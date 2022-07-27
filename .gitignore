@@ -57,6 +57,7 @@ Plugins/*/Binaries/*
 Build/*
 
 Content/**/Assets/
+Content/**/FPS_Weapon_Bundle/
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 !Build/*/
