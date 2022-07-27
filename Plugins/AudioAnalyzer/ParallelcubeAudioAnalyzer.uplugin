@@ -1,0 +1,42 @@
+{
+	"FileVersion": 3,
+	"Version": 29,
+	"VersionName": "3.04",
+	"FriendlyName": "Audio Analyzer Plugin",
+	"Description": "Audio analysis tool",
+	"Category": "Audio",
+	"CreatedBy": "BYC",
+	"CreatedByURL": "https://www.parallelcube.com/AudioAnalyzer",
+	"DocsURL": "https://www.parallelcube.com/content/docs/audioanalyzer/",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/c04ca3c256584bc1a7b94555e9ca0332",
+	"SupportURL": "https://www.parallelcube.com/audio-analyzer-plugin/",
+	"EngineVersion": "5.0.0",
+	"CanContainContent": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "ParallelcubeTaglib",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Android",
+				"Linux",
+				"Mac",
+				"IOS"
+			]
+		},
+		{
+			"Name": "ParallelcubeAudioAnalyzer",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"PlatformAllowList": [
+				"Win64",
+				"Android",
+				"Linux",
+				"Mac",
+				"IOS"
+			]
+		}
+	]
+}
