@@ -34,7 +34,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-public:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 		USkeletalMeshComponent* HandsMesh;
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
@@ -56,6 +55,8 @@ private:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
+	void InteractPressed();
+
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 		TSubclassOf<class AProjectile> ProjectileClass;
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
@@ -63,4 +64,12 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
 		UAnimMontage* FireAnim;
 	UAnimInstance* AnimInstance;
+
+protected:
+	UPROPERTY(VisibleAnywhere, Category = "Interaction");
+		float TraceDistance;
+	UFUNCTION(BlueprintNativeEvent)
+		void TraceForward();
+		void TraceForward_Implementation();
+
 };

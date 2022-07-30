@@ -31,7 +31,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
 		float Damage = 50.f;
 	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
-		USphereComponent* CollisionSphere;
+		UStaticMeshComponent* ProjectileMesh;
 	UFUNCTION()
 		void OnHit(UPrimitiveComponent* HitComponent, 
 			AActor* OtherActor, 

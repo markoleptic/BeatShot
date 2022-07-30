@@ -18,12 +18,12 @@ ADefaultCharacter::ADefaultCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	GetCapsuleComponent()->InitCapsuleSize(40.f, 95.f);
+	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.f);
 	Sensitivity = 45.f;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("First Person Camera");
 	Camera->SetupAttachment(GetCapsuleComponent());
-	Camera->SetRelativeLocation(FVector(0.0f, 0.0f, 50.0f + BaseEyeHeight));
+	Camera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	Camera->bUsePawnControlRotation = true;
 	Camera->SetFieldOfView(110);
 
@@ -45,6 +45,7 @@ ADefaultCharacter::ADefaultCharacter()
 	MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
 
 	GunOffset = FVector(100.f, 0.f, 10.f);
+	TraceDistance = 2000;
 }
 
 // Called when the game starts or when spawned
@@ -61,7 +62,6 @@ void ADefaultCharacter::BeginPlay()
 void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 // Called to bind functionality to input
@@ -84,49 +84,34 @@ void ADefaultCharacter::Fire()
 		FVector CameraLocation;
 		FRotator CameraRotation;
 		GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-
 		// Transform MuzzleOffset from camera space to world space.
 		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
 		// Skew the aim to be slightly upwards. 
 		FRotator MuzzleRotation = CameraRotation;
-
 		UWorld* World = GetWorld();
 		if (World)
 		{
+			InteractPressed();
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.Owner = this;
 			SpawnParams.Instigator = GetInstigator();
 
 			// Spawn the projectile at the muzzle.
 			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, Muzzle, MuzzleRotation, SpawnParams);
+			Projectile->SetOwner(this);
 			if (Projectile)
 			{
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
-				DrawDebugLine(GetWorld(), Muzzle, LaunchDirection, FColor::Red, false, 3);
+				// DrawDebugLine(GetWorld(), Muzzle, LaunchDirection, FColor::Red, false, 3);
 				Projectile->FireInDirection(LaunchDirection);
 			}
 
 		}
 	}
-	//if (GetWorld() != nullptr)
-	//{
-	//	FRotator SpawnRotation = GetControlRotation();
-	//	FVector SpawnLocation = MuzzleLocation != nullptr ?
-	//		MuzzleLocation->GetComponentLocation() :
-	//		GetActorLocation() + SpawnRotation.RotateVector(GunOffset);
-	//	GetWorld()->SpawnActor<AProjectile>(ProjectileClass,
-	//		SpawnLocation,
-	//		SpawnRotation);
-	//	UE_LOG(LogTemp, Display, TEXT("cum"));
-	//}
 }
-
-
 
 void ADefaultCharacter::MoveForward(float Value)
 {
@@ -152,5 +137,33 @@ void ADefaultCharacter::Turn(float Value)
 void ADefaultCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value * Sensitivity * GetWorld()->GetDeltaSeconds());
+}
+
+void ADefaultCharacter::InteractPressed()
+{
+	TraceForward();
+}
+
+void ADefaultCharacter::TraceForward_Implementation()
+{
+	FVector Loc;
+	FRotator Rot;
+	FHitResult Hit;
+
+	GetController()->GetPlayerViewPoint(Loc, Rot);
+
+	FVector Start = Loc;
+	FVector End = Start + (Rot.Vector() * TraceDistance);
+
+	FCollisionQueryParams TraceParams;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Orange, false, 2.f);
+
+	if (bHit)
+	{
+		DrawDebugBox(GetWorld(), Hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.f);
+		FString HitName = Hit.GetActor()->GetActorNameOrLabel();
+	}
 }
 

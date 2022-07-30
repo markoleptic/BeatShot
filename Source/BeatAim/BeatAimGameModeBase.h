@@ -9,9 +9,12 @@
 /**
  * 
  */
+class ASphereTarget;
 UCLASS()
 class BEATAIM_API ABeatAimGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	void ActorDied(AActor* DeadActor);
 };
