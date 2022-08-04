@@ -4,25 +4,64 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "PlayerHUD.generated.h"
-
+class ADefaultCharacter;
+class UTargetSubsystem;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTargetSpawned);
+//class UEditableText;
 /**
  * 
  */
+class UProgressBar;
+class UTextBlock;
 UCLASS()
 class BEATAIM_API UPlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	void SetTargetBar(float TargetsHit);
-	UPROPERTY(EditAnywhere, meta = (BindWidget))
-		class UProgressBar* TargetBar;
+	UPlayerHUD(const FObjectInitializer& ObjectInitializer);
 
-	UPROPERTY(EditAnywhere, Category = "Widgets|Text")
-		FText TargetsHit;
-	UFUNCTION(BlueprintPure, Category = "Widgets|Text")
-		FText GetTargetsHit() const;
-	UFUNCTION(BlueprintCallable, Category = "Widgets|Text")
-		void SetTargetsHit(const FText& NewTargetsHit);
+	void SetTargetBar(float TargetsHit, float ShotsFired);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UProgressBar* TargetBar;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* Accuracy;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* TargetsHitText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* ShotsFiredText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* TargetsSpawnedText;
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
+		float TotalTargetsSpawned;
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetTargetsHit(float TargetsHit);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetAccuracy(float TargetsHit, float ShotsFired);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetShotsFired(float ShotsFired);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetTargetsSpawned(float TargetsSpawned);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void ActOnTargetsSpawned();
+
+	UPROPERTY(BlueprintCallable)
+		FTargetSpawned OnTargetSpawned;
+
+	ADefaultCharacter* DefaultCharacter;
+	UTargetSubsystem* TargetSubsystem;
+	UGameInstance* GI;
 };
 

@@ -2,7 +2,6 @@
 
 
 #include "SphereTarget.h"
-#include "TargetSpawner.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 
@@ -13,6 +12,7 @@ ASphereTarget::ASphereTarget()
 	RootComponent = CapsuleComp;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
+	InitialLifeSpan = 2.f;
 }
 
 void ASphereTarget::BeginPlay()

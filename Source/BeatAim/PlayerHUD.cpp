@@ -2,19 +2,48 @@
 
 
 #include "PlayerHUD.h"
+#include <string>
+
+#include "SphereTarget.h"
+#include "TargetSubsystem.h"
 #include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
+#include "kismet/GameplayStatics.h"
 
-void UPlayerHUD::SetTargetBar(float TargetsHit)
+UPlayerHUD::UPlayerHUD(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 {
-	TargetBar->SetPercent(TargetsHit / 100);
+	GI = UGameplayStatics::GetGameInstance(this);
+	TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
 }
 
-FText UPlayerHUD::GetTargetsHit() const
+void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
 {
-	return TargetsHit;
+	TargetBar->SetPercent(TargetsHit / ShotsFired);
 }
 
-void UPlayerHUD::SetTargetsHit(const FText& NewTargetsHit)
+void UPlayerHUD::SetTargetsHit(float TargetsHit)
 {
-	TargetsHit = NewTargetsHit;
+	TargetsHitText->SetText(FText::AsNumber(TargetsHit));
 }
+
+void UPlayerHUD::SetAccuracy(float TargetsHit, float ShotsFired)
+{
+	Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+}
+
+void UPlayerHUD::SetShotsFired(float ShotsFired)
+{
+	ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
+}
+
+void UPlayerHUD::SetTargetsSpawned(float TargetsSpawned)
+{
+	//TargetSubsystem->SetTotalTargetsSpawned(TargetsSpawned);
+	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
+}
+
+void UPlayerHUD::ActOnTargetsSpawned()
+{
+	
+}
+

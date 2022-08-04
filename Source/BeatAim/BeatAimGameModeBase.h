@@ -6,10 +6,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "BeatAimGameModeBase.generated.h"
 
-/**
- * 
- */
-class ASphereTarget;
 UCLASS()
 class BEATAIM_API ABeatAimGameModeBase : public AGameModeBase
 {

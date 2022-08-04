@@ -2,7 +2,6 @@
 
 #include "BeatAimGameModeBase.h"
 #include "SphereTarget.h"
-#include "TargetSpawner.h"
 
 void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
 {

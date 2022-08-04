@@ -26,18 +26,23 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
 	UPROPERTY(VisibleAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
 		UProjectileMovementComponent* ProjectileMovement;
+
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
-		float Damage = 50.f;
+		float Damage = 1000.f;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
 		UStaticMeshComponent* ProjectileMesh;
+
 	UFUNCTION()
 		void OnHit(UPrimitiveComponent* HitComponent, 
 			AActor* OtherActor, 
 			UPrimitiveComponent* OtherComponent, 
 			FVector NormalImpulse, 
 			const FHitResult& Hit);
+
 	void FireInDirection(const FVector& ShootDirection);
 };
 

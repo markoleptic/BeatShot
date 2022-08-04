@@ -13,6 +13,7 @@ class UCameraComponent;
 class USoundBase;
 class UAnimMontage;
 class UAnimInstance;
+class UPlayerHUD;
 
 UCLASS()
 class BEATAIM_API ADefaultCharacter : public ACharacter
@@ -34,6 +35,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// Cleanup pawn when game ends
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 		USkeletalMeshComponent* HandsMesh;
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
@@ -48,6 +52,21 @@ public:
 		float Sensitivity;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 		FVector MuzzleOffset;
+
+	// Widget class to spawn for HUD
+	UPROPERTY(EditAnywhere)
+		TSubclassOf<class UPlayerHUD> PlayerHUDClass;
+	// instance of class
+	UPROPERTY()
+		UPlayerHUD* PlayerHUD;
+	UPROPERTY(EditAnywhere)
+		float ShotsFired;
+	UPROPERTY(EditAnywhere)
+		float TargetsHit;
+	UPROPERTY(EditAnywhere)
+		float Accuracy;
+	void SetTargetsHit(bool Hit);
+	void SetShotsFired();
 
 private:
 	void Fire();

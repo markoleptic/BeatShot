@@ -11,6 +11,8 @@
 #include "BeatAimGameModeBase.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
+#include "PlayerHUD.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values
 ADefaultCharacter::ADefaultCharacter()
@@ -46,16 +48,50 @@ ADefaultCharacter::ADefaultCharacter()
 
 	GunOffset = FVector(100.f, 0.f, 10.f);
 	TraceDistance = 2000;
+
+	//HUD
+	PlayerHUDClass = nullptr;
+	PlayerHUD = nullptr;
+
+	// Targets
+	ShotsFired = 0.f;
+	TargetsHit = 0.f;
+	Accuracy = 0.f;
 }
 
 // Called when the game starts or when spawned
 void ADefaultCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
 	GunMesh->AttachToComponent(HandsMesh,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 		"GripPoint");
 	AnimInstance = HandsMesh->GetAnimInstance();
+
+	if (IsLocallyControlled() && PlayerHUDClass)
+	{
+		// Want HUD to be owned by local player controller,
+		// bc it will have references to local player and viewports attached to it
+		APlayerController* FPC = GetController<APlayerController>();
+		check(FPC);
+		PlayerHUD = CreateWidget<UPlayerHUD>(FPC, PlayerHUDClass);
+		check(PlayerHUD);
+		PlayerHUD->AddToPlayerScreen();
+		PlayerHUD->SetTargetBar(TargetsHit, ShotsFired);
+	}
+}
+
+void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (PlayerHUD)
+	{
+		PlayerHUD->RemoveFromParent();
+		// Can't destroy widget directly, garbage collector will take care of it when safe to do so
+		PlayerHUD = nullptr;
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 // Called every frame
@@ -73,6 +109,21 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ADefaultCharacter::Turn);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ADefaultCharacter::LookUp);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ADefaultCharacter::Fire);
+}
+
+void ADefaultCharacter::SetTargetsHit(bool Hit)
+{
+	if (PlayerHUD)
+	{
+		if (Hit == true)
+		{
+			TargetsHit++;
+		}
+		PlayerHUD->SetTargetsHit(TargetsHit);
+		PlayerHUD->SetTargetBar(TargetsHit, ShotsFired);
+		PlayerHUD->SetAccuracy(TargetsHit, ShotsFired);
+		PlayerHUD->SetShotsFired(ShotsFired);
+	}
 }
 
 void ADefaultCharacter::Fire()
@@ -100,9 +151,12 @@ void ADefaultCharacter::Fire()
 
 			// Spawn the projectile at the muzzle.
 			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, Muzzle, MuzzleRotation, SpawnParams);
-			Projectile->SetOwner(this);
 			if (Projectile)
 			{
+				SetShotsFired();
+				SetTargetsHit(false);
+				Projectile->SetOwner(this);
+				Projectile->SetInstigator(this);
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
 				// DrawDebugLine(GetWorld(), Muzzle, LaunchDirection, FColor::Red, false, 3);
@@ -111,6 +165,11 @@ void ADefaultCharacter::Fire()
 
 		}
 	}
+}
+
+void ADefaultCharacter::SetShotsFired()
+{
+	ShotsFired++;
 }
 
 void ADefaultCharacter::MoveForward(float Value)

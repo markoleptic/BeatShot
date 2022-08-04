@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "TargetSpawner.generated.h"
 
+class ADefaultCharacter;
 class ASphereTarget;
 class UBoxComponent;
 UCLASS()
@@ -25,24 +26,29 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	//UPROPERTY(BlueprintCallable)
+	//FTargetSpawned OnTargetSpawned;
+	ADefaultCharacter* DefaultCharacter;
+
 private:
 	UFUNCTION(BlueprintCallable)
 		void SpawnActor();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 		bool ShouldSpawn = true;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+		float TargetsSpawned = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 		FBoxSphereBounds BoxBounds;
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
 		bool LastTargetSpawnedCenter = false;
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 		UBoxComponent* SpawnBox;
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-		UStaticMeshComponent* Target;
 	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
 		TSubclassOf<ASphereTarget> ActorToSpawn;
 	UFUNCTION()
 		void OnTargetDestroyed(AActor* DestroyedActor);
-	UPROPERTY(VisibleAnywhere, Category = "Session Statistics", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-		int TargetsHit;
 
+	void RandomizeScale(ASphereTarget* Target);
+	void RandomizeLocation();
+	FVector SpawnLocation;
 };

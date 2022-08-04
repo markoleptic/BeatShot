@@ -2,6 +2,8 @@
 
 
 #include "Projectile.h"
+#include "DefaultCharacter.h"
+#include "SphereTarget.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
@@ -47,10 +49,14 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		return;
 	}
 	AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
+	ADefaultCharacter* Shooter = GetInstigator<ADefaultCharacter>();
+	ASphereTarget* Target = Cast<ASphereTarget>(OtherActor);
+	if (Target && Shooter)
+	{
+		Shooter->SetTargetsHit(true);
+	}
 	UClass* DamageTypeClass = UDamageType::StaticClass();
-	if (OtherActor != nullptr && OtherActor != this && OtherComponent != nullptr 
-		//&& OtherComponent->IsSimulatingPhysics()
-		)
+	if (OtherActor != nullptr && OtherActor != this && OtherComponent != nullptr) //&& OtherComponent->IsSimulatingPhysics()
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 	}

@@ -26,5 +26,4 @@ public:
 	// probably make this a parent class of targets in the future
 	virtual void Tick(float DeltaTime) override;
 	void HandleDestruction();
-private:
 };
