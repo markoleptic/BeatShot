@@ -21,13 +21,13 @@ ADefaultCharacter::ADefaultCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.f);
-	Sensitivity = 45.f;
+	Sensitivity = 12.59;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("First Person Camera");
 	Camera->SetupAttachment(GetCapsuleComponent());
 	Camera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	Camera->bUsePawnControlRotation = true;
-	Camera->SetFieldOfView(110);
+	Camera->SetFieldOfView(103);
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Character Mesh");
 	HandsMesh->SetOnlyOwnerSee(true);
@@ -109,6 +109,16 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ADefaultCharacter::Turn);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ADefaultCharacter::LookUp);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ADefaultCharacter::Fire);
+}
+
+void ADefaultCharacter::SetSensitivity(float InputSensitivity)
+{
+	Sensitivity = InputSensitivity;
+}
+
+float ADefaultCharacter::GetSensitivity()
+{
+	return Sensitivity;
 }
 
 void ADefaultCharacter::SetTargetsHit(bool Hit)

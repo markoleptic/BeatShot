@@ -40,53 +40,78 @@ public:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 		USkeletalMeshComponent* HandsMesh;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 		USkeletalMeshComponent* GunMesh;
+
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
 		USceneComponent* MuzzleLocation;
+
 	UPROPERTY(VisibleAnywhere, Category = "Camera", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 		UCameraComponent* Camera;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 		FVector GunOffset;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-		float Sensitivity;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 		FVector MuzzleOffset;
 
-	// Widget class to spawn for HUD
 	UPROPERTY(EditAnywhere)
 		TSubclassOf<class UPlayerHUD> PlayerHUDClass;
-	// instance of class
+
 	UPROPERTY()
 		UPlayerHUD* PlayerHUD;
-	UPROPERTY(EditAnywhere)
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float ShotsFired;
-	UPROPERTY(EditAnywhere)
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TargetsHit;
-	UPROPERTY(EditAnywhere)
+
+	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float Accuracy;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+		float Sensitivity;
+
+	UFUNCTION(BlueprintCallable)
+		void SetSensitivity(float InputSensitivity);
+
+	UFUNCTION(BlueprintCallable)
+		float GetSensitivity();
+
 	void SetTargetsHit(bool Hit);
+
 	void SetShotsFired();
 
 private:
 	void Fire();
+
 	void MoveForward(float Value);
+
 	void MoveRight(float Value);
+
 	void Turn(float Value);
+
 	void LookUp(float Value);
+
 	void InteractPressed();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 		TSubclassOf<class AProjectile> ProjectileClass;
+
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
 		USoundBase* FireSound;
+
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
 		UAnimMontage* FireAnim;
+
 	UAnimInstance* AnimInstance;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");
 		float TraceDistance;
+
 	UFUNCTION(BlueprintNativeEvent)
 		void TraceForward();
 		void TraceForward_Implementation();
