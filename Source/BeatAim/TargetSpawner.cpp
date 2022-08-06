@@ -21,10 +21,10 @@ void ATargetSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
-	UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
-	UTargetSubsystem* TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
+	//UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
+	//UTargetSubsystem* TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
 	DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	SpawnActor();
+	//SpawnActor();
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -34,31 +34,43 @@ void ATargetSpawner::Tick(float DeltaTime)
 
 void ATargetSpawner::SpawnActor()
 {
-	SpawnLocation = BoxBounds.Origin;
-	if (LastTargetSpawnedCenter == true)
+	if (ShouldSpawn)
 	{
-		RandomizeLocation();
-	}
-	else if (LastTargetSpawnedCenter == false) {
-		LastTargetSpawnedCenter = true;
-	}
-	ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
-	RandomizeScale(SpawnTarget);
-	if (SpawnTarget)
-	{
-		TargetsSpawned++;
-		if (DefaultCharacter->PlayerHUD)
+		SpawnLocation = BoxBounds.Origin;
+		if (LastTargetSpawnedCenter == true)
 		{
-			DefaultCharacter->PlayerHUD->SetTargetsSpawned(TargetsSpawned);
+			RandomizeLocation();
 		}
-		// Bind the destruction of target to OnTargetDestroyed to spawn a new target
-		SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
+		else if (LastTargetSpawnedCenter == false) {
+			LastTargetSpawnedCenter = true;
+		}
+		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
+		RandomizeScale(SpawnTarget);
+		if (SpawnTarget)
+		{
+			TargetsSpawned++;
+			if (DefaultCharacter->PlayerHUD)
+			{
+				DefaultCharacter->PlayerHUD->SetTargetsSpawned(TargetsSpawned);
+			}
+			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
+			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
+		}
 	}
+}
+
+void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
+{
+	LastTargetSpawnedCenter = false;
+	ShouldSpawn = bShouldSpawn;
 }
 
 void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 {
-	SpawnActor();
+	if (ShouldSpawn)
+	{
+		SpawnActor();
+	}
 }
 
 void ATargetSpawner::RandomizeScale(ASphereTarget* Target)

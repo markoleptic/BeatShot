@@ -3,6 +3,7 @@
 
 #include "HealthComponent.h"
 #include "BeatAimGameModeBase.h"
+#include "SpiderShotSelector.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -30,9 +31,17 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 {
 	if (Damage <= 0.f) return;
 	Health -= Damage;
-	if (Health <= 0.f && BeatAimGameMode)
+	if (BeatAimGameMode)
 	{
-		BeatAimGameMode->ActorDied(DamagedActor);
+		if (Health <= 0.f)
+		{
+			BeatAimGameMode->ActorDied(DamagedActor);
+		}
+		if (ASpiderShotSelector* SpiderShotSelector = Cast<ASpiderShotSelector>(DamagedActor))
+		{
+			BeatAimGameMode->ActorDied(DamagedActor);
+		}
 	}
+
 }
 

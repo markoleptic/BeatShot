@@ -44,5 +44,10 @@ public:
 			const FHitResult& Hit);
 
 	void FireInDirection(const FVector& ShootDirection);
+
+	class AController* MyOwnerInstigator;
+	class ADefaultCharacter* Shooter;
+	class ASphereTarget* Target;
+	class ASpiderShotSelector* SpiderShotSelector;
 };
 

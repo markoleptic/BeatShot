@@ -23,8 +23,4 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = StatSubsystem)
 		float TotalTargetsHit;
-
-
-
-	
 };

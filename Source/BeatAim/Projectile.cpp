@@ -8,6 +8,7 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
+#include "SpiderShotSelector.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -48,13 +49,22 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		Destroy();
 		return;
 	}
-	AController* MyOwnerInstigator = MyOwner->GetInstigatorController();
-	ADefaultCharacter* Shooter = GetInstigator<ADefaultCharacter>();
-	ASphereTarget* Target = Cast<ASphereTarget>(OtherActor);
-	if (Target && Shooter)
+	MyOwnerInstigator = MyOwner->GetInstigatorController();
+	Shooter = GetInstigator<ADefaultCharacter>();
+	if (Shooter)
 	{
-		Shooter->SetTargetsHit(true);
+		SpiderShotSelector = Cast<ASpiderShotSelector>(OtherActor);
+		if (SpiderShotSelector)
+		{
+
+		}
+		Target = Cast<ASphereTarget>(OtherActor);
+		if (Target && Shooter)
+		{
+			Shooter->SetTargetsHit(true);
+		}
 	}
+
 	UClass* DamageTypeClass = UDamageType::StaticClass();
 	if (OtherActor != nullptr && OtherActor != this && OtherComponent != nullptr) //&& OtherComponent->IsSimulatingPhysics()
 	{
