@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "TargetSpawner.generated.h"
 
+class UDefaultGameInstance;
 class ADefaultCharacter;
 class ASphereTarget;
 class UBoxComponent;
@@ -26,8 +27,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	//UPROPERTY(BlueprintCallable)
-	//FTargetSpawned OnTargetSpawned;
 	ADefaultCharacter* DefaultCharacter;
 
 	UFUNCTION(BlueprintCallable)
@@ -37,7 +36,7 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-		bool ShouldSpawn = true;
+		bool ShouldSpawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 		float TargetsSpawned = 0.f;
@@ -63,5 +62,5 @@ private:
 
 	FVector SpawnLocation;
 
-	FTimerHandle TimerHandle;
+	UDefaultGameInstance* GI;
 };

@@ -5,6 +5,7 @@
 #include "SpiderShotSelector.h"
 #include "TargetSpawner.h"
 #include "DefaultCharacter.h"
+#include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
 #include "EngineUtils.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,48 +19,53 @@ void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
 
 	if (ASpiderShotSelector* DestroyedSelector = Cast<ASpiderShotSelector>(DeadActor))
 	{
-		StartSpiderShot();
+		HandleGameStart(DestroyedSelector);
 	}
 }
 
 void ABeatAimGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	TArray<ATargetSpawner*> TargetSpawners;
-	FindAllActors(GetWorld(), TargetSpawners);
-	TargetSpawnerRef = TargetSpawners[0];
-
-	//TODO: Get the game mode the player shoots from the wall
-	//GameModeSelector = "SpiderShot";
-	//PlayerGameModeSelected(GameModeSelector);
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	//DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	GI->RegisterGameModeBase(this);
+	DefaultCharacter = GI->DefaultCharacterRef;
+	//TArray<ATargetSpawner*> TargetSpawners;
+	//FindAllActors(GetWorld(), TargetSpawners);
+	//TargetSpawnerRef = TargetSpawners[0];
+	TargetSpawner = GI->TargetSpawnerRef;
+	SphereTarget = GI->SphereTargetRef;
+	GameModeSelected = false;
 }
 
 void ABeatAimGameModeBase::StartSpiderShot()
 {
-	TargetSpawnerRef->SetShouldSpawn(true);
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &ABeatAimGameModeBase::EndSpiderShot, 10.f, false);
-	TargetSpawnerRef->SpawnActor();
+	if (GameModeSelected == true)
+	{
+		TargetSpawner->SetShouldSpawn(true);
+		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 5.f, false);
+		if (SpiderShotGameLength.IsValid())
+		{
+			TargetSpawner->SpawnActor();
+		}
+	}
 }
 
 void ABeatAimGameModeBase::EndSpiderShot()
 {
-	TargetSpawnerRef->SetShouldSpawn(false);
-	GameModeSelector = "NotSpiderShot";
-}
-
-void ABeatAimGameModeBase::PlayerGameModeSelected(FString GameMode)
-{
-	if (GameMode == "SpiderShot")
+	SpiderShotGameLength.Invalidate();
+	TargetSpawner->SetShouldSpawn(false);
+	GameModeSelected = false;
+	if (SphereTarget)
 	{
-		StartSpiderShot();
+		SphereTarget->HandleDestruction();
 	}
 }
 
-void ABeatAimGameModeBase::FindAllActors(UWorld* World, TArray<ATargetSpawner*>& Out)
-{
-	for (TActorIterator<ATargetSpawner> It(World); It; ++It)
-	{
-		Out.Add(*It);
-	}
-}
+//void ABeatAimGameModeBase::FindAllActors(UWorld* World, TArray<ATargetSpawner*>& Out)
+//{
+//	for (TActorIterator<ATargetSpawner> It(World); It; ++It)
+//	{
+//		Out.Add(*It);
+//	}
+//}

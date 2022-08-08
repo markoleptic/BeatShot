@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+class UDefaultGameInstance;
 class USceneComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
@@ -107,6 +108,8 @@ private:
 		UAnimMontage* FireAnim;
 
 	UAnimInstance* AnimInstance;
+
+	UDefaultGameInstance* GI;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");

@@ -48,6 +48,6 @@ public:
 	class AController* MyOwnerInstigator;
 	class ADefaultCharacter* Shooter;
 	class ASphereTarget* Target;
-	class ASpiderShotSelector* SpiderShotSelector;
+	//class ASpiderShotSelector* SpiderShotSelector;
 };
 

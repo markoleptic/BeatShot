@@ -3,18 +3,18 @@
 
 #include "PlayerHUD.h"
 #include <string>
-
+#include "BeatAimGameModeBase.h"
+#include "DefaultGameInstance.h"
 #include "SphereTarget.h"
 #include "TargetSubsystem.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "kismet/GameplayStatics.h"
 
-UPlayerHUD::UPlayerHUD(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
-{
-	GI = UGameplayStatics::GetGameInstance(this);
-	TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
-}
+//UPlayerHUD::UPlayerHUD(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
+//{
+//	//TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
+//}
 
 void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
 {
@@ -40,10 +40,5 @@ void UPlayerHUD::SetTargetsSpawned(float TargetsSpawned)
 {
 	//TargetSubsystem->SetTotalTargetsSpawned(TargetsSpawned);
 	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
-}
-
-void UPlayerHUD::ActOnTargetsSpawned()
-{
-	
 }
 

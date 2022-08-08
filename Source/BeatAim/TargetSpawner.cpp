@@ -5,6 +5,7 @@
 #include "DefaultCharacter.h"
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
+#include "DefaultGameInstance.h"
 #include "TargetSubsystem.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -15,16 +16,17 @@ ATargetSpawner::ATargetSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
 	RootComponent = SpawnBox;
+	SetShouldSpawn(false);
 }
 
 void ATargetSpawner::BeginPlay()
 {
 	Super::BeginPlay();
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	GI->RegisterTargetSpawner(this);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
-	//UGameInstance* GI = UGameplayStatics::GetGameInstance(this);
 	//UTargetSubsystem* TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
 	DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	//SpawnActor();
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -46,6 +48,7 @@ void ATargetSpawner::SpawnActor()
 		}
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
 		RandomizeScale(SpawnTarget);
+		GI->RegisterSphereTarget(SpawnTarget);
 		if (SpawnTarget)
 		{
 			TargetsSpawned++;

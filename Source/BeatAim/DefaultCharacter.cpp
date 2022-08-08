@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Projectile.h"
 #include "BeatAimGameModeBase.h"
+#include "DefaultGameInstance.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
 #include "PlayerHUD.h"
@@ -63,6 +64,9 @@ ADefaultCharacter::ADefaultCharacter()
 void ADefaultCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	GI->RegisterDefaultCharacter(this);
 
 	GunMesh->AttachToComponent(HandsMesh,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,

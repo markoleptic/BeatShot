@@ -6,21 +6,21 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "PlayerHUD.generated.h"
+class ABeatAimGameModeBase;
+class UDefaultGameInstance;
 class ADefaultCharacter;
 class UTargetSubsystem;
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTargetSpawned);
-//class UEditableText;
+class UProgressBar;
+class UTextBlock;
 /**
  * 
  */
-class UProgressBar;
-class UTextBlock;
 UCLASS()
 class BEATAIM_API UPlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	UPlayerHUD(const FObjectInitializer& ObjectInitializer);
+	/*UPlayerHUD(const FObjectInitializer& ObjectInitializer);*/
 
 	void SetTargetBar(float TargetsHit, float ShotsFired);
 
@@ -39,6 +39,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TargetsSpawnedText;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "CountDown")
+		UTextBlock* CountdownTextBlock;
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TotalTargetsSpawned;
 
@@ -53,15 +56,5 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void SetTargetsSpawned(float TargetsSpawned);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void ActOnTargetsSpawned();
-
-	UPROPERTY(BlueprintCallable)
-		FTargetSpawned OnTargetSpawned;
-
-	ADefaultCharacter* DefaultCharacter;
-	UTargetSubsystem* TargetSubsystem;
-	UGameInstance* GI;
 };
 

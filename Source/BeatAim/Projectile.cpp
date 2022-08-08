@@ -53,11 +53,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	Shooter = GetInstigator<ADefaultCharacter>();
 	if (Shooter)
 	{
-		SpiderShotSelector = Cast<ASpiderShotSelector>(OtherActor);
-		if (SpiderShotSelector)
-		{
-
-		}
+		//SpiderShotSelector = Cast<ASpiderShotSelector>(OtherActor);
+		//if (SpiderShotSelector)
+		//}
+		//}
 		Target = Cast<ASphereTarget>(OtherActor);
 		if (Target && Shooter)
 		{
