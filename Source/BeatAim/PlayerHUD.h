@@ -22,8 +22,6 @@ class BEATAIM_API UPlayerHUD : public UUserWidget
 public:
 	/*UPlayerHUD(const FObjectInitializer& ObjectInitializer);*/
 
-	void SetTargetBar(float TargetsHit, float ShotsFired);
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UProgressBar* TargetBar;
 
@@ -44,6 +42,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TotalTargetsSpawned;
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetTargetBar(float TargetsHit, float ShotsFired);
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void SetTargetsHit(float TargetsHit);

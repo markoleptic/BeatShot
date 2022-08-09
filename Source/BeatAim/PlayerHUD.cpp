@@ -2,7 +2,6 @@
 
 
 #include "PlayerHUD.h"
-#include <string>
 #include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
 #include "SphereTarget.h"
@@ -28,7 +27,14 @@ void UPlayerHUD::SetTargetsHit(float TargetsHit)
 
 void UPlayerHUD::SetAccuracy(float TargetsHit, float ShotsFired)
 {
-	Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+	if (isnan(TargetsHit / ShotsFired))
+	{
+		Accuracy->SetText(FText::AsPercent(0.f));
+	}
+	else
+	{
+		Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+	}
 }
 
 void UPlayerHUD::SetShotsFired(float ShotsFired)

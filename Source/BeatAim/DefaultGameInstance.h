@@ -39,4 +39,31 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeBase(ABeatAimGameModeBase* GameModeBase);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float TargetsHit = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float ShotsFired = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float TargetsSpawned = 0;
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void IncrementTargetsSpawned();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void IncrementShotsFired();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void IncrementTargetsHit();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	float GetTargetsHit();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	float GetShotsFired();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	float GetTargetsSpawned();
 };

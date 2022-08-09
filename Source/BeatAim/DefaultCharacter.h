@@ -40,52 +40,53 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
-		USkeletalMeshComponent* HandsMesh;
+	USkeletalMeshComponent* HandsMesh;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
-		USkeletalMeshComponent* GunMesh;
+	USkeletalMeshComponent* GunMesh;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Mesh")
-		USceneComponent* MuzzleLocation;
+	USceneComponent* MuzzleLocation;
 
 	UPROPERTY(VisibleAnywhere, Category = "Camera", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-		UCameraComponent* Camera;
+	UCameraComponent* Camera;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-		FVector GunOffset;
+	FVector GunOffset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-		FVector MuzzleOffset;
+	FVector MuzzleOffset;
 
-	UPROPERTY(EditAnywhere)
-		TSubclassOf<class UPlayerHUD> PlayerHUDClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	TSubclassOf<class ADefaultPlayerController> PlayerControllerClass;
 
 	UPROPERTY()
-		UPlayerHUD* PlayerHUD;
+	ADefaultPlayerController* PlayerController;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float ShotsFired;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UPlayerHUD> PlayerHUDClass;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float TargetsHit;
+	UPROPERTY()
+	UPlayerHUD* PlayerHUD;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float Accuracy;
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+	void ShowPlayerHUD(bool ShouldShow);
+
+	bool HUDActive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-		float Sensitivity;
+	float Sensitivity;
 
 	UFUNCTION(BlueprintCallable)
-		void SetSensitivity(float InputSensitivity);
+	void SetSensitivity(float InputSensitivity);
 
 	UFUNCTION(BlueprintCallable)
-		float GetSensitivity();
+	float GetSensitivity();
 
-	void SetTargetsHit(bool Hit);
-
-	void SetShotsFired();
+	UDefaultGameInstance* GI;
 
 private:
+
 	void Fire();
 
 	void MoveForward(float Value);
@@ -99,17 +100,15 @@ private:
 	void InteractPressed();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-		TSubclassOf<class AProjectile> ProjectileClass;
+	TSubclassOf<class AProjectile> ProjectileClass;
 
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
-		USoundBase* FireSound;
+	USoundBase* FireSound;
 
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
-		UAnimMontage* FireAnim;
+	UAnimMontage* FireAnim;
 
 	UAnimInstance* AnimInstance;
-
-	UDefaultGameInstance* GI;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");
@@ -118,5 +117,4 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 		void TraceForward();
 		void TraceForward_Implementation();
-
 };

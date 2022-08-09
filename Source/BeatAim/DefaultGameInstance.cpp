@@ -25,3 +25,33 @@ void UDefaultGameInstance::RegisterGameModeBase(ABeatAimGameModeBase* GameModeBa
 {
 	GameModeBaseRef = GameModeBase;
 }
+
+void UDefaultGameInstance::IncrementTargetsSpawned()
+{
+	TargetsSpawned++;
+}
+
+void UDefaultGameInstance::IncrementShotsFired()
+{
+	ShotsFired++;
+}
+
+void UDefaultGameInstance::IncrementTargetsHit()
+{
+	TargetsHit++;
+}
+
+float UDefaultGameInstance::GetTargetsHit()
+{
+	return TargetsHit;
+}
+
+float UDefaultGameInstance::GetShotsFired()
+{
+	return ShotsFired;
+}
+
+float UDefaultGameInstance::GetTargetsSpawned()
+{
+	return TargetsSpawned;
+}

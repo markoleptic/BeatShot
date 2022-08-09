@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "TargetSpawner.generated.h"
 
+class ABeatAimGameModeBase;
 class UDefaultGameInstance;
 class ADefaultCharacter;
 class ASphereTarget;
@@ -27,19 +28,19 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	ADefaultCharacter* DefaultCharacter;
+	// Reference to Game Instance
+	UDefaultGameInstance* GI;
 
 	UFUNCTION(BlueprintCallable)
-		void SpawnActor();
+	void SpawnActor();
 
+	// Lets the spawner know it's safe to spawn a target
 	void SetShouldSpawn(bool bShouldSpawn);
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-		bool ShouldSpawn;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-		float TargetsSpawned = 0.f;
+		bool ShouldSpawn;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 		FBoxSphereBounds BoxBounds;
@@ -56,11 +57,13 @@ private:
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
 
+	// Randomize scale of target
 	void RandomizeScale(ASphereTarget* Target);
 
+	// Randomize location of target
 	void RandomizeLocation();
 
+	// Location to spawn the target
 	FVector SpawnLocation;
 
-	UDefaultGameInstance* GI;
 };

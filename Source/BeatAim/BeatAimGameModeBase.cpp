@@ -2,12 +2,12 @@
 
 #include "BeatAimGameModeBase.h"
 #include "SphereTarget.h"
-#include "SpiderShotSelector.h"
 #include "TargetSpawner.h"
 #include "DefaultCharacter.h"
 #include "DefaultGameInstance.h"
-#include "DefaultPlayerController.h"
+#include "PlayerHUD.h"
 #include "EngineUtils.h"
+#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
 void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
@@ -16,7 +16,6 @@ void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
 	{
 		DestroyedTarget->HandleDestruction();
 	}
-
 	if (ASpiderShotSelector* DestroyedSelector = Cast<ASpiderShotSelector>(DeadActor))
 	{
 		HandleGameStart(DestroyedSelector);
@@ -26,46 +25,64 @@ void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
 void ABeatAimGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
+	// Store reference of GameModeBase in Game Instance
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	//DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-	GI->RegisterGameModeBase(this);
-	DefaultCharacter = GI->DefaultCharacterRef;
-	//TArray<ATargetSpawner*> TargetSpawners;
-	//FindAllActors(GetWorld(), TargetSpawners);
-	//TargetSpawnerRef = TargetSpawners[0];
-	TargetSpawner = GI->TargetSpawnerRef;
-	SphereTarget = GI->SphereTargetRef;
+	if (GI)
+	{
+		GI->RegisterGameModeBase(this);
+	}
+
+	//Default class specific values
 	GameModeSelected = false;
+}
+
+void ABeatAimGameModeBase::UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned)
+{
+	if (ShotFired == true)
+	{
+		GI->IncrementShotsFired();
+		GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
+	}
+	if (TargetHit == true)
+	{
+		GI->IncrementTargetsHit();
+		GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
+	}
+	if (TargetSpawned == true)
+	{
+		GI->IncrementTargetsSpawned();
+		GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
+	}
+	GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
+	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
+}
+
+void ABeatAimGameModeBase::ShowPlayerHUD()
+{
+	GI->DefaultCharacterRef->ShowPlayerHUD(true);
 }
 
 void ABeatAimGameModeBase::StartSpiderShot()
 {
 	if (GameModeSelected == true)
 	{
-		TargetSpawner->SetShouldSpawn(true);
+		GI->TargetSpawnerRef->SetShouldSpawn(true);
 		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 5.f, false);
 		if (SpiderShotGameLength.IsValid())
 		{
-			TargetSpawner->SpawnActor();
+			GI->TargetSpawnerRef->SpawnActor();
 		}
 	}
 }
 
 void ABeatAimGameModeBase::EndSpiderShot()
 {
-	SpiderShotGameLength.Invalidate();
-	TargetSpawner->SetShouldSpawn(false);
 	GameModeSelected = false;
-	if (SphereTarget)
+	GI->TargetSpawnerRef->SetShouldSpawn(false);
+	SpiderShotGameLength.Invalidate();
+	if (GI->SphereTargetRef)
 	{
-		SphereTarget->HandleDestruction();
+		GI->SphereTargetRef->HandleDestruction();
 	}
+	GI->DefaultCharacterRef->ShowPlayerHUD(false);
 }
-
-//void ABeatAimGameModeBase::FindAllActors(UWorld* World, TArray<ATargetSpawner*>& Out)
-//{
-//	for (TActorIterator<ATargetSpawner> It(World); It; ++It)
-//	{
-//		Out.Add(*It);
-//	}
-//}

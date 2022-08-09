@@ -4,6 +4,8 @@
 #include "Projectile.h"
 #include "DefaultCharacter.h"
 #include "SphereTarget.h"
+#include "DefaultGameInstance.h"
+#include "BeatAimGameModeBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
@@ -33,6 +35,7 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 }
 
 // Called every frame
@@ -60,7 +63,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		Target = Cast<ASphereTarget>(OtherActor);
 		if (Target && Shooter)
 		{
-			Shooter->SetTargetsHit(true);
+			//Shooter->SetTargetsHit(true);
+			//If reached this point, player has shot a target
+			//Only updating Targets Hit
+			GI->GameModeBaseRef->UpdatePlayerStats(false, true, false);
 		}
 	}
 

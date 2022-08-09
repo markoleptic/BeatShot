@@ -6,6 +6,7 @@
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
+#include "BeatAimGameModeBase.h"
 #include "TargetSubsystem.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,10 +24,12 @@ void ATargetSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GI->RegisterTargetSpawner(this);
+	if (GI)
+	{
+		GI->RegisterTargetSpawner(this);
+	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	//UTargetSubsystem* TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
-	DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -46,24 +49,28 @@ void ATargetSpawner::SpawnActor()
 		else if (LastTargetSpawnedCenter == false) {
 			LastTargetSpawnedCenter = true;
 		}
+		// Spawn the target
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
 		RandomizeScale(SpawnTarget);
+
+		// Update reference to spawned target in Game Instance
 		GI->RegisterSphereTarget(SpawnTarget);
 		if (SpawnTarget)
 		{
-			TargetsSpawned++;
-			if (DefaultCharacter->PlayerHUD)
-			{
-				DefaultCharacter->PlayerHUD->SetTargetsSpawned(TargetsSpawned);
-			}
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
+		}
+		if (GI->DefaultCharacterRef->HUDActive)
+		{
+			// Only update Targets Spawned
+			GI->GameModeBaseRef->UpdatePlayerStats(false, false, true);
 		}
 	}
 }
 
 void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 {
+	// Whenever this function is called, we want the target to always spawn in center
 	LastTargetSpawnedCenter = false;
 	ShouldSpawn = bShouldSpawn;
 }

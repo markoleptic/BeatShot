@@ -10,6 +10,7 @@
 #include "Projectile.h"
 #include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
+#include "DefaultPlayerController.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
 #include "PlayerHUD.h"
@@ -53,36 +54,30 @@ ADefaultCharacter::ADefaultCharacter()
 	//HUD
 	PlayerHUDClass = nullptr;
 	PlayerHUD = nullptr;
-
-	// Targets
-	ShotsFired = 0.f;
-	TargetsHit = 0.f;
-	Accuracy = 0.f;
+	HUDActive = false;
 }
 
 // Called when the game starts or when spawned
 void ADefaultCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GI->RegisterDefaultCharacter(this);
+	if (GI)
+	{
+		GI->RegisterDefaultCharacter(this);
+	}
 
 	GunMesh->AttachToComponent(HandsMesh,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 		"GripPoint");
-	AnimInstance = HandsMesh->GetAnimInstance();
+	//AnimInstance = HandsMesh->GetAnimInstance();
 
 	if (IsLocallyControlled() && PlayerHUDClass)
 	{
-		// Want HUD to be owned by local player controller,
+		// Want HUD to be owned by DefaultPlayerController,
 		// bc it will have references to local player and viewports attached to it
-		APlayerController* FPC = GetController<APlayerController>();
-		check(FPC);
-		PlayerHUD = CreateWidget<UPlayerHUD>(FPC, PlayerHUDClass);
-		check(PlayerHUD);
-		PlayerHUD->AddToPlayerScreen();
-		PlayerHUD->SetTargetBar(TargetsHit, ShotsFired);
+		PlayerController = GetController<ADefaultPlayerController>();
+		PlayerHUD = CreateWidget<UPlayerHUD>(PlayerController, PlayerHUDClass);
 	}
 }
 
@@ -115,6 +110,27 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ADefaultCharacter::Fire);
 }
 
+void ADefaultCharacter::ShowPlayerHUD(bool ShouldShow)
+{
+	if (ShouldShow == true)
+	{
+		//check(PlayerHUD);
+		if (PlayerHUD)
+		{
+			PlayerHUD->AddToPlayerScreen();
+			HUDActive = true;
+		}
+	}
+	else if (ShouldShow == false)
+	{
+		if (PlayerHUD)
+		{
+			PlayerHUD->RemoveFromParent();
+			HUDActive = false;
+		}
+	}
+}
+
 void ADefaultCharacter::SetSensitivity(float InputSensitivity)
 {
 	Sensitivity = InputSensitivity;
@@ -123,21 +139,6 @@ void ADefaultCharacter::SetSensitivity(float InputSensitivity)
 float ADefaultCharacter::GetSensitivity()
 {
 	return Sensitivity;
-}
-
-void ADefaultCharacter::SetTargetsHit(bool Hit)
-{
-	if (PlayerHUD)
-	{
-		if (Hit == true)
-		{
-			TargetsHit++;
-		}
-		PlayerHUD->SetTargetsHit(TargetsHit);
-		PlayerHUD->SetTargetBar(TargetsHit, ShotsFired);
-		PlayerHUD->SetAccuracy(TargetsHit, ShotsFired);
-		PlayerHUD->SetShotsFired(ShotsFired);
-	}
 }
 
 void ADefaultCharacter::Fire()
@@ -149,14 +150,16 @@ void ADefaultCharacter::Fire()
 		FVector CameraLocation;
 		FRotator CameraRotation;
 		GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+
 		// Transform MuzzleOffset from camera space to world space.
 		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
 		// Skew the aim to be slightly upwards. 
 		FRotator MuzzleRotation = CameraRotation;
-		UWorld* World = GetWorld();
-		if (World)
+		if (UWorld* World = GetWorld())
 		{
 			InteractPressed();
 			FActorSpawnParameters SpawnParams;
@@ -167,23 +170,25 @@ void ADefaultCharacter::Fire()
 			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, Muzzle, MuzzleRotation, SpawnParams);
 			if (Projectile)
 			{
-				SetShotsFired();
-				SetTargetsHit(false);
+				// If reached this point, the player has fired
+				if (GI->GameModeBaseRef->GameModeSelected)
+				{
+					// Only updating Shots Fired
+					GI->GameModeBaseRef->UpdatePlayerStats(true, false, false);
+				}
+
 				Projectile->SetOwner(this);
 				Projectile->SetInstigator(this);
+
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = MuzzleRotation.Vector();
+
 				// DrawDebugLine(GetWorld(), Muzzle, LaunchDirection, FColor::Red, false, 3);
 				Projectile->FireInDirection(LaunchDirection);
 			}
 
 		}
 	}
-}
-
-void ADefaultCharacter::SetShotsFired()
-{
-	ShotsFired++;
 }
 
 void ADefaultCharacter::MoveForward(float Value)
