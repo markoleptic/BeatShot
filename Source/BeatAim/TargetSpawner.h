@@ -37,6 +37,14 @@ public:
 	// Lets the spawner know it's safe to spawn a target
 	void SetShouldSpawn(bool bShouldSpawn);
 
+	UFUNCTION()
+		float GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier);
+
+	UFUNCTION()
+		float GetTimeSinceSpawn(FTimerHandle TimerHandle);
+
+	FTimerHandle TimeSinceSpawn;
+
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
@@ -65,5 +73,5 @@ private:
 
 	// Location to spawn the target
 	FVector SpawnLocation;
-
+protected:
 };

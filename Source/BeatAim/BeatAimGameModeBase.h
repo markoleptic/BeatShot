@@ -17,8 +17,10 @@ protected:
 	virtual void BeginPlay() override;
 
 	// Called when SpiderShotSelector receives damage
+	UFUNCTION()
 	void StartSpiderShot();
 
+	UFUNCTION()
 	// Called at the end of SpiderShotGameLength timer
 	void EndSpiderShot();
 
@@ -33,6 +35,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 	FTimerHandle CountDown;
 
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
+	//FTimerHandle TimeSinceTargetSpawn;
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Target Properties")
+	//float CurrentGameMaxLifeSpan;
+
+	//UFUNCTION(BlueprintCallable, Category = "Player Stats")
+
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	class UDefaultGameInstance* GI;
@@ -40,8 +50,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "References")
 	bool GameModeSelected;
 
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-	void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+		void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+		void ResetPlayerStats();
 
 private:
 

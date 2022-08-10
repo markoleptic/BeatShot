@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+class UDefaultStatSaveGame;
 class UDefaultGameInstance;
 class USceneComponent;
 class USkeletalMeshComponent;
@@ -85,6 +86,10 @@ public:
 
 	UDefaultGameInstance* GI;
 
+	void SaveGame();
+
+	void LoadGame();
+
 private:
 
 	void Fire();
@@ -98,6 +103,10 @@ private:
 	void LookUp(float Value);
 
 	void InteractPressed();
+
+	//UDefaultStatSaveGame* SaveGameInstance;
+
+	//TSubclassOf <class UDefaultStatSaveGame> SaveGameClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<class AProjectile> ProjectileClass;

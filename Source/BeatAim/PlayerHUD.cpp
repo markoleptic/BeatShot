@@ -17,7 +17,14 @@
 
 void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
 {
-	TargetBar->SetPercent(TargetsHit / ShotsFired);
+	if (isnan(TargetsHit / ShotsFired))
+	{
+		TargetBar->SetPercent(0.f);
+	}
+	else
+	{
+		TargetBar->SetPercent(TargetsHit / ShotsFired);
+	}
 }
 
 void UPlayerHUD::SetTargetsHit(float TargetsHit)
@@ -48,3 +55,7 @@ void UPlayerHUD::SetTargetsSpawned(float TargetsSpawned)
 	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
 }
 
+void UPlayerHUD::SetCurrentScore(float Score)
+{
+	CurrentScoreTextBlock->SetText(FText::AsNumber(Score));
+}

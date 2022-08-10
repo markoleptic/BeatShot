@@ -16,6 +16,9 @@ class BEATAIM_API UDefaultGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+
+	//References
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	class ADefaultCharacter* DefaultCharacterRef;
 
@@ -27,6 +30,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	class ABeatAimGameModeBase* GameModeBaseRef;
+
+	// Register Functions
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter);
@@ -40,6 +45,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeBase(ABeatAimGameModeBase* GameModeBase);
 
+	// Game Mode Variables Associated with Scoring
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float TargetsHit = 0;
 
@@ -49,14 +56,24 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float TargetsSpawned = 0;
 
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void IncrementTargetsSpawned();
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float Score = 0;
+
+	// Modifying Game Mode Variables
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void IncrementShotsFired();
+	void UpdateTargetsSpawned(bool doReset = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void IncrementTargetsHit();
+	void UpdateShotsFired(bool doReset = false);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void UpdateTargetsHit(bool doReset = false);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void UpdateScore(float ScoreToAdd, bool doReset = false);
+
+	// Getter functions for Game Mode Variables
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	float GetTargetsHit();
@@ -66,4 +83,19 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	float GetTargetsSpawned();
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	float GetScore();
+
+	// Setter functions for Game Mode Variables, used to load saved scores
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void SetTargetsHit(float SavedTargetsHit);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void SetShotsFired(float SavedShotsFired);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void SetTargetsSpawned(float SavedTargetsSpawned);
+
 };

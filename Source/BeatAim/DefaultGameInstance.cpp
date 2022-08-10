@@ -26,19 +26,52 @@ void UDefaultGameInstance::RegisterGameModeBase(ABeatAimGameModeBase* GameModeBa
 	GameModeBaseRef = GameModeBase;
 }
 
-void UDefaultGameInstance::IncrementTargetsSpawned()
+void UDefaultGameInstance::UpdateTargetsSpawned(bool doReset)
 {
-	TargetsSpawned++;
+	if (doReset == false)
+	{
+		TargetsSpawned++;
+	}
+	else if (doReset == true)
+	{
+		TargetsSpawned = 0.f;
+	}
 }
 
-void UDefaultGameInstance::IncrementShotsFired()
+void UDefaultGameInstance::UpdateShotsFired(bool doReset)
 {
-	ShotsFired++;
+	if (doReset == false)
+	{
+		ShotsFired++;
+	}
+	else if (doReset == true)
+	{
+		ShotsFired = 0.f;
+	}
 }
 
-void UDefaultGameInstance::IncrementTargetsHit()
+void UDefaultGameInstance::UpdateTargetsHit(bool doReset)
 {
-	TargetsHit++;
+	if (doReset == false)
+	{
+		TargetsHit++;
+	}
+	else if (doReset == true)
+	{
+		TargetsHit = 0.f;
+	}
+}
+
+void UDefaultGameInstance::UpdateScore(float ScoreToAdd, bool doReset)
+{
+	if (doReset == false)
+	{
+		Score += ScoreToAdd;
+	}
+	else if (doReset == true)
+	{
+		Score = 0.f;
+	}
 }
 
 float UDefaultGameInstance::GetTargetsHit()
@@ -55,3 +88,25 @@ float UDefaultGameInstance::GetTargetsSpawned()
 {
 	return TargetsSpawned;
 }
+
+float UDefaultGameInstance::GetScore()
+{
+	return Score;
+}
+
+void UDefaultGameInstance::SetTargetsHit(float SavedTargetsHit)
+{
+	TargetsHit = SavedTargetsHit;
+}
+
+void UDefaultGameInstance::SetShotsFired(float SavedShotsFired)
+{
+	ShotsFired = SavedShotsFired;
+}
+
+void UDefaultGameInstance::SetTargetsSpawned(float SavedTargetsSpawned)
+{
+	TargetsSpawned = SavedTargetsSpawned;
+}
+
+

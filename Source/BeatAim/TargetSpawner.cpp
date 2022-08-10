@@ -57,6 +57,8 @@ void ATargetSpawner::SpawnActor()
 		GI->RegisterSphereTarget(SpawnTarget);
 		if (SpawnTarget)
 		{
+			// Bind the spawning of Target to GetTimeBasedScore
+			GetWorldTimerManager().SetTimer(TimeSinceSpawn, SpawnTarget->MaxLifeSpan, false);
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 		}
@@ -77,6 +79,9 @@ void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 
 void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 {
+	//GI->UpdateScore(GetTimeBasedScore(GetTimeSinceSpawn(TimeSinceSpawn), 50));
+	//GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
+	TimeSinceSpawn.Invalidate();
 	if (ShouldSpawn)
 	{
 		SpawnActor();
@@ -96,5 +101,16 @@ void ATargetSpawner::RandomizeLocation()
 	SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 	SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 	LastTargetSpawnedCenter = false;
+}
+
+float ATargetSpawner::GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier)
+{
+	UE_LOG(LogTemp, Display, TEXT("Time Elapsed: %f"), TimeElapsed);
+	return ScoreMultiplier / TimeElapsed;
+}
+
+float ATargetSpawner::GetTimeSinceSpawn(FTimerHandle TimerHandle)
+{
+	return GetWorldTimerManager().GetTimerElapsed(TimerHandle);
 }
 

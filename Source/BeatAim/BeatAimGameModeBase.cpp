@@ -36,29 +36,9 @@ void ABeatAimGameModeBase::BeginPlay()
 	GameModeSelected = false;
 }
 
-void ABeatAimGameModeBase::UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned)
-{
-	if (ShotFired == true)
-	{
-		GI->IncrementShotsFired();
-		GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
-	}
-	if (TargetHit == true)
-	{
-		GI->IncrementTargetsHit();
-		GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
-	}
-	if (TargetSpawned == true)
-	{
-		GI->IncrementTargetsSpawned();
-		GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
-	}
-	GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
-	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
-}
-
 void ABeatAimGameModeBase::ShowPlayerHUD()
 {
+	//GI->DefaultCharacterRef->LoadGame();
 	GI->DefaultCharacterRef->ShowPlayerHUD(true);
 }
 
@@ -77,6 +57,7 @@ void ABeatAimGameModeBase::StartSpiderShot()
 
 void ABeatAimGameModeBase::EndSpiderShot()
 {
+	//GI->DefaultCharacterRef->SaveGame();
 	GameModeSelected = false;
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
 	SpiderShotGameLength.Invalidate();
@@ -84,5 +65,44 @@ void ABeatAimGameModeBase::EndSpiderShot()
 	{
 		GI->SphereTargetRef->HandleDestruction();
 	}
+	ResetPlayerStats();
 	GI->DefaultCharacterRef->ShowPlayerHUD(false);
+}
+
+void ABeatAimGameModeBase::UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned)
+{
+	if (ShotFired == true)
+	{
+		GI->UpdateShotsFired();
+		GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
+	}
+	if (TargetHit == true)
+	{
+		GI->UpdateTargetsHit();
+		GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
+	}
+	if (TargetSpawned == true)
+	{
+		GI->UpdateTargetsSpawned();
+		GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
+	}
+	GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
+	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
+}
+
+void ABeatAimGameModeBase::ResetPlayerStats()
+{
+	GI->UpdateShotsFired(true);
+	GI->UpdateTargetsHit(true);
+	GI->UpdateTargetsSpawned(true);
+	GI->UpdateScore(0,true);
+
+	GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
+	GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
+	GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
+
+	GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
+	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
+
+	GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
 }

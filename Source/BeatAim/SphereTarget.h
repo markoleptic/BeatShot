@@ -20,10 +20,18 @@ protected:
 public:	
 	// Called every frame
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-		UCapsuleComponent* CapsuleComp;
+	UCapsuleComponent* CapsuleComp;
+
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-		UStaticMeshComponent* BaseMesh;
+	UStaticMeshComponent* BaseMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	float MaxLifeSpan = 2.5;
+
 	// probably make this a parent class of targets in the future
 	virtual void Tick(float DeltaTime) override;
+
 	void HandleDestruction();
+
+	class UDefaultGameInstance* GI;
 };

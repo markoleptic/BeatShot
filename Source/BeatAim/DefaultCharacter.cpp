@@ -2,6 +2,7 @@
 
 
 #include "DefaultCharacter.h"
+#include <string>
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -11,6 +12,7 @@
 #include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
+#include "DefaultStatSaveGame.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
 #include "PlayerHUD.h"
@@ -66,7 +68,6 @@ void ADefaultCharacter::BeginPlay()
 	{
 		GI->RegisterDefaultCharacter(this);
 	}
-
 	GunMesh->AttachToComponent(HandsMesh,
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 		"GripPoint");
@@ -83,6 +84,7 @@ void ADefaultCharacter::BeginPlay()
 
 void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
+	//SaveGame();
 	if (PlayerHUD)
 	{
 		PlayerHUD->RemoveFromParent();
@@ -215,6 +217,33 @@ void ADefaultCharacter::Turn(float Value)
 void ADefaultCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value * Sensitivity * GetWorld()->GetDeltaSeconds());
+}
+
+void ADefaultCharacter::SaveGame()
+{
+	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
+	//TArray<float> SpiderShotScoreArray;
+	//SpiderShotScoreArray.Add(GI->GetTargetsHit());
+	//SpiderShotScoreArray.Add(GI->GetShotsFired());
+	//SpiderShotScoreArray.Add(GI->GetTargetsSpawned());
+	//SaveGameInstance->InsertToArrayOfSpiderShotScores(SpiderShotScoreArray);
+	SaveGameInstance->PlayerLocation = this->GetActorLocation();
+	UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("MySlot"), 0);
+}
+
+void ADefaultCharacter::LoadGame()
+{
+	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
+	SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0));
+	this->SetActorLocation(SaveGameInstance->PlayerLocation);
+	TArray<TArray<float>> SpiderShotScores = SaveGameInstance->GetArrayOfSpiderShotScores();
+	if (SpiderShotScores.Num() > 1)
+	{
+		GI->SetTargetsHit(SpiderShotScores[SpiderShotScores.Num()-1][0]);
+		GI->SetShotsFired(SpiderShotScores[SpiderShotScores.Num() - 1][2]);
+		GI->SetTargetsSpawned(SpiderShotScores[SpiderShotScores.Num() - 1][3]);
+	}
+	UE_LOG(LogTemp, Display, TEXT("SpiderShotScore Array Size: %f"), SpiderShotScores.Num());
 }
 
 void ADefaultCharacter::InteractPressed()

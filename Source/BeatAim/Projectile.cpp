@@ -6,11 +6,13 @@
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "BeatAimGameModeBase.h"
+#include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
 #include "SpiderShotSelector.h"
+#include "TargetSpawner.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -63,9 +65,10 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		Target = Cast<ASphereTarget>(OtherActor);
 		if (Target && Shooter)
 		{
-			//Shooter->SetTargetsHit(true);
 			//If reached this point, player has shot a target
 			//Only updating Targets Hit
+			GI->UpdateScore(GI->TargetSpawnerRef->GetTimeBasedScore(GI->TargetSpawnerRef->GetTimeSinceSpawn(GI->TargetSpawnerRef->TimeSinceSpawn), 50));
+			GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
 			GI->GameModeBaseRef->UpdatePlayerStats(false, true, false);
 		}
 	}

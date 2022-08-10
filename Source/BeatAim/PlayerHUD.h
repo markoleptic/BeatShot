@@ -40,6 +40,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "CountDown")
 		UTextBlock* CountdownTextBlock;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* CurrentScoreTextBlock;
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TotalTargetsSpawned;
 
@@ -57,5 +60,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void SetTargetsSpawned(float TargetsSpawned);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetCurrentScore(float Score);
 };
 

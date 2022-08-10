@@ -2,8 +2,10 @@
 
 
 #include "SphereTarget.h"
+#include "DefaultGameInstance.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ASphereTarget::ASphereTarget()
 {
@@ -12,7 +14,9 @@ ASphereTarget::ASphereTarget()
 	RootComponent = CapsuleComp;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
-	InitialLifeSpan = 2.f;
+	InitialLifeSpan = MaxLifeSpan;
+
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 }
 
 void ASphereTarget::BeginPlay()
