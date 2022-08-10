@@ -38,10 +38,13 @@ public:
 		UTextBlock* TargetsSpawnedText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "CountDown")
-		UTextBlock* CountdownTextBlock;
+		UTextBlock* CountdownText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* CurrentScoreTextBlock;
+		UTextBlock* CurrentScoreText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* HighScoreText;
 
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TotalTargetsSpawned;
@@ -63,5 +66,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void SetCurrentScore(float Score);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void SetHighScore(float HighScore);
 };
 

@@ -57,5 +57,10 @@ void UPlayerHUD::SetTargetsSpawned(float TargetsSpawned)
 
 void UPlayerHUD::SetCurrentScore(float Score)
 {
-	CurrentScoreTextBlock->SetText(FText::AsNumber(Score));
+	CurrentScoreText->SetText(FText::AsNumber(Score));
+}
+
+void UPlayerHUD::SetHighScore(float HighScore)
+{
+	HighScoreText->SetText(FText::AsNumber(HighScore));
 }

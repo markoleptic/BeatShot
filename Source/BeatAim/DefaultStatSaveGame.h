@@ -18,6 +18,15 @@ public:
 
 	UDefaultStatSaveGame();
 
+	float GetBestSpiderShotScore();
+
+	FVector GetPlayerLocation();
+
+	void SavePlayerLocation(FVector PlayerLocationToSave);
+
+	void SaveHighScore(float HighScoreToSave);
+
+private:
 	UPROPERTY(EditAnywhere, Category = Score)
 	FVector PlayerLocation;
 
@@ -28,8 +37,6 @@ public:
 	TArray<float> SpiderShotScoreArray;
 
 	TArray<TArray<float>> ArrayOfSpiderShotScores;
-
-	float ArraySize;
 
 	void InsertToArrayOfSpiderShotScores(TArray<float> ScoreArray);
 

@@ -45,20 +45,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeBase(ABeatAimGameModeBase* GameModeBase);
 
-	// Game Mode Variables Associated with Scoring
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
-	float TargetsHit = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
-	float ShotsFired = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
-	float TargetsSpawned = 0;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Player Score")
-	float Score = 0;
-
 	// Modifying Game Mode Variables
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
@@ -72,6 +58,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	void UpdateScore(float ScoreToAdd, bool doReset = false);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	void UpdateHighScore(float HighScoreToUpdate);
 
 	// Getter functions for Game Mode Variables
 
@@ -87,6 +76,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	float GetScore();
 
+	UFUNCTION(BlueprintCallable, Category = "Player Score")
+	float GetHighScore();
+
 	// Setter functions for Game Mode Variables, used to load saved scores
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
@@ -98,4 +90,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	void SetTargetsSpawned(float SavedTargetsSpawned);
 
+private:
+	// Game Mode Variables Associated with Scoring
+
+	UPROPERTY(VisibleAnywhere, Category = "Player Score")
+		float TargetsHit = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "Player Score")
+		float ShotsFired = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "Player Score")
+		float TargetsSpawned = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "Player Score")
+		float Score = 0;
+
+	UPROPERTY(VisibleAnywhere, Category = "Player Score")
+		float HighScore = 0;
 };

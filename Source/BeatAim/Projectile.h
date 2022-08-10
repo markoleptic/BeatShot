@@ -28,13 +28,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
-		UProjectileMovementComponent* ProjectileMovement;
+	UProjectileMovementComponent* ProjectileMovement;
 
 	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
-		float Damage = 1000.f;
+	float Damage = 1000.f;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
-		UStaticMeshComponent* ProjectileMesh;
+	UStaticMeshComponent* ProjectileMesh;
 
 	UFUNCTION()
 		void OnHit(UPrimitiveComponent* HitComponent, 

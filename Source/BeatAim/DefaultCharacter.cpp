@@ -227,23 +227,28 @@ void ADefaultCharacter::SaveGame()
 	//SpiderShotScoreArray.Add(GI->GetShotsFired());
 	//SpiderShotScoreArray.Add(GI->GetTargetsSpawned());
 	//SaveGameInstance->InsertToArrayOfSpiderShotScores(SpiderShotScoreArray);
-	SaveGameInstance->PlayerLocation = this->GetActorLocation();
+	SaveGameInstance->SavePlayerLocation(this->GetActorLocation());
+	if (SaveGameInstance->GetBestSpiderShotScore() < GI->GetHighScore())
+	{
+		SaveGameInstance->SaveHighScore(GI->GetHighScore());
+	}
 	UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("MySlot"), 0);
 }
 
 void ADefaultCharacter::LoadGame()
 {
-	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
-	SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0));
-	this->SetActorLocation(SaveGameInstance->PlayerLocation);
-	TArray<TArray<float>> SpiderShotScores = SaveGameInstance->GetArrayOfSpiderShotScores();
-	if (SpiderShotScores.Num() > 1)
-	{
-		GI->SetTargetsHit(SpiderShotScores[SpiderShotScores.Num()-1][0]);
-		GI->SetShotsFired(SpiderShotScores[SpiderShotScores.Num() - 1][2]);
-		GI->SetTargetsSpawned(SpiderShotScores[SpiderShotScores.Num() - 1][3]);
-	}
-	UE_LOG(LogTemp, Display, TEXT("SpiderShotScore Array Size: %f"), SpiderShotScores.Num());
+	//UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
+	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0));
+	this->SetActorLocation(SaveGameInstance->GetPlayerLocation());
+	GI->DefaultCharacterRef->PlayerHUD->SetHighScore(SaveGameInstance->GetBestSpiderShotScore());
+	//TArray<TArray<float>> SpiderShotScores = SaveGameInstance->GetArrayOfSpiderShotScores();
+	//if (SpiderShotScores.Num() > 1)
+	//{
+	//	GI->SetTargetsHit(SpiderShotScores[SpiderShotScores.Num()-1][0]);
+	//	GI->SetShotsFired(SpiderShotScores[SpiderShotScores.Num() - 1][2]);
+	//	GI->SetTargetsSpawned(SpiderShotScores[SpiderShotScores.Num() - 1][3]);
+	//}
+	//UE_LOG(LogTemp, Display, TEXT("SpiderShotScore Array Size: %f"), SpiderShotScores.Num());
 }
 
 void ADefaultCharacter::InteractPressed()

@@ -38,7 +38,7 @@ void ABeatAimGameModeBase::BeginPlay()
 
 void ABeatAimGameModeBase::ShowPlayerHUD()
 {
-	//GI->DefaultCharacterRef->LoadGame();
+	GI->DefaultCharacterRef->LoadGame();
 	GI->DefaultCharacterRef->ShowPlayerHUD(true);
 }
 
@@ -57,7 +57,11 @@ void ABeatAimGameModeBase::StartSpiderShot()
 
 void ABeatAimGameModeBase::EndSpiderShot()
 {
-	//GI->DefaultCharacterRef->SaveGame();
+	if (GI->GetScore() >  GI->GetHighScore())
+	{
+		GI->UpdateHighScore(GI->GetScore());
+	}
+	GI->DefaultCharacterRef->SaveGame();
 	GameModeSelected = false;
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
 	SpiderShotGameLength.Invalidate();
@@ -65,10 +69,13 @@ void ABeatAimGameModeBase::EndSpiderShot()
 	{
 		GI->SphereTargetRef->HandleDestruction();
 	}
-	ResetPlayerStats();
 	GI->DefaultCharacterRef->ShowPlayerHUD(false);
 }
 
+/* Called by DefaultCharacter to update shots fired.
+ * Called by Projectile to update targets hit.
+ * Called by TargetSpawner to update targets spawned.
+ */
 void ABeatAimGameModeBase::UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned)
 {
 	if (ShotFired == true)

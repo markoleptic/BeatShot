@@ -74,6 +74,11 @@ void UDefaultGameInstance::UpdateScore(float ScoreToAdd, bool doReset)
 	}
 }
 
+void UDefaultGameInstance::UpdateHighScore(float HighScoreToUpdate)
+{
+	HighScore = HighScoreToUpdate;
+}
+
 float UDefaultGameInstance::GetTargetsHit()
 {
 	return TargetsHit;
@@ -92,6 +97,11 @@ float UDefaultGameInstance::GetTargetsSpawned()
 float UDefaultGameInstance::GetScore()
 {
 	return Score;
+}
+
+float UDefaultGameInstance::GetHighScore()
+{
+	return HighScore;
 }
 
 void UDefaultGameInstance::SetTargetsHit(float SavedTargetsHit)

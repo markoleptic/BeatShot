@@ -70,6 +70,7 @@ void ABeatAimGameModeBase::HandleGameStart(T* Actor)
 	if (Actor->IsA(ASpiderShotSelector::StaticClass()))
 	{
 		GameModeSelected = true;
+		ResetPlayerStats();
 		ShowPlayerHUD();
 		GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
 	}

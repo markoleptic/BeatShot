@@ -105,7 +105,6 @@ void ATargetSpawner::RandomizeLocation()
 
 float ATargetSpawner::GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier)
 {
-	UE_LOG(LogTemp, Display, TEXT("Time Elapsed: %f"), TimeElapsed);
 	return ScoreMultiplier / TimeElapsed;
 }
 
