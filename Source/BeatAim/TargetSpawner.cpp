@@ -41,13 +41,16 @@ void ATargetSpawner::SpawnActor()
 {
 	if (ShouldSpawn)
 	{
+		//TEMP
+		LastTargetSpawnedCenter = true;
 		SpawnLocation = BoxBounds.Origin;
 		if (LastTargetSpawnedCenter == true)
 		{
 			RandomizeLocation();
 		}
 		else if (LastTargetSpawnedCenter == false) {
-			LastTargetSpawnedCenter = true;
+			//TEMP
+			//LastTargetSpawnedCenter = true;
 		}
 		// Spawn the target
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
@@ -60,7 +63,9 @@ void ATargetSpawner::SpawnActor()
 			// Bind the spawning of Target to GetTimeBasedScore
 			GetWorldTimerManager().SetTimer(TimeSinceSpawn, SpawnTarget->MaxLifeSpan, false);
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
-			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
+
+			//TEMP
+			//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 		}
 		if (GI->DefaultCharacterRef->HUDActive)
 		{
@@ -73,7 +78,8 @@ void ATargetSpawner::SpawnActor()
 void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 {
 	// Whenever this function is called, we want the target to always spawn in center
-	LastTargetSpawnedCenter = false;
+	//TEMP
+	//LastTargetSpawnedCenter = false;
 	ShouldSpawn = bShouldSpawn;
 }
 

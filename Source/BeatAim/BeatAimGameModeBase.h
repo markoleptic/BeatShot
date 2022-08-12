@@ -49,21 +49,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	void ResetPlayerStats();
 
-private:
-
 	UFUNCTION(BlueprintCallable)
-	void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
+		void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
 	//template<class T>
 	//void HandleGameStart(T* Actor);
 
 	UFUNCTION(BlueprintCallable)
-	void HandleGameRestart(TSubclassOf<AActor> GameModeSelector);
+		void HandleGameRestart(TSubclassOf<AActor> GameModeSelector);
 
 	UFUNCTION(BlueprintCallable)
-	TSubclassOf<AActor> GetCurrentGameModeClass();
+		TSubclassOf<AActor> GetCurrentGameModeClass();
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
+		void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void StopAAPlayerAndTracker();
+
+private:
 
 	TSubclassOf<AActor> CurrentGameModeClass;
 

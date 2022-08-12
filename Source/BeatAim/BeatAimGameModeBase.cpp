@@ -96,6 +96,7 @@ void ABeatAimGameModeBase::EndSpiderShot()
 	GI->DefaultCharacterRef->SaveGame();
 	GameModeSelected = false;
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
+	StopAAPlayerAndTracker();
 	GetWorldTimerManager().ClearAllTimersForObject(this);
 	//CountDown.Invalidate();
 	//SpiderShotGameLength.Invalidate();

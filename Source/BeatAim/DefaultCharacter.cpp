@@ -229,7 +229,7 @@ void ADefaultCharacter::SaveGame()
 	//SpiderShotScoreArray.Add(GI->GetShotsFired());
 	//SpiderShotScoreArray.Add(GI->GetTargetsSpawned());
 	//SaveGameInstance->InsertToArrayOfSpiderShotScores(SpiderShotScoreArray);
-	SaveGameInstance->SavePlayerLocation(this->GetActorLocation());
+	//SaveGameInstance->SavePlayerLocation(this->GetActorLocation());
 	if (SaveGameInstance->GetBestSpiderShotScore() < GI->GetHighScore())
 	{
 		SaveGameInstance->SaveHighScore(GI->GetHighScore());
@@ -241,7 +241,7 @@ void ADefaultCharacter::LoadGame()
 {
 	//UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
 	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0));
-	this->SetActorLocation(SaveGameInstance->GetPlayerLocation());
+	//this->SetActorLocation(SaveGameInstance->GetPlayerLocation());
 	GI->DefaultCharacterRef->PlayerHUD->SetHighScore(SaveGameInstance->GetBestSpiderShotScore());
 	//TArray<TArray<float>> SpiderShotScores = SaveGameInstance->GetArrayOfSpiderShotScores();
 	//if (SpiderShotScores.Num() > 1)
