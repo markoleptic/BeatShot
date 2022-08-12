@@ -18,7 +18,8 @@ void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
 	}
 	if (ASpiderShotSelector* DestroyedSelector = Cast<ASpiderShotSelector>(DeadActor))
 	{
-		HandleGameStart(DestroyedSelector);
+		HandleGameStart(ASpiderShotSelector::StaticClass());
+		//HandleGameStart(DestroyedSelector);
 	}
 }
 
@@ -36,6 +37,37 @@ void ABeatAimGameModeBase::BeginPlay()
 	GameModeSelected = false;
 }
 
+void ABeatAimGameModeBase::HandleGameStart(TSubclassOf<AActor> GameModeSelector)
+{
+	if (GameModeSelector == ASpiderShotSelector::StaticClass())
+	{
+		SetCurrentGameModeClass(GameModeSelector);
+		GameModeSelected = true;
+		ResetPlayerStats();
+		ShowPlayerHUD();
+		GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
+	}
+}
+
+void ABeatAimGameModeBase::HandleGameRestart(TSubclassOf<AActor> GameModeSelector)
+{
+	if (GameModeSelector == ASpiderShotSelector::StaticClass())
+	{
+		EndSpiderShot();
+		HandleGameStart(GameModeSelector);
+	}
+}
+
+TSubclassOf<AActor> ABeatAimGameModeBase::GetCurrentGameModeClass()
+{
+	return CurrentGameModeClass;
+}
+
+void ABeatAimGameModeBase::SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass)
+{
+	CurrentGameModeClass = GameModeStaticClass;
+}
+
 void ABeatAimGameModeBase::ShowPlayerHUD()
 {
 	GI->DefaultCharacterRef->LoadGame();
@@ -47,7 +79,7 @@ void ABeatAimGameModeBase::StartSpiderShot()
 	if (GameModeSelected == true)
 	{
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
-		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 60.f, false);
+		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 10.f, false);
 		if (SpiderShotGameLength.IsValid())
 		{
 			GI->TargetSpawnerRef->SpawnActor();
@@ -64,7 +96,9 @@ void ABeatAimGameModeBase::EndSpiderShot()
 	GI->DefaultCharacterRef->SaveGame();
 	GameModeSelected = false;
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
-	SpiderShotGameLength.Invalidate();
+	GetWorldTimerManager().ClearAllTimersForObject(this);
+	//CountDown.Invalidate();
+	//SpiderShotGameLength.Invalidate();
 	if (GI->SphereTargetRef)
 	{
 		GI->SphereTargetRef->HandleDestruction();

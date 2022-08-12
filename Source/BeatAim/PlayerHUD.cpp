@@ -2,13 +2,8 @@
 
 
 #include "PlayerHUD.h"
-#include "BeatAimGameModeBase.h"
-#include "DefaultGameInstance.h"
-#include "SphereTarget.h"
-#include "TargetSubsystem.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "kismet/GameplayStatics.h"
 
 //UPlayerHUD::UPlayerHUD(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
 //{

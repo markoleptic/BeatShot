@@ -22,11 +22,3 @@ void ASpiderShotSelector::BeginPlay()
 {
 	Super::BeginPlay();
 }
-
-// Called every frame
-//void ASpiderShotSelector::Tick(float DeltaTime)
-//{
-//	Super::Tick(DeltaTime);
-//
-//}
-

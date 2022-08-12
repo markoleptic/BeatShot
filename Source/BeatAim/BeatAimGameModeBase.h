@@ -29,19 +29,12 @@ public:
 	void ActorDied(AActor* DeadActor);
 
 	// Timers
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties")
 	FTimerHandle SpiderShotGameLength;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 	FTimerHandle CountDown;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-	//FTimerHandle TimeSinceTargetSpawn;
-
-	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Target Properties")
-	//float CurrentGameMaxLifeSpan;
-
-	//UFUNCTION(BlueprintCallable, Category = "Player Stats")
 
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
@@ -51,27 +44,40 @@ public:
 	bool GameModeSelected;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
-		void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
+	void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
-		void ResetPlayerStats();
+	void ResetPlayerStats();
 
 private:
 
-	template<class T>
-	void HandleGameStart(T* Actor);
+	UFUNCTION(BlueprintCallable)
+	void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
+	//template<class T>
+	//void HandleGameStart(T* Actor);
+
+	UFUNCTION(BlueprintCallable)
+	void HandleGameRestart(TSubclassOf<AActor> GameModeSelector);
+
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<AActor> GetCurrentGameModeClass();
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
+
+	TSubclassOf<AActor> CurrentGameModeClass;
 
 	void ShowPlayerHUD();
 };
 
-template <class T>
-void ABeatAimGameModeBase::HandleGameStart(T* GameModeSelector)
-{
-	if (GameModeSelector->IsA(ASpiderShotSelector::StaticClass()))
-	{
-		GameModeSelected = true;
-		ResetPlayerStats();
-		ShowPlayerHUD();
-		GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
-	}
-}
+//template <class T>
+//void ABeatAimGameModeBase::HandleGameStart(T* GameModeSelector)
+//{
+//	if (GameModeSelector->IsA(ASpiderShotSelector::StaticClass()))
+//	{
+//		GameModeSelected = true;
+//		ResetPlayerStats();
+//		ShowPlayerHUD();
+//		GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
+//	}
+//}

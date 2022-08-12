@@ -78,6 +78,7 @@ void ADefaultCharacter::BeginPlay()
 		// Want HUD to be owned by DefaultPlayerController,
 		// bc it will have references to local player and viewports attached to it
 		PlayerController = GetController<ADefaultPlayerController>();
+		PlayerController->SetInputMode(FInputModeGameOnly());
 		PlayerHUD = CreateWidget<UPlayerHUD>(PlayerController, PlayerHUDClass);
 	}
 }
@@ -128,6 +129,7 @@ void ADefaultCharacter::ShowPlayerHUD(bool ShouldShow)
 		if (PlayerHUD)
 		{
 			PlayerHUD->RemoveFromParent();
+			HideCountdown();
 			HUDActive = false;
 		}
 	}

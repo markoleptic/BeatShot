@@ -17,8 +17,8 @@
 // Sets default values
 AProjectile::AProjectile()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+ 		// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+		PrimaryActorTick.bCanEverTick = true;
 		// Use a sphere as a simple collision representation.
 		ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>("Projectile Mesh");
 		RootComponent = ProjectileMesh;
@@ -26,10 +26,8 @@ AProjectile::AProjectile()
 		ProjectileMovement->SetUpdatedComponent(ProjectileMesh);
 		ProjectileMovement->InitialSpeed = 250000.f;
 		ProjectileMovement->MaxSpeed = 250000.f;
-		//ProjectileMovement->bRotationFollowsVelocity = false;
-		//ProjectileMovement->bShouldBounce = false;
-		//ProjectileMovement->ProjectileGravityScale = 0.0f;
 		InitialLifeSpan = 1.0f;
+		DamageTypeClass = UDamageType::StaticClass();
 }
 
 // Called when the game starts or when spawned
@@ -73,7 +71,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		}
 	}
 
-	UClass* DamageTypeClass = UDamageType::StaticClass();
 	if (OtherActor != nullptr && OtherActor != this && OtherComponent != nullptr) //&& OtherComponent->IsSimulatingPhysics()
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);

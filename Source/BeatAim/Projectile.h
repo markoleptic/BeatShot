@@ -50,5 +50,8 @@ public:
 	class ASphereTarget* Target;
 	class UDefaultGameInstance* GI;
 
+private:
+	UClass* DamageTypeClass;
+
 };
 
