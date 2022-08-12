@@ -65,9 +65,9 @@ private:
 };
 
 template <class T>
-void ABeatAimGameModeBase::HandleGameStart(T* Actor)
+void ABeatAimGameModeBase::HandleGameStart(T* GameModeSelector)
 {
-	if (Actor->IsA(ASpiderShotSelector::StaticClass()))
+	if (GameModeSelector->IsA(ASpiderShotSelector::StaticClass()))
 	{
 		GameModeSelected = true;
 		ResetPlayerStats();

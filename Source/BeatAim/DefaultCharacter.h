@@ -73,6 +73,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	void ShowPlayerHUD(bool ShouldShow);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	bool HUDActive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
@@ -83,6 +84,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetSensitivity();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowCountdown();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void HideCountdown();
 
 	UDefaultGameInstance* GI;
 

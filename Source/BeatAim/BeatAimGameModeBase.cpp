@@ -47,7 +47,7 @@ void ABeatAimGameModeBase::StartSpiderShot()
 	if (GameModeSelected == true)
 	{
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
-		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 5.f, false);
+		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 60.f, false);
 		if (SpiderShotGameLength.IsValid())
 		{
 			GI->TargetSpawnerRef->SpawnActor();

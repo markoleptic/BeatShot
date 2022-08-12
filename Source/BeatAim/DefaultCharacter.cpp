@@ -116,10 +116,10 @@ void ADefaultCharacter::ShowPlayerHUD(bool ShouldShow)
 {
 	if (ShouldShow == true)
 	{
-		//check(PlayerHUD);
 		if (PlayerHUD)
 		{
 			PlayerHUD->AddToPlayerScreen();
+			ShowCountdown();
 			HUDActive = true;
 		}
 	}
