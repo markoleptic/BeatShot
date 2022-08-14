@@ -26,7 +26,7 @@ public:
 	UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	float MaxLifeSpan = 2.5;
+	float MaxLifeSpan = 1.5;
 
 	// probably make this a parent class of targets in the future
 	virtual void Tick(float DeltaTime) override;
@@ -34,4 +34,7 @@ public:
 	void HandleDestruction();
 
 	class UDefaultGameInstance* GI;
+
+	//UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
+	//UMaterialInstanceDynamic* DynamicTargetColorMaterial;
 };

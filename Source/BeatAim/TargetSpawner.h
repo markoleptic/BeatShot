@@ -38,12 +38,14 @@ public:
 	void SetShouldSpawn(bool bShouldSpawn);
 
 	UFUNCTION()
-		float GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier);
+	float GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier);
 
 	UFUNCTION()
-		float GetTimeSinceSpawn(FTimerHandle TimerHandle);
+	float GetTimeSinceSpawn(FTimerHandle TimerHandle);
 
 	FTimerHandle TimeSinceSpawn;
+
+	float NumTargetsAddedToArray;
 
 private:
 

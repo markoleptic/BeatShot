@@ -29,6 +29,9 @@ public:
 	ASphereTarget* SphereTargetRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
+	TArray<ASphereTarget*> SphereTargetArray;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	class ABeatAimGameModeBase* GameModeBaseRef;
 
 	// Register Functions

@@ -2,6 +2,7 @@
 
 
 #include "TargetSpawner.h"
+#include <string>
 #include "DefaultCharacter.h"
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
@@ -58,14 +59,21 @@ void ATargetSpawner::SpawnActor()
 
 		// Update reference to spawned target in Game Instance
 		GI->RegisterSphereTarget(SpawnTarget);
+		GI->SphereTargetArray.Add(SpawnTarget);
+		//FString SphereTargetName = GI->SphereTargetArray[0]->GetName();
+		//int SizeOfSphereTargetArray = GI->SphereTargetArray.Num();
+		//UE_LOG(LogTemp, Display, TEXT("Name of index1 element: %s"), *SphereTargetName);
+		//UE_LOG(LogTemp, Display, TEXT("Size of array: %i"), SizeOfSphereTargetArray);
+		//GI->SphereTargetArray.Pop(true);
 		if (SpawnTarget)
 		{
+			NumTargetsAddedToArray++;
 			// Bind the spawning of Target to GetTimeBasedScore
 			GetWorldTimerManager().SetTimer(TimeSinceSpawn, SpawnTarget->MaxLifeSpan, false);
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 
 			//TEMP
-			//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
+			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 		}
 		if (GI->DefaultCharacterRef->HUDActive)
 		{
@@ -88,15 +96,16 @@ void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 	//GI->UpdateScore(GetTimeBasedScore(GetTimeSinceSpawn(TimeSinceSpawn), 50));
 	//GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
 	TimeSinceSpawn.Invalidate();
-	if (ShouldSpawn)
-	{
-		SpawnActor();
-	}
+	//TEMP:
+	//if (ShouldSpawn)
+	//{
+	//	SpawnActor();
+	//}
 }
 
 void ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 {
-	float RandomScaleValue = FMath::FRandRange(0.2f, 2.f);
+	float RandomScaleValue = FMath::FRandRange(0.8f, 2.f);
 	FVector RandomScaleVector = { RandomScaleValue, RandomScaleValue, RandomScaleValue };
 	Target->BaseMesh->SetWorldScale3D(RandomScaleVector);
 }
@@ -111,7 +120,15 @@ void ATargetSpawner::RandomizeLocation()
 
 float ATargetSpawner::GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier)
 {
-	return ScoreMultiplier / TimeElapsed;
+	if (TimeElapsed <= 0.5f)
+	{
+		return FMath::Lerp(400.f, 1000.f, TimeElapsed / 0.5f);
+	}
+	else if (TimeElapsed <= 1.f)
+	{
+		return FMath::Lerp(1000.f, 400.f, (TimeElapsed - 0.5f) / 0.5f);
+	}
+	else return 400;
 }
 
 float ATargetSpawner::GetTimeSinceSpawn(FTimerHandle TimerHandle)

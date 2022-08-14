@@ -30,8 +30,11 @@ public:
 
 	// Timers
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle SpiderShotGameLength;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float SpiderShotTimerHandleLength;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 	FTimerHandle CountDown;
@@ -50,21 +53,19 @@ public:
 	void ResetPlayerStats();
 
 	UFUNCTION(BlueprintCallable)
-		void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
-	//template<class T>
-	//void HandleGameStart(T* Actor);
+	void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
 
 	UFUNCTION(BlueprintCallable)
-		void HandleGameRestart(TSubclassOf<AActor> GameModeSelector);
+	void HandleGameRestart(TSubclassOf<AActor> GameModeSelector);
 
 	UFUNCTION(BlueprintCallable)
-		TSubclassOf<AActor> GetCurrentGameModeClass();
+	TSubclassOf<AActor> GetCurrentGameModeClass();
 
 	UFUNCTION(BlueprintCallable)
-		void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
+	void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
 
 	UFUNCTION(BlueprintImplementableEvent)
-		void StopAAPlayerAndTracker();
+	void StopAAPlayerAndTracker();
 
 private:
 
@@ -72,15 +73,3 @@ private:
 
 	void ShowPlayerHUD();
 };
-
-//template <class T>
-//void ABeatAimGameModeBase::HandleGameStart(T* GameModeSelector)
-//{
-//	if (GameModeSelector->IsA(ASpiderShotSelector::StaticClass()))
-//	{
-//		GameModeSelected = true;
-//		ResetPlayerStats();
-//		ShowPlayerHUD();
-//		GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
-//	}
-//}

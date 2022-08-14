@@ -35,6 +35,7 @@ void ABeatAimGameModeBase::BeginPlay()
 
 	//Default class specific values
 	GameModeSelected = false;
+	SpiderShotTimerHandleLength = 10.f;
 }
 
 void ABeatAimGameModeBase::HandleGameStart(TSubclassOf<AActor> GameModeSelector)
@@ -79,11 +80,11 @@ void ABeatAimGameModeBase::StartSpiderShot()
 	if (GameModeSelected == true)
 	{
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
-		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, 10.f, false);
-		if (SpiderShotGameLength.IsValid())
-		{
-			GI->TargetSpawnerRef->SpawnActor();
-		}
+		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, SpiderShotTimerHandleLength, false);
+		//if (SpiderShotGameLength.IsValid())
+		//{
+		//	GI->TargetSpawnerRef->SpawnActor();
+		//}
 	}
 }
 
@@ -93,6 +94,17 @@ void ABeatAimGameModeBase::EndSpiderShot()
 	{
 		GI->UpdateHighScore(GI->GetScore());
 	}
+	if (GI->SphereTargetArray.Num() > 0)
+	{
+		for (ASphereTarget* Target : GI->SphereTargetArray)
+		{
+			if (Target)
+			{
+				Target->HandleDestruction();
+			}
+		}
+	}
+
 	GI->DefaultCharacterRef->SaveGame();
 	GameModeSelected = false;
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
