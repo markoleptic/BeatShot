@@ -7,6 +7,7 @@
 #include "HealthComponent.generated.h"
 
 
+class UDefaultGameInstance;
 class ABeatAimGameModeBase;
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class BEATAIM_API UHealthComponent : public UActorComponent
@@ -28,10 +29,14 @@ public:
 private:
 	UPROPERTY(EditAnywhere)
 	float MaxHealth = 100.f;
+
 	UPROPERTY(VisibleAnywhere)
 	float Health = 0.f;
+
 	UFUNCTION()
 	void DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* Instigator,
 		AActor* DamageCauser);
-	ABeatAimGameModeBase* BeatAimGameMode;
+
+	// Reference to Game Instance
+	UDefaultGameInstance* GI;
 };

@@ -2,7 +2,7 @@
 
 
 #include "HealthComponent.h"
-#include "BeatAimGameModeBase.h"
+#include "DefaultGameInstance.h"
 #include "SpiderShotSelector.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,9 +17,9 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Health = MaxHealth;
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::DamageTaken);
-	BeatAimGameMode = Cast<ABeatAimGameModeBase>(UGameplayStatics::GetGameMode(this));
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -31,16 +31,16 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 {
 	if (Damage <= 0.f) return;
 	Health -= Damage;
-	if (BeatAimGameMode)
+	if (GI->GameModeBaseRef)
 	{
 		if (Health <= 0.f)
 		{
-			BeatAimGameMode->ActorDied(DamagedActor);
+			GI->GameModeBaseRef->ActorReceivedDamage(DamagedActor);
 		}
-		if (ASpiderShotSelector* SpiderShotSelector = Cast<ASpiderShotSelector>(DamagedActor))
-		{
-			BeatAimGameMode->ActorDied(DamagedActor);
-		}
+		//if (ASpiderShotSelector* SpiderShotSelector = Cast<ASpiderShotSelector>(DamagedActor))
+		//{
+		//	GI->GameModeBaseRef->ActorReceivedDamage(DamagedActor);
+		//}
 	}
 
 }

@@ -10,48 +10,55 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
-void ABeatAimGameModeBase::ActorDied(AActor* DeadActor)
+void ABeatAimGameModeBase::ActorReceivedDamage(AActor* DeadActor)
 {
 	if (ASphereTarget* DestroyedTarget = Cast<ASphereTarget>(DeadActor))
 	{
 		DestroyedTarget->HandleDestruction();
 	}
-	if (ASpiderShotSelector* DestroyedSelector = Cast<ASpiderShotSelector>(DeadActor))
-	{
-		HandleGameStart(ASpiderShotSelector::StaticClass());
-		//HandleGameStart(DestroyedSelector);
-	}
+	//if (ASpiderShotSelector* DestroyedSelector = Cast<ASpiderShotSelector>(DeadActor))
+	//{
+	//	SetGameModeSelected(true);
+	//	HandleGameStart(ASpiderShotSelector::StaticClass());
+	//}
 }
 
 void ABeatAimGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	// Store reference of GameModeBase in Game Instance
+	// Store instance of GameModeBase in Game Instance
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
 		GI->RegisterGameModeBase(this);
 	}
-
 	//Default class specific values
 	GameModeSelected = false;
-	SpiderShotTimerHandleLength = 10.f;
+	//SpiderShotTimerHandleLength = 10.f;
 }
 
 void ABeatAimGameModeBase::HandleGameStart(TSubclassOf<AActor> GameModeSelector)
 {
-	if (GameModeSelector == ASpiderShotSelector::StaticClass())
-	{
-		SetCurrentGameModeClass(GameModeSelector);
-		GameModeSelected = true;
-		ResetPlayerStats();
-		ShowPlayerHUD();
-		GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
-	}
+	SetCurrentGameModeClass(GameModeSelector);
+	GameModeSelected = true;
+	ResetPlayerStats();
+	GI->DefaultCharacterRef->LoadGame();
+	GI->DefaultCharacterRef->ShowPlayerHUD(true);
+	GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
+}
+
+void ABeatAimGameModeBase::SetGameModeSelected(bool IsSelected)
+{
+	GameModeSelected = IsSelected;
 }
 
 void ABeatAimGameModeBase::HandleGameRestart(TSubclassOf<AActor> GameModeSelector)
 {
+	//if (GameModeSelector == ASpiderShotSelector::StaticClass())
+	//{
+	//	SpidershotGameModeBaseREF->EndSpiderShot();
+	//	HandleGameStart(GameModeSelector);
+	//}
 	if (GameModeSelector == ASpiderShotSelector::StaticClass())
 	{
 		EndSpiderShot();
@@ -69,54 +76,9 @@ void ABeatAimGameModeBase::SetCurrentGameModeClass(TSubclassOf<AActor> GameModeS
 	CurrentGameModeClass = GameModeStaticClass;
 }
 
-void ABeatAimGameModeBase::ShowPlayerHUD()
+bool ABeatAimGameModeBase::IsGameModeSelected()
 {
-	GI->DefaultCharacterRef->LoadGame();
-	GI->DefaultCharacterRef->ShowPlayerHUD(true);
-}
-
-void ABeatAimGameModeBase::StartSpiderShot()
-{
-	if (GameModeSelected == true)
-	{
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
-		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, SpiderShotTimerHandleLength, false);
-		//if (SpiderShotGameLength.IsValid())
-		//{
-		//	GI->TargetSpawnerRef->SpawnActor();
-		//}
-	}
-}
-
-void ABeatAimGameModeBase::EndSpiderShot()
-{
-	if (GI->GetScore() >  GI->GetHighScore())
-	{
-		GI->UpdateHighScore(GI->GetScore());
-	}
-	if (GI->SphereTargetArray.Num() > 0)
-	{
-		for (ASphereTarget* Target : GI->SphereTargetArray)
-		{
-			if (Target)
-			{
-				Target->HandleDestruction();
-			}
-		}
-	}
-
-	GI->DefaultCharacterRef->SaveGame();
-	GameModeSelected = false;
-	GI->TargetSpawnerRef->SetShouldSpawn(false);
-	StopAAPlayerAndTracker();
-	GetWorldTimerManager().ClearAllTimersForObject(this);
-	//CountDown.Invalidate();
-	//SpiderShotGameLength.Invalidate();
-	if (GI->SphereTargetRef)
-	{
-		GI->SphereTargetRef->HandleDestruction();
-	}
-	GI->DefaultCharacterRef->ShowPlayerHUD(false);
+	return GameModeSelected;
 }
 
 /* Called by DefaultCharacter to update shots fired.
@@ -159,4 +121,44 @@ void ABeatAimGameModeBase::ResetPlayerStats()
 	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
 
 	GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
+}
+
+void ABeatAimGameModeBase::StartSpiderShot()
+{
+	if (IsGameModeSelected() == true)
+	{
+		GI->TargetSpawnerRef->SetShouldSpawn(true);
+		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, SpiderShotTimerHandleLength, false);
+	}
+}
+
+void ABeatAimGameModeBase::EndSpiderShot()
+{
+	if (GI->GetScore() > GI->GetHighScore())
+	{
+		GI->UpdateHighScore(GI->GetScore());
+	}
+	if (GI->SphereTargetArray.Num() > 0)
+	{
+		for (ASphereTarget* Target : GI->SphereTargetArray)
+		{
+			if (Target)
+			{
+				Target->HandleDestruction();
+			}
+		}
+	}
+
+	GI->DefaultCharacterRef->SaveGame();
+	SetGameModeSelected(false);
+	GI->TargetSpawnerRef->SetShouldSpawn(false);
+	StopAAPlayerAndTracker();
+	GetWorldTimerManager().ClearAllTimersForObject(this);
+	//CountDown.Invalidate();
+	//SpiderShotGameLength.Invalidate();
+	if (GI->SphereTargetRef)
+	{
+		GI->SphereTargetRef->HandleDestruction();
+	}
+	GI->DefaultCharacterRef->ShowPlayerHUD(false);
 }

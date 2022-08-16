@@ -34,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnActor();
 
+	UFUNCTION(BlueprintCallable)
+	bool GetShouldSpawn();
+
 	// Lets the spawner know it's safe to spawn a target
 	void SetShouldSpawn(bool bShouldSpawn);
 

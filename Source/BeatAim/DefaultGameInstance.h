@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BeatAimGameModeBase.h"
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
+class AGameModeBase;
 class ASphereTarget;
 /**
  * 
@@ -32,7 +34,11 @@ public:
 	TArray<ASphereTarget*> SphereTargetArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	class ABeatAimGameModeBase* GameModeBaseRef;
+	//class ABeatAimGameModeBase* GameModeBaseRef;
+	ABeatAimGameModeBase* GameModeBaseRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
+	class AGameModeActorBase* GameModeActorBaseRef;
 
 	// Register Functions
 
@@ -47,6 +53,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeBase(ABeatAimGameModeBase* GameModeBase);
+
+	UFUNCTION(BlueprintCallable, Category = "References")
+	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
 
 	// Modifying Game Mode Variables
 

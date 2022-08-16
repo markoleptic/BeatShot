@@ -175,7 +175,7 @@ void ADefaultCharacter::Fire()
 			if (Projectile)
 			{
 				// If reached this point, the player has fired
-				if (GI->GameModeBaseRef->GameModeSelected)
+				if (GI->GameModeBaseRef->IsGameModeSelected())
 				{
 					// Only updating Shots Fired
 					GI->GameModeBaseRef->UpdatePlayerStats(true, false, false);

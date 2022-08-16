@@ -26,6 +26,11 @@ void UDefaultGameInstance::RegisterGameModeBase(ABeatAimGameModeBase* GameModeBa
 	GameModeBaseRef = GameModeBase;
 }
 
+void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase)
+{
+	GameModeActorBaseRef = GameModeActorBase;
+}
+
 void UDefaultGameInstance::UpdateTargetsSpawned(bool doReset)
 {
 	if (doReset == false)

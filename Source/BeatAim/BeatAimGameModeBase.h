@@ -8,6 +8,7 @@
 #include "SpiderShotSelector.h"
 #include "BeatAimGameModeBase.generated.h"
 
+class ASpidershotGameModeBase;
 UCLASS()
 class BEATAIM_API ABeatAimGameModeBase : public AGameModeBase
 {
@@ -16,23 +17,22 @@ class BEATAIM_API ABeatAimGameModeBase : public AGameModeBase
 protected:
 	virtual void BeginPlay() override;
 
-	// Called when SpiderShotSelector receives damage
-	UFUNCTION()
-	void StartSpiderShot();
+	void SetGameModeSelected(bool IsSelected);
 
-	UFUNCTION()
-	// Called at the end of SpiderShotGameLength timer
-	void EndSpiderShot();
+	//UFUNCTION(BlueprintCallable)
+	//virtual void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
 
 public:
-	// Called when an Actor receives damage
-	void ActorDied(AActor* DeadActor);
+	// Called when an Actor receives damage, determines which function
+	void ActorReceivedDamage(AActor* DeadActor);
 
 	// Timers
 
+	//.................rename to GameModeLength
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle SpiderShotGameLength;
 
+	//.................rename to GameModeLengthTimerHandleLength
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float SpiderShotTimerHandleLength;
 
@@ -43,8 +43,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	class UDefaultGameInstance* GI;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = "References")
-	bool GameModeSelected;
+	UFUNCTION(BlueprintCallable, Category = "Game Properties")
+	bool IsGameModeSelected();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
@@ -52,24 +52,37 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	void ResetPlayerStats();
 
+	//........eventually replace, used for HandleGameRestart()
 	UFUNCTION(BlueprintCallable)
-	void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
+	TSubclassOf<AActor> GetCurrentGameModeClass();
+
+	//........eventually replace, used for HandleGameRestart()
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
+
+	// Blueprint event used to stop BPAAPlayer and BPAATracker during pause game
+	UFUNCTION(BlueprintImplementableEvent)
+	void StopAAPlayerAndTracker();
+
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties")
+	//ASpidershotGameModeBase* SpidershotGameModeBaseREF;
 
 	UFUNCTION(BlueprintCallable)
 	void HandleGameRestart(TSubclassOf<AActor> GameModeSelector);
 
 	UFUNCTION(BlueprintCallable)
-	TSubclassOf<AActor> GetCurrentGameModeClass();
+	void HandleGameStart(TSubclassOf<AActor> GameModeSelector);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
+	void StartSpiderShot();
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void StopAAPlayerAndTracker();
+	UFUNCTION(BlueprintCallable)
+	void EndSpiderShot();
 
 private:
 
-	TSubclassOf<AActor> CurrentGameModeClass;
+	bool GameModeSelected;
 
-	void ShowPlayerHUD();
+	//........eventually replace, used for HandleGameRestart()
+	TSubclassOf<AActor> CurrentGameModeClass;
 };
