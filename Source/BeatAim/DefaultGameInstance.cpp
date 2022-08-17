@@ -39,6 +39,11 @@ void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameMod
 	GameModeActorBaseRef = GameModeActorBase;
 }
 
+void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController)
+{
+	DefaultPlayerControllerRef = DefaultPlayerController;
+}
+
 void UDefaultGameInstance::UpdateTargetsSpawned(bool doReset)
 {
 	if (doReset == false)

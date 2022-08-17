@@ -2,6 +2,5 @@
 
 
 #include "MainMenuWidget.h"
-#include "MainMenuHUD.h"
 #include <GameFramework/PlayerController.h>
 #include "Kismet/GameplayStatics.h"

@@ -4,13 +4,11 @@
 #include "DefaultCharacter.h"
 #include <string>
 #include "Camera/CameraComponent.h"
-#include "TimerManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectile.h"
-#include "GameFramework/InputSettings.h"
 #include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
@@ -54,11 +52,6 @@ ADefaultCharacter::ADefaultCharacter()
 
 	GunOffset = FVector(100.f, 0.f, 10.f);
 	TraceDistance = 2000;
-
-	//HUD
-	PlayerHUDClass = nullptr;
-	PlayerHUD = nullptr;
-	HUDActive = false;
 }
 
 // Called when the game starts or when spawned
@@ -74,35 +67,20 @@ void ADefaultCharacter::BeginPlay()
 		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
 		"GripPoint");
 	//AnimInstance = HandsMesh->GetAnimInstance();
-
-	if (IsLocallyControlled() && PlayerHUDClass)
-	{
-		UE_LOG(LogTemp, Display, TEXT("reach inside of beginplay defaultcharacter"));
-		// Want HUD to be owned by DefaultPlayerController,
-		// bc it will have references to local player and viewports attached to it
-		PlayerController = GetController<ADefaultPlayerController>();
-		PlayerController->SetInputMode(FInputModeGameOnly());
-		PlayerHUD = CreateWidget<UPlayerHUD>(PlayerController, PlayerHUDClass);
-		if (PlayerHUD)
-		{
-			PlayerHUD->AddToViewport();
-			HUDActive = true;
-			ShowCountdown();
-		}
-	}
 	Sensitivity = GI->GetSensitivity();
+
+	PlayerController = GetController<ADefaultPlayerController>();
+	if (IsLocallyControlled() && PlayerController)
+	{
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		//PlayerController->ShowPlayerHUD();
+		PlayerController->ShowCountdown();
+	}
 }
 
 void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	//SaveGame();
-	if (PlayerHUD)
-	{
-		PlayerHUD->RemoveFromParent();
-		// Can't destroy widget directly, garbage collector will take care of it when safe to do so
-		PlayerHUD = nullptr;
-	}
-
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -121,28 +99,6 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAxis(TEXT("Turn"), this, &ADefaultCharacter::Turn);
 	PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &ADefaultCharacter::LookUp);
 	PlayerInputComponent->BindAction(TEXT("Fire"), IE_Pressed, this, &ADefaultCharacter::Fire);
-}
-
-void ADefaultCharacter::ShowPlayerHUD(bool ShouldShow)
-{
-	if (ShouldShow == true)
-	{
-		if (PlayerHUD)
-		{
-			PlayerHUD->AddToPlayerScreen();
-			ShowCountdown();
-			HUDActive = true;
-		}
-	}
-	else if (ShouldShow == false)
-	{
-		if (PlayerHUD)
-		{
-			PlayerHUD->RemoveFromParent();
-			HideCountdown();
-			HUDActive = false;
-		}
-	}
 }
 
 void ADefaultCharacter::SetSensitivity(float NewSensitivity)
@@ -247,7 +203,7 @@ void ADefaultCharacter::LoadGame()
 	//UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
 	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0));
 	//this->SetActorLocation(SaveGameInstance->GetPlayerLocation());
-	GI->DefaultCharacterRef->PlayerHUD->SetHighScore(SaveGameInstance->GetBestSpiderShotScore());
+	//GI->DefaultCharacterRef->PlayerHUD->SetHighScore(SaveGameInstance->GetBestSpiderShotScore());
 	//TArray<TArray<float>> SpiderShotScores = SaveGameInstance->GetArrayOfSpiderShotScores();
 	//if (SpiderShotScores.Num() > 1)
 	//{

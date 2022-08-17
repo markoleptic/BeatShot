@@ -34,16 +34,12 @@ public:
 
 public:
 
-	UFUNCTION(BlueprintCallable)
 	virtual void HandleGameStart() override;
 
-	UFUNCTION(BlueprintCallable)
 	virtual void HandleGameRestart() override;
 
-	UFUNCTION()
 	virtual void StartGameMode() override;
 
-	UFUNCTION()
 	virtual void EndGameMode() override;
 
 	//template < class T >

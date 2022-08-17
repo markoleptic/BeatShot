@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+class ADefaultPlayerController;
 class UDefaultStatSaveGame;
 class UDefaultGameInstance;
 class USceneComponent;
@@ -59,39 +60,17 @@ public:
 	FVector MuzzleOffset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	TSubclassOf<class ADefaultPlayerController> PlayerControllerClass;
-
-	UPROPERTY()
 	ADefaultPlayerController* PlayerController;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> PlayerHUDClass;
-
-	UPROPERTY()
-	class UPlayerHUD* PlayerHUD;
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-	void ShowPlayerHUD(bool ShouldShow);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	bool HUDActive;
 
 	UFUNCTION(BlueprintCallable)
 	void SetSensitivity(float NewSensitivity);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ShowCountdown();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void HideCountdown();
-
-	UDefaultGameInstance* GI;
 
 	void SaveGame();
 
 	void LoadGame();
 
 private:
+	UDefaultGameInstance* GI;
 
 	void Fire();
 
@@ -121,13 +100,13 @@ private:
 	UAnimInstance* AnimInstance;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
-		float Sensitivity;
+	float Sensitivity;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");
-		float TraceDistance;
+	float TraceDistance;
 
 	UFUNCTION(BlueprintNativeEvent)
-		void TraceForward();
-		void TraceForward_Implementation();
+	void TraceForward();
+	void TraceForward_Implementation();
 };

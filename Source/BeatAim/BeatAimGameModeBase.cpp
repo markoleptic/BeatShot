@@ -67,23 +67,23 @@ bool ABeatAimGameModeBase::IsGameModeSelected()
  */
 void ABeatAimGameModeBase::UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned)
 {
-	if (ShotFired == true)
-	{
-		GI->UpdateShotsFired();
-		GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
-	}
-	if (TargetHit == true)
-	{
-		GI->UpdateTargetsHit();
-		GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
-	}
-	if (TargetSpawned == true)
-	{
-		GI->UpdateTargetsSpawned();
-		GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
-	}
-	GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
-	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
+	//if (ShotFired == true)
+	//{
+	//	GI->UpdateShotsFired();
+	//	GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
+	//}
+	//if (TargetHit == true)
+	//{
+	//	GI->UpdateTargetsHit();
+	//	GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
+	//}
+	//if (TargetSpawned == true)
+	//{
+	//	GI->UpdateTargetsSpawned();
+	//	GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
+	//}
+	//GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
+	//GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
 }
 
 void ABeatAimGameModeBase::ResetPlayerStats()
@@ -93,12 +93,12 @@ void ABeatAimGameModeBase::ResetPlayerStats()
 	GI->UpdateTargetsSpawned(true);
 	GI->UpdateScore(0,true);
 
-	GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
-	GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
-	GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
+	//GI->DefaultCharacterRef->PlayerHUD->SetShotsFired(GI->GetShotsFired());
+	//GI->DefaultCharacterRef->PlayerHUD->SetTargetsHit(GI->GetTargetsHit());
+	//GI->DefaultCharacterRef->PlayerHUD->SetTargetsSpawned(GI->GetTargetsSpawned());
 
-	GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
-	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
+	//GI->DefaultCharacterRef->PlayerHUD->SetAccuracy(GI->GetTargetsHit(), GI->GetShotsFired());
+	//GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
 
-	GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
+	//GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
 }

@@ -11,6 +11,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "BeatAimGameModeBase.h"
+#include "DefaultPlayerController.h"
 
 AWideSpreadMultiBeat::AWideSpreadMultiBeat()
 {
@@ -22,7 +23,6 @@ void AWideSpreadMultiBeat::BeginPlay()
 {
 	Super::BeginPlay();
 	GI->RegisterGameModeActorBase(this);
-	HandleGameStart();
 }
 
 void AWideSpreadMultiBeat::Tick(float DeltaTime)
@@ -42,7 +42,7 @@ void AWideSpreadMultiBeat::HandleGameStart()
 	//GI->DefaultCharacterRef->LoadGame();
 	//GI->DefaultCharacterRef->ShowPlayerHUD(true);
 	//GI->DefaultCharacterRef->ShowCountdown();
-	GetWorldTimerManager().SetTimer(CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, 3.f, false);
+	GetWorldTimerManager().SetTimer(CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, CountdownTimerLength, false);
 }
 
 void AWideSpreadMultiBeat::HandleGameRestart()
@@ -88,6 +88,6 @@ void AWideSpreadMultiBeat::EndGameMode()
 	//Saving Score
 	GI->DefaultCharacterRef->SaveGame();
 
-	//Update HUD
-	GI->DefaultCharacterRef->ShowPlayerHUD(false);
+	//Hide PlayerHUD
+	GI->DefaultPlayerControllerRef->HidePlayerHUD();
 }

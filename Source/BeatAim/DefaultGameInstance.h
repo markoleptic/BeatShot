@@ -7,8 +7,12 @@
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
+class ATargetSpawner;
+class ADefaultCharacter;
 class AGameModeBase;
 class ASphereTarget;
+class ADefaultPlayerController;
+class AGameModeActorBase;
 /**
  * 
  */
@@ -22,10 +26,10 @@ public:
 	//References
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	class ADefaultCharacter* DefaultCharacterRef;
+	ADefaultCharacter* DefaultCharacterRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	class ATargetSpawner* TargetSpawnerRef;
+	ATargetSpawner* TargetSpawnerRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	ASphereTarget* SphereTargetRef;
@@ -38,7 +42,10 @@ public:
 	ABeatAimGameModeBase* GameModeBaseRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	class AGameModeActorBase* GameModeActorBaseRef;
+	AGameModeActorBase* GameModeActorBaseRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
+	ADefaultPlayerController* DefaultPlayerControllerRef;
 
 	// Register Functions
 
@@ -56,6 +63,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
+
+	UFUNCTION(BlueprintCallable, Category = "References")
+	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
 
 	// Modifying Game Mode Variables
 

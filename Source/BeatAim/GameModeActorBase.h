@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "DefaultCharacter.h"
+#include "GameModeActorStruct.h"
 #include "GameModeActorBase.generated.h"
 
 UCLASS()
@@ -46,8 +47,10 @@ public:
 	void StopAAPlayerAndTracker();
 
 public:
+	UFUNCTION(BlueprintCallable)
 	virtual void HandleGameStart();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void HandleGameRestart();
 
 	virtual void StartGameMode();
@@ -55,12 +58,18 @@ public:
 	virtual void EndGameMode();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FGameModeActorStruct GameModeActorStruct;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle GameModeLengthTimer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float CountdownTimerLength;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float GameModeLength;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
 	FTimerHandle CountDownTimer;
 
 	// Reference Game Instance
