@@ -102,6 +102,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Score")
 	void SetTargetsSpawned(float SavedTargetsSpawned);
 
+	// Settings Menu setter and getter functions
+
+	UFUNCTION(BlueprintCallable)
+	void SetSensitivity(float InputSensitivity);
+
+	UFUNCTION(BlueprintCallable)
+	float GetSensitivity();
+
+	UFUNCTION(BlueprintCallable)
+	void SetTargetSpawnCD(float NewTargetSpawnCD);
+
+	UFUNCTION(BlueprintCallable)
+	float GetTargetSpawnCD();
+
 private:
 	// Game Mode Variables Associated with Scoring
 
@@ -119,4 +133,13 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Player Score")
 		float HighScore = 0;
+
+	// Settings Menu options so that options are saved even if character hasn't spawned
+
+	UPROPERTY(VisibleAnywhere, Category = "Settings Menu")
+		float Sensitivity = 12.59;
+
+	UPROPERTY(VisibleAnywhere, Category = "Settings Menu")
+		float TargetSpawnCD = 0.35f;
+
 };

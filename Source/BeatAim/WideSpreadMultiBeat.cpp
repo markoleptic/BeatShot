@@ -21,7 +21,8 @@ AWideSpreadMultiBeat::AWideSpreadMultiBeat()
 void AWideSpreadMultiBeat::BeginPlay()
 {
 	Super::BeginPlay();
-	SetGameModeSelected(true);
+	GI->RegisterGameModeActorBase(this);
+	HandleGameStart();
 }
 
 void AWideSpreadMultiBeat::Tick(float DeltaTime)
@@ -33,6 +34,16 @@ void AWideSpreadMultiBeat::Tick(float DeltaTime)
 //{
 //
 //}
+
+void AWideSpreadMultiBeat::HandleGameStart()
+{
+	SetGameModeSelected(true);
+	//ResetPlayerStats();
+	//GI->DefaultCharacterRef->LoadGame();
+	//GI->DefaultCharacterRef->ShowPlayerHUD(true);
+	//GI->DefaultCharacterRef->ShowCountdown();
+	GetWorldTimerManager().SetTimer(CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, 3.f, false);
+}
 
 void AWideSpreadMultiBeat::HandleGameRestart()
 {

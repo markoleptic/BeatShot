@@ -4,11 +4,13 @@
 #include "DefaultCharacter.h"
 #include <string>
 #include "Camera/CameraComponent.h"
+#include "TimerManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectile.h"
+#include "GameFramework/InputSettings.h"
 #include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
@@ -75,12 +77,20 @@ void ADefaultCharacter::BeginPlay()
 
 	if (IsLocallyControlled() && PlayerHUDClass)
 	{
+		UE_LOG(LogTemp, Display, TEXT("reach inside of beginplay defaultcharacter"));
 		// Want HUD to be owned by DefaultPlayerController,
 		// bc it will have references to local player and viewports attached to it
 		PlayerController = GetController<ADefaultPlayerController>();
 		PlayerController->SetInputMode(FInputModeGameOnly());
 		PlayerHUD = CreateWidget<UPlayerHUD>(PlayerController, PlayerHUDClass);
+		if (PlayerHUD)
+		{
+			PlayerHUD->AddToViewport();
+			HUDActive = true;
+			ShowCountdown();
+		}
 	}
+	Sensitivity = GI->GetSensitivity();
 }
 
 void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -135,14 +145,9 @@ void ADefaultCharacter::ShowPlayerHUD(bool ShouldShow)
 	}
 }
 
-void ADefaultCharacter::SetSensitivity(float InputSensitivity)
+void ADefaultCharacter::SetSensitivity(float NewSensitivity)
 {
-	Sensitivity = InputSensitivity;
-}
-
-float ADefaultCharacter::GetSensitivity()
-{
-	return Sensitivity;
+	Sensitivity = NewSensitivity;
 }
 
 void ADefaultCharacter::Fire()
@@ -175,11 +180,11 @@ void ADefaultCharacter::Fire()
 			if (Projectile)
 			{
 				// If reached this point, the player has fired
-				if (GI->GameModeBaseRef->IsGameModeSelected())
-				{
-					// Only updating Shots Fired
-					GI->GameModeBaseRef->UpdatePlayerStats(true, false, false);
-				}
+				//if (GI->GameModeBaseRef->IsGameModeSelected())
+				//{
+				//	// Only updating Shots Fired
+				//	GI->GameModeBaseRef->UpdatePlayerStats(true, false, false);
+				//}
 
 				Projectile->SetOwner(this);
 				Projectile->SetInstigator(this);

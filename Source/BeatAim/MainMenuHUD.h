@@ -6,6 +6,7 @@
 #include "GameFramework/HUD.h"
 #include "MainMenuHUD.generated.h"
 
+class USettingsMenuWidget;
 /**
  * 
  */
@@ -21,6 +22,10 @@ public:
 		void ShowMainMenu();
 	UFUNCTION(BlueprintCallable)
 		void HideMainMenu();
+	UFUNCTION(BlueprintCallable)
+		void ShowSettingsMenu();
+	UFUNCTION(BlueprintCallable)
+		void HideSettingsMenu();
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -29,4 +34,11 @@ protected:
 	// Keep a pointer to be able to hide it
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USettingsMenuWidget> SettingsMenuClass;
+
+	// Keep a pointer to be able to hide it
+	UPROPERTY()
+	USettingsMenuWidget* SettingsMenu;
 };

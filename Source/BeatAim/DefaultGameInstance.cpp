@@ -9,11 +9,19 @@
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
 {
 	DefaultCharacterRef = DefaultCharacter;
+	if (DefaultCharacterRef)
+	{
+		DefaultCharacterRef->SetSensitivity(GetSensitivity());
+	}
 }
 
 void UDefaultGameInstance::RegisterTargetSpawner(ATargetSpawner* TargetSpawner)
 {
 	TargetSpawnerRef = TargetSpawner;
+	if (TargetSpawnerRef)
+	{
+		TargetSpawnerRef->SetTargetSpawnCD(GetTargetSpawnCD());
+	}
 }
 
 void UDefaultGameInstance::RegisterSphereTarget(ASphereTarget* SphereTarget)
@@ -123,5 +131,34 @@ void UDefaultGameInstance::SetTargetsSpawned(float SavedTargetsSpawned)
 {
 	TargetsSpawned = SavedTargetsSpawned;
 }
+
+void UDefaultGameInstance::SetSensitivity(float InputSensitivity)
+{
+	Sensitivity = InputSensitivity;
+	if (DefaultCharacterRef)
+	{
+		DefaultCharacterRef->SetSensitivity(InputSensitivity);
+	}
+}
+
+float UDefaultGameInstance::GetSensitivity()
+{
+	return Sensitivity;
+}
+
+void UDefaultGameInstance::SetTargetSpawnCD(float NewTargetSpawnCD)
+{
+	TargetSpawnCD = NewTargetSpawnCD;
+	if (TargetSpawnerRef)
+	{
+		TargetSpawnerRef->SetTargetSpawnCD(NewTargetSpawnCD);
+	}
+}
+
+float UDefaultGameInstance::GetTargetSpawnCD()
+{
+	return TargetSpawnCD;
+}
+
 
 

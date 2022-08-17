@@ -46,6 +46,9 @@ public:
 	UFUNCTION()
 	float GetTimeSinceSpawn(FTimerHandle TimerHandle);
 
+	UFUNCTION(BlueprintCallable)
+	void SetTargetSpawnCD(float NewTargetSpawnCD);
+
 	FTimerHandle TimeSinceSpawn;
 
 	float NumTargetsAddedToArray;
@@ -78,5 +81,9 @@ private:
 
 	// Location to spawn the target
 	FVector SpawnLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	float TargetSpawnCD;
+
 protected:
 };

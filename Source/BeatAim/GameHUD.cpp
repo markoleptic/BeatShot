@@ -3,3 +3,14 @@
 
 #include "GameHUD.h"
 
+AGameHUD::AGameHUD()
+{
+}
+
+void AGameHUD::DrawHUD()
+{
+}
+
+void AGameHUD::BeginPlay()
+{
+}

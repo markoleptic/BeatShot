@@ -31,6 +31,7 @@ void AGameModeActorBase::BeginPlay()
 	{
 		GI->RegisterGameModeActorBase(this);
 	}
+	SetGameModeSelected(false);
 }
 
 // Called every frame
@@ -46,7 +47,7 @@ void AGameModeActorBase::SetGameModeSelected(bool IsSelected)
 
 bool AGameModeActorBase::IsGameModeSelected()
 {
-	return false;
+	return GameModeSelected;
 }
 
 void AGameModeActorBase::UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned)
@@ -99,12 +100,6 @@ void AGameModeActorBase::SetCurrentGameModeClass(AGameModeActorBase* GameModeAct
 
 void AGameModeActorBase::HandleGameStart()
 {
-	SetCurrentGameModeClass(this);
-	GameModeSelected = true;
-	ResetPlayerStats();
-	GI->DefaultCharacterRef->LoadGame();
-	GI->DefaultCharacterRef->ShowPlayerHUD(true);
-	GetWorldTimerManager().SetTimer(CountDownTimer, this, &AGameModeActorBase::StartGameMode, 3.f, false);
 }
 
 void AGameModeActorBase::StartGameMode()

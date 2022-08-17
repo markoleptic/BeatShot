@@ -13,5 +13,19 @@ UCLASS()
 class BEATAIM_API USettingsMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	// Make BlueprintCallable for testing
+	UFUNCTION(BlueprintCallable)
+		void ShowSettingsMenu();
+	UFUNCTION(BlueprintCallable)
+		void HideSettingsMenu();
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<USettingsMenuWidget> SettingsMenuClass;
+
+	// Keep a pointer to be able to hide it
+	UPROPERTY()
+	USettingsMenuWidget* SettingsMenu;
 };

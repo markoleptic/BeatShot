@@ -65,10 +65,10 @@ public:
 	ADefaultPlayerController* PlayerController;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class UPlayerHUD> PlayerHUDClass;
+	TSubclassOf<UUserWidget> PlayerHUDClass;
 
 	UPROPERTY()
-	UPlayerHUD* PlayerHUD;
+	class UPlayerHUD* PlayerHUD;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 	void ShowPlayerHUD(bool ShouldShow);
@@ -76,14 +76,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	bool HUDActive;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
-	float Sensitivity;
-
 	UFUNCTION(BlueprintCallable)
-	void SetSensitivity(float InputSensitivity);
-
-	UFUNCTION(BlueprintCallable)
-	float GetSensitivity();
+	void SetSensitivity(float NewSensitivity);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowCountdown();
@@ -125,6 +119,9 @@ private:
 	UAnimMontage* FireAnim;
 
 	UAnimInstance* AnimInstance;
+
+	UPROPERTY(EditAnywhere, Category = "Camera")
+		float Sensitivity;
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");

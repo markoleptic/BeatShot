@@ -7,6 +7,8 @@
 #include "DefaultGameInstance.h"
 #include "PlayerHUD.h"
 #include "EngineUtils.h"
+#include "GameModeActorBase.h"
+#include "WideSpreadMultiBeat.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -32,19 +34,11 @@ void ABeatAimGameModeBase::BeginPlay()
 	{
 		GI->RegisterGameModeBase(this);
 	}
-	//Default class specific values
-	GameModeSelected = false;
-	//SpiderShotTimerHandleLength = 10.f;
-}
-
-void ABeatAimGameModeBase::HandleGameStart(TSubclassOf<AActor> GameModeSelector)
-{
-	SetCurrentGameModeClass(GameModeSelector);
-	GameModeSelected = true;
-	ResetPlayerStats();
-	GI->DefaultCharacterRef->LoadGame();
-	GI->DefaultCharacterRef->ShowPlayerHUD(true);
-	GetWorldTimerManager().SetTimer(CountDown, this, &ABeatAimGameModeBase::StartSpiderShot, 3.f, false);
+	//UE_LOG(LogTemp, Warning, TEXT("here"));
+	//GameModeSelected = true;
+	//FVector Location = { 0, 0, 0 };
+	//FRotator Rotation = { 0, 0, 0 };
+	//AWideSpreadMultiBeat* WideSpreadMultiBeat = GetWorld()->SpawnActor<AWideSpreadMultiBeat>(WideSpreadMultiBeatClass, Location, Rotation);
 }
 
 void ABeatAimGameModeBase::SetGameModeSelected(bool IsSelected)
@@ -52,29 +46,15 @@ void ABeatAimGameModeBase::SetGameModeSelected(bool IsSelected)
 	GameModeSelected = IsSelected;
 }
 
-void ABeatAimGameModeBase::HandleGameRestart(TSubclassOf<AActor> GameModeSelector)
-{
-	//if (GameModeSelector == ASpiderShotSelector::StaticClass())
-	//{
-	//	SpidershotGameModeBaseREF->EndSpiderShot();
-	//	HandleGameStart(GameModeSelector);
-	//}
-	if (GameModeSelector == ASpiderShotSelector::StaticClass())
-	{
-		EndSpiderShot();
-		HandleGameStart(GameModeSelector);
-	}
-}
-
-TSubclassOf<AActor> ABeatAimGameModeBase::GetCurrentGameModeClass()
-{
-	return CurrentGameModeClass;
-}
-
-void ABeatAimGameModeBase::SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass)
-{
-	CurrentGameModeClass = GameModeStaticClass;
-}
+//TSubclassOf<AActor> ABeatAimGameModeBase::GetCurrentGameModeClass()
+//{
+//	return CurrentGameModeClass;
+//}
+//
+//void ABeatAimGameModeBase::SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass)
+//{
+//	CurrentGameModeClass = GameModeStaticClass;
+//}
 
 bool ABeatAimGameModeBase::IsGameModeSelected()
 {
@@ -121,44 +101,4 @@ void ABeatAimGameModeBase::ResetPlayerStats()
 	GI->DefaultCharacterRef->PlayerHUD->SetTargetBar(GI->GetTargetsHit(), GI->GetShotsFired());
 
 	GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
-}
-
-void ABeatAimGameModeBase::StartSpiderShot()
-{
-	if (IsGameModeSelected() == true)
-	{
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
-		GetWorldTimerManager().SetTimer(SpiderShotGameLength, this, &ABeatAimGameModeBase::EndSpiderShot, SpiderShotTimerHandleLength, false);
-	}
-}
-
-void ABeatAimGameModeBase::EndSpiderShot()
-{
-	if (GI->GetScore() > GI->GetHighScore())
-	{
-		GI->UpdateHighScore(GI->GetScore());
-	}
-	if (GI->SphereTargetArray.Num() > 0)
-	{
-		for (ASphereTarget* Target : GI->SphereTargetArray)
-		{
-			if (Target)
-			{
-				Target->HandleDestruction();
-			}
-		}
-	}
-
-	GI->DefaultCharacterRef->SaveGame();
-	SetGameModeSelected(false);
-	GI->TargetSpawnerRef->SetShouldSpawn(false);
-	StopAAPlayerAndTracker();
-	GetWorldTimerManager().ClearAllTimersForObject(this);
-	//CountDown.Invalidate();
-	//SpiderShotGameLength.Invalidate();
-	if (GI->SphereTargetRef)
-	{
-		GI->SphereTargetRef->HandleDestruction();
-	}
-	GI->DefaultCharacterRef->ShowPlayerHUD(false);
 }

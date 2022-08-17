@@ -65,9 +65,9 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		{
 			//If reached this point, player has shot a target
 			//Only updating Targets Hit
-			GI->UpdateScore(GI->TargetSpawnerRef->GetTimeBasedScore(GI->TargetSpawnerRef->GetTimeSinceSpawn(GI->TargetSpawnerRef->TimeSinceSpawn), 50));
-			GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
-			GI->GameModeBaseRef->UpdatePlayerStats(false, true, false);
+			//GI->UpdateScore(GI->TargetSpawnerRef->GetTimeBasedScore(GI->TargetSpawnerRef->GetTimeSinceSpawn(GI->TargetSpawnerRef->TimeSinceSpawn), 50));
+			//GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
+			//GI->GameModeBaseRef->UpdatePlayerStats(false, true, false);
 		}
 	}
 

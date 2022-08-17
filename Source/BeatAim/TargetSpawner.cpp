@@ -30,6 +30,7 @@ void ATargetSpawner::BeginPlay()
 		GI->RegisterTargetSpawner(this);
 	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+	SetTargetSpawnCD(GI->GetTargetSpawnCD());
 	//UTargetSubsystem* TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
 }
 
@@ -70,11 +71,11 @@ void ATargetSpawner::SpawnActor()
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 		}
-		if (GI->DefaultCharacterRef->HUDActive)
-		{
-			// Only update Targets Spawned
-			GI->GameModeBaseRef->UpdatePlayerStats(false, false, true);
-		}
+		//if (GI->DefaultCharacterRef->HUDActive)
+		//{
+		//	// Only update Targets Spawned
+		//	GI->GameModeBaseRef->UpdatePlayerStats(false, false, true);
+		//}
 	}
 }
 
@@ -126,5 +127,10 @@ float ATargetSpawner::GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier
 float ATargetSpawner::GetTimeSinceSpawn(FTimerHandle TimerHandle)
 {
 	return GetWorldTimerManager().GetTimerElapsed(TimerHandle);
+}
+
+void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)
+{
+	TargetSpawnCD = NewTargetSpawnCD;
 }
 

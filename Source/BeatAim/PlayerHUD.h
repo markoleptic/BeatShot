@@ -37,9 +37,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TargetsSpawnedText;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "CountDown")
-		UTextBlock* CountdownText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* CurrentScoreText;
 

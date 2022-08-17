@@ -46,8 +46,7 @@ public:
 	void StopAAPlayerAndTracker();
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void HandleGameStart();
+	virtual void HandleGameStart();
 
 	virtual void HandleGameRestart();
 
