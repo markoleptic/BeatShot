@@ -73,7 +73,6 @@ void ADefaultCharacter::BeginPlay()
 	if (IsLocallyControlled() && PlayerController)
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
-		//PlayerController->ShowPlayerHUD();
 		PlayerController->ShowCountdown();
 	}
 }
@@ -121,7 +120,6 @@ void ADefaultCharacter::Fire()
 
 		// Transform MuzzleOffset from camera space to world space.
 		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
 		// Skew the aim to be slightly upwards. 
 		FRotator MuzzleRotation = CameraRotation;
 		if (UWorld* World = GetWorld())
@@ -131,16 +129,17 @@ void ADefaultCharacter::Fire()
 			SpawnParams.Owner = this;
 			SpawnParams.Instigator = GetInstigator();
 
+
 			// Spawn the projectile at the muzzle.
 			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, Muzzle, MuzzleRotation, SpawnParams);
 			if (Projectile)
 			{
-				// If reached this point, the player has fired
-				//if (GI->GameModeBaseRef->IsGameModeSelected())
-				//{
-				//	// Only updating Shots Fired
-				//	GI->GameModeBaseRef->UpdatePlayerStats(true, false, false);
-				//}
+				//If reached this point, the player has fired
+				if (PlayerController->CountdownActive == false)
+				{
+				//Only updating Shots Fired
+				OnShotFired.Broadcast();
+				}
 
 				Projectile->SetOwner(this);
 				Projectile->SetInstigator(this);
@@ -180,38 +179,6 @@ void ADefaultCharacter::Turn(float Value)
 void ADefaultCharacter::LookUp(float Value)
 {
 	AddControllerPitchInput(Value * Sensitivity * GetWorld()->GetDeltaSeconds());
-}
-
-void ADefaultCharacter::SaveGame()
-{
-	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
-	//TArray<float> SpiderShotScoreArray;
-	//SpiderShotScoreArray.Add(GI->GetTargetsHit());
-	//SpiderShotScoreArray.Add(GI->GetShotsFired());
-	//SpiderShotScoreArray.Add(GI->GetTargetsSpawned());
-	//SaveGameInstance->InsertToArrayOfSpiderShotScores(SpiderShotScoreArray);
-	//SaveGameInstance->SavePlayerLocation(this->GetActorLocation());
-	if (SaveGameInstance->GetBestSpiderShotScore() < GI->GetHighScore())
-	{
-		SaveGameInstance->SaveHighScore(GI->GetHighScore());
-	}
-	UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("MySlot"), 0);
-}
-
-void ADefaultCharacter::LoadGame()
-{
-	//UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
-	UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0));
-	//this->SetActorLocation(SaveGameInstance->GetPlayerLocation());
-	//GI->DefaultCharacterRef->PlayerHUD->SetHighScore(SaveGameInstance->GetBestSpiderShotScore());
-	//TArray<TArray<float>> SpiderShotScores = SaveGameInstance->GetArrayOfSpiderShotScores();
-	//if (SpiderShotScores.Num() > 1)
-	//{
-	//	GI->SetTargetsHit(SpiderShotScores[SpiderShotScores.Num()-1][0]);
-	//	GI->SetShotsFired(SpiderShotScores[SpiderShotScores.Num() - 1][2]);
-	//	GI->SetTargetsSpawned(SpiderShotScores[SpiderShotScores.Num() - 1][3]);
-	//}
-	//UE_LOG(LogTemp, Display, TEXT("SpiderShotScore Array Size: %f"), SpiderShotScores.Num());
 }
 
 void ADefaultCharacter::InteractPressed()

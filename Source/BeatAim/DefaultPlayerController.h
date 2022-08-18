@@ -51,6 +51,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		bool IsPlayerHUDActive();
 
+	bool CountdownActive;
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;

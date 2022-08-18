@@ -3,7 +3,7 @@
 
 #include "HealthComponent.h"
 #include "DefaultGameInstance.h"
-#include "SpiderShotSelector.h"
+#include "SphereTarget.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -31,17 +31,14 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 {
 	if (Damage <= 0.f) return;
 	Health -= Damage;
-	if (GI->GameModeBaseRef)
+	if (Health <= 0.f)
 	{
-		if (Health <= 0.f)
+		if (ASphereTarget* DestroyedTarget = Cast<ASphereTarget>(DamagedActor))
 		{
-			GI->GameModeBaseRef->ActorReceivedDamage(DamagedActor);
+			DestroyedTarget->HandleDestruction();
 		}
-		//if (ASpiderShotSelector* SpiderShotSelector = Cast<ASpiderShotSelector>(DamagedActor))
-		//{
-		//	GI->GameModeBaseRef->ActorReceivedDamage(DamagedActor);
-		//}
 	}
+
 
 }
 

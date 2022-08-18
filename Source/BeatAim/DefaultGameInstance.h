@@ -9,10 +9,13 @@
 
 class ATargetSpawner;
 class ADefaultCharacter;
+class ABeatAimGameModeBase;
 class AGameModeBase;
 class ASphereTarget;
+class AGameModeActorBase;
 class ADefaultPlayerController;
 class AGameModeActorBase;
+class AProjectile;
 /**
  * 
  */
@@ -38,7 +41,6 @@ public:
 	TArray<ASphereTarget*> SphereTargetArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	//class ABeatAimGameModeBase* GameModeBaseRef;
 	ABeatAimGameModeBase* GameModeBaseRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
@@ -46,6 +48,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	ADefaultPlayerController* DefaultPlayerControllerRef;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
+	AProjectile* ProjectileRef;
 
 	// Register Functions
 
@@ -67,50 +72,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
 
-	// Modifying Game Mode Variables
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdateTargetsSpawned(bool doReset = false);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdateShotsFired(bool doReset = false);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdateTargetsHit(bool doReset = false);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdateScore(float ScoreToAdd, bool doReset = false);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdateHighScore(float HighScoreToUpdate);
-
-	// Getter functions for Game Mode Variables
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	float GetTargetsHit();
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	float GetShotsFired();
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	float GetTargetsSpawned();
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	float GetScore();
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	float GetHighScore();
-
-	// Setter functions for Game Mode Variables, used to load saved scores
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void SetTargetsHit(float SavedTargetsHit);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void SetShotsFired(float SavedShotsFired);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void SetTargetsSpawned(float SavedTargetsSpawned);
+	UFUNCTION(BlueprintCallable, Category = "References")
+	void RegisterProjectile(AProjectile* Projectile);
 
 	// Settings Menu setter and getter functions
 

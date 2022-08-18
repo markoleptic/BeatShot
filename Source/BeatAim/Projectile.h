@@ -9,6 +9,7 @@
 class USphereComponent;
 class UProjectileMovementComponent;
 class UStaticMeshComponent;
+class ASphereTarget;
 
 UCLASS()
 class BEATAIM_API AProjectile : public AActor

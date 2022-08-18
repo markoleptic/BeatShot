@@ -17,8 +17,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	// Called when an Actor receives damage, determines which function
-	void ActorReceivedDamage(AActor* DeadActor);
 
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
@@ -30,20 +28,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Game Properties")
 	bool IsGameModeSelected();
 
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void ResetPlayerStats();
-
-	//........eventually replace, used for HandleGameRestart()
-	//UFUNCTION(BlueprintCallable)
-	//TSubclassOf<AActor> GetCurrentGameModeClass();
-
-	//........eventually replace, used for HandleGameRestart()
-	//UFUNCTION(BlueprintCallable)
-	//void SetCurrentGameModeClass(TSubclassOf<AActor> GameModeStaticClass);
-
 	// Blueprint event used to stop BPAAPlayer and BPAATracker during pause game
 	UFUNCTION(BlueprintImplementableEvent)
 	void StopAAPlayerAndTracker();
@@ -51,10 +35,4 @@ public:
 private:
 
 	bool GameModeSelected;
-
-	//........eventually replace, used for HandleGameRestart()
-	//TSubclassOf<AActor> CurrentGameModeClass;
-
-	//UPROPERTY(EditAnywhere, Category = "Spawn Properties")
-	//TSubclassOf<AWideSpreadMultiBeat> WideSpreadMultiBeatClass;
 };

@@ -10,6 +10,7 @@ enum class GameModeActorName : uint8 {
 	NarrowSpreadMultiBeat		UMETA(DisplayName = "NarrowSpreadMultiBeat")
 };
 
+// Used to store game properties, etc.
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
 {
@@ -27,8 +28,12 @@ struct FGameModeActorStruct
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle CountDownTimer;
 
-	UPROPERTY(VisibleAnywhere, Category = "Settings Menu")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float TargetSpawnCD = 0.35f;
+
+	// can set this property in targetspawner
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float TargetMaxLifeSpan = 1.5f;
 
 	FGameModeActorStruct()
 	{
@@ -40,5 +45,55 @@ struct FGameModeActorStruct
 	void SetGameModeSelected(bool IsSelected)
 	{
 		GameModeSelected = IsSelected;
+	}
+};
+
+// Used to load and save player scores
+USTRUCT(BlueprintType)
+struct FPlayerScore
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	FString GameMode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float Score;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float HighScore;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float Accuracy;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float ShotsFired;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float TargetsHit;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	float TargetsSpawned;
+
+	FPlayerScore()
+	{
+		GameMode = "";
+		Score = 0;
+		HighScore = 0;
+		Accuracy =  0;
+		ShotsFired = 0;
+		TargetsHit = 0;
+		TargetsSpawned = 0;
+	}
+
+	void ResetStruct()
+	{
+		GameMode = "";
+		Score = 0;
+		HighScore = 0;
+		Accuracy = 0;
+		ShotsFired = 0;
+		TargetsHit = 0;
+		TargetsSpawned = 0;
 	}
 };

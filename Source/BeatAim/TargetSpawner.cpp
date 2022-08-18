@@ -2,7 +2,6 @@
 
 
 #include "TargetSpawner.h"
-#include <string>
 #include "DefaultCharacter.h"
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
@@ -41,7 +40,6 @@ void ATargetSpawner::Tick(float DeltaTime)
 
 void ATargetSpawner::SpawnActor()
 {
-	UE_LOG(LogTemp, Display, TEXT("Made it to spawn actor"));
 	if (ShouldSpawn)
 	{
 		//TEMP
@@ -66,16 +64,11 @@ void ATargetSpawner::SpawnActor()
 		if (SpawnTarget)
 		{
 			NumTargetsAddedToArray++;
-			// Bind the spawning of Target to GetTimeBasedScore
-			GetWorldTimerManager().SetTimer(TimeSinceSpawn, SpawnTarget->MaxLifeSpan, false);
+			// Broadcast to GameModeActorBase that a target has spawned
+			OnTargetSpawn.Broadcast();
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
-			SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
+			//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 		}
-		//if (GI->DefaultCharacterRef->HUDActive)
-		//{
-		//	// Only update Targets Spawned
-		//	GI->GameModeBaseRef->UpdatePlayerStats(false, false, true);
-		//}
 	}
 }
 
@@ -93,7 +86,7 @@ void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 
 void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 {
-	TimeSinceSpawn.Invalidate();
+	//TimeSinceSpawn.Invalidate();
 }
 
 void ATargetSpawner::RandomizeScale(ASphereTarget* Target)

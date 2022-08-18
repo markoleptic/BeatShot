@@ -8,6 +8,10 @@
 #include "GameModeActorStruct.h"
 #include "GameModeActorBase.generated.h"
 
+class ASphereTarget;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore, NewPlayerScoreStruct);
+
 UCLASS()
 class BEATAIM_API AGameModeActorBase : public AActor
 {
@@ -21,6 +25,10 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	void SaveGame();
+
+	void LoadGame();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -29,12 +37,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Game Properties")
 	bool IsGameModeSelected();
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void UpdatePlayerStats(bool ShotFired, bool TargetHit, bool TargetSpawned);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Score")
-	void ResetPlayerStats();
 
 	UFUNCTION(BlueprintCallable)
 	AGameModeActorBase* GetCurrentGameModeClass();
@@ -61,6 +63,12 @@ public:
 	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FPlayerScore PlayerScoreStruct;
+
+	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Game Properties")
+	FUpdateScoresToHUD UpdateScoresToHUD;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle GameModeLengthTimer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -76,9 +84,29 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	class UDefaultGameInstance* GI;
 
+	UFUNCTION()
+	void UpdateTargetsHit();
+
+	UFUNCTION()
+	void UpdateHighScore();
+
+	UFUNCTION()
+	void UpdateScore(float TimeElapsed);
+
 private:
 
 	bool GameModeSelected;
 
 	AGameModeActorBase* CurrentGameModeClass;
+
+	FVector StartLocation = { 1806.f,2000.f,92.f };
+
+	FRotator StartRotation = FRotator::ZeroRotator;
+
+	UFUNCTION()
+	void UpdateTargetsSpawned();
+
+	UFUNCTION()
+	void UpdateShotsFired();
+
 };

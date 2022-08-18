@@ -98,6 +98,7 @@ void ADefaultPlayerController::ShowCountdown()
 {
 	Countdown = CreateWidget<UCountdown>(this, CountdownClass);
 	Countdown->AddToViewport();
+	CountdownActive = true;
 }
 
 void ADefaultPlayerController::HideCountdown()
@@ -106,6 +107,7 @@ void ADefaultPlayerController::HideCountdown()
 	{
 		Countdown->RemoveFromViewport();
 		Countdown = nullptr;
+		CountdownActive = false;
 	}
 }
 

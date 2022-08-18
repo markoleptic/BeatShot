@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
+#include "GameModeActorStruct.h"
 #include "PlayerHUD.generated.h"
+
+struct FPlayerScore;
 class ABeatAimGameModeBase;
 class UDefaultGameInstance;
 class ADefaultCharacter;
@@ -19,8 +22,11 @@ UCLASS()
 class BEATAIM_API UPlayerHUD : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+	virtual void NativeConstruct() override;
+
 public:
-	/*UPlayerHUD(const FObjectInitializer& ObjectInitializer);*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UProgressBar* TargetBar;
@@ -66,5 +72,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void SetHighScore(float HighScore);
+
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
+
+	class UDefaultGameInstance* GI;
 };
 

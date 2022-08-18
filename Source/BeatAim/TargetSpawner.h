@@ -11,6 +11,9 @@ class UDefaultGameInstance;
 class ADefaultCharacter;
 class ASphereTarget;
 class UBoxComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetSpawnSignature);
+
 UCLASS()
 class BEATAIM_API ATargetSpawner : public AActor
 {
@@ -46,6 +49,9 @@ public:
 	UFUNCTION()
 	float GetTimeSinceSpawn(FTimerHandle TimerHandle);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnTargetSpawnSignature OnTargetSpawn;
+
 	UFUNCTION(BlueprintCallable)
 	void SetTargetSpawnCD(float NewTargetSpawnCD);
 
@@ -56,19 +62,19 @@ public:
 private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-		bool ShouldSpawn;
+	bool ShouldSpawn;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-		FBoxSphereBounds BoxBounds;
+	FBoxSphereBounds BoxBounds;
 
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
-		bool LastTargetSpawnedCenter = false;
+	bool LastTargetSpawnedCenter = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-		UBoxComponent* SpawnBox;
+	UBoxComponent* SpawnBox;
 
 	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
-		TSubclassOf<ASphereTarget> ActorToSpawn;
+	TSubclassOf<ASphereTarget> ActorToSpawn;
 
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);

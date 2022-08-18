@@ -63,11 +63,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		Target = Cast<ASphereTarget>(OtherActor);
 		if (Target && Shooter)
 		{
-			//If reached this point, player has shot a target
-			//Only updating Targets Hit
-			//GI->UpdateScore(GI->TargetSpawnerRef->GetTimeBasedScore(GI->TargetSpawnerRef->GetTimeSinceSpawn(GI->TargetSpawnerRef->TimeSinceSpawn), 50));
-			//GI->DefaultCharacterRef->PlayerHUD->SetCurrentScore(GI->GetScore());
-			//GI->GameModeBaseRef->UpdatePlayerStats(false, true, false);
+			//If reached this point, player has shot a target, and can get exact moment it was hit
+			GI->GameModeActorBaseRef->UpdateTargetsHit();
 		}
 	}
 

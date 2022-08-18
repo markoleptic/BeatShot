@@ -5,39 +5,16 @@
 
 UDefaultStatSaveGame::UDefaultStatSaveGame()
 {
-	PlayerLocation = FVector(0.f, 0.f, 0.f);
-	BestSpiderShotScore = 0.f;
-	//SpiderShotScoreArray.Init(0.f, 3.f);
-	//ArrayOfSpiderShotScores.Add(SpiderShotScoreArray);
 }
 
-float UDefaultStatSaveGame::GetBestSpiderShotScore()
+void UDefaultStatSaveGame::InsertToPlayerScoreStructArray(FPlayerScore PlayerScoreStructToAdd)
 {
-	return BestSpiderShotScore;
+	ArrayOfPlayerScoreStructs.Add(PlayerScoreStructToAdd);
 }
 
-FVector UDefaultStatSaveGame::GetPlayerLocation()
+TArray<FPlayerScore> UDefaultStatSaveGame::GetArrayOfPlayerScoreStructs()
 {
-	return PlayerLocation;
+	return ArrayOfPlayerScoreStructs;
 }
 
-void UDefaultStatSaveGame::SavePlayerLocation(FVector PlayerLocationToSave)
-{
-	PlayerLocation = PlayerLocationToSave;
-}
-
-void UDefaultStatSaveGame::SaveHighScore(float HighScoreToSave)
-{
-	BestSpiderShotScore = HighScoreToSave;
-}
-
-void UDefaultStatSaveGame::InsertToArrayOfSpiderShotScores(TArray<float> ScoreArray)
-{
-	ArrayOfSpiderShotScores.Add(ScoreArray);
-}
-
-TArray<TArray<float>> UDefaultStatSaveGame::GetArrayOfSpiderShotScores()
-{
-	return ArrayOfSpiderShotScores;
-}
 

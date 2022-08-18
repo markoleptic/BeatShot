@@ -11,8 +11,10 @@ UCLASS()
 class BEATAIM_API ASphereTarget : public AActor
 {
 	GENERATED_BODY()
+
 public:	
 	ASphereTarget();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -27,6 +29,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	float MaxLifeSpan = 1.5;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	FTimerHandle TimeSinceSpawn;
 
 	// probably make this a parent class of targets in the future
 	virtual void Tick(float DeltaTime) override;

@@ -4,11 +4,16 @@
 #include "PlayerHUD.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "GameModeActorBase.h"
+#include "DefaultGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
-//UPlayerHUD::UPlayerHUD(const FObjectInitializer& ObjectInitializer) : UUserWidget(ObjectInitializer)
-//{
-//	//TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
-//}
+void UPlayerHUD::NativeConstruct()
+{
+	Super::NativeConstruct();
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
+}
 
 void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
 {
@@ -58,4 +63,49 @@ void UPlayerHUD::SetCurrentScore(float Score)
 void UPlayerHUD::SetHighScore(float HighScore)
 {
 	HighScoreText->SetText(FText::AsNumber(HighScore));
+}
+
+// Should probably just pass one element at a time using above functions for better efficiency
+void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
+{
+	float TargetsHit = NewPlayerScoreStruct.TargetsHit;
+	float Score = NewPlayerScoreStruct.Score;
+	float ShotsFired = NewPlayerScoreStruct.ShotsFired;
+	float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
+	float HighScore = NewPlayerScoreStruct.HighScore;
+
+	if (isnan(TargetsHit / ShotsFired))
+	{
+		TargetBar->SetPercent(0.f);
+	}
+	else
+	{
+		TargetBar->SetPercent(TargetsHit / ShotsFired);
+	}
+
+	TargetsHitText->SetText(FText::AsNumber(TargetsHit));
+
+	if (isnan(TargetsHit / ShotsFired))
+	{
+		Accuracy->SetText(FText::AsPercent(0.f));
+	}
+	else
+	{
+		Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+	}
+
+	ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
+
+	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
+
+	CurrentScoreText->SetText(FText::AsNumber(Score));
+
+	if (HighScore < Score)
+	{
+		HighScoreText->SetText(FText::AsNumber(Score));
+	}
+	else
+	{
+		HighScoreText->SetText(FText::AsNumber(HighScore));
+	}
 }

@@ -24,6 +24,7 @@ ASphereTarget::ASphereTarget()
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, MaxLifeSpan, false);
 }
 
 void ASphereTarget::Tick(float DeltaTime)
@@ -36,6 +37,13 @@ void ASphereTarget::Tick(float DeltaTime)
 
 void ASphereTarget::HandleDestruction()
 {
+	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+	if (TimeAlive < 0.f)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("TimeAlive: %f"), TimeAlive);
+	}
+	GI->GameModeActorBaseRef->UpdateScore(TimeAlive);
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	Destroy();
 }
 

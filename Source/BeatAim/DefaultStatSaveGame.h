@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
+#include "GameModeActorStruct.h"
 #include "DefaultStatSaveGame.generated.h"
 
 /**
@@ -15,30 +16,16 @@ class BEATAIM_API UDefaultStatSaveGame : public USaveGame
 	GENERATED_BODY()
 
 public:
-
 	UDefaultStatSaveGame();
 
-	float GetBestSpiderShotScore();
+	void InsertToPlayerScoreStructArray(FPlayerScore PlayerScoreStructToAdd);
 
-	FVector GetPlayerLocation();
-
-	void SavePlayerLocation(FVector PlayerLocationToSave);
-
-	void SaveHighScore(float HighScoreToSave);
+	TArray<FPlayerScore> GetArrayOfPlayerScoreStructs();
 
 private:
-	UPROPERTY(EditAnywhere, Category = Score)
-	FVector PlayerLocation;
+
+	FPlayerScore PlayerScoreStruct;
 
 	UPROPERTY(EditAnywhere, Category = Score)
-	float BestSpiderShotScore;
-
-	UPROPERTY(EditAnywhere, Category = Score)
-	TArray<float> SpiderShotScoreArray;
-
-	TArray<TArray<float>> ArrayOfSpiderShotScores;
-
-	void InsertToArrayOfSpiderShotScores(TArray<float> ScoreArray);
-
-	TArray<TArray<float>> GetArrayOfSpiderShotScores();
+	TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
 };

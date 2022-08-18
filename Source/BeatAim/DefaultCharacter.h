@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+class AProjectile;
 class ADefaultPlayerController;
 class UDefaultStatSaveGame;
 class UDefaultGameInstance;
@@ -17,6 +18,8 @@ class USoundBase;
 class UAnimMontage;
 class UAnimInstance;
 class UPlayerHUD;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShotFired);
 
 UCLASS()
 class BEATAIM_API ADefaultCharacter : public ACharacter
@@ -65,9 +68,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetSensitivity(float NewSensitivity);
 
-	void SaveGame();
-
-	void LoadGame();
+	UPROPERTY()
+	FOnShotFired OnShotFired;
 
 private:
 	UDefaultGameInstance* GI;
@@ -84,12 +86,8 @@ private:
 
 	void InteractPressed();
 
-	//UDefaultStatSaveGame* SaveGameInstance;
-
-	//TSubclassOf <class UDefaultStatSaveGame> SaveGameClass;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<class AProjectile> ProjectileClass;
+	TSubclassOf<AProjectile> ProjectileClass;
 
 	UPROPERTY(VisibleAnywhere, Category = "Projectile");
 	USoundBase* FireSound;
