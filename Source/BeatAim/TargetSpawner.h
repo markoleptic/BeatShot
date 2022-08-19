@@ -43,12 +43,6 @@ public:
 	// Lets the spawner know it's safe to spawn a target
 	void SetShouldSpawn(bool bShouldSpawn);
 
-	UFUNCTION()
-	float GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier);
-
-	UFUNCTION()
-	float GetTimeSinceSpawn(FTimerHandle TimerHandle);
-
 	UPROPERTY(BlueprintAssignable)
 	FOnTargetSpawnSignature OnTargetSpawn;
 
@@ -83,10 +77,13 @@ private:
 	void RandomizeScale(ASphereTarget* Target);
 
 	// Randomize location of target
-	void RandomizeLocation();
+	void RandomizeLocation(FVector FLastSpawnLocation);
 
 	// Location to spawn the target
 	FVector SpawnLocation;
+
+	// Location to refer to the last target spawned
+	FVector LastSpawnLocation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	float TargetSpawnCD;

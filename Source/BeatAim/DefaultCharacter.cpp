@@ -73,7 +73,6 @@ void ADefaultCharacter::BeginPlay()
 	if (IsLocallyControlled() && PlayerController)
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
-		PlayerController->ShowCountdown();
 	}
 }
 
@@ -137,8 +136,8 @@ void ADefaultCharacter::Fire()
 				//If reached this point, the player has fired
 				if (PlayerController->CountdownActive == false)
 				{
-				//Only updating Shots Fired
-				OnShotFired.Broadcast();
+					//Only updating Shots Fired
+					OnShotFired.Broadcast();
 				}
 
 				Projectile->SetOwner(this);

@@ -3,3 +3,7 @@
 
 #include "MainMenuGameModeBase.h"
 
+void AMainMenuGameModeBase::BeginPlay()
+{
+	GameModeActorName = EGameModeActorName::None;
+}

@@ -5,9 +5,10 @@
 #include "GameModeActorStruct.generated.h"
 
 UENUM(BlueprintType)
-enum class GameModeActorName : uint8 {
-	WideSpreadMultiBeat			UMETA(DisplayName = "WideSpreadMultiBeat"),
-	NarrowSpreadMultiBeat		UMETA(DisplayName = "NarrowSpreadMultiBeat")
+enum class EGameModeActorName : uint8 {
+	None						UMETA(DisplayName, "None"),
+	WideSpreadMultiBeat			UMETA(DisplayName, "WideSpreadMultiBeat"),
+	NarrowSpreadMultiBeat		UMETA(DisplayName, "NarrowSpreadMultiBeat")
 };
 
 // Used to store game properties, etc.

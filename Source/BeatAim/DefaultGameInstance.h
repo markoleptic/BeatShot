@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BeatAimGameModeBase.h"
+#include "GameModeActorStruct.h"
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
@@ -89,23 +90,22 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetTargetSpawnCD();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
+	EGameModeActorName GameModeActorName;
+
 private:
 	// Game Mode Variables Associated with Scoring
-
-	UPROPERTY(VisibleAnywhere, Category = "Player Score")
-		float TargetsHit = 0;
-
-	UPROPERTY(VisibleAnywhere, Category = "Player Score")
-		float ShotsFired = 0;
-
-	UPROPERTY(VisibleAnywhere, Category = "Player Score")
-		float TargetsSpawned = 0;
-
-	UPROPERTY(VisibleAnywhere, Category = "Player Score")
-		float Score = 0;
-
-	UPROPERTY(VisibleAnywhere, Category = "Player Score")
-		float HighScore = 0;
+	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
+	//	float TargetsHit = 0;
+	//
+	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
+	//	float ShotsFired = 0;
+	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
+	//	float TargetsSpawned = 0;
+	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
+	//	float Score = 0;
+	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
+	//	float HighScore = 0;
 
 	// Settings Menu options so that options are saved even if character hasn't spawned
 

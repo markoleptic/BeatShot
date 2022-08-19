@@ -6,6 +6,7 @@
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "BeatAimGameModeBase.h"
+#include "GameModeActorBase.h"
 #include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -61,7 +62,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		//}
 		//}
 		Target = Cast<ASphereTarget>(OtherActor);
-		if (Target && Shooter)
+		if (Target && Shooter && GI->GameModeActorBaseRef)
 		{
 			//If reached this point, player has shot a target, and can get exact moment it was hit
 			GI->GameModeActorBaseRef->UpdateTargetsHit();

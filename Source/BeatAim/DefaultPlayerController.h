@@ -51,7 +51,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 		bool IsPlayerHUDActive();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
 	bool CountdownActive;
+
+	UPROPERTY()
+	UPlayerHUD* PlayerHUD;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -74,9 +78,6 @@ protected:
 
 	UPROPERTY()
 	UCrosshair* Crosshair;
-
-	UPROPERTY()
-	UPlayerHUD* PlayerHUD;
 
 	UPROPERTY()
 	UPauseMenu* PauseMenu;

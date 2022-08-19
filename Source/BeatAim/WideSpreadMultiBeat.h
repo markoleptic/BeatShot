@@ -26,14 +26,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	//UFUNCTION(BlueprintCallable)
-	//AGameModeActorBase* GetCurrentGameModeClass();
-
-	//UFUNCTION(BlueprintCallable)
-	//virtual void SetCurrentGameModeClass(AGameModeActorBase* GameModeActor) override;
-
-public:
-
 	virtual void HandleGameStart() override;
 
 	virtual void HandleGameRestart() override;

@@ -2,12 +2,10 @@
 
 
 #include "TargetSpawner.h"
-#include "DefaultCharacter.h"
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "BeatAimGameModeBase.h"
-#include "TargetSubsystem.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -18,6 +16,7 @@ ATargetSpawner::ATargetSpawner()
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
 	RootComponent = SpawnBox;
 	SetShouldSpawn(false);
+	LastSpawnLocation = FVector::ZeroVector;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -30,7 +29,6 @@ void ATargetSpawner::BeginPlay()
 	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	SetTargetSpawnCD(GI->GetTargetSpawnCD());
-	//UTargetSubsystem* TargetSubsystem = GI ? GI->GetSubsystem<UTargetSubsystem>() : nullptr;
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -43,29 +41,33 @@ void ATargetSpawner::SpawnActor()
 	if (ShouldSpawn)
 	{
 		//TEMP
-		LastTargetSpawnedCenter = true;
+		//LastTargetSpawnedCenter = true;
 		SpawnLocation = BoxBounds.Origin;
-		if (LastTargetSpawnedCenter == true)
-		{
-			RandomizeLocation();
-		}
-		else if (LastTargetSpawnedCenter == false) {
-			//TEMP
-			//LastTargetSpawnedCenter = true;
-		}
+		RandomizeLocation(LastSpawnLocation);
+		//if (LastTargetSpawnedCenter == true)
+		//{
+		//}
+		//else if (LastTargetSpawnedCenter == false) {
+		//TEMP
+		//LastTargetSpawnedCenter = true;
+		//}
 		// Spawn the target
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
-		RandomizeScale(SpawnTarget);
-
-		// Update reference to spawned target in Game Instance
-		GI->RegisterSphereTarget(SpawnTarget);
-		// Add Target to TArray
-		GI->SphereTargetArray.Add(SpawnTarget);
 		if (SpawnTarget)
 		{
+			RandomizeScale(SpawnTarget);
+			LastSpawnLocation = SpawnLocation;
+
+			// Update reference to spawned target in Game Instance
+			GI->RegisterSphereTarget(SpawnTarget);
+
+			// Add Target to TArray
+			GI->SphereTargetArray.Add(SpawnTarget);
 			NumTargetsAddedToArray++;
+
 			// Broadcast to GameModeActorBase that a target has spawned
 			OnTargetSpawn.Broadcast();
+
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 			//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 		}
@@ -96,30 +98,24 @@ void ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 	Target->BaseMesh->SetWorldScale3D(RandomScaleVector);
 }
 
-void ATargetSpawner::RandomizeLocation()
+void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation)
 {
-	SpawnLocation.X += -BoxBounds.BoxExtent.X + 2 * BoxBounds.BoxExtent.X * FMath::FRand();
-	SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-	SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
-	LastTargetSpawnedCenter = false;
-}
-
-float ATargetSpawner::GetTimeBasedScore(float TimeElapsed, float ScoreMultiplier)
-{
-	if (TimeElapsed <= 0.5f)
+	if (FLastSpawnLocation.Equals(FVector::ZeroVector))
 	{
-		return FMath::Lerp(400.f, 1000.f, TimeElapsed / 0.5f);
+		SpawnLocation.X += BoxBounds.BoxExtent.X;
+		SpawnLocation.Y += BoxBounds.BoxExtent.Y;
+		SpawnLocation.Z += BoxBounds.BoxExtent.Z;
+		LastSpawnLocation.X += -BoxBounds.BoxExtent.X + 2 * BoxBounds.BoxExtent.X * FMath::FRand();
+		LastSpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+		LastSpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 	}
-	else if (TimeElapsed <= 1.f)
+	else
 	{
-		return FMath::Lerp(1000.f, 400.f, (TimeElapsed - 0.5f) / 0.5f);
+		SpawnLocation.X += -BoxBounds.BoxExtent.X + 2 * BoxBounds.BoxExtent.X * FMath::FRand();
+		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 	}
-	else return 400;
-}
-
-float ATargetSpawner::GetTimeSinceSpawn(FTimerHandle TimerHandle)
-{
-	return GetWorldTimerManager().GetTimerElapsed(TimerHandle);
+	//LastTargetSpawnedCenter = false;
 }
 
 void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)

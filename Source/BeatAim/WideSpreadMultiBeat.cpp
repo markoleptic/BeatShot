@@ -3,6 +3,7 @@
 
 #include "WideSpreadMultiBeat.h"
 #include "DefaultGameInstance.h"
+#include "DefaultPlayerController.h"
 #include "TargetSpawner.h"
 
 AWideSpreadMultiBeat::AWideSpreadMultiBeat()
@@ -22,15 +23,9 @@ void AWideSpreadMultiBeat::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-//void AWideSpreadMultiBeat::SetCurrentGameModeClass(AGameModeActorBase* GameModeActor)
-//{
-//
-//}
-
 void AWideSpreadMultiBeat::HandleGameStart()
 {
 	Super::HandleGameStart();
-	SetGameModeSelected(true);
 	GetWorldTimerManager().SetTimer(CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, CountdownTimerLength, false);
 }
 
@@ -42,11 +37,7 @@ void AWideSpreadMultiBeat::HandleGameRestart()
 void AWideSpreadMultiBeat::StartGameMode()
 {
 	Super::StartGameMode();
-	if (IsGameModeSelected() == true)
-	{
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
-		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &AWideSpreadMultiBeat::EndGameMode, GameModeLength, false);
-	}
+	GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &AWideSpreadMultiBeat::EndGameMode, GameModeLength, false);
 }
 
 void AWideSpreadMultiBeat::EndGameMode()

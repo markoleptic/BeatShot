@@ -25,6 +25,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	void SaveGame();
 
 	void LoadGame();
@@ -32,21 +34,6 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	void SetGameModeSelected(bool IsSelected);
-
-	UFUNCTION(BlueprintCallable, Category = "Game Properties")
-	bool IsGameModeSelected();
-
-	UFUNCTION(BlueprintCallable)
-	AGameModeActorBase* GetCurrentGameModeClass();
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetCurrentGameModeClass(AGameModeActorBase* GameModeActor);
-
-	// Blueprint event used to stop BP_AAPlayer and BP_AATracker during pause game
-	UFUNCTION(BlueprintImplementableEvent)
-	void StopAAPlayerAndTracker();
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -93,20 +80,18 @@ public:
 	UFUNCTION()
 	void UpdateScore(float TimeElapsed);
 
-private:
-
-	bool GameModeSelected;
-
-	AGameModeActorBase* CurrentGameModeClass;
-
-	FVector StartLocation = { 1806.f,2000.f,92.f };
-
-	FRotator StartRotation = FRotator::ZeroRotator;
-
 	UFUNCTION()
 	void UpdateTargetsSpawned();
 
 	UFUNCTION()
 	void UpdateShotsFired();
+
+private:
+
+	//AGameModeActorBase* CurrentGameModeClass;
+
+	FVector StartLocation = { 1806.f,2000.f,92.f };
+
+	FRotator StartRotation = FRotator::ZeroRotator;
 
 };

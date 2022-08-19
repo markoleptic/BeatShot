@@ -12,53 +12,34 @@
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
-// Sets default values
 AGameModeActorBase::AGameModeActorBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//Default class specific values
 	PrimaryActorTick.bCanEverTick = true;
-	GameModeSelected = false;
 	CountdownTimerLength = 3.f;
 }
 
-// Called when the game starts or when spawned
 void AGameModeActorBase::BeginPlay()
 {
 	Super::BeginPlay();
+	CountdownTimerLength = 3.f;
 	// Store instance of GameModeActorBase in Game Instance
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
 		GI->RegisterGameModeActorBase(this);
 	}
-	SetGameModeSelected(false);
 }
 
-// Called every frame
+void AGameModeActorBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	SaveGame();
+}
+
 void AGameModeActorBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-void AGameModeActorBase::SetGameModeSelected(bool IsSelected)
-{
-	GameModeSelected = IsSelected;
-}
-
-bool AGameModeActorBase::IsGameModeSelected()
-{
-	return GameModeSelected;
-}
-
-AGameModeActorBase* AGameModeActorBase::GetCurrentGameModeClass()
-{
-	return this;
-}
-
-void AGameModeActorBase::SetCurrentGameModeClass(AGameModeActorBase* GameModeActor)
-{
-	CurrentGameModeClass = GameModeActor;
 }
 
 void AGameModeActorBase::HandleGameStart()
@@ -67,13 +48,21 @@ void AGameModeActorBase::HandleGameStart()
 	PlayerScoreStruct.ResetStruct();
 	// load save containing struct to retrieve high score
 	GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
-	GI->DefaultCharacterRef->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
-	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
+	if (GI->DefaultCharacterRef->OnShotFired.IsBound() == false)
+	{
+		GI->DefaultCharacterRef->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+	}
+	if (GI->TargetSpawnerRef->OnTargetSpawn.IsBound() == false)
+	{
+		GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
+	}
+	CountdownTimerLength = 3.f;
 }
 
 void AGameModeActorBase::StartGameMode()
 {
 	LoadGame();
+	GI->TargetSpawnerRef->SetShouldSpawn(true);
 }
 
 void AGameModeActorBase::EndGameMode()
@@ -81,7 +70,7 @@ void AGameModeActorBase::EndGameMode()
 	SaveGame();
 
 	// Stopping Player and Tracker
-	StopAAPlayerAndTracker();
+	GI->GameModeBaseRef->StopAAPlayerAndTracker();
 
 	// Deleting Targets
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
@@ -97,10 +86,13 @@ void AGameModeActorBase::EndGameMode()
 	}
 
 	//Clearing Timers
-	GetWorldTimerManager().ClearAllTimersForObject(this);
+	CountDownTimer.Invalidate();
+	GameModeLengthTimer.Invalidate();
+	CountdownTimerLength = 3.f;
 
-	//Hide PlayerHUD
+	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
+	GI->DefaultPlayerControllerRef->HideCountdown();
 }
 
 // Called by SphereTarget when it takes damage
@@ -172,7 +164,6 @@ void AGameModeActorBase::LoadGame()
 		{
 			for (FPlayerScore SavedPlayerScoreStruct : ArrayOfPlayerScoreStructs)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("PlayerHighScoreValue:"), SavedPlayerScoreStruct.HighScore);
 				if (SavedPlayerScoreStruct.HighScore > PlayerScoreStruct.HighScore)
 				{
 					PlayerScoreStruct.HighScore = SavedPlayerScoreStruct.HighScore;
@@ -184,11 +175,6 @@ void AGameModeActorBase::LoadGame()
 
 void AGameModeActorBase::HandleGameRestart()
 {
-	//TODO: theres probably a lot more stuff i can move from blueprint to here, maybe using the struct
-	GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
-	GI->TargetSpawnerRef->OnTargetSpawn.RemoveAll(this);
-	GI->DefaultCharacterRef->OnShotFired.RemoveAll(this);
 	EndGameMode();
-	StartGameMode();
 }
 

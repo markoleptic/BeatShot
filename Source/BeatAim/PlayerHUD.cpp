@@ -109,3 +109,4 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 		HighScoreText->SetText(FText::AsNumber(HighScore));
 	}
 }
+

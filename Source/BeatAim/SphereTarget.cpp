@@ -3,6 +3,7 @@
 
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
+#include "GameModeActorBase.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
@@ -18,12 +19,12 @@ ASphereTarget::ASphereTarget()
 	BaseMesh->SetupAttachment(CapsuleComp);
 	InitialLifeSpan = MaxLifeSpan;
 	//DynamicTargetColorMaterial = UMaterialInstanceDynamic::Create(BaseMesh->GetMaterial(0), nullptr);
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 }
 
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GetWorldTimerManager().SetTimer(TimeSinceSpawn, MaxLifeSpan, false);
 }
 
@@ -38,13 +39,12 @@ void ASphereTarget::Tick(float DeltaTime)
 void ASphereTarget::HandleDestruction()
 {
 	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-	if (TimeAlive < 0.f)
+	if (TimeAlive > 0.f && GI->GameModeActorBaseRef)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("TimeAlive: %f"), TimeAlive);
+		GI->GameModeActorBaseRef->UpdateScore(TimeAlive);
+		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+		Destroy();
 	}
-	GI->GameModeActorBaseRef->UpdateScore(TimeAlive);
-	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	Destroy();
 }
 
 
