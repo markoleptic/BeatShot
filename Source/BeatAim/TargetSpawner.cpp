@@ -16,7 +16,10 @@ ATargetSpawner::ATargetSpawner()
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
 	RootComponent = SpawnBox;
 	SetShouldSpawn(false);
+	SpawnLocation = BoxBounds.Origin;
 	LastSpawnLocation = FVector::ZeroVector;
+	RecentSpawnLocations.Init(BoxBounds.Origin, 3);
+	RecentSpawnBounds.Init(FBox(BoxBounds.Origin, BoxBounds.Origin), 3);
 }
 
 void ATargetSpawner::BeginPlay()
@@ -42,8 +45,6 @@ void ATargetSpawner::SpawnActor()
 	{
 		//TEMP
 		//LastTargetSpawnedCenter = true;
-		SpawnLocation = BoxBounds.Origin;
-		RandomizeLocation(LastSpawnLocation);
 		//if (LastTargetSpawnedCenter == true)
 		//{
 		//}
@@ -52,11 +53,13 @@ void ATargetSpawner::SpawnActor()
 		//LastTargetSpawnedCenter = true;
 		//}
 		// Spawn the target
+		//SpawnLocation = BoxBounds.Origin;
+		//RandomizeLocation(LastSpawnLocation);
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
 		if (SpawnTarget)
 		{
-			RandomizeScale(SpawnTarget);
 			LastSpawnLocation = SpawnLocation;
+			RandomizeScale(SpawnTarget);
 
 			// Update reference to spawned target in Game Instance
 			GI->RegisterSphereTarget(SpawnTarget);
@@ -67,6 +70,7 @@ void ATargetSpawner::SpawnActor()
 
 			// Broadcast to GameModeActorBase that a target has spawned
 			OnTargetSpawn.Broadcast();
+			RandomizeLocation(LastSpawnLocation);
 
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 			//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
@@ -100,22 +104,36 @@ void ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 
 void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation)
 {
-	if (FLastSpawnLocation.Equals(FVector::ZeroVector))
+	// Insert the most recent spawn location into array
+	RecentSpawnLocations.Insert(LastSpawnLocation, 0);
+	RecentSpawnLocations.SetNum(4);
+
+	//FVector Origin = { LastSpawnLocation.X -30, LastSpawnLocation.Y - 30, LastSpawnLocation.Z = -30 };
+	//FVector Extent = { LastSpawnLocation.X +30, LastSpawnLocation.Y + 30, LastSpawnLocation.Z = +30 };
+
+	FVector NewExtent = { 1, 200, 200 };
+
+	// Insert box around spawn location into box array
+	RecentSpawnBounds.Insert(FBox::BuildAABB(LastSpawnLocation, NewExtent),0);
+	RecentSpawnBounds.SetNum(4);
+
+	// new spawn location
+	// SpawnLocation is always initially at BoxBounds.Origin
+	SpawnLocation = BoxBounds.Origin;
+	SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+	SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+
+	while (RecentSpawnBounds[0].IsInside(SpawnLocation) ||
+		RecentSpawnBounds[1].IsInside(SpawnLocation) ||
+		RecentSpawnBounds[2].IsInside(SpawnLocation) ||
+		RecentSpawnBounds[3].IsInside(SpawnLocation)) 
 	{
-		SpawnLocation.X += BoxBounds.BoxExtent.X;
-		SpawnLocation.Y += BoxBounds.BoxExtent.Y;
-		SpawnLocation.Z += BoxBounds.BoxExtent.Z;
-		LastSpawnLocation.X += -BoxBounds.BoxExtent.X + 2 * BoxBounds.BoxExtent.X * FMath::FRand();
-		LastSpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-		LastSpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
-	}
-	else
-	{
-		SpawnLocation.X += -BoxBounds.BoxExtent.X + 2 * BoxBounds.BoxExtent.X * FMath::FRand();
+		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
+		SpawnLocation = BoxBounds.Origin;
 		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 	}
-	//LastTargetSpawnedCenter = false;
+//LastTargetSpawnedCenter = false;
 }
 
 void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)

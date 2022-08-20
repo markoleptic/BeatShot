@@ -85,6 +85,10 @@ private:
 	// Location to refer to the last target spawned
 	FVector LastSpawnLocation;
 
+	TArray<FVector> RecentSpawnLocations;
+
+	TArray<FBox> RecentSpawnBounds;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	float TargetSpawnCD;
 
