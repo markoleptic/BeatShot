@@ -15,11 +15,23 @@ ATargetSpawner::ATargetSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
 	RootComponent = SpawnBox;
+	//TODO: Set SpawnBox Extent here
+
 	SetShouldSpawn(false);
-	SpawnLocation = BoxBounds.Origin;
+
+	FirstSpawnLocation = BoxBounds.Origin;
+	SpawnLocation = FirstSpawnLocation;
 	LastSpawnLocation = FVector::ZeroVector;
-	RecentSpawnLocations.Init(BoxBounds.Origin, 3);
-	RecentSpawnBounds.Init(FBox(BoxBounds.Origin, BoxBounds.Origin), 3);
+
+	RecentSpawnLocations.Init(BoxBounds.Origin, 4);
+	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), 4);
+
+	MinTargetScale = 0.8f;
+	MaxTargetScale = 1.8f;
+
+	// TODO: base CheckSpawnRadius on MaxTargetScale
+
+	MinDistanceBetweenTargets = 100.f;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -32,6 +44,9 @@ void ATargetSpawner::BeginPlay()
 	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	SetTargetSpawnCD(GI->GetTargetSpawnCD());
+
+	//TODO: Set Max Number of targets up at once using GetTargetCD here
+	//TODO: Set Scale targets
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -43,23 +58,12 @@ void ATargetSpawner::SpawnActor()
 {
 	if (ShouldSpawn)
 	{
-		//TEMP
-		//LastTargetSpawnedCenter = true;
-		//if (LastTargetSpawnedCenter == true)
-		//{
-		//}
-		//else if (LastTargetSpawnedCenter == false) {
-		//TEMP
-		//LastTargetSpawnedCenter = true;
-		//}
-		// Spawn the target
-		//SpawnLocation = BoxBounds.Origin;
-		//RandomizeLocation(LastSpawnLocation);
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
 		if (SpawnTarget)
 		{
+			// Since scaling is done after spawn, we have access to LAST scale value and TargetLocation
 			LastSpawnLocation = SpawnLocation;
-			RandomizeScale(SpawnTarget);
+			LastTargetScale = RandomizeScale(SpawnTarget);
 
 			// Update reference to spawned target in Game Instance
 			GI->RegisterSphereTarget(SpawnTarget);
@@ -70,7 +74,9 @@ void ATargetSpawner::SpawnActor()
 
 			// Broadcast to GameModeActorBase that a target has spawned
 			OnTargetSpawn.Broadcast();
-			RandomizeLocation(LastSpawnLocation);
+
+			// Check for collisions for the next spawn location while randomizing
+			RandomizeLocation(LastSpawnLocation, LastTargetScale);
 
 			// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 			//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
@@ -95,34 +101,30 @@ void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 	//TimeSinceSpawn.Invalidate();
 }
 
-void ATargetSpawner::RandomizeScale(ASphereTarget* Target)
+float ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 {
-	float RandomScaleValue = FMath::FRandRange(0.8f, 2.f);
-	FVector RandomScaleVector = { RandomScaleValue, RandomScaleValue, RandomScaleValue };
-	Target->BaseMesh->SetWorldScale3D(RandomScaleVector);
+	float RandomScaleValue = FMath::FRandRange(MinTargetScale, MaxTargetScale);
+	Target->BaseMesh->SetWorldScale3D(FVector(RandomScaleValue, RandomScaleValue, RandomScaleValue));
+	return RandomScaleValue;
 }
 
-void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation)
+void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue)
 {
 	// Insert the most recent spawn location into array
 	RecentSpawnLocations.Insert(LastSpawnLocation, 0);
 	RecentSpawnLocations.SetNum(4);
 
-	//FVector Origin = { LastSpawnLocation.X -30, LastSpawnLocation.Y - 30, LastSpawnLocation.Z = -30 };
-	//FVector Extent = { LastSpawnLocation.X +30, LastSpawnLocation.Y + 30, LastSpawnLocation.Z = +30 };
-
-	FVector NewExtent = { 1, 200, 200 };
-
-	// Insert box around spawn location into box array
-	RecentSpawnBounds.Insert(FBox::BuildAABB(LastSpawnLocation, NewExtent),0);
+	// Insert sphere of CheckSpawnRadius radius into sphere array
+	CheckSpawnRadius = SphereTargetSize * LastTargetScaleValue + MinDistanceBetweenTargets;
+	RecentSpawnBounds.Insert(FSphere(LastSpawnLocation, CheckSpawnRadius),0);
 	RecentSpawnBounds.SetNum(4);
 
-	// new spawn location
-	// SpawnLocation is always initially at BoxBounds.Origin
+	// SpawnLocation initially centered inside SpawnBox
 	SpawnLocation = BoxBounds.Origin;
 	SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 	SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 
+	// Keep generating random locations until location is not inside the radius of any spheres
 	while (RecentSpawnBounds[0].IsInside(SpawnLocation) ||
 		RecentSpawnBounds[1].IsInside(SpawnLocation) ||
 		RecentSpawnBounds[2].IsInside(SpawnLocation) ||
@@ -133,7 +135,6 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation)
 		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 	}
-//LastTargetSpawnedCenter = false;
 }
 
 void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)

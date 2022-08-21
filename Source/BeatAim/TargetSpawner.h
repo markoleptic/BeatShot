@@ -70,14 +70,23 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
 	TSubclassOf<ASphereTarget> ActorToSpawn;
 
+	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
+	float CheckSpawnRadius;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
+	float MaxNumberOfTargetsAtOnce;
+
 	UFUNCTION()
 	void OnTargetDestroyed(AActor* DestroyedActor);
 
 	// Randomize scale of target
-	void RandomizeScale(ASphereTarget* Target);
+	float RandomizeScale(ASphereTarget* Target);
 
 	// Randomize location of target
-	void RandomizeLocation(FVector FLastSpawnLocation);
+	void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
+
+	// Location to spawn the first target
+	FVector FirstSpawnLocation;
 
 	// Location to spawn the target
 	FVector SpawnLocation;
@@ -85,9 +94,24 @@ private:
 	// Location to refer to the last target spawned
 	FVector LastSpawnLocation;
 
+	// Minimum size of target to spawn
+	float MinTargetScale;
+
+	// Maximum size of target to spawn
+	float MaxTargetScale;
+
+	// The scale applied to the most recently spawned target
+	float LastTargetScale;
+
+	// The base size of the sphere target
+	const float SphereTargetSize = 50.f;
+
+	// Maximum size of target to spawn
+	float MinDistanceBetweenTargets;
+
 	TArray<FVector> RecentSpawnLocations;
 
-	TArray<FBox> RecentSpawnBounds;
+	TArray<FSphere> RecentSpawnBounds;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	float TargetSpawnCD;

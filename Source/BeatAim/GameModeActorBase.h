@@ -90,7 +90,7 @@ private:
 
 	//AGameModeActorBase* CurrentGameModeClass;
 
-	FVector StartLocation = { 1806.f,2000.f,92.f };
+	FVector StartLocation = { 1850,1850,145 };
 
 	FRotator StartRotation = FRotator::ZeroRotator;
 

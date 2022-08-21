@@ -47,7 +47,7 @@ void AGameModeActorBase::HandleGameStart()
 	// Reset Struct to zero scores
 	PlayerScoreStruct.ResetStruct();
 	// load save containing struct to retrieve high score
-	GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
+	//GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
 	if (GI->DefaultCharacterRef->OnShotFired.IsBound() == false)
 	{
 		GI->DefaultCharacterRef->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);

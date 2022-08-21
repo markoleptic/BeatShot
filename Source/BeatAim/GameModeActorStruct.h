@@ -32,9 +32,16 @@ struct FGameModeActorStruct
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float TargetSpawnCD = 0.35f;
 
-	// can set this property in targetspawner
+	//TODO: Use these values to set up properties in targetspawner
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float TargetMaxLifeSpan = 1.5f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float BoxBoundsY = 390.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float BoxBoundsZ = 900.f;
 
 	FGameModeActorStruct()
 	{
