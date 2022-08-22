@@ -5,7 +5,6 @@
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
-#include "BeatAimGameModeBase.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -26,12 +25,13 @@ ATargetSpawner::ATargetSpawner()
 	RecentSpawnLocations.Init(BoxBounds.Origin, 4);
 	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), 4);
 
-	MinTargetScale = 0.8f;
-	MaxTargetScale = 1.8f;
+	GameModeActorStruct = FGameModeActorStruct();
+	//MinTargetScale = 0.8f;
+	//MaxTargetScale = 1.8f;
 
 	// TODO: base CheckSpawnRadius on MaxTargetScale
 
-	MinDistanceBetweenTargets = 100.f;
+	//MinDistanceBetweenTargets = 100.f;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -47,6 +47,10 @@ void ATargetSpawner::BeginPlay()
 
 	//TODO: Set Max Number of targets up at once using GetTargetCD here
 	//TODO: Set Scale targets
+	//SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
+	//MinTargetScale = GameModeActorStruct.MinTargetScale;
+	//MaxTargetScale = GameModeActorStruct.MaxTargetScale;
+	//MinDistanceBetweenTargets = GameModeActorStruct.MinDistanceBetweenTargets;
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -140,5 +144,16 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)
 {
 	TargetSpawnCD = NewTargetSpawnCD;
+}
+
+void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)
+{
+	GameModeActorStruct = NewGameModeActor;
+	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
+	MinTargetScale = GameModeActorStruct.MinTargetScale;
+	MaxTargetScale = GameModeActorStruct.MaxTargetScale;
+	MinDistanceBetweenTargets = GameModeActorStruct.MinDistanceBetweenTargets;
+	TargetSpawnCD = GameModeActorStruct.TargetSpawnCD;
+	GI->SetTargetSpawnCD(GameModeActorStruct.TargetSpawnCD);
 }
 

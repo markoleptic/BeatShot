@@ -17,13 +17,13 @@ AGameModeActorBase::AGameModeActorBase()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//Default class specific values
 	PrimaryActorTick.bCanEverTick = true;
-	CountdownTimerLength = 3.f;
+	GameModeActorStruct = FGameModeActorStruct();
 }
 
 void AGameModeActorBase::BeginPlay()
 {
 	Super::BeginPlay();
-	CountdownTimerLength = 3.f;
+
 	// Store instance of GameModeActorBase in Game Instance
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
@@ -46,7 +46,10 @@ void AGameModeActorBase::HandleGameStart()
 {
 	// Reset Struct to zero scores
 	PlayerScoreStruct.ResetStruct();
+
 	// load save containing struct to retrieve high score
+	LoadGame();
+
 	//GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
 	if (GI->DefaultCharacterRef->OnShotFired.IsBound() == false)
 	{
@@ -56,7 +59,6 @@ void AGameModeActorBase::HandleGameStart()
 	{
 		GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
 	}
-	CountdownTimerLength = 3.f;
 }
 
 void AGameModeActorBase::StartGameMode()
@@ -86,9 +88,9 @@ void AGameModeActorBase::EndGameMode()
 	}
 
 	//Clearing Timers
-	CountDownTimer.Invalidate();
-	GameModeLengthTimer.Invalidate();
-	CountdownTimerLength = 3.f;
+	GameModeActorStruct.CountDownTimer.Invalidate();
+	GameModeActorStruct.GameModeLengthTimer.Invalidate();
+	GameModeActorStruct.CountdownTimerLength = 3.f;
 
 	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();

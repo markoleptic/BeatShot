@@ -46,11 +46,11 @@ public:
 
 	virtual void EndGameMode();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FGameModeActorStruct GameModeActorStruct;
+	UPROPERTY(VisibleAnywhere, Category = "Game Properties")
+	FPlayerScore PlayerScoreStruct;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FPlayerScore PlayerScoreStruct;
+	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Game Properties")
 	FUpdateScoresToHUD UpdateScoresToHUD;
@@ -88,10 +88,6 @@ public:
 
 private:
 
-	//AGameModeActorBase* CurrentGameModeClass;
-
-	FVector StartLocation = { 1850,1850,145 };
-
-	FRotator StartRotation = FRotator::ZeroRotator;
-
+	//FVector StartLocation = { 1850,1850,145 };
+	//FRotator StartRotation = FRotator::ZeroRotator;
 };

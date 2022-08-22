@@ -17,4 +17,17 @@ TArray<FPlayerScore> UDefaultStatSaveGame::GetArrayOfPlayerScoreStructs()
 	return ArrayOfPlayerScoreStructs;
 }
 
+void UDefaultStatSaveGame::SaveSettings(FPlayerSettings PlayerSettingsToSave)
+{
+	PlayerSettings.MasterVolume = PlayerSettingsToSave.MasterVolume;
+	PlayerSettings.MenuVolume = PlayerSettingsToSave.MenuVolume;
+	PlayerSettings.MusicVolume = PlayerSettingsToSave.MusicVolume;
+	PlayerSettings.Sensitivity = PlayerSettingsToSave.Sensitivity;
+}
+
+FPlayerSettings UDefaultStatSaveGame::LoadSettings()
+{
+	return PlayerSettings;
+}
+
 

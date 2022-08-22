@@ -26,7 +26,17 @@ void AWideSpreadMultiBeat::Tick(float DeltaTime)
 void AWideSpreadMultiBeat::HandleGameStart()
 {
 	Super::HandleGameStart();
-	GetWorldTimerManager().SetTimer(CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, CountdownTimerLength, false);
+	GameModeActorStruct.BoxBounds.X = 0;
+	GameModeActorStruct.BoxBounds.Y = 350.f;
+	GameModeActorStruct.BoxBounds.Z = 900.f;
+	GameModeActorStruct.TargetMaxLifeSpan = 1.5f;
+	GameModeActorStruct.MinDistanceBetweenTargets = 100.f;
+	GameModeActorStruct.CountdownTimerLength = 3.f;
+	GameModeActorStruct.TargetSpawnCD = 0.35f;
+	GameModeActorStruct.MinTargetScale = 1.2f;
+	GameModeActorStruct.MaxTargetScale = 1.8f;
+	GI->TargetSpawnerRef->InitializeGameModeActor(GameModeActorStruct);
+	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }
 
 void AWideSpreadMultiBeat::HandleGameRestart()
@@ -37,7 +47,7 @@ void AWideSpreadMultiBeat::HandleGameRestart()
 void AWideSpreadMultiBeat::StartGameMode()
 {
 	Super::StartGameMode();
-	GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &AWideSpreadMultiBeat::EndGameMode, GameModeLength, false);
+	GetWorldTimerManager().SetTimer(GameModeActorStruct.GameModeLengthTimer, this, &AWideSpreadMultiBeat::EndGameMode, GameModeActorStruct.GameModeLength, false);
 }
 
 void AWideSpreadMultiBeat::EndGameMode()

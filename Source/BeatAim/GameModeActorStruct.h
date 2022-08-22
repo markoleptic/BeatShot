@@ -17,42 +17,54 @@ struct FGameModeActorStruct
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Start Conditions")
-	bool GameModeSelected;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	EGameModeActorName GameModeActorName;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle GameModeLengthTimer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float GameModeLength;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle CountDownTimer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float TargetSpawnCD = 0.35f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float CountdownTimerLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float TargetSpawnCD;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float MinDistanceBetweenTargets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float MinTargetScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float MaxTargetScale;
 
 	//TODO: Use these values to set up properties in targetspawner
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float TargetMaxLifeSpan = 1.5f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float TargetMaxLifeSpan;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float BoxBoundsY = 390.f;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float BoxBoundsZ = 900.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FVector BoxBounds;
 
 	FGameModeActorStruct()
 	{
-		GameModeSelected = false;
+		GameModeActorName = EGameModeActorName::None;
+		MinDistanceBetweenTargets = 100.f;
+		CountdownTimerLength = 3.f;
 		GameModeLength = 0;
 		TargetSpawnCD = 0.35f;
-	}
-
-	void SetGameModeSelected(bool IsSelected)
-	{
-		GameModeSelected = IsSelected;
+		TargetMaxLifeSpan = 1.5f;
+		BoxBounds.X = 0.f;
+		BoxBounds.Y = 390.f;
+		BoxBounds.Z = 900.f;
+		MinTargetScale = 0.8f;
+		MaxTargetScale = 2.f;
 	}
 };
 
@@ -103,5 +115,40 @@ struct FPlayerScore
 		ShotsFired = 0;
 		TargetsHit = 0;
 		TargetsSpawned = 0;
+	}
+};
+
+// Used to load and save player scores
+USTRUCT(BlueprintType)
+struct FPlayerSettings
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	float Sensitivity = 12.59;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	float MasterVolume = 50.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	float MenuVolume = 50.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	float MusicVolume = 50.f;
+
+	FPlayerSettings()
+	{
+		Sensitivity = 12.59;
+		MasterVolume = 50.f;
+		MenuVolume = 50.f;
+		MusicVolume = 50.f;
+	}
+
+	void ResetStruct()
+	{
+		Sensitivity = 12.59;
+		MasterVolume = 50.f;
+		MenuVolume = 50.f;
+		MusicVolume = 50.f;
 	}
 };

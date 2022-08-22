@@ -25,6 +25,8 @@ class BEATAIM_API UDefaultGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
+	virtual void Init() override;
+
 public:
 
 	//References
@@ -90,29 +92,39 @@ public:
 	UFUNCTION(BlueprintCallable)
 	float GetTargetSpawnCD();
 
+	UFUNCTION(BlueprintCallable)
+	void SetMasterVolume(float InputVolume);
+
+	UFUNCTION(BlueprintCallable)
+	float GetMasterVolume();
+
+	UFUNCTION(BlueprintCallable)
+	void SetMenuVolume(float InputVolume);
+
+	UFUNCTION(BlueprintCallable)
+	float GetMenuVolume();
+
+	UFUNCTION(BlueprintCallable)
+	void SetMusicVolume(float InputVolume);
+
+	UFUNCTION(BlueprintCallable)
+	float GetMusicVolume();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
 	EGameModeActorName GameModeActorName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
+	FGameModeActorStruct GameModeActorStruct;
+
 private:
-	// Game Mode Variables Associated with Scoring
-	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
-	//	float TargetsHit = 0;
-	//
-	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
-	//	float ShotsFired = 0;
-	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
-	//	float TargetsSpawned = 0;
-	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
-	//	float Score = 0;
-	//UPROPERTY(VisibleAnywhere, Category = "Player Score")
-	//	float HighScore = 0;
+
+	UFUNCTION(BlueprintCallable)
+	void SaveSettings();
+
+	UFUNCTION(BlueprintCallable)
+	void LoadSettings();
 
 	// Settings Menu options so that options are saved even if character hasn't spawned
-
 	UPROPERTY(VisibleAnywhere, Category = "Settings Menu")
-		float Sensitivity = 12.59;
-
-	UPROPERTY(VisibleAnywhere, Category = "Settings Menu")
-		float TargetSpawnCD = 0.35f;
-
+	FPlayerSettings PlayerSettings;
 };

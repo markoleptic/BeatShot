@@ -22,10 +22,23 @@ public:
 
 	TArray<FPlayerScore> GetArrayOfPlayerScoreStructs();
 
-private:
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	void SaveSettings(FPlayerSettings PlayerSettingsToSave);
 
+	UFUNCTION(BlueprintCallable, Category = "Settings")
+	FPlayerSettings LoadSettings();
+
+private:
+	// Settings
+
+	UPROPERTY(VisibleAnywhere, Category = "Settings")
+	FPlayerSettings PlayerSettings;
+
+	// Scores
+
+	UPROPERTY(VisibleAnywhere, Category = "Score")
 	FPlayerScore PlayerScoreStruct;
 
-	UPROPERTY(EditAnywhere, Category = Score)
+	UPROPERTY(VisibleAnywhere, Category = "Score")
 	TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
 };

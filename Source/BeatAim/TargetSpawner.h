@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GameModeActorStruct.h"
 #include "TargetSpawner.generated.h"
 
 class ABeatAimGameModeBase;
@@ -53,7 +54,11 @@ public:
 
 	float NumTargetsAddedToArray;
 
+	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
+
 private:
+
+	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	bool ShouldSpawn;
@@ -115,6 +120,4 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	float TargetSpawnCD;
-
-protected:
 };
