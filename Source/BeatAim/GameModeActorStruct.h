@@ -125,30 +125,30 @@ struct FPlayerSettings
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	float Sensitivity = 12.59;
+	float Sensitivity;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	float MasterVolume = 50.f;
+	float MasterVolume;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	float MenuVolume = 50.f;
+	float MenuVolume;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	float MusicVolume = 50.f;
+	float MusicVolume;
 
 	FPlayerSettings()
 	{
-		Sensitivity = 12.59;
+		Sensitivity = 0.3f;
 		MasterVolume = 50.f;
 		MenuVolume = 50.f;
-		MusicVolume = 50.f;
+		MusicVolume = 10.f;
 	}
 
 	void ResetStruct()
 	{
-		Sensitivity = 12.59;
+		Sensitivity = 0.3f;
 		MasterVolume = 50.f;
 		MenuVolume = 50.f;
-		MusicVolume = 50.f;
+		MusicVolume = 10.f;
 	}
 };

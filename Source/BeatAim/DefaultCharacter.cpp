@@ -25,13 +25,13 @@ ADefaultCharacter::ADefaultCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.f);
-	Sensitivity = 12.59;
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("First Person Camera");
 	Camera->SetupAttachment(GetCapsuleComponent());
 	Camera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	Camera->bUsePawnControlRotation = true;
 	Camera->SetFieldOfView(103);
+	Camera->PostProcessSettings.MotionBlurAmount = 0;
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Character Mesh");
 	HandsMesh->SetOnlyOwnerSee(true);
@@ -172,12 +172,12 @@ void ADefaultCharacter::MoveRight(float Value)
 
 void ADefaultCharacter::Turn(float Value)
 {
-	AddControllerYawInput(Value * Sensitivity * GetWorld()->GetDeltaSeconds());
+	AddControllerYawInput(120.f * Value * Sensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void ADefaultCharacter::LookUp(float Value)
 {
-	AddControllerPitchInput(Value * Sensitivity * GetWorld()->GetDeltaSeconds());
+	AddControllerPitchInput(120.f * Value * Sensitivity * GetWorld()->GetDeltaSeconds());
 }
 
 void ADefaultCharacter::InteractPressed()

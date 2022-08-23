@@ -18,6 +18,7 @@ void UDefaultGameInstance::Init()
 	PlayerSettings = FPlayerSettings();
 	GameModeActorStruct = FGameModeActorStruct();
 	LoadSettings();
+	UE_LOG(LogTemp, Display, TEXT("Sensitivity after loadsettings: %f"), PlayerSettings.Sensitivity);
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)

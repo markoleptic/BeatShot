@@ -28,17 +28,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	FPlayerSettings LoadSettings();
 
-private:
 	// Settings
 
 	UPROPERTY(VisibleAnywhere, Category = "Settings")
-	FPlayerSettings PlayerSettings;
+		FPlayerSettings PlayerSettings;
 
 	// Scores
 
 	UPROPERTY(VisibleAnywhere, Category = "Score")
-	FPlayerScore PlayerScoreStruct;
+		FPlayerScore PlayerScoreStruct;
 
 	UPROPERTY(VisibleAnywhere, Category = "Score")
-	TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
+		TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
 };
