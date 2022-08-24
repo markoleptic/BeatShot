@@ -15,10 +15,27 @@
 
 void UDefaultGameInstance::Init()
 {
-	PlayerSettings = FPlayerSettings();
-	GameModeActorStruct = FGameModeActorStruct();
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
+	{
+		SaveSettingsGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0));
+	}
+	else
+	{
+		SaveSettingsGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
+	}
+
 	LoadSettings();
-	UE_LOG(LogTemp, Display, TEXT("Sensitivity after loadsettings: %f"), PlayerSettings.Sensitivity);
+
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
+	{
+		SaveScoreGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
+	}
+	else
+	{
+		SaveScoreGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
+	}
+
+	LoadScores();
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
@@ -40,7 +57,7 @@ void UDefaultGameInstance::RegisterSphereTarget(ASphereTarget* SphereTarget)
 	SphereTargetRef = SphereTarget;
 }
 
-void UDefaultGameInstance::RegisterGameModeBase(ABeatAimGameModeBase* GameModeBase)
+void UDefaultGameInstance::RegisterGameModeBase(AGameModeBase* GameModeBase)
 {
 	GameModeBaseRef = GameModeBase;
 }
@@ -67,7 +84,6 @@ void UDefaultGameInstance::SetSensitivity(float InputSensitivity)
 	{
 		DefaultCharacterRef->SetSensitivity(InputSensitivity);
 	}
-	SaveSettings();
 }
 
 float UDefaultGameInstance::GetSensitivity()
@@ -92,7 +108,6 @@ float UDefaultGameInstance::GetTargetSpawnCD()
 void UDefaultGameInstance::SetMasterVolume(float InputVolume)
 {
 	PlayerSettings.MasterVolume = InputVolume;
-	SaveSettings();
 }
 
 float UDefaultGameInstance::GetMasterVolume()
@@ -103,7 +118,6 @@ float UDefaultGameInstance::GetMasterVolume()
 void UDefaultGameInstance::SetMenuVolume(float InputVolume)
 {
 	PlayerSettings.MenuVolume = InputVolume;
-	SaveSettings();
 }
 
 float UDefaultGameInstance::GetMenuVolume()
@@ -114,7 +128,6 @@ float UDefaultGameInstance::GetMenuVolume()
 void UDefaultGameInstance::SetMusicVolume(float InputVolume)
 {
 	PlayerSettings.MusicVolume = InputVolume;
-	SaveSettings();
 }
 
 float UDefaultGameInstance::GetMusicVolume()
@@ -124,21 +137,43 @@ float UDefaultGameInstance::GetMusicVolume()
 
 void UDefaultGameInstance::SaveSettings()
 {
-	if (UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass())))
+	if (UDefaultStatSaveGame* SaveGameInstanceToSave = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass())))
 	{
-		SaveGameInstance->SaveSettings(PlayerSettings);
-		if (UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("MySlot"), 0))
+		SaveGameInstanceToSave->SavedPlayerSettings = PlayerSettings;
+		if (UGameplayStatics::SaveGameToSlot(SaveGameInstanceToSave, TEXT("SettingsSlot"), 0))
 		{
-			UE_LOG(LogTemp, Display, TEXT("Save Game Succeeded."));
+			UE_LOG(LogTemp, Warning, TEXT("SaveSettings Succeeded"));
 		}
 	}
 }
 
 void UDefaultGameInstance::LoadSettings()
 {
-	if (UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0)))
+	if (SaveSettingsGameInstance)
 	{
-		PlayerSettings = SaveGameInstance->LoadSettings();
+		PlayerSettings = SaveSettingsGameInstance->SavedPlayerSettings;
+		UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
+	}
+}
+
+void UDefaultGameInstance::SaveScores(FPlayerScore PlayerScoreStructToSave)
+{
+	if (UDefaultStatSaveGame* SaveGameInstanceToSave = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass())))
+	{
+		SaveGameInstanceToSave->InsertToPlayerScoreStructArray(PlayerScoreStructToSave);
+		if (UGameplayStatics::SaveGameToSlot(SaveGameInstanceToSave, TEXT("ScoreSlot"), 1))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SaveScores Succeeded"));
+		}
+	}
+}
+
+void UDefaultGameInstance::LoadScores()
+{
+	if (SaveScoreGameInstance)
+	{
+		ArrayOfPlayerScoreStructs = SaveScoreGameInstance->GetArrayOfPlayerScoreStructs();
+		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded to Game Instance"));
 	}
 }
 

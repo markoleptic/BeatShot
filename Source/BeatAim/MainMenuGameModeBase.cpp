@@ -2,6 +2,9 @@
 
 
 #include "MainMenuGameModeBase.h"
+#include "DefaultGameInstance.h"
+#include "Kismet/GameplayStatics.h"
+
 
 void AMainMenuGameModeBase::BeginPlay()
 {

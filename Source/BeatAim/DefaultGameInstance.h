@@ -8,9 +8,9 @@
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
+class UDefaultStatSaveGame;
 class ATargetSpawner;
 class ADefaultCharacter;
-class ABeatAimGameModeBase;
 class AGameModeBase;
 class ASphereTarget;
 class AGameModeActorBase;
@@ -44,7 +44,7 @@ public:
 	TArray<ASphereTarget*> SphereTargetArray;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	ABeatAimGameModeBase* GameModeBaseRef;
+	AGameModeBase* GameModeBaseRef;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	AGameModeActorBase* GameModeActorBaseRef;
@@ -67,7 +67,7 @@ public:
 	void RegisterSphereTarget(ASphereTarget* SphereTarget);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterGameModeBase(ABeatAimGameModeBase* GameModeBase);
+	void RegisterGameModeBase(AGameModeBase* GameModeBase);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
@@ -116,8 +116,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
 	FGameModeActorStruct GameModeActorStruct;
 
-private:
-
 	UFUNCTION(BlueprintCallable)
 	void SaveSettings();
 
@@ -125,6 +123,23 @@ private:
 	void LoadSettings();
 
 	// Settings Menu options so that options are saved even if character hasn't spawned
-	UPROPERTY(VisibleAnywhere, Category = "Settings Menu")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
 	FPlayerSettings PlayerSettings;
+
+	UFUNCTION(BlueprintCallable)
+	void SaveScores(FPlayerScore PlayerScoreStructToSave);
+
+	UFUNCTION(BlueprintCallable)
+	void LoadScores();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
+	UDefaultStatSaveGame* SaveScoreGameInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
+	UDefaultStatSaveGame* SaveSettingsGameInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
+	TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
+
+private:
 };

@@ -10,6 +10,7 @@
 /**
  * 
  */
+class UDefaultGameInstance;
 UCLASS()
 class BEATAIM_API AMainMenuGameModeBase : public AGameModeBase
 {
@@ -20,6 +21,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
+	UDefaultGameInstance* GI;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
 	EGameModeActorName GameModeActorName;

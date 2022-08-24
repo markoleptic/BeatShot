@@ -18,9 +18,7 @@ class BEATAIM_API UDefaultStatSaveGame : public USaveGame
 public:
 	UDefaultStatSaveGame();
 
-	void InsertToPlayerScoreStructArray(FPlayerScore PlayerScoreStructToAdd);
-
-	TArray<FPlayerScore> GetArrayOfPlayerScoreStructs();
+	// Settings
 
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	void SaveSettings(FPlayerSettings PlayerSettingsToSave);
@@ -28,16 +26,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Settings")
 	FPlayerSettings LoadSettings();
 
-	// Settings
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	FPlayerSettings SavedPlayerSettings;
 
-	UPROPERTY(VisibleAnywhere, Category = "Settings")
-		FPlayerSettings PlayerSettings;
+	// Scoring
 
-	// Scores
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	void InsertToPlayerScoreStructArray(FPlayerScore PlayerScoreStructToAdd);
+
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	TArray<FPlayerScore> GetArrayOfPlayerScoreStructs();
 
 	UPROPERTY(VisibleAnywhere, Category = "Score")
-		FPlayerScore PlayerScoreStruct;
+	FPlayerScore PlayerScoreStruct;
 
 	UPROPERTY(VisibleAnywhere, Category = "Score")
-		TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
+	TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
 };

@@ -143,12 +143,4 @@ struct FPlayerSettings
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
 	}
-
-	void ResetStruct()
-	{
-		Sensitivity = 0.3f;
-		MasterVolume = 50.f;
-		MenuVolume = 50.f;
-		MusicVolume = 10.f;
-	}
 };

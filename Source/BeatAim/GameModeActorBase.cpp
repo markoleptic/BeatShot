@@ -72,7 +72,7 @@ void AGameModeActorBase::EndGameMode()
 	SaveGame();
 
 	// Stopping Player and Tracker
-	GI->GameModeBaseRef->StopAAPlayerAndTracker();
+	Cast<ABeatAimGameModeBase>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
 
 	// Deleting Targets
 	GI->TargetSpawnerRef->SetShouldSpawn(false);
@@ -147,29 +147,18 @@ void AGameModeActorBase::UpdateHighScore()
 
 void AGameModeActorBase::SaveGame()
 {
-	if (UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass())))
-	{
-		SaveGameInstance->InsertToPlayerScoreStructArray(PlayerScoreStruct);
-		if (UGameplayStatics::SaveGameToSlot(SaveGameInstance, TEXT("MySlot"), 0))
-		{
-			UE_LOG(LogTemp, Display, TEXT("Save Game Succeeded."));
-		}
-	}
+	GI->SaveScores(PlayerScoreStruct);
 }
 
 void AGameModeActorBase::LoadGame()
 {
-	if (UDefaultStatSaveGame* SaveGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot("MySlot", 0)))
+	if (GI->ArrayOfPlayerScoreStructs.Num() > 0)
 	{
-		TArray<FPlayerScore> ArrayOfPlayerScoreStructs = SaveGameInstance->GetArrayOfPlayerScoreStructs();
-		if (ArrayOfPlayerScoreStructs.Num() > 0)
+		for (FPlayerScore SavedPlayerScoreStruct : GI->ArrayOfPlayerScoreStructs)
 		{
-			for (FPlayerScore SavedPlayerScoreStruct : ArrayOfPlayerScoreStructs)
+			if (SavedPlayerScoreStruct.HighScore > PlayerScoreStruct.HighScore)
 			{
-				if (SavedPlayerScoreStruct.HighScore > PlayerScoreStruct.HighScore)
-				{
-					PlayerScoreStruct.HighScore = SavedPlayerScoreStruct.HighScore;
-				}
+				PlayerScoreStruct.HighScore = SavedPlayerScoreStruct.HighScore;
 			}
 		}
 	}

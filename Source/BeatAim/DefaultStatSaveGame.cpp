@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "DefaultStatSaveGame.h"
 
 UDefaultStatSaveGame::UDefaultStatSaveGame()
@@ -14,20 +13,21 @@ void UDefaultStatSaveGame::InsertToPlayerScoreStructArray(FPlayerScore PlayerSco
 
 TArray<FPlayerScore> UDefaultStatSaveGame::GetArrayOfPlayerScoreStructs()
 {
+
 	return ArrayOfPlayerScoreStructs;
 }
 
 void UDefaultStatSaveGame::SaveSettings(FPlayerSettings PlayerSettingsToSave)
 {
-	PlayerSettings.MasterVolume = PlayerSettingsToSave.MasterVolume;
-	PlayerSettings.MenuVolume = PlayerSettingsToSave.MenuVolume;
-	PlayerSettings.MusicVolume = PlayerSettingsToSave.MusicVolume;
-	PlayerSettings.Sensitivity = PlayerSettingsToSave.Sensitivity;
+	SavedPlayerSettings = PlayerSettingsToSave;
+	UE_LOG(LogTemp, Warning, TEXT("Settings saved to UDefaultStatSaveGame object."));
 }
 
 FPlayerSettings UDefaultStatSaveGame::LoadSettings()
 {
-	return PlayerSettings;
+	UE_LOG(LogTemp, Warning, TEXT("Settings loaded from UDefaultStatSaveGame object."));
+	return SavedPlayerSettings;
 }
+
 
 
