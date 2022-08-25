@@ -4,6 +4,9 @@
 #include "DefaultGameInstance.h"
 #include "GameModeActorStruct.h"
 #include "NarrowSpreadMultiBeat.h"
+#include "CustomBeat.h"
+#include "NarrowSpreadSingleBeat.h"
+#include "WideSpreadSingleBeat.h"
 #include "WideSpreadMultiBeat.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
@@ -21,36 +24,31 @@ void ABeatAimGameModeBase::BeginPlay()
 
 AGameModeActorBase* ABeatAimGameModeBase::SetGameModeActorBase(EGameModeActorName GameModeActorEnum)
 {
+	// Wide Spread Multi Beat
 	if (GameModeActorEnum == EGameModeActorName::WideSpreadMultiBeat)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadMultiBeat>(WideSpreadMultiBeatClass);
-		return GameModeActorBase;
 	}
+	// Narrow Spread Multi Beat
 	else if (GameModeActorEnum == EGameModeActorName::NarrowSpreadMultiBeat) 
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
-		return GameModeActorBase;
 	}
+	// Narrow Spread Single Beat
 	else if (GameModeActorEnum == EGameModeActorName::NarrowSpreadSingleBeat)
 	{
-		// TODO: replace with actual class
-		//GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadSingleBeat>(NarrowSpreadSingleBeatClass);
-		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
-		return GameModeActorBase;
+		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadSingleBeat>(NarrowSpreadSingleBeatClass);
 	}
+	// Wide Spread Single Beat
 	else if (GameModeActorEnum == EGameModeActorName::WideSpreadSingleBeat)
 	{
-		// TODO: replace with actual class
-		//GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadSingleBeatClass>(WideSpreadSingleBeatClass);
-		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
-		return GameModeActorBase;
+		GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadSingleBeat>(WideSpreadSingleBeatClass);
 	}
+	// Custom
 	else
 	{
-		// TODO: replace with actual class
-		// TEMPORARY so I can always play something in default start map
-		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
-		return GameModeActorBase;
+		GameModeActorBase = GetWorld()->SpawnActor<ACustomBeat>(CustomBeatClass);
 	}
+	return GameModeActorBase;
 }
 

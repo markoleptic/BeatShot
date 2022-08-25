@@ -21,9 +21,6 @@ ATargetSpawner::ATargetSpawner()
 	SpawnLocation = FirstSpawnLocation;
 	LastSpawnLocation = FVector::ZeroVector;
 
-	RecentSpawnLocations.Init(BoxBounds.Origin, 4);
-	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), 4);
-
 	GameModeActorStruct = FGameModeActorStruct();
 
 	// TODO: base CheckSpawnRadius on MaxTargetScale
@@ -38,8 +35,6 @@ void ATargetSpawner::BeginPlay()
 		GI->RegisterTargetSpawner(this);
 	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
-
-	// TODO: Set Max Number of targets up at once using GetTargetCD here
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -105,28 +100,42 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 {
 	// Insert the most recent spawn location into array
 	RecentSpawnLocations.Insert(LastSpawnLocation, 0);
-	RecentSpawnLocations.SetNum(4);
+	RecentSpawnLocations.SetNum(MaxNumberOfTargetsAtOnce);
+	UE_LOG(LogTemp, Display, TEXT("size of spawnlocations: %f ") , RecentSpawnLocations.Num());
 
 	// Insert sphere of CheckSpawnRadius radius into sphere array
 	CheckSpawnRadius = SphereTargetSize * LastTargetScaleValue + GameModeActorStruct.MinDistanceBetweenTargets;
 	RecentSpawnBounds.Insert(FSphere(LastSpawnLocation, CheckSpawnRadius),0);
-	RecentSpawnBounds.SetNum(4);
+	RecentSpawnBounds.SetNum(MaxNumberOfTargetsAtOnce);
 
 	// SpawnLocation initially centered inside SpawnBox
 	SpawnLocation = BoxBounds.Origin;
 	SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 	SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 
-	// Keep generating random locations until location is not inside the radius of any spheres
-	while (RecentSpawnBounds[0].IsInside(SpawnLocation) ||
-		RecentSpawnBounds[1].IsInside(SpawnLocation) ||
-		RecentSpawnBounds[2].IsInside(SpawnLocation) ||
-		RecentSpawnBounds[3].IsInside(SpawnLocation)) 
+	// bool variable to track if the SpawnLocation is inside of any of the active targets
+	bool SphereIsInside = true;
+
+	// while loop that spans the size of RecentSpawnBounds and only finishes if
+	// SpawnLocation is not inside any of the RecentSpawnBounds spheres
+	while (SphereIsInside)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
-		SpawnLocation = BoxBounds.Origin;
-		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+		for (int i = 0; i < RecentSpawnBounds.Num(); i++)
+		{
+			if (RecentSpawnBounds[i].IsInside(SpawnLocation))
+			{
+				UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
+				SpawnLocation = BoxBounds.Origin;
+				SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+				SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+				break;
+			}
+			if (i== RecentSpawnBounds.Num()-1)
+			{
+				SphereIsInside = false;
+				break;
+			}
+		}
 	}
 }
 
@@ -135,6 +144,9 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	GameModeActorStruct = NewGameModeActor;
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+	MaxNumberOfTargetsAtOnce = ceil(GameModeActorStruct.TargetMaxLifeSpan / GameModeActorStruct.TargetSpawnCD);
+	RecentSpawnLocations.Init(BoxBounds.Origin, MaxNumberOfTargetsAtOnce);
+	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), MaxNumberOfTargetsAtOnce);
 }
 
 void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)

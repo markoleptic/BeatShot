@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "MultiBeat.h"
-#include "NarrowSpreadMultiBeat.generated.h"
+#include "GameModeActorBase.h"
+#include "MultiBeat.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BEATAIM_API ANarrowSpreadMultiBeat : public AMultiBeat
+class BEATAIM_API AMultiBeat : public AGameModeActorBase
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ANarrowSpreadMultiBeat();
+	AMultiBeat();
 
 protected:
 	// Called when the game starts or when spawned
@@ -33,4 +33,5 @@ public:
 	virtual void StartGameMode() override;
 
 	virtual void EndGameMode() override;
+	
 };

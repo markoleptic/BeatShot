@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameModeActorBase.h"
+#include "MultiBeat.h"
 #include "WideSpreadMultiBeat.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BEATAIM_API AWideSpreadMultiBeat : public AGameModeActorBase
+class BEATAIM_API AWideSpreadMultiBeat : public AMultiBeat
 {
 	GENERATED_BODY()
 
