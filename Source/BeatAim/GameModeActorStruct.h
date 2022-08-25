@@ -6,9 +6,11 @@
 
 UENUM(BlueprintType)
 enum class EGameModeActorName : uint8 {
-	None						UMETA(DisplayName, "None"),
-	WideSpreadMultiBeat			UMETA(DisplayName, "WideSpreadMultiBeat"),
-	NarrowSpreadMultiBeat		UMETA(DisplayName, "NarrowSpreadMultiBeat")
+	Custom						UMETA(DisplayName, "Custom"),
+	NarrowSpreadSingleBeat		UMETA(DisplayName, "NarrowSpreadSingleBeat"),
+	WideSpreadSingleBeat		UMETA(DisplayName, "WideSpreadSingleBeat"),
+	NarrowSpreadMultiBeat		UMETA(DisplayName, "NarrowSpreadMultiBeat"),
+	WideSpreadMultiBeat			UMETA(DisplayName, "WideSpreadMultiBeat")
 };
 
 // Used to store game properties, etc.
@@ -44,7 +46,8 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float MaxTargetScale;
 
-	//TODO: Use these values to set up properties in targetspawner
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	bool HeadshotHeight;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float TargetMaxLifeSpan;
@@ -52,12 +55,15 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FVector BoxBounds;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FString CustomGameModeName;
+
 	FGameModeActorStruct()
 	{
-		GameModeActorName = EGameModeActorName::None;
+		GameModeActorName = EGameModeActorName::Custom;
 		MinDistanceBetweenTargets = 100.f;
 		CountdownTimerLength = 3.f;
-		GameModeLength = 0;
+		GameModeLength = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
 		BoxBounds.X = 0.f;
@@ -65,6 +71,7 @@ struct FGameModeActorStruct
 		BoxBounds.Z = 900.f;
 		MinTargetScale = 0.8f;
 		MaxTargetScale = 2.f;
+		HeadshotHeight = false;
 	}
 };
 

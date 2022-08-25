@@ -91,6 +91,7 @@ float UDefaultGameInstance::GetSensitivity()
 	return PlayerSettings.Sensitivity;
 }
 
+// Only used to be able to change target spawn CD from pause menu
 void UDefaultGameInstance::SetTargetSpawnCD(float NewTargetSpawnCD)
 {
 	GameModeActorStruct.TargetSpawnCD = NewTargetSpawnCD;

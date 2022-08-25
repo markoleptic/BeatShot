@@ -14,7 +14,6 @@ ATargetSpawner::ATargetSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
 	RootComponent = SpawnBox;
-	//TODO: Set SpawnBox Extent here
 
 	SetShouldSpawn(false);
 
@@ -26,12 +25,8 @@ ATargetSpawner::ATargetSpawner()
 	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), 4);
 
 	GameModeActorStruct = FGameModeActorStruct();
-	//MinTargetScale = 0.8f;
-	//MaxTargetScale = 1.8f;
 
 	// TODO: base CheckSpawnRadius on MaxTargetScale
-
-	//MinDistanceBetweenTargets = 100.f;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -43,14 +38,8 @@ void ATargetSpawner::BeginPlay()
 		GI->RegisterTargetSpawner(this);
 	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
-	SetTargetSpawnCD(GI->GetTargetSpawnCD());
 
-	//TODO: Set Max Number of targets up at once using GetTargetCD here
-	//TODO: Set Scale targets
-	//SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
-	//MinTargetScale = GameModeActorStruct.MinTargetScale;
-	//MaxTargetScale = GameModeActorStruct.MaxTargetScale;
-	//MinDistanceBetweenTargets = GameModeActorStruct.MinDistanceBetweenTargets;
+	// TODO: Set Max Number of targets up at once using GetTargetCD here
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -107,7 +96,7 @@ void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 
 float ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 {
-	float RandomScaleValue = FMath::FRandRange(MinTargetScale, MaxTargetScale);
+	float RandomScaleValue = FMath::FRandRange(GameModeActorStruct.MinTargetScale, GameModeActorStruct.MaxTargetScale);
 	Target->BaseMesh->SetWorldScale3D(FVector(RandomScaleValue, RandomScaleValue, RandomScaleValue));
 	return RandomScaleValue;
 }
@@ -119,7 +108,7 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 	RecentSpawnLocations.SetNum(4);
 
 	// Insert sphere of CheckSpawnRadius radius into sphere array
-	CheckSpawnRadius = SphereTargetSize * LastTargetScaleValue + MinDistanceBetweenTargets;
+	CheckSpawnRadius = SphereTargetSize * LastTargetScaleValue + GameModeActorStruct.MinDistanceBetweenTargets;
 	RecentSpawnBounds.Insert(FSphere(LastSpawnLocation, CheckSpawnRadius),0);
 	RecentSpawnBounds.SetNum(4);
 
@@ -141,19 +130,15 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 	}
 }
 
-void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)
-{
-	TargetSpawnCD = NewTargetSpawnCD;
-}
-
 void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)
 {
 	GameModeActorStruct = NewGameModeActor;
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
-	MinTargetScale = GameModeActorStruct.MinTargetScale;
-	MaxTargetScale = GameModeActorStruct.MaxTargetScale;
-	MinDistanceBetweenTargets = GameModeActorStruct.MinDistanceBetweenTargets;
-	TargetSpawnCD = GameModeActorStruct.TargetSpawnCD;
-	GI->SetTargetSpawnCD(GameModeActorStruct.TargetSpawnCD);
+	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+}
+
+void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)
+{
+	GameModeActorStruct.TargetSpawnCD = NewTargetSpawnCD;
 }
 

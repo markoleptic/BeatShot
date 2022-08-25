@@ -14,7 +14,6 @@ ANarrowSpreadMultiBeat::ANarrowSpreadMultiBeat()
 void ANarrowSpreadMultiBeat::BeginPlay()
 {
 	Super::BeginPlay();
-	GI->RegisterGameModeActorBase(this);
 }
 
 void ANarrowSpreadMultiBeat::Tick(float DeltaTime)
@@ -25,15 +24,19 @@ void ANarrowSpreadMultiBeat::Tick(float DeltaTime)
 void ANarrowSpreadMultiBeat::HandleGameStart()
 {
 	Super::HandleGameStart();
-	GameModeActorStruct.BoxBounds.X = 0;
-	GameModeActorStruct.BoxBounds.Y = 300.f;
-	GameModeActorStruct.BoxBounds.Z = 600.f;
-	GameModeActorStruct.TargetMaxLifeSpan = 1.5f;
-	GameModeActorStruct.MinDistanceBetweenTargets = 100.f;
-	CountdownTimerLength = 3.f;
-	GameModeActorStruct.TargetSpawnCD = 0.30f;
-	GameModeActorStruct.MinTargetScale = 1.2f;
-	GameModeActorStruct.MaxTargetScale = 1.8f;
+	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::NarrowSpreadMultiBeat)
+	{
+		// If not a customized version of widespread multi beat, use NarrowSpreadMultiBeat defaults
+		//GameModeActorStruct.BoxBounds.X = 0;
+		//GameModeActorStruct.BoxBounds.Y = 300.f;
+		//GameModeActorStruct.BoxBounds.Z = 600.f;
+		//GameModeActorStruct.TargetMaxLifeSpan = 1.5f;
+		//GameModeActorStruct.MinDistanceBetweenTargets = 100.f;
+		CountdownTimerLength = 3.f;
+		//GameModeActorStruct.TargetSpawnCD = 0.30f;
+		//GameModeActorStruct.MinTargetScale = 1.2f;
+		//GameModeActorStruct.MaxTargetScale = 1.8f;
+	}
 	GI->TargetSpawnerRef->InitializeGameModeActor(GameModeActorStruct);
 	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &ANarrowSpreadMultiBeat::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }

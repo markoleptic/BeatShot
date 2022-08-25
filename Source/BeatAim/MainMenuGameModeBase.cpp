@@ -5,8 +5,3 @@
 #include "DefaultGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
-
-void AMainMenuGameModeBase::BeginPlay()
-{
-	GameModeActorName = EGameModeActorName::None;
-}

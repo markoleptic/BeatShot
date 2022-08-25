@@ -31,8 +31,26 @@ AGameModeActorBase* ABeatAimGameModeBase::SetGameModeActorBase(EGameModeActorNam
 		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
 		return GameModeActorBase;
 	}
-	// TEMPORARY so I can always play something in default start map
-	GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
-	return GameModeActorBase;
+	else if (GameModeActorEnum == EGameModeActorName::NarrowSpreadSingleBeat)
+	{
+		// TODO: replace with actual class
+		//GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadSingleBeat>(NarrowSpreadSingleBeatClass);
+		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
+		return GameModeActorBase;
+	}
+	else if (GameModeActorEnum == EGameModeActorName::WideSpreadSingleBeat)
+	{
+		// TODO: replace with actual class
+		//GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadSingleBeatClass>(WideSpreadSingleBeatClass);
+		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
+		return GameModeActorBase;
+	}
+	else
+	{
+		// TODO: replace with actual class
+		// TEMPORARY so I can always play something in default start map
+		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
+		return GameModeActorBase;
+	}
 }
 

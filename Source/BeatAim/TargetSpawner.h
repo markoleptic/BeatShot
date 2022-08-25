@@ -33,6 +33,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	// Reference to Game Instance
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	UDefaultGameInstance* GI;
 
 	UFUNCTION(BlueprintCallable)
@@ -47,17 +48,21 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnTargetSpawnSignature OnTargetSpawn;
 
+	UPROPERTY(VisibleAnywhere)
+	FTimerHandle TimeSinceSpawn;
+
+	UPROPERTY(VisibleAnywhere)
+	float NumTargetsAddedToArray;
+
+	UFUNCTION(BlueprintCallable)
+	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
+
 	UFUNCTION(BlueprintCallable)
 	void SetTargetSpawnCD(float NewTargetSpawnCD);
 
-	FTimerHandle TimeSinceSpawn;
-
-	float NumTargetsAddedToArray;
-
-	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
-
 private:
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
@@ -85,33 +90,34 @@ private:
 	void OnTargetDestroyed(AActor* DestroyedActor);
 
 	// Randomize scale of target
+	UFUNCTION()
 	float RandomizeScale(ASphereTarget* Target);
 
 	// Randomize location of target
+	UFUNCTION()
 	void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
 
 	// Location to spawn the first target
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FVector FirstSpawnLocation;
 
 	// Location to spawn the target
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FVector SpawnLocation;
 
 	// Location to refer to the last target spawned
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FVector LastSpawnLocation;
 
-	// Minimum size of target to spawn
-	float MinTargetScale;
-
-	// Maximum size of target to spawn
-	float MaxTargetScale;
-
 	// The scale applied to the most recently spawned target
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	float LastTargetScale;
 
 	// The base size of the sphere target
 	const float SphereTargetSize = 50.f;
 
 	// Maximum size of target to spawn
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	float MinDistanceBetweenTargets;
 
 	TArray<FVector> RecentSpawnLocations;

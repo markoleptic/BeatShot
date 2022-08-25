@@ -34,6 +34,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 	TSubclassOf<AGameModeActorBase> NarrowSpreadMultiBeatClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
+	TSubclassOf<AGameModeActorBase> NarrowSpreadSingleBeatClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
+	TSubclassOf<AGameModeActorBase> WideSpreadSingleBeatClass;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 	AGameModeActorBase* GameModeActorBase;
 

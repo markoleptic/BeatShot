@@ -15,7 +15,6 @@
 AGameModeActorBase::AGameModeActorBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	//Default class specific values
 	PrimaryActorTick.bCanEverTick = true;
 	GameModeActorStruct = FGameModeActorStruct();
 }
@@ -29,6 +28,7 @@ void AGameModeActorBase::BeginPlay()
 	if (GI)
 	{
 		GI->RegisterGameModeActorBase(this);
+		GameModeActorStruct = GI->GameModeActorStruct;
 	}
 }
 
