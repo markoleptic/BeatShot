@@ -13,5 +13,25 @@ UCLASS()
 class BEATAIM_API ASingleBeat : public AGameModeActorBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	// Sets default values for this actor's properties
+	ASingleBeat();
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void HandleGameStart() override;
+
+	virtual void HandleGameRestart() override;
+
+	virtual void StartGameMode() override;
+
+	virtual void EndGameMode() override;
+
 };

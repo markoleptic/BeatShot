@@ -45,6 +45,7 @@ ADefaultCharacter::ADefaultCharacter()
 	GunMesh->SetOnlyOwnerSee(true);
 	GunMesh->bCastDynamicShadow = false;
 	GunMesh->CastShadow = false;
+	GunMesh->SetupAttachment(GetCapsuleComponent());
 
 	MuzzleLocation = CreateDefaultSubobject<USceneComponent>("Muzzle Location");
 	MuzzleLocation->SetupAttachment(GunMesh);
@@ -63,9 +64,8 @@ void ADefaultCharacter::BeginPlay()
 	{
 		GI->RegisterDefaultCharacter(this);
 	}
-	GunMesh->AttachToComponent(HandsMesh,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		"GripPoint");
+	GunMesh->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+	//GunMesh->AttachToComponent(HandsMesh,FAttachmentTransformRules::SnapToTargetNotIncludingScale,"GripPoint");
 	//AnimInstance = HandsMesh->GetAnimInstance();
 	Sensitivity = GI->GetSensitivity();
 

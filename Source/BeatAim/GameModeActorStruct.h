@@ -41,6 +41,9 @@ struct FGameModeActorStruct
 	float MinDistanceBetweenTargets;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FVector CenterOfSpawnBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float MinTargetScale;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -62,16 +65,21 @@ struct FGameModeActorStruct
 	{
 		GameModeActorName = EGameModeActorName::Custom;
 		MinDistanceBetweenTargets = 100.f;
+		CenterOfSpawnBox = { 3500.f,0.f,160.f };
 		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
-		BoxBounds.X = 0.f;
-		BoxBounds.Y = 390.f;
-		BoxBounds.Z = 900.f;
 		MinTargetScale = 0.8f;
 		MaxTargetScale = 2.f;
 		HeadshotHeight = false;
+		BoxBounds.X = 0.f;
+
+		// horizontal
+		BoxBounds.Y = 1000.f;
+
+		// vertical
+		BoxBounds.Z = 500.f;
 	}
 };
 

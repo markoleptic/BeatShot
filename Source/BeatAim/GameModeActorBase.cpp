@@ -30,6 +30,7 @@ void AGameModeActorBase::BeginPlay()
 	{
 		GI->RegisterGameModeActorBase(this);
 		GameModeActorStruct = GI->GameModeActorStruct;
+		UE_LOG(LogTemp, Display, TEXT("GameModeActor: %f"), GameModeActorStruct.BoxBounds.Y);
 	}
 }
 

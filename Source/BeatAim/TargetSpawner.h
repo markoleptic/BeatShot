@@ -40,6 +40,9 @@ public:
 	void SpawnActor();
 
 	UFUNCTION(BlueprintCallable)
+	void SpawnSingleActor();
+
+	UFUNCTION(BlueprintCallable)
 	bool GetShouldSpawn();
 
 	// Lets the spawner know it's safe to spawn a target
@@ -114,16 +117,11 @@ private:
 	float LastTargetScale;
 
 	// The base size of the sphere target
-	const float SphereTargetSize = 50.f;
-
-	// Maximum size of target to spawn
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float MinDistanceBetweenTargets;
+	const float SphereTargetRadius = 50.f;
 
 	TArray<FVector> RecentSpawnLocations;
 
 	TArray<FSphere> RecentSpawnBounds;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float TargetSpawnCD;
+	bool SingleBeat;
 };
