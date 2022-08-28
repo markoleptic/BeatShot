@@ -172,12 +172,18 @@ void ADefaultCharacter::MoveRight(float Value)
 
 void ADefaultCharacter::Turn(float Value)
 {
-	AddControllerYawInput(120.f * Value * Sensitivity * GetWorld()->GetDeltaSeconds());
+	if (Value != 0.f && PlayerController && PlayerController->IsLocalPlayerController())
+	{
+		PlayerController->AddYawInput(Value / 14.2789148024750118991f * Sensitivity);
+	}
 }
 
 void ADefaultCharacter::LookUp(float Value)
 {
-	AddControllerPitchInput(120.f * Value * Sensitivity * GetWorld()->GetDeltaSeconds());
+	if (Value != 0.f && PlayerController && PlayerController->IsLocalPlayerController())
+	{
+		PlayerController->AddPitchInput(Value / 14.2789148024750118991f * Sensitivity);
+	}
 }
 
 void ADefaultCharacter::InteractPressed()

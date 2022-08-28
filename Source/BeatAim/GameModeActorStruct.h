@@ -61,6 +61,9 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FString CustomGameModeName;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float PlayerDelay;
+
 	FGameModeActorStruct()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
@@ -74,6 +77,7 @@ struct FGameModeActorStruct
 		MaxTargetScale = 2.f;
 		HeadshotHeight = false;
 		BoxBounds.X = 0.f;
+		PlayerDelay = 0.f;
 
 		// horizontal
 		BoxBounds.Y = 1000.f;

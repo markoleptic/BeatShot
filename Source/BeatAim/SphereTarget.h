@@ -38,6 +38,7 @@ public:
 
 	void HandleDestruction();
 
+	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
 	class UDefaultGameInstance* GI;
 
 	//UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
