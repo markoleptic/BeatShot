@@ -3,10 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "SphereTarget.generated.h"
 
 class UCapsuleComponent;
+class UNiagaraSystem;
+class UCurveFloat;
+class UCurveLinearColor;
+
 UCLASS()
 class BEATAIM_API ASphereTarget : public AActor
 {
@@ -19,28 +24,33 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UCapsuleComponent* CapsuleComp;
-
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* BaseMesh;
-
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	float MaxLifeSpan = 1.5;
-
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	FTimerHandle TimeSinceSpawn;
-
-	// probably make this a parent class of targets in the future
+public:
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
+	UCapsuleComponent* CapsuleComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
+	UStaticMeshComponent* BaseMesh;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
+	FTimerHandle TimeSinceSpawn;
+
+	UPROPERTY(EditAnywhere, Category = "Effects", BlueprintReadWrite)
+	UNiagaraSystem* NS_Standard_Explosion;
+
+	UFUNCTION(BlueprintCallable, Category = "Target Handling")
 	void HandleDestruction();
 
-	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	UFUNCTION(BlueprintImplementableEvent)
+	void ShowTargetExplosion();
+
+	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly)
 	class UDefaultGameInstance* GI;
 
-	//UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadWrite, meta = (AllowPrivateAccess = true))
-	//UMaterialInstanceDynamic* DynamicTargetColorMaterial;
+	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
+	UMaterialInterface* Material;
+
+	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
+	UMaterialInstanceDynamic* MID_TargetColorChanger;
 };

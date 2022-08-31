@@ -4,10 +4,14 @@
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 ASphereTarget::ASphereTarget()
@@ -17,33 +21,47 @@ ASphereTarget::ASphereTarget()
 	RootComponent = CapsuleComp;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
-	InitialLifeSpan = MaxLifeSpan;
-	//DynamicTargetColorMaterial = UMaterialInstanceDynamic::Create(BaseMesh->GetMaterial(0), nullptr);
+	InitialLifeSpan = 1.5f;
 }
 
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GetWorldTimerManager().SetTimer(TimeSinceSpawn, MaxLifeSpan, false);
+	SetLifeSpan(GI->GameModeActorStruct.TargetMaxLifeSpan);
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+
+	UE_LOG(LogTemp, Display, TEXT("maxlifespan: %f"), GI->GameModeActorStruct.TargetMaxLifeSpan);
+
+	// Use Color Changing Material
+	Material = BaseMesh->GetMaterial(0);
+	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
+	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
 }
 
 void ASphereTarget::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//float blend = 0.5f + FMath::Cos(GetWorld()->TimeSeconds) / 2;
-	//DynamicTargetColorMaterial->SetScalarParameterValue(TEXT("Blend"), blend);
 }
 
 void ASphereTarget::HandleDestruction()
 {
+
 	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
+	FVector SphereScale = BaseMesh->GetComponentScale();
+	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
 	if (TimeAlive > 0.f && GI->GameModeActorBaseRef)
 	{
 		GI->GameModeActorBaseRef->UpdateScore(TimeAlive);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		Destroy();
+	}
+	if (NS_Standard_Explosion)
+	{
+		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Standard_Explosion, ExplosionLocation);
+		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereScale.X);
+		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
 	}
 }
 
