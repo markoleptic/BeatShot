@@ -9,6 +9,9 @@
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Projectile.h"
+#include "NiagaraSystem.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 #include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
@@ -50,7 +53,7 @@ ADefaultCharacter::ADefaultCharacter()
 	MuzzleLocation = CreateDefaultSubobject<USceneComponent>("Muzzle Location");
 	MuzzleLocation->SetupAttachment(GunMesh);
 	MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
-
+	FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
 	GunOffset = FVector(100.f, 0.f, 10.f);
 	TraceDistance = 2000;
 }
@@ -66,7 +69,7 @@ void ADefaultCharacter::BeginPlay()
 	}
 	GunMesh->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 	//GunMesh->AttachToComponent(HandsMesh,FAttachmentTransformRules::SnapToTargetNotIncludingScale,"GripPoint");
-	//AnimInstance = HandsMesh->GetAnimInstance();
+	AnimInstance = HandsMesh->GetAnimInstance();
 	Sensitivity = GI->GetSensitivity();
 
 	PlayerController = GetController<ADefaultPlayerController>();
@@ -102,6 +105,12 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 void ADefaultCharacter::SetSensitivity(float NewSensitivity)
 {
 	Sensitivity = NewSensitivity;
+}
+
+void ADefaultCharacter::PlayRecoilAnim()
+{
+	AnimInstance->Montage_Play(FireAnim, 1.f);
+	RecoilAnimDelay.Invalidate();
 }
 
 void ADefaultCharacter::Fire()
@@ -148,6 +157,14 @@ void ADefaultCharacter::Fire()
 
 				// DrawDebugLine(GetWorld(), Muzzle, LaunchDirection, FColor::Red, false, 3);
 				Projectile->FireInDirection(LaunchDirection);
+
+				// Spawn muzzle flash niagara system
+				if (NS_MuzzleFlash)
+				{
+					FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
+					UNiagaraComponent* MuzzleFlashComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_MuzzleFlash, MuzzleTransform.GetLocation(), MuzzleTransform.Rotator());
+				}
+				GetWorldTimerManager().SetTimer(RecoilAnimDelay,this, &ADefaultCharacter::PlayRecoilAnim, 0.05f, false);
 			}
 
 		}

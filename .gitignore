@@ -58,6 +58,9 @@ Build/*
 
 Content/**/Assets/
 Content/**/FPS_Weapon_Bundle/
+Content/StarterContent/
+Content/**/InfinityBladeEffects/
+Content/**/AnimStarterPack/
 Plugins/
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files

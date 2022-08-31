@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+class UNiagaraSystem;
 class AProjectile;
 class ADefaultPlayerController;
 class UDefaultStatSaveGame;
@@ -62,6 +63,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	FVector MuzzleOffset;
 
+	UPROPERTY(VisibleAnywhere, Category = "Projectile");
+	USoundBase* FireSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation");
+	UAnimMontage* FireAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation");
+	UAnimInstance* AnimInstance;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	ADefaultPlayerController* PlayerController;
 
@@ -70,6 +80,15 @@ public:
 
 	UPROPERTY()
 	FOnShotFired OnShotFired;
+
+	UPROPERTY(EditAnywhere, Category = "Target Properties", BlueprintReadWrite)
+	UNiagaraSystem* NS_MuzzleFlash;
+
+	FTimerHandle RecoilAnimDelay;
+
+	UFUNCTION()
+	void PlayRecoilAnim();
+
 
 private:
 	UDefaultGameInstance* GI;
@@ -88,14 +107,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	TSubclassOf<AProjectile> ProjectileClass;
-
-	UPROPERTY(VisibleAnywhere, Category = "Projectile");
-	USoundBase* FireSound;
-
-	UPROPERTY(VisibleAnywhere, Category = "Projectile");
-	UAnimMontage* FireAnim;
-
-	UAnimInstance* AnimInstance;
 
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float Sensitivity;
