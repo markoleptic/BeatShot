@@ -8,6 +8,7 @@
 #include "TargetSpawner.h"
 #include "DefaultGameInstance.h"
 #include "DefaultStatSaveGame.h"
+#include "DefaultGameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -30,7 +31,6 @@ void AGameModeActorBase::BeginPlay()
 	{
 		GI->RegisterGameModeActorBase(this);
 		GameModeActorStruct = GI->GameModeActorStruct;
-		UE_LOG(LogTemp, Display, TEXT("GameModeActor: %f"), GameModeActorStruct.BoxBounds.Y);
 	}
 }
 
@@ -74,7 +74,7 @@ void AGameModeActorBase::EndGameMode()
 	SaveGame();
 
 	// Stopping Player and Tracker
-	Cast<ABeatAimGameModeBase>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
+	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
 
 	// Deleting Targets
 	GI->TargetSpawnerRef->SetShouldSpawn(false);

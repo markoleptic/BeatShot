@@ -76,11 +76,12 @@ struct FGameModeActorStruct
 		MinTargetScale = 0.8f;
 		MaxTargetScale = 2.f;
 		HeadshotHeight = false;
-		BoxBounds.X = 0.f;
 		PlayerDelay = 0.f;
 
+		BoxBounds.X = 0.f;
+
 		// horizontal
-		BoxBounds.Y = 1000.f;
+		BoxBounds.Y = 1600.f;
 
 		// vertical
 		BoxBounds.Z = 500.f;
@@ -161,5 +162,37 @@ struct FPlayerSettings
 		MasterVolume = 50.f;
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FAASettingsStruct
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	int NumBandChannels;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	TArray<float> BandLimitsThreshold;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	TArray<FVector2D> BandLimits;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	float TimeWindow;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	int HistorySize;
+
+	FAASettingsStruct()
+	{
+		NumBandChannels = 3;
+		BandLimitsThreshold = { 2.1f, 2.1f, 2.1f };
+		BandLimits = { FVector2D(0.f, 87.f),
+			FVector2D(500.f, 700.f),
+			FVector2D(5000.f, 12000.f) };
+		TimeWindow = 0.02f;
+		HistorySize = 30.f;
 	}
 };

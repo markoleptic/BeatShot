@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BeatAimGameModeBase.h"
 #include "GameModeActorStruct.h"
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
 class UDefaultStatSaveGame;
+class ADefaultGameMode;
 class ATargetSpawner;
 class ADefaultCharacter;
 class AGameModeBase;
 class ASphereTarget;
 class AGameModeActorBase;
 class ADefaultPlayerController;
-class AGameModeActorBase;
 class AProjectile;
 /**
  * 
@@ -115,6 +114,15 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
 	FGameModeActorStruct GameModeActorStruct;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	FAASettingsStruct AASettingsStruct;
+
+	UFUNCTION(BlueprintCallable)
+	void SaveAudioAnalyzerSettings(FAASettingsStruct AASettingsStructToSave);
+
+	UFUNCTION(BlueprintCallable)
+	FAASettingsStruct LoadAudioAnalyzerSettings();
 
 	UFUNCTION(BlueprintCallable)
 	void SaveSettings();

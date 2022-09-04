@@ -3,7 +3,7 @@
 
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
-#include "BeatAimGameModeBase.h"
+#include "DefaultGameMode.h"
 #include "GameModeActorBase.h"
 #include "Projectile.h"
 #include "DefaultCharacter.h"
@@ -36,6 +36,8 @@ void UDefaultGameInstance::Init()
 	}
 
 	LoadScores();
+
+	AASettingsStruct = FAASettingsStruct();
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
@@ -134,6 +136,16 @@ void UDefaultGameInstance::SetMusicVolume(float InputVolume)
 float UDefaultGameInstance::GetMusicVolume()
 {
 	return PlayerSettings.MusicVolume;
+}
+
+void UDefaultGameInstance::SaveAudioAnalyzerSettings(FAASettingsStruct AASettingsStructToSave)
+{
+	AASettingsStruct = AASettingsStructToSave;
+}
+
+FAASettingsStruct UDefaultGameInstance::LoadAudioAnalyzerSettings()
+{
+	return AASettingsStruct;
 }
 
 void UDefaultGameInstance::SaveSettings()

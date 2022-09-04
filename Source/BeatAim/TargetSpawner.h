@@ -43,6 +43,9 @@ public:
 	void SpawnSingleActor();
 
 	UFUNCTION(BlueprintCallable)
+	void SpawnTracker();
+
+	UFUNCTION(BlueprintCallable)
 	bool GetShouldSpawn();
 
 	// Lets the spawner know it's safe to spawn a target
@@ -62,6 +65,27 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetTargetSpawnCD(float NewTargetSpawnCD);
+
+	// Tracking Variables and Functions
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	float TotalDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	float CurrentDistance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	float TrackingSpeed = 200.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	FVector TrackingDirection;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	ASphereTarget* TrackingTarget;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	FVector StartLocation;
+
 
 private:
 

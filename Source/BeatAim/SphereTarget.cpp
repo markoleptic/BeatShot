@@ -31,8 +31,6 @@ void ASphereTarget::BeginPlay()
 	SetLifeSpan(GI->GameModeActorStruct.TargetMaxLifeSpan);
 	GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
 
-	UE_LOG(LogTemp, Display, TEXT("maxlifespan: %f"), GI->GameModeActorStruct.TargetMaxLifeSpan);
-
 	// Use Color Changing Material
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);

@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "BeatAimGameModeBase.h"
+#include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorStruct.h"
 #include "NarrowSpreadMultiBeat.h"
@@ -11,7 +11,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
-void ABeatAimGameModeBase::BeginPlay()
+void ADefaultGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	// Store instance of GameModeBase in Game Instance
@@ -20,9 +20,14 @@ void ABeatAimGameModeBase::BeginPlay()
 	{
 		GI->RegisterGameModeBase(this);
 	}
+
+	BandLimitsThreshold = { 2.f,2.5f,3.f,3.f };
+	BandLimits = { FVector2D(0.f, 50.f),FVector2D(51.f, 100.f),FVector2D(101.f, 2000.f),FVector2D(2001.f, 10000.f) };
+	TimeWindow = 0.02f;
+	HistorySize = 30.f;
 }
 
-AGameModeActorBase* ABeatAimGameModeBase::SetGameModeActorBase(EGameModeActorName GameModeActorEnum)
+AGameModeActorBase* ADefaultGameMode::SetGameModeActorBase(EGameModeActorName GameModeActorEnum)
 {
 	// Wide Spread Multi Beat
 	if (GameModeActorEnum == EGameModeActorName::WideSpreadMultiBeat)
@@ -49,6 +54,7 @@ AGameModeActorBase* ABeatAimGameModeBase::SetGameModeActorBase(EGameModeActorNam
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ACustomBeat>(CustomBeatClass);
 	}
+
 	return GameModeActorBase;
 }
 

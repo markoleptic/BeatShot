@@ -5,15 +5,12 @@
 #include "DefaultCharacter.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
-#include "BeatAimGameModeBase.h"
 #include "GameModeActorBase.h"
 #include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
-#include "SpiderShotSelector.h"
-#include "TargetSpawner.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -57,10 +54,6 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	Shooter = GetInstigator<ADefaultCharacter>();
 	if (Shooter)
 	{
-		//SpiderShotSelector = Cast<ASpiderShotSelector>(OtherActor);
-		//if (SpiderShotSelector)
-		//}
-		//}
 		Target = Cast<ASphereTarget>(OtherActor);
 		if (Target && Shooter && GI->GameModeActorBaseRef)
 		{

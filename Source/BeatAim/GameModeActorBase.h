@@ -9,6 +9,7 @@
 #include "GameModeActorBase.generated.h"
 
 class ASphereTarget;
+class UAudioAnalyzerManager;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore, NewPlayerScoreStruct);
 
@@ -86,6 +87,7 @@ public:
 	void UpdateShotsFired();
 
 private:
+	UAudioAnalyzerManager* AAManager;
 
 	//FVector StartLocation = { 1850,1850,145 };
 	//FRotator StartRotation = FRotator::ZeroRotator;

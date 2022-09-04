@@ -2,7 +2,6 @@
 
 
 #include "DefaultCharacter.h"
-#include <string>
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -12,13 +11,10 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "BeatAimGameModeBase.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
-#include "DefaultStatSaveGame.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
-#include "PlayerHUD.h"
 #include "Blueprint/UserWidget.h"
 
 // Sets default values

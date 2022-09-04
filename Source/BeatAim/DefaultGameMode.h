@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameModeActorStruct.h"
 #include "GameFramework/GameModeBase.h"
-#include "BeatAimGameModeBase.generated.h"
+#include "DefaultGameMode.generated.h"
 
 class UDefaultGameInstance;
 class AWideSpreadMultiBeat;
 class AGameModeActorBase;
+
 UCLASS()
-class BEATAIM_API ABeatAimGameModeBase : public AGameModeBase
+class BEATAIM_API ADefaultGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 
@@ -48,4 +49,16 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
 	AGameModeActorBase* SetGameModeActorBase(EGameModeActorName GameModeActorEnum);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		TArray<float> BandLimitsThreshold;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		TArray<FVector2D> BandLimits;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		float TimeWindow;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		int HistorySize;
 };

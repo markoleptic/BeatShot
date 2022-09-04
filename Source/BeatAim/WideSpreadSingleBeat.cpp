@@ -24,7 +24,6 @@ void AWideSpreadSingleBeat::Tick(float DeltaTime)
 void AWideSpreadSingleBeat::HandleGameStart()
 {
 	Super::HandleGameStart();
-	UE_LOG(LogTemp, Warning, TEXT("from widespreadmultibeat %f"), GameModeActorStruct.BoxBounds.Y);
 	
 	GI->TargetSpawnerRef->InitializeGameModeActor(GameModeActorStruct);
 	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AWideSpreadSingleBeat::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
