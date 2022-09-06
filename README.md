@@ -17,6 +17,6 @@ Developed with Unreal Engine 5, this project aims to create a standalone FPS aim
   
 ## Download Development Build [here](https://drive.google.com/file/d/1H22dziK-WYdPmmlP7ToBA5WuJ6Isj9PQ/view?usp=sharing)
 
-## I plan to release this as a free game on Steam in a few months. If you wish to collaborate, I can try to help provide you with more plugin files that might be necessary to run the game in the engine.
+I plan to release this as a free game on Steam in a few months. If you wish to collaborate, I can try to help provide you with more plugin files that might be necessary to run the game in the engine.
 
-### Note that copying my work and releasing a game based on my work is a violation of the Unreal Engine UELA and United States Copyright Laws.
+Note that copying my work and releasing a game based on my work is a violation of the Unreal Engine UELA and United States Copyright Laws.
