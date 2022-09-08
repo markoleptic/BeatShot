@@ -1,8 +1,8 @@
 # BeatShot
 
-Developed with Unreal Engine 5, this project aims to create a standalone FPS aim trainer that spawns targets based on user loaded music by analyzing amplitude and frequency. There is an extensive amount of customization available to the player including:
+Developed with Unreal Engine 5, this project aims to create a standalone FPS aim trainer that spawns targets based on user loaded music (in .mp3 or .ogg format) by analyzing the frequency of the music. There is an extensive amount of customization available to the player including:
 - standard sensitivity settings (Same as Valorant sensitivity), video & audio settings
-- two base gamemodes: continuously spawn targets (MultiBeat) and only one at a time (SingleBeat)
+- two base gamemodes: continuously spawn targets (MultiBeat) or only one at a time (SingleBeat)
 - customizing the gamemodes using:
   - headshot height only mode
   - time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
@@ -13,9 +13,18 @@ Developed with Unreal Engine 5, this project aims to create a standalone FPS aim
   - mininum and maximum size of targets
 - customizing the audio analysis using:
   - 1-4 user defined frequency band channels (e.g. 0-87 Hz for a bass channel)
-  - band limit threshold for each band channel (The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger this beat. higher threshold -> lower sensitivity -> less targets spawned)
-  
+  - band limit threshold for each band channel
+    - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. higher threshold -> lower analyzer sensitivity -> less targets spawned
+
 Download Development Build from Releases (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/tag/v0.1.0)
+
+## Getting .mp3/.ogg files:
+
+1. To convert Spotify playlists into Youtube playlists, I use [Soundiiz](https://soundiiz.com/) (also works with Apple Music, etc.)
+2. You can use [this application](https://github.com/shaked6540/YoutubePlaylistDownloader) to download entire playlists from YouTube. Download and install. *You might need restart the application after you open it for the first time for it to work correctly.*
+3. Click on the cog wheel next to the "Insert a youtube link here" text.
+4. Select where you want the files to be downloaded to at the top.
+5. Under the Audio heading, make sure the box with "Convert videos to" is checked, then select either ogg or mp3.
 
 ## Collaboration / Copyright
 
