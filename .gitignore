@@ -55,6 +55,7 @@ Plugins/*/Binaries/*
 
 # Builds
 Build/*
+.renom/*
 
 Content/**/Assets/
 Content/**/FPS_Weapon_Bundle/
