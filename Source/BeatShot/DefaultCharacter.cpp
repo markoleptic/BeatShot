@@ -13,6 +13,7 @@
 #include "NiagaraComponent.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
+#include "SphereTarget.h"
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimInstance.h"
 #include "Blueprint/UserWidget.h"
@@ -85,6 +86,47 @@ void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Get the camera transform.
+	FVector CameraLocation;
+	FRotator CameraRotation;
+	FHitResult Hit;
+	GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+	MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+	// Transform MuzzleOffset from camera space to world space.
+	FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+	// Skew the aim to be slightly upwards. 
+	FRotator MuzzleRotation = CameraRotation;
+	FVector Start = CameraLocation;
+	FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
+	FCollisionQueryParams TraceParams;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+	if (bHit)
+	{
+		if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
+		{
+			HitTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Green);
+		}
+		else
+		{
+			if (GI->SphereTargetRef)
+			{
+				UE_LOG(LogTemp, Display, TEXT("not hittin"));
+				GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+			}
+		}
+	}
+	else
+	{
+		if (GI->SphereTargetRef)
+		{
+			UE_LOG(LogTemp, Display, TEXT("not hittin"));
+			GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+		}
+	}
+
 }
 
 // Called to bind functionality to input

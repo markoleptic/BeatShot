@@ -18,10 +18,9 @@ ATargetSpawner::ATargetSpawner()
 	SetShouldSpawn(false);
 	LastTargetSpawnedCenter = false;
 	SingleBeat = false;
-	FirstSpawnLocation = BoxBounds.Origin;
-	SpawnLocation = FirstSpawnLocation;
 	LastSpawnLocation = FVector::ZeroVector;
-	GameModeActorStruct = FGameModeActorStruct();
+	LastTargetScale = 1.f;
+	CurrentDistance = 0.f;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -33,21 +32,22 @@ void ATargetSpawner::BeginPlay()
 		GI->RegisterTargetSpawner(this);
 	}
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+	FirstSpawnLocation = BoxBounds.Origin;
+	SpawnLocation = FirstSpawnLocation;
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (TrackingTarget != nullptr)
+	if (IsValid(TrackingTarget))
 	{
-		FVector Location = TrackingTarget->GetActorLocation();
+		CurrentTrackerLocation = TrackingTarget->GetActorLocation();
+		CurrentTrackerLocation += TrackingDirection * TrackingSpeed * DeltaTime;
 
-		Location += TrackingDirection * TrackingSpeed * DeltaTime;
+		TrackingTarget->SetActorLocation(CurrentTrackerLocation);
+		//CurrentDistance = (CurrentTrackerLocation - StartLocation).Size();
 
-		TrackingTarget->SetActorLocation(Location);
-
-		CurrentDistance = (Location - StartLocation).Size();
+		//FMath::VInterpConstantTo(TrackingTarget->GetActorLocation(), EndLocation, DeltaTime, 2);
 	}
 }
 
@@ -125,34 +125,33 @@ void ATargetSpawner::SpawnSingleActor()
 
 void ATargetSpawner::SpawnTracker()
 {
-	// Check for collisions for the next spawn location while randomizing
-	RandomizeLocation(LastSpawnLocation, LastTargetScale);
-	StartLocation = SpawnLocation;
+	// psuedocode for tracking:
+	// if SpawnTracker() is called, direction needs to change
+	// Gets more complicated if used with regular targets
+	//Might want to have global override on channel thresholds so that it doesn't change direction too frequently
 
-	RandomizeLocation(LastSpawnLocation, LastTargetScale);
-	FVector EndLocation = SpawnLocation;
+	//Tracking only:
+		// SpawnActor in center based on regular beat spawning
+		// Move at (maybe random / based on BPM?) speed until another beat
 
-	FVector Distance = EndLocation - StartLocation;
-	TotalDistance = Distance.Size();
-	CurrentDistance = 0.0f;
-	TrackingDirection = Distance.GetSafeNormal();
-
-	TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, StartLocation, SpawnBox->GetComponentRotation());
 	if (TrackingTarget)
 	{
-		TrackingTarget->SetLifeSpan(2.5);
-		// Since scaling is done after spawn, we have access to LAST target's scale value and TargetLocation
-		LastSpawnLocation = SpawnLocation;
-		if (LastSpawnLocation == BoxBounds.Origin)
-		{
-			LastTargetSpawnedCenter = true;
-		}
-		else
-		{
-			LastTargetSpawnedCenter = false;
-		}
+		LocationBeforeDirectionChange = TrackingTarget->GetActorLocation();
+	}
 
-		LastTargetScale = RandomizeScale(TrackingTarget);
+	if (IsValid(TrackingTarget) == false)
+	{
+		// The tracker target will always initially spawn at the center
+		// Only spawn tracker once for Tracking Only Mode
+		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
+		TrackingTarget->SetLifeSpan(GI->GameModeActorStruct.GameModeLength);
+	}
+
+	if (TrackingTarget)
+	{
+		// Using static scale for now
+		// TODO: update scale to dynamic value or user specified value
+		TrackingTarget->BaseMesh->SetWorldScale3D(FVector(1, 1, 1));
 
 		// Update reference to spawned target in Game Instance
 		GI->RegisterSphereTarget(TrackingTarget);
@@ -160,15 +159,14 @@ void ATargetSpawner::SpawnTracker()
 		// Broadcast to GameModeActorBase that a target has spawned
 		OnTargetSpawn.Broadcast();
 
-		// Add Target to TArray
-		//GI->SphereTargetArray.Add(TrackingTarget);
-		//NumTargetsAddedToArray++;
+		// Don't care about end location if we change direction based on beat, so just choose a far enough location
+		EndLocation = RandomizeTrackerLocation(LocationBeforeDirectionChange);
 
-
-		// Bind the destruction of target to OnTargetDestroyed to spawn a new target
+		FVector Distance = EndLocation - LocationBeforeDirectionChange;
+		TrackingDirection = Distance.GetSafeNormal();
+		//TotalDistance = Distance.Size();
+		//CurrentDistance = 0.0f;
 		//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
-
-		SetShouldSpawn(false);
 	}
 }
 
@@ -215,11 +213,13 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 
 		// SpawnLocation initially centered inside SpawnBox
 		SpawnLocation = BoxBounds.Origin;
-		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+		//SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+		//SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 
 		// bool variable to track if the SpawnLocation is inside of any of the active targets
 		bool SphereIsInside = true;
+
+		int OverloadProtect = 0;
 
 		// while loop that spans the size of RecentSpawnBounds and only finishes if
 		// SpawnLocation is not inside any of the RecentSpawnBounds spheres
@@ -229,10 +229,16 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 			{
 				if (RecentSpawnBounds[i].IsInside(SpawnLocation))
 				{
+					if (OverloadProtect > 20)
+					{
+						ShouldSpawn = false;
+						exit(0);
+					}
 					UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
 					SpawnLocation = BoxBounds.Origin;
 					SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 					SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+					OverloadProtect++;
 					break;
 				}
 				if (i == RecentSpawnBounds.Num() - 1)
@@ -243,6 +249,37 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 			}
 		}
 	}
+}
+
+FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
+{
+	// if just doing tracking only, we don't really care about recent spawn locations
+	// **Not currently using LastTargetScaleValue**
+	CheckSpawnRadius = SphereTargetRadius * 2 + GameModeActorStruct.MinDistanceBetweenTargets;
+	FSphere LastSpawnSphere = FSphere(LocationBeforeChange, CheckSpawnRadius);
+
+	//try to spawn at origin if available
+	SpawnLocation = BoxBounds.Origin;
+
+	//So we don't get stuck in infinite loop
+	int OverloadProtect = 0;
+
+	while (LastSpawnSphere.IsInside(SpawnLocation))
+	{
+		if (OverloadProtect > 20)
+		{
+			ShouldSpawn = false;
+			exit(0);
+		}
+
+		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
+		SpawnLocation = BoxBounds.Origin;
+		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+
+		OverloadProtect++;
+	}
+	return SpawnLocation;
 }
 
 void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)

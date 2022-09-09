@@ -75,7 +75,10 @@ public:
 	float CurrentDistance;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float TrackingSpeed = 200.f;
+	FVector CurrentTrackerLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	float TrackingSpeed = 500.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FVector TrackingDirection;
@@ -85,6 +88,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FVector StartLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	FVector EndLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
+	FVector LocationBeforeDirectionChange;
 
 
 private:
@@ -124,6 +133,10 @@ private:
 	UFUNCTION()
 	void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
 
+	// Randomize location of tracker
+	UFUNCTION()
+	FVector RandomizeTrackerLocation(FVector LocationBeforeChange);
+
 	// Location to spawn the first target
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
 	FVector FirstSpawnLocation;
@@ -146,6 +159,8 @@ private:
 	TArray<FVector> RecentSpawnLocations;
 
 	TArray<FSphere> RecentSpawnBounds;
+
+	bool IsTrackerMoving;
 
 	bool SingleBeat;
 };
