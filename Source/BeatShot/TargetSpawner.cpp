@@ -7,6 +7,7 @@
 #include "DefaultGameInstance.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ATargetSpawner::ATargetSpawner()
@@ -45,6 +46,7 @@ void ATargetSpawner::Tick(float DeltaTime)
 		CurrentTrackerLocation += TrackingDirection * TrackingSpeed * DeltaTime;
 
 		TrackingTarget->SetActorLocation(CurrentTrackerLocation);
+
 		//CurrentDistance = (CurrentTrackerLocation - StartLocation).Size();
 
 		//FMath::VInterpConstantTo(TrackingTarget->GetActorLocation(), EndLocation, DeltaTime, 2);
@@ -144,7 +146,19 @@ void ATargetSpawner::SpawnTracker()
 		// The tracker target will always initially spawn at the center
 		// Only spawn tracker once for Tracking Only Mode
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
+		TrackingTarget->SetMaxHealth(100000000.f);
 		TrackingTarget->SetLifeSpan(GI->GameModeActorStruct.GameModeLength);
+		LocationBeforeDirectionChange = FirstSpawnLocation;
+
+		// Update reference to spawned target in Game Instance
+		GI->RegisterSphereTarget(TrackingTarget);
+
+		// Broadcast to GameModeActorBase that a target has spawned
+		OnTargetSpawn.Broadcast();
+
+		// Add Target to TArray
+		GI->SphereTargetArray.Add(TrackingTarget);
+		NumTargetsAddedToArray++;
 	}
 
 	if (TrackingTarget)
@@ -153,17 +167,12 @@ void ATargetSpawner::SpawnTracker()
 		// TODO: update scale to dynamic value or user specified value
 		TrackingTarget->BaseMesh->SetWorldScale3D(FVector(1, 1, 1));
 
-		// Update reference to spawned target in Game Instance
-		GI->RegisterSphereTarget(TrackingTarget);
-
-		// Broadcast to GameModeActorBase that a target has spawned
-		OnTargetSpawn.Broadcast();
-
 		// Don't care about end location if we change direction based on beat, so just choose a far enough location
 		EndLocation = RandomizeTrackerLocation(LocationBeforeDirectionChange);
 
-		FVector Distance = EndLocation - LocationBeforeDirectionChange;
-		TrackingDirection = Distance.GetSafeNormal();
+		TrackingDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
+		UE_LOG(LogTemp, Display, TEXT("%s"), *TrackingDirection.ToCompactString());
+
 		//TotalDistance = Distance.Size();
 		//CurrentDistance = 0.0f;
 		//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
@@ -259,12 +268,12 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 	FSphere LastSpawnSphere = FSphere(LocationBeforeChange, CheckSpawnRadius);
 
 	//try to spawn at origin if available
-	SpawnLocation = BoxBounds.Origin;
+	FVector LocationToReturn = BoxBounds.Origin;
 
 	//So we don't get stuck in infinite loop
 	int OverloadProtect = 0;
 
-	while (LastSpawnSphere.IsInside(SpawnLocation))
+	while (LastSpawnSphere.IsInside(LocationToReturn))
 	{
 		if (OverloadProtect > 20)
 		{
@@ -272,14 +281,14 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 			exit(0);
 		}
 
-		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
-		SpawnLocation = BoxBounds.Origin;
-		SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-		SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
+		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *LocationToReturn.ToString());
+		LocationToReturn = BoxBounds.Origin;
+		LocationToReturn.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
+		LocationToReturn.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 
 		OverloadProtect++;
 	}
-	return SpawnLocation;
+	return LocationToReturn;
 }
 
 void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)
@@ -287,7 +296,7 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	// Initialize Struct passed by GameModeActorBase
 	GameModeActorStruct = NewGameModeActor;
 
-	// Only use SingleBeat if using SingleBeat gamemodes
+	// Only use SingleBeat if using a SingleBeat GameMode
 	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat ||
 		GameModeActorStruct.GameModeActorName == EGameModeActorName::WideSpreadSingleBeat)
 	{

@@ -52,7 +52,7 @@ ADefaultCharacter::ADefaultCharacter()
 	MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
 	FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
 	GunOffset = FVector(100.f, 0.f, 10.f);
-	TraceDistance = 2000;
+	TraceDistance = 5000.f;
 }
 
 // Called when the game starts or when spawned
@@ -87,46 +87,46 @@ void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Get the camera transform.
-	FVector CameraLocation;
-	FRotator CameraRotation;
-	FHitResult Hit;
-	GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-	// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-	MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-	// Transform MuzzleOffset from camera space to world space.
-	FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-	// Skew the aim to be slightly upwards. 
-	FRotator MuzzleRotation = CameraRotation;
-	FVector Start = CameraLocation;
-	FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
-	FCollisionQueryParams TraceParams;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
-	if (bHit)
+	if (GI->GameModeActorStruct.GameModeActorName==EGameModeActorName::BeatTrack)
 	{
-		if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
+		// Get the camera transform.
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		FHitResult Hit;
+		GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
+		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
+		// Transform MuzzleOffset from camera space to world space.
+		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+		FRotator MuzzleRotation = CameraRotation;
+		FVector Start = CameraLocation;
+		FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
+		FCollisionQueryParams TraceParams;
+		
+		if (bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
 		{
-			HitTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Green);
+			if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
+			{
+				UGameplayStatics::ApplyDamage(HitTarget, 1.f , PlayerController, this, UDamageType::StaticClass());
+				HitTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Green);
+			}
+			else
+			{
+				if (GI->SphereTargetRef)
+				{
+					GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+				}
+			}
 		}
 		else
 		{
 			if (GI->SphereTargetRef)
 			{
-				UE_LOG(LogTemp, Display, TEXT("not hittin"));
 				GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
 			}
 		}
 	}
-	else
-	{
-		if (GI->SphereTargetRef)
-		{
-			UE_LOG(LogTemp, Display, TEXT("not hittin"));
-			GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
-		}
-	}
-
 }
 
 // Called to bind functionality to input
@@ -160,13 +160,10 @@ void ADefaultCharacter::Fire()
 		FVector CameraLocation;
 		FRotator CameraRotation;
 		GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
 		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
 		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-
 		// Transform MuzzleOffset from camera space to world space.
 		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-		// Skew the aim to be slightly upwards. 
 		FRotator MuzzleRotation = CameraRotation;
 		if (UWorld* World = GetWorld())
 		{
@@ -175,7 +172,6 @@ void ADefaultCharacter::Fire()
 			SpawnParams.Owner = this;
 			SpawnParams.Instigator = GetInstigator();
 
-
 			// Spawn the projectile at the muzzle.
 			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, Muzzle, MuzzleRotation, SpawnParams);
 			if (Projectile)
@@ -183,8 +179,11 @@ void ADefaultCharacter::Fire()
 				//If reached this point, the player has fired
 				if (PlayerController->CountdownActive == false)
 				{
-					//Only updating Shots Fired
-					OnShotFired.Broadcast();
+					if (GI->GameModeActorStruct.GameModeActorName != EGameModeActorName::BeatTrack)
+					{
+						//Only updating Shots Fired
+						OnShotFired.Broadcast();
+					}
 				}
 
 				Projectile->SetOwner(this);

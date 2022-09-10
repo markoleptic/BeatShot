@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DefaultGameMode.h"
+
+#include "BeatTrack.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorStruct.h"
 #include "NarrowSpreadMultiBeat.h"
@@ -49,12 +51,20 @@ AGameModeActorBase* ADefaultGameMode::SetGameModeActorBase(EGameModeActorName Ga
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadSingleBeat>(WideSpreadSingleBeatClass);
 	}
-	// Custom
-	else
+	else if (GameModeActorEnum == EGameModeActorName::BeatTrack)
+	{
+		GameModeActorBase = GetWorld()->SpawnActor<ABeatTrack>(BeatTrackClass);
+	}
+	else if (GameModeActorEnum == EGameModeActorName::Custom)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ACustomBeat>(CustomBeatClass);
 	}
-
+	else
+	{
+		if (GEngine) {
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("GameMode Init Error"));
+		}
+	}
 	return GameModeActorBase;
 }
 

@@ -2,7 +2,10 @@
 
 
 #include "HealthComponent.h"
+
+#include "BeatTrack.h"
 #include "DefaultGameInstance.h"
+#include "GameModeActorBase.h"
 #include "SphereTarget.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/GameplayStatics.h"
@@ -20,25 +23,42 @@ void UHealthComponent::BeginPlay()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Health = MaxHealth;
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::DamageTaken);
+	TotalPossibleDamage = 0.f;
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (GI->GameModeActorStruct.GameModeActorName==EGameModeActorName::BeatTrack)
+	{
+		TotalPossibleDamage++;
+		Cast<ABeatTrack>(GI->GameModeActorBaseRef)->UpdateTrackingScore(0.f, TotalPossibleDamage);
+	}
+}
+
+void UHealthComponent::SetMaxHealth(float NewMaxHealth)
+{
+	MaxHealth = NewMaxHealth;
+	Health = MaxHealth;
 }
 
 void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser)
 {
 	if (Damage <= 0.f) return;
+
 	Health -= Damage;
-	if (Health <= 0.f)
+
+	if (ASphereTarget* DamagedTarget = Cast<ASphereTarget>(DamagedActor))
 	{
-		if (ASphereTarget* DestroyedTarget = Cast<ASphereTarget>(DamagedActor))
+		if (Health <= 0.f)
 		{
-			DestroyedTarget->HandleDestruction();
+			DamagedTarget->HandleDestruction();
+		}
+		if (Health > 101)
+		{
+			Cast<ABeatTrack>(GI->GameModeActorBaseRef)->UpdateTrackingScore(Damage, TotalPossibleDamage);
 		}
 	}
-
-
 }
 

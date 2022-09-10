@@ -28,9 +28,9 @@ protected:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	void SaveGame();
+	void SavePlayerScore();
 
-	void LoadGame();
+	void LoadPlayerScore();
 
 public:	
 	// Called every frame
@@ -78,7 +78,7 @@ public:
 	void UpdateHighScore();
 
 	UFUNCTION()
-	void UpdateScore(float TimeElapsed);
+	virtual void UpdateScore(float TimeElapsed);
 
 	UFUNCTION()
 	void UpdateTargetsSpawned();

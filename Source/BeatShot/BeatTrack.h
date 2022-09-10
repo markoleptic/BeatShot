@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameModeActorBase.h"
-#include "CustomBeat.generated.h"
+#include "BeatTrack.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class BEATSHOT_API ACustomBeat : public AGameModeActorBase
+class BEATSHOT_API ABeatTrack : public AGameModeActorBase
 {
 	GENERATED_BODY()
 
-	ACustomBeat();
+	ABeatTrack();
 
 protected:
 	// Called when the game starts or when spawned
@@ -31,4 +31,8 @@ public:
 	virtual void StartGameMode() override;
 
 	virtual void EndGameMode() override;
+
+	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
+
+	virtual void UpdateScore(float TimeElapsed) override;
 };

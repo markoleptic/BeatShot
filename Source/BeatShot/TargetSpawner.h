@@ -60,6 +60,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	float NumTargetsAddedToArray;
 
+	// Called from selected GameMode, sets up spawn behavior
 	UFUNCTION(BlueprintCallable)
 	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 

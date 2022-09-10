@@ -34,6 +34,10 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	if (GI->GameModeActorStruct.GameModeActorName == EGameModeActorName::BeatTrack)
+	{
+		Damage = 0.f;
+	}
 }
 
 // Called every frame
@@ -55,7 +59,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	if (Shooter)
 	{
 		Target = Cast<ASphereTarget>(OtherActor);
-		if (Target && Shooter && GI->GameModeActorBaseRef)
+		if (Target && Shooter && GI->GameModeActorBaseRef && GI->GameModeActorStruct.GameModeActorName != EGameModeActorName::BeatTrack)
 		{
 			//If reached this point, player has shot a target, and can get exact moment it was hit
 			GI->GameModeActorBaseRef->UpdateTargetsHit();

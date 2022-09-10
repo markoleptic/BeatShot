@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/TimelineComponent.h"
+#include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
 #include "SphereTarget.generated.h"
 
+class UHealthComponent;
 class UCapsuleComponent;
 class UNiagaraSystem;
 class UCurveFloat;
@@ -53,4 +54,10 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
 	UMaterialInstanceDynamic* MID_TargetColorChanger;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UHealthComponent* HealthComp;
+
+	UFUNCTION(BlueprintCallable, Category = "Target Properties")
+	void SetMaxHealth(float NewMaxHealth);
 };

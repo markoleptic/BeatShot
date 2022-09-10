@@ -7,6 +7,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "DefaultGameMode.generated.h"
 
+class ABeatTrack;
 class UDefaultGameInstance;
 class AWideSpreadMultiBeat;
 class AGameModeActorBase;
@@ -42,6 +43,9 @@ public:
 	TSubclassOf<AGameModeActorBase> WideSpreadSingleBeatClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
+	TSubclassOf<AGameModeActorBase> BeatTrackClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 	TSubclassOf<AGameModeActorBase> CustomBeatClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
@@ -51,14 +55,14 @@ public:
 	AGameModeActorBase* SetGameModeActorBase(EGameModeActorName GameModeActorEnum);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-		TArray<float> BandLimitsThreshold;
+	TArray<float> BandLimitsThreshold;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-		TArray<FVector2D> BandLimits;
+	TArray<FVector2D> BandLimits;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-		float TimeWindow;
+	float TimeWindow;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-		int HistorySize;
+	int HistorySize;
 };

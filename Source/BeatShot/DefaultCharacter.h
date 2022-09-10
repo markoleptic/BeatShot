@@ -89,8 +89,8 @@ public:
 	UFUNCTION()
 	void PlayRecoilAnim();
 
-
 private:
+	UPROPERTY(VisibleAnywhere, Category = "References")
 	UDefaultGameInstance* GI;
 
 	void Fire();
@@ -111,9 +111,10 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float Sensitivity;
 
-protected:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");
 	float TraceDistance;
+
+protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void TraceForward();

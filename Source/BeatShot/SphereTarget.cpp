@@ -4,6 +4,7 @@
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
+#include "HealthComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -21,6 +22,7 @@ ASphereTarget::ASphereTarget()
 	RootComponent = CapsuleComp;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
+	HealthComp = CreateDefaultSubobject<UHealthComponent>("Health Component");
 	InitialLifeSpan = 1.5f;
 }
 
@@ -35,6 +37,10 @@ void ASphereTarget::BeginPlay()
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
+	if (GI->GameModeActorStruct.GameModeActorName==EGameModeActorName::BeatTrack)
+	{
+		MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+	}
 }
 
 void ASphereTarget::Tick(float DeltaTime)
@@ -49,10 +55,14 @@ void ASphereTarget::HandleDestruction()
 	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
 	FVector SphereScale = BaseMesh->GetComponentScale();
 	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
-	if (TimeAlive > 0.f && GI->GameModeActorBaseRef)
+	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorName != EGameModeActorName::BeatTrack))
 	{
 		GI->GameModeActorBaseRef->UpdateScore(TimeAlive);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+		Destroy();
+	}
+	else
+	{
 		Destroy();
 	}
 	if (NS_Standard_Explosion)
@@ -61,6 +71,11 @@ void ASphereTarget::HandleDestruction()
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereScale.X);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
 	}
+}
+
+void ASphereTarget::SetMaxHealth(float NewMaxHealth)
+{
+	HealthComp->SetMaxHealth(NewMaxHealth);
 }
 
 

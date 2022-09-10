@@ -17,7 +17,6 @@ AGameModeActorBase::AGameModeActorBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	GameModeActorStruct = FGameModeActorStruct();
 	GameModeActorStruct.CountdownTimerLength = 3.f;
 }
 
@@ -36,7 +35,7 @@ void AGameModeActorBase::BeginPlay()
 
 void AGameModeActorBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	SaveGame();
+	SavePlayerScore();
 }
 
 void AGameModeActorBase::Tick(float DeltaTime)
@@ -50,7 +49,12 @@ void AGameModeActorBase::HandleGameStart()
 	PlayerScoreStruct.ResetStruct();
 
 	// load save containing struct to retrieve high score
-	LoadGame();
+	LoadPlayerScore();
+
+	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::BeatTrack)
+	{
+		PlayerScoreStruct.IsBeatTrackMode = true;
+	}
 
 	//GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
 	if (GI->DefaultCharacterRef->OnShotFired.IsBound() == false)
@@ -65,13 +69,13 @@ void AGameModeActorBase::HandleGameStart()
 
 void AGameModeActorBase::StartGameMode()
 {
-	LoadGame();
+	LoadPlayerScore();
 	GI->TargetSpawnerRef->SetShouldSpawn(true);
 }
 
 void AGameModeActorBase::EndGameMode()
 {
-	SaveGame();
+	SavePlayerScore();
 
 	// Stopping Player and Tracker
 	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
@@ -147,12 +151,12 @@ void AGameModeActorBase::UpdateHighScore()
 	}
 }
 
-void AGameModeActorBase::SaveGame()
+void AGameModeActorBase::SavePlayerScore()
 {
 	GI->SaveScores(PlayerScoreStruct);
 }
 
-void AGameModeActorBase::LoadGame()
+void AGameModeActorBase::LoadPlayerScore()
 {
 	if (GI->ArrayOfPlayerScoreStructs.Num() > 0)
 	{

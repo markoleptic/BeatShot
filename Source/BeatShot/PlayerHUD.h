@@ -76,6 +76,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	class UDefaultGameInstance* GI;
 };
 

@@ -68,45 +68,80 @@ void UPlayerHUD::SetHighScore(float HighScore)
 // Should probably just pass one element at a time using above functions for better efficiency
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 {
-	float TargetsHit = NewPlayerScoreStruct.TargetsHit;
-	float Score = NewPlayerScoreStruct.Score;
-	float ShotsFired = NewPlayerScoreStruct.ShotsFired;
-	float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
-	float HighScore = NewPlayerScoreStruct.HighScore;
-
-	if (isnan(TargetsHit / ShotsFired))
+	if (NewPlayerScoreStruct.IsBeatTrackMode == true)
 	{
-		TargetBar->SetPercent(0.f);
-	}
-	else
-	{
-		TargetBar->SetPercent(TargetsHit / ShotsFired);
-	}
+		float Score = NewPlayerScoreStruct.Score;
+		float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
+		float ShotsFired = 0;
+		float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
+		float HighScore = NewPlayerScoreStruct.HighScore;
 
-	TargetsHitText->SetText(FText::AsNumber(TargetsHit));
 
-	if (isnan(TargetsHit / ShotsFired))
-	{
-		Accuracy->SetText(FText::AsPercent(0.f));
-	}
-	else
-	{
-		Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
-	}
+		if (isnan(Score / TotalPossibleDamage))
+		{
+			TargetBar->SetPercent(0.f);
+			Accuracy->SetText(FText::AsPercent(0.f));
+		}
+		else
+		{
+			TargetBar->SetPercent(Score / TotalPossibleDamage);
+			Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));
+		}
 
-	ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
-
-	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
-
-	CurrentScoreText->SetText(FText::AsNumber(Score));
-
-	if (HighScore < Score)
-	{
 		HighScoreText->SetText(FText::AsNumber(Score));
+
+		if (HighScore < Score)
+		{
+			HighScoreText->SetText(FText::AsNumber(Score));
+		}
+		else
+		{
+			HighScoreText->SetText(FText::AsNumber(HighScore));
+		}
 	}
 	else
 	{
-		HighScoreText->SetText(FText::AsNumber(HighScore));
+		float TargetsHit = NewPlayerScoreStruct.TargetsHit;
+		float Score = NewPlayerScoreStruct.Score;
+		float ShotsFired = NewPlayerScoreStruct.ShotsFired;
+		float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
+		float HighScore = NewPlayerScoreStruct.HighScore;
+
+		if (isnan(TargetsHit / ShotsFired))
+		{
+			TargetBar->SetPercent(0.f);
+		}
+		else
+		{
+			TargetBar->SetPercent(TargetsHit / ShotsFired);
+		}
+
+		TargetsHitText->SetText(FText::AsNumber(TargetsHit));
+
+		if (isnan(TargetsHit / ShotsFired))
+		{
+			Accuracy->SetText(FText::AsPercent(0.f));
+		}
+		else
+		{
+			Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+		}
+
+		ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
+
+		TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
+
+		CurrentScoreText->SetText(FText::AsNumber(Score));
+
+		if (HighScore < Score)
+		{
+			HighScoreText->SetText(FText::AsNumber(Score));
+		}
+		else
+		{
+			HighScoreText->SetText(FText::AsNumber(HighScore));
+		}
 	}
+
 }
 
