@@ -49,6 +49,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* HighScoreText;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* GameModeNameText;
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TotalTargetsSpawned;
 

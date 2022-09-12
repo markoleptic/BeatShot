@@ -7,17 +7,18 @@
 #include "SphereTarget.h"
 #include "TargetSpawner.h"
 #include "DefaultGameInstance.h"
-#include "DefaultStatSaveGame.h"
 #include "DefaultGameMode.h"
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "SaveGamePlayerScore.h"
+
+class USaveGamePlayerScore;
 
 AGameModeActorBase::AGameModeActorBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	GameModeActorStruct.CountdownTimerLength = 3.f;
 }
 
 void AGameModeActorBase::BeginPlay()
@@ -29,13 +30,23 @@ void AGameModeActorBase::BeginPlay()
 	if (GI)
 	{
 		GI->RegisterGameModeActorBase(this);
+		// Retrieve GameMode data storage object from Game Instance
 		GameModeActorStruct = GI->GameModeActorStruct;
+	}
+
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
+	{
+		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
+	}
+	else
+	{
+		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
 	}
 }
 
 void AGameModeActorBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	SavePlayerScore();
+	SavePlayerScores();
 }
 
 void AGameModeActorBase::Tick(float DeltaTime)
@@ -45,18 +56,14 @@ void AGameModeActorBase::Tick(float DeltaTime)
 
 void AGameModeActorBase::HandleGameStart()
 {
-	// Reset Struct to zero scores
-	PlayerScoreStruct.ResetStruct();
-
-	// load save containing struct to retrieve high score
-	LoadPlayerScore();
+	LoadPlayerScores();
 
 	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::BeatTrack)
 	{
-		PlayerScoreStruct.IsBeatTrackMode = true;
+		PlayerScores.IsBeatTrackMode = true;
 	}
 
-	//GI->DefaultCharacterRef->SetActorLocationAndRotation(StartLocation, StartRotation);
+	// Binding delegates for scoring purposes
 	if (GI->DefaultCharacterRef->OnShotFired.IsBound() == false)
 	{
 		GI->DefaultCharacterRef->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
@@ -69,13 +76,13 @@ void AGameModeActorBase::HandleGameStart()
 
 void AGameModeActorBase::StartGameMode()
 {
-	LoadPlayerScore();
 	GI->TargetSpawnerRef->SetShouldSpawn(true);
+	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
 
 void AGameModeActorBase::EndGameMode()
 {
-	SavePlayerScore();
+	SavePlayerScores();
 
 	// Stopping Player and Tracker
 	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
@@ -103,75 +110,101 @@ void AGameModeActorBase::EndGameMode()
 	GI->DefaultPlayerControllerRef->HideCountdown();
 }
 
-// Called by SphereTarget when it takes damage
-void AGameModeActorBase::UpdateScore(float TimeElapsed)
+void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 {
 	if (TimeElapsed <= 0.5f)
 	{
-		PlayerScoreStruct.Score += FMath::Lerp(400.f, 1000.f, TimeElapsed / 0.5f);
+		PlayerScores.Score += FMath::Lerp(400.f, 1000.f, TimeElapsed / 0.5f);
 	}
 	else if (TimeElapsed <= 1.f)
 	{
-		PlayerScoreStruct.Score += FMath::Lerp(1000.f, 400.f, (TimeElapsed - 0.5f) / 0.5f);
+		PlayerScores.Score += FMath::Lerp(1000.f, 400.f, (TimeElapsed - 0.5f) / 0.5f);
 	}
 	else {
-		PlayerScoreStruct.Score += 400;
+		PlayerScores.Score += 400;
 	}
 	UpdateHighScore();
-	UpdateScoresToHUD.Broadcast(PlayerScoreStruct);
+	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
 
-// Called by TargetSpawner when a SphereTarget is spawned
 void AGameModeActorBase::UpdateTargetsSpawned()
 {
 	//maybe only include targets that have time outed or been shot
-	PlayerScoreStruct.TargetsSpawned++;
-	UpdateScoresToHUD.Broadcast(PlayerScoreStruct);
+	PlayerScores.TargetsSpawned++;
+	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
 
-// Called by DefaultCharacter when player shoots during an active game
 void AGameModeActorBase::UpdateShotsFired()
 {
-	PlayerScoreStruct.ShotsFired++;
-	UpdateScoresToHUD.Broadcast(PlayerScoreStruct);
+	PlayerScores.ShotsFired++;
+	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
 
-// Called by Projectile when a Player's projectile hits a SphereTarget
 void AGameModeActorBase::UpdateTargetsHit()
 {
-	PlayerScoreStruct.TargetsHit++;
-	UpdateScoresToHUD.Broadcast(PlayerScoreStruct);
+	PlayerScores.TargetsHit++;
+	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
 
 void AGameModeActorBase::UpdateHighScore()
 {
-	if (PlayerScoreStruct.Score > PlayerScoreStruct.HighScore)
+	if (PlayerScores.Score > PlayerScores.HighScore)
 	{
-		PlayerScoreStruct.HighScore = PlayerScoreStruct.Score;
+		PlayerScores.HighScore = PlayerScores.Score;
 	}
 }
 
-void AGameModeActorBase::SavePlayerScore()
+void AGameModeActorBase::SavePlayerScores()
 {
-	GI->SaveScores(PlayerScoreStruct);
+	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+	{
+		if (PlayerScores.HighScore > SavedPlayerScores.HighScore)
+		{
+			SavedPlayerScores.HighScore = PlayerScores.HighScore;
+		}
+		PlayerScoreMap.Add(GameModeActorStruct, PlayerScores);
+		SaveGamePlayerScores->PlayerScoreMap = PlayerScoreMap;
+
+		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
+		}
+	}
 }
 
-void AGameModeActorBase::LoadPlayerScore()
+void AGameModeActorBase::LoadPlayerScores()
 {
-	if (GI->ArrayOfPlayerScoreStructs.Num() > 0)
+	if (SaveGamePlayerScore)
 	{
-		for (FPlayerScore SavedPlayerScoreStruct : GI->ArrayOfPlayerScoreStructs)
+		PlayerScoreMap = SaveGamePlayerScore->PlayerScoreMap;
+		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded to Game Instance"));
+
+		SavedPlayerScores = PlayerScoreMap.FindRef(GameModeActorStruct);
+		PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
+		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
 		{
-			if (SavedPlayerScoreStruct.HighScore > PlayerScoreStruct.HighScore)
-			{
-				PlayerScoreStruct.HighScore = SavedPlayerScoreStruct.HighScore;
-			}
+			PlayerScores.HighScore = SavedPlayerScores.HighScore;
 		}
+		
+		//if (PlayerScoreArray.Num() > 0)
+		//{
+		//	for (FPlayerScore SavedPlayerScores : PlayerScoreArray)
+		//	{
+		//		UE_LOG(LogTemp, Display, TEXT("Score %f"), SavedPlayerScores.HighScore);
+		//		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
+		//		{
+		//			PlayerScores.HighScore = SavedPlayerScores.HighScore;
+		//		}
+		//	}
+		//}
 	}
 }
 
 void AGameModeActorBase::HandleGameRestart()
 {
+	// Reset Struct to zero scores
+	PlayerScores.ResetStruct();
+
 	EndGameMode();
 }
 

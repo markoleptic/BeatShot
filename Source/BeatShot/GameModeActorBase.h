@@ -8,6 +8,7 @@
 #include "GameModeActorStruct.h"
 #include "GameModeActorBase.generated.h"
 
+class USaveGamePlayerScore;
 class ASphereTarget;
 class UAudioAnalyzerManager;
 
@@ -28,9 +29,11 @@ protected:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-	void SavePlayerScore();
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	void SavePlayerScores();
 
-	void LoadPlayerScore();
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	void LoadPlayerScores();
 
 public:	
 	// Called every frame
@@ -42,12 +45,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void HandleGameRestart();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void StartGameMode();
 
+	UFUNCTION(BlueprintCallable)
 	virtual void EndGameMode();
-
-	UPROPERTY(VisibleAnywhere, Category = "Game Properties")
-	FPlayerScore PlayerScoreStruct;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FGameModeActorStruct GameModeActorStruct;
@@ -71,18 +73,39 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	class UDefaultGameInstance* GI;
 
-	UFUNCTION()
-	void UpdateTargetsHit();
+	// Scoring
 
-	UFUNCTION()
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
+	TMap<FGameModeActorStruct, FPlayerScore> PlayerScoreMap;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
+	USaveGamePlayerScore* SaveGamePlayerScore;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
+	FPlayerScore SavedPlayerScores;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
+	FPlayerScore PlayerScores;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
+	TArray<FPlayerScore> PlayerScoreArray;
+
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateHighScore();
 
-	UFUNCTION()
-	virtual void UpdateScore(float TimeElapsed);
+	// Called by SphereTarget when it takes damage
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	virtual void UpdatePlayerScores(float TimeElapsed);
 
-	UFUNCTION()
+	// Called by TargetSpawner when a SphereTarget is spawned
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTargetsSpawned();
 
-	UFUNCTION()
+	// Called by DefaultCharacter when player shoots during an active game
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateShotsFired();
+
+	// Called by Projectile when a Player's projectile hits a SphereTarget
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	void UpdateTargetsHit();
 };

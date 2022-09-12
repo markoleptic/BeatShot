@@ -33,6 +33,4 @@ public:
 	virtual void EndGameMode() override;
 
 	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
-
-	virtual void UpdateScore(float TimeElapsed) override;
 };

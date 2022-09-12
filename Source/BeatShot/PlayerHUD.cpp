@@ -68,13 +68,15 @@ void UPlayerHUD::SetHighScore(float HighScore)
 // Should probably just pass one element at a time using above functions for better efficiency
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 {
+	GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
+
 	if (NewPlayerScoreStruct.IsBeatTrackMode == true)
 	{
-		float Score = NewPlayerScoreStruct.Score;
+		float Score = round(NewPlayerScoreStruct.Score);
 		float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
 		float ShotsFired = 0;
 		float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
-		float HighScore = NewPlayerScoreStruct.HighScore;
+		float HighScore = round(NewPlayerScoreStruct.HighScore);
 
 
 		if (isnan(Score / TotalPossibleDamage))
@@ -102,10 +104,10 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 	else
 	{
 		float TargetsHit = NewPlayerScoreStruct.TargetsHit;
-		float Score = NewPlayerScoreStruct.Score;
+		float Score = round(NewPlayerScoreStruct.Score);
 		float ShotsFired = NewPlayerScoreStruct.ShotsFired;
 		float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
-		float HighScore = NewPlayerScoreStruct.HighScore;
+		float HighScore = round(NewPlayerScoreStruct.HighScore);
 
 		if (isnan(TargetsHit / ShotsFired))
 		{

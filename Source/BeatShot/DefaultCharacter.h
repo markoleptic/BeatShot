@@ -9,7 +9,7 @@
 class UNiagaraSystem;
 class AProjectile;
 class ADefaultPlayerController;
-class UDefaultStatSaveGame;
+class USaveGamePlayerSettings;
 class UDefaultGameInstance;
 class USceneComponent;
 class USkeletalMeshComponent;
@@ -81,7 +81,7 @@ public:
 	UPROPERTY()
 	FOnShotFired OnShotFired;
 
-	UPROPERTY(EditAnywhere, Category = "Target Properties", BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, Category = "Animation", BlueprintReadWrite)
 	UNiagaraSystem* NS_MuzzleFlash;
 
 	FTimerHandle RecoilAnimDelay;
@@ -113,6 +113,9 @@ private:
 
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");
 	float TraceDistance;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties");
+	float TotalPossibleDamage;
 
 protected:
 

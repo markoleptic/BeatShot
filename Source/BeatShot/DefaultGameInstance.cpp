@@ -10,32 +10,21 @@
 #include "TargetSpawner.h"
 #include "SphereTarget.h"
 #include "Kismet/GameplayStatics.h"
-#include "DefaultStatSaveGame.h"
+#include "SaveGamePlayerSettings.h"
 
 
 void UDefaultGameInstance::Init()
 {
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
 	{
-		SaveSettingsGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0));
+		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0));
 	}
 	else
 	{
-		SaveSettingsGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
+		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
 	}
 
-	LoadSettings();
-
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
-	{
-		SaveScoreGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-	}
-	else
-	{
-		SaveScoreGameInstance = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass()));
-	}
-
-	LoadScores();
+	LoadPlayerSettings();
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
@@ -55,6 +44,7 @@ void UDefaultGameInstance::RegisterTargetSpawner(ATargetSpawner* TargetSpawner)
 void UDefaultGameInstance::RegisterSphereTarget(ASphereTarget* SphereTarget)
 {
 	SphereTargetRef = SphereTarget;
+	SphereTargetArray.Add(SphereTarget);
 }
 
 void UDefaultGameInstance::RegisterGameModeBase(AGameModeBase* GameModeBase)
@@ -70,11 +60,6 @@ void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameMod
 void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController)
 {
 	DefaultPlayerControllerRef = DefaultPlayerController;
-}
-
-void UDefaultGameInstance::RegisterProjectile(AProjectile* Projectile)
-{
-	ProjectileRef = Projectile;
 }
 
 void UDefaultGameInstance::SetSensitivity(float InputSensitivity)
@@ -146,45 +131,24 @@ FAASettingsStruct UDefaultGameInstance::LoadAudioAnalyzerSettings()
 	return AASettingsStruct;
 }
 
-void UDefaultGameInstance::SaveSettings()
+void UDefaultGameInstance::SavePlayerSettings()
 {
-	if (UDefaultStatSaveGame* SaveGameInstanceToSave = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass())))
+	if (USaveGamePlayerSettings* SaveGameInstanceToSave = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
-		SaveGameInstanceToSave->SavedPlayerSettings = PlayerSettings;
+		SaveGameInstanceToSave->PlayerSettings = PlayerSettings;
 		if (UGameplayStatics::SaveGameToSlot(SaveGameInstanceToSave, TEXT("SettingsSlot"), 0))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("SaveSettings Succeeded"));
+			UE_LOG(LogTemp, Warning, TEXT("SavePlayerSettings Succeeded"));
 		}
 	}
 }
 
-void UDefaultGameInstance::LoadSettings()
+void UDefaultGameInstance::LoadPlayerSettings()
 {
-	if (SaveSettingsGameInstance)
+	if (SaveGamePlayerSettings)
 	{
-		PlayerSettings = SaveSettingsGameInstance->SavedPlayerSettings;
+		PlayerSettings = SaveGamePlayerSettings->PlayerSettings;
 		UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
-	}
-}
-
-void UDefaultGameInstance::SaveScores(FPlayerScore PlayerScoreStructToSave)
-{
-	if (UDefaultStatSaveGame* SaveGameInstanceToSave = Cast<UDefaultStatSaveGame>(UGameplayStatics::CreateSaveGameObject(UDefaultStatSaveGame::StaticClass())))
-	{
-		SaveGameInstanceToSave->InsertToPlayerScoreStructArray(PlayerScoreStructToSave);
-		if (UGameplayStatics::SaveGameToSlot(SaveGameInstanceToSave, TEXT("ScoreSlot"), 1))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SaveScores Succeeded"));
-		}
-	}
-}
-
-void UDefaultGameInstance::LoadScores()
-{
-	if (SaveScoreGameInstance)
-	{
-		ArrayOfPlayerScoreStructs = SaveScoreGameInstance->GetArrayOfPlayerScoreStructs();
-		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded to Game Instance"));
 	}
 }
 

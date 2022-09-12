@@ -7,7 +7,7 @@
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
-class UDefaultStatSaveGame;
+class USaveGamePlayerSettings;
 class ADefaultGameMode;
 class ATargetSpawner;
 class ADefaultCharacter;
@@ -15,7 +15,6 @@ class AGameModeBase;
 class ASphereTarget;
 class AGameModeActorBase;
 class ADefaultPlayerController;
-class AProjectile;
 /**
  * 
  */
@@ -55,11 +54,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	FGameModeActorStruct GameModeActorStruct;
 
-	// Probably not being used by anything besides Projectile
-	// TODO: remove the calls by projectile to register this
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	AProjectile* ProjectileRef;
-
 	// Register Functions
 
 	UFUNCTION(BlueprintCallable, Category = "References")
@@ -79,9 +73,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
-
-	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterProjectile(AProjectile* Projectile);
 
 	// Settings Menu setter and getter functions
 
@@ -119,7 +110,6 @@ public:
 	EGameModeActorName GameModeActorName;
 
 	// Audio Analyzer Settings
-	// TODO: Maybe move this to DefaultGameMode
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	FAASettingsStruct AASettingsStruct;
@@ -130,35 +120,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FAASettingsStruct LoadAudioAnalyzerSettings();
 
-	// Controls, Music, Video Settings
+	// Player Settings: Video, Music, Controls
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
 	FPlayerSettings PlayerSettings;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
-	UDefaultStatSaveGame* SaveSettingsGameInstance;
+	USaveGamePlayerSettings* SaveGamePlayerSettings;
 
 	UFUNCTION(BlueprintCallable)
-	void SaveSettings();
+	void SavePlayerSettings();
 
 	UFUNCTION(BlueprintCallable)
-	void LoadSettings();
-
-	// Player Scores
-	// TODO: Move any handling of scores to GameModeActorBase
-
-	UFUNCTION(BlueprintCallable)
-	void SaveScores(FPlayerScore PlayerScoreStructToSave);
-
-	UFUNCTION(BlueprintCallable)
-	void LoadScores();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
-	UDefaultStatSaveGame* SaveScoreGameInstance;
-
-	// Used to load previously saved PlayerScores, accessed by GameModeActorBase
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
-	TArray<FPlayerScore> ArrayOfPlayerScoreStructs;
-
-private:
+	void LoadPlayerSettings();
 };

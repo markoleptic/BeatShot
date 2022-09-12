@@ -2,6 +2,8 @@
 
 
 #include "SphereTarget.h"
+
+#include "BeatTrack.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
 #include "HealthComponent.h"
@@ -57,7 +59,7 @@ void ASphereTarget::HandleDestruction()
 	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
 	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorName != EGameModeActorName::BeatTrack))
 	{
-		GI->GameModeActorBaseRef->UpdateScore(TimeAlive);
+		GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		Destroy();
 	}

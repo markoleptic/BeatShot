@@ -46,10 +46,6 @@ void ATargetSpawner::Tick(float DeltaTime)
 		CurrentTrackerLocation += TrackingDirection * TrackingSpeed * DeltaTime;
 
 		TrackingTarget->SetActorLocation(CurrentTrackerLocation);
-
-		//CurrentDistance = (CurrentTrackerLocation - StartLocation).Size();
-
-		//FMath::VInterpConstantTo(TrackingTarget->GetActorLocation(), EndLocation, DeltaTime, 2);
 	}
 }
 
@@ -76,10 +72,6 @@ void ATargetSpawner::SpawnActor()
 
 				// Broadcast to GameModeActorBase that a target has spawned
 				OnTargetSpawn.Broadcast();
-
-				// Add Target to TArray
-				GI->SphereTargetArray.Add(SpawnTarget);
-				NumTargetsAddedToArray++;
 
 				// Check for collisions for the next spawn location while randomizing
 				RandomizeLocation(LastSpawnLocation, LastTargetScale);
@@ -112,10 +104,6 @@ void ATargetSpawner::SpawnSingleActor()
 		// Broadcast to GameModeActorBase that a target has spawned
 		OnTargetSpawn.Broadcast();
 
-		// Add Target to TArray
-		GI->SphereTargetArray.Add(SpawnTarget);
-		NumTargetsAddedToArray++;
-
 		// Check for collisions for the next spawn location while randomizing
 		RandomizeLocation(LastSpawnLocation, LastTargetScale);
 
@@ -127,14 +115,8 @@ void ATargetSpawner::SpawnSingleActor()
 
 void ATargetSpawner::SpawnTracker()
 {
-	// psuedocode for tracking:
-	// if SpawnTracker() is called, direction needs to change
 	// Gets more complicated if used with regular targets
-	//Might want to have global override on channel thresholds so that it doesn't change direction too frequently
-
-	//Tracking only:
-		// SpawnActor in center based on regular beat spawning
-		// Move at (maybe random / based on BPM?) speed until another beat
+	// Move at (maybe random / based on BPM?) speed until another beat
 
 	if (TrackingTarget)
 	{
@@ -143,8 +125,7 @@ void ATargetSpawner::SpawnTracker()
 
 	if (IsValid(TrackingTarget) == false)
 	{
-		// The tracker target will always initially spawn at the center
-		// Only spawn tracker once for Tracking Only Mode
+		// Only spawn tracker once in the center if Tracking GameMode
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
 		TrackingTarget->SetMaxHealth(100000000.f);
 		TrackingTarget->SetLifeSpan(GI->GameModeActorStruct.GameModeLength);
@@ -155,26 +136,14 @@ void ATargetSpawner::SpawnTracker()
 
 		// Broadcast to GameModeActorBase that a target has spawned
 		OnTargetSpawn.Broadcast();
-
-		// Add Target to TArray
-		GI->SphereTargetArray.Add(TrackingTarget);
-		NumTargetsAddedToArray++;
 	}
 
 	if (TrackingTarget)
 	{
-		// Using static scale for now
-		// TODO: update scale to dynamic value or user specified value
-		TrackingTarget->BaseMesh->SetWorldScale3D(FVector(1, 1, 1));
-
-		// Don't care about end location if we change direction based on beat, so just choose a far enough location
+		RandomizeScale(TrackingTarget);
 		EndLocation = RandomizeTrackerLocation(LocationBeforeDirectionChange);
-
 		TrackingDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
-		UE_LOG(LogTemp, Display, TEXT("%s"), *TrackingDirection.ToCompactString());
 
-		//TotalDistance = Distance.Size();
-		//CurrentDistance = 0.0f;
 		//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 	}
 }

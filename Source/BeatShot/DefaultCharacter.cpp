@@ -2,6 +2,8 @@
 
 
 #include "DefaultCharacter.h"
+
+#include "BeatTrack.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -53,6 +55,7 @@ ADefaultCharacter::ADefaultCharacter()
 	FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
 	GunOffset = FVector(100.f, 0.f, 10.f);
 	TraceDistance = 5000.f;
+	TotalPossibleDamage = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -65,7 +68,6 @@ void ADefaultCharacter::BeginPlay()
 		GI->RegisterDefaultCharacter(this);
 	}
 	GunMesh->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-	//GunMesh->AttachToComponent(HandsMesh,FAttachmentTransformRules::SnapToTargetNotIncludingScale,"GripPoint");
 	AnimInstance = HandsMesh->GetAnimInstance();
 	Sensitivity = GI->GetSensitivity();
 
@@ -78,7 +80,6 @@ void ADefaultCharacter::BeginPlay()
 
 void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	//SaveGame();
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -103,6 +104,11 @@ void ADefaultCharacter::Tick(float DeltaTime)
 		FVector Start = CameraLocation;
 		FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
 		FCollisionQueryParams TraceParams;
+
+		if (GI->SphereTargetRef) {
+			TotalPossibleDamage++;
+			Cast<ABeatTrack>(GI->GameModeActorBaseRef)->UpdateTrackingScore(0.f, TotalPossibleDamage);
+		}
 		
 		if (bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
 		{

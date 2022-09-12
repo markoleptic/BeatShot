@@ -16,6 +16,7 @@ enum class EGameModeActorName : uint8 {
 	BeatTrack					UMETA(DisplayName, "BeatTrack")
 };
 
+
 // Used to store game properties, etc.
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
@@ -28,59 +29,64 @@ struct FGameModeActorStruct
 
 	// TimerHandle for Song Length
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FTimerHandle GameModeLengthTimer;
+		FTimerHandle GameModeLengthTimer;
 
 	// Length of song
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float GameModeLength;
+		float GameModeLength;
 
 	// Countdown TimerHandle
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FTimerHandle CountDownTimer;
+		FTimerHandle CountDownTimer;
 
 	// Countdown Time Length
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float CountdownTimerLength;
+		float CountdownTimerLength;
 
 	// Sets the minimum time between target spawns
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float TargetSpawnCD;
+		float TargetSpawnCD;
 
 	// Sets the minimum distance between recent target spawns
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float MinDistanceBetweenTargets;
+		float MinDistanceBetweenTargets;
 
 	// Used by TargetSpawner to set the center of target spawn area
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FVector CenterOfSpawnBox;
+		FVector CenterOfSpawnBox;
 
 	// Min multiplier to target size
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float MinTargetScale;
+		float MinTargetScale;
 
 	// Max multiplier to target size
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float MaxTargetScale;
+		float MaxTargetScale;
 
 	// Targets only spawn at headshot height
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	bool HeadshotHeight;
+		bool HeadshotHeight;
 
 	// Maximum time in which target will stay on screen
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float TargetMaxLifeSpan;
+		float TargetMaxLifeSpan;
 
 	// The size of the target spawn BoundingBox. Dimensions are half of the the total length/width
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FVector BoxBounds;
+		FVector BoxBounds;
 
 	// If user creates custom mode, save it with this name
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FString CustomGameModeName;
+		FString CustomGameModeName;
 
 	// Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float PlayerDelay;
+		float PlayerDelay;
+
+	bool operator== (const FGameModeActorStruct& Other) const
+	{
+		return GameModeActorName == Other.GameModeActorName;
+	}
 
 	// Generic initialization
 	FGameModeActorStruct()
@@ -104,130 +110,135 @@ struct FGameModeActorStruct
 		BoxBounds.Z = 500.f;
 	}
 
-	FGameModeActorStruct(EGameModeActorName InGameModeActorName)
-	{
-		if (InGameModeActorName == EGameModeActorName::Custom)
-		{
-			GameModeActorName = EGameModeActorName::Custom;
-			MinDistanceBetweenTargets = 100.f;
-			CenterOfSpawnBox = { 3500.f,0.f,500.f };
-			CountdownTimerLength = 3.f;
-			GameModeLength = 0.f;
-			TargetSpawnCD = 0.35f;
-			TargetMaxLifeSpan = 1.5f;
-			MinTargetScale = 0.8f;
-			MaxTargetScale = 2.f;
-			HeadshotHeight = false;
-			PlayerDelay = 0.3f;
+	//FGameModeActorStruct(EGameModeActorName InGameModeActorName)
+	//{
+	//	if (InGameModeActorName == EGameModeActorName::Custom)
+	//	{
+	//		GameModeActorName = EGameModeActorName::Custom;
+	//		MinDistanceBetweenTargets = 100.f;
+	//		CenterOfSpawnBox = { 3500.f,0.f,500.f };
+	//		CountdownTimerLength = 3.f;
+	//		GameModeLength = 0.f;
+	//		TargetSpawnCD = 0.35f;
+	//		TargetMaxLifeSpan = 1.5f;
+	//		MinTargetScale = 0.8f;
+	//		MaxTargetScale = 2.f;
+	//		HeadshotHeight = false;
+	//		PlayerDelay = 0.3f;
 
-			BoxBounds.X = 0.f;
-			// horizontal
-			BoxBounds.Y = 1600.f;
-			// vertical
-			BoxBounds.Z = 500.f;
-		}
-		else if (InGameModeActorName == EGameModeActorName::WideSpreadSingleBeat)
-		{
-			GameModeActorName = EGameModeActorName::WideSpreadSingleBeat;
-			MinDistanceBetweenTargets = 100.f;
-			CenterOfSpawnBox = { 3500.f,0.f,500.f };
-			CountdownTimerLength = 3.f;
-			GameModeLength = 0.f;
-			TargetSpawnCD = 0.1f;
-			TargetMaxLifeSpan = 1.f;
-			MinTargetScale = 0.7f;
-			MaxTargetScale = 1.5f;
-			HeadshotHeight = false;
-			PlayerDelay = 0.3f;
+	//		BoxBounds.X = 0.f;
+	//		// horizontal
+	//		BoxBounds.Y = 1600.f;
+	//		// vertical
+	//		BoxBounds.Z = 500.f;
+	//	}
+	//	else if (InGameModeActorName == EGameModeActorName::WideSpreadSingleBeat)
+	//	{
+	//		GameModeActorName = EGameModeActorName::WideSpreadSingleBeat;
+	//		MinDistanceBetweenTargets = 100.f;
+	//		CenterOfSpawnBox = { 3500.f,0.f,500.f };
+	//		CountdownTimerLength = 3.f;
+	//		GameModeLength = 0.f;
+	//		TargetSpawnCD = 0.1f;
+	//		TargetMaxLifeSpan = 1.f;
+	//		MinTargetScale = 0.7f;
+	//		MaxTargetScale = 1.5f;
+	//		HeadshotHeight = false;
+	//		PlayerDelay = 0.3f;
 
-			BoxBounds.X = 0.f;
-			// horizontal
-			BoxBounds.Y = 1600.f;
-			// vertical
-			BoxBounds.Z = 800.f;
-		}
-		else if (InGameModeActorName == EGameModeActorName::WideSpreadMultiBeat) 
-		{
-			GameModeActorName = EGameModeActorName::WideSpreadMultiBeat;
-			MinDistanceBetweenTargets = 100.f;
-			CenterOfSpawnBox = { 3500.f,0.f,500.f };
-			CountdownTimerLength = 3.f;
-			GameModeLength = 0.f;
-			TargetSpawnCD = 0.35f;
-			TargetMaxLifeSpan = 1.f;
-			MinTargetScale = 0.8f;
-			MaxTargetScale = 1.8f;
-			HeadshotHeight = false;
-			PlayerDelay = 0.4f;
+	//		BoxBounds.X = 0.f;
+	//		// horizontal
+	//		BoxBounds.Y = 1600.f;
+	//		// vertical
+	//		BoxBounds.Z = 800.f;
+	//	}
+	//	else if (InGameModeActorName == EGameModeActorName::WideSpreadMultiBeat) 
+	//	{
+	//		GameModeActorName = EGameModeActorName::WideSpreadMultiBeat;
+	//		MinDistanceBetweenTargets = 100.f;
+	//		CenterOfSpawnBox = { 3500.f,0.f,500.f };
+	//		CountdownTimerLength = 3.f;
+	//		GameModeLength = 0.f;
+	//		TargetSpawnCD = 0.35f;
+	//		TargetMaxLifeSpan = 1.f;
+	//		MinTargetScale = 0.8f;
+	//		MaxTargetScale = 1.8f;
+	//		HeadshotHeight = false;
+	//		PlayerDelay = 0.4f;
 
-			BoxBounds.X = 0.f;
-			// horizontal
-			BoxBounds.Y = 1600.f;
-			// vertical
-			BoxBounds.Z = 800.f;
-		}
-		else if (InGameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat)
-		{
-			GameModeActorName = EGameModeActorName::NarrowSpreadSingleBeat;
-			MinDistanceBetweenTargets = 100.f;
-			CenterOfSpawnBox = { 3500.f,0.f,500.f };
-			CountdownTimerLength = 3.f;
-			GameModeLength = 0.f;
-			TargetSpawnCD = 0.1f;
-			TargetMaxLifeSpan = 1.f;
-			MinTargetScale = 0.8f;
-			MaxTargetScale = 1.5f;
-			HeadshotHeight = false;
-			PlayerDelay = 0.3f;
+	//		BoxBounds.X = 0.f;
+	//		// horizontal
+	//		BoxBounds.Y = 1600.f;
+	//		// vertical
+	//		BoxBounds.Z = 800.f;
+	//	}
+	//	else if (InGameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat)
+	//	{
+	//		GameModeActorName = EGameModeActorName::NarrowSpreadSingleBeat;
+	//		MinDistanceBetweenTargets = 100.f;
+	//		CenterOfSpawnBox = { 3500.f,0.f,500.f };
+	//		CountdownTimerLength = 3.f;
+	//		GameModeLength = 0.f;
+	//		TargetSpawnCD = 0.1f;
+	//		TargetMaxLifeSpan = 1.f;
+	//		MinTargetScale = 0.8f;
+	//		MaxTargetScale = 1.5f;
+	//		HeadshotHeight = false;
+	//		PlayerDelay = 0.3f;
 
-			BoxBounds.X = 0.f;
-			// horizontal
-			BoxBounds.Y = 800.f;
-			// vertical
-			BoxBounds.Z = 600.f;
-		}
-		else if (InGameModeActorName == EGameModeActorName::NarrowSpreadMultiBeat)
-		{
-			GameModeActorName = EGameModeActorName::NarrowSpreadMultiBeat;
-			MinDistanceBetweenTargets = 100.f;
-			CenterOfSpawnBox = { 3500.f,0.f,500.f };
-			CountdownTimerLength = 3.f;
-			GameModeLength = 0.f;
-			TargetSpawnCD = 0.3f;
-			TargetMaxLifeSpan = 1.f;
-			MinTargetScale = 0.7f;
-			MaxTargetScale = 1.5f;
-			HeadshotHeight = false;
-			PlayerDelay = 0.35f;
+	//		BoxBounds.X = 0.f;
+	//		// horizontal
+	//		BoxBounds.Y = 800.f;
+	//		// vertical
+	//		BoxBounds.Z = 600.f;
+	//	}
+	//	else if (InGameModeActorName == EGameModeActorName::NarrowSpreadMultiBeat)
+	//	{
+	//		GameModeActorName = EGameModeActorName::NarrowSpreadMultiBeat;
+	//		MinDistanceBetweenTargets = 100.f;
+	//		CenterOfSpawnBox = { 3500.f,0.f,500.f };
+	//		CountdownTimerLength = 3.f;
+	//		GameModeLength = 0.f;
+	//		TargetSpawnCD = 0.3f;
+	//		TargetMaxLifeSpan = 1.f;
+	//		MinTargetScale = 0.7f;
+	//		MaxTargetScale = 1.5f;
+	//		HeadshotHeight = false;
+	//		PlayerDelay = 0.35f;
 
-			BoxBounds.X = 0.f;
-			// horizontal
-			BoxBounds.Y = 800.f;
-			// vertical
-			BoxBounds.Z = 600.f;
-		}
-		else
-		{
-			GameModeActorName = EGameModeActorName::Custom;
-			MinDistanceBetweenTargets = 100.f;
-			CenterOfSpawnBox = { 3500.f,0.f,160.f };
-			CountdownTimerLength = 3.f;
-			GameModeLength = 0.f;
-			TargetSpawnCD = 0.35f;
-			TargetMaxLifeSpan = 1.5f;
-			MinTargetScale = 0.8f;
-			MaxTargetScale = 2.f;
-			HeadshotHeight = false;
-			PlayerDelay = 0.3f;
+	//		BoxBounds.X = 0.f;
+	//		// horizontal
+	//		BoxBounds.Y = 800.f;
+	//		// vertical
+	//		BoxBounds.Z = 600.f;
+	//	}
+	//	else
+	//	{
+	//		GameModeActorName = EGameModeActorName::Custom;
+	//		MinDistanceBetweenTargets = 100.f;
+	//		CenterOfSpawnBox = { 3500.f,0.f,160.f };
+	//		CountdownTimerLength = 3.f;
+	//		GameModeLength = 0.f;
+	//		TargetSpawnCD = 0.35f;
+	//		TargetMaxLifeSpan = 1.5f;
+	//		MinTargetScale = 0.8f;
+	//		MaxTargetScale = 2.f;
+	//		HeadshotHeight = false;
+	//		PlayerDelay = 0.3f;
 
-			BoxBounds.X = 0.f;
-			// horizontal
-			BoxBounds.Y = 1600.f;
-			// vertical
-			BoxBounds.Z = 500.f;
-		}
-	}
+	//		BoxBounds.X = 0.f;
+	//		// horizontal
+	//		BoxBounds.Y = 1600.f;
+	//		// vertical
+	//		BoxBounds.Z = 500.f;
+	//	}
+	//}
 };
+
+FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
+{
+	return GetTypeHash(&Other.GameModeActorName);
+}
 
 // Used by GameModeActorBase to load and save player scores
 USTRUCT(BlueprintType)
@@ -236,8 +247,11 @@ struct FPlayerScore
 	GENERATED_USTRUCT_BODY()
 
 	// TODO: The GameMode parameters associated with the score
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	//FGameModeActorStruct GameModeActorStruct;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-	FGameModeActorStruct GameModeActorStruct;
+	EGameModeActorName GameModeActorName;
 
 	// Used by PlayerHUD to display current score
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
@@ -270,7 +284,7 @@ struct FPlayerScore
 
 	// Total possible damage that could have been done to tracking target
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float TotalPossibleDamage;
+	float TotalPossibleDamage;
 
 	FPlayerScore()
 	{
@@ -295,6 +309,24 @@ struct FPlayerScore
 		IsBeatTrackMode = false;
 		TotalPossibleDamage = 100000000.f;
 	}
+
+	//override the "<" operator so that this object can be sorted
+	//FORCEINLINE bool operator<(const FPlayerScore& Other) const
+	//{
+	//	return HighScore < Other.HighScore;
+	//}
+	//FORCEINLINE bool operator>(const FPlayerScore& Other) const
+	//{
+	//	return HighScore > Other.HighScore;
+	//}
+	//FORCEINLINE bool operator==(const FPlayerScore& Other) const
+	//{
+	//	return HighScore == Other.HighScore;
+	//}
+	//FORCEINLINE bool operator!=(const FPlayerScore& Other) const
+	//{
+	//	return HighScore != Other.HighScore;
+	//}
 };
 
 // Used by DefaultGameInstance to load and save player settings
