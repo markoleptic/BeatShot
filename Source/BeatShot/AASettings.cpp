@@ -3,6 +3,7 @@
 
 #include "AASettings.h"
 #include "DefaultGameInstance.h"
+#include "SaveGameAASettings.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/HorizontalBox.h"
@@ -12,8 +13,18 @@
 void UAASettings::NativeConstruct()
 {
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	AASettings = GI->LoadAudioAnalyzerSettings();
+
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("AASettingsSlot"), 2))
+	{
+		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::LoadGameFromSlot(TEXT("AASettingsSlot"), 2));
+	}
+	else
+	{
+		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass()));
+	}
+
 	LoadAASettings();
+	PopulateAASettings();
 }
 
 void UAASettings::ShowBandChannelsAndThresholds()
@@ -77,6 +88,14 @@ void UAASettings::ShowBandChannelsAndThresholds()
 }
 
 void UAASettings::LoadAASettings()
+{
+	if (SaveGameAASettings)
+	{
+		AASettings = SaveGameAASettings->AASettings;
+	}
+}
+
+void UAASettings::PopulateAASettings()
 {
 	NumBandChannels->SetSelectedIndex(AASettings.NumBandChannels - 1);
 
@@ -210,5 +229,20 @@ void UAASettings::SaveAASettings()
 
 	AASettings.TimeWindow = TimeWindowSlider->GetValue();
 
-	GI->SaveAudioAnalyzerSettings(AASettings);
+	if (USaveGameAASettings* SaveGameAASettingsObject = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass())))
+	{
+		SaveGameAASettingsObject->AASettings = AASettings;
+		if (UGameplayStatics::SaveGameToSlot(SaveGameAASettingsObject, TEXT("AASettingsSlot"), 2))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SaveAASettings Succeeded"));
+		}
+	}
+
+	//GI->SaveAudioAnalyzerSettings(AASettings);
+}
+
+void UAASettings::ResetAASettings()
+{
+	AASettings.ResetStruct();
+	PopulateAASettings();
 }

@@ -1,7 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DefaultGameMode.h"
-
 #include "BeatTrack.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorStruct.h"

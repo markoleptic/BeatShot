@@ -181,6 +181,9 @@ void AGameModeActorBase::LoadPlayerScores()
 
 		SavedPlayerScores = PlayerScoreMap.FindRef(GameModeActorStruct);
 		PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
+		PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
+		PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
+
 		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
 		{
 			PlayerScores.HighScore = SavedPlayerScores.HighScore;

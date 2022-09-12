@@ -23,6 +23,9 @@ struct FGameModeActorStruct
 {
 	GENERATED_USTRUCT_BODY()
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FString SongTitle;
+
 	// Used to Spawn GameModes deriving from GameModeActorBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	EGameModeActorName GameModeActorName;
@@ -85,7 +88,9 @@ struct FGameModeActorStruct
 
 	bool operator== (const FGameModeActorStruct& Other) const
 	{
-		return GameModeActorName == Other.GameModeActorName;
+		return GameModeActorName == Other.GameModeActorName && 
+			SongTitle.Equals(Other.SongTitle) &&
+			GameModeLength == Other.GameModeLength;
 	}
 
 	// Generic initialization
@@ -102,7 +107,7 @@ struct FGameModeActorStruct
 		MaxTargetScale = 2.f;
 		HeadshotHeight = false;
 		PlayerDelay = 0.3f;
-
+		SongTitle = "";
 		BoxBounds.X = 0.f;
 		// horizontal
 		BoxBounds.Y = 1600.f;
@@ -237,7 +242,7 @@ struct FGameModeActorStruct
 
 FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
 {
-	return GetTypeHash(&Other.GameModeActorName);
+	return GetTypeHash(&Other);
 }
 
 // Used by GameModeActorBase to load and save player scores
@@ -252,6 +257,12 @@ struct FPlayerScore
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	EGameModeActorName GameModeActorName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FString SongTitle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	float SongLength;
 
 	// Used by PlayerHUD to display current score
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
@@ -288,6 +299,9 @@ struct FPlayerScore
 
 	FPlayerScore()
 	{
+		GameModeActorName = EGameModeActorName::Custom;
+		SongTitle = "";
+		SongLength = 0.f;
 		Score = 0;
 		HighScore = 0;
 		Accuracy =  0;
@@ -387,6 +401,17 @@ struct FAASettingsStruct
 	int HistorySize;
 
 	FAASettingsStruct()
+	{
+		NumBandChannels = 3;
+		BandLimitsThreshold = { 2.1f, 2.1f, 2.1f };
+		BandLimits = { FVector2D(0.f, 87.f),
+			FVector2D(500.f, 700.f),
+			FVector2D(5000.f, 12000.f) };
+		TimeWindow = 0.02f;
+		HistorySize = 30.f;
+	}
+
+	void ResetStruct()
 	{
 		NumBandChannels = 3;
 		BandLimitsThreshold = { 2.1f, 2.1f, 2.1f };

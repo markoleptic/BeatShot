@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameModeActorStruct.h"
+#include "SaveGameAASettings.h"
 #include "Blueprint/UserWidget.h"
 #include "AASettings.generated.h"
 
@@ -32,7 +33,7 @@ protected:
 
 public:
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	FAASettingsStruct AASettings;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
@@ -122,14 +123,28 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UEditableTextBox* TimeWindowValue;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	USaveGameAASettings* SaveGameAASettings;
+
+	// Called anytime there is a change to the number of band channels selected
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void ShowBandChannelsAndThresholds();
 
+	// Load AASettingsStruct from Save slot
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void LoadAASettings();
 
+	// Update values in Settings Menu to match AASettingsStruct
+	UFUNCTION(BlueprintCallable, Category = "AA Settings")
+	void PopulateAASettings();
+
+	// Save AASettingsStruct to Save slot
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void SaveAASettings();
+
+	// Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save
+	UFUNCTION(BlueprintCallable, Category = "AA Settings")
+	void ResetAASettings();
 
 	class UDefaultGameInstance* GI;
 };

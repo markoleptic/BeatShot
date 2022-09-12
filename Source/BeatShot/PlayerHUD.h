@@ -52,6 +52,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* GameModeNameText;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* SongTitle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* TotalSongLength;
+
 	UPROPERTY(EditAnywhere, Category = "Player Stats")
 		float TotalTargetsSpawned;
 

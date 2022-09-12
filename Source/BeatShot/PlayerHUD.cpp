@@ -5,14 +5,19 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameModeActorBase.h"
+#include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetTextLibrary.h"
+#include "Kismet/KismetStringLibrary.h"
 
 void UPlayerHUD::NativeConstruct()
 {
 	Super::NativeConstruct();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
+	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
+	//SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(GI->GameModeBaseRef
 }
 
 void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
@@ -69,7 +74,8 @@ void UPlayerHUD::SetHighScore(float HighScore)
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 {
 	GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
-
+	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
+	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
 	if (NewPlayerScoreStruct.IsBeatTrackMode == true)
 	{
 		float Score = round(NewPlayerScoreStruct.Score);
