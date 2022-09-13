@@ -88,9 +88,24 @@ struct FGameModeActorStruct
 
 	bool operator== (const FGameModeActorStruct& Other) const
 	{
-		return GameModeActorName == Other.GameModeActorName && 
-			SongTitle.Equals(Other.SongTitle) &&
-			GameModeLength == Other.GameModeLength;
+		if ((GameModeActorName == Other.GameModeActorName) &&
+			(SongTitle.Equals(Other.SongTitle)) &&
+			(CustomGameModeName.Equals(Other.CustomGameModeName)))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	bool Equals(const FGameModeActorStruct& Other) const
+	{
+		if ((GameModeActorName == Other.GameModeActorName) &&
+			(SongTitle.Equals(Other.SongTitle)) &&
+			(CustomGameModeName.Equals(Other.CustomGameModeName)))
+		{
+			return true;
+		}
+		return false;
 	}
 
 	// Generic initialization
@@ -108,6 +123,29 @@ struct FGameModeActorStruct
 		HeadshotHeight = false;
 		PlayerDelay = 0.3f;
 		SongTitle = "";
+		CustomGameModeName = "";
+		BoxBounds.X = 0.f;
+		// horizontal
+		BoxBounds.Y = 1600.f;
+		// vertical
+		BoxBounds.Z = 500.f;
+	}
+
+	void ResetStruct()
+	{
+		GameModeActorName = EGameModeActorName::Custom;
+		MinDistanceBetweenTargets = 100.f;
+		CenterOfSpawnBox = { 3500.f,0.f,160.f };
+		CountdownTimerLength = 3.f;
+		GameModeLength = 0.f;
+		TargetSpawnCD = 0.35f;
+		TargetMaxLifeSpan = 1.5f;
+		MinTargetScale = 0.8f;
+		MaxTargetScale = 2.f;
+		HeadshotHeight = false;
+		PlayerDelay = 0.3f;
+		SongTitle = "";
+		CustomGameModeName = "";
 		BoxBounds.X = 0.f;
 		// horizontal
 		BoxBounds.Y = 1600.f;
@@ -242,7 +280,8 @@ struct FGameModeActorStruct
 
 FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
 {
-	return GetTypeHash(&Other);
+	uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
+	return Hash;
 }
 
 // Used by GameModeActorBase to load and save player scores
@@ -257,6 +296,9 @@ struct FPlayerScore
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	EGameModeActorName GameModeActorName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	FString CustomGameModeName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FString SongTitle;
@@ -300,6 +342,7 @@ struct FPlayerScore
 	FPlayerScore()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
+		CustomGameModeName = "";
 		SongTitle = "";
 		SongLength = 0.f;
 		Score = 0;
@@ -315,7 +358,6 @@ struct FPlayerScore
 	void ResetStruct()
 	{
 		Score = 0;
-		HighScore = 0;
 		Accuracy = 0;
 		ShotsFired = 0;
 		TargetsHit = 0;

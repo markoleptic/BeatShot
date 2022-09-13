@@ -162,8 +162,19 @@ void AGameModeActorBase::SavePlayerScores()
 		{
 			SavedPlayerScores.HighScore = PlayerScores.HighScore;
 		}
+
 		PlayerScoreMap.Add(GameModeActorStruct, PlayerScores);
 		SaveGamePlayerScores->PlayerScoreMap = PlayerScoreMap;
+
+		for (auto& Elem : PlayerScoreMap)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Enum: %s, Name: %s, SongName: %s, SongLength: %f, Highscore: %f"), 
+				*UEnum::GetValueAsString(Elem.Key.GameModeActorName),
+				*Elem.Key.CustomGameModeName,
+				*Elem.Key.SongTitle,
+				Elem.Key.GameModeLength,
+				Elem.Value.HighScore);
+		}
 
 		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
 		{
@@ -179,10 +190,17 @@ void AGameModeActorBase::LoadPlayerScores()
 		PlayerScoreMap = SaveGamePlayerScore->PlayerScoreMap;
 		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded to Game Instance"));
 
+		if (PlayerScoreMap.Contains(GameModeActorStruct))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Existing GameMode Found"));
+		}
 		SavedPlayerScores = PlayerScoreMap.FindRef(GameModeActorStruct);
 		PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
 		PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
 		PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
+		PlayerScores.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
+
+		UE_LOG(LogTemp, Warning, TEXT("CustomGameModeName: %s "), *PlayerScores.CustomGameModeName);
 
 		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
 		{

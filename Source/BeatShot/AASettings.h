@@ -146,5 +146,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void ResetAASettings();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 	class UDefaultGameInstance* GI;
 };

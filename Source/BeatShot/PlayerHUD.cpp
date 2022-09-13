@@ -17,7 +17,6 @@ void UPlayerHUD::NativeConstruct()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
 	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
-	//SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(GI->GameModeBaseRef
 }
 
 void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
@@ -73,7 +72,15 @@ void UPlayerHUD::SetHighScore(float HighScore)
 // Should probably just pass one element at a time using above functions for better efficiency
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 {
-	GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
+	if (NewPlayerScoreStruct.CustomGameModeName.Equals(""))
+	{
+		GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
+	}
+	else
+	{
+		GameModeNameText->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.CustomGameModeName));
+	}
+
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
 	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
 	if (NewPlayerScoreStruct.IsBeatTrackMode == true)

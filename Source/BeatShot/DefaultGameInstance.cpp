@@ -5,7 +5,6 @@
 #include "DefaultPlayerController.h"
 #include "DefaultGameMode.h"
 #include "GameModeActorBase.h"
-#include "Projectile.h"
 #include "DefaultCharacter.h"
 #include "TargetSpawner.h"
 #include "SphereTarget.h"
