@@ -29,12 +29,7 @@ void UHealthComponent::BeginPlay()
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (GI->GameModeActorStruct.GameModeActorName==EGameModeActorName::BeatTrack)
-	{
-		TotalPossibleDamage++;
-		Cast<ABeatTrack>(GI->GameModeActorBaseRef)->UpdateTrackingScore(0.f, TotalPossibleDamage);
-	}
+	TotalPossibleDamage++;
 }
 
 void UHealthComponent::SetMaxHealth(float NewMaxHealth)

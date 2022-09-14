@@ -90,6 +90,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	TArray<FPlayerScore> PlayerScoreArray;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
+	float MaxScorePerTarget;
+
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateHighScore();
 

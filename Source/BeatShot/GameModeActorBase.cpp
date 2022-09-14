@@ -72,6 +72,8 @@ void AGameModeActorBase::HandleGameStart()
 	{
 		GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
 	}
+
+	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
 }
 
 void AGameModeActorBase::StartGameMode()
@@ -112,16 +114,17 @@ void AGameModeActorBase::EndGameMode()
 
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 {
-	if (TimeElapsed <= 0.5f)
+	if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
 	{
-		PlayerScores.Score += FMath::Lerp(400.f, 1000.f, TimeElapsed / 0.5f);
+		PlayerScores.Score += FMath::Lerp(MaxScorePerTarget/2, MaxScorePerTarget, TimeElapsed / GameModeActorStruct.PlayerDelay);
 	}
-	else if (TimeElapsed <= 1.f)
+	else if (TimeElapsed <= GameModeActorStruct.PlayerDelay + 0.05f)
 	{
-		PlayerScores.Score += FMath::Lerp(1000.f, 400.f, (TimeElapsed - 0.5f) / 0.5f);
+		PlayerScores.Score += MaxScorePerTarget;
 	}
-	else {
-		PlayerScores.Score += 400;
+	else if (TimeElapsed <= GameModeActorStruct.TargetMaxLifeSpan)
+	{
+		PlayerScores.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan  - (GameModeActorStruct.PlayerDelay + 0.05f)));
 	}
 	UpdateHighScore();
 	UpdateScoresToHUD.Broadcast(PlayerScores);

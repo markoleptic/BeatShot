@@ -127,7 +127,7 @@ void ATargetSpawner::SpawnTracker()
 	{
 		// Only spawn tracker once in the center if Tracking GameMode
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
-		TrackingTarget->SetMaxHealth(100000000.f);
+		TrackingTarget->SetMaxHealth(100000.f);
 		TrackingTarget->SetLifeSpan(GI->GameModeActorStruct.GameModeLength);
 		LocationBeforeDirectionChange = FirstSpawnLocation;
 
