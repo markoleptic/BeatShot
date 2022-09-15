@@ -247,7 +247,7 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 		if (OverloadProtect > 20)
 		{
 			ShouldSpawn = false;
-			exit(0);
+			UE_LOG(LogTemp, Warning, TEXT("Overloading Location Randomizer"));
 		}
 
 		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *LocationToReturn.ToString());
@@ -267,7 +267,8 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 
 	// Only use SingleBeat if using a SingleBeat GameMode
 	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat ||
-		GameModeActorStruct.GameModeActorName == EGameModeActorName::WideSpreadSingleBeat)
+		GameModeActorStruct.GameModeActorName == EGameModeActorName::WideSpreadSingleBeat ||
+		GameModeActorStruct.IsSingleBeatMode == true)
 	{
 		SingleBeat = true;
 	}

@@ -24,11 +24,11 @@ struct FGameModeActorStruct
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FString SongTitle;
+		FString SongTitle;
 
 	// Used to Spawn GameModes deriving from GameModeActorBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	EGameModeActorName GameModeActorName;
+		EGameModeActorName GameModeActorName;
 
 	// TimerHandle for Song Length
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -86,26 +86,26 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		float PlayerDelay;
 
+	// this changes the way scoring is calculated, and prohibits DefaultCharacter from calling OnShotsFired,
+	// and Projectile from dealing damage
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+		bool IsBeatTrackMode;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+		bool IsSingleBeatMode;
+
 	bool operator== (const FGameModeActorStruct& Other) const
 	{
-		if ((GameModeActorName == Other.GameModeActorName) &&
-			(SongTitle.Equals(Other.SongTitle)) &&
-			(CustomGameModeName.Equals(Other.CustomGameModeName)))
+		if (GameModeActorName == Other.GameModeActorName &&
+			SongTitle.Equals(Other.SongTitle) &&
+			CustomGameModeName.Equals(Other.CustomGameModeName))
 		{
 			return true;
 		}
-		return false;
-	}
-
-	bool Equals(const FGameModeActorStruct& Other) const
-	{
-		if ((GameModeActorName == Other.GameModeActorName) &&
-			(SongTitle.Equals(Other.SongTitle)) &&
-			(CustomGameModeName.Equals(Other.CustomGameModeName)))
+		else
 		{
-			return true;
+			return false;
 		}
-		return false;
 	}
 
 	// Generic initialization
@@ -124,6 +124,8 @@ struct FGameModeActorStruct
 		PlayerDelay = 0.3f;
 		SongTitle = "";
 		CustomGameModeName = "";
+		IsBeatTrackMode = false;
+		IsSingleBeatMode = false;
 		BoxBounds.X = 0.f;
 		// horizontal
 		BoxBounds.Y = 1600.f;
@@ -146,6 +148,8 @@ struct FGameModeActorStruct
 		PlayerDelay = 0.3f;
 		SongTitle = "";
 		CustomGameModeName = "";
+		IsBeatTrackMode = false;
+		IsSingleBeatMode = false;
 		BoxBounds.X = 0.f;
 		// horizontal
 		BoxBounds.Y = 1600.f;
@@ -352,18 +356,23 @@ struct FPlayerScore
 		TargetsHit = 0;
 		TargetsSpawned = 0;
 		IsBeatTrackMode = false;
-		TotalPossibleDamage = 100000000.f;
+		TotalPossibleDamage = 0.f;
 	}
 
 	void ResetStruct()
 	{
+		GameModeActorName = EGameModeActorName::Custom;
+		CustomGameModeName = "";
+		SongTitle = "";
+		SongLength = 0.f;
 		Score = 0;
+		HighScore = 0;
 		Accuracy = 0;
 		ShotsFired = 0;
 		TargetsHit = 0;
 		TargetsSpawned = 0;
 		IsBeatTrackMode = false;
-		TotalPossibleDamage = 100000000.f;
+		TotalPossibleDamage = 0.f;
 	}
 
 	//override the "<" operator so that this object can be sorted

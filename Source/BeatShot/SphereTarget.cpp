@@ -2,8 +2,6 @@
 
 
 #include "SphereTarget.h"
-
-#include "BeatTrack.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
 #include "HealthComponent.h"
@@ -39,7 +37,7 @@ void ASphereTarget::BeginPlay()
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
-	if (GI->GameModeActorStruct.GameModeActorName==EGameModeActorName::BeatTrack)
+	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
 	}
@@ -57,7 +55,7 @@ void ASphereTarget::HandleDestruction()
 	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
 	FVector SphereScale = BaseMesh->GetComponentScale();
 	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
-	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorName != EGameModeActorName::BeatTrack))
+	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatTrackMode == false))
 	{
 		GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);

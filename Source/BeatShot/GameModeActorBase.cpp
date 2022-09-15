@@ -13,8 +13,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerScore.h"
 
-class USaveGamePlayerScore;
-
 AGameModeActorBase::AGameModeActorBase()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -33,15 +31,6 @@ void AGameModeActorBase::BeginPlay()
 		// Retrieve GameMode data storage object from Game Instance
 		GameModeActorStruct = GI->GameModeActorStruct;
 	}
-
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
-	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-	}
-	else
-	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
-	}
 }
 
 void AGameModeActorBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -57,10 +46,10 @@ void AGameModeActorBase::Tick(float DeltaTime)
 void AGameModeActorBase::HandleGameStart()
 {
 	LoadPlayerScores();
-
-	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::BeatTrack)
+	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		PlayerScores.IsBeatTrackMode = true;
+		PlayerScores.TotalPossibleDamage = 0.f;
 	}
 
 	// Binding delegates for scoring purposes
@@ -72,8 +61,8 @@ void AGameModeActorBase::HandleGameStart()
 	{
 		GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
 	}
-
 	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
+
 }
 
 void AGameModeActorBase::StartGameMode()
@@ -110,24 +99,50 @@ void AGameModeActorBase::EndGameMode()
 	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
 	GI->DefaultPlayerControllerRef->HideCountdown();
+
+	// Reset Struct to zero scores
+	PlayerScores.ResetStruct();
 }
 
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 {
-	if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
+	if (GameModeActorStruct.IsBeatTrackMode == false)
 	{
-		PlayerScores.Score += FMath::Lerp(MaxScorePerTarget/2, MaxScorePerTarget, TimeElapsed / GameModeActorStruct.PlayerDelay);
+		if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
+		{
+			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / GameModeActorStruct.PlayerDelay);
+		}
+		else if (TimeElapsed <= GameModeActorStruct.PlayerDelay + 0.05f)
+		{
+			PlayerScores.Score += MaxScorePerTarget;
+		}
+		else if (TimeElapsed <= GameModeActorStruct.TargetMaxLifeSpan)
+		{
+			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f)));
+		}
+		UpdateHighScore();
+		UpdateScoresToHUD.Broadcast(PlayerScores);
 	}
-	else if (TimeElapsed <= GameModeActorStruct.PlayerDelay + 0.05f)
+	else
 	{
-		PlayerScores.Score += MaxScorePerTarget;
+		UE_LOG(LogTemp, Warning, TEXT("Error: trying to call UpdateScore() with BeatTrackMode"));
 	}
-	else if (TimeElapsed <= GameModeActorStruct.TargetMaxLifeSpan)
+}
+
+void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage)
+{
+	if (GameModeActorStruct.IsBeatTrackMode==true)
 	{
-		PlayerScores.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan  - (GameModeActorStruct.PlayerDelay + 0.05f)));
+		PlayerScores.IsBeatTrackMode = true;
+		PlayerScores.TotalPossibleDamage = TotalPossibleDamage;
+		PlayerScores.Score += DamageTaken;
+		UpdateHighScore();
+		UpdateScoresToHUD.Broadcast(PlayerScores);
 	}
-	UpdateHighScore();
-	UpdateScoresToHUD.Broadcast(PlayerScores);
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error: trying to call UpdateTrackingScore() with non BeatTrackMode"));
+	}
 }
 
 void AGameModeActorBase::UpdateTargetsSpawned()
@@ -169,6 +184,7 @@ void AGameModeActorBase::SavePlayerScores()
 		PlayerScoreMap.Add(GameModeActorStruct, PlayerScores);
 		SaveGamePlayerScores->PlayerScoreMap = PlayerScoreMap;
 
+		// log the saved scores
 		for (auto& Elem : PlayerScoreMap)
 		{
 			UE_LOG(LogTemp, Display, TEXT("Enum: %s, Name: %s, SongName: %s, SongLength: %f, Highscore: %f"), 
@@ -188,23 +204,34 @@ void AGameModeActorBase::SavePlayerScores()
 
 void AGameModeActorBase::LoadPlayerScores()
 {
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
+	{
+		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
+	}
+	else
+	{
+		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
+	}
+
 	if (SaveGamePlayerScore)
 	{
 		PlayerScoreMap = SaveGamePlayerScore->PlayerScoreMap;
-		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded to Game Instance"));
+		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded from GameModeActorBase: %s"), *PlayerScores.CustomGameModeName);
 
 		if (PlayerScoreMap.Contains(GameModeActorStruct))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Existing GameMode Found"));
 		}
+
+		// save entire score struct to SavedPlayerScores, but only use certain variables for current PlayerScores structure
 		SavedPlayerScores = PlayerScoreMap.FindRef(GameModeActorStruct);
 		PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
 		PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
 		PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
 		PlayerScores.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
+		PlayerScores.TotalPossibleDamage = 0.f;
 
-		UE_LOG(LogTemp, Warning, TEXT("CustomGameModeName: %s "), *PlayerScores.CustomGameModeName);
-
+		// Update initial high score
 		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
 		{
 			PlayerScores.HighScore = SavedPlayerScores.HighScore;
@@ -226,9 +253,6 @@ void AGameModeActorBase::LoadPlayerScores()
 
 void AGameModeActorBase::HandleGameRestart()
 {
-	// Reset Struct to zero scores
-	PlayerScores.ResetStruct();
-
 	EndGameMode();
 }
 

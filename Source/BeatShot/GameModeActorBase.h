@@ -39,6 +39,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// called by WBP_Countdown when player clicks anywhere on screen, including after game restart
 	UFUNCTION(BlueprintCallable)
 	virtual void HandleGameStart();
 
@@ -81,14 +82,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	USaveGamePlayerScore* SaveGamePlayerScore;
 
+	// the entire saved score struct, with accuracy, etc.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore SavedPlayerScores;
 
+	// the "live" player scores, which start fresh and import high score from SavedPlayerScores
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore PlayerScores;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	TArray<FPlayerScore> PlayerScoreArray;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	float MaxScorePerTarget;
@@ -104,11 +104,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTargetsSpawned();
 
-	// Called by DefaultCharacter when player shoots during an active game
+	// Called by DefaultCharacter when player shoots during an active game that is not a BeatTracking game modes
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateShotsFired();
 
-	// Called by Projectile when a Player's projectile hits a SphereTarget
+	// Called by Projectile when a Player's projectile hits a SphereTarget during an active game that is not a BeatTracking game modes
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTargetsHit();
+
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
 };

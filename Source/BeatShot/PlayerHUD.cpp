@@ -69,9 +69,9 @@ void UPlayerHUD::SetHighScore(float HighScore)
 	HighScoreText->SetText(FText::AsNumber(HighScore));
 }
 
-// Should probably just pass one element at a time using above functions for better efficiency
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 {
+	// display default game mode names if not custom
 	if (NewPlayerScoreStruct.CustomGameModeName.Equals(""))
 	{
 		GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
@@ -80,15 +80,14 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 	{
 		GameModeNameText->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.CustomGameModeName));
 	}
-
+	// show song title and total song length
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
 	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
+
 	if (NewPlayerScoreStruct.IsBeatTrackMode == true)
 	{
 		float Score = round(NewPlayerScoreStruct.Score);
 		float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
-		float ShotsFired = 0;
-		float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
 		float HighScore = round(NewPlayerScoreStruct.HighScore);
 
 

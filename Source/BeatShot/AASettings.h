@@ -130,15 +130,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void ShowBandChannelsAndThresholds();
 
-	// Load AASettingsStruct from Save slot
+	// Load AASettings from Save slot
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void LoadAASettings();
 
-	// Update values in Settings Menu to match AASettingsStruct
+	// Update values in Settings Menu to match AASettings
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void PopulateAASettings();
 
-	// Save AASettingsStruct to Save slot
+	// Save AASettings to Save slot
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void SaveAASettings();
 

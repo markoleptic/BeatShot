@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameModeActorStruct.h"
+#include "SaveGameAASettings.h"
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
@@ -112,13 +113,13 @@ public:
 	// Audio Analyzer Settings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
-	FAASettingsStruct AASettingsStruct;
+	FAASettingsStruct AASettings;
 
-	UFUNCTION(BlueprintCallable)
-	void SaveAudioAnalyzerSettings(FAASettingsStruct AASettingsStructToSave);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	USaveGameAASettings* SaveGameAASettings;
 
-	UFUNCTION(BlueprintCallable)
-	FAASettingsStruct LoadAudioAnalyzerSettings();
+	UFUNCTION(BlueprintCallable, Category = "AA Settings")
+	void LoadAASettings();
 
 	// Player Settings: Video, Music, Controls
 
@@ -128,9 +129,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
 	USaveGamePlayerSettings* SaveGamePlayerSettings;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
 	void SavePlayerSettings();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
 	void LoadPlayerSettings();
 };

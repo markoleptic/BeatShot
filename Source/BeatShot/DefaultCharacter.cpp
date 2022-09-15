@@ -2,7 +2,6 @@
 
 
 #include "DefaultCharacter.h"
-
 #include "BeatTrack.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -55,7 +54,6 @@ ADefaultCharacter::ADefaultCharacter()
 	FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
 	GunOffset = FVector(100.f, 0.f, 10.f);
 	TraceDistance = 5000.f;
-	TotalPossibleDamage = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -88,7 +86,8 @@ void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (GI->GameModeActorStruct.GameModeActorName==EGameModeActorName::BeatTrack)
+	// only do tracing for Beat Track game modes
+	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		// Get the camera transform.
 		FVector CameraLocation;
@@ -104,11 +103,6 @@ void ADefaultCharacter::Tick(float DeltaTime)
 		FVector Start = CameraLocation;
 		FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
 		FCollisionQueryParams TraceParams;
-
-		if (GI->SphereTargetRef) {
-			TotalPossibleDamage++;
-			Cast<ABeatTrack>(GI->GameModeActorBaseRef)->UpdateTrackingScore(0.f, TotalPossibleDamage);
-		}
 		
 		if (bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
 		{
@@ -185,7 +179,7 @@ void ADefaultCharacter::Fire()
 				//If reached this point, the player has fired
 				if (PlayerController->CountdownActive == false)
 				{
-					if (GI->GameModeActorStruct.GameModeActorName != EGameModeActorName::BeatTrack)
+					if (GI->GameModeActorStruct.IsBeatTrackMode == false)
 					{
 						//Only updating Shots Fired
 						OnShotFired.Broadcast();

@@ -10,6 +10,7 @@
 #include "SphereTarget.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
+#include "SaveGameAASettings.h"
 
 
 void UDefaultGameInstance::Init()
@@ -24,6 +25,8 @@ void UDefaultGameInstance::Init()
 	}
 
 	LoadPlayerSettings();
+
+	LoadAASettings();
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
@@ -120,14 +123,22 @@ float UDefaultGameInstance::GetMusicVolume()
 	return PlayerSettings.MusicVolume;
 }
 
-void UDefaultGameInstance::SaveAudioAnalyzerSettings(FAASettingsStruct AASettingsStructToSave)
+void UDefaultGameInstance::LoadAASettings()
 {
-	AASettingsStruct = AASettingsStructToSave;
-}
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("AASettingsSlot"), 2))
+	{
+		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::LoadGameFromSlot(TEXT("AASettingsSlot"), 2));
+	}
+	else
+	{
+		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass()));
+	}
 
-FAASettingsStruct UDefaultGameInstance::LoadAudioAnalyzerSettings()
-{
-	return AASettingsStruct;
+	if (SaveGameAASettings)
+	{
+		AASettings = SaveGameAASettings->AASettings;
+		UE_LOG(LogTemp, Warning, TEXT("AASettings loaded to Game Instance"));
+	}
 }
 
 void UDefaultGameInstance::SavePlayerSettings()

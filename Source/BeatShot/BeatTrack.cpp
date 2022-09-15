@@ -43,12 +43,3 @@ void ABeatTrack::EndGameMode()
 {
 	Super::EndGameMode();
 }
-
-void ABeatTrack::UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage)
-{
-	PlayerScores.IsBeatTrackMode = true;
-	PlayerScores.TotalPossibleDamage = TotalPossibleDamage;
-	PlayerScores.Score += DamageTaken;
-	UpdateHighScore();
-	UpdateScoresToHUD.Broadcast(PlayerScores);
-}

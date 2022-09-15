@@ -114,9 +114,6 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Interaction");
 	float TraceDistance;
 
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties");
-	float TotalPossibleDamage;
-
 protected:
 
 	UFUNCTION(BlueprintNativeEvent)

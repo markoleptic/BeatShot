@@ -23,13 +23,22 @@ void UHealthComponent::BeginPlay()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Health = MaxHealth;
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::DamageTaken);
+	ShouldUpdateTotalPossibleDamage = false;
 	TotalPossibleDamage = 0.f;
+	if (Cast<ASphereTarget>(GetOwner()) && GI->GameModeActorStruct.IsBeatTrackMode)
+	{
+		ShouldUpdateTotalPossibleDamage = true;
+	}
 }
 
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	TotalPossibleDamage++;
+	if (ShouldUpdateTotalPossibleDamage)
+	{
+		TotalPossibleDamage++;
+		GI->GameModeActorBaseRef->UpdateTrackingScore(0.f, TotalPossibleDamage);
+	}
 }
 
 void UHealthComponent::SetMaxHealth(float NewMaxHealth)
@@ -50,9 +59,9 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 		{
 			DamagedTarget->HandleDestruction();
 		}
-		if (Health > 101)
+		if (Health > 101 && GI->GameModeActorStruct.IsBeatTrackMode == true)
 		{
-			Cast<ABeatTrack>(GI->GameModeActorBaseRef)->UpdateTrackingScore(Damage, TotalPossibleDamage);
+			GI->GameModeActorBaseRef->UpdateTrackingScore(Damage, TotalPossibleDamage);
 		}
 	}
 }

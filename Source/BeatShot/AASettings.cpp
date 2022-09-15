@@ -238,11 +238,12 @@ void UAASettings::SaveAASettings()
 		}
 	}
 
-	//GI->SaveAudioAnalyzerSettings(AASettings);
+	GI->LoadAASettings();
 }
 
 void UAASettings::ResetAASettings()
 {
 	AASettings.ResetStruct();
 	PopulateAASettings();
+	GI->LoadAASettings();
 }
