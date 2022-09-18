@@ -8,6 +8,7 @@
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
+class USaveGamePlayerScore;
 class USaveGamePlayerSettings;
 class ADefaultGameMode;
 class ATargetSpawner;
@@ -16,6 +17,11 @@ class AGameModeBase;
 class ASphereTarget;
 class AGameModeActorBase;
 class ADefaultPlayerController;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAASettingsChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerSettingsChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerScoresChange);
+
 /**
  * 
  */
@@ -84,9 +90,6 @@ public:
 	float GetSensitivity();
 
 	UFUNCTION(BlueprintCallable)
-	void SetTargetSpawnCD(float NewTargetSpawnCD);
-
-	UFUNCTION(BlueprintCallable)
 	float GetTargetSpawnCD();
 
 	UFUNCTION(BlueprintCallable)
@@ -113,13 +116,24 @@ public:
 	// Audio Analyzer Settings
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
-	FAASettingsStruct AASettings;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	USaveGameAASettings* SaveGameAASettings;
 
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
-	void LoadAASettings();
+	FAASettingsStruct LoadAASettings();
+
+	UFUNCTION(BlueprintCallable, Category = "AA Settings")
+	void SaveAASettings(FAASettingsStruct AASettingsToSave);
+
+	// Player Scores Loading / Saving
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scoring")
+	USaveGamePlayerScore* SaveGamePlayerScore;
+
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores();
+
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	void SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
 
 	// Player Settings: Video, Music, Controls
 
@@ -134,4 +148,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
 	void LoadPlayerSettings();
+
+	// delegates
+
+	UPROPERTY(BlueprintAssignable)
+	FOnAASettingsChange OnAASettingsChange;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerSettingsChange OnPlayerSettingsChange;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPlayerScoresChange OnPlayerScoresChange;
 };

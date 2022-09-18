@@ -11,7 +11,6 @@
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
-#include "SaveGamePlayerScore.h"
 
 AGameModeActorBase::AGameModeActorBase()
 {
@@ -174,81 +173,70 @@ void AGameModeActorBase::UpdateHighScore()
 
 void AGameModeActorBase::SavePlayerScores()
 {
-	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+	PlayerScores.Time = FDateTime::Now();
+	PlayerScoreArrayWrapper.PlayerScoreArray.Add(PlayerScores);
+	PlayerScoreMap.Remove(GameModeActorStruct);
+	PlayerScoreMap.Compact();
+	PlayerScoreMap.Shrink();
+	PlayerScoreMap.Add(GameModeActorStruct, PlayerScoreArrayWrapper);
+	GI->SavePlayerScores(PlayerScoreMap);
+
+	//iterating through keys
+	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
-		if (PlayerScores.HighScore > SavedPlayerScores.HighScore)
+		// get array of player scores from current key value
+		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
+		// iterate through array of player scores
+		float HighScore = 0.f;
+		for (FPlayerScore& PlayerScoreObject : TempArray)
 		{
-			SavedPlayerScores.HighScore = PlayerScores.HighScore;
+			if (PlayerScoreObject.HighScore > HighScore)
+			{
+				HighScore = PlayerScoreObject.HighScore;
+			}
 		}
-
-		PlayerScoreMap.Add(GameModeActorStruct, PlayerScores);
-		SaveGamePlayerScores->PlayerScoreMap = PlayerScoreMap;
-
-		// log the saved scores
-		for (auto& Elem : PlayerScoreMap)
-		{
-			UE_LOG(LogTemp, Display, TEXT("Enum: %s, Name: %s, SongName: %s, SongLength: %f, Highscore: %f"), 
-				*UEnum::GetValueAsString(Elem.Key.GameModeActorName),
-				*Elem.Key.CustomGameModeName,
-				*Elem.Key.SongTitle,
-				Elem.Key.GameModeLength,
-				Elem.Value.HighScore);
-		}
-
-		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
-		}
+	UE_LOG(LogTemp, Display, TEXT("Enum: %s, Name: %s, SongName: %s, SongLength: %f, Highscore: %f"),
+		*UEnum::GetValueAsString(Elem.Key.GameModeActorName),
+		*Elem.Key.CustomGameModeName,
+		*Elem.Key.SongTitle,
+		Elem.Key.GameModeLength,
+		HighScore);
 	}
 }
 
 void AGameModeActorBase::LoadPlayerScores()
 {
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
+	PlayerScoreMap = GI->LoadPlayerScores();
+
+	if (PlayerScoreMap.Contains(GameModeActorStruct))
 	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-	}
-	else
-	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
+		UE_LOG(LogTemp, Warning, TEXT("Existing GameMode Found"));
 	}
 
-	if (SaveGamePlayerScore)
+	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
-		PlayerScoreMap = SaveGamePlayerScore->PlayerScoreMap;
-		UE_LOG(LogTemp, Warning, TEXT("PlayerScores loaded from GameModeActorBase: %s"), *PlayerScores.CustomGameModeName);
-
-		if (PlayerScoreMap.Contains(GameModeActorStruct))
+		if ((Elem.Key.GameModeActorName == GameModeActorStruct.GameModeActorName &&
+			Elem.Key.GameModeActorName != EGameModeActorName::Custom)||
+			(Elem.Key.GameModeActorName == EGameModeActorName::Custom &&
+				Elem.Key.CustomGameModeName == GameModeActorStruct.CustomGameModeName)) 
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Existing GameMode Found"));
+			for (FPlayerScore& PlayerScoreObject : Elem.Value.PlayerScoreArray)
+			{
+				if (PlayerScoreObject.HighScore > PlayerScores.HighScore)
+				{
+					SavedPlayerScores = PlayerScoreObject;
+					PlayerScores.HighScore = PlayerScoreObject.HighScore;
+				}
+			}
 		}
-
-		// save entire score struct to SavedPlayerScores, but only use certain variables for current PlayerScores structure
-		SavedPlayerScores = PlayerScoreMap.FindRef(GameModeActorStruct);
-		PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
-		PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
-		PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
-		PlayerScores.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
-		PlayerScores.TotalPossibleDamage = 0.f;
-
-		// Update initial high score
-		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
-		{
-			PlayerScores.HighScore = SavedPlayerScores.HighScore;
-		}
-		
-		//if (PlayerScoreArray.Num() > 0)
-		//{
-		//	for (FPlayerScore SavedPlayerScores : PlayerScoreArray)
-		//	{
-		//		UE_LOG(LogTemp, Display, TEXT("Score %f"), SavedPlayerScores.HighScore);
-		//		if (SavedPlayerScores.HighScore > PlayerScores.HighScore)
-		//		{
-		//			PlayerScores.HighScore = SavedPlayerScores.HighScore;
-		//		}
-		//	}
-		//}
 	}
+	// save entire score struct to SavedPlayerScores, but only use certain variables for current PlayerScores structure
+	PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
+	PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
+	PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
+	PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
+	PlayerScores.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
+	PlayerScores.TotalPossibleDamage = 0.f;
 }
 
 void AGameModeActorBase::HandleGameRestart()

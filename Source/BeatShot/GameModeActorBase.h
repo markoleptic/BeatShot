@@ -8,7 +8,6 @@
 #include "GameModeActorStruct.h"
 #include "GameModeActorBase.generated.h"
 
-class USaveGamePlayerScore;
 class ASphereTarget;
 class UAudioAnalyzerManager;
 
@@ -77,16 +76,17 @@ public:
 	// Scoring
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	TMap<FGameModeActorStruct, FPlayerScore> PlayerScoreMap;
+	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	USaveGamePlayerScore* SaveGamePlayerScore;
-
-	// the entire saved score struct, with accuracy, etc.
+	// the saved score object, with accuracy, etc.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore SavedPlayerScores;
 
-	// the "live" player scores, which start fresh and import high score from SavedPlayerScores
+	// the wrapper struct that contains the array of saved player score objects
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
+	FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
+
+	// the "live" player score objects, which start fresh and import high score from SavedPlayerScores
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore PlayerScores;
 

@@ -5,7 +5,6 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GameModeActorBase.h"
-#include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
@@ -55,7 +54,6 @@ void UPlayerHUD::SetShotsFired(float ShotsFired)
 
 void UPlayerHUD::SetTargetsSpawned(float TargetsSpawned)
 {
-	//TargetSubsystem->SetTotalTargetsSpawned(TargetsSpawned);
 	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
 }
 

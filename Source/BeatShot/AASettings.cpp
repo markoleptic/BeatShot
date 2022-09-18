@@ -13,16 +13,6 @@
 void UAASettings::NativeConstruct()
 {
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("AASettingsSlot"), 2))
-	{
-		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::LoadGameFromSlot(TEXT("AASettingsSlot"), 2));
-	}
-	else
-	{
-		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass()));
-	}
-
 	LoadAASettings();
 	PopulateAASettings();
 }
@@ -89,10 +79,7 @@ void UAASettings::ShowBandChannelsAndThresholds()
 
 void UAASettings::LoadAASettings()
 {
-	if (SaveGameAASettings)
-	{
-		AASettings = SaveGameAASettings->AASettings;
-	}
+	AASettings = GI->LoadAASettings();
 }
 
 void UAASettings::PopulateAASettings()
@@ -229,21 +216,11 @@ void UAASettings::SaveAASettings()
 
 	AASettings.TimeWindow = TimeWindowSlider->GetValue();
 
-	if (USaveGameAASettings* SaveGameAASettingsObject = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass())))
-	{
-		SaveGameAASettingsObject->AASettings = AASettings;
-		if (UGameplayStatics::SaveGameToSlot(SaveGameAASettingsObject, TEXT("AASettingsSlot"), 2))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SaveAASettings Succeeded"));
-		}
-	}
-
-	GI->LoadAASettings();
+	GI->SaveAASettings(AASettings);
 }
 
 void UAASettings::ResetAASettings()
 {
 	AASettings.ResetStruct();
 	PopulateAASettings();
-	GI->LoadAASettings();
 }

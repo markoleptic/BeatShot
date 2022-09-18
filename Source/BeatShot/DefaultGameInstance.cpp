@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
 #include "SaveGameAASettings.h"
+#include "SaveGamePlayerScore.h"
 
 
 void UDefaultGameInstance::Init()
@@ -25,8 +26,6 @@ void UDefaultGameInstance::Init()
 	}
 
 	LoadPlayerSettings();
-
-	LoadAASettings();
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
@@ -78,16 +77,6 @@ float UDefaultGameInstance::GetSensitivity()
 	return PlayerSettings.Sensitivity;
 }
 
-// Only used to be able to change target spawn CD from pause menu
-void UDefaultGameInstance::SetTargetSpawnCD(float NewTargetSpawnCD)
-{
-	GameModeActorStruct.TargetSpawnCD = NewTargetSpawnCD;
-	if (TargetSpawnerRef)
-	{
-		TargetSpawnerRef->SetTargetSpawnCD(NewTargetSpawnCD);
-	}
-}
-
 float UDefaultGameInstance::GetTargetSpawnCD()
 {
 	return GameModeActorStruct.TargetSpawnCD;
@@ -123,7 +112,7 @@ float UDefaultGameInstance::GetMusicVolume()
 	return PlayerSettings.MusicVolume;
 }
 
-void UDefaultGameInstance::LoadAASettings()
+FAASettingsStruct UDefaultGameInstance::LoadAASettings()
 {
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("AASettingsSlot"), 2))
 	{
@@ -136,9 +125,49 @@ void UDefaultGameInstance::LoadAASettings()
 
 	if (SaveGameAASettings)
 	{
-		AASettings = SaveGameAASettings->AASettings;
 		UE_LOG(LogTemp, Warning, TEXT("AASettings loaded to Game Instance"));
+		return SaveGameAASettings->AASettings;
 	}
+	return FAASettingsStruct();
+}
+
+void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
+{
+	if (USaveGameAASettings* SaveGameAASettingsObject = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass())))
+	{
+		SaveGameAASettingsObject->AASettings = AASettingsToSave;
+		if (UGameplayStatics::SaveGameToSlot(SaveGameAASettingsObject, TEXT("AASettingsSlot"), 2))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SaveAASettings Succeeded"));
+		}
+	}
+	OnAASettingsChange.Broadcast();
+}
+
+TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores()
+{
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
+	{
+		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
+		UE_LOG(LogTemp, Display, TEXT("PlayerScores Loaded"));
+		return SaveGamePlayerScore->PlayerScoreMap;
+	}
+	SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
+	return SaveGamePlayerScore->PlayerScoreMap;
+}
+
+void UDefaultGameInstance::SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+	{
+		SaveGamePlayerScores->PlayerScoreMap = PlayerScoreMapToSave;
+
+		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
+		}
+	}
+	OnPlayerScoresChange.Broadcast();
 }
 
 void UDefaultGameInstance::SavePlayerSettings()
@@ -151,6 +180,7 @@ void UDefaultGameInstance::SavePlayerSettings()
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerSettings Succeeded"));
 		}
 	}
+	OnPlayerSettingsChange.Broadcast();
 }
 
 void UDefaultGameInstance::LoadPlayerSettings()

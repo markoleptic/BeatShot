@@ -123,9 +123,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UEditableTextBox* TimeWindowValue;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
-	USaveGameAASettings* SaveGameAASettings;
-
 	// Called anytime there is a change to the number of band channels selected
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void ShowBandChannelsAndThresholds();

@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine/UserDefinedStruct.h"
 #include "GameModeActorStruct.generated.h"
 
 UENUM(BlueprintType)
@@ -16,6 +17,24 @@ enum class EGameModeActorName : uint8 {
 	BeatTrack					UMETA(DisplayName, "BeatTrack")
 };
 
+USTRUCT(BlueprintType)
+struct FAllGameModeActorNames
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	TArray<EGameModeActorName> AllGameModeActorNames;
+
+
+	FAllGameModeActorNames()
+	{
+		AllGameModeActorNames.Add(EGameModeActorName::NarrowSpreadSingleBeat);
+		AllGameModeActorNames.Add(EGameModeActorName::WideSpreadSingleBeat);
+		AllGameModeActorNames.Add(EGameModeActorName::NarrowSpreadMultiBeat);
+		AllGameModeActorNames.Add(EGameModeActorName::WideSpreadMultiBeat);
+		AllGameModeActorNames.Add(EGameModeActorName::BeatTrack);
+	}
+};
 
 // Used to store game properties, etc.
 USTRUCT(BlueprintType)
@@ -94,7 +113,7 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		bool IsSingleBeatMode;
 
-	bool operator== (const FGameModeActorStruct& Other) const
+	FORCEINLINE bool operator== (const FGameModeActorStruct& Other) const
 	{
 		if (GameModeActorName == Other.GameModeActorName &&
 			SongTitle.Equals(Other.SongTitle) &&
@@ -102,10 +121,8 @@ struct FGameModeActorStruct
 		{
 			return true;
 		}
-		else
-		{
-			return false;
-		}
+		return false;
+
 	}
 
 	// Generic initialization
@@ -294,10 +311,6 @@ struct FPlayerScore
 {
 	GENERATED_USTRUCT_BODY()
 
-	// TODO: The GameMode parameters associated with the score
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-	//FGameModeActorStruct GameModeActorStruct;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	EGameModeActorName GameModeActorName;
 
@@ -343,6 +356,14 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float TotalPossibleDamage;
 
+	// Array that contains the time offset from Spawn Beat Delay for destroyed targets
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	TArray<float> ReactionTime;
+
+	// time that player completed the session
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	FDateTime Time;
+
 	FPlayerScore()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
@@ -374,24 +395,6 @@ struct FPlayerScore
 		IsBeatTrackMode = false;
 		TotalPossibleDamage = 0.f;
 	}
-
-	//override the "<" operator so that this object can be sorted
-	//FORCEINLINE bool operator<(const FPlayerScore& Other) const
-	//{
-	//	return HighScore < Other.HighScore;
-	//}
-	//FORCEINLINE bool operator>(const FPlayerScore& Other) const
-	//{
-	//	return HighScore > Other.HighScore;
-	//}
-	//FORCEINLINE bool operator==(const FPlayerScore& Other) const
-	//{
-	//	return HighScore == Other.HighScore;
-	//}
-	//FORCEINLINE bool operator!=(const FPlayerScore& Other) const
-	//{
-	//	return HighScore != Other.HighScore;
-	//}
 };
 
 // Used by DefaultGameInstance to load and save player settings
@@ -423,6 +426,16 @@ struct FPlayerSettings
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
 	}
+};
+
+// Used by PlayerScoreMap
+USTRUCT(BlueprintType)
+struct FPlayerScoreArrayWrapper
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	TArray<FPlayerScore> PlayerScoreArray;
 };
 
 // Used by AASettings widget to relay Audio Analyzer settings to DefaultGameInstance
