@@ -14,15 +14,20 @@
 void UScoreAnalysisWidget::NativeConstruct()
 {
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+
 	LoadPlayerScores();
-	GameModeSelectComboBox->OnSelectionChanged.AddDynamic(this, &UScoreAnalysisWidget::PopulateSongSelectorComboBox);
+
+	// update the song selector and clear the scoreboxes when game mode selection changes
 	GameModeSelectComboBox->OnSelectionChanged.AddDynamic(this, &UScoreAnalysisWidget::ClearScoreBoxes);
+	GameModeSelectComboBox->OnSelectionChanged.AddDynamic(this, &UScoreAnalysisWidget::PopulateSongSelectorComboBox);
+	// repopulate recent and average score boxes when song selection changes
 	SongSelectorComboBox->OnSelectionChanged.AddDynamic(this, &UScoreAnalysisWidget::PopulateRecentScores);
 	SongSelectorComboBox->OnSelectionChanged.AddDynamic(this, &UScoreAnalysisWidget::PopulateAvgScoresBySong);
 }
 
-void UScoreAnalysisWidget::PopulateRecentScores(FString SelectedItem, ESelectInfo::Type SelectionType)
+void UScoreAnalysisWidget::PopulateRecentScores(FString SelectedSong, ESelectInfo::Type SelectionType)
 {
+	// clear all text
 	TargetBar->SetPercent(0.f);
 	TargetsHitText->SetText(FText::AsNumber(0.f));
 	Accuracy->SetText(FText::AsPercent(0.f));
@@ -31,28 +36,26 @@ void UScoreAnalysisWidget::PopulateRecentScores(FString SelectedItem, ESelectInf
 	CurrentScoreText->SetText(FText::AsNumber(0.f));
 	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(0.f), 3)));
 
+	// iterate through all elements in PlayerScoreMap
 	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
-		// get array of player scores from current key value
+		// find matching Elem.Key for SelectedGameMode
 		if (GameModeSelectComboBox->GetSelectedOption() == UKismetStringLibrary::RightChop(UEnum::GetValueAsString<EGameModeActorName>(Elem.Key.GameModeActorName), 20) ||
 			GameModeSelectComboBox->GetSelectedOption() == Elem.Key.CustomGameModeName)
 		{
-			if (SelectedItem == Elem.Key.SongTitle)
+			// find matching Elem.Key for SelectedSong
+			if (SelectedSong == Elem.Key.SongTitle)
 			{
 				FPlayerScore MostRecentScoreObject;
 				FDateTime MostRecentTime = FDateTime::MinValue();
 
-				//FPlayerScoreArrayWrapper ScoreArrayWrapper = PlayerScoreMap.FindRef(MatchingGameMode);
-
 				// find the most recent time in the Score Array
 				for (FPlayerScore CurrentPlayerScoreObject : Elem.Value.PlayerScoreArray)
 				{
-					UE_LOG(LogTemp, Display, TEXT("OuterTime: %s"), *CurrentPlayerScoreObject.Time.ToString());
 					if (CurrentPlayerScoreObject.Time > MostRecentTime)
 					{
 						MostRecentScoreObject = CurrentPlayerScoreObject;
 						MostRecentTime = CurrentPlayerScoreObject.Time;
-						UE_LOG(LogTemp, Display, TEXT("InnerTime: %s"), *CurrentPlayerScoreObject.Time.ToString());
 					}
 				}
 
@@ -61,6 +64,7 @@ void UScoreAnalysisWidget::PopulateRecentScores(FString SelectedItem, ESelectInf
 				const float TargetsSpawned = MostRecentScoreObject.TargetsSpawned;
 				const float Score = MostRecentScoreObject.Score;
 
+				// update values
 				TargetBar->SetPercent(TargetsHit / ShotsFired);
 				TargetsHitText->SetText(FText::AsNumber(TargetsHit));
 				Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
@@ -73,7 +77,7 @@ void UScoreAnalysisWidget::PopulateRecentScores(FString SelectedItem, ESelectInf
 	}
 }
 
-void UScoreAnalysisWidget::PopulateSongSelectorComboBox(FString SelectedItem, ESelectInfo::Type SelectionType)
+void UScoreAnalysisWidget::PopulateSongSelectorComboBox(FString SelectedGameMode, ESelectInfo::Type SelectionType)
 {
 	SongSelectorComboBox->ClearOptions();
 
@@ -83,9 +87,9 @@ void UScoreAnalysisWidget::PopulateSongSelectorComboBox(FString SelectedItem, ES
 	// looping through all game modes in PlayerScoreMap
 	for (FGameModeActorStruct& GameModeActorStruct : Keys)
 	{
-		// find matching key for SelectedItem
-		if (SelectedItem == UKismetStringLibrary::RightChop(UEnum::GetValueAsString(GameModeActorStruct.GameModeActorName),20) ||
-			SelectedItem == GameModeActorStruct.CustomGameModeName)
+		// find matching key for SelectedGameMode
+		if (SelectedGameMode == UKismetStringLibrary::RightChop(UEnum::GetValueAsString(GameModeActorStruct.GameModeActorName),20) ||
+			SelectedGameMode == GameModeActorStruct.CustomGameModeName)
 		{
 			if (SongSelectorComboBox->FindOptionIndex(GameModeActorStruct.SongTitle) == -1)
 			{
@@ -93,11 +97,6 @@ void UScoreAnalysisWidget::PopulateSongSelectorComboBox(FString SelectedItem, ES
 			}
 		}
 	}
-}
-
-void UScoreAnalysisWidget::PopulateAllMatchingSavedScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToLoad)
-{
-
 }
 
 void UScoreAnalysisWidget::PopulateGameModeSelectComboBox()
@@ -129,8 +128,9 @@ void UScoreAnalysisWidget::PopulateGameModeSelectComboBox()
 	}
 }
 
-void UScoreAnalysisWidget::PopulateAvgScoresBySong(FString SelectedItem, ESelectInfo::Type SelectionType)
+void UScoreAnalysisWidget::PopulateAvgScoresBySong(FString SelectedSong, ESelectInfo::Type SelectionType)
 {
+	// clear all text
 	AvgScoreText->SetText(FText::AsNumber(0.f));
 	AvgTargetBar->SetPercent(0.f);
 	AvgTargetsHitText->SetText(FText::AsNumber(0.f));
@@ -144,32 +144,34 @@ void UScoreAnalysisWidget::PopulateAvgScoresBySong(FString SelectedItem, ESelect
 	float SumTargetsSpawned = 0;
 	float SumScore = 0;
 	float HighScore = 0;
+	int ArraySize = 0;
 
+	// iterate through all elements in PlayerScoreMap
 	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
-		UE_LOG(LogTemp, Display, TEXT("CustomGameModeNameInAvg: %s"), *Elem.Key.CustomGameModeName);
-		UE_LOG(LogTemp, Display, TEXT("SelectedGameModeInAvg: %s"), *GameModeSelectComboBox->GetSelectedOption());
-		// find matching key for SelectedItem
+		// find matching Elem.Key for SelectedGameMode
 		if (GameModeSelectComboBox->GetSelectedOption() == UKismetStringLibrary::RightChop(UEnum::GetValueAsString(Elem.Key.GameModeActorName),20) ||
 			GameModeSelectComboBox->GetSelectedOption() == Elem.Key.CustomGameModeName)
 		{
-			if (Elem.Key.SongTitle == SelectedItem)
+			// find matching Elem.Key for SelectedSong
+			if (Elem.Key.SongTitle == SelectedSong)
 			{
-				int ArraySize = Elem.Value.PlayerScoreArray.Num();
-				UE_LOG(LogTemp, Display, TEXT("ArraySize: %f"), Elem.Value.PlayerScoreArray.Num());
+				// if Song Matches, this is the PlayerScoreArray for selected Game Mode and Song
 				for (FPlayerScore CurrentPlayerScoreObject : Elem.Value.PlayerScoreArray)
 				{
-					UE_LOG(LogTemp, Display, TEXT("Inside CurrentPlayerScoreObject"));
 					SumTargetsHit += CurrentPlayerScoreObject.TargetsHit;
 					SumShotsFired += CurrentPlayerScoreObject.ShotsFired;
 					SumTargetsSpawned += CurrentPlayerScoreObject.TargetsSpawned;
 					SumScore += CurrentPlayerScoreObject.Score;
+					ArraySize++;
 
+					// only update high score if greater than the last high score in PlayerScoreArray
 					if (CurrentPlayerScoreObject.HighScore > HighScore)
 					{
 						HighScore = CurrentPlayerScoreObject.HighScore;
 					}
 				}
+				// update values
 				AvgScoreText->SetText(FText::AsNumber(SumScore / ArraySize));
 				AvgTargetBar->SetPercent((SumTargetsHit / ArraySize) / (SumShotsFired / ArraySize));
 				AvgTargetsHitText->SetText(FText::AsNumber(SumTargetsHit / ArraySize));
@@ -204,4 +206,9 @@ void UScoreAnalysisWidget::ClearScoreBoxes(FString SelectedItem, ESelectInfo::Ty
 	AvgShotsFiredText->SetText(FText::AsNumber(0.f));
 	AvgTargetsSpawnedText->SetText(FText::AsNumber(0.f));
 	HighScoreText->SetText(FText::AsNumber(0.f));
+}
+
+void UScoreAnalysisWidget::PopulateAllMatchingSavedScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToLoad)
+{
+
 }

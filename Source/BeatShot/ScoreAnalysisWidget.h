@@ -32,100 +32,98 @@ protected:
 
 public:
 
+	// UMG widgets
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UComboBoxString* GameModeSelectComboBox;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UComboBoxString* SongSelectorComboBox;
 
-	// accuracy bar
+	// recent score widgets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UProgressBar* TargetBar;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* Accuracy;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TargetsHitText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* ShotsFiredText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TargetsSpawnedText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* CurrentScoreText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* HighScoreText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TotalSongLength;
 
-	// averages
-
+	// average score widgets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UProgressBar* AvgTargetBar;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* AvgAccuracy;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* AvgTargetsHitText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* AvgShotsFiredText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* AvgTargetsSpawnedText;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* AvgScoreText;
 
-	// game mode specific player scores chart
+	// graphs
+
+	// game mode specific player scores line graph
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		USimpleCartesianPlot* PlayerScoresChart;
-
-	// game mode specific player accuracy chart
+	// game mode specific player accuracy line graph
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		USimpleCartesianPlot* PlayerAccuracyChart;
-
-	// all game modes player scores chart
+	// all game modes player scores bar graph
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		USimpleBarChart* AllPlayerScoresChart;
-
+	// all game modes player accuracy bar graph
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		USimpleBarChart* AllPlayerAccuracyChart;
 
+	// Scoring Variables
+
+	// use in PopulateGameModeSelector to compare against base game modes
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		FAllGameModeActorNames AllGameModeActorNames;
-
+	// the player score map obtained from Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
 
-	// only populates the Last Session Box
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void PopulateRecentScores(FString SelectedItem, ESelectInfo::Type SelectionType);
+	// Game Mode Specific functions
 
-	// songs to display depend on the selected game mode (SelectedItem)
+	// game modes to display based on saved scores in PlayerScoreMap
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void PopulateSongSelectorComboBox(FString SelectedItem, ESelectInfo::Type SelectionType);
+		void PopulateGameModeSelectComboBox();
+	// songs to display depend on the selected game mode (SelectedGameMode)
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void PopulateSongSelectorComboBox(FString SelectedGameMode, ESelectInfo::Type SelectionType);
+	// only populates the Last Session Box based on SelectedSong
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void PopulateRecentScores(FString SelectedSong, ESelectInfo::Type SelectionType);
+	// similar to Populate Recent Scores,  but instead takes an average based on SelectedSong
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void PopulateAvgScoresBySong(FString SelectedSong, ESelectInfo::Type SelectionType);
 
+	// All Game Modes functions
+
+	// NYI
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void PopulateAllMatchingSavedScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToLoad);
 
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void PopulateGameModeSelectComboBox();
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void PopulateAvgScoresBySong(FString SelectedItem, ESelectInfo::Type SelectionType);
+	// Utility functions
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void LoadPlayerScores();
-
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void ClearScoreBoxes(FString SelectedItem, ESelectInfo::Type SelectionType);
+
+	// References
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		class UDefaultGameInstance* GI;

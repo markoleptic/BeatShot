@@ -138,12 +138,13 @@ void ATargetSpawner::SpawnTracker()
 		OnTargetSpawn.Broadcast();
 	}
 
+	// update tracking direction and speed if already spawned
 	if (TrackingTarget)
 	{
 		RandomizeScale(TrackingTarget);
 		EndLocation = RandomizeTrackerLocation(LocationBeforeDirectionChange);
 		TrackingDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
-
+		TrackingSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
 		//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 	}
 }
@@ -155,8 +156,6 @@ bool ATargetSpawner::GetShouldSpawn()
 
 void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 {
-	// Whenever this function is called, we want the target to always spawn in center
-	//LastTargetSpawnedCenter = false;
 	ShouldSpawn = bShouldSpawn;
 }
 
@@ -167,7 +166,7 @@ void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 
 float ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 {
-	float RandomScaleValue = FMath::FRandRange(GameModeActorStruct.MinTargetScale, GameModeActorStruct.MaxTargetScale);
+	const float RandomScaleValue = FMath::FRandRange(GameModeActorStruct.MinTargetScale, GameModeActorStruct.MaxTargetScale);
 	Target->BaseMesh->SetWorldScale3D(FVector(RandomScaleValue, RandomScaleValue, RandomScaleValue));
 	return RandomScaleValue;
 }

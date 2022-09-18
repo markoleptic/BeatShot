@@ -61,7 +61,6 @@ void AGameModeActorBase::HandleGameStart()
 		GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
 	}
 	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
-
 }
 
 void AGameModeActorBase::StartGameMode()
@@ -146,7 +145,6 @@ void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossi
 
 void AGameModeActorBase::UpdateTargetsSpawned()
 {
-	//maybe only include targets that have time outed or been shot
 	PlayerScores.TargetsSpawned++;
 	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
@@ -181,13 +179,16 @@ void AGameModeActorBase::SavePlayerScores()
 	PlayerScoreMap.Add(GameModeActorStruct, PlayerScoreArrayWrapper);
 	GI->SavePlayerScores(PlayerScoreMap);
 
-	//iterating through keys
+	// Printing saved scores to console
+
+	// iterate through all elements in PlayerScoreMap
 	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
 		// get array of player scores from current key value
 		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
-		// iterate through array of player scores
+		
 		float HighScore = 0.f;
+		// iterate through array of player scores to find high score for current game mode / song
 		for (FPlayerScore& PlayerScoreObject : TempArray)
 		{
 			if (PlayerScoreObject.HighScore > HighScore)
@@ -213,13 +214,16 @@ void AGameModeActorBase::LoadPlayerScores()
 		UE_LOG(LogTemp, Warning, TEXT("Existing GameMode Found"));
 	}
 
+	// iterate through all elements in PlayerScoreMap
 	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
+		// find matching Elem.Key for GameModeActorName or CustomGameModeName
 		if ((Elem.Key.GameModeActorName == GameModeActorStruct.GameModeActorName &&
 			Elem.Key.GameModeActorName != EGameModeActorName::Custom)||
 			(Elem.Key.GameModeActorName == EGameModeActorName::Custom &&
 				Elem.Key.CustomGameModeName == GameModeActorStruct.CustomGameModeName)) 
 		{
+			// find matching Elem.Key for Song
 			for (FPlayerScore& PlayerScoreObject : Elem.Value.PlayerScoreArray)
 			{
 				if (PlayerScoreObject.HighScore > PlayerScores.HighScore)
@@ -230,7 +234,7 @@ void AGameModeActorBase::LoadPlayerScores()
 			}
 		}
 	}
-	// save entire score struct to SavedPlayerScores, but only use certain variables for current PlayerScores structure
+	// save entire PlayerScoreArray(Wrapper) so we can add a new Score Struct to Array at end of game mode
 	PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
 	PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
 	PlayerScores.SongTitle = GameModeActorStruct.SongTitle;

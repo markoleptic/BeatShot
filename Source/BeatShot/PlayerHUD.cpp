@@ -14,57 +14,12 @@ void UPlayerHUD::NativeConstruct()
 {
 	Super::NativeConstruct();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+
+	// update Scores when GameModeActorBase calls for an update
 	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
+
+	// initial value update
 	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
-}
-
-void UPlayerHUD::SetTargetBar(float TargetsHit, float ShotsFired)
-{
-	if (isnan(TargetsHit / ShotsFired))
-	{
-		TargetBar->SetPercent(0.f);
-	}
-	else
-	{
-		TargetBar->SetPercent(TargetsHit / ShotsFired);
-	}
-}
-
-void UPlayerHUD::SetTargetsHit(float TargetsHit)
-{
-	TargetsHitText->SetText(FText::AsNumber(TargetsHit));
-}
-
-void UPlayerHUD::SetAccuracy(float TargetsHit, float ShotsFired)
-{
-	if (isnan(TargetsHit / ShotsFired))
-	{
-		Accuracy->SetText(FText::AsPercent(0.f));
-	}
-	else
-	{
-		Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
-	}
-}
-
-void UPlayerHUD::SetShotsFired(float ShotsFired)
-{
-	ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
-}
-
-void UPlayerHUD::SetTargetsSpawned(float TargetsSpawned)
-{
-	TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
-}
-
-void UPlayerHUD::SetCurrentScore(float Score)
-{
-	CurrentScoreText->SetText(FText::AsNumber(Score));
-}
-
-void UPlayerHUD::SetHighScore(float HighScore)
-{
-	HighScoreText->SetText(FText::AsNumber(HighScore));
 }
 
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
@@ -74,34 +29,38 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 	{
 		GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
 	}
+	// display custom game mode if not a default game mode
 	else
 	{
 		GameModeNameText->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.CustomGameModeName));
 	}
+
 	// show song title and total song length
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
 	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
 
+	// set initial values as zero so they aren't NAN
+	TargetBar->SetPercent(0.f);
+	Accuracy->SetText(FText::AsPercent(0.f));
+
+	// Beat Track changes how stats are displayed
 	if (NewPlayerScoreStruct.IsBeatTrackMode == true)
 	{
-		float Score = round(NewPlayerScoreStruct.Score);
-		float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
-		float HighScore = round(NewPlayerScoreStruct.HighScore);
+		const float Score = round(NewPlayerScoreStruct.Score);
+		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
+		const float HighScore = round(NewPlayerScoreStruct.HighScore);
 
-
-		if (isnan(Score / TotalPossibleDamage))
-		{
-			TargetBar->SetPercent(0.f);
-			Accuracy->SetText(FText::AsPercent(0.f));
-		}
-		else
+		// Update Accuracy progress bar and Accuracy percentage text
+		if (!(isnan(Score / TotalPossibleDamage)))
 		{
 			TargetBar->SetPercent(Score / TotalPossibleDamage);
 			Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));
 		}
 
-		HighScoreText->SetText(FText::AsNumber(Score));
+		// Update current score
+		CurrentScoreText->SetText(FText::AsNumber(Score));
 
+		// Update high score
 		if (HighScore < Score)
 		{
 			HighScoreText->SetText(FText::AsNumber(Score));
@@ -113,38 +72,32 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 	}
 	else
 	{
-		float TargetsHit = NewPlayerScoreStruct.TargetsHit;
-		float Score = round(NewPlayerScoreStruct.Score);
-		float ShotsFired = NewPlayerScoreStruct.ShotsFired;
-		float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
-		float HighScore = round(NewPlayerScoreStruct.HighScore);
+		const float TargetsHit = NewPlayerScoreStruct.TargetsHit;
+		const float Score = round(NewPlayerScoreStruct.Score);
+		const float ShotsFired = NewPlayerScoreStruct.ShotsFired;
+		const float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
+		const float HighScore = round(NewPlayerScoreStruct.HighScore);
 
-		if (isnan(TargetsHit / ShotsFired))
-		{
-			TargetBar->SetPercent(0.f);
-		}
-		else
+		// Update Accuracy progress bar and Accuracy percentage text
+		if (!(isnan(TargetsHit / ShotsFired)))
 		{
 			TargetBar->SetPercent(TargetsHit / ShotsFired);
-		}
-
-		TargetsHitText->SetText(FText::AsNumber(TargetsHit));
-
-		if (isnan(TargetsHit / ShotsFired))
-		{
-			Accuracy->SetText(FText::AsPercent(0.f));
-		}
-		else
-		{
 			Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
 		}
 
+		// Update number of targets hit
+		TargetsHitText->SetText(FText::AsNumber(TargetsHit));
+
+		// Update number of shots fired
 		ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
 
+		// Update number of targets spawned
 		TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
 
+		// update the current player score
 		CurrentScoreText->SetText(FText::AsNumber(Score));
 
+		// update the high score
 		if (HighScore < Score)
 		{
 			HighScoreText->SetText(FText::AsNumber(Score));
@@ -154,6 +107,5 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 			HighScoreText->SetText(FText::AsNumber(HighScore));
 		}
 	}
-
 }
 

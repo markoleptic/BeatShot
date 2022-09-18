@@ -58,34 +58,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TotalSongLength;
 
-	UPROPERTY(EditAnywhere, Category = "Player Stats")
-		float TotalTargetsSpawned;
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetTargetBar(float TargetsHit, float ShotsFired);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetTargetsHit(float TargetsHit);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetAccuracy(float TargetsHit, float ShotsFired);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetShotsFired(float ShotsFired);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetTargetsSpawned(float TargetsSpawned);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetCurrentScore(float Score);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void SetHighScore(float HighScore);
-
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	class UDefaultGameInstance* GI;
+		class UDefaultGameInstance* GI;
 };
 
