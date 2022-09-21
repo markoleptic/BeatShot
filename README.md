@@ -16,7 +16,7 @@ Developed with Unreal Engine 5, this project aims to create a standalone FPS aim
   - band limit threshold for each band channel
     - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. higher threshold -> lower analyzer sensitivity -> less targets spawned
 
-## **Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.1.3/BeatShot-Windows-v0.1.3.rar) or go to Releases**
+## **Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.1.4/BeatShot-Windows-v0.1.4.rar) or go to Releases**
 
 ## Getting .mp3/.ogg files:
 
