@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+class AGun_AK47;
 class UNiagaraSystem;
 class AProjectile;
 class ADefaultPlayerController;
@@ -19,8 +20,6 @@ class USoundBase;
 class UAnimMontage;
 class UAnimInstance;
 class UPlayerHUD;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShotFired);
 
 UCLASS()
 class BEATSHOT_API ADefaultCharacter : public ACharacter
@@ -48,26 +47,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
 	USkeletalMeshComponent* HandsMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	USkeletalMeshComponent* GunMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	USceneComponent* MuzzleLocation;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	UCameraComponent* Camera;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	FVector GunOffset;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
-	FVector MuzzleOffset;
-
-	UPROPERTY(VisibleAnywhere, Category = "Projectile");
-	USoundBase* FireSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation");
-	UAnimMontage* FireAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation");
 	UAnimInstance* AnimInstance;
@@ -75,19 +56,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
 	ADefaultPlayerController* PlayerController;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	TSubclassOf<AGun_AK47> GunClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mesh")
+	AGun_AK47* Gun;
+
 	UFUNCTION(BlueprintCallable)
 	void SetSensitivity(float NewSensitivity);
 
-	UPROPERTY()
-	FOnShotFired OnShotFired;
-
-	UPROPERTY(EditAnywhere, Category = "Animation", BlueprintReadWrite)
-	UNiagaraSystem* NS_MuzzleFlash;
-
-	FTimerHandle RecoilAnimDelay;
-
-	UFUNCTION()
-	void PlayRecoilAnim();
+	/** Returns Mesh1P subobject **/
+	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = "References")
@@ -105,14 +84,8 @@ private:
 
 	void InteractPressed();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<AProjectile> ProjectileClass;
-
 	UPROPERTY(EditAnywhere, Category = "Camera")
 	float Sensitivity;
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction");
-	float TraceDistance;
 
 protected:
 

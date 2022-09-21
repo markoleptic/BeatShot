@@ -18,6 +18,7 @@ class UTargetSubsystem;
 class UProgressBar;
 class UTextBlock;
 class UComboBoxString;
+class UWidgetSwitcher;
 
 /**
  * 
@@ -38,6 +39,9 @@ public:
 		UComboBoxString* GameModeSelectComboBox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UComboBoxString* SongSelectorComboBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UWidgetSwitcher* GameModeSpecificGraphSwitcher;
+
 
 	// recent score widgets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
@@ -88,9 +92,6 @@ public:
 
 	// Scoring Variables
 
-	// use in PopulateGameModeSelector to compare against base game modes
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
-		FAllGameModeActorNames AllGameModeActorNames;
 	// the player score map obtained from Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
@@ -109,6 +110,9 @@ public:
 	// similar to Populate Recent Scores,  but instead takes an average based on SelectedSong
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void PopulateAvgScoresBySong(FString SelectedSong, ESelectInfo::Type SelectionType);
+	UFUNCTION(BlueprintCallable, Category = "Player Stats")
+		void PopulateAbsoluteMostRecentScores();
+
 
 	// All Game Modes functions
 

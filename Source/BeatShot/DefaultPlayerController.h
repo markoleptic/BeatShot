@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
+class UPostGameMenuWidget;
 class UDefaultGameInstance;
 class UCrosshair;
 class UPlayerHUD;
@@ -47,9 +48,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ShowCountdown();
 	UFUNCTION(BlueprintCallable)
+		void ShowPostGameMenu();
+	UFUNCTION(BlueprintCallable)
+		void HidePostGameMenu();
+	UFUNCTION(BlueprintCallable)
 		void HideCountdown();
 	UFUNCTION(BlueprintCallable)
 		bool IsPlayerHUDActive();
+	UFUNCTION(BlueprintCallable)
+		bool IsPostGameMenuActive();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
 	bool CountdownActive;
@@ -73,6 +80,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCountdown> CountdownClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPostGameMenuWidget> PostGameMenuWidgetClass;
+
+	UPROPERTY()
+	UPostGameMenuWidget* PostGameMenuWidget;
+
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
 
@@ -90,4 +103,6 @@ private:
 	UDefaultGameInstance* GI;
 
 	bool PlayerHUDActive;
+
+	bool PostGameMenuActive;
 };

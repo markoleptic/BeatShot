@@ -7,15 +7,9 @@
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Projectile.h"
-#include "NiagaraSystem.h"
-#include "NiagaraFunctionLibrary.h"
-#include "NiagaraComponent.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
-#include "SphereTarget.h"
-#include "Animation/AnimMontage.h"
-#include "Animation/AnimInstance.h"
+#include "Gun_AK47.h"
 #include "Blueprint/UserWidget.h"
 
 // Sets default values
@@ -40,19 +34,6 @@ ADefaultCharacter::ADefaultCharacter()
 	HandsMesh->CastShadow = false;
 	HandsMesh->AddRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	HandsMesh->AddRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
-
-	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Gun");
-	GunMesh->SetOnlyOwnerSee(true);
-	GunMesh->bCastDynamicShadow = false;
-	GunMesh->CastShadow = false;
-	GunMesh->SetupAttachment(GetCapsuleComponent());
-
-	MuzzleLocation = CreateDefaultSubobject<USceneComponent>("Muzzle Location");
-	MuzzleLocation->SetupAttachment(GunMesh);
-	MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
-	FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
-	GunOffset = FVector(100.f, 0.f, 10.f);
-	TraceDistance = 5000.f;
 }
 
 // Called when the game starts or when spawned
@@ -64,7 +45,14 @@ void ADefaultCharacter::BeginPlay()
 	{
 		GI->RegisterDefaultCharacter(this);
 	}
-	GunMesh->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.Owner = this;
+	SpawnParameters.Instigator = GetInstigator();
+	Gun = GetWorld()->SpawnActor<AGun_AK47>(GunClass, HandsMesh->GetSocketTransform("GripPoint"), SpawnParameters);
+
+	Gun->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
+
 	AnimInstance = HandsMesh->GetAnimInstance();
 	Sensitivity = GI->GetSensitivity();
 
@@ -84,48 +72,6 @@ void ADefaultCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// only do tracing for Beat Track game modes
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
-	{
-		// Get the camera transform.
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		FHitResult Hit;
-		GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-		// Transform MuzzleOffset from camera space to world space.
-		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-		FRotator MuzzleRotation = CameraRotation;
-		FVector Start = CameraLocation;
-		FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
-		FCollisionQueryParams TraceParams;
-		
-		if (bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
-		{
-			if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
-			{
-				UGameplayStatics::ApplyDamage(HitTarget, 1.f , PlayerController, this, UDamageType::StaticClass());
-				HitTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Green);
-			}
-			else
-			{
-				if (GI->SphereTargetRef)
-				{
-					GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
-				}
-			}
-		}
-		else
-		{
-			if (GI->SphereTargetRef)
-			{
-				GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
-			}
-		}
-	}
 }
 
 // Called to bind functionality to input
@@ -144,67 +90,9 @@ void ADefaultCharacter::SetSensitivity(float NewSensitivity)
 	Sensitivity = NewSensitivity;
 }
 
-void ADefaultCharacter::PlayRecoilAnim()
-{
-	AnimInstance->Montage_Play(FireAnim, 1.f);
-	RecoilAnimDelay.Invalidate();
-}
-
 void ADefaultCharacter::Fire()
 {
-	// Attempt to fire a projectile.
-	if (ProjectileClass)
-	{
-		// Get the camera transform.
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		GetActorEyesViewPoint(CameraLocation, CameraRotation);
-		// Set MuzzleOffset to spawn projectiles slightly in front of the camera.
-		MuzzleOffset.Set(100.0f, 0.0f, 0.0f);
-		// Transform MuzzleOffset from camera space to world space.
-		FVector Muzzle = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-		FRotator MuzzleRotation = CameraRotation;
-		if (UWorld* World = GetWorld())
-		{
-			InteractPressed();
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-
-			// Spawn the projectile at the muzzle.
-			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, Muzzle, MuzzleRotation, SpawnParams);
-			if (Projectile)
-			{
-				//If reached this point, the player has fired
-				if (PlayerController->CountdownActive == false)
-				{
-					if (GI->GameModeActorStruct.IsBeatTrackMode == false)
-					{
-						//Only updating Shots Fired
-						OnShotFired.Broadcast();
-					}
-				}
-
-				Projectile->SetOwner(this);
-				Projectile->SetInstigator(this);
-
-				// Set the projectile's initial trajectory.
-				FVector LaunchDirection = MuzzleRotation.Vector();
-
-				// DrawDebugLine(GetWorld(), Muzzle, LaunchDirection, FColor::Red, false, 3);
-				Projectile->FireInDirection(LaunchDirection);
-
-				// Spawn muzzle flash niagara system
-				if (NS_MuzzleFlash)
-				{
-					FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
-					UNiagaraComponent* MuzzleFlashComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_MuzzleFlash, MuzzleTransform.GetLocation(), MuzzleTransform.Rotator());
-				}
-				GetWorldTimerManager().SetTimer(RecoilAnimDelay,this, &ADefaultCharacter::PlayRecoilAnim, 0.05f, false);
-			}
-
-		}
-	}
+	Gun->Fire();
 }
 
 void ADefaultCharacter::MoveForward(float Value)
@@ -253,7 +141,7 @@ void ADefaultCharacter::TraceForward_Implementation()
 	GetController()->GetPlayerViewPoint(Loc, Rot);
 
 	FVector Start = Loc;
-	FVector End = Start + (Rot.Vector() * TraceDistance);
+	FVector End = Start + (Rot.Vector() * 5000);
 
 	FCollisionQueryParams TraceParams;
 	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);

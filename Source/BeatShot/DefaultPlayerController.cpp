@@ -7,6 +7,7 @@
 #include "PlayerHUD.h"
 #include "PauseMenu.h"
 #include "Countdown.h"
+#include "PostGameMenuWidget.h"
 #include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/Pawn.h"
@@ -18,6 +19,7 @@ void ADefaultPlayerController::BeginPlay()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GI->RegisterPlayerController(this);
 	PlayerHUDActive = false;
+	PostGameMenuActive = false;
 }
 
 void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
@@ -101,6 +103,23 @@ void ADefaultPlayerController::ShowCountdown()
 	CountdownActive = true;
 }
 
+void ADefaultPlayerController::ShowPostGameMenu()
+{
+	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
+	PostGameMenuWidget->AddToViewport();
+	PostGameMenuActive = true;
+}
+
+void ADefaultPlayerController::HidePostGameMenu()
+{
+	if (PostGameMenuWidget)
+	{
+		PostGameMenuWidget->RemoveFromViewport();
+		PostGameMenuWidget = nullptr;
+		PostGameMenuActive = false;
+	}
+}
+
 void ADefaultPlayerController::HideCountdown()
 {
 	if (Countdown)
@@ -114,4 +133,9 @@ void ADefaultPlayerController::HideCountdown()
 bool ADefaultPlayerController::IsPlayerHUDActive()
 {
 	return PlayerHUDActive;
+}
+
+bool ADefaultPlayerController::IsPostGameMenuActive()
+{
+	return PostGameMenuActive;
 }

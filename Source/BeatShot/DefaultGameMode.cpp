@@ -6,6 +6,7 @@
 #include "GameModeActorStruct.h"
 #include "NarrowSpreadMultiBeat.h"
 #include "CustomBeat.h"
+#include "DefaultPlayerController.h"
 #include "NarrowSpreadSingleBeat.h"
 #include "WideSpreadSingleBeat.h"
 #include "WideSpreadMultiBeat.h"
@@ -20,41 +21,46 @@ void ADefaultGameMode::BeginPlay()
 	if (GI)
 	{
 		GI->RegisterGameModeBase(this);
+		GI->OnAASettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshAASettings);
 	}
+	GameModeActorAlive = false;
 
-	BandLimitsThreshold = { 2.f,2.5f,3.f,3.f };
-	BandLimits = { FVector2D(0.f, 50.f),FVector2D(51.f, 100.f),FVector2D(101.f, 2000.f),FVector2D(2001.f, 10000.f) };
-	TimeWindow = 0.02f;
-	HistorySize = 30.f;
+	InitializeGameMode(GI->GameModeActorStruct.GameModeActorName);
 }
 
-AGameModeActorBase* ADefaultGameMode::SetGameModeActorBase(EGameModeActorName GameModeActorEnum)
+void ADefaultGameMode::InitializeGameMode(EGameModeActorName GameModeActorName)
 {
+	//if (GameModeActorAlive == true)
+	//{
+	//	GI->GameModeActorBaseRef->Destroy();
+	//	GameModeActorAlive = false;
+	//}
+
 	// Wide Spread Multi Beat
-	if (GameModeActorEnum == EGameModeActorName::WideSpreadMultiBeat)
+	if (GameModeActorName == EGameModeActorName::WideSpreadMultiBeat)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadMultiBeat>(WideSpreadMultiBeatClass);
 	}
 	// Narrow Spread Multi Beat
-	else if (GameModeActorEnum == EGameModeActorName::NarrowSpreadMultiBeat) 
+	else if (GameModeActorName == EGameModeActorName::NarrowSpreadMultiBeat)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadMultiBeat>(NarrowSpreadMultiBeatClass);
 	}
 	// Narrow Spread Single Beat
-	else if (GameModeActorEnum == EGameModeActorName::NarrowSpreadSingleBeat)
+	else if (GameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ANarrowSpreadSingleBeat>(NarrowSpreadSingleBeatClass);
 	}
 	// Wide Spread Single Beat
-	else if (GameModeActorEnum == EGameModeActorName::WideSpreadSingleBeat)
+	else if (GameModeActorName == EGameModeActorName::WideSpreadSingleBeat)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<AWideSpreadSingleBeat>(WideSpreadSingleBeatClass);
 	}
-	else if (GameModeActorEnum == EGameModeActorName::BeatTrack)
+	else if (GameModeActorName == EGameModeActorName::BeatTrack)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ABeatTrack>(BeatTrackClass);
 	}
-	else if (GameModeActorEnum == EGameModeActorName::Custom)
+	else if (GameModeActorName == EGameModeActorName::Custom)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ACustomBeat>(CustomBeatClass);
 	}
@@ -64,6 +70,41 @@ AGameModeActorBase* ADefaultGameMode::SetGameModeActorBase(EGameModeActorName Ga
 			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("GameMode Init Error"));
 		}
 	}
-	return GameModeActorBase;
+
+	if (GameModeActorBase)
+	{
+		GameModeActorAlive = true;
+	}
+
+	GameModeActorBase->OnDestroyed.AddDynamic(this, &ADefaultGameMode::SetGameModeActorDestroyed);
+
+	// initialize AA settings
+	RefreshAASettings();
+
+	// spawn visualizer
+	const FVector VisualizerLocation = { 3910,0,1490 };
+	const FRotator Rotation = FRotator::ZeroRotator;
+	const FActorSpawnParameters SpawnParameters;
+	Visualizer = GetWorld()->SpawnActor(VisualizerClass, &VisualizerLocation , &Rotation, SpawnParameters);
+
+	// call blueprint function
+	InitializeAudioManagers();
+
+	// Call blueprint function
+	PauseAAManagers();
+
+	// Show crosshair and countdown
+	Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController())->ShowCrosshair();
+	Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController())->ShowCountdown();
+}
+
+void ADefaultGameMode::RefreshAASettings()
+{
+	AASettings = GI->LoadAASettings();
+}
+
+void ADefaultGameMode::SetGameModeActorDestroyed(AActor* DestroyedActor)
+{
+	GameModeActorAlive = false;
 }
 

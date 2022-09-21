@@ -27,8 +27,17 @@ public:
 	UDefaultGameInstance* GI;
 
 	// Blueprint event used to stop BPAAPlayer and BPAATracker during pause game
-	UFUNCTION(BlueprintImplementableEvent)
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
 	void StopAAPlayerAndTracker();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
+	void InitializeAudioManagers();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
+	void PauseAAManagers();
+
+	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
+	void InitializeGameMode(EGameModeActorName GameModeActorName);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 	TSubclassOf<AGameModeActorBase> WideSpreadMultiBeatClass;
@@ -48,21 +57,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 	TSubclassOf<AGameModeActorBase> CustomBeatClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
+	TSubclassOf<AActor> VisualizerClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
+	AActor* Visualizer;
+
+	// the GameModeActor that was spawned
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 	AGameModeActorBase* GameModeActorBase;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		FAASettingsStruct AASettings;
+
+	UFUNCTION(BlueprintCallable, Category = "Bound functions")
+		void RefreshAASettings();
+
 	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
-	AGameModeActorBase* SetGameModeActorBase(EGameModeActorName GameModeActorEnum);
+		void SetGameModeActorDestroyed(AActor* DestroyedActor);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	TArray<float> BandLimitsThreshold;
+	bool GameModeActorAlive;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	TArray<FVector2D> BandLimits;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	float TimeWindow;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	int HistorySize;
 };

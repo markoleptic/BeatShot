@@ -14,26 +14,12 @@ enum class EGameModeActorName : uint8 {
 	WideSpreadSingleBeat		UMETA(DisplayName, "WideSpreadSingleBeat"),
 	NarrowSpreadMultiBeat		UMETA(DisplayName, "NarrowSpreadMultiBeat"),
 	WideSpreadMultiBeat			UMETA(DisplayName, "WideSpreadMultiBeat"),
+	// REMEMBER TO UPDATE ENUM_RANGE_BY_FIRST_AND_LAST AS GAME MODES ARE ADDED!!!
 	BeatTrack					UMETA(DisplayName, "BeatTrack")
 };
 
-USTRUCT(BlueprintType)
-struct FAllGameModeActorNames
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	TArray<EGameModeActorName> AllGameModeActorNames;
-
-	FAllGameModeActorNames()
-	{
-		AllGameModeActorNames.Add(EGameModeActorName::NarrowSpreadSingleBeat);
-		AllGameModeActorNames.Add(EGameModeActorName::WideSpreadSingleBeat);
-		AllGameModeActorNames.Add(EGameModeActorName::NarrowSpreadMultiBeat);
-		AllGameModeActorNames.Add(EGameModeActorName::WideSpreadMultiBeat);
-		AllGameModeActorNames.Add(EGameModeActorName::BeatTrack);
-	}
-};
+// REMEMBER TO UPDATE THIS AS GAME MODES ARE ADDED!!!
+ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
 // Used to store game properties, etc.
 USTRUCT(BlueprintType)

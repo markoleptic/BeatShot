@@ -11,6 +11,7 @@
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Gun_AK47.h"
 
 AGameModeActorBase::AGameModeActorBase()
 {
@@ -32,11 +33,6 @@ void AGameModeActorBase::BeginPlay()
 	}
 }
 
-void AGameModeActorBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	SavePlayerScores();
-}
-
 void AGameModeActorBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -52,14 +48,9 @@ void AGameModeActorBase::HandleGameStart()
 	}
 
 	// Binding delegates for scoring purposes
-	if (GI->DefaultCharacterRef->OnShotFired.IsBound() == false)
-	{
-		GI->DefaultCharacterRef->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
-	}
-	if (GI->TargetSpawnerRef->OnTargetSpawn.IsBound() == false)
-	{
-		GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
-	}
+	GI->DefaultCharacterRef->Gun->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
+
 	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
 }
 
@@ -100,6 +91,11 @@ void AGameModeActorBase::EndGameMode()
 
 	// Reset Struct to zero scores
 	PlayerScores.ResetStruct();
+
+	// Show Post Game menu
+	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
+
+	Destroy();
 }
 
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
@@ -245,6 +241,36 @@ void AGameModeActorBase::LoadPlayerScores()
 
 void AGameModeActorBase::HandleGameRestart()
 {
-	EndGameMode();
+	SavePlayerScores();
+
+	// Stopping Player and Tracker
+	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
+
+	// Deleting Targets
+	GI->TargetSpawnerRef->SetShouldSpawn(false);
+	if (GI->SphereTargetArray.Num() > 0)
+	{
+		for (ASphereTarget* Target : GI->SphereTargetArray)
+		{
+			if (Target)
+			{
+				Target->Destroy();
+			}
+		}
+	}
+
+	//Clearing Timers
+	GameModeActorStruct.CountDownTimer.Invalidate();
+	GameModeActorStruct.GameModeLengthTimer.Invalidate();
+	GameModeActorStruct.CountdownTimerLength = 3.f;
+
+	//Hide HUD and countdown
+	GI->DefaultPlayerControllerRef->HidePlayerHUD();
+	GI->DefaultPlayerControllerRef->HideCountdown();
+
+	// Reset Struct to zero scores
+	PlayerScores.ResetStruct();
+
+	Destroy();
 }
 
