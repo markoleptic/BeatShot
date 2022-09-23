@@ -32,136 +32,157 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// Broadcasts when a target has been spawned
+	UPROPERTY(BlueprintAssignable)
+		FOnTargetSpawnSignature OnTargetSpawn;
+
+	// tracks how long its been since target has spawned
+	UPROPERTY(VisibleAnywhere)
+		FTimerHandle TimeSinceSpawn;
+
 	// Reference to Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	UDefaultGameInstance* GI;
+		UDefaultGameInstance* GI;
 
-	UFUNCTION(BlueprintCallable)
-	void SpawnActor();
+	/*
+	 * General Spawning functions available for all game modes to use
+	 */ 
 
-	UFUNCTION(BlueprintCallable)
-	void SpawnSingleActor();
+	// Called from selected GameMode
+	UFUNCTION(BlueprintCallable, Category = "Spawn Properties")
+		void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 
-	UFUNCTION(BlueprintCallable)
-	void SpawnTracker();
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		void SetTargetSpawnCD(float NewTargetSpawnCD);
 
-	UFUNCTION(BlueprintCallable)
-	bool GetShouldSpawn();
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		bool GetShouldSpawn();
 
-	// Lets the spawner know it's safe to spawn a target
-	void SetShouldSpawn(bool bShouldSpawn);
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		void SetShouldSpawn(bool bShouldSpawn);
 
-	UPROPERTY(BlueprintAssignable)
-	FOnTargetSpawnSignature OnTargetSpawn;
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		void SpawnActor();
 
-	UPROPERTY(VisibleAnywhere)
-	FTimerHandle TimeSinceSpawn;
+	/*
+	 * Game mode specific spawn functions
+	 */ 
 
-	UPROPERTY(VisibleAnywhere)
-	float NumTargetsAddedToArray;
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		void SpawnSingleActor();
 
-	// Called from selected GameMode, sets up spawn behavior
-	UFUNCTION(BlueprintCallable)
-	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
-
-	UFUNCTION(BlueprintCallable)
-	void SetTargetSpawnCD(float NewTargetSpawnCD);
-
-	// Tracking Variables and Functions
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float TotalDistance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float CurrentDistance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector CurrentTrackerLocation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float TrackingSpeed = 500.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector TrackingDirection;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	ASphereTarget* TrackingTarget;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector StartLocation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector EndLocation;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector LocationBeforeDirectionChange;
-
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		void SpawnTracker();
 
 private:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FGameModeActorStruct GameModeActorStruct;
+	/*
+	 * General Spawning variables available for all game modes to use
+	 */ 
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	bool ShouldSpawn;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	FBoxSphereBounds BoxBounds;
-
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
-	bool LastTargetSpawnedCenter = false;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UBoxComponent* SpawnBox;
-
-	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
-	TSubclassOf<ASphereTarget> ActorToSpawn;
-
-	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
-	float CheckSpawnRadius;
-
-	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
-	float MaxNumberOfTargetsAtOnce;
-
-	UFUNCTION()
-	void OnTargetDestroyed(AActor* DestroyedActor);
-
-	// Randomize scale of target
-	UFUNCTION()
-	float RandomizeScale(ASphereTarget* Target);
-
-	// Randomize location of target
-	UFUNCTION()
-	void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
-
-	// Randomize location of tracker
-	UFUNCTION()
-	FVector RandomizeTrackerLocation(FVector LocationBeforeChange);
-
-	// Location to spawn the first target
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector FirstSpawnLocation;
-
-	// Location to spawn the target
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector SpawnLocation;
-
-	// Location to refer to the last target spawned
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	FVector LastSpawnLocation;
-
-	// The scale applied to the most recently spawned target
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties", meta = (AllowPrivateAccess = true))
-	float LastTargetScale;
+		bool ShouldSpawn;
 
 	// The base size of the sphere target
-	const float SphereTargetRadius = 50.f;
+		const float SphereTargetRadius = 50.f;
 
-	TArray<FVector> RecentSpawnLocations;
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FGameModeActorStruct GameModeActorStruct;
 
-	TArray<FSphere> RecentSpawnBounds;
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+		FBoxSphereBounds BoxBounds;
 
-	bool IsTrackerMoving;
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		bool LastTargetSpawnedCenter = false;
 
-	bool SingleBeat;
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+		UBoxComponent* SpawnBox;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
+		TSubclassOf<ASphereTarget> ActorToSpawn;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
+		float CheckSpawnRadius;
+
+	UPROPERTY(EditAnywhere, Category = "Spawn Properties")
+		float MaxNumberOfTargetsAtOnce;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector FirstSpawnLocation;
+
+	// Location to spawn the next/current target
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector SpawnLocation;
+
+	// Location to refer to the last target spawned
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector LastSpawnLocation;
+
+	// The scale applied to the most recently spawned target
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		float LastTargetScale;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		TArray<FVector> RecentSpawnLocations;
+
+	// Recent sphere areas
+		TArray<FSphere> RecentSpawnBounds;
+
+	/*
+	 * BeatTrack Variables and Functions
+	 */ 
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector CurrentTrackerLocation;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		float TrackingSpeed;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector TrackingDirection;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		ASphereTarget* TrackingTarget;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector EndLocation;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		FVector LocationBeforeDirectionChange;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		bool IsTrackerMoving;
+
+	UFUNCTION()
+		FVector RandomizeTrackerLocation(FVector LocationBeforeChange);
+
+	/*
+	 * Single Beat Variables and Functions
+	 */
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		bool SingleBeat;
+
+	/*
+	 * BeatGrid Variables and Functions
+	 */
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		bool BeatGrid;
+
+	UFUNCTION(BlueprintCallable, Category = "Game Properties")
+		void InitBeatGrid();
+
+	/*
+	 * Local spawning functions
+	 */ 
+
+	UFUNCTION()
+		void OnTargetDestroyed(AActor* DestroyedActor);
+
+	UFUNCTION()
+		float RandomizeScale(ASphereTarget* Target);
+
+	UFUNCTION()
+		void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
 };

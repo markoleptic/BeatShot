@@ -6,6 +6,7 @@
 #include "Components/ComboBoxString.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/Slider.h"
 #include "KantanChartsUMGClasses.h"
 #include "Components/WidgetSwitcher.h"
 #include "Kismet/GameplayStatics.h"

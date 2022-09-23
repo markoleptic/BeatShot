@@ -15,13 +15,12 @@ ATargetSpawner::ATargetSpawner()
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
 	RootComponent = SpawnBox;
-
 	SetShouldSpawn(false);
 	LastTargetSpawnedCenter = false;
 	SingleBeat = false;
+	BeatGrid = false;
 	LastSpawnLocation = FVector::ZeroVector;
 	LastTargetScale = 1.f;
-	CurrentDistance = 0.f;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -159,6 +158,12 @@ void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 	ShouldSpawn = bShouldSpawn;
 }
 
+void ATargetSpawner::InitBeatGrid()
+{
+	//double GridSpacingY = floor(BoxBounds.BoxExtent.Y * 2 / GameModeActorStruct.BeatGridSpacing.Y);
+}
+
+
 void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 {
 	SetShouldSpawn(true);
@@ -264,39 +269,59 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	// Initialize Struct passed by GameModeActorBase
 	GameModeActorStruct = NewGameModeActor;
 
-	// Only use SingleBeat if using a SingleBeat GameMode
+	/*
+	 * GameMode specific checking
+	 */
 	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat ||
 		GameModeActorStruct.GameModeActorName == EGameModeActorName::WideSpreadSingleBeat ||
 		GameModeActorStruct.IsSingleBeatMode == true)
 	{
 		SingleBeat = true;
 	}
+	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::BeatGrid ||
+		GameModeActorStruct.IsBeatGridMode)
+	{
+		BeatGrid = true;
+	}
 
 	// GameMode menu uses the full width, while box bounds are only half width / half height
+	GameModeActorStruct.BoxBounds.X = 0.f;
 	GameModeActorStruct.BoxBounds.Y = GameModeActorStruct.BoxBounds.Y / 2.f;
 	GameModeActorStruct.BoxBounds.Z = GameModeActorStruct.BoxBounds.Z / 2.f;
 
-	// Change HeadshotOnly specific parameters
+	// Set the center of spawn box based on user selection
 	if (GameModeActorStruct.HeadshotHeight == true)
 	{
 		GameModeActorStruct.CenterOfSpawnBox.Z = 160.f;
 		GameModeActorStruct.BoxBounds.Z = 0.f;
+	}
+	else if (GameModeActorStruct.WallCentered == true)
+	{
+		GameModeActorStruct.CenterOfSpawnBox.Z = 750.f;
 	}
 	else
 	{
 		GameModeActorStruct.CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + 100.f;
 	}
 
-	// Set new location box extent for TargetSpawner
+	// Set new location & box extent
 	SpawnBox->SetRelativeLocation(GameModeActorStruct.CenterOfSpawnBox);
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	FirstSpawnLocation = BoxBounds.Origin;
 
-	// Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds
+	/*
+	 * Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds
+	 * Only used for MultiBeat
+	 */ 
 	MaxNumberOfTargetsAtOnce = ceil(GameModeActorStruct.TargetMaxLifeSpan / GameModeActorStruct.TargetSpawnCD);
 	RecentSpawnLocations.Init(BoxBounds.Origin, MaxNumberOfTargetsAtOnce);
 	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), MaxNumberOfTargetsAtOnce);
+
+	if (BeatGrid == true)
+	{
+		InitBeatGrid();
+	}
 }
 
 void ATargetSpawner::SetTargetSpawnCD(float NewTargetSpawnCD)

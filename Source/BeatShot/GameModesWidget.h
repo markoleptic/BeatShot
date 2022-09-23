@@ -7,6 +7,11 @@
 #include "SaveGameCustomGameMode.h"
 #include "GameModesWidget.generated.h"
 
+class UComboBoxString;
+class USlider;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateBeatGridConstraints, float, value);
+
 /**
  * 
  */
@@ -49,6 +54,53 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Custom GameModes")
 	void PopulateGameModeSettings();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UComboBoxString* GameModeCategoryComboBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		USlider* SpawnWidthSlider;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		USlider* SpawnHeightSlider;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		USlider* BeatGridHorizontalSpacingSlider;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		USlider* BeatGridVerticalSpacingSlider;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UComboBoxString* MaxNumBeatGridTargetsComboBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		USlider* MinTargetScaleSlider;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		USlider* MaxTargetScaleSlider;
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void UpdateBeatGridHeightConstraints(float value);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void UpdateBeatGridWidthConstraints(float value);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void BeatGridTargetSizeConstrained(float value);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void BeatGridSpawnAreaConstrained(float value);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void BeatGridNumberOfTargetsConstrained(FString SelectedSong, ESelectInfo::Type SelectionType);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void BeatGridSpacingConstrained(float value);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
+		FUpdateBeatGridConstraints BeatGridConstraintsDelegate;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-	class UDefaultGameInstance* GI;
+		class UDefaultGameInstance* GI;
+
+	const float SphereDiameter = 100.f;
 };
