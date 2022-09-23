@@ -7,6 +7,7 @@
 #include "SaveGameCustomGameMode.h"
 #include "GameModesWidget.generated.h"
 
+class UButton;
 class UComboBoxString;
 class USlider;
 
@@ -78,11 +79,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
 		USlider* MaxTargetScaleSlider;
 
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-		void UpdateBeatGridHeightConstraints(float value);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UButton* SaveCustomGameModeButton;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UButton* SaveAllAndStartGameModeButton;
+
+	// only called when user tries to save game mode or play game mode
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-		void UpdateBeatGridWidthConstraints(float value);
+		bool CheckAllBeatGridConstraints();
 
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
 		void BeatGridTargetSizeConstrained(float value);

@@ -4,6 +4,7 @@
 #include "GameModesWidget.h"
 #include "DefaultGameInstance.h"
 #include "SaveGameCustomGameMode.h"
+#include "Components/Button.h"
 #include "Components/Slider.h"
 #include "Components/ComboBoxString.h"
 #include "Kismet/GameplayStatics.h"
@@ -24,17 +25,6 @@ void UGameModesWidget::NativeConstruct()
 
 	LoadCustomGameModes();
 	PopulateGameModeSettings();
-
-
-	//still need other bindings
-	//SpawnHeightSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridHeightConstraints);
-	//SpawnWidthSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridWidthConstraints);
-	//BeatGridHorizontalSpacingSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridWidthConstraints);
-	//BeatGridVerticalSpacingSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridHeightConstraints);
-	//MinTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridWidthConstraints);
-	//MaxTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridWidthConstraints);
-	//MinTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridHeightConstraints);
-	//MaxTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::UpdateBeatGridHeightConstraints);
 
 	SpawnHeightSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpawnAreaConstrained);
 	SpawnWidthSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpawnAreaConstrained);
@@ -188,14 +178,20 @@ void UGameModesWidget::BeatGridSpacingConstrained(float value)
 		UE_LOG(LogTemp, Display, TEXT("Spacing height contraint %f"), VSpacing);
 	}
 
+
+
 }
 
-void UGameModesWidget::UpdateBeatGridHeightConstraints(float value)
+bool UGameModesWidget::CheckAllBeatGridConstraints()
 {
 	if (GameModeCategoryComboBox->GetSelectedOption() != "Beat Grid")
 	{
-		return;
+		return true;
 	}
+
+	const float Width = round(SpawnWidthSlider->GetValue());
+	const float TargetWidth = ceil(MaxTargetScaleSlider->GetValue() * SphereDiameter * 100) / 100;
+	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
 	const float Height = round(SpawnHeightSlider->GetValue());
 	const float TargetHeight = ceil(MaxTargetScaleSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float VSpacing = BeatGridVerticalSpacingSlider->GetValue();
@@ -204,49 +200,18 @@ void UGameModesWidget::UpdateBeatGridHeightConstraints(float value)
 	FDefaultValueHelper::ParseInt(ToConvert, MaxTargets);
 	MaxTargets = sqrt(MaxTargets);
 
-	// WidthORHeight = TargetScale*MaxTargets + Spacing*MaxTargets - Spacing + 200
-
-	if (Height <= (TargetHeight * MaxTargets) + (VSpacing * (MaxTargets + 1)) )
+	if (
+		TargetWidth >= ((Width - 200 - HSpacing * MaxTargets + HSpacing) / MaxTargets) ||
+		TargetHeight >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / MaxTargets) ||
+		Width <= (TargetWidth * MaxTargets + HSpacing * MaxTargets - HSpacing + 200) ||
+		Height <= (TargetHeight * MaxTargets + VSpacing * MaxTargets - VSpacing + 200) ||
+		MaxTargets >= ((Width - 200 - HSpacing * MaxTargets + HSpacing) / TargetWidth) ||
+		MaxTargets >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / TargetHeight) ||
+		HSpacing >= ((Width - TargetWidth * MaxTargets - 200) / (MaxTargets - 1)) ||
+		VSpacing >= ((Height - TargetHeight * MaxTargets - 200) / (MaxTargets - 1))
+		)
 	{
+		return false;
 	}
-	if (TargetHeight <= ( (  Height - (VSpacing * (MaxTargets + 1) ) ) / MaxTargets) )
-	{
-	}
-	if (VSpacing <= ( ( Height - (TargetHeight * MaxTargets) ) / (MaxTargets + 1) ) )
-	{
-	}
-	if (MaxTargets <= ( ( Height - VSpacing) / (TargetHeight + (2 * VSpacing) ) ) )
-	{
-	}
-}
-
-void UGameModesWidget::UpdateBeatGridWidthConstraints(float value)
-{
-	if (GameModeCategoryComboBox->GetSelectedOption() != "Beat Grid")
-	{
-		return;
-	}
-
-	const float Width = round(SpawnWidthSlider->GetValue());
-	const float TargetWidth = ceil(MaxTargetScaleSlider->GetValue() * SphereDiameter * 100) / 100;
-	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
-	const FString ToConvert = MaxNumBeatGridTargetsComboBox->GetSelectedOption();
-	int32 MaxTargets;
-	FDefaultValueHelper::ParseInt(ToConvert, MaxTargets);
-	MaxTargets = sqrt(MaxTargets);
-
-	// WidthORHeight = TargetScale*MaxTargets + Spacing*MaxTargets - Spacing + 200
-
-	if (Width <= (TargetWidth * MaxTargets) + (HSpacing * (MaxTargets + 1)))
-	{
-	}
-	if (TargetWidth <= ((Width - (HSpacing * (MaxTargets + 1))) / MaxTargets))
-	{
-	}
-	if (HSpacing <= ((Width - (TargetWidth * MaxTargets)) / (MaxTargets + 1)))
-	{
-	}
-	if (MaxTargets <= ((Width - HSpacing) / (TargetWidth + (2 * HSpacing))))
-	{
-	}
+	return true;
 }

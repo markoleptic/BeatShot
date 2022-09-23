@@ -50,37 +50,43 @@ void ATargetSpawner::Tick(float DeltaTime)
 
 void ATargetSpawner::SpawnActor()
 {
-	if (ShouldSpawn)
+	if (ShouldSpawn == false)
 	{
-		// Use different function for SingleBeat game modes
-		if (SingleBeat == true)
+		return;
+	}
+	// Use different function for SingleBeat game modes
+	if (SingleBeat == true)
+	{
+		SpawnSingleActor();
+	}
+	else
+	{
+		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
+		if (SpawnTarget)
 		{
-			SpawnSingleActor();
-		}
-		else
-		{
-			ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
-			if (SpawnTarget)
-			{
-				// Since scaling is done after spawn, we have access to LAST target's scale value and TargetLocation
-				LastSpawnLocation = SpawnLocation;
-				LastTargetScale = RandomizeScale(SpawnTarget);
+			// Since scaling is done after spawn, we have access to LAST target's scale value and TargetLocation
+			LastSpawnLocation = SpawnLocation;
+			LastTargetScale = RandomizeScale(SpawnTarget);
 
-				// Update reference to spawned target in Game Instance
-				GI->RegisterSphereTarget(SpawnTarget);
+			// Update reference to spawned target in Game Instance
+			GI->RegisterSphereTarget(SpawnTarget);
 
-				// Broadcast to GameModeActorBase that a target has spawned
-				OnTargetSpawn.Broadcast();
+			// Broadcast to GameModeActorBase that a target has spawned
+			OnTargetSpawn.Broadcast();
 
-				// Check for collisions for the next spawn location while randomizing
-				RandomizeLocation(LastSpawnLocation, LastTargetScale);
-			}
+			// Check for collisions for the next spawn location while randomizing
+			RandomizeLocation(LastSpawnLocation, LastTargetScale);
 		}
 	}
+
 }
 
 void ATargetSpawner::SpawnSingleActor()
 {
+	if (ShouldSpawn == false)
+	{
+		return;
+	}
 	ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
 	if (SpawnTarget)
 	{
@@ -114,6 +120,10 @@ void ATargetSpawner::SpawnSingleActor()
 
 void ATargetSpawner::SpawnTracker()
 {
+	if (ShouldSpawn == false)
+	{
+		return;
+	}
 	// Gets more complicated if used with regular targets
 	// Move at (maybe random / based on BPM?) speed until another beat
 
