@@ -60,4 +60,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Target Properties")
 	void SetMaxHealth(float NewMaxHealth);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
+	void PlayColorGradient();
 };

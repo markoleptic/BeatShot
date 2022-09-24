@@ -2,8 +2,6 @@
 
 
 #include "HealthComponent.h"
-
-#include "BeatTrack.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
 #include "SphereTarget.h"
@@ -59,9 +57,14 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 		{
 			DamagedTarget->HandleDestruction();
 		}
-		if (Health > 101 && GI->GameModeActorStruct.IsBeatTrackMode == true)
+		else if (Health > 101 && GI->GameModeActorStruct.IsBeatTrackMode == true)
 		{
 			GI->GameModeActorBaseRef->UpdateTrackingScore(Damage, TotalPossibleDamage);
+		}
+		else if (Health > 101 && GI->GameModeActorStruct.IsBeatGridMode == true)
+		{
+			GI->GameModeActorBaseRef->UpdateTargetsHit();
+			DamagedTarget->HandleDestruction();
 		}
 	}
 }

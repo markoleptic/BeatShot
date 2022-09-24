@@ -60,6 +60,10 @@ void ADefaultGameMode::InitializeGameMode(EGameModeActorName GameModeActorName)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ABeatTrack>(BeatTrackClass);
 	}
+	else if (GameModeActorName == EGameModeActorName::BeatGrid)
+	{
+		GameModeActorBase = GetWorld()->SpawnActor<ACustomBeat>(CustomBeatClass);
+	}
 	else if (GameModeActorName == EGameModeActorName::Custom)
 	{
 		GameModeActorBase = GetWorld()->SpawnActor<ACustomBeat>(CustomBeatClass);

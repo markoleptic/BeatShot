@@ -8,6 +8,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "TargetSpawner.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
@@ -31,13 +32,17 @@ void ASphereTarget::BeginPlay()
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	SetLifeSpan(GI->GameModeActorStruct.TargetMaxLifeSpan);
-	GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+
+	if (GI->GameModeActorStruct.IsBeatGridMode == false)
+	{
+		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+	}
 
 	// Use Color Changing Material
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
+	if (GI->GameModeActorStruct.IsBeatTrackMode == true || GI->GameModeActorStruct.IsBeatGridMode == true)
 	{
 		MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
 	}
@@ -50,22 +55,33 @@ void ASphereTarget::Tick(float DeltaTime)
 
 void ASphereTarget::HandleDestruction()
 {
-
 	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
 	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
 	FVector SphereScale = BaseMesh->GetComponentScale();
 	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
-	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatTrackMode == false))
+	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatTrackMode == false) && (GI->GameModeActorStruct.IsBeatGridMode == false))
 	{
 		GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		Destroy();
 	}
+	else if (GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatGridMode == true))
+	{
+		if (TimeAlive > 0.f)
+		{
+			GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
+		}
+		MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+		SetCanBeDamaged(false);
+		GI->TargetSpawnerRef->SetShouldSpawn(true);
+	}
 	else
 	{
 		Destroy();
 	}
-	if (NS_Standard_Explosion)
+
+	if (NS_Standard_Explosion  && TimeAlive > 0.f)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Standard_Explosion, ExplosionLocation);
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereScale.X);

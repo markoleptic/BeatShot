@@ -36,10 +36,6 @@ public:
 	UPROPERTY(BlueprintAssignable)
 		FOnTargetSpawnSignature OnTargetSpawn;
 
-	// tracks how long its been since target has spawned
-	UPROPERTY(VisibleAnywhere)
-		FTimerHandle TimeSinceSpawn;
-
 	// Reference to Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		UDefaultGameInstance* GI;
@@ -48,7 +44,7 @@ public:
 	 * General Spawning functions available for all game modes to use
 	 */ 
 
-	// Called from selected GameMode
+	// Called from selected GameModeActor
 	UFUNCTION(BlueprintCallable, Category = "Spawn Properties")
 		void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 
@@ -73,6 +69,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
 		void SpawnTracker();
+
+	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
+		void ActivateBeatGridTarget(bool ShouldRandomize);
 
 private:
 
@@ -167,16 +166,40 @@ private:
 	 * BeatGrid Variables and Functions
 	 */
 
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+	UPROPERTY(EditAnywhere, Category = "BeatGrid")
 		bool BeatGrid;
 
-	UFUNCTION(BlueprintCallable, Category = "Game Properties")
+	// not using atm
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		TArray<float> RecentBeatGridIndices;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		float LastBeatGridIndex;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		bool InitialBeatSpawned;
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid")
+		TArray<ASphereTarget*> SpawnedBeatGridTargets;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid")
+		ASphereTarget* ActiveBeatGridTarget;
+
+	UFUNCTION(BlueprintCallable, Category = "BeatGrid")
 		void InitBeatGrid();
+
+	UFUNCTION(BlueprintCallable, Category = "BeatGrid")
+		void OnBeatGridTargetTimeout();
+
+private:
 
 	/*
 	 * Local spawning functions
 	 */ 
 
+	// not using atm
 	UFUNCTION()
 		void OnTargetDestroyed(AActor* DestroyedActor);
 

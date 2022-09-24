@@ -61,7 +61,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	if (Shooter)
 	{
 		Target = Cast<ASphereTarget>(OtherActor);
-		if (Target && Shooter && GI->GameModeActorBaseRef && GI->GameModeActorStruct.IsBeatTrackMode == false)
+		if (Target && Shooter && GI->GameModeActorBaseRef && GI->GameModeActorStruct.IsBeatTrackMode == false && GI->GameModeActorStruct.IsBeatGridMode == false)
 		{
 			//If reached this point, player has shot a target, and can get exact moment it was hit
 			GI->GameModeActorBaseRef->UpdateTargetsHit();

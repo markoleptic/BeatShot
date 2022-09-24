@@ -31,6 +31,7 @@ void ATargetSpawner::BeginPlay()
 	{
 		GI->RegisterTargetSpawner(this);
 	}
+
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	FirstSpawnLocation = BoxBounds.Origin;
 	SpawnLocation = FirstSpawnLocation;
@@ -170,9 +171,227 @@ void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 
 void ATargetSpawner::InitBeatGrid()
 {
-	//double GridSpacingY = floor(BoxBounds.BoxExtent.Y * 2 / GameModeActorStruct.BeatGridSpacing.Y);
+	//const float HSpacingBetweenTargets = round(GameModeActorStruct.BeatGridSpacing.X + GameModeActorStruct.MinTargetScale * 2 * SphereTargetRadius);
+	//const float VSpacingBetweenTargets = round(GameModeActorStruct.BeatGridSpacing.Y + GameModeActorStruct.MinTargetScale * 2 * SphereTargetRadius);
+	//const float HTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.X * (sqrt(GameModeActorStruct.MaxNumBeatGridTargets) - 1));
+	//const float VTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.Y * (sqrt(GameModeActorStruct.MaxNumBeatGridTargets) - 1));
+	//const float HFirstLastTargetSpace = round((2 * HalfWidth) - (2 * OuterSpacing));
+	//float TotalHorizontalDistanceTraveled = 0;
+	//for (int32 i = 0; i< sqrt(GameModeActorStruct.MaxNumBeatGridTargets); i++)
+	//{
+	//	for (int32 j = 0; j < sqrt(GameModeActorStruct.MaxNumBeatGridTargets); j++)
+	//	{
+	//		if (i == 0 && j==0)
+	//		{
+	//			BeatGridSpawnLocation.Z += (HalfHeight - OuterSpacing);
+	//			BeatGridSpawnLocation.Y += (- HalfWidth + OuterSpacing);
+	//			TotalHorizontalDistanceTraveled += HSpacingBetweenTargets;
+	//		}
+	//		else
+	//		{
+	//			BeatGridSpawnLocation.Y += HSpacingBetweenTargets;
+	//			TotalHorizontalDistanceTraveled += HSpacingBetweenTargets;
+	//		}
+	//		FActorSpawnParameters SpawnParams;
+	//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//		BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BeatGridSpawnLocation, SpawnBox->GetComponentRotation(), SpawnParams);
+	//		UE_LOG(LogTemp, Display, TEXT("pos %s"), *BeatGridSpawnLocation.ToString());
+	//		if (BeatGridTarget != nullptr)
+	//		{
+	//			RandomizeScale(BeatGridTarget);
+	//		}
+	//	}
+	//	BeatGridSpawnLocation.Y -= TotalHorizontalDistanceTraveled;
+	//	TotalHorizontalDistanceTraveled = 0.f;
+	//	//BeatGridSpawnLocation.Y -= (HFirstLastTargetSpace + HSpacingBetweenTargets);
+	//	BeatGridSpawnLocation.Z -= VSpacingBetweenTargets;
+	//}
+
+	// clear any variables that could have been used prior to a restart
+
+	if (RecentBeatGridIndices.IsEmpty() == false)
+	{
+		RecentBeatGridIndices.Empty();
+		RecentBeatGridIndices.Shrink();
+	}
+	if (SpawnedBeatGridTargets.IsEmpty() == false)
+	{
+		SpawnedBeatGridTargets.Empty();
+		SpawnedBeatGridTargets.Shrink();
+	}
+
+	if (ActiveBeatGridTarget)
+	{
+		ActiveBeatGridTarget = nullptr;
+	}
+
+	LastBeatGridIndex = -1.f;
+	InitialBeatSpawned = false;
+
+	const float HalfWidth = round(BoxBounds.BoxExtent.Y);
+	const float HalfHeight = round(BoxBounds.BoxExtent.Z);
+	const float NumTargets = (sqrt(GameModeActorStruct.MaxNumBeatGridTargets));
+	FVector BeatGridSpawnLocation = BoxBounds.Origin;
+	const float OuterSpacing = 100.f;
+	const float BasicHSpacing = (HalfWidth - OuterSpacing) * 2 / (NumTargets - 1);
+	const float HStart = -HalfWidth + OuterSpacing;
+	const float BasicVSpacing = (HalfHeight - OuterSpacing) * 2 / (NumTargets - 1);
+	const float VStart = HalfHeight - OuterSpacing;
+
+	// Distributing only based on Spawn Height/Width and number of targets for now
+	for (int32 i = 0; i < NumTargets; i++)
+	{
+		for (int32 j = 0; j < NumTargets; j++)
+		{
+			// initial top left spot
+			if (i == 0 && j == 0)
+			{
+				BeatGridSpawnLocation.Z += VStart;
+				BeatGridSpawnLocation.Y += HStart;
+			}
+			else if (i != 0 && j == 0)
+			{
+				BeatGridSpawnLocation.Y = HStart;
+			}
+			else if (i != 0 || j != 0)
+			{
+				BeatGridSpawnLocation.Y += BasicHSpacing;
+			}
+
+			ASphereTarget* BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BeatGridSpawnLocation, SpawnBox->GetComponentRotation());
+			if (BeatGridTarget)
+			{
+				BeatGridTarget->SetMaxHealth(1000000);
+				BeatGridTarget->SetLifeSpan(GameModeActorStruct.GameModeLength);
+				BeatGridTarget->SetCanBeDamaged(false);
+				RandomizeScale(BeatGridTarget);
+				SpawnedBeatGridTargets.Add(BeatGridTarget);
+			}
+		}
+		BeatGridSpawnLocation.Y = HStart;
+		BeatGridSpawnLocation.Z -= BasicVSpacing;
+	}
 }
 
+void ATargetSpawner::ActivateBeatGridTarget(bool ShouldRandomize)
+{
+	if (ShouldSpawn == false)
+	{
+		return;
+	}
+
+	if (InitialBeatSpawned == false)
+	{
+		const int32 InitialArraySize = SpawnedBeatGridTargets.Num();
+		const int32 RandomIndex = FMath::RandRange(0, InitialArraySize - 1);
+		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
+		//RecentBeatGridIndices.Add(RandomIndex);
+		LastBeatGridIndex = RandomIndex;
+		InitialBeatSpawned = true;
+	}
+	else if (ShouldRandomize == true)
+	{
+		const int32 ArraySize = SpawnedBeatGridTargets.Num();
+		const int32 RandomIndex = FMath::RandRange(0, ArraySize - 1);
+		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
+		//RecentBeatGridIndices.Add(RandomIndex);
+	}
+	else if (ShouldRandomize == false)
+	{
+		TArray<float> FloatArray = {};
+		if (LastBeatGridIndex == 0)
+		{
+			FloatArray = { 1.f , 4.f, 5.f };
+		}
+		else if (LastBeatGridIndex == 1)
+		{
+			FloatArray = { 0.f, 2.f, 4.f, 5.f, 6.f };
+		}
+		else if (LastBeatGridIndex == 2)
+		{
+			FloatArray = { 1.f, 3.f, 5.f, 6.f, 7.f };
+		}
+		else if (LastBeatGridIndex == 3)
+		{
+			FloatArray = { 2.f, 6.f, 7.f };
+		}
+		else if (LastBeatGridIndex == 4)
+		{
+			FloatArray = { 0.f, 1.f, 5.f, 8.f, 9.f };
+		}
+		else if (LastBeatGridIndex == 5)
+		{
+			FloatArray = { 0.f, 1.f, 2.f, 4.f, 6.f, 8.f, 9.f, 10.f };
+		}
+		else if (LastBeatGridIndex == 6)
+		{
+			FloatArray = { 1.f, 2.f, 3.f, 5.f, 7.f, 9.f, 10.f, 11.f };
+		}
+		else if (LastBeatGridIndex == 7)
+		{
+			FloatArray = { 2.f, 3.f, 6.f, 10.f, 11.f };
+		}
+		else if (LastBeatGridIndex == 8)
+		{
+			FloatArray = { 4.f, 5.f, 9.f, 12.f, 13.f };
+		}
+		else if (LastBeatGridIndex == 9)
+		{
+			FloatArray = { 4.f, 5.f, 6.f, 8.f, 10.f, 12.f, 13.f, 14.f };
+		}
+		else if (LastBeatGridIndex == 10)
+		{
+			FloatArray = { 5.f, 6.f, 7.f, 9.f, 11.f, 13.f, 14.f, 15.f };
+		}
+		else if (LastBeatGridIndex == 11)
+		{
+			FloatArray = { 6.f, 7.f, 10.f, 14.f, 15.f };
+		}
+		else if (LastBeatGridIndex == 12)
+		{
+			FloatArray = { 8.f, 9.f, 13.f };
+		}
+		else if (LastBeatGridIndex == 13)
+		{
+			FloatArray = { 8.f, 9.f, 10.f, 12.f, 14.f };
+		}
+		else if (LastBeatGridIndex == 14)
+		{
+			FloatArray = { 9.f, 10.f, 11.f, 13.f, 15.f };
+		}
+		else if (LastBeatGridIndex == 15)
+		{
+			FloatArray = { 10.f , 11.f , 14.f };
+		}
+		const int32 FloatArraySize = FloatArray.Num();
+		const int32 RandomBorderedIndex = FMath::RandRange(0, FloatArraySize - 1);
+		const int32 RandomIndex = FloatArray[RandomBorderedIndex];
+		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
+		LastBeatGridIndex = RandomIndex;
+		//RecentBeatGridIndices.Add(RandomIndex);
+	}
+
+	OnTargetSpawn.Broadcast();
+	GetWorldTimerManager().SetTimer(ActiveBeatGridTarget->TimeSinceSpawn, this, &ATargetSpawner::OnBeatGridTargetTimeout, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+	ActiveBeatGridTarget->SetCanBeDamaged(true);
+	ActiveBeatGridTarget->PlayColorGradient();
+
+	if (GameModeActorStruct.IsSingleBeatMode == true)
+	{
+		SetShouldSpawn(false);
+	}
+}
+
+void ATargetSpawner::OnBeatGridTargetTimeout()
+{
+	GetWorldTimerManager().ClearTimer(ActiveBeatGridTarget->TimeSinceSpawn);
+	ActiveBeatGridTarget->SetCanBeDamaged(false);
+	ActiveBeatGridTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::White);
+	if (GameModeActorStruct.IsSingleBeatMode == true)
+	{
+		SetShouldSpawn(true);
+	}
+}
 
 void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 {
@@ -205,8 +424,6 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 
 		// SpawnLocation initially centered inside SpawnBox
 		SpawnLocation = BoxBounds.Origin;
-		//SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-		//SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 
 		// bool variable to track if the SpawnLocation is inside of any of the active targets
 		bool SphereIsInside = true;
@@ -323,7 +540,8 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	/*
 	 * Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds
 	 * Only used for MultiBeat
-	 */ 
+	 */
+
 	MaxNumberOfTargetsAtOnce = ceil(GameModeActorStruct.TargetMaxLifeSpan / GameModeActorStruct.TargetSpawnCD);
 	RecentSpawnLocations.Init(BoxBounds.Origin, MaxNumberOfTargetsAtOnce);
 	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), MaxNumberOfTargetsAtOnce);
