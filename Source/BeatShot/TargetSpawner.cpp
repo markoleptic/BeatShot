@@ -173,13 +173,13 @@ void ATargetSpawner::InitBeatGrid()
 {
 	//const float HSpacingBetweenTargets = round(GameModeActorStruct.BeatGridSpacing.X + GameModeActorStruct.MinTargetScale * 2 * SphereTargetRadius);
 	//const float VSpacingBetweenTargets = round(GameModeActorStruct.BeatGridSpacing.Y + GameModeActorStruct.MinTargetScale * 2 * SphereTargetRadius);
-	//const float HTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.X * (sqrt(GameModeActorStruct.MaxNumBeatGridTargets) - 1));
-	//const float VTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.Y * (sqrt(GameModeActorStruct.MaxNumBeatGridTargets) - 1));
+	//const float HTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.X * (sqrt(GameModeActorStruct.BeatGridSize) - 1));
+	//const float VTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.Y * (sqrt(GameModeActorStruct.BeatGridSize) - 1));
 	//const float HFirstLastTargetSpace = round((2 * HalfWidth) - (2 * OuterSpacing));
 	//float TotalHorizontalDistanceTraveled = 0;
-	//for (int32 i = 0; i< sqrt(GameModeActorStruct.MaxNumBeatGridTargets); i++)
+	//for (int32 i = 0; i< sqrt(GameModeActorStruct.BeatGridSize); i++)
 	//{
-	//	for (int32 j = 0; j < sqrt(GameModeActorStruct.MaxNumBeatGridTargets); j++)
+	//	for (int32 j = 0; j < sqrt(GameModeActorStruct.BeatGridSize); j++)
 	//	{
 	//		if (i == 0 && j==0)
 	//		{
@@ -208,7 +208,6 @@ void ATargetSpawner::InitBeatGrid()
 	//}
 
 	// clear any variables that could have been used prior to a restart
-
 	if (RecentBeatGridIndices.IsEmpty() == false)
 	{
 		RecentBeatGridIndices.Empty();
@@ -230,7 +229,7 @@ void ATargetSpawner::InitBeatGrid()
 
 	const float HalfWidth = round(BoxBounds.BoxExtent.Y);
 	const float HalfHeight = round(BoxBounds.BoxExtent.Z);
-	const float NumTargets = (sqrt(GameModeActorStruct.MaxNumBeatGridTargets));
+	const float NumTargets = (sqrt(GameModeActorStruct.BeatGridSize));
 	FVector BeatGridSpawnLocation = BoxBounds.Origin;
 	const float OuterSpacing = 100.f;
 	const float BasicHSpacing = (HalfWidth - OuterSpacing) * 2 / (NumTargets - 1);
@@ -273,9 +272,9 @@ void ATargetSpawner::InitBeatGrid()
 	}
 }
 
-void ATargetSpawner::ActivateBeatGridTarget(bool ShouldRandomize)
+void ATargetSpawner::ActivateBeatGridTarget()
 {
-	if (ShouldSpawn == false)
+	if (ShouldSpawn == false || GameModeActorStruct.IsBeatGridMode == false)
 	{
 		return;
 	}
@@ -285,92 +284,95 @@ void ATargetSpawner::ActivateBeatGridTarget(bool ShouldRandomize)
 		const int32 InitialArraySize = SpawnedBeatGridTargets.Num();
 		const int32 RandomIndex = FMath::RandRange(0, InitialArraySize - 1);
 		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-		//RecentBeatGridIndices.Add(RandomIndex);
 		LastBeatGridIndex = RandomIndex;
 		InitialBeatSpawned = true;
 	}
-	else if (ShouldRandomize == true)
+	else if (GameModeActorStruct.RandomizeBeatGrid == true)
 	{
 		const int32 ArraySize = SpawnedBeatGridTargets.Num();
 		const int32 RandomIndex = FMath::RandRange(0, ArraySize - 1);
 		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-		//RecentBeatGridIndices.Add(RandomIndex);
 	}
-	else if (ShouldRandomize == false)
+	else if (GameModeActorStruct.RandomizeBeatGrid == false)
 	{
-		TArray<float> FloatArray = {};
-		if (LastBeatGridIndex == 0)
-		{
-			FloatArray = { 1.f , 4.f, 5.f };
-		}
-		else if (LastBeatGridIndex == 1)
-		{
-			FloatArray = { 0.f, 2.f, 4.f, 5.f, 6.f };
-		}
-		else if (LastBeatGridIndex == 2)
-		{
-			FloatArray = { 1.f, 3.f, 5.f, 6.f, 7.f };
-		}
-		else if (LastBeatGridIndex == 3)
-		{
-			FloatArray = { 2.f, 6.f, 7.f };
-		}
-		else if (LastBeatGridIndex == 4)
-		{
-			FloatArray = { 0.f, 1.f, 5.f, 8.f, 9.f };
-		}
-		else if (LastBeatGridIndex == 5)
-		{
-			FloatArray = { 0.f, 1.f, 2.f, 4.f, 6.f, 8.f, 9.f, 10.f };
-		}
-		else if (LastBeatGridIndex == 6)
-		{
-			FloatArray = { 1.f, 2.f, 3.f, 5.f, 7.f, 9.f, 10.f, 11.f };
-		}
-		else if (LastBeatGridIndex == 7)
-		{
-			FloatArray = { 2.f, 3.f, 6.f, 10.f, 11.f };
-		}
-		else if (LastBeatGridIndex == 8)
-		{
-			FloatArray = { 4.f, 5.f, 9.f, 12.f, 13.f };
-		}
-		else if (LastBeatGridIndex == 9)
-		{
-			FloatArray = { 4.f, 5.f, 6.f, 8.f, 10.f, 12.f, 13.f, 14.f };
-		}
-		else if (LastBeatGridIndex == 10)
-		{
-			FloatArray = { 5.f, 6.f, 7.f, 9.f, 11.f, 13.f, 14.f, 15.f };
-		}
-		else if (LastBeatGridIndex == 11)
-		{
-			FloatArray = { 6.f, 7.f, 10.f, 14.f, 15.f };
-		}
-		else if (LastBeatGridIndex == 12)
-		{
-			FloatArray = { 8.f, 9.f, 13.f };
-		}
-		else if (LastBeatGridIndex == 13)
-		{
-			FloatArray = { 8.f, 9.f, 10.f, 12.f, 14.f };
-		}
-		else if (LastBeatGridIndex == 14)
-		{
-			FloatArray = { 9.f, 10.f, 11.f, 13.f, 15.f };
-		}
-		else if (LastBeatGridIndex == 15)
-		{
-			FloatArray = { 10.f , 11.f , 14.f };
-		}
-		const int32 FloatArraySize = FloatArray.Num();
-		const int32 RandomBorderedIndex = FMath::RandRange(0, FloatArraySize - 1);
-		const int32 RandomIndex = FloatArray[RandomBorderedIndex];
-		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-		LastBeatGridIndex = RandomIndex;
-		//RecentBeatGridIndices.Add(RandomIndex);
-	}
+		TArray<int32> SpawnCandidates;
+		const int32 MaxIndex = SpawnedBeatGridTargets.Num() - 1;
+		const int32 Width = sqrt(SpawnedBeatGridTargets.Num());
+		const int32 Height = Width;
+		const int32 AdjFor = Width + 1;
+		const int32 AdjBack = Width - 1;
+		const int32 i = LastBeatGridIndex;
 
+		// corners
+		if (i == 0)
+		{
+			SpawnCandidates = { 1, Width, AdjFor };
+		}
+		else if (i == AdjBack)
+		{
+			SpawnCandidates = { i - 1, i + AdjBack, i + Width };
+		}
+		else if (i == (Width * AdjBack))
+		{
+			SpawnCandidates = { i - Width, i - AdjBack, i + 1 };
+		}
+		else if (i == MaxIndex)
+		{
+			SpawnCandidates = { i - AdjFor, i - Width, i - 1 };
+		}
+		// top
+		else if (i > 0 && i < AdjBack)
+		{
+			SpawnCandidates = { i - 1, i + 1, i + AdjBack, i + Width, i + AdjFor };
+		}
+		//left
+		else if (i % Width == 0 && i < Width * AdjBack)
+		{
+			SpawnCandidates = { i - Width, i - AdjBack, i + 1, i + AdjFor, i + Width };
+		}
+		//bottom
+		else if (i > Width * AdjBack && i < MaxIndex)
+		{
+			SpawnCandidates = { i - AdjFor, i - Width, i - AdjBack,  i - 1, i + 1 };
+		}
+		//right
+		else if ((i + 1) % Width == 0 && i < MaxIndex)
+		{
+			SpawnCandidates = { i - AdjFor, i - Width, i - 1, i + AdjBack, i + Width };
+		}
+		//middle
+		else
+		{
+			SpawnCandidates = { i - AdjFor, i - Width, i - AdjBack, i - 1, i + 1, i + AdjBack, i + Width, i + AdjFor };
+		}
+
+		// remove recently spawned targets
+		if (RecentBeatGridIndices.IsEmpty() == false)
+		{
+			for (int32 j = 0; j < RecentBeatGridIndices.Num(); j++)
+			{
+				if (SpawnCandidates.Contains(RecentBeatGridIndices[j]))
+				{
+					SpawnCandidates.Remove(RecentBeatGridIndices[j]);
+				}
+			}
+		}
+
+		// shrink after removing recently spawned target indices
+		SpawnCandidates.Shrink();
+
+		// choose a random adjacent target index
+		const int32 CandidateArraySize = SpawnCandidates.Num();
+		const int32 RandomBorderedIndex = FMath::RandRange(0, CandidateArraySize - 1);
+		const int32 RandomIndex = SpawnCandidates[RandomBorderedIndex];
+		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
+
+		// update recently spawned target indices
+		LastBeatGridIndex = RandomIndex;
+		RecentBeatGridIndices.Insert(LastBeatGridIndex, 0);
+		RecentBeatGridIndices.SetNum(2);
+	}
+	// notify GameModeActorBase that target has spawned
 	OnTargetSpawn.Broadcast();
 	GetWorldTimerManager().SetTimer(ActiveBeatGridTarget->TimeSinceSpawn, this, &ATargetSpawner::OnBeatGridTargetTimeout, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
 	ActiveBeatGridTarget->SetCanBeDamaged(true);
@@ -386,7 +388,7 @@ void ATargetSpawner::OnBeatGridTargetTimeout()
 {
 	GetWorldTimerManager().ClearTimer(ActiveBeatGridTarget->TimeSinceSpawn);
 	ActiveBeatGridTarget->SetCanBeDamaged(false);
-	ActiveBeatGridTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::White);
+
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
 		SetShouldSpawn(true);

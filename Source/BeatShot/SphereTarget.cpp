@@ -42,9 +42,15 @@ void ASphereTarget::BeginPlay()
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true || GI->GameModeActorStruct.IsBeatGridMode == true)
+
+	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
 	{
-		MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), FLinearColor::Red);
+	}
+	if (GI->GameModeActorStruct.IsBeatGridMode == true)
+	{
+		const FLinearColor OffWhite = { 0.75 , 0.75, 0.75, 1 };
+		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), OffWhite);
 	}
 }
 
@@ -57,7 +63,7 @@ void ASphereTarget::HandleDestruction()
 {
 	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
 	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
-	FVector SphereScale = BaseMesh->GetComponentScale();
+	float SphereRadius = 50 * BaseMesh->GetComponentScale().X;
 	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
 	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatTrackMode == false) && (GI->GameModeActorStruct.IsBeatGridMode == false))
 	{
@@ -71,9 +77,9 @@ void ASphereTarget::HandleDestruction()
 		{
 			GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 		}
-		MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		SetCanBeDamaged(false);
+		RemoveAndReappear();
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
 	}
 	else
@@ -84,7 +90,7 @@ void ASphereTarget::HandleDestruction()
 	if (NS_Standard_Explosion  && TimeAlive > 0.f)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Standard_Explosion, ExplosionLocation);
-		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereScale.X);
+		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
 	}
 }

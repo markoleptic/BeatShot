@@ -98,6 +98,41 @@ void AGameModeActorBase::EndGameMode()
 	Destroy();
 }
 
+void AGameModeActorBase::HandleGameRestart()
+{
+	SavePlayerScores();
+
+	// Stopping Player and Tracker
+	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
+
+	// Deleting Targets
+	GI->TargetSpawnerRef->SetShouldSpawn(false);
+	if (GI->SphereTargetArray.Num() > 0)
+	{
+		for (ASphereTarget* Target : GI->SphereTargetArray)
+		{
+			if (Target)
+			{
+				Target->Destroy();
+			}
+		}
+	}
+
+	//Clearing Timers
+	GameModeActorStruct.CountDownTimer.Invalidate();
+	GameModeActorStruct.GameModeLengthTimer.Invalidate();
+	GameModeActorStruct.CountdownTimerLength = 3.f;
+
+	//Hide HUD and countdown
+	GI->DefaultPlayerControllerRef->HidePlayerHUD();
+	GI->DefaultPlayerControllerRef->HideCountdown();
+
+	// Reset Struct to zero scores
+	PlayerScores.ResetStruct();
+
+	Destroy();
+}
+
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 {
 	if (GameModeActorStruct.IsBeatTrackMode == false)
@@ -155,7 +190,7 @@ void AGameModeActorBase::UpdateTargetsHit()
 {
 	PlayerScores.TargetsHit++;
 	UpdateScoresToHUD.Broadcast(PlayerScores);
-}
+ }
 
 void AGameModeActorBase::UpdateHighScore()
 {
@@ -239,38 +274,5 @@ void AGameModeActorBase::LoadPlayerScores()
 	PlayerScores.TotalPossibleDamage = 0.f;
 }
 
-void AGameModeActorBase::HandleGameRestart()
-{
-	SavePlayerScores();
 
-	// Stopping Player and Tracker
-	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
-
-	// Deleting Targets
-	GI->TargetSpawnerRef->SetShouldSpawn(false);
-	if (GI->SphereTargetArray.Num() > 0)
-	{
-		for (ASphereTarget* Target : GI->SphereTargetArray)
-		{
-			if (Target)
-			{
-				Target->Destroy();
-			}
-		}
-	}
-
-	//Clearing Timers
-	GameModeActorStruct.CountDownTimer.Invalidate();
-	GameModeActorStruct.GameModeLengthTimer.Invalidate();
-	GameModeActorStruct.CountdownTimerLength = 3.f;
-
-	//Hide HUD and countdown
-	GI->DefaultPlayerControllerRef->HidePlayerHUD();
-	GI->DefaultPlayerControllerRef->HideCountdown();
-
-	// Reset Struct to zero scores
-	PlayerScores.ResetStruct();
-
-	Destroy();
-}
 

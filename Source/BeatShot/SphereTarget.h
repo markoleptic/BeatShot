@@ -46,6 +46,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowTargetExplosion();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void RemoveAndReappear();
+
 	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly)
 	class UDefaultGameInstance* GI;
 

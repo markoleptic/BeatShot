@@ -57,11 +57,18 @@ void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDa
 		{
 			DamagedTarget->HandleDestruction();
 		}
-		else if (Health > 101 && GI->GameModeActorStruct.IsBeatTrackMode == true)
+		else if (
+			Health > 101 && 
+			GI->GameModeActorStruct.IsBeatTrackMode == true
+			)
 		{
 			GI->GameModeActorBaseRef->UpdateTrackingScore(Damage, TotalPossibleDamage);
 		}
-		else if (Health > 101 && GI->GameModeActorStruct.IsBeatGridMode == true)
+		else if (
+			Health > 101 && 
+			GI->GameModeActorStruct.IsBeatGridMode == true && 
+			(DamagedTarget->GetWorldTimerManager().GetTimerElapsed(DamagedTarget->TimeSinceSpawn) > 0.f)
+			)
 		{
 			GI->GameModeActorBaseRef->UpdateTargetsHit();
 			DamagedTarget->HandleDestruction();

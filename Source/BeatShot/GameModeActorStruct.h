@@ -111,12 +111,20 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		bool IsBeatGridMode;
 
+	// not implemented yet
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
 		FVector2D BeatGridSpacing;
 
-	// min 4, only multiples of 4
+	// min 4, only squarable numbers
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
-		int32 MaxNumBeatGridTargets;
+		int32 BeatGridSize;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
+		bool RandomizeBeatGrid;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
+		int32 NumTargetsAtOnceBeatGrid;
+
 
 	FORCEINLINE bool operator== (const FGameModeActorStruct& Other) const
 	{
@@ -151,8 +159,10 @@ struct FGameModeActorStruct
 		IsBeatTrackMode = false;
 		IsSingleBeatMode = false;
 		IsBeatGridMode = false;
+		RandomizeBeatGrid = false;
+		NumTargetsAtOnceBeatGrid = -1;
 		BeatGridSpacing = FVector2D::ZeroVector;
-		MaxNumBeatGridTargets = 0.f;
+		BeatGridSize = 0.f;
 		BoxBounds.X = 0.f;
 		// horizontal
 		BoxBounds.Y = 1600.f;
@@ -181,6 +191,8 @@ struct FGameModeActorStruct
 		IsBeatTrackMode = false;
 		IsSingleBeatMode = false;
 		IsBeatGridMode = false;
+		RandomizeBeatGrid = false;
+		NumTargetsAtOnceBeatGrid = -1;
 		BeatGridSpacing = FVector2D::ZeroVector;
 		BoxBounds.X = 0.f;
 		// horizontal

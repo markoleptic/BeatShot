@@ -71,7 +71,7 @@ public:
 		void SpawnTracker();
 
 	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
-		void ActivateBeatGridTarget(bool ShouldRandomize);
+		void ActivateBeatGridTarget();
 
 private:
 
@@ -171,10 +171,10 @@ private:
 
 	// not using atm
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
-		TArray<float> RecentBeatGridIndices;
+		TArray<int32> RecentBeatGridIndices;
 
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
-		float LastBeatGridIndex;
+		int32 LastBeatGridIndex;
 
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
 		bool InitialBeatSpawned;
