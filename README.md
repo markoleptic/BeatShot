@@ -2,7 +2,7 @@
 
 Developed with Unreal Engine 5, this project aims to create a standalone FPS aim trainer that spawns targets based on user loaded music (in .mp3 or .ogg format) by analyzing the frequency of the music. There is an extensive amount of customization available to the player including:
 - standard sensitivity settings (Same as Valorant sensitivity), video & audio settings
-- two base gamemodes: continuously spawn targets (MultiBeat) or only one at a time (SingleBeat)
+- four base gamemodes: continuously spawn targets (MultiBeat), only one at a time (SingleBeat), tracking one target (BeatTrack), and a static grid of activating targets (BeatGrid)
 - customizing the gamemodes using:
   - headshot height only mode
   - time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
