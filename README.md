@@ -2,7 +2,7 @@
 
 Developed with Unreal Engine 5, this project aims to create a standalone FPS aim trainer that spawns targets based on user loaded music (in .mp3 or .ogg format) by analyzing the frequency of the music. There is an extensive amount of customization available to the player including:
 - standard sensitivity settings (Same as Valorant sensitivity), video & audio settings
-- two base gamemodes: continuously spawn targets (MultiBeat) or only one at a time (SingleBeat)
+- four base gamemodes: continuously spawn targets (MultiBeat), only one at a time (SingleBeat), tracking one target (BeatTrack), and a static grid of activating targets (BeatGrid)
 - customizing the gamemodes using:
   - headshot height only mode
   - time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
@@ -16,7 +16,7 @@ Developed with Unreal Engine 5, this project aims to create a standalone FPS aim
   - band limit threshold for each band channel
     - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. higher threshold -> lower analyzer sensitivity -> less targets spawned
 
-## **Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.1.4/BeatShot-Windows-v0.1.4.rar) or go to Releases**
+## **Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.1.5/BeatShot-Windows-v0.1.5.rar) or go to Releases**
 
 ## Getting .mp3/.ogg files:
 
