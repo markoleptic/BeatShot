@@ -18,7 +18,7 @@ class BEATSHOT_API ASphereTarget : public AActor
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	ASphereTarget();
 
 protected:
@@ -29,41 +29,41 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-	UCapsuleComponent* CapsuleComp;
+		UCapsuleComponent* CapsuleComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-	UStaticMeshComponent* BaseMesh;
+		UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-	FTimerHandle TimeSinceSpawn;
+		FTimerHandle TimeSinceSpawn;
 
 	UPROPERTY(EditAnywhere, Category = "Effects", BlueprintReadWrite)
-	UNiagaraSystem* NS_Standard_Explosion;
+		UNiagaraSystem* NS_Standard_Explosion;
 
 	UFUNCTION(BlueprintCallable, Category = "Target Handling")
-	void HandleDestruction();
+		void HandleDestruction();
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void ShowTargetExplosion();
+		void ShowTargetExplosion();
 
 	UFUNCTION(BlueprintImplementableEvent)
 		void RemoveAndReappear();
 
 	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly)
-	class UDefaultGameInstance* GI;
+		class UDefaultGameInstance* GI;
 
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-	UMaterialInterface* Material;
+		UMaterialInterface* Material;
 
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-	UMaterialInstanceDynamic* MID_TargetColorChanger;
+		UMaterialInstanceDynamic* MID_TargetColorChanger;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-	UHealthComponent* HealthComp;
+		UHealthComponent* HealthComp;
 
 	UFUNCTION(BlueprintCallable, Category = "Target Properties")
-	void SetMaxHealth(float NewMaxHealth);
+		void SetMaxHealth(float NewMaxHealth);
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
-	void PlayColorGradient();
+		void PlayColorGradient();
 };

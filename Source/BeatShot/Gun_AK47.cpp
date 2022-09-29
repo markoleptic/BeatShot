@@ -7,7 +7,6 @@
 #include "Projectile.h"
 #include "Kismet/GameplayStatics.h"
 #include "DefaultGameInstance.h"
-#include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "SphereTarget.h"
@@ -114,17 +113,11 @@ void AGun_AK47::Fire()
 						OnShotFired.Broadcast();
 					}
 				}
-
+				FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = SpawnRotation.Vector();
 				Projectile->FireInDirection(LaunchDirection);
-
-				// Spawn muzzle flash niagara system
-				if (NS_MuzzleFlash)
-				{
-					FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
-					UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_MuzzleFlash, MuzzleTransform.GetLocation(), MuzzleTransform.Rotator());
-				}
+				UNiagaraComponent* MuzzleFlash = UNiagaraFunctionLibrary::SpawnSystemAttached(NS_MuzzleFlash, GunMesh, TEXT("Muzzle"), FVector(5,0,0), MuzzleTransform.Rotator(), EAttachLocation::SnapToTarget, true);
 			}
 		}
 

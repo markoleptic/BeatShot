@@ -155,6 +155,9 @@ private:
 	UFUNCTION()
 		FVector RandomizeTrackerLocation(FVector LocationBeforeChange);
 
+	UFUNCTION()
+		void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
+
 	/*
 	 * Single Beat Variables and Functions
 	 */

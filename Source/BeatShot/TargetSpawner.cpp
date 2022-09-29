@@ -2,6 +2,7 @@
 
 
 #include "TargetSpawner.h"
+#include <string>
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
@@ -125,8 +126,6 @@ void ATargetSpawner::SpawnTracker()
 	{
 		return;
 	}
-	// Gets more complicated if used with regular targets
-	// Move at (maybe random / based on BPM?) speed until another beat
 
 	if (TrackingTarget)
 	{
@@ -136,7 +135,9 @@ void ATargetSpawner::SpawnTracker()
 	if (IsValid(TrackingTarget) == false)
 	{
 		// Only spawn tracker once in the center if Tracking GameMode
+
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
+		TrackingTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		TrackingTarget->SetMaxHealth(100000.f);
 		TrackingTarget->SetLifeSpan(GI->GameModeActorStruct.GameModeLength);
 		LocationBeforeDirectionChange = FirstSpawnLocation;
@@ -152,9 +153,9 @@ void ATargetSpawner::SpawnTracker()
 	if (TrackingTarget)
 	{
 		RandomizeScale(TrackingTarget);
+		TrackingSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
 		EndLocation = RandomizeTrackerLocation(LocationBeforeDirectionChange);
 		TrackingDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
-		TrackingSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
 		//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 	}
 }
@@ -171,42 +172,6 @@ void ATargetSpawner::SetShouldSpawn(bool bShouldSpawn)
 
 void ATargetSpawner::InitBeatGrid()
 {
-	//const float HSpacingBetweenTargets = round(GameModeActorStruct.BeatGridSpacing.X + GameModeActorStruct.MinTargetScale * 2 * SphereTargetRadius);
-	//const float VSpacingBetweenTargets = round(GameModeActorStruct.BeatGridSpacing.Y + GameModeActorStruct.MinTargetScale * 2 * SphereTargetRadius);
-	//const float HTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.X * (sqrt(GameModeActorStruct.BeatGridSize) - 1));
-	//const float VTotalSpacing = round(GameModeActorStruct.BeatGridSpacing.Y * (sqrt(GameModeActorStruct.BeatGridSize) - 1));
-	//const float HFirstLastTargetSpace = round((2 * HalfWidth) - (2 * OuterSpacing));
-	//float TotalHorizontalDistanceTraveled = 0;
-	//for (int32 i = 0; i< sqrt(GameModeActorStruct.BeatGridSize); i++)
-	//{
-	//	for (int32 j = 0; j < sqrt(GameModeActorStruct.BeatGridSize); j++)
-	//	{
-	//		if (i == 0 && j==0)
-	//		{
-	//			BeatGridSpawnLocation.Z += (HalfHeight - OuterSpacing);
-	//			BeatGridSpawnLocation.Y += (- HalfWidth + OuterSpacing);
-	//			TotalHorizontalDistanceTraveled += HSpacingBetweenTargets;
-	//		}
-	//		else
-	//		{
-	//			BeatGridSpawnLocation.Y += HSpacingBetweenTargets;
-	//			TotalHorizontalDistanceTraveled += HSpacingBetweenTargets;
-	//		}
-	//		FActorSpawnParameters SpawnParams;
-	//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	//		BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BeatGridSpawnLocation, SpawnBox->GetComponentRotation(), SpawnParams);
-	//		UE_LOG(LogTemp, Display, TEXT("pos %s"), *BeatGridSpawnLocation.ToString());
-	//		if (BeatGridTarget != nullptr)
-	//		{
-	//			RandomizeScale(BeatGridTarget);
-	//		}
-	//	}
-	//	BeatGridSpawnLocation.Y -= TotalHorizontalDistanceTraveled;
-	//	TotalHorizontalDistanceTraveled = 0.f;
-	//	//BeatGridSpawnLocation.Y -= (HFirstLastTargetSpace + HSpacingBetweenTargets);
-	//	BeatGridSpawnLocation.Z -= VSpacingBetweenTargets;
-	//}
-
 	// clear any variables that could have been used prior to a restart
 	if (RecentBeatGridIndices.IsEmpty() == false)
 	{
@@ -403,7 +368,8 @@ void ATargetSpawner::OnTargetDestroyed(AActor* DestroyedActor)
 float ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 {
 	const float RandomScaleValue = FMath::FRandRange(GameModeActorStruct.MinTargetScale, GameModeActorStruct.MaxTargetScale);
-	Target->BaseMesh->SetWorldScale3D(FVector(RandomScaleValue, RandomScaleValue, RandomScaleValue));
+	const FVector NewScale = { RandomScaleValue , RandomScaleValue , RandomScaleValue };
+	Target->SetActorScale3D(NewScale);
 	return RandomScaleValue;
 }
 
@@ -432,8 +398,11 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 
 		int OverloadProtect = 0;
 
-		// while loop that spans the size of RecentSpawnBounds and only finishes if
-		// SpawnLocation is not inside any of the RecentSpawnBounds spheres
+		/*
+		 * spans the size of RecentSpawnBounds and only finishes if
+		 * SpawnLocation is not inside any of the RecentSpawnBounds spheres
+		 */ 
+	
 		while (SphereIsInside)
 		{
 			for (int i = 0; i < RecentSpawnBounds.Num(); i++)
@@ -443,14 +412,13 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 					if (OverloadProtect > 20)
 					{
 						ShouldSpawn = false;
-						exit(0);
+						break;
 					}
 					UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *SpawnLocation.ToString());
 					SpawnLocation = BoxBounds.Origin;
 					SpawnLocation.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
 					SpawnLocation.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 					OverloadProtect++;
-					break;
 				}
 				if (i == RecentSpawnBounds.Num() - 1)
 				{
@@ -465,7 +433,6 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 {
 	// if just doing tracking only, we don't really care about recent spawn locations
-	// **Not currently using LastTargetScaleValue**
 	CheckSpawnRadius = SphereTargetRadius * 2 + GameModeActorStruct.MinDistanceBetweenTargets;
 	FSphere LastSpawnSphere = FSphere(LocationBeforeChange, CheckSpawnRadius);
 
@@ -474,23 +441,41 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 
 	//So we don't get stuck in infinite loop
 	int OverloadProtect = 0;
-
-	while (LastSpawnSphere.IsInside(LocationToReturn))
+	bool IsInsideBox = false;
+	while (IsInsideBox == false)
 	{
 		if (OverloadProtect > 20)
 		{
-			ShouldSpawn = false;
 			UE_LOG(LogTemp, Warning, TEXT("Overloading Location Randomizer"));
+			break;
 		}
-
+		LocationToReturn = UKismetMathLibrary::RandomPointInBoundingBox(BoxBounds.Origin, BoxBounds.BoxExtent);
 		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *LocationToReturn.ToString());
-		LocationToReturn = BoxBounds.Origin;
-		LocationToReturn.Y += -BoxBounds.BoxExtent.Y + 2 * BoxBounds.BoxExtent.Y * FMath::FRand();
-		LocationToReturn.Z += -BoxBounds.BoxExtent.Z + 2 * BoxBounds.BoxExtent.Z * FMath::FRand();
 
+		float DistanceBetween = TrackingSpeed * GameModeActorStruct.TargetSpawnCD;
+		UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), DistanceBetween);
+
+		if (UKismetMathLibrary::IsPointInBox(LocationBeforeChange +
+			UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, LocationToReturn) *
+			TrackingSpeed * GameModeActorStruct.TargetSpawnCD,
+			BoxBounds.Origin, BoxBounds.BoxExtent))
+		{
+			IsInsideBox = true;
+		}
 		OverloadProtect++;
 	}
 	return LocationToReturn;
+}
+
+void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
+{
+	if (Cast<ATargetSpawner>(OverlappedActor) || Cast<ASphereTarget>(OverlappedActor) && 
+		Cast<ASphereTarget>(OtherActor) || Cast<ATargetSpawner>(OtherActor))
+	{
+		TrackingDirection = TrackingDirection * - 1;
+		UE_LOG(LogTemp, Display, TEXT("EndOverlap called"));
+	}
+
 }
 
 void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)

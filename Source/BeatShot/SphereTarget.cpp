@@ -63,7 +63,7 @@ void ASphereTarget::HandleDestruction()
 {
 	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
 	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
-	float SphereRadius = 50 * BaseMesh->GetComponentScale().X;
+	float SphereRadius = 50 * GetActorScale3D().X;
 	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
 	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatTrackMode == false) && (GI->GameModeActorStruct.IsBeatGridMode == false))
 	{

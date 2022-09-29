@@ -35,7 +35,6 @@ void AProjectile::BeginPlay()
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
-
 	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		Damage = 0.f;
