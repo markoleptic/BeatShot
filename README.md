@@ -27,21 +27,44 @@ In Game                    |  Customize Game Mode Menu
    - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. higher threshold -> lower analyzer sensitivity -> less targets spawned
 
 ## Getting .mp3/.ogg files:
-
 1. To convert Spotify playlists into Youtube playlists, I use [Soundiiz](https://soundiiz.com/) (also works with Apple Music, etc.)
 2. You can use [this application](https://github.com/shaked6540/YoutubePlaylistDownloader) to download entire playlists from YouTube. Download and install. *You might need restart the application after you open it for the first time for it to work correctly.*
 3. Click on the cog wheel next to the "Insert a youtube link here" text.
 4. Select where you want the files to be downloaded to at the top.
 5. Under the Audio heading, make sure the box with "Convert videos to" is checked, then select either ogg or mp3.
 
-## More In-Game Screenshots:
+## What I'm working / Planned Features:
 
+### Website
+- Integrating the game with the [website](https://beatshot.gg)
+  - view charts for different game modes by sending http requests to website and opening a browser window in game
+    - much easier to create pretty charts using chart js than to try and make them in the game
+  - sign up for an account in game to save your scores in a backend database
+  - instead of a static patch notes page, replace with in game browser window showing patch notes on website
+
+### Planned changes to base game
+- Show example videos for main game modes
+- Create AI system tailored to player goals:
+  - Choose priority of accuracy, timing, etc.
+- Togglable Day/Night mode
+- Togglable music visualizations
+- Game Optimization (its not great right now)
+
+### Planned game mode changes
+- Base game mode difficulties if user doesn't want to mess with customization
+  - Needs tuning
+- (Maybe) Game mode that cycles between multiple game modes within one song
+
+#### Planned game mode options to add
+- spawn targets in quick succession nearby to one another
+- change target size based on accuracy/timing accuracy
+  - gradually decrease target size if player has hit consecutive targets in a row, but incrementally increase target size when they miss
+
+## More In-Game Screenshots:
 Audio Analyzer Settings    |  Customize Game Mode Menu
 :-------------------------:|:-------------------------:
 ![](https://user-images.githubusercontent.com/86213229/193479582-644be4d8-5769-40bd-a018-23b12aa34c4d.png)  |  ![](https://user-images.githubusercontent.com/86213229/193479593-28d8a5d3-e1f8-45e6-a167-679c7985177e.png)
 
 ## Collaboration / Copyright
-
 I plan to release this as a free game on Steam in a few months. If you wish to collaborate, I can try to help provide you with more plugin files that might be necessary to run the game in the engine.
-
 Note that copying my work and releasing a game based on my work is a violation of the Unreal Engine UELA and United States Copyright Laws.
