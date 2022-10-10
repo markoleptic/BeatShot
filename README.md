@@ -33,15 +33,13 @@ In Game                    |  Customize Game Mode Menu
 4. Select where you want the files to be downloaded to at the top.
 5. Under the Audio heading, make sure the box with "Convert videos to" is checked, then select either ogg or mp3.
 
-## What I'm working / Planned Features:
-
+## What I'm working on / Planned Features:
 ### Website
 - Integrating the game with the [website](https://beatshot.gg)
   - view charts for different game modes by sending http requests to website and opening a browser window in game
     - much easier to create pretty charts using chart js than to try and make them in the game
   - sign up for an account in game to save your scores in a backend database
   - instead of a static patch notes page, replace with in game browser window showing patch notes on website
-
 ### Planned changes to base game
 - Show example videos for main game modes
 - Create AI system tailored to player goals:
@@ -49,12 +47,10 @@ In Game                    |  Customize Game Mode Menu
 - Togglable Day/Night mode
 - Togglable music visualizations
 - Game Optimization (its not great right now)
-
 ### Planned game mode changes
 - Base game mode difficulties if user doesn't want to mess with customization
   - Needs tuning
 - (Maybe) Game mode that cycles between multiple game modes within one song
-
 #### Planned game mode options to add
 - spawn targets in quick succession nearby to one another
 - change target size based on accuracy/timing accuracy
