@@ -388,3 +388,24 @@ struct FAASettingsStruct
 		HistorySize = 30.f;
 	}
 };
+
+USTRUCT(BlueprintType)
+struct FJsonGameModeScore
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	FString GameMode_SongTitle;
+
+	UPROPERTY()
+	TArray<FPlayerScore> PlayerScoreArray;
+};
+
+USTRUCT(BlueprintType)
+struct FJsonScore
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	TArray<FJsonGameModeScore> GameModeScorePairs;
+};

@@ -10,7 +10,6 @@
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
 #include "SphereTarget.h"
-#include "DefaultPlayerController.h"
 
 // Sets default values
 AGun_AK47::AGun_AK47()
@@ -57,7 +56,8 @@ void AGun_AK47::Tick(float DeltaTime)
 		FVector End = CameraLocation + CameraRotation.Vector() * TraceDistance;
 		FCollisionQueryParams TraceParams;
 
-		if (bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
+		if (GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility,
+		                                                     FCollisionQueryParams::DefaultQueryParam))
 		{
 			if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
 			{
@@ -117,7 +117,7 @@ void AGun_AK47::Fire()
 				// Set the projectile's initial trajectory.
 				FVector LaunchDirection = SpawnRotation.Vector();
 				Projectile->FireInDirection(LaunchDirection);
-				UNiagaraComponent* MuzzleFlash = UNiagaraFunctionLibrary::SpawnSystemAttached(NS_MuzzleFlash, GunMesh, TEXT("Muzzle"), FVector(5,0,0), MuzzleTransform.Rotator(), EAttachLocation::SnapToTarget, true);
+				UNiagaraFunctionLibrary::SpawnSystemAttached(NS_MuzzleFlash, GunMesh, TEXT("Muzzle"), FVector(5,0,0), MuzzleTransform.Rotator(), EAttachLocation::SnapToTarget, true);
 			}
 		}
 

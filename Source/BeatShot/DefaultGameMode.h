@@ -5,12 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameModeActorStruct.h"
 #include "GameFramework/GameModeBase.h"
+#include "Http.h"
 #include "DefaultGameMode.generated.h"
 
 class ABeatTrack;
 class UDefaultGameInstance;
 class AWideSpreadMultiBeat;
 class AGameModeActorBase;
+
 
 UCLASS()
 class BEATSHOT_API ADefaultGameMode : public AGameModeBase
@@ -79,4 +81,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
 	bool GameModeActorAlive;
 
+private:
+	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
 };

@@ -12,6 +12,9 @@
 #include "WideSpreadMultiBeat.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "JsonObjectConverter.h"
+#include "Http.h"
+#include "Kismet/KismetStringLibrary.h"
 
 void ADefaultGameMode::BeginPlay()
 {
@@ -26,6 +29,54 @@ void ADefaultGameMode::BeginPlay()
 	GameModeActorAlive = false;
 
 	InitializeGameMode(GI->GameModeActorStruct.GameModeActorName);
+
+	//TSharedRef<FJsonObject> RequestObj = MakeShared<FJsonObject>();
+	//RequestObj->SetObjectField("name", JSONPayload);
+	//UE_LOG(LogTemp, Display, TEXT("%s"), *JSONPayload);
+
+	//FString RequestBody;
+	//TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&RequestBody);
+	//FJsonSerializer::Serialize(RequestObj, Writer);
+
+	//UE_LOG(LogTemp, Display, TEXT("%s"), *RequestBody);
+	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> Map = GI->LoadPlayerScores();
+	// iterate through all elements in PlayerScoreMap
+
+	FJsonScore JsonScore;
+
+	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : Map)
+	{
+		FJsonGameModeScore JsonGameModeScore;
+		FString GameModeActorName = UKismetStringLibrary::RightChop(StaticEnum<EGameModeActorName>()->GetValueAsString(Elem.Key.GameModeActorName), 20);
+		JsonGameModeScore.GameMode_SongTitle = UKismetStringLibrary::Concat_StrStr(UKismetStringLibrary::Concat_StrStr(GameModeActorName, "_"), Elem.Key.SongTitle);
+		//FString JSONGameModeActorStruct;
+		//FJsonObjectConverter::UStructToJsonObjectString(Elem.Key, JSONGameModeActorStruct);
+		// get array of player scores from current key value
+		JsonGameModeScore.PlayerScoreArray = Elem.Value.PlayerScoreArray;
+		// iterate through array of player scores to find high score for current game mode / song
+		JsonScore.GameModeScorePairs.Add(JsonGameModeScore);
+	}
+
+	//FString JSONPayload;
+	//FJsonObjectConverter::UStructToJsonObjectString(JsonScore, JSONPayload);
+
+	TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
+	FJsonObjectConverter::UStructToJsonObject(FJsonScore::StaticStruct(), &JsonScore, OutJsonObject, 0, 0);
+
+	FString OutputString;
+
+	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+	FJsonSerializer::Serialize(OutJsonObject, Writer);
+
+	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
+
+	FHttpRequestRef Request = FHttpModule::Get().CreateRequest();
+	Request->OnProcessRequestComplete().BindUObject(this, &ADefaultGameMode::OnResponseReceived);
+	Request->SetURL("http://localhost:3000/api/savescores");
+	Request->SetVerb("POST");
+	Request->SetHeader("Content-Type", "application/json");
+	Request->SetContentAsString( OutputString );
+	Request->ProcessRequest();
 }
 
 void ADefaultGameMode::InitializeGameMode(EGameModeActorName GameModeActorName)
@@ -110,5 +161,10 @@ void ADefaultGameMode::RefreshAASettings()
 void ADefaultGameMode::SetGameModeActorDestroyed(AActor* DestroyedActor)
 {
 	GameModeActorAlive = false;
+}
+
+void ADefaultGameMode::OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+{
+	UE_LOG(LogTemp, Display, TEXT("Response: %s"), *Response->GetContentAsString());
 }
 
