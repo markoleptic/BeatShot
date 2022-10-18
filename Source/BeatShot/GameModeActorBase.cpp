@@ -150,6 +150,7 @@ void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f)));
 		}
 		UpdateHighScore();
+		PlayerScores.TotalTimeOffset += FMath::Abs(TimeElapsed - GameModeActorStruct.PlayerDelay);
 		UpdateScoresToHUD.Broadcast(PlayerScores);
 	}
 	else
@@ -202,7 +203,25 @@ void AGameModeActorBase::UpdateHighScore()
 
 void AGameModeActorBase::SavePlayerScores()
 {
+	if (PlayerScores.Score <= 0.01f)
+	{
+		return;
+	}
 	PlayerScores.Time = FDateTime::Now();
+	if (PlayerScores.IsBeatTrackMode)
+	{
+		PlayerScores.Accuracy = FMath::RoundHalfToZero(100.0 * PlayerScores.Score / PlayerScores.TotalPossibleDamage) / 100.0;
+		PlayerScores.Completion = FMath::RoundHalfToZero(100.0 * PlayerScores.Score / PlayerScores.TotalPossibleDamage) / 100.0;
+	}
+	else
+	{
+		PlayerScores.AvgTimeOffset = FMath::RoundHalfToZero(1000.0 * (PlayerScores.TotalTimeOffset / PlayerScores.TargetsHit)) / 1000.0;
+		PlayerScores.Accuracy = FMath::RoundHalfToZero(100.0 * PlayerScores.TargetsHit / PlayerScores.ShotsFired) / 100.0;
+		PlayerScores.Completion = FMath::RoundHalfToZero(100.0 * PlayerScores.TargetsHit / PlayerScores.TargetsSpawned) / 100.0;
+	}
+	PlayerScores.HighScore = FMath::RoundHalfToZero(100.0 * PlayerScores.HighScore) / 100.0;
+	PlayerScores.Score = FMath::RoundHalfToZero(100.0 * PlayerScores.Score) / 100.0;
+	PlayerScores.SongLength = FMath::RoundHalfToZero(100.0 * PlayerScores.SongLength) / 100.0;
 	PlayerScoreArrayWrapper.PlayerScoreArray.Add(PlayerScores);
 	PlayerScoreMap.Remove(GameModeActorStruct);
 	PlayerScoreMap.Compact();

@@ -104,14 +104,11 @@ void AGun_AK47::Fire()
 
 			if (Projectile)
 			{
-				//If reached this point, the player has fired
-				if (GI->DefaultPlayerControllerRef->CountdownActive == false)
+				// If reached this point, the player has fired
+				if (GI->DefaultPlayerControllerRef->CountdownActive == false && GI->GameModeActorStruct.IsBeatTrackMode == false)
 				{
-					if (GI->GameModeActorStruct.IsBeatTrackMode == false)
-					{
-						//Only updating Shots Fired
+						// Only updating Shots Fired
 						OnShotFired.Broadcast();
-					}
 				}
 				FTransform MuzzleTransform = GunMesh->GetSocketTransform("Muzzle");
 				// Set the projectile's initial trajectory.

@@ -238,17 +238,20 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		float Accuracy;
 
+	// Total Targets hit / Total targets spawned
+		float Completion;
+
 	// Incremented after receiving calls from FOnShotsFired delegate in DefaultCharacter
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float ShotsFired;
+		int32 ShotsFired;
 
 	// Total number of targets destroyed by player, called by Projectile
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float TargetsHit;
+		int32 TargetsHit;
 
 	// Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetSpawner
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float TargetsSpawned;
+		int32 TargetsSpawned;
 
 	// Tracking changes the way score is calculated
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
@@ -258,9 +261,13 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		float TotalPossibleDamage;
 
-	// Array that contains the time offset from Spawn Beat Delay for destroyed targets
+	// Total time offset from Spawn Beat Delay for all destroyed targets
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		TArray<float> ReactionTime;
+		float TotalTimeOffset;
+
+	// Avg Time offset from Spawn Beat Delay for destroyed targets
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+		float AvgTimeOffset;
 
 	// time that player completed the session
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
@@ -274,9 +281,12 @@ struct FPlayerScore
 		SongLength = 0.f;
 		Score = 0;
 		HighScore = 0;
+		Completion = 0;
 		Accuracy = 0;
 		ShotsFired = 0;
 		TargetsHit = 0;
+		TotalTimeOffset = 0;
+		AvgTimeOffset = 0;
 		TargetsSpawned = 0;
 		IsBeatTrackMode = false;
 		TotalPossibleDamage = 0.f;
@@ -291,8 +301,10 @@ struct FPlayerScore
 		Score = 0;
 		HighScore = 0;
 		Accuracy = 0;
+		Completion = 0;
 		ShotsFired = 0;
 		TargetsHit = 0;
+		AvgTimeOffset = 0;
 		TargetsSpawned = 0;
 		IsBeatTrackMode = false;
 		TotalPossibleDamage = 0.f;

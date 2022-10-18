@@ -33,6 +33,7 @@ void ASphereTarget::BeginPlay()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	SetLifeSpan(GI->GameModeActorStruct.TargetMaxLifeSpan);
 
+	// Only start timer if appropriate game mode
 	if (GI->GameModeActorStruct.IsBeatGridMode == false)
 	{
 		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
@@ -61,11 +62,11 @@ void ASphereTarget::Tick(float DeltaTime)
 
 void ASphereTarget::HandleDestruction()
 {
-	float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-	FVector ExplosionLocation = BaseMesh->GetComponentLocation();
-	float SphereRadius = 50 * GetActorScale3D().X;
-	FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
-	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && (GI->GameModeActorStruct.IsBeatTrackMode == false) && (GI->GameModeActorStruct.IsBeatGridMode == false))
+	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+	const FVector ExplosionLocation = BaseMesh->GetComponentLocation();
+	const float SphereRadius = 50 * GetActorScale3D().X;
+	const FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
+	if (TimeAlive > 0.f && GI->GameModeActorBaseRef && GI->GameModeActorStruct.IsBeatTrackMode == false && GI->GameModeActorStruct.IsBeatGridMode == false)
 	{
 		GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);

@@ -56,6 +56,7 @@ public:
 	float GameModeLength;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
 	FTimerHandle CountDownTimer;
+
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	class UDefaultGameInstance* GI;
@@ -64,33 +65,42 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
+
 	// the saved score object, with accuracy, etc.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore SavedPlayerScores;
+
 	// the wrapper struct that contains the array of saved player score objects
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
+
 	// the "live" player score objects, which start fresh and import high score from SavedPlayerScores
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore PlayerScores;
+
 	// max score per target based on total amount of targets that could spawn
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	float MaxScorePerTarget;
 
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateHighScore();
+
 	// Called by SphereTarget when it takes damage
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdatePlayerScores(float TimeElapsed);
+
 	// Called by TargetSpawner when a SphereTarget is spawned
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTargetsSpawned();
+
 	// Called by DefaultCharacter when player shoots during an active game that is not a BeatTracking game modes
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateShotsFired();
+
 	// Called by Projectile when a Player's projectile hits a SphereTarget during an active game that is not a BeatTracking game modes
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTargetsHit();
+
 	// Called when IsTrackingGameMode == true
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
