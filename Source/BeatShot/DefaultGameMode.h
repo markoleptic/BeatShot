@@ -80,7 +80,4 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
 	bool GameModeActorAlive;
-
-private:
-	void OnResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
 };

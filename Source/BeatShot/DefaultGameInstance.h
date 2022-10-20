@@ -6,6 +6,7 @@
 #include "GameModeActorStruct.h"
 #include "SaveGameAASettings.h"
 #include "Engine/GameInstance.h"
+#include "Interfaces/IHttpRequest.h"
 #include "DefaultGameInstance.generated.h"
 
 class USaveGamePlayerScore;
@@ -132,8 +133,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores();
 
+	// local saving of scores
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
+
+	// First sends an access token request, then calls savescores with the accesstoken
+	UFUNCTION(BlueprintCallable, Category = "DataBase")
+	void SavePlayerScoresToDatabase(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
 
 	// Player Settings: Video, Music, Controls
 
@@ -145,6 +151,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
 	void SavePlayerSettings();
+
 
 	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
 	void LoadPlayerSettings();
@@ -159,4 +166,38 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerScoresChange OnPlayerScoresChange;
+
+private:
+
+	UFUNCTION(Category = "Authorization")
+	void LoginUser(FLoginPayload LoginPayload);
+
+	UFUNCTION(Category = "Authorization")
+	void RequestAccessToken(FString RefreshToken);
+
+	UFUNCTION(Category = "Authorization")
+	bool IsRefreshTokenValid();
+
+	void OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	void OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	void OnSendScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
+	FString Username;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
+	FString LoginEndpoint = "http://localhost:3000/api/login";
+
+	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
+	FString RefreshEndpoint = "http://localhost:3000/api/refresh";
+
+	UPROPERTY(BlueprintReadWrite, Category = "Authorization", meta = (AllowPrivateAccess = true))
+	FString ScoresEndpoint;
+
+	FString SaveScoresEndpoint;
+
+	FString LoadScoresEndpoint;
 };
+

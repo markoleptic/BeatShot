@@ -73,7 +73,7 @@ void UScoreAnalysisWidget::PopulateRecentScores(FString SelectedSong, ESelectInf
 				const float TargetsSpawned = MostRecentScoreObject.TargetsSpawned;
 				const float Score = MostRecentScoreObject.Score;
 
-				if (MostRecentScoreObject.IsBeatTrackMode == true)
+				if (MostRecentScoreObject.TotalPossibleDamage > 0.01f)
 				{
 					const float TotalPossibleDamage = MostRecentScoreObject.TotalPossibleDamage;
 					TargetBar->SetPercent(Score / TotalPossibleDamage);
@@ -181,7 +181,7 @@ void UScoreAnalysisWidget::PopulateAvgScoresBySong(FString SelectedSong, ESelect
 				// if Song Matches, this is the PlayerScoreArray for selected Game Mode and Song
 				for (FPlayerScore CurrentPlayerScoreObject : Elem.Value.PlayerScoreArray)
 				{
-					if (CurrentPlayerScoreObject.IsBeatTrackMode == true)
+					if (CurrentPlayerScoreObject.TotalPossibleDamage > 0.01f)
 					{
 						SumTotalPossibleDamage += CurrentPlayerScoreObject.TotalPossibleDamage;
 						isBeatTrackMode = true;
@@ -259,7 +259,7 @@ void UScoreAnalysisWidget::PopulateAbsoluteMostRecentScores()
 	const float TargetsSpawned = MostRecentScoreObject.TargetsSpawned;
 	const float Score = MostRecentScoreObject.Score;
 
-	if (MostRecentScoreObject.IsBeatTrackMode == true)
+	if (MostRecentScoreObject.TotalPossibleDamage > 0.01f)
 	{
 		const float TotalPossibleDamage = MostRecentScoreObject.TotalPossibleDamage;
 		TargetBar->SetPercent(Score / TotalPossibleDamage);

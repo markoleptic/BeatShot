@@ -44,7 +44,7 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 	Accuracy->SetText(FText::AsPercent(0.f));
 
 	// Beat Track changes how stats are displayed
-	if (NewPlayerScoreStruct.IsBeatTrackMode == true)
+	if (NewPlayerScoreStruct.TotalPossibleDamage > 0.01f)
 	{
 		const float Score = round(NewPlayerScoreStruct.Score);
 		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;

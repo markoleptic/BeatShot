@@ -90,13 +90,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		USimpleBarChart* AllPlayerAccuracyChart;
 
-	// Scoring Variables
+	/* ----------------- */
+	/* Scoring Variables */
+	/* ----------------- */
 
 	// the player score map obtained from Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Stats")
 		TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
 
-	// Game Mode Specific functions
+	/* ---------------------------- */
+	/* Game Mode Specific functions */
+	/* ---------------------------- */
 
 	// game modes to display based on saved scores in PlayerScoreMap
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
@@ -120,14 +124,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void PopulateAllMatchingSavedScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToLoad);
 
-	// Utility functions
+	/* ----------------- */
+	/* Utility functions */
+	/* ----------------- */
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void LoadPlayerScores();
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void ClearScoreBoxes(FString SelectedItem, ESelectInfo::Type SelectionType);
 
-	// References
+	/* ---------- */
+	/* References */
+	/* ---------- */
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		class UDefaultGameInstance* GI;

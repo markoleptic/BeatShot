@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "GameFramework/Actor.h"
 #include "SphereTarget.generated.h"
 
@@ -43,12 +42,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Target Handling")
 		void HandleDestruction();
 
-	UFUNCTION(BlueprintImplementableEvent)
-		void ShowTargetExplosion();
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void RemoveAndReappear();
-
 	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly)
 		class UDefaultGameInstance* GI;
 
@@ -64,6 +57,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Target Properties")
 		void SetMaxHealth(float NewMaxHealth);
 
+	// base radius for sphere target
+	const float BaseSphereRadius = 50.f;
+
+	// soft white color for BeatGrid
+	const FLinearColor OffWhite = { 0.75 , 0.75, 0.75, 1 };
+
+	// Blueprint implementable events
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
 		void PlayColorGradient();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
+		void ShowTargetExplosion();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
+		void RemoveAndReappear();
 };

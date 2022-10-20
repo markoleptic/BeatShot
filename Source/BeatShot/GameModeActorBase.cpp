@@ -43,7 +43,6 @@ void AGameModeActorBase::HandleGameStart()
 	LoadPlayerScores();
 	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
-		PlayerScores.IsBeatTrackMode = true;
 		PlayerScores.TotalPossibleDamage = 0.f;
 	}
 
@@ -163,7 +162,6 @@ void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossi
 {
 	if (GameModeActorStruct.IsBeatTrackMode==true)
 	{
-		PlayerScores.IsBeatTrackMode = true;
 		PlayerScores.TotalPossibleDamage = TotalPossibleDamage;
 		PlayerScores.Score += DamageTaken;
 		UpdateHighScore();
@@ -208,7 +206,7 @@ void AGameModeActorBase::SavePlayerScores()
 		return;
 	}
 	PlayerScores.Time = FDateTime::Now();
-	if (PlayerScores.IsBeatTrackMode)
+	if (PlayerScores.TotalPossibleDamage > 0.01f)
 	{
 		PlayerScores.Accuracy = FMath::RoundHalfToZero(100.0 * PlayerScores.Score / PlayerScores.TotalPossibleDamage) / 100.0;
 		PlayerScores.Completion = FMath::RoundHalfToZero(100.0 * PlayerScores.Score / PlayerScores.TotalPossibleDamage) / 100.0;

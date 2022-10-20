@@ -22,6 +22,14 @@ enum class EGameModeActorName : uint8 {
 // REMEMBER TO UPDATE THIS AS GAME MODES ARE ADDED!!!
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
+UENUM(BlueprintType)
+enum class EHttpRequestCallbackType : uint8 {
+	None						UMETA(DisplayName, "None"),
+	AccessToken					UMETA(DisplayName, "AccessToken"),
+	FetchScores					UMETA(DisplayName, "FetchScores"),
+	SaveScores					UMETA(DisplayName, "SaveScores"),
+};
+
 // Used to store game properties, etc.
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
@@ -253,11 +261,8 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		int32 TargetsSpawned;
 
-	// Tracking changes the way score is calculated
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		bool IsBeatTrackMode;
-
-	// Total possible damage that could have been done to tracking target
+	// Total possible damage that could have been done to tracking target,
+	// also used to determine if the score object is for Tracking game mode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		float TotalPossibleDamage;
 
@@ -288,7 +293,6 @@ struct FPlayerScore
 		TotalTimeOffset = 0;
 		AvgTimeOffset = 0;
 		TargetsSpawned = 0;
-		IsBeatTrackMode = false;
 		TotalPossibleDamage = 0.f;
 	}
 
@@ -306,7 +310,6 @@ struct FPlayerScore
 		TargetsHit = 0;
 		AvgTimeOffset = 0;
 		TargetsSpawned = 0;
-		IsBeatTrackMode = false;
 		TotalPossibleDamage = 0.f;
 	}
 };
@@ -333,12 +336,24 @@ struct FPlayerSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 		float MusicVolume;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		FString Username;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		bool HasLoggedIn;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		FString LoginCookie;
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
 		MasterVolume = 50.f;
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
+		HasLoggedIn = false;
+		Username = "";
+		LoginCookie = "";
 	}
 };
 
@@ -348,7 +363,7 @@ struct FPlayerScoreArrayWrapper
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FPlayerScore> PlayerScoreArray;
 };
 
@@ -419,5 +434,21 @@ struct FJsonScore
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY()
-	TArray<FJsonGameModeScore> GameModeScorePairs;
+	TArray<FPlayerScore> Scores;
+};
+
+USTRUCT(BlueprintType)
+struct FLoginPayload
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+		FString Username;
+
+	UPROPERTY()
+		FString Email;
+
+	UPROPERTY()
+		FString Password;
+		
 };
