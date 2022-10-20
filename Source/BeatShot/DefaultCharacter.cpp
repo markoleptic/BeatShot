@@ -54,7 +54,7 @@ void ADefaultCharacter::BeginPlay()
 	Gun->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 
 	AnimInstance = HandsMesh->GetAnimInstance();
-	Sensitivity = GI->GetSensitivity();
+	Sensitivity = GI->LoadPlayerSettings().Sensitivity;
 
 	PlayerController = GetController<ADefaultPlayerController>();
 	if (IsLocallyControlled() && PlayerController)

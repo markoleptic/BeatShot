@@ -247,6 +247,7 @@ struct FPlayerScore
 		float Accuracy;
 
 	// Total Targets hit / Total targets spawned
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		float Completion;
 
 	// Incremented after receiving calls from FOnShotsFired delegate in DefaultCharacter
@@ -354,6 +355,14 @@ struct FPlayerSettings
 		HasLoggedIn = false;
 		Username = "";
 		LoginCookie = "";
+	}
+
+	void ResetStruct()
+	{
+		Sensitivity = 0.3f;
+		MasterVolume = 50.f;
+		MenuVolume = 50.f;
+		MusicVolume = 10.f;
 	}
 };
 

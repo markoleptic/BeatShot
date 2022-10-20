@@ -2,23 +2,28 @@
 
 
 #include "SettingsMenuWidget.h"
-#include <GameFramework/PlayerController.h>
+#include "DefaultGameInstance.h"
 #include <Blueprint/UserWidget.h>
 #include <Kismet/GameplayStatics.h>
 
-void USettingsMenuWidget::ShowSettingsMenu()
+void USettingsMenuWidget::NativeConstruct()
 {
-	// Make widget owned by our PlayerController
-	APlayerController* PC = Cast<APlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	SettingsMenu = CreateWidget<USettingsMenuWidget>(PC, SettingsMenuClass);
-	SettingsMenu->AddToViewport();
+	Super::NativeConstruct();
+	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	LoadPlayerSettings();
 }
 
-void USettingsMenuWidget::HideSettingsMenu()
+void USettingsMenuWidget::LoadPlayerSettings()
 {
-	if (SettingsMenu)
-	{
-		SettingsMenu->RemoveFromViewport();
-		SettingsMenu = nullptr;
-	}
+	PlayerSettings = GI->LoadPlayerSettings();
+}
+
+void USettingsMenuWidget::SavePlayerSettings()
+{
+	GI->SavePlayerSettings(PlayerSettings);
+}
+
+void USettingsMenuWidget::ResetPlayerSettings()
+{
+	PlayerSettings.ResetStruct();
 }

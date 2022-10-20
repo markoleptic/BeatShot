@@ -17,8 +17,6 @@
 
 void UDefaultGameInstance::Init()
 {
-	LoadPlayerSettings();
-	LoadAASettings();
 	LoadPlayerScores();
 }
 
@@ -34,20 +32,16 @@ bool UDefaultGameInstance::IsRefreshTokenValid()
 
 		if ((FDateTime::UtcNow() + FTimespan::FromDays(1) < CookieExpireDate))
 		{
-			return false;
+			return true;
 		}
-		return true;
+		return false;
 	}
-	return true;
+	return false;
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
 {
 	DefaultCharacterRef = DefaultCharacter;
-	if (DefaultCharacterRef)
-	{
-		DefaultCharacterRef->SetSensitivity(GetSensitivity());
-	}
 }
 
 void UDefaultGameInstance::RegisterTargetSpawner(ATargetSpawner* TargetSpawner)
@@ -76,57 +70,9 @@ void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* De
 	DefaultPlayerControllerRef = DefaultPlayerController;
 }
 
-void UDefaultGameInstance::SetSensitivity(float InputSensitivity)
-{
-	PlayerSettings.Sensitivity = InputSensitivity;
-	if (DefaultCharacterRef)
-	{
-		DefaultCharacterRef->SetSensitivity(InputSensitivity);
-	}
-}
-
-float UDefaultGameInstance::GetSensitivity()
-{
-	return PlayerSettings.Sensitivity;
-}
-
-float UDefaultGameInstance::GetTargetSpawnCD()
-{
-	return GameModeActorStruct.TargetSpawnCD;
-}
-
-void UDefaultGameInstance::SetMasterVolume(float InputVolume)
-{
-	PlayerSettings.MasterVolume = InputVolume;
-}
-
-float UDefaultGameInstance::GetMasterVolume()
-{
-	return PlayerSettings.MasterVolume;
-}
-
-void UDefaultGameInstance::SetMenuVolume(float InputVolume)
-{
-	PlayerSettings.MenuVolume = InputVolume;
-}
-
-float UDefaultGameInstance::GetMenuVolume()
-{
-	return PlayerSettings.MenuVolume;
-}
-
-void UDefaultGameInstance::SetMusicVolume(float InputVolume)
-{
-	PlayerSettings.MusicVolume = InputVolume;
-}
-
-float UDefaultGameInstance::GetMusicVolume()
-{
-	return PlayerSettings.MusicVolume;
-}
-
 FAASettingsStruct UDefaultGameInstance::LoadAASettings()
 {
+	USaveGameAASettings* SaveGameAASettings;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("AASettingsSlot"), 2))
 	{
 		SaveGameAASettings = Cast<USaveGameAASettings>(UGameplayStatics::LoadGameFromSlot(TEXT("AASettingsSlot"), 2));
@@ -159,6 +105,7 @@ void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
 
 TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores()
 {
+	USaveGamePlayerScore* SaveGamePlayerScore;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
 	{
 		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
@@ -202,8 +149,9 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 	}
 }
 
-void UDefaultGameInstance::SavePlayerSettings()
+void UDefaultGameInstance::SavePlayerSettings(FPlayerSettings PlayerSettingsToSave)
 {
+	PlayerSettings = PlayerSettingsToSave;
 	if (USaveGamePlayerSettings* SaveGameInstanceToSave = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
 		SaveGameInstanceToSave->PlayerSettings = PlayerSettings;
@@ -215,7 +163,7 @@ void UDefaultGameInstance::SavePlayerSettings()
 	OnPlayerSettingsChange.Broadcast();
 }
 
-void UDefaultGameInstance::LoadPlayerSettings()
+FPlayerSettings UDefaultGameInstance::LoadPlayerSettings()
 {
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
 	{
@@ -225,11 +173,8 @@ void UDefaultGameInstance::LoadPlayerSettings()
 	{
 		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
 	}
-	if (SaveGamePlayerSettings)
-	{
-		PlayerSettings = SaveGamePlayerSettings->PlayerSettings;
-		UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
-	}
+	UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
+	return SaveGamePlayerSettings->PlayerSettings;
 }
 
 void UDefaultGameInstance::LoginUser(FLoginPayload LoginPayload)
@@ -275,7 +220,7 @@ void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHtt
 	PlayerSettings.HasLoggedIn = true;
 	PlayerSettings.Username = LoginResponseObj->GetStringField("username");
 	PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
-	SavePlayerSettings();
+	SavePlayerSettings(PlayerSettings);
 }
 
 void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
@@ -299,10 +244,10 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 		// get array of player scores from current key value
 		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
 
-		// iterate through array of player scores to find high score for current game mode / song
 		for (FPlayerScore& PlayerScoreObject : TempArray)
 		{
 			JsonScore.Scores.Add(PlayerScoreObject);
+			UE_LOG(LogTemp, Display, TEXT("completion: %f"), PlayerScoreObject.Completion);
 		}
 	}
 
@@ -316,7 +261,8 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
 
-	SaveScoresEndpoint = "http://localhost:3000/api/profile/" + Username + "/savescores";
+	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
+	SaveScoresEndpoint = "http://localhost:3000/api/profile/" + PlayerSettings.Username + "/savescores";
 	FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
 	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnSendScoresResponseReceived);
 	SendScoreRequest->SetURL(SaveScoresEndpoint);

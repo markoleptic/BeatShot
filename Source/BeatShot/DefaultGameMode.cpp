@@ -12,9 +12,6 @@
 #include "WideSpreadMultiBeat.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "JsonObjectConverter.h"
-#include "Http.h"
-#include "Kismet/KismetStringLibrary.h"
 
 void ADefaultGameMode::BeginPlay()
 {
@@ -27,7 +24,6 @@ void ADefaultGameMode::BeginPlay()
 		GI->OnAASettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshAASettings);
 	}
 	GameModeActorAlive = false;
-
 	InitializeGameMode(GI->GameModeActorStruct.GameModeActorName);
 }
 

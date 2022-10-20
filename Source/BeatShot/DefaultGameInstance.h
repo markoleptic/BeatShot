@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameModeActorStruct.h"
-#include "SaveGameAASettings.h"
 #include "Engine/GameInstance.h"
 #include "Interfaces/IHttpRequest.h"
 #include "DefaultGameInstance.generated.h"
@@ -82,42 +81,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
 
-	// Settings Menu setter and getter functions
-
-	UFUNCTION(BlueprintCallable)
-	void SetSensitivity(float InputSensitivity);
-
-	UFUNCTION(BlueprintCallable)
-	float GetSensitivity();
-
-	UFUNCTION(BlueprintCallable)
-	float GetTargetSpawnCD();
-
-	UFUNCTION(BlueprintCallable)
-	void SetMasterVolume(float InputVolume);
-
-	UFUNCTION(BlueprintCallable)
-	float GetMasterVolume();
-
-	UFUNCTION(BlueprintCallable)
-	void SetMenuVolume(float InputVolume);
-
-	UFUNCTION(BlueprintCallable)
-	float GetMenuVolume();
-
-	UFUNCTION(BlueprintCallable)
-	void SetMusicVolume(float InputVolume);
-
-	UFUNCTION(BlueprintCallable)
-	float GetMusicVolume();
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
 	EGameModeActorName GameModeActorName;
 
 	// Audio Analyzer Settings
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
-	USaveGameAASettings* SaveGameAASettings;
 
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	FAASettingsStruct LoadAASettings();
@@ -127,9 +94,6 @@ public:
 
 	// Player Scores Loading / Saving
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scoring")
-	USaveGamePlayerScore* SaveGamePlayerScore;
-
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores();
 
@@ -137,24 +101,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
 
-	// First sends an access token request, then calls savescores with the accesstoken
+	// database saving of scores. First sends an access token request, then calls savescores with the accesstoken
 	UFUNCTION(BlueprintCallable, Category = "DataBase")
 	void SavePlayerScoresToDatabase(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
 
-	// Player Settings: Video, Music, Controls
+	// Player Settings Loading / Saving
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
 	FPlayerSettings PlayerSettings;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings Menu")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
 	USaveGamePlayerSettings* SaveGamePlayerSettings;
 
-	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
-	void SavePlayerSettings();
+	UFUNCTION(BlueprintCallable, Category = "Player Settings")
+	void SavePlayerSettings(FPlayerSettings PlayerSettingsToSave);
 
-
-	UFUNCTION(BlueprintCallable, Category = "Settings Menu")
-	void LoadPlayerSettings();
+	UFUNCTION(BlueprintCallable, Category = "Player Settings")
+	FPlayerSettings LoadPlayerSettings();
 
 	// delegates
 
@@ -196,8 +159,10 @@ private:
 	UPROPERTY(BlueprintReadWrite, Category = "Authorization", meta = (AllowPrivateAccess = true))
 	FString ScoresEndpoint;
 
+	UPROPERTY()
 	FString SaveScoresEndpoint;
 
+	UPROPERTY()
 	FString LoadScoresEndpoint;
 };
 

@@ -63,6 +63,8 @@ void AGameModeActorBase::EndGameMode()
 {
 	SavePlayerScores();
 
+	UE_LOG(LogTemp, Display, TEXT("EndGameMode called"));
+
 	// Stopping Player and Tracker
 	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
 
