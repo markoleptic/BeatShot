@@ -7,6 +7,7 @@
 #include "SaveGameCustomGameMode.h"
 #include "GameModesWidget.generated.h"
 
+class UDefaultGameInstance;
 class UButton;
 class UComboBoxString;
 class USlider;
@@ -20,7 +21,6 @@ UCLASS()
 class BEATSHOT_API UGameModesWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
 
 protected:
 
@@ -101,11 +101,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
 		void BeatGridSpacingConstrained(float value);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
+	UPROPERTY(BlueprintAssignable, Category = "Custom GameModes")
 		FUpdateBeatGridConstraints BeatGridConstraintsDelegate;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-		class UDefaultGameInstance* GI;
+		UDefaultGameInstance* GI;
 
 	const float SphereDiameter = 100.f;
 };

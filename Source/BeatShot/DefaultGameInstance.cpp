@@ -32,6 +32,7 @@ bool UDefaultGameInstance::IsRefreshTokenValid()
 
 		if ((FDateTime::UtcNow() + FTimespan::FromDays(1) < CookieExpireDate))
 		{
+
 			return true;
 		}
 		return false;
@@ -174,6 +175,7 @@ FPlayerSettings UDefaultGameInstance::LoadPlayerSettings()
 		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
+	PlayerSettings = SaveGamePlayerSettings->PlayerSettings;
 	return SaveGamePlayerSettings->PlayerSettings;
 }
 
@@ -216,11 +218,12 @@ void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHtt
 	const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
 	FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
 
-	UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *Username);
+	UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
 	PlayerSettings.HasLoggedIn = true;
 	PlayerSettings.Username = LoginResponseObj->GetStringField("username");
 	PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
 	SavePlayerSettings(PlayerSettings);
+	OnPlayerLogin.Broadcast();
 }
 
 void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
@@ -230,6 +233,9 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 		UE_LOG(LogTemp, Display, TEXT("Access Token Request Failed."));
 		return;
 	}
+	OnAccessTokenReceived.Broadcast(Response->GetContentAsString());
+
+	// TODO: Remove this part so it doesn't always call to save scores
 
 	const FString RefreshResponseString = Response->GetContentAsString();
 	TSharedPtr<FJsonObject> RefreshResponseObj;

@@ -21,6 +21,8 @@ class ADefaultPlayerController;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAASettingsChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerSettingsChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerScoresChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerLogin);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAccessTokenReceived, FString, AccessToken);
 
 /**
  * 
@@ -130,15 +132,19 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerScoresChange OnPlayerScoresChange;
 
-private:
+	UPROPERTY(BlueprintAssignable)
+		FOnPlayerLogin OnPlayerLogin;
 
-	UFUNCTION(Category = "Authorization")
+	UPROPERTY(BlueprintAssignable)
+		FOnAccessTokenReceived OnAccessTokenReceived;
+
+	UFUNCTION(BlueprintCallable, Category = "Authorization")
 	void LoginUser(FLoginPayload LoginPayload);
 
-	UFUNCTION(Category = "Authorization")
+	UFUNCTION(BlueprintCallable, Category = "Authorization")
 	void RequestAccessToken(FString RefreshToken);
 
-	UFUNCTION(Category = "Authorization")
+	UFUNCTION(BlueprintCallable, Category = "Authorization")
 	bool IsRefreshTokenValid();
 
 	void OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
@@ -146,6 +152,8 @@ private:
 	void OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
 
 	void OnSendScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
+
+	private:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
 	FString Username;

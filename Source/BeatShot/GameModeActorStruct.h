@@ -451,13 +451,13 @@ struct FLoginPayload
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY()
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString Username;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString Email;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString Password;
 		
 };
