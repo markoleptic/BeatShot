@@ -159,10 +159,10 @@ public:
 	FString Username;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
-	FString LoginEndpoint = "http://localhost:3000/api/login";
+	FString LoginEndpoint = "https://beatshot.gg/api/login";
 
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
-	FString RefreshEndpoint = "http://localhost:3000/api/refresh";
+	FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
 
 	UPROPERTY(BlueprintReadWrite, Category = "Authorization", meta = (AllowPrivateAccess = true))
 	FString ScoresEndpoint;
