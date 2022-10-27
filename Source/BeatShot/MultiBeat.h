@@ -28,7 +28,7 @@ public:
 
 	virtual void HandleGameStart() override;
 
-	virtual void HandleGameRestart() override;
+	virtual void HandleGameRestart(bool ShouldSavePlayerScores) override;
 
 	virtual void StartGameMode() override;
 

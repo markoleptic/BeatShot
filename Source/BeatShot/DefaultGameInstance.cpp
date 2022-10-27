@@ -196,8 +196,32 @@ void UDefaultGameInstance::LoginUser(FLoginPayload LoginPayload)
 	LoginRequest->ProcessRequest();
 }
 
+void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+{
+	if (Response->GetResponseCode() != 200)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Login Request Failed."));
+		OnLoginResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
+		return;
+	}
+
+	// create Json object to access string fields
+	const FString LoginResponseString = Response->GetContentAsString();
+	TSharedPtr<FJsonObject> LoginResponseObj;
+	const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
+	FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
+
+	PlayerSettings.HasLoggedIn = true;
+	PlayerSettings.Username = LoginResponseObj->GetStringField("username");
+	PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
+	SavePlayerSettings(PlayerSettings);
+	OnLoginResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
+	UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
+}
+
 void UDefaultGameInstance::RequestAccessToken(FString RefreshToken)
 {
+	// not currently using RefreshToken parameter but may change in future to double check token
 	FHttpRequestRef AccessTokenRequest = FHttpModule::Get().CreateRequest();
 	AccessTokenRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnAccessTokenResponseReceived);
 	AccessTokenRequest->SetURL(RefreshEndpoint);
@@ -206,81 +230,70 @@ void UDefaultGameInstance::RequestAccessToken(FString RefreshToken)
 	AccessTokenRequest->ProcessRequest();
 }
 
-void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
-{
-	if (Response->GetResponseCode() != 200)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Login Request Failed."));
-		return;
-	}
-	const FString LoginResponseString = Response->GetContentAsString();
-	TSharedPtr<FJsonObject> LoginResponseObj;
-	const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
-	FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
-
-	UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
-	PlayerSettings.HasLoggedIn = true;
-	PlayerSettings.Username = LoginResponseObj->GetStringField("username");
-	PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
-	SavePlayerSettings(PlayerSettings);
-	OnPlayerLogin.Broadcast();
-}
-
 void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
 	if (Response->GetResponseCode() != 200)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Access Token Request Failed."));
+		OnAccessTokenResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
 		return;
 	}
-	OnAccessTokenReceived.Broadcast(Response->GetContentAsString());
 
-	// TODO: Remove this part so it doesn't always call to save scores
+	// convert response to Json object to access string fields
+	const FString ResponseString = Response->GetContentAsString();
+	TSharedPtr<FJsonObject> ResponseObj;
+	const TSharedRef<TJsonReader<>> ResponseReader = TJsonReaderFactory<>::Create(ResponseString);
+	FJsonSerializer::Deserialize(ResponseReader, ResponseObj);
+	OnAccessTokenResponse.Broadcast( ResponseObj->GetStringField("accessToken"), Response->GetResponseCode());
+}
 
-	const FString RefreshResponseString = Response->GetContentAsString();
-	TSharedPtr<FJsonObject> RefreshResponseObj;
-	const TSharedRef<TJsonReader<>> RefreshResponseReader = TJsonReaderFactory<>::Create(RefreshResponseString);
-	FJsonSerializer::Deserialize(RefreshResponseReader, RefreshResponseObj);
-
+void UDefaultGameInstance::PostPlayerScores(FString AccessToken)
+{
+	// load local storage of scores
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> Map = LoadPlayerScores();
-	FJsonScore JsonScore;
+	FJsonScore JsonScores;
 	// iterate through all elements in PlayerScoreMap
 	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : Map)
 	{
-		// get array of player scores from current key value
+		// get array of player scores for any given game mode & song from current key value
 		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
-
 		for (FPlayerScore& PlayerScoreObject : TempArray)
 		{
-			JsonScore.Scores.Add(PlayerScoreObject);
-			UE_LOG(LogTemp, Display, TEXT("completion: %f"), PlayerScoreObject.Completion);
+			JsonScores.Scores.Add(PlayerScoreObject);
 		}
 	}
 
+	// convert JsonScores struct to JSON
 	TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(
-		FJsonScore::StaticStruct(), 
-		&JsonScore, 
+		FJsonScore::StaticStruct(),
+		&JsonScores,
 		OutJsonObject);
 	FString OutputString;
-
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
 
-	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
-	SaveScoresEndpoint = "http://localhost:3000/api/profile/" + PlayerSettings.Username + "/savescores";
+	// ReSharper disable once StringLiteralTypo
+	SaveScoresEndpoint = SaveScoresEndpoint + PlayerSettings.Username + "/savescores";
 	FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
-	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnSendScoresResponseReceived);
+	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnPostPlayerScoresResponseReceived);
 	SendScoreRequest->SetURL(SaveScoresEndpoint);
 	SendScoreRequest->SetVerb("POST");
 	SendScoreRequest->SetHeader("Content-Type", "application/json");
-	SendScoreRequest->SetHeader("Authorization", "Bearer " + RefreshResponseObj->GetStringField("accessToken"));
+	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
 }
 
-void UDefaultGameInstance::OnSendScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Response->GetContentAsString());
+	if (Response->GetResponseCode() != 200)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Send Scores Request Failed."));
+		OnPostPlayerScoresResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
+		return;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Successfully saved scores to database."));
+	OnPostPlayerScoresResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
 }
 

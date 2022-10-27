@@ -28,9 +28,9 @@ void AWideSpreadMultiBeat::HandleGameStart()
 	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AWideSpreadMultiBeat::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }
 
-void AWideSpreadMultiBeat::HandleGameRestart()
+void AWideSpreadMultiBeat::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	Super::HandleGameRestart();
+	Super::HandleGameRestart(ShouldSavePlayerScores);
 }
 
 void AWideSpreadMultiBeat::StartGameMode()

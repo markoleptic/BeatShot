@@ -28,9 +28,9 @@ void ACustomBeat::HandleGameStart()
 	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &::ACustomBeat::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }
 
-void ACustomBeat::HandleGameRestart()
+void ACustomBeat::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	Super::HandleGameRestart();
+	Super::HandleGameRestart(ShouldSavePlayerScores);
 }
 
 void ACustomBeat::StartGameMode()

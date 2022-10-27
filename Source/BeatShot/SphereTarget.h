@@ -6,7 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "SphereTarget.generated.h"
 
-class UHealthComponent;
+class UDefaultHealthComponent;
 class UCapsuleComponent;
 class UNiagaraSystem;
 class UCurveFloat;
@@ -52,7 +52,7 @@ public:
 		UMaterialInstanceDynamic* MID_TargetColorChanger;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-		UHealthComponent* HealthComp;
+		UDefaultHealthComponent* HealthComp;
 
 	UFUNCTION(BlueprintCallable, Category = "Target Properties")
 		void SetMaxHealth(float NewMaxHealth);

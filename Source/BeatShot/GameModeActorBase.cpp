@@ -63,8 +63,6 @@ void AGameModeActorBase::EndGameMode()
 {
 	SavePlayerScores();
 
-	UE_LOG(LogTemp, Display, TEXT("EndGameMode called"));
-
 	// Stopping Player and Tracker
 	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();
 
@@ -81,6 +79,9 @@ void AGameModeActorBase::EndGameMode()
 		}
 	}
 
+	// Show Post Game menu
+	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
+
 	//Clearing Timers
 	GameModeActorStruct.CountDownTimer.Invalidate();
 	GameModeActorStruct.GameModeLengthTimer.Invalidate();
@@ -93,15 +94,15 @@ void AGameModeActorBase::EndGameMode()
 	// Reset Struct to zero scores
 	PlayerScores.ResetStruct();
 
-	// Show Post Game menu
-	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
-
 	Destroy();
 }
 
-void AGameModeActorBase::HandleGameRestart()
+void AGameModeActorBase::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	SavePlayerScores();
+	if (ShouldSavePlayerScores)
+	{
+		SavePlayerScores();
+	}
 
 	// Stopping Player and Tracker
 	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->StopAAPlayerAndTracker();

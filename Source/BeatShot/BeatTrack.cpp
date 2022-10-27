@@ -28,9 +28,9 @@ void ABeatTrack::HandleGameStart()
 	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &ABeatTrack::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }
 
-void ABeatTrack::HandleGameRestart()
+void ABeatTrack::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	Super::HandleGameRestart();
+	Super::HandleGameRestart(ShouldSavePlayerScores);
 }
 
 void ABeatTrack::StartGameMode()

@@ -17,8 +17,8 @@ UCLASS()
 class BEATSHOT_API AGameModeActorBase : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AGameModeActorBase();
 
@@ -27,81 +27,72 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void SavePlayerScores();
+		void SavePlayerScores();
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void LoadPlayerScores();
+		void LoadPlayerScores();
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	// called by WBP_Countdown when player clicks anywhere on screen, including after game restart
-	UFUNCTION(BlueprintCallable)
-	virtual void HandleGameStart();
-	UFUNCTION(BlueprintCallable)
-	virtual void HandleGameRestart();
-	UFUNCTION(BlueprintCallable)
-	virtual void StartGameMode();
-	UFUNCTION(BlueprintCallable)
-	virtual void EndGameMode();
 
+	// called by WBP_Countdown when player clicks anywhere on screen, including after game restart
+	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+		virtual void HandleGameStart();
+	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+		virtual void HandleGameRestart(bool ShouldSavePlayerScores);
+	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+		virtual void StartGameMode();
+	// only called if GameModeLengthTimer expires, otherwise use HandleGameRestart
+	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+		virtual void EndGameMode();
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FGameModeActorStruct GameModeActorStruct;
+		FGameModeActorStruct GameModeActorStruct;
 	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Game Properties")
-	FUpdateScoresToHUD UpdateScoresToHUD;
+		FUpdateScoresToHUD UpdateScoresToHUD;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	FTimerHandle GameModeLengthTimer;
+		FTimerHandle GameModeLengthTimer;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float CountdownTimerLength;
+		float CountdownTimerLength;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-	float GameModeLength;
+		float GameModeLength;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
-	FTimerHandle CountDownTimer;
+		FTimerHandle CountDownTimer;
 
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	class UDefaultGameInstance* GI;
+		class UDefaultGameInstance* GI;
 
 	// Scoring
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
-
+		TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
 	// the saved score object, with accuracy, etc.
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	FPlayerScore SavedPlayerScores;
-
+		FPlayerScore SavedPlayerScores;
 	// the wrapper struct that contains the array of saved player score objects
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
-
+		FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
 	// the "live" player score objects, which start fresh and import high score from SavedPlayerScores
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	FPlayerScore PlayerScores;
-
+		FPlayerScore PlayerScores;
 	// max score per target based on total amount of targets that could spawn
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	float MaxScorePerTarget;
-
+		float MaxScorePerTarget;
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void UpdateHighScore();
-
+		void UpdateHighScore();
 	// Called by SphereTarget when it takes damage
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void UpdatePlayerScores(float TimeElapsed);
-
+		void UpdatePlayerScores(float TimeElapsed);
 	// Called by TargetSpawner when a SphereTarget is spawned
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void UpdateTargetsSpawned();
-
+		void UpdateTargetsSpawned();
 	// Called by DefaultCharacter when player shoots during an active game that is not a BeatTracking game modes
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void UpdateShotsFired();
-
+		void UpdateShotsFired();
 	// Called by Projectile when a Player's projectile hits a SphereTarget during an active game that is not a BeatTracking game modes
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void UpdateTargetsHit();
-
+		void UpdateTargetsHit();
 	// Called when IsTrackingGameMode == true
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
+		void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
 };

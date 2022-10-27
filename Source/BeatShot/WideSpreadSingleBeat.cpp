@@ -29,9 +29,9 @@ void AWideSpreadSingleBeat::HandleGameStart()
 	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AWideSpreadSingleBeat::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }
 
-void AWideSpreadSingleBeat::HandleGameRestart()
+void AWideSpreadSingleBeat::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	Super::HandleGameRestart();
+	Super::HandleGameRestart(ShouldSavePlayerScores);
 }
 
 void AWideSpreadSingleBeat::StartGameMode()

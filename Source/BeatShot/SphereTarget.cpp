@@ -4,7 +4,7 @@
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
-#include "HealthComponent.h"
+#include "DefaultHealthComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -23,7 +23,7 @@ ASphereTarget::ASphereTarget()
 	RootComponent = CapsuleComp;
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
-	HealthComp = CreateDefaultSubobject<UHealthComponent>("Health Component");
+	HealthComp = CreateDefaultSubobject<UDefaultHealthComponent>("Health Component");
 	InitialLifeSpan = 1.5f;
 }
 

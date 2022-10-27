@@ -24,9 +24,9 @@ void AMultiBeat::HandleGameStart()
 	Super::HandleGameStart();
 }
 
-void AMultiBeat::HandleGameRestart()
+void AMultiBeat::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	Super::HandleGameRestart();
+	Super::HandleGameRestart(ShouldSavePlayerScores);
 }
 
 void AMultiBeat::StartGameMode()

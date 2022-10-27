@@ -24,9 +24,9 @@ void ASingleBeat::HandleGameStart()
 	Super::HandleGameStart();
 }
 
-void ASingleBeat::HandleGameRestart()
+void ASingleBeat::HandleGameRestart(bool ShouldSavePlayerScores)
 {
-	Super::HandleGameRestart();
+	Super::HandleGameRestart(ShouldSavePlayerScores);
 }
 
 void ASingleBeat::StartGameMode()

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HealthComponent.h"
+#include "DefaultHealthComponent.h"
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
 #include "SphereTarget.h"
@@ -9,18 +9,18 @@
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
-UHealthComponent::UHealthComponent()
+UDefaultHealthComponent::UDefaultHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
 // Called when the game starts
-void UHealthComponent::BeginPlay()
+void UDefaultHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Health = MaxHealth;
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthComponent::DamageTaken);
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UDefaultHealthComponent::DamageTaken);
 	ShouldUpdateTotalPossibleDamage = false;
 	TotalPossibleDamage = 0.f;
 	if (Cast<ASphereTarget>(GetOwner()) && GI->GameModeActorStruct.IsBeatTrackMode)
@@ -29,7 +29,7 @@ void UHealthComponent::BeginPlay()
 	}
 }
 
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UDefaultHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	if (ShouldUpdateTotalPossibleDamage)
@@ -39,13 +39,13 @@ void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	}
 }
 
-void UHealthComponent::SetMaxHealth(float NewMaxHealth)
+void UDefaultHealthComponent::SetMaxHealth(float NewMaxHealth)
 {
 	MaxHealth = NewMaxHealth;
 	Health = MaxHealth;
 }
 
-void UHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser)
+void UDefaultHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser)
 {
 	if (Damage <= 0.f) return;
 
