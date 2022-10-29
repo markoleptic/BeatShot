@@ -51,7 +51,7 @@
 		},
 		{
 			"Name": "KantanCharts",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/89bd18db011b4bd19606db2e31020f13"
 		},
 		{
@@ -86,8 +86,12 @@
 		},
 		{
 			"Name": "FPSCore",
-			"Enabled": true,
+			"Enabled": false,
 			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/1e2dd9aadb6f46db9a42a201177d4cdd"
+		},
+		{
+			"Name": "RenderDocPlugin",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

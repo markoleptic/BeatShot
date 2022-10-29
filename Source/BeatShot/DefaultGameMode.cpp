@@ -16,11 +16,12 @@
 void ADefaultGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	// Store instance of GameModeBase in Game Instance
+
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
 		GI->RegisterGameModeBase(this);
+		// listen to changes that are made to Audio Analyzer settings in case user changes during a game
 		GI->OnAASettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshAASettings);
 	}
 	GameModeActorAlive = false;
@@ -29,12 +30,6 @@ void ADefaultGameMode::BeginPlay()
 
 void ADefaultGameMode::InitializeGameMode(EGameModeActorName GameModeActorName)
 {
-	//if (GameModeActorAlive == true)
-	//{
-	//	GI->GameModeActorBaseRef->Destroy();
-	//	GameModeActorAlive = false;
-	//}
-
 	// Wide Spread Multi Beat
 	if (GameModeActorName == EGameModeActorName::WideSpreadMultiBeat)
 	{
@@ -74,18 +69,11 @@ void ADefaultGameMode::InitializeGameMode(EGameModeActorName GameModeActorName)
 		}
 	}
 
-	if (GameModeActorBase)
-	{
-		GameModeActorAlive = true;
-	}
-
-	GameModeActorBase->OnDestroyed.AddDynamic(this, &ADefaultGameMode::SetGameModeActorDestroyed);
-
 	// initialize AA settings
 	RefreshAASettings();
 
 	// spawn visualizer
-	const FVector VisualizerLocation = { 3910,0,1490 };
+	const FVector VisualizerLocation = { 100,0,60 };
 	const FRotator Rotation = FRotator::ZeroRotator;
 	const FActorSpawnParameters SpawnParameters;
 	Visualizer = GetWorld()->SpawnActor(VisualizerClass, &VisualizerLocation, &Rotation, SpawnParameters);
@@ -106,8 +94,4 @@ void ADefaultGameMode::RefreshAASettings()
 	AASettings = GI->LoadAASettings();
 }
 
-void ADefaultGameMode::SetGameModeActorDestroyed(AActor* DestroyedActor)
-{
-	GameModeActorAlive = false;
-}
 

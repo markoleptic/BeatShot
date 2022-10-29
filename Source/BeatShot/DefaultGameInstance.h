@@ -20,7 +20,7 @@ class ADefaultPlayerController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAASettingsChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerSettingsChange);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerScoresChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInvalidRefreshToken);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, ResponseMsg, int32, ResponseCode);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAccessTokenResponse, FString, ResponseMsg, int32, ResponseCode);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, FString, ResponseMsg, int32, ResponseCode);
@@ -130,8 +130,8 @@ public:
 	UPROPERTY(BlueprintAssignable)
 		FOnPlayerSettingsChange OnPlayerSettingsChange;
 
-	UPROPERTY(BlueprintAssignable)
-		FOnPlayerScoresChange OnPlayerScoresChange;
+	//UPROPERTY(BlueprintAssignable)
+	//	FOnPlayerScoresChange OnPlayerScoresChange;
 
 	UPROPERTY(BlueprintAssignable)
 		FOnLoginResponse OnLoginResponse;
@@ -142,6 +142,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 		FOnPostPlayerScoresResponse OnPostPlayerScoresResponse;
 
+	UPROPERTY(BlueprintAssignable)
+		FOnInvalidRefreshToken OnInvalidRefreshToken;
+
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
 		void LoginUser(FLoginPayload LoginPayload);
 
@@ -149,7 +152,7 @@ public:
 		void RequestAccessToken(FString RefreshToken);
 
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
-		void PostPlayerScores(FString AccessToken);
+		void PostPlayerScores(FString AccessTokenFString, int32 ResponseCode);
 
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
 		bool IsRefreshTokenValid();
@@ -168,10 +171,8 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
 		FString LoginEndpoint = "https://beatshot.gg/api/login";
 
-	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
-		FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
+	const FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
 
-	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
-		FString SaveScoresEndpoint = "https://beatshot.gg/api/profile/";
+	const FString SaveScoresEndpoint = "https://beatshot.gg/api/profile/";
 };
 

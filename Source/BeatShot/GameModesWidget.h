@@ -28,9 +28,6 @@ protected:
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
-	USaveGameCustomGameMode* SaveGameCustomGameMode;
-
 	// The object used to save custom game mode properties to
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
 	FGameModeActorStruct CustomGameMode;

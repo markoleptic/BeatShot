@@ -263,7 +263,7 @@ void ATargetSpawner::ActivateBeatGridTarget()
 		TArray<int32> SpawnCandidates;
 		const int32 MaxIndex = SpawnedBeatGridTargets.Num() - 1;
 		const int32 Width = sqrt(SpawnedBeatGridTargets.Num());
-		const int32 Height = Width;
+		// const int32 Height = Width;
 		const int32 AdjFor = Width + 1;
 		const int32 AdjBack = Width - 1;
 		const int32 i = LastBeatGridIndex;
@@ -337,11 +337,15 @@ void ATargetSpawner::ActivateBeatGridTarget()
 		RecentBeatGridIndices.Insert(LastBeatGridIndex, 0);
 		RecentBeatGridIndices.SetNum(2);
 	}
-	// notify GameModeActorBase that target has spawned
-	OnTargetSpawn.Broadcast();
-	GetWorldTimerManager().SetTimer(ActiveBeatGridTarget->TimeSinceSpawn, this, &ATargetSpawner::OnBeatGridTargetTimeout, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
-	ActiveBeatGridTarget->SetCanBeDamaged(true);
-	ActiveBeatGridTarget->PlayColorGradient();
+	// only "spawn" target if it hasn't been destroyed by GameModeActorBase
+	if (ActiveBeatGridTarget)
+	{
+		// notify GameModeActorBase that target has "spawned"
+		OnTargetSpawn.Broadcast();
+		GetWorldTimerManager().SetTimer(ActiveBeatGridTarget->TimeSinceSpawn, this, &ATargetSpawner::OnBeatGridTargetTimeout, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+		ActiveBeatGridTarget->SetCanBeDamaged(true);
+		ActiveBeatGridTarget->PlayColorGradient();
+	}
 
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
@@ -351,12 +355,15 @@ void ATargetSpawner::ActivateBeatGridTarget()
 
 void ATargetSpawner::OnBeatGridTargetTimeout()
 {
-	GetWorldTimerManager().ClearTimer(ActiveBeatGridTarget->TimeSinceSpawn);
-	ActiveBeatGridTarget->SetCanBeDamaged(false);
-
-	if (GameModeActorStruct.IsSingleBeatMode == true)
+	if (ActiveBeatGridTarget)
 	{
-		SetShouldSpawn(true);
+		GetWorldTimerManager().ClearTimer(ActiveBeatGridTarget->TimeSinceSpawn);
+		ActiveBeatGridTarget->SetCanBeDamaged(false);
+
+		if (GameModeActorStruct.IsSingleBeatMode == true)
+		{
+			SetShouldSpawn(true);
+		}
 	}
 }
 
@@ -434,12 +441,12 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 {
 	// if just doing tracking only, we don't really care about recent spawn locations
 	CheckSpawnRadius = SphereTargetRadius * 2 + GameModeActorStruct.MinDistanceBetweenTargets;
-	FSphere LastSpawnSphere = FSphere(LocationBeforeChange, CheckSpawnRadius);
+	// FSphere LastSpawnSphere = FSphere(LocationBeforeChange, CheckSpawnRadius);
 
-	//try to spawn at origin if available
+	// try to spawn at origin if available
 	FVector LocationToReturn = BoxBounds.Origin;
 
-	//So we don't get stuck in infinite loop
+	// So we don't get stuck in infinite loop
 	int OverloadProtect = 0;
 	bool IsInsideBox = false;
 	while (IsInsideBox == false)

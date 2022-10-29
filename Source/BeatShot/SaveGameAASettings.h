@@ -18,12 +18,6 @@ class BEATSHOT_API USaveGameAASettings : public USaveGame
 public:
 	USaveGameAASettings();
 
-	UFUNCTION(BlueprintCallable, Category = "AA")
-	void SaveAASettings(FAASettingsStruct PlayerSettingsToSave);
-
-	UFUNCTION(BlueprintCallable, Category = "AA")
-	FAASettingsStruct LoadAASettings();
-
 	UPROPERTY(VisibleAnywhere, Category = "AA")
 	FAASettingsStruct AASettings;
 };

@@ -22,21 +22,13 @@ enum class EGameModeActorName : uint8 {
 // REMEMBER TO UPDATE THIS AS GAME MODES ARE ADDED!!!
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
-UENUM(BlueprintType)
-enum class EHttpRequestCallbackType : uint8 {
-	None						UMETA(DisplayName, "None"),
-	AccessToken					UMETA(DisplayName, "AccessToken"),
-	FetchScores					UMETA(DisplayName, "FetchScores"),
-	SaveScores					UMETA(DisplayName, "SaveScores"),
-};
-
 // Used to store game properties, etc.
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		FString SongTitle;
 
 	// Used to Spawn GameModes deriving from GameModeActorBase
@@ -222,7 +214,7 @@ struct FPlayerScore
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		EGameModeActorName GameModeActorName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -321,8 +313,8 @@ struct FPlayerSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-	// Sensitivity of DefaultCharacter
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+		// Sensitivity of DefaultCharacter
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 		float Sensitivity;
 
 	// MasterVolume, which also affects Menu and Music volume
@@ -341,7 +333,10 @@ struct FPlayerSettings
 		FString Username;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-		bool HasLoggedIn;
+		bool HasLoggedInHttp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		bool HasLoggedInBrowser;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString LoginCookie;
@@ -352,7 +347,8 @@ struct FPlayerSettings
 		MasterVolume = 50.f;
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
-		HasLoggedIn = false;
+		HasLoggedInHttp = false;
+		HasLoggedInBrowser = false;
 		Username = "";
 		LoginCookie = "";
 	}
@@ -363,6 +359,10 @@ struct FPlayerSettings
 		MasterVolume = 50.f;
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
+		HasLoggedInHttp = false;
+		HasLoggedInBrowser = false;
+		Username = "";
+		LoginCookie = "";
 	}
 };
 
@@ -382,8 +382,8 @@ struct FAASettingsStruct
 {
 	GENERATED_USTRUCT_BODY()
 
-	// Number of channels to break Tracker Sound frequencies into
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+		// Number of channels to break Tracker Sound frequencies into
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 		int NumBandChannels;
 
 	// Array to store Threshold values for each active band channel
@@ -430,11 +430,11 @@ struct FJsonGameModeScore
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY()
-	FString GameMode_SongTitle;
+		UPROPERTY()
+		FString GameMode_SongTitle;
 
 	UPROPERTY()
-	TArray<FPlayerScore> PlayerScoreArray;
+		TArray<FPlayerScore> PlayerScoreArray;
 };
 
 USTRUCT(BlueprintType)
@@ -442,8 +442,8 @@ struct FJsonScore
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY()
-	TArray<FPlayerScore> Scores;
+		UPROPERTY()
+		TArray<FPlayerScore> Scores;
 };
 
 USTRUCT(BlueprintType)
@@ -459,5 +459,5 @@ struct FLoginPayload
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString Password;
-		
+
 };

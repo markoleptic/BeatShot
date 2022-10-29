@@ -15,7 +15,7 @@
 // Sets default values
 ADefaultCharacter::ADefaultCharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.f);
@@ -26,11 +26,12 @@ ADefaultCharacter::ADefaultCharacter()
 	Camera->bUsePawnControlRotation = true;
 	Camera->SetFieldOfView(103);
 	Camera->PostProcessSettings.MotionBlurAmount = 0;
+	Camera->PostProcessSettings.bOverride_MotionBlurMax = 0;
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Character Mesh");
 	HandsMesh->SetOnlyOwnerSee(true);
 	HandsMesh->SetupAttachment(Camera);
-	HandsMesh->bCastDynamicShadow=false;
+	HandsMesh->bCastDynamicShadow = false;
 	HandsMesh->CastShadow = false;
 	HandsMesh->AddRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	HandsMesh->AddRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));

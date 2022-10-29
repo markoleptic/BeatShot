@@ -18,12 +18,6 @@ class BEATSHOT_API USaveGamePlayerSettings : public USaveGame
 public:
 	USaveGamePlayerSettings();
 
-	UFUNCTION(BlueprintCallable, Category = "Settings")
-	void SaveSettings(FPlayerSettings PlayerSettingsToSave);
-
-	UFUNCTION(BlueprintCallable, Category = "Settings")
-	FPlayerSettings LoadSettings();
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	FPlayerSettings PlayerSettings;
 };

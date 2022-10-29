@@ -9,6 +9,7 @@
 #include "JsonObjectConverter.h"
 #include "TargetSpawner.h"
 #include "SphereTarget.h"
+#include "Http.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
 #include "SaveGameAASettings.h"
@@ -22,7 +23,7 @@ void UDefaultGameInstance::Init()
 
 bool UDefaultGameInstance::IsRefreshTokenValid()
 {
-	if (PlayerSettings.HasLoggedIn == true)
+	if (PlayerSettings.HasLoggedInHttp == true)
 	{
 		FDateTime CookieExpireDate;
 		const int32 ExpiresStartPos = PlayerSettings.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
@@ -130,7 +131,6 @@ void UDefaultGameInstance::SavePlayerScores(TMap<FGameModeActorStruct, FPlayerSc
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
 		}
 	}
-	OnPlayerScoresChange.Broadcast();
 }
 
 void UDefaultGameInstance::SavePlayerScoresToDatabase(
@@ -138,15 +138,12 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 {
 	if (IsRefreshTokenValid())
 	{
+		OnAccessTokenResponse.AddDynamic(this, &UDefaultGameInstance::PostPlayerScores);
 		RequestAccessToken(PlayerSettings.LoginCookie);
 	}
 	else
 	{
-		FLoginPayload Login;
-		Login.Username = "mark";
-		Login.Email = "";
-		Login.Password = "Vrc5Mj8kUEEabJM";
-		LoginUser(Login);
+		OnInvalidRefreshToken.Broadcast();
 	}
 }
 
@@ -211,7 +208,7 @@ void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHtt
 	const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
 	FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
 
-	PlayerSettings.HasLoggedIn = true;
+	PlayerSettings.HasLoggedInHttp = true;
 	PlayerSettings.Username = LoginResponseObj->GetStringField("username");
 	PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
 	SavePlayerSettings(PlayerSettings);
@@ -244,11 +241,16 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 	TSharedPtr<FJsonObject> ResponseObj;
 	const TSharedRef<TJsonReader<>> ResponseReader = TJsonReaderFactory<>::Create(ResponseString);
 	FJsonSerializer::Deserialize(ResponseReader, ResponseObj);
-	OnAccessTokenResponse.Broadcast( ResponseObj->GetStringField("accessToken"), Response->GetResponseCode());
+	OnAccessTokenResponse.Broadcast(ResponseObj->GetStringField("accessToken"), Response->GetResponseCode());
 }
 
-void UDefaultGameInstance::PostPlayerScores(FString AccessToken)
+void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseCode)
 {
+	if (ResponseCode != 200)
+	{
+		return;
+	}
+
 	// load local storage of scores
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> Map = LoadPlayerScores();
 	FJsonScore JsonScores;
@@ -273,16 +275,17 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken)
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
 
-	// ReSharper disable once StringLiteralTypo
-	SaveScoresEndpoint = SaveScoresEndpoint + PlayerSettings.Username + "/savescores";
+	FString Endpoint = SaveScoresEndpoint + PlayerSettings.Username + "/savescores";
 	FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
 	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnPostPlayerScoresResponseReceived);
-	SendScoreRequest->SetURL(SaveScoresEndpoint);
+	SendScoreRequest->SetURL(Endpoint);
 	SendScoreRequest->SetVerb("POST");
 	SendScoreRequest->SetHeader("Content-Type", "application/json");
 	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
+
+	OnAccessTokenResponse.RemoveAll(this);
 }
 
 void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)

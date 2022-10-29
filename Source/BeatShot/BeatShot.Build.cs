@@ -12,7 +12,7 @@ public class BeatShot : ModuleRules
 			"UMG", "Slate", "SlateCore", "Niagara", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities",
 			"WebBrowserWidget", "WebBrowser", });
 		PrivateDependencyModuleNames.AddRange(new string[] { "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer",
-			"KantanChartsUMG", "WebBrowserWidget" });
+			"WebBrowserWidget" });
 		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Private");
 		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
 		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");

@@ -14,15 +14,6 @@ void UGameModesWidget::NativeConstruct()
 {
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
-	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
-	}
-	else
-	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
-	}
-
 	LoadCustomGameModes();
 	PopulateGameModeSettings();
 
@@ -58,12 +49,22 @@ void UGameModesWidget::ResetCustomGameMode()
 
 TMap<FString, FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes()
 {
-	if (USaveGameCustomGameMode* SaveGameCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3)))
+	USaveGameCustomGameMode* SaveGameCustomGameMode;
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
 	{
-		CustomGameModesMap = SaveGameCustomGameModeObject->CustomGameModesMap;
-		return SaveGameCustomGameModeObject->CustomGameModesMap;
+		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
 	}
-	return CustomGameModesMap;
+	else
+	{
+		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
+	}
+	if (SaveGameCustomGameMode)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Custom Game Modes loaded to Game Modes Widget"));
+		CustomGameModesMap = SaveGameCustomGameMode->CustomGameModesMap;
+		return SaveGameCustomGameMode->CustomGameModesMap;
+	}
+	return TMap<FString, FGameModeActorStruct>();
 }
 
 void UGameModesWidget::BeatGridTargetSizeConstrained(float value)
@@ -177,9 +178,6 @@ void UGameModesWidget::BeatGridSpacingConstrained(float value)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Spacing height contraint %f"), VSpacing);
 	}
-
-
-
 }
 
 bool UGameModesWidget::CheckAllBeatGridConstraints()

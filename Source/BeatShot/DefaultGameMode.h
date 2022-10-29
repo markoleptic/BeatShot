@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameModeActorStruct.h"
 #include "GameFramework/GameModeBase.h"
-#include "Http.h"
 #include "DefaultGameMode.generated.h"
 
 class ABeatTrack;
@@ -26,48 +25,50 @@ public:
 
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	UDefaultGameInstance* GI;
+		UDefaultGameInstance* GI;
 
 	// Blueprint event used to stop BPAAPlayer and BPAATracker during pause game
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
-	void StopAAPlayerAndTracker();
+		void StopAAPlayerAndTracker();
+
+	// does all of the AudioAnalyzer initialization
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
+		void InitializeAudioManagers();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
-	void InitializeAudioManagers();
+		void PauseAAManagers();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
-	void PauseAAManagers();
-
+	// entry point into actual game (called when entering range or restarting game mode)
 	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
-	void InitializeGameMode(EGameModeActorName GameModeActorName);
+		void InitializeGameMode(EGameModeActorName GameModeActorName);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AGameModeActorBase> WideSpreadMultiBeatClass;
+		TSubclassOf<AGameModeActorBase> WideSpreadMultiBeatClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AGameModeActorBase> NarrowSpreadMultiBeatClass;
+		TSubclassOf<AGameModeActorBase> NarrowSpreadMultiBeatClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AGameModeActorBase> NarrowSpreadSingleBeatClass;
+		TSubclassOf<AGameModeActorBase> NarrowSpreadSingleBeatClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AGameModeActorBase> WideSpreadSingleBeatClass;
+		TSubclassOf<AGameModeActorBase> WideSpreadSingleBeatClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AGameModeActorBase> BeatTrackClass;
+		TSubclassOf<AGameModeActorBase> BeatTrackClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AGameModeActorBase> CustomBeatClass;
+		TSubclassOf<AGameModeActorBase> CustomBeatClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	TSubclassOf<AActor> VisualizerClass;
+		TSubclassOf<AActor> VisualizerClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	AActor* Visualizer;
+		AActor* Visualizer;
 
 	// the GameModeActor that was spawned
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-	AGameModeActorBase* GameModeActorBase;
+		AGameModeActorBase* GameModeActorBase;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
 		FAASettingsStruct AASettings;
@@ -75,9 +76,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bound functions")
 		void RefreshAASettings();
 
-	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
-		void SetGameModeActorDestroyed(AActor* DestroyedActor);
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	bool GameModeActorAlive;
+		bool GameModeActorAlive;
 };
