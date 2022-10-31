@@ -15,7 +15,6 @@
 #include "SaveGameAASettings.h"
 #include "SaveGamePlayerScore.h"
 
-
 void UDefaultGameInstance::Init()
 {
 	LoadPlayerScores();
@@ -105,6 +104,13 @@ void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
 	OnAASettingsChange.Broadcast();
 }
 
+void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume)
+{
+	const UWorld* World = GetWorld();
+	UGameplayStatics::SetSoundMixClassOverride(World, SoundMix, SoundClassToChange, Volume / 100);
+	UGameplayStatics::PushSoundMixModifier(World, SoundMix);
+}
+
 TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores()
 {
 	USaveGamePlayerScore* SaveGamePlayerScore;
@@ -152,7 +158,7 @@ void UDefaultGameInstance::SavePlayerSettings(FPlayerSettings PlayerSettingsToSa
 	PlayerSettings = PlayerSettingsToSave;
 	if (USaveGamePlayerSettings* SaveGameInstanceToSave = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
-		SaveGameInstanceToSave->PlayerSettings = PlayerSettings;
+		SaveGameInstanceToSave->PlayerSettings = PlayerSettingsToSave;
 		if (UGameplayStatics::SaveGameToSlot(SaveGameInstanceToSave, TEXT("SettingsSlot"), 0))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerSettings Succeeded"));

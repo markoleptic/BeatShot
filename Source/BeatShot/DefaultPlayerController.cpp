@@ -103,6 +103,16 @@ void ADefaultPlayerController::ShowCountdown()
 	CountdownActive = true;
 }
 
+void ADefaultPlayerController::HideCountdown()
+{
+	if (Countdown)
+	{
+		Countdown->RemoveFromViewport();
+		Countdown = nullptr;
+		CountdownActive = false;
+	}
+}
+
 void ADefaultPlayerController::ShowPostGameMenu()
 {
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
@@ -117,16 +127,6 @@ void ADefaultPlayerController::HidePostGameMenu()
 		PostGameMenuWidget->RemoveFromViewport();
 		PostGameMenuWidget = nullptr;
 		PostGameMenuActive = false;
-	}
-}
-
-void ADefaultPlayerController::HideCountdown()
-{
-	if (Countdown)
-	{
-		Countdown->RemoveFromViewport();
-		Countdown = nullptr;
-		CountdownActive = false;
 	}
 }
 

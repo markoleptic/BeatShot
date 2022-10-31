@@ -499,8 +499,7 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	{
 		SingleBeat = true;
 	}
-	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::BeatGrid ||
-		GameModeActorStruct.IsBeatGridMode)
+	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		BeatGrid = true;
 	}
@@ -540,7 +539,7 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	RecentSpawnLocations.Init(BoxBounds.Origin, MaxNumberOfTargetsAtOnce);
 	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), MaxNumberOfTargetsAtOnce);
 
-	if (BeatGrid == true)
+	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		InitBeatGrid();
 	}

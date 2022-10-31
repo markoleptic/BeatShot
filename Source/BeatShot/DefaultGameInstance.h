@@ -16,6 +16,8 @@ class ADefaultCharacter;
 class AGameModeBase;
 class ASphereTarget;
 class AGameModeActorBase;
+class USoundClass;
+class USoundMix;
 class ADefaultPlayerController;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAASettingsChange);
@@ -94,6 +96,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 		void SaveAASettings(FAASettingsStruct AASettingsToSave);
+
+	UFUNCTION(BlueprintCallable, Category = "Sound Settings")
+		void ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume);
 
 	// Player Scores Loading / Saving
 

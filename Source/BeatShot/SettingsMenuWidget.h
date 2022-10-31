@@ -26,17 +26,18 @@ protected:
 
 public:
 
-	// Load AASettings from Save slot
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 		void LoadPlayerSettings();
 
-	// Save AASettings to Save slot
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 		void SavePlayerSettings();
 
 	// Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 		void ResetPlayerSettings();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Player Settings")
+		void PopulatePlayerSettings();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		class UDefaultGameInstance* GI;
@@ -51,7 +52,7 @@ public:
 		UEditableTextBox* NewSensitivityValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Settings")
-		UEditableTextBox* MasterSoundInputValue;
+		UEditableTextBox* GlobalSoundInputValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Settings")
 		UEditableTextBox* MenuSoundInputValue;
@@ -60,7 +61,7 @@ public:
 		UEditableTextBox* MusicSoundInputValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Settings")
-		USlider* MasterSoundSlider;
+		USlider* GlobalSoundSlider;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Settings")
 		USlider* MenuSoundSlider;

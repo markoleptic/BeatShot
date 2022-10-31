@@ -28,7 +28,7 @@ struct FGameModeActorStruct
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		FString SongTitle;
 
 	// Used to Spawn GameModes deriving from GameModeActorBase
@@ -214,7 +214,7 @@ struct FPlayerScore
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		EGameModeActorName GameModeActorName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -313,13 +313,13 @@ struct FPlayerSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-		// Sensitivity of DefaultCharacter
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	// Sensitivity of DefaultCharacter
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 		float Sensitivity;
 
-	// MasterVolume, which also affects Menu and Music volume
+	// GlobalVolume, which also affects Menu and Music volume
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		float MasterVolume;
+		float GlobalVolume;
 
 	// Volume of the Main Menu Music
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
@@ -344,7 +344,7 @@ struct FPlayerSettings
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
-		MasterVolume = 50.f;
+		GlobalVolume = 50.f;
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
 		HasLoggedInHttp = false;
@@ -356,7 +356,7 @@ struct FPlayerSettings
 	void ResetStruct()
 	{
 		Sensitivity = 0.3f;
-		MasterVolume = 50.f;
+		GlobalVolume = 50.f;
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
 		HasLoggedInHttp = false;
@@ -372,7 +372,7 @@ struct FPlayerScoreArrayWrapper
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FPlayerScore> PlayerScoreArray;
 };
 
@@ -382,8 +382,8 @@ struct FAASettingsStruct
 {
 	GENERATED_USTRUCT_BODY()
 
-		// Number of channels to break Tracker Sound frequencies into
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	// Number of channels to break Tracker Sound frequencies into
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 		int NumBandChannels;
 
 	// Array to store Threshold values for each active band channel
@@ -430,7 +430,7 @@ struct FJsonGameModeScore
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY()
+	UPROPERTY()
 		FString GameMode_SongTitle;
 
 	UPROPERTY()
@@ -442,7 +442,7 @@ struct FJsonScore
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY()
+	UPROPERTY()
 		TArray<FPlayerScore> Scores;
 };
 
@@ -451,7 +451,7 @@ struct FLoginPayload
 {
 	GENERATED_USTRUCT_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString Username;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")

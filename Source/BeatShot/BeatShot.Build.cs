@@ -4,29 +4,29 @@ using UnrealBuildTool;
 
 public class BeatShot : ModuleRules
 {
-	public BeatShot(ReadOnlyTargetRules Target) : base(Target)
-	{
-		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
-			"UMG", "Slate", "SlateCore", "Niagara", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities",
-			"WebBrowserWidget", "WebBrowser", });
-		PrivateDependencyModuleNames.AddRange(new string[] { "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer",
-			"WebBrowserWidget" });
-		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Private");
-		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
-		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");
-		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
-		PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb");
+    public BeatShot(ReadOnlyTargetRules Target) : base(Target)
+    {
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
+            "UMG", "Slate", "SlateCore", "Niagara", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities",
+            "WebBrowserWidget", "WebBrowser", "DesktopPlatform" });
+        PrivateDependencyModuleNames.AddRange(new string[] { "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer",
+            "Slate", "SlateCore", "DesktopPlatform" });
+        PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Private");
+        PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
+        PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");
+        PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
+        PrivateIncludePaths.Add("../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb");
 
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
+        PrivateDependencyModuleNames.AddRange(new string[] { });
 
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
-	}
+        // Uncomment if you are using Slate UI
+        // PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+
+        // Uncomment if you are using online features
+        // PrivateDependencyModuleNames.Add("OnlineSubsystem");
+
+        // To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
+    }
 }

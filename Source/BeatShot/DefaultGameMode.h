@@ -9,9 +9,10 @@
 
 class ABeatTrack;
 class UDefaultGameInstance;
-class AWideSpreadMultiBeat;
 class AGameModeActorBase;
+class UAudioAnalyzerManager;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAAPlayerLoaded, UAudioAnalyzerManager* , AAManager);
 
 UCLASS()
 class BEATSHOT_API ADefaultGameMode : public AGameModeBase
@@ -19,6 +20,7 @@ class BEATSHOT_API ADefaultGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 protected:
+
 	virtual void BeginPlay() override;
 
 public:
@@ -28,45 +30,39 @@ public:
 		UDefaultGameInstance* GI;
 
 	// Blueprint event used to stop BPAAPlayer and BPAATracker during pause game
-	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "GameMode Initialization")
 		void StopAAPlayerAndTracker();
 
-	// does all of the AudioAnalyzer initialization
-	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
+	// does all of the AudioAnalyzer initialization, called during InitializeGameMode
+	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
 		void InitializeAudioManagers();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode Initialization")
-		void PauseAAManagers();
+	// called from DefaultPlayerController when the game is paused
+	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
+		void PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* AAManager = nullptr);
 
-	// entry point into actual game (called when entering range or restarting game mode)
+	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
+		void StartAAManagerPlayback();
+
+	// entry point into actual game (called on BeginPlay for DefaultGameMode, or restarting game mode in PauseMenu/PostGameMenuWidget)
 	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
-		void InitializeGameMode(EGameModeActorName GameModeActorName);
+		void InitializeGameMode();
+
+	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
+		void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
+
+	UFUNCTION(BlueprintCallable, Category = "GameModeActor Spawning")
+		void PlayAAPlayer();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-		TSubclassOf<AGameModeActorBase> WideSpreadMultiBeatClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-		TSubclassOf<AGameModeActorBase> NarrowSpreadMultiBeatClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-		TSubclassOf<AGameModeActorBase> NarrowSpreadSingleBeatClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-		TSubclassOf<AGameModeActorBase> WideSpreadSingleBeatClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-		TSubclassOf<AGameModeActorBase> BeatTrackClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
-		TSubclassOf<AGameModeActorBase> CustomBeatClass;
+		TSubclassOf<AGameModeActorBase> GameModeActorBaseClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 		TSubclassOf<AActor> VisualizerClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 		AActor* Visualizer;
 
-	// the GameModeActor that was spawned
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameModeActor Spawning")
 		AGameModeActorBase* GameModeActorBase;
 
@@ -76,6 +72,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Bound functions")
 		void RefreshAASettings();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-		bool GameModeActorAlive;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		bool FirstDelayTriggered;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		bool LastTargetOnSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		UAudioAnalyzerManager* AATracker;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		UAudioAnalyzerManager* AAPlayer;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		float DeltaTime;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		float FirstDelay;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		FString SongTitle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		float TotalSongLength;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
+		float Elapsed;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable, Category = "AudioAnalyzer Settings")
+		FOnAAPlayerLoaded OnAAPlayerLoaded;
+
+	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
+		FString OpenSongFileDialog(EWindowMode::Type WindowMode);
 };

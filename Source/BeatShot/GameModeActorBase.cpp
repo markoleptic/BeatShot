@@ -46,6 +46,9 @@ void AGameModeActorBase::HandleGameStart()
 		PlayerScores.TotalPossibleDamage = 0.f;
 	}
 
+	GI->TargetSpawnerRef->InitializeGameModeActor(GameModeActorStruct);
+	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AGameModeActorBase::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
+
 	// Binding delegates for scoring purposes
 	GI->DefaultCharacterRef->Gun->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
 	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
@@ -55,6 +58,7 @@ void AGameModeActorBase::HandleGameStart()
 
 void AGameModeActorBase::StartGameMode()
 {
+	GetWorldTimerManager().SetTimer(GameModeActorStruct.GameModeLengthTimer, this, &AGameModeActorBase::EndGameMode, GameModeActorStruct.GameModeLength, false);
 	GI->TargetSpawnerRef->SetShouldSpawn(true);
 	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
@@ -90,6 +94,7 @@ void AGameModeActorBase::EndGameMode()
 	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
 	GI->DefaultPlayerControllerRef->HideCountdown();
+	GI->DefaultPlayerControllerRef->HideCrosshair();
 
 	// Reset Struct to zero scores
 	PlayerScores.ResetStruct();
@@ -128,6 +133,7 @@ void AGameModeActorBase::HandleGameRestart(bool ShouldSavePlayerScores)
 	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
 	GI->DefaultPlayerControllerRef->HideCountdown();
+	GI->DefaultPlayerControllerRef->HideCrosshair();
 
 	// Reset Struct to zero scores
 	PlayerScores.ResetStruct();
