@@ -10,7 +10,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
-// Sets default values
 ATargetSpawner::ATargetSpawner()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -62,7 +61,7 @@ void ATargetSpawner::SpawnActor()
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
 		if (SpawnTarget)
 		{
-			// Since scaling is done after spawn, we have access to LAST target's scale value and TargetLocation
+			// Since scaling is done after spawn, we have access to LAST target's scale and location
 			LastSpawnLocation = SpawnLocation;
 			LastTargetScale = RandomizeScale(SpawnTarget);
 
@@ -85,11 +84,11 @@ void ATargetSpawner::SpawnSingleActor()
 	{
 		return;
 	}
-	ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation());
-	if (SpawnTarget)
+	if (ASphereTarget* SpawnTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnLocation, SpawnBox->GetComponentRotation()))
 	{
 		// Since scaling is done after spawn, we have access to LAST target's scale value and TargetLocation
 		LastSpawnLocation = SpawnLocation;
+
 		if (LastSpawnLocation == BoxBounds.Origin)
 		{
 			LastTargetSpawnedCenter = true;
@@ -128,10 +127,9 @@ void ATargetSpawner::SpawnTracker()
 		LocationBeforeDirectionChange = TrackingTarget->GetActorLocation();
 	}
 
-	if (IsValid(TrackingTarget) == false)
+	if (!IsValid(TrackingTarget))
 	{
-		// Only spawn tracker once in the center if Tracking GameMode
-
+		// Initial tracking target spawn
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
 		TrackingTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		TrackingTarget->SetMaxHealth(100000.f);
@@ -146,7 +144,7 @@ void ATargetSpawner::SpawnTracker()
 	}
 
 	// update tracking direction and speed if already spawned
-	if (TrackingTarget)
+	if (IsValid(TrackingTarget))
 	{
 		RandomizeScale(TrackingTarget);
 		TrackingSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
@@ -218,14 +216,15 @@ void ATargetSpawner::InitBeatGrid()
 				BeatGridSpawnLocation.Y += BasicHSpacing;
 			}
 
-			ASphereTarget* BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BeatGridSpawnLocation, SpawnBox->GetComponentRotation());
-			if (BeatGridTarget)
+			if (ASphereTarget* BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn,
+				BeatGridSpawnLocation, SpawnBox->GetComponentRotation()))
 			{
 				BeatGridTarget->SetMaxHealth(1000000);
 				BeatGridTarget->SetLifeSpan(GameModeActorStruct.GameModeLength);
 				BeatGridTarget->SetCanBeDamaged(false);
 				RandomizeScale(BeatGridTarget);
 				SpawnedBeatGridTargets.Add(BeatGridTarget);
+				GI->SphereTargetArray.Add(BeatGridTarget);
 			}
 		}
 		BeatGridSpawnLocation.Y = HStart;
@@ -242,11 +241,13 @@ void ATargetSpawner::ActivateBeatGridTarget()
 
 	if (InitialBeatSpawned == false)
 	{
-		const int32 InitialArraySize = SpawnedBeatGridTargets.Num();
-		const int32 RandomIndex = FMath::RandRange(0, InitialArraySize - 1);
-		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-		LastBeatGridIndex = RandomIndex;
-		InitialBeatSpawned = true;
+		if (const int32 InitialArraySize = SpawnedBeatGridTargets.Num(); InitialArraySize > 0)
+		{
+			const int32 RandomIndex = FMath::RandRange(0, InitialArraySize - 1);
+			ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
+			LastBeatGridIndex = RandomIndex;
+			InitialBeatSpawned = true;
+		}
 	}
 	else if (GameModeActorStruct.RandomizeBeatGrid == true)
 	{
@@ -262,10 +263,9 @@ void ATargetSpawner::ActivateBeatGridTarget()
 		// const int32 Height = Width;
 		const int32 AdjFor = Width + 1;
 		const int32 AdjBack = Width - 1;
-		const int32 i = LastBeatGridIndex;
 
 		// corners
-		if (i == 0)
+		if (const int32 i = LastBeatGridIndex; i == 0)
 		{
 			SpawnCandidates = { 1, Width, AdjFor };
 		}

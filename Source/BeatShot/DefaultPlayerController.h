@@ -59,10 +59,13 @@ public:
 		bool IsPostGameMenuActive();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
-	bool CountdownActive;
+		bool CountdownActive;
 
-	UPROPERTY()
-	UPlayerHUD* PlayerHUD;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+		UPlayerHUD* PlayerHUD;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+		UCountdown* Countdown;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -94,9 +97,6 @@ protected:
 
 	UPROPERTY()
 	UPauseMenu* PauseMenu;
-
-	UPROPERTY()
-	UCountdown* Countdown;
 
 private:
 

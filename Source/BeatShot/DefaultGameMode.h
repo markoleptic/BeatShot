@@ -27,7 +27,7 @@ public:
 
 	// does all of the AudioAnalyzer initialization, called during InitializeGameMode
 	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-		void InitializeAudioManagers();
+		void InitializeAudioManagers(FString SongFilePath);
 
 	// called from Countdown widget when user clicks to start game mode
 	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
@@ -43,7 +43,7 @@ public:
 
 	// opens file dialog for song selection
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "GameMode Initialization")
-		FString OpenSongFileDialog();
+		void OpenSongFileDialog();
 
 	// get AASettings from GameInstance
 	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")

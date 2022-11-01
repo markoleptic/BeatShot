@@ -36,6 +36,7 @@ void AGameModeActorBase::Tick(float DeltaTime)
 void AGameModeActorBase::InitializeGameModeActor()
 {
 	LoadPlayerScores();
+
 	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		PlayerScores.TotalPossibleDamage = 0.f;
@@ -78,6 +79,8 @@ void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
 				Target->Destroy();
 			}
 		}
+		GI->SphereTargetArray.Empty();
+		GI->SphereTargetArray.Shrink();
 	}
 
 	//Clearing Timers
@@ -85,13 +88,10 @@ void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
 	GameModeActorStruct.GameModeLengthTimer.Invalidate();
 	GameModeActorStruct.CountdownTimerLength = 3.f;
 
-	//Hide HUD and countdown
-	GI->DefaultPlayerControllerRef->HidePlayerHUD();
-	GI->DefaultPlayerControllerRef->HideCountdown();
-	GI->DefaultPlayerControllerRef->HideCrosshair();
-
 	// Reset Struct to zero scores
 	PlayerScores.ResetStruct();
+
+	Destroy();
 }
 
 void AGameModeActorBase::OnGameModeLengthTimerComplete()
