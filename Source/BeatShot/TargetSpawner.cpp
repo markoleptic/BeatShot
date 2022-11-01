@@ -28,11 +28,7 @@ void ATargetSpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
-	{
-		GI->RegisterTargetSpawner(this);
-	}
-
+	GI->RegisterTargetSpawner(this);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	FirstSpawnLocation = BoxBounds.Origin;
 	SpawnLocation = FirstSpawnLocation;

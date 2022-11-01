@@ -106,9 +106,8 @@ void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
 
 void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume)
 {
-	const UWorld* World = GetWorld();
-	UGameplayStatics::SetSoundMixClassOverride(World, SoundMix, SoundClassToChange, Volume / 100);
-	UGameplayStatics::PushSoundMixModifier(World, SoundMix);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), SoundMix, SoundClassToChange, round(Volume)/100);
+	UGameplayStatics::PushSoundMixModifier(GetWorld(), SoundMix);
 }
 
 TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores()

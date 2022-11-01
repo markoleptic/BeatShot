@@ -7,15 +7,10 @@
 #include "GameFramework/GameUserSettings.h"
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
-#include "DesktopPlatformModule.h"
-#include "IDesktopPlatform.h"
+#include "TargetSpawner.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "Kismet/KismetStringLibrary.h"
-#include "Engine/GameEngine.h"
-#include "SlateCore.h"
-#include "Framework/Application/SlateApplication.h"
 
 void ADefaultGameMode::BeginPlay()
 {
@@ -38,7 +33,11 @@ void ADefaultGameMode::InitializeAudioManagers()
 	if (AAPlayer) AAPlayer->UnloadPlayerAudio();
 
 	// Show open file dialog and get the song path
-	const FString SongPath = OpenSongFileDialog(UGameUserSettings::GetGameUserSettings()->GetFullscreenMode());
+	const FString SongPath = OpenSongFileDialog();
+	if (SongPath.IsEmpty())
+	{
+		return;
+	}
 
 	AATracker = NewObject<UAudioAnalyzerManager>(this, TEXT("AATracker"));
 	if (const bool InitPlayerSuccess = AATracker->InitPlayerAudio(SongPath); !InitPlayerSuccess)
@@ -53,7 +52,6 @@ void ADefaultGameMode::InitializeAudioManagers()
 	// create AAPlayer if delay large enough, init audio, init spectrum config, broadcast to Visualizer
 	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05f)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Creating AAPlayer"));
 		AAPlayer = NewObject<UAudioAnalyzerManager>(this, TEXT("AAPlayer"));
 		if (const bool InitPlayerSuccess = AAPlayer->InitPlayerAudio(SongPath); !InitPlayerSuccess)
 		{
@@ -115,13 +113,12 @@ void ADefaultGameMode::StartAAManagerPlayback()
 {
 	const UWorld* World = GetWorld();
 	const FPlayerSettings Settings = GI->LoadPlayerSettings();
-	UE_LOG(LogTemp, Display, TEXT("StartAAManagerPlayback Called"));
+
 	// If delay is large enough, play AATracker and then AAPlayer after the delay
 	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05)
 	{
 		PauseAAManager(false, AATracker);
 		AATracker->Play();
-		UE_LOG(LogTemp, Display, TEXT("Tracker Playing"));
 		FLatentActionInfo LatentInfo;
 		LatentInfo.CallbackTarget = this;
 		LatentInfo.Linkage = 0;
@@ -133,7 +130,6 @@ void ADefaultGameMode::StartAAManagerPlayback()
 	{
 		PauseAAManager(false, AATracker);
 		AATracker->Play();
-		UE_LOG(LogTemp, Display, TEXT("Tracker Only Playing with PlayerDelay < 0.05"));
 		SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AATracker);
 	}
 }
@@ -143,22 +139,34 @@ void ADefaultGameMode::InitializeGameMode()
 	// spawn GameModeActorBase
 	GameModeActorBase = GetWorld()->SpawnActor<AGameModeActorBase>(GameModeActorBaseClass);
 
-	// initialize AA settings
-	RefreshAASettings();
+	// spawn TargetSpawner
+	const FVector TargetSpawnerLocation = { 3590, 0, 750 };
+	const FActorSpawnParameters TargetSpawnerSpawnParameters;
+	TargetSpawner = Cast<ATargetSpawner>(GetWorld()->SpawnActor(TargetSpawnerClass, 
+		&TargetSpawnerLocation, 
+		&FRotator::ZeroRotator, 
+		TargetSpawnerSpawnParameters));
+
+	// get GameModeActorStruct and pass to GameModeActorBase
+	GameModeActorBase->GameModeActorStruct = GI->GameModeActorStruct;
+
+	// initialize GameModeActorStruct with TargetSpawner
+	TargetSpawner->InitializeGameModeActor(GI->GameModeActorStruct);
 
 	// spawn visualizer
 	const FVector VisualizerLocation = { 100,0,60 };
 	const FActorSpawnParameters SpawnParameters;
-	Visualizer = GetWorld()->SpawnActor(VisualizerClass, &VisualizerLocation, &FRotator::ZeroRotator, SpawnParameters);
-
-	// call blueprint function
-	InitializeAudioManagers();
-
-	// Call blueprint function
-	PauseAAManager(true);
+	Visualizer = GetWorld()->SpawnActor(VisualizerClass, 
+		&VisualizerLocation, 
+		&FRotator::ZeroRotator, 
+		SpawnParameters);
 
 	// Show countdown widget
 	Cast<ADefaultPlayerController>(GetWorld()->GetFirstPlayerController())->ShowCountdown();
+
+	RefreshAASettings();
+	InitializeAudioManagers();
+	PauseAAManager(true);
 }
 
 void ADefaultGameMode::SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager)
@@ -166,19 +174,16 @@ void ADefaultGameMode::SetAAManagerVolume(float GlobalVolume, float MusicVolume,
 	if (AAManager)
 	{
 		AAManager->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
-		UE_LOG(LogTemp, Display, TEXT("AAManVolume: %f"), GlobalVolume / 100 * MusicVolume / 100);
 	}
 	else
 	{
 		if (AAPlayer)
 		{
 			AAPlayer->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
-			UE_LOG(LogTemp, Display, TEXT("AAPlayer: %f"), GlobalVolume / 100 * MusicVolume / 100);
 		}
 		else if (AATracker)
 		{
 			AATracker->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
-			UE_LOG(LogTemp, Display, TEXT("AATracker: %f"), GlobalVolume / 100 * MusicVolume / 100);
 		}
 	}
 }
@@ -190,7 +195,6 @@ void ADefaultGameMode::PlayAAPlayer()
 		const FPlayerSettings Settings = GI->LoadPlayerSettings();
 		PauseAAManager(false, AAPlayer);
 		AAPlayer->Play();
-		UE_LOG(LogTemp, Display, TEXT("Player Playing"));
 		SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AAPlayer);
 	}
 }
@@ -200,46 +204,29 @@ void ADefaultGameMode::RefreshAASettings()
 	AASettings = GI->LoadAASettings();
 }
 
-FString ADefaultGameMode::OpenSongFileDialog(EWindowMode::Type WindowMode)
+void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)
 {
-	FString SongPath;
-	// scuffed fix for open file dialog while fullscreen
-	if (WindowMode == EWindowMode::Fullscreen)
+	if (GameModeActorBase)
 	{
-		UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::WindowedFullscreen);
-		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+		GameModeActorBase->EndGameMode(ShouldSavePlayerScores);
+		GameModeActorBase->Destroy();
 	}
-
-	// open file dialog
-	TArray<FString> OutFileNames;
-	if (IDesktopPlatform* DesktopPlatform = FDesktopPlatformModule::Get())
+	if (TargetSpawner)
 	{
-		const void* ParentWindowPtr = FSlateApplication::Get().GetActiveTopLevelWindow()->GetNativeWindow()->GetOSWindowHandle();
-		const uint32 SelectionFlag = 0;
-		const FString Extensions = "Audio files|*.mp3;*.ogg";
-		DesktopPlatform->OpenFileDialog(ParentWindowPtr,
-			"Choose A Song", "/", "/",
-			Extensions, SelectionFlag, OutFileNames);
+		TargetSpawner->Destroy();
 	}
-	if (OutFileNames.Num() == 0)
+	if (Visualizer)
 	{
-		UE_LOG(LogTemp, Display, TEXT("No file selected"));
+		Visualizer->Destroy();
 	}
-	else
+	if (AATracker)
 	{
-		SongPath = OutFileNames[0];
-		const FString WeirdPath = "../../../../../../";
-		const FString CPath = "C:/";
-		SongPath = UKismetStringLibrary::Replace(SongPath, WeirdPath, CPath);
+		AATracker = nullptr;
 	}
-
-	if (WindowMode == EWindowMode::Fullscreen)
+	if (AAPlayer)
 	{
-		UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::Fullscreen);
-		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+		AAPlayer = nullptr;
 	}
-
-	return SongPath;
 }
 
 //{

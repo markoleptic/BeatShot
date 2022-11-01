@@ -20,9 +20,10 @@ enum class EGameModeActorName : uint8 {
 };
 
 // REMEMBER TO UPDATE THIS AS GAME MODES ARE ADDED!!!
+// Allows iterating through EGameModeActorName
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
-// Used to store game properties, etc.
+// Used to store game properties
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
 {
@@ -125,12 +126,12 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
 		int32 NumTargetsAtOnceBeatGrid;
 
-
 	FORCEINLINE bool operator== (const FGameModeActorStruct& Other) const
 	{
 		if (GameModeActorName == Other.GameModeActorName &&
 			SongTitle.Equals(Other.SongTitle) &&
-			CustomGameModeName.Equals(Other.CustomGameModeName))
+			(CustomGameModeName.IsEmpty() && Other.CustomGameModeName.IsEmpty() ||
+			CustomGameModeName.Equals(Other.CustomGameModeName)))
 		{
 			return true;
 		}
@@ -208,7 +209,7 @@ FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
 	return Hash;
 }
 
-// Used by GameModeActorBase to load and save player scores
+// Used to load and save player scores
 USTRUCT(BlueprintType)
 struct FPlayerScore
 {
@@ -366,12 +367,14 @@ struct FPlayerSettings
 	}
 };
 
-// Used by PlayerScoreMap
+// Used by PlayerScoreMap to abstract FPlayerScores
 USTRUCT(BlueprintType)
 struct FPlayerScoreArrayWrapper
 {
 	GENERATED_USTRUCT_BODY()
 
+	// originally wanted this to hold all FPlayerScores for a given EGameModeActorName and Song title,
+	// but doesn't work sometimes. Saving and loading works even if equality doesn't work.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FPlayerScore> PlayerScoreArray;
 };
@@ -425,18 +428,7 @@ struct FAASettingsStruct
 	}
 };
 
-USTRUCT(BlueprintType)
-struct FJsonGameModeScore
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY()
-		FString GameMode_SongTitle;
-
-	UPROPERTY()
-		TArray<FPlayerScore> PlayerScoreArray;
-};
-
+// Used to convert PlayerScoreMap to database scores
 USTRUCT(BlueprintType)
 struct FJsonScore
 {
@@ -446,6 +438,7 @@ struct FJsonScore
 		TArray<FPlayerScore> Scores;
 };
 
+// Simple login payload
 USTRUCT(BlueprintType)
 struct FLoginPayload
 {
