@@ -11,6 +11,7 @@
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
+#include "Misc/DateTime.h"
 #include "Gun_AK47.h"
 
 AGameModeActorBase::AGameModeActorBase()
@@ -178,7 +179,7 @@ void AGameModeActorBase::SavePlayerScores()
 	}
 
 	// save current time
-	PlayerScores.Time = FDateTime::Now();
+	PlayerScores.Time = FDateTime::UtcNow().ToIso8601();
 
 	// for BeatTrack modes
 	if (PlayerScores.TotalPossibleDamage > 0.01f)

@@ -270,7 +270,7 @@ struct FPlayerScore
 
 	// time that player completed the session
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		FDateTime Time;
+		FString Time;
 
 	FPlayerScore()
 	{
