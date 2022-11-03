@@ -12,6 +12,8 @@ class UNiagaraSystem;
 class UCurveFloat;
 class UCurveLinearColor;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLifeSpanExpired, bool, DidExpire);
+
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor
 {
@@ -24,8 +26,13 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	virtual void LifeSpanExpired() override;
+
 public:
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
+		FOnLifeSpanExpired OnLifeSpanExpired;
 
 	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
 		UCapsuleComponent* CapsuleComp;
@@ -39,8 +46,15 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Effects", BlueprintReadWrite)
 		UNiagaraSystem* NS_Standard_Explosion;
 
+	// called from DefaultHealthComponent when a SphereTarget receives damage
 	UFUNCTION(BlueprintCallable, Category = "Target Handling")
 		void HandleDestruction();
+
+	UFUNCTION(BlueprintCallable, Category = "Target Handling")
+		void StartBeatGridTimer(float Lifespan);
+
+	UFUNCTION(BlueprintCallable, Category = "Target Handling")
+		void OnBeatGridTimerTimeOut();
 
 	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly)
 		class UDefaultGameInstance* GI;

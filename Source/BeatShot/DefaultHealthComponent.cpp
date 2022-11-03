@@ -51,23 +51,15 @@ void UDefaultHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, co
 
 	if (ASphereTarget* DamagedTarget = Cast<ASphereTarget>(DamagedActor))
 	{
-		if (Health <= 0.f)
+		if (Health <= 0.f || GI->GameModeActorStruct.IsBeatGridMode == true)
 		{
 			DamagedTarget->HandleDestruction();
 		}
-		// BeatTrack modes
+		// BeatTrack modes, handle score based on damage
 		else if (Health > 101 &&
 			GI->GameModeActorStruct.IsBeatTrackMode == true)
 		{
 			GI->GameModeActorBaseRef->UpdateTrackingScore(Damage, TotalPossibleDamage);
-		}
-		// BeatGrid modes
-		else if (Health > 101 &&
-			GI->GameModeActorStruct.IsBeatGridMode == true &&
-			DamagedTarget->GetWorldTimerManager().GetTimerElapsed(DamagedTarget->TimeSinceSpawn) > 0.f)
-		{
-			GI->GameModeActorBaseRef->UpdateTargetsHit();
-			DamagedTarget->HandleDestruction();
 		}
 	}
 }

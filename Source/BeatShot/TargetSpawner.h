@@ -121,11 +121,21 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
 		float LastTargetScale;
 
+	// Max radius for dynamic targets
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		float MaxRadius;
+
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
 		TArray<FVector> RecentSpawnLocations;
 
 	// Recent sphere areas
 		TArray<FSphere> RecentSpawnBounds;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		int32 ConsecutiveTargetsHit;
+
+	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
+		int32 DynamicScaleFactor;
 
 	/*
 	 * BeatTrack Variables and Functions
@@ -159,18 +169,8 @@ private:
 		void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
 
 	/*
-	 * Single Beat Variables and Functions
-	 */
-
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
-		bool SingleBeat;
-
-	/*
 	 * BeatGrid Variables and Functions
 	 */
-
-	UPROPERTY(EditAnywhere, Category = "BeatGrid")
-		bool BeatGrid;
 
 	// not using atm
 	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
@@ -193,9 +193,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BeatGrid")
 		void InitBeatGrid();
 
-	UFUNCTION(BlueprintCallable, Category = "BeatGrid")
-		void OnBeatGridTargetTimeout();
-
 private:
 
 	/*
@@ -203,12 +200,21 @@ private:
 	 */ 
 
 	// not using atm
-	UFUNCTION()
+	UFUNCTION(Category = "Spawn Properties")
 		void OnTargetDestroyed(AActor* DestroyedActor);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Spawn Properties")
 		float RandomizeScale(ASphereTarget* Target);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Spawn Properties")
 		void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
+
+	UFUNCTION(Category = "Spawn Properties")
+		void RandomizeDynamicLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
+
+	UFUNCTION(Category = "Spawn Properties")
+		float ChangeDynamicScale(ASphereTarget* Target);
+
+	UFUNCTION(Category = "Spawn Properties")
+		void OnTargetTimeout(bool DidExpire);
 };

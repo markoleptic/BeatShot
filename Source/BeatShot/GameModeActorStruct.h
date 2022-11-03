@@ -23,6 +23,14 @@ enum class EGameModeActorName : uint8 {
 // Allows iterating through EGameModeActorName
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
+UENUM(BlueprintType)
+enum class EDynamicSpreadType : uint8 {
+	None						UMETA(DisplayName, "None"),
+	EdgeOnly					UMETA(DisplayName, "EdgeOnly"),
+	Random						UMETA(DisplayName, "Random")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EDynamicSpreadType, EDynamicSpreadType::None, EDynamicSpreadType::Random);
+
 // Used to store game properties
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
@@ -35,6 +43,10 @@ struct FGameModeActorStruct
 	// Used to Spawn GameModes deriving from GameModeActorBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		EGameModeActorName GameModeActorName;
+
+	// Used to dynamically adjust the spawn area and sphere size
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+		EDynamicSpreadType DynamicSpreadType;
 
 	// TimerHandle for Song Length
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -142,6 +154,7 @@ struct FGameModeActorStruct
 	FGameModeActorStruct()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
+		DynamicSpreadType = EDynamicSpreadType::None;
 		MinDistanceBetweenTargets = 100.f;
 		CenterOfSpawnBox = { 3590.f,0.f,160.f };
 		CountdownTimerLength = 3.f;
@@ -174,6 +187,7 @@ struct FGameModeActorStruct
 	void ResetStruct()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
+		DynamicSpreadType = EDynamicSpreadType::None;
 		MinDistanceBetweenTargets = 100.f;
 		CenterOfSpawnBox = { 3590.f,0.f,160.f };
 		CountdownTimerLength = 3.f;
@@ -272,6 +286,10 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 		FString Time;
 
+	// The maximum consecutive targets hit in a row
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+		int32 Streak;
+
 	FPlayerScore()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
@@ -288,6 +306,7 @@ struct FPlayerScore
 		AvgTimeOffset = 0;
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
+		Streak = 0;
 	}
 
 	void ResetStruct()
@@ -305,6 +324,7 @@ struct FPlayerScore
 		AvgTimeOffset = 0;
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
+		Streak = 0;
 	}
 };
 

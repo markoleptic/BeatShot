@@ -112,4 +112,7 @@ public:
 	// Called when IsTrackingGameMode == true
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 		void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
+
+	//UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+	//	void UpdateStreak();
 };
