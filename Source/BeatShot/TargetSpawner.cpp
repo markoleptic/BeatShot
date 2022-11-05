@@ -17,10 +17,9 @@ ATargetSpawner::ATargetSpawner()
 	RootComponent = SpawnBox;
 	SetShouldSpawn(false);
 	LastTargetSpawnedCenter = false;
-	SingleBeat = false;
-	BeatGrid = false;
 	LastSpawnLocation = FVector::ZeroVector;
 	LastTargetScale = 1.f;
+	ConsecutiveTargetsHit = 0;
 }
 
 void ATargetSpawner::BeginPlay()
@@ -52,7 +51,7 @@ void ATargetSpawner::SpawnActor()
 		return;
 	}
 	// Use different function for SingleBeat game modes
-	if (SingleBeat == true)
+	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
 		SpawnSingleActor();
 	}
@@ -63,16 +62,23 @@ void ATargetSpawner::SpawnActor()
 		{
 			// Since scaling is done after spawn, we have access to LAST target's scale and location
 			LastSpawnLocation = SpawnLocation;
-			LastTargetScale = RandomizeScale(SpawnTarget);
 
-			// Update reference to spawned target in Game Instance
-			GI->RegisterSphereTarget(SpawnTarget);
+			if (GameModeActorStruct.SpreadType == ESpreadType::DynamicRandom ||
+				GameModeActorStruct.SpreadType == ESpreadType::DynamicEdgeOnly)
+			{
+				LastTargetScale = ChangeDynamicScale(SpawnTarget);
+				RandomizeDynamicLocation(LastSpawnLocation, LastTargetScale);
+			}
+			else
+			{
+				LastTargetScale = RandomizeScale(SpawnTarget);
+				RandomizeLocation(LastSpawnLocation, LastTargetScale);
+			}
+
+			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 
 			// Broadcast to GameModeActorBase that a target has spawned
 			OnTargetSpawn.Broadcast();
-
-			// Check for collisions for the next spawn location while randomizing
-			RandomizeLocation(LastSpawnLocation, LastTargetScale);
 		}
 	}
 
@@ -98,16 +104,21 @@ void ATargetSpawner::SpawnSingleActor()
 			LastTargetSpawnedCenter = false;
 		}
 
-		LastTargetScale = RandomizeScale(SpawnTarget);
-
-		// Update reference to spawned target in Game Instance
-		GI->RegisterSphereTarget(SpawnTarget);
+		if (GameModeActorStruct.SpreadType != ESpreadType::None)
+		{
+			LastTargetScale = ChangeDynamicScale(SpawnTarget);
+			RandomizeDynamicLocation(LastSpawnLocation, LastTargetScale);
+		}
+		else
+		{
+			LastTargetScale = RandomizeScale(SpawnTarget);
+			RandomizeLocation(LastSpawnLocation, LastTargetScale);
+		}
 
 		// Broadcast to GameModeActorBase that a target has spawned
 		OnTargetSpawn.Broadcast();
 
-		// Check for collisions for the next spawn location while randomizing
-		RandomizeLocation(LastSpawnLocation, LastTargetScale);
+		SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 
 		// Bind the destruction of target to OnTargetDestroyed to spawn a new target
 		SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
@@ -132,12 +143,7 @@ void ATargetSpawner::SpawnTracker()
 		// Initial tracking target spawn
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, FirstSpawnLocation, SpawnBox->GetComponentRotation());
 		TrackingTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
-		TrackingTarget->SetMaxHealth(100000.f);
-		TrackingTarget->SetLifeSpan(GI->GameModeActorStruct.GameModeLength);
 		LocationBeforeDirectionChange = FirstSpawnLocation;
-
-		// Update reference to spawned target in Game Instance
-		GI->RegisterSphereTarget(TrackingTarget);
 
 		// Broadcast to GameModeActorBase that a target has spawned
 		OnTargetSpawn.Broadcast();
@@ -150,7 +156,6 @@ void ATargetSpawner::SpawnTracker()
 		TrackingSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
 		EndLocation = RandomizeTrackerLocation(LocationBeforeDirectionChange);
 		TrackingDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
-		//SpawnTarget->OnDestroyed.AddDynamic(this, &ATargetSpawner::OnTargetDestroyed);
 	}
 }
 
@@ -219,12 +224,9 @@ void ATargetSpawner::InitBeatGrid()
 			if (ASphereTarget* BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn,
 				BeatGridSpawnLocation, SpawnBox->GetComponentRotation()))
 			{
-				BeatGridTarget->SetMaxHealth(1000000);
-				BeatGridTarget->SetLifeSpan(GameModeActorStruct.GameModeLength);
-				BeatGridTarget->SetCanBeDamaged(false);
+				BeatGridTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 				RandomizeScale(BeatGridTarget);
 				SpawnedBeatGridTargets.Add(BeatGridTarget);
-				GI->SphereTargetArray.Add(BeatGridTarget);
 			}
 		}
 		BeatGridSpawnLocation.Y = HStart;
@@ -338,28 +340,17 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	{
 		// notify GameModeActorBase that target has "spawned"
 		OnTargetSpawn.Broadcast();
-		GetWorldTimerManager().SetTimer(ActiveBeatGridTarget->TimeSinceSpawn, this, &ATargetSpawner::OnBeatGridTargetTimeout, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
-		ActiveBeatGridTarget->SetCanBeDamaged(true);
-		ActiveBeatGridTarget->PlayColorGradient();
+		ActiveBeatGridTarget->StartBeatGridTimer(GI->GameModeActorStruct.TargetMaxLifeSpan);
+		//GetWorldTimerManager().SetTimer(ActiveBeatGridTarget->TimeSinceSpawn, ActiveBeatGridTarget, &ATargetSpawner::OnBeatGridTargetTimeout, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+		//UE_LOG(LogTemp, Display, TEXT("lifespan: %f"), GI->GameModeActorStruct.TargetMaxLifeSpan);
+		//UE_LOG(LogTemp, Display, TEXT("Timein %s"), ActiveBeatGridTarget->GetName());
+		//ActiveBeatGridTarget->SetCanBeDamaged(true);
+		//ActiveBeatGridTarget->PlayColorGradient();
 	}
 
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
 		SetShouldSpawn(false);
-	}
-}
-
-void ATargetSpawner::OnBeatGridTargetTimeout()
-{
-	if (ActiveBeatGridTarget)
-	{
-		GetWorldTimerManager().ClearTimer(ActiveBeatGridTarget->TimeSinceSpawn);
-		ActiveBeatGridTarget->SetCanBeDamaged(false);
-
-		if (GameModeActorStruct.IsSingleBeatMode == true)
-		{
-			SetShouldSpawn(true);
-		}
 	}
 }
 
@@ -378,7 +369,7 @@ float ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 
 void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue)
 {
-	if (SingleBeat && LastTargetSpawnedCenter == false)
+	if (GameModeActorStruct.IsSingleBeatMode == true && LastTargetSpawnedCenter == false)
 	{
 		SpawnLocation = BoxBounds.Origin;
 	}
@@ -404,8 +395,8 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 		/*
 		 * spans the size of RecentSpawnBounds and only finishes if
 		 * SpawnLocation is not inside any of the RecentSpawnBounds spheres
-		 */ 
-	
+		 */
+
 		while (SphereIsInside)
 		{
 			for (int i = 0; i < RecentSpawnBounds.Num(); i++)
@@ -429,6 +420,188 @@ void ATargetSpawner::RandomizeLocation(FVector FLastSpawnLocation, float LastTar
 					break;
 				}
 			}
+		}
+	}
+}
+
+void ATargetSpawner::RandomizeDynamicLocation(FVector FLastSpawnLocation, float LastTargetScaleValue)
+{
+	// start with widest value and gradually lower
+	const float NewFactor = 1 - DynamicScaleFactor / 100.f * 0.5f;
+	const FVector ScaledBoxBounds = GameModeActorStruct.BoxBounds * NewFactor;
+	SpawnBox->SetBoxExtent(ScaledBoxBounds);
+	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+
+	if (GameModeActorStruct.IsSingleBeatMode == true && LastTargetSpawnedCenter == false)
+	{
+		SpawnLocation = BoxBounds.Origin;
+	}
+	else
+	{
+		// Insert the most recent spawn location into array
+		RecentSpawnLocations.Insert(LastSpawnLocation, 0);
+		RecentSpawnLocations.SetNum(MaxNumberOfTargetsAtOnce);
+
+		// Insert sphere of CheckSpawnRadius radius into sphere array
+		CheckSpawnRadius = SphereTargetRadius * LastTargetScaleValue + GameModeActorStruct.MinDistanceBetweenTargets;
+		RecentSpawnBounds.Insert(FSphere(LastSpawnLocation, CheckSpawnRadius), 0);
+		RecentSpawnBounds.SetNum(MaxNumberOfTargetsAtOnce);
+
+		// SpawnLocation initially centered inside SpawnBox
+		SpawnLocation = BoxBounds.Origin;
+
+		// bool variable to track if the SpawnLocation is inside of any of the active targets
+		bool SphereIsInside = true;
+
+		int OverloadProtect = 0;
+
+		/*
+		 * spans the size of RecentSpawnBounds and only finishes if
+		 * SpawnLocation is not inside any of the RecentSpawnBounds spheres
+		 */
+
+		while (SphereIsInside)
+		{
+			for (int i = 0; i < RecentSpawnBounds.Num(); i++)
+			{
+				if (RecentSpawnBounds[i].IsInside(SpawnLocation))
+				{
+					if (OverloadProtect > 20)
+					{
+						ShouldSpawn = false;
+						break;
+					}
+					if (GameModeActorStruct.SpreadType == ESpreadType::DynamicEdgeOnly)
+					{
+						SpawnLocation = BoxBounds.Origin;
+						// Y is left-right Z is up-down
+						const float OffsetX = 0.f;
+						float OffsetY;
+						float OffsetZ;
+						if (const int32 RandomDirection = UKismetMathLibrary::RandomIntegerInRange(0, 3);
+							RandomDirection == 0)
+						{
+							// top
+							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
+							OffsetZ = ScaledBoxBounds.Z;
+						}
+						else if (RandomDirection == 1)
+						{
+							// right
+							OffsetY = ScaledBoxBounds.Y;
+							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
+						}
+						else if (RandomDirection == 2)
+						{
+							// left
+							OffsetY = -ScaledBoxBounds.Y;
+							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
+						}
+						else
+						{
+							// bottom
+							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
+							OffsetZ = -ScaledBoxBounds.Z;
+						}
+						FVector Offset = { OffsetX, OffsetY, OffsetZ };
+						SpawnLocation = FirstSpawnLocation + Offset;
+					}
+					else if (GameModeActorStruct.SpreadType == ESpreadType::DynamicRandom)
+					{
+						SpawnLocation = UKismetMathLibrary::RandomPointInBoundingBox(FirstSpawnLocation, BoxBounds.BoxExtent);
+					}
+					OverloadProtect++;
+				}
+				if (i == RecentSpawnBounds.Num() - 1)
+				{
+					SphereIsInside = false;
+					break;
+				}
+			}
+		}
+		//DrawDebugSphere(GetWorld(), FirstSpawnLocation, SpawnRadius,12,FColor::Orange, false, 1);
+		DrawDebugBox(GetWorld(), FirstSpawnLocation, ScaledBoxBounds, FColor::Orange, false, 1);
+	}
+}
+
+float ATargetSpawner::ChangeDynamicScale(ASphereTarget* Target)
+{
+	float Scale;
+	// start with widest value and gradually lower
+	if (DynamicScaleFactor == 0)
+	{
+		Scale = GameModeActorStruct.MaxTargetScale;
+	}
+	else
+	{
+		const float NewFactor = 1 - DynamicScaleFactor / 100.f;
+		Scale = UKismetMathLibrary::Lerp(GameModeActorStruct.MinTargetScale, GameModeActorStruct.MaxTargetScale, NewFactor);
+	}
+	Target->SetActorScale3D({ Scale, Scale, Scale });
+	return Scale;
+}
+
+void ATargetSpawner::OnTargetTimeout(bool DidExpire)
+{
+	if (DidExpire)
+	{
+		ConsecutiveTargetsHit = 0;
+
+		if (GameModeActorStruct.SpreadType == ESpreadType::None)
+		{
+			return;
+		}
+
+		if (DynamicScaleFactor > 80)
+		{
+			DynamicScaleFactor -= 20;
+		}
+		else if (DynamicScaleFactor > 60)
+		{
+			DynamicScaleFactor -= 15;
+		}
+		else if (DynamicScaleFactor > 40)
+		{
+			DynamicScaleFactor -= 10;
+		}
+		else
+		{
+			DynamicScaleFactor -= 5;
+		}
+
+		if (DynamicScaleFactor < 0)
+		{
+			DynamicScaleFactor = 0;
+		}
+	}
+	else
+	{
+		ConsecutiveTargetsHit++;
+
+		if (GameModeActorStruct.SpreadType == ESpreadType::None)
+		{
+			return;
+		}
+
+		if (DynamicScaleFactor > 100)
+		{
+			DynamicScaleFactor = 100;
+		}
+		if (DynamicScaleFactor > 80)
+		{
+			DynamicScaleFactor += 2;
+		}
+		else if (DynamicScaleFactor > 60)
+		{
+			DynamicScaleFactor += 3;
+		}
+		else if (DynamicScaleFactor > 40)
+		{
+			DynamicScaleFactor += 4;
+		}
+		else
+		{
+			DynamicScaleFactor += 5;
 		}
 	}
 }
@@ -472,33 +645,18 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 
 void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
 {
-	if (Cast<ATargetSpawner>(OverlappedActor) || Cast<ASphereTarget>(OverlappedActor) && 
+	if (Cast<ATargetSpawner>(OverlappedActor) || Cast<ASphereTarget>(OverlappedActor) &&
 		Cast<ASphereTarget>(OtherActor) || Cast<ATargetSpawner>(OtherActor))
 	{
-		TrackingDirection = TrackingDirection * - 1;
+		TrackingDirection = TrackingDirection * -1;
 		UE_LOG(LogTemp, Display, TEXT("EndOverlap called"));
 	}
-
 }
 
 void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)
 {
 	// Initialize Struct passed by GameModeActorBase
 	GameModeActorStruct = NewGameModeActor;
-
-	/*
-	 * GameMode specific checking
-	 */
-	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::NarrowSpreadSingleBeat ||
-		GameModeActorStruct.GameModeActorName == EGameModeActorName::WideSpreadSingleBeat ||
-		GameModeActorStruct.IsSingleBeatMode == true)
-	{
-		SingleBeat = true;
-	}
-	if (GameModeActorStruct.IsBeatGridMode)
-	{
-		BeatGrid = true;
-	}
 
 	// GameMode menu uses the full width, while box bounds are only half width / half height
 	GameModeActorStruct.BoxBounds.X = 0.f;
@@ -508,16 +666,16 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	// Set the center of spawn box based on user selection
 	if (GameModeActorStruct.HeadshotHeight == true)
 	{
-		GameModeActorStruct.CenterOfSpawnBox.Z = 160.f;
+		GameModeActorStruct.CenterOfSpawnBox.Z = HeadshotHeight;
 		GameModeActorStruct.BoxBounds.Z = 0.f;
 	}
 	else if (GameModeActorStruct.WallCentered == true)
 	{
-		GameModeActorStruct.CenterOfSpawnBox.Z = 750.f;
+		GameModeActorStruct.CenterOfSpawnBox.Z = CenterBackWallHeight;
 	}
 	else
 	{
-		GameModeActorStruct.CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + 100.f;
+		GameModeActorStruct.CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + DistanceFromFloor;
 	}
 
 	// Set new location & box extent
@@ -525,6 +683,7 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	FirstSpawnLocation = BoxBounds.Origin;
+	MaxRadius = GameModeActorStruct.BoxBounds.Z;
 
 	/*
 	 * Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds

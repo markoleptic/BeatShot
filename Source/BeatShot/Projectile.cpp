@@ -49,6 +49,14 @@ void AProjectile::Tick(float DeltaTime)
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
+	// This is the entry point for any target hit by the Projectile
+
+	// Prevent updating score or applying damage if CanBeDamaged is false
+	if (OtherActor->CanBeDamaged() == false)
+	{
+		return;
+	}
+
 	AActor* MyOwner = GetOwner();
 	if (MyOwner == nullptr)
 	{
@@ -60,9 +68,15 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	if (Shooter)
 	{
 		Target = Cast<ASphereTarget>(OtherActor);
-		if (Target && Shooter && GI->GameModeActorBaseRef && GI->GameModeActorStruct.IsBeatTrackMode == false && GI->GameModeActorStruct.IsBeatGridMode == false)
+		// targets should have the TimeSinceSpawn timer active
+		// to be eligible to call UpdateTargetsHit()
+		if (Target && 
+			GI->GameModeActorBaseRef && 
+			GI->GameModeActorStruct.IsBeatTrackMode == false &&
+			(Target->GetWorldTimerManager().GetTimerElapsed(Target->TimeSinceSpawn) > 0.f
+				|| Target->GetLifeSpan() > 0))
 		{
-			//If reached this point, player has shot a target, and can get exact moment it was hit
+			// Player has shot a valid target
 			GI->GameModeActorBaseRef->UpdateTargetsHit();
 		}
 	}
