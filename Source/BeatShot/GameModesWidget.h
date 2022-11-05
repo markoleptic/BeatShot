@@ -30,11 +30,24 @@ public:
 
 	// The object used to save custom game mode properties to
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
-	FGameModeActorStruct CustomGameMode;
+		FGameModeActorStruct CustomGameMode;
 
 	// The map to add custom game modes to
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
-	TMap<FString, FGameModeActorStruct> CustomGameModesMap;
+		TMap<FString, FGameModeActorStruct> CustomGameModesMap;
+
+	// The array of default Game Modes
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default GameModes")
+		TArray<FGameModeActorStruct> GameModeActorDefaults;
+
+	// The array of Game Modes to display
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default GameModes")
+		TArray<FGameModeActorStruct> GameModesToDisplay;
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		FGameModeActorStruct GameModeActorStructConstructor(EGameModeActorName GameModeActor,
+			EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal,
+			ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
 
 	// saves CustomGameModesMap to CustomGameModes save slot
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")

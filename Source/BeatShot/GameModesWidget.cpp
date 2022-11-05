@@ -14,6 +14,14 @@ void UGameModesWidget::NativeConstruct()
 {
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::Custom, EGameModeDifficulty::Normal));
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::SingleBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicEdgeOnly));
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::MultiBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicRandom));
+
+	GameModesToDisplay = GameModeActorDefaults;
+
 	LoadCustomGameModes();
 	PopulateGameModeSettings();
 
@@ -27,6 +35,12 @@ void UGameModesWidget::NativeConstruct()
 	MaxTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
 
 	MaxNumBeatGridTargetsComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::BeatGridNumberOfTargetsConstrained);
+}
+
+FGameModeActorStruct UGameModesWidget::GameModeActorStructConstructor(EGameModeActorName GameModeActor,
+	EGameModeDifficulty NewGameModeDifficulty, ESpreadType NewSpreadType)
+{
+	return FGameModeActorStruct(GameModeActor, NewGameModeDifficulty, NewSpreadType);
 }
 
 void UGameModesWidget::SaveCustomGameMode()

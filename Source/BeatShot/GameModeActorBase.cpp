@@ -110,17 +110,15 @@ void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 		if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
 		{
 			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / GameModeActorStruct.PlayerDelay);
-			UE_LOG(LogTemp, Display, TEXT("First: %f"), FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / GameModeActorStruct.PlayerDelay));
 		}
 		else if (TimeElapsed <= GameModeActorStruct.PlayerDelay + 0.05f)
 		{
 			PlayerScores.Score += MaxScorePerTarget;
-			UE_LOG(LogTemp, Display, TEXT("Max"))
 		}
 		else if (TimeElapsed <= GameModeActorStruct.TargetMaxLifeSpan)
 		{
 			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f)));
-			UE_LOG(LogTemp, Display, TEXT("Last: %f"), FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f))))
+			//UE_LOG(LogTemp, Display, TEXT("Last: %f"), FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f))))
 		}
 		UpdateHighScore();
 		PlayerScores.TotalTimeOffset += FMath::Abs(TimeElapsed - GameModeActorStruct.PlayerDelay);

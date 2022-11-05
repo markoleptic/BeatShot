@@ -75,7 +75,8 @@ public:
 	const float BaseSphereRadius = 50.f;
 
 	// soft white color for BeatGrid
-	const FLinearColor OffWhite = { 0.75 , 0.75, 0.75, 1 };
+	const FLinearColor BeatGridPurple = { 83.f/255.f , 0.f, 245.f/255.f, 1.f };
+	
 
 	// Blueprint implementable events
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
