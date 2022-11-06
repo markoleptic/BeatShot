@@ -478,27 +478,21 @@ void ATargetSpawner::RandomizeDynamicLocation(FVector FLastSpawnLocation, float 
 						const float OffsetX = 0.f;
 						float OffsetY;
 						float OffsetZ;
-						if (const int32 RandomDirection = UKismetMathLibrary::RandomIntegerInRange(0, 3);
-							RandomDirection == 0)
+						switch (UKismetMathLibrary::RandomIntegerInRange(0, 3))
 						{
+						case 0:
 							// top
 							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
 							OffsetZ = ScaledBoxBounds.Z;
-						}
-						else if (RandomDirection == 1)
-						{
+						case 1:
 							// right
 							OffsetY = ScaledBoxBounds.Y;
 							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
-						}
-						else if (RandomDirection == 2)
-						{
+						case 2:
 							// left
 							OffsetY = -ScaledBoxBounds.Y;
 							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
-						}
-						else
-						{
+						default:
 							// bottom
 							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
 							OffsetZ = -ScaledBoxBounds.Z;
