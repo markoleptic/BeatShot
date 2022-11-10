@@ -24,35 +24,33 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(VisibleAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
-	UProjectileMovementComponent* ProjectileMovement;
-
-	UPROPERTY(EditAnywhere, Category = "Combat", meta = (AllowPrivateAccess = true))
-	float Damage = 1000.f;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = "Projectile")
-	UStaticMeshComponent* ProjectileMesh;
+public:
 
 	UFUNCTION()
-		void OnHit(UPrimitiveComponent* HitComponent, 
-			AActor* OtherActor, 
-			UPrimitiveComponent* OtherComponent, 
-			FVector NormalImpulse, 
-			const FHitResult& Hit);
+		void FireInDirection(const FVector& ShootDirection);
 
-	void FireInDirection(const FVector& ShootDirection);
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+		UProjectileMovementComponent* ProjectileMovement;
 
-	class AController* MyOwnerInstigator;
-	class ADefaultCharacter* Shooter;
-	class ASphereTarget* Target;
-	class UDefaultGameInstance* GI;
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+		UStaticMeshComponent* ProjectileMesh;
 
 private:
-	UClass* DamageTypeClass;
 
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComponent,
+			FVector NormalImpulse,
+			const FHitResult& Hit);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+		float Damage = 1000.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Combat")
+		UClass* DamageTypeClass;
 };
 

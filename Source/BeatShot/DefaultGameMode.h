@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameModeActorStruct.h"
+#include "SaveGameAASettings.h"
 #include "GameFramework/GameModeBase.h"
 #include "DefaultGameMode.generated.h"
 

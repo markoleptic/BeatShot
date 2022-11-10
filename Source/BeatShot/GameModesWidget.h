@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveGameCustomGameMode.h"
 #include "GameModesWidget.generated.h"
 
 class UDefaultGameInstance;

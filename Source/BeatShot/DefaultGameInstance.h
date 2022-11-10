@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameModeActorStruct.h"
+#include "GameModeActorBase.h"
+#include "SaveGameAASettings.h"
+#include "SaveGamePlayerSettings.h"
 #include "Engine/GameInstance.h"
 #include "Interfaces/IHttpRequest.h"
 #include "DefaultGameInstance.generated.h"
@@ -20,6 +22,33 @@ class USoundClass;
 class USoundMix;
 class ADefaultPlayerController;
 
+// Used to convert PlayerScoreMap to database scores
+USTRUCT(BlueprintType)
+struct FJsonScore
+{
+	GENERATED_BODY()
+
+		UPROPERTY()
+		TArray<FPlayerScore> Scores;
+};
+
+// Simple login payload
+USTRUCT(BlueprintType)
+struct FLoginPayload
+{
+	GENERATED_BODY()
+
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		FString Username;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		FString Email;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+		FString Password;
+
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAASettingsChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerSettingsChange);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInvalidRefreshToken);
@@ -27,9 +56,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, Response
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAccessTokenResponse, FString, ResponseMsg, int32, ResponseCode);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, FString, ResponseMsg, int32, ResponseCode);
 
-/**
- *
- */
 UCLASS()
 class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 {
@@ -134,9 +160,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 		FOnPlayerSettingsChange OnPlayerSettingsChange;
-
-	//UPROPERTY(BlueprintAssignable)
-	//	FOnPlayerScoresChange OnPlayerScoresChange;
 
 	UPROPERTY(BlueprintAssignable)
 		FOnLoginResponse OnLoginResponse;

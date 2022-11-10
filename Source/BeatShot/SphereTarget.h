@@ -12,7 +12,7 @@ class UNiagaraSystem;
 class UCurveFloat;
 class UCurveLinearColor;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLifeSpanExpired, bool, DidExpire);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLifeSpanExpired, bool, DidExpire, FVector, Location);
 
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor
@@ -46,7 +46,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Effects", BlueprintReadWrite)
 		UNiagaraSystem* NS_Standard_Explosion;
 
-	// called from DefaultHealthComponent when a SphereTarget receives damage
+	// Called from DefaultHealthComponent when a SphereTarget receives damage.
 	UFUNCTION(BlueprintCallable, Category = "Target Handling")
 		void HandleDestruction();
 
@@ -71,20 +71,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Target Properties")
 		void SetMaxHealth(float NewMaxHealth);
 
-	// base radius for sphere target
+	// Base radius for sphere target.
 	const float BaseSphereRadius = 50.f;
 
-	// soft white color for BeatGrid
+	// Color for BeatGrid targets that aren't active.
 	const FLinearColor BeatGridPurple = { 83.f/255.f , 0.f, 245.f/255.f, 1.f };
-	
 
-	// Blueprint implementable events
+	// Play the white to green to red color transition for sphere.
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
 		void PlayColorGradient();
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
 		void ShowTargetExplosion();
 
+	// Briefly makes the target higher opacity. Only used for BeatGrid
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
 		void RemoveAndReappear();
 };

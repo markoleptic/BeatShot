@@ -100,6 +100,7 @@ protected:
 
 private:
 
+	UPROPERTY()
 	UDefaultGameInstance* GI;
 
 	bool PlayerHUDActive;

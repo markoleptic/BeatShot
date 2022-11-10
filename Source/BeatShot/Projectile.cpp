@@ -5,6 +5,7 @@
 #include "DefaultCharacter.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
+#include "DefaultPlayerController.h"
 #include "GameModeActorBase.h"
 #include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
@@ -19,6 +20,7 @@ AProjectile::AProjectile()
 		PrimaryActorTick.bCanEverTick = true;
 		// Use a sphere as a simple collision representation.
 		ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>("Projectile Mesh");
+		ProjectileMesh->CastShadow = false;
 		RootComponent = ProjectileMesh;
 		ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Movement");
 		ProjectileMovement->SetUpdatedComponent(ProjectileMesh);
@@ -33,9 +35,8 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
+	if (Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		Damage = 0.f;
 	}
@@ -47,37 +48,38 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+// This is the entry point for any target hit by the Projectile
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, 
+	AActor* OtherActor, UPrimitiveComponent* OtherComponent, 
+	FVector NormalImpulse, const FHitResult& Hit)
 {
-	// This is the entry point for any target hit by the Projectile
-
 	// Prevent updating score or applying damage if CanBeDamaged is false
 	if (OtherActor->CanBeDamaged() == false)
 	{
 		return;
 	}
 
-	AActor* MyOwner = GetOwner();
+	// Get the owning actor of the projectile
+	const AActor* MyOwner = GetOwner();
 	if (MyOwner == nullptr)
 	{
 		Destroy();
 		return;
 	}
-	MyOwnerInstigator = MyOwner->GetInstigatorController();
-	Shooter = GetInstigator<ADefaultCharacter>();
-	if (Shooter)
+	const UDefaultGameInstance* GameInstance = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	ADefaultPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ADefaultPlayerController>();
+	if (GetInstigator<ADefaultCharacter>())
 	{
-		Target = Cast<ASphereTarget>(OtherActor);
 		// targets should have the TimeSinceSpawn timer active
 		// to be eligible to call UpdateTargetsHit()
-		if (Target && 
-			GI->GameModeActorBaseRef && 
-			GI->GameModeActorStruct.IsBeatTrackMode == false &&
+		if (const ASphereTarget* Target = Cast<ASphereTarget>(OtherActor); Target && 
+			Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorBaseRef &&
+			GameInstance->GameModeActorStruct.IsBeatTrackMode == false &&
 			(Target->GetWorldTimerManager().GetTimerElapsed(Target->TimeSinceSpawn) > 0.f
 				|| Target->GetLifeSpan() > 0))
 		{
 			// Player has shot a valid target
-			GI->GameModeActorBaseRef->UpdateTargetsHit();
+			GameInstance->GameModeActorBaseRef->UpdateTargetsHit();
 		}
 	}
 

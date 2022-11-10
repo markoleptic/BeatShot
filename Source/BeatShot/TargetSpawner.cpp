@@ -535,7 +535,7 @@ float ATargetSpawner::ChangeDynamicScale(ASphereTarget* Target)
 	return Scale;
 }
 
-void ATargetSpawner::OnTargetTimeout(bool DidExpire)
+void ATargetSpawner::OnTargetTimeout(bool DidExpire, FVector Location)
 {
 	if (DidExpire)
 	{
@@ -571,7 +571,7 @@ void ATargetSpawner::OnTargetTimeout(bool DidExpire)
 	else
 	{
 		ConsecutiveTargetsHit++;
-
+		OnStreakUpdate.Broadcast(ConsecutiveTargetsHit, Location);
 		if (GameModeActorStruct.SpreadType == ESpreadType::None)
 		{
 			return;

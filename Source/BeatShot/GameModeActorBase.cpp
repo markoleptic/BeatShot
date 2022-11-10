@@ -3,16 +3,17 @@
 
 #include "GameModeActorBase.h"
 #include "DefaultCharacter.h"
-#include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "TargetSpawner.h"
 #include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
+#include "FloatingTextActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DateTime.h"
 #include "Gun_AK47.h"
+#include "Kismet/KismetTextLibrary.h"
 
 AGameModeActorBase::AGameModeActorBase()
 {
@@ -47,6 +48,7 @@ void AGameModeActorBase::InitializeGameModeActor()
 	// Binding delegates for scoring purposes
 	GI->DefaultCharacterRef->Gun->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
 	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
+	GI->TargetSpawnerRef->OnStreakUpdate.AddDynamic(this, &AGameModeActorBase::OnStreakUpdate);
 	StartCountDownTimer();
 }
 
@@ -101,6 +103,22 @@ void AGameModeActorBase::OnGameModeLengthTimerComplete()
 
 	// Show Post Game menu
 	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
+}
+
+void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
+{
+	if (PlayerScores.Streak < Streak)
+	{
+		PlayerScores.Streak = Streak;
+	}
+	if (Streak % 5 == 0)
+	{
+		if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextActorToSpawn, Location, FRotator()))
+		{
+			FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
+		}
+	}
+
 }
 
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)

@@ -3,7 +3,6 @@
 #include "DefaultGameMode.h"
 #include "AudioAnalyzerManager.h"
 #include "DefaultGameInstance.h"
-#include "GameModeActorStruct.h"
 #include "GameFramework/GameUserSettings.h"
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
@@ -34,7 +33,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 	}
 	AATracker->InitBeatTrackingConfigWLimits(
-		EChannelSelectionMode::All_in_one, 0,
+		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 		false, 100, 50);
 
@@ -47,7 +46,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 			UE_LOG(LogTemp, Display, TEXT("Init Player Error"));
 		}
 		AAPlayer->InitSpectrumConfigWLimits(
-			EChannelSelectionMode::All_in_one, 0,
+			EAA_ChannelSelectionMode::All_in_one, 0,
 			AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 			true, 1);
 		OnAAPlayerLoaded.Broadcast(AAPlayer);
@@ -57,7 +56,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 	{
 		AAPlayer = nullptr;
 		AATracker->InitSpectrumConfigWLimits(
-			EChannelSelectionMode::All_in_one, 0,
+			EAA_ChannelSelectionMode::All_in_one, 0,
 			AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 			true, 1);
 		OnAAPlayerLoaded.Broadcast(AATracker);

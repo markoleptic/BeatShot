@@ -3,16 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameModeActorStruct.h"
 #include "PlayerHUD.generated.h"
 
-struct FPlayerScore;
 class ABeatAimGameModeBase;
 class UDefaultGameInstance;
 class ADefaultCharacter;
-class UTargetSubsystem;
 class UProgressBar;
 class UTextBlock;
 /**
@@ -62,6 +60,6 @@ public:
 		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-		class UDefaultGameInstance* GI;
+		UDefaultGameInstance* GI;
 };
 
