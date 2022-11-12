@@ -40,6 +40,18 @@ struct FPlayerSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString LoginCookie;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		int32 LineWidth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		int32 LineLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		int32 InnerOffset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		FLinearColor CrosshairColor;
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
@@ -50,6 +62,10 @@ struct FPlayerSettings
 		HasLoggedInBrowser = false;
 		Username = "";
 		LoginCookie = "";
+		LineWidth = 4;
+		LineLength = 10;
+		InnerOffset = 6;
+		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 	}
 
 	void ResetStruct()
@@ -62,6 +78,10 @@ struct FPlayerSettings
 		HasLoggedInBrowser = false;
 		Username = "";
 		LoginCookie = "";
+		LineWidth = 4;
+		LineLength = 10;
+		InnerOffset = 6;
+		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 	}
 };
 UCLASS()
