@@ -20,26 +20,6 @@ void UDefaultGameInstance::Init()
 	LoadPlayerScores();
 }
 
-bool UDefaultGameInstance::IsRefreshTokenValid()
-{
-	if (PlayerSettings.HasLoggedInHttp == true)
-	{
-		FDateTime CookieExpireDate;
-		const int32 ExpiresStartPos = PlayerSettings.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
-		const FString RightChopped = PlayerSettings.LoginCookie.RightChop(ExpiresStartPos + 8);
-		const FString CookieExpireString = RightChopped.Left(RightChopped.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, 0));
-		FDateTime::ParseHttpDate(CookieExpireString, CookieExpireDate);
-
-		if ((FDateTime::UtcNow() + FTimespan::FromDays(1) < CookieExpireDate))
-		{
-
-			return true;
-		}
-		return false;
-	}
-	return false;
-}
-
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
 {
 	DefaultCharacterRef = DefaultCharacter;
@@ -69,6 +49,27 @@ void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameMod
 void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController)
 {
 	DefaultPlayerControllerRef = DefaultPlayerController;
+}
+
+bool UDefaultGameInstance::IsRefreshTokenValid()
+{
+	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	if (LoadPlayerSettings().HasLoggedInHttp == true)
+	{
+		FDateTime CookieExpireDate;
+		const int32 ExpiresStartPos = PlayerSettings.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
+		const FString RightChopped = PlayerSettings.LoginCookie.RightChop(ExpiresStartPos + 8);
+		const FString CookieExpireString = RightChopped.Left(RightChopped.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, 0));
+		FDateTime::ParseHttpDate(CookieExpireString, CookieExpireDate);
+
+		if ((FDateTime::UtcNow() + FTimespan::FromDays(1) < CookieExpireDate))
+		{
+
+			return true;
+		}
+		return false;
+	}
+	return false;
 }
 
 FAASettingsStruct UDefaultGameInstance::LoadAASettings()
@@ -144,7 +145,7 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 	if (IsRefreshTokenValid())
 	{
 		OnAccessTokenResponse.AddDynamic(this, &UDefaultGameInstance::PostPlayerScores);
-		RequestAccessToken(PlayerSettings.LoginCookie);
+		RequestAccessToken(LoadPlayerSettings().LoginCookie);
 	}
 	else
 	{
@@ -154,20 +155,20 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 
 void UDefaultGameInstance::SavePlayerSettings(FPlayerSettings PlayerSettingsToSave)
 {
-	PlayerSettings = PlayerSettingsToSave;
-	if (USaveGamePlayerSettings* SaveGameInstanceToSave = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+	if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
-		SaveGameInstanceToSave->PlayerSettings = PlayerSettingsToSave;
-		if (UGameplayStatics::SaveGameToSlot(SaveGameInstanceToSave, TEXT("SettingsSlot"), 0))
+		SaveGamePlayerSettings->PlayerSettings = PlayerSettingsToSave;
+		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerSettings, TEXT("SettingsSlot"), 0))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerSettings Succeeded"));
 		}
 	}
-	OnPlayerSettingsChange.Broadcast(PlayerSettings);
+	OnPlayerSettingsChange.Broadcast(PlayerSettingsToSave);
 }
 
 FPlayerSettings UDefaultGameInstance::LoadPlayerSettings()
 {
+	USaveGamePlayerSettings* SaveGamePlayerSettings;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
 	{
 		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0));
@@ -177,7 +178,6 @@ FPlayerSettings UDefaultGameInstance::LoadPlayerSettings()
 		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
 	}
 	UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
-	PlayerSettings = SaveGamePlayerSettings->PlayerSettings;
 	return SaveGamePlayerSettings->PlayerSettings;
 }
 
@@ -186,10 +186,10 @@ void UDefaultGameInstance::LoginUser(FLoginPayload LoginPayload)
 	const TSharedRef<FJsonObject> LoginObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(FLoginPayload::StaticStruct(), &LoginPayload, LoginObject, 0, 0);
 	FString LoginString;
-	TSharedRef< TJsonWriter<> > LoginWriter = TJsonWriterFactory<>::Create(&LoginString);
+	const TSharedRef< TJsonWriter<> > LoginWriter = TJsonWriterFactory<>::Create(&LoginString);
 	FJsonSerializer::Serialize(LoginObject, LoginWriter);
 
-	FHttpRequestRef LoginRequest = FHttpModule::Get().CreateRequest();
+	const FHttpRequestRef LoginRequest = FHttpModule::Get().CreateRequest();
 	LoginRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnLoginResponseReceived);
 	LoginRequest->SetURL(LoginEndpoint);
 	LoginRequest->SetVerb("POST");
@@ -213,10 +213,12 @@ void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHtt
 	const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
 	FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
 
+	FPlayerSettings PlayerSettings = LoadPlayerSettings();
 	PlayerSettings.HasLoggedInHttp = true;
 	PlayerSettings.Username = LoginResponseObj->GetStringField("username");
 	PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
 	SavePlayerSettings(PlayerSettings);
+
 	OnLoginResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
 	UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
 }
@@ -224,11 +226,11 @@ void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHtt
 void UDefaultGameInstance::RequestAccessToken(FString RefreshToken)
 {
 	// not currently using RefreshToken parameter but may change in future to double check token
-	FHttpRequestRef AccessTokenRequest = FHttpModule::Get().CreateRequest();
+	const FHttpRequestRef AccessTokenRequest = FHttpModule::Get().CreateRequest();
 	AccessTokenRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnAccessTokenResponseReceived);
 	AccessTokenRequest->SetURL(RefreshEndpoint);
 	AccessTokenRequest->SetVerb("GET");
-	AccessTokenRequest->SetHeader("Cookie", PlayerSettings.LoginCookie);
+	AccessTokenRequest->SetHeader("Cookie", LoadPlayerSettings().LoginCookie);
 	AccessTokenRequest->ProcessRequest();
 }
 
@@ -253,14 +255,14 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 {
 	if (ResponseCode != 200)
 	{
+		OnAccessTokenResponse.RemoveAll(this);
 		return;
 	}
 
-	// load local storage of scores
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> Map = LoadPlayerScores();
 	FJsonScore JsonScores;
 	// iterate through all elements in PlayerScoreMap
-	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : Map)
+	for (const TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : Map)
 	{
 		// get array of player scores for any given game mode & song from current key value
 		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
@@ -280,7 +282,7 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
 
-	FString Endpoint = SaveScoresEndpoint + PlayerSettings.Username + "/savescores";
+	const FString Endpoint = SaveScoresEndpoint + LoadPlayerSettings().Username + "/savescores";
 	FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
 	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnPostPlayerScoresResponseReceived);
 	SendScoreRequest->SetURL(Endpoint);
@@ -290,6 +292,7 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
 
+	// Unbind this function so it doesn't get called by other requests
 	OnAccessTokenResponse.RemoveAll(this);
 }
 

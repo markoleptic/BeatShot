@@ -6,6 +6,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
+#include "SaveGamePlayerSettings.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "DefaultGameInstance.h"
@@ -54,11 +55,13 @@ ADefaultCharacter::ADefaultCharacter()
 void ADefaultCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
+
+	// Load settings and listen for changes to Player Settings
+	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
 		GI->RegisterDefaultCharacter(this);
 		Sensitivity = GI->LoadPlayerSettings().Sensitivity;
+		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultCharacter::SetSensitivity);
 	}
 
 	// Spawn gun attached to HandsMesh
@@ -152,14 +155,9 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
-void ADefaultCharacter::SetSensitivity(float NewSensitivity)
+void ADefaultCharacter::SetSensitivity(FPlayerSettings PlayerSettings)
 {
-	Sensitivity = NewSensitivity;
-}
-
-void ADefaultCharacter::Fire() const
-{
-	Gun->StartFire();
+	Sensitivity = PlayerSettings.Sensitivity;
 }
 
 void ADefaultCharacter::StartFire() const
@@ -170,34 +168,6 @@ void ADefaultCharacter::StartFire() const
 void ADefaultCharacter::StopFire() const
 {
 	Gun->StopFire();
-}
-
-void ADefaultCharacter::InteractPressed()
-{
-	TraceForward();
-}
-
-void ADefaultCharacter::TraceForward_Implementation()
-{
-	FVector Loc;
-	FRotator Rot;
-	FHitResult Hit;
-
-	GetController()->GetPlayerViewPoint(Loc, Rot);
-
-	FVector Start = Loc;
-	FVector End = Start + (Rot.Vector() * 5000);
-
-	FCollisionQueryParams TraceParams;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
-
-	DrawDebugLine(GetWorld(), Start, End, FColor::Orange, false, 2.f);
-
-	if (bHit)
-	{
-		DrawDebugBox(GetWorld(), Hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.f);
-		FString HitName = Hit.GetActor()->GetActorNameOrLabel();
-	}
 }
 
 void ADefaultCharacter::Move(const FInputActionValue& Value) {
@@ -220,7 +190,6 @@ void ADefaultCharacter::Look(const FInputActionValue& Value)
 	MouseX = Value[1];
 	MouseY = Value[0];
 
-	// Looking around
 	AddControllerPitchInput(Value[1] / 14.2789148024750118991f * Sensitivity);
 	AddControllerYawInput(Value[0] / 14.2789148024750118991f * Sensitivity);
 }
@@ -289,5 +258,33 @@ void ADefaultCharacter::UpdateMovementValues(const EMovementState NewMovementSta
 	if (MovementState == EMovementState::State_Walk)
 	{
 		bIsWalking = true;
+	}
+}
+
+void ADefaultCharacter::InteractPressed()
+{
+	TraceForward();
+}
+
+void ADefaultCharacter::TraceForward_Implementation()
+{
+	FVector Loc;
+	FRotator Rot;
+	FHitResult Hit;
+
+	GetController()->GetPlayerViewPoint(Loc, Rot);
+
+	FVector Start = Loc;
+	FVector End = Start + (Rot.Vector() * 5000);
+
+	FCollisionQueryParams TraceParams;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Orange, false, 2.f);
+
+	if (bHit)
+	{
+		DrawDebugBox(GetWorld(), Hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.f);
+		FString HitName = Hit.GetActor()->GetActorNameOrLabel();
 	}
 }

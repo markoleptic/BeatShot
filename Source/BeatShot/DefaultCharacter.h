@@ -1,10 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
+// Credit to whoisEllie on Github for some code used in this class
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Gun_AK47.h"
 #include "GameFramework/Character.h"
+#include "SaveGamePlayerSettings.h"
 #include "InputActionValue.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "InputMappingContext.h" // Rider may mark this as unused, but this is incorrect and removal will cause issues
@@ -43,35 +45,16 @@ public:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
+	/** Called on Pawn restart */
 	virtual void PawnClientRestart() override;
 
-	// Called every frame
+	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
+	/** Called to bind functionality to input */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	/** Returns the character's forward movement (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetForwardMovement() const { return ForwardMovement; }
-
-	/** Returns the character's sideways movement (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetRightMovement() const { return RightMovement; }
-
-	/** Returns the character's vertical mouse position (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetMouseY() const { return MouseY; }
-
-	/** Returns the character's horizontal mouse position (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetMouseX() const { return MouseX; }
-
-	/** Returns the character's current movement state */
-	UFUNCTION(BlueprintPure, Category = "FPS Character")
-		EMovementState GetMovementState() const { return MovementState; }
-
-	/** A global system that handles updates to the movement state and changes relevant values accordingly
+	/** Handles updates to the movement state and changes relevant values accordingly
 	*	@param NewMovementState The new movement state of the player
 	*/
 	void UpdateMovementValues(EMovementState NewMovementState);
@@ -80,97 +63,79 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
 		TMap<EMovementState, FMovementVariables> MovementDataMap;
 
-	void Fire() const;
-
+	/** Begin firing gun */
 	void StartFire() const;
 
+	/** Stop firing gun, if automatic fire */
 	void StopFire() const;
 
+	/** Stop firing gun, if automatic fire */
 	void InteractPressed();
 
+	/** Called when PlayerSettings are changed while Character is spawned */
 	UFUNCTION(BlueprintCallable)
-		void SetSensitivity(float NewSensitivity);
+		void SetSensitivity(FPlayerSettings PlayerSettings);
+
+	/** Returns HandMesh **/
+	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 		USpringArmComponent* SpringArmComponent;
 
+	/** The skeletal mesh for hands that hold the gun */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		USkeletalMeshComponent* HandsMesh;
 
+	/** Camera component */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UCameraComponent* Camera;
 
+	/** The blueprint class associated with the gun to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
 		TSubclassOf<AGun_AK47> GunClass;
 
+	/** Reference to gun */
 	UPROPERTY(BlueprintReadWrite, Category = "Mesh")
 		AGun_AK47* Gun;
 
-	/** Returns HandMesh **/
-	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
-
-	/** Returns a reference to the player's camera component */
-	UCameraComponent* GetCameraComponent() const { return Camera; }
-
 protected:
 
+	/** Debug for tracing a line where the character is facing */
 	UFUNCTION(BlueprintNativeEvent)
 	void TraceForward();
-	void TraceForward_Implementation();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-		UDefaultGameInstance* GI;
+	/** Blueprint version of Debug for tracing a line where the character is facing */
+	void TraceForward_Implementation();
 
 private:
 
 	/** Move the character left/right and forward/back
-*	@param Value The value passed in by the Input Component
-*/
+	*	@param Value The value passed in by the Input Component
+	*/
 	void Move(const FInputActionValue& Value);
 
 	/** Look left/right and up/down
 	 *	@param Value The value passed in by the Input Component
 	 */
 	void Look(const FInputActionValue& Value);
-	 /** Alternative to the built in Crouch function
-	  *  Handles crouch input and decides what action to perform based on the character's current state
-	  */
-	void ToggleCrouch();
 
-	/** Transitions the character out of the crouched state
-	 *	@param bToSprint Whether to transition into a sprint state
-	 */
-	void StopCrouch(bool bToSprint);
-
-	/** Toggle for crouching */
+	/** Change movement state to crouching */
 	void StartCrouch();
 
-	/** Exits the character from the slide state if they are sliding and updates bHoldingCrouch */
+	/** Change movement state from crouching */
 	void ReleaseCrouch();
 
-	/** Starting to sprint */
+	/** Change movement state to walk */
 	void StartWalk();
 
-	/** Stopping to sprint */
+	/** Change movement state from walk */
 	void StopWalk();
-
-	/** The forward movement value (used to drive animations) */
-	float ForwardMovement;
-
-	/** The right movement value (used to drive animations) */
-	float RightMovement;
-
-	/** The look up value (used to drive procedural weapon sway) */
-	float MouseY;
-
-	/** The right look value (used to drive procedural weapon sway) */
-	float MouseX;
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;
 
-	/** Whether the player is holding the sprint key */
+	/** Whether the player is holding the walk key */
 	bool bHoldingWalk;
 
 	/** Whether the character is sprinting */
@@ -179,14 +144,14 @@ private:
 	/** Whether the character is crouching */
 	bool bIsCrouching;
 
-	UPROPERTY(VisibleAnywhere, Category = "Camera")
-		float Sensitivity;
+	/** Multiplier to controller pitch and yaw */
+	float Sensitivity;
 
 	/** Enumerator holding the 5 possible movement states defined by EMovementState */
 	UPROPERTY()
 		EMovementState MovementState;
 
-	/** Sets the height of the player's capsule component when crouched */
+	/** Sets the height of the player's capsule component when standing */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
 		float DefaultCapsuleHalfHeight = 96.f;
 
@@ -198,7 +163,7 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
 		float CrouchSpeed = 10.0f;
 
-	/** Input actions */
+	/** Input actions bound inside of the the blueprint for this class */
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
 		UInputAction* MovementAction;
@@ -246,4 +211,40 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Mappings")
 		int32 BaseMappingPriority = 0;
+
+#pragma region NOTINUSE
+
+	/** Returns the character's forward movement (from 0 to 1) */
+	UFUNCTION(BlueprintCallable, Category = "FPS Character")
+		float GetForwardMovement() const { return ForwardMovement; }
+
+	/** Returns the character's sideways movement (from 0 to 1) */
+	UFUNCTION(BlueprintCallable, Category = "FPS Character")
+		float GetRightMovement() const { return RightMovement; }
+
+	/** Returns the character's vertical mouse position (from 0 to 1) */
+	UFUNCTION(BlueprintCallable, Category = "FPS Character")
+		float GetMouseY() const { return MouseY; }
+
+	/** Returns the character's horizontal mouse position (from 0 to 1) */
+	UFUNCTION(BlueprintCallable, Category = "FPS Character")
+		float GetMouseX() const { return MouseX; }
+
+	/** Returns the character's current movement state */
+	UFUNCTION(BlueprintPure, Category = "FPS Character")
+		EMovementState GetMovementState() const { return MovementState; }
+
+	/** The forward movement value (used to drive animations) */
+	float ForwardMovement;
+
+	/** The right movement value (used to drive animations) */
+	float RightMovement;
+
+	/** The look up value (used to drive procedural weapon sway) */
+	float MouseY;
+
+	/** The right look value (used to drive procedural weapon sway) */
+	float MouseX;
+
+#pragma endregion
 };

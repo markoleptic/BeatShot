@@ -119,7 +119,6 @@ void ASphereTarget::HandleDestruction()
 		RemoveAndReappear();
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
 	}
-	// Regular behavior
 	else
 	{
 		Destroy();
@@ -156,7 +155,7 @@ void ASphereTarget::OnBeatGridTimerTimeOut()
 		GetActorLocation().Y,
 		GetActorLocation().Z + 
 		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(false, TopOfSphereLocation);
+	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
 }
 
 void ASphereTarget::SetMaxHealth(float NewMaxHealth)
