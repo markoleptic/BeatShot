@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Gun_AK47.h"
 #include "GameFramework/Character.h"
-#include "InputAction.h"
 #include "InputActionValue.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "InputMappingContext.h" // Rider may mark this as unused, but this is incorrect and removal will cause issues
@@ -189,15 +188,15 @@ private:
 
 	/** Sets the height of the player's capsule component when crouched */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
+		float DefaultCapsuleHalfHeight = 96.f;
+
+	/** Sets the height of the player's capsule component when crouched */
+	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
 		float CrouchedCapsuleHalfHeight = 58.0f;
 
 	/** The rate at which the character crouches */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
 		float CrouchSpeed = 10.0f;
-
-	/** Whether crouching has to be held or can be toggled */
-	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
-		bool bCrouchIsToggle = false;
 
 	/** Input actions */
 

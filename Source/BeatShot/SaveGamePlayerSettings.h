@@ -52,6 +52,13 @@ struct FPlayerSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
 		FLinearColor CrosshairColor;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		float OutlineOpacity;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		int32 OutlineWidth;
+
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
@@ -66,6 +73,8 @@ struct FPlayerSettings
 		LineLength = 10;
 		InnerOffset = 6;
 		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		OutlineOpacity = 1.f;
+		OutlineWidth = 20;
 	}
 
 	void ResetStruct()
@@ -82,6 +91,8 @@ struct FPlayerSettings
 		LineLength = 10;
 		InnerOffset = 6;
 		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		OutlineOpacity = 1.f;
+		OutlineWidth = 20;
 	}
 };
 UCLASS()
