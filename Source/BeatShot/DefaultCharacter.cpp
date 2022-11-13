@@ -147,7 +147,7 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		{
 			// Firing
 			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Started, this, &ADefaultCharacter::StartFire);
-			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this, &ADefaultCharacter::StopFire);
+			//PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this, &ADefaultCharacter::StopFire);
 		}
 	}
 }

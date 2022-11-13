@@ -164,7 +164,7 @@ void ADefaultGameMode::InitializeGameMode()
 		&FRotator::ZeroRotator, 
 		SpawnParameters);
 
-	RefreshAASettings();
+	AASettings = GI->LoadAASettings();
 	// call the blueprint function to display open file dialog window, which then
 	// calls InitializeAudioManagers with the path to the song file,
 	// and then displays the Countdown widget
@@ -201,9 +201,9 @@ void ADefaultGameMode::PlayAAPlayer()
 	}
 }
 
-void ADefaultGameMode::RefreshAASettings()
+void ADefaultGameMode::RefreshAASettings(FAASettingsStruct RefreshedAASettings)
 {
-	AASettings = GI->LoadAASettings();
+	AASettings = RefreshedAASettings;
 }
 
 void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)

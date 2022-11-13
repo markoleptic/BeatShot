@@ -49,8 +49,8 @@ struct FLoginPayload
 
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAASettingsChange);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerSettingsChange);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, FAASettingsStruct, RefreshedAASettings);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, FPlayerSettings, RefreshedPlayerSettings);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInvalidRefreshToken);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, ResponseMsg, int32, ResponseCode);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAccessTokenResponse, FString, ResponseMsg, int32, ResponseCode);

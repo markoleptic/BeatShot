@@ -264,8 +264,8 @@ struct FGameModeActorStruct
 				PlayerDelay = 0.35f;
 				TargetSpawnCD = 0.35f;
 				TargetMaxLifeSpan = 1.2f;
-				MinTargetScale = 1.2f;
-				MaxTargetScale = 1.2f;
+				MinTargetScale = 1.f;
+				MaxTargetScale = 1.f;
 				BeatGridSize = 16;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
@@ -273,8 +273,8 @@ struct FGameModeActorStruct
 				PlayerDelay = 0.3f;
 				TargetSpawnCD = 0.30f;
 				TargetMaxLifeSpan = 1.f;
-				MinTargetScale = 1.f;
-				MaxTargetScale = 1.f;
+				MinTargetScale = 0.75f;
+				MaxTargetScale = 0.75f;
 				BeatGridSize = 25;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Death)
@@ -282,8 +282,8 @@ struct FGameModeActorStruct
 				PlayerDelay = 0.25f;
 				TargetSpawnCD = 0.25f;
 				TargetMaxLifeSpan = 0.75f;
-				MinTargetScale = 0.75f;
-				MaxTargetScale = 0.75f;
+				MinTargetScale = 0.5f;
+				MaxTargetScale = 0.5f;
 				BeatGridSize = 36;
 			}
 		}

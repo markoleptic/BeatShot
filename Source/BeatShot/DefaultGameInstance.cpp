@@ -101,7 +101,7 @@ void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
 			UE_LOG(LogTemp, Warning, TEXT("SaveAASettings Succeeded"));
 		}
 	}
-	OnAASettingsChange.Broadcast();
+	OnAASettingsChange.Broadcast(AASettingsToSave);
 }
 
 void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume)
@@ -163,7 +163,7 @@ void UDefaultGameInstance::SavePlayerSettings(FPlayerSettings PlayerSettingsToSa
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerSettings Succeeded"));
 		}
 	}
-	OnPlayerSettingsChange.Broadcast();
+	OnPlayerSettingsChange.Broadcast(PlayerSettings);
 }
 
 FPlayerSettings UDefaultGameInstance::LoadPlayerSettings()

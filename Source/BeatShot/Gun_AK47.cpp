@@ -46,26 +46,26 @@ void AGun_AK47::BeginPlay()
 	Character = GI->DefaultCharacterRef;
 
 	// Setting our recoil & recovery curves
-	if (VerticalRecoilCurve)
-	{
-		FOnTimelineFloat VerticalRecoilProgressFunction;
-		VerticalRecoilProgressFunction.BindUFunction(this, FName("HandleVerticalRecoilProgress"));
-		VerticalRecoilTimeline.AddInterpFloat(VerticalRecoilCurve, VerticalRecoilProgressFunction);
-	}
+	//if (VerticalRecoilCurve)
+	//{
+	//	FOnTimelineFloat VerticalRecoilProgressFunction;
+	//	VerticalRecoilProgressFunction.BindUFunction(this, FName("HandleVerticalRecoilProgress"));
+	//	VerticalRecoilTimeline.AddInterpFloat(VerticalRecoilCurve, VerticalRecoilProgressFunction);
+	//}
 
-	if (HorizontalRecoilCurve)
-	{
-		FOnTimelineFloat HorizontalRecoilProgressFunction;
-		HorizontalRecoilProgressFunction.BindUFunction(this, FName("HandleHorizontalRecoilProgress"));
-		HorizontalRecoilTimeline.AddInterpFloat(HorizontalRecoilCurve, HorizontalRecoilProgressFunction);
-	}
+	//if (HorizontalRecoilCurve)
+	//{
+	//	FOnTimelineFloat HorizontalRecoilProgressFunction;
+	//	HorizontalRecoilProgressFunction.BindUFunction(this, FName("HandleHorizontalRecoilProgress"));
+	//	HorizontalRecoilTimeline.AddInterpFloat(HorizontalRecoilCurve, HorizontalRecoilProgressFunction);
+	//}
 
-	if (RecoveryCurve)
-	{
-		FOnTimelineFloat RecoveryProgressFunction;
-		RecoveryProgressFunction.BindUFunction(this, FName("HandleRecoveryProgress"));
-		RecoilRecoveryTimeline.AddInterpFloat(RecoveryCurve, RecoveryProgressFunction);
-	}
+	//if (RecoveryCurve)
+	//{
+	//	FOnTimelineFloat RecoveryProgressFunction;
+	//	RecoveryProgressFunction.BindUFunction(this, FName("HandleRecoveryProgress"));
+	//	RecoilRecoveryTimeline.AddInterpFloat(RecoveryCurve, RecoveryProgressFunction);
+	//}
 }
 
 // Called every frame
@@ -73,9 +73,9 @@ void AGun_AK47::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	VerticalRecoilTimeline.TickTimeline(DeltaTime);
-	HorizontalRecoilTimeline.TickTimeline(DeltaTime);
-	RecoilRecoveryTimeline.TickTimeline(DeltaTime);
+	//VerticalRecoilTimeline.TickTimeline(DeltaTime);
+	//HorizontalRecoilTimeline.TickTimeline(DeltaTime);
+	//RecoilRecoveryTimeline.TickTimeline(DeltaTime);
 
 	//InterpRecoil(DeltaTime);
 	//InterpFinalRecoil(DeltaTime);
@@ -183,22 +183,19 @@ void AGun_AK47::StartFire()
 {
 	if (bCanFire)
 	{
+		Fire();
 		// sets a timer for firing the weapon - if bAutomaticFire is true then this timer will repeat until cleared by StopFire(), leading to fully automatic fire
-		GetWorldTimerManager().SetTimer(ShotDelay, this, &AGun_AK47::Fire, 0.10f, true, 0.0f);
-
-
-		// Simultaneously begins to play the recoil timeline
-		StartRecoil();
+		//GetWorldTimerManager().SetTimer(ShotDelay, this, &AGun_AK47::Fire, 0.10f, true, 0.0f);
 	}
 }
 
 void AGun_AK47::StopFire()
 {
 	// Stops the gun firing (for automatic fire)
-	GetWorldTimerManager().ClearTimer(ShotDelay);
-	VerticalRecoilTimeline.Stop();
-	HorizontalRecoilTimeline.Stop();
-	RecoilRecovery();
+	//GetWorldTimerManager().ClearTimer(ShotDelay);
+	//VerticalRecoilTimeline.Stop();
+	//HorizontalRecoilTimeline.Stop();
+	//RecoilRecovery();
 }
 
 void AGun_AK47::Recoil()
