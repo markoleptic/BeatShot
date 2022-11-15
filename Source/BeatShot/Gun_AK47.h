@@ -31,12 +31,11 @@ class BEATSHOT_API AGun_AK47 : public AActor
 {
 	GENERATED_BODY()
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	// Sets default values for this actor's properties
 	AGun_AK47();
+
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -45,7 +44,7 @@ public:
 
 	/** Make the weapon Fire a Projectile */
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-		void Fire();
+	void Fire();
 
 	/** Starts firing the gun (sets the timer for automatic fire) */
 	void StartFire();
@@ -53,22 +52,8 @@ public:
 	/** Stops the timer that allows for automatic fire */
 	void StopFire();
 
-	/** Start weapon recoil */
-	UFUNCTION(BlueprintCallable, Category = "Recoil")
-		void Recoil();
-
 	/** Allows the player to fire again */
 	void EnableFire();
-
-	/** Begins applying recoil to the weapon */
-	void StartRecoil();
-
-	/** Initiates the recoil function */
-	void RecoilRecovery();
-
-	/** Interpolates the player back to their initial view vector */
-	UFUNCTION()
-		void HandleRecoveryProgress(float Value);
 
 	/** Whether the weapon can fire or not */
 	bool CanFire() const { return bCanFire; }
@@ -87,35 +72,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		USceneComponent* MuzzleLocation;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		UCurveVector* RecoilVectorCurve;
+
 private:
 
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 		TSubclassOf<class AProjectile> ProjectileClass;
 
-	/** The curve for vertical recoil  */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-		UCurveFloat* VerticalRecoilCurve;
-
-	/** The curve for horizontal recoil */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-		UCurveFloat* HorizontalRecoilCurve;
-
-	/** The curve for recovery */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-		UCurveFloat* RecoveryCurve;
-
-	/** The timeline for vertical recoil */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-		FTimeline VerticalRecoilTimeline;
-
-	/** The timeline for horizontal recoil (generated from the curve) */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-		FTimeline HorizontalRecoilTimeline;
-
 	/** The timeline for recover (set from the curve) */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
-		FTimeline RecoilRecoveryTimeline;
+		FTimeline RecoilTimeline;
 
 	/** The timer that handles automatic fire */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
@@ -155,30 +123,47 @@ private:
 	bool bShouldRecover;
 
 	/** Used in recoil to make sure the first shot has properly applied recoil */
-	int ShotsFired;
-
-	/** A value to temporarily cache the player's control rotation so that we can return to it */
-	FRotator ControlRotation;
-
-	/** The offset to apply */
 	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator PunchAngle;
+		int ShotsFired;
 
 	UPROPERTY(VisibleAnywhere, Category = "Interaction")
 		FRotator RecoverRotation;
 
 	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		bool isRecovering;
-
-	void InterpFinalRecoil(float DeltaSeconds);
-
-	void InterpRecoil(float DeltaSeconds);
+		bool bIsRecovering;
 
 	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator RecoilRotation;
+		bool bIsFiring;
+
+	UFUNCTION(BlueprintCallable, Category = "Recoil")
+		void UpdateKickback(FVector Output);
 
 	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator FinalRecoilRotation;
+		FRotator StartRotation;
+
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+		FRotator EndRotation;
+
+	/** The total recoil rotation being accumulated during the time that bIsFiring is true */
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+		FRotator TotalRotationFromRecoil;
+
+	/** The current amount recoil rotation recovered during the time that bIsRecovering was true */
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+		FRotator TotalRecoilRecovered;
+
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+		FRotator LastRecoilRotation;
+
+	/** The sum of the recoil rotation accumulated during the time that bIsFiring was true */
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+		FRotator RecoilToRecover;
+
+	/** The current rotation value pulled from the vector curve, added to control rotation during fire */
+	UPROPERTY(VisibleAnywhere, Category = "Interaction")
+		FRotator CurrentShotRecoilRotation;
+
+	bool AutoFiring;
 
 	/** Whether or not to trace on tick for BeatTrack */
 		//bool ShouldTrace;

@@ -28,11 +28,13 @@ ADefaultCharacter::ADefaultCharacter()
 	// Spawning the spring arm component
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->bUsePawnControlRotation = true;
+	//SpringArmComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
 	SpringArmComponent->SetupAttachment(RootComponent);
 
 	Camera = CreateDefaultSubobject<UCameraComponent>("First Person Camera");
 	Camera->SetupAttachment(SpringArmComponent);
-	Camera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
+	//Camera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	Camera->bUsePawnControlRotation = true;
 	Camera->SetFieldOfView(103);
 	Camera->PostProcessSettings.MotionBlurAmount = 0;
@@ -47,8 +49,10 @@ ADefaultCharacter::ADefaultCharacter()
 	//HandsMesh->AddRelativeLocation(FVector(-14.5f, -16.4f, -149.7f));
 	//HandsMesh->AddRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
 	//HandsMesh->AddRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
-	HandsMesh->AddRelativeRotation(FRotator(1.53f, -15.20f, 8.32f));
-	HandsMesh->AddRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
+	HandsMesh->SetRelativeRotation(FRotator(1.53f, -15.20f, 8.32f));
+	HandsMesh->SetRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
+	//HandsMesh->AddRelativeRotation(FRotator(1.53f, -15.20f, 8.32f));
+	//HandsMesh->AddRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
 }
 
 // Called when the game starts or when spawned
@@ -150,7 +154,7 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		{
 			// Firing
 			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Started, this, &ADefaultCharacter::StartFire);
-			//PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this, &ADefaultCharacter::StopFire);
+			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this, &ADefaultCharacter::StopFire);
 		}
 	}
 }

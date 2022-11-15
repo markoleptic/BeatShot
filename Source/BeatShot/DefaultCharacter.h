@@ -79,6 +79,9 @@ public:
 	/** Returns HandMesh **/
 	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
+	/** Returns KickbackOffset **/
+	UCameraComponent* GetCamera() const { return Camera; }
+
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 		USpringArmComponent* SpringArmComponent;
@@ -90,6 +93,12 @@ public:
 	/** Camera component */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UCameraComponent* Camera;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		USceneComponent* KickbackOffset;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		USceneComponent* PatternOffset;
 
 	/** The blueprint class associated with the gun to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Mesh")

@@ -11,6 +11,7 @@
 #include "NiagaraComponent.h"
 #include "SphereTarget.h"
 #include "Camera/CameraComponent.h"
+#include "Curves/CurveVector.h"
 #include "Kismet/KismetMathLibrary.h"
 //#include "Animation/AnimationAsset.h"
 //#include "Animation/AnimSequence.h"
@@ -33,7 +34,11 @@ AGun_AK47::AGun_AK47()
 	MuzzleLocation->SetupAttachment(MeshComp, "Muzzle");
 	TraceDistance = 10000;
 	RecoverRotation = FRotator::ZeroRotator;
-	PunchAngle = FRotator::ZeroRotator;
+	bShouldRecover = false;
+	LastRecoilRotation = FRotator();
+	bIsFiring = false;
+	bIsRecovering = false;
+	AutoFiring = true;
 }
 
 // Called when the game starts or when spawned
@@ -45,27 +50,9 @@ void AGun_AK47::BeginPlay()
 	PlayerController = GI->DefaultPlayerControllerRef;
 	Character = GI->DefaultCharacterRef;
 
-	// Setting our recoil & recovery curves
-	//if (VerticalRecoilCurve)
-	//{
-	//	FOnTimelineFloat VerticalRecoilProgressFunction;
-	//	VerticalRecoilProgressFunction.BindUFunction(this, FName("HandleVerticalRecoilProgress"));
-	//	VerticalRecoilTimeline.AddInterpFloat(VerticalRecoilCurve, VerticalRecoilProgressFunction);
-	//}
-
-	//if (HorizontalRecoilCurve)
-	//{
-	//	FOnTimelineFloat HorizontalRecoilProgressFunction;
-	//	HorizontalRecoilProgressFunction.BindUFunction(this, FName("HandleHorizontalRecoilProgress"));
-	//	HorizontalRecoilTimeline.AddInterpFloat(HorizontalRecoilCurve, HorizontalRecoilProgressFunction);
-	//}
-
-	//if (RecoveryCurve)
-	//{
-	//	FOnTimelineFloat RecoveryProgressFunction;
-	//	RecoveryProgressFunction.BindUFunction(this, FName("HandleRecoveryProgress"));
-	//	RecoilRecoveryTimeline.AddInterpFloat(RecoveryCurve, RecoveryProgressFunction);
-	//}
+	FOnTimelineVector RecoilProgressFunction;
+	RecoilProgressFunction.BindUFunction(this, FName("UpdateKickback"));
+	RecoilTimeline.AddInterpVector(RecoilVectorCurve, RecoilProgressFunction);
 }
 
 // Called every frame
@@ -73,14 +60,37 @@ void AGun_AK47::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//VerticalRecoilTimeline.TickTimeline(DeltaTime);
-	//HorizontalRecoilTimeline.TickTimeline(DeltaTime);
-	//RecoilRecoveryTimeline.TickTimeline(DeltaTime);
+	RecoilTimeline.TickTimeline(DeltaTime);
 
-	//InterpRecoil(DeltaTime);
-	//InterpFinalRecoil(DeltaTime);
+	if (bIsRecovering && abs(TotalRecoilRecovered.Pitch) >= abs(RecoilToRecover.Pitch))
+	{
+		bIsRecovering = false;
+		RecoilToRecover = FRotator();
+		TotalRecoilRecovered = FRotator();
+	}
+	if (bIsFiring)
+	{
+		LastRecoilRotation = PlayerController->GetControlRotation();
+		FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(
+			LastRecoilRotation,
+			LastRecoilRotation + CurrentShotRecoilRotation,
+			DeltaTime, 10);
+		PlayerController->SetControlRotation(UpdatedRotation);
+		TotalRotationFromRecoil += UKismetMathLibrary::NormalizedDeltaRotator(UpdatedRotation, LastRecoilRotation);
+	}
+	if (bIsRecovering)
+	{
+		FRotator LastRecoilRecoverRotation = PlayerController->GetControlRotation();
+		FRotator RecoveredRotation = UKismetMathLibrary::RInterpTo(
+			LastRecoilRecoverRotation,
+			LastRecoilRecoverRotation - RecoilToRecover,
+			DeltaTime, 4);
+		PlayerController->SetControlRotation(RecoveredRotation);
+		// TotalRotationFromRecoil use this maybe
+		TotalRecoilRecovered += UKismetMathLibrary::NormalizedDeltaRotator(LastRecoilRecoverRotation, RecoveredRotation);
 
-	//PlayerController->SetControlRotation(FMath::FInterpTo(PlayerController->GetControlRotation(), PlayerController->GetControlRotation() + PunchAngle, DeltaTime, 1));
+		UE_LOG(LogTemp, Display, TEXT("TotalRecoilRecovered %s"), *TotalRecoilRecovered.ToCompactString());
+	}
 
 	// only do tracing for Beat Track game modes
 	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
@@ -156,7 +166,7 @@ void AGun_AK47::Fire()
 				UNiagaraFunctionLibrary::SpawnSystemAttached(NS_MuzzleFlash, MeshComp, TEXT("Muzzle"),
 					FVector(5, 0, 0), MuzzleTransform.Rotator(),
 					EAttachLocation::SnapToTarget, true);
-				Recoil();
+				ShotsFired++;
 			}
 		}
 
@@ -183,37 +193,53 @@ void AGun_AK47::StartFire()
 {
 	if (bCanFire)
 	{
-		Fire();
+		if (bIsFiring==false)
+		{
+			StartRotation = PlayerController->GetControlRotation();
+			RecoilTimeline.PlayFromStart();
+		}
+		bIsFiring = true;
 		// sets a timer for firing the weapon - if bAutomaticFire is true then this timer will repeat until cleared by StopFire(), leading to fully automatic fire
-		//GetWorldTimerManager().SetTimer(ShotDelay, this, &AGun_AK47::Fire, 0.10f, true, 0.0f);
+		GetWorldTimerManager().SetTimer(ShotDelay, this, &AGun_AK47::Fire, 0.11f, true, 0.0f);
 	}
 }
 
 void AGun_AK47::StopFire()
 {
 	// Stops the gun firing (for automatic fire)
-	//GetWorldTimerManager().ClearTimer(ShotDelay);
-	//VerticalRecoilTimeline.Stop();
-	//HorizontalRecoilTimeline.Stop();
-	//RecoilRecovery();
-}
+	GetWorldTimerManager().ClearTimer(ShotDelay);
+	bIsFiring = false;
 
-void AGun_AK47::Recoil()
-{
-	//const ADefaultCharacter* PlayerCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	//ADefaultPlayerController* Controller = PlayerCharacter->GetController<ADefaultPlayerController>();
+	// Get the recoil rotation to recover
+	RecoilToRecover = TotalRotationFromRecoil;
+	RecoilToRecover.Roll = 0.f;
+	UE_LOG(LogTemp, Display, TEXT("TotalRotFromRecoil: %s"), *TotalRotationFromRecoil.ToString());
+	TotalRotationFromRecoil = FRotator();
 
-	//if  (IsValid(VerticalRecoilCurve) && IsValid(HorizontalRecoilCurve))
-	//{
-		//Controller->AddPitchInput(VerticalRecoilCurve->GetFloatValue(VerticalRecoilTimeline.GetPlaybackPosition()));
-		//Controller->AddYawInput(HorizontalRecoilCurve->GetFloatValue(HorizontalRecoilTimeline.GetPlaybackPosition()));
+	// if player has countered recoil, subtract it
+	EndRotation = PlayerController->GetControlRotation();
+	FRotator DeltaRotationStartEnd = UKismetMathLibrary::NormalizedDeltaRotator(EndRotation, StartRotation);
+	DeltaRotationStartEnd.Roll = 0.f;
+	UE_LOG(LogTemp, Display, TEXT("PlayerControlledRecoil: %s"), *DeltaRotationStartEnd.ToString());
 
-		//RecoilRotation.Pitch += FMath::FRandRange(0.f, 2.f);
-		//RecoilRotation.Yaw += FMath::FRandRange(-1.f, 1.f);
-		//FRotator LocalRotation = { FMath::FRandRange(0.f, 5.f), FMath::FRandRange(-2.f, 2.f), 0.f };
-		//PlayerController->SetControlRotation(PlayerController->GetControlRotation() + LocalRotation);
-	//}
-	//ShotsFired += 1;
+	if (DeltaRotationStartEnd.Pitch <= 0)
+	{
+		RecoilToRecover = FRotator();
+		TotalRecoilRecovered = FRotator();
+		bIsRecovering = false;
+	}
+	else if (DeltaRotationStartEnd.Pitch <= RecoilToRecover.Pitch)
+	{
+		RecoilToRecover.Pitch -= RecoilToRecover.Pitch - DeltaRotationStartEnd.Pitch;
+		bIsRecovering = true;
+	}
+	else
+	{
+		bIsRecovering = true;
+	}
+
+	ShotsFired = 0;
+	RecoilTimeline.Stop();
 }
 
 void AGun_AK47::EnableFire()
@@ -221,60 +247,12 @@ void AGun_AK47::EnableFire()
 	bCanFire = true;
 }
 
-void AGun_AK47::StartRecoil()
+void AGun_AK47::UpdateKickback(FVector Output)
 {
-	// Getting a reference to the Character Controller
-	//const ADefaultCharacter* PlayerCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	//const ADefaultPlayerController* Controller = PlayerCharacter->GetController<ADefaultPlayerController>();
-
-	//ShotsFired = 0;
-	//if (bCanFire && Controller)
-	//{
-		// Plays the recoil timelines and saves the current control rotation in order to recover to it
-		//VerticalRecoilTimeline.PlayFromStart();
-		//HorizontalRecoilTimeline.PlayFromStart();
-		//ControlRotation = Controller->GetControlRotation();
-	//}
+	if (bIsFiring == true)
+	{
+		UE_LOG(LogTemp, Display, TEXT("VECTOR: %s"), *Output.ToString());
+		CurrentShotRecoilRotation.Yaw = Output.Y * 2;
+		CurrentShotRecoilRotation.Pitch = Output.Z * 1.5;
+	}
 }
-
-void AGun_AK47::RecoilRecovery()
-{
-	//const ADefaultCharacter* PlayerCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	//ADefaultPlayerController* Controller = PlayerCharacter->GetController<ADefaultPlayerController>();
-	// Plays the recovery timeline
-	//if (bShouldRecover)
-	//{
-	//	PunchAngle = FRotator::ZeroRotator;
-	//}
-}
-
-// Recovering the player's recoil to the pre-fired position
-void AGun_AK47::HandleRecoveryProgress(float Value)
-{
-	// Getting a reference to the Character Controller
-	//const ADefaultCharacter* PlayerCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	//ADefaultPlayerController* Controller = PlayerCharacter->GetController<ADefaultPlayerController>();
-
-	// Calculating the new control rotation by interpolating between current and target 
-	//const FRotator NewControlRotation = FMath::Lerp(Controller->GetControlRotation(), ControlRotation, Value);
-	//Controller->SetControlRotation(NewControlRotation);
-}
-
-void AGun_AK47::InterpFinalRecoil(float DeltaSeconds)
-{
-	//UKismetMathLibrary::RInterpTo(FinalRecoilRotation,
-	//	FRotator(),
-	//	DeltaSeconds,
-	//	10);
-	//UE_LOG(LogTemp, Display, TEXT("FinalRecoilRotation %s"), *FinalRecoilRotation.ToString());
-}
-
-void AGun_AK47::InterpRecoil(float DeltaSeconds)
-{
-	//UKismetMathLibrary::RInterpTo(RecoilRotation,
-	//	FRotator(),
-	//	DeltaSeconds,
-	//	10);
-	//UE_LOG(LogTemp, Display, TEXT("RecoilRotation %s"), *RecoilRotation.ToString());
-}
-
