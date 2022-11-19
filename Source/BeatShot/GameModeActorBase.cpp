@@ -38,7 +38,6 @@ void AGameModeActorBase::Tick(float DeltaTime)
 void AGameModeActorBase::InitializeGameModeActor()
 {
 	LoadPlayerScores();
-
 	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		PlayerScores.TotalPossibleDamage = 0.f;
@@ -46,7 +45,7 @@ void AGameModeActorBase::InitializeGameModeActor()
 	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
 
 	// Binding delegates for scoring purposes
-	GI->DefaultCharacterRef->Gun->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+	Cast<AGun_AK47>(GI->DefaultCharacterRef->GunActorComp->GetChildActor())->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
 	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
 	GI->TargetSpawnerRef->OnStreakUpdate.AddDynamic(this, &AGameModeActorBase::OnStreakUpdate);
 	StartCountDownTimer();
@@ -107,9 +106,11 @@ void AGameModeActorBase::OnGameModeLengthTimerComplete()
 
 void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
 {
-	if (PlayerScores.Streak < Streak)
+	// Only update best streak in PlayerScores and HUD
+	if (Streak > PlayerScores.Streak)
 	{
 		PlayerScores.Streak = Streak;
+		UpdateScoresToHUD.Broadcast(PlayerScores);
 	}
 	if (Streak % 5 == 0)
 	{
@@ -118,7 +119,6 @@ void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
 			FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
 		}
 	}
-
 }
 
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
@@ -288,6 +288,3 @@ void AGameModeActorBase::LoadPlayerScores()
 	// just in case ScoreMap comparison is working
 	PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
 }
-
-
-

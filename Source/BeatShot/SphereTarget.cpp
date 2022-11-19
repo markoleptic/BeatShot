@@ -44,7 +44,6 @@ void ASphereTarget::BeginPlay()
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
-
 	}
 	else if (GI->GameModeActorStruct.IsBeatTrackMode)
 	{

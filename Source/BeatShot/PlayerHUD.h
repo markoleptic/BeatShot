@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "PlayerHUD.generated.h"
 
+class UHorizontalBox;
 class ABeatAimGameModeBase;
 class UDefaultGameInstance;
 class ADefaultCharacter;
@@ -55,6 +56,21 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TotalSongLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* CurrentStreakBestText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* TargetsSpawnedBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* StreakBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* TargetsHitBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* ShotsFiredBox;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);

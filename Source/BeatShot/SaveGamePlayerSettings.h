@@ -58,6 +58,11 @@ struct FPlayerSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
 		int32 OutlineWidth;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gunplay")
+		bool bShouldRecoil;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gunplay")
+		bool bAutomaticFire;
 
 	FPlayerSettings()
 	{
@@ -75,6 +80,8 @@ struct FPlayerSettings
 		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 		OutlineOpacity = 1.f;
 		OutlineWidth = 20;
+		bShouldRecoil = true;
+		bAutomaticFire = true;
 	}
 
 	void ResetStruct()
@@ -93,6 +100,8 @@ struct FPlayerSettings
 		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 		OutlineOpacity = 1.f;
 		OutlineWidth = 20;
+		bShouldRecoil = true;
+		bAutomaticFire = true;
 	}
 };
 UCLASS()

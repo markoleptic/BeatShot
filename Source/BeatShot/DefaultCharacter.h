@@ -10,8 +10,8 @@
 #include "InputActionValue.h"
 // ReSharper disable once CppUnusedIncludeDirective
 #include "InputMappingContext.h" // Rider may mark this as unused, but this is incorrect and removal will cause issues
-#include "C:/Program Files/Epic Games/UE_5.0/Engine/Plugins/Marketplace/FPSCore/Source/FPSCore/Public/FPSCharacter.h"
-#include "C:/Program Files/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputLibrary.h"
+#include "U:/Epic Games/UE_5.0/Engine/Plugins/Marketplace/FPSCore/Source/FPSCore/Public/FPSCharacter.h"
+#include "U:/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputLibrary.h"
 #include "DefaultCharacter.generated.h"
 
 
@@ -59,31 +59,18 @@ public:
 	*/
 	void UpdateMovementValues(EMovementState NewMovementState);
 
-	/** A map holding data for each movement state */
-	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
-		TMap<EMovementState, FMovementVariables> MovementDataMap;
-
-	/** Begin firing gun */
-	void StartFire() const;
-
-	/** Stop firing gun, if automatic fire */
-	void StopFire() const;
-
-	/** Stop firing gun, if automatic fire */
-	void InteractPressed();
-
-	/** Called when PlayerSettings are changed while Character is spawned */
-	UFUNCTION(BlueprintCallable)
-		void SetSensitivity(FPlayerSettings PlayerSettings);
-
 	/** Returns HandMesh **/
 	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
-	/** Returns KickbackOffset **/
+	/** Returns Camera **/
 	UCameraComponent* GetCamera() const { return Camera; }
 
+	/** Called when PlayerSettings are changed while Character is spawned */
+	UFUNCTION(BlueprintCallable)
+		void OnUserSettingsChange(FPlayerSettings PlayerSettings);
+
 	/** The spring arm component, which is required to enable 'use control rotation' */
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		USpringArmComponent* SpringArmComponent;
 
 	/** The skeletal mesh for hands that hold the gun */
@@ -94,19 +81,29 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		UCameraComponent* Camera;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		USceneComponent* KickbackOffset;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		USceneComponent* PatternOffset;
-
 	/** The blueprint class associated with the gun to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = "Mesh")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 		TSubclassOf<AGun_AK47> GunClass;
 
+	/** Reference to child gun actor component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+		UChildActorComponent* GunActorComp;
+
 	/** Reference to gun */
-	UPROPERTY(BlueprintReadWrite, Category = "Mesh")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 		AGun_AK47* Gun;
+
+	/** Reference to direction of fire */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+		UArrowComponent* ShotDirection;
+
+	/** Additional layer of rotation to use for more realistic recoil */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+		USceneComponent* CameraRecoilComp;
+
+	/** A map holding data for each movement state */
+	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
+		TMap<EMovementState, FMovementVariables> MovementDataMap;
 
 protected:
 
@@ -118,6 +115,15 @@ protected:
 	void TraceForward_Implementation();
 
 private:
+
+	/** Begin firing gun */
+	void StartFire() const;
+
+	/** Stop firing gun, if automatic fire */
+	void StopFire() const;
+
+	/** Stop firing gun, if automatic fire */
+	void InteractPressed();
 
 	/** Move the character left/right and forward/back
 	*	@param Value The value passed in by the Input Component

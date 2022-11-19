@@ -5,10 +5,10 @@
 
 #include "CoreMinimal.h"
 #include "Components/TimelineComponent.h"
-//#include "C:/Program Files/Epic Games/UE_5.0/Engine/Plugins/Marketplace/FPSCore/Source/FPSCore/Public/WeaponBase.h"
 #include "GameFramework/Actor.h"
 #include "Gun_AK47.generated.h"
 
+class UCapsuleComponent;
 class ADefaultPlayerController;
 class UNiagaraSystem;
 class UDefaultGameInstance;
@@ -70,12 +70,33 @@ public:
 		USkeletalMeshComponent* MeshComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		USceneComponent* MuzzleLocation;
+		USceneComponent* MuzzleLocationComp;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Recoil")
 		UCurveVector* RecoilVectorCurve;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Recoil")
+		UCurveFloat* KickbackCurve;
+
+	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
+		UMaterialInterface* BulletDecalMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
+		UMaterialInstanceDynamic* BulletDecalInstance;
+
+	/** Whether or not to recoil the gun */
+	bool bShouldRecoil;
+
+	/** Whether or not to fire the gun continuously */
+	bool bAutomaticFire;
+
 private:
+
+	/** Update the screen-shake-like camera recoil */
+	void UpdateCameraKickback(float DeltaTime);
+
+	/** Update CurrentShotRecoils to vector at the current time into the spray */
+	void UpdateRecoilPattern(FVector Output);
 
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
@@ -85,20 +106,20 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 		FTimeline RecoilTimeline;
 
+	UPROPERTY(VisibleAnywhere, Category = "Recoil")
+		float TraceDistance;
+
 	/** The timer that handles automatic fire */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UPROPERTY(EditDefaultsOnly, Category = "Gun State")
 		FTimerHandle ShotDelay;
 
 	/** The timer that is used when we need to wait for an animation to finish before being able to fire again */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UPROPERTY(EditDefaultsOnly, Category = "Gun State")
 		FTimerHandle AnimationWaitDelay;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 		USoundBase* FireSound;
-
-	UPROPERTY(VisibleAnywhere, Category = "Camera")
-		ADefaultPlayerController* PlayerController;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 		UNiagaraSystem* NS_MuzzleFlash;
@@ -107,64 +128,52 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 		UAnimMontage* FireAnimation;
 
+	/** Used in recoil to make sure the first shot has properly applied recoil */
+	UPROPERTY(VisibleAnywhere, Category = "Gun State")
+		int ShotsFired;
+
+	UPROPERTY(VisibleAnywhere, Category = "Gun State")
+		bool bIsFiring;
+
+	UPROPERTY(VisibleAnywhere, Category = "Recoil")
+		FRotator StartRotation;
+
+	UPROPERTY(VisibleAnywhere, Category = "Recoil")
+		FRotator EndRotation;
+
+	/** The current rotation value pulled from the vector curve, added to control rotation during fire */
+	UPROPERTY(VisibleAnywhere, Category = "Recoil")
+		FRotator CurrentShotRecoilRotation;
+
+	/** Same as CurrentShotRecoilRotation but applied at half the scale */
+	UPROPERTY(VisibleAnywhere, Category = "Recoil")
+		FRotator CurrentShotCameraRecoilRotation;
+
+	/** Offset the muzzle flash a fixed amount */
+	FVector MuzzleFlashOffset = FVector(5, 0, 0);
+
 	UPROPERTY(VisibleAnywhere, Category = "References")
 		ADefaultCharacter* Character;
 
 	UPROPERTY(VisibleAnywhere, Category = "References")
 		UDefaultGameInstance* GI;
 
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		float TraceDistance;
+	UPROPERTY(VisibleAnywhere, Category = "References")
+		ADefaultPlayerController* PlayerController;
 
 	/** Determines if the player can fire */
 	bool bCanFire = true;
 
-	/** Keeping track of whether we should do a recoil recovery after finishing firing or not */
-	bool bShouldRecover;
-
-	/** Used in recoil to make sure the first shot has properly applied recoil */
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		int ShotsFired;
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator RecoverRotation;
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		bool bIsRecovering;
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		bool bIsFiring;
-
-	UFUNCTION(BlueprintCallable, Category = "Recoil")
-		void UpdateKickback(FVector Output);
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator StartRotation;
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator EndRotation;
-
-	/** The total recoil rotation being accumulated during the time that bIsFiring is true */
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator TotalRotationFromRecoil;
-
-	/** The current amount recoil rotation recovered during the time that bIsRecovering was true */
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator TotalRecoilRecovered;
-
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator LastRecoilRotation;
-
-	/** The sum of the recoil rotation accumulated during the time that bIsFiring was true */
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator RecoilToRecover;
-
-	/** The current rotation value pulled from the vector curve, added to control rotation during fire */
-	UPROPERTY(VisibleAnywhere, Category = "Interaction")
-		FRotator CurrentShotRecoilRotation;
-
-	bool AutoFiring;
-
 	/** Whether or not to trace on tick for BeatTrack */
-		//bool ShouldTrace;
+	bool bShouldTrace;
+
+	FActorSpawnParameters ProjectileSpawnParams;
+
+	float RecoilAlpha;
+
+	float RecoilAngle;
+
+	bool Recoil;
+
+	float RecoilDuration = 0.2f;
 };

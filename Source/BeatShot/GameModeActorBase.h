@@ -273,8 +273,8 @@ struct FGameModeActorStruct
 				PlayerDelay = 0.3f;
 				TargetSpawnCD = 0.30f;
 				TargetMaxLifeSpan = 1.f;
-				MinTargetScale = 0.75f;
-				MaxTargetScale = 0.75f;
+				MinTargetScale = 0.7f;
+				MaxTargetScale = 0.7f;
 				BeatGridSize = 25;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Death)
@@ -302,27 +302,27 @@ struct FGameModeActorStruct
 			// BeatTrack Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
 			{
-				MinTrackingSpeed = 500.f;
+				MinTrackingSpeed = 400.f;
 				MaxTrackingSpeed = 500.f;
-				TargetSpawnCD = 0.5f;
-				MinTargetScale = 1.f;
-				MaxTargetScale = 1.f;
+				TargetSpawnCD = 0.75f;
+				MinTargetScale = 1.3f;
+				MaxTargetScale = 1.3f;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
 			{
-				MinTrackingSpeed = 600.f;
+				MinTrackingSpeed = 500.f;
 				MaxTrackingSpeed = 600.f;
-				TargetSpawnCD = 0.4f;
-				MinTargetScale = 0.75f;
-				MaxTargetScale = 0.75f;
+				TargetSpawnCD = 0.6f;
+				MinTargetScale = 1.f;
+				MaxTargetScale = 1.f;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Death)
 			{
-				MinTrackingSpeed = 700.f;
+				MinTrackingSpeed = 500.f;
 				MaxTrackingSpeed = 700.f;
-				TargetSpawnCD = 0.3f;
-				MinTargetScale = 0.5f;
-				MaxTargetScale = 0.5f;
+				TargetSpawnCD = 0.45f;
+				MinTargetScale = 0.75f;
+				MaxTargetScale = 0.75;
 			}
 		}
 		// MultiBeat

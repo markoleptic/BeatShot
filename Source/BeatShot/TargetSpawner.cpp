@@ -475,29 +475,30 @@ void ATargetSpawner::RandomizeDynamicLocation(FVector FLastSpawnLocation, float 
 					{
 						SpawnLocation = BoxBounds.Origin;
 						// Y is left-right Z is up-down
-						const float OffsetX = 0.f;
-						float OffsetY;
-						float OffsetZ;
+						FVector Offset = FVector();
 						switch (UKismetMathLibrary::RandomIntegerInRange(0, 3))
 						{
-						case 0:
+						case 0: {
 							// top
-							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
-							OffsetZ = ScaledBoxBounds.Z;
-						case 1:
+							Offset.Y = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
+							Offset.Z = ScaledBoxBounds.Z;
+							}
+						case 1: {
 							// right
-							OffsetY = ScaledBoxBounds.Y;
-							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
-						case 2:
+							Offset.Y = ScaledBoxBounds.Y;
+							Offset.Z = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
+							}
+						case 2: {
 							// left
-							OffsetY = -ScaledBoxBounds.Y;
-							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
-						default:
+							Offset.Y = -ScaledBoxBounds.Y;
+							Offset.Z = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
+							}
+						default: {
 							// bottom
-							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
-							OffsetZ = -ScaledBoxBounds.Z;
+							Offset.Y = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
+							Offset.Z = -ScaledBoxBounds.Z;
+							}
 						}
-						FVector Offset = { OffsetX, OffsetY, OffsetZ };
 						SpawnLocation = FirstSpawnLocation + Offset;
 					}
 					else if (GameModeActorStruct.SpreadType == ESpreadType::DynamicRandom)

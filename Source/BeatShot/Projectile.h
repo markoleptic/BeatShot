@@ -38,6 +38,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 		UStaticMeshComponent* ProjectileMesh;
 
+	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
+		UMaterialInterface* BulletDecalMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
+		UMaterialInstanceDynamic* BulletDecalInstance;
+
 private:
 
 	UFUNCTION()

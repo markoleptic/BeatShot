@@ -12,9 +12,10 @@
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
 #include "Gun_AK47.h"
-#include "C:/Program Files/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
-#include "C:/Program Files/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
+#include "U:/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
+#include "U:/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
@@ -28,14 +29,18 @@ ADefaultCharacter::ADefaultCharacter()
 	// Spawning the spring arm component
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->bUsePawnControlRotation = true;
-	//SpringArmComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
 	SpringArmComponent->SetupAttachment(RootComponent);
 
+	ShotDirection = CreateDefaultSubobject<UArrowComponent>("ShotDirection");
+	ShotDirection->SetupAttachment(SpringArmComponent);
+
+	CameraRecoilComp = CreateDefaultSubobject<USceneComponent>("CameraRecoilComp");
+	CameraRecoilComp->SetupAttachment(ShotDirection);
+
 	Camera = CreateDefaultSubobject<UCameraComponent>("First Person Camera");
-	Camera->SetupAttachment(SpringArmComponent);
-	//Camera->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f));
-	Camera->bUsePawnControlRotation = true;
+	Camera->SetupAttachment(CameraRecoilComp);
+	Camera->bUsePawnControlRotation = false;
 	Camera->SetFieldOfView(103);
 	Camera->PostProcessSettings.MotionBlurAmount = 0;
 	Camera->PostProcessSettings.bOverride_MotionBlurMax = 0;
@@ -45,14 +50,13 @@ ADefaultCharacter::ADefaultCharacter()
 	HandsMesh->SetupAttachment(Camera);
 	HandsMesh->bCastDynamicShadow = false;
 	HandsMesh->CastShadow = false;
-	//HandsMesh->AddRelativeRotation(FRotator(1.9f, -15.19f, 8.2f));
-	//HandsMesh->AddRelativeLocation(FVector(-14.5f, -16.4f, -149.7f));
-	//HandsMesh->AddRelativeRotation(FRotator(1.9f, -19.19f, 5.2f));
-	//HandsMesh->AddRelativeLocation(FVector(-0.5f, -4.4f, -155.7f));
 	HandsMesh->SetRelativeRotation(FRotator(1.53f, -15.20f, 8.32f));
 	HandsMesh->SetRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
-	//HandsMesh->AddRelativeRotation(FRotator(1.53f, -15.20f, 8.32f));
-	//HandsMesh->AddRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
+
+	GunActorComp = CreateDefaultSubobject<UChildActorComponent>("GunActorComp");
+	GunActorComp->SetChildActorClass(GunClass);
+	GunActorComp->SetupAttachment(HandsMesh, "GripPoint");
+	GunActorComp->CreateChildActor();
 }
 
 // Called when the game starts or when spawned
@@ -60,20 +64,15 @@ void ADefaultCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	Gun = Cast<AGun_AK47>(GunActorComp->GetChildActor());
+
 	// Load settings and listen for changes to Player Settings
 	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
 		GI->RegisterDefaultCharacter(this);
-		Sensitivity = GI->LoadPlayerSettings().Sensitivity;
-		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultCharacter::SetSensitivity);
+		OnUserSettingsChange(GI->LoadPlayerSettings());
+		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
 	}
-
-	// Spawn gun attached to HandsMesh
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.Owner = this;
-	SpawnParameters.Instigator = GetInstigator();
-	Gun = GetWorld()->SpawnActor<AGun_AK47>(GunClass, HandsMesh->GetSocketTransform("GripPoint"), SpawnParameters);
-	Gun->AttachToComponent(HandsMesh, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 
 	ADefaultPlayerController* PlayerController = GetController<ADefaultPlayerController>();
 	if (IsLocallyControlled() && PlayerController)
@@ -159,9 +158,22 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
-void ADefaultCharacter::SetSensitivity(FPlayerSettings PlayerSettings)
+void ADefaultCharacter::OnUserSettingsChange(FPlayerSettings PlayerSettings)
 {
 	Sensitivity = PlayerSettings.Sensitivity;
+
+	if (Gun)
+	{
+		if (Gun->bAutomaticFire != PlayerSettings.bAutomaticFire ||
+			Gun->bShouldRecoil != PlayerSettings.bShouldRecoil)
+		{
+			Gun->StopFire();
+			Gun->bShouldRecoil = PlayerSettings.bShouldRecoil;
+			Gun->bAutomaticFire = PlayerSettings.bAutomaticFire;
+			Camera->SetRelativeRotation(FRotator(0, 0, 0));
+			CameraRecoilComp->SetRelativeRotation(FRotator(0, 0, 0));
+		}
+	}
 }
 
 void ADefaultCharacter::StartFire() const
@@ -243,7 +255,7 @@ void ADefaultCharacter::UpdateMovementValues(const EMovementState NewMovementSta
 
 	if (MovementDataMap.Contains(EMovementState::State_Walk))
 	{
-		//Gun->SetCanFire(MovementDataMap[MovementState].bCanFire);
+		//GunActorComp->SetCanFire(MovementDataMap[MovementState].bCanFire);
 		GetCharacterMovement()->MaxAcceleration = MovementDataMap[MovementState].MaxAcceleration;
 		GetCharacterMovement()->BrakingDecelerationWalking = MovementDataMap[MovementState].BreakingDecelerationWalking;
 		GetCharacterMovement()->GroundFriction = MovementDataMap[MovementState].GroundFriction;
