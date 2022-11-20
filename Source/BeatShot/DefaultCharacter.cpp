@@ -2,21 +2,21 @@
 
 
 #include "DefaultCharacter.h"
+#include "SaveGamePlayerSettings.h"
+#include "DefaultGameInstance.h"
+#include "DefaultPlayerController.h"
+#include "Gun_AK47.h"
+#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
-#include "SaveGamePlayerSettings.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
-#include "DefaultGameInstance.h"
-#include "DefaultPlayerController.h"
-#include "Gun_AK47.h"
-#include "U:/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputSubsystems.h"
-#include "U:/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputComponent.h"
-#include "Blueprint/UserWidget.h"
 #include "Components/ArrowComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 
 // Sets default values
 ADefaultCharacter::ADefaultCharacter()
@@ -70,8 +70,8 @@ void ADefaultCharacter::BeginPlay()
 	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
 		GI->RegisterDefaultCharacter(this);
-		OnUserSettingsChange(GI->LoadPlayerSettings());
 		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
+		OnUserSettingsChange(GI->LoadPlayerSettings());
 	}
 
 	ADefaultPlayerController* PlayerController = GetController<ADefaultPlayerController>();
@@ -108,7 +108,7 @@ void ADefaultCharacter::Tick(float DeltaTime)
 
 	// Crouching
 	// Sets the new Target Half Height based on whether the player is crouching or standing
-	const float TargetHalfHeight = (MovementState == EMovementState::State_Crouch ? CrouchedCapsuleHalfHeight : DefaultCapsuleHalfHeight);
+	const float TargetHalfHeight = (MovementState == EMovementType::Crouching ? CrouchedCapsuleHalfHeight : DefaultCapsuleHalfHeight);
 	// Interpolates between the current height and the target height
 	const float NewHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetHalfHeight, DeltaTime, CrouchSpeed);
 	// Sets the half height of the capsule component to the new interpolated half height
@@ -161,17 +161,16 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 void ADefaultCharacter::OnUserSettingsChange(FPlayerSettings PlayerSettings)
 {
 	Sensitivity = PlayerSettings.Sensitivity;
-
 	if (Gun)
 	{
 		if (Gun->bAutomaticFire != PlayerSettings.bAutomaticFire ||
 			Gun->bShouldRecoil != PlayerSettings.bShouldRecoil)
 		{
 			Gun->StopFire();
-			Gun->bShouldRecoil = PlayerSettings.bShouldRecoil;
-			Gun->bAutomaticFire = PlayerSettings.bAutomaticFire;
 			Camera->SetRelativeRotation(FRotator(0, 0, 0));
 			CameraRecoilComp->SetRelativeRotation(FRotator(0, 0, 0));
+			Gun->bShouldRecoil = PlayerSettings.bShouldRecoil;
+			Gun->bAutomaticFire = PlayerSettings.bAutomaticFire;
 		}
 	}
 }
@@ -186,12 +185,8 @@ void ADefaultCharacter::StopFire() const
 	Gun->StopFire();
 }
 
-void ADefaultCharacter::Move(const FInputActionValue& Value) {
-
-	// Storing movement vectors for animation manipulation
-	ForwardMovement = Value[1];
-	RightMovement = Value[0];
-
+void ADefaultCharacter::Move(const FInputActionValue& Value)
+{
 	// Moving the player
 	if (Value.GetMagnitude() != 0.0f)
 	{
@@ -202,10 +197,6 @@ void ADefaultCharacter::Move(const FInputActionValue& Value) {
 
 void ADefaultCharacter::Look(const FInputActionValue& Value)
 {
-	// Storing look vectors for animation manipulation
-	MouseX = Value[1];
-	MouseY = Value[0];
-
 	AddControllerPitchInput(Value[1] / 14.2789148024750118991f * Sensitivity);
 	AddControllerYawInput(Value[0] / 14.2789148024750118991f * Sensitivity);
 }
@@ -213,11 +204,11 @@ void ADefaultCharacter::Look(const FInputActionValue& Value)
 void ADefaultCharacter::ReleaseCrouch()
 {
 	bHoldingCrouch = false;
-	if (MovementState == EMovementState::State_Walk)
+	if (MovementState == EMovementType::Walking)
 	{
 		return;
 	}
-	UpdateMovementValues(EMovementState::State_Sprint);
+	UpdateMovementValues(EMovementType::Sprinting);
 }
 
 void ADefaultCharacter::StartCrouch()
@@ -225,53 +216,47 @@ void ADefaultCharacter::StartCrouch()
 	bHoldingCrouch = true;
 	if (GetCharacterMovement()->IsMovingOnGround())
 	{
-		UpdateMovementValues(EMovementState::State_Crouch);
+		UpdateMovementValues(EMovementType::Crouching);
 	}
 }
 
 void ADefaultCharacter::StartWalk()
 {
 	bHoldingWalk = true;
-	UpdateMovementValues(EMovementState::State_Walk);
+	UpdateMovementValues(EMovementType::Walking);
 }
 
 void ADefaultCharacter::StopWalk()
 {
-	if (MovementState == EMovementState::State_Walk)
+	if (MovementState == EMovementType::Walking)
 	{
-		UpdateMovementValues(EMovementState::State_Sprint);
+		UpdateMovementValues(EMovementType::Sprinting);
 	}
 	bHoldingWalk = false;
 }
 
-void ADefaultCharacter::UpdateMovementValues(const EMovementState NewMovementState)
+void ADefaultCharacter::UpdateMovementValues(EMovementType NewMovementType)
 {
 	// Clearing sprinting and crouching flags
 	bIsWalking = false;
 	bIsCrouching = false;
 
 	// Updating the movement state
-	MovementState = NewMovementState;
+	MovementState = NewMovementType;
 
-	if (MovementDataMap.Contains(EMovementState::State_Walk))
-	{
-		//GunActorComp->SetCanFire(MovementDataMap[MovementState].bCanFire);
-		GetCharacterMovement()->MaxAcceleration = MovementDataMap[MovementState].MaxAcceleration;
-		GetCharacterMovement()->BrakingDecelerationWalking = MovementDataMap[MovementState].BreakingDecelerationWalking;
-		GetCharacterMovement()->GroundFriction = MovementDataMap[MovementState].GroundFriction;
-		GetCharacterMovement()->MaxWalkSpeed = MovementDataMap[MovementState].MaxWalkSpeed;
-	}
-	else
-	{
-		UE_LOG(LogProfilingDebugging, Error, TEXT("Set up data in MovementDataMap!"))
-	}
+	//GunActorComp->SetCanFire(MovementDataMap[MovementState].bCanFire);
+	GetCharacterMovement()->MaxAcceleration = MovementDataMap[MovementState].MaxAcceleration;
+	GetCharacterMovement()->BrakingDecelerationWalking = MovementDataMap[MovementState].BreakingDecelerationWalking;
+	GetCharacterMovement()->GroundFriction = MovementDataMap[MovementState].GroundFriction;
+	GetCharacterMovement()->MaxWalkSpeed = MovementDataMap[MovementState].MaxWalkSpeed;
+
 
 	// Updating sprinting and crouching flags
-	if (MovementState == EMovementState::State_Crouch)
+	if (MovementState == EMovementType::Crouching)
 	{
 		bIsCrouching = true;
 	}
-	if (MovementState == EMovementState::State_Walk)
+	if (MovementState == EMovementType::Walking)
 	{
 		bIsWalking = true;
 	}

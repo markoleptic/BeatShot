@@ -4,15 +4,15 @@
 #include "Gun_AK47.h"
 #include "DefaultCharacter.h"
 #include "DefaultPlayerController.h"
-#include "Projectile.h"
-#include "Kismet/GameplayStatics.h"
 #include "DefaultGameInstance.h"
+#include "Projectile.h"
+#include "SphereTarget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "SphereTarget.h"
-#include "Components/DecalComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/DecalComponent.h"
 #include "Components/ArrowComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
@@ -29,12 +29,15 @@ AGun_AK47::AGun_AK47()
 	MuzzleLocationComp = CreateDefaultSubobject<USceneComponent>("Muzzle Location");
 	MuzzleLocationComp->SetupAttachment(MeshComp, "Muzzle");
 	TraceDistance = 999999;
+	bCanFire = true;
 	bIsFiring = false;
 	RecoilAlpha = 0.f;
 	RecoilAngle = 0.f;
 	Recoil = false;
 	CurrentShotRecoilRotation = FRotator();
 	CurrentShotCameraRecoilRotation = FRotator();
+	StartRotation = FRotator();
+	EndRotation = FRotator();
 }
 
 // Called when the game starts or when spawned
@@ -43,12 +46,13 @@ void AGun_AK47::BeginPlay()
 	Super::BeginPlay();
 
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	PlayerController = GI->DefaultPlayerControllerRef;
 	Character = Cast<ADefaultCharacter>(GetParentActor());
+	PlayerController = Character->GetController<ADefaultPlayerController>();
 	BulletDecalInstance = UMaterialInstanceDynamic::Create(BulletDecalMaterial, GetInstigatorController<ADefaultPlayerController>());
 	ProjectileSpawnParams.Owner = Character;
 	ProjectileSpawnParams.Instigator = Character;
 	bShouldTrace = GI->GameModeActorStruct.IsBeatTrackMode;
+
 	FOnTimelineVector RecoilProgressFunction;
 	RecoilProgressFunction.BindUFunction(this, FName("UpdateRecoilPattern"));
 	RecoilTimeline.AddInterpVector(RecoilVectorCurve, RecoilProgressFunction);

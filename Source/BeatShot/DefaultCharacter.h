@@ -7,14 +7,9 @@
 #include "Gun_AK47.h"
 #include "GameFramework/Character.h"
 #include "SaveGamePlayerSettings.h"
-#include "InputActionValue.h"
-// ReSharper disable once CppUnusedIncludeDirective
-#include "InputMappingContext.h" // Rider may mark this as unused, but this is incorrect and removal will cause issues
-#include "U:/Epic Games/UE_5.0/Engine/Plugins/Marketplace/FPSCore/Source/FPSCore/Public/FPSCharacter.h"
-#include "U:/Epic Games/UE_5.0/Engine/Plugins/Experimental/EnhancedInput/Source/EnhancedInput/Public/EnhancedInputLibrary.h"
 #include "DefaultCharacter.generated.h"
 
-
+struct FInputActionValue;
 class AGun_AK47;
 class UNiagaraSystem;
 class AProjectile;
@@ -28,9 +23,43 @@ class UCameraComponent;
 class USoundBase;
 class UAnimMontage;
 class UAnimInstance;
-class UPlayerHUD;
 class UCurveFloat;
-class UBlendSpace;
+class UInputAction;
+class UInputMappingContext;
+
+UENUM(BlueprintType)
+enum class EMovementType : uint8 {
+	Sprinting						UMETA(DisplayName, "Sprinting"),
+	Walking							UMETA(DisplayName, "Walking"),
+	Crouching						UMETA(DisplayName, "Crouching")
+};
+
+// Used to store movement properties for different movement types
+USTRUCT(BlueprintType)
+struct FMovementTypeVariables
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
+		float MaxAcceleration;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
+		float BreakingDecelerationWalking;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
+		float GroundFriction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
+		float MaxWalkSpeed;
+
+	FMovementTypeVariables()
+	{
+		MaxAcceleration = 0.f;
+		BreakingDecelerationWalking = 0.f;
+		GroundFriction = 0.f;
+		MaxWalkSpeed = 0.f;
+	}
+};
 
 UCLASS()
 class BEATSHOT_API ADefaultCharacter : public ACharacter
@@ -55,9 +84,9 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Handles updates to the movement state and changes relevant values accordingly
-	*	@param NewMovementState The new movement state of the player
+	*	@param NewMovementType The new movement state of the player
 	*/
-	void UpdateMovementValues(EMovementState NewMovementState);
+	void UpdateMovementValues(EMovementType NewMovementType);
 
 	/** Returns HandMesh **/
 	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
@@ -103,7 +132,7 @@ public:
 
 	/** A map holding data for each movement state */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
-		TMap<EMovementState, FMovementVariables> MovementDataMap;
+		TMap<EMovementType, FMovementTypeVariables> MovementDataMap;
 
 protected:
 
@@ -162,9 +191,9 @@ private:
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;
 
-	/** Enumerator holding the 5 possible movement states defined by EMovementState */
+	/** Enumerator holding the 3 possible movement states defined by EMovementType */
 	UPROPERTY()
-		EMovementState MovementState;
+		EMovementType MovementState;
 
 	/** Sets the height of the player's capsule component when standing */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
@@ -226,40 +255,4 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Mappings")
 		int32 BaseMappingPriority = 0;
-
-#pragma region NOTINUSE
-
-	/** Returns the character's forward movement (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetForwardMovement() const { return ForwardMovement; }
-
-	/** Returns the character's sideways movement (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetRightMovement() const { return RightMovement; }
-
-	/** Returns the character's vertical mouse position (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetMouseY() const { return MouseY; }
-
-	/** Returns the character's horizontal mouse position (from 0 to 1) */
-	UFUNCTION(BlueprintCallable, Category = "FPS Character")
-		float GetMouseX() const { return MouseX; }
-
-	/** Returns the character's current movement state */
-	UFUNCTION(BlueprintPure, Category = "FPS Character")
-		EMovementState GetMovementState() const { return MovementState; }
-
-	/** The forward movement value (used to drive animations) */
-	float ForwardMovement;
-
-	/** The right movement value (used to drive animations) */
-	float RightMovement;
-
-	/** The look up value (used to drive procedural weapon sway) */
-	float MouseY;
-
-	/** The right look value (used to drive procedural weapon sway) */
-	float MouseX;
-
-#pragma endregion
 };

@@ -18,6 +18,7 @@
 void UDefaultGameInstance::Init()
 {
 	LoadPlayerScores();
+	bIsSavingScores = false;
 }
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
@@ -144,7 +145,7 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 {
 	if (IsRefreshTokenValid())
 	{
-		OnAccessTokenResponse.AddDynamic(this, &UDefaultGameInstance::PostPlayerScores);
+		bIsSavingScores = true;
 		RequestAccessToken(LoadPlayerSettings().LoginCookie);
 	}
 	else
@@ -239,7 +240,6 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 	if (Response->GetResponseCode() != 200)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Access Token Request Failed."));
-		OnAccessTokenResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
 		return;
 	}
 
@@ -248,14 +248,18 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 	TSharedPtr<FJsonObject> ResponseObj;
 	const TSharedRef<TJsonReader<>> ResponseReader = TJsonReaderFactory<>::Create(ResponseString);
 	FJsonSerializer::Deserialize(ResponseReader, ResponseObj);
-	OnAccessTokenResponse.Broadcast(ResponseObj->GetStringField("accessToken"), Response->GetResponseCode());
+
+	if (bIsSavingScores)
+	{
+		PostPlayerScores(ResponseObj->GetStringField("accessToken"), Response->GetResponseCode());
+	}
+
 }
 
 void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseCode)
 {
 	if (ResponseCode != 200)
 	{
-		OnAccessTokenResponse.RemoveAll(this);
 		return;
 	}
 
@@ -291,13 +295,11 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
-
-	// Unbind this function so it doesn't get called by other requests
-	OnAccessTokenResponse.RemoveAll(this);
 }
 
 void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
+	bIsSavingScores = false;
 	if (Response->GetResponseCode() != 200)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Send Scores Request Failed."));

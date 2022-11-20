@@ -57,8 +57,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, FPlayerSett
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInvalidRefreshToken);
 /** Broadcast when a login response is received from Beatshot website */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, ResponseMsg, int32, ResponseCode);
-/** Broadcast when an access token is received from Beatshot website, used to call PostScores from SavePlayerScoresToDatabase */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAccessTokenResponse, FString, ResponseMsg, int32, ResponseCode);
 /** Broadcast when a response is received from posting player scores to database */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, FString, ResponseMsg, int32, ResponseCode);
 
@@ -170,9 +168,6 @@ public:
 		FOnLoginResponse OnLoginResponse;
 
 	UPROPERTY(BlueprintAssignable)
-		FOnAccessTokenResponse OnAccessTokenResponse;
-
-	UPROPERTY(BlueprintAssignable)
 		FOnPostPlayerScoresResponse OnPostPlayerScoresResponse;
 
 	UPROPERTY(BlueprintAssignable)
@@ -203,5 +198,7 @@ private:
 	const FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
 
 	const FString SaveScoresEndpoint = "https://beatshot.gg/api/profile/";
+
+	bool bIsSavingScores;
 };
 

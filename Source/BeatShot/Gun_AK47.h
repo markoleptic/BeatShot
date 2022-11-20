@@ -8,21 +8,12 @@
 #include "GameFramework/Actor.h"
 #include "Gun_AK47.generated.h"
 
-class UCapsuleComponent;
 class ADefaultPlayerController;
 class UNiagaraSystem;
 class UDefaultGameInstance;
 class ADefaultCharacter;
-class AWeaponBase;
 class USkeletalMeshComponent;
-class USkeletalMesh;
-class UStaticMesh;
 class UAnimMontage;
-class UAnimationAsset;
-class UAnimSequence;
-class UNiagaraSystem;
-class UBlendSpace;
-class USoundCue;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShotFired);
 
@@ -96,7 +87,8 @@ private:
 	void UpdateCameraKickback(float DeltaTime);
 
 	/** Update CurrentShotRecoils to vector at the current time into the spray */
-	void UpdateRecoilPattern(FVector Output);
+	UFUNCTION(Category = "Recoil")
+		void UpdateRecoilPattern(FVector Output);
 
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
@@ -162,7 +154,7 @@ private:
 		ADefaultPlayerController* PlayerController;
 
 	/** Determines if the player can fire */
-	bool bCanFire = true;
+	bool bCanFire;
 
 	/** Whether or not to trace on tick for BeatTrack */
 	bool bShouldTrace;

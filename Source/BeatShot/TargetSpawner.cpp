@@ -623,9 +623,6 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 		LocationToReturn = UKismetMathLibrary::RandomPointInBoundingBox(BoxBounds.Origin, BoxBounds.BoxExtent);
 		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *LocationToReturn.ToString());
 
-		float DistanceBetween = TrackingSpeed * GameModeActorStruct.TargetSpawnCD;
-		UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), DistanceBetween);
-
 		if (UKismetMathLibrary::IsPointInBox(LocationBeforeChange +
 			UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, LocationToReturn) *
 			TrackingSpeed * GameModeActorStruct.TargetSpawnCD,
