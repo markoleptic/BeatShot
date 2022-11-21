@@ -192,7 +192,9 @@ void AGameModeActorBase::UpdateHighScore()
 void AGameModeActorBase::SavePlayerScores()
 {
 	// don't save scores if score is zero
-	if (PlayerScores.Score <= 0.01f)
+	if (PlayerScores.Score <= 0.01f || 
+		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
+			PlayerScores.CustomGameModeName == ""))
 	{
 		return;
 	}

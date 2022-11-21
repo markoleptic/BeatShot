@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "DefaultCharacter.h"
 #include "GameModeActorBase.generated.h"
 
 class AFloatingTextActor;
@@ -53,12 +52,16 @@ struct FGameModeActorStruct
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		FString SongTitle;
 
 	// Used to Spawn GameModes deriving from GameModeActorBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		EGameModeActorName GameModeActorName;
+
+	// If user creates custom mode, save it with this name
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+		FString CustomGameModeName;
 
 	// Used to dynamically adjust the spawn area and sphere size
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -73,19 +76,19 @@ struct FGameModeActorStruct
 		EGameModeDifficulty GameModeDifficulty;
 
 	// TimerHandle for Song Length
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
 		FTimerHandle GameModeLengthTimer;
 
 	// Length of song
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
 		float GameModeLength;
 
 	// Countdown TimerHandle
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
 		FTimerHandle CountDownTimer;
 
 	// Countdown Time Length
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Static Game Properties")
 		float CountdownTimerLength;
 
 	// Sets the minimum time between target spawns
@@ -122,10 +125,6 @@ struct FGameModeActorStruct
 	// The size of the target spawn BoundingBox. Dimensions are half of the the total length/width
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 		FVector BoxBounds;
-
-	// If user creates custom mode, save it with this name
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FString CustomGameModeName;
 
 	// Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -385,7 +384,7 @@ struct FGameModeActorStruct
 			{
 				PlayerDelay = 0.3f;
 				TargetSpawnCD = 0.3f;
-				TargetMaxLifeSpan = 1.f;
+				TargetMaxLifeSpan = 0.8f;
 				MinTargetScale = 0.75f;
 				MaxTargetScale = 2.f;
 			}
@@ -393,7 +392,7 @@ struct FGameModeActorStruct
 			{
 				PlayerDelay = 0.25f;
 				TargetSpawnCD = 0.25f;
-				TargetMaxLifeSpan = 0.75f;
+				TargetMaxLifeSpan = 0.65f;
 				MinTargetScale = 0.6f;
 				MaxTargetScale = 1.5f;
 			}
@@ -401,7 +400,7 @@ struct FGameModeActorStruct
 			{
 				PlayerDelay = 0.2f;
 				TargetSpawnCD = 0.2f;
-				TargetMaxLifeSpan = 0.5f;
+				TargetMaxLifeSpan = 0.45f;
 				MinTargetScale = 0.4f;
 				MaxTargetScale = 1.5f;
 			}

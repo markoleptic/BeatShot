@@ -5,6 +5,7 @@
 #include "SaveGamePlayerSettings.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
+#include "DefaultGameMode.h"
 #include "Gun_AK47.h"
 #include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
@@ -79,6 +80,8 @@ void ADefaultCharacter::BeginPlay()
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
+
+	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnGameModeActorInit.AddDynamic(this, &ADefaultCharacter::OnGameModeActorUpdate);
 }
 
 // Sets the Mapping Context in Player Controller
@@ -233,6 +236,14 @@ void ADefaultCharacter::StopWalk()
 		UpdateMovementValues(EMovementType::Sprinting);
 	}
 	bHoldingWalk = false;
+}
+
+void ADefaultCharacter::OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct)
+{
+	if (Gun)
+	{
+		Gun->bShouldTrace = GameModeActorStruct.IsBeatTrackMode;
+	}
 }
 
 void ADefaultCharacter::UpdateMovementValues(EMovementType NewMovementType)

@@ -141,6 +141,7 @@ void ADefaultGameMode::InitializeGameMode()
 
 	// spawn GameModeActorBase
 	GameModeActorBase = GetWorld()->SpawnActor<AGameModeActorBase>(GameModeActorBaseClass);
+	OnGameModeActorInit.Broadcast(GI->GameModeActorStruct);
 
 	// spawn TargetSpawner
 	const FVector TargetSpawnerLocation = { 3590, 0, 750 };

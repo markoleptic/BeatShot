@@ -81,6 +81,9 @@ public:
 	/** Whether or not to fire the gun continuously */
 	bool bAutomaticFire;
 
+	/** Whether or not to trace on tick for BeatTrack */
+	bool bShouldTrace;
+
 private:
 
 	/** Update the screen-shake-like camera recoil */
@@ -155,9 +158,6 @@ private:
 
 	/** Determines if the player can fire */
 	bool bCanFire;
-
-	/** Whether or not to trace on tick for BeatTrack */
-	bool bShouldTrace;
 
 	FActorSpawnParameters ProjectileSpawnParams;
 

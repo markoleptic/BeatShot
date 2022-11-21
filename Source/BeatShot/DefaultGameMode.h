@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveGameAASettings.h"
+#include "GameModeActorBase.h"
 #include "GameFramework/GameModeBase.h"
 #include "DefaultGameMode.generated.h"
 
@@ -13,6 +14,7 @@ class AGameModeActorBase;
 class UAudioAnalyzerManager;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAAPlayerLoaded, UAudioAnalyzerManager* , AAManager);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeActorInit, FGameModeActorStruct, GameModeActorStruct);
 
 UCLASS()
 class BEATSHOT_API ADefaultGameMode : public AGameModeBase
@@ -104,6 +106,9 @@ public:
 	// delegate to pass AAManager to visualizer
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable, Category = "AudioAnalyzer Settings")
 		FOnAAPlayerLoaded OnAAPlayerLoaded;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable, Category = "GameMode Initialization")
+		FOnGameModeActorInit OnGameModeActorInit;
 
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
