@@ -64,6 +64,16 @@ struct FPlayerSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gunplay")
 		bool bAutomaticFire;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Environment")
+		bool bShowBulletDecals;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Environment")
+		bool bNightModeSelected;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+		bool bShowFPSCounter;
+
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
@@ -82,6 +92,9 @@ struct FPlayerSettings
 		OutlineWidth = 20;
 		bShouldRecoil = true;
 		bAutomaticFire = true;
+		bShowBulletDecals = true;
+		bNightModeSelected = false;
+		bShowFPSCounter = false;
 	}
 
 	void ResetStruct()
@@ -102,6 +115,9 @@ struct FPlayerSettings
 		OutlineWidth = 20;
 		bShouldRecoil = true;
 		bAutomaticFire = true;
+		bShowBulletDecals = true;
+		bNightModeSelected = false;
+		bShowFPSCounter = false;
 	}
 };
 UCLASS()

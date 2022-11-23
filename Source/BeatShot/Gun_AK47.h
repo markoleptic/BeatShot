@@ -84,6 +84,9 @@ public:
 	/** Whether or not to trace on tick for BeatTrack */
 	bool bShouldTrace;
 
+	/** Whether or not to trace on tick for BeatTrack */
+	bool bShowBulletDecals;
+
 private:
 
 	/** Update the screen-shake-like camera recoil */

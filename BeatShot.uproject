@@ -92,6 +92,10 @@
 		{
 			"Name": "RenderDocPlugin",
 			"Enabled": true
+		},
+		{
+			"Name": "SunPosition",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

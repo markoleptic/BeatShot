@@ -175,6 +175,10 @@ void ADefaultCharacter::OnUserSettingsChange(FPlayerSettings PlayerSettings)
 			Gun->bShouldRecoil = PlayerSettings.bShouldRecoil;
 			Gun->bAutomaticFire = PlayerSettings.bAutomaticFire;
 		}
+		if (Gun->bShowBulletDecals != PlayerSettings.bShowBulletDecals)
+		{
+			Gun->bShowBulletDecals = PlayerSettings.bShowBulletDecals;
+		}
 	}
 }
 

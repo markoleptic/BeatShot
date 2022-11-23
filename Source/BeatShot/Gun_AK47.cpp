@@ -198,7 +198,7 @@ void AGun_AK47::Fire()
 				}
 			}
 			// Try to create decal at hit location
-			if (BulletDecalInstance && BulletDecalMaterial)
+			if (BulletDecalInstance && BulletDecalMaterial && bShowBulletDecals)
 			{
 				if (UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(),
 					BulletDecalInstance, FVector(4, 4, 4),
