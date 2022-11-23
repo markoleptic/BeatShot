@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
 #include "GameFramework/Actor.h"
-#include "GameModeActorStruct.h"
 #include "TargetSpawner.generated.h"
 
 class ABeatAimGameModeBase;
@@ -14,6 +14,7 @@ class ASphereTarget;
 class UBoxComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetSpawnSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdateSignature, int32, Streak, FVector, Location);
 
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor
@@ -35,6 +36,10 @@ public:
 	// Broadcasts when a target has been spawned
 	UPROPERTY(BlueprintAssignable)
 		FOnTargetSpawnSignature OnTargetSpawn;
+
+	// Broadcasts the current streak
+	UPROPERTY(BlueprintAssignable)
+		FOnStreakUpdateSignature OnStreakUpdate;
 
 	// Reference to Game Instance
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
@@ -225,5 +230,5 @@ private:
 		float ChangeDynamicScale(ASphereTarget* Target);
 
 	UFUNCTION(Category = "Spawn Properties")
-		void OnTargetTimeout(bool DidExpire);
+		void OnTargetTimeout(bool DidExpire, FVector Location);
 };

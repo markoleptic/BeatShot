@@ -44,7 +44,6 @@ void ASphereTarget::BeginPlay()
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
-
 	}
 	else if (GI->GameModeActorStruct.IsBeatTrackMode)
 	{
@@ -61,7 +60,11 @@ void ASphereTarget::BeginPlay()
 
 void ASphereTarget::LifeSpanExpired()
 {
-	OnLifeSpanExpired.Broadcast(true);
+	const FVector TopOfSphereLocation = { GetActorLocation().X,
+		GetActorLocation().Y,
+		GetActorLocation().Z + 
+		BaseSphereRadius * GetActorScale3D().Z };
+	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
 	Super::LifeSpanExpired();
 }
 
@@ -72,6 +75,7 @@ void ASphereTarget::Tick(float DeltaTime)
 
 void ASphereTarget::HandleDestruction()
 {
+	// Get the time that the sphere was alive for
 	float TimeAlive;
 	if (GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn) > 0) {
 		TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
@@ -80,44 +84,46 @@ void ASphereTarget::HandleDestruction()
 	{
 		TimeAlive = GI->GameModeActorStruct.TargetMaxLifeSpan - GetLifeSpan();
 	}
+	// if TimeSinceSpawn or LifeSpan expired
 	else
 	{
 		TimeAlive = -1;
 	}
-	const FVector ExplosionLocation = BaseMesh->GetComponentLocation();
-	const float SphereRadius = BaseSphereRadius * GetActorScale3D().X;
-	const FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
-
+	// Destroy target and don't show explosion if timer expired
 	if (TimeAlive < 0)
 	{
 		Destroy();
 		return;
 	}
+	const FVector ExplosionLocation = BaseMesh->GetComponentLocation();
+	const float SphereRadius = BaseSphereRadius * GetActorScale3D().X;
+	const FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
 	// Beat Track shouldn't reach this
 	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		return;
 	}
+	const FVector TopOfSphereLocation = { GetActorLocation().X,
+		GetActorLocation().Y,
+		GetActorLocation().Z +
+		BaseSphereRadius * GetActorScale3D().Z };
+	OnLifeSpanExpired.Broadcast(false, TopOfSphereLocation);
+	GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+
 	// Beat Grid specific behavior
 	if (GI->GameModeActorStruct.IsBeatGridMode == true)
 	{
-		OnLifeSpanExpired.Broadcast(false);
-		GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
-		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		SetCanBeDamaged(false);
 		RemoveAndReappear();
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
 	}
-	// Regular behavior
 	else
 	{
-		OnLifeSpanExpired.Broadcast(false);
-		GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
-		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		Destroy();
 	}
 
-	// Play Explosion fx
+	// Play Explosion effect
 	if (NS_Standard_Explosion)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -144,7 +150,11 @@ void ASphereTarget::OnBeatGridTimerTimeOut()
 	{
 		GI->TargetSpawnerRef->SetShouldSpawn(true);
 	}
-	OnLifeSpanExpired.Broadcast(true);
+	const FVector TopOfSphereLocation = { GetActorLocation().X,
+		GetActorLocation().Y,
+		GetActorLocation().Z + 
+		BaseSphereRadius * GetActorScale3D().Z };
+	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
 }
 
 void ASphereTarget::SetMaxHealth(float NewMaxHealth)

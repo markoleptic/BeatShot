@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameModeActorStruct.h"
 #include "SaveGameAASettings.h"
 #include "Blueprint/UserWidget.h"
 #include "AASettings.generated.h"

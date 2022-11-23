@@ -5,27 +5,30 @@
 #include "DefaultCharacter.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
+#include "DefaultPlayerController.h"
 #include "GameModeActorBase.h"
 #include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AProjectile::AProjectile()
 {
- 		// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-		PrimaryActorTick.bCanEverTick = true;
-		// Use a sphere as a simple collision representation.
-		ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>("Projectile Mesh");
-		RootComponent = ProjectileMesh;
-		ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Movement");
-		ProjectileMovement->SetUpdatedComponent(ProjectileMesh);
-		ProjectileMovement->InitialSpeed = 250000.f;
-		ProjectileMovement->MaxSpeed = 250000.f;
-		InitialLifeSpan = 1.0f;
-		DamageTypeClass = UDamageType::StaticClass();
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+	// Use a sphere as a simple collision representation.
+	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>("Projectile Mesh");
+	ProjectileMesh->CastShadow = false;
+	RootComponent = ProjectileMesh;
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Movement");
+	ProjectileMovement->SetUpdatedComponent(ProjectileMesh);
+	ProjectileMovement->InitialSpeed = 250000.f;
+	ProjectileMovement->MaxSpeed = 250000.f;
+	InitialLifeSpan = 1.0f;
+	DamageTypeClass = UDamageType::StaticClass();
 }
 
 // Called when the game starts or when spawned
@@ -33,9 +36,8 @@ void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
+	if (Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		Damage = 0.f;
 	}
@@ -47,37 +49,32 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+// This is the entry point for any target hit by the Projectile
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, 
+	AActor* OtherActor, UPrimitiveComponent* OtherComponent, 
+	FVector NormalImpulse, const FHitResult& Hit)
 {
-	// This is the entry point for any target hit by the Projectile
-
-	// Prevent updating score or applying damage if CanBeDamaged is false
-	if (OtherActor->CanBeDamaged() == false)
-	{
-		return;
-	}
-
-	AActor* MyOwner = GetOwner();
-	if (MyOwner == nullptr)
+	// Get the owning actor of the projectile
+	const AActor* MyOwner = GetOwner();
+	if (MyOwner == nullptr || !OtherActor->CanBeDamaged())
 	{
 		Destroy();
 		return;
 	}
-	MyOwnerInstigator = MyOwner->GetInstigatorController();
-	Shooter = GetInstigator<ADefaultCharacter>();
-	if (Shooter)
+
+	const UDefaultGameInstance* GameInstance = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	ADefaultPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ADefaultPlayerController>();
+	if (GetInstigator<ADefaultCharacter>())
 	{
-		Target = Cast<ASphereTarget>(OtherActor);
 		// targets should have the TimeSinceSpawn timer active
 		// to be eligible to call UpdateTargetsHit()
-		if (Target && 
-			GI->GameModeActorBaseRef && 
-			GI->GameModeActorStruct.IsBeatTrackMode == false &&
-			(Target->GetWorldTimerManager().GetTimerElapsed(Target->TimeSinceSpawn) > 0.f
+		if (const ASphereTarget* Target = Cast<ASphereTarget>(OtherActor); Target &&
+			GameInstance->GameModeActorStruct.IsBeatTrackMode == false &&
+			(Target->GetWorldTimerManager().GetTimerElapsed(Target->TimeSinceSpawn) > 0
 				|| Target->GetLifeSpan() > 0))
 		{
 			// Player has shot a valid target
-			GI->GameModeActorBaseRef->UpdateTargetsHit();
+			GameInstance->GameModeActorBaseRef->UpdateTargetsHit();
 		}
 	}
 
@@ -85,6 +82,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 	}
+
 	Destroy();
 }
 

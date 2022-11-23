@@ -3,16 +3,17 @@
 
 #include "GameModeActorBase.h"
 #include "DefaultCharacter.h"
-#include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "TargetSpawner.h"
 #include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
+#include "FloatingTextActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DateTime.h"
 #include "Gun_AK47.h"
+#include "Kismet/KismetTextLibrary.h"
 
 AGameModeActorBase::AGameModeActorBase()
 {
@@ -37,7 +38,6 @@ void AGameModeActorBase::Tick(float DeltaTime)
 void AGameModeActorBase::InitializeGameModeActor()
 {
 	LoadPlayerScores();
-
 	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		PlayerScores.TotalPossibleDamage = 0.f;
@@ -45,8 +45,9 @@ void AGameModeActorBase::InitializeGameModeActor()
 	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
 
 	// Binding delegates for scoring purposes
-	GI->DefaultCharacterRef->Gun->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+	Cast<AGun_AK47>(GI->DefaultCharacterRef->GunActorComp->GetChildActor())->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
 	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
+	GI->TargetSpawnerRef->OnStreakUpdate.AddDynamic(this, &AGameModeActorBase::OnStreakUpdate);
 	StartCountDownTimer();
 }
 
@@ -101,6 +102,23 @@ void AGameModeActorBase::OnGameModeLengthTimerComplete()
 
 	// Show Post Game menu
 	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
+}
+
+void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
+{
+	// Only update best streak in PlayerScores and HUD
+	if (Streak > PlayerScores.Streak)
+	{
+		PlayerScores.Streak = Streak;
+		UpdateScoresToHUD.Broadcast(PlayerScores);
+	}
+	if (Streak % 5 == 0)
+	{
+		if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextActorToSpawn, Location, FRotator()))
+		{
+			FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
+		}
+	}
 }
 
 void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
@@ -174,7 +192,9 @@ void AGameModeActorBase::UpdateHighScore()
 void AGameModeActorBase::SavePlayerScores()
 {
 	// don't save scores if score is zero
-	if (PlayerScores.Score <= 0.01f)
+	if (PlayerScores.Score <= 0.01f || 
+		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
+			PlayerScores.CustomGameModeName == ""))
 	{
 		return;
 	}
@@ -270,6 +290,3 @@ void AGameModeActorBase::LoadPlayerScores()
 	// just in case ScoreMap comparison is working
 	PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
 }
-
-
-

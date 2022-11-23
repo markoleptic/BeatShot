@@ -3,7 +3,6 @@
 #include "DefaultGameMode.h"
 #include "AudioAnalyzerManager.h"
 #include "DefaultGameInstance.h"
-#include "GameModeActorStruct.h"
 #include "GameFramework/GameUserSettings.h"
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
@@ -34,7 +33,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 	}
 	AATracker->InitBeatTrackingConfigWLimits(
-		EChannelSelectionMode::All_in_one, 0,
+		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 		false, 100, 50);
 
@@ -47,7 +46,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 			UE_LOG(LogTemp, Display, TEXT("Init Player Error"));
 		}
 		AAPlayer->InitSpectrumConfigWLimits(
-			EChannelSelectionMode::All_in_one, 0,
+			EAA_ChannelSelectionMode::All_in_one, 0,
 			AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 			true, 1);
 		OnAAPlayerLoaded.Broadcast(AAPlayer);
@@ -57,7 +56,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 	{
 		AAPlayer = nullptr;
 		AATracker->InitSpectrumConfigWLimits(
-			EChannelSelectionMode::All_in_one, 0,
+			EAA_ChannelSelectionMode::All_in_one, 0,
 			AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 			true, 1);
 		OnAAPlayerLoaded.Broadcast(AATracker);
@@ -142,6 +141,7 @@ void ADefaultGameMode::InitializeGameMode()
 
 	// spawn GameModeActorBase
 	GameModeActorBase = GetWorld()->SpawnActor<AGameModeActorBase>(GameModeActorBaseClass);
+	OnGameModeActorInit.Broadcast(GI->GameModeActorStruct);
 
 	// spawn TargetSpawner
 	const FVector TargetSpawnerLocation = { 3590, 0, 750 };
@@ -165,7 +165,7 @@ void ADefaultGameMode::InitializeGameMode()
 		&FRotator::ZeroRotator, 
 		SpawnParameters);
 
-	RefreshAASettings();
+	AASettings = GI->LoadAASettings();
 	// call the blueprint function to display open file dialog window, which then
 	// calls InitializeAudioManagers with the path to the song file,
 	// and then displays the Countdown widget
@@ -202,9 +202,9 @@ void ADefaultGameMode::PlayAAPlayer()
 	}
 }
 
-void ADefaultGameMode::RefreshAASettings()
+void ADefaultGameMode::RefreshAASettings(FAASettingsStruct RefreshedAASettings)
 {
-	AASettings = GI->LoadAASettings();
+	AASettings = RefreshedAASettings;
 }
 
 void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)

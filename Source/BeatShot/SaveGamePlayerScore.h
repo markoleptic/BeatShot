@@ -3,13 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
 #include "GameFramework/SaveGame.h"
-#include "GameModeActorStruct.h"
 #include "SaveGamePlayerScore.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class BEATSHOT_API USaveGamePlayerScore : public USaveGame
 {

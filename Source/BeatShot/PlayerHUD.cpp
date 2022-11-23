@@ -6,6 +6,8 @@
 #include "Components/TextBlock.h"
 #include "GameModeActorBase.h"
 #include "DefaultGameInstance.h"
+#include "Components/HorizontalBox.h"
+#include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
@@ -17,9 +19,73 @@ void UPlayerHUD::NativeConstruct()
 
 	// update Scores when GameModeActorBase calls for an update
 	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
+	GI->OnPlayerSettingsChange.AddDynamic(this, &UPlayerHUD::UPlayerHUD::OnPlayerSettingsChange);
+
+	TargetBar->SetPercent(0.f);
+	Accuracy->SetText(FText::AsPercent(0.f));
+
+	if (GI->GameModeActorStruct.IsBeatTrackMode)
+	{
+		TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
+		StreakBox->SetVisibility(ESlateVisibility::Collapsed);
+		TargetsHitBox->SetVisibility(ESlateVisibility::Collapsed);
+		ShotsFiredBox->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (GI->LoadPlayerSettings().bShowFPSCounter)
+	{
+		bShowFPSCounter = true;
+		FPSCounter->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		bShowFPSCounter = false;
+		FPSCounter->SetVisibility(ESlateVisibility::Collapsed);
+	}
 
 	// initial value update
 	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
+}
+
+void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	if (bShowFPSCounter)
+	{
+		CounterUpdateInterval += InDeltaTime;
+		if (CounterUpdateInterval > 0.5f)
+		{
+			FPSCounter->SetText(FText::AsNumber(round(1.0f / InDeltaTime)));
+			CounterUpdateInterval = 0.f;
+		}
+	}
+}
+
+void UPlayerHUD::NativeDestruct()
+{
+	if (GI->OnPlayerSettingsChange.IsAlreadyBound(this, &UPlayerHUD::OnPlayerSettingsChange))
+	{
+		GI->OnPlayerSettingsChange.RemoveDynamic(this, &UPlayerHUD::OnPlayerSettingsChange);
+	}
+	if (GI->GameModeActorBaseRef->UpdateScoresToHUD.IsAlreadyBound(this, &UPlayerHUD::UpdateAllElements))
+	{
+		GI->GameModeActorBaseRef->UpdateScoresToHUD.RemoveDynamic(this, &UPlayerHUD::UpdateAllElements);
+	}
+	Super::NativeDestruct();
+}
+
+void UPlayerHUD::OnPlayerSettingsChange(FPlayerSettings PlayerSettings)
+{
+	bShowFPSCounter = PlayerSettings.bShowFPSCounter;
+	if (PlayerSettings.bShowFPSCounter)
+	{
+		bShowFPSCounter = true;
+		FPSCounter->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		bShowFPSCounter = false;
+		FPSCounter->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
@@ -37,11 +103,8 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 
 	// show song title and total song length
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
-	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
-
-	// set initial values as zero so they aren't NAN
-	TargetBar->SetPercent(0.f);
-	Accuracy->SetText(FText::AsPercent(0.f));
+	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(
+		UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
 
 	// Beat Track changes how stats are displayed
 	if (NewPlayerScoreStruct.TotalPossibleDamage > 0.01f)
@@ -106,6 +169,7 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 		{
 			HighScoreText->SetText(FText::AsNumber(HighScore));
 		}
+		CurrentStreakBestText->SetText(FText::AsNumber(NewPlayerScoreStruct.Streak));
 	}
 }
 

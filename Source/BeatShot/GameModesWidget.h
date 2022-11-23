@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveGameCustomGameMode.h"
+#include "Components/Border.h"
+#include "Components/EditableTextBox.h"
 #include "GameModesWidget.generated.h"
 
 class UDefaultGameInstance;
@@ -24,9 +26,16 @@ class BEATSHOT_API UGameModesWidget : public UUserWidget
 
 protected:
 
+	virtual void NativeOnInitialized() override;
+
 	virtual void NativeConstruct() override;
 
 public:
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		FGameModeActorStruct GameModeActorStructConstructor(EGameModeActorName GameModeActor,
+			EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal,
+			ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
 
 	// The object used to save custom game mode properties to
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
@@ -44,10 +53,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default GameModes")
 		TArray<FGameModeActorStruct> GameModesToDisplay;
 
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-		FGameModeActorStruct GameModeActorStructConstructor(EGameModeActorName GameModeActor,
-			EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal,
-			ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default GameModes")
+		UButton* CustomizeFromStandard;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default GameModes")
+		UButton* PlayFromStandard;
 
 	// saves CustomGameModesMap to CustomGameModes save slot
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
@@ -67,6 +77,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
 		UComboBoxString* GameModeCategoryComboBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UComboBoxString* GameModeNameComboBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
 		USlider* SpawnWidthSlider;
@@ -90,10 +103,31 @@ public:
 		USlider* MaxTargetScaleSlider;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
-		UButton* SaveCustomGameModeButton;
+		UButton* SaveCustom;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
-		UButton* SaveAllAndStartGameModeButton;
+		UButton* SaveCustomAndStart;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UButton* StartCustom;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UButton* RemoveSelectedCustom;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UButton* RemoveAllCustom;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UBorder* DynamicSpreadSelect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UBorder* SpreadSelect;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+		UEditableTextBox* CustomGameModeETB;
+
+	UFUNCTION(Category = "Custom GameModes")
+		void ChangeSaveButtonStates(const FText& Text);
 
 	// only called when user tries to save game mode or play game mode
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
@@ -109,13 +143,30 @@ public:
 		void BeatGridNumberOfTargetsConstrained(FString SelectedSong, ESelectInfo::Type SelectionType);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+		void UpdateCustomGameModeOptions(FString SelectedGameMode, ESelectInfo::Type SelectionType);
+
+	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
 		void BeatGridSpacingConstrained(float value);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Custom GameModes")
+		void PopulateGameModeOptions(FGameModeActorStruct InputGameModeActorStruct);
 
 	UPROPERTY(BlueprintAssignable, Category = "Custom GameModes")
 		FUpdateBeatGridConstraints BeatGridConstraintsDelegate;
+
+	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
+		FGameModeActorStruct FindGameModeFromString(FString GameModeName);
+
+	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
+		FGameModeActorStruct FindGameMode(EGameModeActorName GameModeActorName = EGameModeActorName::Custom, FString CustomGameModeName = "");
+
+	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
+		bool IsCustomGameMode(FString CustomGameModeName);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		UDefaultGameInstance* GI;
 
 	const float SphereDiameter = 100.f;
+
+	
 };

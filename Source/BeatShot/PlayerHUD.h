@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
+#include "SaveGamePlayerSettings.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
-#include "GameModeActorStruct.h"
 #include "PlayerHUD.generated.h"
 
-struct FPlayerScore;
+class UHorizontalBox;
 class ABeatAimGameModeBase;
 class UDefaultGameInstance;
 class ADefaultCharacter;
-class UTargetSubsystem;
 class UProgressBar;
 class UTextBlock;
 /**
@@ -26,7 +26,14 @@ class BEATSHOT_API UPlayerHUD : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	virtual void NativeDestruct() override;
+
 public:
+
+	UFUNCTION(BlueprintCallable)
+		void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UProgressBar* TargetBar;
@@ -58,10 +65,35 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UTextBlock* TotalSongLength;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* CurrentStreakBestText;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UTextBlock* FPSCounter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* TargetsSpawnedBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* StreakBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* TargetsHitBox;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+		UHorizontalBox* ShotsFiredBox;
+
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
 		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-		class UDefaultGameInstance* GI;
+		UDefaultGameInstance* GI;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
+		bool bShowFPSCounter;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
+		float CounterUpdateInterval;
+
 };
 

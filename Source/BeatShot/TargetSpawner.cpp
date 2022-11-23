@@ -475,35 +475,30 @@ void ATargetSpawner::RandomizeDynamicLocation(FVector FLastSpawnLocation, float 
 					{
 						SpawnLocation = BoxBounds.Origin;
 						// Y is left-right Z is up-down
-						const float OffsetX = 0.f;
-						float OffsetY;
-						float OffsetZ;
-						if (const int32 RandomDirection = UKismetMathLibrary::RandomIntegerInRange(0, 3);
-							RandomDirection == 0)
+						FVector Offset = FVector();
+						switch (UKismetMathLibrary::RandomIntegerInRange(0, 3))
 						{
+						case 0: {
 							// top
-							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
-							OffsetZ = ScaledBoxBounds.Z;
-						}
-						else if (RandomDirection == 1)
-						{
+							Offset.Y = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
+							Offset.Z = ScaledBoxBounds.Z;
+							}
+						case 1: {
 							// right
-							OffsetY = ScaledBoxBounds.Y;
-							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
-						}
-						else if (RandomDirection == 2)
-						{
+							Offset.Y = ScaledBoxBounds.Y;
+							Offset.Z = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
+							}
+						case 2: {
 							// left
-							OffsetY = -ScaledBoxBounds.Y;
-							OffsetZ = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
-						}
-						else
-						{
+							Offset.Y = -ScaledBoxBounds.Y;
+							Offset.Z = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Z, ScaledBoxBounds.Z);
+							}
+						default: {
 							// bottom
-							OffsetY = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
-							OffsetZ = -ScaledBoxBounds.Z;
+							Offset.Y = UKismetMathLibrary::RandomFloatInRange(-ScaledBoxBounds.Y, ScaledBoxBounds.Y);
+							Offset.Z = -ScaledBoxBounds.Z;
+							}
 						}
-						FVector Offset = { OffsetX, OffsetY, OffsetZ };
 						SpawnLocation = FirstSpawnLocation + Offset;
 					}
 					else if (GameModeActorStruct.SpreadType == ESpreadType::DynamicRandom)
@@ -541,7 +536,7 @@ float ATargetSpawner::ChangeDynamicScale(ASphereTarget* Target)
 	return Scale;
 }
 
-void ATargetSpawner::OnTargetTimeout(bool DidExpire)
+void ATargetSpawner::OnTargetTimeout(bool DidExpire, FVector Location)
 {
 	if (DidExpire)
 	{
@@ -577,7 +572,7 @@ void ATargetSpawner::OnTargetTimeout(bool DidExpire)
 	else
 	{
 		ConsecutiveTargetsHit++;
-
+		OnStreakUpdate.Broadcast(ConsecutiveTargetsHit, Location);
 		if (GameModeActorStruct.SpreadType == ESpreadType::None)
 		{
 			return;
@@ -627,9 +622,6 @@ FVector ATargetSpawner::RandomizeTrackerLocation(FVector LocationBeforeChange)
 		}
 		LocationToReturn = UKismetMathLibrary::RandomPointInBoundingBox(BoxBounds.Origin, BoxBounds.BoxExtent);
 		UE_LOG(LogTemp, Display, TEXT("Iterating %s"), *LocationToReturn.ToString());
-
-		float DistanceBetween = TrackingSpeed * GameModeActorStruct.TargetSpawnCD;
-		UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), DistanceBetween);
 
 		if (UKismetMathLibrary::IsPointInBox(LocationBeforeChange +
 			UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, LocationToReturn) *

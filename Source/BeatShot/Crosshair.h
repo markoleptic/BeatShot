@@ -13,5 +13,11 @@ UCLASS()
 class BEATSHOT_API UCrosshair : public UUserWidget
 {
 	GENERATED_BODY()
+
+		UFUNCTION(BlueprintCallable, Category = "Color")
+		FLinearColor HexToColor(FString HexString);
+
+	UFUNCTION(BlueprintCallable, Category = "Color")
+		FString ColorToHex(FLinearColor Color);
 	
 };

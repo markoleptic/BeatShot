@@ -10,7 +10,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DefaultValueHelper.h"
 
-void UGameModesWidget::NativeConstruct()
+void UGameModesWidget::NativeOnInitialized()
 {
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
@@ -22,19 +22,43 @@ void UGameModesWidget::NativeConstruct()
 
 	GameModesToDisplay = GameModeActorDefaults;
 
+	SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
+	DynamicSpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
+
+	PlayFromStandard->SetIsEnabled(false);
+	CustomizeFromStandard->SetIsEnabled(false);
+
+	SaveCustom->SetIsEnabled(false);
+	SaveCustomAndStart->SetIsEnabled(false);
+	StartCustom->SetIsEnabled(false);
+
 	LoadCustomGameModes();
+
+	if (CustomGameModesMap.IsEmpty())
+	{
+		RemoveAllCustom->SetIsEnabled(false);
+	}
+	else
+	{
+		RemoveAllCustom->SetIsEnabled(false);
+	}
+	RemoveSelectedCustom->SetIsEnabled(false);
+
 	PopulateGameModeSettings();
 
+	CustomGameModeETB->OnTextChanged.AddDynamic(this, &UGameModesWidget::ChangeSaveButtonStates);
+	GameModeNameComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::UpdateCustomGameModeOptions);
 	SpawnHeightSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpawnAreaConstrained);
 	SpawnWidthSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpawnAreaConstrained);
-
 	BeatGridHorizontalSpacingSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpacingConstrained);
 	BeatGridVerticalSpacingSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpacingConstrained);
-
 	MinTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
 	MaxTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
-
 	MaxNumBeatGridTargetsComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::BeatGridNumberOfTargetsConstrained);
+}
+
+void UGameModesWidget::NativeConstruct()
+{
 }
 
 FGameModeActorStruct UGameModesWidget::GameModeActorStructConstructor(EGameModeActorName GameModeActor,
@@ -166,6 +190,33 @@ void UGameModesWidget::BeatGridNumberOfTargetsConstrained(FString SelectedSong, 
 	}
 }
 
+void UGameModesWidget::UpdateCustomGameModeOptions(FString SelectedGameMode, ESelectInfo::Type SelectionType)
+{
+	if (!(SelectionType == ESelectInfo::Direct))
+	{
+		PopulateGameModeOptions(FindGameModeFromString(SelectedGameMode));
+	}
+
+	if (IsCustomGameMode(SelectedGameMode))
+	{
+		StartCustom->SetIsEnabled(true);
+		SaveCustom->SetIsEnabled(true);
+		SaveCustomAndStart->SetIsEnabled(true);
+		RemoveSelectedCustom->SetIsEnabled(true);
+		RemoveAllCustom->SetIsEnabled(true);
+	}
+	else
+	{
+		if (CustomGameModeETB->GetText().IsEmpty())
+		{
+			StartCustom->SetIsEnabled(false);
+			SaveCustom->SetIsEnabled(false);
+			SaveCustomAndStart->SetIsEnabled(false);
+		}
+		RemoveSelectedCustom->SetIsEnabled(false);
+	}
+}
+
 void UGameModesWidget::BeatGridSpacingConstrained(float value)
 {
 	if (GameModeCategoryComboBox->GetSelectedOption() != "Beat Grid")
@@ -191,6 +242,84 @@ void UGameModesWidget::BeatGridSpacingConstrained(float value)
 	if (VSpacing >= (Height - TargetHeight * MaxTargets - 200) / (MaxTargets - 1))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Spacing height contraint %f"), VSpacing);
+	}
+}
+
+/* For when we only have a string, such as GameModeNameComboBox */
+FGameModeActorStruct UGameModesWidget::FindGameModeFromString(FString GameModeName)
+{
+	// first check default game modes
+	for (const EGameModeActorName GameModeActorName : TEnumRange<EGameModeActorName>())
+	{
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(GameModeActorName).ToString()))
+		{
+			return FindGameMode(GameModeActorName);
+		}
+	}
+	// next check custom game modes
+	for (TTuple<FString, FGameModeActorStruct>& Elem : CustomGameModesMap)
+	{
+		if (Elem.Key.Equals(GameModeName) &&
+			!Elem.Key.IsEmpty())
+		{
+			return Elem.Value;
+		}
+	}
+	return FGameModeActorStruct(EGameModeActorName::Custom, EGameModeDifficulty::Normal);
+}
+
+/* For when we have both a GameModeActorName and CustomGameModeName */
+FGameModeActorStruct UGameModesWidget::FindGameMode(EGameModeActorName GameModeActorName, FString CustomGameModeName)
+{
+	// User created custom game mode
+	if (GameModeActorName == EGameModeActorName::Custom &&
+		!CustomGameModeName.IsEmpty())
+	{
+		for (TTuple<FString, FGameModeActorStruct>& Elem : CustomGameModesMap)
+		{
+			if (Elem.Key.Equals(CustomGameModeName))
+			{
+				return Elem.Value;
+			}
+		}
+	}
+	// default game mode
+	else
+	{
+		for (const FGameModeActorStruct& GameModeActor : GameModeActorDefaults)
+		{
+			if (GameModeActorName == GameModeActor.GameModeActorName)
+			{
+				return GameModeActor;
+			}
+		}
+	}
+	return FGameModeActorStruct(EGameModeActorName::Custom, EGameModeDifficulty::Normal);
+}
+
+bool UGameModesWidget::IsCustomGameMode(FString CustomGameModeName)
+{
+	for (TTuple<FString, FGameModeActorStruct>& Elem : CustomGameModesMap)
+	{
+		if (Elem.Key.Equals(CustomGameModeName))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UGameModesWidget::ChangeSaveButtonStates(const FText& Text)
+{
+	if (!Text.IsEmpty())
+	{
+		SaveCustom->SetIsEnabled(true);
+		SaveCustomAndStart->SetIsEnabled(true);
+	}
+	else
+	{
+		SaveCustom->SetIsEnabled(false);
+		SaveCustomAndStart->SetIsEnabled(false);
 	}
 }
 

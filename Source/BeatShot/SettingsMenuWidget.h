@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "Blueprint/UserWidget.h"
-#include "GameModeActorStruct.h"
 #include "SettingsMenuWidget.generated.h"
 
 class USlider;
