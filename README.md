@@ -1,5 +1,5 @@
 # BeatShot
-This project is a standalone FPS aim trainer that controls target behavior by analyzing user selected music in the background.
+This project is a standalone FPS aim trainer that controls target behavior by analyzing user selected music in real time.
 
 **Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.3.0/Beatshot-Windows-v0.3.0.zip) or go to Releases**
 
@@ -7,7 +7,7 @@ In Game                    |  Customize Game Mode Menu
 :-------------------------:|:-------------------------:
 ![](https://user-images.githubusercontent.com/86213229/193479200-82c7c70c-517e-4164-908b-2f172d599a75.png)  |  ![](https://user-images.githubusercontent.com/86213229/193479337-fe8a5ed2-0d71-4a5f-b3a2-524c74aa65a3.png)
 
-## BeatShot is designed to enable players to have full control over the game
+## Features
 - standard sensitivity settings (Options for CS:GO and Valorant), video & audio settings
 - four base gamemodes with 3 base difficulties: 
   - MultiBeat: continuously spawn targets
@@ -17,7 +17,7 @@ In Game                    |  Customize Game Mode Menu
 - Full CS:GO AK-47 recoil pattern (not 100% accurate), which is togglable use in game wall menu
 - Full auto/semi-auto fire modes
 
-### Customize the gamemodes using:
+### BeatShot is designed to enable players to have full control over the game. Create custom game modes using:
 - any base game mode & difficulty as a template
 - headshot height only mode
 - time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
@@ -28,7 +28,7 @@ In Game                    |  Customize Game Mode Menu
 - mininum and maximum size of targets
 - mininum and maximum speed of targets (BeatGrid and BeatGrid derived modes only)
   
- ### Customizing the audio analysis using:
+ ### Customize the audio analysis using:
 - 1-4 user defined frequency band channels (e.g. 0-87 Hz for a bass channel)
 - band limit threshold for each band channel
    - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. higher threshold -> lower analyzer sensitivity -> less targets spawned
