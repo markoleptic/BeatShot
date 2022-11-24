@@ -8,10 +8,17 @@ In Game                    |  Customize Game Mode Menu
 ![](https://user-images.githubusercontent.com/86213229/193479200-82c7c70c-517e-4164-908b-2f172d599a75.png)  |  ![](https://user-images.githubusercontent.com/86213229/193479337-fe8a5ed2-0d71-4a5f-b3a2-524c74aa65a3.png)
 
 ## BeatShot is designed to enable players to have full control over the game
-- standard sensitivity settings (Same as Valorant sensitivity), video & audio settings
-- four base gamemodes: continuously spawn targets (MultiBeat), only one at a time (SingleBeat), tracking one target (BeatTrack), and a static grid of activating targets (BeatGrid) that can all be used as templates to create custom game modes with
+- standard sensitivity settings (Options for CS:GO and Valorant), video & audio settings
+- four base gamemodes with 3 base difficulties: 
+  - MultiBeat: continuously spawn targets
+  - SingleBeat: only one at a time
+  - BeatTrack: tracking one target
+  - BeatGrid: static grid of activating targets
+- Full CS:GO AK-47 recoil pattern (not 100% accurate), which is togglable use in game wall menu
+- Full auto/semi-auto fire modes
 
 ### Customize the gamemodes using:
+- any base game mode & difficulty as a template
 - headshot height only mode
 - time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
 - max target lifespan
@@ -34,12 +41,6 @@ In Game                    |  Customize Game Mode Menu
 5. Under the Audio heading, make sure the box with "Convert videos to" is checked, then select either ogg or mp3.
 
 ## What I'm working on / Planned Features:
-### Website
-- Integrating the game with the [website](https://beatshot.gg)
-  - view charts for different game modes by sending http requests to website and opening a browser window in game
-    - much easier to create pretty charts using chart js than to try and make them in the game
-  - sign up for an account in game to save your scores in a backend database
-  - instead of a static patch notes page, replace with in game browser window showing patch notes on website
 ### Planned changes to base game
 - Show example videos for main game modes
 - Create AI system tailored to player goals:
@@ -48,8 +49,6 @@ In Game                    |  Customize Game Mode Menu
 - Togglable music visualizations
 - Game Optimization (its not great right now)
 ### Planned game mode changes
-- Base game mode difficulties if user doesn't want to mess with customization
-  - Needs tuning
 - (Maybe) Game mode that cycles between multiple game modes within one song
 #### Planned game mode options to add
 - spawn targets in quick succession nearby to one another
