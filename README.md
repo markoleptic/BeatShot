@@ -1,7 +1,7 @@
 # BeatShot
 This project is a standalone FPS aim trainer that controls target behavior by analyzing user selected music in real time.
 
-**Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.3.0/Beatshot-Windows-v0.3.0.zip) or go to Releases**
+**Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.3.1/Beatshot-Windows-v0.3.1.rar) or go to Releases**
 
 In Game                    |  Customize Game Mode Menu
 :-------------------------:|:-------------------------:
