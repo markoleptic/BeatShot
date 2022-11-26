@@ -59,6 +59,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInvalidRefreshToken);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, ResponseMsg, int32, ResponseCode);
 /** Broadcast when a response is received from posting player scores to database */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, FString, ResponseMsg, int32, ResponseCode);
+/** Broadcast when target spawner is registered */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetSpawnerInit, ATargetSpawner*, TargetSpawner);
 
 UCLASS()
 class BEATSHOT_API UDefaultGameInstance : public UGameInstance
@@ -172,6 +174,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 		FOnInvalidRefreshToken OnInvalidRefreshToken;
+	
+	UPROPERTY(BlueprintAssignable)
+		FOnTargetSpawnerInit OnTargetSpawnerInit;
 
 #pragma endregion
 

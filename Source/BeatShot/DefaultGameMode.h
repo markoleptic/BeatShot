@@ -25,6 +25,8 @@ protected:
 
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 public:
 
 	// does all of the AudioAnalyzer initialization, called during InitializeGameMode
@@ -125,4 +127,13 @@ public:
 	// reference to in game visualizer
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
 		AActor* Visualizer;
+
+	UPROPERTY(BlueprintReadOnly)
+		bool bShouldTick;
+
+private:
+	
+	void ShowSongPathErrorMessage() const;
+
+	void UpdateTargetSpawn(bool bNewTargetState);
 };

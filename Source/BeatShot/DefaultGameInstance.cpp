@@ -29,6 +29,7 @@ void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCh
 void UDefaultGameInstance::RegisterTargetSpawner(ATargetSpawner* TargetSpawner)
 {
 	TargetSpawnerRef = TargetSpawner;
+	OnTargetSpawnerInit.Broadcast(TargetSpawner);
 }
 
 void UDefaultGameInstance::RegisterSphereTarget(ASphereTarget* SphereTarget)

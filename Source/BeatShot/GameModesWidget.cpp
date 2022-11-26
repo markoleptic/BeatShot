@@ -190,14 +190,16 @@ void UGameModesWidget::BeatGridNumberOfTargetsConstrained(FString SelectedSong, 
 	}
 }
 
-void UGameModesWidget::UpdateCustomGameModeOptions(FString SelectedGameMode, ESelectInfo::Type SelectionType)
+void UGameModesWidget::UpdateCustomGameModeOptions(FString SelectedGameModeActorName, ESelectInfo::Type SelectionType)
 {
 	if (!(SelectionType == ESelectInfo::Direct))
 	{
-		PopulateGameModeOptions(FindGameModeFromString(SelectedGameMode));
+		const FGameModeActorStruct FoundGameMode = FindGameModeFromString(SelectedGameModeActorName);
+		SelectedGameMode = FoundGameMode.GameModeActorName;
+		PopulateGameModeOptions(FindGameModeFromString(SelectedGameModeActorName));
 	}
 
-	if (IsCustomGameMode(SelectedGameMode))
+	if (IsCustomGameMode(SelectedGameModeActorName))
 	{
 		StartCustom->SetIsEnabled(true);
 		SaveCustom->SetIsEnabled(true);
@@ -253,6 +255,7 @@ FGameModeActorStruct UGameModesWidget::FindGameModeFromString(FString GameModeNa
 	{
 		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(GameModeActorName).ToString()))
 		{
+			UE_LOG(LogTemp, Display, TEXT("%s"),*UEnum::GetDisplayValueAsText(GameModeActorName).ToString());
 			return FindGameMode(GameModeActorName);
 		}
 	}
@@ -272,14 +275,16 @@ FGameModeActorStruct UGameModesWidget::FindGameModeFromString(FString GameModeNa
 FGameModeActorStruct UGameModesWidget::FindGameMode(EGameModeActorName GameModeActorName, FString CustomGameModeName)
 {
 	// User created custom game mode
-	if (GameModeActorName == EGameModeActorName::Custom &&
-		!CustomGameModeName.IsEmpty())
+	if (GameModeActorName == EGameModeActorName::Custom)
 	{
-		for (TTuple<FString, FGameModeActorStruct>& Elem : CustomGameModesMap)
+		if (!CustomGameModeName.IsEmpty())
 		{
-			if (Elem.Key.Equals(CustomGameModeName))
+			for (TTuple<FString, FGameModeActorStruct>& Elem : CustomGameModesMap)
 			{
-				return Elem.Value;
+				if (Elem.Key.Equals(CustomGameModeName))
+				{
+					return Elem.Value;
+				}
 			}
 		}
 	}
@@ -288,7 +293,8 @@ FGameModeActorStruct UGameModesWidget::FindGameMode(EGameModeActorName GameModeA
 	{
 		for (const FGameModeActorStruct& GameModeActor : GameModeActorDefaults)
 		{
-			if (GameModeActorName == GameModeActor.GameModeActorName)
+			if (GameModeActorName == GameModeActor.GameModeActorName &&
+				GameModeActor.GameModeActorName != EGameModeActorName::Custom)
 			{
 				return GameModeActor;
 			}
@@ -309,6 +315,19 @@ bool UGameModesWidget::IsCustomGameMode(FString CustomGameModeName)
 	return false;
 }
 
+bool UGameModesWidget::IsDefaultGameMode(FString GameModeName)
+{
+	for (const FGameModeActorStruct& GameModeActor : GameModeActorDefaults)
+	{
+		if (GameModeName == UEnum::GetDisplayValueAsText(GameModeActor.GameModeActorName).ToString()
+			&& GameModeName != "Custom")
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void UGameModesWidget::ChangeSaveButtonStates(const FText& Text)
 {
 	if (!Text.IsEmpty())
@@ -318,8 +337,17 @@ void UGameModesWidget::ChangeSaveButtonStates(const FText& Text)
 	}
 	else
 	{
-		SaveCustom->SetIsEnabled(false);
-		SaveCustomAndStart->SetIsEnabled(false);
+		if (IsCustomGameMode(GameModeNameComboBox->GetSelectedOption()))
+		{
+			SaveCustom->SetIsEnabled(true);
+			SaveCustomAndStart->SetIsEnabled(true);
+		}
+		else
+		{
+			SaveCustom->SetIsEnabled(false);
+			SaveCustomAndStart->SetIsEnabled(false);
+		}
+
 	}
 }
 

@@ -10,6 +10,7 @@
 #include "PostGameMenuWidget.h"
 #include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Button.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -24,13 +25,17 @@ void ADefaultPlayerController::BeginPlay()
 
 void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
 {
-	if (bPlayerEnabled) 
+	if (GetWorld()->GetMapName().Contains("Range"))
 	{
-		GetPawn()->EnableInput(this);
-	}
-	else
-	{
-		GetPawn()->DisableInput(this);
+		UE_LOG(LogTemp, Display, TEXT("%s"), *GetWorld()->GetMapName());
+		if (bPlayerEnabled) 
+		{
+			GetPawn()->EnableInput(this);
+		}
+		else
+		{
+			GetPawn()->DisableInput(this);
+		}
 	}
 }
 
@@ -130,6 +135,48 @@ void ADefaultPlayerController::HidePostGameMenu()
 	}
 }
 
+void ADefaultPlayerController::ShowPopupMessage()
+{
+	if (PopupMessageWidget)
+	{
+		if(PopupMessageWidget->GetParent())
+		{
+			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::HitTestInvisible);
+		}
+		setPlayerEnabledState(false);
+		PopupMessageWidget->AddToViewport();
+		PopupMessageWidget->SetVisibility(ESlateVisibility::Visible);
+		if (GetWorld()->GetMapName().Contains("Range"))
+		{
+			SetInputMode(FInputModeUIOnly());
+			SetShowMouseCursor(true);
+		}
+	}
+}
+
+void ADefaultPlayerController::HidePopupMessage()
+{
+	if (PopupMessageWidget)
+	{
+		if(PopupMessageWidget->GetParent())
+		{
+			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		PopupMessageWidget->RemoveFromViewport();
+		PostGameMenuWidget = nullptr;
+	}
+	if (GetWorld()->GetMapName().Contains("Range"))
+	{
+		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
+		setPlayerEnabledState(true);
+		if (!Crosshair)
+		{
+			ShowCrosshair();
+		}
+	}
+}
+
 bool ADefaultPlayerController::IsPlayerHUDActive()
 {
 	return PlayerHUDActive;
@@ -138,4 +185,21 @@ bool ADefaultPlayerController::IsPlayerHUDActive()
 bool ADefaultPlayerController::IsPostGameMenuActive()
 {
 	return PostGameMenuActive;
+}
+
+UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex)
+{
+	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
+	if (bDestroyOnClick)
+	{
+		if (ButtonIndex == 1)
+		{
+			PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &ADefaultPlayerController::HidePopupMessage);
+		}
+		else
+		{
+			PopupMessageWidget->Button2->OnClicked.AddDynamic(this, &ADefaultPlayerController::HidePopupMessage);
+		}
+	}
+	return PopupMessageWidget;
 }

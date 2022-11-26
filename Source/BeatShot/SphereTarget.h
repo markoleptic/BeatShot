@@ -81,9 +81,6 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
 		void PlayColorGradient();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
-		void ShowTargetExplosion();
-
 	// Briefly makes the target higher opacity. Only used for BeatGrid
 	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
 		void RemoveAndReappear();

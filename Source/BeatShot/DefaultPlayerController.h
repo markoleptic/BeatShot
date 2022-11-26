@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PopupMessageWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
@@ -52,19 +53,28 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void HidePostGameMenu();
 	UFUNCTION(BlueprintCallable)
+		void ShowPopupMessage();
+	UFUNCTION(BlueprintCallable)
+		void HidePopupMessage();
+	UFUNCTION(BlueprintCallable)
 		void HideCountdown();
 	UFUNCTION(BlueprintCallable)
 		bool IsPlayerHUDActive();
 	UFUNCTION(BlueprintCallable)
 		bool IsPostGameMenuActive();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		void HandlePause();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+	UFUNCTION(BlueprintCallable)
+		UPopupMessageWidget* CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex = -1);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 		bool CountdownActive;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 		UPlayerHUD* PlayerHUD;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 		UCountdown* Countdown;
 
 protected:
@@ -85,6 +95,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPostGameMenuWidget> PostGameMenuWidgetClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
+
+	UPROPERTY()
+	UPopupMessageWidget* PopupMessageWidget;
 
 	UPROPERTY()
 	UPostGameMenuWidget* PostGameMenuWidget;

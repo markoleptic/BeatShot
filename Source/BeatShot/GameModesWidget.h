@@ -143,7 +143,7 @@ public:
 		void BeatGridNumberOfTargetsConstrained(FString SelectedSong, ESelectInfo::Type SelectionType);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-		void UpdateCustomGameModeOptions(FString SelectedGameMode, ESelectInfo::Type SelectionType);
+		void UpdateCustomGameModeOptions(FString SelectedGameModeActorName, ESelectInfo::Type SelectionType);
 
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
 		void BeatGridSpacingConstrained(float value);
@@ -163,10 +163,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
 		bool IsCustomGameMode(FString CustomGameModeName);
 
+	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
+		bool IsDefaultGameMode(FString GameModeName);
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		UDefaultGameInstance* GI;
 
 	const float SphereDiameter = 100.f;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameModes")
+		EGameModeActorName SelectedGameMode;
 	
 };

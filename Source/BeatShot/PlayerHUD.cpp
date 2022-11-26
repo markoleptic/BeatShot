@@ -51,11 +51,18 @@ void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	if (bShowFPSCounter)
 	{
-		CounterUpdateInterval += InDeltaTime;
-		if (CounterUpdateInterval > 0.5f)
+		// average the last quarter second
+		if (CounterUpdateInterval < 50)
 		{
-			FPSCounter->SetText(FText::AsNumber(round(1.0f / InDeltaTime)));
-			CounterUpdateInterval = 0.f;
+			SumOfTicks += InDeltaTime;
+			CounterUpdateInterval++;
+		}
+		else
+		{
+			// update frame rate
+			FPSCounter->SetText(FText::AsNumber(round(CounterUpdateInterval / SumOfTicks)));
+			SumOfTicks = 0;
+			CounterUpdateInterval = 0;
 		}
 	}
 }

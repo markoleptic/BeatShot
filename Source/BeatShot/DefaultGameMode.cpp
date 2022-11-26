@@ -7,6 +7,7 @@
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
 #include "TargetSpawner.h"
+#include "Misc/Paths.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -22,16 +23,54 @@ void ADefaultGameMode::BeginPlay()
 		// listen to changes that are made to Audio Analyzer settings in case user changes during a game
 		GI->OnAASettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshAASettings);
 	}
+	bShouldTick = true;
 	InitializeGameMode();
+}
+
+void ADefaultGameMode::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (!bShouldTick ||
+	(!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.GameModeLengthTimer) &&
+!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.CountDownTimer)))
+	{
+		return;
+	}
+
+	//DeltaTime = DeltaSeconds;
+	Elapsed += DeltaSeconds;
+
+	TArray<bool> Beats;
+	TArray<float> SpectrumValues;
+	TArray<int32> BPMCurrent;
+	TArray<int32> BPMTotal;
+	AATracker->GetBeatTrackingWLimitsWThreshold(Beats,SpectrumValues,BPMCurrent,BPMTotal, AASettings.BandLimitsThreshold);
+
+	for (const bool Beat : Beats)
+	{
+		UpdateTargetSpawn(Beat);
+	}
 }
 
 void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 {
-	AATracker = NewObject<UAudioAnalyzerManager>(this);
-	if (const bool InitPlayerSuccess = AATracker->InitPlayerAudio(SongFilePath); !InitPlayerSuccess)
+	if (SongFilePath.IsEmpty())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
+		ShowSongPathErrorMessage();
+		bShouldTick = false;
+		return;
 	}
+	
+	AATracker = NewObject<UAudioAnalyzerManager>(this);
+	if (!AATracker->InitPlayerAudio(SongFilePath))
+	{
+		ShowSongPathErrorMessage();
+		bShouldTick = false;
+		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
+		return;
+	}
+	
 	AATracker->InitBeatTrackingConfigWLimits(
 		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
@@ -41,9 +80,12 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05f)
 	{
 		AAPlayer = NewObject<UAudioAnalyzerManager>(this);
-		if (const bool InitPlayerSuccess = AAPlayer->InitPlayerAudio(SongFilePath); !InitPlayerSuccess)
+		if (!AAPlayer->InitPlayerAudio(SongFilePath))
 		{
+			ShowSongPathErrorMessage();
+			bShouldTick = false;
 			UE_LOG(LogTemp, Display, TEXT("Init Player Error"));
+			return;
 		}
 		AAPlayer->InitSpectrumConfigWLimits(
 			EAA_ChannelSelectionMode::All_in_one, 0,
@@ -234,6 +276,35 @@ void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
 	GI->DefaultPlayerControllerRef->HideCountdown();
 	GI->DefaultPlayerControllerRef->HideCrosshair();
+}
+
+void ADefaultGameMode::ShowSongPathErrorMessage() const
+{
+	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
+	UGameplayStatics::GetPlayerController(
+		GetWorld(), 0));
+	UPopupMessageWidget* PopupMessageWidget = PlayerController->CreatePopupMessageWidget(true, 1);
+	PopupMessageWidget->InitPopup("Error",
+		"There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
+		"Okay");
+	PlayerController->ShowPopupMessage();
+}
+
+void ADefaultGameMode::UpdateTargetSpawn(bool bNewTargetState)
+{
+	if (bNewTargetState && !LastTargetOnSet)
+	{
+		LastTargetOnSet = true;
+		if (Elapsed > GameModeActorBase->GameModeActorStruct.TargetSpawnCD)
+		{
+			Elapsed = 0.f;
+			TargetSpawner->CallSpawnFunction();
+		}
+	}
+	else if (!bNewTargetState && LastTargetOnSet)
+	{
+		LastTargetOnSet = false;
+	}
 }
 
 

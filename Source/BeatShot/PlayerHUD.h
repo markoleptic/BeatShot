@@ -93,7 +93,10 @@ public:
 		bool bShowFPSCounter;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
-		float CounterUpdateInterval;
+		int32 CounterUpdateInterval;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
+		float SumOfTicks;
 
 };
 
