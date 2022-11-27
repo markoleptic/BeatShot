@@ -12,6 +12,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 
 void ADefaultPlayerController::BeginPlay()
@@ -19,6 +20,11 @@ void ADefaultPlayerController::BeginPlay()
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GI->RegisterPlayerController(this);
+	if (GI->LoadPlayerSettings().bShowFPSCounter)
+	{
+		ShowFPSCounter();
+	}
+	GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChange);
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
 }
@@ -27,7 +33,6 @@ void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
 {
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
-		UE_LOG(LogTemp, Display, TEXT("%s"), *GetWorld()->GetMapName());
 		if (bPlayerEnabled) 
 		{
 			GetPawn()->EnableInput(this);
@@ -41,6 +46,8 @@ void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
 
 void ADefaultPlayerController::ShowMainMenu()
 {
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
 }
@@ -56,14 +63,20 @@ void ADefaultPlayerController::HideMainMenu()
 
 void ADefaultPlayerController::ShowPauseMenu()
 {
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	PauseMenu = CreateWidget<UPauseMenu>(this, PauseMenuClass);
 	PauseMenu->AddToViewport();
+	FPSCounter->RemoveFromViewport();
+	FPSCounter->AddToViewport();
 }
 
 void ADefaultPlayerController::HidePauseMenu()
 {
 	if (PauseMenu)
 	{
+		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitGame);
+		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 		PauseMenu->RemoveFromViewport();
 		PauseMenu = nullptr;
 	}
@@ -103,9 +116,12 @@ void ADefaultPlayerController::HidePlayerHUD()
 
 void ADefaultPlayerController::ShowCountdown()
 {
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitGame);
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	Countdown = CreateWidget<UCountdown>(this, CountdownClass);
 	Countdown->AddToViewport();
 	CountdownActive = true;
+	ShowFPSCounter();
 }
 
 void ADefaultPlayerController::HideCountdown()
@@ -120,9 +136,13 @@ void ADefaultPlayerController::HideCountdown()
 
 void ADefaultPlayerController::ShowPostGameMenu()
 {
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
+	FPSCounter->RemoveFromViewport();
+	FPSCounter->AddToViewport();
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
@@ -177,6 +197,24 @@ void ADefaultPlayerController::HidePopupMessage()
 	}
 }
 
+void ADefaultPlayerController::ShowFPSCounter()
+{
+	if (FPSCounter == nullptr)
+	{
+		FPSCounter = CreateWidget<UFPSCounterWidget>(this, FPSCounterClass);
+		FPSCounter->AddToViewport();
+	}
+}
+
+void ADefaultPlayerController::HideFPSCounter()
+{
+	if (FPSCounter)
+	{
+		FPSCounter->RemoveFromViewport();
+		FPSCounter = nullptr;
+	}
+}
+
 bool ADefaultPlayerController::IsPlayerHUDActive()
 {
 	return PlayerHUDActive;
@@ -202,4 +240,22 @@ UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(bool bDe
 		}
 	}
 	return PopupMessageWidget;
+}
+
+void ADefaultPlayerController::OnPlayerSettingsChange(FPlayerSettings PlayerSettings)
+{
+	if (PlayerSettings.bShowFPSCounter)
+	{
+		if (FPSCounter == nullptr)
+		{
+			ShowFPSCounter();
+		}
+	}
+	else
+	{
+		if (FPSCounter)
+		{
+			HideFPSCounter();
+		}
+	}
 }

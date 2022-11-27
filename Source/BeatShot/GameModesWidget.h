@@ -61,19 +61,11 @@ public:
 
 	// saves CustomGameModesMap to CustomGameModes save slot
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	void SaveCustomGameMode();
-
-	// resets CustomGameMode to default
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	void ResetCustomGameMode();
+		void SaveCustomGameMode();
 
 	// loads and returns CustomGameModesMap from CustomGameModes save slot
 	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	TMap<FString, FGameModeActorStruct> LoadCustomGameModes();
-
-	// Called after LoadCustomGameModes to update UI with custom game modes
-	UFUNCTION(BlueprintImplementableEvent, Category = "Custom GameModes")
-	void PopulateGameModeSettings();
+		TMap<FString, FGameModeActorStruct> LoadCustomGameModes();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
 		UComboBoxString* GameModeCategoryComboBox;
@@ -151,20 +143,23 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Custom GameModes")
 		void PopulateGameModeOptions(FGameModeActorStruct InputGameModeActorStruct);
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Custom GameModes")
+		void PopulateGameModeNameComboBox(const FString& OptionToSelect);
+
 	UPROPERTY(BlueprintAssignable, Category = "Custom GameModes")
 		FUpdateBeatGridConstraints BeatGridConstraintsDelegate;
 
 	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
-		FGameModeActorStruct FindGameModeFromString(FString GameModeName);
+		FGameModeActorStruct FindGameModeFromString(const FString& GameModeName);
 
 	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
 		FGameModeActorStruct FindGameMode(EGameModeActorName GameModeActorName = EGameModeActorName::Custom, FString CustomGameModeName = "");
 
 	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
-		bool IsCustomGameMode(FString CustomGameModeName);
+		bool IsCustomGameMode(const FString& CustomGameModeName);
 
 	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
-		bool IsDefaultGameMode(FString GameModeName);
+		bool IsDefaultGameMode(const FString& GameModeName);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		UDefaultGameInstance* GI;

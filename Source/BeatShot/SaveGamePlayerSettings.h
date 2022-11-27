@@ -70,9 +70,14 @@ struct FPlayerSettings
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Environment")
 		bool bNightModeSelected;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 		bool bShowFPSCounter;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+		int32 FrameRateLimitMenu;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+		int32 FrameRateLimitGame;
 
 	FPlayerSettings()
 	{
@@ -95,6 +100,8 @@ struct FPlayerSettings
 		bShowBulletDecals = true;
 		bNightModeSelected = false;
 		bShowFPSCounter = false;
+		FrameRateLimitMenu = 144;
+		FrameRateLimitGame = 0;
 	}
 
 	void ResetStruct()
@@ -118,6 +125,8 @@ struct FPlayerSettings
 		bShowBulletDecals = true;
 		bNightModeSelected = false;
 		bShowFPSCounter = false;
+		FrameRateLimitMenu = 144;
+		FrameRateLimitGame = 0;
 	}
 };
 UCLASS()

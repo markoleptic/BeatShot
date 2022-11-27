@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FPSCounterWidget.h"
 #include "PopupMessageWidget.h"
 #include "GameFramework/PlayerController.h"
+#include "SaveGamePlayerSettings.h"
 #include "DefaultPlayerController.generated.h"
 
 class UPostGameMenuWidget;
@@ -49,6 +51,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void ShowCountdown();
 	UFUNCTION(BlueprintCallable)
+		void HideCountdown();
+	UFUNCTION(BlueprintCallable)
 		void ShowPostGameMenu();
 	UFUNCTION(BlueprintCallable)
 		void HidePostGameMenu();
@@ -57,7 +61,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void HidePopupMessage();
 	UFUNCTION(BlueprintCallable)
-		void HideCountdown();
+		void ShowFPSCounter();
+	UFUNCTION(BlueprintCallable)
+		void HideFPSCounter();
+	
 	UFUNCTION(BlueprintCallable)
 		bool IsPlayerHUDActive();
 	UFUNCTION(BlueprintCallable)
@@ -78,6 +85,7 @@ public:
 		UCountdown* Countdown;
 
 protected:
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 
@@ -99,6 +107,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
+	
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
 
@@ -114,6 +125,9 @@ protected:
 	UPROPERTY()
 	UPauseMenu* PauseMenu;
 
+	UPROPERTY()
+	UFPSCounterWidget* FPSCounter;
+
 private:
 
 	UPROPERTY()
@@ -122,4 +136,7 @@ private:
 	bool PlayerHUDActive;
 
 	bool PostGameMenuActive;
+	
+	UFUNCTION()
+		void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
 };

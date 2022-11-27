@@ -19,7 +19,6 @@ void UPlayerHUD::NativeConstruct()
 
 	// update Scores when GameModeActorBase calls for an update
 	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
-	GI->OnPlayerSettingsChange.AddDynamic(this, &UPlayerHUD::UPlayerHUD::OnPlayerSettingsChange);
 
 	TargetBar->SetPercent(0.f);
 	Accuracy->SetText(FText::AsPercent(0.f));
@@ -32,67 +31,17 @@ void UPlayerHUD::NativeConstruct()
 		ShotsFiredBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	if (GI->LoadPlayerSettings().bShowFPSCounter)
-	{
-		bShowFPSCounter = true;
-		FPSCounter->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		bShowFPSCounter = false;
-		FPSCounter->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
 	// initial value update
 	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
 }
 
-void UPlayerHUD::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	if (bShowFPSCounter)
-	{
-		// average the last quarter second
-		if (CounterUpdateInterval < 50)
-		{
-			SumOfTicks += InDeltaTime;
-			CounterUpdateInterval++;
-		}
-		else
-		{
-			// update frame rate
-			FPSCounter->SetText(FText::AsNumber(round(CounterUpdateInterval / SumOfTicks)));
-			SumOfTicks = 0;
-			CounterUpdateInterval = 0;
-		}
-	}
-}
-
 void UPlayerHUD::NativeDestruct()
 {
-	if (GI->OnPlayerSettingsChange.IsAlreadyBound(this, &UPlayerHUD::OnPlayerSettingsChange))
-	{
-		GI->OnPlayerSettingsChange.RemoveDynamic(this, &UPlayerHUD::OnPlayerSettingsChange);
-	}
 	if (GI->GameModeActorBaseRef->UpdateScoresToHUD.IsAlreadyBound(this, &UPlayerHUD::UpdateAllElements))
 	{
 		GI->GameModeActorBaseRef->UpdateScoresToHUD.RemoveDynamic(this, &UPlayerHUD::UpdateAllElements);
 	}
 	Super::NativeDestruct();
-}
-
-void UPlayerHUD::OnPlayerSettingsChange(FPlayerSettings PlayerSettings)
-{
-	bShowFPSCounter = PlayerSettings.bShowFPSCounter;
-	if (PlayerSettings.bShowFPSCounter)
-	{
-		bShowFPSCounter = true;
-		FPSCounter->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		bShowFPSCounter = false;
-		FPSCounter->SetVisibility(ESlateVisibility::Collapsed);
-	}
 }
 
 void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)

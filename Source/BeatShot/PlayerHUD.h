@@ -26,14 +26,9 @@ class BEATSHOT_API UPlayerHUD : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
 	virtual void NativeDestruct() override;
 
 public:
-
-	UFUNCTION(BlueprintCallable)
-		void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UProgressBar* TargetBar;
@@ -69,9 +64,6 @@ public:
 		UTextBlock* CurrentStreakBestText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* FPSCounter;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
 		UHorizontalBox* TargetsSpawnedBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
@@ -88,15 +80,5 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		UDefaultGameInstance* GI;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
-		bool bShowFPSCounter;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
-		int32 CounterUpdateInterval;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
-		float SumOfTicks;
-
 };
 

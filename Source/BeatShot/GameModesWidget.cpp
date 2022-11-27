@@ -44,8 +44,6 @@ void UGameModesWidget::NativeOnInitialized()
 	}
 	RemoveSelectedCustom->SetIsEnabled(false);
 
-	PopulateGameModeSettings();
-
 	CustomGameModeETB->OnTextChanged.AddDynamic(this, &UGameModesWidget::ChangeSaveButtonStates);
 	GameModeNameComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::UpdateCustomGameModeOptions);
 	SpawnHeightSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpawnAreaConstrained);
@@ -55,6 +53,8 @@ void UGameModesWidget::NativeOnInitialized()
 	MinTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
 	MaxTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
 	MaxNumBeatGridTargetsComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::BeatGridNumberOfTargetsConstrained);
+
+	PopulateGameModeNameComboBox("Custom");
 }
 
 void UGameModesWidget::NativeConstruct()
@@ -77,12 +77,6 @@ void UGameModesWidget::SaveCustomGameMode()
 			UE_LOG(LogTemp, Warning, TEXT("SaveCustomGameModes Succeeded"));
 		}
 	}
-}
-
-void UGameModesWidget::ResetCustomGameMode()
-{
-	CustomGameMode.ResetStruct();
-	PopulateGameModeSettings();
 }
 
 TMap<FString, FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes()
@@ -248,7 +242,7 @@ void UGameModesWidget::BeatGridSpacingConstrained(float value)
 }
 
 /* For when we only have a string, such as GameModeNameComboBox */
-FGameModeActorStruct UGameModesWidget::FindGameModeFromString(FString GameModeName)
+FGameModeActorStruct UGameModesWidget::FindGameModeFromString(const FString& GameModeName)
 {
 	// first check default game modes
 	for (const EGameModeActorName GameModeActorName : TEnumRange<EGameModeActorName>())
@@ -303,7 +297,7 @@ FGameModeActorStruct UGameModesWidget::FindGameMode(EGameModeActorName GameModeA
 	return FGameModeActorStruct(EGameModeActorName::Custom, EGameModeDifficulty::Normal);
 }
 
-bool UGameModesWidget::IsCustomGameMode(FString CustomGameModeName)
+bool UGameModesWidget::IsCustomGameMode(const FString& CustomGameModeName)
 {
 	for (TTuple<FString, FGameModeActorStruct>& Elem : CustomGameModesMap)
 	{
@@ -315,7 +309,7 @@ bool UGameModesWidget::IsCustomGameMode(FString CustomGameModeName)
 	return false;
 }
 
-bool UGameModesWidget::IsDefaultGameMode(FString GameModeName)
+bool UGameModesWidget::IsDefaultGameMode(const FString&GameModeName)
 {
 	for (const FGameModeActorStruct& GameModeActor : GameModeActorDefaults)
 	{
