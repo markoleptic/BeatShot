@@ -180,7 +180,7 @@ struct FGameModeActorStruct
 		SpreadType = ESpreadType::None;
 		GameModeDifficulty = EGameModeDifficulty::Normal;
 		UseDynamicSizing = false;
-		MinDistanceBetweenTargets = 100.f;
+		MinDistanceBetweenTargets = 10.f;
 		CenterOfSpawnBox = { 3590.f,0.f,160.f };
 		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;
@@ -233,7 +233,7 @@ struct FGameModeActorStruct
 		IsSingleBeatMode = false;
 		IsBeatGridMode = false;
 		UseDynamicSizing = false;
-		MinDistanceBetweenTargets = 100.f;
+		MinDistanceBetweenTargets = 10.f;
 		PlayerDelay = 0.3f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
@@ -432,7 +432,7 @@ struct FGameModeActorStruct
 	{
 		GameModeActorName = EGameModeActorName::Custom;
 		SpreadType = ESpreadType::None;
-		MinDistanceBetweenTargets = 100.f;
+		MinDistanceBetweenTargets = 10.f;
 		CenterOfSpawnBox = { 3590.f,0.f,160.f };
 		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;

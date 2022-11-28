@@ -123,20 +123,17 @@ private:
 	/* the radius to check for recent spawn target collision */ 
 		int32 MaxNumberOfTargetsAtOnce;
 
-	/* initial spawn location at center of BoxBounds */ 
-		FVector FirstSpawnLocation;
-
 	/* Location to spawn the next/current target */
 		FVector SpawnLocation;
+
+	/* The scale to apply to the next/current target */
+		float TargetScale;
 
 	/* Location to refer to the last target spawned */
 		FVector LastSpawnLocation;
 
 	/* The scale applied to the most recently spawned target */
 		float LastTargetScale;
-
-	/* Max radius for dynamic targets */
-		float MaxRadius;
 
 	/* Recent sphere areas */
 		TArray<FSphere> RecentSpawnBounds;
@@ -171,7 +168,7 @@ private:
 		FVector LocationBeforeDirectionChange;
 
 	/* Randomizes tracking target location */
-		FVector RandomizeTrackerLocation(FVector LocationBeforeChange);
+		FVector RandomizeTrackerLocation(const FVector LocationBeforeChange);
 
 	UFUNCTION()
 		void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
@@ -204,14 +201,8 @@ private:
 	/* randomize scale of target */
 	float RandomizeScale(ASphereTarget* Target);
 
-	/* randomize location of target */
-	void RandomizeLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
-
-	/* dynamically randomize location of target */
-	void RandomizeDynamicLocation(FVector FLastSpawnLocation, float LastTargetScaleValue);
-
-	/* dynamically change the target scale */
-	float ChangeDynamicScale(ASphereTarget* Target);
+	/* FindNextTargetProperties */
+	void FindNextTargetProperties(FVector FLastSpawnLocation, float LastTargetScaleValue);
 
 	/* Bind the expiration or destruction of target to this function */
 	UFUNCTION(Category = "Spawn Properties")
