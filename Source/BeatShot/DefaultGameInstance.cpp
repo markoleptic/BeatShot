@@ -56,8 +56,12 @@ void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* De
 bool UDefaultGameInstance::IsRefreshTokenValid()
 {
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
-	if (LoadPlayerSettings().HasLoggedInHttp == true)
+	if (PlayerSettings.HasLoggedInHttp == true)
 	{
+		if (PlayerSettings.LoginCookie.IsEmpty())
+		{
+			return false;
+		}
 		FDateTime CookieExpireDate;
 		const int32 ExpiresStartPos = PlayerSettings.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
 		const FString RightChopped = PlayerSettings.LoginCookie.RightChop(ExpiresStartPos + 8);
@@ -66,10 +70,8 @@ bool UDefaultGameInstance::IsRefreshTokenValid()
 
 		if ((FDateTime::UtcNow() + FTimespan::FromDays(1) < CookieExpireDate))
 		{
-
 			return true;
 		}
-		return false;
 	}
 	return false;
 }
@@ -147,11 +149,12 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 	if (IsRefreshTokenValid())
 	{
 		bIsSavingScores = true;
+		bLastRefreshTokenSuccessful = true;
 		RequestAccessToken(LoadPlayerSettings().LoginCookie);
 	}
 	else
 	{
-		OnInvalidRefreshToken.Broadcast();
+		bLastRefreshTokenSuccessful = false;
 	}
 }
 
@@ -240,21 +243,24 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 {
 	if (Response->GetResponseCode() != 200)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Access Token Request Failed."));
+		FPlayerSettings PlayerSettings = LoadPlayerSettings();
+		OnRefreshTokenResponse.Broadcast(false);
+		PlayerSettings.LoginCookie = "";
+		SavePlayerSettings(PlayerSettings);
+		UE_LOG(LogTemp, Display, TEXT("Access Token Request Failed. Resetting login cookie"));
 		return;
 	}
-
+	OnRefreshTokenResponse.Broadcast(true);
 	// convert response to Json object to access string fields
 	const FString ResponseString = Response->GetContentAsString();
 	TSharedPtr<FJsonObject> ResponseObj;
 	const TSharedRef<TJsonReader<>> ResponseReader = TJsonReaderFactory<>::Create(ResponseString);
 	FJsonSerializer::Deserialize(ResponseReader, ResponseObj);
-
+	
 	if (bIsSavingScores)
 	{
 		PostPlayerScores(ResponseObj->GetStringField("accessToken"), Response->GetResponseCode());
 	}
-
 }
 
 void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseCode)
@@ -296,6 +302,7 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
+	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
 }
 
 void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)

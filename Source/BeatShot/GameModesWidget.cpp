@@ -15,15 +15,19 @@ void UGameModesWidget::NativeOnInitialized()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
 	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::Custom, EGameModeDifficulty::Normal));
-	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
-	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
-	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::SingleBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicEdgeOnly));
-	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::MultiBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicRandom));
+	GameModeActorDefaults.
+		Add(GameModeActorStructConstructor(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
+	GameModeActorDefaults.Add(
+		GameModeActorStructConstructor(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::SingleBeat,
+	                                                         EGameModeDifficulty::Normal,
+	                                                         ESpreadType::DynamicEdgeOnly));
+	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::MultiBeat, EGameModeDifficulty::Normal,
+	                                                         ESpreadType::DynamicRandom));
 
 	GameModesToDisplay = GameModeActorDefaults;
 
 	SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
-	DynamicSpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
 
 	PlayFromStandard->SetIsEnabled(false);
 	CustomizeFromStandard->SetIsEnabled(false);
@@ -52,7 +56,8 @@ void UGameModesWidget::NativeOnInitialized()
 	BeatGridVerticalSpacingSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridSpacingConstrained);
 	MinTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
 	MaxTargetScaleSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::BeatGridTargetSizeConstrained);
-	MaxNumBeatGridTargetsComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::BeatGridNumberOfTargetsConstrained);
+	MaxNumBeatGridTargetsComboBox->OnSelectionChanged.AddDynamic(
+		this, &UGameModesWidget::BeatGridNumberOfTargetsConstrained);
 
 	PopulateGameModeNameComboBox("Custom");
 }
@@ -62,14 +67,16 @@ void UGameModesWidget::NativeConstruct()
 }
 
 FGameModeActorStruct UGameModesWidget::GameModeActorStructConstructor(EGameModeActorName GameModeActor,
-	EGameModeDifficulty NewGameModeDifficulty, ESpreadType NewSpreadType)
+                                                                      EGameModeDifficulty NewGameModeDifficulty,
+                                                                      ESpreadType NewSpreadType)
 {
 	return FGameModeActorStruct(GameModeActor, NewGameModeDifficulty, NewSpreadType);
 }
 
 void UGameModesWidget::SaveCustomGameMode()
 {
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
+		UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
 		SaveCustomGameModeObject->CustomGameModesMap = CustomGameModesMap;
 		if (UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3))
@@ -84,11 +91,13 @@ TMap<FString, FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes()
 	USaveGameCustomGameMode* SaveGameCustomGameMode;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
 	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
+		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(
+			UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
 	}
 	else
 	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
+		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(
+			UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
 	}
 	if (SaveGameCustomGameMode)
 	{
@@ -249,7 +258,7 @@ FGameModeActorStruct UGameModesWidget::FindGameModeFromString(const FString& Gam
 	{
 		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(GameModeActorName).ToString()))
 		{
-			UE_LOG(LogTemp, Display, TEXT("%s"),*UEnum::GetDisplayValueAsText(GameModeActorName).ToString());
+			UE_LOG(LogTemp, Display, TEXT("%s"), *UEnum::GetDisplayValueAsText(GameModeActorName).ToString());
 			return FindGameMode(GameModeActorName);
 		}
 	}
@@ -309,7 +318,7 @@ bool UGameModesWidget::IsCustomGameMode(const FString& CustomGameModeName)
 	return false;
 }
 
-bool UGameModesWidget::IsDefaultGameMode(const FString&GameModeName)
+bool UGameModesWidget::IsDefaultGameMode(const FString& GameModeName)
 {
 	for (const FGameModeActorStruct& GameModeActor : GameModeActorDefaults)
 	{
@@ -341,7 +350,6 @@ void UGameModesWidget::ChangeSaveButtonStates(const FText& Text)
 			SaveCustom->SetIsEnabled(false);
 			SaveCustomAndStart->SetIsEnabled(false);
 		}
-
 	}
 }
 
@@ -372,7 +380,7 @@ bool UGameModesWidget::CheckAllBeatGridConstraints()
 		MaxTargets >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / TargetHeight) ||
 		HSpacing >= ((Width - TargetWidth * MaxTargets - 200) / (MaxTargets - 1)) ||
 		VSpacing >= ((Height - TargetHeight * MaxTargets - 200) / (MaxTargets - 1))
-		)
+	)
 	{
 		return false;
 	}

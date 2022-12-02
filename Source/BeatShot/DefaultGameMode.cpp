@@ -7,7 +7,6 @@
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
 #include "TargetSpawner.h"
-#include "Misc/Paths.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -31,9 +30,9 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!bShouldTick ||
-	(!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.GameModeLengthTimer) &&
-!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.CountDownTimer)))
+	if (!bShouldTick) { return; }
+	if (!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.GameModeLengthTimer) &&
+		!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.CountDownTimer))
 	{
 		return;
 	}
@@ -45,7 +44,8 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 	TArray<float> SpectrumValues;
 	TArray<int32> BPMCurrent;
 	TArray<int32> BPMTotal;
-	AATracker->GetBeatTrackingWLimitsWThreshold(Beats,SpectrumValues,BPMCurrent,BPMTotal, AASettings.BandLimitsThreshold);
+	AATracker->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
+	                                            AASettings.BandLimitsThreshold);
 
 	for (const bool Beat : Beats)
 	{
@@ -61,7 +61,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 		bShouldTick = false;
 		return;
 	}
-	
+
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 	if (!AATracker->InitPlayerAudio(SongFilePath))
 	{
@@ -70,7 +70,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 		return;
 	}
-	
+
 	AATracker->InitBeatTrackingConfigWLimits(
 		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
@@ -114,11 +114,13 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 	// set Song length and song title in GameModeActorStruct
 	FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
 	AATracker->GetMetadata(Filename, Extension, MetaType, Title,
-		Artist, Album, Year, Genre);
-	if (Title.Equals("")) {
+	                       Artist, Album, Year, Genre);
+	if (Title.Equals(""))
+	{
 		GameModeActorBase->GameModeActorStruct.SongTitle = Filename;
 	}
-	else {
+	else
+	{
 		GameModeActorBase->GameModeActorStruct.SongTitle = Title;
 	}
 	GameModeActorBase->GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
@@ -130,7 +132,7 @@ void ADefaultGameMode::PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* A
 	{
 		AAManager->SetPaused(ShouldPause);
 	}
-	else 
+	else
 	{
 		if (IsValid(AATracker))
 		{
@@ -186,12 +188,12 @@ void ADefaultGameMode::InitializeGameMode()
 	OnGameModeActorInit.Broadcast(GI->GameModeActorStruct);
 
 	// spawn TargetSpawner
-	const FVector TargetSpawnerLocation = { 3590, 0, 750 };
+	const FVector TargetSpawnerLocation = {3590, 0, 750};
 	const FActorSpawnParameters TargetSpawnerSpawnParameters;
-	TargetSpawner = Cast<ATargetSpawner>(GetWorld()->SpawnActor(TargetSpawnerClass, 
-		&TargetSpawnerLocation, 
-		&FRotator::ZeroRotator, 
-		TargetSpawnerSpawnParameters));
+	TargetSpawner = Cast<ATargetSpawner>(GetWorld()->SpawnActor(TargetSpawnerClass,
+	                                                            &TargetSpawnerLocation,
+	                                                            &FRotator::ZeroRotator,
+	                                                            TargetSpawnerSpawnParameters));
 
 	// get GameModeActorStruct and pass to GameModeActorBase
 	GameModeActorBase->GameModeActorStruct = GI->GameModeActorStruct;
@@ -200,12 +202,12 @@ void ADefaultGameMode::InitializeGameMode()
 	TargetSpawner->InitializeGameModeActor(GI->GameModeActorStruct);
 
 	// spawn visualizer
-	const FVector VisualizerLocation = { 100,0,60 };
+	const FVector VisualizerLocation = {100, 0, 60};
 	const FActorSpawnParameters SpawnParameters;
-	Visualizer = GetWorld()->SpawnActor(VisualizerClass, 
-		&VisualizerLocation, 
-		&FRotator::ZeroRotator, 
-		SpawnParameters);
+	Visualizer = GetWorld()->SpawnActor(VisualizerClass,
+	                                    &VisualizerLocation,
+	                                    &FRotator::ZeroRotator,
+	                                    SpawnParameters);
 
 	AASettings = GI->LoadAASettings();
 	// call the blueprint function to display open file dialog window, which then
@@ -281,12 +283,12 @@ void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)
 void ADefaultGameMode::ShowSongPathErrorMessage() const
 {
 	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
-	UGameplayStatics::GetPlayerController(
-		GetWorld(), 0));
+		UGameplayStatics::GetPlayerController(
+			GetWorld(), 0));
 	UPopupMessageWidget* PopupMessageWidget = PlayerController->CreatePopupMessageWidget(true, 1);
 	PopupMessageWidget->InitPopup("Error",
-		"There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
-		"Okay");
+	                              "There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
+	                              "Okay");
 	PlayerController->ShowPopupMessage();
 }
 
@@ -306,6 +308,3 @@ void ADefaultGameMode::UpdateTargetSpawn(bool bNewTargetState)
 		LastTargetOnSet = false;
 	}
 }
-
-
-

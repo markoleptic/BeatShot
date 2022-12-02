@@ -7,10 +7,12 @@
 #include "PlayerHUD.h"
 #include "PauseMenu.h"
 #include "Countdown.h"
+#include "LoginWidget.h"
 #include "PostGameMenuWidget.h"
 #include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
+#include "Components/Overlay.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -33,7 +35,7 @@ void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
 {
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
-		if (bPlayerEnabled) 
+		if (bPlayerEnabled)
 		{
 			GetPawn()->EnableInput(this);
 		}
@@ -159,7 +161,7 @@ void ADefaultPlayerController::ShowPopupMessage()
 {
 	if (PopupMessageWidget)
 	{
-		if(PopupMessageWidget->GetParent())
+		if (PopupMessageWidget->GetParent())
 		{
 			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::HitTestInvisible);
 		}
@@ -178,7 +180,7 @@ void ADefaultPlayerController::HidePopupMessage()
 {
 	if (PopupMessageWidget)
 	{
-		if(PopupMessageWidget->GetParent())
+		if (PopupMessageWidget->GetParent())
 		{
 			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
@@ -212,6 +214,41 @@ void ADefaultPlayerController::HideFPSCounter()
 	{
 		FPSCounter->RemoveFromViewport();
 		FPSCounter = nullptr;
+	}
+}
+
+/* Not being used since Main Menu should be the only place to encounter login screen and
+ * it's already part of that widget */
+void ADefaultPlayerController::ShowLogin(bool bHasSignedIn)
+{
+	LoginWidget = CreateWidget<ULoginWidget>(this, LoginClass);
+	if (LoginWidget->GetParent())
+	{
+		LoginWidget->GetParent()->SetVisibility(ESlateVisibility::HitTestInvisible);
+	}
+	if (bHasSignedIn)
+	{
+		LoginWidget->DefaultSignInText->SetVisibility(ESlateVisibility::Collapsed);
+		LoginWidget->HasSignedInBeforeText->SetVisibility(ESlateVisibility::Visible);
+	}
+	LoginWidget->RegisterOverlay->SetVisibility(ESlateVisibility::Collapsed);
+	LoginWidget->LoggedInOverlay->SetVisibility(ESlateVisibility::Collapsed);
+	LoginWidget->ContinueWithoutOverlay->SetVisibility(ESlateVisibility::Collapsed);
+	LoginWidget->AddToViewport();
+	LoginWidget->PlayAnimationForward(LoginWidget->FadeInAllInitial, 1, false);
+	LoginWidget->ExitLogin.AddDynamic(this, &ADefaultPlayerController::HideLogin);
+}
+
+void ADefaultPlayerController::HideLogin()
+{
+	if (LoginWidget)
+	{
+		if (LoginWidget->GetParent())
+		{
+			LoginWidget->GetParent()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		LoginWidget->RemoveFromViewport();
+		LoginWidget = nullptr;
 	}
 }
 

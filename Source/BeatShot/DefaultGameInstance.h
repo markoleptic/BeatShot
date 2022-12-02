@@ -54,7 +54,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, FAASettingsStru
 /** Broadcast when Player Settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, FPlayerSettings, RefreshedPlayerSettings);
 /** Broadcast if refresh token is invalid NYI */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInvalidRefreshToken);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRefreshTokenResponse, bool, bSuccessful);
 /** Broadcast when a login response is received from Beatshot website */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, ResponseMsg, int32, ResponseCode);
 /** Broadcast when a response is received from posting player scores to database */
@@ -70,6 +70,9 @@ class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 public:
 
 	virtual void Init() override;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bLastRefreshTokenSuccessful = true;
 
 #pragma region References
 
@@ -173,7 +176,7 @@ public:
 		FOnPostPlayerScoresResponse OnPostPlayerScoresResponse;
 
 	UPROPERTY(BlueprintAssignable)
-		FOnInvalidRefreshToken OnInvalidRefreshToken;
+		FOnRefreshTokenResponse OnRefreshTokenResponse;
 	
 	UPROPERTY(BlueprintAssignable)
 		FOnTargetSpawnerInit OnTargetSpawnerInit;
@@ -193,7 +196,7 @@ private:
 
 	/* Bound to onAccessTokenResponse and removed when this function calls PostPlayerScores */
 	void PostPlayerScores(FString AccessTokenFString, int32 ResponseCode);
-
+	
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
 		FString Username;
 

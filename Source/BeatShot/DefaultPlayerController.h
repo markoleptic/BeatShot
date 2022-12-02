@@ -9,6 +9,7 @@
 #include "SaveGamePlayerSettings.h"
 #include "DefaultPlayerController.generated.h"
 
+class ULoginWidget;
 class UPostGameMenuWidget;
 class UDefaultGameInstance;
 class UCrosshair;
@@ -64,6 +65,10 @@ public:
 		void ShowFPSCounter();
 	UFUNCTION(BlueprintCallable)
 		void HideFPSCounter();
+	UFUNCTION(BlueprintCallable)
+		void ShowLogin(bool bHasSignedIn);
+	UFUNCTION(BlueprintCallable)
+		void HideLogin();
 	
 	UFUNCTION(BlueprintCallable)
 		bool IsPlayerHUDActive();
@@ -71,16 +76,12 @@ public:
 		bool IsPostGameMenuActive();
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void HandlePause();
-
 	UFUNCTION(BlueprintCallable)
 		UPopupMessageWidget* CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex = -1);
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 		bool CountdownActive;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 		UPlayerHUD* PlayerHUD;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 		UCountdown* Countdown;
 
@@ -88,46 +89,36 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCrosshair> CrosshairClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPauseMenu> PauseMenuClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCountdown> CountdownClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPostGameMenuWidget> PostGameMenuWidgetClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
-	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ULoginWidget> LoginClass;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
-
 	UPROPERTY()
 	UPostGameMenuWidget* PostGameMenuWidget;
-
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
-
 	UPROPERTY()
 	UCrosshair* Crosshair;
-
 	UPROPERTY()
 	UPauseMenu* PauseMenu;
-
 	UPROPERTY()
 	UFPSCounterWidget* FPSCounter;
-
+	UPROPERTY()
+	ULoginWidget* LoginWidget;
 private:
 
 	UPROPERTY()

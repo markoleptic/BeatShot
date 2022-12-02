@@ -230,7 +230,7 @@ void AGameModeActorBase::SavePlayerScores()
 	GI->SavePlayerScores(PlayerScoreMap);
 
 	// Printing saved scores to console
-	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
+	for (const TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
 	{
 		// get array of player scores from current key value
 		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
@@ -263,7 +263,8 @@ void AGameModeActorBase::LoadPlayerScores()
 	{
 		// find matching GameModeActorName or CustomGameModeName
 		if ((Elem.Key.GameModeActorName == GameModeActorStruct.GameModeActorName &&
-			Elem.Key.GameModeActorName != EGameModeActorName::Custom)||
+			Elem.Key.GameModeActorName != EGameModeActorName::Custom &&
+			Elem.Key.GameModeDifficulty == GameModeActorStruct.GameModeDifficulty) ||
 			(Elem.Key.GameModeActorName == EGameModeActorName::Custom &&
 				Elem.Key.CustomGameModeName == GameModeActorStruct.CustomGameModeName)) 
 		{
@@ -285,6 +286,7 @@ void AGameModeActorBase::LoadPlayerScores()
 	PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
 	PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
 	PlayerScores.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
+	PlayerScores.Difficulty = GameModeActorStruct.GameModeDifficulty;
 	PlayerScores.TotalPossibleDamage = 0.f;
 
 	// just in case ScoreMap comparison is working
