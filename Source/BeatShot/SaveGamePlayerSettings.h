@@ -78,6 +78,12 @@ struct FPlayerSettings
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 		int32 FrameRateLimitGame;
+		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+		bool bShowStreakCombatText;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+		int32 CombatTextFrequency;
 
 	FPlayerSettings()
 	{
@@ -102,6 +108,8 @@ struct FPlayerSettings
 		bShowFPSCounter = false;
 		FrameRateLimitMenu = 144;
 		FrameRateLimitGame = 0;
+		bShowStreakCombatText = true;
+		CombatTextFrequency = 5;
 	}
 
 	void ResetStruct()
@@ -127,6 +135,8 @@ struct FPlayerSettings
 		bShowFPSCounter = false;
 		FrameRateLimitMenu = 144;
 		FrameRateLimitGame = 0;
+		bShowStreakCombatText = true;
+		CombatTextFrequency = 5;
 	}
 };
 UCLASS()

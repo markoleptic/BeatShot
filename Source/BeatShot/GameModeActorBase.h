@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "GameFramework/Actor.h"
 #include "GameModeActorBase.generated.h"
 
@@ -699,6 +700,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
 
+	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
+
 	//UFUNCTION(BlueprintCallable, Category = "Game Start/End")
 	//	void UpdateStreak();
+
+private:
+
+	bool bShowStreakCombatText;
+
+	int32 CombatTextFrequency;
 };

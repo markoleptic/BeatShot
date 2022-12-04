@@ -65,12 +65,15 @@ void ADefaultPlayerController::HideMainMenu()
 
 void ADefaultPlayerController::ShowPauseMenu()
 {
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
-	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	PauseMenu = CreateWidget<UPauseMenu>(this, PauseMenuClass);
 	PauseMenu->AddToViewport();
-	FPSCounter->RemoveFromViewport();
-	FPSCounter->AddToViewport();
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+	if (FPSCounter)
+	{
+		FPSCounter->RemoveFromViewport();
+		FPSCounter->AddToViewport();
+	}
 }
 
 void ADefaultPlayerController::HidePauseMenu()
@@ -123,7 +126,6 @@ void ADefaultPlayerController::ShowCountdown()
 	Countdown = CreateWidget<UCountdown>(this, CountdownClass);
 	Countdown->AddToViewport();
 	CountdownActive = true;
-	ShowFPSCounter();
 }
 
 void ADefaultPlayerController::HideCountdown()
@@ -143,8 +145,11 @@ void ADefaultPlayerController::ShowPostGameMenu()
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
-	FPSCounter->RemoveFromViewport();
-	FPSCounter->AddToViewport();
+	if (FPSCounter)
+	{
+		FPSCounter->RemoveFromViewport();
+		FPSCounter->AddToViewport();
+	}
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
@@ -283,7 +288,7 @@ void ADefaultPlayerController::OnPlayerSettingsChange(FPlayerSettings PlayerSett
 {
 	if (PlayerSettings.bShowFPSCounter)
 	{
-		if (FPSCounter == nullptr)
+		if (!FPSCounter)
 		{
 			ShowFPSCounter();
 		}

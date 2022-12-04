@@ -28,6 +28,10 @@ void AGameModeActorBase::BeginPlay()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	// register GameModeActorBase as a reference in GI
 	GI->RegisterGameModeActorBase(this);
+	const FPlayerSettings PlayerSettings = GI->LoadPlayerSettings();
+	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
+	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
+	GI->OnPlayerSettingsChange.AddDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
 }
 
 void AGameModeActorBase::Tick(float DeltaTime)
@@ -112,11 +116,14 @@ void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
 		PlayerScores.Streak = Streak;
 		UpdateScoresToHUD.Broadcast(PlayerScores);
 	}
-	if (Streak % 5 == 0)
+	if (bShowStreakCombatText)
 	{
-		if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextActorToSpawn, Location, FRotator()))
+		if (CombatTextFrequency!= 0 && Streak % CombatTextFrequency == 0)
 		{
-			FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
+			if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextActorToSpawn, Location, FRotator()))
+			{
+				FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
+			}
 		}
 	}
 }
@@ -161,6 +168,12 @@ void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossi
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Error: trying to call UpdateTrackingScore() with non BeatTrackMode"));
 	}
+}
+
+void AGameModeActorBase::OnPlayerSettingsChange(FPlayerSettings PlayerSettings)
+{
+	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
+	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
 }
 
 void AGameModeActorBase::UpdateTargetsSpawned()
