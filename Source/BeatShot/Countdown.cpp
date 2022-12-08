@@ -28,7 +28,7 @@ void UCountdown::StartCountDownTimer()
 	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdown::StartGameMode, CountdownTimerLength, false);
 }
 
-void UCountdown::StartGameMode()
+void UCountdown::StartGameMode() const
 {
 	UE_LOG(LogTemp, Display, TEXT("StartGameMode firing"));
 	DefaultGameMode->GameModeActorBase->StartGameMode();

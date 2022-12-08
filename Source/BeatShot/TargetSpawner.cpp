@@ -2,7 +2,6 @@
 
 
 #include "TargetSpawner.h"
-#include <string>
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
@@ -310,12 +309,12 @@ void ATargetSpawner::ActivateBeatGridTarget()
 		RecentBeatGridIndices.Insert(LastBeatGridIndex, 0);
 		RecentBeatGridIndices.SetNum(2);
 	}
-	// only "spawn" target if it hasn't been destroyed by GameModeActorBase
+	/* only "spawn" target if it hasn't been destroyed by GameModeActorBase */
 	if (ActiveBeatGridTarget)
 	{
-		// notify GameModeActorBase that target has "spawned"
+		/* notify GameModeActorBase that target has "spawned" */
+		ActiveBeatGridTarget->StartBeatGridTimer(GameModeActorStruct.TargetMaxLifeSpan);
 		OnTargetSpawn.Broadcast();
-		ActiveBeatGridTarget->StartBeatGridTimer(GI->GameModeActorStruct.TargetMaxLifeSpan);
 	}
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
@@ -346,7 +345,7 @@ float ATargetSpawner::RandomizeScale(ASphereTarget* Target)
 	return TargetScale;
 }
 
-void ATargetSpawner::FindNextTargetProperties(FVector FLastSpawnLocation, float LastTargetScaleValue)
+void ATargetSpawner::FindNextTargetProperties(const FVector FLastSpawnLocation, const float LastTargetScaleValue)
 {
 	/* Insert sphere of CheckSpawnRadius radius into sphere array */
 	RecentSpawnBounds.Insert(FSphere(FLastSpawnLocation, LastTargetScaleValue * SphereTargetRadius), 0);
@@ -505,13 +504,12 @@ void ATargetSpawner::FindNextTargetProperties(FVector FLastSpawnLocation, float 
 	}
 }
 
-void ATargetSpawner::OnTargetTimeout(bool DidExpire, FVector Location)
+void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive, const FVector Location)
 {
 	if (GameModeActorStruct.IsSingleBeatMode)
 	{
 		SetShouldSpawn(true);
 	}
-
 	if (DidExpire)
 	{
 		ConsecutiveTargetsHit = 0;
@@ -542,6 +540,8 @@ void ATargetSpawner::OnTargetTimeout(bool DidExpire, FVector Location)
 	}
 	else
 	{
+		/* Only update player reaction time if the target did not expire */
+		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 		ConsecutiveTargetsHit++;
 		OnStreakUpdate.Broadcast(ConsecutiveTargetsHit, Location);
 		if (GameModeActorStruct.SpreadType == ESpreadType::None)
@@ -571,7 +571,7 @@ void ATargetSpawner::OnTargetTimeout(bool DidExpire, FVector Location)
 	}
 }
 
-FVector ATargetSpawner::RandomizeTrackerLocation(const FVector LocationBeforeChange)
+FVector ATargetSpawner::RandomizeTrackerLocation(const FVector LocationBeforeChange) const
 {
 	// try to spawn at origin if available
 	FVector LocationToReturn = BoxBounds.Origin;
@@ -608,37 +608,44 @@ void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* Othe
 	}
 }
 
-void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeActor)
+void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameModeActor)
 {
-	// Initialize Struct passed by GameModeActorBase
+	/* Initialize local copy of struct passed by GameModeActorBase */
 	GameModeActorStruct = NewGameModeActor;
 
-	// GameMode menu uses the full width, while box bounds are only half width / half height
+	/* GameMode menu uses the full width, while box bounds are only half width / half height */
 	GameModeActorStruct.BoxBounds.X = 0.f;
 	GameModeActorStruct.BoxBounds.Y = GameModeActorStruct.BoxBounds.Y / 2.f;
 	GameModeActorStruct.BoxBounds.Z = GameModeActorStruct.BoxBounds.Z / 2.f;
-
-	// Set the center of spawn box based on user selection
+	
+	/* Set the center of spawn box based on user selection */
+	FVector CenterOfSpawnBox = {3590.f, 0.f, 160.f};
 	if (GameModeActorStruct.HeadshotHeight == true)
 	{
-		GameModeActorStruct.CenterOfSpawnBox.Z = HeadshotHeight;
+		CenterOfSpawnBox.Z = HeadshotHeight;
 		GameModeActorStruct.BoxBounds.Z = 0.f;
 	}
 	else if (GameModeActorStruct.WallCentered == true)
 	{
-		GameModeActorStruct.CenterOfSpawnBox.Z = CenterBackWallHeight;
+		CenterOfSpawnBox.Z = CenterBackWallHeight;
 	}
 	else
 	{
-		GameModeActorStruct.CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + DistanceFromFloor;
+		CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + DistanceFromFloor;
 	}
 
-	// Set new location & box extent
-	SpawnBox->SetRelativeLocation(GameModeActorStruct.CenterOfSpawnBox);
+	/* Set new location & box extent */
+	SpawnBox->SetRelativeLocation(CenterOfSpawnBox);
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 	SpawnLocation = BoxBounds.Origin;
-	if (GameModeActorStruct.MinTargetScale == GameModeActorStruct.MaxTargetScale)
+	
+	/* Initial target size */
+	if (GameModeActorStruct.UseDynamicSizing)
+	{
+		TargetScale = GameModeActorStruct.MaxTargetScale;
+	}
+	else if (GameModeActorStruct.MinTargetScale == GameModeActorStruct.MaxTargetScale)
 	{
 		TargetScale = GameModeActorStruct.MinTargetScale;
 	}
@@ -646,11 +653,8 @@ void ATargetSpawner::InitializeGameModeActor(FGameModeActorStruct NewGameModeAct
 	{
 		TargetScale = FMath::FRandRange(GameModeActorStruct.MinTargetScale, GameModeActorStruct.MaxTargetScale);
 	}
-	/*
-	 * Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds
-	 * Only used for MultiBeat
-	 */
-
+	
+	/* Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds. Only used for MultiBeat */
 	MaxNumberOfTargetsAtOnce = ceil(GameModeActorStruct.TargetMaxLifeSpan / GameModeActorStruct.TargetSpawnCD);
 	RecentSpawnBounds.Init(FSphere(BoxBounds.Origin, 1), MaxNumberOfTargetsAtOnce);
 

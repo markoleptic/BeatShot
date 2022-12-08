@@ -20,7 +20,6 @@ class BEATSHOT_API UCountdown : public UUserWidget
 protected:
 
 	virtual void NativeConstruct() override;
-
 	virtual void NativeDestruct() override;
 
 public:
@@ -28,7 +27,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Countdown")
 		void StartCountDownTimer();
 	UFUNCTION(BlueprintCallable, Category = "Countdown")
-		void StartGameMode();
+		void StartGameMode() const;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
 		FTimerHandle CountDownTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")

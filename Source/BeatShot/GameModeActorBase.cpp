@@ -62,7 +62,7 @@ void AGameModeActorBase::StartGameMode()
 	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
 
-void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
+void AGameModeActorBase::EndGameMode(const bool ShouldSavePlayerScores)
 {
 	if (ShouldSavePlayerScores)
 	{
@@ -94,7 +94,7 @@ void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
 	Destroy();
 }
 
-void AGameModeActorBase::OnGameModeLengthTimerComplete()
+void AGameModeActorBase::OnGameModeLengthTimerComplete() const
 {
 	// Show Post Game menu
 	// don't save scores if score is zero
@@ -111,7 +111,7 @@ void AGameModeActorBase::OnGameModeLengthTimerComplete()
 	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->EndGameMode(true);
 }
 
-void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
+void AGameModeActorBase::OnStreakUpdate(const int32 Streak, const FVector Location)
 {
 	// Only update best streak in PlayerScores and HUD
 	if (Streak > PlayerScores.Streak)
@@ -131,7 +131,7 @@ void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
 	}
 }
 
-void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
+void AGameModeActorBase::UpdatePlayerScores(const float TimeElapsed)
 {
 	if (GameModeActorStruct.IsBeatTrackMode == false)
 	{
@@ -158,7 +158,7 @@ void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
 	}
 }
 
-void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage)
+void AGameModeActorBase::UpdateTrackingScore(const float DamageTaken, const float TotalPossibleDamage)
 {
 	if (GameModeActorStruct.IsBeatTrackMode==true)
 	{
@@ -173,7 +173,7 @@ void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossi
 	}
 }
 
-void AGameModeActorBase::OnPlayerSettingsChange(FPlayerSettings PlayerSettings)
+void AGameModeActorBase::OnPlayerSettingsChange(const FPlayerSettings PlayerSettings)
 {
 	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
 	CombatTextFrequency = PlayerSettings.CombatTextFrequency;

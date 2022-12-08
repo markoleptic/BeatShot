@@ -8,12 +8,10 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "TargetSpawner.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 
 ASphereTarget::ASphereTarget()
@@ -30,22 +28,23 @@ ASphereTarget::ASphereTarget()
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GI->RegisterSphereTarget(this);
+	GameModeActorStruct = GI->GameModeActorStruct;
 
-	// Use Color Changing Material, this is required in order to change color using C++
+	/* Use Color Changing Material, this is required in order to change color using C++ */
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
 
-	if (GI->GameModeActorStruct.IsBeatGridMode)
+	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
 	}
-	else if (GI->GameModeActorStruct.IsBeatTrackMode)
+	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
@@ -53,8 +52,8 @@ void ASphereTarget::BeginPlay()
 	}
 	else
 	{
-		SetLifeSpan(GI->GameModeActorStruct.TargetMaxLifeSpan);
-		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+		SetLifeSpan(GameModeActorStruct.TargetMaxLifeSpan);
+		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GameModeActorStruct.TargetMaxLifeSpan, false);
 	}
 }
 
@@ -64,25 +63,20 @@ void ASphereTarget::LifeSpanExpired()
 		GetActorLocation().Y,
 		GetActorLocation().Z + 
 		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
+	OnLifeSpanExpired.Broadcast(true, -1, TopOfSphereLocation);
 	Super::LifeSpanExpired();
-}
-
-void ASphereTarget::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ASphereTarget::HandleDestruction()
 {
-	// Get the time that the sphere was alive for
+	/* Get the time that the sphere was alive for */
 	float TimeAlive;
 	if (GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn) > 0) {
 		TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
 	}
 	else if (GetLifeSpan() > 0)
 	{
-		TimeAlive = GI->GameModeActorStruct.TargetMaxLifeSpan - GetLifeSpan();
+		TimeAlive = GameModeActorStruct.TargetMaxLifeSpan - GetLifeSpan();
 	}
 	// if TimeSinceSpawn or LifeSpan expired
 	else
@@ -95,11 +89,9 @@ void ASphereTarget::HandleDestruction()
 		Destroy();
 		return;
 	}
-	const FVector ExplosionLocation = BaseMesh->GetComponentLocation();
-	const float SphereRadius = BaseSphereRadius * GetActorScale3D().X;
-	const FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
+
 	// Beat Track shouldn't reach this
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
+	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		return;
 	}
@@ -107,23 +99,45 @@ void ASphereTarget::HandleDestruction()
 		GetActorLocation().Y,
 		GetActorLocation().Z +
 		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(false, TopOfSphereLocation);
-	GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
+	/* For */
+	OnLifeSpanExpired.Broadcast(false, TimeAlive, TopOfSphereLocation);
+	//Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 
-	// Beat Grid specific behavior
-	if (GI->GameModeActorStruct.IsBeatGridMode == true)
+	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
+	
+	/* Don't destroy target if BeatGrid mode */
+	if (GameModeActorStruct.IsBeatGridMode == true)
 	{
 		SetCanBeDamaged(false);
 		RemoveAndReappear();
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
 	}
 	else
 	{
 		Destroy();
 	}
+}
 
-	// Play Explosion effect
+void ASphereTarget::StartBeatGridTimer(const float Lifespan)
+{
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
+	SetCanBeDamaged(true);
+	PlayColorGradient();
+}
+
+void ASphereTarget::OnBeatGridTimerTimeOut()
+{
+	SetCanBeDamaged(false);
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+	const FVector TopOfSphereLocation = { GetActorLocation().X,
+		GetActorLocation().Y,
+		GetActorLocation().Z + 
+		BaseSphereRadius * GetActorScale3D().Z };
+	OnLifeSpanExpired.Broadcast(true, -1, TopOfSphereLocation);
+}
+
+void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const
+{
 	if (NS_Standard_Explosion)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -135,29 +149,7 @@ void ASphereTarget::HandleDestruction()
 	}
 }
 
-void ASphereTarget::StartBeatGridTimer(float Lifespan)
-{
-	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
-	SetCanBeDamaged(true);
-	PlayColorGradient();
-}
-
-void ASphereTarget::OnBeatGridTimerTimeOut()
-{
-	SetCanBeDamaged(false);
-	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	if (GI->GameModeActorStruct.IsSingleBeatMode == true)
-	{
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
-	}
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z + 
-		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
-}
-
-void ASphereTarget::SetMaxHealth(float NewMaxHealth)
+void ASphereTarget::SetMaxHealth(const float NewMaxHealth) const
 {
 	HealthComp->SetMaxHealth(NewMaxHealth);
 }

@@ -32,8 +32,7 @@ class BEATSHOT_API ADefaultPlayerController : public APlayerController
 	virtual void BeginPlay() override;
 
 public:
-	void setPlayerEnabledState(bool bPlayerEnabled);
-	// Make BlueprintCallable for testing
+	void SetPlayerEnabledState(bool bPlayerEnabled);
 	UFUNCTION(BlueprintCallable)
 	void ShowMainMenu();
 	UFUNCTION(BlueprintCallable)
@@ -75,9 +74,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FadeScreenFromBlack();
 	UFUNCTION(BlueprintCallable)
-	bool IsPlayerHUDActive();
+	bool IsPlayerHUDActive() const;
 	UFUNCTION(BlueprintCallable)
-	bool IsPostGameMenuActive();
+	bool IsPostGameMenuActive() const;
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void HandlePause();
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)

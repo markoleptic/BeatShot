@@ -47,7 +47,7 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 	}
 }
 
-void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
+void ADefaultGameMode::InitializeAudioManagers(const FString SongFilePath)
 {
 	if (SongFilePath.IsEmpty())
 	{
@@ -120,7 +120,7 @@ void ADefaultGameMode::InitializeAudioManagers(FString SongFilePath)
 	GameModeActorBase->GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
 }
 
-void ADefaultGameMode::PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* AAManager)
+void ADefaultGameMode::PauseAAManager(const bool ShouldPause, UAudioAnalyzerManager* AAManager) const
 {
 	if (IsValid(AAManager))
 	{
@@ -206,7 +206,7 @@ void ADefaultGameMode::InitializeGameMode()
 	OpenSongFileDialog();
 }
 
-void ADefaultGameMode::SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager)
+void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume, UAudioAnalyzerManager* AAManager) const
 {
 	if (IsValid(AAManager))
 	{
@@ -237,12 +237,12 @@ void ADefaultGameMode::PlayAAPlayer()
 	}
 }
 
-void ADefaultGameMode::RefreshAASettings(FAASettingsStruct RefreshedAASettings)
+void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct RefreshedAASettings)
 {
 	AASettings = RefreshedAASettings;
 }
 
-void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)
+void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores)
 {
 	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
@@ -285,7 +285,7 @@ void ADefaultGameMode::ShowSongPathErrorMessage() const
 	PlayerController->ShowPopupMessage();
 }
 
-void ADefaultGameMode::UpdateTargetSpawn(bool bNewTargetState)
+void ADefaultGameMode::UpdateTargetSpawn(const bool bNewTargetState)
 {
 	if (bNewTargetState && !LastTargetOnSet)
 	{

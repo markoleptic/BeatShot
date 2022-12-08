@@ -31,7 +31,7 @@ void ADefaultPlayerController::BeginPlay()
 	PostGameMenuActive = false;
 }
 
-void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
+void ADefaultPlayerController::SetPlayerEnabledState(bool bPlayerEnabled)
 {
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
@@ -135,7 +135,7 @@ void ADefaultPlayerController::HideCountdown()
 	}
 }
 
-void ADefaultPlayerController::ShowPostGameMenu(bool bSavedScores)
+void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 {
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
@@ -165,7 +165,7 @@ void ADefaultPlayerController::ShowPopupMessage()
 		{
 			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::HitTestInvisible);
 		}
-		setPlayerEnabledState(false);
+		SetPlayerEnabledState(false);
 		PopupMessageWidget->AddToViewport();
 		PopupMessageWidget->SetVisibility(ESlateVisibility::Visible);
 		if (GetWorld()->GetMapName().Contains("Range"))
@@ -191,7 +191,7 @@ void ADefaultPlayerController::HidePopupMessage()
 	{
 		SetInputMode(FInputModeGameAndUI());
 		SetShowMouseCursor(false);
-		setPlayerEnabledState(true);
+		SetPlayerEnabledState(true);
 		if (!Crosshair)
 		{
 			ShowCrosshair();
@@ -219,7 +219,7 @@ void ADefaultPlayerController::HideFPSCounter()
 
 /* Not being used since Main Menu should be the only place to encounter login screen and
  * it's already part of that widget */
-void ADefaultPlayerController::ShowLogin(bool bHasSignedIn)
+void ADefaultPlayerController::ShowLogin(const bool bHasSignedIn)
 {
 	LoginWidget = CreateWidget<ULoginWidget>(this, LoginClass);
 	if (LoginWidget->GetParent())
@@ -287,17 +287,17 @@ void ADefaultPlayerController::OnFadeScreenFromBlackFinish()
 	ScreenFadeWidget = nullptr;
 }
 
-bool ADefaultPlayerController::IsPlayerHUDActive()
+bool ADefaultPlayerController::IsPlayerHUDActive() const
 {
 	return PlayerHUDActive;
 }
 
-bool ADefaultPlayerController::IsPostGameMenuActive()
+bool ADefaultPlayerController::IsPostGameMenuActive() const
 {
 	return PostGameMenuActive;
 }
 
-UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex)
+UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(const bool bDestroyOnClick, const int32 ButtonIndex)
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	if (bDestroyOnClick)
@@ -314,7 +314,7 @@ UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(bool bDe
 	return PopupMessageWidget;
 }
 
-void ADefaultPlayerController::OnPlayerSettingsChange(FPlayerSettings PlayerSettings)
+void ADefaultPlayerController::OnPlayerSettingsChange(const FPlayerSettings PlayerSettings)
 {
 	if (PlayerSettings.bShowFPSCounter)
 	{

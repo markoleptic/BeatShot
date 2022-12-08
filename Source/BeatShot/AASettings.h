@@ -15,7 +15,6 @@ class UComboBoxString;
 class UComboBox;
 class UTextBlock;
 class UProgressBar;
-class GameModeActorBase;
 
 /**
  * 
@@ -122,23 +121,23 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UEditableTextBox* TimeWindowValue;
 
-	// Called anytime there is a change to the number of band channels selected
+	/* Called anytime there is a change to the number of band channels selected */
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void ShowBandChannelsAndThresholds();
 
-	// Load AASettings from Save slot
+	/* Load AASettings from Save slot */
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void LoadAASettings();
 
-	// Update values in Settings Menu to match AASettings
+	/* Update values in Settings Menu to match AASettings */
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void PopulateAASettings();
-
-	// Save AASettings to Save slot
+ 
+	/* Save AASettings to Save slot */
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void SaveAASettings();
 
-	// Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save
+	/* Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save */
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	void ResetAASettings();
 

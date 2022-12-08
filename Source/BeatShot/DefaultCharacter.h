@@ -29,29 +29,30 @@ class UInputAction;
 class UInputMappingContext;
 
 UENUM(BlueprintType)
-enum class EMovementType : uint8 {
-	Sprinting						UMETA(DisplayName, "Sprinting"),
-	Walking							UMETA(DisplayName, "Walking"),
-	Crouching						UMETA(DisplayName, "Crouching")
+enum class EMovementType : uint8
+{
+	Sprinting UMETA(DisplayName, "Sprinting"),
+	Walking UMETA(DisplayName, "Walking"),
+	Crouching UMETA(DisplayName, "Crouching")
 };
 
-// Used to store movement properties for different movement types
+/* Used to store movement properties for different movement types */
 USTRUCT(BlueprintType)
 struct FMovementTypeVariables
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-		float MaxAcceleration;
+	float MaxAcceleration;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-		float BreakingDecelerationWalking;
+	float BreakingDecelerationWalking;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-		float GroundFriction;
+	float GroundFriction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-		float MaxWalkSpeed;
+	float MaxWalkSpeed;
 
 	FMovementTypeVariables()
 	{
@@ -68,14 +69,13 @@ class BEATSHOT_API ADefaultCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-
 	/** Sets default values for this character's properties */
 	ADefaultCharacter();
 
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
-	/** Called on Pawn restart */
+	/** Sets the Mapping Context in Player Controller */
 	virtual void PawnClientRestart() override;
 
 	/** Called every frame */
@@ -97,46 +97,45 @@ public:
 
 	/** Called when PlayerSettings are changed while Character is spawned */
 	UFUNCTION(BlueprintCallable)
-		void OnUserSettingsChange(FPlayerSettings PlayerSettings);
+	void OnUserSettingsChange(FPlayerSettings PlayerSettings);
 
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		USpringArmComponent* SpringArmComponent;
+	USpringArmComponent* SpringArmComponent;
 
 	/** The skeletal mesh for hands that hold the gun */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		USkeletalMeshComponent* HandsMesh;
+	USkeletalMeshComponent* HandsMesh;
 
 	/** Camera component */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		UCameraComponent* Camera;
+	UCameraComponent* Camera;
 
 	/** The blueprint class associated with the gun to spawn */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		TSubclassOf<AGun_AK47> GunClass;
+	TSubclassOf<AGun_AK47> GunClass;
 
 	/** Reference to child gun actor component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-		UChildActorComponent* GunActorComp;
+	UChildActorComponent* GunActorComp;
 
 	/** Reference to gun */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-		AGun_AK47* Gun;
+	AGun_AK47* Gun;
 
 	/** Reference to direction of fire */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-		UArrowComponent* ShotDirection;
+	UArrowComponent* ShotDirection;
 
 	/** Additional layer of rotation to use for more realistic recoil */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-		USceneComponent* CameraRecoilComp;
+	USceneComponent* CameraRecoilComp;
 
 	/** A map holding data for each movement state */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
-		TMap<EMovementType, FMovementTypeVariables> MovementDataMap;
+	TMap<EMovementType, FMovementTypeVariables> MovementDataMap;
 
 protected:
-
 	/** Debug for tracing a line where the character is facing */
 	UFUNCTION(BlueprintNativeEvent)
 	void TraceForward();
@@ -145,7 +144,6 @@ protected:
 	void TraceForward_Implementation();
 
 private:
-
 	/** Begin firing gun */
 	void StartFire() const;
 
@@ -180,7 +178,7 @@ private:
 	/** Called from DefaultGameMode when a new game mode has began,
 	 *  to update whether gun should trace during OnTick */
 	UFUNCTION()
-		void OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct);
+	void OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct) const;
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;
@@ -199,66 +197,66 @@ private:
 
 	/** Enumerator holding the 3 possible movement states defined by EMovementType */
 	UPROPERTY()
-		EMovementType MovementState;
+	EMovementType MovementState;
 
 	/** Sets the height of the player's capsule component when standing */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
-		float DefaultCapsuleHalfHeight = 96.f;
+	float DefaultCapsuleHalfHeight = 96.f;
 
 	/** Sets the height of the player's capsule component when crouched */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
-		float CrouchedCapsuleHalfHeight = 58.0f;
+	float CrouchedCapsuleHalfHeight = 58.0f;
 
 	/** The rate at which the character crouches */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
-		float CrouchSpeed = 10.0f;
+	float CrouchSpeed = 10.0f;
 
 	/** Input actions bound inside of the the blueprint for this class */
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* MovementAction;
+	UInputAction* MovementAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* LookAction;
+	UInputAction* LookAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* JumpAction;
+	UInputAction* JumpAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* SprintAction;
+	UInputAction* SprintAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* CrouchAction;
+	UInputAction* CrouchAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* FiringAction;
+	UInputAction* FiringAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* PrimaryWeaponAction;
+	UInputAction* PrimaryWeaponAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* SecondaryWeaponAction;
+	UInputAction* SecondaryWeaponAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* ReloadAction;
+	UInputAction* ReloadAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* AimAction;
+	UInputAction* AimAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* InteractAction;
+	UInputAction* InteractAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* ScrollAction;
+	UInputAction* ScrollAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
-		UInputAction* PauseAction;
+	UInputAction* PauseAction;
 
 	/** Input Mappings */
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Mappings")
-		UInputMappingContext* BaseMappingContext;
+	UInputMappingContext* BaseMappingContext;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Mappings")
-		int32 BaseMappingPriority = 0;
+	int32 BaseMappingPriority = 0;
 };

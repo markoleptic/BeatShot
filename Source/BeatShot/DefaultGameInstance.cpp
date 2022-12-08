@@ -15,12 +15,6 @@
 #include "SaveGameAASettings.h"
 #include "SaveGamePlayerScore.h"
 
-void UDefaultGameInstance::Init()
-{
-	LoadPlayerScores();
-	bIsSavingScores = false;
-}
-
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
 {
 	DefaultCharacterRef = DefaultCharacter;
@@ -53,7 +47,7 @@ void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* De
 	DefaultPlayerControllerRef = DefaultPlayerController;
 }
 
-bool UDefaultGameInstance::IsRefreshTokenValid()
+bool UDefaultGameInstance::IsRefreshTokenValid() const
 {
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
 	if (PlayerSettings.HasLoggedInHttp == true)
@@ -76,7 +70,7 @@ bool UDefaultGameInstance::IsRefreshTokenValid()
 	return false;
 }
 
-FAASettingsStruct UDefaultGameInstance::LoadAASettings()
+FAASettingsStruct UDefaultGameInstance::LoadAASettings() const
 {
 	USaveGameAASettings* SaveGameAASettings;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("AASettingsSlot"), 2))
@@ -95,7 +89,7 @@ FAASettingsStruct UDefaultGameInstance::LoadAASettings()
 	return FAASettingsStruct();
 }
 
-void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
+void UDefaultGameInstance::SaveAASettings(const FAASettingsStruct AASettingsToSave) const
 {
 	if (USaveGameAASettings* SaveGameAASettingsObject = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass())))
 	{
@@ -108,13 +102,13 @@ void UDefaultGameInstance::SaveAASettings(FAASettingsStruct AASettingsToSave)
 	OnAASettingsChange.Broadcast(AASettingsToSave);
 }
 
-void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume)
+void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, const float Volume, float GlobalVolume) const
 {
 	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), SoundMix, SoundClassToChange, round(Volume)/100);
 	UGameplayStatics::PushSoundMixModifier(GetWorld(), SoundMix);
 }
 
-TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores()
+TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores() const
 {
 	USaveGamePlayerScore* SaveGamePlayerScore;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
@@ -126,7 +120,7 @@ TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadP
 	return SaveGamePlayerScore->PlayerScoreMap;
 }
 
-void UDefaultGameInstance::SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave, bool bSaveToDatabase)
+void UDefaultGameInstance::SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave, const bool bSaveToDatabase)
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
 	{
@@ -148,17 +142,15 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase()
 	if (IsRefreshTokenValid())
 	{
 		bIsSavingScores = true;
-		bLastRefreshTokenSuccessful = true;
 		RequestAccessToken(LoadPlayerSettings().LoginCookie);
 	}
 	else
 	{
-		bLastRefreshTokenSuccessful = false;
 		OnPostPlayerScoresResponse.Broadcast("Invalid Refresh Token", 401);
 	}
 }
 
-void UDefaultGameInstance::SavePlayerSettings(FPlayerSettings PlayerSettingsToSave)
+void UDefaultGameInstance::SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave) const
 {
 	if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
@@ -171,7 +163,7 @@ void UDefaultGameInstance::SavePlayerSettings(FPlayerSettings PlayerSettingsToSa
 	OnPlayerSettingsChange.Broadcast(PlayerSettingsToSave);
 }
 
-FPlayerSettings UDefaultGameInstance::LoadPlayerSettings()
+FPlayerSettings UDefaultGameInstance::LoadPlayerSettings() const
 {
 	USaveGamePlayerSettings* SaveGamePlayerSettings;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
@@ -203,7 +195,7 @@ void UDefaultGameInstance::LoginUser(FLoginPayload LoginPayload)
 	LoginRequest->ProcessRequest();
 }
 
-void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully) const
 {
 	if (Response->GetResponseCode() != 200)
 	{
@@ -239,7 +231,7 @@ void UDefaultGameInstance::RequestAccessToken(FString RefreshToken)
 	AccessTokenRequest->ProcessRequest();
 }
 
-void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
 	if (Response->GetResponseCode() != 200)
 	{
@@ -263,7 +255,7 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 	}
 }
 
-void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseCode)
+void UDefaultGameInstance::PostPlayerScores(const FString AccessToken, const int32 ResponseCode)
 {
 	if (ResponseCode != 200)
 	{
@@ -287,18 +279,18 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	}
 
 	// convert JsonScores struct to JSON
-	TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
+	const TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(
 		FJsonScore::StaticStruct(),
 		&JsonScores,
 		OutJsonObject);
 	FString OutputString;
-	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
+	const TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
 
 	// ReSharper disable once StringLiteralTypo
 	const FString Endpoint = SaveScoresEndpoint + LoadPlayerSettings().Username + "/savescores";
-	FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
+	const FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
 	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnPostPlayerScoresResponseReceived);
 	SendScoreRequest->SetURL(Endpoint);
 	SendScoreRequest->SetVerb("POST");
@@ -308,7 +300,7 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	SendScoreRequest->ProcessRequest();
 }
 
-void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
+void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 {
 	bIsSavingScores = false;
 	if (Response->GetResponseCode() != 200)

@@ -7,7 +7,6 @@
 #include "DefaultPlayerController.h"
 #include "DefaultGameMode.h"
 #include "Gun_AK47.h"
-#include "Blueprint/UserWidget.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
@@ -60,14 +59,13 @@ ADefaultCharacter::ADefaultCharacter()
 	GunActorComp->CreateChildActor();
 }
 
-// Called when the game starts or when spawned
 void ADefaultCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
 	Gun = Cast<AGun_AK47>(GunActorComp->GetChildActor());
 
-	// Load settings and listen for changes to Player Settings
+	/* Load settings and listen for changes to Player Settings */
 	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
 		GI->RegisterDefaultCharacter(this);
@@ -76,7 +74,7 @@ void ADefaultCharacter::BeginPlay()
 	}
 
 	ADefaultPlayerController* PlayerController = GetController<ADefaultPlayerController>();
-	if (IsLocallyControlled() && PlayerController)
+	if (IsLocallyControlled())
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
@@ -84,41 +82,37 @@ void ADefaultCharacter::BeginPlay()
 	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnGameModeActorInit.AddDynamic(this, &ADefaultCharacter::OnGameModeActorUpdate);
 }
 
-// Sets the Mapping Context in Player Controller
 void ADefaultCharacter::PawnClientRestart() {
 
 	Super::PawnClientRestart();
 
-	// Make sure that we have a valid PlayerController.
+	/* Make sure that we have a valid PlayerController */
 	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(GetController()))
 	{
-		// Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller.
+		/* Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller */
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
-			// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings.
+			/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
 			Subsystem->ClearAllMappings();
 
-			// Add each mapping context, along with their priority values. Higher values outprioritize lower values.
+			/* Add each mapping context, along with their priority values. Higher values out-prioritize lower values */
 			Subsystem->AddMappingContext(BaseMappingContext, BaseMappingPriority);
 		}
 	}
 }
 
-// Called every frame
 void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	// Crouching
-	// Sets the new Target Half Height based on whether the player is crouching or standing
+	
+	/* Sets the new Target Half Height based on whether the player is crouching or standing */
 	const float TargetHalfHeight = (MovementState == EMovementType::Crouching ? CrouchedCapsuleHalfHeight : DefaultCapsuleHalfHeight);
-	// Interpolates between the current height and the target height
+	/* Interpolates between the current height and the target height */
 	const float NewHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetHalfHeight, DeltaTime, CrouchSpeed);
-	// Sets the half height of the capsule component to the new interpolated half height
+	/* Sets the half height of the capsule component to the new interpolated half height */
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
 
-// Called to bind functionality to input
 void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -242,7 +236,7 @@ void ADefaultCharacter::StopWalk()
 	bHoldingWalk = false;
 }
 
-void ADefaultCharacter::OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct)
+void ADefaultCharacter::OnGameModeActorUpdate(const FGameModeActorStruct GameModeActorStruct) const
 {
 	if (Gun)
 	{
@@ -250,7 +244,7 @@ void ADefaultCharacter::OnGameModeActorUpdate(FGameModeActorStruct GameModeActor
 	}
 }
 
-void ADefaultCharacter::UpdateMovementValues(EMovementType NewMovementType)
+void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType)
 {
 	// Clearing sprinting and crouching flags
 	bIsWalking = false;
