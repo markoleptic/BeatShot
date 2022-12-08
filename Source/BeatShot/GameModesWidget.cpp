@@ -10,10 +10,10 @@
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DefaultValueHelper.h"
 
-void UGameModesWidget::NativeOnInitialized()
+void UGameModesWidget::NativeConstruct()
 {
+	Super::NativeConstruct();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-
 	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::Custom, EGameModeDifficulty::Normal));
 	GameModeActorDefaults.
 		Add(GameModeActorStructConstructor(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
@@ -24,18 +24,13 @@ void UGameModesWidget::NativeOnInitialized()
 	                                                         ESpreadType::DynamicEdgeOnly));
 	GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::MultiBeat, EGameModeDifficulty::Normal,
 	                                                         ESpreadType::DynamicRandom));
-
 	GameModesToDisplay = GameModeActorDefaults;
-
 	SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
-
 	PlayFromStandard->SetIsEnabled(false);
 	CustomizeFromStandard->SetIsEnabled(false);
-
 	SaveCustom->SetIsEnabled(false);
 	SaveCustomAndStart->SetIsEnabled(false);
 	StartCustom->SetIsEnabled(false);
-
 	LoadCustomGameModes();
 
 	if (CustomGameModesMap.IsEmpty())
@@ -60,10 +55,6 @@ void UGameModesWidget::NativeOnInitialized()
 		this, &UGameModesWidget::BeatGridNumberOfTargetsConstrained);
 
 	PopulateGameModeNameComboBox("Custom");
-}
-
-void UGameModesWidget::NativeConstruct()
-{
 }
 
 FGameModeActorStruct UGameModesWidget::GameModeActorStructConstructor(EGameModeActorName GameModeActor,

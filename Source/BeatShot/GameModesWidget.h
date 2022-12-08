@@ -26,8 +26,6 @@ class BEATSHOT_API UGameModesWidget : public UUserWidget
 
 protected:
 
-	virtual void NativeOnInitialized() override;
-
 	virtual void NativeConstruct() override;
 
 public:

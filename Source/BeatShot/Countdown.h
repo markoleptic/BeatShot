@@ -6,7 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Countdown.generated.h"
 
-class UWidgetSwitcher;
 class AGameModeActorBase;
 class ADefaultGameMode;
 class ADefaultPlayerController;
@@ -22,20 +21,24 @@ protected:
 
 	virtual void NativeConstruct() override;
 
+	virtual void NativeDestruct() override;
+
 public:
 
+	UFUNCTION(BlueprintCallable, Category = "Countdown")
+		void StartCountDownTimer();
+	UFUNCTION(BlueprintCallable, Category = "Countdown")
+		void StartGameMode();
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+		FTimerHandle CountDownTimer;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		ADefaultPlayerController* DefaultPlayerController;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
 		ADefaultGameMode* DefaultGameMode;
+	UPROPERTY(BlueprintReadOnly)
+		float PlayerDelay;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-		AGameModeActorBase* GameModeActorBase;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Transient, meta = (BindWidgetAnim), Category = "Animations")
-		UWidgetAnimation* FadeFromBlack;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-		UWidgetSwitcher* CountdownSwitcher;
+private:
+	
+	const int32 CountdownTimerLength = 3;
 };

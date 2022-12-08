@@ -80,7 +80,7 @@ void ADefaultCharacter::BeginPlay()
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
-
+	
 	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnGameModeActorInit.AddDynamic(this, &ADefaultCharacter::OnGameModeActorUpdate);
 }
 

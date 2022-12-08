@@ -131,6 +131,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 		bool bShouldTick;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
+		FTimerHandle PlayerDelayTimer;
+
 private:
 	
 	void ShowSongPathErrorMessage() const;

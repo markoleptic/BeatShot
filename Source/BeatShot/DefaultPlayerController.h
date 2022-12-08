@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ScreenFadeWidget.h"
 #include "FPSCounterWidget.h"
 #include "PopupMessageWidget.h"
-#include "GameFramework/PlayerController.h"
+// ReSharper disable once CppUnusedIncludeDirective
 #include "SaveGamePlayerSettings.h"
+#include "GameFramework/PlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
 class ULoginWidget;
@@ -21,6 +23,7 @@ class UCountdown;
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenFadeToBlackFinish);
 UCLASS()
 class BEATSHOT_API ADefaultPlayerController : public APlayerController
 {
@@ -29,64 +32,68 @@ class BEATSHOT_API ADefaultPlayerController : public APlayerController
 	virtual void BeginPlay() override;
 
 public:
-
 	void setPlayerEnabledState(bool bPlayerEnabled);
-
 	// Make BlueprintCallable for testing
 	UFUNCTION(BlueprintCallable)
-		void ShowMainMenu();
+	void ShowMainMenu();
 	UFUNCTION(BlueprintCallable)
-		void HideMainMenu();
+	void HideMainMenu();
 	UFUNCTION(BlueprintCallable)
-		void ShowPauseMenu();
+	void ShowPauseMenu();
 	UFUNCTION(BlueprintCallable)
-		void HidePauseMenu();
+	void HidePauseMenu();
 	UFUNCTION(BlueprintCallable)
-		void ShowCrosshair();
+	void ShowCrosshair();
 	UFUNCTION(BlueprintCallable)
-		void HideCrosshair();
+	void HideCrosshair();
 	UFUNCTION(BlueprintCallable)
-		void ShowPlayerHUD();
+	void ShowPlayerHUD();
 	UFUNCTION(BlueprintCallable)
-		void HidePlayerHUD();
+	void HidePlayerHUD();
 	UFUNCTION(BlueprintCallable)
-		void ShowCountdown();
+	void ShowCountdown();
 	UFUNCTION(BlueprintCallable)
-		void HideCountdown();
+	void HideCountdown();
 	UFUNCTION(BlueprintCallable)
-		void ShowPostGameMenu();
+	void ShowPostGameMenu(bool bSavedScores);
 	UFUNCTION(BlueprintCallable)
-		void HidePostGameMenu();
+	void HidePostGameMenu();
 	UFUNCTION(BlueprintCallable)
-		void ShowPopupMessage();
+	void ShowPopupMessage();
 	UFUNCTION(BlueprintCallable)
-		void HidePopupMessage();
+	void HidePopupMessage();
 	UFUNCTION(BlueprintCallable)
-		void ShowFPSCounter();
+	void ShowFPSCounter();
 	UFUNCTION(BlueprintCallable)
-		void HideFPSCounter();
+	void HideFPSCounter();
 	UFUNCTION(BlueprintCallable)
-		void ShowLogin(bool bHasSignedIn);
+	void ShowLogin(bool bHasSignedIn);
 	UFUNCTION(BlueprintCallable)
-		void HideLogin();
-	
+	void HideLogin();
 	UFUNCTION(BlueprintCallable)
-		bool IsPlayerHUDActive();
+	void FadeScreenToBlack();
 	UFUNCTION(BlueprintCallable)
-		bool IsPostGameMenuActive();
+	void FadeScreenFromBlack();
+	UFUNCTION(BlueprintCallable)
+	bool IsPlayerHUDActive();
+	UFUNCTION(BlueprintCallable)
+	bool IsPostGameMenuActive();
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		void HandlePause();
+	void HandlePause();
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void HandlePostGameMenuPause(bool bShouldPause);
 	UFUNCTION(BlueprintCallable)
-		UPopupMessageWidget* CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex = -1);
+	UPopupMessageWidget* CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex = -1);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-		bool CountdownActive;
+	bool CountdownActive;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-		UPlayerHUD* PlayerHUD;
+	UPlayerHUD* PlayerHUD;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-		UCountdown* Countdown;
+	UCountdown* Countdown;
+	UPROPERTY(BlueprintAssignable, Category = "Screen Fade")
+	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
-protected:
-	
+private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -105,6 +112,9 @@ protected:
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ULoginWidget> LoginClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
+	
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
 	UPROPERTY()
@@ -119,15 +129,21 @@ protected:
 	UFPSCounterWidget* FPSCounter;
 	UPROPERTY()
 	ULoginWidget* LoginWidget;
-private:
-
 	UPROPERTY()
 	UDefaultGameInstance* GI;
+	UPROPERTY()
+	UScreenFadeWidget* ScreenFadeWidget;
 
 	bool PlayerHUDActive;
-
 	bool PostGameMenuActive;
 	
+	const int32 ZOrderFadeScreen = 20;
+	const int32 ZOrderFPSCounter = 19;
+	
 	UFUNCTION()
-		void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
+	void OnFadeScreenToBlackFinish();
+	UFUNCTION()
+	void OnFadeScreenFromBlackFinish();
+	UFUNCTION()
+	void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
 };

@@ -90,7 +90,6 @@ FAASettingsStruct UDefaultGameInstance::LoadAASettings()
 
 	if (SaveGameAASettings)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("AASettings loaded to Game Instance"));
 		return SaveGameAASettings->AASettings;
 	}
 	return FAASettingsStruct();
@@ -121,17 +120,14 @@ TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadP
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
 	{
 		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-		UE_LOG(LogTemp, Display, TEXT("PlayerScores Loaded"));
 		return SaveGamePlayerScore->PlayerScoreMap;
 	}
 	SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
 	return SaveGamePlayerScore->PlayerScoreMap;
 }
 
-void UDefaultGameInstance::SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave)
+void UDefaultGameInstance::SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave, bool bSaveToDatabase)
 {
-	SavePlayerScoresToDatabase(PlayerScoreMapToSave);
-
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
 	{
 		SaveGamePlayerScores->PlayerScoreMap = PlayerScoreMapToSave;
@@ -141,10 +137,13 @@ void UDefaultGameInstance::SavePlayerScores(TMap<FGameModeActorStruct, FPlayerSc
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
 		}
 	}
+	if (bSaveToDatabase)
+	{
+		SavePlayerScoresToDatabase();
+	}
 }
 
-void UDefaultGameInstance::SavePlayerScoresToDatabase(
-	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave)
+void UDefaultGameInstance::SavePlayerScoresToDatabase()
 {
 	if (IsRefreshTokenValid())
 	{
@@ -155,6 +154,7 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase(
 	else
 	{
 		bLastRefreshTokenSuccessful = false;
+		OnPostPlayerScoresResponse.Broadcast("Invalid Refresh Token", 401);
 	}
 }
 
@@ -279,7 +279,10 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
 		for (FPlayerScore& PlayerScoreObject : TempArray)
 		{
-			JsonScores.Scores.Add(PlayerScoreObject);
+			if (!PlayerScoreObject.bSavedToDatabase)
+			{
+				JsonScores.Scores.Add(PlayerScoreObject);
+			}
 		}
 	}
 
@@ -293,6 +296,7 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	TSharedRef< TJsonWriter<> > Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
 
+	// ReSharper disable once StringLiteralTypo
 	const FString Endpoint = SaveScoresEndpoint + LoadPlayerSettings().Username + "/savescores";
 	FHttpRequestRef SendScoreRequest = FHttpModule::Get().CreateRequest();
 	SendScoreRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnPostPlayerScoresResponseReceived);
@@ -302,7 +306,6 @@ void UDefaultGameInstance::PostPlayerScores(FString AccessToken, int32 ResponseC
 	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
-	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
 }
 
 void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully)
@@ -316,5 +319,18 @@ void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Re
 	}
 	UE_LOG(LogTemp, Display, TEXT("Successfully saved scores to database."));
 	OnPostPlayerScoresResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
+	
+	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> Map = LoadPlayerScores();
+	// iterate through all elements in PlayerScoreMap
+	for (const TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : Map)
+	{
+		// get array of player scores for any given game mode & song from current key value
+		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
+		for (FPlayerScore& PlayerScoreObject : TempArray)
+		{
+			PlayerScoreObject.bSavedToDatabase = true;
+		}
+	}
+	SavePlayerScores(Map, false);
 }
 

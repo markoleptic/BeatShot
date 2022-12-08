@@ -7,11 +7,11 @@
 #include "TargetSpawner.h"
 #include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
-#include "Blueprint/UserWidget.h"
 #include "DefaultPlayerController.h"
 #include "FloatingTextActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DateTime.h"
+#include "Engine/World.h"
 #include "Gun_AK47.h"
 #include "Kismet/KismetTextLibrary.h"
 
@@ -52,17 +52,12 @@ void AGameModeActorBase::InitializeGameModeActor()
 	Cast<AGun_AK47>(GI->DefaultCharacterRef->GunActorComp->GetChildActor())->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
 	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
 	GI->TargetSpawnerRef->OnStreakUpdate.AddDynamic(this, &AGameModeActorBase::OnStreakUpdate);
-	StartCountDownTimer();
-}
-
-void AGameModeActorBase::StartCountDownTimer()
-{
-	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AGameModeActorBase::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
 }
 
 void AGameModeActorBase::StartGameMode()
 {
-	GetWorldTimerManager().SetTimer(GameModeActorStruct.GameModeLengthTimer, this, &AGameModeActorBase::OnGameModeLengthTimerComplete, GameModeActorStruct.GameModeLength, false);
+	InitializeGameModeActor();
+	GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &AGameModeActorBase::OnGameModeLengthTimerComplete, GameModeActorStruct.GameModeLength, false);
 	GI->TargetSpawnerRef->SetShouldSpawn(true);
 	UpdateScoresToHUD.Broadcast(PlayerScores);
 }
@@ -90,9 +85,8 @@ void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
 	}
 
 	//Clearing Timers
-	GameModeActorStruct.CountDownTimer.Invalidate();
-	GameModeActorStruct.GameModeLengthTimer.Invalidate();
-	GameModeActorStruct.CountdownTimerLength = 3.f;
+	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
+	GameModeLengthTimer.Invalidate();
 
 	// Reset Struct to zero scores
 	PlayerScores.ResetStruct();
@@ -102,10 +96,19 @@ void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
 
 void AGameModeActorBase::OnGameModeLengthTimerComplete()
 {
-	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->EndGameMode(true);
-
 	// Show Post Game menu
-	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
+	// don't save scores if score is zero
+	if (PlayerScores.Score <= 0 || 
+		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
+			PlayerScores.CustomGameModeName == ""))
+	{
+		GI->DefaultPlayerControllerRef->ShowPostGameMenu(false);
+	}
+	else
+	{
+		GI->DefaultPlayerControllerRef->ShowPostGameMenu(true);
+	}
+	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->EndGameMode(true);
 }
 
 void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
@@ -205,7 +208,7 @@ void AGameModeActorBase::UpdateHighScore()
 void AGameModeActorBase::SavePlayerScores()
 {
 	// don't save scores if score is zero
-	if (PlayerScores.Score <= 0.01f || 
+	if (PlayerScores.Score <= 0 || 
 		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
 			PlayerScores.CustomGameModeName == ""))
 	{
@@ -238,9 +241,10 @@ void AGameModeActorBase::SavePlayerScores()
 		PlayerScoreMap.Remove(GameModeActorStruct);
 		PlayerScoreMap.Compact();
 		PlayerScoreMap.Shrink();
+		UE_LOG(LogTemp, Display, TEXT("An existing gamemodeactorstruct was found and replaced"));
 	}
 	PlayerScoreMap.Add(GameModeActorStruct, PlayerScoreArrayWrapper);
-	GI->SavePlayerScores(PlayerScoreMap);
+	GI->SavePlayerScores(PlayerScoreMap, true);
 
 	// Printing saved scores to console
 	for (const TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
@@ -303,5 +307,8 @@ void AGameModeActorBase::LoadPlayerScores()
 	PlayerScores.TotalPossibleDamage = 0.f;
 
 	// just in case ScoreMap comparison is working
-	PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
+	if (PlayerScoreMap.Contains(GameModeActorStruct))
+	{
+		PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
+	}
 }

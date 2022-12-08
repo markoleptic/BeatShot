@@ -3,18 +3,14 @@
 #include "DefaultGameMode.h"
 #include "AudioAnalyzerManager.h"
 #include "DefaultGameInstance.h"
-#include "GameFramework/GameUserSettings.h"
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
 #include "TargetSpawner.h"
-#include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
 
 void ADefaultGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	if (GI)
 	{
@@ -29,10 +25,8 @@ void ADefaultGameMode::BeginPlay()
 void ADefaultGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	if (!bShouldTick) { return; }
-	if (!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.GameModeLengthTimer) &&
-		!GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeActorStruct.CountDownTimer))
+	
+	if (!bShouldTick || !GameModeActorBase || !GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeLengthTimer))
 	{
 		return;
 	}
@@ -147,30 +141,26 @@ void ADefaultGameMode::PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* A
 
 void ADefaultGameMode::StartAAManagerPlayback()
 {
-	const UWorld* World = GetWorld();
 	const FPlayerSettings Settings = GI->LoadPlayerSettings();
 
 	// If delay is large enough, play AATracker and then AAPlayer after the delay
 	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05)
 	{
-		PauseAAManager(false, AATracker);
 		if (AATracker)
 		{
+			PauseAAManager(false, AATracker);
 			AATracker->Play();
-			FLatentActionInfo LatentInfo;
-			LatentInfo.CallbackTarget = this;
-			LatentInfo.Linkage = 0;
-			LatentInfo.UUID = 0;
-			LatentInfo.ExecutionFunction = FName("PlayAAPlayer");
-			UKismetSystemLibrary::Delay(World, GameModeActorBase->GameModeActorStruct.PlayerDelay, LatentInfo);
+			UE_LOG(LogTemp, Display, TEXT("Now Playing AATracker"));
+			GetWorldTimerManager().SetTimer(PlayerDelayTimer,this, &ADefaultGameMode::PlayAAPlayer, GameModeActorBase->GameModeActorStruct.PlayerDelay, false);
 		}
 	}
 	else
 	{
-		PauseAAManager(false, AATracker);
 		if (AATracker)
 		{
+			PauseAAManager(false, AATracker);
 			AATracker->Play();
+			UE_LOG(LogTemp, Display, TEXT("Now Playing AATracker"));
 			SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AATracker);
 		}
 	}
@@ -242,6 +232,7 @@ void ADefaultGameMode::PlayAAPlayer()
 		const FPlayerSettings Settings = GI->LoadPlayerSettings();
 		PauseAAManager(false, AAPlayer);
 		AAPlayer->Play();
+		UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer"));
 		SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AAPlayer);
 	}
 }
@@ -253,6 +244,13 @@ void ADefaultGameMode::RefreshAASettings(FAASettingsStruct RefreshedAASettings)
 
 void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)
 {
+	//Hide HUD and countdown
+	GI->DefaultPlayerControllerRef->HidePlayerHUD();
+	GI->DefaultPlayerControllerRef->HideCountdown();
+	GI->DefaultPlayerControllerRef->HideCrosshair();
+	
+	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
+	
 	if (IsValid(GameModeActorBase))
 	{
 		GameModeActorBase->EndGameMode(ShouldSavePlayerScores);
@@ -273,11 +271,6 @@ void ADefaultGameMode::EndGameMode(bool ShouldSavePlayerScores)
 	{
 		AAPlayer = nullptr;
 	}
-
-	//Hide HUD and countdown
-	GI->DefaultPlayerControllerRef->HidePlayerHUD();
-	GI->DefaultPlayerControllerRef->HideCountdown();
-	GI->DefaultPlayerControllerRef->HideCrosshair();
 }
 
 void ADefaultGameMode::ShowSongPathErrorMessage() const

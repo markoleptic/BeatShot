@@ -48,6 +48,7 @@ void ADefaultPlayerController::setPlayerEnabledState(bool bPlayerEnabled)
 
 void ADefaultPlayerController::ShowMainMenu()
 {
+	FadeScreenFromBlack();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
@@ -69,11 +70,6 @@ void ADefaultPlayerController::ShowPauseMenu()
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
-	if (FPSCounter)
-	{
-		FPSCounter->RemoveFromViewport();
-		FPSCounter->AddToViewport();
-	}
 }
 
 void ADefaultPlayerController::HidePauseMenu()
@@ -123,6 +119,7 @@ void ADefaultPlayerController::ShowCountdown()
 {
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitGame);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+	FadeScreenFromBlack();
 	Countdown = CreateWidget<UCountdown>(this, CountdownClass);
 	Countdown->AddToViewport();
 	CountdownActive = true;
@@ -138,18 +135,15 @@ void ADefaultPlayerController::HideCountdown()
 	}
 }
 
-void ADefaultPlayerController::ShowPostGameMenu()
+void ADefaultPlayerController::ShowPostGameMenu(bool bSavedScores)
 {
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
+	PostGameMenuWidget->bSavedScores = bSavedScores;
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
-	if (FPSCounter)
-	{
-		FPSCounter->RemoveFromViewport();
-		FPSCounter->AddToViewport();
-	}
+	HandlePostGameMenuPause(true);
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
@@ -159,6 +153,7 @@ void ADefaultPlayerController::HidePostGameMenu()
 		PostGameMenuWidget->RemoveFromViewport();
 		PostGameMenuWidget = nullptr;
 		PostGameMenuActive = false;
+		HandlePostGameMenuPause(false);
 	}
 }
 
@@ -194,7 +189,7 @@ void ADefaultPlayerController::HidePopupMessage()
 	}
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
-		SetInputMode(FInputModeGameOnly());
+		SetInputMode(FInputModeGameAndUI());
 		SetShowMouseCursor(false);
 		setPlayerEnabledState(true);
 		if (!Crosshair)
@@ -209,7 +204,7 @@ void ADefaultPlayerController::ShowFPSCounter()
 	if (FPSCounter == nullptr)
 	{
 		FPSCounter = CreateWidget<UFPSCounterWidget>(this, FPSCounterClass);
-		FPSCounter->AddToViewport();
+		FPSCounter->AddToViewport(ZOrderFPSCounter);
 	}
 }
 
@@ -255,6 +250,41 @@ void ADefaultPlayerController::HideLogin()
 		LoginWidget->RemoveFromViewport();
 		LoginWidget = nullptr;
 	}
+}
+
+void ADefaultPlayerController::FadeScreenToBlack()
+{
+	if (!ScreenFadeWidget)
+	{
+		ScreenFadeWidget = CreateWidget<UScreenFadeWidget>(this, ScreenFadeClass);
+	}
+	ScreenFadeWidget->AddToViewport(ZOrderFadeScreen);
+	ScreenFadeWidget->OnFadeToBlackFinish.AddDynamic(this, &ADefaultPlayerController::OnFadeScreenToBlackFinish);
+	ScreenFadeWidget->FadeToBlack();
+}
+
+void ADefaultPlayerController::FadeScreenFromBlack()
+{
+	if (!ScreenFadeWidget)
+	{
+		ScreenFadeWidget = CreateWidget<UScreenFadeWidget>(this, ScreenFadeClass);
+		ScreenFadeWidget->AddToViewport(ZOrderFadeScreen);
+	}
+	ScreenFadeWidget->OnFadeFromBlackFinish.AddDynamic(this, &ADefaultPlayerController::OnFadeScreenFromBlackFinish);
+	ScreenFadeWidget->FadeFromBlack();
+}
+
+void ADefaultPlayerController::OnFadeScreenToBlackFinish()
+{
+	OnScreenFadeToBlackFinish.Broadcast();
+	OnScreenFadeToBlackFinish.Clear();
+}
+
+void ADefaultPlayerController::OnFadeScreenFromBlackFinish()
+{
+	ScreenFadeWidget->OnFadeFromBlackFinish.RemoveAll(this);
+	ScreenFadeWidget->RemoveFromViewport();
+	ScreenFadeWidget = nullptr;
 }
 
 bool ADefaultPlayerController::IsPlayerHUDActive()

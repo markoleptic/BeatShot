@@ -13,5 +13,8 @@ UCLASS()
 class BEATSHOT_API UPostGameMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(BlueprintReadOnly)
+		bool bSavedScores;
 };

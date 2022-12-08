@@ -82,21 +82,9 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	EGameModeDifficulty GameModeDifficulty;
 
-	// TimerHandle for Song Length
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
-	FTimerHandle GameModeLengthTimer;
-
 	// Length of song
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
 	float GameModeLength;
-
-	// Countdown TimerHandle
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
-	FTimerHandle CountDownTimer;
-
-	// Countdown Time Length
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Static Game Properties")
-	float CountdownTimerLength;
 
 	// Sets the minimum time between target spawns
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
@@ -158,7 +146,7 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
 	FVector2D BeatGridSpacing;
 
-	// min 4, only squarable numbers
+	// min 4, only squareable numbers
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
 	int32 BeatGridSize;
 
@@ -173,7 +161,8 @@ struct FGameModeActorStruct
 		if (GameModeActorName == Other.GameModeActorName &&
 			SongTitle.Equals(Other.SongTitle) &&
 			(CustomGameModeName.IsEmpty() && Other.CustomGameModeName.IsEmpty() ||
-				CustomGameModeName.Equals(Other.CustomGameModeName)))
+				CustomGameModeName.Equals(Other.CustomGameModeName)) &&
+				GameModeDifficulty == Other.GameModeDifficulty)
 		{
 			return true;
 		}
@@ -189,7 +178,6 @@ struct FGameModeActorStruct
 		UseDynamicSizing = false;
 		MinDistanceBetweenTargets = 10.f;
 		CenterOfSpawnBox = {3590.f, 0.f, 160.f};
-		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
@@ -226,7 +214,6 @@ struct FGameModeActorStruct
 		SpreadType = NewSpreadType;
 
 		// Constant for all Game Modes and Difficulties
-		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;
 		HeadshotHeight = false;
 		RandomizeBeatGrid = false;
@@ -441,7 +428,6 @@ struct FGameModeActorStruct
 		SpreadType = ESpreadType::None;
 		MinDistanceBetweenTargets = 10.f;
 		CenterOfSpawnBox = {3590.f, 0.f, 160.f};
-		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
@@ -537,6 +523,9 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 Streak;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	bool bSavedToDatabase;
+
 	FPlayerScore()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
@@ -555,6 +544,7 @@ struct FPlayerScore
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
+		bSavedToDatabase = false;
 	}
 
 	void ResetStruct()
@@ -574,6 +564,7 @@ struct FPlayerScore
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
+		bSavedToDatabase = false;
 	}
 };
 
@@ -591,7 +582,7 @@ struct FPlayerScoreArrayWrapper
 
 FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
 {
-	uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
+	const uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
 	return Hash;
 }
 
@@ -629,9 +620,6 @@ public:
 	void EndGameMode(bool ShouldSavePlayerScores = false);
 
 	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-	void StartCountDownTimer();
-
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
 	void OnGameModeLengthTimerComplete();
 
 	UFUNCTION(BlueprintCallable, Category = "FloatingTextActor")
@@ -648,9 +636,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle GameModeLengthTimer;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
-	FTimerHandle CountDownTimer;
 
 	// Reference Game Instance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
@@ -702,9 +687,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
-
-	//UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-	//	void UpdateStreak();
 
 private:
 

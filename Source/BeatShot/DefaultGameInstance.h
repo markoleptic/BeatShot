@@ -142,11 +142,11 @@ public:
 		TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores();
 
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
+		void SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave, bool bSaveToDatabase);
 
 	// database saving of scores. First sends an access token request, then calls savescores with the accesstoken
 	UFUNCTION(BlueprintCallable, Category = "DataBase")
-		void SavePlayerScoresToDatabase(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave);
+		void SavePlayerScoresToDatabase();
 
 #pragma region HttpRequests
 
