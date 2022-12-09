@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameModeActorBase.h"
-#include "SaveGamePlayerSettings.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "PlayerHUD.generated.h"
@@ -25,60 +24,57 @@ class BEATSHOT_API UPlayerHUD : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
-
 	virtual void NativeDestruct() override;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
+	UProgressBar* TargetBar;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UProgressBar* TargetBar;
+	UTextBlock* Accuracy;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* Accuracy;
+	UTextBlock* TargetsHitText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* TargetsHitText;
+	UTextBlock* ShotsFiredText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* ShotsFiredText;
+	UTextBlock* TargetsSpawnedText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* TargetsSpawnedText;
+	UTextBlock* CurrentScoreText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* CurrentScoreText;
+	UTextBlock* HighScoreText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* HighScoreText;
+	UTextBlock* GameModeNameText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* GameModeNameText;
+	UTextBlock* SongTitle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* SongTitle;
+	UTextBlock* TotalSongLength;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* TotalSongLength;
+	UTextBlock* CurrentStreakBestText;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* CurrentStreakBestText;
+	UHorizontalBox* TargetsSpawnedBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* TargetsSpawnedBox;
+	UHorizontalBox* StreakBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* StreakBox;
+	UHorizontalBox* TargetsHitBox;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* TargetsHitBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* ShotsFiredBox;
+	UHorizontalBox* ShotsFiredBox;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
+	void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-		UDefaultGameInstance* GI;
+	UDefaultGameInstance* GI;
 };
-

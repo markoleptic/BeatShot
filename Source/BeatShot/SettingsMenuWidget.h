@@ -30,7 +30,7 @@ public:
 		void LoadPlayerSettings();
 
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
-		void SavePlayerSettings();
+		void SavePlayerSettings() const;
 
 	// Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")

@@ -7,12 +7,10 @@
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
 #include "GameModeActorBase.h"
-#include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -86,7 +84,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent,
 	Destroy();
 }
 
-void AProjectile::FireInDirection(const FVector& ShootDirection)
+void AProjectile::FireInDirection(const FVector& ShootDirection) const
 {
 	ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 }

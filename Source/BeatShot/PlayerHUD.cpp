@@ -7,7 +7,6 @@
 #include "GameModeActorBase.h"
 #include "DefaultGameInstance.h"
 #include "Components/HorizontalBox.h"
-#include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
@@ -17,7 +16,7 @@ void UPlayerHUD::NativeConstruct()
 	Super::NativeConstruct();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 
-	// update Scores when GameModeActorBase calls for an update
+	/* Update scores when GameModeActorBase calls for an update */
 	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
 
 	TargetBar->SetPercent(0.f);
@@ -31,7 +30,7 @@ void UPlayerHUD::NativeConstruct()
 		ShotsFiredBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	// initial value update
+	/* initial value update */
 	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
 }
 
@@ -44,42 +43,43 @@ void UPlayerHUD::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
+// ReSharper disable once CppUE4BlueprintCallableFunctionMayBeConst
+void UPlayerHUD::UpdateAllElements(const FPlayerScore NewPlayerScoreStruct)
 {
-	// display default game mode names if not custom
+	/* display default game mode names if not custom */
 	if (NewPlayerScoreStruct.CustomGameModeName.Equals(""))
 	{
 		GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
 	}
-	// display custom game mode if not a default game mode
+	/* display custom game mode if not a default game mode */
 	else
 	{
 		GameModeNameText->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.CustomGameModeName));
 	}
 
-	// show song title and total song length
+	/* show song title and total song length */
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
 	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(
 		UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength),3)));
 
-	// Beat Track changes how stats are displayed
+	/* Beat Track changes how stats are displayed */
 	if (NewPlayerScoreStruct.TotalPossibleDamage > 0.01f)
 	{
 		const float Score = round(NewPlayerScoreStruct.Score);
 		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
 		const float HighScore = round(NewPlayerScoreStruct.HighScore);
 
-		// Update Accuracy progress bar and Accuracy percentage text
+		/* Update Accuracy progress bar and Accuracy percentage text */
 		if (!(isnan(Score / TotalPossibleDamage)))
 		{
 			TargetBar->SetPercent(Score / TotalPossibleDamage);
 			Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));
 		}
 
-		// Update current score
+		/* Update current score */
 		CurrentScoreText->SetText(FText::AsNumber(Score));
 
-		// Update high score
+		/* Update high score */
 		if (HighScore < Score)
 		{
 			HighScoreText->SetText(FText::AsNumber(Score));
@@ -97,26 +97,26 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 		const float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
 		const float HighScore = round(NewPlayerScoreStruct.HighScore);
 
-		// Update Accuracy progress bar and Accuracy percentage text
-		if (!(isnan(TargetsHit / ShotsFired)))
+		/* Update Accuracy progress bar and Accuracy percentage text */
+		if (!isnan(TargetsHit / ShotsFired))
 		{
 			TargetBar->SetPercent(TargetsHit / ShotsFired);
 			Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
 		}
 
-		// Update number of targets hit
+		/* Update number of targets hit */
 		TargetsHitText->SetText(FText::AsNumber(TargetsHit));
 
-		// Update number of shots fired
+		/* Update number of shots fired */
 		ShotsFiredText->SetText(FText::AsNumber(ShotsFired));
 
-		// Update number of targets spawned
+		/* Update number of targets spawned */
 		TargetsSpawnedText->SetText(FText::AsNumber(TargetsSpawned));
 
-		// update the current player score
+		/* update the current player score */
 		CurrentScoreText->SetText(FText::AsNumber(Score));
 
-		// update the high score
+		/* update the high score */
 		if (HighScore < Score)
 		{
 			HighScoreText->SetText(FText::AsNumber(Score));
@@ -125,6 +125,7 @@ void UPlayerHUD::UpdateAllElements(FPlayerScore NewPlayerScoreStruct)
 		{
 			HighScoreText->SetText(FText::AsNumber(HighScore));
 		}
+		/* update streak */
 		CurrentStreakBestText->SetText(FText::AsNumber(NewPlayerScoreStruct.Streak));
 	}
 }

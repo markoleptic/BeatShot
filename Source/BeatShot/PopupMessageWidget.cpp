@@ -19,8 +19,8 @@ void UPopupMessageWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UPopupMessageWidget::InitPopup(FString TitleInput, FString MessageInput, FString Button1TextInput,
-                                    FString Button2TextInput)
+void UPopupMessageWidget::InitPopup(const FString TitleInput, const FString MessageInput, const FString Button1TextInput,
+                                    const FString Button2TextInput) const
 {
 	TitleText->SetText(UKismetTextLibrary::Conv_StringToText(TitleInput));
 	MessageText->SetText(UKismetTextLibrary::Conv_StringToText(MessageInput));

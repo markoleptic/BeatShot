@@ -10,6 +10,7 @@ void ULoginWidget::NativeConstruct()
 	BindToAnimationFinished(FadeOutAll, EndDelegate);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ULoginWidget::FadeOutAnimFinished()
 {
 	ExitLogin.Broadcast();

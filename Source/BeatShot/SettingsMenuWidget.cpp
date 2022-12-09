@@ -20,7 +20,7 @@ void USettingsMenuWidget::LoadPlayerSettings()
 	PlayerSettings = GI->LoadPlayerSettings();
 }
 
-void USettingsMenuWidget::SavePlayerSettings()
+void USettingsMenuWidget::SavePlayerSettings() const
 {
 	GI->SavePlayerSettings(PlayerSettings);
 }

@@ -39,10 +39,8 @@ public:
 		UWidgetAnimation* FadeOutAll;
 	UPROPERTY(BlueprintReadWrite, Transient, meta = (BindWidgetAnim))
 		UWidgetAnimation* FadeInAllInitial;
-	
 private:
 	FWidgetAnimationDynamicEvent EndDelegate;
 	UFUNCTION()
 		void FadeOutAnimFinished();
-
 };

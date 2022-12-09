@@ -21,26 +21,26 @@ protected:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeDestruct() override;
-	
+
 public:
 	UFUNCTION(BlueprintCallable)
-		void InitPopup(FString TitleInput, FString MessageInput, FString Button1TextInput, FString Button2TextInput = "");
+	void InitPopup(FString TitleInput, FString MessageInput, FString Button1TextInput, FString Button2TextInput = "") const;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
-		UButton* Button1;
+	UButton* Button1;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
-		UButton* Button2;
+	UButton* Button2;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
-		UTextBlock* Button1Text;
+	UTextBlock* Button1Text;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
-		UTextBlock* Button2Text;
+	UTextBlock* Button2Text;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
-		UTextBlock* TitleText;
+	UTextBlock* TitleText;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
-		UTextBlock* MessageText;
+	UTextBlock* MessageText;
 };
