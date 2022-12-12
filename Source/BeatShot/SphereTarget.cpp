@@ -57,56 +57,54 @@ void ASphereTarget::BeginPlay()
 	}
 }
 
+void ASphereTarget::StartBeatGridTimer(const float Lifespan)
+{
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
+	SetCanBeDamaged(true);
+	PlayColorGradient();
+}
+
 void ASphereTarget::LifeSpanExpired()
 {
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
+	const FVector TopOfSphereLocation = {
+		GetActorLocation().X,
 		GetActorLocation().Y,
-		GetActorLocation().Z + 
-		BaseSphereRadius * GetActorScale3D().Z };
+		GetActorLocation().Z +
+		BaseSphereRadius * GetActorScale3D().Z
+	};
 	OnLifeSpanExpired.Broadcast(true, -1, TopOfSphereLocation);
 	Super::LifeSpanExpired();
 }
 
 void ASphereTarget::HandleDestruction()
 {
-	/* Get the time that the sphere was alive for */
-	float TimeAlive;
-	if (GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn) > 0) {
-		TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-	}
-	else if (GetLifeSpan() > 0)
-	{
-		TimeAlive = GameModeActorStruct.TargetMaxLifeSpan - GetLifeSpan();
-	}
-	// if TimeSinceSpawn or LifeSpan expired
-	else
-	{
-		TimeAlive = -1;
-	}
-	// Destroy target and don't show explosion if timer expired
-	if (TimeAlive < 0)
-	{
-		Destroy();
-		return;
-	}
-
-	// Beat Track shouldn't reach this
+	/* Beat Track shouldn't reach this */
 	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		return;
 	}
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
+
+	/* Get the time that the sphere was alive for */
+	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+	if (TimeAlive < 0 || TimeAlive >= GameModeActorStruct.TargetMaxLifeSpan)
+	{
+		Destroy();
+		return;
+	}
+	const FVector TopOfSphereLocation = {
+		GetActorLocation().X,
 		GetActorLocation().Y,
 		GetActorLocation().Z +
-		BaseSphereRadius * GetActorScale3D().Z };
-	/* For */
-	OnLifeSpanExpired.Broadcast(false, TimeAlive, TopOfSphereLocation);
-	//Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
-	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+		BaseSphereRadius * GetActorScale3D().Z
+	};
 
-	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
-	
-	/* Don't destroy target if BeatGrid mode */
+	/* Broadcast that the target has been destroyed by player */
+	OnLifeSpanExpired.Broadcast(false, TimeAlive, TopOfSphereLocation);
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X,
+	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
+
+	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear blueprint event */
 	if (GameModeActorStruct.IsBeatGridMode == true)
 	{
 		SetCanBeDamaged(false);
@@ -118,25 +116,21 @@ void ASphereTarget::HandleDestruction()
 	}
 }
 
-void ASphereTarget::StartBeatGridTimer(const float Lifespan)
-{
-	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
-	SetCanBeDamaged(true);
-	PlayColorGradient();
-}
-
 void ASphereTarget::OnBeatGridTimerTimeOut()
 {
 	SetCanBeDamaged(false);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
+	const FVector TopOfSphereLocation = {
+		GetActorLocation().X,
 		GetActorLocation().Y,
-		GetActorLocation().Z + 
-		BaseSphereRadius * GetActorScale3D().Z };
+		GetActorLocation().Z +
+		BaseSphereRadius * GetActorScale3D().Z
+	};
 	OnLifeSpanExpired.Broadcast(true, -1, TopOfSphereLocation);
 }
 
-void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const
+void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,
+                                        const FLinearColor ColorWhenDestroyed) const
 {
 	if (NS_Standard_Explosion)
 	{
@@ -153,8 +147,3 @@ void ASphereTarget::SetMaxHealth(const float NewMaxHealth) const
 {
 	HealthComp->SetMaxHealth(NewMaxHealth);
 }
-
-
-
-
-

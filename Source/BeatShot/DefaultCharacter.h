@@ -82,7 +82,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/** Called to bind functionality to input */
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	/** Handles updates to the movement state and changes relevant values accordingly
 	*	@param NewMovementType The new movement state of the player
@@ -178,7 +178,7 @@ private:
 	/** Called from DefaultGameMode when a new game mode has began,
 	 *  to update whether gun should trace during OnTick */
 	UFUNCTION()
-	void OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct) const;
+	void OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct);
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;
@@ -255,6 +255,7 @@ private:
 	/** Input Mappings */
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Mappings")
+	// ReSharper disable once UnrealHeaderToolError
 	UInputMappingContext* BaseMappingContext;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Mappings")

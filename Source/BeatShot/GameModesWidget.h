@@ -172,10 +172,6 @@ public:
 	FGameModeActorStruct FindGameMode(EGameModeActorName GameModeActorName = EGameModeActorName::Custom,
 	                                  FString CustomGameModeName = "");
 
-	/* Returns whether or not the game mode is custom */
-	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
-	bool IsCustomGameMode(const FString& CustomGameModeName);
-
 	/* Returns whether or not the game mode is a default game mode */
 	UFUNCTION(BlueprintCallable, Category = "Utility Functions")
 	bool IsDefaultGameMode(const FString& GameModeName);

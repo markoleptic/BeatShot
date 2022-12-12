@@ -11,6 +11,7 @@
 #include "GameFramework/PlayerController.h"
 #include "DefaultPlayerController.generated.h"
 
+class ULoadingScreenWidget;
 class ULoginWidget;
 class UPostGameMenuWidget;
 class UDefaultGameInstance;
@@ -74,6 +75,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FadeScreenFromBlack();
 	UFUNCTION(BlueprintCallable)
+	void FadeInLoadingScreen();
+	UFUNCTION(BlueprintCallable)
+	void FadeOutLoadingScreen(float LastTime);
+	UFUNCTION(BlueprintCallable)
 	bool IsPlayerHUDActive() const;
 	UFUNCTION(BlueprintCallable)
 	bool IsPostGameMenuActive() const;
@@ -91,6 +96,8 @@ public:
 	UCountdown* Countdown;
 	UPROPERTY(BlueprintAssignable, Category = "Screen Fade")
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ULoadingScreenWidget> LoadingScreenClass;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -132,6 +139,8 @@ private:
 	UDefaultGameInstance* GI;
 	UPROPERTY()
 	UScreenFadeWidget* ScreenFadeWidget;
+	UPROPERTY()
+	ULoadingScreenWidget* LoadingScreenWidget;
 
 	bool PlayerHUDActive;
 	bool PostGameMenuActive;
@@ -145,4 +154,11 @@ private:
 	void OnFadeScreenFromBlackFinish();
 	UFUNCTION()
 	void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
+	UFUNCTION()
+	void OnPostPlayerScoresResponse(FString Message, int32 ResponseCode);
+	UFUNCTION()
+	void OnURLLoaded(const bool bLoadedSuccessfully);
+	UFUNCTION()
+	void OnLoadingScreenFadeOutFinish();
+	
 };

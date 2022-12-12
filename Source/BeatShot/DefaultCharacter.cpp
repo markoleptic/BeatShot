@@ -236,7 +236,8 @@ void ADefaultCharacter::StopWalk()
 	bHoldingWalk = false;
 }
 
-void ADefaultCharacter::OnGameModeActorUpdate(const FGameModeActorStruct GameModeActorStruct) const
+// ReSharper disable once CppMemberFunctionMayBeConst
+void ADefaultCharacter::OnGameModeActorUpdate(const FGameModeActorStruct GameModeActorStruct)
 {
 	if (Gun)
 	{

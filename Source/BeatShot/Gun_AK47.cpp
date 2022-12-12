@@ -162,6 +162,7 @@ void AGun_AK47::StopFire()
 	}
 	bIsFiring = false;
 	CurrentShotRecoilRotation = FRotator(0,0,0);
+	CurrentShotCameraRecoilRotation = FRotator(0,0,0);
 	ShotsFired = 0;
 	/* Reverse the timeline so that it takes time to recover to the beginning */
 	RecoilTimeline.SetPlayRate(5.454545f);
@@ -248,10 +249,8 @@ void AGun_AK47::UpdateRecoilPattern(const FVector Output)
 	}
 	else
 	{
-		CurrentShotCameraRecoilRotation.Yaw = 0;
-		CurrentShotCameraRecoilRotation.Pitch = 0;
-		CurrentShotRecoilRotation.Yaw = 0;
-		CurrentShotRecoilRotation.Pitch = 0;
+		CurrentShotCameraRecoilRotation = FRotator(0,0,0);
+		CurrentShotRecoilRotation = FRotator(0,0,0);
 	}
 }
 

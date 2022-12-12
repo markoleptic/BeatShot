@@ -57,12 +57,6 @@ public:
 	void CallSpawnFunction();
 
 private:
-	/* randomize scale of target */
-	float RandomizeScale(ASphereTarget* Target);
-
-	/* FindNextTargetProperties */
-	void FindNextTargetProperties(FVector FLastSpawnLocation, float LastTargetScaleValue);
-
 	/* The expiration or destruction of any non-BeatTrack target is bound to this function
 	 * to keep track of the streak, timing, and location */
 	UFUNCTION(Category = "Spawn Properties")
@@ -73,6 +67,18 @@ private:
 
 	/* Spawn a MultiBeat on beat */
 	void SpawnMultiBeatTarget();
+
+	/* FindNextTargetProperties */
+	void FindNextTargetProperties(FVector FLastSpawnLocation, float LastTargetScaleValue);
+	
+	/* Find the next spawn location for a target */
+	FVector FindNextTargetSpawnLocation(ESpreadType SpreadType, const float CollisionSphereRadius);
+
+	/* randomize scale of target */
+	float GenerateRandomTargetScale() const;
+	
+	/* Find the next spawn location for a target */
+	FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
 
 #pragma region General Spawning Variables
 
@@ -94,6 +100,9 @@ private:
 
 	/* Changed by GameModeActorBase */
 	bool ShouldSpawn;
+
+	/* Whether or not to skip the spawn of this target if a new Target location was not found */
+	bool bSkipNextSpawn;
 
 	/* Base size of the sphere target */
 	const float SphereTargetRadius = 50.f;
@@ -142,7 +151,7 @@ private:
 #pragma region BeatTrack
 
 	/* Change the tracking target direction on beat */
-	void ChangeTrackingTargetDirection();
+	void FindNextTrackingDirection();
 	
 	/* Function to reverse direction of target if no longer overlapping the SpawnBox */
 	UFUNCTION()
@@ -168,7 +177,7 @@ private:
 	FVector LocationBeforeDirectionChange;
 
 	/* Randomizes tracking target location */
-	FVector RandomizeTrackerLocation(const FVector LocationBeforeChange) const;
+	FVector GenerateRandomTrackerLocation(const FVector LocationBeforeChange) const;
 
 #pragma endregion
 	

@@ -8,10 +8,10 @@ public class BeatShot : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore",
+        PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore",
             "UMG", "Slate", "SlateCore", "Niagara", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities",
-            "WebBrowserWidget", "WebBrowser", "EasyFileDialog", "EnhancedInput" });
-        PrivateDependencyModuleNames.AddRange(new string[] { "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer",
+            "WebBrowserWidget", "WebBrowser", "EasyFileDialog", "EnhancedInput", "MoviePlayer" });
+        PrivateDependencyModuleNames.AddRange(new[] { "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer",
             "Slate", "SlateCore", "EnhancedInput", "InputCore" });
         PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
         PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");

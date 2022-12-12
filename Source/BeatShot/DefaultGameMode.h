@@ -66,15 +66,15 @@ public:
 
 	/* Destroys all actors involved in a game mode and calls GameModeActorBase to save scores */
 	UFUNCTION(BlueprintCallable, Category = "GameMode Ending")
-	void EndGameMode(bool ShouldSavePlayerScores);
+	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
 
 	/* change volume of given AAManager, or if none provided change Player/Tracker volume */
 	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
-	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr) const;
+	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
 
 	/* called from DefaultPlayerController when the game is paused */
 	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
-	void PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* AAManager = nullptr) const;
+	void PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* AAManager = nullptr);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
 	UAudioAnalyzerManager* AATracker;

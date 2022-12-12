@@ -22,6 +22,7 @@ enum class EGameModeActorName : uint8
 	BeatGrid UMETA(DisplayName, "BeatGrid"),
 	BeatTrack UMETA(DisplayName, "BeatTrack")
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
 /* Enum representing the spread type of the targets */
@@ -34,6 +35,7 @@ enum class ESpreadType : uint8
 	StaticNarrow UMETA(DisplayName, "StaticNarrow"),
 	StaticWide UMETA(DisplayName, "StaticWide")
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::StaticWide);
 
 /* Enum representing the default game mode difficulties */
@@ -45,6 +47,7 @@ enum class EGameModeDifficulty : uint8
 	Hard UMETA(DisplayName, "Hard"),
 	Death UMETA(DisplayName, "Death")
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
 /* Struct representing a game mode */
@@ -69,7 +72,7 @@ struct FGameModeActorStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	EGameModeDifficulty GameModeDifficulty;
 
-	/* Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
+	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
 	 * If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	ESpreadType SpreadType;
@@ -438,7 +441,7 @@ USTRUCT(BlueprintType)
 struct FPlayerScore
 {
 	GENERATED_BODY()
-	
+
 	/* The default game mode name, or custom if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	EGameModeActorName GameModeActorName;
@@ -559,7 +562,7 @@ struct FPlayerScoreArrayWrapper
 {
 	GENERATED_BODY()
 
-	/* originally wanted this to hold all FPlayerScores for a given EGameModeActorName, Song title, and Difficulty,
+	/** originally wanted this to hold all FPlayerScores for a given EGameModeActorName, Song title, and Difficulty,
 	/* but doesn't work sometimes. Saving and loading works even if equality doesn't work. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FPlayerScore> PlayerScoreArray;
@@ -588,7 +591,6 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-
 	/* Starts the game mode timer */
 	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
 	void StartGameMode();
@@ -604,7 +606,7 @@ public:
 	/* Reports to DefaultGameMode when the song has finished */
 	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
 	void OnGameModeLengthTimerComplete() const;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FloatingTextActor")
 	TSubclassOf<AFloatingTextActor> FloatingTextActorToSpawn;
 
@@ -625,7 +627,7 @@ public:
 	/* Function bound to TargetSpawner to keep track of streak */
 	UFUNCTION(BlueprintCallable, Category = "FloatingTextActor")
 	void OnStreakUpdate(int32 Streak, FVector Location);
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	void UpdateHighScore();
 
@@ -672,7 +674,7 @@ public:
 	/* max score per target based on total amount of targets that could spawn */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	float MaxScorePerTarget;
-	
+
 	/* Map of GameModes and Scores */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
@@ -680,16 +682,15 @@ public:
 #pragma endregion
 
 private:
-
 	/* Prepares PlayerScores for saving in GameInstance, then calls SavePlayerScores in DefaultGameInstance */
 	void SavePlayerScores();
-	
+
 	/* Loads the player scores at the begin play */
 	void LoadPlayerScores();
 
 	/* Whether or not to show the Streak Combat Text */
 	bool bShowStreakCombatText;
-	
+
 	/* The frequency at which to show Streak Combat Text */
 	int32 CombatTextFrequency;
 };

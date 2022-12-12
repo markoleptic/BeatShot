@@ -10,10 +10,37 @@
 #include "TargetSpawner.h"
 #include "SphereTarget.h"
 #include "Http.h"
+#include "LoadingScreenWidget.h"
+#include "MoviePlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
 #include "SaveGameAASettings.h"
 #include "SaveGamePlayerScore.h"
+
+void UDefaultGameInstance::Init()
+{
+	Super::Init();
+	//FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UDefaultGameInstance::BeginLoadingScreen);
+	//FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UDefaultGameInstance::EndLoadingScreen);
+}
+
+void UDefaultGameInstance::BeginLoadingScreen(const FString& MapName)
+{
+	if (!IsRunningDedicatedServer())
+	{
+		FLoadingScreenAttributes LoadingScreen;
+		LoadingScreen.bAutoCompleteWhenLoadingCompletes = true;
+		LoadingScreen.MinimumLoadingScreenDisplayTime = 1.f;
+		LoadingScreenWidget = Cast<ULoadingScreenWidget>(CreateWidget(this, LoadingScreenClass));
+		LoadingScreen.WidgetLoadingScreen = LoadingScreenWidget->TakeWidget();
+		GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
+	}
+}
+
+void UDefaultGameInstance::EndLoadingScreen(UWorld* InLoadedWorld)
+{
+	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->FadeScreenFromBlack();
+}
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
 {
@@ -94,15 +121,12 @@ void UDefaultGameInstance::SaveAASettings(const FAASettingsStruct AASettingsToSa
 	if (USaveGameAASettings* SaveGameAASettingsObject = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass())))
 	{
 		SaveGameAASettingsObject->AASettings = AASettingsToSave;
-		if (UGameplayStatics::SaveGameToSlot(SaveGameAASettingsObject, TEXT("AASettingsSlot"), 2))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SaveAASettings Succeeded"));
-		}
+		UGameplayStatics::SaveGameToSlot(SaveGameAASettingsObject, TEXT("AASettingsSlot"), 2);
 	}
 	OnAASettingsChange.Broadcast(AASettingsToSave);
 }
 
-void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, const float Volume, float GlobalVolume) const
+void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, const float Volume, float GlobalVolume)
 {
 	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), SoundMix, SoundClassToChange, round(Volume)/100);
 	UGameplayStatics::PushSoundMixModifier(GetWorld(), SoundMix);
@@ -144,10 +168,6 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase()
 		bIsSavingScores = true;
 		RequestAccessToken(LoadPlayerSettings().LoginCookie);
 	}
-	else
-	{
-		OnPostPlayerScoresResponse.Broadcast("Invalid Refresh Token", 401);
-	}
 }
 
 void UDefaultGameInstance::SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave) const
@@ -174,7 +194,6 @@ FPlayerSettings UDefaultGameInstance::LoadPlayerSettings() const
 	{
 		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Settings loaded to Game Instance"));
 	return SaveGamePlayerSettings->PlayerSettings;
 }
 

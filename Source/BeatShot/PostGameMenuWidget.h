@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PostGameMenuWidget.generated.h"
 
+class UWebBrowserWidget;
 /**
  * 
  */
@@ -16,5 +17,17 @@ class BEATSHOT_API UPostGameMenuWidget : public UUserWidget
 
 public:
 	UPROPERTY(BlueprintReadOnly)
-		bool bSavedScores;
+	bool bSavedScores;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowScoresWebBrowser;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UWebBrowserWidget* WebBrowserWidget;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void ScoresOverlayTextSwitcher(const int32 IndexID);
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void ScoringButtonClicked();
 };

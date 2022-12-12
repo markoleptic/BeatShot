@@ -120,7 +120,7 @@ void ADefaultGameMode::InitializeAudioManagers(const FString SongFilePath)
 	GameModeActorBase->GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
 }
 
-void ADefaultGameMode::PauseAAManager(const bool ShouldPause, UAudioAnalyzerManager* AAManager) const
+void ADefaultGameMode::PauseAAManager(const bool ShouldPause, UAudioAnalyzerManager* AAManager) 
 {
 	if (IsValid(AAManager))
 	{
@@ -200,13 +200,13 @@ void ADefaultGameMode::InitializeGameMode()
 	                                    SpawnParameters);
 
 	AASettings = GI->LoadAASettings();
-	// call the blueprint function to display open file dialog window, which then
-	// calls InitializeAudioManagers with the path to the song file,
-	// and then displays the Countdown widget
-	OpenSongFileDialog();
+	/** call the blueprint function to display open file dialog window, which then
+	 *  calls InitializeAudioManagers with the path to the song file,
+	 *  and then displays the Countdown widget */
+	OpenSongFileDialog(); 
 }
 
-void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume, UAudioAnalyzerManager* AAManager) const
+void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume, UAudioAnalyzerManager* AAManager)
 {
 	if (IsValid(AAManager))
 	{
@@ -242,14 +242,18 @@ void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct RefreshedAASett
 	AASettings = RefreshedAASettings;
 }
 
-void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores)
+void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
 {
+	if (ShowPostGameMenu)
+	{
+		GI->DefaultPlayerControllerRef->ShowPostGameMenu(ShouldSavePlayerScores);
+	}
+	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
+	
 	//Hide HUD and countdown
 	GI->DefaultPlayerControllerRef->HidePlayerHUD();
 	GI->DefaultPlayerControllerRef->HideCountdown();
 	GI->DefaultPlayerControllerRef->HideCrosshair();
-	
-	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	
 	if (IsValid(GameModeActorBase))
 	{
@@ -278,6 +282,10 @@ void ADefaultGameMode::ShowSongPathErrorMessage() const
 	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(
 			GetWorld(), 0));
+	if (PlayerController->IsPostGameMenuActive())
+	{
+		PlayerController->HidePostGameMenu();
+	}
 	UPopupMessageWidget* PopupMessageWidget = PlayerController->CreatePopupMessageWidget(true, 1);
 	PopupMessageWidget->InitPopup("Error",
 	                              "There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",

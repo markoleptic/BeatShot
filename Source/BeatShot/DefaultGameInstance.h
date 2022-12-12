@@ -10,6 +10,7 @@
 #include "Interfaces/IHttpRequest.h"
 #include "DefaultGameInstance.generated.h"
 
+class ULoadingScreenWidget;
 class USaveGamePlayerScore;
 class USaveGamePlayerSettings;
 class ADefaultGameMode;
@@ -71,6 +72,14 @@ class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 
+public:
+	
+	virtual void Init() override;
+	UFUNCTION()
+	virtual void BeginLoadingScreen(const FString& MapName);
+	UFUNCTION()
+	virtual void EndLoadingScreen(UWorld* InLoadedWorld);
+
 #pragma region References
 
 public:
@@ -93,9 +102,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
-
-	UFUNCTION(BlueprintCallable, Category = "Sound Settings")
-	void ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume) const;
 
 	UPROPERTY(BlueprintReadWrite, Category = "References")
 	ADefaultCharacter* DefaultCharacterRef;
@@ -137,6 +143,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	void SavePlayerSettings(FPlayerSettings PlayerSettingsToSave) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Sound Settings")
+	void ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume);
 
 #pragma endregion
 
@@ -209,6 +218,12 @@ public:
 #pragma endregion
 
 private:
+	
+	UPROPERTY()
+	ULoadingScreenWidget* LoadingScreenWidget;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ULoadingScreenWidget> LoadingScreenClass;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
 	FString Username;
