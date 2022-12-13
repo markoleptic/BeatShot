@@ -67,10 +67,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideFPSCounter();
 	UFUNCTION(BlueprintCallable)
-	void ShowLogin(bool bHasSignedIn);
-	UFUNCTION(BlueprintCallable)
-	void HideLogin();
-	UFUNCTION(BlueprintCallable)
 	void FadeScreenToBlack();
 	UFUNCTION(BlueprintCallable)
 	void FadeScreenFromBlack();
@@ -117,8 +113,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ULoginWidget> LoginClass;
-	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
 	
 	UPROPERTY()
@@ -133,8 +127,6 @@ private:
 	UPauseMenu* PauseMenu;
 	UPROPERTY()
 	UFPSCounterWidget* FPSCounter;
-	UPROPERTY()
-	ULoginWidget* LoginWidget;
 	UPROPERTY()
 	UDefaultGameInstance* GI;
 	UPROPERTY()
@@ -160,5 +152,4 @@ private:
 	void OnURLLoaded(const bool bLoadedSuccessfully);
 	UFUNCTION()
 	void OnLoadingScreenFadeOutFinish();
-	
 };

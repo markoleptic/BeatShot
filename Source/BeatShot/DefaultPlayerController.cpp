@@ -9,7 +9,6 @@
 #include "PauseMenu.h"
 #include "Countdown.h"
 #include "DefaultCharacter.h"
-#include "LoginWidget.h"
 #include "PostGameMenuWidget.h"
 #include "DefaultGameInstance.h"
 #include "WebBrowserWidget.h"
@@ -281,41 +280,6 @@ void ADefaultPlayerController::HideFPSCounter()
 	{
 		FPSCounter->RemoveFromViewport();
 		FPSCounter = nullptr;
-	}
-}
-
-/* Not being used since Main Menu should be the only place to encounter login screen and
- * it's already part of that widget */
-void ADefaultPlayerController::ShowLogin(const bool bHasSignedIn)
-{
-	LoginWidget = CreateWidget<ULoginWidget>(this, LoginClass);
-	if (LoginWidget->GetParent())
-	{
-		LoginWidget->GetParent()->SetVisibility(ESlateVisibility::HitTestInvisible);
-	}
-	if (bHasSignedIn)
-	{
-		LoginWidget->DefaultSignInText->SetVisibility(ESlateVisibility::Collapsed);
-		LoginWidget->HasSignedInBeforeText->SetVisibility(ESlateVisibility::Visible);
-	}
-	LoginWidget->RegisterOverlay->SetVisibility(ESlateVisibility::Collapsed);
-	LoginWidget->LoggedInOverlay->SetVisibility(ESlateVisibility::Collapsed);
-	LoginWidget->ContinueWithoutOverlay->SetVisibility(ESlateVisibility::Collapsed);
-	LoginWidget->AddToViewport();
-	LoginWidget->PlayAnimationForward(LoginWidget->FadeInAllInitial, 1, false);
-	LoginWidget->ExitLogin.AddDynamic(this, &ADefaultPlayerController::HideLogin);
-}
-
-void ADefaultPlayerController::HideLogin()
-{
-	if (LoginWidget)
-	{
-		if (LoginWidget->GetParent())
-		{
-			LoginWidget->GetParent()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		LoginWidget->RemoveFromViewport();
-		LoginWidget = nullptr;
 	}
 }
 
