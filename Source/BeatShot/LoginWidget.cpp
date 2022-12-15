@@ -9,6 +9,7 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Overlay.h"
+#include "Components/BackgroundBlur.h"
 #include "Kismet/GameplayStatics.h"
 
 void ULoginWidget::NativeConstruct()
@@ -16,6 +17,7 @@ void ULoginWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	Login->OnClicked.AddDynamic(this, &ULoginWidget::LoginButtonClicked);
+	Login->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutLogin);
 	
 	Register->OnClicked.AddDynamic(this, &ULoginWidget::LaunchRegisterURL);
 	Register->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutRegister);
@@ -47,6 +49,7 @@ void ULoginWidget::NativeConstruct()
 	PasswordTextBox->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ULoginWidget::LoginButtonClicked()
 {
 	if ((UsernameTextBox->GetText().IsEmpty() && EmailTextBox->GetText().IsEmpty()) || PasswordTextBox->GetText().IsEmpty())
@@ -60,12 +63,17 @@ void ULoginWidget::LoginButtonClicked()
 
 void ULoginWidget::OnLoginSuccess()
 {
-	PlayFadeOutLogin();
 	PlayFadeInLoggedIn();
 }
 
-void ULoginWidget::ShowRegisterScreen()
+void ULoginWidget::ShowRegisterScreen(const bool bIsPopupScreen)
 {
+	if (!bIsPopupScreen)
+	{
+		BackgroundBlur->SetVisibility(ESlateVisibility::Collapsed);
+		NoRegister->SetVisibility(ESlateVisibility::Collapsed);
+		NoLogin->SetVisibility(ESlateVisibility::Collapsed);
+	}
 	SetVisibility(ESlateVisibility::Visible);
 	PlayFadeInRegister();
 }
@@ -74,22 +82,20 @@ void ULoginWidget::ShowLoginScreen(const bool bIsPopupScreen)
 {
 	if (Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->LoadPlayerSettings().HasLoggedInHttp)
 	{
-		DefaultSignInText->SetVisibility(ESlateVisibility::Collapsed);
-		HasSignedInBeforeText->SetVisibility(ESlateVisibility::Visible);
-		ContinueWithoutLoginText->SetText(FText::FromString("Continue Without Signing In"));
-		ContinueWithoutTitleText->SetText(FText::FromString("Are you sure you want to continue without signing in?"));
-		ContinueWithoutBodyText->SetText(FText::FromString("You won't be able to see your played game data, but it will still be saved locally when you decide to sign in later."));
-		ContinueWithoutCancelText->SetText(FText::FromString("Go Back and Sign In"));
+		LoginErrorBox->SetVisibility(ESlateVisibility::Visible);
 		NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
 		NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
+		ContinueWithoutTitleText->SetText(FText::FromStringTable("/Game/UI/StringTables/ST_Login.ST_Login", "ContinueWithoutTitleTextLogin"));
+		ContinueWithoutBodyText->SetText(FText::FromStringTable("/Game/UI/StringTables/ST_Login.ST_Login", "ContinueWithoutBodyTextLogin"));
+		ContinueWithoutCancelButtonText->SetText(FText::FromStringTable("/Game/UI/StringTables/ST_Login.ST_Login", "ContinueWithoutCancelButtonTextLogin"));
 	}
 	else
 	{
-		DefaultSignInText->SetVisibility(ESlateVisibility::Visible);
-		HasSignedInBeforeText->SetVisibility(ESlateVisibility::Collapsed);
+		LoginErrorBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	if (!bIsPopupScreen)
 	{
+		BackgroundBlur->SetVisibility(ESlateVisibility::Collapsed);
 		NoLogin->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	SetVisibility(ESlateVisibility::Visible);

@@ -99,7 +99,7 @@ void UWebBrowserWidget::OnURLChanged(const FString& LastURL)
 	}
 	if (LastURL.IsEmpty())
 	{
-		GetWorld()->GetTimerManager().SetTimer(URLCheckDelay, this, &UWebBrowserWidget::OnURLChangedCallback, 0.3f, true, 0.2f);
+		GetWorld()->GetTimerManager().SetTimer(URLCheckDelay, this, &UWebBrowserWidget::OnURLChangedCallback, 0.3f, true, 0.5f);
 	}
 	else if (UKismetStringLibrary::StartsWith(LastURL, UserProfileURL, ESearchCase::IgnoreCase))
 	{
@@ -121,6 +121,5 @@ void UWebBrowserWidget::OnURLChanged(const FString& LastURL)
 
 void UWebBrowserWidget::OnURLChangedCallback()
 {
-	UE_LOG(LogTemp, Display, TEXT("URL: %s"),*Browser->GetUrl());
 	OnURLChanged(Browser->GetUrl());
 }

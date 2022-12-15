@@ -8,6 +8,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "LoginWidget.generated.h"
 
+class UBackgroundBlur;
 class UOverlay;
 class UEditableTextBox;
 class UTextBlock;
@@ -25,25 +26,36 @@ class BEATSHOT_API ULoginWidget : public UUserWidget
 	virtual void NativeConstruct() override;
 	
 public:
-
+	
+	/** Since LoginWidget is not responsible for logging the user into the Beatshot website,
+	 * WebBrowserOverlay or its parent widget will call this function to show success message */
 	UFUNCTION(BlueprintCallable)
 	void OnLoginSuccess();
 
+	/** Shows the register screen */
 	UFUNCTION(BlueprintCallable)
-	void ShowRegisterScreen();
+	void ShowRegisterScreen(const bool bIsPopupScreen);
 
+	/** Shows the login screen */
 	UFUNCTION(BlueprintCallable)
 	void ShowLoginScreen(const bool bIsPopupScreen);
-	
+
+	/** Broadcasts the user's login info to WebBrowserOverlay in order to log them into the web browser.
+	 * The parameters are stateless, the only one that would be saved is the username. */
 	UPROPERTY(BlueprintAssignable)
 	FOnLoginButtonClicked OnLoginButtonClicked;
+
+	/** WebBrowserOverlay binds to this button's OnClick event */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UButton* OkayButton;
 	
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* DefaultSignInText;
+	UBackgroundBlur* BackgroundBlur;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* HasSignedInBeforeText;
+	UHorizontalBox* LoginErrorBox;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* ErrorBox;
 
@@ -68,13 +80,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ErrorText;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ContinueWithoutLoginText;
+	UTextBlock* NoLoginButtonText;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ContinueWithoutTitleText;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ContinueWithoutBodyText;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ContinueWithoutCancelText;
+	UTextBlock* ContinueWithoutCancelButtonText;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* Register;
@@ -92,8 +104,6 @@ protected:
 	UButton* NoRegisterConfirm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* NoRegisterCancel;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* OkayButton;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLogin;

@@ -1,18 +1,30 @@
 Key,SourceString
-"BaseGameMode","The gamemode to base the custom game mode off of. For example, if you want targets in a grid, this needs to be set to BeatGrid."
-"GameModeTemplate",See what settings the default game modes use to fine tune your custom game mode.
-"CustomGameModeName",The name to save your custom game mode as.
-"GameModeDifficulty","Useful for seeing what settings the default game modes use, but custom game modes have no difficulty by default."
-"SpawnBeatDelay",Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time.
-"Lifespan","How long the target will live, even if not shot. This doesn't apply to BeatTrack."
-"TargetSpawnCD","Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
-"HeadshotHeight","If checked, the targests will only spawn at headshot height."
-"CenterTargets","If checked, the spawn area is centered in the middle of the wall rather than placed as low as possible without colliding into the ground."
-"MinDistance",The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
-"SpreadType","There are two types of spread that control how far the targets can spawn from the center of the spawn area. Dynamic spread lowers the spawn area based on consecutive targets hit, while static spread does not change the spawn area."
-"ConstantTargetSize",Static sized targets that do not change.
-"DynamicTargetSize","Similar to dynamic spread, the targets gradually shrink from Max Target scale to Min Target scale based on consecutive targets hit."
-"BeatGridEvenSpacing",Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
-"BeatGridAdjacentOnly","By default, adjacent-only will only activate a target that was adjacent/beside a previously activated target. Completely random will choose a target in the grid at random."
-"BeatGridNumTargets",The number of targets that are spawned at the beginning.
-"BeatTrackConstantSpeed","If checked, the speed at which the target moves will not change."
+MissingInfoError,Please enter your username/email and password to login.
+RegisterTitleText,It looks like you don't have an account yet
+RegisterBodyTitle,Registering for an account automatically:
+RegisterBody1,Signs you in each time you start the game
+RegisterBody2,Saves your scores in the cloud
+RegisterBody3,Grants access to detailed score data online and in game
+RegisterButtonText,Register
+GotoLoginText,Already have an account?
+NoRegisterText,Continue without Registering
+ContinueWithoutTitleTextLogin,Are you sure you want to continue without signing in?
+ContinueWithoutTitleTextRegister,Are you sure you want to continue without registering?
+ContinueWithoutBodyTextLogin,"You won't be able to see your played game data, but it will still be saved locally if you decide to sign in later."
+ContinueWithoutBodyTextRegister,"You won't be able to see your played game data, but it will still be saved locally if you ever decide to make an account."
+ContinueWithoutConfirmButtonText,Yes I'm Sure
+ContinueWithoutCancelButtonTextLogin,Go Back and Sign In
+ContinueWithoutCancelButtonTextRegister,Go Back and Register
+LoginTitleText,Sign In
+ErrorText,
+LoginErrorText,Something went wrong or your login expired. Please sign again to see your scores.
+UsernameText,Username:
+EmailText,Email:
+PasswordText,Password:
+LoginSubtitleText,You can use your username OR email.
+GotoRegisterButtonText,Don't have an account?
+NoLoginButtonText,Continue without signing in
+LoginButtonText,Login
+LoggedInTitleText,Login Success
+LoggedInBodyText,You've been logged in and won't have to login again until your cookie expires.
+OkayButtonText,Sick
