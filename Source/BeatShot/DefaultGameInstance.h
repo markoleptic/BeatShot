@@ -47,22 +47,35 @@ struct FLoginPayload
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 	FString Password;
+
+	FLoginPayload() {
+		Username = "";
+		Email = "";
+		Password = "";
+	}
+
+	FLoginPayload(const FString& InUsername,const FString& InEmail, const FString& InPassword)
+	{
+		Username = InUsername;
+		Email = InEmail;
+		Password = InPassword;
+	}
 };
 
 /** Broadcast when AudioAnalyzer settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, FAASettingsStruct, RefreshedAASettings);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, const FAASettingsStruct&, RefreshedAASettings);
 
 /** Broadcast when Player Settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, FPlayerSettings, RefreshedPlayerSettings);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, const FPlayerSettings&, RefreshedPlayerSettings);
 
-/** Broadcast if refresh token is invalid NYI */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRefreshTokenResponse, bool, bSuccessful);
+/** Broadcast if refresh token is invalid */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRefreshTokenResponse, const bool, bSuccessful);
 
 /** Broadcast when a login response is received from Beatshot website */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, FString, ResponseMsg, int32, ResponseCode);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, const FString, ResponseMsg, const int32, ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, FString, ResponseMsg, int32, ResponseCode);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, const FString, ResponseMsg, const int32, ResponseCode);
 
 /** Broadcast when target spawner is registered */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetSpawnerInit, ATargetSpawner*, TargetSpawner);
@@ -136,13 +149,13 @@ public:
 	FAASettingsStruct LoadAASettings() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
-	void SaveAASettings(FAASettingsStruct AASettingsToSave) const;
+	void SaveAASettings(const FAASettingsStruct& AASettingsToSave) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	FPlayerSettings LoadPlayerSettings() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
-	void SavePlayerSettings(FPlayerSettings PlayerSettingsToSave) const;
+	void SavePlayerSettings(const FPlayerSettings& PlayerSettingsToSave) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Sound Settings")
 	void ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume);
@@ -155,7 +168,7 @@ public:
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void SavePlayerScores(TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave,
+	void SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> &PlayerScoreMapToSave,
 	                      bool bSaveToDatabase);
 
 	/* Database saving of scores. First sends an access token request, then calls save scores with the access token */
@@ -173,10 +186,10 @@ private:
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
-	void LoginUser(FLoginPayload LoginPayload);
+	void LoginUser(const FLoginPayload& LoginPayload);
 
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
-	void RequestAccessToken(FString RefreshToken);
+	void RequestAccessToken();
 
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
 	bool IsRefreshTokenValid() const;

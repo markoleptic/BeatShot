@@ -155,7 +155,7 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
-void ADefaultCharacter::OnUserSettingsChange(FPlayerSettings PlayerSettings)
+void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 {
 	Sensitivity = PlayerSettings.Sensitivity;
 	if (Gun)

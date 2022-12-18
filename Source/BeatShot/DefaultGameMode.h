@@ -50,7 +50,7 @@ public:
 
 	/* get AASettings from GameInstance */
 	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-	void RefreshAASettings(FAASettingsStruct RefreshedAASettings);
+	void RefreshAASettings(const FAASettingsStruct& RefreshedAASettings);
 
 	/* GameModeActorBase class to spawn, deals with GameModeActorStruct, scoring, etc. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Initialization")

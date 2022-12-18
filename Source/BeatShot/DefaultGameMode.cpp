@@ -237,7 +237,7 @@ void ADefaultGameMode::PlayAAPlayer()
 	}
 }
 
-void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct RefreshedAASettings)
+void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASettings)
 {
 	AASettings = RefreshedAASettings;
 }

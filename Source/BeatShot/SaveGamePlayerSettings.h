@@ -35,9 +35,6 @@ struct FPlayerSettings
 		bool HasLoggedInHttp;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-		bool HasLoggedInBrowser;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 		FString LoginCookie;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
@@ -92,7 +89,6 @@ struct FPlayerSettings
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
 		HasLoggedInHttp = false;
-		HasLoggedInBrowser = false;
 		Username = "";
 		LoginCookie = "";
 		LineWidth = 4;
@@ -119,7 +115,6 @@ struct FPlayerSettings
 		MenuVolume = 50.f;
 		MusicVolume = 10.f;
 		HasLoggedInHttp = false;
-		HasLoggedInBrowser = false;
 		Username = "";
 		LoginCookie = "";
 		LineWidth = 4;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "WebBrowser.h"
 #include "Delegates/DelegateCombinations.h"
@@ -41,7 +42,7 @@ public:
 
 	/* Executes Javascript to login a user */
 	UFUNCTION(BlueprintCallable)
-	void HandleUserLogin(const FString& Username,const FString& Email,const FString& Password);
+	void HandleUserLogin(const FLoginPayload LoginPayload);
 
 	/* Allows other widgets to bind to loading of URLs */
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
@@ -50,7 +51,7 @@ public:
 private:
 
 	/* Fills the login form on the login screen of the website using Javascript */
-	bool FillLoginForm(const FString& Username,const FString& Email,const FString& Password) const;
+	bool FillLoginForm(const FLoginPayload LoginPayload) const;
 
 	/* Check the persistant checkbox on the login screen of the website using Javascript */
 	void CheckPersistCheckbox();

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -17,7 +18,7 @@ class UHorizontalBox;
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLoginButtonClicked, FString, Username, FString, Email, FString, Password);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool, bIsPopup);
 
 UCLASS()
 class BEATSHOT_API ULoginWidget : public UUserWidget
@@ -34,20 +35,23 @@ public:
 
 	/** Shows the register screen */
 	UFUNCTION(BlueprintCallable)
-	void ShowRegisterScreen(const bool bIsPopupScreen);
+	void ShowRegisterScreen();
 
 	/** Shows the login screen */
 	UFUNCTION(BlueprintCallable)
-	void ShowLoginScreen(const bool bIsPopupScreen);
+	void ShowLoginScreen();
 
 	/** Broadcasts the user's login info to WebBrowserOverlay in order to log them into the web browser.
-	 * The parameters are stateless, the only one that would be saved is the username. */
+	 * The parameters are stateless, the only one that would be saved is the username */
 	UPROPERTY(BlueprintAssignable)
 	FOnLoginButtonClicked OnLoginButtonClicked;
 
 	/** WebBrowserOverlay binds to this button's OnClick event */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* OkayButton;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
+	bool bIsPopup;
 	
 protected:
 
@@ -145,3 +149,5 @@ protected:
 	
 	const FString MissingInfoError = "Please enter your username/email and password to login.";
 };
+
+

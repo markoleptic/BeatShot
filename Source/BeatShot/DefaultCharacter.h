@@ -97,7 +97,7 @@ public:
 
 	/** Called when PlayerSettings are changed while Character is spawned */
 	UFUNCTION(BlueprintCallable)
-	void OnUserSettingsChange(FPlayerSettings PlayerSettings);
+	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
 
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")

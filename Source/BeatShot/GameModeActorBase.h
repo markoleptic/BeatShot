@@ -618,10 +618,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	FTimerHandle GameModeLengthTimer;
 
-	/* Reference Game Instance */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	UDefaultGameInstance* GI;
-
 #pragma region Scoring
 
 	/* Function bound to TargetSpawner to keep track of streak */
@@ -653,7 +649,7 @@ public:
 
 	/* Function called when new settings are saved in Game Instance */
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
+	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 
 	/* Delegate called when there is any update that should be reflected in PlayerHUD stats */
 	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Delegates")

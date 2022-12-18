@@ -116,7 +116,7 @@ FAASettingsStruct UDefaultGameInstance::LoadAASettings() const
 	return FAASettingsStruct();
 }
 
-void UDefaultGameInstance::SaveAASettings(const FAASettingsStruct AASettingsToSave) const
+void UDefaultGameInstance::SaveAASettings(const FAASettingsStruct& AASettingsToSave) const
 {
 	if (USaveGameAASettings* SaveGameAASettingsObject = Cast<USaveGameAASettings>(UGameplayStatics::CreateSaveGameObject(USaveGameAASettings::StaticClass())))
 	{
@@ -144,7 +144,7 @@ TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadP
 	return SaveGamePlayerScore->PlayerScoreMap;
 }
 
-void UDefaultGameInstance::SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMapToSave, const bool bSaveToDatabase)
+void UDefaultGameInstance::SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> &PlayerScoreMapToSave, const bool bSaveToDatabase)
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
 	{
@@ -163,14 +163,24 @@ void UDefaultGameInstance::SavePlayerScores(const TMap<FGameModeActorStruct, FPl
 
 void UDefaultGameInstance::SavePlayerScoresToDatabase()
 {
-	if (IsRefreshTokenValid())
+	if (!LoadPlayerSettings().HasLoggedInHttp)
+	{
+		/** Broadcast custom code for DefaultPlayerController to listen to in case user doesn't have account */
+		OnPostPlayerScoresResponse.Broadcast("NoAccount", 900);
+	}
+	else if (!IsRefreshTokenValid())
+	{
+		/** Broadcast custom code for DefaultPlayerController to listen to in case of invalid refresh token */
+		OnPostPlayerScoresResponse.Broadcast("SavedScoresLocallyOnly", 901);
+	}
+	else
 	{
 		bIsSavingScores = true;
-		RequestAccessToken(LoadPlayerSettings().LoginCookie);
+		RequestAccessToken();
 	}
 }
 
-void UDefaultGameInstance::SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave) const
+void UDefaultGameInstance::SavePlayerSettings(const FPlayerSettings& PlayerSettingsToSave) const
 {
 	if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
@@ -197,7 +207,7 @@ FPlayerSettings UDefaultGameInstance::LoadPlayerSettings() const
 	return SaveGamePlayerSettings->PlayerSettings;
 }
 
-void UDefaultGameInstance::LoginUser(FLoginPayload LoginPayload)
+void UDefaultGameInstance::LoginUser(const FLoginPayload& LoginPayload)
 {
 	const TSharedRef<FJsonObject> LoginObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(FLoginPayload::StaticStruct(), &LoginPayload, LoginObject, 0, 0);
@@ -239,7 +249,7 @@ void UDefaultGameInstance::OnLoginResponseReceived(FHttpRequestPtr Request, cons
 	UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
 }
 
-void UDefaultGameInstance::RequestAccessToken(FString RefreshToken)
+void UDefaultGameInstance::RequestAccessToken()
 {
 	// not currently using RefreshToken parameter but may change in future to double check token
 	const FHttpRequestRef AccessTokenRequest = FHttpModule::Get().CreateRequest();
@@ -255,14 +265,24 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 	if (Response->GetResponseCode() != 200)
 	{
 		FPlayerSettings PlayerSettings = LoadPlayerSettings();
-		OnRefreshTokenResponse.Broadcast(false);
 		PlayerSettings.LoginCookie = "";
 		SavePlayerSettings(PlayerSettings);
+		OnRefreshTokenResponse.Broadcast(false);
 		UE_LOG(LogTemp, Display, TEXT("Access Token Request Failed. Resetting login cookie"));
+		
+		if (bIsSavingScores)
+		{
+			/** Broadcast custom code for DefaultPlayerController to listen to in case of invalid refresh token */
+			OnPostPlayerScoresResponse.Broadcast("SavedScoresLocallyOnly", Response->GetResponseCode());
+		}
+		
 		return;
 	}
+	
 	OnRefreshTokenResponse.Broadcast(true);
-	// convert response to Json object to access string fields
+	UE_LOG(LogTemp, Display, TEXT("Successful Access Token Response"));
+	
+	/** Convert response to Json object to access string fields */
 	const FString ResponseString = Response->GetContentAsString();
 	TSharedPtr<FJsonObject> ResponseObj;
 	const TSharedRef<TJsonReader<>> ResponseReader = TJsonReaderFactory<>::Create(ResponseString);

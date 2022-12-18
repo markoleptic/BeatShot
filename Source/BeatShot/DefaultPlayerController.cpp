@@ -11,7 +11,6 @@
 #include "DefaultCharacter.h"
 #include "PostGameMenuWidget.h"
 #include "DefaultGameInstance.h"
-#include "WebBrowserWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/Overlay.h"
@@ -34,7 +33,7 @@ void ADefaultPlayerController::BeginPlay()
 	GI->OnPostPlayerScoresResponse.AddDynamic(this, &ADefaultPlayerController::OnPostPlayerScoresResponse);
 }
 
-void ADefaultPlayerController::SetPlayerEnabledState(bool bPlayerEnabled)
+void ADefaultPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
 {
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
@@ -146,7 +145,12 @@ void ADefaultPlayerController::HideCountdown()
 void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 {
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	PostGameMenuWidget->bSavedScores = bSavedScores;
+	//PostGameMenuWidget->bSavedScores = bSavedScores;
+	/** If scores weren't saved, update Overlay text to reflect that. This also means OnPostPlayerScores won't get called */
+	if (!bSavedScores)
+	{
+		PostGameMenuWidget->WebBrowserOverlay->SetOverlayText("DidNotSaveScores");
+	}
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
 	HandlePostGameMenuPause(true);
@@ -154,55 +158,15 @@ void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
-void ADefaultPlayerController::OnPostPlayerScoresResponse(FString Message, int32 ResponseCode)
+// ReSharper disable once CppMemberFunctionMayBeConst
+void ADefaultPlayerController::OnPostPlayerScoresResponse(const FString Message, const int32 ResponseCode) 
 {
 	UE_LOG(LogTemp, Display, TEXT("HitPostPlayerScoresResponse"));
 	if (!PostGameMenuActive)
 	{
 		return;
 	}
-	if (ResponseCode != 200)
-	{
-		PostGameMenuWidget->ScoresOverlayTextSwitcher(2);
-		PostGameMenuWidget->ScoringButtonClicked();
-		return;
-	}
-	
-	const FPlayerSettings PlayerSettings = GI->LoadPlayerSettings();
-	if (!PlayerSettings.HasLoggedInHttp)
-	{
-		PostGameMenuWidget->ScoresOverlayTextSwitcher(2);
-		PostGameMenuWidget->ScoringButtonClicked();
-		return;
-	}
-	PostGameMenuWidget->WebBrowserWidget->OnURLLoaded.AddDynamic(this, &ADefaultPlayerController::OnURLLoaded);
-	if (GI->GameModeActorStruct.CustomGameModeName.IsEmpty())
-	{
-		PostGameMenuWidget->WebBrowserWidget->LoadDefaultGameModesURL(PlayerSettings.Username);
-	}
-	else
-	{
-		PostGameMenuWidget->WebBrowserWidget->LoadCustomGameModesURL(PlayerSettings.Username);
-	}
-}
-
-void ADefaultPlayerController::OnURLLoaded(const bool bLoadedSuccessfully)
-{
-	if (!PostGameMenuActive)
-	{
-		return;
-	}
-	if (bLoadedSuccessfully)
-	{
-		PostGameMenuWidget->bShowScoresWebBrowser = true;
-		PostGameMenuWidget->ScoringButtonClicked();
-	}
-	else
-	{
-		PostGameMenuWidget->ScoresOverlayTextSwitcher(4);
-		PostGameMenuWidget->ScoringButtonClicked();
-	}
-	PostGameMenuWidget->WebBrowserWidget->OnURLLoaded.RemoveDynamic(this, &ADefaultPlayerController::OnURLLoaded);
+	PostGameMenuWidget->WebBrowserOverlay->InitializePostGameScoringOverlay(Message, ResponseCode);
 }
 
 void ADefaultPlayerController::OnLoadingScreenFadeOutFinish()
@@ -305,19 +269,6 @@ void ADefaultPlayerController::FadeScreenFromBlack()
 	ScreenFadeWidget->FadeFromBlack();
 }
 
-void ADefaultPlayerController::FadeInLoadingScreen()
-{
-}
-
-void ADefaultPlayerController::FadeOutLoadingScreen(float LastTime)
-{
-	LoadingScreenWidget = CreateWidget<ULoadingScreenWidget>(this, LoadingScreenClass);
-	LoadingScreenWidget->Time = LastTime;
-	LoadingScreenWidget->AddToViewport(21);
-	LoadingScreenWidget->BindToFadeOutFinish(this, FName("OnLoadingScreenFadeOutFinish"));
-	LoadingScreenWidget->FadeOut();
-}
-
 void ADefaultPlayerController::OnFadeScreenToBlackFinish()
 {
 	if (ScreenFadeWidget)
@@ -364,7 +315,7 @@ UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(const bo
 	return PopupMessageWidget;
 }
 
-void ADefaultPlayerController::OnPlayerSettingsChange(const FPlayerSettings PlayerSettings)
+void ADefaultPlayerController::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)
 {
 	if (PlayerSettings.bShowFPSCounter)
 	{

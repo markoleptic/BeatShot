@@ -33,7 +33,7 @@ class BEATSHOT_API ADefaultPlayerController : public APlayerController
 	virtual void BeginPlay() override;
 
 public:
-	void SetPlayerEnabledState(bool bPlayerEnabled);
+	void SetPlayerEnabledState(const bool bPlayerEnabled);
 	UFUNCTION(BlueprintCallable)
 	void ShowMainMenu();
 	UFUNCTION(BlueprintCallable)
@@ -55,7 +55,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HideCountdown();
 	UFUNCTION(BlueprintCallable)
-	void ShowPostGameMenu(bool bSavedScores);
+	void ShowPostGameMenu(const bool bSavedScores);
 	UFUNCTION(BlueprintCallable)
 	void HidePostGameMenu();
 	UFUNCTION(BlueprintCallable)
@@ -71,19 +71,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FadeScreenFromBlack();
 	UFUNCTION(BlueprintCallable)
-	void FadeInLoadingScreen();
-	UFUNCTION(BlueprintCallable)
-	void FadeOutLoadingScreen(float LastTime);
-	UFUNCTION(BlueprintCallable)
 	bool IsPlayerHUDActive() const;
 	UFUNCTION(BlueprintCallable)
 	bool IsPostGameMenuActive() const;
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void HandlePause();
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void HandlePostGameMenuPause(bool bShouldPause);
+	void HandlePostGameMenuPause(const bool bShouldPause);
 	UFUNCTION(BlueprintCallable)
-	UPopupMessageWidget* CreatePopupMessageWidget(bool bDestroyOnClick, int32 ButtonIndex = -1);
+	UPopupMessageWidget* CreatePopupMessageWidget(const bool bDestroyOnClick, const int32 ButtonIndex = -1);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 	bool CountdownActive;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
@@ -145,11 +141,9 @@ private:
 	UFUNCTION()
 	void OnFadeScreenFromBlackFinish();
 	UFUNCTION()
-	void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
+	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 	UFUNCTION()
-	void OnPostPlayerScoresResponse(FString Message, int32 ResponseCode);
-	UFUNCTION()
-	void OnURLLoaded(const bool bLoadedSuccessfully);
+	void OnPostPlayerScoresResponse(const FString Message, int32 ResponseCode);
 	UFUNCTION()
 	void OnLoadingScreenFadeOutFinish();
 };

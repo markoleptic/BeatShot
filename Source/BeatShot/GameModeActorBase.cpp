@@ -23,11 +23,10 @@ AGameModeActorBase::AGameModeActorBase()
 void AGameModeActorBase::BeginPlay()
 {
 	Super::BeginPlay();
-	// Store instance of GameModeActorBase in Game Instance
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	// register GameModeActorBase as a reference in GI
-	GI->RegisterGameModeActorBase(this);
+	
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	const FPlayerSettings PlayerSettings = GI->LoadPlayerSettings();
+	GI->RegisterGameModeActorBase(this);
 	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
 	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
 	GI->OnPlayerSettingsChange.AddDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
@@ -48,6 +47,7 @@ void AGameModeActorBase::InitializeGameModeActor()
 	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
 
 	// Binding delegates for scoring purposes
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	Cast<AGun_AK47>(GI->DefaultCharacterRef->GunActorComp->GetChildActor())->OnShotFired.AddDynamic(
 		this, &AGameModeActorBase::UpdateShotsFired);
 	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
@@ -57,6 +57,7 @@ void AGameModeActorBase::InitializeGameModeActor()
 void AGameModeActorBase::StartGameMode()
 {
 	InitializeGameModeActor();
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &AGameModeActorBase::OnGameModeLengthTimerComplete,
 	                                GameModeActorStruct.GameModeLength, false);
 	GI->TargetSpawnerRef->SetShouldSpawn(true);
@@ -65,6 +66,8 @@ void AGameModeActorBase::StartGameMode()
 
 void AGameModeActorBase::EndGameMode(const bool ShouldSavePlayerScores)
 {
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
 	if (ShouldSavePlayerScores)
 	{
 		SavePlayerScores();
@@ -97,14 +100,15 @@ void AGameModeActorBase::EndGameMode(const bool ShouldSavePlayerScores)
 
 void AGameModeActorBase::OnGameModeLengthTimerComplete() const
 {
+	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	/* don't save scores if score is zero */
 	if (PlayerScores.Score <= 0 ||
 		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
 			PlayerScores.CustomGameModeName == ""))
 	{
-		Cast<ADefaultGameMode>(GI->GameModeBaseRef)->EndGameMode(false, true);
+		GameMode->EndGameMode(false, true);
 	}
-	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->EndGameMode(true, true);
+	GameMode->EndGameMode(true, true);
 }
 
 void AGameModeActorBase::OnStreakUpdate(const int32 Streak, const FVector Location)
@@ -174,7 +178,7 @@ void AGameModeActorBase::UpdateTrackingScore(const float DamageTaken, const floa
 	}
 }
 
-void AGameModeActorBase::OnPlayerSettingsChange(const FPlayerSettings PlayerSettings)
+void AGameModeActorBase::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)
 {
 	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
 	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
@@ -208,6 +212,9 @@ void AGameModeActorBase::UpdateHighScore()
 
 void AGameModeActorBase::SavePlayerScores()
 {
+
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
 	// don't save scores if score is zero
 	if (PlayerScores.Score <= 0 ||
 		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
@@ -279,7 +286,7 @@ void AGameModeActorBase::SavePlayerScores()
 
 void AGameModeActorBase::LoadPlayerScores()
 {
-	PlayerScoreMap = GI->LoadPlayerScores();
+	PlayerScoreMap = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->LoadPlayerScores();
 
 	// iterate through all elements in PlayerScoreMap
 	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
