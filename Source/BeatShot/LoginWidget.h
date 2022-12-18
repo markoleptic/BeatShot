@@ -18,16 +18,17 @@ class UHorizontalBox;
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool, bIsPopup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool,
+                                             bIsPopup);
 
 UCLASS()
 class BEATSHOT_API ULoginWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 	virtual void NativeConstruct() override;
-	
+
 public:
-	
 	/** Since LoginWidget is not responsible for logging the user into the Beatshot website,
 	 * WebBrowserOverlay or its parent widget will call this function to show success message */
 	UFUNCTION(BlueprintCallable)
@@ -52,12 +53,11 @@ public:
 
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsPopup;
-	
-protected:
 
+protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBackgroundBlur* BackgroundBlur;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* LoginErrorBox;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -73,7 +73,7 @@ protected:
 	UOverlay* LoginOverlay;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* LoggedInOverlay;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* UsernameTextBox;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -108,7 +108,7 @@ protected:
 	UButton* NoRegisterConfirm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* NoRegisterCancel;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
@@ -117,7 +117,7 @@ protected:
 	UWidgetAnimation* FadeOutContinueWithout;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLoggedIn;
-	
+
 	FWidgetAnimationDynamicEvent FadeOutContinueWithoutDelegate;
 	FWidgetAnimationDynamicEvent FadeOutLoggedInDelegate;
 
@@ -146,8 +146,6 @@ protected:
 	void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
 	UFUNCTION()
 	void InitializeExit();
-	
+
 	const FString MissingInfoError = "Please enter your username/email and password to login.";
 };
-
-

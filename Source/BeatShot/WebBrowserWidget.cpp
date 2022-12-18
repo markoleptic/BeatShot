@@ -9,18 +9,29 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 
+void UWebBrowserWidget::NativeConstruct()
+{
+	Super::NativeConstruct();
+	bTimerActive = false;
+	OnTimerElapsed.BindDynamic(this, &UWebBrowserWidget::OnURLChanged);
+}
+
+void UWebBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+}
+
 void UWebBrowserWidget::LoadCustomGameModesURL(const FString& Username)
 {
 	UserProfileURL = ProfileURL + Username;
-	Browser->LoadURL(UserProfileURL + CustomModesString);
+	Browser->LoadURL(ProfileURL + Username + CustomModesString);
 	OnURLChanged(FString());
 }
 
 void UWebBrowserWidget::LoadDefaultGameModesURL(const FString& Username)
 {
 	UserProfileURL = ProfileURL + Username;
-	UE_LOG(LogTemp, Display, TEXT("URL: %s"), *UserProfileURL.Append(DefaultModesString));
-	Browser->LoadURL(UserProfileURL + DefaultModesString);
+	Browser->LoadURL(ProfileURL + Username + DefaultModesString);
 	OnURLChanged(FString());
 }
 
@@ -32,7 +43,7 @@ void UWebBrowserWidget::LoadPatchNotesURL() const
 void UWebBrowserWidget::LoadProfileURL(const FString& Username)
 {
 	UserProfileURL = ProfileURL + Username;
-	Browser->LoadURL(UserProfileURL);
+	Browser->LoadURL(ProfileURL + Username);
 	OnURLChanged(FString());
 }
 
@@ -46,7 +57,21 @@ void UWebBrowserWidget::HandleUserLogin(const FLoginPayload LoginPayload)
 	{
 		UserProfileURL = ProfileURL + LoginPayload.Username;
 	}
-	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, this, &UWebBrowserWidget::CheckPersistCheckbox, 0.1f, false);
+	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, this, &UWebBrowserWidget::CheckPersistCheckbox, 0.1f,
+	                                       false);
+}
+
+void UWebBrowserWidget::ParentTickOverride(float DeltaTime)
+{
+	if (bTimerActive)
+	{
+		if (URLCheckTimer > 0.3f && OnTimerElapsed.IsBound())
+		{
+			OnTimerElapsed.Execute(Browser->GetUrl());
+			URLCheckTimer = 0.f;
+		}
+		URLCheckTimer = URLCheckTimer + DeltaTime;
+	}
 }
 
 bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
@@ -58,13 +83,15 @@ bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
 	Browser->ExecuteJavascript(InitialInputEventScript);
 	if (!LoginPayload.Username.IsEmpty())
 	{
-		Browser->ExecuteJavascript(SetElementUsernameScript + LoginPayload.Username + "');" + DispatchUsernameChangeEventScript);
+		Browser->ExecuteJavascript(
+			SetElementUsernameScript + LoginPayload.Username + "');" + DispatchUsernameChangeEventScript);
 	}
 	else
 	{
 		Browser->ExecuteJavascript(SetElementEmailScript + LoginPayload.Email + "');" + DispatchEmailChangeEventScript);
 	}
-	Browser->ExecuteJavascript(SetElementPasswordScript + LoginPayload.Password + "');" + DispatchPasswordChangeEventScript);
+	Browser->ExecuteJavascript(
+		SetElementPasswordScript + LoginPayload.Password + "');" + DispatchPasswordChangeEventScript);
 	return true;
 }
 
@@ -78,7 +105,8 @@ void UWebBrowserWidget::CheckPersistCheckbox()
 void UWebBrowserWidget::ClickLogin()
 {
 	GetWorld()->GetTimerManager().ClearTimer(ClickLoginDelay);
-	if (const FPlayerSettings PlayerSettings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
+	if (const FPlayerSettings PlayerSettings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))
+		->
 		LoadPlayerSettings(); PlayerSettings.HasLoggedInHttp)
 	{
 		UserProfileURL = ProfileURL + PlayerSettings.Username;
@@ -90,31 +118,24 @@ void UWebBrowserWidget::ClickLogin()
 void UWebBrowserWidget::OnURLChanged(const FString& LastURL)
 {
 	URLCheckAttempts++;
-	UE_LOG(LogTemp, Display, TEXT("Last URL: %s"), *LastURL);
 	if (URLCheckAttempts > 15)
 	{
-		GetWorld()->GetTimerManager().ClearTimer(URLCheckDelay);
+		bTimerActive = false;
 		OnURLLoaded.Broadcast(false);
-		UserProfileURL="";
+		UserProfileURL = "";
 		URLCheckAttempts = 0;
 		return;
 	}
-	if (LastURL.IsEmpty() && !GetWorld()->GetTimerManager().IsTimerActive(URLCheckDelay))
+	if (LastURL.IsEmpty())
 	{
-		/** TODO: Come up with a fix to deal with timers while the game is paused (inside PostGameMenuWidget) */
-		GetWorld()->GetTimerManager().SetTimer(URLCheckDelay, this, &UWebBrowserWidget::OnURLChangedCallback, 0.3f, true);
+		bTimerActive = true;
 		return;
 	}
 	if (UKismetStringLibrary::StartsWith(LastURL, UserProfileURL, ESearchCase::IgnoreCase))
 	{
-		GetWorld()->GetTimerManager().ClearTimer(URLCheckDelay);
-		UserProfileURL="";
+		bTimerActive = false;
+		UserProfileURL = "";
 		URLCheckAttempts = 0;
 		OnURLLoaded.Broadcast(true);
 	}
-}
-
-void UWebBrowserWidget::OnURLChangedCallback()
-{
-	OnURLChanged(Browser->GetUrl());
 }

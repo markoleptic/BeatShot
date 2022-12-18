@@ -3,7 +3,6 @@
 
 #include "DefaultPlayerController.h"
 #include "MainMenuWidget.h"
-#include "LoadingScreenWidget.h"
 #include "Crosshair.h"
 #include "PlayerHUD.h"
 #include "PauseMenu.h"
@@ -28,9 +27,9 @@ void ADefaultPlayerController::BeginPlay()
 		ShowFPSCounter();
 	}
 	GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChange);
+	GI->OnPostPlayerScoresResponse.AddDynamic(this, &ADefaultPlayerController::OnPostPlayerScoresResponse);
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
-	GI->OnPostPlayerScoresResponse.AddDynamic(this, &ADefaultPlayerController::OnPostPlayerScoresResponse);
 }
 
 void ADefaultPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
@@ -145,7 +144,6 @@ void ADefaultPlayerController::HideCountdown()
 void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 {
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	//PostGameMenuWidget->bSavedScores = bSavedScores;
 	/** If scores weren't saved, update Overlay text to reflect that. This also means OnPostPlayerScores won't get called */
 	if (!bSavedScores)
 	{
@@ -161,19 +159,11 @@ void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ADefaultPlayerController::OnPostPlayerScoresResponse(const FString Message, const int32 ResponseCode) 
 {
-	UE_LOG(LogTemp, Display, TEXT("HitPostPlayerScoresResponse"));
 	if (!PostGameMenuActive)
 	{
 		return;
 	}
 	PostGameMenuWidget->WebBrowserOverlay->InitializePostGameScoringOverlay(Message, ResponseCode);
-}
-
-void ADefaultPlayerController::OnLoadingScreenFadeOutFinish()
-{
-	LoadingScreenWidget->RemoveFromViewport();
-	LoadingScreenWidget->Destruct();
-	LoadingScreenWidget = nullptr;
 }
 
 void ADefaultPlayerController::HidePostGameMenu()

@@ -88,8 +88,6 @@ public:
 	UCountdown* Countdown;
 	UPROPERTY(BlueprintAssignable, Category = "Screen Fade")
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ULoadingScreenWidget> LoadingScreenClass;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -127,8 +125,6 @@ private:
 	UDefaultGameInstance* GI;
 	UPROPERTY()
 	UScreenFadeWidget* ScreenFadeWidget;
-	UPROPERTY()
-	ULoadingScreenWidget* LoadingScreenWidget;
 
 	bool PlayerHUDActive;
 	bool PostGameMenuActive;
@@ -143,7 +139,5 @@ private:
 	UFUNCTION()
 	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 	UFUNCTION()
-	void OnPostPlayerScoresResponse(const FString Message, int32 ResponseCode);
-	UFUNCTION()
-	void OnLoadingScreenFadeOutFinish();
+	void OnPostPlayerScoresResponse(const FString Message, const int32 ResponseCode);
 };

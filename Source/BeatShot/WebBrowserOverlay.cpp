@@ -12,8 +12,15 @@
 void UWebBrowserOverlay::NativeConstruct()
 {
 	Super::NativeConstruct();
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
 	BindToAnimationFinished(FadeOutOverlay, FadeOutDelegate);
 	FadeOutDelegate.BindUFunction(BrowserOverlay, FName("RemoveFromParent"));
+
+	GI->OnRefreshTokenResponse.AddDynamic(this, &UWebBrowserOverlay::OnAccessTokenResponse);
+	GI->OnLoginResponse.AddDynamic(this, &UWebBrowserOverlay::OnHttpLoginResponse);
+	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UWebBrowserOverlay::LoginUserHttp);
+	BrowserWidget->OnURLLoaded.AddDynamic(this, &UWebBrowserOverlay::OnURLLoaded);
 }
 
 void UWebBrowserOverlay::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -30,15 +37,12 @@ void UWebBrowserOverlay::InitializeScoringOverlay()
 		if (!GI->IsRefreshTokenValid())
 		{
 			LoginWidget->ShowLoginScreen();
-			LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UWebBrowserOverlay::LoginUserHttp);
 			OnLoginStateChange.Broadcast(true, false, false);
 		}
 		else
 		{
 			/* Default behavior if logged in and has valid refresh token */
-			GI->OnRefreshTokenResponse.AddDynamic(this, &UWebBrowserOverlay::OnAccessTokenResponse);
 			GI->RequestAccessToken();
-			BrowserWidget->OnURLLoaded.AddDynamic(this, &UWebBrowserOverlay::OnURLLoaded);
 			BrowserWidget->LoadProfileURL(PlayerSettings.Username);
 		}
 	}
@@ -46,14 +50,12 @@ void UWebBrowserOverlay::InitializeScoringOverlay()
 	else
 	{
 		LoginWidget->ShowRegisterScreen();
-		LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UWebBrowserOverlay::LoginUserHttp);
 		OnLoginStateChange.Broadcast(false, false, false);
 	}
 }
 
 void UWebBrowserOverlay::InitializePostGameScoringOverlay(const FString& ResponseMessage, const int32 ResponseCode)
 {
-	UE_LOG(LogTemp, Display, TEXT("From InitPostGameScoringOverlay: %s"), *ResponseMessage);
 	switch (ResponseCode)
 	{
 	/** User doesn't have an account*/
@@ -118,7 +120,6 @@ void UWebBrowserOverlay::LoginUserHttp(const FLoginPayload LoginPayload, const b
 	Reset();
 	bSignedInThroughPopup = bIsPopup;
 	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->OnLoginResponse.AddDynamic(this, &UWebBrowserOverlay::OnHttpLoginResponse);
 	GI->LoginUser(LoginPayload);
 	LoginUserBrowser(LoginPayload);
 }
@@ -130,12 +131,6 @@ void UWebBrowserOverlay::OnHttpLoginResponse(FString ResponseMsg, const int32 Re
 	{
 		GetWorld()->GetTimerManager().ClearTimer(HttpTimerHandle);
 	}
-
-	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->OnLoginResponse.RemoveDynamic(this, &UWebBrowserOverlay::OnHttpLoginResponse);
-
-	UE_LOG(LogTemp, Display, TEXT("Http Login Resposne: %d"), ResponseCode);
-
 	bHttpResponse = true;
 	if (ResponseCode != 200)
 	{
@@ -150,34 +145,27 @@ void UWebBrowserOverlay::OnHttpLoginResponse(FString ResponseMsg, const int32 Re
 void UWebBrowserOverlay::LoginUserBrowser(const FLoginPayload LoginPayload)
 {
 	bIsLoggingIn = true;
-	BrowserWidget->OnURLLoaded.AddDynamic(this, &UWebBrowserOverlay::OnURLLoaded);
 	BrowserWidget->HandleUserLogin(LoginPayload);
 }
 
 void UWebBrowserOverlay::OnURLLoaded(const bool bLoadedSuccessfully)
 {
-	UE_LOG(LogTemp, Display, TEXT("OnURLLoaded called"));
+	URLLoadSuccess = bLoadedSuccessfully;
+
+	/* Limited set of instructions if this widget is a child of PostGameMenuWidget */
 	if (bIsPostGameScoringOverlay)
 	{
-		UE_LOG(LogTemp, Display, TEXT("bIsPostGameScoringOverlay"));
 		if (bLoadedSuccessfully)
 		{
 			FadeOut();
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("Unsuccessful URL login"));
 			SetOverlayText("SavedScoresButNotLoggedIn");
 		}
 		return;
 	}
 
-	URLLoadSuccess = bLoadedSuccessfully;
-
-	if (bHttpResponse)
-	{
-		UE_LOG(LogTemp, Display, TEXT("bHttpResponse True"));
-	}
 	/* Set timer to keep calling this function until we get an Http response */
 	if (!bHttpResponse)
 	{
@@ -186,28 +174,23 @@ void UWebBrowserOverlay::OnURLLoaded(const bool bLoadedSuccessfully)
 			GetWorld()->GetTimerManager().SetTimer(HttpTimerHandle, this, &UWebBrowserOverlay::HttpDelay, 0.2f, true,
 			                                       0.5f);
 		}
-		UE_LOG(LogTemp, Display, TEXT("bHttpResponse False"));
 		return;
 	}
-
-	UE_LOG(LogTemp, Display, TEXT("1"));
+	
 	/* Clear timer when we get an Http response */
 	if (GetWorld()->GetTimerManager().IsTimerActive(HttpTimerHandle))
 	{
 		GetWorld()->GetTimerManager().ClearTimer(HttpTimerHandle);
 	}
-
-	UE_LOG(LogTemp, Display, TEXT("2"));
+	
 	/* Unsuccessful Http Response */
 	if (!bHttpResponseSuccess)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Failed Http response"));
 		SetOverlayText("InvalidHttpResponse");
 		OnLoginStateChange.Broadcast(false, false, bSignedInThroughPopup);
 		return;
 	}
-
-	UE_LOG(LogTemp, Display, TEXT("3"));
+	
 	/* Unsuccessful URL load in browser */
 	if (!bLoadedSuccessfully)
 	{
@@ -215,17 +198,14 @@ void UWebBrowserOverlay::OnURLLoaded(const bool bLoadedSuccessfully)
 		OnLoginStateChange.Broadcast(true, false, bSignedInThroughPopup);
 		return;
 	}
-
-	UE_LOG(LogTemp, Display, TEXT("4"));
+	
 	/* Successful URL load in browser for user that has logged in before */
 	if (!bIsLoggingIn)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Successful URL load in browser for user that has logged in before"));
 		OnLoginStateChange.Broadcast(true, true, bSignedInThroughPopup);
 		return;
 	}
-
-	UE_LOG(LogTemp, Display, TEXT("5"));
+	
 	/** Don't not show a success message if they were logging in from the Popup in MainMenu so the user does not receive two success messages */
 	if (!bSignedInThroughPopup)
 	{
@@ -241,7 +221,6 @@ void UWebBrowserOverlay::OnURLLoaded(const bool bLoadedSuccessfully)
 
 void UWebBrowserOverlay::HttpDelay()
 {
-	UE_LOG(LogTemp, Display, TEXT("Http Delay called"));
 	OnURLLoaded(URLLoadSuccess);
 }
 

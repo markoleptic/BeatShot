@@ -59,8 +59,8 @@ void ULoginWidget::LoginButtonClicked()
 		return;
 	}
 	const FLoginPayload LoginPayload = FLoginPayload(UsernameTextBox->GetText().ToString(),
-												 EmailTextBox->GetText().ToString(),
-												 PasswordTextBox->GetText().ToString());
+	                                                 EmailTextBox->GetText().ToString(),
+	                                                 PasswordTextBox->GetText().ToString());
 	OnLoginButtonClicked.Broadcast(LoginPayload, bIsPopup);
 }
 
@@ -103,6 +103,8 @@ void ULoginWidget::ShowLoginScreen()
 	{
 		BackgroundBlur->SetVisibility(ESlateVisibility::Collapsed);
 		NoLogin->SetVisibility(ESlateVisibility::Collapsed);
+		GotoRegister->OnClicked.RemoveAll(this);
+		GotoRegister->OnClicked.AddDynamic(this, &ULoginWidget::LaunchRegisterURL);
 	}
 	SetVisibility(ESlateVisibility::Visible);
 	PlayFadeInLogin();

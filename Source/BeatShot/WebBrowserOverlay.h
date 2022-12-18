@@ -57,13 +57,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FadeInText();
 
-	/** Broadcast when a login state has changed, either in InitializeScoringOverlay or OnURLLoaded */
-	UPROPERTY(BlueprintAssignable)
-	FOnLoginStateChange OnLoginStateChange;
-
 	/** Whether or not the instance of this widget is a child of PostGameMenuWidget, vs being a child widget of MainMenuWidget */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsPostGameScoringOverlay;
+
+	/** Broadcast when a login state has changed, either in InitializeScoringOverlay or OnURLLoaded */
+	UPROPERTY(BlueprintAssignable)
+	FOnLoginStateChange OnLoginStateChange;
 
 	/** Animation to fade out the overlay and show the web browser */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
@@ -72,6 +72,10 @@ public:
 	/** Animation to fade in the OverlayText and fade out the loading icon */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInOverlayText;
+
+	/** WebBrowserWidget, only public so that parent widget can pass in ticks */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UWebBrowserWidget* BrowserWidget;
 
 private:
 	/** Calls HandleLoginUser function in LoginWidget */
@@ -106,9 +110,6 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UOverlay* BrowserOverlay;
-
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UWebBrowserWidget* BrowserWidget;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	ULoginWidget* LoginWidget;

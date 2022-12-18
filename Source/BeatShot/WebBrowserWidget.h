@@ -10,6 +10,7 @@
 #include "WebBrowserWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnURLLoaded, bool, bLoadedSuccessfully);
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTimerElapsed, const FString&, LastURL);
 
 /**
  * 
@@ -18,6 +19,12 @@ UCLASS()
 class BEATSHOT_API UWebBrowserWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
+protected:
+
+	virtual void NativeConstruct() override;
+	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
 	/* The WebBrowser widget */
@@ -44,6 +51,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void HandleUserLogin(const FLoginPayload LoginPayload);
 
+	/* Enables passing in ticks from parent widget (MainMenu or PostGameMenu), so that URLCheckTimer still gets incremented */
+	UFUNCTION(BlueprintCallable)
+	void ParentTickOverride(float DeltaTime);
+
 	/* Allows other widgets to bind to loading of URLs */
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FOnURLLoaded OnURLLoaded;
@@ -60,19 +71,13 @@ private:
 	void ClickLogin();
 
 	/* Compares the browser's current URL address against the UserProfileURL */
+	UFUNCTION()
 	void OnURLChanged(const FString& LastURL);
 
-	/* Callback for After the delay inside OnURLChanged has completed, which recursively calls OnURLChanged */
-	UFUNCTION()
-	void OnURLChangedCallback();
-
-	/* Timer to recursively call OnURLChanged at constant intervals */
-	FTimerHandle URLCheckDelay;
-
-	/* Timer to recursively call OnURLChanged at constant intervals */
+	/* Timer to delay clicking the Checkbox on the login page */
 	FTimerHandle CheckCheckboxDelay;
 
-	/* Timer to recursively call OnURLChanged at constant intervals */
+	/* Timer to delay clicking the login button on the login page */
 	FTimerHandle ClickLoginDelay;
 
 	/* The user's profile URL to check the current browser URL against */
@@ -80,6 +85,16 @@ private:
 
 	/* The number of OnURLChanged function calls, or number of profile URL checks */
 	int32 URLCheckAttempts = 0;
+
+	/* Whether or not to tick the timer */
+	bool bTimerActive = false;
+
+	/* Whether or not to tick the timer */
+	float URLCheckTimer = 0.f;
+
+	/* Delegate to recursively call OnURLChanged at predefined intervals, depending on the value of URLCheckTimer */
+	UPROPERTY()
+	FOnTimerElapsed OnTimerElapsed;
 
 #pragma region URLs
 	

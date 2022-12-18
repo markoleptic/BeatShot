@@ -48,13 +48,14 @@ struct FLoginPayload
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
 	FString Password;
 
-	FLoginPayload() {
+	FLoginPayload()
+	{
 		Username = "";
 		Email = "";
 		Password = "";
 	}
 
-	FLoginPayload(const FString& InUsername,const FString& InEmail, const FString& InPassword)
+	FLoginPayload(const FString& InUsername, const FString& InEmail, const FString& InPassword)
 	{
 		Username = InUsername;
 		Email = InEmail;
@@ -75,7 +76,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRefreshTokenResponse, const bool,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, const FString, ResponseMsg, const int32, ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, const FString, ResponseMsg, const int32, ResponseCode);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, const FString, ResponseMsg, const int32,
+                                             ResponseCode);
 
 /** Broadcast when target spawner is registered */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetSpawnerInit, ATargetSpawner*, TargetSpawner);
@@ -84,14 +86,6 @@ UCLASS()
 class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-
-public:
-	
-	virtual void Init() override;
-	UFUNCTION()
-	virtual void BeginLoadingScreen(const FString& MapName);
-	UFUNCTION()
-	virtual void EndLoadingScreen(UWorld* InLoadedWorld);
 
 #pragma region References
 
@@ -144,7 +138,7 @@ public:
 #pragma endregion
 
 #pragma region Settings
-	
+
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
 	FAASettingsStruct LoadAASettings() const;
 
@@ -153,7 +147,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	FPlayerSettings LoadPlayerSettings() const;
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	void SavePlayerSettings(const FPlayerSettings& PlayerSettingsToSave) const;
 
@@ -163,12 +157,12 @@ public:
 #pragma endregion
 
 #pragma region Scoring
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> &PlayerScoreMapToSave,
+	void SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper>& PlayerScoreMapToSave,
 	                      bool bSaveToDatabase);
 
 	/* Database saving of scores. First sends an access token request, then calls save scores with the access token */
@@ -176,14 +170,13 @@ public:
 	void SavePlayerScoresToDatabase();
 
 private:
-	
 	/* Bound to onAccessTokenResponse and removed when this function calls PostPlayerScores */
 	void PostPlayerScores(FString AccessTokenFString, int32 ResponseCode);
 
 #pragma endregion
 
 #pragma region HttpRequests
-	
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "Authorization")
 	void LoginUser(const FLoginPayload& LoginPayload);
@@ -203,12 +196,12 @@ private:
 
 	/* Bound to OnProcessRequestComplete PostPlayerScores Response */
 	void OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
-											bool bConnectedSuccessfully);
+	                                        bool bConnectedSuccessfully);
 
 #pragma endregion
 
 #pragma region Delegates
-	
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnAASettingsChange OnAASettingsChange;
@@ -231,13 +224,6 @@ public:
 #pragma endregion
 
 private:
-	
-	UPROPERTY()
-	ULoadingScreenWidget* LoadingScreenWidget;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ULoadingScreenWidget> LoadingScreenClass;
-
 	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
 	FString Username;
 

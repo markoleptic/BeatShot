@@ -10,37 +10,11 @@
 #include "TargetSpawner.h"
 #include "SphereTarget.h"
 #include "Http.h"
-#include "LoadingScreenWidget.h"
-#include "MoviePlayer.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
 #include "SaveGameAASettings.h"
 #include "SaveGamePlayerScore.h"
 
-void UDefaultGameInstance::Init()
-{
-	Super::Init();
-	//FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UDefaultGameInstance::BeginLoadingScreen);
-	//FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UDefaultGameInstance::EndLoadingScreen);
-}
-
-void UDefaultGameInstance::BeginLoadingScreen(const FString& MapName)
-{
-	if (!IsRunningDedicatedServer())
-	{
-		FLoadingScreenAttributes LoadingScreen;
-		LoadingScreen.bAutoCompleteWhenLoadingCompletes = true;
-		LoadingScreen.MinimumLoadingScreenDisplayTime = 1.f;
-		LoadingScreenWidget = Cast<ULoadingScreenWidget>(CreateWidget(this, LoadingScreenClass));
-		LoadingScreen.WidgetLoadingScreen = LoadingScreenWidget->TakeWidget();
-		GetMoviePlayer()->SetupLoadingScreen(LoadingScreen);
-	}
-}
-
-void UDefaultGameInstance::EndLoadingScreen(UWorld* InLoadedWorld)
-{
-	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->FadeScreenFromBlack();
-}
 
 void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
 {
