@@ -213,7 +213,7 @@ void UGameModesWidget::ChangeSaveButtonStates(const FText& Text)
 
 void UGameModesWidget::BeatGridSpacingConstrained(float value)
 {
-	if (GameModeCategoryComboBox->GetSelectedOption() != "Beat Grid")
+	if (GameModeCategoryComboBox->GetSelectedOption() != "BeatGrid")
 	{
 		return;
 	}
@@ -326,7 +326,7 @@ void UGameModesWidget::BeatGridNumberOfTargetsConstrained(FString SelectedSong, 
 
 bool UGameModesWidget::CheckAllBeatGridConstraints()
 {
-	if (GameModeCategoryComboBox->GetSelectedOption() != "Beat Grid")
+	if (GameModeCategoryComboBox->GetSelectedOption() != "BeatGrid")
 	{
 		return true;
 	}

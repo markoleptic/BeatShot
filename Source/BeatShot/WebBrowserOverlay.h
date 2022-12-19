@@ -73,6 +73,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInOverlayText;
 
+	/** Animation to fade in the patch notes */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* FadeInPatchNotes;
+
 	/** WebBrowserWidget, only public so that parent widget can pass in ticks */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWebBrowserWidget* BrowserWidget;

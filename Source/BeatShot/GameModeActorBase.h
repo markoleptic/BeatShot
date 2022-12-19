@@ -239,7 +239,6 @@ struct FGameModeActorStruct
 		{
 			SpreadType = ESpreadType::None;
 			IsBeatGridMode = true;
-			WallCentered = true;
 			BoxBounds = FVector(0.f, 1000.f, 1000.f);
 
 			// BeatGrid Difficulties
@@ -248,9 +247,9 @@ struct FGameModeActorStruct
 				PlayerDelay = 0.35f;
 				TargetSpawnCD = 0.35f;
 				TargetMaxLifeSpan = 1.2f;
-				MinTargetScale = 1.f;
-				MaxTargetScale = 1.f;
-				BeatGridSize = 16;
+				MinTargetScale = 0.85f;
+				MaxTargetScale = 0.85f;
+				BeatGridSize = 25;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
 			{
