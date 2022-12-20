@@ -19,7 +19,7 @@ class UCrosshair;
 class UPlayerHUD;
 class USettingsMenuWidget;
 class UMainMenuWidget;
-class UPauseMenu;
+class UPauseMenuWidget;
 class UCountdown;
 /**
  * 
@@ -97,7 +97,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UPauseMenu> PauseMenuClass;
+	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UCountdown> CountdownClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -118,7 +118,7 @@ private:
 	UPROPERTY()
 	UCrosshair* Crosshair;
 	UPROPERTY()
-	UPauseMenu* PauseMenu;
+	UPauseMenuWidget* PauseMenu;
 	UPROPERTY()
 	UFPSCounterWidget* FPSCounter;
 	UPROPERTY()

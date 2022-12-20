@@ -49,7 +49,7 @@ void UMainMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UMainMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
 {
-	for (auto& Elem : MainMenuWidgets)
+	for (TTuple<USlideRightButton*, UVerticalBox*>& Elem : MainMenuWidgets)
 	{
 		if (Elem.Key != ActiveButton)
 		{

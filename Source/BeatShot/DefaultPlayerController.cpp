@@ -5,7 +5,7 @@
 #include "MainMenuWidget.h"
 #include "Crosshair.h"
 #include "PlayerHUD.h"
-#include "PauseMenu.h"
+#include "PauseMenuWidget.h"
 #include "Countdown.h"
 #include "DefaultCharacter.h"
 #include "PostGameMenuWidget.h"
@@ -67,7 +67,7 @@ void ADefaultPlayerController::HideMainMenu()
 
 void ADefaultPlayerController::ShowPauseMenu()
 {
-	PauseMenu = CreateWidget<UPauseMenu>(this, PauseMenuClass);
+	PauseMenu = CreateWidget<UPauseMenuWidget>(this, PauseMenuClass);
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
