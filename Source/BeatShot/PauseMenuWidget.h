@@ -6,7 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PauseMenuWidget.generated.h"
 
-class USaveQuitMenuWidget;
+class UQuitMenuWidget;
 /**
  * 
  */
@@ -44,7 +44,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USaveQuitMenuWidget* SaveQuitMenuWidget;
+	UQuitMenuWidget* QuitMenuWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USlideRightButton* ResumeButton;
@@ -75,14 +75,13 @@ private:
 	UFUNCTION()
 	void OnResumeButtonClicked();
 	UFUNCTION()
+	void OnRestartCurrentModeClicked();
+	UFUNCTION()
 	void OnSettingsButtonClicked() { SlideButtons(SettingsButton); }
 	UFUNCTION()
 	void OnFAQButtonClicked() { SlideButtons(FAQButton); }
 	UFUNCTION()
 	void OnQuitButtonClicked();
 	UFUNCTION()
-	void OnQuitMainMenuButtonClicked();
-	UFUNCTION()
-	void OnQuitDesktopButtonClicked();
-	
+	void SlideQuitMenuButtonsLeft();
 };
