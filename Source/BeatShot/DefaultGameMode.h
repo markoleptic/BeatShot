@@ -52,6 +52,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
 	void RefreshAASettings(const FAASettingsStruct& RefreshedAASettings);
 
+	/* get PlayerSettings from GameInstance */
+	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
+	void RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings);
+
 	/* GameModeActorBase class to spawn, deals with GameModeActorStruct, scoring, etc. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Initialization")
 	TSubclassOf<AGameModeActorBase> GameModeActorBaseClass;

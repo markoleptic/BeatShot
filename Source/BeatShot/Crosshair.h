@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Crosshair.generated.h"
-
+class UEditableTextBox;
+class USlider;
 /**
  * 
  */

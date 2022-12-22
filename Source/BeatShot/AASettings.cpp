@@ -3,20 +3,55 @@
 
 #include "AASettings.h"
 #include "DefaultGameInstance.h"
+#include "Components/Button.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/HorizontalBox.h"
 #include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 void UAASettings::NativeConstruct()
 {
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	Super::NativeConstruct();
+
+	ResetAASettingsButton->OnClicked.AddDynamic(this, &UAASettings::ResetAASettings);
+	SaveAASettingsButton->OnClicked.AddDynamic(this, &UAASettings::SaveAASettings);
+	SaveAndRestartButton->OnClicked.AddDynamic(this, &UAASettings::OnSaveAndRestartButtonClicked);
+	NumBandChannels->OnSelectionChanged.AddDynamic(this, &UAASettings::ShowBandChannelsAndThresholds);
+
+	ThresholdSliderOne->OnValueChanged.AddDynamic(this, &UAASettings::OnThresholdSliderOneChanged);
+	ThresholdSliderTwo->OnValueChanged.AddDynamic(this, &UAASettings::OnThresholdSliderTwoChanged);
+	ThresholdSliderThree->OnValueChanged.AddDynamic(this, &UAASettings::OnThresholdSliderThreeChanged);
+	ThresholdSliderFour->OnValueChanged.AddDynamic(this, &UAASettings::OnThresholdSliderFourChanged);
+
+	ThresholdValueOne->OnTextChanged.AddDynamic(this,  &UAASettings::OnThresholdValueOneChanged);
+	ThresholdValueTwo->OnTextChanged.AddDynamic(this,  &UAASettings::OnThresholdValueTwoChanged);
+	ThresholdValueThree->OnTextChanged.AddDynamic(this,  &UAASettings::OnThresholdValueThreeChanged);
+	ThresholdValueFour->OnTextChanged.AddDynamic(this,  &UAASettings::OnThresholdValueFourChanged);
+	
 	LoadAASettings();
 	PopulateAASettings();
 }
 
-void UAASettings::ShowBandChannelsAndThresholds()
+void UAASettings::OnSaveAndRestartButtonClicked()
+{
+	SaveAASettings();
+	OnRestartButtonClicked.Execute();
+}
+
+void UAASettings::OnThresholdSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
+	const float SnapSize)
+{
+	TextBoxToChange->SetText(FText::FromString(FString::SanitizeFloat(UKismetMathLibrary::GridSnap_Float(NewValue, SnapSize))));
+}
+
+void UAASettings::OnThresholdValueChanged(const FText& NewText, USlider* SliderToChange, const float SnapSize)
+{
+	SliderToChange->SetValue(UKismetMathLibrary::GridSnap_Float(FCString::Atof(*NewText.ToString()), SnapSize));
+}
+
+void UAASettings::ShowBandChannelsAndThresholds(const FString SelectedOption, ESelectInfo::Type SelectionType)
 {
 	if (NumBandChannels->GetSelectedIndex() == 3)
 	{
@@ -78,7 +113,7 @@ void UAASettings::ShowBandChannelsAndThresholds()
 
 void UAASettings::LoadAASettings()
 {
-	AASettings = GI->LoadAASettings();
+	AASettings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->LoadAASettings();
 }
 
 void UAASettings::PopulateAASettings()
@@ -214,8 +249,7 @@ void UAASettings::SaveAASettings()
 	}
 
 	AASettings.TimeWindow = TimeWindowSlider->GetValue();
-
-	GI->SaveAASettings(AASettings);
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SaveAASettings(AASettings);
 }
 
 void UAASettings::ResetAASettings()

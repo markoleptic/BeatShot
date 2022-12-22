@@ -15,8 +15,10 @@ void ADefaultGameMode::BeginPlay()
 	if (GI)
 	{
 		GI->RegisterGameModeBase(this);
-		// listen to changes that are made to Audio Analyzer settings in case user changes during a game
+		/** listen to changes that are made to Audio Analyzer settings in case user changes during a game */
 		GI->OnAASettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshAASettings);
+		/** listen to changes that are made to Player settings in case music volume changes during a game */
+		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshPlayerSettings);
 	}
 	bShouldTick = true;
 	InitializeGameMode();
@@ -241,6 +243,12 @@ void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASet
 {
 	AASettings = RefreshedAASettings;
 }
+
+void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings)
+{
+	SetAAManagerVolume(RefreshedPlayerSettings.GlobalVolume, RefreshedPlayerSettings.MusicVolume);
+}
+
 
 void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
 {

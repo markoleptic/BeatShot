@@ -61,6 +61,32 @@ void UMainMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
 	}
 }
 
+void UMainMenuWidget::OnPatchNotesButtonClicked()
+{
+	SlideButtons(PatchNotesButton);
+}
+
+void UMainMenuWidget::OnGameModesButtonClicked()
+{
+	SlideButtons(GameModesButton);
+}
+
+void UMainMenuWidget::OnScoringButtonClicked()
+{
+	SlideButtons(ScoresButton);
+	if (bShowWebBrowserScoring) ScoresWidget->FadeOut();
+}
+
+void UMainMenuWidget::OnSettingsButtonClicked()
+{
+	SlideButtons(SettingsButton);
+}
+
+void UMainMenuWidget::OnFAQButtonClicked()
+{
+	SlideButtons(FAQButton);
+}
+
 void UMainMenuWidget::OnLoginButtonClicked(const FLoginPayload LoginPayload, const bool bIsPopup)
 {
 	ScoresWidget->LoginUserHttp(LoginPayload, bIsPopup);

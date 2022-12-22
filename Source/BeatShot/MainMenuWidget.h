@@ -28,9 +28,8 @@ UCLASS()
 class BEATSHOT_API UMainMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 protected:
-	
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
@@ -40,6 +39,8 @@ protected:
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
 	TMap<USlideRightButton*, UVerticalBox*> MainMenuWidgets;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UWidgetSwitcher* MainMenuSwitcher;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* PatchNotes;
@@ -51,6 +52,7 @@ protected:
 	UVerticalBox* SettingsMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* FAQ;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWebBrowserOverlay* WebBrowserOverlayPatchNotes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -78,10 +80,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	ULoginWidget* LoginWidget;
 
-#pragma	endregion
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UWidgetSwitcher* MainMenuSwitcher;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* SignInStateText;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -89,23 +87,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* GitHubIssueButton;
 
+#pragma	endregion
+
 private:
+	/** Calls SlideButton() from SlideRightButton and sets the associated widget to active in the MainMenuSwitcher */
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	UFUNCTION()
-	void OnPatchNotesButtonClicked() { SlideButtons(PatchNotesButton); }
+	void OnPatchNotesButtonClicked();
 	UFUNCTION()
-	void OnGameModesButtonClicked() { SlideButtons(GameModesButton); }
+	void OnGameModesButtonClicked();
 	UFUNCTION()
-	void OnScoringButtonClicked()
-	{ SlideButtons(ScoresButton); if (bShowWebBrowserScoring) ScoresWidget->FadeOut(); }
+	void OnScoringButtonClicked();
 	UFUNCTION()
-	void OnSettingsButtonClicked() { SlideButtons(SettingsButton); }
+	void OnSettingsButtonClicked();
 	UFUNCTION()
-	void OnFAQButtonClicked() { SlideButtons(FAQButton); }
+	void OnFAQButtonClicked();
 	UFUNCTION()
 	void OnQuitButtonClicked();
-
 	UFUNCTION()
 	void OnLoginButtonClicked(const FLoginPayload LoginPayload, const bool bIsPopup);
 	UFUNCTION()
@@ -115,6 +114,7 @@ private:
 	UFUNCTION()
 	void UpdateLoginState(const bool bSuccessfulLogin);
 
+	/** Whether or not to fade out the browser overlay to reveal the web browser for the ScoresWidget */
 	bool bShowWebBrowserScoring;
 
 	const FString GitHubURL = "https://github.com/markoleptic/BeatShot/issues/new/choose";

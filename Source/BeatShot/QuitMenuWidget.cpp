@@ -16,12 +16,12 @@ void UQuitMenuWidget::NativeConstruct()
 	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
 	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuTrue);
 	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleMainMenu);
-	
+
 	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
 	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
 	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuFalse);
 	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleDesktop);
-	
+
 	QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
 	QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
 
@@ -40,7 +40,7 @@ void UQuitMenuWidget::NativeConstruct()
 	RestartAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Restart);
 	RestartWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
 	RestartWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Restart);
-	
+
 	RestartBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutRestartMenu);
 	RestartBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
 }
@@ -74,7 +74,7 @@ void UQuitMenuWidget::QuitToDesktop()
 {
 	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(bShouldSaveScores, false);
 	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-	                               EQuitPreference::Quit, false);
+								   EQuitPreference::Quit, false);
 }
 
 void UQuitMenuWidget::Restart()
@@ -104,7 +104,7 @@ void UQuitMenuWidget::CollapseWidget()
 void UQuitMenuWidget::InitializeExit()
 {
 	PlayAnimationForward(FadeOutBackgroundBlur);
-	FadeOutWidgetDelegate.BindDynamic(this,& UQuitMenuWidget::CollapseWidget);
+	FadeOutWidgetDelegate.BindDynamic(this, & UQuitMenuWidget::CollapseWidget);
 	BindToAnimationFinished(FadeOutBackgroundBlur, FadeOutWidgetDelegate);
 	OnExitQuitMenu.Execute();
 }

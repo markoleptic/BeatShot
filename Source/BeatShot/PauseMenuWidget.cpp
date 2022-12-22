@@ -3,10 +3,12 @@
 
 #include "PauseMenuWidget.h"
 
+#include "AASettings.h"
 #include "DefaultPlayerController.h"
 #include "QuitMenuWidget.h"
 #include "Components/Button.h"
 #include "SlideRightButton.h"
+#include "SettingsMenuWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,6 +30,7 @@ void UPauseMenuWidget::NativeConstruct()
 	PauseMenuWidgets.Add(QuitButton, PauseScreen);
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
+	SettingsMenuWidget->AASettingsWidget->OnRestartButtonClicked.BindDynamic(this, &UPauseMenuWidget::OnRestartCurrentModeClicked);
 	
 	FadeInWidget();
 }
@@ -50,7 +53,7 @@ void UPauseMenuWidget::OnQuitButtonClicked()
 {
 	SlideButtons(QuitButton);
 	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
-	QuitMenuWidget->PlayFadeInMenu();
+	QuitMenuWidget->PlayInitialFadeInMenu();
 }
 
 void UPauseMenuWidget::SlideQuitMenuButtonsLeft()

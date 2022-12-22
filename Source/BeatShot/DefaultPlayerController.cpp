@@ -147,7 +147,7 @@ void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 	/** If scores weren't saved, update Overlay text to reflect that. This also means OnPostPlayerScores won't get called */
 	if (!bSavedScores)
 	{
-		PostGameMenuWidget->WebBrowserOverlay->SetOverlayText("DidNotSaveScores");
+		PostGameMenuWidget->ScoresWidget->SetOverlayText("DidNotSaveScores");
 	}
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
@@ -163,7 +163,7 @@ void ADefaultPlayerController::OnPostPlayerScoresResponse(const FString Message,
 	{
 		return;
 	}
-	PostGameMenuWidget->WebBrowserOverlay->InitializePostGameScoringOverlay(Message, ResponseCode);
+	PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(Message, ResponseCode);
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
