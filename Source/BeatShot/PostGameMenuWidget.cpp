@@ -31,16 +31,19 @@ void UPostGameMenuWidget::NativeConstruct()
 	FAQButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnFAQButtonClicked);
 	QuitButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnQuitButtonClicked);
 
-	SettingsMenuWidget->AASettingsWidget->OnRestartButtonClicked.BindDynamic(this, &UPostGameMenuWidget::HandleRestart);
-	
+	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
+	SettingsMenuWidget->AASettingsWidget->OnRestartButtonClicked.BindDynamic(this, &UPostGameMenuWidget::Restart);
+	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
+	
 	PlayFadeInWidget();
 }
 
 void UPostGameMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+	ScoresWidget->BrowserWidget->ParentTickOverride(InDeltaTime);
 }
 
 void UPostGameMenuWidget::Restart()
@@ -82,9 +85,7 @@ void UPostGameMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
 
 void UPostGameMenuWidget::OnPlayAgainButtonClicked()
 {
-	SlideButtons(PlayAgainButton);
-	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
-	QuitMenuWidget->PlayFadeInRestartMenu();
+	Restart();
 }
 
 void UPostGameMenuWidget::OnGameModesButtonClicked()
@@ -109,6 +110,14 @@ void UPostGameMenuWidget::OnQuitButtonClicked()
 	QuitMenuWidget->PlayInitialFadeInMenu();
 }
 
+void UPostGameMenuWidget::OnLoginStateChange(bool bLoggedInHttp, bool bLoggedInBrowser, bool bIsPopup)
+{
+	if (bLoggedInHttp && bLoggedInBrowser)
+	{
+		ScoresWidget->FadeOut();
+	}
+}
+
 void UPostGameMenuWidget::SlideQuitMenuButtonsLeft()
 {
 	PlayAgainButton->SlideButton(false);
@@ -117,4 +126,5 @@ void UPostGameMenuWidget::SlideQuitMenuButtonsLeft()
 
 void UPostGameMenuWidget::OnScoresButtonClicked()
 {
+	SlideButtons(ScoresButton);
 }

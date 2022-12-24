@@ -107,6 +107,7 @@ void AGameModeActorBase::OnGameModeLengthTimerComplete() const
 			PlayerScores.CustomGameModeName == ""))
 	{
 		GameMode->EndGameMode(false, true);
+		return;
 	}
 	GameMode->EndGameMode(true, true);
 }

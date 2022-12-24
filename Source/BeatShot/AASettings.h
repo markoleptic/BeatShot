@@ -32,11 +32,13 @@ public:
 	
 	UPROPERTY()
 	FOnRestartButtonClicked OnRestartButtonClicked;
+	
+	/** Do specific things if this instance of AASettings belongs to MainMenuWidget */
+	void InitMainMenuChild();
 
 protected:
 
 	virtual void NativeConstruct() override;
-
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	FAASettingsStruct AASettings;

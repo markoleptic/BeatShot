@@ -34,7 +34,9 @@ public:
 	/** Fades in the RestartOverlay */
 	UFUNCTION()
 	void PlayFadeInRestartMenu() { PlayAnimationReverse(FadeOutRestartMenu); PlayAnimationReverse(FadeOutBackgroundBlur); }
-	/** Delegate used to let PauseMenuWidget know to slide the MenuButtons to the left after exiting the menus */
+	/** Whether or not this instance of QuitMenu belongs to The PostGameMenuWidget or not */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
+	bool bIsPostGameMenuChild;
 	UPROPERTY()
 	FOnExitQuitMenu OnExitQuitMenu;
 

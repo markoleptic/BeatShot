@@ -12,37 +12,55 @@
 void UQuitMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
-	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuTrue);
-	QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleMainMenu);
 
-	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
-	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuFalse);
-	QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleDesktop);
+	if (bIsPostGameMenuChild)
+	{
+		bShouldSaveScores = false;
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuTrue);
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
 
-	QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-	QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuFalse);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
 
-	QuitAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
-	QuitAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresTrue);
-	QuitAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
+		QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
+		QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
+	}
+	else
+	{
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuTrue);
+		QuitMainMenuButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleMainMenu);
 
-	QuitWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
-	QuitWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
-	QuitWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuFalse);
+		QuitDesktopButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleDesktop);
 
-	SaveBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
-	SaveBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInMenu);
+		QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
+		QuitBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
 
-	RestartAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresTrue);
-	RestartAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Restart);
-	RestartWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
-	RestartWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Restart);
+		QuitAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
+		QuitAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresTrue);
+		QuitAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
 
-	RestartBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutRestartMenu);
-	RestartBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
+		QuitWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
+		QuitWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
+		QuitWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
+
+		SaveBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
+		SaveBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInMenu);
+
+		RestartAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresTrue);
+		RestartAndSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Restart);
+		RestartWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
+		RestartWithoutSaveButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::Restart);
+
+		RestartBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutRestartMenu);
+		RestartBackButton->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
+	}
 }
 
 void UQuitMenuWidget::Quit()
@@ -74,7 +92,7 @@ void UQuitMenuWidget::QuitToDesktop()
 {
 	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(bShouldSaveScores, false);
 	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-								   EQuitPreference::Quit, false);
+	                               EQuitPreference::Quit, false);
 }
 
 void UQuitMenuWidget::Restart()

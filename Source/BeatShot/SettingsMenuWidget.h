@@ -6,8 +6,10 @@
 #include "SaveGamePlayerSettings.h"
 #include "Components/Button.h"
 #include "Blueprint/UserWidget.h"
+#include "VideoSettingButton.h"
 #include "SettingsMenuWidget.generated.h"
 
+class UPopupMessageWidget;
 class UCheckBox;
 class UCrossHairSettingsWidget;
 class UAASettings;
@@ -21,37 +23,15 @@ class UWidgetSwitcher;
 class SettingsMenuWidget;
 class UCrossHairSettingsWidget;
 
-UENUM()
-enum class ESettingType : uint8
-{
-	AntiAliasing UMETA(DisplayName, "AntiAliasing"),
-	GlobalIllumination UMETA(DisplayName, "GlobalIllumination"),
-	PostProcessing  UMETA(DisplayName, "PostProcessing"),
-	Reflection UMETA(DisplayName, "Reflection"),
-	Shadow UMETA(DisplayName, "Shadow"),
-	Shading UMETA(DisplayName, "Shading"),
-	Texture UMETA(DisplayName, "Texture"),
-	ViewDistance UMETA(DisplayName, "ViewDistance"),
-	VisualEffect UMETA(DisplayName, "VisualEffect")
-};
-
-ENUM_RANGE_BY_FIRST_AND_LAST(ESettingType, ESettingType::AntiAliasing, ESettingType::VisualEffect);
-
-UCLASS()
-class BEATSHOT_API UVideoSettingButton : public UButton
-{
-	GENERATED_BODY()
-public:
-	UPROPERTY(EditDefaultsOnly)
-	int32 Quality;
-	UPROPERTY(EditDefaultsOnly)
-	ESettingType SettingType;
-};
-
 UCLASS()
 class BEATSHOT_API USettingsMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
+public:
+	
+	/** Whether or not this instance of SettingsMenuWidget belongs to MainMenuWidget or not */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
+	bool bIsMainMenuChild;
 
 protected:
 	
@@ -64,7 +44,8 @@ protected:
 	TMap<USlideRightButton*, UVerticalBox*> MenuWidgets;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
-	
+
+	/** Containers for each widget in SettingsMenu */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* VideoAndSoundSettings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -73,7 +54,8 @@ protected:
 	UVerticalBox* Sensitivity;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* CrossHair;
-	
+
+	/** SubMenu Widgets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* VideoAndSoundSettingsWidget;
 public:
@@ -85,7 +67,8 @@ protected:
 	UVerticalBox* SensitivityWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UCrossHairSettingsWidget* CrossHairWidget;
-	
+
+	/** Settings Navigation Buttons */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USlideRightButton* VideoAndSoundSettingsButton;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -95,32 +78,32 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USlideRightButton* CrossHairButton;
 
+	/** Function to Play the Slide Animation for Navigation Buttons */
+	UFUNCTION()
+	void SlideButtons(const USlideRightButton* ActiveButton);
+	UFUNCTION()
+	void OnVideoAndSoundSettingsButtonClicked() {SlideButtons(VideoAndSoundSettingsButton); }
+	UFUNCTION()
+	void OnAASettingsButtonClicked() {SlideButtons(AASettingsButton); }
+	UFUNCTION()
+	void OnSensitivityButtonClicked() { SlideButtons(SensitivityButton); }
+	UFUNCTION()
+	void OnCrossHairButtonClicked() {SlideButtons(CrossHairButton); }
+
 #pragma	endregion
 
-#pragma region VideoAndSound
+#pragma region Video
 
-	/** SOUND */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	UEditableTextBox* GlobalSoundInputValue;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	UEditableTextBox* MenuSoundInputValue;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	UEditableTextBox* MusicSoundInputValue;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound ")
-	USlider* GlobalSoundSlider;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	USlider* MenuSoundSlider;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	USlider* MusicSoundSlider;
+#pragma region Quality
 	/** Anti-Aliasing */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Anti-Aliasing Quality")
-	UVideoSettingButton* AA0;
+	UVideoSettingButton* AAQ0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Anti-Aliasing Quality")
-	UVideoSettingButton* AA1;
+	UVideoSettingButton* AAQ1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Anti-Aliasing Quality")
-	UVideoSettingButton* AA2;
+	UVideoSettingButton* AAQ2;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Anti-Aliasing Quality")
-	UVideoSettingButton* AA3;
+	UVideoSettingButton* AAQ3;
 	/** Global Illumination */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Global Illumination Quality")
 	UVideoSettingButton* GIQ0;
@@ -132,13 +115,13 @@ protected:
 	UVideoSettingButton* GIQ3;
 	/** Post Processing */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Post Processing Quality")
-	UVideoSettingButton* PP0;
+	UVideoSettingButton* PPQ0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Post Processing Quality")
-	UVideoSettingButton* PP1;
+	UVideoSettingButton* PPQ1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Post Processing Quality")
-	UVideoSettingButton* PP2;
+	UVideoSettingButton* PPQ2;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Post Processing Quality")
-	UVideoSettingButton* PP3;
+	UVideoSettingButton* PPQ3;
 	/** Reflection */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Reflection Quality")
 	UVideoSettingButton* RQ0;
@@ -150,13 +133,13 @@ protected:
 	UVideoSettingButton* RQ3;
 	/** Shadow */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Shadow Quality")
-	UVideoSettingButton* SW0;
+	UVideoSettingButton* SWQ0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Shadow Quality")
-	UVideoSettingButton* SW1;
+	UVideoSettingButton* SWQ1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Shadow Quality")
-	UVideoSettingButton* SW2;
+	UVideoSettingButton* SWQ2;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Shadow Quality")
-	UVideoSettingButton* SW3;
+	UVideoSettingButton* SWQ3;
 	/** Shading */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Shading Quality")
 	UVideoSettingButton* SGQ0;
@@ -177,13 +160,13 @@ protected:
 	UVideoSettingButton* TQ3;
 	/** View Distance */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "View Distance Quality")
-	UVideoSettingButton* VD0;
+	UVideoSettingButton* VDQ0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "View Distance Quality")
-	UVideoSettingButton* VD1;
+	UVideoSettingButton* VDQ1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "View Distance Quality")
-	UVideoSettingButton* VD2;
+	UVideoSettingButton* VDQ2;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "View Distance Quality")
-	UVideoSettingButton* VD3;
+	UVideoSettingButton* VDQ3;
 	/** Visual Effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Visual Effect Quality")
 	UVideoSettingButton* VEQ0;
@@ -193,14 +176,27 @@ protected:
 	UVideoSettingButton* VEQ2;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Visual Effect Quality")
 	UVideoSettingButton* VEQ3;
+
+	/** Changes video settings quality depending on input button */
+	UFUNCTION()
+	void OnVideoQualityButtonClicked(UVideoSettingButton* ClickedButton);
+	/** Changes video settings background color */
+	UFUNCTION()
+	void SetVideoSettingButtonBackgroundColor(UVideoSettingButton* ClickedButton);
+	/** Returns the associated button given the quality and SettingType */
+	UFUNCTION()
+	UVideoSettingButton* FindVideoSettingButtonFromQuality(const int32 Quality, ESettingType SettingType);
+
+#pragma endregion
+
 	/** FRAME LIMIT */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Frame Limit")
 	UEditableTextBox* FrameLimitMenuValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Frame Limit")
 	UEditableTextBox* FrameLimitGameValue;
-	/** STREAK */
+	/** COMBAT TEXT */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Streak")
-	UEditableTextBox* StreakFrequency;
+	UEditableTextBox* CombatTextFrequency;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Streak")
 	UCheckBox* ShowStreakCombatTextCheckBox;
 	/** RESOLUTION */
@@ -216,28 +212,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "FPS Counter")
 	UCheckBox* FPSCounterCheckBox;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* SaveVideoAndSoundSettingsButton;
-
-	/** Saves the Video and Sound Settings using Game Instance */
-	UFUNCTION()
-	void SaveVideoAndSoundSettingsButtonClicked();
-	UFUNCTION()
-	void OnVideoAndSoundSettingsButtonClicked() {SlideButtons(VideoAndSoundSettingsButton); }
-
-	UFUNCTION()
-	void OnGlobalSoundSliderChanged(const float NewValue);
-	UFUNCTION()
-	void OnMenuSoundSliderChanged(const float NewValue);
-	UFUNCTION()
-	void OnMusicSoundSliderChanged(const float NewValue);
-	UFUNCTION()
-	void OnGlobalSoundValueChanged(const FText& NewValue);
-	UFUNCTION()
-	void OnMenuSoundValueChanged(const FText& NewValue);
-	UFUNCTION()
-	void OnMusicSoundValueChanged(const FText& NewValue);
-	
 	UFUNCTION()
 	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -247,35 +221,59 @@ protected:
 	void OnFrameLimitMenuValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnFrameLimitGameValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnStreakFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-
+	
 	UFUNCTION()
 	void OnVSyncEnabledCheckStateChanged(const bool bIsChecked);
 	UFUNCTION()
 	void OnFPSCounterCheckStateChanged(const bool bIsChecked);
-	UFUNCTION()
-	void OnShowStreakCombatTextCheckStateChanged(const bool bIsChecked);
 
-	/** Changes video settings quality depending on input button */
 	UFUNCTION()
-	void OnVideoQualityButtonClicked(UVideoSettingButton* ClickedButton);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
-	TSubclassOf<USoundClass> GlobalSoundClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
-	TSubclassOf<USoundClass> MenuSoundClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
-	TSubclassOf<USoundMix> GlobalSoundMixClass;
+	void OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnShowCombatTextCheckStateChanged(const bool bIsChecked);
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
-	USoundClass* GlobalSound;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
-	USoundClass* MenuSound;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Settings")
-	USoundMix* GlobalSoundMix;
+	/** TODO: Implement this in c++ */
+	UFUNCTION()
+	void PopulateResolutionComboBox();
 
 #pragma	endregion
+
+#pragma region Sound
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
+	UEditableTextBox* GlobalSoundValue;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
+	UEditableTextBox* MenuSoundValue;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
+	UEditableTextBox* MusicSoundValue;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound ")
+	USlider* GlobalSoundSlider;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
+	USlider* MenuSoundSlider;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
+	USlider* MusicSoundSlider;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundClass* GlobalSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundClass* MenuSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundMix* GlobalSoundMix;
+
+	UFUNCTION()
+	void OnGlobalSoundSliderChanged(const float NewValue);
+	UFUNCTION()
+	void OnMenuSoundSliderChanged(const float NewValue);
+	UFUNCTION()
+	void OnMusicSoundSliderChanged(const float NewValue);
+	UFUNCTION()
+	void OnGlobalSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnMenuSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnMusicSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
+
+#pragma endregion
 
 #pragma region Sensitivity
 
@@ -287,13 +285,7 @@ protected:
 	UEditableTextBox* NewSensitivityCsgoValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Settings")
 	USlider* SensSlider;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* SaveSensitivityButton;
 	
-	UFUNCTION()
-	void OnSaveSensitivitySettingsButtonClicked();
-	UFUNCTION()
-	void OnSensitivityButtonClicked() { SlideButtons(SensitivityButton); }
 	UFUNCTION()
 	void OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
@@ -302,35 +294,74 @@ protected:
 	void OnSensitivitySliderChanged(const float NewValue);
 
 #pragma	endregion
+
+#pragma region LoadingAndSaving
 	
-	UFUNCTION(BlueprintCallable, Category = "Player Settings")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* SaveVideoAndSoundSettingsButton;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* SaveSensitivityButton;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* ResetVideoAndSoundButton;
+	/** The Player Settings loaded upon initialization */
+	FPlayerSettings InitialPlayerSettings;
+	/** The Player Settings that are changed during setting menu interaction */
+	FPlayerSettings NewPlayerSettings;
+
+	/** Saves the Video and Sound Settings using Game Instance */
+	UFUNCTION()
+	void OnSaveVideoAndSoundSettingsButtonClicked();
+	/** Saves the Sensitivity Settings using Game Instance */
+	UFUNCTION()
+	void OnSaveSensitivitySettingsButtonClicked();
+	/** Loads player settings on Initialization */
+	UFUNCTION()
 	void LoadPlayerSettings();
-	UFUNCTION(BlueprintCallable, Category = "Player Settings")
+	/** Saves player settings when a save button is clicked */
+	UFUNCTION()
 	void SavePlayerSettings() const;
 	/** Reset AASettings to default value and repopulate in Settings Menu. Does not automatically save */
-	UFUNCTION(BlueprintCallable, Category = "Player Settings")
-	void ResetPlayerSettings();
-	/** TODO: Implement this in c++ */
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Player Settings")
-	void PopulatePlayerSettings();
-	
-	FPlayerSettings InitialPlayerSettings;
-	FPlayerSettings NewPlayerSettings;
-	
 	UFUNCTION()
-	void SlideButtons(const USlideRightButton* ActiveButton);
+	void OnResetVideoAndSoundButtonClicked();
+
+#pragma endregion
+
+#pragma region Utility
+
+	UPROPERTY(EditDefaultsOnly, Category = "Utility")
+	TSubclassOf<UPopupMessageWidget> ConfirmVideoSettingsMessageClass;
+	UPROPERTY()
+	UPopupMessageWidget* ConfirmVideoSettingsMessage;
+	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes */
+	UPROPERTY()
+	FTimerHandle RevertVideoSettingsTimer;
+	/** Adds the ConfirmVideoSettingsMessage to viewport, and starts the RevertVideoSettingsTimer */
 	UFUNCTION()
-	void OnAASettingsButtonClicked() {SlideButtons(AASettingsButton); }
+	void ShowConfirmVideoSettingsMessage();
+	/** Stops the RevertVideoSettingsTimer and applies the video settings and closes the ConfirmVideoSettingsMessage */
 	UFUNCTION()
-	void OnCrossHairButtonClicked() {SlideButtons(CrossHairButton); }
+	void OnConfirmVideoSettingsButtonClicked();
+	/** Reverts the video settings and closes the ConfirmVideoSettingsMessage */
+	UFUNCTION()
+	void OnCancelVideoSettingsButtonClicked();
+	/** Rounds the slider value to the snap size and sets the corresponding text box text to the rounded value */
 	UFUNCTION()
 	float ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange, const float SnapSize);
+	/** Rounds the text value to the snap size and sets the corresponding slider value to the rounded value */
 	UFUNCTION()
 	float ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange, const float SnapSize);
-	
+	/** Loads the save file containing the player settings, populates all settings */
+	UFUNCTION()
+	void InitializeSettings();
+	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */
 	const float CsgoMultiplier = 3.18;
+	/** The color used to change the VideoSettingButton color to when selected */
 	const FLinearColor BeatshotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
+	/** The color used to change the VideoSettingButton color to when not selected */
 	const FLinearColor White = FLinearColor::White;
+
+#pragma endregion
+	
 };
 
 

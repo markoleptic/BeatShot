@@ -92,7 +92,6 @@ protected:
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	UFUNCTION()
 	void SlideQuitMenuButtonsLeft();
-	
 	UFUNCTION()
 	void OnScoresButtonClicked();
 	UFUNCTION()
@@ -105,5 +104,7 @@ protected:
 	void OnFAQButtonClicked();
 	UFUNCTION()
 	void OnQuitButtonClicked();
+	UFUNCTION()
+	void OnLoginStateChange(bool bLoggedInHttp, bool bLoggedInBrowser, bool bIsPopup);
 
 };

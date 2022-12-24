@@ -5,6 +5,7 @@
 
 #include "LoginWidget.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,6 +18,8 @@ void UWebBrowserOverlay::NativeConstruct()
 	BindToAnimationFinished(FadeOutOverlay, FadeOutDelegate);
 	FadeOutDelegate.BindUFunction(BrowserOverlay, FName("RemoveFromParent"));
 
+	MID_LoadingIcon = LoadingIcon->GetDynamicMaterial();
+
 	GI->OnRefreshTokenResponse.AddDynamic(this, &UWebBrowserOverlay::OnAccessTokenResponse);
 	GI->OnLoginResponse.AddDynamic(this, &UWebBrowserOverlay::OnHttpLoginResponse);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UWebBrowserOverlay::LoginUserHttp);
@@ -26,6 +29,11 @@ void UWebBrowserOverlay::NativeConstruct()
 void UWebBrowserOverlay::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+	TotalDeltaTime += InDeltaTime;
+	if (BrowserOverlay)
+	{
+		MID_LoadingIcon->SetScalarParameterValue(FName("Time"), TotalDeltaTime);
+	}
 }
 
 void UWebBrowserOverlay::InitializeScoringOverlay()

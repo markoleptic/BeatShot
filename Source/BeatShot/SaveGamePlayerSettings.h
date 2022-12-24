@@ -133,6 +133,17 @@ struct FPlayerSettings
 		bShowStreakCombatText = true;
 		CombatTextFrequency = 5;
 	}
+
+	void ResetSettings()
+	{
+		GlobalVolume = 50.f;
+		MenuVolume = 50.f;
+		MusicVolume = 10.f;
+		FrameRateLimitMenu = 144;
+		FrameRateLimitGame = 0;
+		bShowStreakCombatText = true;
+		CombatTextFrequency = 5;
+	}
 };
 UCLASS()
 class BEATSHOT_API USaveGamePlayerSettings : public USaveGame

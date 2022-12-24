@@ -10,6 +10,7 @@
 
 #include "WebBrowserOverlay.generated.h"
 
+class UImage;
 class ULoginWidget;
 class UTextBlock;
 class UOverlay;
@@ -80,6 +81,17 @@ public:
 	/** WebBrowserWidget, only public so that parent widget can pass in ticks */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWebBrowserWidget* BrowserWidget;
+
+	/** Loading Icon Dynamic Material */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UImage* LoadingIcon;
+
+	/** Loading Icon Dynamic Material */
+	UPROPERTY(EditDefaultsOnly, Category = "Materials")
+	UMaterialInstanceDynamic* MID_LoadingIcon;
+
+	/** Total DeltaTime pass to Loading Icon Dynamic Material */
+	float TotalDeltaTime = 0;
 
 private:
 	/** Calls HandleLoginUser function in LoginWidget */

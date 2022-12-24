@@ -11,6 +11,11 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
+void UAASettings::InitMainMenuChild()
+{
+	SaveAndRestartButton->SetVisibility(ESlateVisibility::Collapsed);
+}
+
 void UAASettings::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -37,7 +42,9 @@ void UAASettings::NativeConstruct()
 void UAASettings::OnSaveAndRestartButtonClicked()
 {
 	SaveAASettings();
-	OnRestartButtonClicked.Execute();
+	if (OnRestartButtonClicked.IsBound()) {
+		OnRestartButtonClicked.Execute();
+	}
 }
 
 void UAASettings::OnThresholdSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,

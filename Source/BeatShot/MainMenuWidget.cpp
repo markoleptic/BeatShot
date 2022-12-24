@@ -39,6 +39,7 @@ void UMainMenuWidget::NativeConstruct()
 	ScoresWidget->InitializeScoringOverlay();
 	WebBrowserOverlayPatchNotes->BrowserWidget->LoadPatchNotesURL();
 	WebBrowserOverlayPatchNotes->FadeOut();
+	OnPatchNotesButtonClicked();
 }
 
 void UMainMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
