@@ -59,12 +59,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* BottomImage;
 
-private:
-
-	/** Changes a string into an FLinearColor */
-	FLinearColor HexToColor(FString HexString);
-	/** Changes an FLinearColor into a string */
-	FString ColorToHex(FLinearColor Color);
+public:
+	
 	/** Changes the width of the containers */
 	void SetLineWidth(const int32 NewWidthValue);
 	/** Changes the length of the containers */
@@ -75,7 +71,6 @@ private:
 	void SetOutlineOpacity(float NewOpacityValue);
 	/** Changes the color of the images (LeftImage, etc.) while leaving the OutlineImages unchanged */
 	void SetImageColor(const FLinearColor NewColor);
-	void SetImageColor(const FString& NewHexColor);
 	/** Changes the offset between the middle of the screen and the start of a container */
 	void SetInnerOffset(const int32 NewOffsetValue);
 	/** Reinitialize CrossHair if Player Settings change */

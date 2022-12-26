@@ -20,10 +20,12 @@ UCLASS()
 class BEATSHOT_API UCrossHairSettingsWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
-	protected:
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	virtual void NativeConstruct() override;
+
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UCrosshair* CrossHairWidget;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -76,6 +78,59 @@ class BEATSHOT_API UCrossHairSettingsWidget : public UUserWidget
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* SaveCrossHairButton;
 
+private:
+	
+	UFUNCTION()
+	void OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnHexValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnLineLengthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnLineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnOutlineOpacityValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnOutlineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+
+	UFUNCTION()
+	void OnColorASliderChange(const float NewValue);
+	UFUNCTION()
+	void OnColorRSliderChange(const float NewValue);
+	UFUNCTION()
+	void OnColorGSliderChange(const float NewValue);
+	UFUNCTION()
+	void OnColorBSliderChange(const float NewValue);
+	UFUNCTION()
+	void OnInnerOffsetSliderChange(const float NewValue);
+	UFUNCTION()
+	void OnLineLengthSliderChange(const float NewValue);
+	UFUNCTION()
+	void OnLineWidthSliderChange(const float NewValue);
+	UFUNCTION()
+	void OnOutlineOpacitySliderChange(const float NewValue);
+	UFUNCTION()
+	void OnOutlineWidthSliderChange(const float NewValue);
+
+	UFUNCTION()
+	void OnResetToDefaultButtonClicked();
+	UFUNCTION()
+	void OnRevertCrossHairButtonClicked();
+	UFUNCTION()
+	void OnSaveCrossHairButtonClicked();
+
+	/** Fills out all CrossHair Settings given PlayerSettings */
+	void SetCrossHairOptions(const FPlayerSettings& CrossHairSettings);
+	/** The PlayerSettings that were initially loaded */
 	FPlayerSettings InitialCrossHairSettings;
+	/** The PlayerSettings that are changed when interacting with the CrossHairSettingsWidget */
 	FPlayerSettings NewCrossHairSettings;
 };

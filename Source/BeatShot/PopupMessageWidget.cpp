@@ -3,8 +3,10 @@
 
 #include "PopupMessageWidget.h"
 
+#include "DefaultPlayerController.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 
 void UPopupMessageWidget::NativeConstruct()
@@ -34,4 +36,21 @@ void UPopupMessageWidget::InitPopup(const FString TitleInput, const FString Mess
 	{
 		Button2->SetVisibility(ESlateVisibility::Collapsed);
 	}
+}
+
+void UPopupMessageWidget::FadeIn()
+{
+	PlayAnimationForward(FadeInMessage);
+}
+
+void UPopupMessageWidget::FadeOut()
+{
+	FadeOutPopupMessageDelegate.BindDynamic(this, &UPopupMessageWidget::OnFadeOutPopupMessageFinish);
+	BindToAnimationFinished(FadeOutMessage, FadeOutPopupMessageDelegate);
+	PlayAnimationForward(FadeOutMessage);
+}
+
+void UPopupMessageWidget::OnFadeOutPopupMessageFinish()
+{
+	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->OnFadeOutPopupMessageFinish();
 }

@@ -6,6 +6,7 @@
 #include "GameModeActorBase.h"
 #include "DefaultPlayerController.h"
 #include "TargetSpawner.h"
+#include "Components/Button.h"
 #include "Kismet/GameplayStatics.h"
 
 void ADefaultGameMode::BeginPlay()
@@ -298,7 +299,7 @@ void ADefaultGameMode::ShowSongPathErrorMessage() const
 	PopupMessageWidget->InitPopup("Error",
 	                              "There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
 	                              "Okay");
-	PlayerController->ShowPopupMessage();
+	PopupMessageWidget->Button1->OnClicked.AddDynamic(PlayerController, &ADefaultPlayerController::HidePopupMessage);
 }
 
 void ADefaultGameMode::UpdateTargetSpawn(const bool bNewTargetState)

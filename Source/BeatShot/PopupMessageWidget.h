@@ -8,6 +8,7 @@
 
 class UButton;
 class UTextBlock;
+class UWidgetAnimation;
 
 /**
  * 
@@ -18,29 +19,40 @@ class BEATSHOT_API UPopupMessageWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
+	
 	virtual void NativeConstruct() override;
-
 	virtual void NativeDestruct() override;
 
 public:
+	
 	UFUNCTION(BlueprintCallable)
 	void InitPopup(FString TitleInput, FString MessageInput, FString Button1TextInput, FString Button2TextInput = "") const;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
+	UFUNCTION()
+	void FadeIn();
+	UFUNCTION()
+	void FadeOut();
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* Button1;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* Button2;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
+protected:
+	
+	FWidgetAnimationDynamicEvent FadeOutPopupMessageDelegate;
+	UFUNCTION()
+	void OnFadeOutPopupMessageFinish();
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* Button1Text;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* Button2Text;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TitleText;
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Component Parameters")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* MessageText;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* FadeOutMessage;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* FadeInMessage;
 };
+
+

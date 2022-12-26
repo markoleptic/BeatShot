@@ -27,14 +27,13 @@ UCLASS()
 class BEATSHOT_API USettingsMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
+
 public:
-	
 	/** Whether or not this instance of SettingsMenuWidget belongs to MainMenuWidget or not */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsMainMenuChild;
 
 protected:
-	
 	virtual void NativeConstruct() override;
 
 #pragma region MenuWidgets
@@ -58,11 +57,15 @@ protected:
 	/** SubMenu Widgets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* VideoAndSoundSettingsWidget;
+
 public:
+	
 	/** So that parent widgets can bind to OnRestartButtonClicked */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UAASettings* AASettingsWidget;
+
 protected:
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* SensitivityWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -82,13 +85,13 @@ protected:
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	UFUNCTION()
-	void OnVideoAndSoundSettingsButtonClicked() {SlideButtons(VideoAndSoundSettingsButton); }
+	void OnVideoAndSoundSettingsButtonClicked() { SlideButtons(VideoAndSoundSettingsButton); }
 	UFUNCTION()
-	void OnAASettingsButtonClicked() {SlideButtons(AASettingsButton); }
+	void OnAASettingsButtonClicked() { SlideButtons(AASettingsButton); }
 	UFUNCTION()
 	void OnSensitivityButtonClicked() { SlideButtons(SensitivityButton); }
 	UFUNCTION()
-	void OnCrossHairButtonClicked() {SlideButtons(CrossHairButton); }
+	void OnCrossHairButtonClicked() { SlideButtons(CrossHairButton); }
 
 #pragma	endregion
 
@@ -211,7 +214,8 @@ protected:
 	/** FPSCOUNTER */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "FPS Counter")
 	UCheckBox* FPSCounterCheckBox;
-	
+
+
 	UFUNCTION()
 	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -221,7 +225,7 @@ protected:
 	void OnFrameLimitMenuValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnFrameLimitGameValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	
+
 	UFUNCTION()
 	void OnVSyncEnabledCheckStateChanged(const bool bIsChecked);
 	UFUNCTION()
@@ -231,15 +235,16 @@ protected:
 	void OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnShowCombatTextCheckStateChanged(const bool bIsChecked);
-	
-	/** TODO: Implement this in c++ */
+
+	/** Clears and repopulates the ResolutionComboBox based on the resolutions from
+	 *  GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
 	UFUNCTION()
 	void PopulateResolutionComboBox();
 
 #pragma	endregion
 
 #pragma region Sound
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
 	UEditableTextBox* GlobalSoundValue;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
@@ -285,7 +290,7 @@ protected:
 	UEditableTextBox* NewSensitivityCsgoValue;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Settings")
 	USlider* SensSlider;
-	
+
 	UFUNCTION()
 	void OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
@@ -296,7 +301,7 @@ protected:
 #pragma	endregion
 
 #pragma region LoadingAndSaving
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UButton* SaveVideoAndSoundSettingsButton;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
@@ -327,11 +332,7 @@ protected:
 #pragma endregion
 
 #pragma region Utility
-
-	UPROPERTY(EditDefaultsOnly, Category = "Utility")
-	TSubclassOf<UPopupMessageWidget> ConfirmVideoSettingsMessageClass;
-	UPROPERTY()
-	UPopupMessageWidget* ConfirmVideoSettingsMessage;
+	
 	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes */
 	UPROPERTY()
 	FTimerHandle RevertVideoSettingsTimer;
@@ -361,8 +362,4 @@ protected:
 	const FLinearColor White = FLinearColor::White;
 
 #pragma endregion
-	
 };
-
-
-

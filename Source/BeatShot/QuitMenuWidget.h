@@ -6,7 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Delegates/DelegateCombinations.h"
-#include "Delegates/DelegateCombinations.h"
 #include "QuitMenuWidget.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnExitQuitMenu);

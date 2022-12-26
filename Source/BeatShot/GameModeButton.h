@@ -1,0 +1,37 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameModeActorBase.h"
+#include "Blueprint/UserWidget.h"
+#include "GameModeButton.generated.h"
+
+/**
+ * 
+ */
+class UButton;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeButtonClicked, UGameModeButton*, GameModeButton);
+
+UCLASS()
+class BEATSHOT_API UGameModeButton : public UUserWidget
+{
+	GENERATED_BODY()
+	
+	virtual void NativeConstruct() override;
+
+public:
+	UFUNCTION()
+	void OnButtonClickedCallback();
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UButton* Button;
+	UPROPERTY()
+	int32 Quality;
+	UPROPERTY()
+	EGameModeDifficulty Difficulty;
+	UPROPERTY()
+	UGameModeButton* Next;
+
+	FOnGameModeButtonClicked OnGameModeButtonClicked;
+};

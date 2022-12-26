@@ -29,34 +29,28 @@ void UCrosshair::NativeConstruct()
 	InitializeCrossHair(GI->LoadPlayerSettings());
 }
 
-FLinearColor UCrosshair::HexToColor(const FString HexString)
-{
-	return FLinearColor(FColor::FromHex(HexString));
-}
-
-FString UCrosshair::ColorToHex(const FLinearColor Color)
-{
-	return Color.ToFColor(false).ToHex();
-}
-
 void UCrosshair::SetLineWidth(const int32 NewWidthValue)
 {
-	const float SizeX = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().X;
-	const float SizeY = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().Y;
-	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetSize(FVector2d(NewWidthValue, SizeY));
-	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetSize(FVector2d(NewWidthValue, SizeY));
-	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetSize(FVector2d(SizeX, NewWidthValue));
-	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetSize(FVector2d(SizeX, NewWidthValue));
+	const float SizeHorizontalX = Cast<UCanvasPanelSlot>(LeftContainer->Slot)->GetSize().X;
+	const float SizeVerticalY = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().Y;
+
+	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetSize(FVector2d(NewWidthValue, SizeVerticalY));
+	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetSize(FVector2d(NewWidthValue, SizeVerticalY));
+
+	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetSize(FVector2d(SizeHorizontalX, NewWidthValue));
+	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetSize(FVector2d(SizeHorizontalX, NewWidthValue));
 }
 
 void UCrosshair::SetLineLength(const float NewLengthValue)
 {
-	const float SizeX = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().X;
-	const float SizeY = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().Y;
-	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetSize(FVector2d(SizeX, NewLengthValue));
-	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetSize(FVector2d(SizeX, NewLengthValue));
-	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetSize(FVector2d(NewLengthValue, SizeY));
-	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetSize(FVector2d(NewLengthValue, SizeY));
+	const float SizeVerticalX = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().X;
+	const float SizeHorizontalY = Cast<UCanvasPanelSlot>(LeftContainer->Slot)->GetSize().Y;
+
+	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetSize(FVector2d(SizeVerticalX, NewLengthValue));
+	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetSize(FVector2d(SizeVerticalX, NewLengthValue));
+
+	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetSize(FVector2d(NewLengthValue, SizeHorizontalY));
+	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetSize(FVector2d(NewLengthValue, SizeHorizontalY));
 }
 
 void UCrosshair::SetOutlineWidth(const int32 NewWidthValue)
@@ -87,20 +81,12 @@ void UCrosshair::SetImageColor(const FLinearColor NewColor)
 	RightImage->SetColorAndOpacity(NewColor);
 }
 
-void UCrosshair::SetImageColor(const FString& NewHexColor)
-{
-	TopImage->SetColorAndOpacity(HexToColor(NewHexColor));
-	BottomImage->SetColorAndOpacity(HexToColor(NewHexColor));
-	LeftImage->SetColorAndOpacity(HexToColor(NewHexColor));
-	RightImage->SetColorAndOpacity(HexToColor(NewHexColor));
-}
-
 void UCrosshair::SetInnerOffset(const int32 NewOffsetValue)
 {
 	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetPosition(FVector2d(0, -NewOffsetValue));
-	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetPosition(FVector2d(0, -NewOffsetValue));
+	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetPosition(FVector2d(0, NewOffsetValue));
 	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetPosition(FVector2d(-NewOffsetValue, 0));
-	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetPosition(FVector2d(-NewOffsetValue, 0));
+	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetPosition(FVector2d(NewOffsetValue, 0));
 }
 
 void UCrosshair::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)

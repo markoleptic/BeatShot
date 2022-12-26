@@ -15,6 +15,7 @@
 #include <Kismet/GameplayStatics.h>
 
 #include "AASettings.h"
+#include "DefaultPlayerController.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
@@ -225,18 +226,6 @@ void USettingsMenuWidget::NativeConstruct()
 	SaveSensitivityButton->OnClicked.AddDynamic(
 		this, &USettingsMenuWidget::OnSaveSensitivitySettingsButtonClicked);
 
-	ConfirmVideoSettingsMessage = CreateWidget<UPopupMessageWidget>(this, ConfirmVideoSettingsMessageClass);
-	ConfirmVideoSettingsMessage->TitleText->SetText(FText::FromString("Confirm Video Settings?"));
-	ConfirmVideoSettingsMessage->MessageText->SetText(
-		FText::FromString("Settings will be reverted if not confirmed in 10 seconds"));
-	ConfirmVideoSettingsMessage->Button1Text->SetText(FText::FromString("Confirm"));
-	ConfirmVideoSettingsMessage->Button2Text->SetText(FText::FromString("Revert"));
-	ConfirmVideoSettingsMessage->Button1->OnClicked.AddDynamic(
-		this, &USettingsMenuWidget::OnConfirmVideoSettingsButtonClicked);
-	ConfirmVideoSettingsMessage->Button2->OnClicked.AddDynamic(
-		this, &USettingsMenuWidget::OnCancelVideoSettingsButtonClicked);
-	ConfirmVideoSettingsMessage->Button2->SetVisibility(ESlateVisibility::Visible);
-
 	LoadPlayerSettings();
 	InitializeSettings();
 
@@ -244,140 +233,6 @@ void USettingsMenuWidget::NativeConstruct()
 	{
 		AASettingsWidget->InitMainMenuChild();
 	}
-}
-
-void USettingsMenuWidget::LoadPlayerSettings()
-{
-	InitialPlayerSettings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
-		LoadPlayerSettings();
-	NewPlayerSettings = InitialPlayerSettings;
-}
-
-void USettingsMenuWidget::SavePlayerSettings() const
-{
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SavePlayerSettings(NewPlayerSettings);
-}
-
-void USettingsMenuWidget::OnResetVideoAndSoundButtonClicked()
-{
-	UGameUserSettings::GetGameUserSettings()->SetToDefaults();
-	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
-	NewPlayerSettings.ResetSettings();
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SavePlayerSettings(NewPlayerSettings);
-	InitialPlayerSettings = NewPlayerSettings;
-	InitializeSettings();
-}
-
-void USettingsMenuWidget::ShowConfirmVideoSettingsMessage()
-{
-	ConfirmVideoSettingsMessage->AddToViewport();
-	GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, this,
-	                                       &USettingsMenuWidget::OnCancelVideoSettingsButtonClicked, 10.f, false);
-}
-
-void USettingsMenuWidget::OnConfirmVideoSettingsButtonClicked()
-{
-	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
-	UGameUserSettings::GetGameUserSettings()->ConfirmVideoMode();
-	ConfirmVideoSettingsMessage->RemoveFromViewport();
-}
-
-void USettingsMenuWidget::OnCancelVideoSettingsButtonClicked()
-{
-	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
-	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
-	Settings->RevertVideoMode();
-
-	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
-	{
-	case EWindowMode::Fullscreen:
-		{
-			WindowModeComboBox->SetSelectedOption("Fullscreen");
-			break;
-		}
-	case EWindowMode::WindowedFullscreen:
-		{
-			WindowModeComboBox->SetSelectedOption("Windowed Fullscreen");
-			break;
-		}
-	case EWindowMode::Windowed:
-		{
-			WindowModeComboBox->SetSelectedOption("Windowed");
-			break;
-		}
-	case EWindowMode::NumWindowModes:
-		{
-			break;
-		}
-	}
-	ConfirmVideoSettingsMessage->RemoveFromViewport();
-}
-
-void USettingsMenuWidget::PopulateResolutionComboBox()
-{
-	TArray<FIntPoint> Resolutions;
-	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
-	{
-	case EWindowMode::Fullscreen:
-		{
-			UKismetSystemLibrary::GetSupportedFullscreenResolutions(Resolutions);
-			break;
-		}
-	case EWindowMode::WindowedFullscreen:
-		{
-			UKismetSystemLibrary::GetConvenientWindowedResolutions(Resolutions);
-			break;
-		}
-	case EWindowMode::Windowed:
-		{
-			UKismetSystemLibrary::GetConvenientWindowedResolutions(Resolutions);
-			break;
-		}
-	case EWindowMode::NumWindowModes:
-		{
-			break;
-		}
-	}
-	ResolutionComboBox->ClearOptions();
-	const FIntPoint CurrentRes = UGameUserSettings::GetGameUserSettings()->GetLastConfirmedScreenResolution();
-	for (const FIntPoint Resolution : Resolutions)
-	{
-		ResolutionComboBox->AddOption(FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
-		if (Resolution == CurrentRes)
-		{
-			ResolutionComboBox->SetSelectedOption(FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
-		}
-	}
-}
-
-void USettingsMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
-{
-	for (TTuple<USlideRightButton*, UVerticalBox*>& Elem : MenuWidgets)
-	{
-		if (Elem.Key != ActiveButton)
-		{
-			Elem.Key->SlideButton(false);
-			continue;
-		}
-		Elem.Key->SlideButton(true);
-		MenuSwitcher->SetActiveWidget(Elem.Value);
-	}
-}
-
-float USettingsMenuWidget::ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange,
-                                                     const float SnapSize)
-{
-	const float NewValue = UKismetMathLibrary::GridSnap_Float(SliderValue, SnapSize);
-	TextBoxToChange->SetText(FText::AsNumber(NewValue));
-	return NewValue;
-}
-
-float USettingsMenuWidget::ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange,
-                                                     const float SnapSize)
-{
-	const float NewValue = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*TextValue.ToString()), SnapSize);
-	SliderToChange->SetValue(NewValue);
-	return NewValue;
 }
 
 void USettingsMenuWidget::InitializeSettings()
@@ -391,7 +246,7 @@ void USettingsMenuWidget::InitializeSettings()
 
 	GlobalSoundValue->SetText(FText::AsNumber(InitialPlayerSettings.GlobalVolume));
 	MenuSoundValue->SetText(FText::AsNumber(InitialPlayerSettings.MenuVolume));
-	MusicSoundValue->SetText(FText::AsNumber(InitialPlayerSettings.MusicVolume ));
+	MusicSoundValue->SetText(FText::AsNumber(InitialPlayerSettings.MusicVolume));
 
 	FPSCounterCheckBox->SetIsChecked(InitialPlayerSettings.bShowFPSCounter);
 
@@ -452,69 +307,137 @@ void USettingsMenuWidget::InitializeSettings()
 	OnVideoAndSoundSettingsButtonClicked();
 }
 
-UVideoSettingButton* USettingsMenuWidget::FindVideoSettingButtonFromQuality(
-	const int32 Quality, ESettingType SettingType)
+void USettingsMenuWidget::LoadPlayerSettings()
 {
-	UVideoSettingButton* Head = nullptr;
-	switch (SettingType)
-	{
-	case ESettingType::AntiAliasing:
-		{
-			Head = AAQ0;
-			break;
-		}
-	case ESettingType::GlobalIllumination:
-		{
-			Head = GIQ0;
-			break;
-		}
-	case ESettingType::PostProcessing:
-		{
-			Head = PPQ0;
-			break;
-		}
-	case ESettingType::Reflection:
-		{
-			Head = RQ0;
-			break;
-		}
-	case ESettingType::Shadow:
-		{
-			Head = SWQ0;
-			break;
-		}
-	case ESettingType::Shading:
-		{
-			Head = SGQ0;
-			break;
-		}
-	case ESettingType::Texture:
-		{
-			Head = TQ0;
-			break;
-		}
-	case ESettingType::ViewDistance:
-		{
-			Head = VDQ0;
-			break;
-		}
-	case ESettingType::VisualEffect:
-		{
-			Head = VEQ0;
-			break;
-		}
-	}
-	while (Head->Quality != Quality)
-	{
-		Head = Head->Next;
-	}
-	return Head;
+	InitialPlayerSettings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
+		LoadPlayerSettings();
+	NewPlayerSettings = InitialPlayerSettings;
+}
+
+void USettingsMenuWidget::SavePlayerSettings() const
+{
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SavePlayerSettings(NewPlayerSettings);
 }
 
 void USettingsMenuWidget::OnSaveVideoAndSoundSettingsButtonClicked()
 {
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	SavePlayerSettings();
+}
+
+void USettingsMenuWidget::OnResetVideoAndSoundButtonClicked()
+{
+	UGameUserSettings::GetGameUserSettings()->SetToDefaults();
+	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+	NewPlayerSettings.ResetVideoAndSoundSettings();
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SavePlayerSettings(NewPlayerSettings);
+	InitialPlayerSettings = NewPlayerSettings;
+	InitializeSettings();
+}
+
+void USettingsMenuWidget::ShowConfirmVideoSettingsMessage()
+{
+	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(
+			GetWorld(), 0));
+	UPopupMessageWidget* PopupMessageWidget = PlayerController->CreatePopupMessageWidget(true, 1);
+	PopupMessageWidget->InitPopup("Confirm Video Settings?",
+	                              "Settings will be reverted if not confirmed in 10 seconds",
+	                              "Confirm", "Revert");
+	PopupMessageWidget->Button1->OnClicked.AddDynamic(
+		this, &USettingsMenuWidget::OnConfirmVideoSettingsButtonClicked);
+	PopupMessageWidget->Button2->OnClicked.AddDynamic(
+		this, &USettingsMenuWidget::OnCancelVideoSettingsButtonClicked);
+	GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, this,
+	                                       &USettingsMenuWidget::OnCancelVideoSettingsButtonClicked, 10.f, false);
+}
+
+void USettingsMenuWidget::OnConfirmVideoSettingsButtonClicked()
+{
+	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	Settings->ConfirmVideoMode();
+	Settings->ApplyResolutionSettings(false);
+	PopulateResolutionComboBox();
+	
+	Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(
+			GetWorld(), 0))->HidePopupMessage();
+}
+
+void USettingsMenuWidget::OnCancelVideoSettingsButtonClicked()
+{
+	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	Settings->RevertVideoMode();
+	Settings->SetScreenResolution(Settings->GetLastConfirmedScreenResolution());
+	PopulateResolutionComboBox();
+
+	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
+	{
+	case EWindowMode::Fullscreen:
+		{
+			WindowModeComboBox->SetSelectedOption("Fullscreen");
+			break;
+		}
+	case EWindowMode::WindowedFullscreen:
+		{
+			WindowModeComboBox->SetSelectedOption("Windowed Fullscreen");
+			break;
+		}
+	case EWindowMode::Windowed:
+		{
+			WindowModeComboBox->SetSelectedOption("Windowed");
+			break;
+		}
+	case EWindowMode::NumWindowModes:
+		{
+			break;
+		}
+	}
+	
+	Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(
+			GetWorld(), 0))->HidePopupMessage();
+}
+
+void USettingsMenuWidget::PopulateResolutionComboBox()
+{
+	TArray<FIntPoint> Resolutions;
+	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
+	{
+	case EWindowMode::Fullscreen:
+		{
+			UKismetSystemLibrary::GetSupportedFullscreenResolutions(Resolutions);
+			break;
+		}
+	case EWindowMode::WindowedFullscreen:
+		{
+			UKismetSystemLibrary::GetConvenientWindowedResolutions(Resolutions);
+			break;
+		}
+	case EWindowMode::Windowed:
+		{
+			UKismetSystemLibrary::GetConvenientWindowedResolutions(Resolutions);
+			break;
+		}
+	case EWindowMode::NumWindowModes:
+		{
+			break;
+		}
+	}
+	ResolutionComboBox->ClearOptions();
+	const FIntPoint CurrentRes = UGameUserSettings::GetGameUserSettings()->GetLastConfirmedScreenResolution();
+	for (const FIntPoint Resolution : Resolutions)
+	{
+		ResolutionComboBox->AddOption(
+			FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
+		if (Resolution == CurrentRes)
+		{
+			ResolutionComboBox->SetSelectedOption(
+				FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
+		}
+	}
 }
 
 void USettingsMenuWidget::OnGlobalSoundSliderChanged(const float NewValue)
@@ -583,7 +506,6 @@ void USettingsMenuWidget::OnWindowModeSelectionChanged(const FString SelectedOpt
 	{
 		UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::Windowed);
 	}
-	PopulateResolutionComboBox();
 	ShowConfirmVideoSettingsMessage();
 }
 
@@ -594,10 +516,13 @@ void USettingsMenuWidget::OnResolutionSelectionChanged(const FString SelectedOpt
 	SelectedOption.Split("x", &LeftS, &RightS);
 	LeftS = UKismetStringLibrary::Replace(LeftS, ",", "");
 	RightS = UKismetStringLibrary::Replace(RightS, ",", "");
-	const FIntPoint NewResolution = FIntPoint(	FCString::Atoi(*LeftS),
+	const FIntPoint NewResolution = FIntPoint(FCString::Atoi(*LeftS),
 	                                          FCString::Atoi(*RightS));
 	UGameUserSettings::GetGameUserSettings()->SetScreenResolution(NewResolution);
-	ShowConfirmVideoSettingsMessage();
+	if (SelectionType != ESelectInfo::Direct)
+	{
+		ShowConfirmVideoSettingsMessage();
+	}
 }
 
 void USettingsMenuWidget::OnFrameLimitMenuValueChanged(const FText& NewValue, ETextCommit::Type CommitType)
@@ -740,4 +665,93 @@ void USettingsMenuWidget::OnSensitivitySliderChanged(const float NewValue)
 void USettingsMenuWidget::OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	NewPlayerSettings.CombatTextFrequency = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*NewValue.ToString()), 1);
+}
+
+void USettingsMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
+{
+	for (TTuple<USlideRightButton*, UVerticalBox*>& Elem : MenuWidgets)
+	{
+		if (Elem.Key != ActiveButton)
+		{
+			Elem.Key->SlideButton(false);
+			continue;
+		}
+		Elem.Key->SlideButton(true);
+		MenuSwitcher->SetActiveWidget(Elem.Value);
+	}
+}
+
+float USettingsMenuWidget::ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange,
+                                                     const float SnapSize)
+{
+	const float NewValue = UKismetMathLibrary::GridSnap_Float(SliderValue, SnapSize);
+	TextBoxToChange->SetText(FText::AsNumber(NewValue));
+	return NewValue;
+}
+
+float USettingsMenuWidget::ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange,
+                                                     const float SnapSize)
+{
+	const float NewValue = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*TextValue.ToString()), SnapSize);
+	SliderToChange->SetValue(NewValue);
+	return NewValue;
+}
+
+UVideoSettingButton* USettingsMenuWidget::FindVideoSettingButtonFromQuality(
+	const int32 Quality, ESettingType SettingType)
+{
+	UVideoSettingButton* Head = nullptr;
+	switch (SettingType)
+	{
+	case ESettingType::AntiAliasing:
+		{
+			Head = AAQ0;
+			break;
+		}
+	case ESettingType::GlobalIllumination:
+		{
+			Head = GIQ0;
+			break;
+		}
+	case ESettingType::PostProcessing:
+		{
+			Head = PPQ0;
+			break;
+		}
+	case ESettingType::Reflection:
+		{
+			Head = RQ0;
+			break;
+		}
+	case ESettingType::Shadow:
+		{
+			Head = SWQ0;
+			break;
+		}
+	case ESettingType::Shading:
+		{
+			Head = SGQ0;
+			break;
+		}
+	case ESettingType::Texture:
+		{
+			Head = TQ0;
+			break;
+		}
+	case ESettingType::ViewDistance:
+		{
+			Head = VDQ0;
+			break;
+		}
+	case ESettingType::VisualEffect:
+		{
+			Head = VEQ0;
+			break;
+		}
+	}
+	while (Head->Quality != Quality)
+	{
+		Head = Head->Next;
+	}
+	return Head;
 }

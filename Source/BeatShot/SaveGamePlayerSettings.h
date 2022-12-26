@@ -134,7 +134,7 @@ struct FPlayerSettings
 		CombatTextFrequency = 5;
 	}
 
-	void ResetSettings()
+	void ResetVideoAndSoundSettings()
 	{
 		GlobalVolume = 50.f;
 		MenuVolume = 50.f;
@@ -143,6 +143,16 @@ struct FPlayerSettings
 		FrameRateLimitGame = 0;
 		bShowStreakCombatText = true;
 		CombatTextFrequency = 5;
+	}
+
+	void ResetCrossHair()
+	{
+		LineWidth = 4;
+		LineLength = 10;
+		InnerOffset = 6;
+		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		OutlineOpacity = 1.f;
+		OutlineWidth = 20;
 	}
 };
 UCLASS()

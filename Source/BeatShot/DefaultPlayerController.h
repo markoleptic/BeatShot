@@ -25,6 +25,8 @@ class UCountdown;
  * 
  */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenFadeToBlackFinish);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPopupMessageButtonOneClicked);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPopupMessageButtonTwoClicked);
 UCLASS()
 class BEATSHOT_API ADefaultPlayerController : public APlayerController
 {
@@ -58,8 +60,6 @@ public:
 	void ShowPostGameMenu(const bool bSavedScores);
 	UFUNCTION(BlueprintCallable)
 	void HidePostGameMenu();
-	UFUNCTION(BlueprintCallable)
-	void ShowPopupMessage();
 	UFUNCTION(BlueprintCallable)
 	void HidePopupMessage();
 	UFUNCTION(BlueprintCallable)
@@ -131,7 +131,14 @@ private:
 	
 	const int32 ZOrderFadeScreen = 20;
 	const int32 ZOrderFPSCounter = 19;
+
+public:
+
+	/** Called by PopupMessageWidget when the FadeOut animation is complete */
+	UFUNCTION()
+	void OnFadeOutPopupMessageFinish();
 	
+private:
 	UFUNCTION()
 	void OnFadeScreenToBlackFinish();
 	UFUNCTION()

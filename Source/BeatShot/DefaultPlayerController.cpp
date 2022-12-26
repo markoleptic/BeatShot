@@ -11,8 +11,6 @@
 #include "PostGameMenuWidget.h"
 #include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Button.h"
-#include "Components/Overlay.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -177,36 +175,35 @@ void ADefaultPlayerController::HidePostGameMenu()
 	}
 }
 
-void ADefaultPlayerController::ShowPopupMessage()
+UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(const bool bDestroyOnClick, const int32 ButtonIndex)
 {
+	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	if (PopupMessageWidget)
 	{
-		if (PopupMessageWidget->GetParent())
-		{
-			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::HitTestInvisible);
-		}
-		SetPlayerEnabledState(false);
 		PopupMessageWidget->AddToViewport();
-		PopupMessageWidget->SetVisibility(ESlateVisibility::Visible);
+		PopupMessageWidget->FadeIn();
 		if (GetWorld()->GetMapName().Contains("Range"))
 		{
 			SetInputMode(FInputModeUIOnly());
 			SetShowMouseCursor(true);
+			SetPlayerEnabledState(false);
 		}
 	}
+	return PopupMessageWidget;
 }
 
 void ADefaultPlayerController::HidePopupMessage()
 {
-	if (PopupMessageWidget)
+	if (PopupMessageWidget != nullptr)
 	{
-		if (PopupMessageWidget->GetParent())
-		{
-			PopupMessageWidget->GetParent()->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		PopupMessageWidget->RemoveFromViewport();
-		PostGameMenuWidget = nullptr;
+		PopupMessageWidget->FadeOut();
 	}
+}
+
+void ADefaultPlayerController::OnFadeOutPopupMessageFinish()
+{
+	PopupMessageWidget->RemoveFromViewport();
+	PostGameMenuWidget = nullptr;
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
 		SetInputMode(FInputModeGameAndUI());
@@ -286,23 +283,6 @@ bool ADefaultPlayerController::IsPlayerHUDActive() const
 bool ADefaultPlayerController::IsPostGameMenuActive() const
 {
 	return PostGameMenuActive;
-}
-
-UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(const bool bDestroyOnClick, const int32 ButtonIndex)
-{
-	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
-	if (bDestroyOnClick)
-	{
-		if (ButtonIndex == 1)
-		{
-			PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &ADefaultPlayerController::HidePopupMessage);
-		}
-		else
-		{
-			PopupMessageWidget->Button2->OnClicked.AddDynamic(this, &ADefaultPlayerController::HidePopupMessage);
-		}
-	}
-	return PopupMessageWidget;
 }
 
 void ADefaultPlayerController::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)
