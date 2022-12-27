@@ -9,10 +9,13 @@
 #include "GameModesWidget.generated.h"
 
 class UPopupMessageWidget;
+class USlideRightButton;
+class UVerticalBox;
 class UDefaultGameInstance;
 class UButton;
 class UBorder;
 class UEditableTextBox;
+class UWidgetSwitcher;
 class UComboBoxString;
 class USlider;
 class UCheckBox;
@@ -31,139 +34,331 @@ protected:
 	
 	virtual void NativeConstruct() override;
 
+#pragma region NavigationWidgets
+	
+	/** A map to store buttons and the widgets they associate with */
+	UPROPERTY()
+	TMap<USlideRightButton*, UVerticalBox*> MenuWidgets;
+	/** Switch between DefaultGameModes and CustomGameModes */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UWidgetSwitcher* MenuSwitcher;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlideRightButton* DefaultGameModesButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlideRightButton* CustomGameModesButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* DefaultGameModes;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* CustomGameModes;
+
+private:
+	
+	/** Function to Play the Slide Animation for Navigation Buttons */
+	UFUNCTION()
+	void SlideButtons(const USlideRightButton* ActiveButton);
+	UFUNCTION()
+	void OnDefaultGameModesButtonClicked() { SlideButtons(DefaultGameModesButton); }
+	UFUNCTION()
+	void OnCustomGameModesButtonClicked() { SlideButtons(CustomGameModesButton); }
+
+#pragma endregion
+
+#pragma region DefaultGameModes
+
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* BeatGridNormalButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* BeatGridHardButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* BeatGridDeathButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* BeatTrackNormalButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* BeatTrackHardButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* BeatTrackDeathButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* MultiBeatNormalButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* MultiBeatHardButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* MultiBeatDeathButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* SingleBeatNormalButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* SingleBeatHardButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UGameModeButton* SingleBeatDeathButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UBorder* SpreadSelect;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UButton* DynamicSpreadButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UButton* NarrowSpreadButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UButton* WideSpreadButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UButton* CustomizeFromStandardButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
+	UButton* PlayFromStandardButton;
+
+private:
+	
+	/** Changes the SelectedGameMode depending on input button */
+	UFUNCTION()
+	void OnDefaultGameModeButtonClicked(UGameModeButton* GameModeButton);
+	/** Changes the background colors for the Game Mode of the ClickedButton */
+	void SetGameModeButtonBackgroundColor(const UGameModeButton* ClickedButton);
+	/** Changes the SpreadType of SelectedGameMode to Dynamic */
+	UFUNCTION()
+	void OnDynamicSpreadButtonClicked();
+	/** Changes the SpreadType of SelectedGameMode to Narrow */
+	UFUNCTION()
+	void OnNarrowSpreadButtonClicked();
+	/** Changes the SpreadType of SelectedGameMode to Wide */
+	UFUNCTION()
+	void OnWideSpreadButtonClicked();
+	/** Switches to CustomGameModes, making sure to Populate the CustomGameModeOptions with what's selected in DefaultGameModes */
+	UFUNCTION()
+	void OnCustomizeFromStandardButtonClicked();
+	/** TODO: Passes SelectedGameMode to GameInstance, fades to black, and opens the Range level */
+	UFUNCTION()
+	void OnPlayFromStandardButtonClicked();
+
+#pragma endregion
+
 #pragma region CustomGeneral
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UComboBoxString* GameModeNameComboBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes")
 	UEditableTextBox* CustomGameModeETB;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UComboBoxString* BaseGameModeComboBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UComboBoxString* GameModeDifficultyComboBox;
+
+private:
+	/** Populate Game Mode Options and changes the Custom Save Button states */
+	UFUNCTION()
+	void OnGameModeNameSelectionChange(const FString SelectedGameModeName, const ESelectInfo::Type SelectionType);
+	/** Changes the CustomGameModeName in SelectedGameMode, and changes the Custom Save Button states */
+	UFUNCTION()
+	void OnCustomGameModeETBChange(const FText& NewCustomGameModeText);
+	/** Changes the base game mode in SelectedGameMode */
+	UFUNCTION()
+	void OnBaseGameModeSelectionChange(const FString SelectedBaseGameMode, const ESelectInfo::Type SelectionType);
+	/** Changes the difficulty in SelectedGameMode */
+	UFUNCTION()
+	void OnGameModeDifficultySelectionChange(const FString SelectedDifficulty, const ESelectInfo::Type SelectionType);
 
 #pragma endregion
 
 #pragma region CustomSaveStart
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
-	UButton* SaveCustomButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
-	UButton* StartWithoutSavingButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
-	UButton* SaveCustomAndStartButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
-	UButton* StartCustomButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
-	UButton* RemoveSelectedCustomButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
-	UButton* RemoveAllCustomButton;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UPopupMessageWidget* PopUpMessageWidget;
 
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UButton* SaveCustomButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UButton* StartWithoutSavingButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UButton* SaveCustomAndStartButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UButton* StartCustomButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UButton* RemoveSelectedCustomButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UButton* RemoveAllCustomButton;
+
+private:
+	
 	/** saves CustomGameModesMap to CustomGameModes save slot */
 	void SaveCustomGameMode() const;
 	/** loads and returns CustomGameModesMap from CustomGameModes save slot */
-	TMap<FString, FGameModeActorStruct> LoadCustomGameModes();
-	/** Changes the Save Button states depending on what is selected in GameModeNameComboBox and CustomGameModeETB */
+	TArray<FGameModeActorStruct> LoadCustomGameModes();
+	/** Changes the Save and Start Button states depending on what is selected in GameModeNameComboBox and CustomGameModeETB */
+	void UpdateSaveStartButtonStates(const FString& CustomGameModeName);
+	/** TODO: Saves the custom game mode, repopulates GameModeNameComboBox, and selects the new custom game mode */
 	UFUNCTION()
-	void ChangeSaveButtonStates(const FText& Text);
+	void OnSaveCustomButtonClicked();
+	/** TODO: Passes SelectedGameMode to GameInstance without saving, fades to black, and opens the Range level */
+	UFUNCTION()
+	void OnStartWithoutSavingButtonClicked();
+	/** TODO: Saves the custom game mode and passes it to GameInstance, fades to black, and opens the Range level */
+	UFUNCTION()
+	void OnSaveCustomAndStartButtonClicked();
+	/** TODO: Passes SelectedGameMode to GameInstance, fades to black, and opens the Range level */
+	UFUNCTION()
+	void OnStartCustomButtonClicked();
+	/** TODO: Removes selected custom game mode, and repopulates GameModeNameComboBox */
+	UFUNCTION()
+	void OnRemoveSelectedCustomButtonClicked();
+	/** TODO: Removes all custom game modes, and repopulates GameModeNameComboBox */
+	UFUNCTION()
+	void OnRemoveAllCustomButtonClicked();
+
+	/** Initializes a PopupMessage using DefaultPlayerController, and binds to the buttons */
+	void ShowConfirmOverwriteMessage();
+	/** TODO: Overwrites a custom game mode, and calls DefaultPlayerController to hide the message */
+	UFUNCTION()
+	void OnConfirmOverwriteButtonClicked();
+	/** TODO: Does not overwrite a custom game mode, and calls DefaultPlayerController to hide the message */
+	UFUNCTION()
+	void OnCancelOverwriteButtonClicked();
 
 #pragma endregion
 
 #pragma region TimeRelated
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UComboBoxString* PlayerDelayComboBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	USlider* LifespanSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UEditableTextBox* LifespanValue;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	USlider* TargetSpawnCDSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom GameModes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UEditableTextBox* TargetSpawnCDValue;
+
+private:
+	
+	UFUNCTION()
+	void OnPlayerDelaySelectionChanged(const FString SelectedPlayerDelay, const ESelectInfo::Type SelectionType) { SelectedGameMode.PlayerDelay = FCString::Atof(*SelectedPlayerDelay); }
+	UFUNCTION()
+	void OnLifespanSliderChanged(const float NewLifespan) { SelectedGameMode.TargetMaxLifeSpan = NewLifespan; }
+	UFUNCTION()
+	void OnLifespanValueCommitted(const FText& NewLifespan, ETextCommit::Type CommitType) { SelectedGameMode.TargetMaxLifeSpan = FCString::Atof(*NewLifespan.ToString()); }
+	UFUNCTION()
+	void OnTargetSpawnCDSliderChanged(const float NewTargetSpawnCD) { SelectedGameMode.TargetSpawnCD = NewTargetSpawnCD; }
+	UFUNCTION()
+	void OnTargetSpawnCDValueCommitted(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType) { SelectedGameMode.TargetSpawnCD = FCString::Atof(*NewTargetSpawnCD.ToString()); }
 
 #pragma endregion
 
 #pragma region TargetSpread
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	UCheckBox* HeadShotOnlyCheckBox;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	UCheckBox* WallCenteredCheckBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	USlider* MinTargetDistanceSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	UEditableTextBox* MinTargetDistanceValue;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	UComboBoxString* SpreadTypeComboBox;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	USlider* HorizontalSpreadSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	UEditableTextBox* HorizontalSpreadValue;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	USlider* VerticalSpreadSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Spread")
 	UEditableTextBox* VerticalSpreadValue;
+
+private:
+	
+	UFUNCTION()
+	void OnHeadShotOnlyCheckStateChanged(const bool bHeadshotOnly) {SelectedGameMode.HeadshotHeight = bHeadshotOnly; }
+	UFUNCTION()
+	void OnWallCenteredCheckStateChanged(const bool bWallCentered) {SelectedGameMode.WallCentered = bWallCentered; }
+	UFUNCTION()
+	void OnMinTargetDistanceSliderChanged(const float NewMinTargetDistance) {SelectedGameMode.MinDistanceBetweenTargets = NewMinTargetDistance; }
+	UFUNCTION()
+	void OnMinTargetDistanceValueCommitted(const FText& NewMinTargetDistance, ETextCommit::Type CommitType) {SelectedGameMode.MinDistanceBetweenTargets = FCString::Atof(*NewMinTargetDistance.ToString()); }
+	UFUNCTION()
+	void OnSpreadTypeSelectionChanged(const FString SelectedSpreadType, const ESelectInfo::Type SelectionType) {SelectedGameMode.SpreadType = GetSpreadType(SelectedSpreadType); }
+	UFUNCTION()
+	void OnHorizontalSpreadSliderChanged(const float NewHorizontalSpread) {SelectedGameMode.BoxBounds.Y = NewHorizontalSpread; }
+	UFUNCTION()
+	void OnHorizontalSpreadValueCommitted(const FText& NewHorizontalSpread, ETextCommit::Type CommitType) {SelectedGameMode.BoxBounds.Y = FCString::Atof(*NewHorizontalSpread.ToString()); }
+	UFUNCTION()
+	void OnVerticalSpreadSliderChanged(const float NewVerticalSpread) {SelectedGameMode.BoxBounds.Z = NewVerticalSpread; }
+	UFUNCTION()
+	void OnVerticalSpreadValueCommitted(const FText& NewVerticalSpread, ETextCommit::Type CommitType) {SelectedGameMode.BoxBounds.Z = FCString::Atof(*NewVerticalSpread.ToString()); }
 
 #pragma endregion
 
 #pragma region TargetSizing
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	UCheckBox* ConstantTargetScaleCheckBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	UCheckBox* DynamicTargetScaleCheckBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	USlider* MinTargetScaleSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	UEditableTextBox* MinTargetScaleValue;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	USlider* MaxTargetScaleSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	UEditableTextBox* MaxTargetScaleValue;
+
+private:
+	
+	UFUNCTION()
+	void OnConstantTargetScaleCheckStateChanged(const bool bConstantTargetScale);
+	UFUNCTION()
+	void OnDynamicTargetScaleCheckStateChanged(const bool bDynamicTargetScale) { SelectedGameMode.UseDynamicSizing = bDynamicTargetScale; }
+	UFUNCTION()
+	void OnMinTargetScaleSliderChanged(const float NewMinTargetScale) { SelectedGameMode.MinTargetScale = NewMinTargetScale; }
+	UFUNCTION()
+	void OnMinTargetScaleValueCommitted(const FText& NewMinTargetScale, ETextCommit::Type CommitType) { SelectedGameMode.MinTargetScale = FCString::Atof(*NewMinTargetScale.ToString()); }
+	UFUNCTION()
+	void OnMaxTargetScaleSliderChanged(const float NewMaxTargetScale) { SelectedGameMode.MaxTargetScale = NewMaxTargetScale; }
+	UFUNCTION()
+	void OnMaxTargetScaleValueCommitted(const FText& NewMaxTargetScale, ETextCommit::Type CommitType) { SelectedGameMode.MaxTargetScale = FCString::Atof(*NewMaxTargetScale.ToString()); }
 
 #pragma endregion
 
 #pragma region BeatGrid
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatGrid Settings")
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatGrid")
 	UBorder* BeatGridSpecificSettings;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatGrid")
 	USlider* BeatGridHorizontalSpacingSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatGrid")
 	USlider* BeatGridVerticalSpacingSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Custom Game Modes")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatGrid")
 	UComboBoxString* NumBeatGridTargetsComboBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatGrid Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatGrid")
 	UCheckBox* ConstantBeatGridSpacingCheckBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatGrid Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatGrid")
 	UCheckBox* RandomizeNextBeatGridTargetCheckBox;
-
-	// only called when user tries to save game mode or play game mode
+	
+private:
+	
+	UFUNCTION()
+	void OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing);
+	UFUNCTION()
+	void OnRandomizeNextBeatGridTargetCheckStateChanged(const bool bRandomizeNextBeatGridTarget) { SelectedGameMode.RandomizeBeatGrid = bRandomizeNextBeatGridTarget; }
+	UFUNCTION()
+	void OnNumBeatGridTargetsSelectionChanged(const FString NumBeatGridTargets, const ESelectInfo::Type SelectionType) { SelectedGameMode.NumTargetsAtOnceBeatGrid = FCString::Atoi(*NumBeatGridTargets); }
+	
 	UFUNCTION()
 	bool CheckAllBeatGridConstraints();
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	void BeatGridTargetSizeConstrained(float value);
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	void BeatGridSpawnAreaConstrained(float value);
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
+	UFUNCTION()
+	void BeatGridTargetSizeConstrained(float Value);
+	UFUNCTION()
+	void BeatGridSpawnAreaConstrained(float Value);
+	UFUNCTION()
 	void BeatGridNumberOfTargetsConstrained(FString SelectedSong, ESelectInfo::Type SelectionType);
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	void UpdateCustomGameModeOptions(FString SelectedGameMode, ESelectInfo::Type SelectionType);
-	UFUNCTION(BlueprintCallable, Category = "Custom GameModes")
-	void BeatGridSpacingConstrained(float value);
+	UFUNCTION()
+	void BeatGridSpacingConstrained(float Value);
 
 	FUpdateBeatGridConstraints BeatGridConstraintsDelegate;
 
@@ -171,100 +366,81 @@ protected:
 
 #pragma region BeatTrack
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatTrack Settings")
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	UBorder* BeatTrackSpecificSettings;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatTrack Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	UCheckBox* ConstantTargetSpeedCheckBox;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatTrack Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	USlider* BeatTrackMinTargetSpeedSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatTrack Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	UEditableTextBox*  BeatTrackMinTargetSpeedValue;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatTrack Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	USlider* BeatTrackMaxTargetSpeedSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "BeatTrack Settings")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	UEditableTextBox* BeatTrackMaxTargetSpeedValue;
-
-#pragma endregion
-
-#pragma region DefaultGameModes
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* BeatGridNormalButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* BeatGridHardButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* BeatGridDeathButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* BeatTrackNormalButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* BeatTrackHardButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* BeatTrackDeathButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* MultiBeatNormalButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* MultiBeatHardButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* MultiBeatDeathButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* SingleBeatNormalButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* SingleBeatHardButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UGameModeButton* SingleBeatDeathButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UBorder* SpreadSelect;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UButton* DynamicSpreadButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UButton* NarrowSpreadButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UButton* WideSpreadButton;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UButton* CustomizeFromStandardButton;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Default Game Modes")
-	UButton* PlayFromStandardButton;
-
-#pragma endregion
-
+	
 private:
+	
+	UFUNCTION()
+	void OnConstantTargetSpeedCheckStateChanged(const bool bConstantTargetSpeed);
+	UFUNCTION()
+	void OnBeatTrackMinTargetSpeedSliderChanged(const float NewBeatTrackMinTargetSpeed) { SelectedGameMode.MinTrackingSpeed = NewBeatTrackMinTargetSpeed; }
+	UFUNCTION()
+	void OnBeatTrackMinTargetSpeedValueCommitted(const FText& NewBeatTrackMinTargetSpeed, ETextCommit::Type CommitType) { SelectedGameMode.MinTrackingSpeed = FCString::Atof(*NewBeatTrackMinTargetSpeed.ToString()); }
+	UFUNCTION()
+	void OnBeatTrackMaxTargetSpeedSliderChanged(const float NewBeatTrackMaxTargetSpeed) { SelectedGameMode.MaxTrackingSpeed = NewBeatTrackMaxTargetSpeed; }
+	UFUNCTION()
+	void OnBeatTrackMaxTargetSpeedValueCommitted(const FText& NewBeatTrackMaxTargetSpeed, ETextCommit::Type CommitType) { SelectedGameMode.MaxTrackingSpeed = FCString::Atof(*NewBeatTrackMaxTargetSpeed.ToString()); }
 
-#pragma region UpdateOptions
+#pragma endregion
+
+#pragma region Update
 	
 	/** Initializes all Custom game mode options based on the GameModeActorStruct */
-	void PopulateGameModeOptions(FGameModeActorStruct InputGameModeActorStruct);
+	void PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct);
 	/** Updates GameModeNameComboBox with CustomGameModes */
 	void PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect);
 
 #pragma endregion;
+
+#pragma region Utility
 	
-	FGameModeActorStruct GetGameMode(const EGameModeActorName& GameModeActorName, const FString& GameModeName);
+	/** Returns the ESpreadType corresponding to the SpreadType string */
+	ESpreadType GetSpreadType(const FString& SpreadType) const;
+	/** Returns the FGameModeActorStruct corresponding to the input GameModeName string */
+	FGameModeActorStruct GetDefaultGameMode(const FString& GameModeName);
+	/** Returns the FGameModeActorStruct corresponding to the input CustomGameModeName string */
 	FGameModeActorStruct GetCustomGameMode(const FString& CustomGameModeName);
 	/** Returns whether or not the GameModeName is part of the game's default game modes */
 	bool IsDefaultGameMode(const FString& GameModeName);
+	/** Returns whether or not the GameModeName is already a custom game mode name */
+	bool IsCustomGameMode(const FString& GameModeName);
 	/** Creates default game modes based on Difficulty and Spread Type */
-	FGameModeActorStruct GameModeActorStructConstructor(EGameModeActorName GameModeActor,
-														EGameModeDifficulty NewGameModeDifficulty =
-															EGameModeDifficulty::Normal,
-														ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
+	static FGameModeActorStruct GameModeActorStructConstructor(EGameModeActorName GameModeActor,
+	                                                           EGameModeDifficulty NewGameModeDifficulty =
+		                                                           EGameModeDifficulty::Normal,
+	                                                           ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
+
+#pragma endregion
 
 	
 	/** The object used to save custom game mode properties to */
-	FGameModeActorStruct CustomGameMode;
+	FGameModeActorStruct SelectedGameMode;
 	/** The map to add custom game modes to */
-	TMap<FString, FGameModeActorStruct> CustomGameModesMap;
+	TArray<FGameModeActorStruct> CustomGameModesArray;
 	/** The array of default Game Modes */
 	TArray<FGameModeActorStruct> GameModeActorDefaults;
 	/** The array of Game Modes to display */
 	TArray<FGameModeActorStruct> GameModesToDisplay;
-
+	/** The color used to change the GameModeButton color to when selected */
+	const FLinearColor BeatshotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
+	/** The color used to change the GameModeButton color to when not selected */
+	const FLinearColor White = FLinearColor::White;
+	/** The diameter of a target */
 	const float SphereDiameter = 100.f;
 };
+
+
+

@@ -31,6 +31,8 @@ public:
 	UPROPERTY()
 	EGameModeDifficulty Difficulty;
 	UPROPERTY()
+	EGameModeActorName GameModeName;
+	UPROPERTY()
 	UGameModeButton* Next;
 
 	FOnGameModeButtonClicked OnGameModeButtonClicked;
