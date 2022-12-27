@@ -74,6 +74,7 @@ public:
 	/** Changes the offset between the middle of the screen and the start of a container */
 	void SetInnerOffset(const int32 NewOffsetValue);
 	/** Reinitialize CrossHair if Player Settings change */
+	UFUNCTION()
 	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 };
 

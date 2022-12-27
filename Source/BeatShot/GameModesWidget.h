@@ -177,37 +177,42 @@ protected:
 
 private:
 	
-	/** saves CustomGameModesMap to CustomGameModes save slot */
-	void SaveCustomGameMode() const;
+	/** saves CustomGameModesArray to CustomGameModes save slot */
+	void SaveCustomGameModeArrayToSlot() const;
+	/** saves CustomGameModesArray to local CustomGameModesArray, then saves to slot */
+	void SaveCustomGameMode(const FGameModeActorStruct GameModeToSave);
+	/** Removes a Custom Game Mode from CustomGameModesArray, then saves to slot */
+	bool RemoveCustomGameMode(const FString& CustomGameModeName);
+	/** Removes all Custom Game Mode from CustomGameModesArray, then saves to slot */
+	void RemoveAllCustomGameModes();
 	/** loads and returns CustomGameModesMap from CustomGameModes save slot */
 	TArray<FGameModeActorStruct> LoadCustomGameModes();
 	/** Changes the Save and Start Button states depending on what is selected in GameModeNameComboBox and CustomGameModeETB */
 	void UpdateSaveStartButtonStates(const FString& CustomGameModeName);
-	/** TODO: Saves the custom game mode, repopulates GameModeNameComboBox, and selects the new custom game mode */
+	/** Saves the custom game mode to local array and slot, repopulates GameModeNameComboBox, and selects the new custom game mode */
 	UFUNCTION()
 	void OnSaveCustomButtonClicked();
-	/** TODO: Passes SelectedGameMode to GameInstance without saving, fades to black, and opens the Range level */
+	/** Passes SelectedGameMode to GameInstance without saving, fades to black, and opens the Range level */
 	UFUNCTION()
 	void OnStartWithoutSavingButtonClicked();
-	/** TODO: Saves the custom game mode and passes it to GameInstance, fades to black, and opens the Range level */
+	/** Saves the custom game mode and passes it to GameInstance, fades to black, and opens the Range level */
 	UFUNCTION()
 	void OnSaveCustomAndStartButtonClicked();
-	/** TODO: Passes SelectedGameMode to GameInstance, fades to black, and opens the Range level */
+	/** Passes SelectedGameMode to GameInstance, fades to black, and opens the Range level */
 	UFUNCTION()
 	void OnStartCustomButtonClicked();
-	/** TODO: Removes selected custom game mode, and repopulates GameModeNameComboBox */
+	/** Calls RemoveCustomGameMode */
 	UFUNCTION()
 	void OnRemoveSelectedCustomButtonClicked();
-	/** TODO: Removes all custom game modes, and repopulates GameModeNameComboBox */
+	/** Calls RemoveAllCustomGameModes */
 	UFUNCTION()
 	void OnRemoveAllCustomButtonClicked();
-
 	/** Initializes a PopupMessage using DefaultPlayerController, and binds to the buttons */
 	void ShowConfirmOverwriteMessage();
-	/** TODO: Overwrites a custom game mode, and calls DefaultPlayerController to hide the message */
+	/** Overwrites a custom game mode by invoking SaveCustomGameMode and calls DefaultPlayerController to hide the message */
 	UFUNCTION()
 	void OnConfirmOverwriteButtonClicked();
-	/** TODO: Does not overwrite a custom game mode, and calls DefaultPlayerController to hide the message */
+	/** Does not overwrite a custom game mode, and calls DefaultPlayerController to hide the message */
 	UFUNCTION()
 	void OnCancelOverwriteButtonClicked();
 
@@ -399,7 +404,7 @@ private:
 #pragma region Update
 	
 	/** Initializes all Custom game mode options based on the GameModeActorStruct */
-	void PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct);
+	void PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct, bool bSelectGameModeNameComboBox);
 	/** Updates GameModeNameComboBox with CustomGameModes */
 	void PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect);
 
@@ -422,6 +427,11 @@ private:
 	                                                           EGameModeDifficulty NewGameModeDifficulty =
 		                                                           EGameModeDifficulty::Normal,
 	                                                           ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
+	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
+	void InitializeExit();
+	/** Cleans up widgets, initializes the game mode if in Range level, or opens the Range level if in MainMenuLevel */
+	UFUNCTION()
+	void StartGame();
 
 #pragma endregion
 
