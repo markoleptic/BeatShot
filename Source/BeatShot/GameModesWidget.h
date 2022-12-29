@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameModeActorBase.h"
 #include "GameModeButton.h"
+#include "ConstrainedSlider.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
@@ -20,11 +21,9 @@ class UComboBoxString;
 class USlider;
 class UCheckBox;
 
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateBeatGridConstraints, float, value);
 
-/**
- *
- */
 UCLASS()
 class BEATSHOT_API UGameModesWidget : public UUserWidget
 {
@@ -34,7 +33,7 @@ protected:
 	
 	virtual void NativeConstruct() override;
 
-#pragma region NavigationWidgets
+#pragma region Navigation
 	
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
@@ -158,7 +157,7 @@ private:
 
 #pragma endregion
 
-#pragma region CustomSaveStart
+#pragma region SaveStart
 
 protected:
 	
@@ -215,6 +214,11 @@ private:
 	/** Does not overwrite a custom game mode, and calls DefaultPlayerController to hide the message */
 	UFUNCTION()
 	void OnCancelOverwriteButtonClicked();
+	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
+	void InitializeExit();
+	/** Cleans up widgets, initializes the game mode if in Range level, or opens the Range level if in MainMenuLevel */
+	UFUNCTION()
+	void StartGame();
 
 #pragma endregion
 
@@ -236,15 +240,29 @@ protected:
 private:
 	
 	UFUNCTION()
-	void OnPlayerDelaySelectionChanged(const FString SelectedPlayerDelay, const ESelectInfo::Type SelectionType) { SelectedGameMode.PlayerDelay = FCString::Atof(*SelectedPlayerDelay); }
+	void OnPlayerDelaySelectionChanged(const FString SelectedPlayerDelay, const ESelectInfo::Type SelectionType)
+	{
+		SelectedGameMode.PlayerDelay = FCString::Atof(*SelectedPlayerDelay);
+	}
 	UFUNCTION()
-	void OnLifespanSliderChanged(const float NewLifespan) { SelectedGameMode.TargetMaxLifeSpan = NewLifespan; }
+	void OnLifespanSliderChanged(const float NewLifespan)
+	{
+		SelectedGameMode.TargetMaxLifeSpan = NewLifespan;
+	}
 	UFUNCTION()
 	void OnLifespanValueCommitted(const FText& NewLifespan, ETextCommit::Type CommitType) { SelectedGameMode.TargetMaxLifeSpan = FCString::Atof(*NewLifespan.ToString()); }
 	UFUNCTION()
-	void OnTargetSpawnCDSliderChanged(const float NewTargetSpawnCD) { SelectedGameMode.TargetSpawnCD = NewTargetSpawnCD; }
+	void OnTargetSpawnCDSliderChanged(const float NewTargetSpawnCD)
+	{
+		SelectedGameMode.TargetSpawnCD = NewTargetSpawnCD;
+		OnSliderChanged(NewTargetSpawnCD, TargetSpawnCDValue, 0.01);
+	}
 	UFUNCTION()
-	void OnTargetSpawnCDValueCommitted(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType) { SelectedGameMode.TargetSpawnCD = FCString::Atof(*NewTargetSpawnCD.ToString()); }
+	void OnTargetSpawnCDValueCommitted(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType)
+	{
+		SelectedGameMode.TargetSpawnCD = FCString::Atof(*NewTargetSpawnCD.ToString());
+		OnEditableTextBoxChanged(NewTargetSpawnCD, TargetSpawnCDValue, TargetSpawnCDSlider, 0.01, 0.05, 2);
+	}
 
 #pragma endregion
 
@@ -297,34 +315,20 @@ private:
 #pragma region TargetSizing
 
 protected:
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	UCheckBox* ConstantTargetScaleCheckBox;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
 	UCheckBox* DynamicTargetScaleCheckBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	USlider* MinTargetScaleSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	UEditableTextBox* MinTargetScaleValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	USlider* MaxTargetScaleSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	UEditableTextBox* MaxTargetScaleValue;
+	UConstrainedSlider* TargetScaleConstrained;
 
 private:
 	
 	UFUNCTION()
-	void OnConstantTargetScaleCheckStateChanged(const bool bConstantTargetScale);
-	UFUNCTION()
 	void OnDynamicTargetScaleCheckStateChanged(const bool bDynamicTargetScale) { SelectedGameMode.UseDynamicSizing = bDynamicTargetScale; }
 	UFUNCTION()
-	void OnMinTargetScaleSliderChanged(const float NewMinTargetScale) { SelectedGameMode.MinTargetScale = NewMinTargetScale; }
+	void OnMinTargetScaleConstrainedChange(const float NewMin);
 	UFUNCTION()
-	void OnMinTargetScaleValueCommitted(const FText& NewMinTargetScale, ETextCommit::Type CommitType) { SelectedGameMode.MinTargetScale = FCString::Atof(*NewMinTargetScale.ToString()); }
-	UFUNCTION()
-	void OnMaxTargetScaleSliderChanged(const float NewMaxTargetScale) { SelectedGameMode.MaxTargetScale = NewMaxTargetScale; }
-	UFUNCTION()
-	void OnMaxTargetScaleValueCommitted(const FText& NewMaxTargetScale, ETextCommit::Type CommitType) { SelectedGameMode.MaxTargetScale = FCString::Atof(*NewMaxTargetScale.ToString()); }
+	void OnMaxTargetScaleConstrainedChange(const float NewMax);
 
 #pragma endregion
 
@@ -376,28 +380,14 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
 	UBorder* BeatTrackSpecificSettings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
-	UCheckBox* ConstantTargetSpeedCheckBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
-	USlider* BeatTrackMinTargetSpeedSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
-	UEditableTextBox*  BeatTrackMinTargetSpeedValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
-	USlider* BeatTrackMaxTargetSpeedSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "BeatTrack")
-	UEditableTextBox* BeatTrackMaxTargetSpeedValue;
+	UConstrainedSlider* TargetSpeedConstrained;
 	
 private:
 	
 	UFUNCTION()
-	void OnConstantTargetSpeedCheckStateChanged(const bool bConstantTargetSpeed);
+	void OnMinTargetSpeedConstrainedChange(const float NewMin);
 	UFUNCTION()
-	void OnBeatTrackMinTargetSpeedSliderChanged(const float NewBeatTrackMinTargetSpeed) { SelectedGameMode.MinTrackingSpeed = NewBeatTrackMinTargetSpeed; }
-	UFUNCTION()
-	void OnBeatTrackMinTargetSpeedValueCommitted(const FText& NewBeatTrackMinTargetSpeed, ETextCommit::Type CommitType) { SelectedGameMode.MinTrackingSpeed = FCString::Atof(*NewBeatTrackMinTargetSpeed.ToString()); }
-	UFUNCTION()
-	void OnBeatTrackMaxTargetSpeedSliderChanged(const float NewBeatTrackMaxTargetSpeed) { SelectedGameMode.MaxTrackingSpeed = NewBeatTrackMaxTargetSpeed; }
-	UFUNCTION()
-	void OnBeatTrackMaxTargetSpeedValueCommitted(const FText& NewBeatTrackMaxTargetSpeed, ETextCommit::Type CommitType) { SelectedGameMode.MaxTrackingSpeed = FCString::Atof(*NewBeatTrackMaxTargetSpeed.ToString()); }
+	void OnMaxTargetSpeedConstrainedChange(const float NewMax);
 
 #pragma endregion
 
@@ -427,14 +417,12 @@ private:
 	                                                           EGameModeDifficulty NewGameModeDifficulty =
 		                                                           EGameModeDifficulty::Normal,
 	                                                           ESpreadType NewSpreadType = ESpreadType::StaticNarrow);
-	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
-	void InitializeExit();
-	/** Cleans up widgets, initializes the game mode if in Range level, or opens the Range level if in MainMenuLevel */
-	UFUNCTION()
-	void StartGame();
+	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
+	void OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
+	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
+	void OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize);
 
 #pragma endregion
-
 	
 	/** The object used to save custom game mode properties to */
 	FGameModeActorStruct SelectedGameMode;
