@@ -15,7 +15,7 @@ class BEATSHOT_API UTooltipWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
-protected:
+public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TooltipDescriptor;

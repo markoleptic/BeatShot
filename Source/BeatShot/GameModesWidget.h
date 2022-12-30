@@ -5,10 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameModeActorBase.h"
 #include "GameModeButton.h"
+#include "TooltipImage.h"
+#include "TooltipWidget.h"
 #include "ConstrainedSlider.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
+class UHorizontalBox;
 class UPopupMessageWidget;
 class USlideRightButton;
 class UVerticalBox;
@@ -126,6 +129,10 @@ private:
 	UFUNCTION()
 	void OnPlayFromStandardButtonClicked();
 
+	ESpreadType DefaultGameModeSpreadType;
+	EGameModeActorName DefaultGameModeActorName;
+	EGameModeDifficulty DefaultGameModeDifficulty;
+
 #pragma endregion
 
 #pragma region CustomGeneral
@@ -140,6 +147,8 @@ protected:
 	UComboBoxString* BaseGameModeComboBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
 	UComboBoxString* GameModeDifficultyComboBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes")
+	UHorizontalBox* BaseGameModeBox;
 
 private:
 	/** Populate Game Mode Options and changes the Custom Save Button states */
@@ -176,16 +185,14 @@ protected:
 
 private:
 	
-	/** saves CustomGameModesArray to CustomGameModes save slot */
-	void SaveCustomGameModeArrayToSlot() const;
-	/** saves CustomGameModesArray to local CustomGameModesArray, then saves to slot */
-	void SaveCustomGameMode(const FGameModeActorStruct GameModeToSave);
-	/** Removes a Custom Game Mode from CustomGameModesArray, then saves to slot */
-	bool RemoveCustomGameMode(const FString& CustomGameModeName);
-	/** Removes all Custom Game Mode from CustomGameModesArray, then saves to slot */
-	void RemoveAllCustomGameModes();
+	/** saves a CustomGameMode to save slot  */
+	void SaveCustomGameMode(const FGameModeActorStruct GameModeToSave) const;
+	/** Loads CustomGameModes, removes the CustomGameMode corresponding to CustomGameModeName, then saves to slot */
+	void RemoveCustomGameMode(const FString& CustomGameModeName) const;
+	/** Loads CustomGameModes, removes all, then saves to slot */
+	void RemoveAllCustomGameModes() const;
 	/** loads and returns CustomGameModesMap from CustomGameModes save slot */
-	TArray<FGameModeActorStruct> LoadCustomGameModes();
+	TArray<FGameModeActorStruct> LoadCustomGameModes() const;
 	/** Changes the Save and Start Button states depending on what is selected in GameModeNameComboBox and CustomGameModeETB */
 	void UpdateSaveStartButtonStates(const FString& CustomGameModeName);
 	/** Saves the custom game mode to local array and slot, repopulates GameModeNameComboBox, and selects the new custom game mode */
@@ -242,25 +249,30 @@ private:
 	UFUNCTION()
 	void OnPlayerDelaySelectionChanged(const FString SelectedPlayerDelay, const ESelectInfo::Type SelectionType)
 	{
-		SelectedGameMode.PlayerDelay = FCString::Atof(*SelectedPlayerDelay);
+		//SelectedGameMode.PlayerDelay = FCString::Atof(*SelectedPlayerDelay);
 	}
 	UFUNCTION()
 	void OnLifespanSliderChanged(const float NewLifespan)
 	{
-		SelectedGameMode.TargetMaxLifeSpan = NewLifespan;
+		//SelectedGameMode.TargetMaxLifeSpan = NewLifespan;
+		OnSliderChanged(NewLifespan, LifespanValue, 0.01);
 	}
 	UFUNCTION()
-	void OnLifespanValueCommitted(const FText& NewLifespan, ETextCommit::Type CommitType) { SelectedGameMode.TargetMaxLifeSpan = FCString::Atof(*NewLifespan.ToString()); }
+	void OnLifespanValueCommitted(const FText& NewLifespan, ETextCommit::Type CommitType)
+	{
+		//SelectedGameMode.TargetMaxLifeSpan = FCString::Atof(*NewLifespan.ToString());
+		OnEditableTextBoxChanged(NewLifespan, LifespanValue, LifespanSlider, 0.01, 0.1, 2);
+	}
 	UFUNCTION()
 	void OnTargetSpawnCDSliderChanged(const float NewTargetSpawnCD)
 	{
-		SelectedGameMode.TargetSpawnCD = NewTargetSpawnCD;
+		//SelectedGameMode.TargetSpawnCD = NewTargetSpawnCD;
 		OnSliderChanged(NewTargetSpawnCD, TargetSpawnCDValue, 0.01);
 	}
 	UFUNCTION()
 	void OnTargetSpawnCDValueCommitted(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType)
 	{
-		SelectedGameMode.TargetSpawnCD = FCString::Atof(*NewTargetSpawnCD.ToString());
+		//SelectedGameMode.TargetSpawnCD = FCString::Atof(*NewTargetSpawnCD.ToString());
 		OnEditableTextBoxChanged(NewTargetSpawnCD, TargetSpawnCDValue, TargetSpawnCDSlider, 0.01, 0.05, 2);
 	}
 
@@ -292,23 +304,56 @@ protected:
 private:
 	
 	UFUNCTION()
-	void OnHeadShotOnlyCheckStateChanged(const bool bHeadshotOnly) {SelectedGameMode.HeadshotHeight = bHeadshotOnly; }
+	void OnHeadShotOnlyCheckStateChanged(const bool bHeadshotOnly)
+	{
+		//SelectedGameMode.HeadshotHeight = bHeadshotOnly;
+	}
 	UFUNCTION()
-	void OnWallCenteredCheckStateChanged(const bool bWallCentered) {SelectedGameMode.WallCentered = bWallCentered; }
+	void OnWallCenteredCheckStateChanged(const bool bWallCentered)
+	{
+		//SelectedGameMode.WallCentered = bWallCentered;
+	}
 	UFUNCTION()
-	void OnMinTargetDistanceSliderChanged(const float NewMinTargetDistance) {SelectedGameMode.MinDistanceBetweenTargets = NewMinTargetDistance; }
+	void OnMinTargetDistanceSliderChanged(const float NewMinTargetDistance)
+	{
+		//SelectedGameMode.MinDistanceBetweenTargets = NewMinTargetDistance;
+		OnSliderChanged(NewMinTargetDistance, MinTargetDistanceValue, 5);
+	}
 	UFUNCTION()
-	void OnMinTargetDistanceValueCommitted(const FText& NewMinTargetDistance, ETextCommit::Type CommitType) {SelectedGameMode.MinDistanceBetweenTargets = FCString::Atof(*NewMinTargetDistance.ToString()); }
+	void OnMinTargetDistanceValueCommitted(const FText& NewMinTargetDistance, ETextCommit::Type CommitType)
+	{
+		//SelectedGameMode.MinDistanceBetweenTargets = FCString::Atof(*NewMinTargetDistance.ToString());
+		OnEditableTextBoxChanged(NewMinTargetDistance, MinTargetDistanceValue, MinTargetDistanceSlider, 5, 0, 600);
+	}
 	UFUNCTION()
-	void OnSpreadTypeSelectionChanged(const FString SelectedSpreadType, const ESelectInfo::Type SelectionType) {SelectedGameMode.SpreadType = GetSpreadType(SelectedSpreadType); }
+	void OnSpreadTypeSelectionChanged(const FString SelectedSpreadType, const ESelectInfo::Type SelectionType)
+	{
+		//SelectedGameMode.SpreadType = GetSpreadType();
+	}
 	UFUNCTION()
-	void OnHorizontalSpreadSliderChanged(const float NewHorizontalSpread) {SelectedGameMode.BoxBounds.Y = NewHorizontalSpread; }
+	void OnHorizontalSpreadSliderChanged(const float NewHorizontalSpread)
+	{
+		//SelectedGameMode.BoxBounds.Y = NewHorizontalSpread;
+		OnSliderChanged(NewHorizontalSpread, HorizontalSpreadValue, 10);
+	}
 	UFUNCTION()
-	void OnHorizontalSpreadValueCommitted(const FText& NewHorizontalSpread, ETextCommit::Type CommitType) {SelectedGameMode.BoxBounds.Y = FCString::Atof(*NewHorizontalSpread.ToString()); }
+	void OnHorizontalSpreadValueCommitted(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
+	{
+		//SelectedGameMode.BoxBounds.Y = FCString::Atof(*NewHorizontalSpread.ToString());
+		OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, 10, 200, 3200);
+	}
 	UFUNCTION()
-	void OnVerticalSpreadSliderChanged(const float NewVerticalSpread) {SelectedGameMode.BoxBounds.Z = NewVerticalSpread; }
+	void OnVerticalSpreadSliderChanged(const float NewVerticalSpread)
+	{
+		//SelectedGameMode.BoxBounds.Z = NewVerticalSpread;
+		OnSliderChanged(NewVerticalSpread, VerticalSpreadValue, 10);
+	}
 	UFUNCTION()
-	void OnVerticalSpreadValueCommitted(const FText& NewVerticalSpread, ETextCommit::Type CommitType) {SelectedGameMode.BoxBounds.Z = FCString::Atof(*NewVerticalSpread.ToString()); }
+	void OnVerticalSpreadValueCommitted(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
+	{
+		//SelectedGameMode.BoxBounds.Z = FCString::Atof(*NewVerticalSpread.ToString());
+		OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, 10, 200, 1000);
+	}
 
 #pragma endregion
 
@@ -324,7 +369,10 @@ protected:
 private:
 	
 	UFUNCTION()
-	void OnDynamicTargetScaleCheckStateChanged(const bool bDynamicTargetScale) { SelectedGameMode.UseDynamicSizing = bDynamicTargetScale; }
+	void OnDynamicTargetScaleCheckStateChanged(const bool bDynamicTargetScale)
+	{
+		//SelectedGameMode.UseDynamicSizing = bDynamicTargetScale;
+	}
 	UFUNCTION()
 	void OnMinTargetScaleConstrainedChange(const float NewMin);
 	UFUNCTION()
@@ -354,9 +402,15 @@ private:
 	UFUNCTION()
 	void OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing);
 	UFUNCTION()
-	void OnRandomizeNextBeatGridTargetCheckStateChanged(const bool bRandomizeNextBeatGridTarget) { SelectedGameMode.RandomizeBeatGrid = bRandomizeNextBeatGridTarget; }
+	void OnRandomizeNextBeatGridTargetCheckStateChanged(const bool bRandomizeNextBeatGridTarget)
+	{
+		//SelectedGameMode.RandomizeBeatGrid = bRandomizeNextBeatGridTarget;
+	}
 	UFUNCTION()
-	void OnNumBeatGridTargetsSelectionChanged(const FString NumBeatGridTargets, const ESelectInfo::Type SelectionType) { SelectedGameMode.NumTargetsAtOnceBeatGrid = FCString::Atoi(*NumBeatGridTargets); }
+	void OnNumBeatGridTargetsSelectionChanged(const FString NumBeatGridTargets, const ESelectInfo::Type SelectionType)
+	{
+		//SelectedGameMode.NumTargetsAtOnceBeatGrid = FCString::Atoi(*NumBeatGridTargets);
+	}
 	
 	UFUNCTION()
 	bool CheckAllBeatGridConstraints();
@@ -391,23 +445,73 @@ private:
 
 #pragma endregion
 
+#pragma region Tooltip
+
+protected:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* GameModeTemplateQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* CustomGameModeNameQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* BaseGameModeQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* GameModeDifficultyQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* SpawnBeatDelayQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* LifespanQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* TargetSpawnCDQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* HeadshotHeightQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* CenterTargetsQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* MinDistanceQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* SpreadTypeQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* DynamicTargetScaleQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* BeatGridEvenSpacingQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* BeatGridAdjacentOnlyQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* BeatGridNumTargetsQMark;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
+	UPROPERTY()
+	UTooltipWidget* Tooltip;
+
+private:
+	
+	/** Updates the tooltip text and shows the tooltip at the location of the Button (which is just the question mark image) */
+	UFUNCTION()
+	void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow);
+
+
+#pragma endregion
+
 #pragma region Update
 	
 	/** Initializes all Custom game mode options based on the GameModeActorStruct */
-	void PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct, bool bSelectGameModeNameComboBox);
+	void PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct);
 	/** Updates GameModeNameComboBox with CustomGameModes */
 	void PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect);
+	/** Retrieves all Custom game mode options and returns a GameModeActorStruct with those options */
+	FGameModeActorStruct GetCustomGameModeOptions();
 
 #pragma endregion;
 
 #pragma region Utility
 	
 	/** Returns the ESpreadType corresponding to the SpreadType string */
-	ESpreadType GetSpreadType(const FString& SpreadType) const;
+	ESpreadType GetSpreadType() const;
 	/** Returns the FGameModeActorStruct corresponding to the input GameModeName string */
 	FGameModeActorStruct GetDefaultGameMode(const FString& GameModeName);
 	/** Returns the FGameModeActorStruct corresponding to the input CustomGameModeName string */
-	FGameModeActorStruct GetCustomGameMode(const FString& CustomGameModeName);
+	FGameModeActorStruct GetCustomGameMode(const FString& CustomGameModeName) const;
 	/** Returns whether or not the GameModeName is part of the game's default game modes */
 	bool IsDefaultGameMode(const FString& GameModeName);
 	/** Returns whether or not the GameModeName is already a custom game mode name */
@@ -425,13 +529,9 @@ private:
 #pragma endregion
 	
 	/** The object used to save custom game mode properties to */
-	FGameModeActorStruct SelectedGameMode;
-	/** The map to add custom game modes to */
-	TArray<FGameModeActorStruct> CustomGameModesArray;
+	//FGameModeActorStruct SelectedGameMode;
 	/** The array of default Game Modes */
 	TArray<FGameModeActorStruct> GameModeActorDefaults;
-	/** The array of Game Modes to display */
-	TArray<FGameModeActorStruct> GameModesToDisplay;
 	/** The color used to change the GameModeButton color to when selected */
 	const FLinearColor BeatshotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
 	/** The color used to change the GameModeButton color to when not selected */

@@ -9,14 +9,17 @@
 #include "JsonObjectConverter.h"
 #include "SaveGameCustomGameMode.h"
 #include "SlideRightButton.h"
+#include "TooltipWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
 #include "Components/Slider.h"
 #include "Components/Border.h"
 #include "Components/CheckBox.h"
+#include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
 #include "Components/ComboBoxString.h"
+#include "Components/HorizontalBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DefaultValueHelper.h"
 
@@ -117,8 +120,6 @@ void UGameModesWidget::NativeConstruct()
 	/** Default GameModes Array */
 	{
 		GameModeActorDefaults.Add(
-			GameModeActorStructConstructor(EGameModeActorName::Custom, EGameModeDifficulty::Normal));
-		GameModeActorDefaults.Add(
 			GameModeActorStructConstructor(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
 		GameModeActorDefaults.Add(
 			GameModeActorStructConstructor(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
@@ -128,7 +129,6 @@ void UGameModesWidget::NativeConstruct()
 		GameModeActorDefaults.Add(GameModeActorStructConstructor(EGameModeActorName::MultiBeat,
 		                                                         EGameModeDifficulty::Normal,
 		                                                         ESpreadType::DynamicRandom));
-		GameModesToDisplay = GameModeActorDefaults;
 	}
 
 	/** Save Start Custom Buttons */
@@ -153,7 +153,6 @@ void UGameModesWidget::NativeConstruct()
 		{
 			RemoveAllCustomButton->SetIsEnabled(true);
 		}
-
 		GameModeNameComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::OnGameModeNameSelectionChange);
 		CustomGameModeETB->OnTextChanged.AddDynamic(this, &UGameModesWidget::OnCustomGameModeETBChange);
 		BaseGameModeComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::OnBaseGameModeSelectionChange);
@@ -230,8 +229,68 @@ void UGameModesWidget::NativeConstruct()
 		TargetSpeedConstrained->OnMaxValueChanged.BindUFunction(this, FName("OnMaxTargetSpeedConstrainedChange"));
 	}
 
+	/** Tooltip */
+	{
+		Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
+
+		GameModeTemplateQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "GameModeTemplate");
+		CustomGameModeNameQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "CustomGameModeName");
+		BaseGameModeQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "BaseGameMode");
+		GameModeDifficultyQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "GameModeDifficulty");
+		SpawnBeatDelayQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "SpawnBeatDelay");
+		LifespanQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "Lifespan");
+		TargetSpawnCDQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "MinDistance");
+		HeadshotHeightQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "HeadshotHeight");
+		CenterTargetsQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "CenterTargets");
+		MinDistanceQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "MinDistance");
+		SpreadTypeQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "SpreadType");
+		DynamicTargetScaleQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "DynamicTargetScale");
+		BeatGridEvenSpacingQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "BeatGridEvenSpacing");
+		BeatGridAdjacentOnlyQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "BeatGridAdjacentOnly");
+		BeatGridNumTargetsQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "BeatGridNumTargets");
+		TargetScaleConstrained->CheckboxQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "ConstantTargetScale");
+		TargetSpeedConstrained->CheckboxQMark->TooltipText = FText::FromStringTable(
+			"/Game/UI/StringTables/ST_GameModesWidget.ST_GameModesWidget", "BeatTrackConstantSpeed");
+
+		GameModeTemplateQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		CustomGameModeNameQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		BaseGameModeQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		GameModeDifficultyQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		SpawnBeatDelayQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		LifespanQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		TargetSpawnCDQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		CenterTargetsQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		HeadshotHeightQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		MinDistanceQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		SpreadTypeQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		DynamicTargetScaleQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		BeatGridEvenSpacingQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		BeatGridAdjacentOnlyQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		BeatGridNumTargetsQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		TargetScaleConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(
+			this, &UGameModesWidget::OnTooltipImageHovered);
+		TargetSpeedConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(
+			this, &UGameModesWidget::OnTooltipImageHovered);
+	}
+
 	OnDefaultGameModesButtonClicked();
-	PopulateGameModeNameComboBox("Custom");
+	PopulateGameModeNameComboBox("MultiBeat");
 }
 
 void UGameModesWidget::SlideButtons(const USlideRightButton* ActiveButton)
@@ -252,8 +311,10 @@ void UGameModesWidget::SlideButtons(const USlideRightButton* ActiveButton)
 
 void UGameModesWidget::OnDefaultGameModeButtonClicked(UGameModeButton* GameModeButton)
 {
-	SelectedGameMode = GameModeActorStructConstructor(GameModeButton->GameModeName, GameModeButton->Difficulty);
-	PopulateGameModeOptions(SelectedGameMode, true);
+	DefaultGameModeActorName = GameModeButton->GameModeName;
+	DefaultGameModeDifficulty = GameModeButton->Difficulty;
+	FGameModeActorStruct SelectedGameMode = GameModeActorStructConstructor(GameModeButton->GameModeName, GameModeButton->Difficulty);
+	PopulateGameModeOptions(GameModeActorStructConstructor(GameModeButton->GameModeName, GameModeButton->Difficulty));
 	SetGameModeButtonBackgroundColor(GameModeButton);
 	DynamicSpreadButton->SetBackgroundColor(White);
 	WideSpreadButton->SetBackgroundColor(White);
@@ -295,7 +356,7 @@ void UGameModesWidget::OnDynamicSpreadButtonClicked()
 	NarrowSpreadButton->SetBackgroundColor(White);
 	WideSpreadButton->SetBackgroundColor(White);
 	ESpreadType SpreadType;
-	if (SelectedGameMode.GameModeActorName == EGameModeActorName::MultiBeat)
+	if (DefaultGameModeActorName == EGameModeActorName::MultiBeat)
 	{
 		SpreadType = ESpreadType::DynamicRandom;
 	}
@@ -303,9 +364,8 @@ void UGameModesWidget::OnDynamicSpreadButtonClicked()
 	{
 		SpreadType = ESpreadType::DynamicEdgeOnly;
 	}
-	SelectedGameMode = GameModeActorStructConstructor(SelectedGameMode.GameModeActorName,
-	                                                  SelectedGameMode.GameModeDifficulty, SpreadType);
-	PopulateGameModeOptions(SelectedGameMode, true);
+	PopulateGameModeOptions(GameModeActorStructConstructor(DefaultGameModeActorName,
+													  DefaultGameModeDifficulty, SpreadType));
 	PlayFromStandardButton->SetIsEnabled(true);
 }
 
@@ -315,9 +375,10 @@ void UGameModesWidget::OnNarrowSpreadButtonClicked()
 	DynamicSpreadButton->SetBackgroundColor(White);
 	NarrowSpreadButton->SetBackgroundColor(BeatshotBlue);
 	WideSpreadButton->SetBackgroundColor(White);
-	SelectedGameMode = GameModeActorStructConstructor(SelectedGameMode.GameModeActorName,
-	                                                  SelectedGameMode.GameModeDifficulty, ESpreadType::StaticNarrow);
-	PopulateGameModeOptions(SelectedGameMode, true);
+	//SelectedGameMode = GameModeActorStructConstructor(SelectedGameMode.GameModeActorName,
+	//                                                  SelectedGameMode.GameModeDifficulty, ESpreadType::StaticNarrow);
+	PopulateGameModeOptions(GameModeActorStructConstructor(DefaultGameModeActorName,
+													  DefaultGameModeDifficulty, ESpreadType::StaticNarrow));
 	PlayFromStandardButton->SetIsEnabled(true);
 }
 
@@ -327,9 +388,10 @@ void UGameModesWidget::OnWideSpreadButtonClicked()
 	DynamicSpreadButton->SetBackgroundColor(White);
 	NarrowSpreadButton->SetBackgroundColor(White);
 	WideSpreadButton->SetBackgroundColor(BeatshotBlue);
-	SelectedGameMode = GameModeActorStructConstructor(SelectedGameMode.GameModeActorName,
-	                                                  SelectedGameMode.GameModeDifficulty, ESpreadType::StaticWide);
-	PopulateGameModeOptions(SelectedGameMode, true);
+	//SelectedGameMode = GameModeActorStructConstructor(SelectedGameMode.GameModeActorName,
+	//                                                  SelectedGameMode.GameModeDifficulty, ESpreadType::StaticWide);
+	PopulateGameModeOptions(GameModeActorStructConstructor(DefaultGameModeActorName,
+													  DefaultGameModeDifficulty, ESpreadType::StaticWide));
 	PlayFromStandardButton->SetIsEnabled(true);
 }
 
@@ -343,7 +405,7 @@ void UGameModesWidget::OnPlayFromStandardButtonClicked()
 	InitializeExit();
 }
 
-#pragma endregion 
+#pragma endregion
 
 #pragma region CustomGeneral
 
@@ -352,16 +414,18 @@ void UGameModesWidget::OnGameModeNameSelectionChange(const FString SelectedGameM
 {
 	if (IsDefaultGameMode(SelectedGameModeName))
 	{
-		PopulateGameModeOptions(GetDefaultGameMode(SelectedGameModeName), true);
+		BaseGameModeBox->SetVisibility(ESlateVisibility::Collapsed);
+		PopulateGameModeOptions(GetDefaultGameMode(SelectedGameModeName));
 	}
 	if (IsCustomGameMode(SelectedGameModeName))
 	{
-		PopulateGameModeOptions(GetCustomGameMode(SelectedGameModeName), true);
+		BaseGameModeBox->SetVisibility(ESlateVisibility::Visible);
+		PopulateGameModeOptions(GetCustomGameMode(SelectedGameModeName));
 	}
 	UpdateSaveStartButtonStates(SelectedGameModeName);
 	if (IsCustomGameMode(SelectedGameModeName))
 	{
-		SelectedGameMode.CustomGameModeName = SelectedGameModeName;
+		//SelectedGameMode.CustomGameModeName = SelectedGameModeName;
 	}
 }
 
@@ -371,39 +435,73 @@ void UGameModesWidget::OnCustomGameModeETBChange(const FText& NewCustomGameModeT
 	if (const FString NewCustomGameModeName = NewCustomGameModeText.ToString(); !IsDefaultGameMode(
 		NewCustomGameModeName))
 	{
-		SelectedGameMode.CustomGameModeName = NewCustomGameModeName;
+		//SelectedGameMode.CustomGameModeName = NewCustomGameModeName;
 	}
 }
 
 void UGameModesWidget::OnBaseGameModeSelectionChange(const FString SelectedBaseGameMode,
                                                      const ESelectInfo::Type SelectionType)
 {
-	/** TODO: Fix bug that doesn't let player save custom mode after selecting a new BaseGameMode*/
+	/*if (SelectedBaseGameMode.Equals("BeatGrid"))
+	{
+		SelectedGameMode.IsBeatGridMode = true;
+		SelectedGameMode.IsSingleBeatMode = false;
+		SelectedGameMode.IsBeatTrackMode = false;
+	}
+	else if (SelectedBaseGameMode.Equals("BeatTrack"))
+	{
+		SelectedGameMode.IsBeatTrackMode = true;
+		SelectedGameMode.IsBeatGridMode = false;
+		SelectedGameMode.IsSingleBeatMode = false;
+	}
+	else if (SelectedBaseGameMode.Equals("SingleBeat"))
+	{
+		SelectedGameMode.IsSingleBeatMode = true;
+		SelectedGameMode.IsBeatGridMode = false;
+		SelectedGameMode.IsBeatTrackMode = false;
+	}
+	else
+	{
+		SelectedGameMode.IsBeatGridMode = false;
+		SelectedGameMode.IsBeatTrackMode = false;
+		SelectedGameMode.IsSingleBeatMode = false;
+	}*/
+
+	/** TODO: Is this necessary*/
 	if (SelectionType != ESelectInfo::Type::Direct)
 	{
-		PopulateGameModeOptions(GetDefaultGameMode(SelectedBaseGameMode), false);
+		PopulateGameModeOptions(GetDefaultGameMode(SelectedBaseGameMode));
 	}
 }
 
 void UGameModesWidget::OnGameModeDifficultySelectionChange(const FString SelectedDifficulty,
                                                            const ESelectInfo::Type SelectionType)
 {
+	EGameModeDifficulty EnumDifficulty = EGameModeDifficulty::None;
 	for (const EGameModeDifficulty Difficulty : TEnumRange<EGameModeDifficulty>())
 	{
 		if (UEnum::GetDisplayValueAsText(Difficulty).ToString().Equals(SelectedDifficulty))
 		{
-			SelectedGameMode.GameModeDifficulty = Difficulty;
-			if (SelectionType != ESelectInfo::Type::Direct)
-			{
-				PopulateGameModeOptions(SelectedGameMode, false);
-			}
-			return;
+			EnumDifficulty = Difficulty;
+			break;
 		}
 	}
-	SelectedGameMode.GameModeDifficulty = EGameModeDifficulty::None;
+	if (EnumDifficulty != EGameModeDifficulty::None)
+	{
+		/*const FGameModeActorStruct GameModeActorStruct =  GameModeActorStructConstructor(GetDefaultGameMode(BaseGameModeComboBox->GetSelectedOption()).GameModeActorName, EnumDifficulty);
+		SelectedGameMode.GameModeDifficulty = GameModeActorStruct.GameModeDifficulty;
+		SelectedGameMode.PlayerDelay = GameModeActorStruct.PlayerDelay;
+		SelectedGameMode.TargetSpawnCD = GameModeActorStruct.TargetSpawnCD;
+		SelectedGameMode.TargetMaxLifeSpan = GameModeActorStruct.TargetMaxLifeSpan;
+		SelectedGameMode.MinTargetScale = GameModeActorStruct.MinTargetScale;
+		SelectedGameMode.MaxTargetScale = GameModeActorStruct.MaxTargetScale;
+		SelectedGameMode.MinTrackingSpeed = GameModeActorStruct.MinTrackingSpeed;
+		SelectedGameMode.MaxTrackingSpeed = GameModeActorStruct.MaxTrackingSpeed;
+		SelectedGameMode.BeatGridSize = GameModeActorStruct.BeatGridSize;*/
+	}
 	if (SelectionType != ESelectInfo::Type::Direct)
 	{
-		PopulateGameModeOptions(SelectedGameMode, false);
+		//PopulateGameModeOptions(SelectedGameMode);
 	}
 }
 
@@ -411,24 +509,25 @@ void UGameModesWidget::OnGameModeDifficultySelectionChange(const FString Selecte
 
 #pragma region Update
 
-void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct,
-                                               const bool bSelectGameModeNameComboBox)
+void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& InputGameModeActorStruct)
 {
-	if (bSelectGameModeNameComboBox)
+	if (InputGameModeActorStruct.IsBeatGridMode)
 	{
-		if (IsCustomGameMode(InputGameModeActorStruct.CustomGameModeName))
-		{
-			GameModeNameComboBox->SetSelectedOption(InputGameModeActorStruct.CustomGameModeName);
-		}
-		else
-		{
-			GameModeNameComboBox->SetSelectedOption(
-				UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeActorName).ToString());
-		}
+		BaseGameModeComboBox->SetSelectedOption("BeatGrid");
 	}
-	CustomGameModeETB->SetText(FText::FromString(InputGameModeActorStruct.CustomGameModeName));
-	BaseGameModeComboBox->SetSelectedOption(
-		UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeActorName).ToString());
+	else if (InputGameModeActorStruct.IsBeatTrackMode)
+	{
+		BaseGameModeComboBox->SetSelectedOption("BeatTrack");
+	}
+	else if (InputGameModeActorStruct.IsSingleBeatMode)
+	{
+		BaseGameModeComboBox->SetSelectedOption("SingleBeat");
+	}
+	else
+	{
+		BaseGameModeComboBox->SetSelectedOption("MultiBeat");
+	}
+
 	GameModeDifficultyComboBox->SetSelectedOption(
 		UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeDifficulty).ToString());
 
@@ -489,7 +588,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	                                            InputGameModeActorStruct.MaxTargetScale);
 
 	// convert JsonScores struct to JSON
-	const TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
+	/*const TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(
 		FGameModeActorStruct::StaticStruct(),
 		&SelectedGameMode,
@@ -497,11 +596,13 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	FString OutputString;
 	const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
 	FJsonSerializer::Serialize(OutJsonObject, Writer);
-	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
+	UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);*/
 }
 
 void UGameModesWidget::PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect)
 {
+	GameModeNameComboBox->ClearOptions();
+	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
 	for (const FGameModeActorStruct& GameMode : GameModeActorDefaults)
 	{
 		GameModeNameComboBox->AddOption(UEnum::GetDisplayValueAsText(GameMode.GameModeActorName).ToString());
@@ -513,79 +614,144 @@ void UGameModesWidget::PopulateGameModeNameComboBox(const FString& GameModeOptio
 	GameModeNameComboBox->SetSelectedOption(GameModeOptionToSelect);
 }
 
+FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
+{
+	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && CustomGameModeETB->GetText().IsEmpty())
+	{
+		FGameModeActorStruct();
+	}
+	FGameModeActorStruct Gmas;
+	Gmas.GameModeActorName = EGameModeActorName::Custom;
+	if (IsCustomGameMode(GameModeNameComboBox->GetSelectedOption()))
+	{
+		Gmas.CustomGameModeName = GameModeNameComboBox->GetSelectedOption();
+	}
+	else
+	{
+		Gmas.CustomGameModeName = CustomGameModeETB->GetText().ToString();
+	}
+	if (BaseGameModeComboBox->GetSelectedOption().Equals("BeatGrid"))
+	{
+		Gmas.IsBeatGridMode = true;
+		Gmas.IsBeatTrackMode = false;
+		Gmas.IsSingleBeatMode = false;
+	}
+	else if (BaseGameModeComboBox->GetSelectedOption().Equals("BeatTrack"))
+	{
+		Gmas.IsBeatGridMode = false;
+		Gmas.IsBeatTrackMode = true;
+		Gmas.IsSingleBeatMode = false;
+	}
+	else if (BaseGameModeComboBox->GetSelectedOption().Equals("SingleBeat"))
+	{
+		Gmas.IsBeatGridMode = false;
+		Gmas.IsBeatTrackMode = false;
+		Gmas.IsSingleBeatMode = true;
+	}
+	else
+	{
+		Gmas.IsBeatGridMode = false;
+		Gmas.IsBeatTrackMode = false;
+		Gmas.IsSingleBeatMode = false;
+	}
+	Gmas.GameModeDifficulty = EGameModeDifficulty::None;
+	if (PlayerDelayComboBox->GetSelectedOption().Equals("No Delay"))
+	{
+		Gmas.PlayerDelay = 0.f;
+	}
+	else
+	{
+		Gmas.PlayerDelay = FCString::Atof(*PlayerDelayComboBox->GetSelectedOption().LeftChop(1));
+	}
+	Gmas.TargetMaxLifeSpan = LifespanSlider->GetValue();
+	Gmas.TargetSpawnCD = TargetSpawnCDSlider->GetValue();
+	Gmas.HeadshotHeight = HeadShotOnlyCheckBox->IsChecked();
+	Gmas.WallCentered = WallCenteredCheckBox->IsChecked();
+	Gmas.MinDistanceBetweenTargets = MinTargetDistanceSlider->GetValue();
+	Gmas.SpreadType = GetSpreadType();
+	Gmas.BoxBounds = FVector(0, HorizontalSpreadSlider->GetValue(), VerticalSpreadSlider->GetValue());
+	Gmas.UseDynamicSizing = DynamicTargetScaleCheckBox->IsChecked();
+	Gmas.MinTargetScale = TargetScaleConstrained->MinSlider->GetValue();
+	Gmas.MaxTargetScale = TargetScaleConstrained->MaxSlider->GetValue();
+	Gmas.RandomizeBeatGrid = RandomizeNextBeatGridTargetCheckBox->IsChecked();
+	/** TODO: Constant BeatGrid Spacing option*/
+	Gmas.NumTargetsAtOnceBeatGrid = FCString::Atoi(*NumBeatGridTargetsComboBox->GetSelectedOption());
+	Gmas.MinTrackingSpeed = TargetSpeedConstrained->MinSlider->GetValue();
+	Gmas.MaxTrackingSpeed = TargetSpeedConstrained->MaxSlider->GetValue();
+	return Gmas;
+}
+
 void UGameModesWidget::OnMinTargetSpeedConstrainedChange(const float NewMin)
 {
-	SelectedGameMode.MinTrackingSpeed = NewMin;
-	UE_LOG(LogTemp, Display, TEXT("MinTargetSpeed Broadcast recieved %f"), NewMin);
+	//SelectedGameMode.MinTrackingSpeed = NewMin;
 }
 
 void UGameModesWidget::OnMaxTargetSpeedConstrainedChange(const float NewMax)
 {
-	SelectedGameMode.MaxTrackingSpeed = NewMax;
-	UE_LOG(LogTemp, Display, TEXT("MaxTargetSpeed Broadcast recieved %f"), NewMax);
+	//SelectedGameMode.MaxTrackingSpeed = NewMax;
 }
 
 void UGameModesWidget::OnMinTargetScaleConstrainedChange(const float NewMin)
 {
-	SelectedGameMode.MinTargetScale = NewMin;
+	//SelectedGameMode.MinTargetScale = NewMin;
 }
 
 void UGameModesWidget::OnMaxTargetScaleConstrainedChange(const float NewMax)
 {
-	SelectedGameMode.MaxTargetScale = NewMax;
+	//SelectedGameMode.MaxTargetScale = NewMax;
 }
 
 #pragma endregion;
 
 #pragma region SaveStart
 
-void UGameModesWidget::SaveCustomGameModeArrayToSlot() const
+void UGameModesWidget::SaveCustomGameMode(const FGameModeActorStruct GameModeToSave) const
 {
+	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
+	for (const FGameModeActorStruct Elem : CustomGameModesArray)
+	{
+		if (Elem.CustomGameModeName.Equals(GameModeToSave.CustomGameModeName))
+		{
+			CustomGameModesArray.Remove(Elem);
+			CustomGameModesArray.Shrink();
+		}
+	}
+	CustomGameModesArray.Add(GameModeToSave);
 	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
-		UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
 		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
 		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
 	}
 }
 
-void UGameModesWidget::SaveCustomGameMode(const FGameModeActorStruct GameModeToSave)
+void UGameModesWidget::RemoveCustomGameMode(const FString& CustomGameModeName) const
 {
-	for (const FGameModeActorStruct& Elem : CustomGameModesArray)
+	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
+	CustomGameModesArray.Remove(GetCustomGameMode(CustomGameModeName));
+	CustomGameModesArray.Shrink();
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
+UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
-		if (Elem.CustomGameModeName.Equals(GameModeToSave.CustomGameModeName))
-		{
-			RemoveCustomGameMode(Elem.CustomGameModeName);
-			break;
-		}
+		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
+		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
 	}
-	CustomGameModesArray.Add(GameModeToSave);
-	SaveCustomGameModeArrayToSlot();
 }
 
-bool UGameModesWidget::RemoveCustomGameMode(const FString& CustomGameModeName)
+void UGameModesWidget::RemoveAllCustomGameModes() const
 {
-	for (const FGameModeActorStruct Elem : CustomGameModesArray)
-	{
-		if (Elem.CustomGameModeName.Equals(CustomGameModeName))
-		{
-			CustomGameModesArray.Remove(Elem);
-			CustomGameModesArray.Shrink();
-			SaveCustomGameModeArrayToSlot();
-			return true;
-		}
-	}
-	return false;
-}
-
-void UGameModesWidget::RemoveAllCustomGameModes()
-{
+	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
 	CustomGameModesArray.Empty();
 	CustomGameModesArray.Shrink();
-	SaveCustomGameModeArrayToSlot();
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
+UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	{
+		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
+		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+	}
 }
 
-TArray<FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes()
+TArray<FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes() const
 {
 	USaveGameCustomGameMode* SaveGameCustomGameMode;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
@@ -600,7 +766,6 @@ TArray<FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes()
 	}
 	if (SaveGameCustomGameMode)
 	{
-		CustomGameModesArray = SaveGameCustomGameMode->CustomGameModes;
 		return SaveGameCustomGameMode->CustomGameModes;
 	}
 	return TArray<FGameModeActorStruct>();
@@ -608,8 +773,10 @@ TArray<FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes()
 
 void UGameModesWidget::UpdateSaveStartButtonStates(const FString& CustomGameModeName)
 {
-	/** Empty CustomGameModeName (CustomGameModeETB) */
-	if (CustomGameModeName.IsEmpty())
+	/** Invalid Non-Empty CustomGameModeName, which is only DefaultGameMode names */
+	if (IsDefaultGameMode(CustomGameModeName) ||
+	/** Empty CustomGameModeName and custom game mode is not selected in GameModeNameComboBox */
+		(CustomGameModeName.IsEmpty() && !IsCustomGameMode(GameModeNameComboBox->GetSelectedOption())))
 	{
 		SaveCustomButton->SetIsEnabled(false);
 		SaveCustomAndStartButton->SetIsEnabled(false);
@@ -618,20 +785,8 @@ void UGameModesWidget::UpdateSaveStartButtonStates(const FString& CustomGameMode
 		RemoveSelectedCustomButton->SetIsEnabled(false);
 		return;
 	}
-
-	/** Invalid Non-Empty CustomGameModeName (CustomGameModeETB) */
-	if (IsDefaultGameMode(CustomGameModeName) || CustomGameModeName.Equals("Custom"))
-	{
-		SaveCustomButton->SetIsEnabled(false);
-		SaveCustomAndStartButton->SetIsEnabled(false);
-		StartCustomButton->SetIsEnabled(false);
-		SaveCustomAndStartButton->SetIsEnabled(false);
-		RemoveSelectedCustomButton->SetIsEnabled(false);
-		return;
-	}
-
-	/** Existing custom game mode or a new custom game mode*/
-
+	
+	/** Existing custom game mode or a new custom game mode */
 	SaveCustomButton->SetIsEnabled(true);
 	SaveCustomAndStartButton->SetIsEnabled(true);
 	StartCustomButton->SetIsEnabled(true);
@@ -641,24 +796,26 @@ void UGameModesWidget::UpdateSaveStartButtonStates(const FString& CustomGameMode
 
 void UGameModesWidget::OnSaveCustomButtonClicked()
 {
-	if (IsCustomGameMode(GameModeNameComboBox->GetSelectedOption()) || IsCustomGameMode(
-		CustomGameModeETB->GetText().ToString()))
+	const FString SelectedGameModeName = GameModeNameComboBox->GetSelectedOption();
+	const FString CustomGameModeName = CustomGameModeETB->GetText().ToString();
+	if (IsCustomGameMode(SelectedGameModeName))
+		//CustomGameModeName.IsEmpty() || SelectedGameModeName.Equals(CustomGameModeName) ||))
 	{
 		ShowConfirmOverwriteMessage();
 		return;
 	}
-	SaveCustomGameMode(SelectedGameMode);
+	SaveCustomGameMode(GetCustomGameModeOptions());
 }
 
 void UGameModesWidget::OnStartWithoutSavingButtonClicked()
 {
-	SelectedGameMode.GameModeActorName = EGameModeActorName::Custom;
+	//SelectedGameMode.GameModeActorName = EGameModeActorName::Custom;
 	InitializeExit();
 }
 
 void UGameModesWidget::OnSaveCustomAndStartButtonClicked()
 {
-	SaveCustomGameMode(SelectedGameMode);
+	SaveCustomGameMode(GetCustomGameModeOptions());
 	InitializeExit();
 }
 
@@ -672,15 +829,12 @@ void UGameModesWidget::OnRemoveSelectedCustomButtonClicked()
 	if (IsCustomGameMode(GameModeNameComboBox->GetSelectedOption()))
 	{
 		RemoveCustomGameMode(GameModeNameComboBox->GetSelectedOption());
-		PopulateGameModeNameComboBox("");
 	}
 }
 
 void UGameModesWidget::OnRemoveAllCustomButtonClicked()
 {
-	CustomGameModesArray.Empty();
-	SaveCustomGameModeArrayToSlot();
-	PopulateGameModeNameComboBox("");
+	RemoveAllCustomGameModes();
 }
 
 void UGameModesWidget::ShowConfirmOverwriteMessage()
@@ -701,7 +855,7 @@ void UGameModesWidget::ShowConfirmOverwriteMessage()
 void UGameModesWidget::OnConfirmOverwriteButtonClicked()
 {
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->HidePopupMessage();
-	SaveCustomGameMode(SelectedGameMode);
+	SaveCustomGameMode(GetCustomGameModeOptions());
 }
 
 void UGameModesWidget::OnCancelOverwriteButtonClicked()
@@ -721,8 +875,8 @@ void UGameModesWidget::InitializeExit()
 
 void UGameModesWidget::StartGame()
 {
-	/** Pass SelectedGameMode to Game Instance */
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct = SelectedGameMode;
+	/** TODO Pass SelectedGameMode to Game Instance */
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct = GetCustomGameModeOptions();
 	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	PlayerController->HideMainMenu();
@@ -740,7 +894,7 @@ void UGameModesWidget::StartGame()
 
 void UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing)
 {
-	/** TODO: Constrain TargetScale */
+	/** TODO: Constrain BeatGridSpacing */
 }
 
 void UGameModesWidget::BeatGridSpacingConstrained(float Value)
@@ -751,10 +905,10 @@ void UGameModesWidget::BeatGridSpacingConstrained(float Value)
 	}
 
 	const float Width = round(HorizontalSpreadSlider->GetValue());
-	const float TargetWidth = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetWidth = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
 	const float Height = round(VerticalSpreadSlider->GetValue());
-	const float TargetHeight = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetHeight = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float VSpacing = BeatGridVerticalSpacingSlider->GetValue();
 	const FString ToConvert = NumBeatGridTargetsComboBox->GetSelectedOption();
 	int32 MaxTargets;
@@ -778,10 +932,10 @@ void UGameModesWidget::BeatGridTargetSizeConstrained(float Value)
 		return;
 	}
 	const float Width = round(HorizontalSpreadSlider->GetValue());
-	const float TargetWidth = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetWidth = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
 	const float Height = round(VerticalSpreadSlider->GetValue());
-	const float TargetHeight = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetHeight = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float VSpacing = BeatGridVerticalSpacingSlider->GetValue();
 	const FString ToConvert = NumBeatGridTargetsComboBox->GetSelectedOption();
 	int32 MaxTargets;
@@ -806,10 +960,10 @@ void UGameModesWidget::BeatGridSpawnAreaConstrained(float Value)
 	}
 
 	const float Width = round(HorizontalSpreadSlider->GetValue());
-	const float TargetWidth = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetWidth = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
 	const float Height = round(VerticalSpreadSlider->GetValue());
-	const float TargetHeight = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetHeight = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float VSpacing = BeatGridVerticalSpacingSlider->GetValue();
 	const FString ToConvert = NumBeatGridTargetsComboBox->GetSelectedOption();
 	int32 MaxTargets;
@@ -834,10 +988,10 @@ void UGameModesWidget::BeatGridNumberOfTargetsConstrained(FString SelectedSong, 
 	}
 
 	const float Width = round(HorizontalSpreadSlider->GetValue());
-	const float TargetWidth = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetWidth = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
 	const float Height = round(VerticalSpreadSlider->GetValue());
-	const float TargetHeight = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetHeight = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float VSpacing = BeatGridVerticalSpacingSlider->GetValue();
 	const FString ToConvert = NumBeatGridTargetsComboBox->GetSelectedOption();
 	int32 MaxTargets;
@@ -864,10 +1018,10 @@ bool UGameModesWidget::CheckAllBeatGridConstraints()
 	}
 
 	const float Width = round(HorizontalSpreadSlider->GetValue());
-	const float TargetWidth = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetWidth = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float HSpacing = BeatGridHorizontalSpacingSlider->GetValue();
 	const float Height = round(VerticalSpreadSlider->GetValue());
-	const float TargetHeight = ceil(SelectedGameMode.MaxTargetScale * SphereDiameter * 100) / 100;
+	const float TargetHeight = ceil(TargetScaleConstrained->MaxSlider->GetValue() * SphereDiameter * 100) / 100;
 	const float VSpacing = BeatGridVerticalSpacingSlider->GetValue();
 	const FString ToConvert = NumBeatGridTargetsComboBox->GetSelectedOption();
 	int32 MaxTargets;
@@ -906,13 +1060,10 @@ FGameModeActorStruct UGameModesWidget::GetDefaultGameMode(const FString& GameMod
 	return FGameModeActorStruct(EGameModeActorName::Custom, EGameModeDifficulty::Normal);
 }
 
-FGameModeActorStruct UGameModesWidget::GetCustomGameMode(const FString& CustomGameModeName)
+FGameModeActorStruct UGameModesWidget::GetCustomGameMode(const FString& CustomGameModeName) const
 {
-	if (CustomGameModeName.IsEmpty())
-	{
-		return FGameModeActorStruct(EGameModeActorName::Custom, EGameModeDifficulty::Normal);
-	}
-	for (FGameModeActorStruct& Elem : CustomGameModesArray)
+	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
+	for (const FGameModeActorStruct& Elem : CustomGameModesArray)
 	{
 		if (Elem.CustomGameModeName.Equals(CustomGameModeName))
 		{
@@ -922,16 +1073,16 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameMode(const FString& CustomGa
 	return FGameModeActorStruct(EGameModeActorName::Custom, EGameModeDifficulty::Normal);
 }
 
-ESpreadType UGameModesWidget::GetSpreadType(const FString& SpreadType) const
+ESpreadType UGameModesWidget::GetSpreadType() const
 {
-	if (SpreadType.IsEmpty())
+	const FString SelectedSpread = SpreadTypeComboBox->GetSelectedOption();
+	if (SelectedSpread.IsEmpty())
 	{
 		return ESpreadType::None;
 	}
-
 	for (const ESpreadType Spread : TEnumRange<ESpreadType>())
 	{
-		if (SpreadType.Equals(UEnum::GetDisplayValueAsText(Spread).ToString()))
+		if (SelectedSpread.Equals(UEnum::GetDisplayValueAsText(Spread).ToString()))
 		{
 			return Spread;
 		}
@@ -943,8 +1094,7 @@ bool UGameModesWidget::IsDefaultGameMode(const FString& GameModeName)
 {
 	for (const FGameModeActorStruct& GameModeActor : GameModeActorDefaults)
 	{
-		if (GameModeName == UEnum::GetDisplayValueAsText(GameModeActor.GameModeActorName).ToString()
-			&& GameModeName != "Custom")
+		if (GameModeName == UEnum::GetDisplayValueAsText(GameModeActor.GameModeActorName).ToString())
 		{
 			return true;
 		}
@@ -958,6 +1108,7 @@ bool UGameModesWidget::IsCustomGameMode(const FString& GameModeName)
 	{
 		return false;
 	}
+	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
 	for (const FGameModeActorStruct& GameMode : CustomGameModesArray)
 	{
 		if (GameMode.CustomGameModeName.Equals(GameModeName))
@@ -969,24 +1120,32 @@ bool UGameModesWidget::IsCustomGameMode(const FString& GameModeName)
 }
 
 FGameModeActorStruct UGameModesWidget::GameModeActorStructConstructor(const EGameModeActorName GameModeActor,
-																	  const EGameModeDifficulty NewGameModeDifficulty,
-																	  const ESpreadType NewSpreadType)
+                                                                      const EGameModeDifficulty NewGameModeDifficulty,
+                                                                      const ESpreadType NewSpreadType)
 {
 	return FGameModeActorStruct(GameModeActor, NewGameModeDifficulty, NewSpreadType);
 }
 
-void UGameModesWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange,
-												const float GridSnapSize, const float Min, const float Max)
+void UGameModesWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
+                                                USlider* SliderToChange,
+                                                const float GridSnapSize, const float Min, const float Max)
 {
-	TextBoxToChange->SetText(FText::AsNumber(FMath::GridSnap(FMath::Clamp(FCString::Atof(*NewTextValue.ToString()), Min, Max), GridSnapSize)));
-	SliderToChange->SetValue(FMath::GridSnap(FMath::Clamp(FCString::Atof(*NewTextValue.ToString()), Min, Max),
-											 GridSnapSize));
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*NewTextValue.ToString()), Min, Max);
+	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
+	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));
+	SliderToChange->SetValue(SnappedValue);
 }
 
 void UGameModesWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
-									   const float GridSnapSize)
+                                       const float GridSnapSize)
 {
 	TextBoxToChange->SetText(FText::AsNumber(FMath::GridSnap(NewValue, GridSnapSize)));
+}
+
+void UGameModesWidget::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow)
+{
+	Tooltip->TooltipDescriptor->SetText(TooltipTextToShow);
+	HoveredTooltipImage->SetToolTip(Tooltip);
 }
 
 #pragma endregion

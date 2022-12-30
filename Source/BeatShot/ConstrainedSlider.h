@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TooltipImage.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
 #include "ConstrainedSlider.generated.h"
 
+class UButton;
 class UCheckBox;
 class USlider;
 class UTextBlock;
@@ -49,24 +51,27 @@ public:
 	/** Executed when MaxSlider or MaxValue is changed */
 	UPROPERTY()
 	FOnMaxValueChanged OnMaxValueChanged;
+	/** The Tooltip image for the Checkbox. The parent widget will bind to this widget's OnTooltipImageHovered delegate to display tooltip information */
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* CheckboxQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* MinSlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* MaxSlider;
 	
 protected:
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* CheckboxText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* MinText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* MaxText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* Checkbox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	USlider* MinSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* MinValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
-	USlider* MaxSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* MaxValue;
 
 	/** Updates the Checkbox checked state, and calls the appropriate OnSliderChanged functions to update the values of the Sliders and EditableTextBoxes */
