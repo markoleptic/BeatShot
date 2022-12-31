@@ -270,6 +270,15 @@ void UCrossHairSettingsWidget::OnRevertCrossHairButtonClicked()
 
 void UCrossHairSettingsWidget::OnSaveCrossHairButtonClicked()
 {
+	/** Load settings again in case the user changed other settings before navigating to crosshair settings */
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	FPlayerSettings MostRecentSettings = GI->LoadPlayerSettings();
+	MostRecentSettings.LineWidth = NewCrossHairSettings.LineWidth;
+	MostRecentSettings.LineLength = NewCrossHairSettings.LineLength;
+	MostRecentSettings.InnerOffset = NewCrossHairSettings.InnerOffset;
+	MostRecentSettings.CrosshairColor = NewCrossHairSettings.CrosshairColor;
+	MostRecentSettings.OutlineOpacity = NewCrossHairSettings.OutlineOpacity;
+	MostRecentSettings.OutlineWidth = NewCrossHairSettings.OutlineWidth;
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
-		SavePlayerSettings(NewCrossHairSettings);
+		SavePlayerSettings(MostRecentSettings);
 }

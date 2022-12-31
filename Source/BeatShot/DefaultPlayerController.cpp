@@ -19,7 +19,6 @@ void ADefaultPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GI->RegisterPlayerController(this);
 	if (GI->LoadPlayerSettings().bShowFPSCounter)
 	{
 		ShowFPSCounter();
@@ -65,6 +64,7 @@ void ADefaultPlayerController::HideMainMenu()
 
 void ADefaultPlayerController::ShowPauseMenu()
 {
+	UE_LOG(LogTemp, Display, TEXT("ShowPauseMenuCalled"));
 	PauseMenu = CreateWidget<UPauseMenuWidget>(this, PauseMenuClass);
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
@@ -206,7 +206,7 @@ void ADefaultPlayerController::OnFadeOutPopupMessageFinish()
 	PostGameMenuWidget = nullptr;
 	if (GetWorld()->GetMapName().Contains("Range"))
 	{
-		SetInputMode(FInputModeGameAndUI());
+		SetInputMode(FInputModeGameOnly());
 		SetShowMouseCursor(false);
 		SetPlayerEnabledState(true);
 		if (!Crosshair)

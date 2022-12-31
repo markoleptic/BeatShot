@@ -14,7 +14,7 @@ class AGameModeActorBase;
 class UAudioAnalyzerManager;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAAPlayerLoaded, UAudioAnalyzerManager*, AAManager);
-
+DECLARE_DYNAMIC_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float, PlaybackTime);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeActorInit, FGameModeActorStruct, GameModeActorStruct);
 
 UCLASS()
@@ -28,121 +28,109 @@ protected:
 	virtual void Tick(float DeltaSeconds) override;
 
 public:
-	/* does all of the AudioAnalyzer initialization, called during InitializeGameMode */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-	void InitializeAudioManagers(FString SongFilePath);
-
-	/* called from Countdown widget when user clicks to start game mode */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-	void StartAAManagerPlayback();
-
-	/* entry point into starting game, spawn GameModeActorBase, init AAManagers */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
+	/** Entry point into starting game. Spawn GameModeActorBase, TargetSpawner, and Visualizer and calls OpenSongFileDialog.
+	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
 	void InitializeGameMode();
 
-	/* play AAPlayer, used as callback function to set delay from AATracker */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-	void PlayAAPlayer();
+	/** Opens file dialog for song selection. The Implementation version only checks the fullscreen mode,
+	 *  and changes it to Windowed Fullscreen if necessary */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "GameMode Initialization")
+	void OpenSongFileDialog(TArray<FString>& OutFileNames);
 
-	/* opens file dialog for song selection */
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "GameMode Initialization")
-	void OpenSongFileDialog();
+	/** Called from Countdown widget when user clicks to start game mode. If player delay is > 0.05, the function
+	 *  begins playback for AATracker and sets a timer of length player delay to then begin playback of AAPlayer.
+	 *  If player delay isn't long enough to justify two separate players, only AATracker begins playback. */
+	void StartAAManagerPlayback();
 
-	/* get AASettings from GameInstance */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-	void RefreshAASettings(const FAASettingsStruct& RefreshedAASettings);
+	/** Called from Countdown widget to then call StartGameMode in GameModeActorBase. Also hides countdown widget,
+	 *  shows PlayerHUD widget, and shows CrossHair widget*/
+	void StartGameMode();
 
-	/* get PlayerSettings from GameInstance */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Initialization")
-	void RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings);
-
-	/* GameModeActorBase class to spawn, deals with GameModeActorStruct, scoring, etc. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Initialization")
-	TSubclassOf<AGameModeActorBase> GameModeActorBaseClass;
-
-	/* TargetSpawner to spawn */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Initialization")
-	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
-
-	/* in game visualizer class to spawn */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Initialization")
-	TSubclassOf<AActor> VisualizerClass;
-
-	/* Destroys all actors involved in a game mode and calls GameModeActorBase to save scores */
-	UFUNCTION(BlueprintCallable, Category = "GameMode Ending")
+	/** Destroys all actors involved in a game mode and calls GameModeActorBase to optionally save scores */
 	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
 
-	/* change volume of given AAManager, or if none provided change Player/Tracker volume */
-	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
-	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
-
-	/* called from DefaultPlayerController when the game is paused */
+	/** Called from DefaultPlayerController when the game is paused */
 	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
 	void PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* AAManager = nullptr);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	UAudioAnalyzerManager* AATracker;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	UAudioAnalyzerManager* AAPlayer;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	FAASettingsStruct AASettings;
-
-	/* Whether or not the first delay has been triggered */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	bool FirstDelayTriggered;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	bool LastTargetOnSet;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	float DeltaTime;
-
-	/* The time length for the first delay */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	float FirstDelay;
-
-	/* The time elapsed since last target spawn */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "AudioAnalyzer Settings")
-	float Elapsed;
-
-	/* Delegate to pass AAManager to visualizer */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable, Category = "AudioAnalyzer Settings")
+	/** Delegate to pass AAManager to visualizer */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable)
 	FOnAAPlayerLoaded OnAAPlayerLoaded;
 
-	/* Delegate that is called when GameModeActorBase is initialized */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable, Category = "GameMode Initialization")
+	/** Delegate that is called when GameModeActorBase is initialized. This is so the character is informed that the
+	 *  Gun needs to perform line tracing for BeatTrack game modes, but otherwise can skip line tracing */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable)
 	FOnGameModeActorInit OnGameModeActorInit;
+	
+	/** Delegate that is called every second to update the progress into song on PlayerHUD */
+	UPROPERTY()
+	FOnAAManagerSecondPassed OnAAManagerSecondPassed;
 
-	/* Reference Game Instance */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	UDefaultGameInstance* GI;
-
-	/* reference to spawned GameModeActorBase */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	AGameModeActorBase* GameModeActorBase;
-
-	/* reference to TargetSpawner */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "GameMode Initialization")
-	ATargetSpawner* TargetSpawner;
-
-	/* reference to in game visualizer */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	AActor* Visualizer;
-
-	/* Whether or not to run tick functions */
+protected:
 	UPROPERTY(BlueprintReadOnly)
-	bool bShouldTick;
+	TSubclassOf<AGameModeActorBase> GameModeActorBaseClass;
+	UPROPERTY(BlueprintReadOnly)
+	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
+	UPROPERTY(BlueprintReadOnly)
+	TSubclassOf<AActor> VisualizerClass;
+	UPROPERTY(BlueprintReadOnly)
+	AGameModeActorBase* GameModeActorBase;
+	UPROPERTY(BlueprintReadOnly)
+	ATargetSpawner* TargetSpawner;
+	UPROPERTY(BlueprintReadOnly)
+	AActor* Visualizer;
+	UPROPERTY(BlueprintReadOnly)
+	UAudioAnalyzerManager* AATracker;
+	UPROPERTY(BlueprintReadOnly)
+	UAudioAnalyzerManager* AAPlayer;
+	UPROPERTY(BlueprintReadOnly)
+	FAASettingsStruct AASettings;
+	
+	bool LastTargetOnSet;
 
-	/* A timer used to set the difference in start times between AATracker and AAPlayer */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
-	FTimerHandle PlayerDelayTimer;
+	/* The time elapsed since last target spawn */
+	float Elapsed;
 
 private:
-	/* Displays an error message upon failed AudioAnalyzer initialization */
+	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
+	void InitializeAudioManagers(const FString& SongFilePath);
+
+	/** Displays an error message upon failed AudioAnalyzer initialization */
 	void ShowSongPathErrorMessage() const;
-	
-	/* Function to tell TargetSpawner to spawn a new target */
+
+	/** play AAPlayer, used as callback function to set delay from AATracker */
+	UFUNCTION()
+	void PlayAAPlayer();
+
+	/** Get AASettings from GameInstance when AASettings are updated */
+	UFUNCTION()
+	void RefreshAASettings(const FAASettingsStruct& RefreshedAASettings);
+
+	/** Get PlayerSettings from GameInstance when PlayerSettings are updated */
+	UFUNCTION()
+	void RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings);
+
+	/** Change volume of given AAManager, or if none provided change Player/Tracker volume */
+	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
+
+	/** Function to tell TargetSpawner to spawn a new target */
 	void UpdateTargetSpawn(bool bNewTargetState);
+	
+	UFUNCTION()
+	void OnSecondPassed();
+
+	/* A timer used to set the difference in start times between AATracker and AAPlayer */
+	UPROPERTY()
+	FTimerHandle PlayerDelayTimer;
+
+	UPROPERTY()
+	FTimerHandle OnSecondPassedTimer;
+
+	/* Whether or not to run tick functions */
+	bool bShouldTick;
+
+	/** Whether or not the game was in fullscreen mode before showing OpenFileDialog */
+	bool bWasInFullScreenMode = false;
 };
+
+

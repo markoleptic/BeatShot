@@ -102,13 +102,7 @@ public:
 	void RegisterSphereTarget(ASphereTarget* SphereTarget);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterGameModeBase(AGameModeBase* GameModeBase);
-
-	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
-
-	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void InitializeGameModeActorStruct(const FGameModeActorStruct NewGameModeActorStruct);
@@ -127,13 +121,7 @@ public:
 	TArray<ASphereTarget*> SphereTargetArray;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	AGameModeBase* GameModeBaseRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
 	AGameModeActorBase* GameModeActorBaseRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	ADefaultPlayerController* DefaultPlayerControllerRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
 	FGameModeActorStruct GameModeActorStruct;
@@ -173,6 +161,8 @@ private:
 	/* Bound to onAccessTokenResponse and removed when this function calls PostPlayerScores */
 	void PostPlayerScores(FString AccessTokenFString, int32 ResponseCode);
 
+	bool bIsSavingScores = false;
+
 #pragma endregion
 
 #pragma region HttpRequests
@@ -197,6 +187,11 @@ private:
 	/* Bound to OnProcessRequestComplete PostPlayerScores Response */
 	void OnPostPlayerScoresResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response,
 	                                        bool bConnectedSuccessfully);
+	
+	FString Username;
+	FString LoginEndpoint = "https://beatshot.gg/api/login";
+	const FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
+	const FString SaveScoresEndpoint = "https://beatshot.gg/api/profile/";
 
 #pragma endregion
 
@@ -223,16 +218,7 @@ public:
 
 #pragma endregion
 
-private:
-	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
-	FString Username;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Authorization", meta = (AllowPrivateAccess = true))
-	FString LoginEndpoint = "https://beatshot.gg/api/login";
 
-	const FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
 
-	const FString SaveScoresEndpoint = "https://beatshot.gg/api/profile/";
-
-	bool bIsSavingScores = false;
 };

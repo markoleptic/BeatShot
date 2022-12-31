@@ -2,8 +2,6 @@
 
 
 #include "DefaultGameInstance.h"
-#include "DefaultPlayerController.h"
-#include "DefaultGameMode.h"
 #include "GameModeActorBase.h"
 #include "DefaultCharacter.h"
 #include "JsonObjectConverter.h"
@@ -33,19 +31,9 @@ void UDefaultGameInstance::RegisterSphereTarget(ASphereTarget* SphereTarget)
 	SphereTargetArray.Add(SphereTarget);
 }
 
-void UDefaultGameInstance::RegisterGameModeBase(AGameModeBase* GameModeBase)
-{
-	GameModeBaseRef = GameModeBase;
-}
-
 void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase)
 {
 	GameModeActorBaseRef = GameModeActorBase;
-}
-
-void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController)
-{
-	DefaultPlayerControllerRef = DefaultPlayerController;
 }
 
 void UDefaultGameInstance::InitializeGameModeActorStruct(const FGameModeActorStruct NewGameModeActorStruct)

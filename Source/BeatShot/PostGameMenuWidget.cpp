@@ -7,7 +7,6 @@
 #include "DefaultGameMode.h"
 #include "DefaultPlayerController.h"
 #include "SettingsMenuWidget.h"
-#include "GameModesWidget.h"
 #include "SlideRightButton.h"
 #include "WebBrowserOverlay.h"
 #include "QuitMenuWidget.h"
@@ -48,6 +47,7 @@ void UPostGameMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 
 void UPostGameMenuWidget::Restart()
 {
+	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(false, false);
 	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
 	UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	Controller->OnScreenFadeToBlackFinish.AddDynamic(this, &UPostGameMenuWidget::HandleRestart);
@@ -59,7 +59,6 @@ void UPostGameMenuWidget::HandleRestart()
 	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->InitializeGameMode();
 	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	Controller->HandlePause();
 	Controller->HidePostGameMenu();
 }
 

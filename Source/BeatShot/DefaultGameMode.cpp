@@ -7,58 +7,61 @@
 #include "DefaultPlayerController.h"
 #include "TargetSpawner.h"
 #include "Components/Button.h"
+#include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 
 void ADefaultGameMode::BeginPlay()
 {
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bCanEverTick = true;
 	Super::BeginPlay();
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	if (GI)
+	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
-		GI->RegisterGameModeBase(this);
 		/** listen to changes that are made to Audio Analyzer settings in case user changes during a game */
 		GI->OnAASettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshAASettings);
 		/** listen to changes that are made to Player settings in case music volume changes during a game */
 		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultGameMode::RefreshPlayerSettings);
 	}
-	bShouldTick = true;
 	InitializeGameMode();
 }
 
 void ADefaultGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
-	if (!bShouldTick || !GameModeActorBase || !GetWorldTimerManager().IsTimerActive(GameModeActorBase->GameModeLengthTimer))
+	if (!bShouldTick)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Shouldn't tick"));
+	}
+	if (!GetWorldTimerManager().IsTimerActive(
+		GameModeActorBase->GameModeLengthTimer))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Timer Not Active"));
+	}
+	if (!GameModeActorBase)
+	{
+		UE_LOG(LogTemp, Display, TEXT("GameModeActorBase"));
+	}
+	if (!bShouldTick || !GameModeActorBase || !GetWorldTimerManager().IsTimerActive(
+		GameModeActorBase->GameModeLengthTimer))
 	{
 		return;
 	}
-
-	//DeltaTime = DeltaSeconds;
 	Elapsed += DeltaSeconds;
-
 	TArray<bool> Beats;
 	TArray<float> SpectrumValues;
 	TArray<int32> BPMCurrent;
 	TArray<int32> BPMTotal;
 	AATracker->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
 	                                            AASettings.BandLimitsThreshold);
-
 	for (const bool Beat : Beats)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Going thru beats"));
 		UpdateTargetSpawn(Beat);
 	}
 }
 
-void ADefaultGameMode::InitializeAudioManagers(const FString SongFilePath)
+void ADefaultGameMode::InitializeAudioManagers(const FString& SongFilePath)
 {
-	if (SongFilePath.IsEmpty())
-	{
-		ShowSongPathErrorMessage();
-		bShouldTick = false;
-		return;
-	}
-
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 	if (!AATracker->InitPlayerAudio(SongFilePath))
 	{
@@ -123,7 +126,7 @@ void ADefaultGameMode::InitializeAudioManagers(const FString SongFilePath)
 	GameModeActorBase->GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
 }
 
-void ADefaultGameMode::PauseAAManager(const bool ShouldPause, UAudioAnalyzerManager* AAManager) 
+void ADefaultGameMode::PauseAAManager(const bool ShouldPause, UAudioAnalyzerManager* AAManager)
 {
 	if (IsValid(AAManager))
 	{
@@ -144,7 +147,8 @@ void ADefaultGameMode::PauseAAManager(const bool ShouldPause, UAudioAnalyzerMana
 
 void ADefaultGameMode::StartAAManagerPlayback()
 {
-	const FPlayerSettings Settings = GI->LoadPlayerSettings();
+	const FPlayerSettings Settings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->
+		LoadPlayerSettings();
 
 	// If delay is large enough, play AATracker and then AAPlayer after the delay
 	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05)
@@ -154,7 +158,8 @@ void ADefaultGameMode::StartAAManagerPlayback()
 			PauseAAManager(false, AATracker);
 			AATracker->Play();
 			UE_LOG(LogTemp, Display, TEXT("Now Playing AATracker"));
-			GetWorldTimerManager().SetTimer(PlayerDelayTimer,this, &ADefaultGameMode::PlayAAPlayer, GameModeActorBase->GameModeActorStruct.PlayerDelay, false);
+			GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ADefaultGameMode::PlayAAPlayer,
+			                                GameModeActorBase->GameModeActorStruct.PlayerDelay, false);
 		}
 	}
 	else
@@ -169,17 +174,27 @@ void ADefaultGameMode::StartAAManagerPlayback()
 	}
 }
 
+void ADefaultGameMode::StartGameMode()
+{
+	ADefaultPlayerController* DefaultPlayerController = Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	DefaultPlayerController->ShowCrosshair();
+	DefaultPlayerController->ShowPlayerHUD();
+	DefaultPlayerController->HideCountdown();
+	GameModeActorBase->StartGameMode();
+	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ADefaultGameMode::OnSecondPassed, 1.f, true);
+}
+
 void ADefaultGameMode::InitializeGameMode()
 {
-	FirstDelayTriggered = false;
-	DeltaTime = 0.f;
-	FirstDelay = 0.f;
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	
+	LastTargetOnSet = false;
 	Elapsed = 0.f;
 
 	// spawn GameModeActorBase
 	GameModeActorBase = GetWorld()->SpawnActor<AGameModeActorBase>(GameModeActorBaseClass);
 	OnGameModeActorInit.Broadcast(GI->GameModeActorStruct);
-
 	// spawn TargetSpawner
 	const FVector TargetSpawnerLocation = {3590, 0, 750};
 	const FActorSpawnParameters TargetSpawnerSpawnParameters;
@@ -187,13 +202,10 @@ void ADefaultGameMode::InitializeGameMode()
 	                                                            &TargetSpawnerLocation,
 	                                                            &FRotator::ZeroRotator,
 	                                                            TargetSpawnerSpawnParameters));
-
 	// get GameModeActorStruct and pass to GameModeActorBase
 	GameModeActorBase->GameModeActorStruct = GI->GameModeActorStruct;
-
 	// initialize GameModeActorStruct with TargetSpawner
 	TargetSpawner->InitializeGameModeActor(GI->GameModeActorStruct);
-
 	// spawn visualizer
 	const FVector VisualizerLocation = {100, 0, 60};
 	const FActorSpawnParameters SpawnParameters;
@@ -201,15 +213,30 @@ void ADefaultGameMode::InitializeGameMode()
 	                                    &VisualizerLocation,
 	                                    &FRotator::ZeroRotator,
 	                                    SpawnParameters);
-
 	AASettings = GI->LoadAASettings();
-	/** call the blueprint function to display open file dialog window, which then
-	 *  calls InitializeAudioManagers with the path to the song file,
-	 *  and then displays the Countdown widget */
-	OpenSongFileDialog(); 
+	TArray<FString> FileNames;
+	OpenSongFileDialog(FileNames);
+	if (bWasInFullScreenMode)
+	{
+		UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+		GameUserSettings->SetFullscreenMode(EWindowMode::Fullscreen);
+		GameUserSettings->ApplySettings(false);
+		bWasInFullScreenMode = false;
+	}
+	if (FileNames.Num() == 0 || FileNames[0].IsEmpty())
+	{
+		ShowSongPathErrorMessage();
+		bShouldTick = false;
+		EndGameMode(false, false);
+		return;
+	}
+	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
+	InitializeAudioManagers(FileNames[0]);
+	bShouldTick = true;
 }
 
-void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume, UAudioAnalyzerManager* AAManager)
+void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume,
+                                          UAudioAnalyzerManager* AAManager)
 {
 	if (IsValid(AAManager))
 	{
@@ -232,11 +259,23 @@ void ADefaultGameMode::PlayAAPlayer()
 {
 	if (IsValid(AAPlayer))
 	{
-		const FPlayerSettings Settings = GI->LoadPlayerSettings();
+		const FPlayerSettings Settings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->LoadPlayerSettings();
 		PauseAAManager(false, AAPlayer);
 		AAPlayer->Play();
 		UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer"));
 		SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AAPlayer);
+	}
+}
+
+void ADefaultGameMode::OpenSongFileDialog_Implementation(TArray<FString>& OutFileNames)
+{
+	/** Cheap fix to make sure open file dialog is always on top of the game */
+	if (UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings(); GameUserSettings->
+		GetFullscreenMode() == EWindowMode::Fullscreen)
+	{
+		bWasInFullScreenMode = true;
+		GameUserSettings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
+		GameUserSettings->ApplySettings(false);
 	}
 }
 
@@ -250,20 +289,22 @@ void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPla
 	SetAAManagerVolume(RefreshedPlayerSettings.GlobalVolume, RefreshedPlayerSettings.MusicVolume);
 }
 
-
 void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
 {
+	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (ShowPostGameMenu)
 	{
-		GI->DefaultPlayerControllerRef->ShowPostGameMenu(ShouldSavePlayerScores);
+		Controller->ShowPostGameMenu(ShouldSavePlayerScores);
 	}
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
-	
+	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
+
 	//Hide HUD and countdown
-	GI->DefaultPlayerControllerRef->HidePlayerHUD();
-	GI->DefaultPlayerControllerRef->HideCountdown();
-	GI->DefaultPlayerControllerRef->HideCrosshair();
-	
+	Controller->HidePlayerHUD();
+	Controller->HideCountdown();
+	Controller->HideCrosshair();
+
 	if (IsValid(GameModeActorBase))
 	{
 		GameModeActorBase->EndGameMode(ShouldSavePlayerScores);
@@ -291,11 +332,12 @@ void ADefaultGameMode::ShowSongPathErrorMessage() const
 	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(
 			GetWorld(), 0));
+	PlayerController->FadeScreenFromBlack();
 	if (PlayerController->IsPostGameMenuActive())
 	{
 		PlayerController->HidePostGameMenu();
 	}
-	UPopupMessageWidget* PopupMessageWidget = PlayerController->CreatePopupMessageWidget(true, 1);
+	const UPopupMessageWidget* PopupMessageWidget = PlayerController->CreatePopupMessageWidget(true, 1);
 	PopupMessageWidget->InitPopup("Error",
 	                              "There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
 	                              "Okay");
@@ -304,6 +346,7 @@ void ADefaultGameMode::ShowSongPathErrorMessage() const
 
 void ADefaultGameMode::UpdateTargetSpawn(const bool bNewTargetState)
 {
+	UE_LOG(LogTemp, Display, TEXT("UpdateTargetSpawn called"));
 	if (bNewTargetState && !LastTargetOnSet)
 	{
 		LastTargetOnSet = true;
@@ -316,5 +359,20 @@ void ADefaultGameMode::UpdateTargetSpawn(const bool bNewTargetState)
 	else if (!bNewTargetState && LastTargetOnSet)
 	{
 		LastTargetOnSet = false;
+	}
+}
+
+void ADefaultGameMode::OnSecondPassed()
+{
+	if (OnAAManagerSecondPassed.IsBound())
+	{
+		if (IsValid(AAPlayer))
+		{
+			OnAAManagerSecondPassed.Execute(AAPlayer->GetPlaybackTime());
+		}
+		else if (IsValid(AATracker))
+		{
+			OnAAManagerSecondPassed.Execute(AATracker->GetPlaybackTime());
+		}
 	}
 }

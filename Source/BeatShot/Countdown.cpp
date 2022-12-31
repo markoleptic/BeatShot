@@ -3,7 +3,6 @@
 
 #include "Countdown.h"
 
-#include "AudioAnalyzerManager.h"
 #include "DefaultGameInstance.h"
 #include "DefaultGameMode.h"
 #include "DefaultPlayerController.h"
@@ -44,10 +43,12 @@ void UCountdown::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	{
 		return;
 	}
-	if (StartAAManagerOnce)
+	/** If reached this point, CurrentTime is equal to PlayerDelay, and AAManager playback can be started */
+	if (!bHasCalledStartAAManagerPlayback)
 	{
+		UE_LOG(LogTemp, Display, TEXT("StartAAManagerOnce from Countdown"));
 		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->StartAAManagerPlayback();
-		StartAAManagerOnce = false;
+		bHasCalledStartAAManagerPlayback = true;
 	}
 }
 
@@ -59,14 +60,9 @@ void UCountdown::StartCountDownTimer()
 
 void UCountdown::StartGameMode() const
 {
-	ADefaultPlayerController* DefaultPlayerController = Cast<ADefaultPlayerController>(
-		UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	ADefaultGameMode* DefaultGameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	DefaultGameMode->GameModeActorBase->StartGameMode();
-	DefaultPlayerController->ShowCrosshair();
-	DefaultPlayerController->ShowPlayerHUD();
-	DefaultPlayerController->HideCountdown();
-	if (!DefaultGameMode->AATracker->IsPlaying())
+	DefaultGameMode->StartGameMode();
+	if (!bHasCalledStartAAManagerPlayback)
 	{
 		DefaultGameMode->StartAAManagerPlayback();
 	}

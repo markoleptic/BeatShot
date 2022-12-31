@@ -23,15 +23,16 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Countdown")
+	/** Called from Blueprint when user clicks on screen */
+	UFUNCTION(BlueprintCallable)
 	void StartCountDownTimer();
-	UFUNCTION(BlueprintCallable, Category = "Countdown")
+
+	/** Called when CountDownTimer has finished, which then calls StartGameMode in DefaultGameMode */
+	UFUNCTION()
 	void StartGameMode() const;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
-	FTimerHandle CountDownTimer;
-	UPROPERTY(BlueprintReadOnly)
-	float PlayerDelay;
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
+
+protected:
+	UPROPERTY(EditDefaultsOnly)
 	UMaterialInstanceDynamic* MID_Countdown;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* CountdownImage;
@@ -39,6 +40,12 @@ public:
 	UTextBlock* Counter;
 
 private:
+	UPROPERTY()
+	FTimerHandle CountDownTimer;
+	/** The delay to set between the AAManagers */
+	float PlayerDelay;
+	/** The length of the countdown timer */
 	const int32 CountdownTimerLength = 3;
-	bool StartAAManagerOnce = true;
+	/** Whether or not NativeTick or StartGameMode has called StartAAManagerPlayback from DefaultGameMode */
+	bool bHasCalledStartAAManagerPlayback = false;
 };
