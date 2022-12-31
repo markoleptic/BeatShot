@@ -110,6 +110,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterPlayerController(ADefaultPlayerController* DefaultPlayerController);
 
+	UFUNCTION(BlueprintCallable, Category = "References")
+	void InitializeGameModeActorStruct(const FGameModeActorStruct NewGameModeActorStruct);
+
 	UPROPERTY(BlueprintReadWrite, Category = "References")
 	ADefaultCharacter* DefaultCharacterRef;
 
@@ -150,9 +153,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	void SavePlayerSettings(const FPlayerSettings& PlayerSettingsToSave) const;
-
-	UFUNCTION(BlueprintCallable, Category = "Sound Settings")
-	void ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, float Volume, float GlobalVolume);
 
 #pragma endregion
 

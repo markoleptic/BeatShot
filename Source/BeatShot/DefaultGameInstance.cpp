@@ -48,6 +48,11 @@ void UDefaultGameInstance::RegisterPlayerController(ADefaultPlayerController* De
 	DefaultPlayerControllerRef = DefaultPlayerController;
 }
 
+void UDefaultGameInstance::InitializeGameModeActorStruct(const FGameModeActorStruct NewGameModeActorStruct)
+{
+	GameModeActorStruct = NewGameModeActorStruct;
+}
+
 bool UDefaultGameInstance::IsRefreshTokenValid() const
 {
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
@@ -98,12 +103,6 @@ void UDefaultGameInstance::SaveAASettings(const FAASettingsStruct& AASettingsToS
 		UGameplayStatics::SaveGameToSlot(SaveGameAASettingsObject, TEXT("AASettingsSlot"), 2);
 	}
 	OnAASettingsChange.Broadcast(AASettingsToSave);
-}
-
-void UDefaultGameInstance::ChangeVolume(USoundClass* SoundClassToChange, USoundMix* SoundMix, const float Volume, float GlobalVolume)
-{
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), SoundMix, SoundClassToChange, round(Volume)/100);
-	UGameplayStatics::PushSoundMixModifier(GetWorld(), SoundMix);
 }
 
 TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> UDefaultGameInstance::LoadPlayerScores() const

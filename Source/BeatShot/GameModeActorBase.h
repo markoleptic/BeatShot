@@ -59,36 +59,36 @@ struct FGameModeActorStruct
 	/* The song title */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	FString SongTitle;
-
+	
 	/* The default game mode name, or custom if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	EGameModeActorName GameModeActorName;
-
+	
 	/* Custom game mode name if custom, otherwise empty string */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	FString CustomGameModeName;
-
+	
 	/* Default game mode difficulties, or none if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	EGameModeDifficulty GameModeDifficulty;
-
+	
 	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
 	 * If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	ESpreadType SpreadType;
-
+	
 	/* Whether or not to dynamically change the size of targets as consecutive targets are hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	bool UseDynamicSizing;
-
+	
 	/* Length of song */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
 	float GameModeLength;
-
+	
 	/* Sets the minimum time between target spawns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float TargetSpawnCD;
-
+	
 	/* Sets the minimum distance between recent target spawns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float MinDistanceBetweenTargets;
@@ -336,7 +336,7 @@ struct FGameModeActorStruct
 				MaxTargetScale = 1.25f;
 			}
 
-			// MultiBeat Spread Types
+			// MultiBeat Spread Types, defaults to DynamicRandom
 			if (SpreadType == ESpreadType::StaticNarrow)
 			{
 				UseDynamicSizing = false;
@@ -347,9 +347,9 @@ struct FGameModeActorStruct
 				UseDynamicSizing = false;
 				BoxBounds = FVector(0.f, 3200.f, 1000.f);
 			}
-			else if (SpreadType == ESpreadType::DynamicEdgeOnly ||
-				SpreadType == ESpreadType::DynamicRandom)
+			else
 			{
+				SpreadType = ESpreadType::DynamicRandom;
 				UseDynamicSizing = true;
 				BoxBounds = FVector(0.f, 2000.f, 800.f);
 			}
@@ -385,7 +385,7 @@ struct FGameModeActorStruct
 				MaxTargetScale = 1.5f;
 			}
 
-			// SingleBeat Spread Types
+			// SingleBeat Spread Types, defaults to DynamicEdgeOnly
 			if (SpreadType == ESpreadType::StaticNarrow)
 			{
 				UseDynamicSizing = false;
@@ -396,9 +396,9 @@ struct FGameModeActorStruct
 				UseDynamicSizing = false;
 				BoxBounds = FVector(0.f, 3200.f, 1000.f);
 			}
-			else if (SpreadType == ESpreadType::DynamicEdgeOnly ||
-				SpreadType == ESpreadType::DynamicRandom)
+			else
 			{
+				SpreadType = ESpreadType::DynamicEdgeOnly;
 				UseDynamicSizing = true;
 				BoxBounds = FVector(0.f, 2000.f, 800.f);
 			}

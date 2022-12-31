@@ -12,7 +12,7 @@
  */
 class UButton;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeButtonClicked, UGameModeButton*, GameModeButton);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeButtonClicked, const UGameModeButton*, GameModeButton);
 
 UCLASS()
 class BEATSHOT_API UGameModeButton : public UUserWidget

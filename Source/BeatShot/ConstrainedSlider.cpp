@@ -7,6 +7,7 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
+#include "Kismet/KismetStringLibrary.h"
 
 void UConstrainedSlider::NativeConstruct()
 {
@@ -47,18 +48,17 @@ void UConstrainedSlider::InitConstrainedSlider(const FConstrainedSliderStruct In
 
 void UConstrainedSlider::UpdateDefaultValues(const float NewMinValue, const float NewMaxValue)
 {
+	UE_LOG(LogTemp, Display, TEXT("Updating default values %f %f"), NewMinValue, NewMaxValue);
 	SliderStruct.DefaultMinValue = RoundValue(NewMinValue);
 	SliderStruct.DefaultMaxValue = RoundValue(NewMaxValue);
-	if (SliderStruct.DefaultMinValue == SliderStruct.DefaultMaxValue && !SliderStruct.bSyncSlidersAndValues)
+	if (SliderStruct.DefaultMinValue == SliderStruct.DefaultMaxValue)
 	{
 		Checkbox->SetIsChecked(true);
 		OnCheckStateChanged(true);
 		return;
 	}
-	MinSlider->SetValue(SliderStruct.DefaultMinValue);
-	MaxSlider->SetValue(SliderStruct.DefaultMaxValue);
-	OnMinSliderChanged(SliderStruct.DefaultMinValue);
-	OnMaxSliderChanged(SliderStruct.DefaultMaxValue);
+	Checkbox->SetIsChecked(false);
+	OnCheckStateChanged(false);
 }
 
 void UConstrainedSlider::OnCheckStateChanged(const bool bIsChecked)
@@ -132,14 +132,16 @@ void UConstrainedSlider::OnMaxSliderChanged(const float NewMax)
 
 void UConstrainedSlider::OnMinValueCommitted(const FText& NewMin, ETextCommit::Type CommitType)
 {
-	const float NewMinValue = CheckConstraints(FCString::Atof(*NewMin.ToString()), true);
+	const FString NewMinString = UKismetStringLibrary::Replace(NewMin.ToString(), "," ,"");
+	const float NewMinValue = CheckConstraints(FCString::Atof(*NewMinString), true);
 	MinSlider->SetValue(NewMinValue);
 	OnMinSliderChanged(NewMinValue);
 }
 
 void UConstrainedSlider::OnMaxValueCommitted(const FText& NewMax, ETextCommit::Type CommitType)
 {
-	const float NewMaxValue = CheckConstraints(FCString::Atof(*NewMax.ToString()), false);
+	const FString NewMaxString = UKismetStringLibrary::Replace(NewMax.ToString(), "," ,"");
+	const float NewMaxValue = CheckConstraints(FCString::Atof(*NewMaxString), false);
 	MaxSlider->SetValue(NewMaxValue);
 	OnMaxSliderChanged(NewMaxValue);
 }
