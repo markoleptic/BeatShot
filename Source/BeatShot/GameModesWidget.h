@@ -165,6 +165,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UCheckBox* WallCenteredCheckBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	UHorizontalBox* MinTargetDistanceBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	USlider* MinTargetDistanceSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UEditableTextBox* MinTargetDistanceValue;
@@ -178,8 +180,7 @@ protected:
 	USlider* VerticalSpreadSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UEditableTextBox* VerticalSpreadValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UHorizontalBox* MinTargetDistanceBox;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UHorizontalBox* SpreadTypeBox;
 
@@ -210,6 +211,32 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UConstrainedSlider* TargetSpeedConstrained;
 
+	const float MinLifespanValue = 0.1;
+	const float MaxLifespanValue = 2;
+	const float LifespanGridSnapSize = 0.01;
+	
+	const float MinTargetSpawnCDValue = 0.05;
+	const float MaxTargetSpawnCDValue = 2;
+	const float TargetSpawnCDGridSnapSize = 0.01;
+	
+	const float MinMinTargetDistanceValue = 0;
+	const float MaxMinTargetDistanceValue = 600;
+	const float MinTargetDistanceGridSnapSize = 5;
+	
+	const float MinHorizontalSpreadValue = 200;
+	const float MaxHorizontalSpreadValue = 3200;
+	const float MinVerticalSpreadValue = 200;
+	const float MaxVerticalSpreadValue = 1000;
+	const float SpreadGridSnapSize = 10;
+	
+	const float MinTargetScaleValue = 0.1;
+	const float MaxTargetScaleValue = 2;
+	const float TargetScaleSnapSize = 0.01;
+	
+	const float MinTargetSpeedValue = 300;
+	const float MaxTargetSpeedValue = 1000;
+	const float TargetSpeedSnapSize = 10;
+	
 private:
 	/** Populate Game Mode Options and changes the Custom Save Button states */
 	UFUNCTION()

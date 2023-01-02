@@ -29,16 +29,18 @@ protected:
 	/* Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
+	virtual void Destroyed() override;
+
 	/* Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
 public:
 	/* Broadcasts when a target has been spawned */
-	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	UPROPERTY()
 	FOnTargetSpawnSignature OnTargetSpawn;
 
 	/* Broadcasts the current streak */
-	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	UPROPERTY()
 	FOnStreakUpdateSignature OnStreakUpdate;
 
 	/* Reference to Game Instance */

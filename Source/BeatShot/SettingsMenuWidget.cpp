@@ -256,9 +256,6 @@ void USettingsMenuWidget::InitializeSettings()
 	ShowStreakCombatTextCheckBox->SetIsChecked(InitialPlayerSettings.bShowStreakCombatText);
 	CombatTextFrequency->SetText(FText::AsNumber(InitialPlayerSettings.CombatTextFrequency));
 
-
-	PopulateResolutionComboBox();
-
 	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
 	{
 	case EWindowMode::Fullscreen:
@@ -282,8 +279,11 @@ void USettingsMenuWidget::InitializeSettings()
 		}
 	}
 
+	PopulateResolutionComboBox();
+
 	const UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
 
+	LastConfirmedResolution = GameUserSettings->GetScreenResolution();
 	OnVideoQualityButtonClicked(
 		FindVideoSettingButtonFromQuality(GameUserSettings->GetAntiAliasingQuality(), ESettingType::AntiAliasing));
 	OnVideoQualityButtonClicked(
@@ -357,9 +357,8 @@ void USettingsMenuWidget::OnConfirmVideoSettingsButtonClicked()
 	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	Settings->ConfirmVideoMode();
-	Settings->ApplyResolutionSettings(false);
+	LastConfirmedResolution = Settings->GetScreenResolution();
 	PopulateResolutionComboBox();
-	
 	Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(
 			GetWorld(), 0))->HidePopupMessage();
@@ -370,9 +369,8 @@ void USettingsMenuWidget::OnCancelVideoSettingsButtonClicked()
 	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	Settings->RevertVideoMode();
-	Settings->SetScreenResolution(Settings->GetLastConfirmedScreenResolution());
-	PopulateResolutionComboBox();
-
+	Settings->SetScreenResolution(LastConfirmedResolution);
+	Settings->ApplyResolutionSettings(false);
 	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
 	{
 	case EWindowMode::Fullscreen:
@@ -395,7 +393,9 @@ void USettingsMenuWidget::OnCancelVideoSettingsButtonClicked()
 			break;
 		}
 	}
-	
+
+	PopulateResolutionComboBox();
+
 	Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(
 			GetWorld(), 0))->HidePopupMessage();
@@ -403,8 +403,13 @@ void USettingsMenuWidget::OnCancelVideoSettingsButtonClicked()
 
 void USettingsMenuWidget::PopulateResolutionComboBox()
 {
+	const UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	TArray<FIntPoint> Resolutions;
-	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
+	FIntPoint MaxResolution = FIntPoint(0, 0);
+	bool bIsWindowedFullscreen = false;
+	ResolutionComboBox->ClearOptions();
+	LastConfirmedResolution = Settings->GetScreenResolution();
+	switch (Settings->GetFullscreenMode())
 	{
 	case EWindowMode::Fullscreen:
 		{
@@ -413,7 +418,8 @@ void USettingsMenuWidget::PopulateResolutionComboBox()
 		}
 	case EWindowMode::WindowedFullscreen:
 		{
-			UKismetSystemLibrary::GetConvenientWindowedResolutions(Resolutions);
+			UKismetSystemLibrary::GetSupportedFullscreenResolutions(Resolutions);
+			bIsWindowedFullscreen = true;
 			break;
 		}
 	case EWindowMode::Windowed:
@@ -423,20 +429,36 @@ void USettingsMenuWidget::PopulateResolutionComboBox()
 		}
 	case EWindowMode::NumWindowModes:
 		{
+			UKismetSystemLibrary::GetSupportedFullscreenResolutions(Resolutions);
 			break;
 		}
 	}
-	ResolutionComboBox->ClearOptions();
-	const FIntPoint CurrentRes = UGameUserSettings::GetGameUserSettings()->GetLastConfirmedScreenResolution();
 	for (const FIntPoint Resolution : Resolutions)
 	{
-		ResolutionComboBox->AddOption(
-			FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
-		if (Resolution == CurrentRes)
+		if (!bIsWindowedFullscreen)
 		{
-			ResolutionComboBox->SetSelectedOption(
+			ResolutionComboBox->AddOption(
 				FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
+			if (Resolution == LastConfirmedResolution)
+			{
+				ResolutionComboBox->SetSelectedOption(
+					FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
+			}
 		}
+		else
+		{
+			if (Resolution.X > MaxResolution.X)
+			{
+				MaxResolution = Resolution;
+			}
+		}
+	}
+	if (bIsWindowedFullscreen)
+	{
+		ResolutionComboBox->AddOption(
+			FString::FormatAsNumber(MaxResolution.X) + "x" + FString::FormatAsNumber(MaxResolution.Y));
+		ResolutionComboBox->SetSelectedOption(
+			FString::FormatAsNumber(MaxResolution.X) + "x" + FString::FormatAsNumber(MaxResolution.Y));
 	}
 }
 
@@ -494,18 +516,20 @@ void USettingsMenuWidget::OnWindowModeSelectionChanged(const FString SelectedOpt
 	{
 		return;
 	}
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	if (SelectedOption.Equals("Fullscreen"))
 	{
-		UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::Fullscreen);
+		Settings->SetFullscreenMode(EWindowMode::Fullscreen);
 	}
 	else if (SelectedOption.Equals("Windowed Fullscreen"))
 	{
-		UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::WindowedFullscreen);
+		Settings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
 	}
 	else if (SelectedOption.Equals("Windowed"))
 	{
-		UGameUserSettings::GetGameUserSettings()->SetFullscreenMode(EWindowMode::Windowed);
+		Settings->SetFullscreenMode(EWindowMode::Windowed);
 	}
+	Settings->ApplyResolutionSettings(false);
 	ShowConfirmVideoSettingsMessage();
 }
 
@@ -518,7 +542,10 @@ void USettingsMenuWidget::OnResolutionSelectionChanged(const FString SelectedOpt
 	RightS = UKismetStringLibrary::Replace(RightS, ",", "");
 	const FIntPoint NewResolution = FIntPoint(FCString::Atoi(*LeftS),
 	                                          FCString::Atoi(*RightS));
-	UGameUserSettings::GetGameUserSettings()->SetScreenResolution(NewResolution);
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	LastConfirmedResolution = Settings->GetScreenResolution();
+	Settings->SetScreenResolution(NewResolution);
+	Settings->ApplyResolutionSettings(false);
 	if (SelectionType != ESelectInfo::Direct)
 	{
 		ShowConfirmVideoSettingsMessage();

@@ -64,7 +64,6 @@ void ADefaultPlayerController::HideMainMenu()
 
 void ADefaultPlayerController::ShowPauseMenu()
 {
-	UE_LOG(LogTemp, Display, TEXT("ShowPauseMenuCalled"));
 	PauseMenu = CreateWidget<UPauseMenuWidget>(this, PauseMenuClass);
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
@@ -204,7 +203,7 @@ void ADefaultPlayerController::OnFadeOutPopupMessageFinish()
 {
 	PopupMessageWidget->RemoveFromViewport();
 	PostGameMenuWidget = nullptr;
-	if (GetWorld()->GetMapName().Contains("Range"))
+	if (GetWorld()->GetMapName().Contains("Range") && !UGameplayStatics::IsGamePaused(GetWorld()))
 	{
 		SetInputMode(FInputModeGameOnly());
 		SetShowMouseCursor(false);

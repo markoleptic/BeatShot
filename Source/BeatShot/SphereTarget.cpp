@@ -12,6 +12,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ASphereTarget::ASphereTarget()
@@ -28,14 +29,35 @@ ASphereTarget::ASphereTarget()
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GI->RegisterSphereTarget(this);
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GameModeActorStruct = GI->GameModeActorStruct;
+	const float WhiteToGreenMultiplier = 1 / GameModeActorStruct.PlayerDelay;
+	const float GreenToRedMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
 
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
+
+	FOnTimelineLinearColor OnWhiteToGreenTimeline;
+	OnWhiteToGreenTimeline.BindUFunction(this, FName("SetSphereColor"));
+	WhiteToGreenTimeline.AddInterpLinearColor(WhiteToGreenCurve, OnWhiteToGreenTimeline);
+
+	FOnTimelineEvent OnWhiteToGreenTimelineFinished;
+	OnWhiteToGreenTimelineFinished.BindUFunction(this, FName("PlayGreenToRedTimeline"));
+	WhiteToGreenTimeline.SetTimelineFinishedFunc(OnWhiteToGreenTimelineFinished);
+
+	FOnTimelineLinearColor OnGreenToRedCurveTimeline;
+	OnGreenToRedCurveTimeline.BindUFunction(this, FName("SetSphereColor"));
+	GreenToRedTimeline.AddInterpLinearColor(GreenToRedCurve, OnGreenToRedCurveTimeline);
+
+	FOnTimelineLinearColor OnFadeAndReappearTimeline;
+	OnFadeAndReappearTimeline.BindUFunction(this, FName("SetSphereColor"));
+	FadeAndReappearTimeline.AddInterpLinearColor(FadeAndReappearCurve, OnFadeAndReappearTimeline);
+
+	WhiteToGreenTimeline.SetPlayRate(WhiteToGreenMultiplier);
+	GreenToRedTimeline.SetPlayRate(GreenToRedMultiplier);
+	FadeAndReappearTimeline.SetPlayRate(WhiteToGreenMultiplier);
 
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
@@ -53,7 +75,32 @@ void ASphereTarget::BeginPlay()
 	else
 	{
 		SetLifeSpan(GameModeActorStruct.TargetMaxLifeSpan);
+		PlayWhiteToGreenTimeline();
 		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GameModeActorStruct.TargetMaxLifeSpan, false);
+	}
+}
+
+void ASphereTarget::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	switch (TimelineSwitch)
+	{
+	case 0:
+		{
+			WhiteToGreenTimeline.TickTimeline(DeltaSeconds);
+			break;
+		}
+	case 1:
+		{
+			GreenToRedTimeline.TickTimeline(DeltaSeconds);
+			break;
+		}
+	case 2:
+		{
+			FadeAndReappearTimeline.TickTimeline(DeltaSeconds);
+			break;
+		}
+	default: break;
 	}
 }
 
@@ -61,7 +108,54 @@ void ASphereTarget::StartBeatGridTimer(const float Lifespan)
 {
 	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
 	SetCanBeDamaged(true);
-	PlayColorGradient();
+	PlayWhiteToGreenTimeline();
+}
+
+void ASphereTarget::PlayWhiteToGreenTimeline()
+{
+	if (FadeAndReappearTimeline.IsPlaying())
+	{
+		FadeAndReappearTimeline.Stop();
+	}
+	if (GreenToRedTimeline.IsPlaying())
+	{
+		GreenToRedTimeline.Stop();
+	}
+	TimelineSwitch = 0;
+	WhiteToGreenTimeline.PlayFromStart();
+}
+
+void ASphereTarget::PlayGreenToRedTimeline()
+{
+	if (WhiteToGreenTimeline.IsPlaying())
+	{
+		WhiteToGreenTimeline.Stop();
+	}
+	if (FadeAndReappearTimeline.IsPlaying())
+	{
+		FadeAndReappearTimeline.Stop();
+	}
+	TimelineSwitch = 1;
+	GreenToRedTimeline.PlayFromStart();
+}
+
+void ASphereTarget::PlayFadeAndReappearTimeline()
+{
+	if (WhiteToGreenTimeline.IsPlaying())
+	{
+		WhiteToGreenTimeline.Stop();
+	}
+	if (GreenToRedTimeline.IsPlaying())
+	{
+		GreenToRedTimeline.Stop();
+	}
+	TimelineSwitch = 2;
+	FadeAndReappearTimeline.Play();
+}
+
+void ASphereTarget::SetSphereColor(const FLinearColor Output)
+{
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), Output);
 }
 
 void ASphereTarget::LifeSpanExpired()
@@ -108,7 +202,7 @@ void ASphereTarget::HandleDestruction()
 	if (GameModeActorStruct.IsBeatGridMode == true)
 	{
 		SetCanBeDamaged(false);
-		RemoveAndReappear();
+		PlayFadeAndReappearTimeline();
 	}
 	else
 	{
@@ -119,6 +213,7 @@ void ASphereTarget::HandleDestruction()
 void ASphereTarget::OnBeatGridTimerTimeOut()
 {
 	SetCanBeDamaged(false);
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	const FVector TopOfSphereLocation = {
 		GetActorLocation().X,

@@ -4,7 +4,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameModeActorBase.h"
 #include "Gun_AK47.h"
 #include "GameFramework/Character.h"
 #include "SaveGamePlayerSettings.h"
@@ -174,11 +173,6 @@ private:
 
 	/** Change movement state from walk */
 	void StopWalk();
-
-	/** Called from DefaultGameMode when a new game mode has began,
-	 *  to update whether gun should trace during OnTick */
-	UFUNCTION()
-	void OnGameModeActorUpdate(FGameModeActorStruct GameModeActorStruct);
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;

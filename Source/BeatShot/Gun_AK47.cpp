@@ -38,7 +38,7 @@ void AGun_AK47::BeginPlay()
 {
 	Super::BeginPlay();
 
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Character = Cast<ADefaultCharacter>(GetParentActor());
 	PlayerController = Character->GetController<ADefaultPlayerController>();
 	BulletDecalInstance = UMaterialInstanceDynamic::Create(BulletDecalMaterial,
@@ -63,6 +63,7 @@ void AGun_AK47::Tick(float DeltaTime)
 	/* only do tracing for BeatTrack game modes */
 	if (bShouldTrace)
 	{
+		UE_LOG(LogTemp, Display, TEXT("ShouldTrace is true"));
 		TraceForward();
 	}
 }
@@ -108,7 +109,7 @@ void AGun_AK47::Fire()
 	}
 	/* Update number of shots fired */
 	if (!PlayerController->CountdownActive &&
-		!GI->GameModeActorStruct.IsBeatTrackMode)
+		!TrackingTarget)
 	{
 		OnShotFired.Broadcast();
 	}
@@ -185,15 +186,15 @@ void AGun_AK47::TraceForward() const
 		if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
 		{
 			UGameplayStatics::ApplyDamage(HitTarget, 1.f, PlayerController, Character, UDamageType::StaticClass());
-			HitTarget->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Green);
+			HitTarget->SetSphereColor(FLinearColor::Green);
 			return;
 		}
 	}
-	if (!GI->SphereTargetRef)
+	if (!TrackingTarget)
 	{
 		return;
 	}
-	GI->SphereTargetRef->MID_TargetColorChanger->SetVectorParameterByIndex(0, FLinearColor::Red);
+	TrackingTarget->SetSphereColor(FLinearColor::Red);
 }
 
 void AGun_AK47::UpdateRecoilAndKickback(const float DeltaTime)

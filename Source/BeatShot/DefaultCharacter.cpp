@@ -79,7 +79,14 @@ void ADefaultCharacter::BeginPlay()
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
 	
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnGameModeActorInit.AddDynamic(this, &ADefaultCharacter::OnGameModeActorUpdate);
+	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnGameModeActorInit.BindLambda([&](const FGameModeActorStruct GameModeActorStruct)
+	{
+		Gun->bShouldTrace = GameModeActorStruct.IsBeatTrackMode;
+	});
+	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.BindLambda([&](ASphereTarget* TrackingTarget)
+	{
+		Gun->TrackingTarget = TrackingTarget;
+	});
 }
 
 void ADefaultCharacter::PawnClientRestart() {
@@ -234,15 +241,6 @@ void ADefaultCharacter::StopWalk()
 		UpdateMovementValues(EMovementType::Sprinting);
 	}
 	bHoldingWalk = false;
-}
-
-// ReSharper disable once CppMemberFunctionMayBeConst
-void ADefaultCharacter::OnGameModeActorUpdate(const FGameModeActorStruct GameModeActorStruct)
-{
-	if (Gun)
-	{
-		Gun->bShouldTrace = GameModeActorStruct.IsBeatTrackMode;
-	}
 }
 
 void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType)

@@ -590,102 +590,99 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	/* Starts the game mode timer */
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+	/** Starts the game mode timer */
+	UFUNCTION()
 	void StartGameMode();
 
-	/* called during StartGameMode */
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+	/** called during StartGameMode */
+	UFUNCTION()
 	void InitializeGameModeActor();
 
-	/* Called by DefaultGameMode. Clears any saved targets in Game Instance's sphere target array, destroys self */
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-	void EndGameMode(bool ShouldSavePlayerScores = false);
-
-	/* Reports to DefaultGameMode when the song has finished */
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
+	/** Reports to DefaultGameMode when the song has finished */
+	UFUNCTION()
 	void OnGameModeLengthTimerComplete() const;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FloatingTextActor")
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFloatingTextActor> FloatingTextActorToSpawn;
 
-	/* The game mode defining properties */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	/** The game mode defining properties */
+	UPROPERTY(VisibleAnywhere)
 	FGameModeActorStruct GameModeActorStruct;
 
-	/* Timer that spans the length of the song */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
+	/** Timer that spans the length of the song */
+	UPROPERTY(VisibleAnywhere)
 	FTimerHandle GameModeLengthTimer;
 
 #pragma region Scoring
 
+	/** Prepares PlayerScores for saving in GameInstance, then calls SavePlayerScores in DefaultGameInstance */
+	void SavePlayerScores();
+
 	/* Function bound to TargetSpawner to keep track of streak */
-	UFUNCTION(BlueprintCallable, Category = "FloatingTextActor")
+	UFUNCTION()
 	void OnStreakUpdate(int32 Streak, FVector Location);
 
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void UpdateHighScore();
 
 	/* Called by TargetSpawner when a target takes damage */
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void UpdatePlayerScores(float TimeElapsed);
 
 	/* Called by TargetSpawner when a SphereTarget is spawned */
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void UpdateTargetsSpawned();
 
 	/* Called by DefaultCharacter when player shoots during an active game that is not a BeatTracking game modes */
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void UpdateShotsFired();
 
 	/* Called by Projectile when a Player's projectile hits a SphereTarget during an active game that is not a BeatTracking game modes */
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void UpdateTargetsHit();
 
 	/* Called when IsTrackingGameMode */
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
 
 	/* Function called when new settings are saved in Game Instance */
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
+	UFUNCTION()
 	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 
-	/* Delegate called when there is any update that should be reflected in PlayerHUD stats */
+	/** Delegate called when there is any update that should be reflected in PlayerHUD stats */
 	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Delegates")
 	FUpdateScoresToHUD UpdateScoresToHUD;
 
-	/* the saved score object, with accuracy, etc. */
+	/** Yhe saved score object, with accuracy, etc. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore SavedPlayerScores;
 
-	/* the wrapper struct that contains the array of saved player score objects */
+	/** Yhe wrapper struct that contains the array of saved player score objects */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
 
-	/* the "live" player score objects, which start fresh and import high score from SavedPlayerScores */
+	/** Yhe "live" player score objects, which start fresh and import high score from SavedPlayerScores */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	FPlayerScore PlayerScores;
 
-	/* max score per target based on total amount of targets that could spawn */
+	/** Max score per target based on total amount of targets that could spawn */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
 	float MaxScorePerTarget;
 
-	/* Map of GameModes and Scores */
+	/** Map of GameModes and Scores */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
 
 #pragma endregion
 
 private:
-	/* Prepares PlayerScores for saving in GameInstance, then calls SavePlayerScores in DefaultGameInstance */
-	void SavePlayerScores();
 
-	/* Loads the player scores at the begin play */
+	/** Loads the player scores at the begin play */
 	void LoadPlayerScores();
 
-	/* Whether or not to show the Streak Combat Text */
+	/** Whether or not to show the Streak Combat Text */
 	bool bShowStreakCombatText;
 
-	/* The frequency at which to show Streak Combat Text */
+	/** The frequency at which to show Streak Combat Text */
 	int32 CombatTextFrequency;
 };

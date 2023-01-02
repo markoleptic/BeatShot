@@ -107,7 +107,7 @@ void UWebBrowserOverlay::InitializePostGameScoringOverlay(const FString& Respons
 
 void UWebBrowserOverlay::SetOverlayText(const FString& Key)
 {
-	OverlayText->SetText(FText::FromStringTable("/Game/UI/StringTables/ST_WebBrowserOverlay.ST_WebBrowserOverlay",
+	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_WebBrowserOverlay.ST_WebBrowserOverlay",
 	                                            Key));
 	FadeInText();
 }

@@ -6,7 +6,6 @@
 #include "DefaultCharacter.h"
 #include "JsonObjectConverter.h"
 #include "TargetSpawner.h"
-#include "SphereTarget.h"
 #include "Http.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
@@ -23,12 +22,6 @@ void UDefaultGameInstance::RegisterTargetSpawner(ATargetSpawner* TargetSpawner)
 {
 	TargetSpawnerRef = TargetSpawner;
 	OnTargetSpawnerInit.Broadcast(TargetSpawner);
-}
-
-void UDefaultGameInstance::RegisterSphereTarget(ASphereTarget* SphereTarget)
-{
-	SphereTargetRef = SphereTarget;
-	SphereTargetArray.Add(SphereTarget);
 }
 
 void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase)

@@ -5,6 +5,7 @@
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
 #include "DefaultGameInstance.h"
+#include "DefaultGameMode.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -28,6 +29,22 @@ void ATargetSpawner::BeginPlay()
 	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	GI->RegisterTargetSpawner(this);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+}
+
+void ATargetSpawner::Destroyed()
+{
+	Super::Destroyed();
+	if (TrackingTarget)
+	{
+		TrackingTarget->Destroy();
+	}
+	if (SpawnedBeatGridTargets.Num() > 0)
+	{
+		for (ASphereTarget* Target : SpawnedBeatGridTargets)
+		{
+			Target->Destroy();
+		}
+	}
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
@@ -401,6 +418,7 @@ void ATargetSpawner::FindNextTrackingDirection()
 		// Initial tracking target spawn
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BoxBounds.Origin,
 		                                                       SpawnBox->GetComponentRotation());
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.ExecuteIfBound(TrackingTarget);
 		TrackingTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		LocationBeforeDirectionChange = BoxBounds.Origin;
 

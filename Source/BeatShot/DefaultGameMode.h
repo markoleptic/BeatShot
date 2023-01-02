@@ -9,20 +9,19 @@
 #include "DefaultGameMode.generated.h"
 
 class ATargetSpawner;
-class UDefaultGameInstance;
 class AGameModeActorBase;
 class UAudioAnalyzerManager;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAAPlayerLoaded, UAudioAnalyzerManager*, AAManager);
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float, PlaybackTime);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeActorInit, FGameModeActorStruct, GameModeActorStruct);
+DECLARE_DELEGATE_OneParam(FOnGameModeActorInit, const FGameModeActorStruct);
+DECLARE_DELEGATE_OneParam(FOnBeatTrackTargetSpawned, ASphereTarget*);
 
 UCLASS()
 class BEATSHOT_API ADefaultGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
-protected:
+	
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
@@ -59,19 +58,21 @@ public:
 
 	/** Delegate that is called when GameModeActorBase is initialized. This is so the character is informed that the
 	 *  Gun needs to perform line tracing for BeatTrack game modes, but otherwise can skip line tracing */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, BlueprintAssignable)
 	FOnGameModeActorInit OnGameModeActorInit;
 	
 	/** Delegate that is called every second to update the progress into song on PlayerHUD */
 	UPROPERTY()
 	FOnAAManagerSecondPassed OnAAManagerSecondPassed;
 
+	/* Broadcasts when a BeatTrack target has been spawned */
+	FOnBeatTrackTargetSpawned OnBeatTrackTargetSpawned;
+
 protected:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGameModeActorBase> GameModeActorBaseClass;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AActor> VisualizerClass;
 	UPROPERTY(BlueprintReadOnly)
 	AGameModeActorBase* GameModeActorBase;

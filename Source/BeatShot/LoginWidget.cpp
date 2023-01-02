@@ -89,11 +89,11 @@ void ULoginWidget::ShowLoginScreen()
 		NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
 		NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
 		ContinueWithoutTitleText->SetText(
-			FText::FromStringTable("/Game/UI/StringTables/ST_Login.ST_Login", "ContinueWithoutTitleTextLogin"));
+			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutTitleTextLogin"));
 		ContinueWithoutBodyText->SetText(
-			FText::FromStringTable("/Game/UI/StringTables/ST_Login.ST_Login", "ContinueWithoutBodyTextLogin"));
+			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutBodyTextLogin"));
 		ContinueWithoutCancelButtonText->SetText(
-			FText::FromStringTable("/Game/UI/StringTables/ST_Login.ST_Login", "ContinueWithoutCancelButtonTextLogin"));
+			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutCancelButtonTextLogin"));
 	}
 	else
 	{

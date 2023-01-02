@@ -215,7 +215,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "FPS Counter")
 	UCheckBox* FPSCounterCheckBox;
 
-
+	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
+	FIntPoint LastConfirmedResolution;
+	
 	UFUNCTION()
 	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()

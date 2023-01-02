@@ -99,9 +99,6 @@ public:
 	void RegisterTargetSpawner(ATargetSpawner* TargetSpawner);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterSphereTarget(ASphereTarget* SphereTarget);
-
-	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
@@ -112,13 +109,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
 	ATargetSpawner* TargetSpawnerRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	ASphereTarget* SphereTargetRef;
-
-	/* Used to make sure all targets are destroyed at the end of game */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	TArray<ASphereTarget*> SphereTargetArray;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
 	AGameModeActorBase* GameModeActorBaseRef;

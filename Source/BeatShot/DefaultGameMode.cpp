@@ -12,9 +12,8 @@
 
 void ADefaultGameMode::BeginPlay()
 {
-	PrimaryActorTick.bStartWithTickEnabled = true;
-	PrimaryActorTick.bCanEverTick = true;
 	Super::BeginPlay();
+	PrimaryActorTick.bCanEverTick = true;
 	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
 		/** listen to changes that are made to Audio Analyzer settings in case user changes during a game */
@@ -28,19 +27,6 @@ void ADefaultGameMode::BeginPlay()
 void ADefaultGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (!bShouldTick)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Shouldn't tick"));
-	}
-	if (!GetWorldTimerManager().IsTimerActive(
-		GameModeActorBase->GameModeLengthTimer))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Timer Not Active"));
-	}
-	if (!GameModeActorBase)
-	{
-		UE_LOG(LogTemp, Display, TEXT("GameModeActorBase"));
-	}
 	if (!bShouldTick || !GameModeActorBase || !GetWorldTimerManager().IsTimerActive(
 		GameModeActorBase->GameModeLengthTimer))
 	{
@@ -55,7 +41,6 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 	                                            AASettings.BandLimitsThreshold);
 	for (const bool Beat : Beats)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Going thru beats"));
 		UpdateTargetSpawn(Beat);
 	}
 }
@@ -188,13 +173,12 @@ void ADefaultGameMode::StartGameMode()
 void ADefaultGameMode::InitializeGameMode()
 {
 	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	
 	LastTargetOnSet = false;
 	Elapsed = 0.f;
 
 	// spawn GameModeActorBase
 	GameModeActorBase = GetWorld()->SpawnActor<AGameModeActorBase>(GameModeActorBaseClass);
-	OnGameModeActorInit.Broadcast(GI->GameModeActorStruct);
+	OnGameModeActorInit.ExecuteIfBound(GI->GameModeActorStruct);
 	// spawn TargetSpawner
 	const FVector TargetSpawnerLocation = {3590, 0, 750};
 	const FActorSpawnParameters TargetSpawnerSpawnParameters;
@@ -202,6 +186,7 @@ void ADefaultGameMode::InitializeGameMode()
 	                                                            &TargetSpawnerLocation,
 	                                                            &FRotator::ZeroRotator,
 	                                                            TargetSpawnerSpawnParameters));
+	
 	// get GameModeActorStruct and pass to GameModeActorBase
 	GameModeActorBase->GameModeActorStruct = GI->GameModeActorStruct;
 	// initialize GameModeActorStruct with TargetSpawner
@@ -307,10 +292,15 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 
 	if (IsValid(GameModeActorBase))
 	{
-		GameModeActorBase->EndGameMode(ShouldSavePlayerScores);
+		if (ShouldSavePlayerScores)
+		{
+			GameModeActorBase->SavePlayerScores();
+		}
+		GameModeActorBase->Destroy();
 	}
 	if (IsValid(TargetSpawner))
 	{
+		TargetSpawner->SetShouldSpawn(false);
 		TargetSpawner->Destroy();
 	}
 	if (IsValid(Visualizer))
@@ -346,7 +336,6 @@ void ADefaultGameMode::ShowSongPathErrorMessage() const
 
 void ADefaultGameMode::UpdateTargetSpawn(const bool bNewTargetState)
 {
-	UE_LOG(LogTemp, Display, TEXT("UpdateTargetSpawn called"));
 	if (bNewTargetState && !LastTargetOnSet)
 	{
 		LastTargetOnSet = true;

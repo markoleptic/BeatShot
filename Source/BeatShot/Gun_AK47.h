@@ -8,6 +8,7 @@
 #include "GameFramework/Actor.h"
 #include "Gun_AK47.generated.h"
 
+class ASphereTarget;
 class ADefaultPlayerController;
 class UNiagaraSystem;
 class UDefaultGameInstance;
@@ -80,6 +81,11 @@ public:
 	/** The MID for the bullet decal */
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
 	UMaterialInstanceDynamic* BulletDecalInstance;
+
+	/** Reference to the tracking target that was obtained from FOnBeatTrackTargetSpawned,
+	*   so we can change color of target based on the line trace */
+	UPROPERTY()
+	ASphereTarget* TrackingTarget;
 
 	/** Whether or not to recoil the gun */
 	bool bShouldRecoil;
@@ -161,10 +167,6 @@ private:
 	/** Reference to owning character */
 	UPROPERTY(VisibleAnywhere, Category = "References")
 	ADefaultCharacter* Character;
-
-	/** Reference to game instance */
-	UPROPERTY(VisibleAnywhere, Category = "References")
-	UDefaultGameInstance* GI;
 
 	/** Reference to player controller */
 	UPROPERTY(VisibleAnywhere, Category = "References")

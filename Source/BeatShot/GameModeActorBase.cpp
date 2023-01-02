@@ -3,7 +3,6 @@
 
 #include "GameModeActorBase.h"
 #include "DefaultCharacter.h"
-#include "SphereTarget.h"
 #include "TargetSpawner.h"
 #include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
@@ -62,40 +61,6 @@ void AGameModeActorBase::StartGameMode()
 	                                GameModeActorStruct.GameModeLength, false);
 	GI->TargetSpawnerRef->SetShouldSpawn(true);
 	UpdateScoresToHUD.Broadcast(PlayerScores);
-}
-
-void AGameModeActorBase::EndGameMode(const bool ShouldSavePlayerScores)
-{
-	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	
-	if (ShouldSavePlayerScores)
-	{
-		SavePlayerScores();
-	}
-
-	// Deleting Targets
-	GI->TargetSpawnerRef->SetShouldSpawn(false);
-	if (GI->SphereTargetArray.Num() > 0)
-	{
-		for (ASphereTarget* Target : GI->SphereTargetArray)
-		{
-			if (Target)
-			{
-				Target->Destroy();
-			}
-		}
-		GI->SphereTargetArray.Empty();
-		GI->SphereTargetArray.Shrink();
-	}
-
-	//Clearing Timers
-	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
-	GameModeLengthTimer.Invalidate();
-
-	// Reset Struct to zero scores
-	PlayerScores.ResetStruct();
-
-	Destroy();
 }
 
 void AGameModeActorBase::OnGameModeLengthTimerComplete() const
