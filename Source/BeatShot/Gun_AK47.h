@@ -114,7 +114,14 @@ private:
 	UFUNCTION()
 	void UpdateRecoilPattern(FVector Output);
 
-	void ShowEffectsAndPlaySounds(const FRotator& MuzzleRotation, const FHitResult& Hit) const;
+	/** Plays the muzzle flash Niagara effect */
+	void ShowMuzzleFlash(const FRotator& MuzzleRotation) const;
+	/** Plays the gunshot sound (no gunshot sound atm) */
+	void PlayGunshotSound() const;
+	/** Spawns a bullet decal at the Hit result location */
+	void ShotBulletDecal(const FHitResult& Hit) const;
+	/** Plays the recoil animation located in DefaultCharacter */
+	void PlayRecoilAnimation() const;
 
 	/** The timeline set from RecoilVectorCurve */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")

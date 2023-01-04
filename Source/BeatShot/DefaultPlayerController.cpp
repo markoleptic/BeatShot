@@ -144,6 +144,7 @@ void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 	/** If scores weren't saved, update Overlay text to reflect that. This also means OnPostPlayerScores won't get called */
 	if (!bSavedScores)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Didn't save player scores"));
 		PostGameMenuWidget->ScoresWidget->SetOverlayText("DidNotSaveScores");
 	}
 	PostGameMenuWidget->AddToViewport();

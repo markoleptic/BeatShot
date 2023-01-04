@@ -7,12 +7,13 @@
 #include "GameFramework/Actor.h"
 #include "GameModeActorBase.generated.h"
 
-class AFloatingTextActor;
 class ASphereTarget;
-class UAudioAnalyzerManager;
-class UDefaultGameInstance;
+class AFloatingTextActor;
+class ADefaultGameMode;
 
-/* Enum representing the default game mode names */
+#pragma region Enums
+
+/** Enum representing the default game mode names */
 UENUM(BlueprintType)
 enum class EGameModeActorName : uint8
 {
@@ -25,7 +26,7 @@ enum class EGameModeActorName : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
-/* Enum representing the spread type of the targets */
+/** Enum representing the spread type of the targets */
 UENUM(BlueprintType)
 enum class ESpreadType : uint8
 {
@@ -38,7 +39,7 @@ enum class ESpreadType : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::StaticWide);
 
-/* Enum representing the default game mode difficulties */
+/** Enum representing the default game mode difficulties */
 UENUM(BlueprintType)
 enum class EGameModeDifficulty : uint8
 {
@@ -50,6 +51,10 @@ enum class EGameModeDifficulty : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
+#pragma endregion
+
+#pragma region Structs
+
 /* Struct representing a game mode */
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
@@ -59,36 +64,36 @@ struct FGameModeActorStruct
 	/* The song title */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	FString SongTitle;
-	
+
 	/* The default game mode name, or custom if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	EGameModeActorName GameModeActorName;
-	
+
 	/* Custom game mode name if custom, otherwise empty string */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	FString CustomGameModeName;
-	
+
 	/* Default game mode difficulties, or none if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	EGameModeDifficulty GameModeDifficulty;
-	
+
 	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
 	 * If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	ESpreadType SpreadType;
-	
+
 	/* Whether or not to dynamically change the size of targets as consecutive targets are hit */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	bool UseDynamicSizing;
-	
+
 	/* Length of song */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
 	float GameModeLength;
-	
+
 	/* Sets the minimum time between target spawns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float TargetSpawnCD;
-	
+
 	/* Sets the minimum distance between recent target spawns */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float MinDistanceBetweenTargets;
@@ -555,25 +560,13 @@ struct FPlayerScore
 	}
 };
 
-/* Used by PlayerScoreMap to abstract FPlayerScores */
-USTRUCT(BlueprintType)
-struct FPlayerScoreArrayWrapper
-{
-	GENERATED_BODY()
+// FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
+// {
+// 	const uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
+// 	return Hash;
+// }
 
-	/** originally wanted this to hold all FPlayerScores for a given EGameModeActorName, Song title, and Difficulty,
-	/* but doesn't work sometimes. Saving and loading works even if equality doesn't work. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FPlayerScore> PlayerScoreArray;
-};
-
-FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
-{
-	const uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
-	return Hash;
-}
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore, NewPlayerScoreStruct);
+#pragma endregion
 
 UCLASS()
 class BEATSHOT_API AGameModeActorBase : public AActor
@@ -586,7 +579,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	/* Called every frame */
+	virtual void Destroyed() override;
+
 	virtual void Tick(float DeltaTime) override;
 
 public:
@@ -594,95 +588,103 @@ public:
 	UFUNCTION()
 	void StartGameMode();
 
-	/** called during StartGameMode */
-	UFUNCTION()
-	void InitializeGameModeActor();
-
-	/** Reports to DefaultGameMode when the song has finished */
-	UFUNCTION()
-	void OnGameModeLengthTimerComplete() const;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AFloatingTextActor> FloatingTextActorToSpawn;
+	/** Timer that spans the length of the song */
+	UPROPERTY(VisibleAnywhere)
+	FTimerHandle GameModeLengthTimer;
 
 	/** The game mode defining properties */
 	UPROPERTY(VisibleAnywhere)
 	FGameModeActorStruct GameModeActorStruct;
 
-	/** Timer that spans the length of the song */
-	UPROPERTY(VisibleAnywhere)
-	FTimerHandle GameModeLengthTimer;
-
-#pragma region Scoring
-
-	/** Prepares PlayerScores for saving in GameInstance, then calls SavePlayerScores in DefaultGameInstance */
-	void SavePlayerScores();
-
-	/* Function bound to TargetSpawner to keep track of streak */
+private:
+	/** called during StartGameMode. Loads player scores, sets the score amount for each target, and binds to TargetSpawner's
+	 *  UpdateTargetSpawned and OnStreakUpdate */
 	UFUNCTION()
-	void OnStreakUpdate(int32 Streak, FVector Location);
+	void InitializeGameModeActor();
 
+	/** Reports to DefaultGameMode when the song has finished */
 	UFUNCTION()
-	void UpdateHighScore();
+	void OnGameModeLengthTimerComplete();
 
-	/* Called by TargetSpawner when a target takes damage */
+	/** Function bound to DefaultGameMode's OnBeatTrackTargetSpawned delegate.
+	 *  Binds the tracking target's health component's OnBeatTrackTick delegate to UpdateTrackingScore */
 	UFUNCTION()
-	void UpdatePlayerScores(float TimeElapsed);
+	void OnBeatTrackTargetSpawned(ASphereTarget* TrackingTarget);
 
-	/* Called by TargetSpawner when a SphereTarget is spawned */
+	/** The floating combat text class */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AFloatingTextActor> FloatingTextActorToSpawn;
+
+#pragma region HUDUpdate
+
+
+	/** Function bound to DefaultGameMode's OnTargetDestroyed delegate, which is executed by TargetSpawner.
+	 *  Passes the time that the target was alive for */
 	UFUNCTION()
-	void UpdateTargetsSpawned();
+	void UpdatePlayerScores(const float TimeElapsed);
 
-	/* Called by DefaultCharacter when player shoots during an active game that is not a BeatTracking game modes */
-	UFUNCTION()
-	void UpdateShotsFired();
-
-	/* Called by Projectile when a Player's projectile hits a SphereTarget during an active game that is not a BeatTracking game modes */
-	UFUNCTION()
-	void UpdateTargetsHit();
-
-	/* Called when IsTrackingGameMode */
+	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
+	 *  which passes the current damage taken, and the total possible damage. Executed on tick
+	 *  by SphereTarget */
 	UFUNCTION()
 	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
 
-	/* Function called when new settings are saved in Game Instance */
+	/** Function bound to DefaultGameMode's OnTargetSpawned delegate to keep track of number of targets spawned.
+	 *  Executed by TargetSpawner */
 	UFUNCTION()
-	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
+	void UpdateTargetsSpawned();
 
-	/** Delegate called when there is any update that should be reflected in PlayerHUD stats */
-	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Delegates")
-	FUpdateScoresToHUD UpdateScoresToHUD;
+	/** Function bound to Gun_AK47's FOnShotFired delegate to keep track of number of targets spawned.
+	 *  Executed by Gun_AK47 */
+	UFUNCTION()
+	void UpdateShotsFired();
 
-	/** Yhe saved score object, with accuracy, etc. */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	FPlayerScore SavedPlayerScores;
+	/** Function bound to DefaultGameMode's OnStreakUpdate delegate to keep track of streak.
+	 *  Executed by TargetSpawner */
+	UFUNCTION()
+	void OnStreakUpdate(int32 Streak, FVector Location);
+	
+	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
+	void UpdateTargetsHit();
 
-	/** Yhe wrapper struct that contains the array of saved player score objects */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
-
-	/** Yhe "live" player score objects, which start fresh and import high score from SavedPlayerScores */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	FPlayerScore PlayerScores;
-
-	/** Max score per target based on total amount of targets that could spawn */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-	float MaxScorePerTarget;
-
-	/** Map of GameModes and Scores */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
+	/** Called by UpdatePlayerScores or UpdatingTrackingScores to recalculate the high score if needed  */
+	void UpdateHighScore();
 
 #pragma endregion
 
-private:
+#pragma region Scoring
 
-	/** Loads the player scores at the begin play */
+	/** Loads the player scores and finds the highest score that matches the GameModeActorBase, Difficulty, and song title */
 	void LoadPlayerScores();
 
+public:
+	/** Prepares PlayerScores for saving in GameInstance, then calls SavePlayerScores in DefaultGameInstance */
+	void SavePlayerScores();
+
+private:
+	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
+	UPROPERTY(VisibleAnywhere)
+	FPlayerScore CurrentPlayerScore;
+
+	/** Max score per target based on total amount of targets that could spawn */
+	UPROPERTY(VisibleAnywhere)
+	float MaxScorePerTarget;
+
+#pragma endregion
+
+	/** Function called when new settings are saved in Game Instance */
+	UFUNCTION()
+	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
+
+	float CheckFloatNaN(const float ValueToCheck, const float ValueToRound);
+	
 	/** Whether or not to show the Streak Combat Text */
 	bool bShowStreakCombatText;
 
 	/** The frequency at which to show Streak Combat Text */
 	int32 CombatTextFrequency;
+	
+	/** Reference to the GameMode because it frequently needs to be called */
+	UPROPERTY()
+	ADefaultGameMode* GameMode;
 };

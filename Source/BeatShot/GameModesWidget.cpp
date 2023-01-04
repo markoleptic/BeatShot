@@ -159,6 +159,8 @@ void UGameModesWidget::NativeConstruct()
 		BaseGameModeComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::OnBaseGameModeSelectionChange);
 		GameModeDifficultyComboBox->OnSelectionChanged.AddDynamic(
 			this, &UGameModesWidget::OnGameModeDifficultySelectionChange);
+		PlayerDelaySlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnPlayerDelaySliderChanged);
+		PlayerDelayValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnPlayerDelayValueCommitted);
 		LifespanSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnLifespanSliderChanged);
 		LifespanValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnLifespanValueCommitted);
 		TargetSpawnCDSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnTargetSpawnCDSliderChanged);
@@ -441,6 +443,17 @@ void UGameModesWidget::OnGameModeDifficultySelectionChange(const FString Selecte
 	}
 }
 
+void UGameModesWidget::OnPlayerDelaySliderChanged(const float NewPlayerDelay)
+{
+	OnSliderChanged(NewPlayerDelay, PlayerDelayValue, PlayerDelayGridSnapSize);
+}
+
+void UGameModesWidget::OnPlayerDelayValueCommitted(const FText& NewPlayerDelay, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewPlayerDelay, PlayerDelayValue, PlayerDelaySlider, PlayerDelayGridSnapSize, MinPlayerDelayValue,
+						 MaxPlayerDelayValue);
+}
+
 void UGameModesWidget::OnLifespanSliderChanged(const float NewLifespan)
 {
 	OnSliderChanged(NewLifespan, LifespanValue, LifespanGridSnapSize);
@@ -719,22 +732,8 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 
 	GameModeDifficultyComboBox->SetSelectedOption(
 		UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeDifficulty).ToString());
-
-	/** Match player delay with options from ComboBox */
-	if (InputGameModeActorStruct.PlayerDelay <= 0.f)
-	{
-		PlayerDelayComboBox->SetSelectedOption("No Delay");
-	}
-	else if (FString::SanitizeFloat(InputGameModeActorStruct.PlayerDelay).Len() == 3)
-	{
-		PlayerDelayComboBox->SetSelectedOption(FString::SanitizeFloat(InputGameModeActorStruct.PlayerDelay) + "0s");
-	}
-	else
-	{
-		PlayerDelayComboBox->SetSelectedOption(FString::SanitizeFloat(InputGameModeActorStruct.PlayerDelay) + "s");
-	}
-
-	PlayerDelayComboBox->SetSelectedOption(FString::SanitizeFloat(InputGameModeActorStruct.PlayerDelay) + "s");
+	PlayerDelaySlider->SetValue(InputGameModeActorStruct.PlayerDelay);
+	PlayerDelayValue->SetText(FText::AsNumber(InputGameModeActorStruct.PlayerDelay));
 	LifespanSlider->SetValue(InputGameModeActorStruct.TargetMaxLifeSpan);
 	LifespanValue->SetText(FText::AsNumber(InputGameModeActorStruct.TargetMaxLifeSpan));
 	TargetSpawnCDSlider->SetValue(InputGameModeActorStruct.TargetSpawnCD);
@@ -825,14 +824,8 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 		ReturnStruct.IsSingleBeatMode = false;
 	}
 	ReturnStruct.GameModeDifficulty = EGameModeDifficulty::None;
-	if (PlayerDelayComboBox->GetSelectedOption().Equals("No Delay"))
-	{
-		ReturnStruct.PlayerDelay = 0.f;
-	}
-	else
-	{
-		ReturnStruct.PlayerDelay = FCString::Atof(*PlayerDelayComboBox->GetSelectedOption().LeftChop(1));
-	}
+	ReturnStruct.PlayerDelay = FMath::GridSnap(
+		FMath::Clamp(PlayerDelaySlider->GetValue(), MinPlayerDelayValue, MaxPlayerDelayValue), PlayerDelayGridSnapSize);
 	ReturnStruct.TargetMaxLifeSpan = FMath::GridSnap(
 		FMath::Clamp(LifespanSlider->GetValue(), MinLifespanValue, MaxLifespanValue), LifespanGridSnapSize);
 	ReturnStruct.TargetSpawnCD = FMath::GridSnap(

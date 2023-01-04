@@ -7,14 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "TargetSpawner.generated.h"
 
-class ABeatAimGameModeBase;
-class UDefaultGameInstance;
-class ADefaultCharacter;
 class ASphereTarget;
 class UBoxComponent;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetSpawnSignature);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdateSignature, int32, Streak, FVector, Location);
 
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor
@@ -22,46 +16,30 @@ class BEATSHOT_API ATargetSpawner : public AActor
 	GENERATED_BODY()
 
 public:
-	/* Sets default values for this actor's properties */
 	ATargetSpawner();
 
 protected:
-	/* Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
 	virtual void Destroyed() override;
-
-	/* Called every frame */
+	
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	/* Broadcasts when a target has been spawned */
-	UPROPERTY()
-	FOnTargetSpawnSignature OnTargetSpawn;
-
-	/* Broadcasts the current streak */
-	UPROPERTY()
-	FOnStreakUpdateSignature OnStreakUpdate;
-
-	/* Reference to Game Instance */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-	UDefaultGameInstance* GI;
 	
 	/* Called from selected DefaultGameMode */
-	UFUNCTION(BlueprintCallable, Category = "Spawn Properties")
 	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 
 	/* Called from selected GameModeActorBase */
-	UFUNCTION(BlueprintCallable, Category = "Spawn Functions")
 	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
 
 	/* Called from DefaultGameMode */
 	void CallSpawnFunction();
 
 private:
-	/* The expiration or destruction of any non-BeatTrack target is bound to this function
-	 * to keep track of the streak, timing, and location */
-	UFUNCTION(Category = "Spawn Properties")
+	/** The expiration or destruction of any non-BeatTrack target is bound to this function
+	 *  to keep track of the streak, timing, and location */
+	UFUNCTION()
 	void OnTargetTimeout(bool DidExpire, float TimeAlive, FVector Location);
 
 	/* Spawn a SingleBeat on beat */

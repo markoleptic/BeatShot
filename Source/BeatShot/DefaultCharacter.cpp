@@ -6,6 +6,7 @@
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
 #include "DefaultGameMode.h"
+#include "SphereTarget.h"
 #include "Gun_AK47.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -78,26 +79,25 @@ void ADefaultCharacter::BeginPlay()
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
-	
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnGameModeActorInit.BindLambda([&](const FGameModeActorStruct GameModeActorStruct)
+
+	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameMode->OnGameModeActorInit.BindLambda([&](const FGameModeActorStruct GameModeActorStruct)
 	{
 		Gun->bShouldTrace = GameModeActorStruct.IsBeatTrackMode;
 	});
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.BindLambda([&](ASphereTarget* TrackingTarget)
-	{
-		Gun->TrackingTarget = TrackingTarget;
-	});
+	GameMode->OnBeatTrackTargetSpawned.AddUniqueDynamic(this, &ADefaultCharacter::PassTrackingTargetToGun);
 }
 
-void ADefaultCharacter::PawnClientRestart() {
-
+void ADefaultCharacter::PawnClientRestart()
+{
 	Super::PawnClientRestart();
 
 	/* Make sure that we have a valid PlayerController */
 	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(GetController()))
 	{
 		/* Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller */
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
 			Subsystem->ClearAllMappings();
@@ -111,11 +111,14 @@ void ADefaultCharacter::PawnClientRestart() {
 void ADefaultCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	/* Sets the new Target Half Height based on whether the player is crouching or standing */
-	const float TargetHalfHeight = (MovementState == EMovementType::Crouching ? CrouchedCapsuleHalfHeight : DefaultCapsuleHalfHeight);
+	const float TargetHalfHeight = (MovementState == EMovementType::Crouching
+		                                ? CrouchedCapsuleHalfHeight
+		                                : DefaultCapsuleHalfHeight);
 	/* Interpolates between the current height and the target height */
-	const float NewHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetHalfHeight, DeltaTime, CrouchSpeed);
+	const float NewHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetHalfHeight,
+	                                             DeltaTime, CrouchSpeed);
 	/* Sets the half height of the capsule component to the new interpolated half height */
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
@@ -129,35 +132,44 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		if (JumpAction)
 		{
 			// Jumping
-			PlayerEnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ADefaultCharacter::Jump);
+			PlayerEnhancedInputComponent->
+				BindAction(JumpAction, ETriggerEvent::Started, this, &ADefaultCharacter::Jump);
 		}
 		if (SprintAction)
 		{
 			// Sprinting
-			PlayerEnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &ADefaultCharacter::StartWalk);
-			PlayerEnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ADefaultCharacter::StopWalk);
+			PlayerEnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this,
+			                                         &ADefaultCharacter::StartWalk);
+			PlayerEnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this,
+			                                         &ADefaultCharacter::StopWalk);
 		}
 		if (MovementAction)
 		{
 			// Move forward/back + left/right inputs
-			PlayerEnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this, &ADefaultCharacter::Move);
+			PlayerEnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this,
+			                                         &ADefaultCharacter::Move);
 		}
 		if (LookAction)
 		{
 			// Look up/down + left/right
-			PlayerEnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ADefaultCharacter::Look);
+			PlayerEnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this,
+			                                         &ADefaultCharacter::Look);
 		}
 		if (CrouchAction)
 		{
 			// Crouching
-			PlayerEnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &ADefaultCharacter::StartCrouch);
-			PlayerEnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &ADefaultCharacter::ReleaseCrouch);
+			PlayerEnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this,
+			                                         &ADefaultCharacter::StartCrouch);
+			PlayerEnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this,
+			                                         &ADefaultCharacter::ReleaseCrouch);
 		}
 		if (FiringAction)
 		{
 			// Firing
-			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Started, this, &ADefaultCharacter::StartFire);
-			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this, &ADefaultCharacter::StopFire);
+			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Started, this,
+			                                         &ADefaultCharacter::StartFire);
+			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this,
+			                                         &ADefaultCharacter::StopFire);
 		}
 	}
 }
@@ -270,30 +282,7 @@ void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType
 	}
 }
 
-void ADefaultCharacter::InteractPressed()
+void ADefaultCharacter::PassTrackingTargetToGun(ASphereTarget* TrackingTarget)
 {
-	TraceForward();
-}
-
-void ADefaultCharacter::TraceForward_Implementation()
-{
-	FVector Loc;
-	FRotator Rot;
-	FHitResult Hit;
-
-	GetController()->GetPlayerViewPoint(Loc, Rot);
-
-	FVector Start = Loc;
-	FVector End = Start + (Rot.Vector() * 5000);
-
-	FCollisionQueryParams TraceParams;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
-
-	DrawDebugLine(GetWorld(), Start, End, FColor::Orange, false, 2.f);
-
-	if (bHit)
-	{
-		DrawDebugBox(GetWorld(), Hit.ImpactPoint, FVector(5, 5, 5), FColor::Emerald, false, 2.f);
-		FString HitName = Hit.GetActor()->GetActorNameOrLabel();
-	}
+	Gun->TrackingTarget = TrackingTarget;
 }

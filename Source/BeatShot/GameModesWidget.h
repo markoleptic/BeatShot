@@ -150,7 +150,9 @@ protected:
 	UHorizontalBox* BaseGameModeBox;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
-	UComboBoxString* PlayerDelayComboBox;
+	USlider* PlayerDelaySlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UEditableTextBox* PlayerDelayValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
 	USlider* LifespanSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
@@ -211,6 +213,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UConstrainedSlider* TargetSpeedConstrained;
 
+	const float MinPlayerDelayValue = 0;
+	const float MaxPlayerDelayValue = 0.5;
+	const float PlayerDelayGridSnapSize = 0.01;
+
 	const float MinLifespanValue = 0.1;
 	const float MaxLifespanValue = 2;
 	const float LifespanGridSnapSize = 0.01;
@@ -254,6 +260,10 @@ private:
 	UFUNCTION()
 	void OnGameModeDifficultySelectionChange(const FString SelectedDifficulty, const ESelectInfo::Type SelectionType);
 
+	UFUNCTION()
+	void OnPlayerDelaySliderChanged(const float NewPlayerDelay);
+	UFUNCTION()
+	void OnPlayerDelayValueCommitted(const FText& NewPlayerDelay, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnLifespanSliderChanged(const float NewLifespan);
 	UFUNCTION()
@@ -473,3 +483,5 @@ private:
 
 #pragma endregion
 };
+
+

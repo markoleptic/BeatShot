@@ -21,12 +21,11 @@ class USettingsMenuWidget;
 class UMainMenuWidget;
 class UPauseMenuWidget;
 class UCountdown;
-/**
- * 
- */
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnScreenFadeToBlackFinish);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPopupMessageButtonOneClicked);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPopupMessageButtonTwoClicked);
+
 UCLASS()
 class BEATSHOT_API ADefaultPlayerController : public APlayerController
 {
@@ -44,33 +43,19 @@ public:
 	void ShowPauseMenu();
 	UFUNCTION(BlueprintCallable)
 	void HidePauseMenu();
-	UFUNCTION(BlueprintCallable)
 	void ShowCrosshair();
-	UFUNCTION(BlueprintCallable)
 	void HideCrosshair();
-	UFUNCTION(BlueprintCallable)
 	void ShowPlayerHUD();
-	UFUNCTION(BlueprintCallable)
 	void HidePlayerHUD();
-	UFUNCTION(BlueprintCallable)
 	void ShowCountdown();
-	UFUNCTION(BlueprintCallable)
 	void HideCountdown();
-	UFUNCTION(BlueprintCallable)
 	void ShowPostGameMenu(const bool bSavedScores);
-	UFUNCTION(BlueprintCallable)
 	void HidePostGameMenu();
-	UFUNCTION(BlueprintCallable)
 	void HidePopupMessage();
-	UFUNCTION(BlueprintCallable)
 	void ShowFPSCounter();
-	UFUNCTION(BlueprintCallable)
 	void HideFPSCounter();
-	UFUNCTION(BlueprintCallable)
 	void FadeScreenToBlack();
-	UFUNCTION(BlueprintCallable)
 	void FadeScreenFromBlack();
-	UFUNCTION(BlueprintCallable)
 	bool IsPlayerHUDActive() const;
 	UFUNCTION(BlueprintCallable)
 	bool IsPostGameMenuActive() const;

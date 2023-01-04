@@ -63,7 +63,6 @@ void AGun_AK47::Tick(float DeltaTime)
 	/* only do tracing for BeatTrack game modes */
 	if (bShouldTrace)
 	{
-		UE_LOG(LogTemp, Display, TEXT("ShouldTrace is true"));
 		TraceForward();
 	}
 }
@@ -120,7 +119,10 @@ void AGun_AK47::Fire()
 		bShouldKickback = true;
 		KickbackAlpha = 0.f;
 	}
-	ShowEffectsAndPlaySounds(MuzzleRotation, Hit);
+	ShowMuzzleFlash(MuzzleRotation);
+	PlayGunshotSound();
+	ShotBulletDecal(Hit);
+	PlayRecoilAnimation();
 }
 
 void AGun_AK47::StartFire()
@@ -190,11 +192,10 @@ void AGun_AK47::TraceForward() const
 			return;
 		}
 	}
-	if (!TrackingTarget)
+	if (TrackingTarget)
 	{
-		return;
+		TrackingTarget->SetSphereColor(FLinearColor::Red);
 	}
-	TrackingTarget->SetSphereColor(FLinearColor::Red);
 }
 
 void AGun_AK47::UpdateRecoilAndKickback(const float DeltaTime)
@@ -209,7 +210,7 @@ void AGun_AK47::UpdateRecoilAndKickback(const float DeltaTime)
 	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(
 		Current, CurrentShotCameraRecoilRotation,
 		DeltaTime, 4);
-	Character->Camera->SetRelativeRotation(UpdatedRotation);
+	Character->GetCamera()->SetRelativeRotation(UpdatedRotation);
 	Character->CameraRecoilComp->SetRelativeRotation(FRotator(KickbackAngle, 0, 0));
 }
 
@@ -240,7 +241,7 @@ void AGun_AK47::UpdateRecoilPattern(const FVector Output)
 	{
 		return;
 	}
-	/* Don't continue playing animation if semi-automatic */
+	/** Don't continue playing animation if semi-automatic */
 	if (bAutomaticFire || ShotsFired < 1)
 	{
 		CurrentShotCameraRecoilRotation.Yaw = Output.X * 0.5;
@@ -255,42 +256,54 @@ void AGun_AK47::UpdateRecoilPattern(const FVector Output)
 	}
 }
 
-void AGun_AK47::ShowEffectsAndPlaySounds(const FRotator& MuzzleRotation, const FHitResult& Hit) const
+void AGun_AK47::ShowMuzzleFlash(const FRotator& MuzzleRotation) const
 {
-	/* Play Muzzle flash */
+	/** Play Muzzle flash */
 	if (NS_MuzzleFlash)
 	{
 		UNiagaraFunctionLibrary::SpawnSystemAttached(NS_MuzzleFlash, MeshComp, TEXT("Muzzle"),
-		                                             MuzzleFlashOffset, MuzzleRotation,
-		                                             EAttachLocation::SnapToTarget, true);
+													 MuzzleFlashOffset, MuzzleRotation,
+													 EAttachLocation::SnapToTarget, true);
 	}
-	/* Play the sound if specified */
+}
+
+void AGun_AK47::PlayGunshotSound() const
+{
+	/** Play the sound if specified */
 	if (FireSound)
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, FireSound, Character->GetActorLocation());
 	}
-	/* Try and play a firing animation if specified */
-	if (FireAnimation)
-	{
-		/* Get the animation object for the arms mesh */
-		if (UAnimInstance* AnimInstance = Character->GetHandsMesh()->GetAnimInstance(); AnimInstance != nullptr)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
-	/* Try to create decal at hit location */
+}
+
+void AGun_AK47::ShotBulletDecal(const FHitResult& Hit) const
+{
+	/** Try to create decal at hit location */
 	if (BulletDecalInstance && BulletDecalMaterial && bShowBulletDecals)
 	{
 		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(),
-		                                                                BulletDecalInstance, FVector(4, 4, 4),
-		                                                                Hit.ImpactPoint, Hit.Normal.Rotation(),
-		                                                                0.f);
+																		BulletDecalInstance, FVector(4, 4, 4),
+																		Hit.ImpactPoint, Hit.Normal.Rotation(),
+																		0.f);
 		if (!Decal)
 		{
 			return;
 		}
 		Decal->SetFadeScreenSize(0.f);
 		Decal->SetFadeOut(1, 2, true);
+	}
+}
+
+void AGun_AK47::PlayRecoilAnimation() const
+{
+	/** Try and play a firing animation if specified */
+	if (FireAnimation)
+	{
+		/** Get the animation object for the arms mesh */
+		if (UAnimInstance* AnimInstance = Character->GetHandsMesh()->GetAnimInstance(); AnimInstance != nullptr)
+		{
+			AnimInstance->Montage_Play(FireAnimation, 1.f);
+		}
 	}
 }
 

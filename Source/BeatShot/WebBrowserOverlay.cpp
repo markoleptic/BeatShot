@@ -8,6 +8,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"
+#include "GameModeActorBase.h"
 #include "Kismet/GameplayStatics.h"
 
 void UWebBrowserOverlay::NativeConstruct()
@@ -92,16 +93,28 @@ void UWebBrowserOverlay::InitializePostGameScoringOverlay(const FString& Respons
 	}
 
 	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const FPlayerSettings PlayerSettings = GI->LoadPlayerSettings();
-
-	BrowserWidget->OnURLLoaded.AddDynamic(this, &UWebBrowserOverlay::OnURLLoaded);
-	if (GI->GameModeActorStruct.CustomGameModeName.IsEmpty())
+	int64 MinTimeDifference = FDateTime::MinValue().ToUnixTimestamp();
+	FPlayerScore MinDateScore = FPlayerScore();
+	/** Could probably just use the last value in PlayerScoreArray, but just to be sure: */
+	for (const FPlayerScore& Score : GI->LoadPlayerScores())
 	{
-		BrowserWidget->LoadDefaultGameModesURL(PlayerSettings.Username);
+		FDateTime ParsedTime;
+		FDateTime::ParseIso8601(*Score.Time, ParsedTime);
+		UE_LOG(LogTemp, Display, TEXT("DateTime: %s"), *Score.Time);
+		if (ParsedTime.ToUnixTimestamp() > MinTimeDifference)
+		{
+			MinTimeDifference = ParsedTime.ToUnixTimestamp();
+			MinDateScore = Score;
+		}
+	}
+	BrowserWidget->OnURLLoaded.AddDynamic(this, &UWebBrowserOverlay::OnURLLoaded);
+	if (MinDateScore.CustomGameModeName.IsEmpty())
+	{
+		BrowserWidget->LoadDefaultGameModesURL(GI->LoadPlayerSettings().Username);
 	}
 	else
 	{
-		BrowserWidget->LoadCustomGameModesURL(PlayerSettings.Username);
+		BrowserWidget->LoadCustomGameModesURL(GI->LoadPlayerSettings().Username);
 	}
 }
 

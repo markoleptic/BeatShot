@@ -39,7 +39,7 @@ void UCountdown::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Counter->SetText(FText::AsNumber(ceil(CurrentTime)));
 	MID_Countdown->SetScalarParameterValue(FName("Progress"), UKismetMathLibrary::Fraction(CurrentTime));
 
-	if (PlayerDelay < 0.05 || CurrentTime - PlayerDelay > 0 || CurrentTime == -1)
+	if (PlayerDelay <= 0.01 || CurrentTime - PlayerDelay > 0 || CurrentTime == -1)
 	{
 		return;
 	}

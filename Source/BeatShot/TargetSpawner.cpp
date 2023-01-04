@@ -4,7 +4,6 @@
 #include "TargetSpawner.h"
 #include "PlayerHUD.h"
 #include "SphereTarget.h"
-#include "DefaultGameInstance.h"
 #include "DefaultGameMode.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -26,8 +25,6 @@ ATargetSpawner::ATargetSpawner()
 void ATargetSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GI->RegisterTargetSpawner(this);
 	BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
 }
 
@@ -96,7 +93,11 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 
 			/* Broadcast to GameModeActorBase that a target has spawned */
-			OnTargetSpawn.Broadcast();
+			if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
+			{
+				UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
+			}
+			//OnTargetSpawn.Broadcast();
 
 			/* LAST target's location and scale */
 			LastSpawnLocation = SpawnLocation;
@@ -134,8 +135,11 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 
 			/* Broadcast to GameModeActorBase that a target has spawned */
-			OnTargetSpawn.Broadcast();
-
+			if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
+			{
+				UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
+			}
+			//OnTargetSpawn.Broadcast();
 			/* LAST target's location and scale */
 			LastSpawnLocation = SpawnLocation;
 			LastTargetScale = TargetScale;
@@ -312,7 +316,11 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	{
 		/* notify GameModeActorBase that target has "spawned" */
 		ActiveBeatGridTarget->StartBeatGridTimer(GameModeActorStruct.TargetMaxLifeSpan);
-		OnTargetSpawn.Broadcast();
+		if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
+		}
+		//OnTargetSpawn.Broadcast();
 	}
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
@@ -351,7 +359,7 @@ FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType
 {
 	/* SpawnLocation initially centered inside SpawnBox */
 	FVector NewSpawnLocation = BoxBounds.Origin;
-	
+
 	/* If single beat needs to spawn at center, exit early */
 	if (GameModeActorStruct.IsSingleBeatMode && !LastTargetSpawnedCenter)
 	{
@@ -360,7 +368,7 @@ FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType
 
 	/* counting how many times the loop failed to try to spawn a target */
 	int OverloadProtect = 0;
-	
+
 	/* simulate intersection with spheres inside of RecentSpawnBounds */
 	FSphere NewTarget = FSphere(NewSpawnLocation, CollisionSphereRadius);
 
@@ -418,12 +426,13 @@ void ATargetSpawner::FindNextTrackingDirection()
 		// Initial tracking target spawn
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BoxBounds.Origin,
 		                                                       SpawnBox->GetComponentRotation());
-		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.ExecuteIfBound(TrackingTarget);
 		TrackingTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.Broadcast(
+			TrackingTarget);
 		LocationBeforeDirectionChange = BoxBounds.Origin;
-
 		// Broadcast to GameModeActorBase that a target has spawned
-		OnTargetSpawn.Broadcast();
+		//Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound();
+		//OnTargetSpawn.Broadcast();
 	}
 
 	if (IsValid(TrackingTarget))
@@ -571,11 +580,15 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	}
 	else
 	{
-		/* Only update player reaction time if the target did not expire */
-		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorBaseRef->
-		                                                                     UpdatePlayerScores(TimeAlive);
 		ConsecutiveTargetsHit++;
-		OnStreakUpdate.Broadcast(ConsecutiveTargetsHit, Location);
+		const ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+		/* Only update player reaction time if the target did not expire */
+		if (!GameMode->OnTargetDestroyed.ExecuteIfBound(TimeAlive))
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnTargetDestroyed not bound."));
+		}
+		GameMode->OnStreakUpdate.Broadcast(ConsecutiveTargetsHit, Location);
+
 		if (GameModeActorStruct.SpreadType == ESpreadType::None)
 		{
 			return;

@@ -77,7 +77,7 @@ protected:
 	UWidgetAnimation* FadeInWidget;
 	UFUNCTION()
 	void PlayFadeInWidget() { PlayAnimationForward(FadeInWidget); }
-	UPROPERTY(BlueprintReadOnly)
+
 	bool bSavedScores;
 	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur */
 	FWidgetAnimationDynamicEvent FadeInWidgetDelegate;

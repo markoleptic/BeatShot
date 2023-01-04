@@ -35,7 +35,7 @@ enum class EMovementType : uint8
 	Crouching UMETA(DisplayName, "Crouching")
 };
 
-/* Used to store movement properties for different movement types */
+/** Used to store movement properties for different movement types */
 USTRUCT(BlueprintType)
 struct FMovementTypeVariables
 {
@@ -67,7 +67,8 @@ class BEATSHOT_API ADefaultCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-public:
+protected:
+	
 	/** Sets default values for this character's properties */
 	ADefaultCharacter();
 
@@ -87,16 +88,6 @@ public:
 	*	@param NewMovementType The new movement state of the player
 	*/
 	void UpdateMovementValues(EMovementType NewMovementType);
-
-	/** Returns HandMesh **/
-	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
-
-	/** Returns Camera **/
-	UCameraComponent* GetCamera() const { return Camera; }
-
-	/** Called when PlayerSettings are changed while Character is spawned */
-	UFUNCTION(BlueprintCallable)
-	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
 
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
@@ -118,9 +109,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UChildActorComponent* GunActorComp;
 
-	/** Reference to gun */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	AGun_AK47* Gun;
+	/** A map holding data for each movement state */
+	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
+	TMap<EMovementType, FMovementTypeVariables> MovementDataMap;
+
+public:
 
 	/** Reference to direction of fire */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
@@ -129,18 +122,16 @@ public:
 	/** Additional layer of rotation to use for more realistic recoil */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USceneComponent* CameraRecoilComp;
+	
+	/** Returns HandMesh **/
+	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
-	/** A map holding data for each movement state */
-	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
-	TMap<EMovementType, FMovementTypeVariables> MovementDataMap;
+	/** Returns Camera **/
+	UCameraComponent* GetCamera() const { return Camera; }
 
-protected:
-	/** Debug for tracing a line where the character is facing */
-	UFUNCTION(BlueprintNativeEvent)
-	void TraceForward();
-
-	/** Blueprint version of Debug for tracing a line where the character is facing */
-	void TraceForward_Implementation();
+	/** Reference to gun */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	AGun_AK47* Gun;
 
 private:
 	/** Begin firing gun */
@@ -148,9 +139,6 @@ private:
 
 	/** Stop firing gun, if automatic fire */
 	void StopFire() const;
-
-	/** Stop firing gun, if automatic fire */
-	void InteractPressed();
 
 	/** Move the character left/right and forward/back
 	*	@param Value The value passed in by the Input Component
@@ -173,6 +161,14 @@ private:
 
 	/** Change movement state from walk */
 	void StopWalk();
+
+	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
+	UFUNCTION()
+	void PassTrackingTargetToGun(ASphereTarget* TrackingTarget);
+
+	/** Called when PlayerSettings are changed while Character is spawned */
+	UFUNCTION()
+	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;

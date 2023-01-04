@@ -49,9 +49,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UMaterialInterface* Material;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	UDefaultHealthComponent* HealthComp;
-
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInstanceDynamic* MID_TargetColorChanger;
 
@@ -82,6 +79,12 @@ public:
 
 	UPROPERTY()
 	FTimerHandle TimeSinceSpawn;
+
+	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
+	FGameModeActorStruct GameModeActorStruct;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UDefaultHealthComponent* HealthComp;
 
 private:
 
@@ -122,9 +125,6 @@ private:
 
 	/** Color for BeatGrid targets that aren't active. */
 	FLinearColor BeatGridPurple = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
-
-	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
-	FGameModeActorStruct GameModeActorStruct;
 };
 
 

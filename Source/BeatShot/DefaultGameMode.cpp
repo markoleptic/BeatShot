@@ -62,7 +62,7 @@ void ADefaultGameMode::InitializeAudioManagers(const FString& SongFilePath)
 		false, 100, 50);
 
 	// create AAPlayer if delay large enough, init audio, init spectrum config, broadcast to Visualizer
-	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05f)
+	if (GameModeActorBase->GameModeActorStruct.PlayerDelay >= 0.01f)
 	{
 		AAPlayer = NewObject<UAudioAnalyzerManager>(this);
 		if (!AAPlayer->InitPlayerAudio(SongFilePath))
@@ -136,7 +136,7 @@ void ADefaultGameMode::StartAAManagerPlayback()
 		LoadPlayerSettings();
 
 	// If delay is large enough, play AATracker and then AAPlayer after the delay
-	if (GameModeActorBase->GameModeActorStruct.PlayerDelay > 0.05)
+	if (GameModeActorBase->GameModeActorStruct.PlayerDelay >= 0.01f)
 	{
 		if (AATracker)
 		{
@@ -167,6 +167,7 @@ void ADefaultGameMode::StartGameMode()
 	DefaultPlayerController->ShowPlayerHUD();
 	DefaultPlayerController->HideCountdown();
 	GameModeActorBase->StartGameMode();
+	TargetSpawner->SetShouldSpawn(true);
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ADefaultGameMode::OnSecondPassed, 1.f, true);
 }
 
@@ -290,7 +291,12 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	Controller->HideCountdown();
 	Controller->HideCrosshair();
 
-	if (IsValid(GameModeActorBase))
+	if (TargetSpawner)
+	{
+		TargetSpawner->SetShouldSpawn(false);
+		TargetSpawner->Destroy();
+	}
+	if (GameModeActorBase)
 	{
 		if (ShouldSavePlayerScores)
 		{
@@ -298,20 +304,15 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 		}
 		GameModeActorBase->Destroy();
 	}
-	if (IsValid(TargetSpawner))
-	{
-		TargetSpawner->SetShouldSpawn(false);
-		TargetSpawner->Destroy();
-	}
-	if (IsValid(Visualizer))
+	if (Visualizer)
 	{
 		Visualizer->Destroy();
 	}
-	if (IsValid(AATracker))
+	if (AATracker)
 	{
 		AATracker = nullptr;
 	}
-	if (IsValid(AAPlayer))
+	if (AAPlayer)
 	{
 		AAPlayer = nullptr;
 	}

@@ -15,12 +15,13 @@
 void UPlayerHUD::NativeConstruct()
 {
 	Super::NativeConstruct();
-	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	/** Update scores when GameModeActorBase calls for an update */
-	GI->GameModeActorBaseRef->UpdateScoresToHUD.AddDynamic(this, &UPlayerHUD::UpdateAllElements);
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnAAManagerSecondPassed.BindUFunction(
-		this, "UpdateSongProgress");
-
+	
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	
+	GameMode->UpdateScoresToHUD.BindUFunction(this, FName("UpdateAllElements"));
+	GameMode->OnAAManagerSecondPassed.BindUFunction(this, "UpdateSongProgress");
+	
 	if (GI->GameModeActorStruct.IsBeatTrackMode)
 	{
 		TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -28,20 +29,22 @@ void UPlayerHUD::NativeConstruct()
 		TargetsHitBox->SetVisibility(ESlateVisibility::Collapsed);
 		ShotsFiredBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
-
 	/** Initial value update */
 	TargetBar->SetPercent(0.f);
 	Accuracy->SetText(FText::AsPercent(0.f));
-	UpdateAllElements(GI->GameModeActorBaseRef->PlayerScores);
 	SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
 }
 
 void UPlayerHUD::NativeDestruct()
 {
-	if (const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-		GI->GameModeActorBaseRef->UpdateScoresToHUD.IsBound())
+	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (GameMode->UpdateScoresToHUD.IsBoundToObject(this))
 	{
-		GI->GameModeActorBaseRef->UpdateScoresToHUD.RemoveDynamic(this, &UPlayerHUD::UpdateAllElements);
+		GameMode->UpdateScoresToHUD.Unbind();
+	}
+	if (GameMode->OnAAManagerSecondPassed.IsBoundToObject(this))
+	{
+		GameMode->OnAAManagerSecondPassed.Unbind();
 	}
 	Super::NativeDestruct();
 }

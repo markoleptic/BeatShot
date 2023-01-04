@@ -71,6 +71,7 @@ void ASphereTarget::BeginPlay()
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), FLinearColor::Red);
+		HealthComp->ShouldUpdateTotalPossibleDamage = true;
 	}
 	else
 	{

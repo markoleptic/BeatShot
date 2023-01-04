@@ -23,7 +23,7 @@ class USoundClass;
 class USoundMix;
 class ADefaultPlayerController;
 
-/* Used to convert PlayerScoreMap to database scores */
+/* Used to convert PlayerScoreArray to database scores */
 USTRUCT(BlueprintType)
 struct FJsonScore
 {
@@ -79,9 +79,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, const FString, Re
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, const FString, ResponseMsg, const int32,
                                              ResponseCode);
 
-/** Broadcast when target spawner is registered */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetSpawnerInit, ATargetSpawner*, TargetSpawner);
-
 UCLASS()
 class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 {
@@ -96,9 +93,6 @@ public:
 	void RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterTargetSpawner(ATargetSpawner* TargetSpawner);
-
-	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
 
 	UFUNCTION(BlueprintCallable, Category = "References")
@@ -106,9 +100,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "References")
 	ADefaultCharacter* DefaultCharacterRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	ATargetSpawner* TargetSpawnerRef;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
 	AGameModeActorBase* GameModeActorBaseRef;
@@ -124,27 +115,25 @@ public:
 	FAASettingsStruct LoadAASettings() const;
 
 	UFUNCTION(BlueprintCallable, Category = "AA Settings")
-	void SaveAASettings(const FAASettingsStruct& AASettingsToSave) const;
+	void SaveAASettings(const FAASettingsStruct& AASettingsToSave);
 
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	FPlayerSettings LoadPlayerSettings() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
-	void SavePlayerSettings(const FPlayerSettings& PlayerSettingsToSave) const;
+	void SavePlayerSettings(const FPlayerSettings& PlayerSettingsToSave);
 
 #pragma endregion
 
 #pragma region Scoring
+	
+	TArray<FPlayerScore> LoadPlayerScores() const;
+	
+	void SavePlayerScores(const TArray<FPlayerScore>& PlayerScoreArrayToSave, bool bSaveToDatabase);
 
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> LoadPlayerScores() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-	void SavePlayerScores(const TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper>& PlayerScoreMapToSave,
-	                      bool bSaveToDatabase);
+	void SavePlayerScores(FPlayerScore PlayerScoreObjectToSave, const bool bSaveToDatabase);
 
 	/* Database saving of scores. First sends an access token request, then calls save scores with the access token */
-	UFUNCTION(BlueprintCallable, Category = "DataBase")
 	void SavePlayerScoresToDatabase();
 
 private:
@@ -169,7 +158,7 @@ public:
 
 private:
 	/* Bound to OnProcessRequestComplete Login Response */
-	void OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully) const;
+	void OnLoginResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
 
 	/* Bound to OnProcessRequestComplete RequestAccessToken Response */
 	void OnAccessTokenResponseReceived(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bConnectedSuccessfully);
@@ -202,9 +191,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnRefreshTokenResponse OnRefreshTokenResponse;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnTargetSpawnerInit OnTargetSpawnerInit;
 
 #pragma endregion
 

@@ -657,7 +657,7 @@ void USettingsMenuWidget::SetVideoSettingButtonBackgroundColor(UVideoSettingButt
 
 void USettingsMenuWidget::OnSaveSensitivitySettingsButtonClicked()
 {
-	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	FPlayerSettings Settings = GI->LoadPlayerSettings();
 	Settings.Sensitivity = SensSlider->GetValue();
 	GI->SavePlayerSettings(Settings);
