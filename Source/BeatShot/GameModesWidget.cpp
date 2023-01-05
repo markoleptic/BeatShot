@@ -172,6 +172,9 @@ void UGameModesWidget::NativeConstruct()
 		HorizontalSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnHorizontalSpreadValueCommitted);
 		VerticalSpreadSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnVerticalSpreadSliderChanged);
 		VerticalSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnVerticalSpreadValueCommitted);
+		ForwardSpreadCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget::OnForwardSpreadCheckStateChanged);
+		ForwardSpreadSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnForwardSpreadSliderChanged);
+		ForwardSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnForwardSpreadValueCommitted);
 		ConstantBeatGridSpacingCheckBox->OnCheckStateChanged.AddDynamic(
 			this, &UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged);
 
@@ -239,6 +242,8 @@ void UGameModesWidget::NativeConstruct()
 			"/Game/StringTables/ST_GameModesWidget.ST_GameModesWidget", "MinDistance");
 		HeadshotHeightQMark->TooltipText = FText::FromStringTable(
 			"/Game/StringTables/ST_GameModesWidget.ST_GameModesWidget", "HeadshotHeight");
+		ForwardSpreadQMark->TooltipText = FText::FromStringTable(
+			"/Game/StringTables/ST_GameModesWidget.ST_GameModesWidget", "ForwardSpread");
 		CenterTargetsQMark->TooltipText = FText::FromStringTable(
 			"/Game/StringTables/ST_GameModesWidget.ST_GameModesWidget", "CenterTargets");
 		MinDistanceQMark->TooltipText = FText::FromStringTable(
@@ -267,6 +272,7 @@ void UGameModesWidget::NativeConstruct()
 		TargetSpawnCDQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		CenterTargetsQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		HeadshotHeightQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		ForwardSpreadQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		MinDistanceQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		SpreadTypeQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		DynamicTargetScaleQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
@@ -528,6 +534,27 @@ void UGameModesWidget::OnVerticalSpreadValueCommitted(const FText& NewVerticalSp
 	                         MinVerticalSpreadValue, MaxVerticalSpreadValue);
 }
 
+void UGameModesWidget::OnForwardSpreadCheckStateChanged(const bool bUseForwardSpread)
+{
+	if (bUseForwardSpread)
+	{
+		ForwardSpreadBox->SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+	ForwardSpreadBox->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UGameModesWidget::OnForwardSpreadSliderChanged(const float NewForwardSpread)
+{
+	OnSliderChanged(NewForwardSpread, ForwardSpreadValue, SpreadGridSnapSize);
+}
+
+void UGameModesWidget::OnForwardSpreadValueCommitted(const FText& NewForwardSpread, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewForwardSpread, ForwardSpreadValue, ForwardSpreadSlider, SpreadGridSnapSize,
+						 MinForwardSpreadValue, MaxForwardSpreadValue);
+}
+
 void UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing)
 {
 	/** TODO: Constrain BeatGridSpacing */
@@ -747,6 +774,9 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	HorizontalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Y));
 	VerticalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Z);
 	VerticalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Z));
+	ForwardSpreadCheckBox->SetIsChecked(InputGameModeActorStruct.bMoveTargetsForward);
+	ForwardSpreadSlider->SetValue(InputGameModeActorStruct.MoveForwardDistance);
+	ForwardSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.MoveForwardDistance));
 	TargetScaleConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTargetScale,
 	                                            InputGameModeActorStruct.MaxTargetScale);
 
@@ -844,8 +874,9 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 	                                 FMath::GridSnap(
 		                                 FMath::Clamp(VerticalSpreadSlider->GetValue(), MinVerticalSpreadValue,
 		                                              MaxVerticalSpreadValue), SpreadGridSnapSize));
+	ReturnStruct.bMoveTargetsForward = ForwardSpreadCheckBox->IsChecked();
+	ReturnStruct.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(ForwardSpreadSlider->GetValue(), MinForwardSpreadValue, MaxForwardSpreadValue), SpreadGridSnapSize);
 	ReturnStruct.UseDynamicSizing = DynamicTargetScaleCheckBox->IsChecked();
-
 	ReturnStruct.MinTargetScale = FMath::GridSnap(
 		FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue),
 		TargetScaleSnapSize);

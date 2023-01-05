@@ -193,7 +193,7 @@ void ADefaultGameMode::InitializeGameMode()
 	// initialize GameModeActorStruct with TargetSpawner
 	TargetSpawner->InitializeGameModeActor(GI->GameModeActorStruct);
 	// spawn visualizer
-	const FVector VisualizerLocation = {100, 0, 60};
+	const FVector VisualizerLocation = {-3900, 0, 60};
 	const FActorSpawnParameters SpawnParameters;
 	Visualizer = GetWorld()->SpawnActor(VisualizerClass,
 	                                    &VisualizerLocation,

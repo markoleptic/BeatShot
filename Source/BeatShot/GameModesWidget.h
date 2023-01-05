@@ -184,6 +184,14 @@ protected:
 	UEditableTextBox* VerticalSpreadValue;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	UHorizontalBox* ForwardSpreadBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	UCheckBox* ForwardSpreadCheckBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	USlider* ForwardSpreadSlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	UEditableTextBox* ForwardSpreadValue;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UHorizontalBox* SpreadTypeBox;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
@@ -233,7 +241,10 @@ protected:
 	const float MaxHorizontalSpreadValue = 3200;
 	const float MinVerticalSpreadValue = 200;
 	const float MaxVerticalSpreadValue = 1000;
+	const float MinForwardSpreadValue = 100;
+	const float MaxForwardSpreadValue = 5000;
 	const float SpreadGridSnapSize = 10;
+	
 	
 	const float MinTargetScaleValue = 0.1;
 	const float MaxTargetScaleValue = 2;
@@ -286,6 +297,12 @@ private:
 	void OnVerticalSpreadSliderChanged(const float NewVerticalSpread);
 	UFUNCTION()
 	void OnVerticalSpreadValueCommitted(const FText& NewVerticalSpread, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnForwardSpreadCheckStateChanged(const bool bUseForwardSpread);
+	UFUNCTION()
+	void OnForwardSpreadSliderChanged(const float NewForwardSpread);
+	UFUNCTION()
+	void OnForwardSpreadValueCommitted(const FText& NewForwardSpread, ETextCommit::Type CommitType);
 
 	UFUNCTION()
 	void OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing);
@@ -428,6 +445,8 @@ protected:
 	UTooltipImage* HeadshotHeightQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* CenterTargetsQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* ForwardSpreadQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* MinDistanceQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")

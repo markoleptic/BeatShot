@@ -161,13 +161,7 @@ void ASphereTarget::SetSphereColor(const FLinearColor Output)
 
 void ASphereTarget::LifeSpanExpired()
 {
-	const FVector TopOfSphereLocation = {
-		GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z +
-		BaseSphereRadius * GetActorScale3D().Z
-	};
-	OnLifeSpanExpired.Broadcast(true, -1, TopOfSphereLocation);
+	OnLifeSpanExpired.Broadcast(true, -1, this);
 	Super::LifeSpanExpired();
 }
 
@@ -186,15 +180,9 @@ void ASphereTarget::HandleDestruction()
 		Destroy();
 		return;
 	}
-	const FVector TopOfSphereLocation = {
-		GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z +
-		BaseSphereRadius * GetActorScale3D().Z
-	};
 
 	/* Broadcast that the target has been destroyed by player */
-	OnLifeSpanExpired.Broadcast(false, TimeAlive, TopOfSphereLocation);
+	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X,
 	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
@@ -216,13 +204,7 @@ void ASphereTarget::OnBeatGridTimerTimeOut()
 	SetCanBeDamaged(false);
 	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	const FVector TopOfSphereLocation = {
-		GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z +
-		BaseSphereRadius * GetActorScale3D().Z
-	};
-	OnLifeSpanExpired.Broadcast(true, -1, TopOfSphereLocation);
+	OnLifeSpanExpired.Broadcast(true, -1, this);
 }
 
 void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,

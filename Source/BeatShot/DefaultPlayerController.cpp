@@ -182,7 +182,7 @@ UPopupMessageWidget* ADefaultPlayerController::CreatePopupMessageWidget(const bo
 	{
 		PopupMessageWidget->AddToViewport();
 		PopupMessageWidget->FadeIn();
-		if (GetWorld()->GetMapName().Contains("Range"))
+		if (GetWorld()->GetMapName().Contains("Range")  && !UGameplayStatics::IsGamePaused(GetWorld()))
 		{
 			SetInputMode(FInputModeUIOnly());
 			SetShowMouseCursor(true);
@@ -206,7 +206,7 @@ void ADefaultPlayerController::OnFadeOutPopupMessageFinish()
 	PostGameMenuWidget = nullptr;
 	if (GetWorld()->GetMapName().Contains("Range") && !UGameplayStatics::IsGamePaused(GetWorld()))
 	{
-		SetInputMode(FInputModeGameOnly());
+		SetInputMode(FInputModeGameAndUI());
 		SetShowMouseCursor(false);
 		SetPlayerEnabledState(true);
 		if (!Crosshair)

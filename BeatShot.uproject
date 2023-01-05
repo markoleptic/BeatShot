@@ -13,6 +13,11 @@
 				"UMG",
 				"WebBrowserWidget"
 			]
+		},
+		{
+			"Name": "MainMenu",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
 		}
 	],
 	"Plugins": [

@@ -15,7 +15,7 @@ class UCurveFloat;
 class UCurveLinearColor;
 
 /** Target Spawner binds to this function to receive info about how target was destroyed */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, FVector, Location);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor
