@@ -13,19 +13,34 @@ class UBoxComponent;
 
 struct FActiveTargetStruct
 {
+	/** A 2D representation of the area the target spawned. This is stored so that the points can be freed when
+	 *  the target expires or is destroyed. */
 	TArray<FIntPoint> BlockedSpawnPoints;
+
+	/** A reference to the target that was spawned, so that it can be found and its BlockedSpawnPoints can be freed
+	 *  when the target expires or is destroyed. */
 	ASphereTarget* ActiveTarget;
+
+	/** The radius of this target*/
+	float TargetScale;
+
+	/** The center of this target*/
+	FIntPoint Center;
 
 	FActiveTargetStruct()
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
 		ActiveTarget = nullptr;
+		TargetScale = 0.f;
+		Center = FIntPoint();
 	}
 
-	explicit FActiveTargetStruct(ASphereTarget* TargetToAdd)
+	FActiveTargetStruct(ASphereTarget* TargetToAdd)
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
 		ActiveTarget = TargetToAdd;
+		TargetScale = 0.f;
+		Center = FIntPoint();
 	}
 
 	FORCEINLINE bool operator==(const FActiveTargetStruct& Other) const
@@ -78,19 +93,29 @@ private:
 	void SpawnMultiBeatTarget();
 
 	/** FindNextTargetProperties */
-	void FindNextTargetProperties(FVector FLastSpawnLocation, float LastTargetScaleValue);
+	void FindNextTargetProperties(FVector LastSpawnLocation, float LastTargetScale);
 	
 	/** Find the next spawn location for a target */
-	FVector FindNextTargetSpawnLocation(ESpreadType SpreadType, const float CollisionSphereRadius);
+	FVector FindNextTargetSpawnLocation(ESpreadType SpreadType, const float NewTargetScale);
 
-	/** randomize scale of target */
-	float GenerateRandomTargetScale() const;
+	/** Returns the scale for next target */
+	float GenerateTargetScale() const;
 	
 	/** Find the next spawn location for a target */
 	FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
 
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
+
+	/** Adds a circle to the 2D array SpawnArea by setting all values that make up the area covered by the target
+	 *  equal to 1 (occupied). Returns an array of points containing all values that were changed. */
+	TArray<FIntPoint> SetSpawnAreaOccupied(const FIntPoint Center, const float Scale);
+
+	std::vector<std::vector<int32>> SetTempSpawnAreaOccupied(const FIntPoint Center, const float Scale, std::vector<std::vector<int32>>& TempSpawnArea);
+
+	FIntPoint ConvertLocationToPoint(const FVector Location) const;
+
+	FVector ConvertPointToLocation(const FIntPoint Point) const;
 
 #pragma region General Spawning Variables
 
@@ -143,12 +168,6 @@ private:
 	/** The scale to apply to the next/current target */
 	float TargetScale;
 
-	/** Location to refer to the last target spawned */
-	FVector LastSpawnLocation;
-
-	/** The scale applied to the most recently spawned target */
-	float LastTargetScale;
-
 	/** Recent sphere areas */
 	TArray<FSphere> RecentSpawnBounds;
 
@@ -157,13 +176,16 @@ private:
 
 	/** number used to dynamically change spawn area size and target size, if dynamic settings are enabled */
 	int32 DynamicScaleFactor;
-
-	/** An array of spawned targets that is used to move targets forward towards the player on tick */
-	TArray<ASphereTarget*> ActiveTargetsToMove;
-
+	
+	/** An array of structs where each element holds a reference to the target, the radius, and an array of points
+	 *  that the target occupies in 2D space. */
 	TArray<FActiveTargetStruct> ActiveTargetArray;
 
-	std::vector<std::vector<int32>> SpawnArray;
+	/** A 2D array representation of the space that the spawn area occupies. Initializes with size equal to twice the
+	 *  box bounds. 0's represent available spawn locations, 1's represent occupied spawn locations, and 2's represent
+	 *  the box bounds shrinking during dynamic spread types */
+	std::vector<std::vector<int32>> SpawnArea;
+
 #pragma endregion
 
 #pragma region BeatTrack
@@ -227,5 +249,6 @@ private:
 #pragma endregion
 	
 };
+
 
 

@@ -17,8 +17,6 @@ ATargetSpawner::ATargetSpawner()
 	SetShouldSpawn(false);
 	LastTargetSpawnedCenter = false;
 	bSkipNextSpawn = false;
-	LastSpawnLocation = FVector::ZeroVector;
-	LastTargetScale = 1.f;
 	ConsecutiveTargetsHit = 0;
 }
 
@@ -58,12 +56,12 @@ void ATargetSpawner::Tick(float DeltaTime)
 	{
 		return;
 	}
-	
-	for (ASphereTarget* Target : ActiveTargetsToMove)
+
+	for (const FActiveTargetStruct ActiveTarget : ActiveTargetArray)
 	{
-		if (Target)
+		if (ActiveTarget.ActiveTarget != nullptr)
 		{
-			MoveTargetForward(Target, DeltaTime);
+			MoveTargetForward(ActiveTarget.ActiveTarget, DeltaTime);
 		}
 	}
 }
@@ -110,13 +108,8 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 			{
 				UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
 			}
-			//OnTargetSpawn.Broadcast();
 
-			/* LAST target's location and scale */
-			LastSpawnLocation = SpawnLocation;
-			LastTargetScale = TargetScale;
-
-			if (LastSpawnLocation == BoxBounds.Origin)
+			if (SpawnLocation == BoxBounds.Origin)
 			{
 				LastTargetSpawnedCenter = true;
 			}
@@ -127,7 +120,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 		}
 	}
 
-	/* Find the next target's location and scale */
+	/* Find the next target's location and scale using the most recently spawned target's data */
 	FindNextTargetProperties(SpawnLocation, TargetScale);
 
 	/* Don't continue spawning for SingleBeat */
@@ -143,8 +136,8 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 		if (ASphereTarget* SpawnTarget = Cast<ASphereTarget>(
 			GetWorld()->SpawnActor(ActorToSpawn, &SpawnLocation, &FRotator::ZeroRotator, SpawnParams)))
 		{
-			ActiveTargetsToMove.Add(SpawnTarget);
 			ActiveTargetArray.Add(FActiveTargetStruct(SpawnTarget));
+
 			/* Setting the current target's scale that was previously calculated */
 			SpawnTarget->SetActorScale3D(FVector(TargetScale, TargetScale, TargetScale));
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
@@ -154,14 +147,10 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			{
 				UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
 			}
-			//OnTargetSpawn.Broadcast();
-			/* LAST target's location and scale */
-			LastSpawnLocation = SpawnLocation;
-			LastTargetScale = TargetScale;
 		}
 	}
 	/* Find the next target's location and scale */
-	FindNextTargetProperties(LastSpawnLocation, LastTargetScale);
+	FindNextTargetProperties(SpawnLocation, TargetScale);
 }
 
 void ATargetSpawner::InitBeatGrid()
@@ -220,7 +209,7 @@ void ATargetSpawner::InitBeatGrid()
 				BeatGridSpawnLocation, SpawnBox->GetComponentRotation()))
 			{
 				BeatGridTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
-				const float NewTargetScale = GenerateRandomTargetScale();
+				const float NewTargetScale = GenerateTargetScale();
 				BeatGridTarget->SetActorScale3D(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
 				SpawnedBeatGridTargets.Add(BeatGridTarget);
 			}
@@ -343,93 +332,30 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	}
 }
 
-void ATargetSpawner::FindNextTargetProperties(const FVector FLastSpawnLocation, const float LastTargetScaleValue)
+void ATargetSpawner::FindNextTargetProperties(const FVector LastSpawnLocation, const float LastTargetScale)
 {
-
-	/* Insert sphere of CheckSpawnRadius radius into sphere array. If skipping, insert a blank */
-	if (bSkipNextSpawn)
+	/* Only add a recently spawned target to the SpawnArea and ActiveTargetArray if the last target spawn was not skipped */
+	if (!bSkipNextSpawn)
 	{
-		RecentSpawnBounds.Insert(FSphere(FVector(0, 0, 0), 1), 0);
-		bSkipNextSpawn = false;
-	}
-	else
-	{
-		RecentSpawnBounds.Insert(FSphere(FLastSpawnLocation, LastTargetScaleValue * SphereTargetRadius), 0);
+		const TArray<FIntPoint> BlockedPoints = SetSpawnAreaOccupied(ConvertLocationToPoint(LastSpawnLocation), LastTargetScale);
+		/* Set the most recently spawned target's values in ActiveTargetArray */
+		ActiveTargetArray.Last().BlockedSpawnPoints = BlockedPoints;
+		ActiveTargetArray.Last().Center = ConvertLocationToPoint(LastSpawnLocation);
+		ActiveTargetArray.Last().TargetScale = LastTargetScale;
 	}
 
-	/** TODO: NEW */
+	TargetScale = GenerateTargetScale();
 	
-	UE_LOG(LogTemp, Display, TEXT("%s"),*FLastSpawnLocation.ToString());
-	UE_LOG(LogTemp, Display, TEXT("%s"),*BoxBounds.Origin.ToString());
-	/** Multiply by 2 so that any not switched point is a valid spawn location */
-	int32 CircleToDrawRadius = LastTargetScaleValue * SphereTargetRadius * 2 + GameModeActorStruct.MinDistanceBetweenTargets;
-	int32 CenterXValue = FLastSpawnLocation.Y + BoxBounds.BoxExtent.Y;
-	int32 CenterYValue = FLastSpawnLocation.Z + BoxBounds.BoxExtent.Z - BoxBounds.Origin.Z;
-	int32 XMin = CenterXValue - CircleToDrawRadius;
-	int32 XMax = CenterXValue + CircleToDrawRadius;
-	int32 YMin = CenterYValue - CircleToDrawRadius;
-	int32 YMax = CenterYValue + CircleToDrawRadius;
-	/** Iterate over a square section to mark off */
-	TArray<FIntPoint> BlockedPoints;
-	for (int x = XMin; x <  XMax; x++)
-	{
-		for (int y = YMin; y < YMax; y++)
-		{
-			if ((x - CenterXValue) * (x - CenterXValue) + (y - CenterYValue) * (y - CenterYValue) <= CircleToDrawRadius * CircleToDrawRadius)
-			{
-				if (x > 0 && y > 0 && (x < GameModeActorStruct.BoxBounds.Y * 2) && (y < GameModeActorStruct.BoxBounds.Z * 2))
-				{
-					SpawnArray[x][y] = 1;
-					BlockedPoints.Add(FIntPoint(x,y));
-				}
-			}
-		}
-	}
-	ActiveTargetArray.Last().BlockedSpawnPoints = BlockedPoints;
-
-	//DrawDebugBox(GetWorld(), FVector(BoxBounds.Origin.X, CenterXValue, CenterYValue),
-	//	FVector(0, CircleToDrawRadius, CircleToDrawRadius), FColor::Blue, false, MaxNumberOfTargetsAtOnce);
-	UE_LOG(LogTemp, Display, TEXT("XMin x: %d XMax x: %d YMin y: %d YMax y: %d"),XMin, XMax, YMin, YMax);
-	TArray<FIntPoint> OpenPoints;
-	std::vector<std::vector<int32>>::iterator Row;
-	std::vector<int32>::iterator Col;
-	for (Row = SpawnArray.begin(); Row != SpawnArray.end(); Row++)
-	{
-		for (Col = Row->begin(); Col != Row->end(); Col++)
-		{
-			int32 X  = std::distance(SpawnArray.begin(), Row);
-			int32 Y = std::distance(Row->begin(), Col);
-			if (SpawnArray[X][Y] != 1)
-			{
-				OpenPoints.Add(FIntPoint(X,Y));
-			}
-		}
-	}
-	UE_LOG(LogTemp, Display, TEXT("Size %d "), OpenPoints.Num())
-	int32 RandomPoint = UKismetMathLibrary::RandomFloatInRange(0, OpenPoints.Num() - 1);
-	DrawDebugSphere(GetWorld(), FVector(BoxBounds.Origin.X,OpenPoints[RandomPoint].X - BoxBounds.BoxExtent.Y, OpenPoints[RandomPoint].Y - BoxBounds.BoxExtent.Z + BoxBounds.Origin.Z), LastTargetScaleValue * SphereTargetRadius, 20, FColor::Orange, false,
-				MaxNumberOfTargetsAtOnce);
-
-	/** TODO: ENDNEW */
-	
-	RecentSpawnBounds.SetNum(MaxNumberOfTargetsAtOnce);
-	DrawDebugSphere(GetWorld(), FLastSpawnLocation, LastTargetScaleValue * SphereTargetRadius, 20, FColor::Blue, false,
-	                MaxNumberOfTargetsAtOnce);
-
-	/* set the scale before we find the location */
-	TargetScale = GenerateRandomTargetScale();
-
-	/* the radius of the sphere target to test for collisions against */
-	const float CollisionSphereRadius = TargetScale * SphereTargetRadius + GameModeActorStruct.
-		MinDistanceBetweenTargets;
-
-	/* find location */
-	SpawnLocation = FindNextTargetSpawnLocation(GameModeActorStruct.SpreadType, CollisionSphereRadius);
+	/* Find location */
+	SpawnLocation = FindNextTargetSpawnLocation(GameModeActorStruct.SpreadType, TargetScale);
 }
 
-FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType, const float CollisionSphereRadius)
+FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType, const float NewTargetScale)
 {
-	/* SpawnLocation initially centered inside SpawnBox */
+	/* Reset SkipNextSpawn */
+	bSkipNextSpawn = false;
+
+	/* The location to return, initially centered inside SpawnBox */
 	FVector NewSpawnLocation = BoxBounds.Origin;
 
 	/* If single beat needs to spawn at center, exit early */
@@ -438,13 +364,7 @@ FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType
 		return NewSpawnLocation;
 	}
 
-	/* counting how many times the loop failed to try to spawn a target */
-	int OverloadProtect = 0;
-
-	/* simulate intersection with spheres inside of RecentSpawnBounds */
-	FSphere NewTarget = FSphere(NewSpawnLocation, CollisionSphereRadius);
-
-	/* dynamic sizing variables */
+	/* The new value of the BoxExtent for use with dynamic spread types */
 	const FVector ScaledBoxExtent = GameModeActorStruct.BoxBounds * (1 - DynamicScaleFactor / 100.f * 0.5f);
 
 	/* Change the size of the SpawnBox if dynamic */
@@ -456,10 +376,154 @@ FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType
 		DrawDebugBox(GetWorld(), BoxBounds.Origin, ScaledBoxExtent, FColor::Orange, false, 1);
 	}
 
+	const int32 XValueClip = abs(ScaledBoxExtent.Y - GameModeActorStruct.BoxBounds.Y);
+	const int32 YValueClip = abs(ScaledBoxExtent.Z - GameModeActorStruct.BoxBounds.Z);
+	const int32 XValueUpperClip = GameModeActorStruct.BoxBounds.Y * 2 - XValueClip;
+	const int32 YValueUpperClip = GameModeActorStruct.BoxBounds.Z * 2 - YValueClip;
+	int32 NumClips = 0;
+	int32 NumUpperClips = 0;
+	int32 NonClips = 0;
+
+	std::vector<std::vector<int32>> TempSpawnArea = SpawnArea;
+	
+	for (FActiveTargetStruct TargetStruct : ActiveTargetArray)
+	{
+		if (TargetStruct.TargetScale < NewTargetScale)
+		{
+			
+			TempSpawnArea = SetTempSpawnAreaOccupied(TargetStruct.Center, NewTargetScale, TempSpawnArea);
+		}
+	}
+	
+	/* Create an array of valid spawn locations */
+	TArray<FIntPoint> OpenPoints;
+
+	for (std::vector<std::vector<int32>>::iterator Row = TempSpawnArea.begin(); Row != TempSpawnArea.end(); ++Row)
+	{
+		for (std::vector<int32>::iterator Col = Row->begin(); Col != Row->end(); ++Col)
+		{
+			const int32 X = std::distance(TempSpawnArea.begin(), Row);
+			const int32 Y = std::distance(Row->begin(), Col);
+
+			/** The min size of BoxExtend is half the BoxExtent */
+			if (TempSpawnArea[X][Y] != 1)
+			{
+				if (X < XValueClip || Y < YValueClip)
+				{
+					TempSpawnArea[X][Y] = 2;
+					NumClips++;
+				}
+				else if ((X > XValueUpperClip && X <= GameModeActorStruct.BoxBounds.Y * 2) || (Y > YValueUpperClip && Y
+					<= GameModeActorStruct.BoxBounds.Z * 2))
+				{
+					TempSpawnArea[X][Y] = 2;
+					NumUpperClips++;
+				}
+				else
+				{
+					NonClips++;
+					TempSpawnArea[X][Y] = 0;
+					OpenPoints.Add(FIntPoint(X, Y));
+				}
+			}
+			else
+			{
+				NonClips++;
+			}
+		}
+	}
+
+	/*for (std::vector<std::vector<int32>>::iterator Row = SpawnArea.begin(); Row != SpawnArea.end(); ++Row)
+	{
+		const int32 X = std::distance(SpawnArea.begin(), Row);
+		for (std::vector<int32>::iterator Col = Row->begin(); Col != Row->end(); ++Col)
+		{
+			const int32 Y = std::distance(Row->begin(), Col);
+
+			/** The min size of BoxExtend is half the BoxExtent #1#
+			if (SpawnArea[X][Y] != 1)
+			{
+				if (X < XValueClip || Y < YValueClip)
+				{
+					SpawnArea[X][Y] = 2;
+					NumClips++;
+				}
+				else if ((X > XValueUpperClip && X <= GameModeActorStruct.BoxBounds.Y * 2) || (Y > YValueUpperClip && Y
+					<= GameModeActorStruct.BoxBounds.Z * 2))
+				{
+					SpawnArea[X][Y] = 2;
+					NumUpperClips++;
+				}
+				else
+				{
+					NonClips++;
+					SpawnArea[X][Y] = 0;
+					OpenPoints.Add(FIntPoint(X, Y));
+				}
+			}
+			else
+			{
+				NonClips++;
+			}
+		}
+	}*/
+	
+	UE_LOG(LogTemp, Display, TEXT("NumClips %d NumUpperClips %d NonClips %d"), NumClips, NumUpperClips, NonClips);
+	UE_LOG(LogTemp, Display, TEXT("XValueClip: %d XValueUpperClip: %d YValueClip: %d YValueUpperClip: %d"), XValueClip,XValueUpperClip, YValueClip,YValueUpperClip);
+	UE_LOG(LogTemp, Display, TEXT("Number of Valid Spawn Points: %d "), OpenPoints.Num());
+	
+	if (OpenPoints.Num() == 0)
+	{
+		bSkipNextSpawn = true;
+		return NewSpawnLocation;
+	}
+
+	/* Spawn at BoxBounds origin whenever possible */
+	//if (OpenPoints.Contains(FIntPoint(GameModeActorStruct.BoxBounds.Y, GameModeActorStruct.BoxBounds.Z)))
+	//{
+	//	NewSpawnLocation = BoxBounds.Origin;
+	//}
+	//else
+	//{
+		const int32 RandomPoint = UKismetMathLibrary::RandomFloatInRange(0, OpenPoints.Num() - 1);
+		NewSpawnLocation = ConvertPointToLocation(OpenPoints[RandomPoint]);
+	//}
+	return NewSpawnLocation;
+}
+
+/*FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType, const float CollisionSphereRadius)
+{
+	/* SpawnLocation initially centered inside SpawnBox #1#
+	FVector NewSpawnLocation = BoxBounds.Origin;
+
+	/* If single beat needs to spawn at center, exit early #1#
+	if (GameModeActorStruct.IsSingleBeatMode && !LastTargetSpawnedCenter)
+	{
+		return NewSpawnLocation;
+	}
+
+	/* counting how many times the loop failed to try to spawn a target #1#
+	int OverloadProtect = 0;
+
+	/* simulate intersection with spheres inside of RecentSpawnBounds #1#
+	FSphere NewTarget = FSphere(NewSpawnLocation, CollisionSphereRadius);
+
+	/* dynamic sizing variables #1#
+	const FVector ScaledBoxExtent = GameModeActorStruct.BoxBounds * (1 - DynamicScaleFactor / 100.f * 0.5f);
+
+	/* Change the size of the SpawnBox if dynamic #1#
+	if (SpreadType == ESpreadType::DynamicRandom ||
+		SpreadType == ESpreadType::DynamicEdgeOnly)
+	{
+		SpawnBox->SetBoxExtent(ScaledBoxExtent);
+		BoxBounds = SpawnBox->CalcBounds(GetActorTransform());
+		DrawDebugBox(GetWorld(), BoxBounds.Origin, ScaledBoxExtent, FColor::Orange, false, 1);
+	}
+
 	int i = 0;
 	while (i < RecentSpawnBounds.Num() && OverloadProtect <= 50)
 	{
-		/* Loop through Recent sphere locations */
+		/* Loop through Recent sphere locations #1#
 		for (i = 0; i < RecentSpawnBounds.Num(); i++)
 		{
 			if (!RecentSpawnBounds[i].Intersects(NewTarget))
@@ -469,12 +533,12 @@ FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType
 			OverloadProtect++;
 			break;
 		}
-		/* If reached the last index of RecentSpawnBounds, it did not intersect any spheres, so it is safe to spawn */
+		/* If reached the last index of RecentSpawnBounds, it did not intersect any spheres, so it is safe to spawn #1#
 		if (i == RecentSpawnBounds.Num())
 		{
 			return NewSpawnLocation;
 		}
-		/* Continue with new target locations, reset i so that it always loops through entire RecentSpawnBounds */
+		/* Continue with new target locations, reset i so that it always loops through entire RecentSpawnBounds #1#
 		NewSpawnLocation = GenerateRandomTargetLocation(SpreadType, ScaledBoxExtent);
 		NewTarget = FSphere(NewSpawnLocation, CollisionSphereRadius);
 		i = -1;
@@ -484,7 +548,7 @@ FVector ATargetSpawner::FindNextTargetSpawnLocation(const ESpreadType SpreadType
 		bSkipNextSpawn = true;
 	}
 	return NewSpawnLocation;
-}
+}*/
 
 void ATargetSpawner::FindNextTrackingDirection()
 {
@@ -492,10 +556,10 @@ void ATargetSpawner::FindNextTrackingDirection()
 	{
 		/** Initial tracking target spawn */
 		TrackingTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, BoxBounds.Origin,
-															   SpawnBox->GetComponentRotation());
+		                                                       SpawnBox->GetComponentRotation());
 		TrackingTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		LocationBeforeDirectionChange = BoxBounds.Origin;
-		
+
 		/** Broadcast to GameModeActorBase and DefaultCharacter that a BeatTrack target has spawned */
 		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.Broadcast(
 			TrackingTarget);
@@ -503,7 +567,7 @@ void ATargetSpawner::FindNextTrackingDirection()
 	if (TrackingTarget)
 	{
 		LocationBeforeDirectionChange = TrackingTarget->GetActorLocation();
-		const float NewTargetScale = GenerateRandomTargetScale();
+		const float NewTargetScale = GenerateTargetScale();
 		TrackingTarget->SetActorScale3D(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
 		TrackingSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
 		EndLocation = GenerateRandomTrackerLocation(LocationBeforeDirectionChange);
@@ -511,7 +575,7 @@ void ATargetSpawner::FindNextTrackingDirection()
 	}
 }
 
-float ATargetSpawner::GenerateRandomTargetScale() const
+float ATargetSpawner::GenerateTargetScale() const
 {
 	if (GameModeActorStruct.UseDynamicSizing)
 	{
@@ -624,22 +688,18 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 			SphereTargetRadius * DestroyedTargetScale.Z
 		};
 	}
-
-	/** TODO: NEW */
-	ActiveTargetArray.Find(FActiveTargetStruct(DestroyedTarget));
-	ActiveTargetArray.Shrink();
-
+	
 	if (const int Index = ActiveTargetArray.Find(FActiveTargetStruct(DestroyedTarget)); Index != INDEX_NONE)
 	{
 		for (const FIntPoint Point : ActiveTargetArray[Index].BlockedSpawnPoints)
 		{
-			SpawnArray[Point.X][Point.Y] = 0;
+			/* Reset all occupied points back to unoccupied */
+			SpawnArea[Point.X][Point.Y] = 0;
 		}
+		/* Remove the ActiveTargetStruct from ActiveTargetArray */
+		ActiveTargetArray.RemoveAtSwap(Index);
 	}
-
-	/** TODO: ENDNEW */
-	ActiveTargetsToMove.Remove(DestroyedTarget);
-	ActiveTargetsToMove.Shrink();
+	ActiveTargetArray.Shrink();
 	
 	if (GameModeActorStruct.IsSingleBeatMode)
 	{
@@ -756,7 +816,7 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	SpawnLocation = BoxBounds.Origin;
 
 	/* Initial target size */
-	TargetScale = GenerateRandomTargetScale();
+	TargetScale = GenerateTargetScale();
 
 	/* Setting max targets at one time for the size of RecentSpawnLocations & RecentSpawnBounds. Only used for MultiBeat */
 	MaxNumberOfTargetsAtOnce = ceil(GameModeActorStruct.TargetMaxLifeSpan / GameModeActorStruct.TargetSpawnCD);
@@ -766,13 +826,92 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	{
 		InitBeatGrid();
 	}
-	
-	SpawnArray = {static_cast<unsigned long>(GameModeActorStruct.BoxBounds.Y * 2), std::vector(static_cast<unsigned long>(GameModeActorStruct.BoxBounds.Z) * 2, 0)};
+
+	SpawnArea = {
+		static_cast<unsigned long>(GameModeActorStruct.BoxBounds.Y * 2),
+		std::vector(static_cast<unsigned long>(GameModeActorStruct.BoxBounds.Z) * 2, 0)
+	};
 }
 
 void ATargetSpawner::MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const
 {
 	const FVector Loc = SpawnTarget->GetActorLocation();
 	const FVector NewLoc = FVector(Loc.X - GameModeActorStruct.MoveForwardDistance, Loc.Y, Loc.Z);
-	SpawnTarget->SetActorLocation(UKismetMathLibrary::VInterpTo(Loc, NewLoc, DeltaTime, 1/GameModeActorStruct.TargetMaxLifeSpan));
+	SpawnTarget->SetActorLocation(
+		UKismetMathLibrary::VInterpTo(Loc, NewLoc, DeltaTime, 1 / GameModeActorStruct.TargetMaxLifeSpan));
+}
+
+TArray<FIntPoint> ATargetSpawner::SetSpawnAreaOccupied(const FIntPoint Center, const float Scale)
+{
+	/* Multiply by 2 so that any point outside of circle is a valid spawn location */
+	const int32 Radius = (Scale * SphereTargetRadius * 2) + GameModeActorStruct.MinDistanceBetweenTargets;
+	const int32 LeftSquare = Center.X - Radius;
+	const int32 RightSquare = Center.X + Radius;
+	const int32 BottomSquare = Center.Y - Radius;
+	const int32 TopSquare = Center.Y + Radius;
+
+	/* An array that represents invalid spawn points */
+	TArray<FIntPoint> BlockedPoints;
+	/* Iterate over a square section with length & width equal to sphere diameter */
+	for (int x = LeftSquare; x < RightSquare; x++)
+	{
+		for (int y = BottomSquare; y < TopSquare; y++)
+		{
+			/* Only add to BlockedPoints if inside circle radius */
+			if ((x - Center.X) * (x - Center.X) + (y - Center.Y) * (y - Center.Y) <=
+				Radius * Radius)
+			{
+				/* Don't add points that are outside of the box extent (like when near an edge or corner) */
+				if (x > 0 && y > 0 && (x < BoxBounds.BoxExtent.Y * 2) && (y < BoxBounds.BoxExtent.Z * 2))
+				{
+					SpawnArea[x][y] = 1;
+					BlockedPoints.Add(FIntPoint(x, y));
+				}
+			}
+		}
+	}
+	return BlockedPoints;
+}
+
+std::vector<std::vector<int32>> ATargetSpawner::SetTempSpawnAreaOccupied(const FIntPoint Center, const float Scale, std::vector<std::vector<int32>>& TempSpawnArea)
+{
+	/* Multiply by 2 so that any point outside of circle is a valid spawn location */
+	const int32 Radius = (Scale * SphereTargetRadius * 2) + GameModeActorStruct.MinDistanceBetweenTargets;
+	const int32 LeftSquare = Center.X - Radius;
+	const int32 RightSquare = Center.X + Radius;
+	const int32 BottomSquare = Center.Y - Radius;
+	const int32 TopSquare = Center.Y + Radius;
+	
+	/* Iterate over a square section with length & width equal to sphere diameter */
+	for (int x = LeftSquare; x < RightSquare; x++)
+	{
+		for (int y = BottomSquare; y < TopSquare; y++)
+		{
+			/* Only add to BlockedPoints if inside circle radius */
+			if ((x - Center.X) * (x - Center.X) + (y - Center.Y) * (y - Center.Y) <=
+				Radius * Radius)
+			{
+				/* Don't add points that are outside of the box extent (like when near an edge or corner) */
+				if (x > 0 && y > 0 && (x < BoxBounds.BoxExtent.Y * 2) && (y < BoxBounds.BoxExtent.Z * 2))
+				{
+					TempSpawnArea[x][y] = 1;
+				}
+			}
+		}
+	}
+	return TempSpawnArea;
+}
+
+FIntPoint ATargetSpawner::ConvertLocationToPoint(const FVector Location) const
+{
+	const int32 CenterXValue = Location.Y + GameModeActorStruct.BoxBounds.Y;
+	const int32 CenterYValue = Location.Z + GameModeActorStruct.BoxBounds.Z - BoxBounds.Origin.Z;
+	return FIntPoint(CenterXValue,CenterYValue);
+}
+
+FVector ATargetSpawner::ConvertPointToLocation(const FIntPoint Point) const
+{
+	const int32 Y = Point.X - GameModeActorStruct.BoxBounds.Y;
+	const int32 Z = Point.Y - GameModeActorStruct.BoxBounds.Z + BoxBounds.Origin.Z;
+	return FVector(BoxBounds.Origin.X, Y, Z);
 }
