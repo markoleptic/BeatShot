@@ -24,6 +24,7 @@ ASphereTarget::ASphereTarget()
 	BaseMesh->SetupAttachment(CapsuleComp);
 	HealthComp = CreateDefaultSubobject<UDefaultHealthComponent>("Health Component");
 	InitialLifeSpan = 1.5f;
+	Guid = FGuid::NewGuid();
 }
 
 void ASphereTarget::BeginPlay()

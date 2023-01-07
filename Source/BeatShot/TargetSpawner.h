@@ -5,23 +5,29 @@
 #include "CoreMinimal.h"
 #include <vector>
 #include "GameModeActorBase.h"
+#include "SphereTarget.h"
 #include "GameFramework/Actor.h"
 #include "TargetSpawner.generated.h"
 
 class ASphereTarget;
 class UBoxComponent;
 
+USTRUCT()
 struct FActiveTargetStruct
 {
+	GENERATED_BODY()
+	
 	/** A 2D representation of the area the target spawned. This is stored so that the points can be freed when
 	 *  the target expires or is destroyed. */
 	TArray<FIntPoint> BlockedSpawnPoints;
 
 	/** A reference to the target that was spawned, so that it can be found and its BlockedSpawnPoints can be freed
 	 *  when the target expires or is destroyed. */
-	ASphereTarget* ActiveTarget;
+	//ASphereTarget* ActiveTarget;
 
-	/** The radius of this target*/
+	FGuid TargetGuid;
+
+	/** The scale of this target, as it is in the world */
 	float TargetScale;
 
 	/** The center of this target*/
@@ -30,22 +36,32 @@ struct FActiveTargetStruct
 	FActiveTargetStruct()
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
-		ActiveTarget = nullptr;
+		//ActiveTarget = nullptr;
 		TargetScale = 0.f;
-		Center = FIntPoint();
+		Center = FIntPoint(-5000, -5000);
 	}
 
-	FActiveTargetStruct(ASphereTarget* TargetToAdd)
+	FActiveTargetStruct(const FGuid GuidToRemove)
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
-		ActiveTarget = TargetToAdd;
+		TargetGuid = GuidToRemove;
 		TargetScale = 0.f;
-		Center = FIntPoint();
+		Center = FIntPoint(-5000, -5000);
+	}
+	
+	FActiveTargetStruct(const ASphereTarget* TargetToAdd, const TArray<FIntPoint> BlockedSpawnPointsToAdd,
+	                    const float TargetScaleToAdd, const FIntPoint CenterToAdd)
+	{
+		BlockedSpawnPoints = BlockedSpawnPointsToAdd;
+		//ActiveTarget = TargetToAdd;
+		TargetGuid = TargetToAdd->Guid;
+		TargetScale = TargetScaleToAdd;
+		Center = CenterToAdd;
 	}
 
-	FORCEINLINE bool operator==(const FActiveTargetStruct& Other) const
+	FORCEINLINE bool operator == (const FActiveTargetStruct& Other) const
 	{
-		if (ActiveTarget == Other.ActiveTarget)
+		if (TargetGuid == Other.TargetGuid)
 		{
 			return true;
 		}
@@ -65,11 +81,10 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void Destroyed() override;
-	
+
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	
 	/* Called from selected DefaultGameMode */
 	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 
@@ -80,42 +95,87 @@ public:
 	void CallSpawnFunction();
 
 private:
-	/** The expiration or destruction of any non-BeatTrack target is bound to this function
-	 *  to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
-	 *  based on consecutive targets hit */
-	UFUNCTION()
-	void OnTargetTimeout(bool DidExpire, float TimeAlive, ASphereTarget* DestroyedTarget);
-
+	/** Create BeatGrid Targets */
+	void InitBeatGrid();
+	
+	/** Spawn a MultiBeat on beat */
+	void SpawnMultiBeatTarget();
+	
 	/** Spawn a SingleBeat on beat */
 	void SpawnSingleBeatTarget();
 
-	/** Spawn a MultiBeat on beat */
-	void SpawnMultiBeatTarget();
+	/** Active a BeatGrid target on beat */
+	void ActivateBeatGridTarget();
 
-	/** FindNextTargetProperties */
-	void FindNextTargetProperties(FVector LastSpawnLocation, float LastTargetScale);
+	/** Change the tracking target direction on beat */
+	void SetNewTrackingDirection();
+
+	/** The expiration or destruction of any non-BeatTrack target is bound to this function
+	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
+	*   based on consecutive targets hit */
+	UFUNCTION()
+	void OnTargetTimeout(bool DidExpire, float TimeAlive, ASphereTarget* DestroyedTarget);
 	
-	/** Find the next spawn location for a target */
-	FVector FindNextTargetSpawnLocation(ESpreadType SpreadType, const float NewTargetScale);
+	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
+	UFUNCTION()
+	void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
+	
+	/** Calls functions to get the next target's location and scale */
+	void FindNextTargetProperties();
 
 	/** Returns the scale for next target */
-	float GenerateTargetScale() const;
-	
+	float GetNextTargetScale() const;
+
 	/** Find the next spawn location for a target */
-	FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
+	FVector GetNextTargetSpawnLocation(ESpreadType SpreadType, const float NewTargetScale);
+
+	/** Randomizes a location to set the BeatTrack target to move towards */
+	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;
 
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
+	/** Adds a target to ActiveTargetArray (used for moving targets forward), and RecentTargetArray
+	 *  (used to store location and size of recently spawned targets  */
+	void AddTargetToTargetArrays(ASphereTarget* Target, FVector LastSpawnLocation, float LastTargetScale);
+
+	UFUNCTION()
+	void RemoveFromRecentTargetArray(const FGuid GuidToRemove);
+	
 	/** Adds a circle to the 2D array SpawnArea by setting all values that make up the area covered by the target
-	 *  equal to 1 (occupied). Returns an array of points containing all values that were changed. */
-	TArray<FIntPoint> SetSpawnAreaOccupied(const FIntPoint Center, const float Scale);
+	 *  equal to 1 (occupied). Returns an array of points containing all values that were changed */
+	TArray<FIntPoint> GetCircleOfPoints(const FIntPoint Center, const float Scale) const;
 
-	std::vector<std::vector<int32>> SetTempSpawnAreaOccupied(const FIntPoint Center, const float Scale, std::vector<std::vector<int32>>& TempSpawnArea);
+	/** Returns an array of valid spawn points by creating a new 2D array and filling out the values based on the
+	 *  contents of RecentTargetArray, the scale of the new target to spawn, and the current BoxExtent */
+	TArray<FIntPoint> GetValidSpawnPoints(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
+	
+	/** Returns a copy of the RecentTargetArray, used to determine future target spawn locations */
+	TArray<FActiveTargetStruct> GetRecentTargetArray();
 
+	/** Modifies a circle of points in OutSpawnArea. Returns the modified OutSpawnArea */
+	std::vector<std::vector<int32>> ResizeCircleInSpawnArea(const FIntPoint Center, const float Scale,
+															std::vector<std::vector<int32>>& OutSpawnArea) const;
+
+	/** Simulates lowering the size of a BoxExtent, but since OutSpawnArea is centered at (0,0), the function
+	 *  modifies the outer edges by setting the edge point values equal to 2 (Out of bounds).
+	 *  Returns the modified OutSpawnArea */
+	std::vector<std::vector<int32>> ResizeSpawnAreaBounds(std::vector<std::vector<int32>>& OutSpawnArea,
+														  const FVector& BoxExtent) const;
+
+	/** Returns a point in 2D space with origin at (0,0) given an absolute world location */
 	FIntPoint ConvertLocationToPoint(const FVector Location) const;
 
+	/** Returns the absolute world location given a point in 2D space with origin at (0,0) based on the original
+	 *  BoxExtent from GameModeActorStruct.BoxBounds */
 	FVector ConvertPointToLocation(const FIntPoint Point) const;
+	
+	/** Returns the absolute world location given a point in 2D space with origin at (0,0) based on the current
+	 *  BoxExtent from BoxBounds.BoxExtent */
+	FVector ConvertPointToLocationSingleBeat(const FIntPoint Point) const;
+	
+	/** Find the next spawn location for a target */
+	FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
 
 #pragma region General Spawning Variables
 
@@ -155,12 +215,6 @@ private:
 
 	/** Initialized at start of game mode by DefaultGameMode */
 	FGameModeActorStruct GameModeActorStruct;
-	
-	/** the radius to check for recent spawn target collision */
-	float CheckSpawnRadius;
-
-	/** the radius to check for recent spawn target collision */
-	int32 MaxNumberOfTargetsAtOnce;
 
 	/** Location to spawn the next/current target */
 	FVector SpawnLocation;
@@ -168,47 +222,45 @@ private:
 	/** The scale to apply to the next/current target */
 	float TargetScale;
 
-	/** Recent sphere areas */
-	TArray<FSphere> RecentSpawnBounds;
-
 	/** consecutively destroyed targets */
 	int32 ConsecutiveTargetsHit;
 
 	/** number used to dynamically change spawn area size and target size, if dynamic settings are enabled */
 	int32 DynamicScaleFactor;
-	
-	/** An array of structs where each element holds a reference to the target, the radius, and an array of points
-	 *  that the target occupies in 2D space. */
-	TArray<FActiveTargetStruct> ActiveTargetArray;
 
-	/** A 2D array representation of the space that the spawn area occupies. Initializes with size equal to twice the
-	 *  box bounds. 0's represent available spawn locations, 1's represent occupied spawn locations, and 2's represent
-	 *  the box bounds shrinking during dynamic spread types */
-	std::vector<std::vector<int32>> SpawnArea;
+	/** An array of SphereTargets used to move targets forward after they have spawned (if game mode settings permit).
+	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
+	 *  OnTargetTimeout */
+	UPROPERTY()
+	TArray<ASphereTarget*> ActiveTargetArray;
+
+	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
+	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
+	 *  OnTargetTimeout */
+	UPROPERTY()
+	TArray<FActiveTargetStruct> RecentTargetArray;
+
+	/** Scale the 2D representation of the spawn area down by this factor */
+	int32 SpawnAreaScale;
+
+	FTimerDelegate RemoveFromRecentDelegate;
 
 #pragma endregion
 
-#pragma region BeatTrack
-
-	/** Change the tracking target direction on beat */
-	void FindNextTrackingDirection();
-	
-	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
-	UFUNCTION()
-	void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
+#pragma region BeatTrack Variables
 	
 	/** Only one tracking target spawns, so we store a ref to it to manipulate its behavior */
-	UPROPERTY(VisibleAnywhere, Category = "Spawn Properties")
-	ASphereTarget* TrackingTarget;
-	
+	UPROPERTY()
+	ASphereTarget* BeatTrackTarget;
+
 	/** Current location of tracking target */
-	FVector CurrentTrackerLocation;
+	FVector BeatTrackTargetLocation;
 
 	/** Current direction of tracking target */
-	FVector TrackingDirection;
+	FVector BeatTrackTargetDirection;
 
 	/** Current speed of tracking target */
-	float TrackingSpeed;
+	float BeatTrackTargetSpeed;
 
 	/** The end of the path that the tracking target will move to */
 	FVector EndLocation;
@@ -216,19 +268,10 @@ private:
 	/** Location just before randomizing a new tracking direction */
 	FVector LocationBeforeDirectionChange;
 
-	/** Randomizes tracking target location */
-	FVector GenerateRandomTrackerLocation(const FVector LocationBeforeChange) const;
-
 #pragma endregion
-	
-#pragma region BeatGrid
 
-	/** Active a BeatGrid target on beat */
-	void ActivateBeatGridTarget();
+#pragma region BeatGrid Variables
 
-	/** Create BeatGrid Targets */
-	void InitBeatGrid();
-	
 	/** Currently activated beat grid target */
 	UPROPERTY(VisibleDefaultsOnly, Category = "BeatGrid")
 	ASphereTarget* ActiveBeatGridTarget;
@@ -247,8 +290,4 @@ private:
 	bool InitialBeatGridTargetActivated;
 
 #pragma endregion
-	
 };
-
-
-

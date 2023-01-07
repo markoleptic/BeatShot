@@ -37,9 +37,18 @@ void AGameModeActorBase::Destroyed()
 	/** Unbinding delegates */
 	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->OnPlayerSettingsChange.RemoveDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
-	GI->DefaultCharacterRef->Gun->OnShotFired.RemoveDynamic(this, &AGameModeActorBase::UpdateShotsFired);
-	GameMode->OnBeatTrackTargetSpawned.RemoveDynamic(this, &AGameModeActorBase::OnBeatTrackTargetSpawned);
-	GameMode->OnStreakUpdate.RemoveDynamic(this, &AGameModeActorBase::OnStreakUpdate);
+	if (GI->DefaultCharacterRef->Gun)
+	{
+		GI->DefaultCharacterRef->Gun->OnShotFired.RemoveDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+	}
+	if (GameMode->OnBeatTrackTargetSpawned.IsBound())
+	{
+		GameMode->OnBeatTrackTargetSpawned.RemoveDynamic(this, &AGameModeActorBase::OnBeatTrackTargetSpawned);
+	}
+	if (GameMode->OnStreakUpdate.IsBound())
+	{
+		GameMode->OnStreakUpdate.RemoveDynamic(this, &AGameModeActorBase::OnStreakUpdate);
+	}
 	if (GameMode->OnTargetSpawned.IsBoundToObject(this))
 	{
 		GameMode->OnTargetSpawned.Unbind();

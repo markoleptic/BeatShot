@@ -86,6 +86,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UDefaultHealthComponent* HealthComp;
 
+	FGuid Guid;
+
 private:
 
 	/** Play the WhiteToGreenTimeline, which corresponds to the WhiteToGreenCurve */
