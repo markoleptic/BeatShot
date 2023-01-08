@@ -16,7 +16,6 @@ void ULoginWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	Login->OnClicked.AddDynamic(this, &ULoginWidget::LoginButtonClicked);
-	Login->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutLogin);
 
 	Register->OnClicked.AddDynamic(this, &ULoginWidget::LaunchRegisterURL);
 	Register->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutRegister);
@@ -55,13 +54,14 @@ void ULoginWidget::LoginButtonClicked()
 		IsEmpty())
 	{
 		ErrorBox->SetVisibility(ESlateVisibility::Visible);
-		ErrorText->SetText(FText::FromString(MissingInfoError));
+		SetErrorText("MissingInfoErrorText");
 		return;
 	}
 	const FLoginPayload LoginPayload = FLoginPayload(UsernameTextBox->GetText().ToString(),
 	                                                 EmailTextBox->GetText().ToString(),
 	                                                 PasswordTextBox->GetText().ToString());
 	OnLoginButtonClicked.Broadcast(LoginPayload, bIsPopup);
+	PlayFadeOutLogin();
 }
 
 void ULoginWidget::OnLoginSuccess()
@@ -81,11 +81,10 @@ void ULoginWidget::ShowRegisterScreen()
 	PlayFadeInRegister();
 }
 
-void ULoginWidget::ShowLoginScreen()
+void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
 	if (Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->LoadPlayerSettings().HasLoggedInHttp)
 	{
-		LoginErrorBox->SetVisibility(ESlateVisibility::Visible);
 		NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
 		NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
 		ContinueWithoutTitleText->SetText(
@@ -95,9 +94,10 @@ void ULoginWidget::ShowLoginScreen()
 		ContinueWithoutCancelButtonText->SetText(
 			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutCancelButtonTextLogin"));
 	}
-	else
+	if (!Key.IsEmpty())
 	{
-		LoginErrorBox->SetVisibility(ESlateVisibility::Collapsed);
+		ErrorBox->SetVisibility(ESlateVisibility::Visible);
+		SetErrorText(Key);
 	}
 	if (!bIsPopup)
 	{
@@ -115,6 +115,12 @@ void ULoginWidget::ClearErrorText(const FText& Text)
 {
 	ErrorBox->SetVisibility(ESlateVisibility::Collapsed);
 	ErrorText->SetText(FText());
+}
+
+void ULoginWidget::SetErrorText(const FString& Key)
+{
+	ErrorText->SetText(FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login",
+											Key));
 }
 
 void ULoginWidget::InitializeExit()

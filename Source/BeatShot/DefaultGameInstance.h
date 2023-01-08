@@ -23,6 +23,20 @@ class USoundClass;
 class USoundMix;
 class ADefaultPlayerController;
 
+UENUM()
+enum class ELoginState : uint8
+{
+	NewUser UMETA(DisplayName, "NewUser"),
+	LoggedInHttp UMETA(DisplayName, "LoggedInHttp"),
+	LoggedInHttpAndBrowser UMETA(DisplayName, "LoggedInHttpAndBrowser"),
+	InvalidHttp UMETA(DisplayName, "InvalidHttp"),
+	InvalidBrowser UMETA(DisplayName, "InvalidBrowser"),
+	InvalidCredentials UMETA(DisplayName, "InvalidCredentials"),
+	TimeOut UMETA(DisplayName, "TimeOut"),
+};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ELoginState, ELoginState::NewUser, ELoginState::TimeOut);
+
 /* Used to convert PlayerScoreArray to database scores */
 USTRUCT(BlueprintType)
 struct FJsonScore
@@ -76,8 +90,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRefreshTokenResponse, const bool,
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginResponse, const FString, ResponseMsg, const int32, ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPostPlayerScoresResponse, const FString, ResponseMsg, const int32,
-                                             ResponseCode);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPostPlayerScoresResponse, const ELoginState&, LoginState);
 
 UCLASS()
 class BEATSHOT_API UDefaultGameInstance : public UGameInstance
@@ -88,7 +101,7 @@ class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 
 public:
 	// Register Functions
-
+	
 	UFUNCTION(BlueprintCallable, Category = "References")
 	void RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter);
 
@@ -147,13 +160,13 @@ private:
 #pragma region HttpRequests
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Authorization")
+	UFUNCTION()
 	void LoginUser(const FLoginPayload& LoginPayload);
 
-	UFUNCTION(BlueprintCallable, Category = "Authorization")
+	UFUNCTION()
 	void RequestAccessToken();
 
-	UFUNCTION(BlueprintCallable, Category = "Authorization")
+	UFUNCTION()
 	bool IsRefreshTokenValid() const;
 
 private:

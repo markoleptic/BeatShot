@@ -32,17 +32,11 @@ void UPostGameMenuWidget::NativeConstruct()
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
 	SettingsMenuWidget->AASettingsWidget->OnRestartButtonClicked.BindDynamic(this, &UPostGameMenuWidget::Restart);
-	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
+	//ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
 	
 	PlayFadeInWidget();
-}
-
-void UPostGameMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-	ScoresWidget->BrowserWidget->ParentTickOverride(InDeltaTime);
 }
 
 void UPostGameMenuWidget::Restart()
@@ -109,11 +103,11 @@ void UPostGameMenuWidget::OnQuitButtonClicked()
 	QuitMenuWidget->PlayInitialFadeInMenu();
 }
 
-void UPostGameMenuWidget::OnLoginStateChange(bool bLoggedInHttp, bool bLoggedInBrowser, bool bIsPopup)
+void UPostGameMenuWidget::OnLoginStateChange(const ELoginState& LoginState, bool bIsPopup)
 {
-	if (bLoggedInHttp && bLoggedInBrowser)
+	if (LoginState == ELoginState::LoggedInHttpAndBrowser)
 	{
-		ScoresWidget->FadeOut();
+		ScoresWidget->FadeOutLoadingOverlay();
 	}
 }
 

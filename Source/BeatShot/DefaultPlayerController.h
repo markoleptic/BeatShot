@@ -43,8 +43,8 @@ public:
 	void ShowPauseMenu();
 	UFUNCTION(BlueprintCallable)
 	void HidePauseMenu();
-	void ShowCrosshair();
-	void HideCrosshair();
+	void ShowCrossHair();
+	void HideCrossHair();
 	void ShowPlayerHUD();
 	void HidePlayerHUD();
 	void ShowCountdown();
@@ -61,8 +61,6 @@ public:
 	bool IsPostGameMenuActive() const;
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void HandlePause();
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void HandlePostGameMenuPause(const bool bShouldPause);
 	UFUNCTION(BlueprintCallable)
 	UPopupMessageWidget* CreatePopupMessageWidget(const bool bDestroyOnClick, const int32 ButtonIndex = -1);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
@@ -78,7 +76,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCrosshair> CrosshairClass;
+	TSubclassOf<UCrosshair> CrossHairClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -101,7 +99,7 @@ private:
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
 	UPROPERTY()
-	UCrosshair* Crosshair;
+	UCrosshair* CrossHair;
 	UPROPERTY()
 	UPauseMenuWidget* PauseMenu;
 	UPROPERTY()
@@ -131,5 +129,5 @@ private:
 	UFUNCTION()
 	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 	UFUNCTION()
-	void OnPostPlayerScoresResponse(const FString Message, const int32 ResponseCode);
+	void OnPostPlayerScoresResponse(const ELoginState& LoginState);
 };

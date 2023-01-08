@@ -429,7 +429,6 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 
 	//UE_LOG(LogTemp, Display, TEXT("ActiveTargetArray size: %d"), ActiveTargetArray.Num());
 	
-
 	FTimerHandle TimerHandle;
 	RemoveFromRecentDelegate.BindUFunction(this, FName("RemoveFromRecentTargetArray"), DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, GameModeActorStruct.TargetSpawnCD + 0.01, false);

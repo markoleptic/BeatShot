@@ -32,8 +32,6 @@ class BEATSHOT_API UMainMenuWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
 #pragma region MenuWidgets
 
 	/** A map to store buttons and the widgets they associate with */
@@ -110,7 +108,7 @@ private:
 	UFUNCTION()
 	void OnGitHubButtonClicked();
 	UFUNCTION()
-	void OnLoginStateChange(const bool bLoggedInHttp, const bool bLoggedInBrowser, const bool bIsPopup);
+	void OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup);
 	UFUNCTION()
 	void UpdateLoginState(const bool bSuccessfulLogin);
 

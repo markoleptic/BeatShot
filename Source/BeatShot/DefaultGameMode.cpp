@@ -163,7 +163,7 @@ void ADefaultGameMode::StartGameMode()
 {
 	ADefaultPlayerController* DefaultPlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	DefaultPlayerController->ShowCrosshair();
+	DefaultPlayerController->ShowCrossHair();
 	DefaultPlayerController->ShowPlayerHUD();
 	DefaultPlayerController->HideCountdown();
 	GameModeActorBase->StartGameMode();
@@ -289,7 +289,7 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	//Hide HUD and countdown
 	Controller->HidePlayerHUD();
 	Controller->HideCountdown();
-	Controller->HideCrosshair();
+	Controller->HideCrossHair();
 
 	if (TargetSpawner)
 	{

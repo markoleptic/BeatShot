@@ -24,7 +24,6 @@ void ADefaultPlayerController::BeginPlay()
 		ShowFPSCounter();
 	}
 	GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChange);
-	GI->OnPostPlayerScoresResponse.AddDynamic(this, &ADefaultPlayerController::OnPostPlayerScoresResponse);
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
 }
@@ -81,18 +80,18 @@ void ADefaultPlayerController::HidePauseMenu()
 	}
 }
 
-void ADefaultPlayerController::ShowCrosshair()
+void ADefaultPlayerController::ShowCrossHair()
 {
-	Crosshair = CreateWidget<UCrosshair>(this, CrosshairClass);
-	Crosshair->AddToViewport();
+	CrossHair = CreateWidget<UCrosshair>(this, CrossHairClass);
+	CrossHair->AddToViewport();
 }
 
-void ADefaultPlayerController::HideCrosshair()
+void ADefaultPlayerController::HideCrossHair()
 {
-	if (Crosshair)
+	if (CrossHair)
 	{
-		Crosshair->RemoveFromViewport();
-		Crosshair = nullptr;
+		CrossHair->RemoveFromViewport();
+		CrossHair = nullptr;
 	}
 }
 
@@ -140,6 +139,7 @@ void ADefaultPlayerController::HideCountdown()
 
 void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 {
+	GI->OnPostPlayerScoresResponse.AddDynamic(this, &ADefaultPlayerController::OnPostPlayerScoresResponse);
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
 	/** If scores weren't saved, update Overlay text to reflect that. This also means OnPostPlayerScores won't get called */
 	if (!bSavedScores)
@@ -149,19 +149,21 @@ void ADefaultPlayerController::ShowPostGameMenu(const bool bSavedScores)
 	}
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
-	HandlePostGameMenuPause(true);
+	//HandlePostGameMenuPause(true);
+	SetInputMode(FInputModeUIOnly());
+	SetShowMouseCursor(true);
+	SetPlayerEnabledState(false);
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(GI->LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-void ADefaultPlayerController::OnPostPlayerScoresResponse(const FString Message, const int32 ResponseCode) 
+void ADefaultPlayerController::OnPostPlayerScoresResponse(const ELoginState& LoginState) 
 {
-	if (!PostGameMenuActive)
+	if (PostGameMenuWidget)
 	{
-		return;
+		PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(LoginState);
 	}
-	PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(Message, ResponseCode);
+	GI->OnPostPlayerScoresResponse.RemoveDynamic(this, &ADefaultPlayerController::OnPostPlayerScoresResponse);
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
@@ -171,7 +173,10 @@ void ADefaultPlayerController::HidePostGameMenu()
 		PostGameMenuWidget->RemoveFromViewport();
 		PostGameMenuWidget = nullptr;
 		PostGameMenuActive = false;
-		HandlePostGameMenuPause(false);
+		//HandlePostGameMenuPause(false);
+		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
+		SetPlayerEnabledState(true);
 	}
 }
 
@@ -206,12 +211,12 @@ void ADefaultPlayerController::OnFadeOutPopupMessageFinish()
 	PostGameMenuWidget = nullptr;
 	if (GetWorld()->GetMapName().Contains("Range") && !UGameplayStatics::IsGamePaused(GetWorld()))
 	{
-		SetInputMode(FInputModeGameAndUI());
+		SetInputMode(FInputModeGameOnly());
 		SetShowMouseCursor(false);
 		SetPlayerEnabledState(true);
-		if (!Crosshair)
+		if (!CrossHair)
 		{
-			ShowCrosshair();
+			ShowCrossHair();
 		}
 	}
 }

@@ -131,12 +131,12 @@ void UDefaultGameInstance::SavePlayerScoresToDatabase()
 	if (!LoadPlayerSettings().HasLoggedInHttp)
 	{
 		/** Broadcast custom code for DefaultPlayerController to listen to in case user doesn't have account */
-		OnPostPlayerScoresResponse.Broadcast("NoAccount", 900);
+		OnPostPlayerScoresResponse.Broadcast(ELoginState::NewUser);
 	}
 	else if (!IsRefreshTokenValid())
 	{
 		/** Broadcast custom code for DefaultPlayerController to listen to in case of invalid refresh token */
-		OnPostPlayerScoresResponse.Broadcast("SavedScoresLocallyOnly", 901);
+		OnPostPlayerScoresResponse.Broadcast(ELoginState::InvalidHttp);
 	}
 	else
 	{
@@ -179,13 +179,13 @@ void UDefaultGameInstance::LoginUser(const FLoginPayload& LoginPayload)
 	FString LoginString;
 	const TSharedRef< TJsonWriter<> > LoginWriter = TJsonWriterFactory<>::Create(&LoginString);
 	FJsonSerializer::Serialize(LoginObject, LoginWriter);
-
+	
 	const FHttpRequestRef LoginRequest = FHttpModule::Get().CreateRequest();
-	LoginRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnLoginResponseReceived);
 	LoginRequest->SetURL(LoginEndpoint);
 	LoginRequest->SetVerb("POST");
 	LoginRequest->SetHeader("Content-Type", "application/json");
 	LoginRequest->SetContentAsString(LoginString);
+	LoginRequest->OnProcessRequestComplete().BindUObject(this, &UDefaultGameInstance::OnLoginResponseReceived);
 	LoginRequest->ProcessRequest();
 }
 
@@ -238,9 +238,8 @@ void UDefaultGameInstance::OnAccessTokenResponseReceived(FHttpRequestPtr Request
 		if (bIsSavingScores)
 		{
 			/** Broadcast custom code for DefaultPlayerController to listen to in case of invalid refresh token */
-			OnPostPlayerScoresResponse.Broadcast("SavedScoresLocallyOnly", Response->GetResponseCode());
+			OnPostPlayerScoresResponse.Broadcast(ELoginState::InvalidHttp);
 		}
-		
 		return;
 	}
 	
@@ -306,12 +305,12 @@ void UDefaultGameInstance::OnPostPlayerScoresResponseReceived(FHttpRequestPtr Re
 	bIsSavingScores = false;
 	if (Response->GetResponseCode() != 200)
 	{
-		OnPostPlayerScoresResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
+		OnPostPlayerScoresResponse.Broadcast(ELoginState::InvalidHttp);
 		UE_LOG(LogTemp, Display, TEXT("Send Scores Request Failed: %s"), *Response->GetContentAsString());
 		return;
 	}
 	UE_LOG(LogTemp, Display, TEXT("Successfully saved scores to database."));
-	OnPostPlayerScoresResponse.Broadcast(Response->GetContentAsString(), Response->GetResponseCode());
+	OnPostPlayerScoresResponse.Broadcast(ELoginState::LoggedInHttp);
 	
 	TArray<FPlayerScore> PlayerScoreArray = LoadPlayerScores();
 	// Save the player scores after marking them as saved to database

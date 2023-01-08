@@ -5,7 +5,6 @@
 
 #include "LoginWidget.h"
 #include "SettingsMenuWidget.h"
-#include "GameModesWidget.h"
 #include "SlideRightButton.h"
 #include "WebBrowserOverlay.h"
 #include "Components/Button.h"
@@ -24,7 +23,6 @@ void UMainMenuWidget::NativeConstruct()
 	MainMenuWidgets.Add(FAQButton, FAQ);
 
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UMainMenuWidget::OnLoginStateChange);
-
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnLoginButtonClicked);
 	LoginWidget->OkayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnScoringButtonClicked);
 
@@ -38,14 +36,8 @@ void UMainMenuWidget::NativeConstruct()
 	GitHubIssueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnGitHubButtonClicked);
 	ScoresWidget->InitializeScoringOverlay();
 	WebBrowserOverlayPatchNotes->BrowserWidget->LoadPatchNotesURL();
-	WebBrowserOverlayPatchNotes->FadeOut();
+	WebBrowserOverlayPatchNotes->FadeOutLoadingOverlay();
 	OnPatchNotesButtonClicked();
-}
-
-void UMainMenuWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-	ScoresWidget->BrowserWidget->ParentTickOverride(InDeltaTime);
 }
 
 void UMainMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
@@ -75,7 +67,7 @@ void UMainMenuWidget::OnGameModesButtonClicked()
 void UMainMenuWidget::OnScoringButtonClicked()
 {
 	SlideButtons(ScoresButton);
-	if (bShowWebBrowserScoring) ScoresWidget->FadeOut();
+	if (bShowWebBrowserScoring) ScoresWidget->FadeOutLoadingOverlay();
 }
 
 void UMainMenuWidget::OnSettingsButtonClicked()
@@ -91,7 +83,6 @@ void UMainMenuWidget::OnFAQButtonClicked()
 void UMainMenuWidget::OnLoginButtonClicked(const FLoginPayload LoginPayload, const bool bIsPopup)
 {
 	ScoresWidget->LoginUserHttp(LoginPayload, bIsPopup);
-	bShowWebBrowserScoring = true;
 }
 
 void UMainMenuWidget::OnGitHubButtonClicked()
@@ -99,29 +90,55 @@ void UMainMenuWidget::OnGitHubButtonClicked()
 	UKismetSystemLibrary::LaunchURL(GitHubURL);
 }
 
-void UMainMenuWidget::OnLoginStateChange(const bool bLoggedInHttp, const bool bLoggedInBrowser, const bool bIsPopup)
+void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup)
 {
-	if (!bLoggedInHttp)
+	switch (LoginState)
 	{
-		LoginWidget->ShowRegisterScreen();
-		UpdateLoginState(false);
-		return;
+	case ELoginState::NewUser:
+		{
+			LoginWidget->ShowRegisterScreen();
+			UpdateLoginState(false);
+			return;
+		}
+	case ELoginState::InvalidHttp:
+		{
+			LoginWidget->ShowLoginScreen("LoginErrorText");
+			UpdateLoginState(false);
+			return;
+		}
+	case ELoginState::InvalidBrowser:
+		{
+			LoginWidget->ShowLoginScreen("BrowserLoginErrorText");
+			UpdateLoginState(false);
+			return;
+		}
+	case ELoginState::LoggedInHttpAndBrowser:
+		{
+			bShowWebBrowserScoring = true;
+			if (bIsPopup)
+			{
+				LoginWidget->OnLoginSuccess();
+			}
+			UpdateLoginState(true);
+			break;
+		}
+	case ELoginState::InvalidCredentials:
+		{
+			LoginWidget->ShowLoginScreen("InvalidCredentialsText");
+			UpdateLoginState(false);
+			break;
+		}
+	case ELoginState::TimeOut:
+		{
+			LoginWidget->ShowLoginScreen("TimeOutErrorText");
+			UpdateLoginState(false);
+			break;
+		}
+	default:
+		{
+			break;
+		}
 	}
-	if (!bLoggedInBrowser)
-	{
-		LoginWidget->ShowLoginScreen();
-		UpdateLoginState(false);
-		return;
-	}
-
-	bShowWebBrowserScoring = true;
-	if (!bIsPopup)
-	{
-		UpdateLoginState(true);
-		return;
-	}
-	LoginWidget->OnLoginSuccess();
-	UpdateLoginState(true);
 }
 
 void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)

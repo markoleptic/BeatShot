@@ -16,7 +16,6 @@ ContinueWithoutConfirmButtonText,Yes I'm Sure
 ContinueWithoutCancelButtonTextLogin,Go Back and Sign In
 ContinueWithoutCancelButtonTextRegister,Go Back and Register
 LoginTitleText,Sign In
-ErrorText,
 LoginErrorText,Something went wrong or your login expired. Please sign again to see your scores.
 UsernameText,Username:
 EmailText,Email:
@@ -28,3 +27,7 @@ LoginButtonText,Login
 LoggedInTitleText,Login Success
 LoggedInBodyText,You've been logged in and won't have to login again until your cookie expires.
 OkayButtonText,Sick
+BrowserLoginErrorText,"The game received a valid response from the server, but couldn't log you in to the website in the browser."
+InvalidCredentialsText,"Incorrect username, email, and/or password."
+TimeOutErrorText,Couldn't connect to BeatShot servers.
+MissingInfoErrorText,Please enter your username/email and password to login.

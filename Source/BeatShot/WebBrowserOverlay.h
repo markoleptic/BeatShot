@@ -15,11 +15,8 @@ class ULoginWidget;
 class UTextBlock;
 class UOverlay;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLoginStateChange, bool, bLoggedInHttp, bool, bLoggedInBrowser, bool, bIsPopup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginStateChange, const ELoginState&, LoginState, bool, bIsPopup);
 
-/**
- * 
- */
 UCLASS()
 class BEATSHOT_API UWebBrowserOverlay : public UUserWidget
 {
@@ -31,31 +28,31 @@ class BEATSHOT_API UWebBrowserOverlay : public UUserWidget
 
 public:
 	/** Called from the parent widget of any instance of this widget */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void InitializeScoringOverlay();
 
 	/** Called from the parent widget of any instance of this widget */
-	UFUNCTION(BlueprintCallable)
-	void InitializePostGameScoringOverlay(const FString& ResponseMessage, const int32 ResponseCode);
+	UFUNCTION()
+	void InitializePostGameScoringOverlay(const ELoginState& LoginState);
 
 	/** Sends a login request to make sure we can save scores to database, which also saves the refresh token */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void LoginUserHttp(const FLoginPayload LoginPayload, const bool bIsPopup);
 
 	/** Function called when there a response is returned for logging in user through Http */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void OnHttpLoginResponse(FString ResponseMsg, int32 ResponseCode);
 
 	/** Called to change the overlay text in PostGameMenuWidget */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void SetOverlayText(const FString& Key);
 
 	/** Fade Out the loading screen overlay and show the web browser */
-	UFUNCTION(BlueprintCallable)
-	void FadeOut();
+	UFUNCTION()
+	void FadeOutLoadingOverlay();
 
 	/** Fade in the OverlayText and fade out the loading icon */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION()
 	void FadeInText();
 
 	/** Whether or not the instance of this widget is a child of PostGameMenuWidget, vs being a child widget of MainMenuWidget */
@@ -106,16 +103,8 @@ private:
 	UFUNCTION()
 	void OnAccessTokenResponse(const bool Success);
 
-	/** Handles the response from LoginWidget HandleUserLogin */
-	UFUNCTION()
-	void HttpDelay();
-
 	/** Resets all instance variables at the end of a Login State Change */
 	void Reset();
-
-	/** The timer associated with looping OnURLLoaded over itself by binding to HttpDelay */
-	UPROPERTY()
-	FTimerHandle HttpTimerHandle;
 
 	/** Delegate used to remove the overlay from WebBrowserOverlay after FadeOut */
 	UPROPERTY()
@@ -130,27 +119,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	ULoginWidget* LoginWidget;
 
-#pragma region InstanceVariables
-
-	/** Whether or not the user was explicitly logging in with the login screen,
-	 *  rather than just loading the user profile in BrowserWidget */
-	bool bIsLoggingIn = false;
-
-	/** Whether or not the http login request returned a status of 200 (OK) */
-	bool bHttpResponseSuccess = false;
-
-	/** Whether or not we've received an http response yet. Used to determine if
-	 *  OnURLLoaded should continue execution or loop over itself until it
-	 *  receives a response */
-	bool bHttpResponse = false;
-
-	/** Whether or not the URL load was successful in WebBrowser. Saved as variable in case
-	 *  we need to wait for an Http Response */
-	bool URLLoadSuccess = false;
+	FLoginPayload LoginInfo;
 
 	/** Whether or not LoginUserHttp was called through this widget's LoginWidget, or through the
 	 *  MainMenu's Popup LoginWidget */
 	bool bSignedInThroughPopup = false;
-
-#pragma endregion
 };

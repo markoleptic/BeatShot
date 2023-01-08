@@ -3,36 +3,27 @@
 
 #include "WebBrowserWidget.h"
 
-#include "SaveGamePlayerSettings.h"
 #include "DefaultGameInstance.h"
 #include "TimerManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 
 void UWebBrowserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	bTimerActive = false;
-	OnTimerElapsed.BindDynamic(this, &UWebBrowserWidget::OnURLChanged);
-}
-
-void UWebBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
 void UWebBrowserWidget::LoadCustomGameModesURL(const FString& Username)
 {
 	UserProfileURL = ProfileURL + Username;
 	Browser->LoadURL(ProfileURL + Username + CustomModesString);
-	OnURLChanged(FString());
+	OnURLChanged();
 }
 
 void UWebBrowserWidget::LoadDefaultGameModesURL(const FString& Username)
 {
 	UserProfileURL = ProfileURL + Username;
 	Browser->LoadURL(ProfileURL + Username + DefaultModesString);
-	OnURLChanged(FString());
+	OnURLChanged();
 }
 
 void UWebBrowserWidget::LoadPatchNotesURL() const
@@ -44,7 +35,7 @@ void UWebBrowserWidget::LoadProfileURL(const FString& Username)
 {
 	UserProfileURL = ProfileURL + Username;
 	Browser->LoadURL(ProfileURL + Username);
-	OnURLChanged(FString());
+	OnURLChanged();
 }
 
 void UWebBrowserWidget::HandleUserLogin(const FLoginPayload LoginPayload)
@@ -57,21 +48,23 @@ void UWebBrowserWidget::HandleUserLogin(const FLoginPayload LoginPayload)
 	{
 		UserProfileURL = ProfileURL + LoginPayload.Username;
 	}
-	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, this, &UWebBrowserWidget::CheckPersistCheckbox, 0.1f,
-	                                       false);
-}
-
-void UWebBrowserWidget::ParentTickOverride(float DeltaTime)
-{
-	if (bTimerActive)
+	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, FTimerDelegate::CreateLambda([&]
 	{
-		if (URLCheckTimer > 0.3f && OnTimerElapsed.IsBound())
+		GetWorld()->GetTimerManager().ClearTimer(CheckCheckboxDelay);
+		Browser->ExecuteJavascript(CheckPersistScript);
+		GetWorld()->GetTimerManager().SetTimer(ClickLoginDelay, FTimerDelegate::CreateLambda([&]
 		{
-			OnTimerElapsed.Execute(Browser->GetUrl());
-			URLCheckTimer = 0.f;
-		}
-		URLCheckTimer = URLCheckTimer + DeltaTime;
-	}
+			GetWorld()->GetTimerManager().ClearTimer(ClickLoginDelay);
+			// if (const FPlayerSettings PlayerSettings = Cast<UDefaultGameInstance>(
+			// 		UGameplayStatics::GetGameInstance(GetWorld()))->
+			// 	LoadPlayerSettings(); PlayerSettings.HasLoggedInHttp)
+			// {
+			// 	UserProfileURL = ProfileURL + PlayerSettings.Username;
+			// }
+			Browser->ExecuteJavascript(ClickLoginScript);
+			OnURLChanged();
+		}), 0.1f, false);
+	}), 0.1f, false);
 }
 
 bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
@@ -95,47 +88,26 @@ bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
 	return true;
 }
 
-void UWebBrowserWidget::CheckPersistCheckbox()
+void UWebBrowserWidget::OnURLChanged()
 {
-	GetWorld()->GetTimerManager().ClearTimer(CheckCheckboxDelay);
-	Browser->ExecuteJavascript(CheckPersistScript);
-	GetWorld()->GetTimerManager().SetTimer(ClickLoginDelay, this, &UWebBrowserWidget::ClickLogin, 0.1f, false);
-}
-
-void UWebBrowserWidget::ClickLogin()
-{
-	GetWorld()->GetTimerManager().ClearTimer(ClickLoginDelay);
-	if (const FPlayerSettings PlayerSettings = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))
-		->
-		LoadPlayerSettings(); PlayerSettings.HasLoggedInHttp)
+	GetWorld()->GetTimerManager().SetTimer(CheckURLTimer, FTimerDelegate::CreateLambda([&]
 	{
-		UserProfileURL = ProfileURL + PlayerSettings.Username;
-	}
-	Browser->ExecuteJavascript(ClickLoginScript);
-	OnURLChanged(FString());
-}
-
-void UWebBrowserWidget::OnURLChanged(const FString& LastURL)
-{
-	URLCheckAttempts++;
-	if (URLCheckAttempts > 15)
-	{
-		bTimerActive = false;
-		OnURLLoaded.Broadcast(false);
-		UserProfileURL = "";
-		URLCheckAttempts = 0;
-		return;
-	}
-	if (LastURL.IsEmpty())
-	{
-		bTimerActive = true;
-		return;
-	}
-	if (UKismetStringLibrary::StartsWith(LastURL, UserProfileURL, ESearchCase::IgnoreCase))
-	{
-		bTimerActive = false;
-		UserProfileURL = "";
-		URLCheckAttempts = 0;
-		OnURLLoaded.Broadcast(true);
-	}
+		const FString URL = Browser->GetUrl();
+		URLCheckAttempts++;
+		if (URLCheckAttempts > 6)
+		{
+			OnURLLoaded.Broadcast(false);
+			UserProfileURL = "";
+			URLCheckAttempts = 0;
+			GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
+			return;
+		}
+		if (UKismetStringLibrary::StartsWith(URL, UserProfileURL, ESearchCase::IgnoreCase))
+		{
+			UserProfileURL = "";
+			URLCheckAttempts = 0;
+			OnURLLoaded.Broadcast(true);
+			GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
+		}
+	}), 0.5f, true);
 }
