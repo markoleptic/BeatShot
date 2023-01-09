@@ -4,6 +4,7 @@
 #include "WebBrowserOverlay.h"
 
 #include "LoginWidget.h"
+#include "WebBrowserWidget.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"

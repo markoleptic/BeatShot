@@ -6,6 +6,7 @@
 #include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
 #include "DefaultHealthComponent.h"
+#include "DefaultPlayerController.h"
 #include "FloatingTextActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DateTime.h"
@@ -25,7 +26,6 @@ void AGameModeActorBase::BeginPlay()
 	Super::BeginPlay();
 	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	const FPlayerSettings PlayerSettings = GI->LoadPlayerSettings();
-	GI->RegisterGameModeActorBase(this);
 	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
 	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
 	GI->OnPlayerSettingsChange.AddDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
@@ -36,10 +36,13 @@ void AGameModeActorBase::Destroyed()
 {
 	/** Unbinding delegates */
 	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	GI->OnPlayerSettingsChange.RemoveDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
-	if (GI->DefaultCharacterRef->Gun)
+	if (Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun)
 	{
-		GI->DefaultCharacterRef->Gun->OnShotFired.RemoveDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+		Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun->OnShotFired.RemoveDynamic(
+			this, &AGameModeActorBase::UpdateShotsFired);
 	}
 	if (GameMode->OnBeatTrackTargetSpawned.IsBound())
 	{
@@ -79,9 +82,10 @@ void AGameModeActorBase::StartGameMode()
 void AGameModeActorBase::InitializeGameModeActor()
 {
 	LoadPlayerScores();
-	
+
 	/** Binding delegates */
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->DefaultCharacterRef->Gun->
+
+	Cast<ADefaultCharacter>(Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))->Gun->
 		OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
 	GameMode->OnTargetSpawned.BindUFunction(this, FName("UpdateTargetsSpawned"));
 	GameMode->OnTargetDestroyed.BindUFunction(this, FName("UpdatePlayerScores"));
@@ -272,26 +276,32 @@ void AGameModeActorBase::SavePlayerScores()
 	/** for BeatTrack modes */
 	if (CurrentPlayerScore.TotalPossibleDamage > 0.01f)
 	{
-		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage, 100);
-		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage, 100);
+		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage,
+		                                            100);
+		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage,
+		                                              100);
 	}
 	else
 	{
-		CurrentPlayerScore.AvgTimeOffset = CheckFloatNaN(CurrentPlayerScore.TotalTimeOffset / CurrentPlayerScore.TargetsHit, 1000);
+		CurrentPlayerScore.AvgTimeOffset = CheckFloatNaN(
+			CurrentPlayerScore.TotalTimeOffset / CurrentPlayerScore.TargetsHit, 1000);
 		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.ShotsFired, 100);
-		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.TargetsSpawned, 100);
+		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.TargetsSpawned,
+		                                              100);
 	}
 	CurrentPlayerScore.HighScore = CheckFloatNaN(CurrentPlayerScore.HighScore, 100);
-	CurrentPlayerScore.Score = CheckFloatNaN( CurrentPlayerScore.Score, 100);
+	CurrentPlayerScore.Score = CheckFloatNaN(CurrentPlayerScore.Score, 100);
 	CurrentPlayerScore.SongLength = CheckFloatNaN(CurrentPlayerScore.SongLength, 100);
 
 	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 	GI->SavePlayerScores(CurrentPlayerScore, true);
 
-	UE_LOG(LogTemp, Display, TEXT("Accuracy: %f \n Completion: %f \n AvgTimeOffset: %f \n HighScore: %f \n Score: %f \n SongLength: %f"),
-		CurrentPlayerScore.Accuracy, CurrentPlayerScore.Completion, CurrentPlayerScore.AvgTimeOffset, CurrentPlayerScore.HighScore,
-		CurrentPlayerScore.Score, CurrentPlayerScore.SongLength);
+	UE_LOG(LogTemp, Display,
+	       TEXT("Accuracy: %f \n Completion: %f \n AvgTimeOffset: %f \n HighScore: %f \n Score: %f \n SongLength: %f"),
+	       CurrentPlayerScore.Accuracy, CurrentPlayerScore.Completion, CurrentPlayerScore.AvgTimeOffset,
+	       CurrentPlayerScore.HighScore,
+	       CurrentPlayerScore.Score, CurrentPlayerScore.SongLength);
 }
 
 void AGameModeActorBase::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)

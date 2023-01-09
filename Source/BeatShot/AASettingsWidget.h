@@ -6,7 +6,7 @@
 #include "SaveGameAASettings.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
-#include "AASettings.generated.h"
+#include "AASettingsWidget.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnRestartButtonClicked);
 
@@ -24,7 +24,7 @@ class UProgressBar;
  */
 
 UCLASS()
-class BEATSHOT_API UAASettings : public UUserWidget
+class BEATSHOT_API UAASettingsWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -40,7 +40,7 @@ protected:
 
 	virtual void NativeConstruct() override;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY()
 	FAASettingsStruct AASettings;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UComboBoxString* NumBandChannels;

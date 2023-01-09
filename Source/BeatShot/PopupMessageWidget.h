@@ -10,9 +10,6 @@ class UButton;
 class UTextBlock;
 class UWidgetAnimation;
 
-/**
- * 
- */
 UCLASS()
 class BEATSHOT_API UPopupMessageWidget : public UUserWidget
 {

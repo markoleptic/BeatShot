@@ -12,7 +12,7 @@
 class UPopupMessageWidget;
 class UCheckBox;
 class UCrossHairSettingsWidget;
-class UAASettings;
+class UAASettingsWidget;
 class USlider;
 class UEditableTextBox;
 class UComboBoxString;
@@ -20,7 +20,6 @@ class UVerticalBox;
 class UTextBlock;
 class UButton;
 class UWidgetSwitcher;
-class SettingsMenuWidget;
 class UCrossHairSettingsWidget;
 
 UCLASS()
@@ -62,7 +61,7 @@ public:
 	
 	/** So that parent widgets can bind to OnRestartButtonClicked */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UAASettings* AASettingsWidget;
+	UAASettingsWidget* AASettingsWidget;
 
 protected:
 	

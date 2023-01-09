@@ -112,7 +112,7 @@ protected:
 	UAudioAnalyzerManager* AATracker;
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AAPlayer;
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY()
 	FAASettingsStruct AASettings;
 
 private:

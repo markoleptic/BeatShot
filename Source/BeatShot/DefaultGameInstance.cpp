@@ -3,24 +3,12 @@
 
 #include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
-#include "DefaultCharacter.h"
 #include "JsonObjectConverter.h"
 #include "Http.h"
 #include "Kismet/GameplayStatics.h"
 #include "SaveGamePlayerSettings.h"
 #include "SaveGameAASettings.h"
 #include "SaveGamePlayerScore.h"
-
-
-void UDefaultGameInstance::RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter)
-{
-	DefaultCharacterRef = DefaultCharacter;
-}
-
-void UDefaultGameInstance::RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase)
-{
-	GameModeActorBaseRef = GameModeActorBase;
-}
 
 void UDefaultGameInstance::InitializeGameModeActorStruct(const FGameModeActorStruct NewGameModeActorStruct)
 {

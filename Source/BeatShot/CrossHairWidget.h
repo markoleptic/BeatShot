@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "SaveGamePlayerSettings.h"
-#include "Crosshair.generated.h"
+#include "CrossHairWidget.generated.h"
 
 class UImage;
 class UScaleBox;
 
 UCLASS()
-class BEATSHOT_API UCrosshair : public UUserWidget
+class BEATSHOT_API UCrossHairWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

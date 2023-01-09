@@ -13,23 +13,23 @@ struct FAASettingsStruct
 	GENERATED_BODY()
 
 	// Number of channels to break Tracker Sound frequencies into
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(BlueprintReadOnly)
 	int NumBandChannels;
 
 	// Array to store Threshold values for each active band channel
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(BlueprintReadOnly)
 	TArray<float> BandLimitsThreshold;
 
 	// Array to store band frequency channels
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(BlueprintReadOnly)
 	TArray<FVector2D> BandLimits;
 
 	// Time window to take frequency sample
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(BlueprintReadOnly)
 	float TimeWindow;
 
 	// History size of frequency sample
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(BlueprintReadOnly)
 	int HistorySize;
 
 	FAASettingsStruct()
@@ -67,6 +67,6 @@ class BEATSHOT_API USaveGameAASettings : public USaveGame
 public:
 	USaveGameAASettings();
 
-	UPROPERTY(VisibleAnywhere, Category = "AA")
+	UPROPERTY(BlueprintReadOnly)
 	FAASettingsStruct AASettings;
 };

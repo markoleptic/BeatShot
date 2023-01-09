@@ -100,24 +100,11 @@ class BEATSHOT_API UDefaultGameInstance : public UGameInstance
 #pragma region References
 
 public:
-	// Register Functions
-	
-	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterDefaultCharacter(ADefaultCharacter* DefaultCharacter);
 
-	UFUNCTION(BlueprintCallable, Category = "References")
-	void RegisterGameModeActorBase(AGameModeActorBase* GameModeActorBase);
-
-	UFUNCTION(BlueprintCallable, Category = "References")
+	UFUNCTION()
 	void InitializeGameModeActorStruct(const FGameModeActorStruct NewGameModeActorStruct);
 
-	UPROPERTY(BlueprintReadWrite, Category = "References")
-	ADefaultCharacter* DefaultCharacterRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
-	AGameModeActorBase* GameModeActorBaseRef;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "References")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	FGameModeActorStruct GameModeActorStruct;
 
 #pragma endregion
@@ -206,8 +193,4 @@ public:
 	FOnRefreshTokenResponse OnRefreshTokenResponse;
 
 #pragma endregion
-
-
-
-
 };

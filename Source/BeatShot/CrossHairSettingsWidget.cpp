@@ -3,7 +3,7 @@
 
 #include "CrossHairSettingsWidget.h"
 
-#include "Crosshair.h"
+#include "CrossHairWidget.h"
 #include "DefaultGameInstance.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
@@ -48,88 +48,88 @@ void UCrossHairSettingsWidget::NativeConstruct()
 
 void UCrossHairSettingsWidget::SetCrossHairOptions(const FPlayerSettings& CrossHairSettings)
 {
-	ColorAValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrosshairColor.A * 100)));
-	ColorRValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrosshairColor.R * 255)));
-	ColorGValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrosshairColor.G * 255)));
-	ColorBValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrosshairColor.B * 255)));
-	HexValue->SetText(FText::FromString(CrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
+	ColorAValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrossHairColor.A * 100)));
+	ColorRValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrossHairColor.R * 255)));
+	ColorGValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrossHairColor.G * 255)));
+	ColorBValue->SetText(FText::AsNumber(roundf(CrossHairSettings.CrossHairColor.B * 255)));
+	HexValue->SetText(FText::FromString(CrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	InnerOffsetValue->SetText(FText::AsNumber(CrossHairSettings.InnerOffset));
 	LineLengthValue->SetText(FText::AsNumber(CrossHairSettings.LineLength));
 	LineWidthValue->SetText(FText::AsNumber(CrossHairSettings.LineWidth));
 	OutlineOpacityValue->SetText(FText::AsNumber(roundf(CrossHairSettings.OutlineOpacity * 100)));
 	OutlineWidthValue->SetText(FText::AsNumber(CrossHairSettings.OutlineWidth));
 
-	ColorASlider->SetValue(roundf(CrossHairSettings.CrosshairColor.A * 100));
-	ColorRSlider->SetValue(roundf(CrossHairSettings.CrosshairColor.R * 255));
-	ColorGSlider->SetValue(roundf(CrossHairSettings.CrosshairColor.G * 255));
-	ColorBSlider->SetValue(roundf(CrossHairSettings.CrosshairColor.B * 255));
+	ColorASlider->SetValue(roundf(CrossHairSettings.CrossHairColor.A * 100));
+	ColorRSlider->SetValue(roundf(CrossHairSettings.CrossHairColor.R * 255));
+	ColorGSlider->SetValue(roundf(CrossHairSettings.CrossHairColor.G * 255));
+	ColorBSlider->SetValue(roundf(CrossHairSettings.CrossHairColor.B * 255));
 	InnerOffsetSlider->SetValue(CrossHairSettings.InnerOffset);
 	LineLengthSlider->SetValue(CrossHairSettings.LineLength);
 	LineWidthSlider->SetValue(CrossHairSettings.LineWidth);
 	OutlineOpacitySlider->SetValue(roundf(CrossHairSettings.OutlineOpacity * 100));
 	OutlineWidthSlider->SetValue(CrossHairSettings.OutlineWidth);
 
-	ColorPreview->SetColorAndOpacity(CrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(CrossHairSettings.CrossHairColor);
 	CrossHairWidget->InitializeCrossHair(CrossHairSettings);
 }
 
 void UCrossHairSettingsWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrosshairColor.A = RoundedValue / 100;
+	NewCrossHairSettings.CrossHairColor.A = RoundedValue / 100;
 	ColorASlider->SetValue(RoundedValue);
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrosshairColor.R = RoundedValue / 255;
+	NewCrossHairSettings.CrossHairColor.R = RoundedValue / 255;
 	ColorRSlider->SetValue(RoundedValue);
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrosshairColor.G = RoundedValue / 255;
+	NewCrossHairSettings.CrossHairColor.G = RoundedValue / 255;
 	ColorGSlider->SetValue(RoundedValue);
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrosshairColor.B = RoundedValue / 255;
+	NewCrossHairSettings.CrossHairColor.B = RoundedValue / 255;
 	ColorBSlider->SetValue(RoundedValue);
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnHexValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	NewCrossHairSettings.CrosshairColor = FLinearColor(FColor::FromHex(NewValue.ToString()));
-	ColorAValue->SetText(FText::AsNumber(NewCrossHairSettings.CrosshairColor.A));
-	ColorRValue->SetText(FText::AsNumber(NewCrossHairSettings.CrosshairColor.R));
-	ColorGValue->SetText(FText::AsNumber(NewCrossHairSettings.CrosshairColor.G));
-	ColorBValue->SetText(FText::AsNumber(NewCrossHairSettings.CrosshairColor.B));
-	ColorASlider->SetValue(NewCrossHairSettings.CrosshairColor.A);
-	ColorRSlider->SetValue(NewCrossHairSettings.CrosshairColor.R);
-	ColorGSlider->SetValue(NewCrossHairSettings.CrosshairColor.G);
-	ColorBSlider->SetValue(NewCrossHairSettings.CrosshairColor.B);
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	NewCrossHairSettings.CrossHairColor = FLinearColor(FColor::FromHex(NewValue.ToString()));
+	ColorAValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.A));
+	ColorRValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.R));
+	ColorGValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.G));
+	ColorBValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.B));
+	ColorASlider->SetValue(NewCrossHairSettings.CrossHairColor.A);
+	ColorRSlider->SetValue(NewCrossHairSettings.CrossHairColor.R);
+	ColorGSlider->SetValue(NewCrossHairSettings.CrossHairColor.G);
+	ColorBSlider->SetValue(NewCrossHairSettings.CrossHairColor.B);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType)
@@ -176,44 +176,44 @@ void UCrossHairSettingsWidget::OnColorASliderChange(const float NewValue)
 {
 	const float RoundedValue = roundf(NewValue);
 	ColorAValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrosshairColor.A = RoundedValue / 100;
+	NewCrossHairSettings.CrossHairColor.A = RoundedValue / 100;
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnColorRSliderChange(const float NewValue)
 {
 	const float RoundedValue = roundf(NewValue);
 	ColorRValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrosshairColor.R = RoundedValue / 255;
+	NewCrossHairSettings.CrossHairColor.R = RoundedValue / 255;
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnColorGSliderChange(const float NewValue)
 {
 	const float RoundedValue = roundf(NewValue);
 	ColorGValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrosshairColor.G = RoundedValue / 255;
+	NewCrossHairSettings.CrossHairColor.G = RoundedValue / 255;
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnColorBSliderChange(const float NewValue)
 {
 	const float RoundedValue = roundf(NewValue);
 	ColorBValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrosshairColor.B = RoundedValue / 255;
+	NewCrossHairSettings.CrossHairColor.B = RoundedValue / 255;
 
-	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrosshairColor);
-	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrosshairColor.ToFColor(false).ToHex()));
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrosshairColor);
+	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
+	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
+	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void UCrossHairSettingsWidget::OnInnerOffsetSliderChange(const float NewValue)
@@ -276,7 +276,7 @@ void UCrossHairSettingsWidget::OnSaveCrossHairButtonClicked()
 	MostRecentSettings.LineWidth = NewCrossHairSettings.LineWidth;
 	MostRecentSettings.LineLength = NewCrossHairSettings.LineLength;
 	MostRecentSettings.InnerOffset = NewCrossHairSettings.InnerOffset;
-	MostRecentSettings.CrosshairColor = NewCrossHairSettings.CrosshairColor;
+	MostRecentSettings.CrossHairColor = NewCrossHairSettings.CrossHairColor;
 	MostRecentSettings.OutlineOpacity = NewCrossHairSettings.OutlineOpacity;
 	MostRecentSettings.OutlineWidth = NewCrossHairSettings.OutlineWidth;
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->

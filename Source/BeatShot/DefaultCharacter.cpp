@@ -69,7 +69,6 @@ void ADefaultCharacter::BeginPlay()
 	/* Load settings and listen for changes to Player Settings */
 	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this)))
 	{
-		GI->RegisterDefaultCharacter(this);
 		GI->OnPlayerSettingsChange.AddDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
 		OnUserSettingsChange(GI->LoadPlayerSettings());
 	}

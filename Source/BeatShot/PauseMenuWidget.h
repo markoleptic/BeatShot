@@ -7,9 +7,6 @@
 #include "PauseMenuWidget.generated.h"
 
 class UQuitMenuWidget;
-/**
- * 
- */
 class UVerticalBox;
 class UWidgetSwitcher;
 class USlideRightButton;
@@ -18,7 +15,6 @@ class UFAQWidget;
 class UTextBlock;
 
 UCLASS()
-
 class BEATSHOT_API UPauseMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()

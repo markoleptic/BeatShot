@@ -3,7 +3,7 @@
 
 #include "PauseMenuWidget.h"
 
-#include "AASettings.h"
+#include "AASettingsWidget.h"
 #include "DefaultPlayerController.h"
 #include "QuitMenuWidget.h"
 #include "Components/Button.h"

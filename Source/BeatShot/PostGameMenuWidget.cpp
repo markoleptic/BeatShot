@@ -3,7 +3,7 @@
 
 #include "PostGameMenuWidget.h"
 
-#include "AASettings.h"
+#include "AASettingsWidget.h"
 #include "DefaultGameMode.h"
 #include "DefaultPlayerController.h"
 #include "SettingsMenuWidget.h"

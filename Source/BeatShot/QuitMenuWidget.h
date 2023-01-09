@@ -9,9 +9,7 @@
 #include "QuitMenuWidget.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnExitQuitMenu);
-/**
- * 
- */
+
 class UTextBlock;
 class UVerticalBox;
 class UOverlay;

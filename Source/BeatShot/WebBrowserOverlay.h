@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WebBrowserWidget.h"
-#include "Blueprint/UserWidget.h"
 #include "DefaultGameInstance.h"
+#include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
-
 #include "WebBrowserOverlay.generated.h"
 
 class UImage;
+class UWebBrowserWidget;
 class ULoginWidget;
 class UTextBlock;
 class UOverlay;

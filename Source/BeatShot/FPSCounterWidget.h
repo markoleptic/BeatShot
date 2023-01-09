@@ -7,10 +7,7 @@
 #include "FPSCounterWidget.generated.h"
 
 class UTextBlock;
-struct FPlayerSettings;
-/**
- * 
- */
+
 UCLASS()
 class BEATSHOT_API UFPSCounterWidget : public UUserWidget
 {
@@ -30,5 +27,5 @@ class BEATSHOT_API UFPSCounterWidget : public UUserWidget
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* FPSCounter;
+	UTextBlock* FPSCounter;
 };

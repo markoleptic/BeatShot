@@ -6,6 +6,7 @@
 #include "LoginWidget.h"
 #include "SettingsMenuWidget.h"
 #include "SlideRightButton.h"
+#include "WebBrowserWidget.h"
 #include "WebBrowserOverlay.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"

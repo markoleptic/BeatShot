@@ -7,7 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "CrossHairSettingsWidget.generated.h"
 
-class UCrosshair;
+class UCrossHairWidget;
 class USlider;
 class UImage;
 class UEditableTextBox;
@@ -26,7 +26,7 @@ class BEATSHOT_API UCrossHairSettingsWidget : public UUserWidget
 protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UCrosshair* CrossHairWidget;
+	UCrossHairWidget* CrossHairWidget;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* ColorAValue;

@@ -12,75 +12,75 @@ struct FPlayerSettings
 {
 	GENERATED_USTRUCT_BODY()
 
-		// Sensitivity of DefaultCharacter
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		float Sensitivity;
+	// Sensitivity of DefaultCharacter
+	UPROPERTY(BlueprintReadOnly)
+	float Sensitivity;
 
 	// GlobalVolume, which also affects Menu and Music volume
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		float GlobalVolume;
+	UPROPERTY(BlueprintReadOnly)
+	float GlobalVolume;
 
 	// Volume of the Main Menu Music
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		float MenuVolume;
+	UPROPERTY(BlueprintReadOnly)
+	float MenuVolume;
 
 	// Volume of the AudioAnalyzer Tracker
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		float MusicVolume;
+	UPROPERTY(BlueprintReadOnly)
+	float MusicVolume;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-		FString Username;
+	UPROPERTY(BlueprintReadOnly)
+	FString Username;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-		bool HasLoggedInHttp;
+	UPROPERTY(BlueprintReadOnly)
+	bool HasLoggedInHttp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
-		FString LoginCookie;
+	UPROPERTY(BlueprintReadOnly)
+	FString LoginCookie;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
-		int32 LineWidth;
+	UPROPERTY(BlueprintReadOnly)
+	int32 LineWidth;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
-		int32 LineLength;
+	UPROPERTY(BlueprintReadOnly)
+	int32 LineLength;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
-		int32 InnerOffset;
+	UPROPERTY(BlueprintReadOnly)
+	int32 InnerOffset;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
-		FLinearColor CrosshairColor;
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor CrossHairColor;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
-		float OutlineOpacity;
+	UPROPERTY(BlueprintReadOnly)
+	float OutlineOpacity;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Crosshair")
-		int32 OutlineWidth;
+	UPROPERTY(BlueprintReadOnly)
+	int32 OutlineWidth;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gunplay")
-		bool bShouldRecoil;
+	UPROPERTY(BlueprintReadOnly)
+	bool bShouldRecoil;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gunplay")
-		bool bAutomaticFire;
+	UPROPERTY(BlueprintReadOnly)
+	bool bAutomaticFire;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Environment")
-		bool bShowBulletDecals;
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowBulletDecals;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Environment")
-		bool bNightModeSelected;
+	UPROPERTY(BlueprintReadOnly)
+	bool bNightModeSelected;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		bool bShowFPSCounter;
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowFPSCounter;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		int32 FrameRateLimitMenu;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		int32 FrameRateLimitGame;
-		
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		bool bShowStreakCombatText;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-		int32 CombatTextFrequency;
+	UPROPERTY(BlueprintReadOnly)
+	int32 FrameRateLimitMenu;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 FrameRateLimitGame;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowStreakCombatText;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 CombatTextFrequency;
 
 	FPlayerSettings()
 	{
@@ -94,7 +94,7 @@ struct FPlayerSettings
 		LineWidth = 4;
 		LineLength = 10;
 		InnerOffset = 6;
-		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 		OutlineOpacity = 1.f;
 		OutlineWidth = 20;
 		bShouldRecoil = true;
@@ -120,7 +120,7 @@ struct FPlayerSettings
 		LineWidth = 4;
 		LineLength = 10;
 		InnerOffset = 6;
-		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 		OutlineOpacity = 1.f;
 		OutlineWidth = 20;
 		bShouldRecoil = true;
@@ -150,11 +150,12 @@ struct FPlayerSettings
 		LineWidth = 4;
 		LineLength = 10;
 		InnerOffset = 6;
-		CrosshairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 		OutlineOpacity = 1.f;
 		OutlineWidth = 20;
 	}
 };
+
 UCLASS()
 class BEATSHOT_API USaveGamePlayerSettings : public USaveGame
 {
@@ -163,6 +164,6 @@ class BEATSHOT_API USaveGamePlayerSettings : public USaveGame
 public:
 	USaveGamePlayerSettings();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	UPROPERTY(BlueprintReadOnly)
 	FPlayerSettings PlayerSettings;
 };

@@ -15,7 +15,7 @@ class ULoadingScreenWidget;
 class ULoginWidget;
 class UPostGameMenuWidget;
 class UDefaultGameInstance;
-class UCrosshair;
+class UCrossHairWidget;
 class UPlayerHUD;
 class USettingsMenuWidget;
 class UMainMenuWidget;
@@ -76,7 +76,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCrosshair> CrossHairClass;
+	TSubclassOf<UCrossHairWidget> CrossHairClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -99,7 +99,7 @@ private:
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
 	UPROPERTY()
-	UCrosshair* CrossHair;
+	UCrossHairWidget* CrossHair;
 	UPROPERTY()
 	UPauseMenuWidget* PauseMenu;
 	UPROPERTY()

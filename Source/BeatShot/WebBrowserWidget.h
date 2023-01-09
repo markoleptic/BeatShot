@@ -3,9 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DefaultGameInstance.h"
 #include "Blueprint/UserWidget.h"
-#include "WebBrowser.h"
 #include "Delegates/DelegateCombinations.h"
 #include "WebBrowserWidget.generated.h"
 
@@ -13,9 +11,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnURLLoaded, bool, bLoadedSuccessfu
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTimerElapsed, const FString&, LastURL);
 
-/**
- * 
- */
+class UWebBrowser;
+
 UCLASS()
 class BEATSHOT_API UWebBrowserWidget : public UUserWidget
 {

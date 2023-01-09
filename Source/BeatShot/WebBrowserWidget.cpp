@@ -5,6 +5,7 @@
 
 #include "DefaultGameInstance.h"
 #include "TimerManager.h"
+#include "WebBrowser.h"
 #include "Kismet/KismetStringLibrary.h"
 
 void UWebBrowserWidget::NativeConstruct()

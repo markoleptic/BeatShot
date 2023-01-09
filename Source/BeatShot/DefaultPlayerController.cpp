@@ -3,7 +3,7 @@
 
 #include "DefaultPlayerController.h"
 #include "MainMenuWidget.h"
-#include "Crosshair.h"
+#include "CrossHairWidget.h"
 #include "PlayerHUD.h"
 #include "PauseMenuWidget.h"
 #include "Countdown.h"
@@ -82,7 +82,7 @@ void ADefaultPlayerController::HidePauseMenu()
 
 void ADefaultPlayerController::ShowCrossHair()
 {
-	CrossHair = CreateWidget<UCrosshair>(this, CrossHairClass);
+	CrossHair = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
 	CrossHair->AddToViewport();
 }
 

@@ -2,7 +2,6 @@
 
 
 #include "FPSCounterWidget.h"
-
 #include "Components/TextBlock.h"
 
 void UFPSCounterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

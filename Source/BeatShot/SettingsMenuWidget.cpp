@@ -14,7 +14,7 @@
 #include <Blueprint/UserWidget.h>
 #include <Kismet/GameplayStatics.h>
 
-#include "AASettings.h"
+#include "AASettingsWidget.h"
 #include "DefaultPlayerController.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"

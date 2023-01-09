@@ -14,9 +14,7 @@ class UDefaultGameInstance;
 class ADefaultCharacter;
 class UProgressBar;
 class UTextBlock;
-/**
- * 
- */
+
 UCLASS()
 class BEATSHOT_API UPlayerHUD : public UUserWidget
 {
