@@ -5,11 +5,14 @@
 
 #include "CrossHairWidget.h"
 #include "DefaultGameInstance.h"
+#include "SavedTextWidget.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Image.h"
+#include "Math/Color.h"
 #include "Components/Slider.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetStringLibrary.h"
 
 void UCrossHairSettingsWidget::NativeConstruct()
 {
@@ -75,10 +78,8 @@ void UCrossHairSettingsWidget::SetCrossHairOptions(const FPlayerSettings& CrossH
 
 void UCrossHairSettingsWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrossHairColor.A = RoundedValue / 100;
-	ColorASlider->SetValue(RoundedValue);
-
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, ColorAValue, ColorASlider, 1, 0, 100);
+	NewCrossHairSettings.CrossHairColor.A = FMath::GridSnap(SnappedValue / 100, 0.01);
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -86,10 +87,8 @@ void UCrossHairSettingsWidget::OnColorAValueChange(const FText& NewValue, ETextC
 
 void UCrossHairSettingsWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrossHairColor.R = RoundedValue / 255;
-	ColorRSlider->SetValue(RoundedValue);
-
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, ColorRValue, ColorRSlider, 1, 0, 255);
+	NewCrossHairSettings.CrossHairColor.R = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -97,10 +96,8 @@ void UCrossHairSettingsWidget::OnColorRValueChange(const FText& NewValue, ETextC
 
 void UCrossHairSettingsWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrossHairColor.G = RoundedValue / 255;
-	ColorGSlider->SetValue(RoundedValue);
-
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, ColorGValue, ColorGSlider, 1, 0, 255);
+	NewCrossHairSettings.CrossHairColor.G = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -108,10 +105,8 @@ void UCrossHairSettingsWidget::OnColorGValueChange(const FText& NewValue, ETextC
 
 void UCrossHairSettingsWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.CrossHairColor.B = RoundedValue / 255;
-	ColorBSlider->SetValue(RoundedValue);
-
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, ColorBValue, ColorBSlider, 1, 0, 255);
+	NewCrossHairSettings.CrossHairColor.B = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -119,65 +114,64 @@ void UCrossHairSettingsWidget::OnColorBValueChange(const FText& NewValue, ETextC
 
 void UCrossHairSettingsWidget::OnHexValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	NewCrossHairSettings.CrossHairColor = FLinearColor(FColor::FromHex(NewValue.ToString()));
-	ColorAValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.A));
-	ColorRValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.R));
-	ColorGValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.G));
-	ColorBValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.B));
-	ColorASlider->SetValue(NewCrossHairSettings.CrossHairColor.A);
-	ColorRSlider->SetValue(NewCrossHairSettings.CrossHairColor.R);
-	ColorGSlider->SetValue(NewCrossHairSettings.CrossHairColor.G);
-	ColorBSlider->SetValue(NewCrossHairSettings.CrossHairColor.B);
+	const FString String = FColor::FromHex(NewValue.ToString()).ToString();
+	NewCrossHairSettings.CrossHairColor.InitFromString(String);
+	NewCrossHairSettings.CrossHairColor.R = NewCrossHairSettings.CrossHairColor.R / 255;
+	NewCrossHairSettings.CrossHairColor.G = NewCrossHairSettings.CrossHairColor.G / 255;
+	NewCrossHairSettings.CrossHairColor.B = NewCrossHairSettings.CrossHairColor.B / 255;
+	NewCrossHairSettings.CrossHairColor.A = NewCrossHairSettings.CrossHairColor.A / 255;
+	ColorAValue->SetText(FText::AsNumber(roundf(NewCrossHairSettings.CrossHairColor.A * 100)));
+	ColorRValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.R * 255));
+	ColorGValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.G * 255));
+	ColorBValue->SetText(FText::AsNumber(NewCrossHairSettings.CrossHairColor.B * 255));
+	ColorASlider->SetValue(roundf(NewCrossHairSettings.CrossHairColor.A * 100));
+	ColorRSlider->SetValue(NewCrossHairSettings.CrossHairColor.R * 255);
+	ColorGSlider->SetValue(NewCrossHairSettings.CrossHairColor.G * 255);
+	ColorBSlider->SetValue(NewCrossHairSettings.CrossHairColor.B * 255);
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
+	UE_LOG(LogTemp, Display, TEXT("NewCrossHairSettings.CrossHairColor %s"), *NewCrossHairSettings.CrossHairColor.ToString());
 }
 
 void UCrossHairSettingsWidget::OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const int32 Value = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.InnerOffset = Value;
-	InnerOffsetSlider->SetValue(Value);
-	CrossHairWidget->SetInnerOffset(Value);
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, InnerOffsetValue, InnerOffsetSlider, 1, 0, 30);
+	NewCrossHairSettings.InnerOffset = SnappedValue;
+	CrossHairWidget->SetInnerOffset(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnLineLengthValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const int32 Value = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.LineLength = Value;
-	LineLengthSlider->SetValue(Value);
-	CrossHairWidget->SetLineLength(Value);
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, LineLengthValue, LineLengthSlider, 1, 0, 100);
+	NewCrossHairSettings.LineLength = SnappedValue;
+	CrossHairWidget->SetLineLength(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnLineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const int32 Value = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.LineWidth = Value;
-	LineWidthSlider->SetValue(Value);
-	CrossHairWidget->SetLineWidth(Value);
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, LineWidthValue, LineWidthSlider, 1, 0, 100);
+	NewCrossHairSettings.LineWidth = SnappedValue;
+	CrossHairWidget->SetLineWidth(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnOutlineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const int32 Value = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.OutlineWidth = Value;
-	OutlineWidthSlider->SetValue(Value);
-	CrossHairWidget->SetOutlineWidth(Value);
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, OutlineWidthValue, OutlineWidthSlider, 1, 0, 50);
+	NewCrossHairSettings.OutlineWidth = SnappedValue;
+	CrossHairWidget->SetOutlineWidth(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnOutlineOpacityValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float RoundedValue = roundf(FCString::Atof(*NewValue.ToString()));
-	NewCrossHairSettings.OutlineOpacity = RoundedValue / 100;
-	OutlineOpacitySlider->SetValue(RoundedValue);
-	CrossHairWidget->SetOutlineOpacity(RoundedValue / 100);
+	const float SnappedValue = OnEditableTextBoxChanged(NewValue, OutlineOpacityValue, OutlineOpacitySlider, 1, 0, 100);
+	NewCrossHairSettings.OutlineOpacity = SnappedValue / 100;
+	CrossHairWidget->SetOutlineOpacity(SnappedValue / 100);
 }
 
 void UCrossHairSettingsWidget::OnColorASliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	ColorAValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrossHairColor.A = RoundedValue / 100;
-
+	const float SnappedValue = OnSliderChanged(NewValue, ColorAValue, 1);
+	NewCrossHairSettings.CrossHairColor.A = SnappedValue / 100;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -185,10 +179,8 @@ void UCrossHairSettingsWidget::OnColorASliderChange(const float NewValue)
 
 void UCrossHairSettingsWidget::OnColorRSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	ColorRValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrossHairColor.R = RoundedValue / 255;
-
+	const float SnappedValue = OnSliderChanged(NewValue, ColorRValue, 1);
+	NewCrossHairSettings.CrossHairColor.R = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -196,10 +188,8 @@ void UCrossHairSettingsWidget::OnColorRSliderChange(const float NewValue)
 
 void UCrossHairSettingsWidget::OnColorGSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	ColorGValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrossHairColor.G = RoundedValue / 255;
-
+	const float SnappedValue = OnSliderChanged(NewValue, ColorGValue, 1);
+	NewCrossHairSettings.CrossHairColor.G = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -207,10 +197,8 @@ void UCrossHairSettingsWidget::OnColorGSliderChange(const float NewValue)
 
 void UCrossHairSettingsWidget::OnColorBSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	ColorBValue->SetText(FText::AsNumber(RoundedValue));
-	NewCrossHairSettings.CrossHairColor.B = RoundedValue / 255;
-
+	const float SnappedValue = OnSliderChanged(NewValue, ColorBValue, 1);
+	NewCrossHairSettings.CrossHairColor.B = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	HexValue->SetText(FText::FromString(NewCrossHairSettings.CrossHairColor.ToFColor(false).ToHex()));
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
@@ -218,42 +206,37 @@ void UCrossHairSettingsWidget::OnColorBSliderChange(const float NewValue)
 
 void UCrossHairSettingsWidget::OnInnerOffsetSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	NewCrossHairSettings.InnerOffset = RoundedValue;
-	InnerOffsetValue->SetText(FText::AsNumber(RoundedValue));
-	CrossHairWidget->SetInnerOffset(RoundedValue);
+	const float SnappedValue = OnSliderChanged(NewValue, InnerOffsetValue, 1);
+	NewCrossHairSettings.InnerOffset = SnappedValue;
+	CrossHairWidget->SetInnerOffset(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnLineLengthSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	NewCrossHairSettings.LineLength = RoundedValue;
-	LineLengthValue->SetText(FText::AsNumber(RoundedValue));
-	CrossHairWidget->SetLineLength(RoundedValue);
+	const float SnappedValue = OnSliderChanged(NewValue, LineLengthValue, 1);
+	NewCrossHairSettings.LineLength = SnappedValue;
+	CrossHairWidget->SetLineLength(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnLineWidthSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	NewCrossHairSettings.LineWidth = RoundedValue;
-	LineWidthValue->SetText(FText::AsNumber(RoundedValue));
-	CrossHairWidget->SetLineWidth(RoundedValue);
+	const float SnappedValue = OnSliderChanged(NewValue, LineWidthValue, 1);
+	NewCrossHairSettings.LineWidth = SnappedValue;
+	CrossHairWidget->SetLineWidth(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnOutlineOpacitySliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	NewCrossHairSettings.OutlineOpacity = RoundedValue / 100;
-	OutlineOpacityValue->SetText(FText::AsNumber(RoundedValue));
-	CrossHairWidget->SetOutlineOpacity(RoundedValue / 100);
+	const float SnappedValue = OnSliderChanged(NewValue, OutlineOpacityValue, 1);
+	NewCrossHairSettings.OutlineOpacity = SnappedValue / 100;
+	CrossHairWidget->SetOutlineOpacity(SnappedValue / 100);
 }
 
 void UCrossHairSettingsWidget::OnOutlineWidthSliderChange(const float NewValue)
 {
-	const float RoundedValue = roundf(NewValue);
-	NewCrossHairSettings.OutlineWidth = RoundedValue;
-	OutlineWidthValue->SetText(FText::AsNumber(RoundedValue));
-	CrossHairWidget->SetOutlineWidth(RoundedValue);
+	const float SnappedValue = OnSliderChanged(NewValue, OutlineWidthValue, 1);
+	NewCrossHairSettings.OutlineWidth = SnappedValue;
+	CrossHairWidget->SetOutlineWidth(SnappedValue);
 }
 
 void UCrossHairSettingsWidget::OnResetToDefaultButtonClicked()
@@ -281,4 +264,27 @@ void UCrossHairSettingsWidget::OnSaveCrossHairButtonClicked()
 	MostRecentSettings.OutlineWidth = NewCrossHairSettings.OutlineWidth;
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
 		SavePlayerSettings(MostRecentSettings);
+	SavedTextWidget->PlayFadeInFadeOut();
+	InitialCrossHairSettings = NewCrossHairSettings;
+}
+
+float  UCrossHairSettingsWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
+												USlider* SliderToChange,
+												const float GridSnapSize, const float Min, const float Max)
+{
+	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
+	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
+	UE_LOG(LogTemp, Display, TEXT("Snapped: %f"),SnappedValue);
+	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));
+	SliderToChange->SetValue(SnappedValue);
+	return SnappedValue;
+}
+
+float UCrossHairSettingsWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
+									   const float GridSnapSize)
+{
+	const float SnappedValue = FMath::GridSnap(NewValue, GridSnapSize);
+	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));
+	return SnappedValue;
 }

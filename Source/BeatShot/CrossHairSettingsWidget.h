@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "CrossHairSettingsWidget.generated.h"
 
+class USavedTextWidget;
 class UCrossHairWidget;
 class USlider;
 class UImage;
@@ -70,7 +71,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UImage* ColorPreview;
-
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* ResetToDefaultButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -127,6 +130,13 @@ private:
 	UFUNCTION()
 	void OnSaveCrossHairButtonClicked();
 
+	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
+												USlider* SliderToChange,
+												const float GridSnapSize, const float Min, const float Max);
+
+	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
+										   const float GridSnapSize);
+	
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings& CrossHairSettings);
 	/** The PlayerSettings that were initially loaded */
