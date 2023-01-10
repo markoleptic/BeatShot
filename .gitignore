@@ -58,20 +58,17 @@ Plugins/*/Binaries/*
 Build/*
 .renom/*
 
-Content/**/Assets/
-Content/**/FPS_Weapon_Bundle/
-Content/StarterContent/
-Content/**/InfinityBladeEffects/
-Content/**/AnimStarterPack/
 Plugins/
 
+Content/**/Assets/
+
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
-!Build/*/
-Build/*/**
-!Build/*/PakBlacklist*.txt
+#!Build/*/
+#Build/*/**
+#!Build/*/PakBlacklist*.txt
 
 # Don't ignore icon files in Build
-!Build/**/*.ico
+# !Build/**/*.ico
 
 # Built data for maps
 *_BuiltData.uasset

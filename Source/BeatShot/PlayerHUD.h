@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameModeActorBase.h"
-#include "SaveGamePlayerSettings.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "PlayerHUD.generated.h"
@@ -15,9 +14,7 @@ class UDefaultGameInstance;
 class ADefaultCharacter;
 class UProgressBar;
 class UTextBlock;
-/**
- * 
- */
+
 UCLASS()
 class BEATSHOT_API UPlayerHUD : public UUserWidget
 {
@@ -25,75 +22,47 @@ class BEATSHOT_API UPlayerHUD : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
-
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
 	virtual void NativeDestruct() override;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UProgressBar* TargetBar;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* Accuracy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TargetsHitText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* ShotsFiredText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TargetsSpawnedText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* CurrentScoreText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* HighScoreText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* GameModeNameText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* SongTitle;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* SongTimeElapsed;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TotalSongLength;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* CurrentStreakBestText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* TargetsSpawnedBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* StreakBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* TargetsHitBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* ShotsFiredBox;
 
-public:
-
-	UFUNCTION(BlueprintCallable)
-		void OnPlayerSettingsChange(FPlayerSettings PlayerSettings);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UProgressBar* TargetBar;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* Accuracy;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* TargetsHitText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* ShotsFiredText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* TargetsSpawnedText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* CurrentScoreText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* HighScoreText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* GameModeNameText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* SongTitle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* TotalSongLength;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* CurrentStreakBestText;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UTextBlock* FPSCounter;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* TargetsSpawnedBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* StreakBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* TargetsHitBox;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Player Stats")
-		UHorizontalBox* ShotsFiredBox;
-
-	UFUNCTION(BlueprintCallable, Category = "Player Stats")
-		void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "References")
-		UDefaultGameInstance* GI;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
-		bool bShowFPSCounter;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "FPS")
-		float CounterUpdateInterval;
-
+private:
+	
+	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD. Called from GameModeActorBase */
+	UFUNCTION()
+	void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
+	/** Callback function for OnAAManagerSecondPassed to update the current song progress. Called every second by DefaultGameMode */
+	UFUNCTION()
+	void UpdateSongProgress(const float PlaybackTime);
 };
-

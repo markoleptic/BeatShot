@@ -3,31 +3,64 @@
 
 #include "GameModeActorBase.h"
 #include "DefaultCharacter.h"
-#include "SphereTarget.h"
-#include "TargetSpawner.h"
 #include "DefaultGameMode.h"
 #include "DefaultGameInstance.h"
-#include "Blueprint/UserWidget.h"
+#include "DefaultHealthComponent.h"
 #include "DefaultPlayerController.h"
 #include "FloatingTextActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Misc/DateTime.h"
+#include "Engine/World.h"
 #include "Gun_AK47.h"
+#include "SphereTarget.h"
 #include "Kismet/KismetTextLibrary.h"
 
 AGameModeActorBase::AGameModeActorBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AGameModeActorBase::BeginPlay()
 {
 	Super::BeginPlay();
-	// Store instance of GameModeActorBase in Game Instance
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	// register GameModeActorBase as a reference in GI
-	GI->RegisterGameModeActorBase(this);
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const FPlayerSettings PlayerSettings = GI->LoadPlayerSettings();
+	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
+	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
+	GI->OnPlayerSettingsChange.AddDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
+	GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+}
+
+void AGameModeActorBase::Destroyed()
+{
+	/** Unbinding delegates */
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	GI->OnPlayerSettingsChange.RemoveDynamic(this, &AGameModeActorBase::OnPlayerSettingsChange);
+	if (Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun)
+	{
+		Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun->OnShotFired.RemoveDynamic(
+			this, &AGameModeActorBase::UpdateShotsFired);
+	}
+	if (GameMode->OnBeatTrackTargetSpawned.IsBound())
+	{
+		GameMode->OnBeatTrackTargetSpawned.RemoveDynamic(this, &AGameModeActorBase::OnBeatTrackTargetSpawned);
+	}
+	if (GameMode->OnStreakUpdate.IsBound())
+	{
+		GameMode->OnStreakUpdate.RemoveDynamic(this, &AGameModeActorBase::OnStreakUpdate);
+	}
+	if (GameMode->OnTargetSpawned.IsBoundToObject(this))
+	{
+		GameMode->OnTargetSpawned.Unbind();
+	}
+	if (GameMode->OnTargetDestroyed.IsBoundToObject(this))
+	{
+		GameMode->OnTargetDestroyed.Unbind();
+	}
+	Super::Destroyed();
 }
 
 void AGameModeActorBase::Tick(float DeltaTime)
@@ -35,258 +68,253 @@ void AGameModeActorBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AGameModeActorBase::StartGameMode()
+{
+	InitializeGameModeActor();
+	GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &AGameModeActorBase::OnGameModeLengthTimerComplete,
+	                                GameModeActorStruct.GameModeLength, false);
+	if (!GameMode->UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Initial UpdateScoresToHUD failed."));
+	}
+}
+
 void AGameModeActorBase::InitializeGameModeActor()
 {
 	LoadPlayerScores();
-	if (GameModeActorStruct.IsBeatTrackMode == true)
+
+	/** Binding delegates */
+
+	Cast<ADefaultCharacter>(Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)))->Gun->
+		OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
+	GameMode->OnTargetSpawned.BindUFunction(this, FName("UpdateTargetsSpawned"));
+	GameMode->OnTargetDestroyed.BindUFunction(this, FName("UpdatePlayerScores"));
+	GameMode->OnStreakUpdate.AddUniqueDynamic(this, &AGameModeActorBase::OnStreakUpdate);
+	if (GameModeActorStruct.IsBeatTrackMode)
 	{
-		PlayerScores.TotalPossibleDamage = 0.f;
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.AddUniqueDynamic(
+			this, &AGameModeActorBase::OnBeatTrackTargetSpawned);
 	}
-	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
-
-	// Binding delegates for scoring purposes
-	Cast<AGun_AK47>(GI->DefaultCharacterRef->GunActorComp->GetChildActor())->OnShotFired.AddDynamic(this, &AGameModeActorBase::UpdateShotsFired);
-	GI->TargetSpawnerRef->OnTargetSpawn.AddDynamic(this, &AGameModeActorBase::UpdateTargetsSpawned);
-	GI->TargetSpawnerRef->OnStreakUpdate.AddDynamic(this, &AGameModeActorBase::OnStreakUpdate);
-	StartCountDownTimer();
-}
-
-void AGameModeActorBase::StartCountDownTimer()
-{
-	GetWorldTimerManager().SetTimer(GameModeActorStruct.CountDownTimer, this, &AGameModeActorBase::StartGameMode, GameModeActorStruct.CountdownTimerLength, false);
-}
-
-void AGameModeActorBase::StartGameMode()
-{
-	GetWorldTimerManager().SetTimer(GameModeActorStruct.GameModeLengthTimer, this, &AGameModeActorBase::OnGameModeLengthTimerComplete, GameModeActorStruct.GameModeLength, false);
-	GI->TargetSpawnerRef->SetShouldSpawn(true);
-	UpdateScoresToHUD.Broadcast(PlayerScores);
-}
-
-void AGameModeActorBase::EndGameMode(bool ShouldSavePlayerScores)
-{
-	if (ShouldSavePlayerScores)
-	{
-		SavePlayerScores();
-	}
-
-	// Deleting Targets
-	GI->TargetSpawnerRef->SetShouldSpawn(false);
-	if (GI->SphereTargetArray.Num() > 0)
-	{
-		for (ASphereTarget* Target : GI->SphereTargetArray)
-		{
-			if (Target)
-			{
-				Target->Destroy();
-			}
-		}
-		GI->SphereTargetArray.Empty();
-		GI->SphereTargetArray.Shrink();
-	}
-
-	//Clearing Timers
-	GameModeActorStruct.CountDownTimer.Invalidate();
-	GameModeActorStruct.GameModeLengthTimer.Invalidate();
-	GameModeActorStruct.CountdownTimerLength = 3.f;
-
-	// Reset Struct to zero scores
-	PlayerScores.ResetStruct();
-
-	Destroy();
 }
 
 void AGameModeActorBase::OnGameModeLengthTimerComplete()
 {
-	Cast<ADefaultGameMode>(GI->GameModeBaseRef)->EndGameMode(true);
-
-	// Show Post Game menu
-	GI->DefaultPlayerControllerRef->ShowPostGameMenu();
+	/** don't save scores if score is zero */
+	if (CurrentPlayerScore.Score <= 0 ||
+		(CurrentPlayerScore.GameModeActorName == EGameModeActorName::Custom &&
+			CurrentPlayerScore.CustomGameModeName == ""))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Shouldn't save player scores"));
+		GameMode->EndGameMode(false, true);
+		return;
+	}
+	GameMode->EndGameMode(true, true);
 }
 
-void AGameModeActorBase::OnStreakUpdate(int32 Streak, FVector Location)
+void AGameModeActorBase::OnBeatTrackTargetSpawned(ASphereTarget* TrackingTarget)
 {
-	// Only update best streak in PlayerScores and HUD
-	if (Streak > PlayerScores.Streak)
-	{
-		PlayerScores.Streak = Streak;
-		UpdateScoresToHUD.Broadcast(PlayerScores);
-	}
-	if (Streak % 5 == 0)
-	{
-		if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextActorToSpawn, Location, FRotator()))
-		{
-			FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
-		}
-	}
+	/** Update tracking score if a Tracking target has spawned */
+	TrackingTarget->HealthComp->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
 }
 
-void AGameModeActorBase::UpdatePlayerScores(float TimeElapsed)
+void AGameModeActorBase::UpdatePlayerScores(const float TimeElapsed)
 {
-	if (GameModeActorStruct.IsBeatTrackMode == false)
-	{
-		if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
-		{
-			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / GameModeActorStruct.PlayerDelay);
-		}
-		else if (TimeElapsed <= GameModeActorStruct.PlayerDelay + 0.05f)
-		{
-			PlayerScores.Score += MaxScorePerTarget;
-		}
-		else if (TimeElapsed <= GameModeActorStruct.TargetMaxLifeSpan)
-		{
-			PlayerScores.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f)));
-			//UE_LOG(LogTemp, Display, TEXT("Last: %f"), FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f))))
-		}
-		UpdateHighScore();
-		PlayerScores.TotalTimeOffset += FMath::Abs(TimeElapsed - GameModeActorStruct.PlayerDelay);
-		UpdateScoresToHUD.Broadcast(PlayerScores);
-	}
-	else
+	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Error: trying to call UpdateScore() with BeatTrackMode"));
+		return;
+	}
+	UpdateTargetsHit();
+	if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
+	{
+		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget,
+		                                        TimeElapsed / GameModeActorStruct.PlayerDelay);
+	}
+	else if (TimeElapsed <= GameModeActorStruct.PlayerDelay + 0.05f)
+	{
+		CurrentPlayerScore.Score += MaxScorePerTarget;
+	}
+	else if (TimeElapsed <= GameModeActorStruct.TargetMaxLifeSpan)
+	{
+		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2,
+		                                        (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) / (
+			                                        GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.
+				                                        PlayerDelay + 0.05f)));
+		// UE_LOG(LogTemp, Display, TEXT("Last: %f"), FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2,
+		// (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) /
+		// (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f))))
+	}
+	UpdateHighScore();
+	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - GameModeActorStruct.PlayerDelay);
+	if (!GameMode->UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
+	{
+		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
 	}
 }
 
-void AGameModeActorBase::UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage)
+void AGameModeActorBase::UpdateTrackingScore(const float DamageTaken, const float TotalPossibleDamage)
 {
-	if (GameModeActorStruct.IsBeatTrackMode==true)
+	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
+	CurrentPlayerScore.Score += DamageTaken;
+	UpdateHighScore();
+	if (!GameMode->UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
 	{
-		PlayerScores.TotalPossibleDamage = TotalPossibleDamage;
-		PlayerScores.Score += DamageTaken;
-		UpdateHighScore();
-		UpdateScoresToHUD.Broadcast(PlayerScores);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Error: trying to call UpdateTrackingScore() with non BeatTrackMode"));
+		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
 	}
 }
 
 void AGameModeActorBase::UpdateTargetsSpawned()
 {
-	PlayerScores.TargetsSpawned++;
-	UpdateScoresToHUD.Broadcast(PlayerScores);
+	CurrentPlayerScore.TargetsSpawned++;
+	if (!GameMode->UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
+	{
+		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
+	}
 }
 
 void AGameModeActorBase::UpdateShotsFired()
 {
-	PlayerScores.ShotsFired++;
-	UpdateScoresToHUD.Broadcast(PlayerScores);
+	CurrentPlayerScore.ShotsFired++;
+	if (!GameMode->UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
+	{
+		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
+	}
+}
+
+void AGameModeActorBase::OnStreakUpdate(const int32 Streak, const FVector Location)
+{
+	/** Only update best streak in PlayerScores and HUD */
+	if (Streak > CurrentPlayerScore.Streak)
+	{
+		CurrentPlayerScore.Streak = Streak;
+		if (!GameMode->UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
+		{
+			UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
+		}
+	}
+	if (bShowStreakCombatText)
+	{
+		if (CombatTextFrequency != 0 && Streak % CombatTextFrequency == 0)
+		{
+			if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(
+				FloatingTextActorToSpawn, Location, FRotator()))
+			{
+				FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
+			}
+		}
+	}
 }
 
 void AGameModeActorBase::UpdateTargetsHit()
 {
-	PlayerScores.TargetsHit++;
-	UpdateScoresToHUD.Broadcast(PlayerScores);
- }
+	CurrentPlayerScore.TargetsHit++;
+}
 
 void AGameModeActorBase::UpdateHighScore()
 {
-	if (PlayerScores.Score > PlayerScores.HighScore)
+	if (CurrentPlayerScore.Score > CurrentPlayerScore.HighScore)
 	{
-		PlayerScores.HighScore = PlayerScores.Score;
-	}
-}
-
-void AGameModeActorBase::SavePlayerScores()
-{
-	// don't save scores if score is zero
-	if (PlayerScores.Score <= 0.01f || 
-		(PlayerScores.GameModeActorName == EGameModeActorName::Custom &&
-			PlayerScores.CustomGameModeName == ""))
-	{
-		return;
-	}
-
-	// save current time
-	PlayerScores.Time = FDateTime::UtcNow().ToIso8601();
-
-	// for BeatTrack modes
-	if (PlayerScores.TotalPossibleDamage > 0.01f)
-	{
-		PlayerScores.Accuracy = FMath::RoundHalfToZero(100.0 * PlayerScores.Score / PlayerScores.TotalPossibleDamage) / 100.0;
-		PlayerScores.Completion = FMath::RoundHalfToZero(100.0 * PlayerScores.Score / PlayerScores.TotalPossibleDamage) / 100.0;
-	}
-	else
-	{
-		PlayerScores.AvgTimeOffset = FMath::RoundHalfToZero(1000.0 * (PlayerScores.TotalTimeOffset / PlayerScores.TargetsHit)) / 1000.0;
-		PlayerScores.Accuracy = FMath::RoundHalfToZero(100.0 * PlayerScores.TargetsHit / PlayerScores.ShotsFired) / 100.0;
-		PlayerScores.Completion = FMath::RoundHalfToZero(100.0 * PlayerScores.TargetsHit / PlayerScores.TargetsSpawned) / 100.0;
-	}
-	PlayerScores.HighScore = FMath::RoundHalfToZero(100.0 * PlayerScores.HighScore) / 100.0;
-	PlayerScores.Score = FMath::RoundHalfToZero(100.0 * PlayerScores.Score) / 100.0;
-	PlayerScores.SongLength = FMath::RoundHalfToZero(100.0 * PlayerScores.SongLength) / 100.0;
-	PlayerScoreArrayWrapper.PlayerScoreArray.Add(PlayerScores);
-
-	// just in case ScoreMap comparison is working
-	if (PlayerScoreMap.Contains(GameModeActorStruct))
-	{
-		PlayerScoreMap.Remove(GameModeActorStruct);
-		PlayerScoreMap.Compact();
-		PlayerScoreMap.Shrink();
-	}
-	PlayerScoreMap.Add(GameModeActorStruct, PlayerScoreArrayWrapper);
-	GI->SavePlayerScores(PlayerScoreMap);
-
-	// Printing saved scores to console
-	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
-	{
-		// get array of player scores from current key value
-		TArray<FPlayerScore> TempArray = Elem.Value.PlayerScoreArray;
-		
-		float HighScore = 0.f;
-
-		// iterate through array of player scores to find high score for current game mode / song
-		for (FPlayerScore& PlayerScoreObject : TempArray)
-		{
-			if (PlayerScoreObject.HighScore > HighScore)
-			{
-				HighScore = PlayerScoreObject.HighScore;
-			}
-			UE_LOG(LogTemp, Display, TEXT("Score for %s %s %s: %f High Score: %f"),
-				*PlayerScoreObject.SongTitle,
-				*UEnum::GetValueAsString(Elem.Key.GameModeActorName),
-				*PlayerScoreObject.CustomGameModeName,
-				PlayerScoreObject.Score,
-				HighScore);
-		}
+		CurrentPlayerScore.HighScore = CurrentPlayerScore.Score;
 	}
 }
 
 void AGameModeActorBase::LoadPlayerScores()
 {
-	PlayerScoreMap = GI->LoadPlayerScores();
-
-	// iterate through all elements in PlayerScoreMap
-	for (TTuple<FGameModeActorStruct, FPlayerScoreArrayWrapper>& Elem : PlayerScoreMap)
+	const TArray<FPlayerScore> PlayerScores = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))
+		->LoadPlayerScores();
+	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::Custom)
 	{
-		// find matching GameModeActorName or CustomGameModeName
-		if ((Elem.Key.GameModeActorName == GameModeActorStruct.GameModeActorName &&
-			Elem.Key.GameModeActorName != EGameModeActorName::Custom)||
-			(Elem.Key.GameModeActorName == EGameModeActorName::Custom &&
-				Elem.Key.CustomGameModeName == GameModeActorStruct.CustomGameModeName)) 
+		for (FPlayerScore ScoreObject : PlayerScores)
 		{
-			// find matching Song
-			for (const FPlayerScore& PlayerScoreObject : Elem.Value.PlayerScoreArray)
+			if (ScoreObject.CustomGameModeName.Equals(GameModeActorStruct.CustomGameModeName) &&
+				ScoreObject.SongTitle.Equals(GameModeActorStruct.SongTitle))
 			{
-				if (PlayerScoreObject.SongTitle.Equals(GameModeActorStruct.SongTitle))
+				if (ScoreObject.Score > CurrentPlayerScore.HighScore)
 				{
-					// get high score for PlayerHUD
-					if (PlayerScores.HighScore < PlayerScoreObject.HighScore)
-					{
-						PlayerScores.HighScore = PlayerScoreObject.HighScore;
-					}
+					CurrentPlayerScore.HighScore = ScoreObject.Score;
 				}
 			}
 		}
 	}
-	PlayerScores.GameModeActorName = GameModeActorStruct.GameModeActorName;
-	PlayerScores.SongTitle = GameModeActorStruct.SongTitle;
-	PlayerScores.SongLength = GameModeActorStruct.GameModeLength;
-	PlayerScores.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
-	PlayerScores.TotalPossibleDamage = 0.f;
+	else
+	{
+		for (FPlayerScore ScoreObject : PlayerScores)
+		{
+			if (ScoreObject.GameModeActorName == GameModeActorStruct.GameModeActorName &&
+				ScoreObject.SongTitle.Equals(GameModeActorStruct.SongTitle) &&
+				ScoreObject.Difficulty == GameModeActorStruct.GameModeDifficulty)
+			{
+				if (ScoreObject.Score > CurrentPlayerScore.HighScore)
+				{
+					CurrentPlayerScore.HighScore = ScoreObject.Score;
+				}
+			}
+		}
+	}
+	CurrentPlayerScore.GameModeActorName = GameModeActorStruct.GameModeActorName;
+	CurrentPlayerScore.SongTitle = GameModeActorStruct.SongTitle;
+	CurrentPlayerScore.SongLength = GameModeActorStruct.GameModeLength;
+	CurrentPlayerScore.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
+	CurrentPlayerScore.Difficulty = GameModeActorStruct.GameModeDifficulty;
+	CurrentPlayerScore.TotalPossibleDamage = 0.f;
+	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
+}
 
-	// just in case ScoreMap comparison is working
-	PlayerScoreArrayWrapper = PlayerScoreMap.FindRef(GameModeActorStruct);
+void AGameModeActorBase::SavePlayerScores()
+{
+	/** don't save scores if score is zero */
+	if (CurrentPlayerScore.Score <= 0 ||
+		(CurrentPlayerScore.GameModeActorName == EGameModeActorName::Custom &&
+			CurrentPlayerScore.CustomGameModeName == ""))
+	{
+		return;
+	}
+
+	/** save current time */
+	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
+
+	/** for BeatTrack modes */
+	if (CurrentPlayerScore.TotalPossibleDamage > 0.01f)
+	{
+		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage,
+		                                            100);
+		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage,
+		                                              100);
+	}
+	else
+	{
+		CurrentPlayerScore.AvgTimeOffset = CheckFloatNaN(
+			CurrentPlayerScore.TotalTimeOffset / CurrentPlayerScore.TargetsHit, 1000);
+		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.ShotsFired, 100);
+		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.TargetsSpawned,
+		                                              100);
+	}
+	CurrentPlayerScore.HighScore = CheckFloatNaN(CurrentPlayerScore.HighScore, 100);
+	CurrentPlayerScore.Score = CheckFloatNaN(CurrentPlayerScore.Score, 100);
+	CurrentPlayerScore.SongLength = CheckFloatNaN(CurrentPlayerScore.SongLength, 100);
+
+	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	GI->SavePlayerScores(CurrentPlayerScore, true);
+
+	UE_LOG(LogTemp, Display,
+	       TEXT("Accuracy: %f \n Completion: %f \n AvgTimeOffset: %f \n HighScore: %f \n Score: %f \n SongLength: %f"),
+	       CurrentPlayerScore.Accuracy, CurrentPlayerScore.Completion, CurrentPlayerScore.AvgTimeOffset,
+	       CurrentPlayerScore.HighScore,
+	       CurrentPlayerScore.Score, CurrentPlayerScore.SongLength);
+}
+
+void AGameModeActorBase::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)
+{
+	bShowStreakCombatText = PlayerSettings.bShowStreakCombatText;
+	CombatTextFrequency = PlayerSettings.CombatTextFrequency;
+}
+
+float AGameModeActorBase::CheckFloatNaN(const float ValueToCheck, const float ValueToRound)
+{
+	if (!isnan(roundf(ValueToRound * ValueToCheck) / ValueToRound))
+	{
+		return roundf(ValueToRound * ValueToCheck) / ValueToRound;
+	}
+	return 0;
 }

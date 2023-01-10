@@ -8,12 +8,11 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
-#include "TargetSpawner.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ASphereTarget::ASphereTarget()
@@ -25,105 +24,193 @@ ASphereTarget::ASphereTarget()
 	BaseMesh->SetupAttachment(CapsuleComp);
 	HealthComp = CreateDefaultSubobject<UDefaultHealthComponent>("Health Component");
 	InitialLifeSpan = 1.5f;
+	Guid = FGuid::NewGuid();
 }
 
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GI->RegisterSphereTarget(this);
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	GameModeActorStruct = GI->GameModeActorStruct;
+	const float WhiteToGreenMultiplier = 1 / GameModeActorStruct.PlayerDelay;
+	const float GreenToRedMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
 
-	// Use Color Changing Material, this is required in order to change color using C++
+	/* Use Color Changing Material, this is required in order to change color using C++ */
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
 
-	if (GI->GameModeActorStruct.IsBeatGridMode)
+	FOnTimelineLinearColor OnWhiteToGreenTimeline;
+	OnWhiteToGreenTimeline.BindUFunction(this, FName("SetSphereColor"));
+	WhiteToGreenTimeline.AddInterpLinearColor(WhiteToGreenCurve, OnWhiteToGreenTimeline);
+
+	FOnTimelineEvent OnWhiteToGreenTimelineFinished;
+	OnWhiteToGreenTimelineFinished.BindUFunction(this, FName("PlayGreenToRedTimeline"));
+	WhiteToGreenTimeline.SetTimelineFinishedFunc(OnWhiteToGreenTimelineFinished);
+
+	FOnTimelineLinearColor OnGreenToRedCurveTimeline;
+	OnGreenToRedCurveTimeline.BindUFunction(this, FName("SetSphereColor"));
+	GreenToRedTimeline.AddInterpLinearColor(GreenToRedCurve, OnGreenToRedCurveTimeline);
+
+	FOnTimelineLinearColor OnFadeAndReappearTimeline;
+	OnFadeAndReappearTimeline.BindUFunction(this, FName("SetSphereColor"));
+	FadeAndReappearTimeline.AddInterpLinearColor(FadeAndReappearCurve, OnFadeAndReappearTimeline);
+
+	WhiteToGreenTimeline.SetPlayRate(WhiteToGreenMultiplier);
+	GreenToRedTimeline.SetPlayRate(GreenToRedMultiplier);
+	FadeAndReappearTimeline.SetPlayRate(WhiteToGreenMultiplier);
+
+	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
 	}
-	else if (GI->GameModeActorStruct.IsBeatTrackMode)
+	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), FLinearColor::Red);
+		HealthComp->ShouldUpdateTotalPossibleDamage = true;
 	}
 	else
 	{
-		SetLifeSpan(GI->GameModeActorStruct.TargetMaxLifeSpan);
-		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GI->GameModeActorStruct.TargetMaxLifeSpan, false);
+		SetLifeSpan(GameModeActorStruct.TargetMaxLifeSpan);
+		PlayWhiteToGreenTimeline();
+		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GameModeActorStruct.TargetMaxLifeSpan, false);
 	}
+}
+
+void ASphereTarget::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	switch (TimelineSwitch)
+	{
+	case 0:
+		{
+			WhiteToGreenTimeline.TickTimeline(DeltaSeconds);
+			break;
+		}
+	case 1:
+		{
+			GreenToRedTimeline.TickTimeline(DeltaSeconds);
+			break;
+		}
+	case 2:
+		{
+			FadeAndReappearTimeline.TickTimeline(DeltaSeconds);
+			break;
+		}
+	default: break;
+	}
+}
+
+void ASphereTarget::StartBeatGridTimer(const float Lifespan)
+{
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
+	SetCanBeDamaged(true);
+	PlayWhiteToGreenTimeline();
+}
+
+void ASphereTarget::PlayWhiteToGreenTimeline()
+{
+	if (FadeAndReappearTimeline.IsPlaying())
+	{
+		FadeAndReappearTimeline.Stop();
+	}
+	if (GreenToRedTimeline.IsPlaying())
+	{
+		GreenToRedTimeline.Stop();
+	}
+	TimelineSwitch = 0;
+	WhiteToGreenTimeline.PlayFromStart();
+}
+
+void ASphereTarget::PlayGreenToRedTimeline()
+{
+	if (WhiteToGreenTimeline.IsPlaying())
+	{
+		WhiteToGreenTimeline.Stop();
+	}
+	if (FadeAndReappearTimeline.IsPlaying())
+	{
+		FadeAndReappearTimeline.Stop();
+	}
+	TimelineSwitch = 1;
+	GreenToRedTimeline.PlayFromStart();
+}
+
+void ASphereTarget::PlayFadeAndReappearTimeline()
+{
+	if (WhiteToGreenTimeline.IsPlaying())
+	{
+		WhiteToGreenTimeline.Stop();
+	}
+	if (GreenToRedTimeline.IsPlaying())
+	{
+		GreenToRedTimeline.Stop();
+	}
+	TimelineSwitch = 2;
+	FadeAndReappearTimeline.Play();
+}
+
+void ASphereTarget::SetSphereColor(const FLinearColor Output)
+{
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), Output);
 }
 
 void ASphereTarget::LifeSpanExpired()
 {
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z + 
-		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
+	OnLifeSpanExpired.Broadcast(true, -1, this);
 	Super::LifeSpanExpired();
-}
-
-void ASphereTarget::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void ASphereTarget::HandleDestruction()
 {
-	// Get the time that the sphere was alive for
-	float TimeAlive;
-	if (GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn) > 0) {
-		TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-	}
-	else if (GetLifeSpan() > 0)
+	/* Beat Track shouldn't reach this */
+	if (GameModeActorStruct.IsBeatTrackMode == true)
 	{
-		TimeAlive = GI->GameModeActorStruct.TargetMaxLifeSpan - GetLifeSpan();
+		return;
 	}
-	// if TimeSinceSpawn or LifeSpan expired
-	else
-	{
-		TimeAlive = -1;
-	}
-	// Destroy target and don't show explosion if timer expired
-	if (TimeAlive < 0)
+
+	/* Get the time that the sphere was alive for */
+	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+	if (TimeAlive < 0 || TimeAlive >= GameModeActorStruct.TargetMaxLifeSpan)
 	{
 		Destroy();
 		return;
 	}
-	const FVector ExplosionLocation = BaseMesh->GetComponentLocation();
-	const float SphereRadius = BaseSphereRadius * GetActorScale3D().X;
-	const FLinearColor ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor"));
-	// Beat Track shouldn't reach this
-	if (GI->GameModeActorStruct.IsBeatTrackMode == true)
-	{
-		return;
-	}
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z +
-		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(false, TopOfSphereLocation);
-	GI->GameModeActorBaseRef->UpdatePlayerScores(TimeAlive);
-	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 
-	// Beat Grid specific behavior
-	if (GI->GameModeActorStruct.IsBeatGridMode == true)
+	/* Broadcast that the target has been destroyed by player */
+	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X,
+	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
+
+	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear blueprint event */
+	if (GameModeActorStruct.IsBeatGridMode == true)
 	{
 		SetCanBeDamaged(false);
-		RemoveAndReappear();
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
+		PlayFadeAndReappearTimeline();
 	}
 	else
 	{
 		Destroy();
 	}
+}
 
-	// Play Explosion effect
+void ASphereTarget::OnBeatGridTimerTimeOut()
+{
+	SetCanBeDamaged(false);
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+	OnLifeSpanExpired.Broadcast(true, -1, this);
+}
+
+void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,
+                                        const FLinearColor ColorWhenDestroyed) const
+{
 	if (NS_Standard_Explosion)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -135,34 +222,7 @@ void ASphereTarget::HandleDestruction()
 	}
 }
 
-void ASphereTarget::StartBeatGridTimer(float Lifespan)
-{
-	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
-	SetCanBeDamaged(true);
-	PlayColorGradient();
-}
-
-void ASphereTarget::OnBeatGridTimerTimeOut()
-{
-	SetCanBeDamaged(false);
-	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	if (GI->GameModeActorStruct.IsSingleBeatMode == true)
-	{
-		GI->TargetSpawnerRef->SetShouldSpawn(true);
-	}
-	const FVector TopOfSphereLocation = { GetActorLocation().X,
-		GetActorLocation().Y,
-		GetActorLocation().Z + 
-		BaseSphereRadius * GetActorScale3D().Z };
-	OnLifeSpanExpired.Broadcast(true, TopOfSphereLocation);
-}
-
-void ASphereTarget::SetMaxHealth(float NewMaxHealth)
+void ASphereTarget::SetMaxHealth(const float NewMaxHealth) const
 {
 	HealthComp->SetMaxHealth(NewMaxHealth);
 }
-
-
-
-
-

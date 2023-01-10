@@ -30,7 +30,7 @@ protected:
 public:
 
 	UFUNCTION()
-		void FireInDirection(const FVector& ShootDirection);
+		void FireInDirection(const FVector& ShootDirection) const;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 		UProjectileMovementComponent* ProjectileMovement;

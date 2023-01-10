@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameModeActorBase.h"
+#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "SphereTarget.generated.h"
 
@@ -12,7 +14,8 @@ class UNiagaraSystem;
 class UCurveFloat;
 class UCurveLinearColor;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLifeSpanExpired, bool, DidExpire, FVector, Location);
+/** Target Spawner binds to this function to receive info about how target was destroyed */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor
@@ -20,71 +23,110 @@ class BEATSHOT_API ASphereTarget : public AActor
 	GENERATED_BODY()
 
 public:
+	/** Sets default values for this actor's properties */
 	ASphereTarget();
 
 protected:
-	// Called when the game starts or when spawned
+	
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
+	/** Ticks the timelines */
+	virtual void Tick(float DeltaSeconds) override;
+	
+	/** Called when a non BeatGrid target lifespan has expired */
 	virtual void LifeSpanExpired() override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UCapsuleComponent* CapsuleComp;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UStaticMeshComponent* BaseMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UNiagaraSystem* NS_Standard_Explosion;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UMaterialInterface* Material;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstanceDynamic* MID_TargetColorChanger;
+
+	UPROPERTY(EditDefaultsOnly)
+	UCurveLinearColor* FadeAndReappearCurve;
+
+	UPROPERTY(EditDefaultsOnly)
+	UCurveLinearColor* WhiteToGreenCurve;
+
+	UPROPERTY(EditDefaultsOnly)
+	UCurveLinearColor* GreenToRedCurve;
+
 public:
-	virtual void Tick(float DeltaTime) override;
+	
+	/** Called in TargetSpawner to activate a BeatGrid target */
+	void StartBeatGridTimer(float Lifespan);
 
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-		FOnLifeSpanExpired OnLifeSpanExpired;
+	/* Called from DefaultHealthComponent when a SphereTarget receives damage. */
+	void HandleDestruction();
+	
+	FOnLifeSpanExpired OnLifeSpanExpired;
 
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-		UCapsuleComponent* CapsuleComp;
+	/** All of the FOnTimelineLinearColor bind to this function,
+	*   so that the color of the sphere is changed based on the timeline positions.
+	*   Also called by Gun to change the color for BeatTrack modes */
+	UFUNCTION()
+	void SetSphereColor(const FLinearColor Output);
 
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-		UStaticMeshComponent* BaseMesh;
+	UPROPERTY()
+	FTimerHandle TimeSinceSpawn;
 
-	UPROPERTY(VisibleAnywhere, Category = "Target Properties", BlueprintReadOnly)
-		FTimerHandle TimeSinceSpawn;
+	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
+	FGameModeActorStruct GameModeActorStruct;
 
-	UPROPERTY(EditAnywhere, Category = "Effects", BlueprintReadWrite)
-		UNiagaraSystem* NS_Standard_Explosion;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UDefaultHealthComponent* HealthComp;
 
-	// Called from DefaultHealthComponent when a SphereTarget receives damage.
-	UFUNCTION(BlueprintCallable, Category = "Target Handling")
-		void HandleDestruction();
+	FGuid Guid;
 
-	UFUNCTION(BlueprintCallable, Category = "Target Handling")
-		void StartBeatGridTimer(float Lifespan);
+private:
 
-	UFUNCTION(BlueprintCallable, Category = "Target Handling")
-		void OnBeatGridTimerTimeOut();
+	/** Play the WhiteToGreenTimeline, which corresponds to the WhiteToGreenCurve */
+	UFUNCTION()
+	void PlayWhiteToGreenTimeline();
 
-	UPROPERTY(VisibleAnywhere, Category = "References", BlueprintReadOnly)
-		class UDefaultGameInstance* GI;
+	/** Play the WhiteToGreenTimeline, which corresponds to the WhiteToGreenCurve */
+	UFUNCTION()
+	void PlayGreenToRedTimeline();
 
-	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-		UMaterialInterface* Material;
+	/** Briefly makes the target higher opacity. Only used for BeatGrid */
+	UFUNCTION()
+	void PlayFadeAndReappearTimeline();
+	
+	FTimeline FadeAndReappearTimeline;
+	FTimeline WhiteToGreenTimeline;
+	FTimeline GreenToRedTimeline;
 
-	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-		UMaterialInstanceDynamic* MID_TargetColorChanger;
+	/** Switch that is changed in the PlayTimeline functions so that all timelines aren't always ticked */
+	int32 TimelineSwitch = -1;
+	
+	/** Unlike other modes which use LifeSpanExpired to notify TargetSpawner of their expiration,
+	 *  BeatGrid needs to use this function since the the targets aren't going to be destroyed,
+	 *  but instead just deactivated */
+	UFUNCTION()
+	void OnBeatGridTimerTimeOut();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
-		UDefaultHealthComponent* HealthComp;
+	/** Set the max health of the target */
+	void SetMaxHealth(float NewMaxHealth) const;
 
-	UFUNCTION(BlueprintCallable, Category = "Target Properties")
-		void SetMaxHealth(float NewMaxHealth);
+	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
+	void PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,
+	                         const FLinearColor ColorWhenDestroyed) const;
 
-	// Base radius for sphere target.
+	/** Base radius for sphere target. */
 	const float BaseSphereRadius = 50.f;
 
-	// Color for BeatGrid targets that aren't active.
-	const FLinearColor BeatGridPurple = { 83.f/255.f , 0.f, 245.f/255.f, 1.f };
-
-	// Play the white to green to red color transition for sphere.
-	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
-		void PlayColorGradient();
-
-	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
-		void ShowTargetExplosion();
-
-	// Briefly makes the target higher opacity. Only used for BeatGrid
-	UFUNCTION(BlueprintImplementableEvent, Category = "Target Properties")
-		void RemoveAndReappear();
+	/** Color for BeatGrid targets that aren't active. */
+	FLinearColor BeatGridPurple = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
 };
+
+

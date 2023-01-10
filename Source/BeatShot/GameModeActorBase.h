@@ -3,186 +3,200 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "GameFramework/Actor.h"
 #include "GameModeActorBase.generated.h"
 
-class AFloatingTextActor;
 class ASphereTarget;
-class UAudioAnalyzerManager;
-class UDefaultGameInstance;
+class AFloatingTextActor;
+class ADefaultGameMode;
 
-// Base game mode names
+#pragma region Enums
+
+/** Enum representing the default game mode names */
 UENUM(BlueprintType)
-enum class EGameModeActorName : uint8 {
-	Custom						UMETA(DisplayName, "Custom"),
-	SingleBeat					UMETA(DisplayName, "SingleBeat"),
-	MultiBeat					UMETA(DisplayName, "MultiBeat"),
-	BeatGrid					UMETA(DisplayName, "BeatGrid"),
-	// REMEMBER TO UPDATE ENUM_RANGE_BY_FIRST_AND_LAST AS GAME MODES ARE ADDED!!!
-	BeatTrack					UMETA(DisplayName, "BeatTrack")
+enum class EGameModeActorName : uint8
+{
+	Custom UMETA(DisplayName, "Custom"),
+	SingleBeat UMETA(DisplayName, "SingleBeat"),
+	MultiBeat UMETA(DisplayName, "MultiBeat"),
+	BeatGrid UMETA(DisplayName, "BeatGrid"),
+	BeatTrack UMETA(DisplayName, "BeatTrack")
 };
 
-// REMEMBER TO UPDATE THIS AS GAME MODES ARE ADDED!!!
-// Allows iterating through EGameModeActorName
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
-// Target spawning spread
+/** Enum representing the spread type of the targets */
 UENUM(BlueprintType)
-enum class ESpreadType : uint8 {
-	None						UMETA(DisplayName, "None"),
-	DynamicEdgeOnly				UMETA(DisplayName, "DynamicEdgeOnly"),
-	DynamicRandom				UMETA(DisplayName, "DynamicRandom"),
-	StaticNarrow				UMETA(DisplayName, "StaticNarrow"),
-	StaticWide					UMETA(DisplayName, "StaticWide")
+enum class ESpreadType : uint8
+{
+	None UMETA(DisplayName, "None"),
+	DynamicEdgeOnly UMETA(DisplayName, "DynamicEdgeOnly"),
+	DynamicRandom UMETA(DisplayName, "DynamicRandom"),
+	StaticNarrow UMETA(DisplayName, "StaticNarrow"),
+	StaticWide UMETA(DisplayName, "StaticWide")
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::StaticWide);
 
-// Base difficulties
+/** Enum representing the default game mode difficulties */
 UENUM(BlueprintType)
-enum class EGameModeDifficulty : uint8 {
-	Normal						UMETA(DisplayName, "Normal"),
-	Hard						UMETA(DisplayName, "Hard"),
-	Death						UMETA(DisplayName, "Death")
+enum class EGameModeDifficulty : uint8
+{
+	None UMETA(DisplayName, "None"),
+	Normal UMETA(DisplayName, "Normal"),
+	Hard UMETA(DisplayName, "Hard"),
+	Death UMETA(DisplayName, "Death")
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::Normal, EGameModeDifficulty::Death);
 
-// Used to store game properties
+ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
+
+#pragma endregion
+
+#pragma region Structs
+
+/* Struct representing a game mode */
 USTRUCT(BlueprintType)
 struct FGameModeActorStruct
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FString SongTitle;
+	/* The song title */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	FString SongTitle;
 
-	// Used to Spawn GameModes deriving from GameModeActorBase
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		EGameModeActorName GameModeActorName;
+	/* The default game mode name, or custom if custom */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	EGameModeActorName GameModeActorName;
 
-	// If user creates custom mode, save it with this name
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FString CustomGameModeName;
+	/* Custom game mode name if custom, otherwise empty string */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	FString CustomGameModeName;
 
-	// Used to dynamically adjust the spawn area and sphere size
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		ESpreadType SpreadType;
+	/* Default game mode difficulties, or none if custom */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	EGameModeDifficulty GameModeDifficulty;
 
-	// Used to dynamically adjust the sphere size
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		bool UseDynamicSizing;
+	/* Whether or not the game mode derives from BeatTrack */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
+	bool IsBeatTrackMode;
 
-	// Changes default difficulty values
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		EGameModeDifficulty GameModeDifficulty;
+	/* Whether or not the game mode derives from SingleBeat */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
+	bool IsSingleBeatMode;
 
-	// TimerHandle for Song Length
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
-		FTimerHandle GameModeLengthTimer;
+	/* Whether or not the game mode derives from BeatGrid */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
+	bool IsBeatGridMode;
 
-	// Length of song
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
-		float GameModeLength;
+	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
+	 * If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	ESpreadType SpreadType;
 
-	// Countdown TimerHandle
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Song Properties")
-		FTimerHandle CountDownTimer;
+	/* Whether or not to dynamically change the size of targets as consecutive targets are hit */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	bool UseDynamicSizing;
 
-	// Countdown Time Length
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Static Game Properties")
-		float CountdownTimerLength;
+	/* Length of song */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float GameModeLength;
 
-	// Sets the minimum time between target spawns
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float TargetSpawnCD;
+	/* Sets the minimum time between target spawns */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float TargetSpawnCD;
 
-	// Sets the minimum distance between recent target spawns
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float MinDistanceBetweenTargets;
+	/* Sets the minimum distance between recent target spawns */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float MinDistanceBetweenTargets;
 
-	// Used by TargetSpawner to set the center of target spawn area
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FVector CenterOfSpawnBox;
+	/* Min multiplier to target size */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float MinTargetScale;
 
-	// Min multiplier to target size
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float MinTargetScale;
+	/* Max multiplier to target size */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float MaxTargetScale;
 
-	// Max multiplier to target size
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float MaxTargetScale;
+	/* Whether or not to spawn targets only at headshot height */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	bool HeadshotHeight;
 
-	// Targets only spawn at headshot height
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		bool HeadshotHeight;
+	/* Whether or not to center spawn area in the center of wall, vs as close to the ground as possible */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	bool WallCentered;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		bool WallCentered;
+	/* Maximum time in which target will stay on screen */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float TargetMaxLifeSpan;
 
-	// Maximum time in which target will stay on screen
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float TargetMaxLifeSpan;
+	/* The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	FVector BoxBounds;
 
-	// The size of the target spawn BoundingBox. Dimensions are half of the the total length/width
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FVector BoxBounds;
+	/* Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float PlayerDelay;
 
-	// Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float PlayerDelay;
+	/* Whether or not to move the targets forward towards the player after spawning */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	bool bMoveTargetsForward;
 
-	// the minimum speed multiplier for Tracking Game Mode
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatTrack Properties")
-		float MinTrackingSpeed;
+	/* Whether or not to move the targets forward towards the player after spawning */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	float MoveForwardDistance;
 
-	// the maximum speed multiplier for Tracking Game Mode
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatTrack Properties")
-		float MaxTrackingSpeed;
+	/* The minimum speed multiplier for Tracking Game Mode */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
+	float MinTrackingSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		bool IsBeatTrackMode;
+	/* The maximum speed multiplier for Tracking Game Mode */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
+	float MaxTrackingSpeed;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		bool IsSingleBeatMode;
+	/* The number of BeatGrid targets, only square-able numbers */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	int32 BeatGridSize;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		bool IsBeatGridMode;
+	/* Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	bool RandomizeBeatGrid;
 
-	// not implemented yet
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
-		FVector2D BeatGridSpacing;
+	/* The space between BeatGrid targets */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	FVector2D BeatGridSpacing;
 
-	// min 4, only squarable numbers
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
-		int32 BeatGridSize;
+	/* not implemented yet */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	int32 NumTargetsAtOnceBeatGrid;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
-		bool RandomizeBeatGrid;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BeatGrid Properties")
-		int32 NumTargetsAtOnceBeatGrid;
-
-	FORCEINLINE bool operator== (const FGameModeActorStruct& Other) const
+	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const
 	{
 		if (GameModeActorName == Other.GameModeActorName &&
-			SongTitle.Equals(Other.SongTitle) &&
-			(CustomGameModeName.IsEmpty() && Other.CustomGameModeName.IsEmpty() ||
-				CustomGameModeName.Equals(Other.CustomGameModeName)))
+			CustomGameModeName.Equals(Other.CustomGameModeName))
 		{
 			return true;
 		}
 		return false;
 	}
 
-	// Generic initialization
+	/*FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
+	{
+		const uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
+		return Hash;
+	}*/
+
+	/* Generic initialization */
 	FGameModeActorStruct()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
 		SpreadType = ESpreadType::None;
 		GameModeDifficulty = EGameModeDifficulty::Normal;
+		IsBeatTrackMode = false;
+		IsSingleBeatMode = false;
+		IsBeatGridMode = false;
 		UseDynamicSizing = false;
-		MinDistanceBetweenTargets = 100.f;
-		CenterOfSpawnBox = { 3590.f,0.f,160.f };
-		CountdownTimerLength = 3.f;
+		MinDistanceBetweenTargets = 10.f;
 		GameModeLength = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
@@ -191,27 +205,22 @@ struct FGameModeActorStruct
 		HeadshotHeight = false;
 		WallCentered = false;
 		PlayerDelay = 0.3f;
+		bMoveTargetsForward = false;
+		MoveForwardDistance = 0.f;
 		SongTitle = "";
 		CustomGameModeName = "";
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
-		IsBeatTrackMode = false;
-		IsSingleBeatMode = false;
-		IsBeatGridMode = false;
 		RandomizeBeatGrid = false;
 		NumTargetsAtOnceBeatGrid = -1;
 		BeatGridSpacing = FVector2D::ZeroVector;
 		BeatGridSize = 0.f;
-		BoxBounds.X = 0.f;
-		// horizontal
-		BoxBounds.Y = 3200.f;
-		// vertical
-		BoxBounds.Z = 1000.f;
+		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 	}
 
 	FGameModeActorStruct(EGameModeActorName GameModeActor,
-		EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal,
-		ESpreadType NewSpreadType = ESpreadType::None)
+	                     EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal,
+	                     ESpreadType NewSpreadType = ESpreadType::None)
 	{
 		// Parameters
 		GameModeActorName = GameModeActor;
@@ -219,7 +228,6 @@ struct FGameModeActorStruct
 		SpreadType = NewSpreadType;
 
 		// Constant for all Game Modes and Difficulties
-		CountdownTimerLength = 3.f;
 		GameModeLength = 0.f;
 		HeadshotHeight = false;
 		RandomizeBeatGrid = false;
@@ -233,8 +241,10 @@ struct FGameModeActorStruct
 		IsSingleBeatMode = false;
 		IsBeatGridMode = false;
 		UseDynamicSizing = false;
-		MinDistanceBetweenTargets = 100.f;
+		MinDistanceBetweenTargets = 10.f;
 		PlayerDelay = 0.3f;
+		bMoveTargetsForward = false;
+		MoveForwardDistance = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
 		MinTargetScale = 0.8f;
@@ -242,20 +252,14 @@ struct FGameModeActorStruct
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
 		BeatGridSize = 0.f;
-		BoxBounds.X = 0.f;
-		BoxBounds.Y = 3200.f;
-		BoxBounds.Z = 1000.f;
-		CenterOfSpawnBox = { 3590.f,0.f,160.f };
+		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 
 		// BeatGrid
 		if (GameModeActor == EGameModeActorName::BeatGrid)
 		{
 			SpreadType = ESpreadType::None;
 			IsBeatGridMode = true;
-			WallCentered = true;
-			BoxBounds.Y = 1000.f;
-			BoxBounds.Z = 1000.f;
-			CenterOfSpawnBox = { 3590.f,0.f,750.f };
+			BoxBounds = FVector(0.f, 1000.f, 1000.f);
 
 			// BeatGrid Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
@@ -263,9 +267,9 @@ struct FGameModeActorStruct
 				PlayerDelay = 0.35f;
 				TargetSpawnCD = 0.35f;
 				TargetMaxLifeSpan = 1.2f;
-				MinTargetScale = 1.f;
-				MaxTargetScale = 1.f;
-				BeatGridSize = 16;
+				MinTargetScale = 0.85f;
+				MaxTargetScale = 0.85f;
+				BeatGridSize = 25;
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
 			{
@@ -296,7 +300,6 @@ struct FGameModeActorStruct
 			TargetMaxLifeSpan = 0.f;
 			MinTrackingSpeed = 500.f;
 			MaxTrackingSpeed = 500.f;
-			CenterOfSpawnBox = { 3590.f,0.f,750.f };
 
 			// BeatTrack Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
@@ -353,25 +356,22 @@ struct FGameModeActorStruct
 				MaxTargetScale = 1.25f;
 			}
 
-			// MultiBeat Spread Types
+			// MultiBeat Spread Types, defaults to DynamicRandom
 			if (SpreadType == ESpreadType::StaticNarrow)
 			{
 				UseDynamicSizing = false;
-				BoxBounds.Y = 1600.f;
-				BoxBounds.Z = 500.f;
+				BoxBounds = FVector(0.f, 1600.f, 500.f);
 			}
 			else if (SpreadType == ESpreadType::StaticWide)
 			{
 				UseDynamicSizing = false;
-				BoxBounds.Y = 3200.f;
-				BoxBounds.Z = 1000.f;
+				BoxBounds = FVector(0.f, 3200.f, 1000.f);
 			}
-			else if (SpreadType == ESpreadType::DynamicEdgeOnly ||
-				SpreadType == ESpreadType::DynamicRandom)
+			else
 			{
+				SpreadType = ESpreadType::DynamicRandom;
 				UseDynamicSizing = true;
-				BoxBounds.Y = 2000.f;
-				BoxBounds.Z = 800.f;
+				BoxBounds = FVector(0.f, 2000.f, 800.f);
 			}
 		}
 		// SingleBeat
@@ -405,25 +405,22 @@ struct FGameModeActorStruct
 				MaxTargetScale = 1.5f;
 			}
 
-			// SingleBeat Spread Types
+			// SingleBeat Spread Types, defaults to DynamicEdgeOnly
 			if (SpreadType == ESpreadType::StaticNarrow)
 			{
 				UseDynamicSizing = false;
-				BoxBounds.Y = 1600.f;
-				BoxBounds.Z = 500.f;
+				BoxBounds = FVector(0.f, 1600.f, 500.f);
 			}
 			else if (SpreadType == ESpreadType::StaticWide)
 			{
 				UseDynamicSizing = false;
-				BoxBounds.Y = 3200.f;
-				BoxBounds.Z = 1000.f;
+				BoxBounds = FVector(0.f, 3200.f, 1000.f);
 			}
-			else if (SpreadType == ESpreadType::DynamicEdgeOnly ||
-				SpreadType == ESpreadType::DynamicRandom)
+			else
 			{
+				SpreadType = ESpreadType::DynamicEdgeOnly;
 				UseDynamicSizing = true;
-				BoxBounds.Y = 2000.f;
-				BoxBounds.Z = 800.f;
+				BoxBounds = FVector(0.f, 2000.f, 800.f);
 			}
 		}
 	}
@@ -432,9 +429,7 @@ struct FGameModeActorStruct
 	{
 		GameModeActorName = EGameModeActorName::Custom;
 		SpreadType = ESpreadType::None;
-		MinDistanceBetweenTargets = 100.f;
-		CenterOfSpawnBox = { 3590.f,0.f,160.f };
-		CountdownTimerLength = 3.f;
+		MinDistanceBetweenTargets = 10.f;
 		GameModeLength = 0.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
@@ -460,76 +455,88 @@ struct FGameModeActorStruct
 	}
 };
 
-// Used to load and save player scores
+/* Used to load and save player scores */
 USTRUCT(BlueprintType)
 struct FPlayerScore
 {
 	GENERATED_BODY()
 
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		EGameModeActorName GameModeActorName;
+	/* The default game mode name, or custom if custom */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
+	EGameModeActorName GameModeActorName;
 
+	/* Custom game mode name if custom, otherwise empty string */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
+	FString CustomGameModeName;
+
+	/* Default game mode difficulties, or none if custom */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
+	EGameModeDifficulty Difficulty;
+
+	/* The song title */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
+	FString SongTitle;
+
+	/* Length of song */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FString CustomGameModeName;
+	float SongLength;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FString SongTitle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		float SongLength;
-
-	// Used by PlayerHUD to display current score
+	/* The current score at any given time during play */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float Score;
+	float Score;
 
-	// Displayed with PlayerHUD
+	/* Only represents highest score based on previous entries, and may become outdated */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float HighScore;
+	float HighScore;
 
-	// Total Targets hit / Total shots fired
+	/* Total Targets hit divided by Total shots fired */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float Accuracy;
+	float Accuracy;
 
-	// Total Targets hit / Total targets spawned
+	/* Total Targets hit divided by Total targets spawned */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float Completion;
+	float Completion;
 
-	// Incremented after receiving calls from FOnShotsFired delegate in DefaultCharacter
+	/* Incremented after receiving calls from FOnShotsFired delegate in DefaultCharacter */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		int32 ShotsFired;
+	int32 ShotsFired;
 
-	// Total number of targets destroyed by player, called by Projectile
+	/* Total number of targets destroyed by player */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		int32 TargetsHit;
+	int32 TargetsHit;
 
-	// Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetSpawner
+	/* Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetSpawner */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		int32 TargetsSpawned;
+	int32 TargetsSpawned;
 
-	// Total possible damage that could have been done to tracking target,
-	// also used to determine if the score object is for Tracking game mode
+	/* Total possible damage that could have been done to tracking target, also used to determine if the score object is for Tracking game mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float TotalPossibleDamage;
+	float TotalPossibleDamage;
 
-	// Total time offset from Spawn Beat Delay for all destroyed targets
+	/* Total time offset from Spawn Beat Delay for all destroyed targets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float TotalTimeOffset;
+	float TotalTimeOffset;
 
-	// Avg Time offset from Spawn Beat Delay for destroyed targets
+	/* Avg Time offset from Spawn Beat Delay for destroyed targets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		float AvgTimeOffset;
+	float AvgTimeOffset;
 
-	// time that player completed the session
+	/* time that player completed the session, in Iso8601 UTC format */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		FString Time;
+	FString Time;
 
-	// The maximum consecutive targets hit in a row
+	/* The maximum consecutive targets hit in a row */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
-		int32 Streak;
+	int32 Streak;
+
+	/* Whether or not this instance has been saved to the database yet */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
+	bool bSavedToDatabase;
 
 	FPlayerScore()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
+		Difficulty = EGameModeDifficulty::None;
 		CustomGameModeName = "";
 		SongTitle = "";
 		SongLength = 0.f;
@@ -544,12 +551,14 @@ struct FPlayerScore
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
+		bSavedToDatabase = false;
 	}
 
 	void ResetStruct()
 	{
 		GameModeActorName = EGameModeActorName::Custom;
 		CustomGameModeName = "";
+		Difficulty = EGameModeDifficulty::None;
 		SongTitle = "";
 		SongLength = 0.f;
 		Score = 0;
@@ -562,28 +571,11 @@ struct FPlayerScore
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
+		bSavedToDatabase = false;
 	}
 };
 
-// Used by PlayerScoreMap to abstract FPlayerScores
-USTRUCT(BlueprintType)
-struct FPlayerScoreArrayWrapper
-{
-	GENERATED_BODY()
-
-		// originally wanted this to hold all FPlayerScores for a given EGameModeActorName and Song title,
-		// but doesn't work sometimes. Saving and loading works even if equality doesn't work.
-		UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<FPlayerScore> PlayerScoreArray;
-};
-
-FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
-{
-	uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
-	return Hash;
-}
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore, NewPlayerScoreStruct);
+#pragma endregion
 
 UCLASS()
 class BEATSHOT_API AGameModeActorBase : public AActor
@@ -591,105 +583,117 @@ class BEATSHOT_API AGameModeActorBase : public AActor
 	GENERATED_BODY()
 
 public:
-
 	AGameModeActorBase();
 
 protected:
-
 	virtual void BeginPlay() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void SavePlayerScores();
+	virtual void Destroyed() override;
 
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void LoadPlayerScores();
-
-public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// called by WBP_Countdown when player clicks anywhere on screen, including after game restart
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-		void InitializeGameModeActor();
+public:
+	/** Starts the game mode timer */
+	UFUNCTION()
+	void StartGameMode();
 
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-		void StartGameMode();
+	/** Timer that spans the length of the song */
+	UPROPERTY(VisibleAnywhere)
+	FTimerHandle GameModeLengthTimer;
 
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-		void EndGameMode(bool ShouldSavePlayerScores = false);
+	/** The game mode defining properties */
+	UPROPERTY(VisibleAnywhere)
+	FGameModeActorStruct GameModeActorStruct;
 
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-		void StartCountDownTimer();
+private:
+	/** called during StartGameMode. Loads player scores, sets the score amount for each target, and binds to TargetSpawner's
+	 *  UpdateTargetSpawned and OnStreakUpdate */
+	UFUNCTION()
+	void InitializeGameModeActor();
 
-	UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-		void OnGameModeLengthTimerComplete();
+	/** Reports to DefaultGameMode when the song has finished */
+	UFUNCTION()
+	void OnGameModeLengthTimerComplete();
 
-	UFUNCTION(BlueprintCallable, Category = "FloatingTextActor")
-		void OnStreakUpdate(int32 Streak, FVector Location);
+	/** Function bound to DefaultGameMode's OnBeatTrackTargetSpawned delegate.
+	 *  Binds the tracking target's health component's OnBeatTrackTick delegate to UpdateTrackingScore */
+	UFUNCTION()
+	void OnBeatTrackTargetSpawned(ASphereTarget* TrackingTarget);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "FloatingTextActor")
-		TSubclassOf<AFloatingTextActor> FloatingTextActorToSpawn;
+	/** The floating combat text class */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AFloatingTextActor> FloatingTextActorToSpawn;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FGameModeActorStruct GameModeActorStruct;
+#pragma region HUDUpdate
 
-	UPROPERTY(VisibleAnywhere, BlueprintAssignable, Category = "Game Properties")
-		FUpdateScoresToHUD UpdateScoresToHUD;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Game Properties")
-		FTimerHandle GameModeLengthTimer;
+	/** Function bound to DefaultGameMode's OnTargetDestroyed delegate, which is executed by TargetSpawner.
+	 *  Passes the time that the target was alive for */
+	UFUNCTION()
+	void UpdatePlayerScores(const float TimeElapsed);
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Countdown")
-		FTimerHandle CountDownTimer;
+	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
+	 *  which passes the current damage taken, and the total possible damage. Executed on tick
+	 *  by SphereTarget */
+	UFUNCTION()
+	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
 
-	// Reference Game Instance
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-		UDefaultGameInstance* GI;
+	/** Function bound to DefaultGameMode's OnTargetSpawned delegate to keep track of number of targets spawned.
+	 *  Executed by TargetSpawner */
+	UFUNCTION()
+	void UpdateTargetsSpawned();
 
-	// Scoring
+	/** Function bound to Gun_AK47's FOnShotFired delegate to keep track of number of targets spawned.
+	 *  Executed by Gun_AK47 */
+	UFUNCTION()
+	void UpdateShotsFired();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
-		TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
+	/** Function bound to DefaultGameMode's OnStreakUpdate delegate to keep track of streak.
+	 *  Executed by TargetSpawner */
+	UFUNCTION()
+	void OnStreakUpdate(int32 Streak, FVector Location);
 
-	// the saved score object, with accuracy, etc.
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-		FPlayerScore SavedPlayerScores;
+	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
+	void UpdateTargetsHit();
 
-	// the wrapper struct that contains the array of saved player score objects
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-		FPlayerScoreArrayWrapper PlayerScoreArrayWrapper;
+	/** Called by UpdatePlayerScores or UpdatingTrackingScores to recalculate the high score if needed  */
+	void UpdateHighScore();
 
-	// the "live" player score objects, which start fresh and import high score from SavedPlayerScores
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-		FPlayerScore PlayerScores;
+#pragma endregion
 
-	// max score per target based on total amount of targets that could spawn
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Scoring")
-		float MaxScorePerTarget;
+#pragma region Scoring
 
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void UpdateHighScore();
+	/** Loads the player scores and finds the highest score that matches the GameModeActorBase, Difficulty, and song title */
+	void LoadPlayerScores();
 
-	// Called by SphereTarget when it takes damage
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void UpdatePlayerScores(float TimeElapsed);
+public:
+	/** Prepares PlayerScores for saving in GameInstance, then calls SavePlayerScores in DefaultGameInstance */
+	void SavePlayerScores();
 
-	// Called by TargetSpawner when a SphereTarget is spawned
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void UpdateTargetsSpawned();
+private:
+	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
+	UPROPERTY(VisibleAnywhere)
+	FPlayerScore CurrentPlayerScore;
 
-	// Called by DefaultCharacter when player shoots during an active game that is not a BeatTracking game modes
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void UpdateShotsFired();
+	/** Max score per target based on total amount of targets that could spawn */
+	UPROPERTY(VisibleAnywhere)
+	float MaxScorePerTarget;
 
-	// Called by Projectile when a Player's projectile hits a SphereTarget during an active game that is not a BeatTracking game modes
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void UpdateTargetsHit();
+#pragma endregion
 
-	// Called when IsTrackingGameMode == true
-	UFUNCTION(BlueprintCallable, Category = "Scoring")
-		void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
+	/** Function called when new settings are saved in Game Instance */
+	UFUNCTION()
+	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 
-	//UFUNCTION(BlueprintCallable, Category = "Game Start/End")
-	//	void UpdateStreak();
+	float CheckFloatNaN(const float ValueToCheck, const float ValueToRound);
+
+	/** Whether or not to show the Streak Combat Text */
+	bool bShowStreakCombatText;
+
+	/** The frequency at which to show Streak Combat Text */
+	int32 CombatTextFrequency;
+
+	/** Reference to the GameMode because it frequently needs to be called */
+	UPROPERTY()
+	ADefaultGameMode* GameMode;
 };

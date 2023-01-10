@@ -2,11 +2,9 @@
 
 
 #include "DefaultHealthComponent.h"
-#include "DefaultGameInstance.h"
 #include "GameModeActorBase.h"
 #include "SphereTarget.h"
 #include "GameFramework/Actor.h"
-#include "Kismet/GameplayStatics.h"
 
 UDefaultHealthComponent::UDefaultHealthComponent()
 {
@@ -16,15 +14,9 @@ UDefaultHealthComponent::UDefaultHealthComponent()
 void UDefaultHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Health = MaxHealth;
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UDefaultHealthComponent::DamageTaken);
-	ShouldUpdateTotalPossibleDamage = false;
 	TotalPossibleDamage = 0.f;
-	if (Cast<ASphereTarget>(GetOwner()) && GI->GameModeActorStruct.IsBeatTrackMode)
-	{
-		ShouldUpdateTotalPossibleDamage = true;
-	}
 }
 
 void UDefaultHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -33,7 +25,10 @@ void UDefaultHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	if (ShouldUpdateTotalPossibleDamage)
 	{
 		TotalPossibleDamage++;
-		GI->GameModeActorBaseRef->UpdateTrackingScore(0.f, TotalPossibleDamage);
+		if (!OnBeatTrackTick.ExecuteIfBound(0.f, TotalPossibleDamage))
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnBeatTrackTick not bound."));
+		}
 	}
 }
 
@@ -51,15 +46,18 @@ void UDefaultHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, co
 
 	if (ASphereTarget* DamagedTarget = Cast<ASphereTarget>(DamagedActor))
 	{
-		if (Health <= 0.f || GI->GameModeActorStruct.IsBeatGridMode == true)
+		if (Health <= 0.f || DamagedTarget->GameModeActorStruct.IsBeatGridMode == true)
 		{
 			DamagedTarget->HandleDestruction();
 		}
 		// BeatTrack modes, handle score based on damage
 		else if (Health > 101 &&
-			GI->GameModeActorStruct.IsBeatTrackMode == true)
+			DamagedTarget->GameModeActorStruct.IsBeatTrackMode == true)
 		{
-			GI->GameModeActorBaseRef->UpdateTrackingScore(Damage, TotalPossibleDamage);
+			if (!OnBeatTrackTick.ExecuteIfBound(Damage, TotalPossibleDamage))
+			{
+				UE_LOG(LogTemp, Display, TEXT("OnBeatTrackTick not bound."));
+			}
 		}
 	}
 }

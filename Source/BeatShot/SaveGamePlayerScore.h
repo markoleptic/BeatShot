@@ -16,5 +16,5 @@ public:
 
 	// Map to store all scores, accessible by GameMode
 	UPROPERTY()
-	TMap<FGameModeActorStruct, FPlayerScoreArrayWrapper> PlayerScoreMap;
+	TArray<FPlayerScore> PlayerScoreArray;
 };

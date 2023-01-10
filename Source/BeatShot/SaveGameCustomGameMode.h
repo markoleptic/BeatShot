@@ -14,6 +14,6 @@ class BEATSHOT_API USaveGameCustomGameMode : public USaveGame
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom GameModes")
-	TMap<FString, FGameModeActorStruct> CustomGameModesMap;
+	UPROPERTY()
+	TArray<FGameModeActorStruct> CustomGameModes;
 };

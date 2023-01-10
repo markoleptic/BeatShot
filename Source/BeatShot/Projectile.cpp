@@ -2,17 +2,13 @@
 
 
 #include "Projectile.h"
-#include "DefaultCharacter.h"
-#include "SphereTarget.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
 #include "GameModeActorBase.h"
-#include "PlayerHUD.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AProjectile::AProjectile()
@@ -61,32 +57,15 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent,
 		Destroy();
 		return;
 	}
-
-	const UDefaultGameInstance* GameInstance = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	ADefaultPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ADefaultPlayerController>();
-	if (GetInstigator<ADefaultCharacter>())
-	{
-		// targets should have the TimeSinceSpawn timer active
-		// to be eligible to call UpdateTargetsHit()
-		if (const ASphereTarget* Target = Cast<ASphereTarget>(OtherActor); Target &&
-			GameInstance->GameModeActorStruct.IsBeatTrackMode == false &&
-			(Target->GetWorldTimerManager().GetTimerElapsed(Target->TimeSinceSpawn) > 0
-				|| Target->GetLifeSpan() > 0))
-		{
-			// Player has shot a valid target
-			GameInstance->GameModeActorBaseRef->UpdateTargetsHit();
-		}
-	}
-
 	if (OtherActor != nullptr && OtherActor != this && OtherComponent != nullptr) //&& OtherComponent->IsSimulatingPhysics()
 	{
+		ADefaultPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ADefaultPlayerController>();
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 	}
-
 	Destroy();
 }
 
-void AProjectile::FireInDirection(const FVector& ShootDirection)
+void AProjectile::FireInDirection(const FVector& ShootDirection) const
 {
 	ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 }
