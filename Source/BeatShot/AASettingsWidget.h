@@ -17,6 +17,7 @@ class UHorizontalBox;
 class UComboBoxString;
 class UComboBox;
 class UTextBlock;
+class USavedTextWidget;
 class UProgressBar;
 
 /**
@@ -102,6 +103,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UEditableTextBox* TimeWindowValue;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UButton* ResetAASettingsButton;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")

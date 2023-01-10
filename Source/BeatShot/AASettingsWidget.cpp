@@ -4,6 +4,7 @@
 #include "AASettingsWidget.h"
 #include "DefaultGameInstance.h"
 #include "Components/Button.h"
+#include "SavedTextWidget.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/HorizontalBox.h"
@@ -257,6 +258,7 @@ void UAASettingsWidget::SaveAASettings()
 
 	AASettings.TimeWindow = TimeWindowSlider->GetValue();
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SaveAASettings(AASettings);
+	SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void UAASettingsWidget::ResetAASettings()

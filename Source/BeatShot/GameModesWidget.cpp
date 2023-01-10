@@ -5,6 +5,7 @@
 #include "DefaultGameInstance.h"
 #include "DefaultGameMode.h"
 #include "DefaultPlayerController.h"
+#include "SavedTextWidget.h"
 #include "GameModeButton.h"
 #include "JsonObjectConverter.h"
 #include "SaveGameCustomGameMode.h"
@@ -912,18 +913,29 @@ void UGameModesWidget::SaveCustomGameMode(const FGameModeActorStruct GameModeToS
 		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
 		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
 	}
+		SavedTextWidget->SetSavedText(FText::FromString(GameModeToSave.CustomGameModeName + " saved"));
+		SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void UGameModesWidget::RemoveCustomGameMode(const FString& CustomGameModeName) const
 {
 	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
-	CustomGameModesArray.Remove(GetCustomGameMode(CustomGameModeName));
+	const int32 NumRemoved = CustomGameModesArray.RemoveAll(
+	[&CustomGameModeName](const FGameModeActorStruct& MatchingStruct)
+	{
+		return MatchingStruct.CustomGameModeName == CustomGameModeName;
+	});
 	CustomGameModesArray.Shrink();
 	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
 		UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
 		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
 		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+	}
+	if (NumRemoved >= 1)
+	{
+		SavedTextWidget->SetSavedText(FText::FromString(CustomGameModeName + " removed"));
+		SavedTextWidget->PlayFadeInFadeOut();
 	}
 }
 
@@ -938,6 +950,10 @@ void UGameModesWidget::RemoveAllCustomGameModes() const
 		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
 		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
 	}
+
+	SavedTextWidget->SetSavedText(FText::FromString("All custom game modes removed"));
+	SavedTextWidget->PlayFadeInFadeOut();
+
 }
 
 TArray<FGameModeActorStruct> UGameModesWidget::LoadCustomGameModes() const
@@ -1116,6 +1132,7 @@ void UGameModesWidget::OnConfirmOverwriteButtonClicked()
 {
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->HidePopupMessage();
 	SaveCustomGameMode(GetCustomGameModeOptions());
+	
 }
 
 void UGameModesWidget::OnConfirmOverwriteButtonClickedAndStartGame()

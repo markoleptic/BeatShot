@@ -12,6 +12,7 @@
 #include "GameModesWidget.generated.h"
 
 class UHorizontalBox;
+class USavedTextWidget;
 class UPopupMessageWidget;
 class USlideRightButton;
 class UVerticalBox;
@@ -337,6 +338,8 @@ private:
 #pragma region SaveStart
 
 protected:
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
 	UButton* SaveCustomButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")

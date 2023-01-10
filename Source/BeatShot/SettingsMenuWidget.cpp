@@ -13,7 +13,7 @@
 #include "Components/Slider.h"
 #include <Blueprint/UserWidget.h>
 #include <Kismet/GameplayStatics.h>
-
+#include "SavedTextWidget.h"
 #include "AASettingsWidget.h"
 #include "DefaultPlayerController.h"
 #include "Components/CheckBox.h"
@@ -317,6 +317,7 @@ void USettingsMenuWidget::LoadPlayerSettings()
 void USettingsMenuWidget::SavePlayerSettings() const
 {
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->SavePlayerSettings(NewPlayerSettings);
+	SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void USettingsMenuWidget::OnSaveVideoAndSoundSettingsButtonClicked()
@@ -662,6 +663,7 @@ void USettingsMenuWidget::OnSaveSensitivitySettingsButtonClicked()
 	Settings.Sensitivity = SensSlider->GetValue();
 	GI->SavePlayerSettings(Settings);
 	CurrentSensitivityValue->SetText(FText::AsNumber(SensSlider->GetValue()));
+	SavedTextWidgetSens->PlayFadeInFadeOut();
 }
 
 void USettingsMenuWidget::OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType)

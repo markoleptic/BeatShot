@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "SaveGamePlayerSettings.h"
-#include "Components/Button.h"
 #include "Blueprint/UserWidget.h"
 #include "VideoSettingButton.h"
 #include "SettingsMenuWidget.generated.h"
 
 class UPopupMessageWidget;
+class USavedTextWidget;
 class UCheckBox;
 class UCrossHairSettingsWidget;
 class UAASettingsWidget;
@@ -302,7 +302,11 @@ protected:
 #pragma	endregion
 
 #pragma region LoadingAndSaving
-
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidgetSens;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UButton* SaveVideoAndSoundSettingsButton;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
