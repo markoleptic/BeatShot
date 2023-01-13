@@ -15,7 +15,12 @@
 			]
 		},
 		{
-			"Name": "MainMenu",
+			"Name": "UserInterface",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "Global",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}

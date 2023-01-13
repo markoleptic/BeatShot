@@ -10,9 +10,10 @@ public class BeatShot : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine", "InputCore",
             "UMG", "Slate", "SlateCore", "Niagara", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities",
-            "WebBrowserWidget", "WebBrowser", "EasyFileDialog", "EnhancedInput", "MoviePlayer", "MainMenu" });
+            "WebBrowserWidget", "WebBrowser", "EasyFileDialog", "EnhancedInput", "UserInterface", "Global"});
         PrivateDependencyModuleNames.AddRange(new[] { "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer",
-            "Slate", "SlateCore", "EnhancedInput", "InputCore" });
+            "Slate", "SlateCore", "EnhancedInput", "InputCore"
+        });
         PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
         PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
         PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");
