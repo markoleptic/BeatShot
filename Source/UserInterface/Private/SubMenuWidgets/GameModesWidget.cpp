@@ -2,7 +2,6 @@
 
 
 #include "SubMenuWidgets/GameModesWidget.h"
-#include "JsonObjectConverter.h"
 #include "SaveGameCustomGameMode.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
@@ -18,6 +17,7 @@
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
+#include "OverlayWidgets/AudioSelectWidget.h"
 #include "WidgetComponents/ConstrainedSlider.h"
 #include "WidgetComponents/GameModeButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
@@ -333,7 +333,7 @@ void UGameModesWidget::OnDefaultGameModeButtonClicked(const UGameModeButton* Gam
 
 void UGameModesWidget::SetGameModeButtonBackgroundColor(const UGameModeButton* ClickedButton) const
 {
-	ClickedButton->Button->SetBackgroundColor(BeatshotBlue);
+	ClickedButton->Button->SetBackgroundColor(BeatShotBlue);
 	const EGameModeDifficulty ClickedButtonDifficulty = ClickedButton->Difficulty;
 	const EGameModeActorName ClickedButtonGameModeName = ClickedButton->GameModeName;
 	const UGameModeButton* Head = ClickedButton->Next;
@@ -349,7 +349,7 @@ void UGameModesWidget::SetGameModeButtonBackgroundColor(const UGameModeButton* C
 void UGameModesWidget::OnDynamicSpreadButtonClicked()
 {
 	/** Change the background colors of the spread select buttons */
-	DynamicSpreadButton->SetBackgroundColor(BeatshotBlue);
+	DynamicSpreadButton->SetBackgroundColor(BeatShotBlue);
 	NarrowSpreadButton->SetBackgroundColor(White);
 	WideSpreadButton->SetBackgroundColor(White);
 	if (DefaultGameModeActorName == EGameModeActorName::MultiBeat)
@@ -369,7 +369,7 @@ void UGameModesWidget::OnNarrowSpreadButtonClicked()
 {
 	/** Change the background colors of the spread select buttons */
 	DynamicSpreadButton->SetBackgroundColor(White);
-	NarrowSpreadButton->SetBackgroundColor(BeatshotBlue);
+	NarrowSpreadButton->SetBackgroundColor(BeatShotBlue);
 	WideSpreadButton->SetBackgroundColor(White);
 	DefaultGameModeSpreadType = ESpreadType::StaticNarrow;
 	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName,
@@ -382,7 +382,7 @@ void UGameModesWidget::OnWideSpreadButtonClicked()
 	/** Change the background colors of the spread select buttons */
 	DynamicSpreadButton->SetBackgroundColor(White);
 	NarrowSpreadButton->SetBackgroundColor(White);
-	WideSpreadButton->SetBackgroundColor(BeatshotBlue);
+	WideSpreadButton->SetBackgroundColor(BeatShotBlue);
 	DefaultGameModeSpreadType = ESpreadType::StaticWide;
 	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName,
 	                                             DefaultGameModeDifficulty, ESpreadType::StaticWide));
@@ -780,17 +780,6 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	ForwardSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.MoveForwardDistance));
 	TargetScaleConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTargetScale,
 	                                            InputGameModeActorStruct.MaxTargetScale);
-
-	// convert JsonScores struct to JSON
-	const TSharedRef<FJsonObject> OutJsonObject = MakeShareable(new FJsonObject);
-	FJsonObjectConverter::UStructToJsonObject(
-		FGameModeActorStruct::StaticStruct(),
-		&InputGameModeActorStruct,
-		OutJsonObject);
-	FString OutputString;
-	const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
-	FJsonSerializer::Serialize(OutJsonObject, Writer);
-	//UE_LOG(LogTemp, Display, TEXT("%s"), *OutputString);
 }
 
 void UGameModesWidget::PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect)
@@ -1020,7 +1009,7 @@ void UGameModesWidget::OnSaveCustomButtonClicked()
 
 void UGameModesWidget::OnStartWithoutSavingButtonClicked()
 {
-	InitializeExit(false);
+	ShowAudioFormatSelect(false);
 }
 
 void UGameModesWidget::OnSaveCustomAndStartButtonClicked()
@@ -1044,17 +1033,17 @@ void UGameModesWidget::OnSaveCustomAndStartButtonClicked()
 		PopulateGameModeNameComboBox(SelectedGameModeName);
 	}
 	CustomGameModeETB->SetText(FText::GetEmpty());
-	InitializeExit(false);
+	ShowAudioFormatSelect(false);
 }
 
 void UGameModesWidget::OnPlayFromStandardButtonClicked()
 {
-	InitializeExit(true);
+	ShowAudioFormatSelect(true);
 }
 
 void UGameModesWidget::OnStartCustomButtonClicked()
 {
-	InitializeExit(false);
+	ShowAudioFormatSelect(false);
 }
 
 void UGameModesWidget::OnRemoveSelectedCustomButtonClicked()
@@ -1121,7 +1110,7 @@ void UGameModesWidget::OnConfirmOverwriteButtonClickedAndStartGame()
 		PopulateGameModeNameComboBox(SelectedGameModeName);
 	}
 	CustomGameModeETB->SetText(FText::GetEmpty());
-	InitializeExit(false);
+	ShowAudioFormatSelect(false);
 }
 
 void UGameModesWidget::OnCancelOverwriteButtonClicked()
@@ -1129,20 +1118,40 @@ void UGameModesWidget::OnCancelOverwriteButtonClicked()
 	PopupMessageWidget->FadeOut();
 }
 
-void UGameModesWidget::InitializeExit(const bool bStartFromDefaultGameMode)
+void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
-	if (bStartFromDefaultGameMode)
+	AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode] (const bool bShowOpenFileDialog, const FString SongTitle, const int32 SongLength)
 	{
-		OnGameModeSelected.ExecuteIfBound(FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, DefaultGameModeSpreadType));
-	}
-	else
-	{
-		OnGameModeSelected.ExecuteIfBound(GetCustomGameModeOptions());
-	}
-	if (!OnStartGameMode.ExecuteIfBound())
-	{
-		UE_LOG(LogTemp, Display, TEXT("StartGameMode not bound."));
-	}
+		FGameModeTransitionState GameModeTransitionState;
+		GameModeTransitionState.bSaveCurrentScores = false;
+		GameModeTransitionState.bShowOpenFileDialog = bShowOpenFileDialog;
+		if (bIsMainMenuChild)
+		{
+			GameModeTransitionState.TransitionState = ETransitionState::StartFromMainMenu;
+		}
+		else
+		{
+			GameModeTransitionState.TransitionState = ETransitionState::StartFromPostGameMenu;
+		}
+		if (bStartFromDefaultGameMode)
+		{
+			FGameModeActorStruct GameModeActorStruct = FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, DefaultGameModeSpreadType);
+			GameModeActorStruct.SongTitle = SongTitle;
+			GameModeActorStruct.GameModeLength = SongLength;
+			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
+		}
+		else
+		{
+			FGameModeActorStruct GameModeActorStruct = GetCustomGameModeOptions();
+			GameModeActorStruct.SongTitle = SongTitle;
+			GameModeActorStruct.GameModeLength = SongLength;
+			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
+		}
+		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
+	});
+	AudioSelectWidget->AddToViewport();
+	AudioSelectWidget->FadeIn();
 }
 
 void UGameModesWidget::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow)

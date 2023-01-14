@@ -9,7 +9,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "OverlayWidgets/LoginWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
-#include "SubMenuWidgets/GameModesWidget.h"
 #include "WidgetComponents/SlideRightButton.h"
 #include "WidgetComponents/WebBrowserWidget.h"
 
@@ -32,21 +31,6 @@ void UMainMenuWidget::NativeConstruct()
 	FAQButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnFAQButtonClicked);
 	QuitButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitButtonClicked);
 	GitHubIssueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnGitHubButtonClicked);
-	GameModesWidget->OnGameModeSelected.BindLambda([&](const FGameModeActorStruct& GameModeActorStruct)
-	{
-		if (!OnGameModeSelected.ExecuteIfBound(GameModeActorStruct))
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnGameModeSelected not bound."));
-		}
-	});
-	GameModesWidget->OnStartGameMode.BindLambda( [&]
-	{
-		if (!StartGameModeMainMenu.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("StartGameModeMainMenu not bound."));
-		}
-	});
-	
 	ScoresWidget->InitializeScoringOverlay();
 	WebBrowserOverlayPatchNotes->BrowserWidget->LoadPatchNotesURL();
 	WebBrowserOverlayPatchNotes->FadeOutLoadingOverlay();

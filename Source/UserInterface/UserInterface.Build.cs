@@ -6,9 +6,9 @@ public class UserInterface : ModuleRules
 {
 	public UserInterface(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PublicDependencyModuleNames.AddRange(new[] { "Core", "CoreUObject", "Engine",
-				"UMG", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "Global", 
-				"HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities"
+		PublicDependencyModuleNames.AddRange(new[]
+		{
+			"Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "Global"
 		});
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

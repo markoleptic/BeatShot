@@ -11,6 +11,7 @@
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
+class UAudioSelectWidget;
 class UHorizontalBox;
 class USavedTextWidget;
 class UPopupMessageWidget;
@@ -24,9 +25,6 @@ class UComboBoxString;
 class USlider;
 class UCheckBox;
 
-DECLARE_DELEGATE_OneParam(FOnGameModeSelected, const FGameModeActorStruct&);
-
-DECLARE_DELEGATE(FOnStartGameMode);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUpdateBeatGridConstraints, float, value);
 
@@ -38,15 +36,15 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 	GENERATED_BODY()
 
 public:
-	FStartScreenFadeToBlack StartScreenFadeToBlack;
-
-	/** MainMenu or PostGameMenu executes this when a game mode has been selected,
-     *  and DefaultGameInstance listens and calls InitializeGameModeActor() */
-	FOnGameModeSelected OnGameModeSelected;
+	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
+	bool bIsMainMenuChild;
 
 	/** Executes when the user has clicked a start game mode button. Parent widgets must listen in order to take
 	 *  action */
-	FOnStartGameMode OnStartGameMode;
+	FOnGameModeStateChanged OnGameModeStateChanged;
+	
+	FStartScreenFadeToBlack StartScreenFadeToBlack;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -355,8 +353,12 @@ private:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UAudioSelectWidget> AudioSelectClass;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
+	UPROPERTY()
+	UAudioSelectWidget* AudioSelectWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
@@ -420,7 +422,7 @@ private:
 	UFUNCTION()
 	void OnConfirmOverwriteButtonClicked();
 
-	/** Overwrites a custom game mode by invoking SaveCustomGameModeToSlot and calls DefaultPlayerController to hide the message. Calls InitializeExit after */
+	/** Overwrites a custom game mode by invoking SaveCustomGameModeToSlot and calls DefaultPlayerController to hide the message. Calls ShowAudioFormatSelect after */
 	UFUNCTION()
 	void OnConfirmOverwriteButtonClickedAndStartGame();
 
@@ -429,17 +431,7 @@ private:
 	void OnCancelOverwriteButtonClicked();
 
 	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
-	void InitializeExit(const bool bStartFromDefaultGameMode);
-
-	/** Cleans up widgets, fades screen to black, and initializes the CustomGameMode with Game Instance.
-	 *  If already in Range level, calls InitializeGameMode, otherwise opens the Range level */
-	//UFUNCTION()
-	//void StartGameFromCustomGameModes();
-
-	/** Cleans up widgets, fades screen to black, and initializes the DefaultGameMode with Game Instance.
-	 *  If already in Range level, calls InitializeGameMode, otherwise opens the Range level */
-	//UFUNCTION()
-	//void StartGameFromDefaultGameModes();
+	void ShowAudioFormatSelect(const bool bStartFromDefaultGameMode);
 
 #pragma endregion
 
@@ -513,7 +505,7 @@ private:
 	/** The array of default Game Modes */
 	TArray<FGameModeActorStruct> GameModeActorDefaults;
 	/** The color used to change the GameModeButton color to when selected */
-	const FLinearColor BeatshotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
+	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
 	/** The color used to change the GameModeButton color to when not selected */
 	const FLinearColor White = FLinearColor::White;
 	/** The diameter of a target */

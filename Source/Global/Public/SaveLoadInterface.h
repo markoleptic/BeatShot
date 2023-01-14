@@ -5,11 +5,46 @@
 #include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.generated.h"
 
+UENUM()
+enum class ETransitionState : uint8
+{
+	StartFromMainMenu UMETA(DisplayName, "StartFromMainMenu"),
+	StartFromPostGameMenu UMETA(DisplayName, "StartFromPostGameMenu"),
+	Restart UMETA(DisplayName, "Restart"),
+	QuitToMainMenu UMETA(DisplayName, "QuitToMainMenu"),
+	QuitToDesktop UMETA(DisplayName, "QuitToDesktop")
+};
+
+/* Information about the transition state of the game */
+USTRUCT()
+struct FGameModeTransitionState
+{
+	GENERATED_BODY()
+
+	/* The game mode transition to perform */
+	ETransitionState TransitionState;
+
+	/* Whether or not to show the OpenFileDialog, vs using Loopback audio */
+	bool bShowOpenFileDialog;
+	
+	/* Whether or not to save current scores if the transition is Restart or Quit */
+	bool bSaveCurrentScores;
+	
+	/* The game mode properties, only used if Start or Restart */
+	FGameModeActorStruct GameModeActorStruct;
+};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::QuitToDesktop);
+
 /** Broadcast when Player Settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, const FPlayerSettings&, RefreshedPlayerSettings);
 
 /** Broadcast when AudioAnalyzer settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, const FAASettingsStruct&, RefreshedAASettings);
+
+/** Broadcast from GameModesWidget, AASettingsWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should
+ *  start, restart, or stop */
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);
 
 UINTERFACE()
 class USaveLoadInterface : public UInterface

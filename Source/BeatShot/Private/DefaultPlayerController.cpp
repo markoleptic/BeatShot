@@ -5,7 +5,6 @@
 #include "DefaultCharacter.h"
 #include "DefaultGameInstance.h"
 #include "DefaultGameMode.h"
-#include "GameModeActorBase.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/HorizontalBox.h"
@@ -93,12 +92,7 @@ void ADefaultPlayerController::ShowMainMenu()
 	FadeScreenFromBlack();
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
-	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	MainMenu->OnGameModeSelected.BindUFunction(GI, "InitializeGameModeActor");
-	MainMenu->StartGameModeMainMenu.BindLambda([&]
-	{
-		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->StartGameMode(false, false);
-	});
+	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUFunction(Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -121,23 +115,21 @@ void ADefaultPlayerController::ShowPauseMenu()
 		HidePauseMenu();
 	});
 	PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChanged);
-	if (Cast<ADefaultCharacter>(GetPawn()))
+	if (ADefaultCharacter* DefaultCharacter = Cast<ADefaultCharacter>(GetPawn()))
 	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(Cast<ADefaultCharacter>(GetPawn()), &ADefaultCharacter::OnUserSettingsChange);
+		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(DefaultCharacter, &ADefaultCharacter::OnUserSettingsChange);
 	}
-	if (Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GameModeActorBase)
+	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		AGameModeActorBase* GameModeActorBase = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GameModeActorBase;
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(GameModeActorBase, &AGameModeActorBase::OnPlayerSettingsChanged);
+		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
+		PauseMenu->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
 	}
 	if (CrossHair)
 	{
 		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
 	}
-	PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())),&ADefaultGameMode::RefreshPlayerSettings);
-	PauseMenu->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())), &ADefaultGameMode::RefreshAASettings);
-	PauseMenu->QuitMenuWidget->OnQuit.BindUFunction(
-		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "OnQuit");
+	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(
+		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
@@ -230,14 +222,12 @@ void ADefaultPlayerController::HideCountdown()
 void ADefaultPlayerController::ShowPostGameMenu()
 {
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	PostGameMenuWidget->GameModesWidget->OnGameModeSelected.BindUFunction(GI, "InitializeGameModeActor");
-	PostGameMenuWidget->QuitMenuWidget->OnQuit.BindUFunction(GI, "OnQuit");
-	PostGameMenuWidget->StartGameModePostGameMenu.BindLambda([&]
-	{
-		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->StartGameMode(false, false);
-	});
 	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChanged);
+	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
+	{
+		PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUFunction(GI, "HandleGameModeTransition");
+		PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(GI, "HandleGameModeTransition");
+	}
 	if (Cast<ADefaultCharacter>(GetPawn()))
 	{
 		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(Cast<ADefaultCharacter>(GetPawn()), &ADefaultCharacter::OnUserSettingsChange);
@@ -246,8 +236,11 @@ void ADefaultPlayerController::ShowPostGameMenu()
 	{
 		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
 	}
-	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())),&ADefaultGameMode::RefreshPlayerSettings);
-	PostGameMenuWidget->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())), &ADefaultGameMode::RefreshAASettings);
+	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
+		PostGameMenuWidget->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
+	}
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
 	SetInputMode(FInputModeUIOnly());

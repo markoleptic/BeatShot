@@ -16,7 +16,7 @@ class ADefaultCharacter;
 class USkeletalMeshComponent;
 class UAnimMontage;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnShotFired);
+DECLARE_DELEGATE(FOnShotFired);
 
 UCLASS()
 class BEATSHOT_API AGun_AK47 : public AActor
@@ -54,8 +54,7 @@ public:
 	 */
 	void SetCanFire(const bool bNewFire) { bCanFire = bNewFire; }
 
-	/** GameModeActorBase binds to this delegate to keep track of number of shots fired */
-	UPROPERTY()
+	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;
 
 	/** The skeletal mesh of the gun */

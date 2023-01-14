@@ -25,7 +25,6 @@ class USERINTERFACE_API UPauseMenuWidget : public UUserWidget
 public:
 	/** Delegate that gets bound to lambda function in DefaultPlayerController */
 	FResumeGame ResumeGame;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UQuitMenuWidget* QuitMenuWidget;
 

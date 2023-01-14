@@ -4,7 +4,6 @@
 #include "OverlayWidgets/QuitMenuWidget.h"
 #include "OverlayWidgets/ScreenFadeWidget.h"
 #include "Components/Button.h"
-#include "Kismet/GameplayStatics.h"
 
 void UQuitMenuWidget::NativeConstruct()
 {
@@ -72,28 +71,27 @@ void UQuitMenuWidget::Quit()
 
 void UQuitMenuWidget::OnQuitToMainMenu()
 {
-	if (!OnQuit.ExecuteIfBound(bShouldSaveScores, false, true))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnQuit not bound."));
-	}
+	FGameModeTransitionState TransitionState;
+	TransitionState.TransitionState = ETransitionState::QuitToMainMenu;
+	TransitionState.bSaveCurrentScores = bShouldSaveScores;
+	OnGameModeStateChanged.Broadcast(TransitionState);
 }
 
 void UQuitMenuWidget::OnQuitToDesktop()
 {
-	if (!OnQuit.ExecuteIfBound(bShouldSaveScores, false, false))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnQuit not bound."));
-	}
-	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-	                               EQuitPreference::Quit, false);
+	FGameModeTransitionState TransitionState;
+	TransitionState.TransitionState = ETransitionState::QuitToDesktop;
+	TransitionState.bSaveCurrentScores = bShouldSaveScores;
+	OnGameModeStateChanged.Broadcast(TransitionState);
 }
 
 void UQuitMenuWidget::OnRestart()
 {
-	if (!OnQuit.ExecuteIfBound(bShouldSaveScores, true, false))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnQuit not bound."));
-	}
+	FGameModeTransitionState TransitionState;
+	TransitionState.TransitionState = ETransitionState::Restart;
+	TransitionState.bSaveCurrentScores = bShouldSaveScores;
+	OnGameModeStateChanged.Broadcast(TransitionState);
+
 }
 
 void UQuitMenuWidget::CollapseWidget()

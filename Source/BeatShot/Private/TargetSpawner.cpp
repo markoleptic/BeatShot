@@ -395,8 +395,10 @@ void ATargetSpawner::SetNewTrackingDirection()
 		LocationBeforeDirectionChange = BoxBounds.Origin;
 
 		/** Broadcast to GameModeActorBase and DefaultCharacter that a BeatTrack target has spawned */
-		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.Broadcast(
-			BeatTrackTarget);
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.Broadcast(BeatTrackTarget);
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnBeatTrackTargetSpawned not bound."));
+		}
 	}
 	if (BeatTrackTarget)
 	{
@@ -425,15 +427,9 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	}
 	ActiveTargetArray.Remove(DestroyedTarget);
 	ActiveTargetArray.Shrink();
-
-	//UE_LOG(LogTemp, Display, TEXT("ActiveTargetArray size: %d"), ActiveTargetArray.Num());
-	
 	FTimerHandle TimerHandle;
 	RemoveFromRecentDelegate.BindUFunction(this, FName("RemoveFromRecentTargetArray"), DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, GameModeActorStruct.TargetSpawnCD + 0.01, false);
-
-	UE_LOG(LogTemp, Display, TEXT("RecentTargetArray size: %d"), RecentTargetArray.Num());
-
 	if (GameModeActorStruct.IsSingleBeatMode)
 	{
 		SetShouldSpawn(true);
@@ -476,7 +472,6 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 			UE_LOG(LogTemp, Display, TEXT("OnTargetDestroyed not bound."));
 		}
 		GameMode->OnStreakUpdate.Broadcast(ConsecutiveTargetsHit, Location);
-
 		if (GameModeActorStruct.SpreadType == ESpreadType::None)
 		{
 			return;

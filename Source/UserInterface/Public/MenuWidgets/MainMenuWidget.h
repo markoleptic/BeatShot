@@ -8,9 +8,8 @@
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
+#include "Delegates/DelegateCombinations.h"
 #include "MainMenuWidget.generated.h"
-
-DECLARE_DELEGATE(FStartGameModeMainMenu)
 
 class UScoreBrowserWidget;
 class UVerticalBox;
@@ -32,13 +31,6 @@ UCLASS()
 class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-
-public:
-	/** Executes when a game mode has been selected in GameModesWidget */
-	FOnGameModeSelected OnGameModeSelected;
-	
-	/** Executes after game mode has been selected in GameModesWidget to instruct Game Instance to change levels */
-	FStartGameModeMainMenu StartGameModeMainMenu;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -65,10 +57,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UGameModesWidget* GameModesWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UGameModesWidget* GameModesWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
 protected:

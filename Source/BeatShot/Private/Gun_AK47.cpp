@@ -38,7 +38,7 @@ void AGun_AK47::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
+	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
 	Character = Cast<ADefaultCharacter>(GetParentActor());
 	PlayerController = Character->GetController<ADefaultPlayerController>();
 	BulletDecalInstance = UMaterialInstanceDynamic::Create(BulletDecalMaterial,
@@ -110,7 +110,10 @@ void AGun_AK47::Fire()
 	if (!PlayerController->CountdownActive &&
 		!TrackingTarget)
 	{
-		OnShotFired.Broadcast();
+		if (!OnShotFired.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnShotFired not bound."));
+		}
 	}
 	/* Update how many shots fired for recoil purposes */
 	ShotsFired++;
@@ -194,6 +197,7 @@ void AGun_AK47::TraceForward() const
 	}
 	if (TrackingTarget)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Tracking target found"));
 		TrackingTarget->SetSphereColor(FLinearColor::Red);
 	}
 }

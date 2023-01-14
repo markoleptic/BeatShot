@@ -2,7 +2,6 @@
 
 
 #include "DefaultHealthComponent.h"
-#include "GameModeActorBase.h"
 #include "SphereTarget.h"
 #include "GameFramework/Actor.h"
 

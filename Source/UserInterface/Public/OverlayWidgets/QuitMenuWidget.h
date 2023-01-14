@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Delegates/DelegateCombinations.h"
@@ -10,7 +11,6 @@
 #include "QuitMenuWidget.generated.h"
 
 DECLARE_DYNAMIC_DELEGATE(FOnExitQuitMenu);
-DECLARE_DELEGATE_ThreeParams(FOnQuit, const bool bShouldSaveScores, const bool bShouldRestart, const bool bGoToMainMenu)
 
 class UTextBlock;
 class UVerticalBox;
@@ -20,7 +20,7 @@ class UWidgetAnimation;
 class UScreenFadeWidget;
 
 UCLASS()
-class USERINTERFACE_API UQuitMenuWidget : public UUserWidget
+class USERINTERFACE_API UQuitMenuWidget : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -41,7 +41,7 @@ public:
 	UPROPERTY()
 	FOnExitQuitMenu OnExitQuitMenu;
 	/** Bound to DefaultGameInstance when constructed in DefaultPlayerController */
-	FOnQuit OnQuit;
+	FOnGameModeStateChanged OnGameModeStateChanged;
 
 protected:
 
@@ -127,7 +127,7 @@ private:
 	/** Called when either RestartAndSaveButton or RestartWithoutSaveButton is clicked */
 	UFUNCTION()
 	void OnRestart();
-	/** Plays FadeOutBackgroundBlur, binds FadeOutWidgetDelegate to InitializeExit and executes OnExitQuitMenu */	
+	/** Plays FadeOutBackgroundBlur, binds FadeOutWidgetDelegate to ShowAudioFormatSelect and executes OnExitQuitMenu */	
 	UFUNCTION()
 	void InitializeExit();
 	/** Function that is bound to FadeOutBackgroundBlur to set the visibility of the widget to collapsed */

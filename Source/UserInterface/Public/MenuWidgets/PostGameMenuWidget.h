@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Delegates/DelegateCombinations.h"
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "PostGameMenuWidget.generated.h"
-
-DECLARE_DELEGATE(FStartGameModePostGameMenu)
 
 class USlideRightButton;
 class UWidgetSwitcher;
@@ -26,11 +25,6 @@ UCLASS()
 class USERINTERFACE_API UPostGameMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
-
-public:
-	/** Executes after a game mode has been selected in GameModesWidget OR when play again is selected OR when
-	 *  restart is selected in AASettingsWidget */
-	FStartGameModePostGameMenu StartGameModePostGameMenu;
 
 protected:
 	virtual void NativeConstruct() override;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveGameCustomGameMode.h"
+#include "SaveLoadInterface.h"
 #include "Engine/GameInstance.h"
 #include "DefaultGameInstance.generated.h"
 
@@ -13,28 +14,18 @@ class AGameModeActorBase;
 class ADefaultPlayerController;
 
 UCLASS()
-class BEATSHOT_API UDefaultGameInstance : public UGameInstance
+class BEATSHOT_API UDefaultGameInstance : public UGameInstance, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 	
 public:
-	/** Executed from GameModesWidget when a game mode has been selected. PlayerController binds
-	 *  the OnGameModeSelected delegate to this function when the parent widget is constructed */
 	UFUNCTION()
-	void InitializeGameModeActor(const FGameModeActorStruct& GameModeActor);
-	/** Executed from QuitMenuWidget when a quit state has been reached. PlayerController binds
-	 *  the OnQuit delegate to this function when the parent widget is constructed. Calls
-	 *  QuitToMainMenu, QuitToDesktop, or StartGameMode depending on parameters */
+	void StartGameMode(const bool bShowOpenFileDialog) const;
 	UFUNCTION()
-	void OnQuit(const bool bShouldSaveScores, const bool bShouldRestart, const bool bGoToMainMenu);
-	UFUNCTION()
-	void QuitToMainMenu(const bool bShouldSaveScores) const;
-	UFUNCTION()
-	void QuitToDesktop(const bool bShouldSaveScores) const;
-	UFUNCTION()
-	void StartGameMode(const bool bIsRestarting, const bool bShouldSaveScores) const;
+	void HandleGameModeTransition(const FGameModeTransitionState& GameModeTransitionState);
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FGameModeActorStruct GameModeActorStruct;
+	bool bLastSavedShowOpenFileDialog;
 };
 
 

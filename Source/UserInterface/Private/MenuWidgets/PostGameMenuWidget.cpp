@@ -31,19 +31,15 @@ void UPostGameMenuWidget::NativeConstruct()
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
-	GameModesWidget->OnStartGameMode.BindLambda([&]
-	{
-		Restart();
-	});
 	PlayFadeInWidget();
 }
 
 void UPostGameMenuWidget::Restart()
 {
-	if (!StartGameModePostGameMenu.ExecuteIfBound())
-	{
-		UE_LOG(LogTemp, Display, TEXT("StartGameModePostGameMenu not bound."));
-	}
+	FGameModeTransitionState GameModeTransitionState;
+	GameModeTransitionState.TransitionState = ETransitionState::Restart;
+	GameModeTransitionState.bSaveCurrentScores = false;
+	GameModesWidget->OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 }
 
 void UPostGameMenuWidget::SetScoresWidgetVisibility()

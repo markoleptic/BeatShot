@@ -4,7 +4,6 @@
 #include "Projectile.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
-#include "GameModeActorBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
