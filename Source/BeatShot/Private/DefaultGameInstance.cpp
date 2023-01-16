@@ -6,7 +6,7 @@
 #include "DefaultPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
-void UDefaultGameInstance::StartGameMode(const bool bShowOpenFileDialog) const
+void UDefaultGameInstance::StartGameMode() const
 {
 	ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -14,7 +14,7 @@ void UDefaultGameInstance::StartGameMode(const bool bShowOpenFileDialog) const
 	{
 		PlayerController->HandlePause();
 	}
-	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this, bShowOpenFileDialog]
+	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this]
 	{
 		ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
 			UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -23,7 +23,7 @@ void UDefaultGameInstance::StartGameMode(const bool bShowOpenFileDialog) const
 		Controller->HidePauseMenu();
 		if (GetWorld()->GetMapName().Contains("Range"))
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->InitializeGameMode(bShowOpenFileDialog);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->InitializeGameMode();
 		}
 		else
 		{
@@ -33,32 +33,31 @@ void UDefaultGameInstance::StartGameMode(const bool bShowOpenFileDialog) const
 	PlayerController->FadeScreenToBlack();
 }
 
-void UDefaultGameInstance::HandleGameModeTransition(const FGameModeTransitionState& GameModeTransitionState)
+void UDefaultGameInstance::HandleGameModeTransition(FGameModeTransitionState& NewGameModeTransitionState)
 {
-	bLastSavedShowOpenFileDialog = GameModeTransitionState.bShowOpenFileDialog;
-	switch (GameModeTransitionState.TransitionState)
+	switch (NewGameModeTransitionState.TransitionState)
 	{
 	case ETransitionState::StartFromMainMenu:
 		{
-			GameModeActorStruct = GameModeTransitionState.GameModeActorStruct;
-			StartGameMode(GameModeTransitionState.bShowOpenFileDialog);
+			GameModeActorStruct = NewGameModeTransitionState.GameModeActorStruct;
+			StartGameMode();
 			break;
 		}
 	case ETransitionState::StartFromPostGameMenu:
 		{
-			GameModeActorStruct = GameModeTransitionState.GameModeActorStruct;
-			StartGameMode(GameModeTransitionState.bShowOpenFileDialog);
+			GameModeActorStruct = NewGameModeTransitionState.GameModeActorStruct;
+			StartGameMode();
 			break;
 		}
 	case ETransitionState::Restart:
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(GameModeTransitionState.bSaveCurrentScores, false);
-			StartGameMode(GameModeTransitionState.bShowOpenFileDialog);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			StartGameMode();
 			break;
 		}
 	case ETransitionState::QuitToMainMenu:
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(GameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
 			ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 				UGameplayStatics::GetPlayerController(GetWorld(), 0));
 			PlayerController->FadeScreenToBlack();
@@ -74,7 +73,7 @@ void UDefaultGameInstance::HandleGameModeTransition(const FGameModeTransitionSta
 		}
 	case ETransitionState::QuitToDesktop:
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(GameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
 			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
 										   EQuitPreference::Quit, false);
 			break;

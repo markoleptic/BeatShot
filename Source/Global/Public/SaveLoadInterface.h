@@ -44,7 +44,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, const FAASettin
 
 /** Broadcast from GameModesWidget, AASettingsWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should
  *  start, restart, or stop */
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, FGameModeTransitionState& TransitionState);
 
 UINTERFACE()
 class USaveLoadInterface : public UInterface

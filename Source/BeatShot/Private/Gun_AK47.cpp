@@ -197,7 +197,6 @@ void AGun_AK47::TraceForward() const
 	}
 	if (TrackingTarget)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Tracking target found"));
 		TrackingTarget->SetSphereColor(FLinearColor::Red);
 	}
 }

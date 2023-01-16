@@ -28,9 +28,6 @@ class BEATSHOT_API ADefaultPlayerController : public APlayerController, public I
 	virtual void BeginPlay() override;
 
 public:
-	void ShowSongPathErrorMessage();
-	UFUNCTION()
-	void HideSongPathErrorMessage();
 	void SetPlayerEnabledState(const bool bPlayerEnabled);
 	UFUNCTION(BlueprintCallable)
 	void ShowMainMenu();

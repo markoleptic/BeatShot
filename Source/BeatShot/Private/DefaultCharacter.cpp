@@ -71,9 +71,13 @@ void ADefaultCharacter::BeginPlay()
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
-	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	GameMode->OnGameModeInit.BindUFunction(this, "SetGunShouldTrace");
-	GameMode->OnBeatTrackTargetSpawned.AddUFunction(this, "PassTrackingTargetToGun");
+	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		UE_LOG(LogTemp, Display, TEXT("DefaultCharacter accessing GameMode in beginplay"));
+		GameMode->OnGameModeInit.BindUFunction(Gun, "SetShouldTrace");
+		GameMode->OnBeatTrackTargetSpawned.AddUFunction(this, "PassTrackingTargetToGun");
+	}
+
 }
 
 void ADefaultCharacter::PawnClientRestart()
@@ -271,16 +275,5 @@ void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType
 
 void ADefaultCharacter::PassTrackingTargetToGun(ASphereTarget* TrackingTarget)
 {
-	Gun->bShouldTrace = true;
 	Gun->TrackingTarget = TrackingTarget;
-}
-
-void ADefaultCharacter::SetGunShouldTrace(const FGameModeActorStruct GameModeActorStruct)
-{
-	UE_LOG(LogTemp, Display, TEXT("OnGameModeInit firing"));
-	if (GameModeActorStruct.IsBeatTrackMode)
-	{
-		UE_LOG(LogTemp, Display, TEXT("bShouldTrace should be true"));
-	}
-	Gun->bShouldTrace = GameModeActorStruct.IsBeatTrackMode;
 }

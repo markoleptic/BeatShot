@@ -126,7 +126,6 @@ void UCrossHairSettingsWidget::OnHexValueChange(const FText& NewValue, ETextComm
 	ColorBSlider->SetValue(NewCrossHairSettings.CrossHairColor.B * 255);
 	ColorPreview->SetColorAndOpacity(NewCrossHairSettings.CrossHairColor);
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
-	UE_LOG(LogTemp, Display, TEXT("NewCrossHairSettings.CrossHairColor %s"), *NewCrossHairSettings.CrossHairColor.ToString());
 }
 
 void UCrossHairSettingsWidget::OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType)
@@ -273,7 +272,6 @@ float  UCrossHairSettingsWidget::OnEditableTextBoxChanged(const FText& NewTextVa
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
-	UE_LOG(LogTemp, Display, TEXT("Snapped: %f"),SnappedValue);
 	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));
 	SliderToChange->SetValue(SnappedValue);
 	return SnappedValue;

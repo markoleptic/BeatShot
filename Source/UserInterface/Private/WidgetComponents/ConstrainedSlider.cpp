@@ -49,7 +49,6 @@ void UConstrainedSlider::InitConstrainedSlider(const FConstrainedSliderStruct In
 
 void UConstrainedSlider::UpdateDefaultValues(const float NewMinValue, const float NewMaxValue)
 {
-	UE_LOG(LogTemp, Display, TEXT("Updating default values %f %f"), NewMinValue, NewMaxValue);
 	SliderStruct.DefaultMinValue = RoundValue(NewMinValue);
 	SliderStruct.DefaultMaxValue = RoundValue(NewMaxValue);
 	if (SliderStruct.DefaultMinValue == SliderStruct.DefaultMaxValue)

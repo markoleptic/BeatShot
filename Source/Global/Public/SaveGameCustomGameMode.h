@@ -70,6 +70,18 @@ struct FGameModeActorStruct
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
 	EGameModeDifficulty GameModeDifficulty;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	bool bPlaybackAudio;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	FString InAudioDevice;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	FString OutAudioDevice;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	FString SongPath;
+
 	/* Whether or not the game mode derives from BeatTrack */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
 	bool IsBeatTrackMode;
@@ -163,6 +175,8 @@ struct FGameModeActorStruct
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumTargetsAtOnceBeatGrid;
 
+	
+
 	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const
 	{
 		if (GameModeActorName == Other.GameModeActorName &&
@@ -185,6 +199,10 @@ struct FGameModeActorStruct
 		GameModeActorName = EGameModeActorName::Custom;
 		SpreadType = ESpreadType::None;
 		GameModeDifficulty = EGameModeDifficulty::Normal;
+		bPlaybackAudio = false;
+		InAudioDevice = "";
+		OutAudioDevice = "";
+		SongPath = "";
 		IsBeatTrackMode = false;
 		IsSingleBeatMode = false;
 		IsBeatGridMode = false;
@@ -221,6 +239,10 @@ struct FGameModeActorStruct
 		SpreadType = NewSpreadType;
 
 		// Constant for all Game Modes and Difficulties
+		bPlaybackAudio = false;
+		InAudioDevice = "";
+		OutAudioDevice = "";
+		SongPath = "";
 		GameModeLength = 0.f;
 		HeadshotHeight = false;
 		RandomizeBeatGrid = false;

@@ -7,16 +7,37 @@
 #include "Delegates/DelegateCombinations.h"
 #include "AudioSelectWidget.generated.h"
 
+/* Information about the transition state of the game */
+USTRUCT()
+struct FAudioSelectStruct
+{
+	GENERATED_BODY()
+
+	float SongLength = 0;
+
+	FString SongPath = "";
+	
+	FString SongTitle = "";
+
+	FString InAudioDevice = "";
+
+	FString OutAudioDevice = "";
+
+	bool bPlaybackAudio;
+};
+
+DECLARE_DELEGATE_OneParam(FOnStartButtonClicked, const FAudioSelectStruct AudioSelectStruct);
+
+class UComboBoxString;
 class UVerticalBox;
+class UPopupMessageWidget;
 class UButton;
+class UBorder;
 class UTextBlock;
+class UCheckBox;
 class UEditableTextBox;
 class UWidgetAnimation;
-DECLARE_DELEGATE_ThreeParams(FOnStartButtonClicked, const bool bShowOpenFileDialog, const FString SongTitle, const int32 SongLength)
 
-/**
- * 
- */
 UCLASS()
 class USERINTERFACE_API UAudioSelectWidget : public UUserWidget
 {
@@ -42,7 +63,7 @@ protected:
 	UFUNCTION()
 	void OnAudioFromFileButtonClicked();
 	UFUNCTION()
-	void OnLoopbackAudioButtonClicked();
+	void OnStreamAudioButtonClicked();
 	UFUNCTION()
 	void OnStartButtonClicked();
 	UFUNCTION()
@@ -51,14 +72,29 @@ protected:
 	void OnMinutesValueCommitted(const FText& NewMinutes, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnSecondsValueCommitted(const FText& NewSeconds, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnInAudioDeviceSelectionChanged(const FString SelectedInAudioDevice, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnOutAudioDeviceSelectionChanged(const FString SelectedOutAudioDevice, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnPlaybackAudioCheckStateChanged(const bool bIsChecked);
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* AudioFromFileButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* LoopbackAudioButton;
+	UButton* StreamAudioButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* StartButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* LoopbackAudioBox;
+	UVerticalBox* StreamAudioBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxString* InAudioDevices;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxString* OutAudioDevices;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* PlaybackAudioBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* PlaybackAudioCheckbox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* SongTitleText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -70,12 +106,46 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
+	UPROPERTY()
+	UPopupMessageWidget* PopupMessageWidget;
+
+
+	
+	/** Opens file dialog for song selection. The Implementation version only checks the fullscreen mode,
+	 *  and changes it to Windowed Fullscreen if necessary */
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OpenSongFileDialog(TArray<FString>& OutFileNames);
+
+private:
+	/** Displays an error message upon failed AudioAnalyzer initialization */
+	UFUNCTION()
+	void ShowSongPathErrorMessage();
+	
+	/** Hides the error message */
+	UFUNCTION()
+	void HideSongPathErrorMessage();
+
+	/** Number formatting options for song length text boxes */
 	FNumberFormattingOptions NumberFormattingOptions;
+	
 	/** The color used to change the GameModeButton color to when selected */
 	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
+	
 	/** The color used to change the GameModeButton color to when not selected */
 	const FLinearColor White = FLinearColor::White;
-	bool bShowOpenFileDialog = false;
-	int32 SongLength = 0;
-	FString SongTitle = "";
+
+	/** Contains information relating to the audio format the user has selected. Passed to GameModesWidget
+	 *  using OnStartButtonClickedDelegate */
+	FAudioSelectStruct AudioSelectStruct;
+	
+	/** Whether or not the user was in fullscreen mode before OpenFileDialog */
+	bool bWasInFullScreenMode;
+
+	/** Whether or not to show OpenFileDialog upon clicking the start button */
+	bool bShowOpenFileDialog;
 };
+
+
+

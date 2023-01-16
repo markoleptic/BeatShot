@@ -34,7 +34,7 @@ class BEATSHOT_API AGun_AK47 : public AActor
 
 public:
 	/** Make the weapon Fire a Projectile */
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION()
 	void Fire();
 
 	/** Starts firing the gun (sets the timer for automatic fire) */
@@ -53,6 +53,9 @@ public:
 	 *	@param bNewFire The new state of the weapon's ability to fire
 	 */
 	void SetCanFire(const bool bNewFire) { bCanFire = bNewFire; }
+
+	UFUNCTION()
+	void SetShouldTrace(const bool bNewShouldTrace) { bShouldTrace = bNewShouldTrace; }
 
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;

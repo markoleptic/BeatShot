@@ -28,7 +28,6 @@ void USlideRightButton::SlideButton(const bool bIsActiveSelection)
 		}
 		if (HorizontalBox->RenderTransform.Translation.X > -40)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Translation: %f"), RenderTransform.Translation.X);
 			SlideButtonLeft();
 		}
 	}

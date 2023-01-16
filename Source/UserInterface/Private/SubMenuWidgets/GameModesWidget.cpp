@@ -1121,11 +1121,11 @@ void UGameModesWidget::OnCancelOverwriteButtonClicked()
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
 	AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode] (const bool bShowOpenFileDialog, const FString SongTitle, const int32 SongLength)
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode] (const FAudioSelectStruct AudioSelectStruct)
 	{
 		FGameModeTransitionState GameModeTransitionState;
+		FGameModeActorStruct GameModeActorStruct;
 		GameModeTransitionState.bSaveCurrentScores = false;
-		GameModeTransitionState.bShowOpenFileDialog = bShowOpenFileDialog;
 		if (bIsMainMenuChild)
 		{
 			GameModeTransitionState.TransitionState = ETransitionState::StartFromMainMenu;
@@ -1136,18 +1136,19 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 		}
 		if (bStartFromDefaultGameMode)
 		{
-			FGameModeActorStruct GameModeActorStruct = FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, DefaultGameModeSpreadType);
-			GameModeActorStruct.SongTitle = SongTitle;
-			GameModeActorStruct.GameModeLength = SongLength;
-			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
+			GameModeActorStruct = FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, DefaultGameModeSpreadType);
 		}
 		else
 		{
-			FGameModeActorStruct GameModeActorStruct = GetCustomGameModeOptions();
-			GameModeActorStruct.SongTitle = SongTitle;
-			GameModeActorStruct.GameModeLength = SongLength;
-			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
+			GameModeActorStruct = GetCustomGameModeOptions();
 		}
+		GameModeActorStruct.SongTitle = AudioSelectStruct.SongTitle;
+		GameModeActorStruct.GameModeLength = AudioSelectStruct.SongLength;
+		GameModeActorStruct.InAudioDevice = AudioSelectStruct.InAudioDevice;
+		GameModeActorStruct.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
+		GameModeActorStruct.SongPath = AudioSelectStruct.SongPath;
+		GameModeActorStruct.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
+		GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
 		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 	});
 	AudioSelectWidget->AddToViewport();

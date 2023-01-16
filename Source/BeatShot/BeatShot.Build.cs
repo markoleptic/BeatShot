@@ -10,8 +10,7 @@ public class BeatShot : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EasyFileDialog", "EnhancedInput", "UserInterface",
-			"Global"
+			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "Global"
 		});
 		PrivateDependencyModuleNames.AddRange(new[]
 			{ "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer", "EnhancedInput", "InputCore" });

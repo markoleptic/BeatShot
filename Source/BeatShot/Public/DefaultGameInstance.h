@@ -20,11 +20,16 @@ class BEATSHOT_API UDefaultGameInstance : public UGameInstance, public ISaveLoad
 	
 public:
 	UFUNCTION()
-	void StartGameMode(const bool bShowOpenFileDialog) const;
+	void StartGameMode() const;
+	
 	UFUNCTION()
-	void HandleGameModeTransition(const FGameModeTransitionState& GameModeTransitionState);
+	void HandleGameModeTransition(FGameModeTransitionState& NewGameModeTransitionState);
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FGameModeActorStruct GameModeActorStruct;
+	
+	FGameModeTransitionState LastGameModeTransitionState;
+	
 	bool bLastSavedShowOpenFileDialog;
 };
 

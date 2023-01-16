@@ -20,7 +20,7 @@ class UAudioAnalyzerManager;
 DECLARE_DELEGATE(FOnTargetSpawned);
 DECLARE_DELEGATE_OneParam(FOnTargetDestroyed, const float TimeAlive);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
-DECLARE_DELEGATE_OneParam(FOnGameModeInit, const FGameModeActorStruct GameModeActorStruct);
+DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
 DECLARE_DELEGATE_OneParam(FOnVisualizerSpawned, AVisualizer* Visualizer);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAAPlayerLoaded, UAudioAnalyzerManager*, AAManager);
@@ -77,7 +77,7 @@ protected:
 public:
 	/** Entry point into starting game. Spawn GameModeActorBase, TargetSpawner, and Visualizer and calls OpenSongFileDialog.
 	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
-	void InitializeGameMode(const bool bShowOpenFileDialog);
+	void InitializeGameMode();
 
 	/** Called from Countdown widget to begin the game mode. Also hides countdown widget, shows PlayerHUD widget, and shows CrossHair widget*/
 	UFUNCTION()
@@ -111,11 +111,11 @@ public:
 
 	/** Called from DefaultPlayerController when the game is paused */
 	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
-	void PauseAAManager(bool ShouldPause, UAudioAnalyzerManager* AAManager = nullptr);
+	void PauseAAManager(bool ShouldPause);
 
 private:
 	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
-	void InitializeAudioManagers(const bool bUseSongFromFile, const FString& SongFilePath);
+	void InitializeAudioManagers(const bool bPlaybackAudio, const FString& SongFilePath = "", const FString& InAudioDevice = "", const FString& OutAudioDevice = "");
 
 	/** play AAPlayer, used as callback function to set delay from AATracker */
 	UFUNCTION()
@@ -127,6 +127,12 @@ private:
 	/** Callback function for OnSecondPassedTimer, executes OnAAManagerSecondPassed */
 	UFUNCTION()
 	void OnSecondPassed();
+
+	UFUNCTION()
+	void FeedStreamCaptureTracker(const TArray<uint8>& StreamData);
+
+	UFUNCTION()
+	void FeedStreamCapturePlayer(const TArray<uint8>& StreamData);
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
@@ -216,8 +222,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	float MaxScorePerTarget;
 
-
-
 #pragma endregion
 
 #pragma region Settings
@@ -234,9 +238,6 @@ public:
 private:
 	/** Whether or not to run tick functions */
 	bool bShouldTick;
-
-	/** Whether or not the game was in fullscreen mode before showing OpenFileDialog */
-	bool bWasInFullScreenMode = false;
 
 	/** Whether or not to show the Streak Combat Text */
 	bool bShowStreakCombatText;
@@ -298,16 +299,6 @@ private:
 #pragma endregion
 
 #pragma region Utility
-
-public:
-	/** Opens file dialog for song selection. The Implementation version only checks the fullscreen mode,
-	 *  and changes it to Windowed Fullscreen if necessary */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OpenSongFileDialog(TArray<FString>& OutFileNames);
-
-private:
-	/** Displays an error message upon failed AudioAnalyzer initialization */
-	void ShowSongPathErrorMessage() const;
 
 	/** Checks if the value is NaN so we don't save a NaN value */
 	float CheckFloatNaN(const float ValueToCheck, const float ValueToRound);

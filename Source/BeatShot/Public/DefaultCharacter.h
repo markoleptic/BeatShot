@@ -169,9 +169,6 @@ private:
 	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
 	UFUNCTION()
 	void PassTrackingTargetToGun(ASphereTarget* TrackingTarget);
-	
-	UFUNCTION()
-	void SetGunShouldTrace(const FGameModeActorStruct GameModeActorStruct);
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;

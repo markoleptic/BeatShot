@@ -6,7 +6,6 @@
 #include "DefaultGameInstance.h"
 #include "DefaultGameMode.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Button.h"
 #include "Components/HorizontalBox.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/GameUserSettings.h"
@@ -18,7 +17,6 @@
 #include "OverlayWidgets/CrossHairWidget.h"
 #include "OverlayWidgets/FPSCounterWidget.h"
 #include "OverlayWidgets/PlayerHUD.h"
-#include "OverlayWidgets/PopupMessageWidget.h"
 #include "OverlayWidgets/ScreenFadeWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
@@ -33,43 +31,6 @@ void ADefaultPlayerController::BeginPlay()
 	}
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
-}
-
-void ADefaultPlayerController::ShowSongPathErrorMessage()
-{
-	if (IsPostGameMenuActive())
-	{
-		HidePostGameMenu();
-	}
-	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
-	PopupMessageWidget->InitPopup("Error",
-	                              "There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
-	                              "Okay");
-	PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &ADefaultPlayerController::HideSongPathErrorMessage);
-	PopupMessageWidget->AddToViewport();
-	PopupMessageWidget->FadeIn();
-	if (GetWorld()->GetMapName().Contains("Range") && !UGameplayStatics::IsGamePaused(GetWorld()))
-	{
-		SetInputMode(FInputModeUIOnly());
-		SetShowMouseCursor(true);
-		SetPlayerEnabledState(false);
-	}
-}
-
-void ADefaultPlayerController::HideSongPathErrorMessage()
-{
-	UE_LOG(LogTemp, Display, TEXT("Hidepopupmessagecalled"));
-	PopupMessageWidget->RemoveFromViewport();
-	if (GetWorld()->GetMapName().Contains("Range") && !UGameplayStatics::IsGamePaused(GetWorld()))
-	{
-		SetInputMode(FInputModeGameOnly());
-		SetShowMouseCursor(false);
-		SetPlayerEnabledState(true);
-		if (!IsCrossHairActive())
-		{
-			ShowCrossHair();
-		}
-	}
 }
 
 void ADefaultPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
