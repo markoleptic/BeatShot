@@ -18,7 +18,6 @@ AVisualizer::AVisualizer()
 void AVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnAAPlayerLoaded.AddDynamic(this, &AVisualizer::OnAAManagerLoaded);
 }
 
 // Called every frame
@@ -27,7 +26,7 @@ void AVisualizer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AVisualizer::OnAAManagerLoaded(UAudioAnalyzerManager* Manager)
+void AVisualizer::OnAAPlayerLoaded(UAudioAnalyzerManager* Manager)
 {
 	AAManager = Manager;
 	InitializeCubes(LoadAASettings().NumBandChannels);

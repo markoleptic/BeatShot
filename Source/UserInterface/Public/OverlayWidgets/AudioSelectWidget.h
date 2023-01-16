@@ -34,6 +34,8 @@ class UPopupMessageWidget;
 class UButton;
 class UBorder;
 class UTextBlock;
+class UTooltipImage;
+class UTooltipWidget;
 class UCheckBox;
 class UEditableTextBox;
 class UWidgetAnimation;
@@ -83,16 +85,21 @@ protected:
 	UButton* AudioFromFileButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* StreamAudioButton;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UButton* BackButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* StartButton;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* StreamAudioBox;
+	UVerticalBox* AudioDeviceBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* InAudioDevices;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* OutAudioDevices;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* PlaybackAudioBox;
+	UVerticalBox* SongTitleLengthBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* PlaybackAudioCheckbox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -101,6 +108,17 @@ protected:
 	UEditableTextBox* Minutes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Seconds;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* PlaybackAudioQMark;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
+	UPROPERTY()
+	UTooltipWidget* Tooltip;
+	/** Updates the tooltip text and shows the tooltip at the location of the Button (which is just the question mark image) */
+	UFUNCTION()
+	void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow);
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))

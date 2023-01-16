@@ -3,11 +3,13 @@
 
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "AudioAnalyzerManager.h"
-#include "Components/Border.h"
+#include "WidgetComponents/TooltipImage.h"
+#include "WidgetComponents/TooltipWidget.h"
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
+#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
@@ -17,16 +19,24 @@ void UAudioSelectWidget::NativeConstruct()
 	Super::NativeConstruct();
 	NumberFormattingOptions.MinimumIntegralDigits = 2;
 	NumberFormattingOptions.MaximumIntegralDigits = 2;
+	BackButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::FadeOut);
 	StartButton->SetIsEnabled(false);
+	StartButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStartButtonClicked);
 	AudioFromFileButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnAudioFromFileButtonClicked);
 	StreamAudioButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStreamAudioButtonClicked);
-	StartButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStartButtonClicked);
 	SongTitleText->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnSongTitleValueCommitted);
 	Seconds->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnSecondsValueCommitted);
 	Minutes->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnMinutesValueCommitted);
 	InAudioDevices->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnInAudioDeviceSelectionChanged);
 	OutAudioDevices->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnOutAudioDeviceSelectionChanged);
 	PlaybackAudioCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnPlaybackAudioCheckStateChanged);
+
+	Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
+
+	PlaybackAudioQMark->TooltipText = FText::FromStringTable(
+		"/Game/StringTables/ST_GameModesWidget.ST_GameModesWidget", "PlaybackAudio");
+	PlaybackAudioQMark->OnTooltipImageHovered.AddDynamic(this, &UAudioSelectWidget::OnTooltipImageHovered);
+	
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
 	TArray<FString> OutAudioDeviceList;
 	TArray<FString> InAudioDeviceList;
@@ -42,6 +52,11 @@ void UAudioSelectWidget::NativeConstruct()
 	{
 		InAudioDevices->AddOption(AudioDevice);
 	}
+
+	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
+	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
+	OnSecondsValueCommitted(FText::AsNumber(0), ETextCommit::Type::Default);
+	OnMinutesValueCommitted(FText::AsNumber(0), ETextCommit::Type::Default);
 }
 
 void UAudioSelectWidget::NativeDestruct()
@@ -71,10 +86,8 @@ void UAudioSelectWidget::OnAudioFromFileButtonClicked()
 	AudioFromFileButton->SetBackgroundColor(BeatShotBlue);
 	StreamAudioButton->SetBackgroundColor(White);
 	StartButton->SetIsEnabled(true);
-	StreamAudioBox->SetVisibility(ESlateVisibility::Collapsed);
-	InAudioDevices->SetVisibility(ESlateVisibility::Collapsed);
-	OutAudioDevices->SetVisibility(ESlateVisibility::Collapsed);
-	PlaybackAudioBox->SetVisibility(ESlateVisibility::Collapsed);
+	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
+	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 	InAudioDevices->ClearSelection();
 	OutAudioDevices->ClearSelection();
 }
@@ -84,9 +97,7 @@ void UAudioSelectWidget::OnStreamAudioButtonClicked()
 	bShowOpenFileDialog = false;
 	AudioFromFileButton->SetBackgroundColor(White);
 	StreamAudioButton->SetBackgroundColor(BeatShotBlue);
-	InAudioDevices->SetVisibility(ESlateVisibility::Visible);
-	OutAudioDevices->SetVisibility(ESlateVisibility::Visible);
-	PlaybackAudioBox->SetVisibility(ESlateVisibility::Visible);
+	AudioDeviceBox->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UAudioSelectWidget::OnStartButtonClicked()
@@ -145,9 +156,9 @@ void UAudioSelectWidget::OnInAudioDeviceSelectionChanged(const FString SelectedI
 	const ESelectInfo::Type SelectionType)
 {
 	AudioSelectStruct.InAudioDevice = SelectedInAudioDevice;
-	if (OutAudioDevices->GetSelectedIndex() > 0 && InAudioDevices->GetSelectedIndex() > 0)
+	if (OutAudioDevices->GetSelectedIndex() != -1 && InAudioDevices->GetSelectedIndex() != -1)
 	{
-		StreamAudioBox->SetVisibility(ESlateVisibility::Visible);
+		SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
 		StartButton->SetIsEnabled(true);
 	}
 }
@@ -156,9 +167,9 @@ void UAudioSelectWidget::OnOutAudioDeviceSelectionChanged(const FString Selected
 	const ESelectInfo::Type SelectionType)
 {
 	AudioSelectStruct.OutAudioDevice = SelectedOutAudioDevice;
-	if (OutAudioDevices->GetSelectedIndex() > 0 && InAudioDevices->GetSelectedIndex() > 0)
+	if (OutAudioDevices->GetSelectedIndex() != -1 && InAudioDevices->GetSelectedIndex() != -1)
 	{
-		StreamAudioBox->SetVisibility(ESlateVisibility::Visible);
+		SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
 		StartButton->SetIsEnabled(true);
 	}
 }
@@ -180,6 +191,12 @@ void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutF
 	}
 }
 
+void UAudioSelectWidget::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow)
+{
+	Tooltip->TooltipDescriptor->SetText(TooltipTextToShow);
+	HoveredTooltipImage->SetToolTip(Tooltip);
+}
+
 void UAudioSelectWidget::ShowSongPathErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
@@ -194,4 +211,5 @@ void UAudioSelectWidget::ShowSongPathErrorMessage()
 void UAudioSelectWidget::HideSongPathErrorMessage()
 {
 	PopupMessageWidget->RemoveFromViewport();
+	FadeOut();
 }

@@ -23,8 +23,6 @@ DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
 DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
 DECLARE_DELEGATE_OneParam(FOnVisualizerSpawned, AVisualizer* Visualizer);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAAPlayerLoaded, UAudioAnalyzerManager*, AAManager);
-
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeatTrackTargetSpawned, ASphereTarget* TrackingTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32, NewStreak, const FVector, Position);
 
@@ -128,12 +126,6 @@ private:
 	UFUNCTION()
 	void OnSecondPassed();
 
-	UFUNCTION()
-	void FeedStreamCaptureTracker(const TArray<uint8>& StreamData);
-
-	UFUNCTION()
-	void FeedStreamCapturePlayer(const TArray<uint8>& StreamData);
-
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
 	FAASettingsStruct AASettings;
@@ -157,10 +149,6 @@ private:
 #pragma region PublicDelegates
 
 public:
-	/** Delegate to pass AAManager to visualizer */
-	UPROPERTY(BlueprintAssignable, BlueprintCallable, BlueprintReadWrite)
-	FOnAAPlayerLoaded OnAAPlayerLoaded;
-
 	/** Delegate that is executed when GameModeActorBase is initialized. This is so the character is informed that the
 	 *  Gun needs to perform line tracing for BeatTrack game modes, but otherwise can skip line tracing.
 	 *  DefaultCharacter binds to it, while DefaultGameMode (this) executes it */
@@ -252,6 +240,8 @@ private:
 	const FVector TargetSpawnerLocation = {3590, 0, 750};
 
 	const FVector VisualizerLocation = {-3900, 0, 60};
+
+	const FVector Visualizer2Location = {-3400, 0, 60};
 
 	const FActorSpawnParameters SpawnParameters;
 

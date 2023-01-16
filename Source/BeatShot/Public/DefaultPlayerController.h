@@ -16,7 +16,7 @@ class UPlayerHUD;
 class UMainMenuWidget;
 class UPauseMenuWidget;
 class UPopupMessageWidget;
-class UCountdown;
+class UCountdownWidget;
 
 DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
@@ -59,7 +59,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
 	UPlayerHUD* PlayerHUD;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-	UCountdown* Countdown;
+	UCountdownWidget* Countdown;
 
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 	
@@ -75,7 +75,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UCountdown> CountdownClass;
+	TSubclassOf<UCountdownWidget> CountdownClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPostGameMenuWidget> PostGameMenuWidgetClass;
 	UPROPERTY(EditDefaultsOnly)

@@ -8,7 +8,7 @@
 AMainMenuGameMode::AMainMenuGameMode()
 {
 	MainMenuMusicComp = CreateDefaultSubobject<UAudioComponent>(TEXT("MainMenuMusicComp"));
-	MainMenuMusicComp->SetupAttachment(RootComponent);
+	SetRootComponent(MainMenuMusicComp);
 }
 
 void AMainMenuGameMode::BeginPlay()

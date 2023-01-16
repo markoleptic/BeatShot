@@ -26,7 +26,7 @@ void ADefaultGameMode::BeginPlay()
 void ADefaultGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (!bShouldTick || !GetWorldTimerManager().IsTimerActive(OnSecondPassedTimer))
+	if (!bShouldTick || !GetWorldTimerManager().IsTimerActive(GameModeLengthTimer))
 	{
 		return;
 	}
@@ -59,7 +59,6 @@ void ADefaultGameMode::InitializeGameMode()
 	                                                      &VisualizerLocation,
 	                                                      &FRotator::ZeroRotator,
 	                                                      SpawnParameters));
-
 	InitializeAudioManagers(GameModeActorStruct.bPlaybackAudio, GameModeActorStruct.SongPath, GameModeActorStruct.InAudioDevice, GameModeActorStruct.OutAudioDevice);
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
 	bShouldTick = true;
@@ -91,15 +90,21 @@ void ADefaultGameMode::StartGameMode()
 	{
 		OnBeatTrackTargetSpawned.AddUFunction(this, FName("OnBeatTrackTargetSpawnedCallback"));
 	}
-	GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ADefaultGameMode::OnGameModeLengthTimerComplete,
-	                                GameModeActorStruct.GameModeLength, false);
+	if (GameModeActorStruct.GameModeLength == 0.f)
+	{
+		GetWorldTimerManager().SetTimer(GameModeLengthTimer, 31536000, false);
+	}
+	else
+	{
+		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ADefaultGameMode::OnGameModeLengthTimerComplete,
+								GameModeActorStruct.GameModeLength, false);
+	}
 	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
 	{
 		UE_LOG(LogTemp, Display, TEXT("Initial UpdateScoresToHUD failed."));
 	}
-
-	TargetSpawner->SetShouldSpawn(true);
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ADefaultGameMode::OnSecondPassed, 1.f, true);
+	TargetSpawner->SetShouldSpawn(true);
 }
 
 void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
@@ -110,6 +115,7 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		Controller->ShowPostGameMenu();
 	}
+	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
 
@@ -135,9 +141,6 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 		}
 	}
 	/** Unbinding delegates */
-	//AATracker->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCaptureTracker);
-	//AAPlayer->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);
-
 	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0)); Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun)
 	{
@@ -163,11 +166,13 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	}
 	if (AATracker)
 	{
+		AATracker->UnloadCapturerAudio();
 		AATracker->UnloadPlayerAudio();
 		AATracker = nullptr;
 	}
 	if (AAPlayer)
 	{
+		AAPlayer->UnloadCapturerAudio();
 		AAPlayer->UnloadPlayerAudio();
 		AAPlayer = nullptr;
 	}
@@ -210,9 +215,8 @@ void ADefaultGameMode::StartAAManagerPlayback()
 	{
 		return;
 	}
-
-	const FPlayerSettings Settings = LoadPlayerSettings();
-	// If delay is large enough, play AATracker and then AAPlayer after the delay
+	
+	/* If delay is large enough, play AATracker and then AAPlayer after the delay */
 	if (GameModeActorStruct.PlayerDelay >= 0.01f)
 	{
 		GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ADefaultGameMode::PlayAAPlayer,
@@ -228,6 +232,7 @@ void ADefaultGameMode::StartAAManagerPlayback()
 		if (GameModeActorStruct.PlayerDelay < 0.01f)
 		{
 			AATracker->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
+			SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AATracker);
 		}
 		else
 		{
@@ -235,10 +240,6 @@ void ADefaultGameMode::StartAAManagerPlayback()
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("Now Playing AATracker"));
-	if (GameModeActorStruct.PlayerDelay < 0.01f)
-	{
-		SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AATracker);
-	}
 }
 
 void ADefaultGameMode::PauseAAManager(const bool ShouldPause)
@@ -295,23 +296,6 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	const bool bUseCaptureAudio = SongFilePath.IsEmpty();
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
-	/* set Song length and song title in GameModeActorStruct if using song file */
-	if (!bUseCaptureAudio)
-	{
-		FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
-		AATracker->GetMetadata(Filename, Extension, MetaType, Title,
-		                       Artist, Album, Year, Genre);
-		if (Title.IsEmpty())
-		{
-			GameModeActorStruct.SongTitle = Filename;
-		}
-		else
-		{
-			GameModeActorStruct.SongTitle = Title;
-		}
-		GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
-	}
-
 	/* Initialize AATracker Manager */
 	if (bUseCaptureAudio)
 	{
@@ -335,6 +319,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 				UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 				return;
 			}
+			AATracker->SetCaptureVolume(1, 0);
 		}
 	}
 	else
@@ -345,7 +330,21 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 			UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 			return;
 		}
+		/* set Song length and song title in GameModeActorStruct if using song file */
+		FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
+		AATracker->GetMetadata(Filename, Extension, MetaType, Title,
+							   Artist, Album, Year, Genre);
+		if (Title.IsEmpty())
+		{
+			GameModeActorStruct.SongTitle = Filename;
+		}
+		else
+		{
+			GameModeActorStruct.SongTitle = Title;
+		}
+		GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
 	}
+	
 	AATracker->InitBeatTrackingConfigWLimits(
 		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
@@ -355,8 +354,8 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	/* Only initialize AAPlayer if the player delay is large enough */
 	if (GameModeActorStruct.PlayerDelay < 0.01f)
 	{
+		Visualizer->OnAAPlayerLoaded(AATracker);
 		AAPlayer = nullptr;
-		OnAAPlayerLoaded.Broadcast(AATracker);
 		return;
 	}
 	AAPlayer = NewObject<UAudioAnalyzerManager>(this);
@@ -385,7 +384,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 		false, 100, 2.1);
 	SetAAManagerVolume(0, 0, AAPlayer);
-	OnAAPlayerLoaded.Broadcast(AAPlayer);
+	Visualizer->OnAAPlayerLoaded(AAPlayer);
 }
 
 void ADefaultGameMode::PlayAAPlayer()
@@ -394,18 +393,17 @@ void ADefaultGameMode::PlayAAPlayer()
 	{
 		return;
 	}
-
-	const FPlayerSettings Settings = LoadPlayerSettings();
+	
 	if (!GameModeActorStruct.SongPath.IsEmpty())
 	{
 		AAPlayer->Play();
 	}
 	else
 	{
-		AAPlayer->StartCapture(false, GameModeActorStruct.bPlaybackAudio);
+		AAPlayer->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
 	}
 	UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer"));
-	SetAAManagerVolume(Settings.GlobalVolume, Settings.MusicVolume, AAPlayer);
+	SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AAPlayer);
 }
 
 void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume,
@@ -415,7 +413,7 @@ void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float 
 	{
 		if (GameModeActorStruct.SongPath.IsEmpty())
 		{
-			AAManager->SetCaptureVolume(GlobalVolume / 100 * MusicVolume / 100, GlobalVolume / 100 * MusicVolume / 100);
+			AAManager->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
 		}
 		else
 		{
@@ -427,19 +425,20 @@ void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float 
 	{
 		if (GameModeActorStruct.SongPath.IsEmpty())
 		{
-			AAPlayer->SetCaptureVolume(GlobalVolume / 100 * MusicVolume / 100, GlobalVolume / 100 * MusicVolume / 100);
+			AAPlayer->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
 		}
 		else
 		{
 			AAPlayer->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
 		}
+		/* Exit early if AAPlayer exists so we don't set volume for two playback sources at once */
 		return;
 	}
 	if (AATracker)
 	{
 		if (GameModeActorStruct.SongPath.IsEmpty())
 		{
-			AATracker->SetCaptureVolume(GlobalVolume / 100 * MusicVolume / 100, GlobalVolume / 100 * MusicVolume / 100);
+			AATracker->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
 		}
 		else
 		{
@@ -457,7 +456,8 @@ void ADefaultGameMode::OnSecondPassed()
 		{
 			if (GameModeActorStruct.SongPath.IsEmpty())
 			{
-				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(OnSecondPassedTimer));
+				UE_LOG(LogTemp, Display, TEXT("%f"), GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
+				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 			}
 			else
 			{
@@ -468,7 +468,7 @@ void ADefaultGameMode::OnSecondPassed()
 		{
 			if (GameModeActorStruct.SongPath.IsEmpty())
 			{
-				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(OnSecondPassedTimer));
+				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 			}
 			else
 			{
@@ -476,16 +476,6 @@ void ADefaultGameMode::OnSecondPassed()
 			}
 		}
 	}
-}
-
-void ADefaultGameMode::FeedStreamCaptureTracker(const TArray<uint8>& StreamData)
-{
-	AATracker->FeedStreamCapture(StreamData);
-}
-
-void ADefaultGameMode::FeedStreamCapturePlayer(const TArray<uint8>& StreamData)
-{
-	AAPlayer->FeedStreamCapture(StreamData);
 }
 
 void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASettings)
@@ -539,7 +529,14 @@ void ADefaultGameMode::LoadMatchingPlayerScores()
 	CurrentPlayerScore.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
 	CurrentPlayerScore.Difficulty = GameModeActorStruct.GameModeDifficulty;
 	CurrentPlayerScore.TotalPossibleDamage = 0.f;
-	MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
+	if (GameModeActorStruct.GameModeLength == 0.f)
+	{
+		MaxScorePerTarget = 1000.f;
+	}
+	else
+	{
+		MaxScorePerTarget = 100000.f / ((GameModeActorStruct.GameModeLength - 1.f) / GameModeActorStruct.TargetSpawnCD);
+	}
 }
 
 TArray<FPlayerScore> ADefaultGameMode::GetCompletedPlayerScores()
@@ -752,6 +749,9 @@ AASettings.NumBandChannels = 8;
 Visualizer->UpdateAASettings(AASettings);
 */
 
+//AATracker->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCaptureTracker);
+//AAPlayer->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);
+
 // if (!AATracker->InitLoopbackAudio())
 // {
 // 	ShowSongPathErrorMessage();
@@ -788,3 +788,18 @@ Visualizer->UpdateAASettings(AASettings);
 //AAPlayer->SetDefaultDeviceStreamAudio(*OutAudioDevice);
 //AAPlayer->InitStreamAudio(1, 44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
 //AAPlayer->OnCapturedData.AddUniqueDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);
+
+/*Visualizer2 = Cast<AVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
+												  &Visualizer2Location,
+												  &FRotator::ZeroRotator,
+												  SpawnParameters));*/
+
+/*void ADefaultGameMode::FeedStreamCaptureTracker(const TArray<uint8>& StreamData)
+{
+	AATracker->FeedStreamCapture(StreamData);
+}
+
+void ADefaultGameMode::FeedStreamCapturePlayer(const TArray<uint8>& StreamData)
+{
+	AAPlayer->FeedStreamCapture(StreamData);
+}*/

@@ -1,26 +1,26 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "OverlayWidgets/Countdown.h"
+#include "OverlayWidgets/CountdownWidget.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
 
-void UCountdown::NativeConstruct()
+void UCountdownWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	MID_Countdown = CountdownImage->GetDynamicMaterial();
 }
 
-void UCountdown::NativeDestruct()
+void UCountdownWidget::NativeDestruct()
 {
 	Super::NativeDestruct();
 	GetWorld()->GetTimerManager().ClearTimer(CountDownTimer);
 	CountDownTimer.Invalidate();
 }
 
-void UCountdown::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
@@ -49,13 +49,13 @@ void UCountdown::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	}
 }
 
-void UCountdown::StartCountDownTimer()
+void UCountdownWidget::StartCountDownTimer()
 {
-	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdown::StartGameMode, CountdownTimerLength,
+	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdownWidget::StartGameMode, CountdownTimerLength,
 	                                       false);
 }
 
-void UCountdown::StartGameMode() const
+void UCountdownWidget::StartGameMode() const
 {
 	if (!OnCountdownCompleted.ExecuteIfBound())
 	{

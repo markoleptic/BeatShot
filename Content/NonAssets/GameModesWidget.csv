@@ -17,3 +17,4 @@ BeatGridAdjacentOnly,"By default, adjacent-only will only activate a target that
 BeatGridNumTargets,The number of targets that are spawned at the beginning.
 BeatTrackConstantSpeed,"If checked, the speed at which the target moves will not change."
 ForwardSpread,"If checked, the targets will move forward towards the player by ForwardDistance over the maximum target lifespan."
+PlaybackAudio,"If checked, the audio from the Input Audio Device will playback to the Output Audio Device. Check  this box if you aren't routing your Input Audio Device to your desktop sound."

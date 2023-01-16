@@ -13,7 +13,7 @@
 #include "MenuWidgets/MainMenuWidget.h"
 #include "MenuWidgets/PauseMenuWidget.h"
 #include "MenuWidgets/PostGameMenuWidget.h"
-#include "OverlayWidgets/Countdown.h"
+#include "OverlayWidgets/CountdownWidget.h"
 #include "OverlayWidgets/CrossHairWidget.h"
 #include "OverlayWidgets/FPSCounterWidget.h"
 #include "OverlayWidgets/PlayerHUD.h"
@@ -158,7 +158,7 @@ void ADefaultPlayerController::ShowCountdown()
 		Cast<ADefaultCharacter>(GetPawn())->SetActorLocationAndRotation(FVector(1580, 0, 102), FRotator(0, 0, 0));
 	}
 	FadeScreenFromBlack();
-	Countdown = CreateWidget<UCountdown>(this, CountdownClass);
+	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
 	Countdown->PlayerDelay = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
 	                         GameModeActorStruct.PlayerDelay;
 	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));

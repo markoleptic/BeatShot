@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Countdown.generated.h"
+#include "CountdownWidget.generated.h"
 
 DECLARE_DELEGATE(FOnCountdownCompleted);
 
@@ -17,7 +17,7 @@ class UTextBlock;
  * 
  */
 UCLASS()
-class USERINTERFACE_API UCountdown : public UUserWidget
+class USERINTERFACE_API UCountdownWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

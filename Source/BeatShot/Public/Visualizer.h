@@ -22,7 +22,8 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -30,7 +31,7 @@ public:
 	UAudioAnalyzerManager* AAManager;
 
 	UFUNCTION()
-	void OnAAManagerLoaded(UAudioAnalyzerManager* Manager);
+	void OnAAPlayerLoaded(UAudioAnalyzerManager* Manager);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void InitializeCubes(int32 NewNumBandChannels);
@@ -43,7 +44,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	FAASettingsStruct AASettings;
-
 };
 
 
