@@ -57,8 +57,12 @@ void ADefaultGameMode::InitializeGameMode()
 	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
 	Visualizer = Cast<AVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
 	                                                      &VisualizerLocation,
-	                                                      &FRotator::ZeroRotator,
+	                                                      &VisualizerRotation,
 	                                                      SpawnParameters));
+	Visualizer2 = Cast<AVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
+													  &Visualizer2Location,
+													  &VisualizerRotation,
+													  SpawnParameters));
 	InitializeAudioManagers(GameModeActorStruct.bPlaybackAudio, GameModeActorStruct.SongPath, GameModeActorStruct.InAudioDevice, GameModeActorStruct.OutAudioDevice);
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
 	bShouldTick = true;
@@ -158,11 +162,15 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		OnTargetDestroyed.Unbind();
 	}
-
 	if (Visualizer)
 	{
 		Visualizer->Destroy();
 		Visualizer = nullptr;
+	}
+	if (Visualizer2)
+	{
+		Visualizer2->Destroy();
+		Visualizer2 = nullptr;
 	}
 	if (AATracker)
 	{
@@ -293,6 +301,9 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
                                                const FString& InAudioDevice, const FString& OutAudioDevice)
 {
 	AASettings = LoadAASettings();
+	Visualizer->UpdateAASettings(AASettings);
+	Visualizer2->UpdateAASettings(AASettings);
+	
 	const bool bUseCaptureAudio = SongFilePath.IsEmpty();
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
@@ -355,6 +366,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	if (GameModeActorStruct.PlayerDelay < 0.01f)
 	{
 		Visualizer->OnAAPlayerLoaded(AATracker);
+		Visualizer2->OnAAPlayerLoaded(AATracker);
 		AAPlayer = nullptr;
 		return;
 	}
@@ -385,6 +397,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		false, 100, 2.1);
 	SetAAManagerVolume(0, 0, AAPlayer);
 	Visualizer->OnAAPlayerLoaded(AAPlayer);
+	Visualizer2->OnAAPlayerLoaded(AAPlayer);
 }
 
 void ADefaultGameMode::PlayAAPlayer()
@@ -482,6 +495,7 @@ void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASet
 {
 	AASettings = RefreshedAASettings;
 	Visualizer->UpdateAASettings(RefreshedAASettings);
+	Visualizer2->UpdateAASettings(RefreshedAASettings);
 }
 
 void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings)
@@ -732,22 +746,6 @@ float ADefaultGameMode::CheckFloatNaN(const float ValueToCheck, const float Valu
 	return 0;
 }
 
-
-/*
-AASettings.BandLimits = {
-	FVector2d(0,100),
-	FVector2d(101,150),
-	FVector2d(151,200),
-	FVector2d(201,400),
-	FVector2d(401,999),
-	FVector2d(1000,2000),
-	FVector2d(2001,3000),
-	FVector2d(3001,4000)
-};
-AASettings.BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
-AASettings.NumBandChannels = 8;
-Visualizer->UpdateAASettings(AASettings);
-*/
 
 //AATracker->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCaptureTracker);
 //AAPlayer->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);

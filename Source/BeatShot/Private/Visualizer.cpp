@@ -18,6 +18,7 @@ AVisualizer::AVisualizer()
 void AVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
+	AASettings = LoadAASettings();
 }
 
 // Called every frame
@@ -29,15 +30,15 @@ void AVisualizer::Tick(float DeltaTime)
 void AVisualizer::OnAAPlayerLoaded(UAudioAnalyzerManager* Manager)
 {
 	AAManager = Manager;
-	InitializeCubes(LoadAASettings().NumBandChannels);
+	InitializeCubes(AASettings.NumBandChannels);
 	bAAManagerInitialized = true;
 }
 
 void AVisualizer::UpdateAASettings(const FAASettingsStruct AASettingsStruct)
 {
-	bAAManagerInitialized = false;
-	InitializeCubes(AASettingsStruct.NumBandChannels);
-	AASettings = AASettingsStruct;
-	bAAManagerInitialized = true;
+	 bAAManagerInitialized = false;
+	 InitializeCubes(AASettingsStruct.NumBandChannels);
+	 AASettings = AASettingsStruct;
+	 bAAManagerInitialized = true;
 }
 

@@ -214,26 +214,44 @@ struct FAASettingsStruct
 
 	FAASettingsStruct()
 	{
-		NumBandChannels = 3;
-		BandLimitsThreshold = {2.1f, 2.1f, 2.1f};
 		BandLimits = {
-			FVector2D(0.f, 87.f),
-			FVector2D(500.f, 700.f),
-			FVector2D(5000.f, 12000.f)
+			FVector2d(0,50),
+			FVector2d(50,100),
+			FVector2d(101,150),
+			FVector2d(151,200),
+			FVector2d(201,250),
+			FVector2d(251,300),
+			FVector2d(301,350),
+			FVector2d(351,400),
+			FVector2d(401,999),
+			FVector2d(1000,2000),
+			FVector2d(2001,3000),
+			FVector2d(3001,4000)
 		};
+		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
+		NumBandChannels = 12;
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
 	}
 
 	void ResetStruct()
 	{
-		NumBandChannels = 3;
-		BandLimitsThreshold = {2.1f, 2.1f, 2.1f};
 		BandLimits = {
-			FVector2D(0.f, 87.f),
-			FVector2D(500.f, 700.f),
-			FVector2D(5000.f, 12000.f)
+			FVector2d(0,50),
+			FVector2d(50,100),
+			FVector2d(101,150),
+			FVector2d(151,200),
+			FVector2d(201,250),
+			FVector2d(251,300),
+			FVector2d(301,350),
+			FVector2d(351,400),
+			FVector2d(401,999),
+			FVector2d(1000,2000),
+			FVector2d(2001,3000),
+			FVector2d(3001,4000)
 		};
+		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
+		NumBandChannels = 12;
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
 	}

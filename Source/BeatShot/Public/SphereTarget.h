@@ -26,6 +26,9 @@ public:
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
 
+	/** Sets the scale for the BaseMesh and the OutlineMesh */
+	void SetSphereScale(const FVector NewScale) const;
+
 protected:
 	
 	/** Called when the game starts or when spawned */
@@ -44,13 +47,22 @@ protected:
 	UStaticMeshComponent* BaseMesh;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UStaticMeshComponent* OutlineMesh;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UNiagaraSystem* NS_Standard_Explosion;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UMaterialInterface* Material;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	UMaterialInterface* OutlineMaterial;
+
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInstanceDynamic* MID_TargetColorChanger;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterialInstanceDynamic* MID_TargetOutline;
 
 	UPROPERTY(EditDefaultsOnly)
 	UCurveLinearColor* FadeAndReappearCurve;
@@ -76,9 +88,18 @@ public:
 	*   Also called by Gun to change the color for BeatTrack modes */
 	UFUNCTION()
 	void SetSphereColor(const FLinearColor Output);
+	
+	UFUNCTION()
+	void SetOutlineColor(const FLinearColor Output);
+
+	UFUNCTION()
+	void SetSphereAndOutlineColor(const FLinearColor Output);
 
 	UPROPERTY()
 	FTimerHandle TimeSinceSpawn;
+
+	UPROPERTY()
+	FTimerHandle ValidScoreTargetTime;
 
 	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
 	FGameModeActorStruct GameModeActorStruct;
@@ -127,6 +148,10 @@ private:
 
 	/** Color for BeatGrid targets that aren't active. */
 	FLinearColor BeatGridPurple = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
+
+	/** The ratio between the scale of the BaseMesh to OutlineMesh, used to apply a constant proportioned outline
+	 *  regardless of the scale of the target */
+	const float BaseToOutlineRatio = 0.9;
 };
 
 

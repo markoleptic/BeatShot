@@ -19,26 +19,43 @@ ASphereTarget::ASphereTarget()
 	PrimaryActorTick.bCanEverTick = true;
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("Capsule Collider");
 	RootComponent = CapsuleComp;
+	
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
+	
+	OutlineMesh = CreateDefaultSubobject<UStaticMeshComponent>("Outline Mesh");
+	OutlineMesh->SetupAttachment(BaseMesh);
+	
 	HealthComp = CreateDefaultSubobject<UDefaultHealthComponent>("Health Component");
+	
 	InitialLifeSpan = 1.5f;
 	Guid = FGuid::NewGuid();
+}
+
+void ASphereTarget::SetSphereScale(const FVector NewScale) const
+{
+	BaseMesh->SetRelativeScale3D(NewScale * BaseToOutlineRatio);
+	OutlineMesh->SetRelativeScale3D(FVector(1 / BaseToOutlineRatio));
 }
 
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	GameModeActorStruct = GI->GameModeActorStruct;
-	const float WhiteToGreenMultiplier = 1 / GameModeActorStruct.PlayerDelay;
-	const float GreenToRedMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
 
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
 	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
 
+	/* Use Color Changing Material, this is required in order to change color using C++ */
+	OutlineMaterial = OutlineMesh->GetMaterial(0);
+	MID_TargetOutline = UMaterialInstanceDynamic::Create(OutlineMaterial, this);
+	OutlineMesh->SetMaterial(0, MID_TargetOutline);
+	
+	GameModeActorStruct = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
+	const float WhiteToGreenMultiplier = 1 / GameModeActorStruct.PlayerDelay;
+	const float GreenToRedMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
+	
 	FOnTimelineLinearColor OnWhiteToGreenTimeline;
 	OnWhiteToGreenTimeline.BindUFunction(this, FName("SetSphereColor"));
 	WhiteToGreenTimeline.AddInterpLinearColor(WhiteToGreenCurve, OnWhiteToGreenTimeline);
@@ -52,7 +69,7 @@ void ASphereTarget::BeginPlay()
 	GreenToRedTimeline.AddInterpLinearColor(GreenToRedCurve, OnGreenToRedCurveTimeline);
 
 	FOnTimelineLinearColor OnFadeAndReappearTimeline;
-	OnFadeAndReappearTimeline.BindUFunction(this, FName("SetSphereColor"));
+	OnFadeAndReappearTimeline.BindUFunction(this, FName("SetSphereAndOutlineColor"));
 	FadeAndReappearTimeline.AddInterpLinearColor(FadeAndReappearCurve, OnFadeAndReappearTimeline);
 
 	WhiteToGreenTimeline.SetPlayRate(WhiteToGreenMultiplier);
@@ -65,12 +82,14 @@ void ASphereTarget::BeginPlay()
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
+		MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), BeatGridPurple);
 	}
 	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), FLinearColor::Red);
+		MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), FLinearColor::Red);
 		HealthComp->ShouldUpdateTotalPossibleDamage = true;
 	}
 	else
@@ -124,6 +143,7 @@ void ASphereTarget::PlayWhiteToGreenTimeline()
 	}
 	TimelineSwitch = 0;
 	WhiteToGreenTimeline.PlayFromStart();
+	SetOutlineColor(FLinearColor::Green);
 }
 
 void ASphereTarget::PlayGreenToRedTimeline()
@@ -159,6 +179,17 @@ void ASphereTarget::SetSphereColor(const FLinearColor Output)
 	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), Output);
 }
 
+void ASphereTarget::SetOutlineColor(const FLinearColor Output)
+{
+	MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), Output);
+}
+
+void ASphereTarget::SetSphereAndOutlineColor(const FLinearColor Output)
+{
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), Output);
+	MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), Output);
+}
+
 void ASphereTarget::LifeSpanExpired()
 {
 	OnLifeSpanExpired.Broadcast(true, -1, this);
@@ -187,6 +218,8 @@ void ASphereTarget::HandleDestruction()
 	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X,
 	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
 
+	UE_LOG(LogTemp, Display, TEXT("GetActorScale3D().X %f"), GetActorScale3D().X);
+	
 	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear blueprint event */
 	if (GameModeActorStruct.IsBeatGridMode == true)
 	{
@@ -202,7 +235,8 @@ void ASphereTarget::HandleDestruction()
 void ASphereTarget::OnBeatGridTimerTimeOut()
 {
 	SetCanBeDamaged(false);
-	MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
+	SetSphereColor(BeatGridPurple);
+	SetOutlineColor(BeatGridPurple);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
 }

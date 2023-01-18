@@ -60,6 +60,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	AVisualizer* Visualizer;
 
+	/* The spawned Visualizer */
+	UPROPERTY(BlueprintReadOnly)
+	AVisualizer* Visualizer2;
+
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AATracker;
@@ -238,11 +242,11 @@ private:
 	FGameModeActorStruct GameModeActorStruct;
 
 	const FVector TargetSpawnerLocation = {3590, 0, 750};
-
-	const FVector VisualizerLocation = {-3900, 0, 60};
-
-	const FVector Visualizer2Location = {-3400, 0, 60};
-
+	
+	const FVector VisualizerLocation = {3800,-1870,220};
+	const FVector Visualizer2Location = {3800, 1870,220};
+	const FRotator VisualizerRotation = {0, 90, 90};
+	
 	const FActorSpawnParameters SpawnParameters;
 
 #pragma endregion

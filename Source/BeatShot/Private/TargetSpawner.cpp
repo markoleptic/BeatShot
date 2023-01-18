@@ -174,7 +174,7 @@ void ATargetSpawner::InitBeatGrid()
 			{
 				BeatGridTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 				const float NewTargetScale = GetNextTargetScale();
-				BeatGridTarget->SetActorScale3D(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
+				BeatGridTarget->SetSphereScale(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
 				SpawnedBeatGridTargets.Add(BeatGridTarget);
 			}
 		}
@@ -217,7 +217,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			GetWorld()->SpawnActor(ActorToSpawn, &SpawnLocation, &FRotator::ZeroRotator, SpawnParams)))
 		{
 			/* Setting the current target's scale that was previously calculated */
-			SpawnTarget->SetActorScale3D(FVector(TargetScale, TargetScale, TargetScale));
+			SpawnTarget->SetSphereScale(FVector(TargetScale, TargetScale, TargetScale));
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			
 			AddTargetToTargetArrays(SpawnTarget, SpawnLocation, TargetScale);
@@ -243,7 +243,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 			GetWorld()->SpawnActor(ActorToSpawn, &SpawnLocation, &FRotator::ZeroRotator, SpawnParams)))
 		{
 			/* Setting the current target's scale that was previously calculated */
-			SpawnTarget->SetActorScale3D(FVector(TargetScale, TargetScale, TargetScale));
+			SpawnTarget->SetSphereScale(FVector(TargetScale, TargetScale, TargetScale));
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 
 			AddTargetToTargetArrays(SpawnTarget, SpawnLocation, TargetScale);
@@ -404,7 +404,7 @@ void ATargetSpawner::SetNewTrackingDirection()
 	{
 		LocationBeforeDirectionChange = BeatTrackTarget->GetActorLocation();
 		const float NewTargetScale = GetNextTargetScale();
-		BeatTrackTarget->SetActorScale3D(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
+		BeatTrackTarget->SetSphereScale(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
 		BeatTrackTargetSpeed = FMath::FRandRange(GameModeActorStruct.MinTrackingSpeed, GameModeActorStruct.MaxTrackingSpeed);
 		EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
 		BeatTrackTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
