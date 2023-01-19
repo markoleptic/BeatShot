@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
 #include "AudioSelectWidget.generated.h"
@@ -30,6 +31,7 @@ DECLARE_DELEGATE_OneParam(FOnStartButtonClicked, const FAudioSelectStruct AudioS
 
 class UComboBoxString;
 class UVerticalBox;
+class UHorizontalBox;
 class UPopupMessageWidget;
 class UButton;
 class UBorder;
@@ -41,7 +43,7 @@ class UEditableTextBox;
 class UWidgetAnimation;
 
 UCLASS()
-class USERINTERFACE_API UAudioSelectWidget : public UUserWidget
+class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -69,6 +71,8 @@ protected:
 	UFUNCTION()
 	void OnStartButtonClicked();
 	UFUNCTION()
+	void OnLoadFileButtonClicked();
+	UFUNCTION()
 	void OnSongTitleValueCommitted(const FText& NewSongTitle, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnMinutesValueCommitted(const FText& NewMinutes, ETextCommit::Type CommitType);
@@ -79,20 +83,25 @@ protected:
 	UFUNCTION()
 	void OnOutAudioDeviceSelectionChanged(const FString SelectedOutAudioDevice, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
+	void OnSongTitleSelectionChanged(const FString SelectedSongTitle, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
 	void OnPlaybackAudioCheckStateChanged(const bool bIsChecked);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* AudioFromFileButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* StreamAudioButton;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* BackButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* StartButton;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UButton* LoadFileButton;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* AudioDeviceBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* AudioDeviceWarningBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* InAudioDevices;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -101,7 +110,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* SongTitleLengthBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* SongLengthBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* SongTitleBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* PlaybackAudioCheckbox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxString* SongTitleComboBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* SongTitleText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -160,10 +175,4 @@ private:
 	
 	/** Whether or not the user was in fullscreen mode before OpenFileDialog */
 	bool bWasInFullScreenMode;
-
-	/** Whether or not to show OpenFileDialog upon clicking the start button */
-	bool bShowOpenFileDialog;
 };
-
-
-

@@ -11,6 +11,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
+#include "Components/HorizontalBox.h"
 #include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
 
@@ -21,14 +22,17 @@ void UAudioSelectWidget::NativeConstruct()
 	NumberFormattingOptions.MaximumIntegralDigits = 2;
 	BackButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::FadeOut);
 	StartButton->SetIsEnabled(false);
+	LoadFileButton->SetIsEnabled(false);
 	StartButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStartButtonClicked);
 	AudioFromFileButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnAudioFromFileButtonClicked);
+	LoadFileButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnLoadFileButtonClicked);
 	StreamAudioButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStreamAudioButtonClicked);
 	SongTitleText->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnSongTitleValueCommitted);
 	Seconds->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnSecondsValueCommitted);
 	Minutes->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnMinutesValueCommitted);
 	InAudioDevices->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnInAudioDeviceSelectionChanged);
 	OutAudioDevices->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnOutAudioDeviceSelectionChanged);
+	SongTitleComboBox->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnSongTitleSelectionChanged);
 	PlaybackAudioCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnPlaybackAudioCheckStateChanged);
 
 	Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
@@ -82,48 +86,99 @@ void UAudioSelectWidget::OnFadeOutFinish()
 
 void UAudioSelectWidget::OnAudioFromFileButtonClicked()
 {
-	bShowOpenFileDialog = true;
-	AudioFromFileButton->SetBackgroundColor(BeatShotBlue);
-	StreamAudioButton->SetBackgroundColor(White);
-	StartButton->SetIsEnabled(true);
-	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
-	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
+	StartButton->SetIsEnabled(false);
+	LoadFileButton->SetIsEnabled(true);
 	InAudioDevices->ClearSelection();
 	OutAudioDevices->ClearSelection();
+	AudioFromFileButton->SetBackgroundColor(BeatShotBlue);
+	StreamAudioButton->SetBackgroundColor(White);
+	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
+	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UAudioSelectWidget::OnStreamAudioButtonClicked()
 {
-	bShowOpenFileDialog = false;
+	StartButton->SetIsEnabled(false);
+	LoadFileButton->SetIsEnabled(false);
+	InAudioDevices->ClearSelection();
+	OutAudioDevices->ClearSelection();
 	AudioFromFileButton->SetBackgroundColor(White);
 	StreamAudioButton->SetBackgroundColor(BeatShotBlue);
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Visible);
+	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UAudioSelectWidget::OnStartButtonClicked()
 {
-	if (bShowOpenFileDialog)
-	{
-		TArray<FString> FileNames = {""};
-		OpenSongFileDialog(FileNames);
-		if (bWasInFullScreenMode)
-		{
-			UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
-			GameUserSettings->SetFullscreenMode(EWindowMode::Fullscreen);
-			GameUserSettings->ApplySettings(false);
-			bWasInFullScreenMode = false;
-		}
-		if (FileNames.Num() == 0 || FileNames[0].IsEmpty())
-		{
-			ShowSongPathErrorMessage();
-			return;
-		}
-		AudioSelectStruct.SongPath = FileNames[0];
-	}
 	if(!OnStartButtonClickedDelegate.ExecuteIfBound(AudioSelectStruct))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnStartButtonClickedDelegate not bound."));
 	}
+}
+
+void UAudioSelectWidget::OnLoadFileButtonClicked()
+{
+	TArray<FString> FileNames = {""};
+	OpenSongFileDialog(FileNames);
+	if (bWasInFullScreenMode)
+	{
+		UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+		GameUserSettings->SetFullscreenMode(EWindowMode::Fullscreen);
+		GameUserSettings->ApplySettings(false);
+		bWasInFullScreenMode = false;
+	}
+	if (FileNames.Num() == 0 || FileNames[0].IsEmpty())
+	{
+		ShowSongPathErrorMessage();
+		return;
+	}
+	AudioSelectStruct.SongPath = FileNames[0];
+
+	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
+	if (!Manager->InitPlayerAudio(AudioSelectStruct.SongPath))
+	{
+		ShowSongPathErrorMessage();
+		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
+		return;
+	}
+	/* set Song length and song title in GameModeActorStruct if using song file */
+	FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
+	Manager->GetMetadata(Filename, Extension, MetaType, Title,
+						   Artist, Album, Year, Genre);
+	if (Title.IsEmpty())
+	{
+		if (SongTitleComboBox->FindOptionIndex(Filename) == -1)
+		{
+			SongTitleComboBox->AddOption(Filename);
+		}
+		SongTitleComboBox->SetSelectedOption(Filename);
+		SongTitleText->SetText(FText::FromString(Filename));
+		AudioSelectStruct.SongTitle = Filename;
+	}
+	else
+	{
+		if (SongTitleComboBox->FindOptionIndex(Title) == -1)
+		{
+			SongTitleComboBox->AddOption(Title);
+		}
+		SongTitleComboBox->SetSelectedOption(Title);
+		SongTitleText->SetText(FText::FromString(Title));
+		AudioSelectStruct.SongTitle = Title;
+	}
+	AudioSelectStruct.SongLength = Manager->GetTotalDuration();
+
+	for (FPlayerScore SavedScoreObj : LoadPlayerScores())
+	{
+		if (SongTitleComboBox->FindOptionIndex(SavedScoreObj.SongTitle) == -1)
+		{
+			SongTitleComboBox->AddOption(SavedScoreObj.SongTitle);
+		}
+	}
+	
+	SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
+	SongTitleBox->SetVisibility(ESlateVisibility::Visible);
+	SongLengthBox->SetVisibility(ESlateVisibility::Collapsed);
+	StartButton->SetIsEnabled(true);
 }
 
 void UAudioSelectWidget::OnSongTitleValueCommitted(const FText& NewSongTitle, ETextCommit::Type CommitType)
@@ -159,6 +214,8 @@ void UAudioSelectWidget::OnInAudioDeviceSelectionChanged(const FString SelectedI
 	if (OutAudioDevices->GetSelectedIndex() != -1 && InAudioDevices->GetSelectedIndex() != -1)
 	{
 		SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
+		SongTitleBox->SetVisibility(ESlateVisibility::Visible);
+		SongLengthBox->SetVisibility(ESlateVisibility::Visible);
 		StartButton->SetIsEnabled(true);
 	}
 }
@@ -170,8 +227,16 @@ void UAudioSelectWidget::OnOutAudioDeviceSelectionChanged(const FString Selected
 	if (OutAudioDevices->GetSelectedIndex() != -1 && InAudioDevices->GetSelectedIndex() != -1)
 	{
 		SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
+		SongTitleBox->SetVisibility(ESlateVisibility::Visible);
+		SongLengthBox->SetVisibility(ESlateVisibility::Visible);
 		StartButton->SetIsEnabled(true);
 	}
+}
+
+void UAudioSelectWidget::OnSongTitleSelectionChanged(const FString SelectedSongTitle,
+	const ESelectInfo::Type SelectionType)
+{
+	AudioSelectStruct.SongTitle = SelectedSongTitle;
 }
 
 void UAudioSelectWidget::OnPlaybackAudioCheckStateChanged(const bool bIsChecked)

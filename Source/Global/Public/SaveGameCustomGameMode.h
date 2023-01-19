@@ -26,10 +26,10 @@ UENUM(BlueprintType)
 enum class ESpreadType : uint8
 {
 	None UMETA(DisplayName, "None"),
-	DynamicEdgeOnly UMETA(DisplayName, "DynamicEdgeOnly"),
-	DynamicRandom UMETA(DisplayName, "DynamicRandom"),
-	StaticNarrow UMETA(DisplayName, "StaticNarrow"),
-	StaticWide UMETA(DisplayName, "StaticWide")
+	DynamicEdgeOnly UMETA(DisplayName, "Dynamic Edge Only"),
+	DynamicRandom UMETA(DisplayName, "Dynamic Random"),
+	StaticNarrow UMETA(DisplayName, "Static Narrow"),
+	StaticWide UMETA(DisplayName, "Static Wide")
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::StaticWide);
@@ -345,6 +345,8 @@ struct FGameModeActorStruct
 		// MultiBeat
 		else if (GameModeActor == EGameModeActorName::MultiBeat)
 		{
+			UseDynamicSizing = true;
+			SpreadType = ESpreadType::DynamicRandom;
 			// MultiBeat Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
 			{
@@ -393,7 +395,8 @@ struct FGameModeActorStruct
 		else if (GameModeActor == EGameModeActorName::SingleBeat)
 		{
 			IsSingleBeatMode = true;
-
+			UseDynamicSizing = true;
+			SpreadType = ESpreadType::DynamicEdgeOnly;
 			// SingleBeat Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
 			{
