@@ -23,7 +23,7 @@ protected:
 public:
 	
 	UFUNCTION(BlueprintCallable)
-	void InitPopup(FString TitleInput, FString MessageInput, FString Button1TextInput, FString Button2TextInput = "") const;
+	void InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, FText Button2TextInput = FText::GetEmpty()) const;
 	UFUNCTION()
 	void FadeIn();
 	UFUNCTION()

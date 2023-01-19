@@ -748,8 +748,8 @@ TArray<FIntPoint> ATargetSpawner::GetValidSpawnPoints(const float Scale, const F
 		}
 	}
 	
-	UE_LOG(LogTemp, Display, TEXT("Count: %d "), Count);
-	UE_LOG(LogTemp, Display, TEXT("Number of Valid Spawn Points: %d "), OpenPoints.Num());
+	//UE_LOG(LogTemp, Display, TEXT("Count: %d "), Count);
+	//UE_LOG(LogTemp, Display, TEXT("Number of Valid Spawn Points: %d "), OpenPoints.Num());
 	return OpenPoints;
 }
 

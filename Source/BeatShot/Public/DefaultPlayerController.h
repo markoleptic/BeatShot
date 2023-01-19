@@ -15,7 +15,6 @@ class UCrossHairWidget;
 class UPlayerHUD;
 class UMainMenuWidget;
 class UPauseMenuWidget;
-class UPopupMessageWidget;
 class UCountdownWidget;
 
 DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
@@ -82,8 +81,6 @@ private:
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	
 	UPROPERTY()
 	UPostGameMenuWidget* PostGameMenuWidget;
@@ -97,8 +94,6 @@ private:
 	UFPSCounterWidget* FPSCounter;
 	UPROPERTY()
 	UScreenFadeWidget* ScreenFadeWidget;
-	UPROPERTY()
-	UPopupMessageWidget* PopupMessageWidget;
 
 	bool PlayerHUDActive;
 	bool PostGameMenuActive;

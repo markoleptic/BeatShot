@@ -34,7 +34,7 @@ void UAudioSelectWidget::NativeConstruct()
 	Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
 
 	PlaybackAudioQMark->TooltipText = FText::FromStringTable(
-		"/Game/StringTables/ST_GameModesWidget.ST_GameModesWidget", "PlaybackAudio");
+		"/Game/StringTables/ST_Tooltips.ST_Tooltips", "PlaybackAudio");
 	PlaybackAudioQMark->OnTooltipImageHovered.AddDynamic(this, &UAudioSelectWidget::OnTooltipImageHovered);
 	
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
@@ -200,9 +200,9 @@ void UAudioSelectWidget::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImag
 void UAudioSelectWidget::ShowSongPathErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
-	PopupMessageWidget->InitPopup("Error",
-								  "There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support.",
-								  "Okay");
+	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorTitle"),
+								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorMessage"),
+								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
 	PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UAudioSelectWidget::HideSongPathErrorMessage);
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();

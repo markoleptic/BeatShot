@@ -338,9 +338,10 @@ void USettingsMenuWidget::ShowConfirmVideoSettingsMessage()
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	if (PopupMessageWidget)
 	{
-		PopupMessageWidget->InitPopup("Confirm Video Settings?",
-							  "Settings will be reverted if not confirmed in 10 seconds",
-							  "Confirm", "Revert");
+		PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupTitle"),
+							  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage"),
+							  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton1"),
+							  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton2"));
 		PopupMessageWidget->Button1->OnClicked.AddDynamic(
 			this, &USettingsMenuWidget::OnConfirmVideoSettingsButtonClicked);
 		PopupMessageWidget->Button2->OnClicked.AddDynamic(

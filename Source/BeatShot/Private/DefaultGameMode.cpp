@@ -469,7 +469,6 @@ void ADefaultGameMode::OnSecondPassed()
 		{
 			if (GameModeActorStruct.SongPath.IsEmpty())
 			{
-				UE_LOG(LogTemp, Display, TEXT("%f"), GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 			}
 			else

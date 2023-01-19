@@ -27,7 +27,7 @@ public:
 	ASphereTarget();
 
 	/** Sets the scale for the BaseMesh and the OutlineMesh */
-	void SetSphereScale(const FVector NewScale) const;
+	void SetSphereScale(const FVector NewScale);
 
 protected:
 	
@@ -145,6 +145,9 @@ private:
 
 	/** Base radius for sphere target. */
 	const float BaseSphereRadius = 50.f;
+
+	/** The scale that was applied when spawned */
+	float TargetScale = 1.f;
 
 	/** Color for BeatGrid targets that aren't active. */
 	FLinearColor BeatGridPurple = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};

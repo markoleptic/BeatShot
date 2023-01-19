@@ -18,16 +18,15 @@ void UPopupMessageWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
-void UPopupMessageWidget::InitPopup(const FString TitleInput, const FString MessageInput, const FString Button1TextInput,
-                                    const FString Button2TextInput) const
+void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, FText Button2TextInput) const
 {
-	TitleText->SetText(UKismetTextLibrary::Conv_StringToText(TitleInput));
-	MessageText->SetText(UKismetTextLibrary::Conv_StringToText(MessageInput));
-	Button1Text->SetText(UKismetTextLibrary::Conv_StringToText(Button1TextInput));
+	TitleText->SetText(TitleInput);
+	MessageText->SetText(MessageInput);
+	Button1Text->SetText(Button1TextInput);
 	if (!Button2TextInput.IsEmpty())
 	{
 		Button2->SetVisibility(ESlateVisibility::Visible);
-		Button2Text->SetText(UKismetTextLibrary::Conv_StringToText(Button2TextInput));
+		Button2Text->SetText(Button2TextInput);
 	}
 	else
 	{

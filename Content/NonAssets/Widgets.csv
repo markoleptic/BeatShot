@@ -1,0 +1,176 @@
+Key,SourceString
+MenuOption_VideoAndSound,Video and Sound
+MenuOption_AASettings,Audio Analyzer
+MenuOption_Sensitivity,Sensitivity
+MenuOption_CrossHair,Crosshair
+Category_Game,Game
+Category_Sound,Sound
+Category_Video,Video
+Sound_Global,Global Sound
+Sound_MainMenu,Menu Sound
+Sound_Game,In Game Sound
+WindowMode_Fullscreen,Fullscreen
+WindowMode_FullscreenWindowed,Fullscreen Windowed
+WindowMode_Windowed,Windowed
+Video_WindowMode,Window Mode
+Video_Resolution,Resolution
+Video_Vsync,Enable VSync
+Video_AntiAliasing,Anti-Aliasing Quality
+Video_GlobalIllumination,Global Illumination Quality
+Video_PostProcessing,Post Processing Quality
+Video_Reflection,Reflection Quality
+Video_Shading,Shading Quality
+Video_Shadow,Shadow Quality
+Video_Texture,Texture Quality
+Video_ViewDistance,View Distance
+Video_VisualEffect,Visual Effect Quality
+Game_FPSCounter,FPS Counter
+Game_FPSLimitMenu,FPS Limit Menus
+Game_FPSLimitGame,FPS Limit Game
+Game_CombatText,Show Streak Combat Text
+Game_CombatTextFrequency,Streak Combat Text Frequency
+ResetSettingsButtonText,Reset to Default
+SaveButtonText,Save
+QualityButtonText_Low,Low
+QualityButtonText_Medium,Medium
+QualityButtonText_High,High
+QualityButtonText_Epic,Epic
+Sensitivity_Info,"Beatshot uses Valorant sensitivity by default, but you can also enter your CSGO sensitivity. If you don't have either of those values, you can use an online converter to get your Valorant sensitivity."
+Sensitivity_Current,Current Sensitivity:
+Sensitivity_Valorant,New Sensitivity (Valorant/Beatshot):
+Sensitivity_CSGO,New Sensitivity (CS:GO):
+Sensitivity_HintText,Enter here
+AA_RestartText,These Settings Require a GameMode Restart to Take Effect
+AA_AlwaysText,These Settings Can Always Be Changed
+AA_BandLimits,Band Limits
+AA_BandLimitThreshold,Band Limit Threshold
+AA_BandLimits_Help,Here you can define custom beat tracking bounds for up to 12 channels. Must be sorted with no overlap (Closed Intervals).
+AA_BandLimitThreshold_Help,The threshold value changes how sensitive the analyzer is to music. Values greater than Threshold * Average trigger a target to spawn.
+AA_NumBandChannels,Number of Band Channels
+AA_TimeWindow,Time Window (Duration to capture beat tracking)
+AA_SaveAndRestartButtonText,Save Analyzer Settings and Restart GameMode
+AA_SaveButtonText,Save Analyzer Settings
+AA_ResetButtonText,Reset Analyzer Settings
+AA_BandChannelText,Channel
+AA_BandChannelUnit,(Hertz)
+AA_BandChannelLower,Lower Bound:
+AA_BandChannelUpper,Upper Bound:
+AA_ThresholdText,Threshold:
+AF_Title,Select an Audio Format
+AF_FileButtonText,MP3/OGG File
+AF_AudioDeviceButtonText,Audio Device
+AF_InputDeviceText,Input Audio Device (device for game to listen to)
+AF_OutputAudioDevice,Output Audio Device (device to output music to if different from default)
+AF_SendPlayback,Send Playback to Output Audio Device
+AF_Warning1,"If you want to save your scores when listening to an audio device, you will need to manually provide the song title and the length of the song."
+AF_Warning2,"If you don't provide both, the game mode will continue indefinitely."
+AF_SongTitle,Song Title:
+AF_SongLength,Song Length:
+AF_BackButtonText,Back
+AF_StartButtonText,Start
+CountdownText,Click Anywhere to Begin
+HUD_Score,Score:
+HUD_HighScore,High Score:
+HUD_Streak,Streak:
+HUD_ShotsFired,Shots Fired:
+HUD_TargetsHit,Targets Hit:
+HUD_TargetsSpawned,Targets Spawned:
+HUD_Accuracy,Accuracy:
+QM_RestartTitle,Restart
+QM_SaveText,Save current game mode scores?
+QM_SaveRestartButtonText,Save and Restart
+QM_RestartWithoutButtonText,Restart without saving
+QM_BackButtonText,Back
+QM_SaveQuitButtonText,Save and quit
+QM_QuitWithoutButtonText,Quit without saving
+QM_QuitTitle,Quit
+QM_QuitMainMenuButtonText,Quit to Main Menu
+QM_QuitDesktopButtonText,Quit to Desktop
+MenuOption_StandardGameModes,Standard Game Modes
+MenuOption_CustomGameModes,Custom Game Modes
+GM_General,General
+GM_Time,Time Related
+GM_Spread,Target Spread
+GM_Sizing,Target Sizing
+GM_BeatTrackSpecific,BeatTrack specific
+GM_BeatGridSpecific,BeatGrid specific
+GM_Standard_Info,Hop right into a session by selecting a game mode with default configured difficulty
+GM_SingleBeat,Single Beat
+GM_SingleBeat_Info,One target at a time.
+GM_MultiBeat,Multi Beat
+GM_MultiBeat_Info,Spawns targets continuously.
+GM_BeatTrack,Beat Track
+GM_BeatTrack_Info,"Only one target is spawned, tracking style."
+GM_BeatGrid,Beat Grid
+GM_BeatGrid_Info,MultiBeat but in a grid.
+GM_Difficulty_Normal,Normal
+GM_Difficulty_Hard,Hard
+GM_Difficulty_Death,Death
+GM_SpreadSelectTitle,Select A Spread
+GM_DynamicSpread,Dynamic
+GM_NarrowSpread,Narrow
+GM_WideSpread,Wide
+GM_PlayFromDefault,Play
+GM_CustomizeSelected,Customize Selected
+SettingsSavedText,Settings Saved
+GM_General_Info,"Select a template to see default values for different game modes. You can save custom game modes based on any game mode templates, and everything can be customized."
+GM_GameModeTemplate,Game Mode Template
+GM_CustomGameModeName,New Custom Game Mode Name
+GM_GameModeDifficulty,Game Mode Difficulty
+GM_BaseGameMode,Base Game Mode
+GM_SpawnBeatDelay,Spawn Beat Delay
+GM_MaximumTargetLifespan,Maximum Target Lifespan
+GM_TargetSpawnCooldown,Target Spawn Cooldown
+GM_HeadshotOnly,Headshot Height Targets Only
+GM_CenterTargets,Center Targets in Middle of Wall
+GM_MinDistanceBetweenTargets,Minimum Distance Between Targets
+GM_SpreadType,Spread Type
+GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
+GM_VerticalSpread,Vertical Spread (Max if Dynamic)
+GM_MoveTargetsForward,Move Targets Forward
+GM_ForwardSpread,Forward Spread
+GM_DynamicTargetSize,Dynamic Target Size (Performance-based)
+GM_EvenSpacing,Even Vertical/Horizontal Spacing
+GM_CompletelyRandomTargets,Completely Random Targets (vs Only Adjacent Targets)
+GM_NumberOfTargets,Number of Targets
+GM_MaxTrackingSpeed,Max Tracking Speed
+GM_MinTrackingSpeed,Min Tracking Speed
+GM_ConstantTrackingSpeed,Constant Tracking Speed
+GM_MaxTargetScale,Max Target Scale
+GM_MinTargetScale,Min Target Scale
+GM_ConstantTargetSize,Constant Target Scale
+GM_RemoveCustom,Remove Custom
+GM_RemoveAllCustom,Remove All Custom
+GM_SaveCustom,Save Custom
+GM_SaveAndStartGame,Save and Start Game
+GM_StartCustom,Start Custom
+GM_StartWithoutSaving,Start Without Saving
+CH_InnerGap,Inner Gap
+CH_LineWidth,Line Width
+CH_LineLength,Line Length
+CH_OutlineOpacity,Outline Opacity
+CH_OutlineWidth,Outline Width
+CH_Color,Color
+CH_ColorOpacity,Opacity
+CH_HexValue,Hex Value
+CH_RevertToLastSaved,Revert to Last Saved
+GM_GameModeRemovedText,Game mode removed
+GM_AllGameModesRemovedText,All custom game modes removed
+GM_GameModeSavedText,saved
+GM_OverwritePopupTitle,Overwrite Existing Game Mode?
+GM_OverwriteConfirm,Confirm
+GM_OverwriteCancel,Cancel
+ASW_SongPathErrorTitle,Error
+ASW_SongPathErrorMessage,"There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support."
+ASW_SongPathErrorButton,Okay
+ConfirmVideoSettingsPopupTitle,Confirm Video Settings?
+ConfirmVideoSettingsPopupMessage,Settings will be reverted if not confirmed in 10 seconds
+ConfirmVideoSettingsPopupButton1,Confirm
+ConfirmVideoSettingsPopupButton2,Revert
+WallMenu_BulletDecals,BULLET DECALS
+WallMenu_FireRate,FIRE RATE
+WallMenu_Recoil,RECOIL
+WallMenu_On,ON
+WallMenu_Off,OFF
+WallMenu_Auto,AUTO
+WallMenu_Semi,SEMI

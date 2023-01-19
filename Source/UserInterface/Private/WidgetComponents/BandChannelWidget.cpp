@@ -18,7 +18,10 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 {
 	BandChannelMin->SetText(FText::AsNumber(Values.X));
 	BandChannelMax->SetText(FText::AsNumber(Values.Y));
-	ChannelText->SetText(FText::FromString("Channel " + FString::FromInt(ChannelIndex + 1) + " (Hertz)"));
+	const TArray ChannelNumber = { FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"),
+		FText::FromString(FString::FromInt(ChannelIndex + 1)),
+		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelUnit") };
+	ChannelText->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
 
 	FSlateBrush LightBrush = FSlateBrush();

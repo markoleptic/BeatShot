@@ -14,7 +14,6 @@ class AVisualizer;
 class AFloatingTextActor;
 class ATargetSpawner;
 class ASphereTarget;
-class UPopupMessageWidget;
 class UAudioAnalyzerManager;
 
 DECLARE_DELEGATE(FOnTargetSpawned);

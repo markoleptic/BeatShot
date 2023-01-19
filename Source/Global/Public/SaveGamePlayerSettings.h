@@ -216,15 +216,15 @@ struct FAASettingsStruct
 	{
 		BandLimits = {
 			FVector2d(0,50),
-			FVector2d(50,100),
+			FVector2d(51,100),
 			FVector2d(101,150),
 			FVector2d(151,200),
 			FVector2d(201,250),
 			FVector2d(251,300),
 			FVector2d(301,350),
 			FVector2d(351,400),
-			FVector2d(401,999),
-			FVector2d(1000,2000),
+			FVector2d(401,1000),
+			FVector2d(1001,2000),
 			FVector2d(2001,3000),
 			FVector2d(3001,4000)
 		};
@@ -238,15 +238,15 @@ struct FAASettingsStruct
 	{
 		BandLimits = {
 			FVector2d(0,50),
-			FVector2d(50,100),
+			FVector2d(51,100),
 			FVector2d(101,150),
 			FVector2d(151,200),
 			FVector2d(201,250),
 			FVector2d(251,300),
 			FVector2d(301,350),
 			FVector2d(351,400),
-			FVector2d(401,999),
-			FVector2d(1000,2000),
+			FVector2d(401,1000),
+			FVector2d(1001,2000),
 			FVector2d(2001,3000),
 			FVector2d(3001,4000)
 		};

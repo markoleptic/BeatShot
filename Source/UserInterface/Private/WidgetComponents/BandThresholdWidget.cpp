@@ -19,9 +19,9 @@ void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 Channe
 {
 	ThresholdValue->SetText(FText::AsNumber(Value));
 	ThresholdSlider->SetValue(Value);
-	ChannelText->SetText(FText::FromString("Channel " + FString::FromInt(ChannelIndex + 1) + " Threshold"));
+	const TArray ChannelNumber = { FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"), FText::FromString(FString::FromInt(ChannelIndex + 1))};
+	ChannelText->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
-	
 	FSlateBrush LightBrush = FSlateBrush();
 	LightBrush.TintColor = FLinearColor(0,0,0,0.1);
 	FSlateBrush DarkBrush = FSlateBrush();

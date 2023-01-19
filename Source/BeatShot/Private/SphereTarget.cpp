@@ -32,8 +32,9 @@ ASphereTarget::ASphereTarget()
 	Guid = FGuid::NewGuid();
 }
 
-void ASphereTarget::SetSphereScale(const FVector NewScale) const
+void ASphereTarget::SetSphereScale(const FVector NewScale)
 {
+	TargetScale = NewScale.X;
 	BaseMesh->SetRelativeScale3D(NewScale * BaseToOutlineRatio);
 	OutlineMesh->SetRelativeScale3D(FVector(1 / BaseToOutlineRatio));
 }
@@ -215,7 +216,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * GetActorScale3D().X,
+	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale,
 	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
 
 	UE_LOG(LogTemp, Display, TEXT("GetActorScale3D().X %f"), GetActorScale3D().X);
@@ -235,8 +236,7 @@ void ASphereTarget::HandleDestruction()
 void ASphereTarget::OnBeatGridTimerTimeOut()
 {
 	SetCanBeDamaged(false);
-	SetSphereColor(BeatGridPurple);
-	SetOutlineColor(BeatGridPurple);
+	SetSphereAndOutlineColor(BeatGridPurple);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
 }
