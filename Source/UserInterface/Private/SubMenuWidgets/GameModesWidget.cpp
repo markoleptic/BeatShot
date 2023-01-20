@@ -13,7 +13,6 @@
 #include "Components/EditableTextBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/HorizontalBox.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
@@ -778,7 +777,25 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	WallCenteredCheckBox->SetIsChecked(InputGameModeActorStruct.WallCentered);
 	MinTargetDistanceSlider->SetValue(InputGameModeActorStruct.MinDistanceBetweenTargets);
 	MinTargetDistanceValue->SetText(FText::AsNumber(InputGameModeActorStruct.MinDistanceBetweenTargets));
-	SpreadTypeComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InputGameModeActorStruct.SpreadType).ToString());
+
+	FString StringSpread = UEnum::GetDisplayValueAsText(InputGameModeActorStruct.SpreadType).ToString();
+	
+	if (InputGameModeActorStruct.SpreadType == ESpreadType::DynamicEdgeOnly)
+	{
+		StringSpread.InsertAt(11, " ");
+		StringSpread.InsertAt(7, " ");
+	}
+	else if (InputGameModeActorStruct.SpreadType == ESpreadType::DynamicRandom)
+	{
+		StringSpread.InsertAt(7, " ");
+	}
+	else if (InputGameModeActorStruct.SpreadType == ESpreadType::StaticNarrow ||
+		InputGameModeActorStruct.SpreadType == ESpreadType::StaticWide)
+	{
+		StringSpread.InsertAt(6, " ");
+	}
+	SpreadTypeComboBox->SetSelectedOption(StringSpread);
+	
 	HorizontalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Y);
 	HorizontalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Y));
 	VerticalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Z);
@@ -895,7 +912,7 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 	return ReturnStruct;
 }
 
-void UGameModesWidget::SaveCustomGameModeToSlot(const FGameModeActorStruct GameModeToSave) const
+void UGameModesWidget::SaveCustomGameModeToSlot(const FGameModeActorStruct GameModeToSave)
 {
 	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
 	const int32 NumRemoved = CustomGameModesArray.RemoveAll(
@@ -906,12 +923,7 @@ void UGameModesWidget::SaveCustomGameModeToSlot(const FGameModeActorStruct GameM
 	UE_LOG(LogTemp, Display, TEXT("NumRemoved %d"), NumRemoved);
 	CustomGameModesArray.Shrink();
 	CustomGameModesArray.Add(GameModeToSave);
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
-		UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
-	{
-		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
-		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
-	}
+	SaveCustomGameMode(CustomGameModesArray);
 	const TArray SavedText = { FText::FromString(GameModeToSave.CustomGameModeName), FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_GameModeSavedText") };
 	SavedTextWidget->SetSavedText(FText::Join(FText::FromString(" "), SavedText));
 	SavedTextWidget->PlayFadeInFadeOut();
@@ -1187,7 +1199,21 @@ ESpreadType UGameModesWidget::GetSpreadType() const
 	}
 	for (const ESpreadType Spread : TEnumRange<ESpreadType>())
 	{
-		if (SelectedSpread.Equals(UEnum::GetDisplayValueAsText(Spread).ToString()))
+		FString StringSpread = UEnum::GetDisplayValueAsText(Spread).ToString();
+		if (Spread == ESpreadType::DynamicEdgeOnly)
+		{
+			StringSpread.InsertAt(11, " ");
+			StringSpread.InsertAt(7, " ");
+		}
+		else if (Spread == ESpreadType::DynamicRandom)
+		{
+			StringSpread.InsertAt(7, " ");
+		}
+		else if (Spread == ESpreadType::StaticNarrow || Spread == ESpreadType::StaticWide)
+		{
+			StringSpread.InsertAt(6, " ");
+		}
+		if (StringSpread.Equals(SelectedSpread))
 		{
 			return Spread;
 		}

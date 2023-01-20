@@ -260,6 +260,7 @@ struct FAASettingsStruct
 UENUM()
 enum class ELoginState : uint8
 {
+	None UMETA(DisplayName, "None"),
 	NewUser UMETA(DisplayName, "NewUser"),
 	LoggedInHttp UMETA(DisplayName, "LoggedInHttp"),
 	LoggedInHttpAndBrowser UMETA(DisplayName, "LoggedInHttpAndBrowser"),
@@ -269,7 +270,7 @@ enum class ELoginState : uint8
 	TimeOut UMETA(DisplayName, "TimeOut"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ELoginState, ELoginState::NewUser, ELoginState::TimeOut);
+ENUM_RANGE_BY_FIRST_AND_LAST(ELoginState, ELoginState::None, ELoginState::TimeOut);
 
 UCLASS()
 class GLOBAL_API USaveGamePlayerSettings : public USaveGame

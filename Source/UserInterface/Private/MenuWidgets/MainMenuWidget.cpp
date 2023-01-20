@@ -99,13 +99,13 @@ void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bo
 		}
 	case ELoginState::InvalidHttp:
 		{
-			LoginWidget->ShowLoginScreen("LoginErrorText");
+			LoginWidget->ShowLoginScreen("Login_LoginErrorText");
 			UpdateLoginState(false);
 			return;
 		}
 	case ELoginState::InvalidBrowser:
 		{
-			LoginWidget->ShowLoginScreen("BrowserLoginErrorText");
+			LoginWidget->ShowLoginScreen("Login_BrowserLoginErrorText");
 			UpdateLoginState(false);
 			return;
 		}
@@ -121,13 +121,13 @@ void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bo
 		}
 	case ELoginState::InvalidCredentials:
 		{
-			LoginWidget->ShowLoginScreen("InvalidCredentialsText");
+			LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
 			UpdateLoginState(false);
 			break;
 		}
 	case ELoginState::TimeOut:
 		{
-			LoginWidget->ShowLoginScreen("TimeOutErrorText");
+			LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
 			UpdateLoginState(false);
 			break;
 		}

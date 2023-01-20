@@ -191,20 +191,33 @@ private:
 	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget */
 	void LoadMatchingPlayerScores();
 
-	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget */
-	TArray<FPlayerScore> GetCompletedPlayerScores();
+	/** Saves player scores to slot and calls SaveScoresToDatabase() if bShouldSavePlayerScores is true and
+	 *  GetCompletedPlayerScores() returns a valid score object. Otherwise Broadcasts OnPostScoresResponse with "None" */
+	void HandleScoreSaving(bool bShouldSavePlayerScores);
 
-	/** Calls RequestAccessToken and then calls PostPlayerScores if access token is not empty string */
-	void SaveScoresToDatabase(const bool ShowPostGameMenu, const FPlayerSettings PlayerSettings,
-							  const TArray<FPlayerScore> Scores);
+	/** Function bound to the response of an access token, which is broadcast from RequestAccessToken() */
+	UFUNCTION()
+	void OnAccessTokenResponseReceived(const FString AccessToken);
+
+	/** Function bound to the response of posting player scores to database, which is broadcast from PostPlayerScores() */
+	UFUNCTION()
+	void OnPostScoresResponseReceived(const ELoginState& LoginState);
+
+	/** Returns the current player scores, checking for NaNs and updating the time */
+	FPlayerScore GetCompletedPlayerScores();
+
+	/** Calls RequestAccessToken if player has logged in before */
+	void SaveScoresToDatabase();
 	
-	/** Delegate that listens for the access token response after calling RequestAccessToken() inside EndGameMode */
-	FOnAccessTokenResponse OnAccessTokenResponseDelegate;
-
-	/** Delegate that listens for post scores response after calling PostPlayerScores() inside EndGameMode. Passes
-	 *  the information received about the login state to DefaultPlayerController, which then passes to ScoreBrowserWidget */
+	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
+	FOnAccessTokenResponse OnAccessTokenResponse;
+	
+public:
+	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
+	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
 	FOnPostScoresResponse OnPostScoresResponse;
 
+private:
 	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
 	UPROPERTY(VisibleAnywhere)
 	FPlayerScore CurrentPlayerScore;

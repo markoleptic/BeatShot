@@ -68,7 +68,6 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, FOnLogi
 
 void IHttpRequestInterface::RequestAccessToken(const FString LoginCookie, FOnAccessTokenResponse& OnAccessTokenResponse) const
 {
-	// not currently using RefreshToken parameter but may change in future to double check token
 	const FHttpRequestRef AccessTokenRequest = FHttpModule::Get().CreateRequest();
 	AccessTokenRequest->SetURL(RefreshEndpoint);
 	AccessTokenRequest->SetVerb("GET");
@@ -131,12 +130,12 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresTo
 		{
 			if (Response->GetResponseCode() != 200)
 			{
-				OnPostResponse.Execute(ELoginState::InvalidHttp);
+				OnPostResponse.Broadcast(ELoginState::InvalidHttp);
 				UE_LOG(LogTemp, Display, TEXT("Send Scores Request Failed: %s"), *Response->GetContentAsString());
 				return;
 			}
 			UE_LOG(LogTemp, Display, TEXT("Successfully saved scores to database."));
-			OnPostResponse.Execute(ELoginState::LoggedInHttp);
+			OnPostResponse.Broadcast(ELoginState::LoggedInHttp);
 		});
 	SendScoreRequest->SetURL(Endpoint);
 	SendScoreRequest->SetVerb("POST");

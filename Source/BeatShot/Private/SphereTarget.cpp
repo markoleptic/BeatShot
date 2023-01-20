@@ -218,8 +218,6 @@ void ASphereTarget::HandleDestruction()
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale,
 	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
-
-	UE_LOG(LogTemp, Display, TEXT("GetActorScale3D().X %f"), GetActorScale3D().X);
 	
 	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear blueprint event */
 	if (GameModeActorStruct.IsBeatGridMode == true)

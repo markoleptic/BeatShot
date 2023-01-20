@@ -1,5 +1,0 @@
-Key,SourceString
-NoAccount,Your scores were saved locally but were not uploaded to the database. Create an account in the main menu to see your scores.
-DidNotSaveScores,Your scores weren't saved because you didn't select a name for your custom game mode or your score was 0.
-SavedScoresButNotLoggedIn,Your scores were saved to the database but there was a problem loading your profile in the web browser. Go to the main menu to sign in again.
-SavedScoresLocallyOnly,Your scores were saved locally but there was a problem posting your scores to the database. Your scores will be uploaded to the database the next time there is a successful connection to it. Go to the main menu to sign in again.

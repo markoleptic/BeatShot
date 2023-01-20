@@ -109,5 +109,5 @@ private:
 public:
 	
 	UFUNCTION()
-	void OnPostPlayerScoresResponse(const bool bDidPostScores, const ELoginState& LoginState);
+	void OnPostScoresResponseReceived(const ELoginState& LoginState);
 };

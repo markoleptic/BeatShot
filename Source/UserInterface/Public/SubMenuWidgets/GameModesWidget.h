@@ -376,7 +376,7 @@ protected:
 
 private:
 	/** saves a CustomGameMode to save slot  */
-	void SaveCustomGameModeToSlot(const FGameModeActorStruct GameModeToSave) const;
+	void SaveCustomGameModeToSlot(const FGameModeActorStruct GameModeToSave);
 
 	/** Loads CustomGameModes, removes the CustomGameMode corresponding to CustomGameModeName, then saves to slot */
 	void RemoveCustomGameMode(const FString& CustomGameModeName);

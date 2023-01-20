@@ -21,6 +21,9 @@ void ADefaultGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	InitializeGameMode();
+	OnPostScoresResponse.AddUFunction(this, "OnPostScoresResponseReceived");
+	OnAccessTokenResponse.BindUFunction(this, "OnAccessTokenResponseReceived");
+	OnPostScoresResponse.AddUFunction(Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)), "OnPostScoresResponseReceived");
 }
 
 void ADefaultGameMode::Tick(float DeltaSeconds)
@@ -135,15 +138,8 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 		TargetSpawner = nullptr;
 	}
 
-	if (const TArray<FPlayerScore> Scores = GetCompletedPlayerScores(); ShouldSavePlayerScores && !Scores.
-		IsEmpty())
-	{
-		SavePlayerScores(Scores);
-		if (const FPlayerSettings PlayerSettings = LoadPlayerSettings(); PlayerSettings.HasLoggedInHttp)
-		{
-			SaveScoresToDatabase(ShowPostGameMenu, PlayerSettings, Scores);
-		}
-	}
+	HandleScoreSaving(ShouldSavePlayerScores);
+
 	/** Unbinding delegates */
 	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0)); Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun)
@@ -210,7 +206,6 @@ void ADefaultGameMode::OnGameModeLengthTimerComplete()
 		(CurrentPlayerScore.GameModeActorName == EGameModeActorName::Custom &&
 			CurrentPlayerScore.CustomGameModeName == ""))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Shouldn't save player scores"));
 		EndGameMode(false, true);
 		return;
 	}
@@ -552,14 +547,28 @@ void ADefaultGameMode::LoadMatchingPlayerScores()
 	}
 }
 
-TArray<FPlayerScore> ADefaultGameMode::GetCompletedPlayerScores()
+void ADefaultGameMode::HandleScoreSaving(const bool bShouldSavePlayerScores)
+{
+	const FPlayerScore Scores = GetCompletedPlayerScores();
+	if (!bShouldSavePlayerScores || Scores.Score <= 0.f)
+	{
+		OnPostScoresResponse.Broadcast(ELoginState::None);
+		return;
+	}
+	TArray<FPlayerScore> AllSavedScores = LoadPlayerScores();
+	AllSavedScores.Emplace(Scores);
+	SavePlayerScores(AllSavedScores);
+	SaveScoresToDatabase();
+}
+
+FPlayerScore ADefaultGameMode::GetCompletedPlayerScores()
 {
 	/** don't save scores if score is zero */
 	if (CurrentPlayerScore.Score <= 0 ||
 		(CurrentPlayerScore.GameModeActorName == EGameModeActorName::Custom &&
 			CurrentPlayerScore.CustomGameModeName == ""))
 	{
-		return TArray<FPlayerScore>();
+		return FPlayerScore();
 	}
 
 	/** save current time */
@@ -585,48 +594,49 @@ TArray<FPlayerScore> ADefaultGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Score = CheckFloatNaN(CurrentPlayerScore.Score, 100);
 	CurrentPlayerScore.SongLength = CheckFloatNaN(CurrentPlayerScore.SongLength, 100);
 
-	TArray<FPlayerScore> Scores = LoadPlayerScores();
-	Scores.Emplace(CurrentPlayerScore);
-	UE_LOG(LogTemp, Display,
-	       TEXT("Accuracy: %f \n Completion: %f \n AvgTimeOffset: %f \n HighScore: %f \n Score: %f \n SongLength: %f"),
-	       CurrentPlayerScore.Accuracy, CurrentPlayerScore.Completion, CurrentPlayerScore.AvgTimeOffset,
-	       CurrentPlayerScore.HighScore,
-	       CurrentPlayerScore.Score, CurrentPlayerScore.SongLength);
-	return Scores;
+	return CurrentPlayerScore;
 }
 
-void ADefaultGameMode::SaveScoresToDatabase(const bool ShowPostGameMenu, const FPlayerSettings PlayerSettings,
-                                            const TArray<FPlayerScore> Scores)
+void ADefaultGameMode::SaveScoresToDatabase()
 {
-	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
-		UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	/* Request access token by binding to the response of the delegate, and passing the delegate to RequestAccessToken */
-	OnAccessTokenResponseDelegate.BindLambda(
-		[this, Scores, PlayerSettings, Controller, ShowPostGameMenu](const FString AccessToken)
+	if (!LoadPlayerSettings().HasLoggedInHttp)
+	{
+		OnPostScoresResponse.Broadcast(ELoginState::NewUser);
+		return;
+	}
+	RequestAccessToken(LoadPlayerSettings().LoginCookie, OnAccessTokenResponse);
+}
+
+void ADefaultGameMode::OnAccessTokenResponseReceived(const FString AccessToken)
+{
+	if (AccessToken.IsEmpty())
+	{
+		OnPostScoresResponse.Broadcast(ELoginState::InvalidHttp);
+		return;
+	}
+	TArray<FPlayerScore> ScoresNotSavedToDB;
+	TArray<FPlayerScore> AllPlayerScores = LoadPlayerScores();
+	for (FPlayerScore PlayerScoreObj : LoadPlayerScores())
+	{
+		if (!PlayerScoreObj.bSavedToDatabase)
 		{
-			/* Post player scores by binding to the response of the delegate, and passing the delegate to PostPlayerScores */
-			OnPostScoresResponse.BindLambda([this, Scores, Controller, ShowPostGameMenu](const ELoginState& LoginState)
-			{
-				if (LoginState == ELoginState::LoggedInHttp)
-				{
-					TArray<FPlayerScore> ScoresToUpdate = Scores;
-					for (FPlayerScore& Score : ScoresToUpdate)
-					{
-						Score.bSavedToDatabase = true;
-					}
-					SavePlayerScores(ScoresToUpdate);
-				}
-				if (ShowPostGameMenu)
-				{
-					Controller->OnPostPlayerScoresResponse(ShowPostGameMenu, LoginState);
-				}
-			});
-			if (!AccessToken.IsEmpty())
-			{
-				PostPlayerScores(Scores, PlayerSettings.Username, AccessToken, OnPostScoresResponse);
-			}
-		});
-	RequestAccessToken(PlayerSettings.LoginCookie, OnAccessTokenResponseDelegate);
+			ScoresNotSavedToDB.Emplace(PlayerScoreObj);
+		}
+	}
+	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().Username, AccessToken, OnPostScoresResponse);
+}
+
+void ADefaultGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
+{
+	if (LoginState == ELoginState::LoggedInHttp)
+	{
+		TArray<FPlayerScore> ScoresToUpdate = LoadPlayerScores();
+		for (FPlayerScore& Score : ScoresToUpdate)
+		{
+			Score.bSavedToDatabase = true;
+		}
+		SavePlayerScores(ScoresToUpdate);
+	}
 }
 
 void ADefaultGameMode::UpdatePlayerScores(const float TimeElapsed)

@@ -4,7 +4,6 @@
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "Kismet/KismetTextLibrary.h"
 
 void UPopupMessageWidget::NativeConstruct()
 {

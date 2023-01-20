@@ -7,10 +7,6 @@
 void FBeatShot::StartupModule()
 {
 	FDefaultGameModuleImpl::StartupModule();
-
-	LOCTABLE_FROMFILE_GAME("ST_WebBrowserOverlay","ST_WebBrowserOverlay","/Game/StringTables/ST_WebBrowserOverlay");
-	LOCTABLE_FROMFILE_GAME("ST_GameModesWidget","ST_GameModesWidget","/Game/ST_GameModesWidget");
-	LOCTABLE_FROMFILE_GAME("ST_Login","ST_Login","/Game/StringTables/ST_Login");
 }
 
 void FBeatShot::ShutdownModule()

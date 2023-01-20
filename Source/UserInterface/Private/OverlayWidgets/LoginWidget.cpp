@@ -86,11 +86,11 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 		NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
 		NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
 		ContinueWithoutTitleText->SetText(
-			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutTitleTextLogin"));
+			FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
 		ContinueWithoutBodyText->SetText(
-			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutBodyTextLogin"));
+			FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
 		ContinueWithoutCancelButtonText->SetText(
-			FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login", "ContinueWithoutCancelButtonTextLogin"));
+			FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
 	}
 	if (!Key.IsEmpty())
 	{
@@ -117,8 +117,7 @@ void ULoginWidget::ClearErrorText(const FText& Text)
 
 void ULoginWidget::SetErrorText(const FString& Key)
 {
-	ErrorText->SetText(FText::FromStringTable("/Game/StringTables/ST_Login.ST_Login",
-											Key));
+	ErrorText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
 }
 
 void ULoginWidget::InitializeExit()

@@ -36,7 +36,7 @@ void UScoreBrowserWidget::InitializeScoringOverlay()
 	{
 		if (!IsRefreshTokenValid(PlayerSettings))
 		{
-			LoginWidget->ShowLoginScreen("LoginErrorText");
+			LoginWidget->ShowLoginScreen("Login_LoginErrorText");
 			OnLoginStateChange.Broadcast(ELoginState::InvalidHttp, false);
 		}
 		else
@@ -58,10 +58,16 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 {
 	switch (LoginState)
 	{
+	/** Didn't save scores because of zero score or unsaved game mode */
+	case ELoginState::None:
+		{
+			SetOverlayText("SBW_DidNotSaveScores");
+			return;
+		}
 	/** User doesn't have an account*/
 	case ELoginState::NewUser:
 		{
-			SetOverlayText("NoAccount");
+			SetOverlayText("SBW_NoAccount");
 			return;
 		}
 	/** Successful Http POST scores request*/
@@ -72,7 +78,7 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 	/** Invalid Refresh Token or Http POST scores request failed */
 	default:
 		{
-			SetOverlayText("SavedScoresLocallyOnly");
+			SetOverlayText("SBW_SavedScoresLocallyOnly");
 			return;
 		}
 	}
@@ -102,7 +108,7 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 
 void UScoreBrowserWidget::SetOverlayText(const FString& Key)
 {
-	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_WebBrowserOverlay.ST_WebBrowserOverlay",
+	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
 	                                            Key));
 	FadeInText();
 }
@@ -134,7 +140,7 @@ void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings& PlayerSetti
 			OnLoginStateChange.Broadcast(ELoginState::InvalidCredentials, bSignedInThroughPopup);
 			if (!bSignedInThroughPopup)
 			{
-				LoginWidget->ShowLoginScreen("InvalidCredentialsText");
+				LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
 			}
 		}
 		else if (ResponseCode == 408 || ResponseCode == 504)
@@ -142,7 +148,7 @@ void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings& PlayerSetti
 			OnLoginStateChange.Broadcast(ELoginState::TimeOut, bSignedInThroughPopup);
 			if (!bSignedInThroughPopup)
 			{
-				LoginWidget->ShowLoginScreen("TimeOutErrorText");
+				LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
 			}
 		}
 		else
@@ -150,7 +156,7 @@ void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings& PlayerSetti
 			OnLoginStateChange.Broadcast(ELoginState::InvalidHttp, bSignedInThroughPopup);
 			if (!bSignedInThroughPopup)
 			{
-				LoginWidget->ShowLoginScreen("LoginErrorText");
+				LoginWidget->ShowLoginScreen("Login_LoginErrorText");
 			}
 		}
 	}
@@ -187,7 +193,7 @@ void UScoreBrowserWidget::OnURLLoaded(const bool bLoadedSuccessfully)
 		}
 		else
 		{
-			SetOverlayText("SavedScoresButNotLoggedIn");
+			SetOverlayText("SBW_SavedScoresButNotLoggedIn");
 		}
 		return;
 	}
@@ -195,7 +201,7 @@ void UScoreBrowserWidget::OnURLLoaded(const bool bLoadedSuccessfully)
 	/* Unsuccessful URL load in browser */
 	if (!bLoadedSuccessfully)
 	{
-		LoginWidget->ShowLoginScreen("BrowserLoginErrorText");
+		LoginWidget->ShowLoginScreen("Login_BrowserLoginErrorText");
 		OnLoginStateChange.Broadcast(ELoginState::InvalidBrowser, bSignedInThroughPopup);
 		return;
 	}
@@ -221,7 +227,7 @@ void UScoreBrowserWidget::OnAccessTokenResponse(const FString& AccessToken)
 	}
 	else
 	{
-		SetOverlayText("InvalidHttpResponse");
+		SetOverlayText("SBW_InvalidHttpResponse");
 		OnLoginStateChange.Broadcast(ELoginState::InvalidHttp, bSignedInThroughPopup);
 	}
 	if (OnAccessTokenResponseDelegate.IsBound())

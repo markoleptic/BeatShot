@@ -11,7 +11,7 @@ DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString AccessToken);
 DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FPlayerSettings& PlayerSettings, const FString ResponseMsg, const int32 ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */
-DECLARE_DELEGATE_OneParam(FOnPostScoresResponse, const ELoginState& LoginState);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostScoresResponse, const ELoginState& LoginState);
 
 UINTERFACE()
 class UHttpRequestInterface : public UInterface

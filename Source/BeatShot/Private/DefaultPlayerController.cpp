@@ -199,6 +199,7 @@ void ADefaultPlayerController::ShowPostGameMenu()
 	}
 	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
+		
 		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
 		PostGameMenuWidget->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
 	}
@@ -211,17 +212,13 @@ void ADefaultPlayerController::ShowPostGameMenu()
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
-void ADefaultPlayerController::OnPostPlayerScoresResponse(const bool bDidPostScores, const ELoginState& LoginState)
+void ADefaultPlayerController::OnPostScoresResponseReceived(const ELoginState& LoginState)
 {
-	if (!bDidPostScores)
+	if (!PostGameMenuWidget)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Didn't post player scores"));
-		PostGameMenuWidget->ScoresWidget->SetOverlayText("DidNotSaveScores");
+		return;
 	}
-	if (PostGameMenuWidget)
-	{
-		PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(LoginState);
-	}
+	PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(LoginState);
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
