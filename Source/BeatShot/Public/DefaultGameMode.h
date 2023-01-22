@@ -10,7 +10,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "DefaultGameMode.generated.h"
 
-class AVisualizer;
+class ABeamVisualizer;
+class AStaticCubeVisualizer;
 class AFloatingTextActor;
 class ATargetSpawner;
 class ASphereTarget;
@@ -20,7 +21,7 @@ DECLARE_DELEGATE(FOnTargetSpawned);
 DECLARE_DELEGATE_OneParam(FOnTargetDestroyed, const float TimeAlive);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
 DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
-DECLARE_DELEGATE_OneParam(FOnVisualizerSpawned, AVisualizer* Visualizer);
+DECLARE_DELEGATE_OneParam(FOnVisualizerSpawned, AStaticCubeVisualizer* Visualizer);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeatTrackTargetSpawned, ASphereTarget* TrackingTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32, NewStreak, const FVector, Position);
@@ -45,7 +46,11 @@ protected:
 
 	/* The Visualizer class to spawn */
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AVisualizer> VisualizerClass;
+	TSubclassOf<AStaticCubeVisualizer> VisualizerClass;
+
+	/** The BeamVisualizer class to spawn */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABeamVisualizer> BeamVisualizerClass;
 
 	/** The FloatingTextActor class to spawn */
 	UPROPERTY(EditDefaultsOnly)
@@ -57,12 +62,16 @@ protected:
 
 	/* The spawned Visualizer */
 	UPROPERTY(BlueprintReadOnly)
-	AVisualizer* Visualizer;
+	AStaticCubeVisualizer* Visualizer;
 
 	/* The spawned Visualizer */
 	UPROPERTY(BlueprintReadOnly)
-	AVisualizer* Visualizer2;
+	AStaticCubeVisualizer* Visualizer2;
 
+	/* The spawned BeamVisualizer */
+	UPROPERTY(BlueprintReadOnly)
+	ABeamVisualizer* BeamVisualizer;
+		
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AATracker;
@@ -258,6 +267,9 @@ private:
 	const FVector VisualizerLocation = {3800,-1870,220};
 	const FVector Visualizer2Location = {3800, 1870,220};
 	const FRotator VisualizerRotation = {0, 90, 90};
+
+	const FVector BeamVisualizerLocation = {0,1920,1320};
+	const FRotator BeamRotation = {0,0,0};
 	
 	const FActorSpawnParameters SpawnParameters;
 

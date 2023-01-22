@@ -4,7 +4,54 @@
 #include "DefaultGameInstance.h"
 #include "DefaultGameMode.h"
 #include "DefaultPlayerController.h"
+#include "SteamManager.h"
 #include "Kismet/GameplayStatics.h"
+
+void UDefaultGameInstance::Init()
+{
+	Super::Init();
+	InitializeCPPElements();
+}
+
+bool UDefaultGameInstance::InitializeCPPElements()
+{
+	if (!SteamAPI_Init())
+	{
+		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Failed"));
+		return false;
+	}
+	
+	if (EnableUSteamManagerFeatures && SteamUser() != nullptr)
+	{
+		SteamManager = NewObject<USteamManager>(this);
+		SteamManager->InitializeSteamManager();
+		SteamManager->AssignGameInstance(this);
+		return true;
+	}
+	return false;
+}
+
+void UDefaultGameInstance::OnSteamOverlayIsOn()
+{
+	IsSteamOverlayActive = true;
+	this->OnSteamOverlayIsActive(true);
+}
+
+void UDefaultGameInstance::OnSteamOverlayIsOff()
+{
+	IsSteamOverlayActive = false;
+	this->OnSteamOverlayIsActive(false);
+}
+
+void UDefaultGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
+{
+	if (bIsOverlayActive)
+	{
+		ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
+	UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		PlayerController->HandlePause();
+	}
+}
 
 void UDefaultGameInstance::StartGameMode() const
 {
@@ -51,13 +98,15 @@ void UDefaultGameInstance::HandleGameModeTransition(FGameModeTransitionState& Ne
 		}
 	case ETransitionState::Restart:
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
+				NewGameModeTransitionState.bSaveCurrentScores, false);
 			StartGameMode();
 			break;
 		}
 	case ETransitionState::QuitToMainMenu:
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
+				NewGameModeTransitionState.bSaveCurrentScores, false);
 			ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 				UGameplayStatics::GetPlayerController(GetWorld(), 0));
 			PlayerController->FadeScreenToBlack();
@@ -73,12 +122,13 @@ void UDefaultGameInstance::HandleGameModeTransition(FGameModeTransitionState& Ne
 		}
 	case ETransitionState::QuitToDesktop:
 		{
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
+				NewGameModeTransitionState.bSaveCurrentScores, false);
 			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-										   EQuitPreference::Quit, false);
+			                               EQuitPreference::Quit, false);
 			break;
 		}
-		default:
+	default:
 		{
 			break;
 		}

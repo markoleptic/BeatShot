@@ -2,13 +2,14 @@
 
 #include "DefaultGameMode.h"
 #include "AudioAnalyzerManager.h"
+#include "BeamVisualizer.h"
 #include "DefaultCharacter.h"
 #include "DefaultGameInstance.h"
 #include "DefaultHealthComponent.h"
 #include "DefaultPlayerController.h"
 #include "FloatingTextActor.h"
 #include "TargetSpawner.h"
-#include "Visualizer.h"
+#include "StaticCubeVisualizer.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 
@@ -58,14 +59,15 @@ void ADefaultGameMode::InitializeGameMode()
 	                                                            &FRotator::ZeroRotator,
 	                                                            SpawnParameters));
 	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
-	Visualizer = Cast<AVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
+	Visualizer = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
 	                                                      &VisualizerLocation,
 	                                                      &VisualizerRotation,
 	                                                      SpawnParameters));
-	Visualizer2 = Cast<AVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
+	Visualizer2 = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
 													  &Visualizer2Location,
 													  &VisualizerRotation,
 													  SpawnParameters));
+	BeamVisualizer = Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass,&BeamVisualizerLocation, &BeamRotation, SpawnParameters));
 	InitializeAudioManagers(GameModeActorStruct.bPlaybackAudio, GameModeActorStruct.SongPath, GameModeActorStruct.InAudioDevice, GameModeActorStruct.OutAudioDevice);
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
 	bShouldTick = true;
@@ -167,6 +169,11 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		Visualizer2->Destroy();
 		Visualizer2 = nullptr;
+	}
+	if (BeamVisualizer)
+	{
+		BeamVisualizer->Destroy();
+		BeamVisualizer = nullptr;
 	}
 	if (AATracker)
 	{
@@ -298,6 +305,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	AASettings = LoadAASettings();
 	Visualizer->UpdateAASettings(AASettings);
 	Visualizer2->UpdateAASettings(AASettings);
+	BeamVisualizer->UpdateAASettings(AASettings);
 	
 	const bool bUseCaptureAudio = SongFilePath.IsEmpty();
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
@@ -362,6 +370,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	{
 		Visualizer->OnAAPlayerLoaded(AATracker);
 		Visualizer2->OnAAPlayerLoaded(AATracker);
+		BeamVisualizer->OnAAPlayerLoaded(AATracker);
 		AAPlayer = nullptr;
 		return;
 	}
@@ -393,6 +402,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	SetAAManagerVolume(0, 0, AAPlayer);
 	Visualizer->OnAAPlayerLoaded(AAPlayer);
 	Visualizer2->OnAAPlayerLoaded(AAPlayer);
+	BeamVisualizer->OnAAPlayerLoaded(AAPlayer);
 }
 
 void ADefaultGameMode::PlayAAPlayer()
@@ -490,6 +500,7 @@ void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASet
 	AASettings = RefreshedAASettings;
 	Visualizer->UpdateAASettings(RefreshedAASettings);
 	Visualizer2->UpdateAASettings(RefreshedAASettings);
+	BeamVisualizer->UpdateAASettings(RefreshedAASettings);
 }
 
 void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings)
@@ -796,7 +807,7 @@ float ADefaultGameMode::CheckFloatNaN(const float ValueToCheck, const float Valu
 //AAPlayer->InitStreamAudio(1, 44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
 //AAPlayer->OnCapturedData.AddUniqueDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);
 
-/*Visualizer2 = Cast<AVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
+/*Visualizer2 = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
 												  &Visualizer2Location,
 												  &FRotator::ZeroRotator,
 												  SpawnParameters));*/
