@@ -5,6 +5,8 @@
 
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/PointLightComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/TimelineComponent.h"
@@ -18,29 +20,55 @@ ASimpleBeamLight::ASimpleBeamLight()
 
 	Spots_SpotBase = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spots_SpotBase"));
 	RootComponent = Spots_SpotBase;
+	
 	Spots_SpotLimb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spots_SpotLimb"));
 	Spots_SpotLimb->SetupAttachment(Spots_SpotBase);
 	Spots_SpotLimb->SetRelativeLocation(FVector(0, 0, -18));
+	
 	Spots_SpotHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spots_SpotHead"));
 	Spots_SpotHead->SetupAttachment(Spots_SpotLimb);
 	Spots_SpotHead->SetRelativeLocation(FVector(0, 0, -41));
-	//SimpleBeamComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SimpleBeamComp"));
-	//SimpleBeamComp->SetupAttachment(Spots_SpotHead);
-	//SimpleBeamComp->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
-	//SimpleBeamComp->SetAgeUpdateMode(ENiagaraAgeUpdateMode::DesiredAge);
+	
+	BeamStartSpotLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamStartSpotLight"));
+	BeamStartSpotLight->SetupAttachment(Spots_SpotHead);
+	BeamStartSpotLight->SetRelativeLocation(FVector(22, 0, 0));
+	
+	BeamEndSpotLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamEndSpotLight"));
+	BeamEndSpotLight->SetupAttachment(Spots_SpotHead);
+	
+	BeamIllumination = CreateDefaultSubobject<UPointLightComponent>(TEXT("BeamIllumination"));
+	BeamIllumination->SetupAttachment(Spots_SpotHead);
+	
+	SimpleBeamComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SimpleBeam"));
+	SimpleBeamComponent->SetupAttachment(Spots_SpotHead);
+	SimpleBeamComponent->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
+	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
+	//SimpleBeamComponent->SetAgeUpdateMode(ENiagaraAgeUpdateMode::DesiredAge);
 }
 
 // Called when the game starts or when spawned
 void ASimpleBeamLight::BeginPlay()
 {
 	Super::BeginPlay();
+	LineTrace();
+
+	BeamStartSpotLight->SetIntensity(0);
+	BeamStartSpotLight->SetLightColor(LightColor);
+
+	BeamEndSpotLight->SetIntensity(0);
+	BeamEndSpotLight->SetLightColor(LightColor);
+
 	EmissiveLightBulbMaterial = Spots_SpotHead->GetMaterial(1);
 	EmissiveLightBulb = UMaterialInstanceDynamic::Create(EmissiveLightBulbMaterial, this);
 	Spots_SpotHead->SetMaterial(1, EmissiveLightBulb);
-	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), FLinearColor(LightColor).Desaturate(0));
+	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+	
 	FOnTimelineLinearColor OnEmissiveLightTimeline;
 	OnEmissiveLightTimeline.BindUFunction(this, FName("SetEmissiveLightColor"));
 	EmissiveBulbTimeline.AddInterpLinearColor(EmissiveLightCurve, OnEmissiveLightTimeline);
+	
+	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
+	SimpleBeamComponent->Deactivate();
 }
 
 // Called every frame
@@ -55,35 +83,34 @@ void ASimpleBeamLight::Tick(float DeltaTime)
 
 void ASimpleBeamLight::InitializeBeam()
 {
-	SimpleBeamComp = UNiagaraFunctionLibrary::SpawnSystemAttached(SimpleBeam, Spots_SpotHead, TEXT("BeamAttachPoint"),
+	/*SimpleBeamComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(SimpleBeam, Spots_SpotHead, TEXT("BeamAttachPoint"),
 	                                                              FVector::ZeroVector, FRotator::ZeroRotator,
 	                                                              EAttachLocation::SnapToTarget, false);
-	SimpleBeamComp->SetColorParameter(TEXT("User.BeamColor"), LightColor);
-	SimpleBeamComp->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
+	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
+	SimpleBeamComponent->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);*/
 }
 
-void ASimpleBeamLight::UpdateNiagaraBeam(float Value)
+void ASimpleBeamLight::UpdateNiagaraBeam(const float Value)
 {
-	if (SimpleBeamComp)
+	if (SimpleBeamComponent)
 	{
-		SimpleBeamComp->Activate();
+		SimpleBeamComponent->Activate();
 		const float ClampedValue = UKismetMathLibrary::MapRangeClamped(Value , 0, 1, 0, 50);
-		SimpleBeamComp->SetFloatParameter(TEXT("User.BeamWidth"), ClampedValue);
-		if (EmissiveBulbTimeline.IsPlaying())
-		{
-			EmissiveBulbTimeline.Stop();
-		}
+		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), ClampedValue);
 		EmissiveBulbTimeline.PlayFromStart();
 	}
-	//SimpleBeamComp->SetDesiredAge(Value);
-	/*SimpleBeamComp->SetFloatParameter(TEXT("User.Alpha"), Value);
-	SimpleBeamComp->SetColorParameter(TEXT("User.BeamColor"), LightColor);*/
 }
 
 void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent)
 {
 	NiagaraComponent->Deactivate();
-	UE_LOG(LogTemp, Display, TEXT("Niagara System Finished"));
+	if (EmissiveBulbTimeline.IsPlaying())
+	{
+		EmissiveBulbTimeline.Stop();
+		SetEmissiveLightColor(FLinearColor(LightColor).Desaturate(0));
+		BeamStartSpotLight->SetIntensity(0);
+		BeamEndSpotLight->SetIntensity(0);
+	}
 }
 
 void ASimpleBeamLight::SetEmissiveLightColor(const FLinearColor Value)
@@ -91,6 +118,32 @@ void ASimpleBeamLight::SetEmissiveLightColor(const FLinearColor Value)
 	if (EmissiveLightBulb)
 	{
 		EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), Value.A * 8);
-		EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), FLinearColor(LightColor) * Value);
+		EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), FLinearColor(LightColor.R, LightColor.G, LightColor.B, Value.A));
+		BeamStartSpotLight->SetIntensity(Value.A * 16000000);
+		BeamEndSpotLight->SetIntensity(Value.A * 80000);
+	}
+}
+
+void ASimpleBeamLight::LineTrace()
+{
+	const FVector StartLoc = Spots_SpotHead->GetComponentLocation();
+	const FVector EndLoc = Spots_SpotHead->GetForwardVector() * FVector(
+		TraceDistance, TraceDistance, TraceDistance);
+	DrawDebugLine(GetWorld(), StartLoc, EndLoc, FColor::Red, false, 10.f);
+	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLoc, ECC_Camera,
+															 FCollisionQueryParams::DefaultQueryParam))
+	{
+		const float HitDistance = Hit.Distance;
+		const FVector HitLoc = Hit.Location;
+		const FVector HitNormal = Hit.Normal;
+		if (Hit.bBlockingHit)
+		{
+			BeamEndSpotLight->SetWorldLocation(HitLoc + Spots_SpotHead->GetComponentRotation().Vector() * 5);
+			FRotator BeamEndRotation = (Spots_SpotHead->GetForwardVector() * FVector(
+		TraceDistance, TraceDistance, TraceDistance) - HitNormal.Dot(Spots_SpotHead->GetForwardVector() * FVector(
+		TraceDistance, TraceDistance, TraceDistance)) * 2 * HitNormal).Rotation();
+			
+			BeamEndSpotLight->SetWorldRotation(BeamEndRotation);
+		}
 	}
 }

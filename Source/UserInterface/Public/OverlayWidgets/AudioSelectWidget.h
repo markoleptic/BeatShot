@@ -86,6 +86,8 @@ protected:
 	void OnSongTitleSelectionChanged(const FString SelectedSongTitle, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnPlaybackAudioCheckStateChanged(const bool bIsChecked);
+
+	void PopulateSongOptionComboBox();
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* AudioFromFileButton;

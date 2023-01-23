@@ -112,6 +112,12 @@ struct FPlayerSettings
 	UPROPERTY(BlueprintReadOnly)
 	int32 CombatTextFrequency;
 
+	UPROPERTY(BlueprintReadOnly)
+	FString LastSelectedInputAudioDevice;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString LastSelectedOutputAudioDevice;
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
@@ -136,6 +142,8 @@ struct FPlayerSettings
 		FrameRateLimitGame = 0;
 		bShowStreakCombatText = true;
 		CombatTextFrequency = 5;
+		LastSelectedInputAudioDevice = "";
+		LastSelectedOutputAudioDevice = "";
 	}
 
 	void ResetStruct()
@@ -162,6 +170,8 @@ struct FPlayerSettings
 		FrameRateLimitGame = 0;
 		bShowStreakCombatText = true;
 		CombatTextFrequency = 5;
+		LastSelectedInputAudioDevice = "";
+		LastSelectedOutputAudioDevice = "";
 	}
 
 	void ResetVideoAndSoundSettings()

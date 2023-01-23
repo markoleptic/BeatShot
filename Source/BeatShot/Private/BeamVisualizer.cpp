@@ -39,6 +39,7 @@ void ABeamVisualizer::Tick(float DeltaTime)
 	TArray<int32> BPMTotal;
 	AAManager->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
 	                                            AASettings.BandLimitsThreshold);
+	AAManager->GetBeatTrackingAverage(AvgSpectrumValues);
 	if (SpectrumValues.Num() > 0)
 	{
 		UpdateLightBeams(SpectrumValues, DeltaTime);
@@ -55,7 +56,7 @@ void ABeamVisualizer::OnAAPlayerLoaded(UAudioAnalyzerManager* Manager)
 void ABeamVisualizer::InitializeLightBeams(int32 NewNumBandChannels)
 {
 	MaxAverageValues.SetNum(NewNumBandChannels);
-	MaxValues.SetNum(NewNumBandChannels);
+	MaxSpectrumValues.SetNum(NewNumBandChannels);
 	/*for (ABeamLight* Light : BeamLights)
 	{
 		Light->Destroy();
@@ -107,7 +108,7 @@ void ABeamVisualizer::UpdateLightBeams(TArray<float> SpectrumValues, float Delta
 		{
 			
 		}
-	}
+	}w
 	for (const float Value : MaxAverageValues)
 	{
 		if (Value <= 0)
@@ -119,16 +120,16 @@ void ABeamVisualizer::UpdateLightBeams(TArray<float> SpectrumValues, float Delta
 	
 	for (int i = 0; i < SpectrumValues.Num(); i++)
 	{
-		if (SpectrumValues[i] > MaxValues[i])
+		if (SpectrumValues[i] > MaxSpectrumValues[i])
 		{
-			MaxValues[i] = SpectrumValues[i];
+			MaxSpectrumValues[i] = SpectrumValues[i];
 		}
 		if ((SpectrumValues[i] > MaxAverageValues[i]) &&
 			(MaxAverageValues[i] <= 0) &&
-			(SpectrumValues[i] > MaxValues[i]/2))
+			(SpectrumValues[i] > MaxSpectrumValues[i]/2))
 		{
 			MaxAverageValues[i] = SpectrumValues[i];
-			const float ScaledValue = UKismetMathLibrary::MapRangeClamped(MaxAverageValues[i], 0, MaxValues[i], 0, 1);
+			const float ScaledValue = UKismetMathLibrary::MapRangeClamped(MaxAverageValues[i], 0, MaxSpectrumValues[i], 0, 1);
 			SimpleBeamLights[i]->UpdateNiagaraBeam(ScaledValue);
 		}
 	}
@@ -137,7 +138,7 @@ void ABeamVisualizer::UpdateLightBeams(TArray<float> SpectrumValues, float Delta
 	{
 		
 		const FVector CurrentLoc = BeamTargets[i]->GetActorLocation();
-		const float ScaledValue = UKismetMathLibrary::MapRangeClamped(MaxAverageValues[i], 0, MaxValues[i], 0, 2);
+		const float ScaledValue = UKismetMathLibrary::MapRangeClamped(MaxAverageValues[i], 0, MaxSpectrumValues[i], 0, 2);
 		FVector NewLoc;
 		FVector UpdatedRotation;
 		if (MaxAverageValues[i] < 0)

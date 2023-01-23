@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "SimpleBeamLight.generated.h"
 
+class USpotLightComponent;
+class UPointLightComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
 class UCurveLinearColor;
@@ -42,6 +44,11 @@ public:
 	UFUNCTION()
 	void SetEmissiveLightColor(FLinearColor Value);
 
+	UFUNCTION(BlueprintCallable)
+	void LineTrace();
+
+	const float TraceDistance = 999999;
+
 	FTimeline EmissiveBulbTimeline;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -50,8 +57,8 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UNiagaraSystem* SimpleBeam;
 
-	UPROPERTY(EditAnywhere)
-	UNiagaraComponent* SimpleBeamComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UNiagaraComponent* SimpleBeamComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* Spots_SpotBase;
@@ -62,13 +69,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* Spots_SpotHead;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPointLightComponent* BeamIllumination;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USpotLightComponent* BeamStartSpotLight;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USpotLightComponent* BeamEndSpotLight;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UMaterialInterface* EmissiveLightBulbMaterial;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMaterialInstanceDynamic* EmissiveLightBulb;
 
-	UPROPERTY(EditAnywhere,  BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FLinearColor LightColor = FLinearColor::White;
 };
 

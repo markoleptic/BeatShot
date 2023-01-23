@@ -69,13 +69,16 @@ public:
 
 	const FVector InitialBeamLocation = {0,1920,1320};
 	const FVector InitialTargetLocation = {0,-1920,1320};
-	const FRotator BeamRotation = {-90,0,90};
+	const FRotator BeamRotation = {0,0,90};
 
 	const FActorSpawnParameters SpawnParameters;
 
 	UPROPERTY(VisibleAnywhere)
-	TArray<float> MaxValues;
+	TArray<float> MaxSpectrumValues;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> MaxAverageValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> AvgSpectrumValues;
 };

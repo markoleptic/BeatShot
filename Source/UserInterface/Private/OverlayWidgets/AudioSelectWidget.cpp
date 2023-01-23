@@ -46,16 +46,28 @@ void UAudioSelectWidget::NativeConstruct()
 	TArray<FString> InAudioDeviceList;
 	Manager->GetOutputAudioDevices(OutAudioDeviceList);
 	Manager->GetInputAudioDevices(InAudioDeviceList);
-
+	
+	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	
 	for (FString AudioDevice : OutAudioDeviceList)
 	{
 		OutAudioDevices->AddOption(AudioDevice);
+		if (AudioDevice.Equals(PlayerSettings.LastSelectedOutputAudioDevice))
+		{
+			OutAudioDevices->SetSelectedOption(AudioDevice);
+		}
 	}
 
 	for (FString AudioDevice : InAudioDeviceList)
 	{
 		InAudioDevices->AddOption(AudioDevice);
+		if (AudioDevice.Equals(PlayerSettings.LastSelectedInputAudioDevice))
+		{
+			InAudioDevices->SetSelectedOption(AudioDevice);
+		}
 	}
+
+	PopulateSongOptionComboBox();
 
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -110,6 +122,16 @@ void UAudioSelectWidget::OnStreamAudioButtonClicked()
 
 void UAudioSelectWidget::OnStartButtonClicked()
 {
+	FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	if (!InAudioDevices->GetSelectedOption().IsEmpty())
+	{
+		PlayerSettings.LastSelectedInputAudioDevice = InAudioDevices->GetSelectedOption();
+	}
+	if (!OutAudioDevices->GetSelectedOption().IsEmpty())
+	{
+		PlayerSettings.LastSelectedOutputAudioDevice = OutAudioDevices->GetSelectedOption();
+	}
+	SavePlayerSettings(PlayerSettings);
 	if(!OnStartButtonClickedDelegate.ExecuteIfBound(AudioSelectStruct))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnStartButtonClickedDelegate not bound."));
@@ -133,7 +155,7 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 		return;
 	}
 	AudioSelectStruct.SongPath = FileNames[0];
-
+	
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
 	if (!Manager->InitPlayerAudio(AudioSelectStruct.SongPath))
 	{
@@ -166,14 +188,6 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 		AudioSelectStruct.SongTitle = Title;
 	}
 	AudioSelectStruct.SongLength = Manager->GetTotalDuration();
-
-	for (FPlayerScore SavedScoreObj : LoadPlayerScores())
-	{
-		if (SongTitleComboBox->FindOptionIndex(SavedScoreObj.SongTitle) == -1)
-		{
-			SongTitleComboBox->AddOption(SavedScoreObj.SongTitle);
-		}
-	}
 	
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
 	SongTitleBox->SetVisibility(ESlateVisibility::Visible);
@@ -242,6 +256,17 @@ void UAudioSelectWidget::OnSongTitleSelectionChanged(const FString SelectedSongT
 void UAudioSelectWidget::OnPlaybackAudioCheckStateChanged(const bool bIsChecked)
 {
 	AudioSelectStruct.bPlaybackAudio = bIsChecked;
+}
+
+void UAudioSelectWidget::PopulateSongOptionComboBox()
+{
+	for (FPlayerScore SavedScoreObj : LoadPlayerScores())
+	{
+		if (SongTitleComboBox->FindOptionIndex(SavedScoreObj.SongTitle) == -1)
+		{
+			SongTitleComboBox->AddOption(SavedScoreObj.SongTitle);
+		}
+	}
 }
 
 void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutFileNames)
