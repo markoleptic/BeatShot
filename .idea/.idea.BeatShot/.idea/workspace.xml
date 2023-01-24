@@ -9,49 +9,11 @@
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_SimpleBeamLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Lights/BP_SimpleBeamLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Lights/NS_SpotlightSystem.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BP_BeamLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Migrated/BP_BeamLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BP_BeamTarget.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Migrated/BP_BeamTarget.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BP_SpotLight_Master.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BP_SpotTarget.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BeamEmitterSetup.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BeamWidth.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BreakVector.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BreakVector2D.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Color.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/CoreParameters.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/DefaultRibbonMaterial.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/DynamicMaterialParameters.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/EmitterLifeCycle.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/EmitterState.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/FloatFromCurve.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/MakeVector.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/MakeVector2D.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Multiply_Float.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Multiply_VectorByFloat.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/NewCurveBase.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/NewNiagaraEmitter.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/NewNiagaraEmitter_System.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/ParticleState.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SimulationPosition.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SolveForcesAndVelocity.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SpawnBeam.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SpawnBurst_Instantaneous.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SystemChangeState.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SystemState.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/TransformPosition.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/TransformVector.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/UpdateBeam.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Vector2DLength.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Login.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_MenuWidgets.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BeamVisualizer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BeamVisualizer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SimpleBeamLight.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SimpleBeamLight.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BeamVisualizer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BeamVisualizer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SimpleBeamLight.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SimpleBeamLight.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameMode.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" afterDir="false" />
     </list>
@@ -232,6 +194,7 @@
       <workItem from="1674278407471" duration="1234000" />
       <workItem from="1674324136907" duration="46185000" />
       <workItem from="1674440750752" duration="12310000" />
+      <workItem from="1674498731914" duration="17852000" />
     </task>
     <servers />
   </component>

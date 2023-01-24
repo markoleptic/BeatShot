@@ -67,6 +67,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	FAASettingsStruct AASettings;
 
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> SpectrumSpectrumValues;
+	
 	const FVector InitialBeamLocation = {0,1920,1320};
 	const FVector InitialTargetLocation = {0,-1920,1320};
 	const FRotator BeamRotation = {0,0,90};

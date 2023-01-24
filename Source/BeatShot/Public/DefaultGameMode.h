@@ -17,6 +17,8 @@ class ATargetSpawner;
 class ASphereTarget;
 class UAudioAnalyzerManager;
 
+DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
+
 DECLARE_DELEGATE(FOnTargetSpawned);
 DECLARE_DELEGATE_OneParam(FOnTargetDestroyed, const float TimeAlive);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
@@ -36,6 +38,9 @@ class BEATSHOT_API ADefaultGameMode : public AGameModeBase, public ISaveLoadInte
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> Freq;
 
 #pragma region Classes
 

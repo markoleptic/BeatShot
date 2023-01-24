@@ -13,6 +13,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 
+DEFINE_LOG_CATEGORY(LogAudioData);
+
 ADefaultGameMode::ADefaultGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -45,6 +47,11 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 	{
 		SpawnNewTarget(Beat);
 	}
+	//float FFrequency;
+	TArray<float> AvgFreq;
+	AATracker->GetSpectrum(Freq, AvgFreq, false);
+	//AATracker->GetPitchTracking(FFrequency);
+	//UE_LOG(LogAudioData, Display, TEXT("Freq: %f AvgFreq: %f FFrequency: %f"), Freq[0], AvgFreq[0], FFrequency);
 }
 
 void ADefaultGameMode::InitializeGameMode()
@@ -316,7 +323,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		AATracker->SetDefaultDevicesCapturerAudio(*InAudioDevice, *OutAudioDevice);
 		if (GameModeActorStruct.PlayerDelay < 0.01f)
 		{
-			if (!AATracker->InitCapturerAudioEx(44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
+			if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
 			                                    bPlaybackAudio))
 			{
 				bShouldTick = false;
@@ -326,7 +333,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		}
 		else
 		{
-			if (!AATracker->InitCapturerAudioEx(44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
+			if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
 			                                    false))
 			{
 				bShouldTick = false;
@@ -363,7 +370,9 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 		false, 100, 2.1);
+	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, LoadAASettings().BandLimits, 0.02, 60, true, 1);
 	SetAAManagerVolume(0, 0, AATracker);
+	AATracker->InitPitchTrackingConfig(EAA_ChannelSelectionMode::All_in_one, -1, 0.02, 0.19);
 
 	/* Only initialize AAPlayer if the player delay is large enough */
 	if (GameModeActorStruct.PlayerDelay < 0.01f)
@@ -378,7 +387,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	if (bUseCaptureAudio)
 	{
 		AAPlayer->SetDefaultDevicesCapturerAudio(*InAudioDevice, *OutAudioDevice);
-		if (!AAPlayer->InitCapturerAudioEx(44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
+		if (!AAPlayer->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
 		                                   bPlaybackAudio))
 		{
 			bShouldTick = false;
@@ -399,6 +408,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 		false, 100, 2.1);
+	AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, LoadAASettings().BandLimits, 0.02, 60, true, 1);
 	SetAAManagerVolume(0, 0, AAPlayer);
 	Visualizer->OnAAPlayerLoaded(AAPlayer);
 	Visualizer2->OnAAPlayerLoaded(AAPlayer);
@@ -798,13 +808,13 @@ float ADefaultGameMode::CheckFloatNaN(const float ValueToCheck, const float Valu
 // 	true, 1);
 // OnAAPlayerLoaded.Broadcast(AATracker);
 
-//AATracker->InitCapturerAudioEx(44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, AudioBufferSeconds);
+//AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, AudioBufferSeconds);
 //AATracker->SetDefaultDeviceStreamAudio(*OutAudioDevice);
-//AATracker->InitStreamAudio(1, 44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
+//AATracker->InitStreamAudio(1, 48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
 //AATracker->OnCapturedData.AddUniqueDynamic(this, &ADefaultGameMode::FeedStreamCaptureTracker);
 
 //AAPlayer->SetDefaultDeviceStreamAudio(*OutAudioDevice);
-//AAPlayer->InitStreamAudio(1, 44100, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
+//AAPlayer->InitStreamAudio(1, 48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
 //AAPlayer->OnCapturedData.AddUniqueDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);
 
 /*Visualizer2 = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,

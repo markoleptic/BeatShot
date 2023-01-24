@@ -103,8 +103,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* AudioDeviceBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* AudioDeviceWarningBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* InAudioDevices;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* OutAudioDevices;

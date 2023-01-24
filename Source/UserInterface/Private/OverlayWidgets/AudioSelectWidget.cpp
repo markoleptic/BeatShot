@@ -46,29 +46,15 @@ void UAudioSelectWidget::NativeConstruct()
 	TArray<FString> InAudioDeviceList;
 	Manager->GetOutputAudioDevices(OutAudioDeviceList);
 	Manager->GetInputAudioDevices(InAudioDeviceList);
-	
-	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
-	
-	for (FString AudioDevice : OutAudioDeviceList)
+	for (const FString& AudioDevice : OutAudioDeviceList)
 	{
 		OutAudioDevices->AddOption(AudioDevice);
-		if (AudioDevice.Equals(PlayerSettings.LastSelectedOutputAudioDevice))
-		{
-			OutAudioDevices->SetSelectedOption(AudioDevice);
-		}
 	}
-
-	for (FString AudioDevice : InAudioDeviceList)
+	for (const FString& AudioDevice : InAudioDeviceList)
 	{
 		InAudioDevices->AddOption(AudioDevice);
-		if (AudioDevice.Equals(PlayerSettings.LastSelectedInputAudioDevice))
-		{
-			InAudioDevices->SetSelectedOption(AudioDevice);
-		}
 	}
-
 	PopulateSongOptionComboBox();
-
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 	OnSecondsValueCommitted(FText::AsNumber(0), ETextCommit::Type::Default);
@@ -118,6 +104,10 @@ void UAudioSelectWidget::OnStreamAudioButtonClicked()
 	StreamAudioButton->SetBackgroundColor(BeatShotBlue);
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Visible);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
+
+	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	InAudioDevices->SetSelectedOption(PlayerSettings.LastSelectedInputAudioDevice);
+	OutAudioDevices->SetSelectedOption(PlayerSettings.LastSelectedOutputAudioDevice);
 }
 
 void UAudioSelectWidget::OnStartButtonClicked()
@@ -224,6 +214,7 @@ void UAudioSelectWidget::OnSecondsValueCommitted(const FText& NewSeconds, ETextC
 void UAudioSelectWidget::OnInAudioDeviceSelectionChanged(const FString SelectedInAudioDevice,
 	const ESelectInfo::Type SelectionType)
 {
+	UE_LOG(LogTemp, Display, TEXT("Selection changed"));
 	AudioSelectStruct.InAudioDevice = SelectedInAudioDevice;
 	if (OutAudioDevices->GetSelectedIndex() != -1 && InAudioDevices->GetSelectedIndex() != -1)
 	{
