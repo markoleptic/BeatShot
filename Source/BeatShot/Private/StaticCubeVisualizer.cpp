@@ -3,94 +3,99 @@
 
 #include "StaticCubeVisualizer.h"
 #include "DefaultGameMode.h"
-#include "AudioAnalyzerManager.h"
+#include "Kismet/KismetMathLibrary.h"
 
-// Sets default values
 AStaticCubeVisualizer::AStaticCubeVisualizer()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
 void AStaticCubeVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	AASettings = LoadAASettings();
+	SetVisualizerOffset(FVector(0,-110, 0));
 }
 
-// Called every frame
 void AStaticCubeVisualizer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (!bAAManagerInitialized || !AAManager)
-	{
-		return;
-	}
-	TArray<bool> Beats;
-	TArray<float> SpectrumValues;
-	TArray<int32> BPMCurrent;
-	TArray<int32> BPMTotal;
-	AAManager->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
-												AASettings.BandLimitsThreshold);
-	UpdateCubes(SpectrumValues);
 }
 
-void AStaticCubeVisualizer::OnAAPlayerLoaded(UAudioAnalyzerManager* Manager)
+void AStaticCubeVisualizer::InitializeVisualizer()
 {
-	AAManager = Manager;
-	InitializeCubes(AASettings.NumBandChannels);
-	bAAManagerInitialized = true;
-}
+	Super::InitializeVisualizer();
 
-void AStaticCubeVisualizer::InitializeCubes(const int32 NewNumBandChannels)
-{
-	MaxAverageValues.SetNum(NewNumBandChannels);
-	for (UStaticMeshComponent* Comp : Cubes)
+	for (AActor* Visualizer : Visualizers)
 	{
-		Comp->DestroyComponent();
-	}
-	Cubes.SetNum(NewNumBandChannels);
-	for (int i = 0; i < NewNumBandChannels; i++)
-	{
-		Cubes[i] = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), TEXT("Cube " + i));
-		Cubes[i]->RegisterComponent();
-		Cubes[i]->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-		Cubes[i]->SetRelativeLocation(FVector(0,i * -110, 0));
-		Cubes[i]->SetStaticMesh(CubeMesh);
-		Cubes[i]->SetRenderCustomDepth(true);
-		Cubes[i]->SetCustomDepthStencilValue(0);
-		Cubes[i]->SetMaterial(0, CubeMaterial);
-	}
-}
-
-void AStaticCubeVisualizer::UpdateCubes(TArray<float> SpectrumValues)
-{
-	for (int i = 0; i < SpectrumValues.Num(); i++)
-	{
-		if (SpectrumValues[i] > MaxAverageValues[i])
+		if (Cast<USceneComponent>(Visualizer))
 		{
-			MaxAverageValues[i] = SpectrumValues[i];
+			Cast<USceneComponent>(Visualizer)->DestroyComponent();
 		}
 	}
-	for (int i = 0; i < MaxAverageValues.Num(); i++)
+
+	for (UStaticMeshComponent* Cube : Cubes)
 	{
-		const FVector CurrentLoc = Cubes[i]->GetRelativeLocation();
-		Cubes[i]->SetRelativeScale3D(FVector(1,1,MaxAverageValues[i] * 20 + 1));
-		Cubes[i]->SetRelativeLocation(FVector(CurrentLoc.X, CurrentLoc.Y, MaxAverageValues[i] * 100));
-		Cubes[i]->SetScalarParameterValueOnMaterials("value", MaxAverageValues[i] * 100);
+		Cube->DestroyComponent();
 	}
-	for (float& Value : MaxAverageValues)
+	
+	Cubes.Empty();
+	for (int i = 0; i < AASettings.NumBandChannels; i++)
 	{
-		Value -= 0.01;
+		Cubes.EmplaceAt(i, NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), TEXT("Cube " + i)));
+		UStaticMeshComponent* Visualizer = Cubes[i];
+		Visualizer->RegisterComponent();
+		Visualizer->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+		Visualizer->SetRelativeLocation(i * VisualizerOffset);
+		Visualizer->SetStaticMesh(CubeMesh);
+		Visualizer->SetRenderCustomDepth(true);
+		Visualizer->SetCustomDepthStencilValue(0);
+		Visualizer->SetMaterial(0, CubeMaterial);
 	}
 }
 
-void AStaticCubeVisualizer::UpdateAASettings(const FAASettingsStruct AASettingsStruct)
+void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
-	 bAAManagerInitialized = false;
-	 InitializeCubes(AASettingsStruct.NumBandChannels);
-	 AASettings = AASettingsStruct;
-	 bAAManagerInitialized = true;
+	Cubes[Index]->SetRelativeScale3D(FVector(1,1,GetScaledHeight(SpectrumAlpha)));
+	Cubes[Index]->SetScalarParameterValueOnMaterials("RedGreenAlpha", SpectrumAlpha);
 }
+
+float AStaticCubeVisualizer::GetScaledHeight(const float SpectrumValue)
+{
+	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, 1, 5);
+}
+
+// for (int i = 0; i < SpectrumValues.Num(); i++)
+// {
+// 	if (SpectrumValues[i] > MaxAverageValues[i])
+// 	{
+// 		MaxAverageValues[i] = SpectrumValues[i];
+// 	}
+// }
+	
+// for (int i = 0; i < MaxAverageValues.Num(); i++)
+// {
+// 	const FVector CurrentLoc = Cubes[i]->GetRelativeLocation();
+// 	Cubes[i]->SetRelativeScale3D(FVector(1,1,MaxAverageValues[i] * 20 + 1));
+// 	Cubes[i]->SetRelativeLocation(FVector(CurrentLoc.X, CurrentLoc.Y, MaxAverageValues[i] * 100));
+// 	Cubes[i]->SetScalarParameterValueOnMaterials("value", MaxAverageValues[i] * 100);
+// }
+// for (float& Value : MaxAverageValues)
+// {
+// 	Value -= 0.01;
+// }
+
+// for (int i = 0; i < SpectrumValues.Num(); i++)
+// {
+// 	if (SpectrumValues[i] > LocalSpectrumValues[i])
+// 	{
+// 		LocalSpectrumValues[i] = SpectrumValues[i];
+// 	}
+// 	Cubes[i]->SetRelativeScale3D(FVector(1,1,GetScaledHeight(LocalSpectrumValues[i])));
+// 	Cubes[i]->SetScalarParameterValueOnMaterials("RedGreenAlpha", LocalSpectrumValues[i]);
+// 	if (LocalSpectrumValues[i] >= 0)
+// 	{
+// 		LocalSpectrumValues[i]-= 0.005;
+// 	}
+// }
 

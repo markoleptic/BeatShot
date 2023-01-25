@@ -31,9 +31,6 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-	void InitializeBeam();
 	
 	UFUNCTION()
 	void UpdateNiagaraBeam(float Value);

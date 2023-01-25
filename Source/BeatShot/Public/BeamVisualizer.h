@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
+#include "VisualizerBase.h"
 #include "GameFramework/Actor.h"
 #include "BeamVisualizer.generated.h"
 
 class ASimpleBeamLight;
 class ABeamLight;
 class ABeamTarget;
+
 UCLASS()
-class BEATSHOT_API ABeamVisualizer : public AActor, public ISaveLoadInterface
+class BEATSHOT_API ABeamVisualizer : public AVisualizerBase
 {
 	GENERATED_BODY()
 	
@@ -28,60 +28,14 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<ABeamTarget> BeamTargetClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<ABeamLight> BeamLightClass;
-
+	virtual void InitializeVisualizer() override;
+	
+	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
-
-	UPROPERTY(BlueprintReadOnly)
-	UAudioAnalyzerManager* AAManager;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<ABeamTarget*> BeamTargets;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<ABeamLight*> BeamLights;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<ASimpleBeamLight*> SimpleBeamLights;
-
-	UFUNCTION()
-	void OnAAPlayerLoaded(UAudioAnalyzerManager* Manager);
-
-	UFUNCTION()
-	void InitializeLightBeams(int32 NewNumBandChannels);
-	
-	UFUNCTION()
-	void UpdateLightBeams(TArray<float> SpectrumValues, float DeltaTime);
-
-	UFUNCTION()
-	void UpdateAASettings(const FAASettingsStruct AASettingsStruct);
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bAAManagerInitialized;
-
-	UPROPERTY(BlueprintReadOnly)
-	FAASettingsStruct AASettings;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumSpectrumValues;
 	
 	const FVector InitialBeamLocation = {0,1920,1320};
-	const FVector InitialTargetLocation = {0,-1920,1320};
 	const FRotator BeamRotation = {0,0,90};
-
-	const FActorSpawnParameters SpawnParameters;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> MaxSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> MaxAverageValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> AvgSpectrumValues;
+	const FVector BeamOffset = {100, 0, 0};
 };

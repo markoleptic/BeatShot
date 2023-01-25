@@ -222,48 +222,49 @@ struct FAASettingsStruct
 	UPROPERTY(BlueprintReadOnly)
 	int HistorySize;
 
+	// Max number of band channels allowed
+	int32 MaxNumBandChannels = 32;
+
 	FAASettingsStruct()
 	{
 		BandLimits = {
-			FVector2d(0,50),
-			FVector2d(51,100),
-			FVector2d(101,150),
-			FVector2d(151,200),
-			FVector2d(201,250),
-			FVector2d(251,300),
-			FVector2d(301,350),
-			FVector2d(351,400),
-			FVector2d(401,1000),
-			FVector2d(1001,2000),
-			FVector2d(2001,3000),
-			FVector2d(3001,4000)
+			FVector2d(0,44),
+			FVector2d(45,88),
+			FVector2d(89,177),
+			FVector2d(178,355),
+			FVector2d(356,710),
+			FVector2d(711,1420),
+			FVector2d(1421,2840),
+			FVector2d(2841,5680),
+			FVector2d(5681,11360),
+			FVector2d(11361,22720),
 		};
-		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
-		NumBandChannels = 12;
+		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
+		NumBandChannels = 10;
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
+		MaxNumBandChannels = 32;
 	}
 
 	void ResetStruct()
 	{
 		BandLimits = {
-			FVector2d(0,50),
-			FVector2d(51,100),
-			FVector2d(101,150),
-			FVector2d(151,200),
-			FVector2d(201,250),
-			FVector2d(251,300),
-			FVector2d(301,350),
-			FVector2d(351,400),
-			FVector2d(401,1000),
-			FVector2d(1001,2000),
-			FVector2d(2001,3000),
-			FVector2d(3001,4000)
+			FVector2d(0,44),
+			FVector2d(45,88),
+			FVector2d(89,177),
+			FVector2d(178,355),
+			FVector2d(356,710),
+			FVector2d(711,1420),
+			FVector2d(1421,2840),
+			FVector2d(2841,5680),
+			FVector2d(5681,11360),
+			FVector2d(11361,22720),
 		};
-		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
-		NumBandChannels = 12;
+		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
+		NumBandChannels = 10;
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
+		MaxNumBandChannels = 32;
 	}
 };
 

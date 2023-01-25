@@ -10,6 +10,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "DefaultGameMode.generated.h"
 
+class AVisualizerBase;
 class ABeamVisualizer;
 class AStaticCubeVisualizer;
 class AFloatingTextActor;
@@ -23,7 +24,6 @@ DECLARE_DELEGATE(FOnTargetSpawned);
 DECLARE_DELEGATE_OneParam(FOnTargetDestroyed, const float TimeAlive);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
 DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
-DECLARE_DELEGATE_OneParam(FOnVisualizerSpawned, AStaticCubeVisualizer* Visualizer);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeatTrackTargetSpawned, ASphereTarget* TrackingTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32, NewStreak, const FVector, Position);
@@ -39,9 +39,6 @@ class BEATSHOT_API ADefaultGameMode : public AGameModeBase, public ISaveLoadInte
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> Freq;
-
 #pragma region Classes
 
 protected:
@@ -49,14 +46,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
 
-	/* The Visualizer class to spawn */
+	/* The base Visualizer class to spawn */
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AStaticCubeVisualizer> VisualizerClass;
+	TSubclassOf<AStaticCubeVisualizer> StaticCubeVisualizerClass;
 
 	/** The BeamVisualizer class to spawn */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ABeamVisualizer> BeamVisualizerClass;
-
+	
 	/** The FloatingTextActor class to spawn */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
@@ -65,17 +62,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	ATargetSpawner* TargetSpawner;
 
-	/* The spawned Visualizer */
+	/** The spawned Visualizers */
 	UPROPERTY(BlueprintReadOnly)
-	AStaticCubeVisualizer* Visualizer;
-
-	/* The spawned Visualizer */
-	UPROPERTY(BlueprintReadOnly)
-	AStaticCubeVisualizer* Visualizer2;
-
-	/* The spawned BeamVisualizer */
-	UPROPERTY(BlueprintReadOnly)
-	ABeamVisualizer* BeamVisualizer;
+	TArray<AVisualizerBase*> Visualizers;
 		
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
@@ -84,6 +73,35 @@ protected:
 	/* The spawned AAPlayer object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AAPlayer;
+
+	void UpdateVisualizers(const TArray<float> SpectrumValues);
+
+	void InitializeVisualizers();
+
+	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> SpectrumVariance;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> AvgSpectrumValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> CurrentSpectrumValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> CurrentCubeSpectrumValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> SpectrumPeaks;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> SpectrumPeakEnergy;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> MaxSpectrumValues;
+
+	int32 UsingAAPlayer = 0;
 
 #pragma endregion
 
@@ -269,8 +287,8 @@ private:
 
 	const FVector TargetSpawnerLocation = {3590, 0, 750};
 	
-	const FVector VisualizerLocation = {3800,-1870,220};
-	const FVector Visualizer2Location = {3800, 1870,220};
+	const FVector VisualizerLocation = {3850,-1870,220};
+	const FVector Visualizer2Location = {3850, 1870,220};
 	const FRotator VisualizerRotation = {0, 90, 90};
 
 	const FVector BeamVisualizerLocation = {0,1920,1320};

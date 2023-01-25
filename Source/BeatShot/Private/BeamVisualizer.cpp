@@ -2,9 +2,7 @@
 
 
 #include "BeamVisualizer.h"
-#include "AudioAnalyzerManager.h"
 #include "SimpleBeamLight.h"
-#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 ABeamVisualizer::ABeamVisualizer()
@@ -17,99 +15,49 @@ ABeamVisualizer::ABeamVisualizer()
 void ABeamVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	AASettings = LoadAASettings();
+	SetInitialLocation(InitialBeamLocation);
+	SetRotation(BeamRotation);
+	SetVisualizerOffset(BeamOffset);
 }
 
 // Called every frame
 void ABeamVisualizer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (!bAAManagerInitialized || !AAManager)
-	{
-		return;
-	}
-
-	TArray<bool> Beats;
-	TArray<float> BeatSpectrumValues;
-	TArray<int32> BPMCurrent;
-	TArray<int32> BPMTotal;
-	AAManager->GetBeatTrackingWLimitsWThreshold(Beats, BeatSpectrumValues, BPMCurrent, BPMTotal,
-	                                            AASettings.BandLimitsThreshold);
-	AAManager->GetBeatTrackingAverage(AvgSpectrumValues);
-	TArray<float> AvgFreq;
-	if (BeatSpectrumValues.Num() > 0)
-	{
-		UpdateLightBeams(BeatSpectrumValues, DeltaTime);
-	}
 }
 
-void ABeamVisualizer::OnAAPlayerLoaded(UAudioAnalyzerManager* Manager)
+void ABeamVisualizer::InitializeVisualizer()
 {
-	AAManager = Manager;
-	InitializeLightBeams(AASettings.NumBandChannels);
-	bAAManagerInitialized = true;
+	Super::InitializeVisualizer();
+
+	for (AActor* Visualizer : Visualizers)
+	{
+		Visualizer->Destroy();
+	}
+
+	Visualizers.Empty();
+	for (int i = 0; i < AASettings.NumBandChannels; i++)
+	{
+		const FVector& CurrentSpawnLoc = i * VisualizerOffset + InitialVisualizerLocation;
+		Visualizers.EmplaceAt(i, Cast<ASimpleBeamLight>(
+			                      GetWorld()->SpawnActor(SimpleBeamLightClass, &CurrentSpawnLoc, &VisualizerRotation,
+			                                             SpawnParameters)));
+	}
 }
 
-void ABeamVisualizer::InitializeLightBeams(int32 NewNumBandChannels)
+void ABeamVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
-	MaxAverageValues.SetNum(NewNumBandChannels);
-	MaxSpectrumValues.SetNum(NewNumBandChannels);
-	
-	for (ASimpleBeamLight* BeamLight : SimpleBeamLights)
-	{
-		BeamLight->Destroy();
-	}
-
-	BeamLights.SetNum(NewNumBandChannels);
-	BeamTargets.SetNum(NewNumBandChannels);
-	SimpleBeamLights.SetNum(NewNumBandChannels);
-	
-	FVector Offset = FVector::ZeroVector;
-	
-	for (int i = 0; i < NewNumBandChannels; i++)
-	{
-		const FVector& BeamLightSpawnLoc = Offset + InitialBeamLocation;
-		SimpleBeamLights[i] = Cast<ASimpleBeamLight>(
-			GetWorld()->SpawnActor(SimpleBeamLightClass, &BeamLightSpawnLoc, &BeamRotation, SpawnParameters));
-		SimpleBeamLights[i]->InitializeBeam();
-		Offset += FVector(100, 0, 0);
-	}
+	Cast<ASimpleBeamLight>(Visualizers[Index])->UpdateNiagaraBeam(SpectrumAlpha);
 }
 
-void ABeamVisualizer::UpdateLightBeams(TArray<float> SpectrumValues, float DeltaTime)
-{
-	for (int i = 0; i < SpectrumValues.Num(); i++)
-	{
-		if (SpectrumValues[i] > MaxSpectrumValues[i])
-		{
-			MaxSpectrumValues[i] = SpectrumValues[i];
-		}
-		if ((SpectrumValues[i] > MaxAverageValues[i]) &&
-			(MaxAverageValues[i] <= 0) &&
-			(SpectrumValues[i] > MaxSpectrumValues[i]/2))
-		{
-			MaxAverageValues[i] = SpectrumValues[i];
-			const float ScaledValue = UKismetMathLibrary::MapRangeClamped(MaxAverageValues[i], 0, MaxSpectrumValues[i], 0, 1);
-			SimpleBeamLights[i]->UpdateNiagaraBeam(ScaledValue);
-		}
-	}
+// for (ASimpleBeamLight* BeamLight : SimpleBeamLights)
+// {
+// 	BeamLight->Destroy();
+// }
+// SimpleBeamLights.SetNum(AASettings.NumBandChannels);
 
-	for (float& Value : MaxAverageValues)
-	{
-		if (Value >= 0)
-		{
-			Value -= 0.0005;
-		}
-	}
-}
-
-void ABeamVisualizer::UpdateAASettings(const FAASettingsStruct AASettingsStruct)
-{
-	bAAManagerInitialized = false;
-	InitializeLightBeams(AASettingsStruct.NumBandChannels);
-	AASettings = AASettingsStruct;
-	bAAManagerInitialized = true;
-}
+//SimpleBeamLights[i] = Cast<ASimpleBeamLight>(
+//	GetWorld()->SpawnActor(SimpleBeamLightClass, &BeamLightSpawnLoc, &BeamRotation, SpawnParameters));
 
 //#include "BeamLight.h"
 //#include "BeamTarget.h"
@@ -125,6 +73,9 @@ for (ABeamTarget* Target : BeamTargets)
 {
 	Target->Destroy();
 }*/
+
+//BeamLights.SetNum(AASettings.NumBandChannels);
+//BeamTargets.SetNum(AASettings.NumBandChannels);
 
 /*bool UpdateValues = false;
 for (int i = 0; i < MaxAverageValues.Num(); i++)
@@ -174,3 +125,36 @@ BeamLights[i]->InitializeLight();
 BeamTargets[i] = BeamLights[i]->BeamTarget;
 BeamTargets[i]->UpdateBeamLightRefs(BeamLights[i]);*/
 
+// for (int i = 0; i < SpectrumValues.Num(); i++)
+// {
+// 	if (SpectrumValues[i] > MaxSpectrumValues[i])
+// 	{
+// 		MaxSpectrumValues[i] = SpectrumValues[i];
+// 	}
+// 	if ((SpectrumValues[i] > MaxAverageValues[i]) &&
+// 		(MaxAverageValues[i] <= 0) &&
+// 		(SpectrumValues[i] > MaxSpectrumValues[i]/2))
+// 	{
+// 		MaxAverageValues[i] = SpectrumValues[i];
+// 		const float ScaledValue = UKismetMathLibrary::MapRangeClamped(MaxAverageValues[i], 0, MaxSpectrumValues[i], 0, 1);
+// 		SimpleBeamLights[i]->UpdateNiagaraBeam(ScaledValue);
+// 	}
+// }
+
+// for (int i = 0; i < SpectrumValues.Num(); i++)
+// {
+// 	if (SpectrumValues[i] > 0)
+// 	{
+// 		SimpleBeamLights[i]->UpdateNiagaraBeam(SpectrumValues[i]);
+// 	}
+// }
+
+//SimpleBeamLights[Index]->UpdateNiagaraBeam(SpectrumAlpha);
+
+// for (float& Value : MaxAverageValues)
+// {
+// 	if (Value >= 0)
+// 	{
+// 		Value -= 0.0005;
+// 	}
+// }

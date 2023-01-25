@@ -3,16 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
+#include "VisualizerBase.h"
 #include "GameFramework/Actor.h"
 #include "StaticCubeVisualizer.generated.h"
 
-class UAudioAnalyzerManager;
 class UStaticMeshComponent;
 
 UCLASS()
-class BEATSHOT_API AStaticCubeVisualizer : public AActor, public ISaveLoadInterface
+class BEATSHOT_API AStaticCubeVisualizer : public AVisualizerBase
 {
 	GENERATED_BODY()
 	
@@ -28,38 +26,23 @@ public:
 	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(BlueprintReadOnly)
-	UAudioAnalyzerManager* AAManager;
-
-	UFUNCTION()
-	void OnAAPlayerLoaded(UAudioAnalyzerManager* Manager);
-
-	UFUNCTION()
-	void InitializeCubes(int32 NewNumBandChannels);
 	
-	UFUNCTION()
-	void UpdateCubes(TArray<float> SpectrumValues);
+	virtual void InitializeVisualizer() override;
+	
+	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
 
-	UFUNCTION()
-	void UpdateAASettings(const FAASettingsStruct AASettingsStruct);
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bAAManagerInitialized;
-
-	UPROPERTY(BlueprintReadOnly)
-	FAASettingsStruct AASettings;
-
-	TArray<float> MaxAverageValues;
-
-	UPROPERTY()
-	TArray<UStaticMeshComponent*> Cubes;
+	float GetScaledHeight(const float SpectrumValue);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMesh* CubeMesh;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UMaterialInterface* CubeMaterial;
+
+	const float MaxZScale = 10.f;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<UStaticMeshComponent*> Cubes;
 };
 
 

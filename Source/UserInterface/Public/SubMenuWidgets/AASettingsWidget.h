@@ -107,8 +107,6 @@ protected:
 	void ResetAASettings();
 
 	const float Hundredths = 0.01f;
-
-	const int32 MaxNumBandChannels = 12;
 };
 
 

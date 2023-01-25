@@ -2,9 +2,7 @@
 
 
 #include "SimpleBeamLight.h"
-
 #include "NiagaraComponent.h"
-#include "NiagaraFunctionLibrary.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
@@ -12,7 +10,6 @@
 #include "Components/TimelineComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-// Sets default values
 ASimpleBeamLight::ASimpleBeamLight()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -43,10 +40,9 @@ ASimpleBeamLight::ASimpleBeamLight()
 	SimpleBeamComponent->SetupAttachment(Spots_SpotHead);
 	SimpleBeamComponent->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
 	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
-	//SimpleBeamComponent->SetAgeUpdateMode(ENiagaraAgeUpdateMode::DesiredAge);
+	SimpleBeamComponent->SetAutoActivate(false);
 }
 
-// Called when the game starts or when spawned
 void ASimpleBeamLight::BeginPlay()
 {
 	Super::BeginPlay();
@@ -61,17 +57,16 @@ void ASimpleBeamLight::BeginPlay()
 	EmissiveLightBulbMaterial = Spots_SpotHead->GetMaterial(1);
 	EmissiveLightBulb = UMaterialInstanceDynamic::Create(EmissiveLightBulbMaterial, this);
 	Spots_SpotHead->SetMaterial(1, EmissiveLightBulb);
-	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), LightColor);
+	EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), 0);
 	
 	FOnTimelineLinearColor OnEmissiveLightTimeline;
 	OnEmissiveLightTimeline.BindUFunction(this, FName("SetEmissiveLightColor"));
 	EmissiveBulbTimeline.AddInterpLinearColor(EmissiveLightCurve, OnEmissiveLightTimeline);
 	
 	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
-	SimpleBeamComponent->Deactivate();
 }
 
-// Called every frame
 void ASimpleBeamLight::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -81,21 +76,12 @@ void ASimpleBeamLight::Tick(float DeltaTime)
 	}
 }
 
-void ASimpleBeamLight::InitializeBeam()
-{
-	/*SimpleBeamComponent = UNiagaraFunctionLibrary::SpawnSystemAttached(SimpleBeam, Spots_SpotHead, TEXT("BeamAttachPoint"),
-	                                                              FVector::ZeroVector, FRotator::ZeroRotator,
-	                                                              EAttachLocation::SnapToTarget, false);
-	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
-	SimpleBeamComponent->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);*/
-}
-
 void ASimpleBeamLight::UpdateNiagaraBeam(const float Value)
 {
 	if (SimpleBeamComponent)
 	{
 		SimpleBeamComponent->Activate();
-		const float ClampedValue = UKismetMathLibrary::MapRangeClamped(Value , 0, 1, 0, 50);
+		const float ClampedValue = UKismetMathLibrary::MapRangeClamped(Value, 0, 1, 0, 50);
 		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), ClampedValue);
 		EmissiveBulbTimeline.PlayFromStart();
 	}
@@ -107,7 +93,7 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 	if (EmissiveBulbTimeline.IsPlaying())
 	{
 		EmissiveBulbTimeline.Stop();
-		SetEmissiveLightColor(FLinearColor(LightColor).Desaturate(0));
+		SetEmissiveLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
 		BeamStartSpotLight->SetIntensity(0);
 		BeamEndSpotLight->SetIntensity(0);
 	}
@@ -118,7 +104,6 @@ void ASimpleBeamLight::SetEmissiveLightColor(const FLinearColor Value)
 	if (EmissiveLightBulb)
 	{
 		EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), Value.A * 8);
-		EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), FLinearColor(LightColor.R, LightColor.G, LightColor.B, Value.A));
 		BeamStartSpotLight->SetIntensity(Value.A * 16000000);
 		BeamEndSpotLight->SetIntensity(Value.A * 80000);
 	}
@@ -133,7 +118,6 @@ void ASimpleBeamLight::LineTrace()
 	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLoc, ECC_Camera,
 															 FCollisionQueryParams::DefaultQueryParam))
 	{
-		const float HitDistance = Hit.Distance;
 		const FVector HitLoc = Hit.Location;
 		const FVector HitNormal = Hit.Normal;
 		if (Hit.bBlockingHit)

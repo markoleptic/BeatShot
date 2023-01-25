@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DefaultGameMode.h"
+#include <vector>
 #include "AudioAnalyzerManager.h"
 #include "BeamVisualizer.h"
 #include "DefaultCharacter.h"
@@ -11,6 +12,7 @@
 #include "TargetSpawner.h"
 #include "StaticCubeVisualizer.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetTextLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogAudioData);
@@ -26,7 +28,9 @@ void ADefaultGameMode::BeginPlay()
 	InitializeGameMode();
 	OnPostScoresResponse.AddUFunction(this, "OnPostScoresResponseReceived");
 	OnAccessTokenResponse.BindUFunction(this, "OnAccessTokenResponseReceived");
-	OnPostScoresResponse.AddUFunction(Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)), "OnPostScoresResponseReceived");
+	OnPostScoresResponse.AddUFunction(
+		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)),
+		"OnPostScoresResponseReceived");
 }
 
 void ADefaultGameMode::Tick(float DeltaSeconds)
@@ -41,17 +45,101 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 	TArray<float> SpectrumValues;
 	TArray<int32> BPMCurrent;
 	TArray<int32> BPMTotal;
+
 	AATracker->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
 	                                            AASettings.BandLimitsThreshold);
 	for (const bool Beat : Beats)
 	{
 		SpawnNewTarget(Beat);
 	}
-	//float FFrequency;
-	TArray<float> AvgFreq;
-	AATracker->GetSpectrum(Freq, AvgFreq, false);
-	//AATracker->GetPitchTracking(FFrequency);
-	//UE_LOG(LogAudioData, Display, TEXT("Freq: %f AvgFreq: %f FFrequency: %f"), Freq[0], AvgFreq[0], FFrequency);
+
+	switch (UsingAAPlayer)
+	{
+	case 0:
+		{
+			AATracker->GetBeatTrackingAverageAndVariance(SpectrumVariance, AvgSpectrumValues);
+			AATracker->GetSpectrumPeaks(SpectrumPeaks, SpectrumPeakEnergy);
+			break;
+		}
+	default:
+		{
+			AAPlayer->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
+			                                           AASettings.BandLimitsThreshold);
+			AAPlayer->GetBeatTrackingAverageAndVariance(SpectrumVariance, AvgSpectrumValues);
+			AAPlayer->GetSpectrumPeaks(SpectrumPeaks, SpectrumPeakEnergy);
+			break;
+		}
+	}
+	UpdateVisualizers(SpectrumValues);
+}
+
+void ADefaultGameMode::InitializeVisualizers()
+{
+	AvgSpectrumValues.SetNum(AASettings.NumBandChannels);
+	CurrentSpectrumValues.SetNum(AASettings.NumBandChannels);
+	MaxSpectrumValues.SetNum(AASettings.NumBandChannels);
+	MaxSpectrumValues.Init(1, AASettings.NumBandChannels);
+	CurrentCubeSpectrumValues.SetNum(AASettings.NumBandChannels);
+
+	for (AVisualizerBase* Visualizer : Visualizers)
+	{
+		Visualizer->InitializeVisualizer();
+	}
+}
+
+float ADefaultGameMode::GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam)
+{
+	if (bIsBeam)
+	{
+		return UKismetMathLibrary::MapRangeClamped(CurrentSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
+	}
+	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
+}
+
+void ADefaultGameMode::UpdateVisualizers(const TArray<float> SpectrumValues)
+{
+	for (int i = 0; i < SpectrumValues.Num(); i++)
+	{
+		if (SpectrumValues[i] > MaxSpectrumValues[i])
+		{
+			MaxSpectrumValues[i] = SpectrumValues[i];
+		}
+		if (SpectrumValues[i] > CurrentCubeSpectrumValues[i])
+		{
+			CurrentCubeSpectrumValues[i] = SpectrumValues[i];
+		}
+
+		if (SpectrumValues[i] > CurrentSpectrumValues[i] && CurrentSpectrumValues[i] <= 0)
+		{
+			CurrentSpectrumValues[i] = SpectrumValues[i];
+			if (Visualizers[2])
+			{
+				Visualizers[2]->UpdateVisualizer(i, GetNormalizedSpectrumValue(i, true));
+			}
+		}
+
+		if (Visualizers[0])
+		{
+			Visualizers[0]->UpdateVisualizer(i, GetNormalizedSpectrumValue(i, false));
+		}
+		if (Visualizers[1])
+		{
+			Visualizers[1]->UpdateVisualizer(i, GetNormalizedSpectrumValue(i, false));
+		}
+
+		if (CurrentSpectrumValues[i] >= 0)
+		{
+			CurrentSpectrumValues[i] -= 0.0005;
+		}
+		if (CurrentCubeSpectrumValues[i] >= 0)
+		{
+			CurrentCubeSpectrumValues[i] -= 0.005;
+		}
+		if (MaxSpectrumValues[i] >= 0)
+		{
+			MaxSpectrumValues[i] -= 0.0001;
+		}
+	}
 }
 
 void ADefaultGameMode::InitializeGameMode()
@@ -66,16 +154,21 @@ void ADefaultGameMode::InitializeGameMode()
 	                                                            &FRotator::ZeroRotator,
 	                                                            SpawnParameters));
 	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
-	Visualizer = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
-	                                                      &VisualizerLocation,
-	                                                      &VisualizerRotation,
-	                                                      SpawnParameters));
-	Visualizer2 = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
-													  &Visualizer2Location,
-													  &VisualizerRotation,
-													  SpawnParameters));
-	BeamVisualizer = Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass,&BeamVisualizerLocation, &BeamRotation, SpawnParameters));
-	InitializeAudioManagers(GameModeActorStruct.bPlaybackAudio, GameModeActorStruct.SongPath, GameModeActorStruct.InAudioDevice, GameModeActorStruct.OutAudioDevice);
+	Visualizers.Empty();
+	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
+		                      &VisualizerLocation,
+		                      &VisualizerRotation,
+		                      SpawnParameters)));
+	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
+		                      &Visualizer2Location,
+		                      &VisualizerRotation,
+		                      SpawnParameters)));
+	Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(
+		                      GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
+		                                             SpawnParameters)));
+	InitializeVisualizers();
+	InitializeAudioManagers(GameModeActorStruct.bPlaybackAudio, GameModeActorStruct.SongPath,
+	                        GameModeActorStruct.InAudioDevice, GameModeActorStruct.OutAudioDevice);
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
 	bShouldTick = true;
 }
@@ -113,7 +206,7 @@ void ADefaultGameMode::StartGameMode()
 	else
 	{
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ADefaultGameMode::OnGameModeLengthTimerComplete,
-								GameModeActorStruct.GameModeLength, false);
+		                                GameModeActorStruct.GameModeLength, false);
 	}
 	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
 	{
@@ -151,7 +244,8 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 
 	/** Unbinding delegates */
 	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
-		UGameplayStatics::GetPlayerController(GetWorld(), 0)); Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun)
+			UGameplayStatics::GetPlayerController(GetWorld(), 0)); Cast<ADefaultCharacter>(PlayerController->GetPawn())
+		->Gun)
 	{
 		Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun->OnShotFired.Unbind();
 	}
@@ -167,21 +261,13 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		OnTargetDestroyed.Unbind();
 	}
-	if (Visualizer)
+
+	for (AVisualizerBase* Visualizer : Visualizers)
 	{
 		Visualizer->Destroy();
-		Visualizer = nullptr;
 	}
-	if (Visualizer2)
-	{
-		Visualizer2->Destroy();
-		Visualizer2 = nullptr;
-	}
-	if (BeamVisualizer)
-	{
-		BeamVisualizer->Destroy();
-		BeamVisualizer = nullptr;
-	}
+	Visualizers.Empty();
+
 	if (AATracker)
 	{
 		AATracker->UnloadCapturerAudio();
@@ -232,7 +318,7 @@ void ADefaultGameMode::StartAAManagerPlayback()
 	{
 		return;
 	}
-	
+
 	/* If delay is large enough, play AATracker and then AAPlayer after the delay */
 	if (GameModeActorStruct.PlayerDelay >= 0.01f)
 	{
@@ -310,10 +396,6 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
                                                const FString& InAudioDevice, const FString& OutAudioDevice)
 {
 	AASettings = LoadAASettings();
-	Visualizer->UpdateAASettings(AASettings);
-	Visualizer2->UpdateAASettings(AASettings);
-	BeamVisualizer->UpdateAASettings(AASettings);
-	
 	const bool bUseCaptureAudio = SongFilePath.IsEmpty();
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
@@ -354,7 +436,7 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		/* set Song length and song title in GameModeActorStruct if using song file */
 		FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
 		AATracker->GetMetadata(Filename, Extension, MetaType, Title,
-							   Artist, Album, Year, Genre);
+		                       Artist, Album, Year, Genre);
 		if (Title.IsEmpty())
 		{
 			GameModeActorStruct.SongTitle = Filename;
@@ -365,21 +447,21 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		}
 		GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
 	}
-	
+
 	AATracker->InitBeatTrackingConfigWLimits(
 		EAA_ChannelSelectionMode::All_in_one, 0,
-		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
+		AASettings.BandLimits, AASettings.TimeWindow, 10 / AASettings.TimeWindow,
 		false, 100, 2.1);
-	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, LoadAASettings().BandLimits, 0.02, 60, true, 1);
+	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
+	                                     AASettings.TimeWindow, 10 / AASettings.TimeWindow, true,
+	                                     AASettings.NumBandChannels);
 	SetAAManagerVolume(0, 0, AATracker);
-	AATracker->InitPitchTrackingConfig(EAA_ChannelSelectionMode::All_in_one, -1, 0.02, 0.19);
+	//AATracker->InitPitchTrackingConfig(EAA_ChannelSelectionMode::All_in_one, -1, 0.02, 0.19);
 
 	/* Only initialize AAPlayer if the player delay is large enough */
 	if (GameModeActorStruct.PlayerDelay < 0.01f)
 	{
-		Visualizer->OnAAPlayerLoaded(AATracker);
-		Visualizer2->OnAAPlayerLoaded(AATracker);
-		BeamVisualizer->OnAAPlayerLoaded(AATracker);
+		UsingAAPlayer = 0;
 		AAPlayer = nullptr;
 		return;
 	}
@@ -408,11 +490,11 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 		EAA_ChannelSelectionMode::All_in_one, 0,
 		AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
 		false, 100, 2.1);
-	AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, LoadAASettings().BandLimits, 0.02, 60, true, 1);
+	AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
+	                                    AASettings.TimeWindow, 10 / AASettings.TimeWindow, true,
+	                                    AASettings.NumBandChannels);
+	UsingAAPlayer = 1;
 	SetAAManagerVolume(0, 0, AAPlayer);
-	Visualizer->OnAAPlayerLoaded(AAPlayer);
-	Visualizer2->OnAAPlayerLoaded(AAPlayer);
-	BeamVisualizer->OnAAPlayerLoaded(AAPlayer);
 }
 
 void ADefaultGameMode::PlayAAPlayer()
@@ -421,7 +503,7 @@ void ADefaultGameMode::PlayAAPlayer()
 	{
 		return;
 	}
-	
+
 	if (!GameModeActorStruct.SongPath.IsEmpty())
 	{
 		AAPlayer->Play();
@@ -473,7 +555,6 @@ void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float 
 			AATracker->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
 		}
 	}
-
 }
 
 void ADefaultGameMode::OnSecondPassed()
@@ -508,9 +589,10 @@ void ADefaultGameMode::OnSecondPassed()
 void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASettings)
 {
 	AASettings = RefreshedAASettings;
-	Visualizer->UpdateAASettings(RefreshedAASettings);
-	Visualizer2->UpdateAASettings(RefreshedAASettings);
-	BeamVisualizer->UpdateAASettings(RefreshedAASettings);
+	for (AVisualizerBase* Visualizer : Visualizers)
+	{
+		Visualizer->UpdateAASettings(RefreshedAASettings);
+	}
 }
 
 void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings)

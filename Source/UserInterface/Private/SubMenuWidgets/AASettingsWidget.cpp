@@ -22,14 +22,15 @@ void UAASettingsWidget::NativeConstruct()
 	SaveAASettingsButton->OnClicked.AddDynamic(this, &UAASettingsWidget::SaveAASettingsToSlot);
 	SaveAndRestartButton->OnClicked.AddDynamic(this, &UAASettingsWidget::OnSaveAndRestartButtonClicked);
 	NumBandChannels->OnSelectionChanged.AddDynamic(this, &UAASettingsWidget::OnNumBandChannelsSelectionChanged);
+
+	AASettings = ISaveLoadInterface::LoadAASettings();
+	NewAASettings = AASettings;
+	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
 	
-	for (int i = 0; i < MaxNumBandChannels; i++)
+	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
 		NumBandChannels->AddOption(FString::FromInt(i+1));
 	}
-	
-	AASettings = ISaveLoadInterface::LoadAASettings();
-	NewAASettings = AASettings;
 	
 	BandChannelWidget = CreateWidget<UBandChannelWidget>(this, BandChannelWidgetClass);
 	BandChannelWidget->SetDefaultValues(NewAASettings.BandLimits[0], 0);
@@ -43,8 +44,8 @@ void UAASettingsWidget::NativeConstruct()
 	
 	UBandChannelWidget* CurrentBandChannel = BandChannelWidget;
 	UBandThresholdWidget* CurrentBandThreshold = BandThresholdWidget;
-	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
-	for (int i = 1; i < MaxNumBandChannels; i++)
+
+	for (int i = 1; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
 		CurrentBandChannel->Next = CreateWidget<UBandChannelWidget>(this, BandChannelWidgetClass);
 		CurrentBandChannel->Next->OnChannelValueCommitted.BindUFunction(this, "OnChannelValueCommitted");
@@ -58,10 +59,15 @@ void UAASettingsWidget::NativeConstruct()
 			CurrentBandChannel->Next->SetDefaultValues(NewAASettings.BandLimits[i], i);
 			CurrentBandThreshold->Next->SetDefaultValue(NewAASettings.BandLimitsThreshold[i], i);
 		}
-		else
+		else if (DefaultAASettings.NumBandChannels > i)
 		{
 			CurrentBandChannel->Next->SetDefaultValues(DefaultAASettings.BandLimits[i], i);
 			CurrentBandThreshold->Next->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[i], i);
+		}
+		else
+		{
+			CurrentBandChannel->Next->SetDefaultValues(FVector2d(0,0), i);
+			CurrentBandThreshold->Next->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[0], i);
 		}
 		CurrentBandChannel = CurrentBandChannel->Next;
 		CurrentBandThreshold = CurrentBandThreshold->Next;
@@ -123,7 +129,7 @@ void UAASettingsWidget::PopulateAASettings()
 	UBandChannelWidget* CurrentBandChannelWidget = BandChannelWidget;
 	UBandThresholdWidget* CurrentBandThresholdWidget = BandThresholdWidget;
 	int Count = 0;
-	while (Count < MaxNumBandChannels)
+	while (Count < FAASettingsStruct().MaxNumBandChannels)
 	{
 		if (Count <= NewAASettings.NumBandChannels - 1)
 		{
@@ -149,8 +155,18 @@ void UAASettingsWidget::PopulateAASettings()
 
 void UAASettingsWidget::SaveAASettingsToSlot()
 {
+	NewAASettings.BandLimits.RemoveAll([this] (const FVector2d& BandLimit)
+	{
+		if (BandLimit == FVector2d(0,0))
+		{
+			return true;
+		}
+		return false;
+	});
+	NewAASettings.NumBandChannels = NewAASettings.BandLimits.Num();
+	NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.BandLimits.Num());
 	SaveAASettings(NewAASettings);
-	OnAASettingsChange.Broadcast(AASettings);
+	OnAASettingsChange.Broadcast(NewAASettings);
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
@@ -161,10 +177,19 @@ void UAASettingsWidget::ResetAASettings()
 	UBandThresholdWidget* CurrentBandThreshold = BandThresholdWidget;
 	CurrentBandChannel->SetDefaultValues(NewAASettings.BandLimits[0], 0);
 	CurrentBandThreshold->SetDefaultValue(NewAASettings.BandLimitsThreshold[0], 0);
-	for (int i = 1; i < MaxNumBandChannels; i++)
+	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
+	for (int i = 1; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
-		CurrentBandChannel->Next->SetDefaultValues(NewAASettings.BandLimits[i], i);
-		CurrentBandThreshold->Next->SetDefaultValue(NewAASettings.BandLimitsThreshold[i], i);
+		if (DefaultAASettings.NumBandChannels > i)
+		{
+			CurrentBandChannel->Next->SetDefaultValues(DefaultAASettings.BandLimits[i], i);
+			CurrentBandThreshold->Next->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[i], i);
+		}
+		else
+		{
+			CurrentBandChannel->Next->SetDefaultValues(FVector2d(0,0), i);
+			CurrentBandThreshold->Next->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[0], i);
+		}
 		CurrentBandChannel = CurrentBandChannel->Next;
 		CurrentBandThreshold = CurrentBandThreshold->Next;
 	}
