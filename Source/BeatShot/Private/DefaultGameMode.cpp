@@ -109,7 +109,7 @@ void ADefaultGameMode::UpdateVisualizers(const TArray<float> SpectrumValues)
 			CurrentCubeSpectrumValues[i] = SpectrumValues[i];
 		}
 
-		if (SpectrumValues[i] > CurrentSpectrumValues[i] && CurrentSpectrumValues[i] <= 0)
+		if (SpectrumValues[i] > 0 && CurrentSpectrumValues[i] < 0)
 		{
 			CurrentSpectrumValues[i] = SpectrumValues[i];
 			if (Visualizers[2])

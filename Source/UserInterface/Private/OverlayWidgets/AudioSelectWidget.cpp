@@ -291,6 +291,6 @@ void UAudioSelectWidget::ShowSongPathErrorMessage()
 
 void UAudioSelectWidget::HideSongPathErrorMessage()
 {
-	PopupMessageWidget->RemoveFromViewport();
+	PopupMessageWidget->FadeOut();
 	FadeOut();
 }

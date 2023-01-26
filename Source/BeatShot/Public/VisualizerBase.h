@@ -16,22 +16,21 @@ class BEATSHOT_API AVisualizerBase : public AActor, public ISaveLoadInterface
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	AVisualizerBase();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+public:	
 
 	/** Destroys any existing components and repopulates based on AASettings.NumBandChannels */
 	UFUNCTION()
 	virtual void InitializeVisualizer();
 
-	/** Called by the owning object (DefaultGameMode) every time an update should be propagated */
+	/** Updates a visualizer state at Index inside Visualizers array. SpectrumAlpha should be a value between
+	 *  0 and 1, with 1 being the maximum visualizer state and 0 being the minimum */
 	UFUNCTION()
 	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha);
 

@@ -13,36 +13,40 @@ UCLASS()
 class BEATSHOT_API AStaticCubeVisualizer : public AVisualizerBase
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	AStaticCubeVisualizer();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 public:
-	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	
+	AStaticCubeVisualizer();
+
+	/** Deletes all existing visualizers and generates a new array of visualizers based on AASettings */
 	virtual void InitializeVisualizer() override;
-	
+
+	/** Updates the CubeHeightScale and the RedGreenAlpha for a cube at Index */
 	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
 
-	float GetScaledHeight(const float SpectrumValue);
+protected:
+	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
 	UStaticMesh* CubeMesh;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
 	UMaterialInterface* CubeMaterial;
 
-	const float MaxZScale = 10.f;
+private:
+	/** Returns the SpectrumValue scaled between MinCubeHeightScale and MaxCubeHeightScale */
+	float GetScaledHeight(const float SpectrumValue) const;
 
+	/** Using this array instead of Visualizers array */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UStaticMeshComponent*> Cubes;
+
+	const float MinCubeHeightScale = 1;
+
+	const float MaxCubeHeightScale = 4;
+
+	const int32 CustomDepthStencilValue = 0;
+
+	const FVector CubeOffset = FVector(0,-110, 0);
 };
-
-

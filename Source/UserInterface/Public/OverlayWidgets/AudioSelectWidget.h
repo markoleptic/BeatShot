@@ -143,8 +143,6 @@ protected:
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
-
-
 	
 	/** Opens file dialog for song selection. The Implementation version only checks the fullscreen mode,
 	 *  and changes it to Windowed Fullscreen if necessary */

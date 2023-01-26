@@ -5,9 +5,10 @@ AA_BandChannelText,Channel
 AA_BandChannelUnit,(Hertz)
 AA_BandChannelUpper,Upper Bound:
 AA_BandLimits,Band Limits
-AA_BandLimits_Help,Here you can define custom beat tracking bounds for up to 12 channels. Must be sorted with no overlap (Closed Intervals).
+AA_BandLimits_Help,Here you can define custom frequency bounds for up to 32 channels. Must have no overlap (Closed Intervals).
 AA_BandLimitThreshold,Band Limit Threshold
 AA_BandLimitThreshold_Help,The threshold value changes how sensitive the analyzer is to music. Values greater than Threshold * Average trigger a target to spawn.
+AA_BandLimitThresholdError,One or more band limits are overlapping. Remove the overlap to save your settings.
 AA_NumBandChannels,Number of Band Channels
 AA_ResetButtonText,Reset Analyzer Settings
 AA_RestartText,These Settings Require a GameMode Restart to Take Effect

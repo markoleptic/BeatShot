@@ -8,7 +8,6 @@
 #include "SimpleBeamLight.generated.h"
 
 class USpotLightComponent;
-class UPointLightComponent;
 class UNiagaraComponent;
 class UNiagaraSystem;
 class UCurveLinearColor;
@@ -19,70 +18,109 @@ UCLASS()
 class BEATSHOT_API ASimpleBeamLight : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
+
+public:
 	ASimpleBeamLight();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	UFUNCTION()
-	void UpdateNiagaraBeam(float Value);
 
+public:
+	/** Activates the Niagara System, sets the BeamWidth parameter, and plays the ColorTimeline */
+	UFUNCTION()
+	void UpdateNiagaraBeam(const float Alpha);
+
+private:
+	/** Deactivates the Niagara System and stops the ColorTimeline */
 	UFUNCTION()
 	void OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent);
-	
-	UFUNCTION()
-	void SetEmissiveLightColor(FLinearColor Value);
 
-	UFUNCTION(BlueprintCallable)
+	/** Main function that calls all other SetColor functions */
+	UFUNCTION()
+	void SetLightColor(const FLinearColor Color);
+
+	/** Sets the color and intensity of the EmissiveLightBulb */
+	void SetEmissiveBulbColor(const FLinearColor Color);
+
+	/** Sets the color and intensity of the Spotlight */
+	void SetSpotlightColor(const FLinearColor Color);
+
+	/** Sets the color and intensity of the BeamEndLight */
+	void SetBeamEndLightColor(const FLinearColor Color);
+
+	/** Traces a line forward from SpotlightHead and if a blocking hit is found, sets the BeamEndLight to the correct
+	 *  location and rotation. Disables the BeamEndLight if not blocking hit is found */
+	UFUNCTION()
 	void LineTrace();
 
-	const float TraceDistance = 999999;
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMeshComponent* SpotlightBase;
 
-	FTimeline EmissiveBulbTimeline;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMeshComponent* SpotlightLimb;
 
-	UPROPERTY(EditDefaultsOnly)
-	UCurveLinearColor* EmissiveLightCurve;
-	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
+	UStaticMeshComponent* SpotlightHead;
+
+	/** Niagara system for the visible beam of light */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Niagara")
 	UNiagaraSystem* SimpleBeam;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** Niagara component that SimpleBeam resides in */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Niagara")
 	UNiagaraComponent* SimpleBeamComponent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* Spots_SpotBase;
+	/** The actual spotlight light that appears at the end of the SimpleBeam */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lights")
+	USpotLightComponent* Spotlight;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* Spots_SpotLimb;
+	/** Indirect lighting applied to the area at the end of the SimpleBeam */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lights")
+	USpotLightComponent* BeamEndLight;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* Spots_SpotHead;
+	/** The color values over time to apply to the lights */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lights | Curves")
+	UCurveLinearColor* LightColorCurve;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UPointLightComponent* BeamIllumination;
+	/** The base color to apply to all lights */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Lights | Color")
+	FLinearColor LightColor = FLinearColor::White;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USpotLightComponent* BeamStartSpotLight;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	USpotLightComponent* BeamEndSpotLight;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UMaterialInterface* EmissiveLightBulbMaterial;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	/** The light inside the SpotlightHead */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
 	UMaterialInstanceDynamic* EmissiveLightBulb;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FLinearColor LightColor = FLinearColor::White;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	UMaterialInterface* EmissiveLightBulbMaterial;
+
+private:
+	/** The timeline to link to the LightColorCurve */
+	FTimeline ColorTimeline;
+
+	/** Delegate that binds the ColorTimeline to SetColor() */
+	FOnTimelineLinearColor ColorTimelineDelegate;
+
+	/** Inner cone angle for the Spotlight */
+	float InnerConeAngle = 0.5;
+
+	/** Outer cone angle for the Spotlight */
+	float OuterConeAngle = 1.5;
+
+	/** The distance to trace the line */
+	const float TraceDistance = 999999;
+
+	/** The max value of the Spotlight intensity */
+	const float MaxSpotlightIntensity = 16000000;
+
+	/** The max value of the BeamEndLight intensity */
+	const float MaxBeamEndLightIntensity = 80000;
+
+	/** The distance to trace the line */
+	const float MaxBeamWidth = 50;
+
+	/** Offset to apply to the location of the BeamEndLight */
+	const float BeamEndLightOffset = 5;
 };
-
-

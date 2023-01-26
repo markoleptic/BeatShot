@@ -24,6 +24,7 @@ class UComboBox;
 class UTextBlock;
 class USavedTextWidget;
 class UProgressBar;
+class UPopupMessageWidget;
 
 /**
  * 
@@ -35,6 +36,8 @@ class USERINTERFACE_API UAASettingsWidget : public UUserWidget, public ISaveLoad
 	GENERATED_BODY()
 
 public:
+
+	virtual void NativeConstruct() override;
 	
 	UPROPERTY()
 	FOnRestartButtonClicked OnRestartButtonClicked;
@@ -46,8 +49,6 @@ public:
 	void InitMainMenuChild();
 
 protected:
-
-	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UVerticalBox* BandChannelBounds;
@@ -90,22 +91,39 @@ protected:
 	UButton* SaveAASettingsButton;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UButton* SaveAndRestartButton;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
+	UPROPERTY()
+	UPopupMessageWidget* PopupMessageWidget;
 	
-	UFUNCTION()
-	void OnSaveAndRestartButtonClicked();
 	UFUNCTION()
 	void OnNumBandChannelsSelectionChanged(FString NewNum, ESelectInfo::Type SelectType);
 	
-	/* Update values in Settings Menu to match AASettings */
+	/** Update values in Settings Menu to match AASettings */
 	UFUNCTION()
 	void PopulateAASettings();
-	/* Save AASettings to Save slot */
+	
+	/** Save AASettings to Save slot */
 	UFUNCTION()
 	void SaveAASettingsToSlot();
-	/* Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save */
+	
+	/** Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save */
 	UFUNCTION()
 	void ResetAASettings();
+	
+	/** Sorts NewAASettings and checks for overlapping Band Channels. Calls ShowBandLimitErrorMessage() if it finds
+	 *  an overlap */
+	UFUNCTION()
+	void SortAndCheckOverlap();
 
+	/** Adds a popup message to the viewport displaying the error */
+	void ShowBandLimitErrorMessage();
+
+	/** Hides the error message */
+	UFUNCTION()
+	void HideSongPathErrorMessage();
+	
 	const float Hundredths = 0.01f;
 };
 

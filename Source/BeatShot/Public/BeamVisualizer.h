@@ -8,8 +8,6 @@
 #include "BeamVisualizer.generated.h"
 
 class ASimpleBeamLight;
-class ABeamLight;
-class ABeamTarget;
 
 UCLASS()
 class BEATSHOT_API ABeamVisualizer : public AVisualizerBase
@@ -17,25 +15,28 @@ class BEATSHOT_API ABeamVisualizer : public AVisualizerBase
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
 	ABeamVisualizer();
 
+	/** Calls the parent implementation and spawns a new array of visualizers given the current AASettings */
+	virtual void InitializeVisualizer() override;
+
+	/** Calls UpdateNiagaraBeam for the Index of the current visualizer */
+	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
+
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void InitializeVisualizer() override;
+	virtual void Destroyed() override;
 	
-	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
+	virtual void Tick(float DeltaTime) override;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
 	
-	const FVector InitialBeamLocation = {0,1920,1320};
-	const FRotator BeamRotation = {0,0,90};
-	const FVector BeamOffset = {100, 0, 0};
+private:
+	const FVector InitialBeamLightLocation = {0, 1920, 1320};
+	
+	const FRotator BeamLightRotation = {90, 0, 90};
+	
+	const FVector BeamLightOffset = {100, 0, 0};
 };

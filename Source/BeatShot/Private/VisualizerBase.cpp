@@ -19,6 +19,11 @@ void AVisualizerBase::Tick(float DeltaTime)
 
 void AVisualizerBase::InitializeVisualizer()
 {
+	for (AActor* Visualizer : Visualizers)
+	{
+		Visualizer->Destroy();
+	}
+	Visualizers.Empty();
 }
 
 void AVisualizerBase::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)

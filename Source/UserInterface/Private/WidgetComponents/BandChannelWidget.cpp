@@ -16,6 +16,8 @@ void UBandChannelWidget::NativeConstruct()
 
 void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 ChannelIndex)
 {
+	// FNumberFormattingOptions NumberFormattingOptions;
+	// NumberFormattingOptions.SetRoundingMode(ER)
 	BandChannelMin->SetText(FText::AsNumber(Values.X));
 	BandChannelMax->SetText(FText::AsNumber(Values.Y));
 	const TArray ChannelNumber = { FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"),
@@ -46,6 +48,16 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), "," ,""));
+	if (NewFloatValue < AbsoluteMin)
+	{
+		BandChannelMin->SetText(FText::AsNumber(0));
+		return;
+	}
+	if (NewFloatValue > AbsoluteMax)
+	{
+		BandChannelMin->SetText(FText::AsNumber(22720));
+		return;
+	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, true))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnChannelValueCommitted not bound."));
@@ -55,6 +67,16 @@ void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit:
 void UBandChannelWidget::OnMaxValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), "," ,""));
+	if (NewFloatValue < AbsoluteMin)
+	{
+		BandChannelMax->SetText(FText::AsNumber(0));
+		return;
+	}
+	if (NewFloatValue > AbsoluteMax)
+	{
+		BandChannelMax->SetText(FText::AsNumber(22720));
+		return;
+	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, false))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnChannelValueCommitted not bound."));

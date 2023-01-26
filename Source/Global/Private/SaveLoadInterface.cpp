@@ -20,6 +20,7 @@ void ISaveLoadInterface::SaveAASettings(const FAASettingsStruct AASettingsToSave
 {
 	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
+		SaveGameObject->PlayerSettings = LoadPlayerSettings();
 		SaveGameObject->AASettings = AASettingsToSave;
 		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
 	}
@@ -44,6 +45,7 @@ void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings PlayerSettings
 	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
 		SaveGameObject->PlayerSettings = PlayerSettingsToSave;
+		SaveGameObject->AASettings = LoadAASettings();
 		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
 	}
 }

@@ -15,29 +15,28 @@ ASimpleBeamLight::ASimpleBeamLight()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	Spots_SpotBase = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spots_SpotBase"));
-	RootComponent = Spots_SpotBase;
+	SpotlightBase = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightBase"));
+	RootComponent = SpotlightBase;
+
+	SpotlightLimb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightLimb"));
+	SpotlightLimb->SetupAttachment(SpotlightBase);
+	SpotlightLimb->SetRelativeLocation(FVector(0, 0, -18));
 	
-	Spots_SpotLimb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spots_SpotLimb"));
-	Spots_SpotLimb->SetupAttachment(Spots_SpotBase);
-	Spots_SpotLimb->SetRelativeLocation(FVector(0, 0, -18));
-	
-	Spots_SpotHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Spots_SpotHead"));
-	Spots_SpotHead->SetupAttachment(Spots_SpotLimb);
-	Spots_SpotHead->SetRelativeLocation(FVector(0, 0, -41));
-	
-	BeamStartSpotLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamStartSpotLight"));
-	BeamStartSpotLight->SetupAttachment(Spots_SpotHead);
-	BeamStartSpotLight->SetRelativeLocation(FVector(22, 0, 0));
-	
-	BeamEndSpotLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamEndSpotLight"));
-	BeamEndSpotLight->SetupAttachment(Spots_SpotHead);
-	
-	BeamIllumination = CreateDefaultSubobject<UPointLightComponent>(TEXT("BeamIllumination"));
-	BeamIllumination->SetupAttachment(Spots_SpotHead);
-	
+	SpotlightHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightHead"));
+	SpotlightHead->SetupAttachment(SpotlightLimb);
+	SpotlightHead->SetRelativeLocation(FVector(0, 0, -41));
+	SpotlightHead->SetRelativeRotation(FRotator(-90, 0, 0));
+
+	Spotlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Spotlight"));
+	Spotlight->SetupAttachment(SpotlightHead);
+	Spotlight->SetRelativeLocation(FVector(22, 0, 0));
+
+	BeamEndLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamEndLight"));
+	BeamEndLight->SetupAttachment(SpotlightHead);
+	BeamEndLight->SetAutoActivate(false);
+
 	SimpleBeamComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SimpleBeam"));
-	SimpleBeamComponent->SetupAttachment(Spots_SpotHead);
+	SimpleBeamComponent->SetupAttachment(SpotlightHead);
 	SimpleBeamComponent->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
 	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
 	SimpleBeamComponent->SetAutoActivate(false);
@@ -46,88 +45,112 @@ ASimpleBeamLight::ASimpleBeamLight()
 void ASimpleBeamLight::BeginPlay()
 {
 	Super::BeginPlay();
+
 	LineTrace();
-
-	BeamStartSpotLight->SetIntensity(0);
-	BeamStartSpotLight->SetLightColor(LightColor);
-
-	BeamEndSpotLight->SetIntensity(0);
-	BeamEndSpotLight->SetLightColor(LightColor);
-
-	EmissiveLightBulbMaterial = Spots_SpotHead->GetMaterial(1);
+	
+	EmissiveLightBulbMaterial = SpotlightHead->GetMaterial(1);
 	EmissiveLightBulb = UMaterialInstanceDynamic::Create(EmissiveLightBulbMaterial, this);
-	Spots_SpotHead->SetMaterial(1, EmissiveLightBulb);
-	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), LightColor);
-	EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), 0);
+	SpotlightHead->SetMaterial(1, EmissiveLightBulb);
+
+	Spotlight->SetInnerConeAngle(InnerConeAngle);
+	Spotlight->SetOuterConeAngle(OuterConeAngle);
 	
-	FOnTimelineLinearColor OnEmissiveLightTimeline;
-	OnEmissiveLightTimeline.BindUFunction(this, FName("SetEmissiveLightColor"));
-	EmissiveBulbTimeline.AddInterpLinearColor(EmissiveLightCurve, OnEmissiveLightTimeline);
-	
+	SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+	SetBeamEndLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+
+	ColorTimelineDelegate.BindUFunction(this, FName("SetLightColor"));
+	ColorTimeline.AddInterpLinearColor(LightColorCurve, ColorTimelineDelegate);
+
 	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
 }
 
 void ASimpleBeamLight::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (EmissiveBulbTimeline.IsPlaying())
+	if (ColorTimeline.IsPlaying())
 	{
-		EmissiveBulbTimeline.TickTimeline(DeltaTime);
+		ColorTimeline.TickTimeline(DeltaTime);
 	}
 }
 
-void ASimpleBeamLight::UpdateNiagaraBeam(const float Value)
+void ASimpleBeamLight::UpdateNiagaraBeam(const float Alpha)
 {
 	if (SimpleBeamComponent)
 	{
 		SimpleBeamComponent->Activate();
-		const float ClampedValue = UKismetMathLibrary::MapRangeClamped(Value, 0, 1, 0, 50);
-		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), ClampedValue);
-		EmissiveBulbTimeline.PlayFromStart();
+		const float ClampedAlpha = UKismetMathLibrary::MapRangeClamped(Alpha, 0, 1, 0, MaxBeamWidth);
+		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), ClampedAlpha);
+		ColorTimeline.PlayFromStart();
 	}
 }
 
 void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent)
 {
-	NiagaraComponent->Deactivate();
-	if (EmissiveBulbTimeline.IsPlaying())
+	if (ColorTimeline.IsPlaying())
 	{
-		EmissiveBulbTimeline.Stop();
-		SetEmissiveLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
-		BeamStartSpotLight->SetIntensity(0);
-		BeamEndSpotLight->SetIntensity(0);
+		ColorTimeline.Stop();
+	}
+	SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+	NiagaraComponent->Deactivate();
+}
+
+void ASimpleBeamLight::SetLightColor(const FLinearColor Color)
+{
+	SetEmissiveBulbColor(Color);
+	SetSpotlightColor(Color);
+	if (BeamEndLight->IsActive())
+	{
+		SetBeamEndLightColor(Color);
 	}
 }
 
-void ASimpleBeamLight::SetEmissiveLightColor(const FLinearColor Value)
+void ASimpleBeamLight::SetEmissiveBulbColor(const FLinearColor Color)
 {
 	if (EmissiveLightBulb)
 	{
-		EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), Value.A * 8);
-		BeamStartSpotLight->SetIntensity(Value.A * 16000000);
-		BeamEndSpotLight->SetIntensity(Value.A * 80000);
+		EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), Color);
+	}
+}
+
+void ASimpleBeamLight::SetSpotlightColor(const FLinearColor Color)
+{
+	if (Spotlight)
+	{
+		Spotlight->SetIntensity(Color.A * MaxSpotlightIntensity);
+	}
+}
+
+void ASimpleBeamLight::SetBeamEndLightColor(const FLinearColor Color)
+{
+	if (BeamEndLight)
+	{
+		BeamEndLight->SetIntensity(Color.A * MaxBeamEndLightIntensity);
 	}
 }
 
 void ASimpleBeamLight::LineTrace()
 {
-	const FVector StartLoc = Spots_SpotHead->GetComponentLocation();
-	const FVector EndLoc = Spots_SpotHead->GetForwardVector() * FVector(
-		TraceDistance, TraceDistance, TraceDistance);
-	DrawDebugLine(GetWorld(), StartLoc, EndLoc, FColor::Red, false, 10.f);
+	const FVector StartLoc = SpotlightHead->GetComponentLocation();
+	const FVector EndLoc = SpotlightHead->GetForwardVector() * FVector(TraceDistance);
+	//DrawDebugLine(GetWorld(), StartLoc, EndLoc, FColor::Red, false, 10.f);
 	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLoc, ECC_Camera,
-															 FCollisionQueryParams::DefaultQueryParam))
+	                                                         FCollisionQueryParams::DefaultQueryParam))
 	{
 		const FVector HitLoc = Hit.Location;
 		const FVector HitNormal = Hit.Normal;
 		if (Hit.bBlockingHit)
 		{
-			BeamEndSpotLight->SetWorldLocation(HitLoc + Spots_SpotHead->GetComponentRotation().Vector() * 5);
-			FRotator BeamEndRotation = (Spots_SpotHead->GetForwardVector() * FVector(
-		TraceDistance, TraceDistance, TraceDistance) - HitNormal.Dot(Spots_SpotHead->GetForwardVector() * FVector(
-		TraceDistance, TraceDistance, TraceDistance)) * 2 * HitNormal).Rotation();
-			
-			BeamEndSpotLight->SetWorldRotation(BeamEndRotation);
+			BeamEndLight->SetWorldLocation(HitLoc + SpotlightHead->GetComponentRotation().Vector() * BeamEndLightOffset);
+			FVector ForwardVector = SpotlightHead->GetForwardVector() * FVector(TraceDistance);
+			double DotProduct = HitNormal.Dot(SpotlightHead->GetForwardVector() * FVector(TraceDistance));
+			FRotator BeamEndRotation = (ForwardVector - DotProduct * 2 * HitNormal).Rotation();
+			BeamEndLight->SetWorldRotation(BeamEndRotation);
+			BeamEndLight->Activate();
+			Spotlight->SetAttenuationRadius(Hit.Distance + 500);
 		}
+	}
+	else
+	{
+		BeamEndLight->Deactivate();
 	}
 }
