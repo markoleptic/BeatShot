@@ -31,6 +31,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* MoonMesh;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UMaterialInstanceDynamic* MoonMaterialInstance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UMaterial* MoonMaterial;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UDirectionalLightComponent* MoonLight;
 
@@ -39,6 +45,10 @@ public:
 	const FVector MoonMeshScale = {400, 400, 400};
 
 	const FVector MoonLightScale = {0.0025, 0.0025, 0.0025};
+
+	const FRotator DaytimeMoonRotation = {0, 0, -180};
+
+	const FRotator NighttimeMoonRotation = {0, 0, 0};
 
 	const float SphereCompRadius = 400000;
 };

@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/TimelineComponent.h"
 #include "Engine/LevelScriptActor.h"
 #include "RangeLevelScriptActor.generated.h"
 
 class AVolumetricCloud;
 class ADirectionalLight;
 class ARectLight;
+class UCurveFloat;
 class AMoon;
 class UMaterialInstanceDynamic;
 
@@ -36,19 +38,10 @@ protected:
 	AActor* SkySphere;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<UStaticMeshComponent> StaticMeshComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UMaterialInterface* StarrySkyMat;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UMaterialInterface* MoonMaterial;
+	AMoon* Moon;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UMaterialInstanceDynamic* StarrySkyMatDynamic;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UMaterialInstanceDynamic* MoonMatDynamic;
+	UMaterialInstanceDynamic* SkySphereMaterial;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	AVolumetricCloud* VolumetricCloud;
@@ -58,35 +51,44 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ARectLight* TargetSpawnerLight;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AMoon> MoonClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	AMoon* Moon;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 StreakThreshold = 1;
-	
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* MovementCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* SkyMaterialCurve;
+
+	FTimeline TransitionTimeline;
+
+	FOnTimelineFloat OnTransitionTick;
+
+	FOnTimelineFloat OnTransitionMaterialTick;
+
+	FOnTimelineEvent OnTimelineCompleted;
+
 	void BeginNightTransition();
 
-	void RotateSun();
+	void BeginDayTransition();
 
-	void RotateMoon();
-
-	void TransitionToNight(float DeltaTime);
-
-	bool bStreakActive;
-
-	bool bMoonPositionReached;
-
-	const float CycleSpeed = 30;
-
-	const FRotator StartMoonRotation = {0,0,180};
+	UFUNCTION()
+	void OnTimelineCompletedCallback();
 	
-	const FRotator EndMoonRotation = {0,0,0};
+	UFUNCTION()
+	void TransitionDayState(float Alpha);
 
-	const FRotator StartSunRotation = {-46, 0, 0};
-	
-	const FRotator EndSunRotation = {60,-180,0};
+	UFUNCTION()
+	void TransitionDayStateMaterial(float Alpha);
+
+	bool bIsDaytime;
+
+	bool bIsTransitioning;
+
+	const float CycleSpeed = 20;
+
+	float LastLerpRotation;
 };
+
+

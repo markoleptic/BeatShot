@@ -10,59 +10,15 @@
       <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_MoonAndSphere.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Lights/BP_MoonAndSphere.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_Moon.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Lights/BP_Moon.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_MoonAndSphere.uasset" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Lights/BP_SimpleBeamLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Lights/BP_SimpleBeamLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Lights/NE_SimpleBeam.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Lights/NE_SimpleBeam.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Lights/NS_SimpleBeam.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Lights/NS_SimpleBeam.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Lights/NewCurveBase.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/BP_BeamLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Migrated/BP_BeamLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/M_SpotMesh.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Mat_Emissive.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Mat_Emissive_Inst.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/SpotX_SpotHead001.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Spots_SpotBase.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Migrated/Spots_SpotLimb.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Ceiling_Metal_1.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Concrete_2.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Metal_Walkway_2.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Steel_1.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Steel_4.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Steel_4.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Materials/MasterMaterial/M_Steel_5.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Building_Ceiling_1.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Building_Ceiling_1.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Ceiling_3.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Ceiling_Metal_1.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Ceiling_Metal_2.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Ceiling_Metal_2_Cut.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Meshes/SM_Ceiling_Metal_2_Cut2.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Ceiling_Metal_1_B.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Ceiling_Metal_1_N.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Ceiling_Metal_1_ORM.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_1_AO.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_1_B.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_1_N.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_1_R.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_2_AO.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_2_B.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_2_N.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Concrete_2_R.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_MetalWalkway_2_B.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_MetalWalkway_2_M.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_MetalWalkway_2_N.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_MetalWalkway_2_O.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_MetalWalkway_2_R.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Steel_1_B.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Steel_1_N.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/ResearchMegaPack/ResearchUnderground/Textures/T_Steel_1_ORM.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BeamVisualizer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BeamVisualizer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/CC_SimpleBeam.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/VC_BeamEndPosition.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Moon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Moon.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeLevelScriptActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeLevelScriptActor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SimpleBeamLight.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SimpleBeamLight.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BeamVisualizer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BeamVisualizer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameMode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Moon.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Moon.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RangeLevelScriptActor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RangeLevelScriptActor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SimpleBeamLight.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SimpleBeamLight.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -91,7 +47,7 @@
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CppOtherInlayHintsOptions&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.Color Scheme Font&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -248,7 +204,10 @@
       <workItem from="1674671738763" duration="28500000" />
       <workItem from="1674770436568" duration="12895000" />
       <workItem from="1674845313632" duration="12978000" />
-      <workItem from="1674945612468" duration="12086000" />
+      <workItem from="1674945612468" duration="12337000" />
+      <workItem from="1675097489058" duration="316000" />
+      <workItem from="1675097851235" duration="367000" />
+      <workItem from="1675098282414" duration="16643000" />
     </task>
     <servers />
   </component>

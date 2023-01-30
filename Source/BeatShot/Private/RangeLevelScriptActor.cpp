@@ -9,6 +9,7 @@
 #include "Components/DirectionalLightComponent.h"
 #include "Components/LightComponent.h"
 #include "Components/SphereComponent.h"
+#include "Components/TimelineComponent.h"
 #include "Components/VolumetricCloudComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/RectLight.h"
@@ -17,92 +18,124 @@
 
 ARangeLevelScriptActor::ARangeLevelScriptActor()
 {
-
+	LastLerpRotation = 0;
+	bIsTransitioning = false;
+	bIsDaytime = true;
 }
 
 void ARangeLevelScriptActor::BeginPlay()
 {
 	Super::BeginPlay();
 	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnStreakUpdate.AddDynamic(this, &ARangeLevelScriptActor::OnStreakUpdated);
+	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
+	TransitionTimeline.SetTimelineFinishedFunc(OnTimelineCompleted);
+	OnTransitionTick.BindUFunction(this, FName("TransitionDayState"));
+	TransitionTimeline.AddInterpFloat(MovementCurve, OnTransitionTick);
+	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionDayStateMaterial"));
+	TransitionTimeline.AddInterpFloat(SkyMaterialCurve, OnTransitionMaterialTick);
+	SkySphereMaterial = Cast<UMaterialInstanceDynamic>(Cast<UStaticMeshComponent>(SkySphere->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
 }
 
 void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (bStreakActive && !bMoonPositionReached)
+	UE_LOG(LogTemp, Display, TEXT("Tick %f"), DeltaSeconds);
+	if (TransitionTimeline.IsPlaying())
 	{
-		TransitionToNight(DeltaSeconds);
+		TransitionTimeline.TickTimeline(DeltaSeconds);
 	}
 }
 
 void ARangeLevelScriptActor::OnStreakUpdated(const int32 NewStreak, const FVector Position)
 {
-	if (bStreakActive)
+	if (bIsTransitioning)
 	{
 		return;
 	}
 	if (NewStreak > StreakThreshold)
 	{
-		BeginNightTransition();
+		if (bIsDaytime)
+		{
+			BeginNightTransition();
+		}
+		else
+		{
+			BeginDayTransition();
+		}
 	}
+}
+
+void ARangeLevelScriptActor::OnTimelineCompletedCallback()
+{
+	bIsTransitioning = false;
+	if (Moon->SphereComponent->GetRelativeRotation().Equals(Moon->DaytimeMoonRotation, 1.f))
+	{
+		bIsDaytime = true;
+	}
+	else
+	{
+		bIsDaytime = false;
+	}
+	BeginDayTransition();
 }
 
 void ARangeLevelScriptActor::BeginNightTransition()
 {
-	UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(SkySphere->GetComponentByClass(UStaticMeshComponent::StaticClass()));
-	StarrySkyMatDynamic = Mesh->CreateDynamicMaterialInstance(0, StarrySkyMat, "StarrySky");
-	Mesh->SetMaterial(0, StarrySkyMatDynamic);
-	MoonMatDynamic = Moon->MoonMesh->CreateDynamicMaterialInstance(0, MoonMaterial, "MoonMatDynamic");
+	UE_LOG(LogTemp, Display, TEXT("Beginning NightTransition"));
+	LastLerpRotation = 0;
 	VolumetricCloud->Destroy();
-	bStreakActive = true;
+	bIsTransitioning = true;
+	TransitionTimeline.SetPlayRate(1.f/CycleSpeed);
+	TransitionTimeline.PlayFromStart();
 }
 
-void ARangeLevelScriptActor::RotateSun()
+void ARangeLevelScriptActor::BeginDayTransition()
 {
+	UE_LOG(LogTemp, Display, TEXT("Beginning DayTransition"));
+	LastLerpRotation = 0;
+	VolumetricCloud = GetWorld()->SpawnActor<AVolumetricCloud>(AVolumetricCloud::StaticClass());
+	bIsTransitioning = true;
+	TransitionTimeline.SetPlayRate(1.f/CycleSpeed);
+	TransitionTimeline.PlayFromStart();
 }
 
-void ARangeLevelScriptActor::RotateMoon()
+void ARangeLevelScriptActor::TransitionDayState(float Alpha)
 {
-}
-
-void ARangeLevelScriptActor::TransitionToNight(float DeltaTime)
-{
-	//if (Moon->SphereComponent->GetRelativeRotation().Roll >= 179)
-	//{
-	//	bMoonPositionReached = true;
-	//	return;
-	//}
-
-	//Daylight->GetLightComponent()->AddLocalRotation(FRotator(0, DeltaTime * CycleSpeed, 0));
-	//Moon->SphereComponent->AddLocalRotation(FRotator(0, - DeltaTime * CycleSpeed, 0));
-	//Moon->MoonLight->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(Moon->MoonLight->GetComponentLocation(), FVector::Zero()));
-	//float Value = 0.f;
-	//float DaylightIntensity = 0.f;
-	//if (Daylight->GetActorRotation().Yaw > 90)
-	//{
-		//MoonMatDynamic->SetScalarParameterValue("Opacity", Value);
-		//TargetSpawnerLight->GetLightComponent()->SetIntensity(DaylightIntensity);
-	//}
-	//else if (Daylight->GetActorRotation().Yaw > -130)
-	//{
-	//}
-	
-	if (Moon->SphereComponent->GetRelativeRotation() == EndMoonRotation)
+	float Value;
+	if (bIsDaytime)
 	{
-		bMoonPositionReached = true;
-		return;
+		Value = UKismetMathLibrary::Lerp(0, 1, Alpha);
 	}
-	const FRotator NewMoonlightRotation = UKismetMathLibrary::RInterpTo(Moon->SphereComponent->GetRelativeRotation(),
-	                                                                   EndMoonRotation, DeltaTime, 0.2);
-	Moon->SphereComponent->SetRelativeRotation(NewMoonlightRotation);
+	else
+	{
+		Value = UKismetMathLibrary::Lerp(1, 0, Alpha);
+	}
+
 	Moon->MoonLight->SetRelativeRotation(UKismetMathLibrary::FindLookAtRotation(Moon->MoonLight->GetComponentLocation(), FVector::Zero()));
-	float Value = UKismetMathLibrary::FInterpTo(TargetSpawnerLight->GetLightComponent()->Intensity, 1, DeltaTime, 0.2);
-	MoonMatDynamic->SetScalarParameterValue("Opacity", Value);
 	TargetSpawnerLight->GetLightComponent()->SetIntensity(Value);
-	const FRotator NewSunlightRotation = UKismetMathLibrary::RInterpTo(Daylight->GetLightComponent()->GetRelativeRotation(),
-		EndSunRotation, DeltaTime, 0.2);
-	Daylight->GetLightComponent()->SetRelativeRotation(NewSunlightRotation);
+	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", Value);
+	
+	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Alpha);
+	
+	Moon->SphereComponent->AddLocalRotation(FRotator(0, 0, -(CurrentLerpRotation - LastLerpRotation)));
+	Daylight->GetLightComponent()->AddLocalRotation(FRotator(0, CurrentLerpRotation - LastLerpRotation, 0));
+	
+	LastLerpRotation = CurrentLerpRotation;
 	RefreshSkySphereMaterial();
+	UE_LOG(LogTemp, Display, TEXT("Daylight Rotation: %s"), *Daylight->GetLightComponent()->GetRelativeRotation().ToString());
 }
 
+void ARangeLevelScriptActor::TransitionDayStateMaterial(float Alpha)
+{
+	float Value;
+	if (bIsDaytime)
+	{
+		Value = UKismetMathLibrary::Lerp(0, 1, Alpha);
+	}
+	else
+	{
+		Value = UKismetMathLibrary::Lerp(1, 0, Alpha);
+	}
+	SkySphereMaterial->SetScalarParameterValue("NightAlpha", Value);
+}

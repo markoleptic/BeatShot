@@ -10,12 +10,13 @@
 AMoon::AMoon()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	SphereComponent	= CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->SetMobility(EComponentMobility::Movable);
 	SphereComponent->SetSphereRadius(SphereCompRadius);
+	SphereComponent->SetRelativeRotation(DaytimeMoonRotation);
 
 	MoonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MoonMesh"));
 	MoonMesh->SetupAttachment(SphereComponent);
@@ -33,7 +34,6 @@ AMoon::AMoon()
 void AMoon::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
