@@ -129,7 +129,7 @@ void ADefaultGameMode::UpdateVisualizers(const TArray<float> SpectrumValues)
 
 		if (CurrentSpectrumValues[i] >= 0)
 		{
-			CurrentSpectrumValues[i] -= 0.0005;
+			CurrentSpectrumValues[i] -= (AvgSpectrumValues[i] / 120);
 		}
 		if (CurrentCubeSpectrumValues[i] >= 0)
 		{
@@ -137,7 +137,7 @@ void ADefaultGameMode::UpdateVisualizers(const TArray<float> SpectrumValues)
 		}
 		if (MaxSpectrumValues[i] >= 0)
 		{
-			MaxSpectrumValues[i] -= 0.0001;
+			MaxSpectrumValues[i] -= (AvgSpectrumValues[i] / 500);
 		}
 	}
 }

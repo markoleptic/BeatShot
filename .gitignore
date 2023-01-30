@@ -102,5 +102,10 @@ Plugins/**/Intermediate/*
 # End of https://www.toptal.com/developers/gitignore/api/unrealengine
 Content/Levels/Range.umap
 Windows/
+AssetPacks/
+ModSciInteriors/
+MSPresets/
+Megascans/
+ResearchMegaPack/
 SDATAPROVIDERACTIVITYFILTER.ipch
 SMSWINDOW.ipch

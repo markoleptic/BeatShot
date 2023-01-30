@@ -34,9 +34,14 @@ protected:
 	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
 	
 private:
-	const FVector InitialBeamLightLocation = {0, 1920, 1320};
+	TArray<FLinearColor> BeatColors;
+	//const FVector InitialBeamLightLocation = {0, 1920, 1320};
+
+	const FVector InitialBeamLightLocation = {0, 0, 1340};
 	
-	const FRotator BeamLightRotation = {90, 0, 90};
+	//const FRotator BeamLightRotation = {90, 0, 90};
+
+	const FRotator BeamLightRotation = {0, 0, 0};
 	
-	const FVector BeamLightOffset = {100, 0, 0};
+	const FVector BeamLightOffset = {0, 100, 0};
 };

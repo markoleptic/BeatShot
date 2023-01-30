@@ -75,7 +75,7 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	GameModeActorStruct.BoxBounds.Z = GameModeActorStruct.BoxBounds.Z / 2.f;
 
 	/* Set the center of spawn box based on user selection */
-	FVector CenterOfSpawnBox = {3590.f, 0.f, 160.f};
+	FVector CenterOfSpawnBox = {3700.f, 0.f, 160.f};
 	if (GameModeActorStruct.HeadshotHeight == true)
 	{
 		CenterOfSpawnBox.Z = HeadshotHeight;

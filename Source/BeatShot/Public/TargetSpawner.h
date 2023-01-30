@@ -207,7 +207,7 @@ private:
 	/** Minimum distance between floor and bottom of the SpawnBox */
 	const float DistanceFromFloor = 110.f;
 
-	/** Distance between floor and center of Back Wall */
+	/** Distance between floor and center of designated Back Wall */
 	const float CenterBackWallHeight = 750.f;
 
 	/** Distance between floor and HeadshotHeight */

@@ -5,6 +5,7 @@
 #include "NiagaraComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SceneComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/TimelineComponent.h"
@@ -20,25 +21,27 @@ ASimpleBeamLight::ASimpleBeamLight()
 
 	SpotlightLimb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightLimb"));
 	SpotlightLimb->SetupAttachment(SpotlightBase);
-	SpotlightLimb->SetRelativeLocation(FVector(0, 0, -18));
+	SpotlightLimb->SetRelativeLocation(DefaultSpotlightLimbOffset);
 	
 	SpotlightHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightHead"));
 	SpotlightHead->SetupAttachment(SpotlightLimb);
-	SpotlightHead->SetRelativeLocation(FVector(0, 0, -41));
-	SpotlightHead->SetRelativeRotation(FRotator(-90, 0, 0));
+	SpotlightHead->SetRelativeLocation(DefaultSpotlightHeadOffset);
+	SpotlightHead->SetRelativeRotation(DefaultSpotlightHeadRotation);
 
 	Spotlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Spotlight"));
 	Spotlight->SetupAttachment(SpotlightHead);
-	Spotlight->SetRelativeLocation(FVector(22, 0, 0));
+	Spotlight->SetRelativeLocation(DefaultSpotlightOffset);
 
+	LightPositionComponent = CreateDefaultSubobject<USceneComponent>("LightPosition");
+	LightPositionComponent->SetupAttachment(SpotlightBase);
+	
 	BeamEndLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamEndLight"));
-	BeamEndLight->SetupAttachment(SpotlightHead);
+	BeamEndLight->SetupAttachment(LightPositionComponent);
 	BeamEndLight->SetAutoActivate(false);
 
 	SimpleBeamComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("SimpleBeam"));
 	SimpleBeamComponent->SetupAttachment(SpotlightHead);
 	SimpleBeamComponent->OnSystemFinished.AddDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
-	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
 	SimpleBeamComponent->SetAutoActivate(false);
 }
 
@@ -46,22 +49,19 @@ void ASimpleBeamLight::BeginPlay()
 {
 	Super::BeginPlay();
 
-	LineTrace();
+	LineTrace(SpotlightHead->GetForwardVector() * FVector(TraceDistance));
 	
 	EmissiveLightBulbMaterial = SpotlightHead->GetMaterial(1);
 	EmissiveLightBulb = UMaterialInstanceDynamic::Create(EmissiveLightBulbMaterial, this);
 	SpotlightHead->SetMaterial(1, EmissiveLightBulb);
-
+	
 	Spotlight->SetInnerConeAngle(InnerConeAngle);
 	Spotlight->SetOuterConeAngle(OuterConeAngle);
 	
-	SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
-	SetBeamEndLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
-
 	ColorTimelineDelegate.BindUFunction(this, FName("SetLightColor"));
 	ColorTimeline.AddInterpLinearColor(LightColorCurve, ColorTimelineDelegate);
-
-	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
+	TimelineVectorDelegate.BindUFunction(this, FName("UpdateBeamEndLightPosition"));
+	LightPositionTimeline.AddInterpVector(LightMovementCurve, TimelineVectorDelegate);
 }
 
 void ASimpleBeamLight::Tick(float DeltaTime)
@@ -71,17 +71,40 @@ void ASimpleBeamLight::Tick(float DeltaTime)
 	{
 		ColorTimeline.TickTimeline(DeltaTime);
 	}
+	if (LightPositionTimeline.IsPlaying() || LightPositionTimeline.IsReversing())
+	{
+		LightPositionTimeline.TickTimeline(DeltaTime);
+	}
 }
 
 void ASimpleBeamLight::UpdateNiagaraBeam(const float Alpha)
 {
+	if (ColorTimeline.IsPlaying() || LightPositionTimeline.IsPlaying() || LightPositionTimeline.IsReversing())
+	{
+		return;
+	}
 	if (SimpleBeamComponent)
 	{
 		SimpleBeamComponent->Activate();
 		const float ClampedAlpha = UKismetMathLibrary::MapRangeClamped(Alpha, 0, 1, 0, MaxBeamWidth);
 		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), ClampedAlpha);
 		ColorTimeline.PlayFromStart();
+		if (Index % 2 == 0)
+		{
+			LightPositionTimeline.ReverseFromEnd();
+			return;
+		}
+		LightPositionTimeline.PlayFromStart();
 	}
+}
+
+void ASimpleBeamLight::SetColor(const FLinearColor Color)
+{
+	LightColor = Color;
+	Spotlight->SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+	BeamEndLight->SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
+	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), LightColor);
+	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
 }
 
 void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent)
@@ -90,17 +113,24 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 	{
 		ColorTimeline.Stop();
 	}
+	if (LightPositionTimeline.IsPlaying())
+	{
+		LightPositionTimeline.Stop();
+	}
+	LightPositionComponent->SetRelativeLocation(FVector(0));
+	SpotlightLimb->SetRelativeRotation(FRotator(0));
+	SpotlightHead->SetRelativeRotation(DefaultSpotlightHeadRotation);
 	SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
 	NiagaraComponent->Deactivate();
 }
 
 void ASimpleBeamLight::SetLightColor(const FLinearColor Color)
 {
-	SetEmissiveBulbColor(Color);
-	SetSpotlightColor(Color);
+	SetEmissiveBulbColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, Color.A));
+	SetSpotlightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, Color.A));
 	if (BeamEndLight->IsActive())
 	{
-		SetBeamEndLightColor(Color);
+		SetBeamEndLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, Color.A));
 	}
 }
 
@@ -128,12 +158,11 @@ void ASimpleBeamLight::SetBeamEndLightColor(const FLinearColor Color)
 	}
 }
 
-void ASimpleBeamLight::LineTrace()
+void ASimpleBeamLight::LineTrace(const FVector EndLocation)
 {
 	const FVector StartLoc = SpotlightHead->GetComponentLocation();
-	const FVector EndLoc = SpotlightHead->GetForwardVector() * FVector(TraceDistance);
-	//DrawDebugLine(GetWorld(), StartLoc, EndLoc, FColor::Red, false, 10.f);
-	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLoc, ECC_Camera,
+	//DrawDebugLine(GetWorld(), StartLoc, EndLocation, FColor::Red, false, 0.5f);
+	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLocation, ECC_Camera,
 	                                                         FCollisionQueryParams::DefaultQueryParam))
 	{
 		const FVector HitLoc = Hit.Location;
@@ -145,12 +174,29 @@ void ASimpleBeamLight::LineTrace()
 			double DotProduct = HitNormal.Dot(SpotlightHead->GetForwardVector() * FVector(TraceDistance));
 			FRotator BeamEndRotation = (ForwardVector - DotProduct * 2 * HitNormal).Rotation();
 			BeamEndLight->SetWorldRotation(BeamEndRotation);
-			BeamEndLight->Activate();
-			Spotlight->SetAttenuationRadius(Hit.Distance + 500);
+			Spotlight->SetAttenuationRadius(Hit.Distance + 2000);
+			SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamLength"), Hit.Distance + 500);
+			if (!BeamEndLight->IsActive())
+			{
+				BeamEndLight->Activate();
+			}
 		}
 	}
 	else
 	{
 		BeamEndLight->Deactivate();
 	}
+}
+
+void ASimpleBeamLight::UpdateBeamEndLightPosition(const FVector& Position)
+{
+	LightPositionComponent->SetRelativeLocation(Position);
+	const FVector StartLoc = SpotlightHead->GetComponentLocation();
+	const FRotator NewLimbHeadRot = (BeamEndLight->GetComponentLocation() + Position - StartLoc).Rotation();
+	
+	GimbalRotation = NewLimbHeadRot.Yaw;
+	SpotlightHeadRotation = NewLimbHeadRot.Pitch;
+	SpotlightLimb->SetRelativeRotation(FRotator(0, GimbalRotation, 0));
+	SpotlightHead->SetRelativeRotation(FRotator(SpotlightHeadRotation, 0, 0));
+	LineTrace(SpotlightHead->GetForwardVector() * FVector(TraceDistance));
 }

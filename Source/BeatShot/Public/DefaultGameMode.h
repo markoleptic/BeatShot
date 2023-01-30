@@ -285,10 +285,10 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	FGameModeActorStruct GameModeActorStruct;
 
-	const FVector TargetSpawnerLocation = {3590, 0, 750};
+	const FVector TargetSpawnerLocation = {3730, 0, 750};
 	
-	const FVector VisualizerLocation = {3850,-1870,220};
-	const FVector Visualizer2Location = {3850, 1870,220};
+	const FVector VisualizerLocation = {4000,-1950, 210};
+	const FVector Visualizer2Location = {4000, 1950, 210};
 	const FRotator VisualizerRotation = {0, 90, 90};
 
 	const FVector BeamVisualizerLocation = {0,1920,1320};
