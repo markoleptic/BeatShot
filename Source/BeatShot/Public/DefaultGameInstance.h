@@ -55,6 +55,8 @@ public:
 	FGameModeTransitionState LastGameModeTransitionState;
 	
 	bool bLastSavedShowOpenFileDialog;
+
+	FOnPlayerSettingsChange OnPlayerSettingsChange;
 };
 
 

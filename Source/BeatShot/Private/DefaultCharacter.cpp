@@ -77,7 +77,7 @@ void ADefaultCharacter::BeginPlay()
 		GameMode->OnGameModeInit.BindUFunction(Gun, "SetShouldTrace");
 		GameMode->OnBeatTrackTargetSpawned.AddUFunction(this, "PassTrackingTargetToGun");
 	}
-
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
 }
 
 void ADefaultCharacter::PawnClientRestart()
@@ -163,6 +163,12 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			                                         &ADefaultCharacter::StopFire);
 		}
 	}
+}
+
+void ADefaultCharacter::Destroyed()
+{
+	Super::Destroyed();
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.RemoveDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
 }
 
 void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)

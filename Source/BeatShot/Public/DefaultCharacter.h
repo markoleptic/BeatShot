@@ -84,6 +84,9 @@ protected:
 	/** Called to bind functionality to input */
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	/** Called to remove any dynamic delegate binding */
+	virtual void Destroyed() override;
+
 	/** Handles updates to the movement state and changes relevant values accordingly
 	*	@param NewMovementType The new movement state of the player
 	*/

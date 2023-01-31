@@ -20,11 +20,22 @@ class BEATSHOT_API AWallMenu : public AStaticMeshActor, public ISaveLoadInterfac
 
 	virtual void Destroyed() override;
 
+protected:
+
+	/** Displays which settings are on/off etc by lighting the correct words */
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitializeSettings(const FPlayerSettings PlayerSettings);
+
+	/** Overriden version so blueprint can use */
 	UFUNCTION(BlueprintCallable)
 	virtual FPlayerSettings LoadPlayerSettings() const override;
 
+	/** Overriden version so blueprint can use, also broadcasts GameInstance's OnPlayerSettingsChanged */
 	UFUNCTION(BlueprintCallable)
 	virtual void SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave) override;
-
-	FOnPlayerSettingsChange OnPlayerSettingsChange;
+	
+	UFUNCTION()
+	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
 };
+
+

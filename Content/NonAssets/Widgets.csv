@@ -282,6 +282,7 @@ WallMenu_FireRate,FIRE RATE
 WallMenu_Off,OFF
 WallMenu_On,ON
 WallMenu_Recoil,RECOIL
+WallMenu_NightMode,NIGHT MODE
 WallMenu_Semi,SEMI
 WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen

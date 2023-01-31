@@ -3,27 +3,20 @@
 
 #include "WallMenu.h"
 #include "DefaultCharacter.h"
+#include "DefaultGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 void AWallMenu::BeginPlay()
 {
 	Super::BeginPlay();
-	if (ADefaultCharacter* DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
-	{
-		OnPlayerSettingsChange.AddUniqueDynamic(DefaultCharacter, &ADefaultCharacter::OnUserSettingsChange);
-	}
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged);
+	InitializeSettings(LoadPlayerSettings());
 }
 
 void AWallMenu::Destroyed()
 {
-	if (ADefaultCharacter* DefaultCharacter = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
-	{
-		if (OnPlayerSettingsChange.IsAlreadyBound(DefaultCharacter, &ADefaultCharacter::OnUserSettingsChange))
-		{
-			OnPlayerSettingsChange.RemoveDynamic(DefaultCharacter, &ADefaultCharacter::OnUserSettingsChange);
-		}
-	}
 	Super::Destroyed();
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.RemoveDynamic(this, &AWallMenu::OnPlayerSettingsChanged);
 }
 
 FPlayerSettings AWallMenu::LoadPlayerSettings() const
@@ -34,5 +27,10 @@ FPlayerSettings AWallMenu::LoadPlayerSettings() const
 void AWallMenu::SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave)
 {
 	ISaveLoadInterface::SavePlayerSettings(PlayerSettingsToSave);
-	OnPlayerSettingsChange.Broadcast(PlayerSettingsToSave);
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.Broadcast(PlayerSettingsToSave);
+}
+
+void AWallMenu::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
+{
+	InitializeSettings(PlayerSettings);
 }
