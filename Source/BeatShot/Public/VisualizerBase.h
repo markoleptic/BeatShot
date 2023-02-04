@@ -9,6 +9,7 @@
 #include "VisualizerBase.generated.h"
 
 class USceneComponent;
+class UAudioAnalyzerManager;
 
 UCLASS()
 class BEATSHOT_API AVisualizerBase : public AActor, public ISaveLoadInterface
@@ -22,6 +23,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
+
+	virtual void Destroyed() override;
 
 public:	
 
@@ -38,6 +41,8 @@ public:
 	UFUNCTION()
 	virtual void UpdateAASettings(const FAASettingsStruct AASettingsStruct);
 
+	
+
 protected:
 
 	/** Sets the initial visualizer spawn location */
@@ -48,7 +53,7 @@ protected:
 
 	/** Sets offset used to space out the visualizers */
 	void SetVisualizerOffset(const FVector Offset) { VisualizerOffset = Offset; }
-
+	
 	/** AudioAnalyzer settings */
 	FAASettingsStruct AASettings;
 
@@ -66,5 +71,4 @@ protected:
 	/** An array of spawned visualizers */
 	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> Visualizers;
-	
 };

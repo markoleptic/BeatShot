@@ -10,6 +10,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "DefaultGameMode.generated.h"
 
+class AVisualizerManager;
 class AVisualizerBase;
 class ABeamVisualizer;
 class AStaticCubeVisualizer;
@@ -45,27 +46,23 @@ protected:
 	/* The TargetSpawner class to spawn */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
-
-	/* The base Visualizer class to spawn */
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AStaticCubeVisualizer> StaticCubeVisualizerClass;
-
-	/** The BeamVisualizer class to spawn */
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABeamVisualizer> BeamVisualizerClass;
 	
 	/** The FloatingTextActor class to spawn */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
 
+	/** The VisualizerManager class to spawn */
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AVisualizerManager> VisualizerManagerClass;
+
 	/* The spawned TargetSpawner */
 	UPROPERTY(BlueprintReadOnly)
 	ATargetSpawner* TargetSpawner;
 
-	/** The spawned Visualizers */
+	/** The Visualizer Manager */
 	UPROPERTY(BlueprintReadOnly)
-	TArray<AVisualizerBase*> Visualizers;
-		
+	AVisualizerManager* VisualizerManager;
+	
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AATracker;
@@ -73,33 +70,6 @@ protected:
 	/* The spawned AAPlayer object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AAPlayer;
-
-	void UpdateVisualizers(const TArray<float> SpectrumValues);
-
-	void InitializeVisualizers();
-
-	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumVariance;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> AvgSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> CurrentSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> CurrentCubeSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumPeaks;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumPeakEnergy;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> MaxSpectrumValues;
 
 	int32 UsingAAPlayer = 0;
 
@@ -286,13 +256,6 @@ private:
 	FGameModeActorStruct GameModeActorStruct;
 
 	const FVector TargetSpawnerLocation = {3730, 0, 750};
-	
-	const FVector VisualizerLocation = {4000,-1950, 210};
-	const FVector Visualizer2Location = {4000, 1950, 210};
-	const FRotator VisualizerRotation = {0, 90, 90};
-
-	const FVector BeamVisualizerLocation = {0,1920,1320};
-	const FRotator BeamRotation = {0,0,0};
 	
 	const FActorSpawnParameters SpawnParameters;
 

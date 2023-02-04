@@ -283,6 +283,8 @@ WallMenu_Off,OFF
 WallMenu_On,ON
 WallMenu_Recoil,RECOIL
 WallMenu_NightMode,NIGHT MODE
+WallMenu_ShapeVisualizer,SHAPE VISUALIZERS
+WallMenu_LightVisualizer,LIGHT VISUALIZERS
 WallMenu_Semi,SEMI
 WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen

@@ -58,7 +58,7 @@ void ASimpleBeamLight::BeginPlay()
 	Spotlight->SetInnerConeAngle(InnerConeAngle);
 	Spotlight->SetOuterConeAngle(OuterConeAngle);
 	
-	ColorTimelineDelegate.BindUFunction(this, FName("SetLightColor"));
+	ColorTimelineDelegate.BindUFunction(this, FName("SetLightIntensities"));
 	ColorTimeline.AddInterpLinearColor(LightColorCurve, ColorTimelineDelegate);
 	TimelineVectorDelegate.BindUFunction(this, FName("UpdateBeamEndLightPosition"));
 	LightPositionTimeline.AddInterpVector(LightMovementCurve, TimelineVectorDelegate);
@@ -86,8 +86,7 @@ void ASimpleBeamLight::UpdateNiagaraBeam(const float Alpha)
 	if (SimpleBeamComponent)
 	{
 		SimpleBeamComponent->Activate();
-		const float ClampedAlpha = UKismetMathLibrary::MapRangeClamped(Alpha, 0, 1, 0, MaxBeamWidth);
-		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), ClampedAlpha);
+		SimpleBeamComponent->SetFloatParameter(TEXT("User.BeamWidth"), Alpha * MaxBeamWidth);
 		ColorTimeline.PlayFromStart();
 		if (Index % 2 == 0)
 		{
@@ -96,15 +95,6 @@ void ASimpleBeamLight::UpdateNiagaraBeam(const float Alpha)
 		}
 		LightPositionTimeline.PlayFromStart();
 	}
-}
-
-void ASimpleBeamLight::SetColor(const FLinearColor Color)
-{
-	LightColor = Color;
-	Spotlight->SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
-	BeamEndLight->SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
-	EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), LightColor);
-	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), LightColor);
 }
 
 void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent)
@@ -120,41 +110,44 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 	LightPositionComponent->SetRelativeLocation(FVector(0));
 	SpotlightLimb->SetRelativeRotation(FRotator(0));
 	SpotlightHead->SetRelativeRotation(DefaultSpotlightHeadRotation);
-	SetLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, 0));
 	NiagaraComponent->Deactivate();
 }
 
 void ASimpleBeamLight::SetLightColor(const FLinearColor Color)
 {
-	SetEmissiveBulbColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, Color.A));
-	SetSpotlightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, Color.A));
-	if (BeamEndLight->IsActive())
-	{
-		SetBeamEndLightColor(FLinearColor(LightColor.R, LightColor.G, LightColor.B, Color.A));
-	}
-}
-
-void ASimpleBeamLight::SetEmissiveBulbColor(const FLinearColor Color)
-{
+	LightColor = Color;
 	if (EmissiveLightBulb)
 	{
 		EmissiveLightBulb->SetVectorParameterValue(TEXT("Color"), Color);
 	}
+	if (Spotlight)
+	{
+		Spotlight->SetLightColor(Color);
+	}
+	if (BeamEndLight)
+	{
+		BeamEndLight->SetLightColor(Color);
+	}
+	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), Color);
 }
 
-void ASimpleBeamLight::SetSpotlightColor(const FLinearColor Color)
+void ASimpleBeamLight::SetLightIntensities(const FLinearColor Color)
 {
+	if (EmissiveLightBulb)
+	{
+		EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), Color.A);
+	}
 	if (Spotlight)
 	{
 		Spotlight->SetIntensity(Color.A * MaxSpotlightIntensity);
 	}
-}
-
-void ASimpleBeamLight::SetBeamEndLightColor(const FLinearColor Color)
-{
-	if (BeamEndLight)
+	if (BeamEndLight && BeamEndLight->IsActive())
 	{
 		BeamEndLight->SetIntensity(Color.A * MaxBeamEndLightIntensity);
+	}
+	if (SimpleBeamComponent->IsActive())
+	{
+		SimpleBeamComponent->SetFloatParameter(TEXT("User.Alpha"), Color.A);
 	}
 }
 
@@ -193,7 +186,6 @@ void ASimpleBeamLight::UpdateBeamEndLightPosition(const FVector& Position)
 	LightPositionComponent->SetRelativeLocation(Position);
 	const FVector StartLoc = SpotlightHead->GetComponentLocation();
 	const FRotator NewLimbHeadRot = (BeamEndLight->GetComponentLocation() + Position - StartLoc).Rotation();
-	
 	GimbalRotation = NewLimbHeadRot.Yaw;
 	SpotlightHeadRotation = NewLimbHeadRot.Pitch;
 	SpotlightLimb->SetRelativeRotation(FRotator(0, GimbalRotation, 0));

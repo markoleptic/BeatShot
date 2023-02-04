@@ -8,6 +8,7 @@
 #include "Engine/LevelScriptActor.h"
 #include "RangeLevelScriptActor.generated.h"
 
+class AStaticMeshActor;
 class AVolumetricCloud;
 class ADirectionalLight;
 class ARectLight;
@@ -55,13 +56,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	AMoon* Moon;
 
+	/** Reference to left roof mesh to move */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	AStaticMeshActor* LeftWindowCover;
+
+	/** Reference to right roof mesh to move */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	AStaticMeshActor* RightWindowCover;
+	
 	/** Reference to SkySphere dynamic material instance */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UMaterialInstanceDynamic* SkySphereMaterial;
-
-	/** Reference to volumetric cloud in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	AVolumetricCloud* VolumetricCloud;
 
 	/** Reference to Daylight directional light in Range level */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -121,7 +126,13 @@ protected:
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
 
+	FVector InitialLeftWindowCoverLoc;
+
+	FVector InitialRightWindowCoverLoc;
+
 	const float CycleSpeed = 20;
+
+	const float WindowCoverOffset = 1700;
 
 	float LastLerpRotation;
 };

@@ -11,6 +11,7 @@ class UCurveFloat;
 class ABeamTarget;
 class USpotLightComponent;
 class UNiagaraComponent;
+
 UCLASS()
 class BEATSHOT_API ABeamLight : public AActor
 {
@@ -20,8 +21,6 @@ public:
 	// Sets default values for this actor's properties
 	ABeamLight();
 
-	void InitBeamTarget(ABeamTarget* NewBeamTarget);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,21 +28,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void OnRep_LightIntensity();
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void UpdateRotation();
-	
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void InitializeLight();
 	
 	UFUNCTION(BlueprintCallable)
 	void UpdateNiagaraConeProps();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ABeamTarget* BeamTarget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* Spots_SpotBase;
@@ -81,7 +68,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LightAttenuation = 3000;
 
-	UPROPERTY(EditAnywhere,  BlueprintReadWrite, ReplicatedUsing = OnRep_LightIntensity)
+	UPROPERTY(EditAnywhere,  BlueprintReadWrite)
 	float LightIntensity = 1;
 	
 	UPROPERTY(EditAnywhere,  BlueprintReadWrite)

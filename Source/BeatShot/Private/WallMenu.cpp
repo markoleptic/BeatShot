@@ -16,7 +16,6 @@ void AWallMenu::BeginPlay()
 void AWallMenu::Destroyed()
 {
 	Super::Destroyed();
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.RemoveDynamic(this, &AWallMenu::OnPlayerSettingsChanged);
 }
 
 FPlayerSettings AWallMenu::LoadPlayerSettings() const

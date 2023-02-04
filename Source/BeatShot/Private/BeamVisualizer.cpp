@@ -10,15 +10,6 @@ ABeamVisualizer::ABeamVisualizer()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ABeamVisualizer::Destroyed()
-{
-	Super::Destroyed();
-	for (AActor* Visualizer : Visualizers)
-	{
-		Visualizer->Destroy();
-	}
-}
-
 void ABeamVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
@@ -54,7 +45,8 @@ void ABeamVisualizer::InitializeVisualizer()
 		Visualizers.EmplaceAt(i, Cast<ASimpleBeamLight>(
 			                      GetWorld()->SpawnActor(SimpleBeamLightClass, &CurrentSpawnLoc, &VisualizerRotation,
 			                                             SpawnParameters)));
-		Cast<ASimpleBeamLight>(Visualizers[i])->SetColor(BeatColors[i]);
+		Cast<ASimpleBeamLight>(Visualizers[i])->SetLightColor(BeatColors[i]);
+		Cast<ASimpleBeamLight>(Visualizers[i])->SetLightIntensities(FLinearColor::Transparent);
 		Cast<ASimpleBeamLight>(Visualizers[i])->SetIndex(i);
 		CurrentSpawnLoc += VisualizerOffset;
 	}

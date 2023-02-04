@@ -36,29 +36,22 @@ public:
 	
 	void SetTrackOnUpdate(const bool bShouldTrackOnUpdate) { bTrackOnUpdate = bShouldTrackOnUpdate; }
 
-	void SetColor(const FLinearColor Color);
+	/** Main function that calls all other SetColor functions */
+	UFUNCTION()
+	void SetLightColor(const FLinearColor Color);
 
+	/** Main function that varies all light intensities based on the alpha value from LightColorCurve */
+	UFUNCTION()
+	void SetLightIntensities(const FLinearColor Color);
+
+	/** Set the index of this SimpleBeamLight */
 	void SetIndex(const int32 NewIndex) { Index = NewIndex; }
-
 
 private:
 	/** Deactivates the Niagara System and stops the ColorTimeline */
 	UFUNCTION()
 	void OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent);
-
-	/** Main function that calls all other SetColor functions */
-	UFUNCTION()
-	void SetLightColor(const FLinearColor Color);
-
-	/** Sets the color and intensity of the EmissiveLightBulb */
-	void SetEmissiveBulbColor(const FLinearColor Color);
-
-	/** Sets the color and intensity of the Spotlight */
-	void SetSpotlightColor(const FLinearColor Color);
-
-	/** Sets the color and intensity of the BeamEndLight */
-	void SetBeamEndLightColor(const FLinearColor Color);
-
+	
 	/** Traces a line forward from SpotlightHead and if a blocking hit is found, sets the BeamEndLight to the correct
 	 *  location and rotation. Disables the BeamEndLight if not blocking hit is found */
 	UFUNCTION()
@@ -129,7 +122,7 @@ private:
 	/** Delegate that binds the LightPositionTimeline to UpdateBeamEndLightPosition() */
 	FOnTimelineVector TimelineVectorDelegate;
 
-	/** Delegate that binds the ColorTimeline to SetColor() */
+	/** Delegate that binds the ColorTimeline to SetLightIntensities() */
 	FOnTimelineLinearColor ColorTimelineDelegate;
 
 	/** Inner cone angle for the Spotlight */

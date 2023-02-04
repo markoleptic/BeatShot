@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "VisualizerBase.h"
-#include "GameFramework/Actor.h"
 #include "BeamVisualizer.generated.h"
 
 class ASimpleBeamLight;
@@ -25,8 +24,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-	virtual void Destroyed() override;
 	
 	virtual void Tick(float DeltaTime) override;
 	
@@ -35,11 +32,8 @@ protected:
 	
 private:
 	TArray<FLinearColor> BeatColors;
-	//const FVector InitialBeamLightLocation = {0, 1920, 1320};
 
 	const FVector InitialBeamLightLocation = {0, 0, 1340};
-	
-	//const FRotator BeamLightRotation = {90, 0, 90};
 
 	const FRotator BeamLightRotation = {0, 0, 0};
 	

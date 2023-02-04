@@ -1,5 +1,6 @@
 ﻿#include "VisualizerBase.h"
 
+
 AVisualizerBase::AVisualizerBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -15,6 +16,16 @@ void AVisualizerBase::BeginPlay()
 void AVisualizerBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AVisualizerBase::Destroyed()
+{
+	Super::Destroyed();
+	for (AActor* Visualizer : Visualizers)
+	{
+		Visualizer->Destroy();
+	}
+	Visualizers.Empty();
 }
 
 void AVisualizerBase::InitializeVisualizer()

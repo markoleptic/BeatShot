@@ -100,6 +100,9 @@ struct FPlayerSettings
 	UPROPERTY(BlueprintReadWrite)
 	bool bNightModeSelected;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowLightVisualizers;
+
 	UPROPERTY(BlueprintReadOnly)
 	bool bShowFPSCounter;
 
@@ -141,6 +144,7 @@ struct FPlayerSettings
 		bShowBulletDecals = true;
 		bNightModeUnlocked = false;
 		bNightModeSelected = false;
+		bShowLightVisualizers = false;
 		bShowFPSCounter = false;
 		FrameRateLimitMenu = 144;
 		FrameRateLimitGame = 0;
@@ -170,6 +174,7 @@ struct FPlayerSettings
 		bShowBulletDecals = true;
 		bNightModeUnlocked = false;
 		bNightModeSelected = false;
+		bShowLightVisualizers = false;
 		bShowFPSCounter = false;
 		FrameRateLimitMenu = 144;
 		FrameRateLimitGame = 0;

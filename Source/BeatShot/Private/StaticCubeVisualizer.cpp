@@ -23,6 +23,7 @@ void AStaticCubeVisualizer::Tick(float DeltaTime)
 
 void AStaticCubeVisualizer::InitializeVisualizer()
 {
+	Super::InitializeVisualizer();
 	for (UStaticMeshComponent* Cube : Cubes)
 	{
 		Cube->DestroyComponent();
