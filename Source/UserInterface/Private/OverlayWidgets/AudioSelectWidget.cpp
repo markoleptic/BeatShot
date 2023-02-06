@@ -26,7 +26,7 @@ void UAudioSelectWidget::NativeConstruct()
 	StartButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStartButtonClicked);
 	AudioFromFileButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnAudioFromFileButtonClicked);
 	LoadFileButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnLoadFileButtonClicked);
-	StreamAudioButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnStreamAudioButtonClicked);
+	CaptureAudioButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnCaptureAudioButtonClicked);
 	SongTitleText->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnSongTitleValueCommitted);
 	Seconds->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnSecondsValueCommitted);
 	Minutes->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnMinutesValueCommitted);
@@ -84,24 +84,26 @@ void UAudioSelectWidget::OnFadeOutFinish()
 
 void UAudioSelectWidget::OnAudioFromFileButtonClicked()
 {
+	AudioSelectStruct.AudioFormat = EAudioFormat::File;
 	StartButton->SetIsEnabled(false);
 	LoadFileButton->SetIsEnabled(true);
 	InAudioDevices->ClearSelection();
 	OutAudioDevices->ClearSelection();
 	AudioFromFileButton->SetBackgroundColor(BeatShotBlue);
-	StreamAudioButton->SetBackgroundColor(White);
+	CaptureAudioButton->SetBackgroundColor(White);
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UAudioSelectWidget::OnStreamAudioButtonClicked()
+void UAudioSelectWidget::OnCaptureAudioButtonClicked()
 {
+	AudioSelectStruct.AudioFormat = EAudioFormat::Capture;
 	StartButton->SetIsEnabled(false);
 	LoadFileButton->SetIsEnabled(false);
 	InAudioDevices->ClearSelection();
 	OutAudioDevices->ClearSelection();
 	AudioFromFileButton->SetBackgroundColor(White);
-	StreamAudioButton->SetBackgroundColor(BeatShotBlue);
+	CaptureAudioButton->SetBackgroundColor(BeatShotBlue);
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Visible);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 

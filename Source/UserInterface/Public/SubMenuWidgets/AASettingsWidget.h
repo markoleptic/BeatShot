@@ -8,9 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "WidgetComponents/BandChannelWidget.h"
 #include "WidgetComponents/BandThresholdWidget.h"
-#include "Delegates/DelegateCombinations.h"
 #include "AASettingsWidget.generated.h"
-
 
 DECLARE_DYNAMIC_DELEGATE(FOnRestartButtonClicked);
 

@@ -14,6 +14,8 @@ struct FAudioSelectStruct
 {
 	GENERATED_BODY()
 
+	EAudioFormat AudioFormat;
+
 	float SongLength = 0;
 
 	FString SongPath = "";
@@ -67,7 +69,7 @@ protected:
 	UFUNCTION()
 	void OnAudioFromFileButtonClicked();
 	UFUNCTION()
-	void OnStreamAudioButtonClicked();
+	void OnCaptureAudioButtonClicked();
 	UFUNCTION()
 	void OnStartButtonClicked();
 	UFUNCTION()
@@ -92,7 +94,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* AudioFromFileButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* StreamAudioButton;
+	UButton* CaptureAudioButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* BackButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

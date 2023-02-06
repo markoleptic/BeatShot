@@ -22,10 +22,11 @@ class UAudioAnalyzerManager;
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
 
 DECLARE_DELEGATE(FOnTargetSpawned);
-DECLARE_DELEGATE_OneParam(FOnTargetDestroyed, const float TimeAlive);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float, TimeAlive, const int32, NewStreak, const FVector, Position);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
 DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
+/* Passes a reference to the spawned BeatTrackTarget */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeatTrackTargetSpawned, ASphereTarget* TrackingTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32, NewStreak, const FVector, Position);
 
@@ -82,9 +83,13 @@ public:
 	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
 	void InitializeGameMode();
 
-	/** Called from Countdown widget to begin the game mode. Also hides countdown widget, shows PlayerHUD widget, and shows CrossHair widget*/
+	/** Called from Countdown widget when the countdown has completed */
 	UFUNCTION()
 	void StartGameMode();
+
+	void StartGameModeTimers();
+
+	void BindGameModeDelegates();
 
 	/** Destroys all actors involved in a game mode and optionally save scores */
 	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
@@ -118,7 +123,7 @@ public:
 
 private:
 	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
-	void InitializeAudioManagers(const bool bPlaybackAudio, const FString& SongFilePath = "", const FString& InAudioDevice = "", const FString& OutAudioDevice = "");
+	void InitializeAudioManagers();
 
 	/** play AAPlayer, used as callback function to set delay from AATracker */
 	UFUNCTION()
@@ -171,14 +176,9 @@ public:
 	*   GameModeActorBase binds to it, while TargetSpawner executes it */
 	FOnTargetSpawned OnTargetSpawned;
 
-	/** Delegate that is executed when a new streak has been achieved by player, to update streak in PlayerHUD.
-	*   GameModeActorBase binds to it, while TargetSpawner executes it. Range level also listens to this to look
-	*   for streak values going greater than a certain amount */
-	UPROPERTY(BlueprintAssignable)
-	FOnStreakUpdate OnStreakUpdate;
-
 	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data.
 	 *  GameModeActorBase binds to it, while TargetSpawner executes it */
+	UPROPERTY(BlueprintAssignable)
 	FOnTargetDestroyed OnTargetDestroyed;
 
 	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
@@ -266,7 +266,7 @@ private:
 	/** Function bound to DefaultGameMode's OnTargetDestroyed delegate, which is executed by TargetSpawner.
 	 *  Passes the time that the target was alive for */
 	UFUNCTION()
-	void UpdatePlayerScores(const float TimeElapsed);
+	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector Position);
 
 	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
 	 *  which passes the current damage taken, and the total possible damage. Executed on tick
@@ -283,11 +283,9 @@ private:
 	 *  Executed by Gun_AK47 */
 	UFUNCTION()
 	void UpdateShotsFired();
-
-	/** Function bound to DefaultGameMode's OnStreakUpdateCallback delegate to keep track of streak.
-	 *  Executed by TargetSpawner */
+	
 	UFUNCTION()
-	void OnStreakUpdateCallback(int32 Streak, FVector Location);
+	void UpdateStreak(int32 Streak, FVector Location);
 
 	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
 	void UpdateTargetsHit();

@@ -42,7 +42,7 @@ protected:
 
 	/** Changes TimeOfDay if NewStreak is greater than StreakThreshold */
 	UFUNCTION()
-	void OnStreakUpdated(const int32 NewStreak, const FVector Position);
+	void OnTargetDestroyed(const float TimeAlive, const int32 NewStreak, const FVector Position);
 
 	/** Calls RefreshMaterial function in SkySphere */
 	UFUNCTION(BlueprintImplementableEvent)

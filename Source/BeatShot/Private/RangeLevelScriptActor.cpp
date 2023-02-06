@@ -25,8 +25,8 @@ ARangeLevelScriptActor::ARangeLevelScriptActor()
 void ARangeLevelScriptActor::BeginPlay()
 {
 	Super::BeginPlay();
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnStreakUpdate.AddUniqueDynamic(
-		this, &ARangeLevelScriptActor::OnStreakUpdated);
+	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.AddUniqueDynamic(
+		this, &ARangeLevelScriptActor::OnTargetDestroyed);
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
 		this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
 	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
@@ -55,7 +55,7 @@ void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 	}
 }
 
-void ARangeLevelScriptActor::OnStreakUpdated(const int32 NewStreak, const FVector Position)
+void ARangeLevelScriptActor::OnTargetDestroyed(const float TimeAlive, const int32 NewStreak, const FVector Position)
 {
 	if (TimeOfDay == ETimeOfDay::DayToNight || TimeOfDay == ETimeOfDay::NightToDay)
 	{
@@ -109,7 +109,6 @@ void ARangeLevelScriptActor::SetTimeOfDayToNight()
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", 1);
 	Moon->SphereComponent->AddLocalRotation(FRotator(0, 0, 180));
 	Daylight->GetLightComponent()->AddLocalRotation(FRotator(0, 180, 0));
-	TargetSpawnerLight->GetLightComponent()->SetIntensity(1);
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 1);
 	Moon->MoonLight->SetRelativeRotation(
 		UKismetMathLibrary::FindLookAtRotation(Moon->MoonLight->GetComponentLocation(), FVector::Zero()));
@@ -136,7 +135,6 @@ void ARangeLevelScriptActor::TransitionTimeOfDay(float Alpha)
 	
 	Moon->MoonLight->SetRelativeRotation(
 		UKismetMathLibrary::FindLookAtRotation(Moon->MoonLight->GetComponentLocation(), FVector::Zero()));
-	TargetSpawnerLight->GetLightComponent()->SetIntensity(Value);
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", Value);
 	
 	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Alpha);

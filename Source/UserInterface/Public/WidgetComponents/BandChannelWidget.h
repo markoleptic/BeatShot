@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
-#include "Delegates/DelegateCombinations.h"
 #include "BandChannelWidget.generated.h"
 
 DECLARE_DELEGATE_FourParams(FOnChannelValueCommitted, const UBandChannelWidget* BandChannel, const int32 Index,

@@ -29,7 +29,8 @@ void ADefaultGameMode::BeginPlay()
 	OnPostScoresResponse.AddUFunction(
 		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)),
 		"OnPostScoresResponseReceived");
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ADefaultGameMode::RefreshPlayerSettings);
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
+		this, &ADefaultGameMode::RefreshPlayerSettings);
 }
 
 void ADefaultGameMode::Tick(float DeltaSeconds)
@@ -56,7 +57,8 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 	{
 	case 0:
 		{
-			AATracker->GetBeatTrackingAverageAndVariance(VisualizerManager->SpectrumVariance, VisualizerManager->AvgSpectrumValues);
+			AATracker->GetBeatTrackingAverageAndVariance(VisualizerManager->SpectrumVariance,
+			                                             VisualizerManager->AvgSpectrumValues);
 			AATracker->GetSpectrumPeaks(VisualizerManager->SpectrumPeaks, VisualizerManager->SpectrumPeakEnergy);
 			break;
 		}
@@ -64,7 +66,8 @@ void ADefaultGameMode::Tick(float DeltaSeconds)
 		{
 			AAPlayer->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BPMCurrent, BPMTotal,
 			                                           AASettings.BandLimitsThreshold);
-			AAPlayer->GetBeatTrackingAverageAndVariance(VisualizerManager->SpectrumVariance, VisualizerManager->AvgSpectrumValues);
+			AAPlayer->GetBeatTrackingAverageAndVariance(VisualizerManager->SpectrumVariance,
+			                                            VisualizerManager->AvgSpectrumValues);
 			AAPlayer->GetSpectrumPeaks(VisualizerManager->SpectrumPeaks, VisualizerManager->SpectrumPeakEnergy);
 			break;
 		}
@@ -85,38 +88,37 @@ void ADefaultGameMode::InitializeGameMode()
 	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
 	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
 	VisualizerManager->InitializeVisualizers(LoadPlayerSettings());
-	InitializeAudioManagers(GameModeActorStruct.bPlaybackAudio, GameModeActorStruct.SongPath,
-	                        GameModeActorStruct.InAudioDevice, GameModeActorStruct.OutAudioDevice);
+	InitializeAudioManagers();
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
 	bShouldTick = true;
 }
 
 void ADefaultGameMode::StartGameMode()
 {
+	if (!OnGameModeInit.ExecuteIfBound(GameModeActorStruct.IsBeatTrackMode))
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnGameModeInit not bound."));
+	}
+
 	ADefaultPlayerController* DefaultPlayerController = Cast<ADefaultPlayerController>(
 		UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	DefaultPlayerController->ShowCrossHair();
 	DefaultPlayerController->ShowPlayerHUD();
 	DefaultPlayerController->HideCountdown();
 
-	if (OnGameModeInit.ExecuteIfBound(GameModeActorStruct.IsBeatTrackMode))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnGameModeInit not bound."));
-	}
-
 	LoadMatchingPlayerScores();
+	BindGameModeDelegates();
 
-	/** Binding delegates */
-	Cast<ADefaultCharacter>(
-			Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn())->Gun->
-		OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
-	OnTargetSpawned.BindUFunction(this, FName("UpdateTargetsSpawned"));
-	OnTargetDestroyed.BindUFunction(this, FName("UpdatePlayerScores"));
-	OnStreakUpdate.AddUniqueDynamic(this, &ADefaultGameMode::OnStreakUpdateCallback);
-	if (GameModeActorStruct.IsBeatTrackMode)
+	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
 	{
-		OnBeatTrackTargetSpawned.AddUFunction(this, FName("OnBeatTrackTargetSpawnedCallback"));
+		UE_LOG(LogTemp, Display, TEXT("Initial UpdateScoresToHUD failed."));
 	}
+	StartGameModeTimers();
+	TargetSpawner->SetShouldSpawn(true);
+}
+
+void ADefaultGameMode::StartGameModeTimers()
+{
 	if (GameModeActorStruct.GameModeLength == 0.f)
 	{
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, 31536000, false);
@@ -126,12 +128,20 @@ void ADefaultGameMode::StartGameMode()
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ADefaultGameMode::OnGameModeLengthTimerComplete,
 		                                GameModeActorStruct.GameModeLength, false);
 	}
-	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Initial UpdateScoresToHUD failed."));
-	}
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ADefaultGameMode::OnSecondPassed, 1.f, true);
-	TargetSpawner->SetShouldSpawn(true);
+}
+
+void ADefaultGameMode::BindGameModeDelegates()
+{
+	Cast<ADefaultCharacter>(
+			Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn())->Gun->
+		OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
+	OnTargetSpawned.BindUFunction(this, FName("UpdateTargetsSpawned"));
+	OnTargetDestroyed.AddUniqueDynamic(this, &ADefaultGameMode::UpdatePlayerScores);
+	if (GameModeActorStruct.IsBeatTrackMode)
+	{
+		OnBeatTrackTargetSpawned.AddUFunction(this, FName("OnBeatTrackTargetSpawnedCallback"));
+	}
 }
 
 void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
@@ -167,17 +177,9 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun->OnShotFired.Unbind();
 	}
-	if (OnStreakUpdate.IsBound())
-	{
-		OnStreakUpdate.RemoveDynamic(this, &ADefaultGameMode::OnStreakUpdateCallback);
-	}
 	if (OnTargetSpawned.IsBoundToObject(this))
 	{
 		OnTargetSpawned.Unbind();
-	}
-	if (OnTargetDestroyed.IsBoundToObject(this))
-	{
-		OnTargetDestroyed.Unbind();
 	}
 
 	VisualizerManager->DestroyVisualizers();
@@ -240,7 +242,6 @@ void ADefaultGameMode::StartAAManagerPlayback()
 		GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ADefaultGameMode::PlayAAPlayer,
 		                                GameModeActorStruct.PlayerDelay, false);
 	}
-
 	if (!GameModeActorStruct.SongPath.IsEmpty())
 	{
 		AATracker->Play();
@@ -249,8 +250,18 @@ void ADefaultGameMode::StartAAManagerPlayback()
 	{
 		if (GameModeActorStruct.PlayerDelay < 0.01f)
 		{
-			AATracker->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
-			SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AATracker);
+			/* Using capture audio */
+			if (GameModeActorStruct.SongPath.IsEmpty())
+			{
+				AATracker->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
+				SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AATracker);
+			}
+			/* BeatTrack or game mode with no delay */
+			else
+			{
+				AATracker->Play();
+				SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AATracker);
+			}
 		}
 		else
 		{
@@ -307,60 +318,50 @@ void ADefaultGameMode::PauseAAManager(const bool ShouldPause)
 	}
 }
 
-void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const FString& SongFilePath,
-                                               const FString& InAudioDevice, const FString& OutAudioDevice)
+void ADefaultGameMode::InitializeAudioManagers()
 {
 	AASettings = LoadAASettings();
-	const bool bUseCaptureAudio = SongFilePath.IsEmpty();
+	UsingAAPlayer = 0;
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
-	/* Initialize AATracker Manager */
-	if (bUseCaptureAudio)
+	switch (GameModeActorStruct.AudioFormat)
 	{
-		AATracker->SetDefaultDevicesCapturerAudio(*InAudioDevice, *OutAudioDevice);
-		if (GameModeActorStruct.PlayerDelay < 0.01f)
-		{
-			if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
-			                                    bPlaybackAudio))
-			{
-				bShouldTick = false;
-				UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
-				return;
-			}
-		}
-		else
-		{
-			if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
-			                                    false))
-			{
-				bShouldTick = false;
-				UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
-				return;
-			}
-			AATracker->SetCaptureVolume(1, 0);
-		}
-	}
-	else
-	{
-		if (!AATracker->InitPlayerAudio(SongFilePath))
+	case EAudioFormat::Capture:
+		AATracker->SetDefaultDevicesCapturerAudio(*GameModeActorStruct.InAudioDevice,
+		                                          *GameModeActorStruct.OutAudioDevice);
+		if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
+		                                    GameModeActorStruct.bPlaybackAudio))
 		{
 			bShouldTick = false;
 			UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 			return;
 		}
-		/* set Song length and song title in GameModeActorStruct if using song file */
-		FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
-		AATracker->GetMetadata(Filename, Extension, MetaType, Title,
-		                       Artist, Album, Year, Genre);
-		if (Title.IsEmpty())
+		break;
+	case EAudioFormat::File:
+		if (!AATracker->InitPlayerAudio(GameModeActorStruct.SongPath))
 		{
-			GameModeActorStruct.SongTitle = Filename;
+			bShouldTick = false;
+			UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
+			return;
 		}
-		else
+		if (GameModeActorStruct.SongTitle.IsEmpty())
 		{
-			GameModeActorStruct.SongTitle = Title;
+			/* set Song length and song title in GameModeActorStruct if using song file */
+			FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
+			AATracker->GetMetadata(Filename, Extension, MetaType, Title,
+			                       Artist, Album, Year, Genre);
+			if (Title.IsEmpty())
+			{
+				GameModeActorStruct.SongTitle = Filename;
+			}
+			else
+			{
+				GameModeActorStruct.SongTitle = Title;
+			}
 		}
 		GameModeActorStruct.GameModeLength = AATracker->GetTotalDuration();
+		break;
+	case EAudioFormat::None: break;
 	}
 
 	AATracker->InitBeatTrackingConfigWLimits(
@@ -370,36 +371,39 @@ void ADefaultGameMode::InitializeAudioManagers(const bool bPlaybackAudio, const 
 	AATracker->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits,
 	                                     AASettings.TimeWindow, 10 / AASettings.TimeWindow, true,
 	                                     AASettings.NumBandChannels);
-	SetAAManagerVolume(0, 0, AATracker);
 	//AATracker->InitPitchTrackingConfig(EAA_ChannelSelectionMode::All_in_one, -1, 0.02, 0.19);
-
-	/* Only initialize AAPlayer if the player delay is large enough */
+	SetAAManagerVolume(0, 0, AATracker);
+	
 	if (GameModeActorStruct.PlayerDelay < 0.01f)
 	{
 		UsingAAPlayer = 0;
 		AAPlayer = nullptr;
 		return;
 	}
+
 	AAPlayer = NewObject<UAudioAnalyzerManager>(this);
-	if (bUseCaptureAudio)
+	switch (GameModeActorStruct.AudioFormat)
 	{
-		AAPlayer->SetDefaultDevicesCapturerAudio(*InAudioDevice, *OutAudioDevice);
+	case EAudioFormat::Capture:
+		AAPlayer->SetDefaultDevicesCapturerAudio(*GameModeActorStruct.InAudioDevice,
+		                                         *GameModeActorStruct.OutAudioDevice);
 		if (!AAPlayer->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
-		                                   bPlaybackAudio))
+		                                   GameModeActorStruct.bPlaybackAudio))
 		{
 			bShouldTick = false;
 			UE_LOG(LogTemp, Display, TEXT("Init Player Error"));
 			return;
 		}
-	}
-	else
-	{
-		if (!AAPlayer->InitPlayerAudio(SongFilePath))
+		break;
+	case EAudioFormat::File:
+		if (!AAPlayer->InitPlayerAudio(GameModeActorStruct.SongPath))
 		{
 			bShouldTick = false;
 			UE_LOG(LogTemp, Display, TEXT("Init Player Error"));
 			return;
 		}
+		break;
+	case EAudioFormat::None: break;
 	}
 	AAPlayer->InitBeatTrackingConfigWLimits(
 		EAA_ChannelSelectionMode::All_in_one, 0,
@@ -419,13 +423,15 @@ void ADefaultGameMode::PlayAAPlayer()
 		return;
 	}
 
-	if (!GameModeActorStruct.SongPath.IsEmpty())
+	switch (GameModeActorStruct.AudioFormat)
 	{
+	case EAudioFormat::File:
 		AAPlayer->Play();
-	}
-	else
-	{
+		break;
+	case EAudioFormat::Capture:
 		AAPlayer->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
+		break;
+	case EAudioFormat::None: break;
 	}
 	UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer"));
 	SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AAPlayer);
@@ -436,38 +442,44 @@ void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float 
 {
 	if (AAManager)
 	{
-		if (GameModeActorStruct.SongPath.IsEmpty())
+		switch (GameModeActorStruct.AudioFormat)
 		{
-			AAManager->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
-		}
-		else
-		{
+		case EAudioFormat::File:
 			AAManager->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
+			break;
+		case EAudioFormat::Capture:
+			AAManager->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
+			break;
+		case EAudioFormat::None: break;
 		}
 		return;
 	}
 	if (AAPlayer)
 	{
-		if (GameModeActorStruct.SongPath.IsEmpty())
+		switch (GameModeActorStruct.AudioFormat)
 		{
-			AAPlayer->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
-		}
-		else
-		{
+		case EAudioFormat::File:
 			AAPlayer->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
+			break;
+		case EAudioFormat::Capture:
+			AAPlayer->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
+			break;
+		case EAudioFormat::None: break;
 		}
 		/* Exit early if AAPlayer exists so we don't set volume for two playback sources at once */
 		return;
 	}
 	if (AATracker)
 	{
-		if (GameModeActorStruct.SongPath.IsEmpty())
+		switch (GameModeActorStruct.AudioFormat)
 		{
-			AATracker->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
-		}
-		else
-		{
+		case EAudioFormat::File:
 			AATracker->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
+			break;
+		case EAudioFormat::Capture:
+			AATracker->SetCaptureVolume(1, GlobalVolume / 100 * MusicVolume / 100);
+			break;
+		case EAudioFormat::None: break;
 		}
 	}
 }
@@ -476,28 +488,7 @@ void ADefaultGameMode::OnSecondPassed()
 {
 	if (OnAAManagerSecondPassed.IsBound())
 	{
-		if (AAPlayer != nullptr)
-		{
-			if (GameModeActorStruct.SongPath.IsEmpty())
-			{
-				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
-			}
-			else
-			{
-				OnAAManagerSecondPassed.Execute(AAPlayer->GetPlaybackTime());
-			}
-		}
-		else if (AATracker != nullptr)
-		{
-			if (GameModeActorStruct.SongPath.IsEmpty())
-			{
-				OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
-			}
-			else
-			{
-				OnAAManagerSecondPassed.Execute(AATracker->GetPlaybackTime());
-			}
-		}
+		OnAAManagerSecondPassed.Execute(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 	}
 }
 
@@ -520,6 +511,7 @@ void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPla
 
 void ADefaultGameMode::LoadMatchingPlayerScores()
 {
+	CurrentPlayerScore.ResetStruct();
 	const TArray<FPlayerScore> PlayerScores = LoadPlayerScores();
 	if (GameModeActorStruct.GameModeActorName == EGameModeActorName::Custom)
 	{
@@ -658,14 +650,23 @@ void ADefaultGameMode::OnPostScoresResponseReceived(const ELoginState& LoginStat
 	}
 }
 
-void ADefaultGameMode::UpdatePlayerScores(const float TimeElapsed)
+void ADefaultGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector Position)
 {
-	if (GameModeActorStruct.IsBeatTrackMode == true)
+	FString Hit;
+	if (TimeElapsed == -1)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Error: trying to call UpdateScore() with BeatTrackMode"));
+		Hit = "Miss";
+	}
+	else
+	{
+		Hit = "Hit";
+	}
+	UE_LOG(LogTemp, Display, TEXT("%s, Position: %s"), *Hit, *Position.ToString());
+	if (GameModeActorStruct.IsBeatTrackMode == true || TimeElapsed == -1)
+	{
 		return;
 	}
-	UpdateTargetsHit();
+
 	if (TimeElapsed <= GameModeActorStruct.PlayerDelay - 0.05f)
 	{
 		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget,
@@ -685,6 +686,8 @@ void ADefaultGameMode::UpdatePlayerScores(const float TimeElapsed)
 		// (TimeElapsed - GameModeActorStruct.PlayerDelay + 0.05f) /
 		// (GameModeActorStruct.TargetMaxLifeSpan - (GameModeActorStruct.PlayerDelay + 0.05f))))
 	}
+	UpdateTargetsHit();
+	UpdateStreak(NewStreak, Position);
 	UpdateHighScore();
 	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - GameModeActorStruct.PlayerDelay);
 	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
@@ -722,7 +725,7 @@ void ADefaultGameMode::UpdateShotsFired()
 	}
 }
 
-void ADefaultGameMode::OnStreakUpdateCallback(const int32 Streak, const FVector Location)
+void ADefaultGameMode::UpdateStreak(const int32 Streak, const FVector Location)
 {
 	/** Only update best streak in PlayerScores and HUD */
 	if (Streak > CurrentPlayerScore.Streak)

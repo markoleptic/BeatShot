@@ -1177,6 +1177,7 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 			GameModeActorStruct.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
 			GameModeActorStruct.SongPath = AudioSelectStruct.SongPath;
 			GameModeActorStruct.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
+			GameModeActorStruct.AudioFormat = AudioSelectStruct.AudioFormat;
 			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
 			OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 		});
@@ -1200,6 +1201,7 @@ ESpreadType UGameModesWidget::GetSpreadType() const
 	for (const ESpreadType Spread : TEnumRange<ESpreadType>())
 	{
 		FString StringSpread = UEnum::GetDisplayValueAsText(Spread).ToString();
+		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"),*StringSpread);
 		if (Spread == ESpreadType::DynamicEdgeOnly)
 		{
 			StringSpread.InsertAt(11, " ");
@@ -1213,11 +1215,13 @@ ESpreadType UGameModesWidget::GetSpreadType() const
 		{
 			StringSpread.InsertAt(6, " ");
 		}
+		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"),*StringSpread);
 		if (StringSpread.Equals(SelectedSpread))
 		{
 			return Spread;
 		}
 	}
+	UE_LOG(LogTemp, Display, TEXT("Didn't get match"));
 	return ESpreadType::None;
 }
 

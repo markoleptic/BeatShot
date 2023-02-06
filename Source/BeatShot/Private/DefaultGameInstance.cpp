@@ -80,7 +80,7 @@ void UDefaultGameInstance::StartGameMode() const
 	PlayerController->FadeScreenToBlack();
 }
 
-void UDefaultGameInstance::HandleGameModeTransition(FGameModeTransitionState& NewGameModeTransitionState)
+void UDefaultGameInstance::HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState)
 {
 	switch (NewGameModeTransitionState.TransitionState)
 	{
@@ -98,6 +98,7 @@ void UDefaultGameInstance::HandleGameModeTransition(FGameModeTransitionState& Ne
 		}
 	case ETransitionState::Restart:
 		{
+			UE_LOG(LogTemp, Display, TEXT("Restarting"));
 			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
 				NewGameModeTransitionState.bSaveCurrentScores, false);
 			StartGameMode();

@@ -40,7 +40,6 @@ void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	/** If reached this point, CurrentTime is equal to PlayerDelay, and AAManager playback can be started */
 	if (!bHasCalledStartAAManagerPlayback)
 	{
-		UE_LOG(LogTemp, Display, TEXT("StartAAManagerOnce from Countdown"));
 		if (!StartAAManagerPlayback.ExecuteIfBound())
 		{
 			UE_LOG(LogTemp, Display, TEXT("StartAAManagerPlayback not bound."));

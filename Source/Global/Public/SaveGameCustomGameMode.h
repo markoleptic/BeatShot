@@ -46,6 +46,16 @@ enum class EGameModeDifficulty : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
+/** The player chosen audio format for the current game mode */
+UENUM()
+enum class EAudioFormat : uint8
+{
+	None UMETA(DisplayName, "None"),
+	File UMETA(DisplayName, "File"),
+	Capture UMETA(DisplayName, "Capture")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Capture);
+
 #pragma endregion
 
 /* Struct representing a game mode */
@@ -72,6 +82,9 @@ struct FGameModeActorStruct
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
 	bool bPlaybackAudio;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	EAudioFormat AudioFormat;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
 	FString InAudioDevice;
@@ -175,8 +188,6 @@ struct FGameModeActorStruct
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumTargetsAtOnceBeatGrid;
 
-	
-
 	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const
 	{
 		if (GameModeActorName == Other.GameModeActorName &&
@@ -200,6 +211,7 @@ struct FGameModeActorStruct
 		SpreadType = ESpreadType::None;
 		GameModeDifficulty = EGameModeDifficulty::Normal;
 		bPlaybackAudio = false;
+		AudioFormat = EAudioFormat::None;
 		InAudioDevice = "";
 		OutAudioDevice = "";
 		SongPath = "";
@@ -240,6 +252,7 @@ struct FGameModeActorStruct
 
 		// Constant for all Game Modes and Difficulties
 		bPlaybackAudio = false;
+		AudioFormat = EAudioFormat::None;
 		InAudioDevice = "";
 		OutAudioDevice = "";
 		SongPath = "";
@@ -346,7 +359,7 @@ struct FGameModeActorStruct
 		else if (GameModeActor == EGameModeActorName::MultiBeat)
 		{
 			UseDynamicSizing = true;
-			SpreadType = ESpreadType::DynamicRandom;
+			// SpreadType = ESpreadType::DynamicRandom;
 			// MultiBeat Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
 			{
@@ -396,7 +409,6 @@ struct FGameModeActorStruct
 		{
 			IsSingleBeatMode = true;
 			UseDynamicSizing = true;
-			SpreadType = ESpreadType::DynamicEdgeOnly;
 			// SingleBeat Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
 			{

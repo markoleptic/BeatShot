@@ -122,8 +122,6 @@ void UAASettingsWidget::PopulateAASettings()
 		
 		if (NewAASettings.NumBandChannels > i)
 		{
-			UE_LOG(LogTemp, Display, TEXT("NewAASettings.NumBandChannels > i %d > %d"), NewAASettings.NumBandChannels, i);
-			UE_LOG(LogTemp, Display, TEXT("NewAASettings.BandLimits[i] i %s %d"), *NewAASettings.BandLimits[i].ToString(), i);
 			PreviousBandChannel->SetDefaultValues(NewAASettings.BandLimits[i], i);
 			PreviousBandThreshold->SetDefaultValue(NewAASettings.BandLimitsThreshold[i], i);
 			PreviousBandChannel->SetVisibility(ESlateVisibility::Visible);
@@ -131,8 +129,6 @@ void UAASettingsWidget::PopulateAASettings()
 		}
 		else if (DefaultAASettings.NumBandChannels > i)
 		{
-			UE_LOG(LogTemp, Display, TEXT("DefaultAASettings.NumBandChannels > i %d > %d"), DefaultAASettings.NumBandChannels, i);
-			UE_LOG(LogTemp, Display, TEXT("DefaultAASettings.BandLimitsThreshold[i] i %s %d"), *DefaultAASettings.BandLimits[i].ToString(), i);
 			PreviousBandChannel->SetDefaultValues(DefaultAASettings.BandLimits[i], i);
 			PreviousBandThreshold->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[i], i);
 			PreviousBandChannel->SetVisibility(ESlateVisibility::Collapsed);
@@ -148,30 +144,6 @@ void UAASettingsWidget::PopulateAASettings()
 		PreviousBandChannel = PreviousBandChannel->Next;
 		PreviousBandThreshold = PreviousBandThreshold->Next;
 	}
-	
-	// UBandChannelWidget* CurrentBandChannelWidget = BandChannelWidget;
-	// UBandThresholdWidget* CurrentBandThresholdWidget = BandThresholdWidget;
-	// int Count = 0;
-	// while (Count < FAASettingsStruct().MaxNumBandChannels)
-	// {
-	// 	if (Count <= NewAASettings.NumBandChannels - 1)
-	// 	{
-	// 		CurrentBandChannelWidget->SetVisibility(ESlateVisibility::Visible);
-	// 		CurrentBandThresholdWidget->SetVisibility(ESlateVisibility::Visible);
-	// 	}
-	// 	else
-	// 	{
-	// 		CurrentBandChannelWidget->SetVisibility(ESlateVisibility::Collapsed);
-	// 		CurrentBandThresholdWidget->SetVisibility(ESlateVisibility::Collapsed);
-	// 	}
-	// 	if (CurrentBandChannelWidget->Next == nullptr || CurrentBandThresholdWidget->Next == nullptr)
-	// 	{
-	// 		break;
-	// 	}
-	// 	CurrentBandChannelWidget = CurrentBandChannelWidget->Next;
-	// 	CurrentBandThresholdWidget = CurrentBandThresholdWidget->Next;
-	// 	Count++;
-	// }
 	
 	TimeWindowSlider->SetValue(NewAASettings.TimeWindow);
 	TimeWindowValue->SetText(FText::AsNumber(NewAASettings.TimeWindow, &FNumberFormattingOptions::DefaultNoGrouping()));
@@ -229,7 +201,6 @@ void UAASettingsWidget::SortAndCheckOverlap()
 	{
 		if (NewAASettings.BandLimits[i].X >= NewAASettings.BandLimits[i].Y)
 		{
-			UE_LOG(LogTemp, Display, TEXT("%f %f %d"),NewAASettings.BandLimits[i].X, NewAASettings.BandLimits[i].Y, i );
 			ShowBandLimitErrorMessage();
 			return;
 		}
@@ -239,7 +210,6 @@ void UAASettingsWidget::SortAndCheckOverlap()
 		}
 		if (NewAASettings.BandLimits[i].X <= LastEndThreshold)
 		{
-			UE_LOG(LogTemp, Display, TEXT("%f %f"),NewAASettings.BandLimits[i].X, LastEndThreshold );
 			ShowBandLimitErrorMessage();
 			return;
 		}

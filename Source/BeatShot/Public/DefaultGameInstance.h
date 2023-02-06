@@ -47,7 +47,7 @@ public:
 	void StartGameMode() const;
 	
 	UFUNCTION()
-	void HandleGameModeTransition(FGameModeTransitionState& NewGameModeTransitionState);
+	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FGameModeActorStruct GameModeActorStruct;

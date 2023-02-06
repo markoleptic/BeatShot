@@ -11,37 +11,38 @@
 
 class ASphereTarget;
 class UBoxComponent;
+class UMaterialInterface;
+class AStaticMeshActor;
+class UActorComponent;
+class AVisualGrid;
 
+/** A struct representing the space in the grid that a recently spawned target occupies */
 USTRUCT()
-struct FActiveTargetStruct
+struct FRecentTargetStruct
 {
 	GENERATED_BODY()
 	
 	/** A 2D representation of the area the target spawned. This is stored so that the points can be freed when
 	 *  the target expires or is destroyed. */
 	TArray<FIntPoint> BlockedSpawnPoints;
-
-	/** A reference to the target that was spawned, so that it can be found and its BlockedSpawnPoints can be freed
-	 *  when the target expires or is destroyed. */
-	//ASphereTarget* ActiveTarget;
-
+	
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid TargetGuid;
 
-	/** The scale of this target, as it is in the world */
+	/** The scale of the target, as it is in the world */
 	float TargetScale;
 
-	/** The center of this target*/
+	/** The center of the target*/
 	FIntPoint Center;
 
-	FActiveTargetStruct()
+	FRecentTargetStruct()
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
-		//ActiveTarget = nullptr;
 		TargetScale = 0.f;
 		Center = FIntPoint(-5000, -5000);
 	}
 
-	FActiveTargetStruct(const FGuid GuidToRemove)
+	FRecentTargetStruct(const FGuid GuidToRemove)
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
 		TargetGuid = GuidToRemove;
@@ -49,17 +50,16 @@ struct FActiveTargetStruct
 		Center = FIntPoint(-5000, -5000);
 	}
 	
-	FActiveTargetStruct(const ASphereTarget* TargetToAdd, const TArray<FIntPoint> BlockedSpawnPointsToAdd,
-	                    const float TargetScaleToAdd, const FIntPoint CenterToAdd)
+	FRecentTargetStruct(const FGuid NewTargetGuid, const TArray<FIntPoint> NewBlockedSpawnPoints,
+	                    const float NewTargetScale, const FIntPoint NewCenter)
 	{
-		BlockedSpawnPoints = BlockedSpawnPointsToAdd;
-		//ActiveTarget = TargetToAdd;
-		TargetGuid = TargetToAdd->Guid;
-		TargetScale = TargetScaleToAdd;
-		Center = CenterToAdd;
+		BlockedSpawnPoints = NewBlockedSpawnPoints;
+		TargetGuid = NewTargetGuid;
+		TargetScale = NewTargetScale;
+		Center = NewCenter;
 	}
 
-	FORCEINLINE bool operator == (const FActiveTargetStruct& Other) const
+	FORCEINLINE bool operator == (const FRecentTargetStruct& Other) const
 	{
 		if (TargetGuid == Other.TargetGuid)
 		{
@@ -135,23 +135,18 @@ private:
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
-	/** Adds a target to ActiveTargetArray (used for moving targets forward), and RecentTargetArray
-	 *  (used to store location and size of recently spawned targets  */
-	void AddTargetToTargetArrays(ASphereTarget* Target, FVector LastSpawnLocation, float LastTargetScale);
-
 	UFUNCTION()
 	void RemoveFromRecentTargetArray(const FGuid GuidToRemove);
 	
-	/** Adds a circle to the 2D array SpawnArea by setting all values that make up the area covered by the target
-	 *  equal to 1 (occupied). Returns an array of points containing all values that were changed */
-	TArray<FIntPoint> GetCircleOfPoints(const FIntPoint Center, const float Scale) const;
+	/** Returns an array of points containing the area of the target that was spawned */
+	TArray<FIntPoint> GetBlockedPoints(const FIntPoint Center, const float Scale) const;
 
 	/** Returns an array of valid spawn points by creating a new 2D array and filling out the values based on the
 	 *  contents of RecentTargetArray, the scale of the new target to spawn, and the current BoxExtent */
 	TArray<FIntPoint> GetValidSpawnPoints(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
 	
 	/** Returns a copy of the RecentTargetArray, used to determine future target spawn locations */
-	TArray<FActiveTargetStruct> GetRecentTargetArray();
+	TArray<FRecentTargetStruct> GetRecentTargetArray();
 
 	/** Modifies a circle of points in OutSpawnArea. Returns the modified OutSpawnArea */
 	std::vector<std::vector<int32>> ResizeCircleInSpawnArea(const FIntPoint Center, const float Scale,
@@ -175,7 +170,7 @@ private:
 	FVector ConvertPointToLocationSingleBeat(const FIntPoint Point) const;
 	
 	/** Find the next spawn location for a target */
-	FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
+	//FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
 
 #pragma region General Spawning Variables
 
@@ -238,12 +233,19 @@ private:
 	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
 	 *  OnTargetTimeout */
 	UPROPERTY()
-	TArray<FActiveTargetStruct> RecentTargetArray;
+	TArray<FRecentTargetStruct> RecentTargetArray;
 
 	/** Scale the 2D representation of the spawn area down by this factor */
 	int32 SpawnAreaScale;
 
 	FTimerDelegate RemoveFromRecentDelegate;
+
+	FActorSpawnParameters TargetSpawnParams;
+
+	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
+	
+	std::vector<std::vector<int32>> SpawnAreaTotals;
+	std::vector<std::vector<int32>> SpawnAreaHits;
 
 #pragma endregion
 
@@ -288,6 +290,20 @@ private:
 
 	/** Whether or not the first BeatGrid target has been activated */
 	bool InitialBeatGridTargetActivated;
+
+#pragma endregion
+
+protected:
+
+#pragma region Experimental
+
+	void CreateVisualGrid();
+
+	UPROPERTY(EditDefaultsOnly)
+	AVisualGrid* VisualGrid;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AVisualGrid> VisualGridClass;
 
 #pragma endregion
 };

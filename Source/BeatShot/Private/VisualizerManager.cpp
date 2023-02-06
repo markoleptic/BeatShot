@@ -113,9 +113,16 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
 
 void AVisualizerManager::DestroyVisualizers()
 {
-	for (AVisualizerBase* Visualizer : Visualizers)
+	if (Visualizers.IsEmpty())
 	{
-		Visualizer->Destroy();
+		return;
+	}
+	for (int i = 0; i < Visualizers.Num(); i++)
+	{
+		if (IsValid(Visualizers[i]))
+		{
+			Visualizers[i]->Destroy();
+		}
 	}
 	Visualizers.Empty();
 }
