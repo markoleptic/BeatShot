@@ -8,6 +8,7 @@
 #include "Engine/LevelScriptActor.h"
 #include "RangeLevelScriptActor.generated.h"
 
+class ASkyLight;
 class AStaticMeshActor;
 class AVolumetricCloud;
 class ADirectionalLight;
@@ -72,6 +73,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ADirectionalLight* Daylight;
 
+	/** Reference to Moonlight directional light in Range level */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	ADirectionalLight* Moonlight;
+
+	/** Reference to Skylight directional light in Range level */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	ASkyLight* Skylight;
+	
 	/** Reference to rectangular light near the TargetSpawner */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ARectLight* TargetSpawnerLight;
@@ -88,15 +97,30 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UCurveFloat* SkyMaterialCurve;
 
+	/** The curve to link to OnTransitionSkylightTick and TransitionTimeline */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* SkylightIntensityCurve;
+
+	/** The curve to link to OnTransitionSkylightTick and TransitionTimeline */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* SkylightIntensityCurveReverse;
+
 	ETimeOfDay TimeOfDay;
 
 	FTimeline TransitionTimeline;
+
+	FTimeline SkylightIntensityTimeline;
+
+	FTimeline SkylightIntensityReverseTimeline;
 
 	/** Link TransitionTimeline, MovementCurve to the function TransitionTimeOfDay() */
 	FOnTimelineFloat OnTransitionTick;
 
 	/** Link TransitionTimeline, SkyMaterialCurve to the function TransitionSkySphereMaterial() */
 	FOnTimelineFloat OnTransitionMaterialTick;
+
+	/** Link SkylightIntensityTimeline, SkylightIntensityCurve to the function TransitionSkylightIntensity() */
+	FOnTimelineFloat OnTransitionSkylightTick;
 
 	/** Link TransitionTimeline to the function OnTimelineCompletedCallback() */
 	FOnTimelineEvent OnTimelineCompleted;
@@ -122,6 +146,10 @@ protected:
 	UFUNCTION()
 	void TransitionSkySphereMaterial(float Alpha);
 
+	/** Executes on every tick of SkylightIntensityTimeline, reads from SkylightIntensityCurve */
+	UFUNCTION()
+	void TransitionSkylightIntensity(float Alpha);
+
 	/** Callback function to respond to NightMode change from WallMenu */
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
@@ -136,4 +164,3 @@ protected:
 
 	float LastLerpRotation;
 };
-

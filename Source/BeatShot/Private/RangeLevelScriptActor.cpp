@@ -8,11 +8,12 @@
 #include "Moon.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/LightComponent.h"
-#include "Components/SphereComponent.h"
+#include "Components/SkyLightComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Components/VolumetricCloudComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/RectLight.h"
+#include "Engine/SkyLight.h"
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -32,9 +33,14 @@ void ARangeLevelScriptActor::BeginPlay()
 	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
 	OnTransitionTick.BindUFunction(this, FName("TransitionTimeOfDay"));
 	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionSkySphereMaterial"));
+	OnTransitionSkylightTick.BindUFunction(this, FName("TransitionSkylightIntensity"));
 	TransitionTimeline.SetTimelineFinishedFunc(OnTimelineCompleted);
 	TransitionTimeline.AddInterpFloat(MovementCurve, OnTransitionTick);
 	TransitionTimeline.AddInterpFloat(SkyMaterialCurve, OnTransitionMaterialTick);
+	
+	SkylightIntensityTimeline.AddInterpFloat(SkylightIntensityCurve, OnTransitionSkylightTick);
+	SkylightIntensityReverseTimeline.AddInterpFloat(SkylightIntensityCurveReverse, OnTransitionSkylightTick);
+
 	SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
 		Cast<UStaticMeshComponent>(
 			SkySphere->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
@@ -52,6 +58,8 @@ void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 	if (TransitionTimeline.IsPlaying())
 	{
 		TransitionTimeline.TickTimeline(DeltaSeconds);
+		SkylightIntensityTimeline.TickTimeline(DeltaSeconds);
+		SkylightIntensityReverseTimeline.TickTimeline(DeltaSeconds);
 	}
 }
 
@@ -93,6 +101,8 @@ void ARangeLevelScriptActor::BeginTransitionToNight()
 	TimeOfDay = ETimeOfDay::DayToNight;
 	TransitionTimeline.SetPlayRate(1.f / CycleSpeed);
 	TransitionTimeline.PlayFromStart();
+	SkylightIntensityTimeline.SetPlayRate(1.f / CycleSpeed);
+	SkylightIntensityTimeline.PlayFromStart();
 }
 
 void ARangeLevelScriptActor::BeginTransitionToDay()
@@ -101,19 +111,20 @@ void ARangeLevelScriptActor::BeginTransitionToDay()
 	TimeOfDay = ETimeOfDay::NightToDay;
 	TransitionTimeline.SetPlayRate(1.f / CycleSpeed);
 	TransitionTimeline.PlayFromStart();
+	SkylightIntensityReverseTimeline.SetPlayRate(1.f / CycleSpeed);
+	SkylightIntensityReverseTimeline.PlayFromStart();
 }
 
 void ARangeLevelScriptActor::SetTimeOfDayToNight()
 {
 	TimeOfDay = ETimeOfDay::Night;
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", 1);
-	Moon->SphereComponent->AddLocalRotation(FRotator(0, 0, 180));
-	Daylight->GetLightComponent()->AddLocalRotation(FRotator(0, 180, 0));
+	Daylight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 1);
-	Moon->MoonLight->SetRelativeRotation(
-		UKismetMathLibrary::FindLookAtRotation(Moon->MoonLight->GetComponentLocation(), FVector::Zero()));
+	Moon->MoonLight->SetIntensity(0.3);
 	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(WindowCoverOffset, 0,0));
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(WindowCoverOffset,0,0));
+	Skylight->GetLightComponent()->SetIntensity(50);
 	RefreshSkySphereMaterial();
 }
 
@@ -133,13 +144,11 @@ void ARangeLevelScriptActor::TransitionTimeOfDay(float Alpha)
 	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(CurrentWindowOffset,0,0));
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(CurrentWindowOffset,0,0));
 	
-	Moon->MoonLight->SetRelativeRotation(
-		UKismetMathLibrary::FindLookAtRotation(Moon->MoonLight->GetComponentLocation(), FVector::Zero()));
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", Value);
+	Moon->MoonLight->SetIntensity(0.3*Value);
 	
 	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Alpha);
-	Moon->SphereComponent->AddLocalRotation(FRotator(0, 0, -(CurrentLerpRotation - LastLerpRotation)));
-	Daylight->GetLightComponent()->AddLocalRotation(FRotator(0, CurrentLerpRotation - LastLerpRotation, 0));
+	Daylight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, CurrentLerpRotation - LastLerpRotation));
 	LastLerpRotation = CurrentLerpRotation;
 	RefreshSkySphereMaterial();
 }
@@ -156,6 +165,11 @@ void ARangeLevelScriptActor::TransitionSkySphereMaterial(float Alpha)
 		Value = UKismetMathLibrary::Lerp(1, 0, Alpha);
 	}
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", Value);
+}
+
+void ARangeLevelScriptActor::TransitionSkylightIntensity(float Alpha)
+{
+	Skylight->GetLightComponent()->SetIntensity(UKismetMathLibrary::Lerp(1, 50, Alpha));
 }
 
 void ARangeLevelScriptActor::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
