@@ -122,6 +122,10 @@ private:
 	/** Briefly makes the target higher opacity. Only used for BeatGrid */
 	UFUNCTION()
 	void PlayFadeAndReappearTimeline();
+
+	/** Set the color to BeatGrid color */
+	UFUNCTION()
+	void SetColorToBeatGridColor();
 	
 	FTimeline FadeAndReappearTimeline;
 	FTimeline WhiteToGreenTimeline;

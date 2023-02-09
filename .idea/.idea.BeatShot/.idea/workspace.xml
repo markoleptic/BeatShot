@@ -7,12 +7,97 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultGame.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultGame.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Base_Grey.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Cover.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_ExpBarrel.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_JumpX.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Local_DarkGrey.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Local_Green.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Local_Grey.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Local_Red.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Local_White.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_Water.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/MI_LDGrid_World.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/M_LDGrid_Base.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Materials/M_LDGrid_Local.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Assets/Textures/T_Grid.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_ADS.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Crouch.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Fire.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Interact.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Jump.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Look.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Move.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Pause.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_PrimaryWeaponSelect.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Reload.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Scroll.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_SecondaryWeaponSelect.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Actions/IA_Sprint.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/BP_DefaultCharacter.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/BP_DefaultPlayerController.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/BP_Gun_AK47.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/BP_Projectile.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Curves/C_KickbackCurve.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Curves/VC_AK47Recoil.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/CharactersAndControllers/Mappings/MC_Base.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/GameModesAndInstances/BP_DefaultGameInstance.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/GameModesAndInstances/BP_DefaultGameMode.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/GameModesAndInstances/BP_MainMenuGameModeBase.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/BP_DynamicVolumetricSky1.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/Daylight_Blueprint.uasset" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/SkyLight_Blueprint.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_Moon.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_NightRectLight.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_SimpleBeamLight.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/BP_Sky_Sphere1.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/C_BeamEndPosition.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/C_NightTransitionMaterial.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/C_NightTransitionMaterial1.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/C_NightTransitionMaterial2.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/C_NightTransitionPosition.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/C_SimpleBeam.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/MI_SpotlightEmissive.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/M_SpotlightEmissive.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/M_SpotlightMaterial.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/NE_SimpleBeam.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/NS_SimpleBeam.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/SM_SpotlightBase.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/SM_SpotlightHead.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Lights/SM_SpotlightLimb.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/BP_SphereTarget.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/BP_TargetSpawner.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/BP_VisualGrid.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/FadeAndReappear.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/GreenToRedCurve.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/M_VisualGrid.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Targets/WhiteToGreenCurve.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/BP_FloatingText.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/BP_WallMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/BP_WallMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PauseMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PauseMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Countdown.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Countdown.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PlayerHUD.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PlayerHUD.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_ScoreBrowser.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_ScoreBrowser.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SettingsMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SettingsMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ConstrainedSlider.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ConstrainedSlider.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Tooltip.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Tooltip.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TooltipImage.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TooltipImage.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Visualization/BP_BeamVisualizer.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Visualization/BP_StaticCubeVisualizer.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Visualization/BP_VisualizerManager.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BeamLight.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/VisualGrid.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/VisualGrid.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/VisualizerManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/VisualizerManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BeamLight.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -218,7 +303,8 @@
       <workItem from="1675623092070" duration="23879000" />
       <workItem from="1675750850544" duration="8000" />
       <workItem from="1675794875657" duration="17547000" />
-      <workItem from="1675881859687" duration="20914000" />
+      <workItem from="1675881859687" duration="21085000" />
+      <workItem from="1675914084842" duration="4304000" />
     </task>
     <servers />
   </component>

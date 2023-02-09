@@ -29,37 +29,39 @@ void ATargetSpawner::BeginPlay()
 
 void ATargetSpawner::Destroyed()
 {
-	FString file = FPaths::ProjectDir();
-	file.Append(TEXT("AccuracyMatrix.csv"));
-	FString StringToWrite;
-	for (const FGridPoint Point : SpawnAreaHitsPoints)
+	if (SpawnAreaTotalsPoints.Num() > 0)
 	{
-		StringToWrite.Append(FString::FromInt(Point.Count));
-		if (Point.Point.X == NumRowsGrid -1 )
+		FString file = FPaths::ProjectDir();
+		file.Append(TEXT("AccuracyMatrix.csv"));
+		FString StringToWrite;
+		for (const FGridPoint Point : SpawnAreaHitsPoints)
 		{
-			StringToWrite.Append("\n");
+			StringToWrite.Append(FString::FromInt(Point.Count));
+			if (Point.Point.X == NumRowsGrid -1 )
+			{
+				StringToWrite.Append("\n");
+			}
+			else
+			{
+				StringToWrite.Append(",");
+			}
 		}
-		else
+		StringToWrite.Append("\n");
+		for (const FGridPoint Point : SpawnAreaTotalsPoints)
 		{
-			StringToWrite.Append(",");
+			StringToWrite.Append(FString::FromInt(Point.Count));
+			if (Point.Point.X == NumRowsGrid -1 )
+			{
+				StringToWrite.Append("\n");
+			}
+			else
+			{
+				StringToWrite.Append(",");
+			}
 		}
-	}
-	StringToWrite.Append("\n");
-	for (const FGridPoint Point : SpawnAreaTotalsPoints)
-	{
-		StringToWrite.Append(FString::FromInt(Point.Count));
-		if (Point.Point.X == NumRowsGrid -1 )
-		{
-			StringToWrite.Append("\n");
-		}
-		else
-		{
-			StringToWrite.Append(",");
-		}
+		FFileHelper::SaveStringToFile(StringToWrite, *file);
 	}
 	
-	FFileHelper::SaveStringToFile(StringToWrite, *file);
-
 	Super::Destroyed();
 	if (BeatTrackTarget)
 	{
@@ -149,10 +151,19 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 
 	/* Initial target size */
 	TargetScale = GetNextTargetScale();
+	
+	if (GameModeActorStruct.IsBeatTrackMode)
+	{
+		return;
+	}
 
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		InitBeatGrid();
+		return;
+		/* TODO: implement SpawnAreaPoints for BeatGrid */
+		NumRowsGrid = sqrt(GameModeActorStruct.NumTargetsAtOnceBeatGrid);
+		NumColsGrids = sqrt(GameModeActorStruct.NumTargetsAtOnceBeatGrid);
 	}
 
 	NumRowsGrid = roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) + 1;
@@ -172,7 +183,6 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 			SpawnAreaTotalsPoints[i * NumRowsGrid + j].Point = FIntPoint(j,i);
 		}
 	}
-
 	UE_LOG(LogTemp, Display, TEXT("Size: %d"),SpawnAreaHitsPoints.Num());
 }
 
@@ -440,10 +450,9 @@ void ATargetSpawner::ActivateBeatGridTarget()
 		RecentBeatGridIndices.Insert(LastBeatGridIndex, 0);
 		RecentBeatGridIndices.SetNum(2);
 	}
-	/* only "spawn" target if it hasn't been destroyed by GameModeActorBase */
+	/* only "spawn" target if it hasn't been destroyed */
 	if (ActiveBeatGridTarget)
 	{
-		/* notify GameModeActorBase that target has "spawned" */
 		ActiveBeatGridTarget->StartBeatGridTimer(GameModeActorStruct.TargetMaxLifeSpan);
 		if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
 		{
@@ -554,6 +563,14 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z
 	};
 
+	const ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameMode->OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, Location);
+
+	if (GameModeActorStruct.IsBeatGridMode || GameModeActorStruct.IsBeatTrackMode)
+	{
+		return;
+	}
+	
 	FIntPoint DestroyedTargetCenterPoint;
 	for (FRecentTargetStruct Struct : GetRecentTargetArray())
 	{
@@ -563,9 +580,6 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 			break;
 		}
 	}
-
-	const ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	GameMode->OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, Location);
 	
 	SpawnAreaTotalsPoints[DestroyedTargetCenterPoint.Y * NumRowsGrid + DestroyedTargetCenterPoint.X]++;
 	if (!DidExpire)

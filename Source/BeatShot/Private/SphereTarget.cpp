@@ -82,8 +82,10 @@ void ASphereTarget::BeginPlay()
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
-		MID_TargetColorChanger->SetVectorParameterValue(TEXT("StartColor"), BeatGridPurple);
-		MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), BeatGridPurple);
+		SetColorToBeatGridColor();
+		FOnTimelineEvent OnGreenToRedTimelineFinished;
+		OnGreenToRedTimelineFinished.BindUFunction(this, FName("SetColorToBeatGridColor"));
+		GreenToRedTimeline.SetTimelineFinishedFunc(OnGreenToRedTimelineFinished);
 	}
 	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
@@ -104,25 +106,9 @@ void ASphereTarget::BeginPlay()
 void ASphereTarget::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	switch (TimelineSwitch)
-	{
-	case 0:
-		{
-			WhiteToGreenTimeline.TickTimeline(DeltaSeconds);
-			break;
-		}
-	case 1:
-		{
-			GreenToRedTimeline.TickTimeline(DeltaSeconds);
-			break;
-		}
-	case 2:
-		{
-			FadeAndReappearTimeline.TickTimeline(DeltaSeconds);
-			break;
-		}
-	default: break;
-	}
+	WhiteToGreenTimeline.TickTimeline(DeltaSeconds);
+	GreenToRedTimeline.TickTimeline(DeltaSeconds);
+	FadeAndReappearTimeline.TickTimeline(DeltaSeconds);
 }
 
 void ASphereTarget::StartBeatGridTimer(const float Lifespan)
@@ -142,7 +128,6 @@ void ASphereTarget::PlayWhiteToGreenTimeline()
 	{
 		GreenToRedTimeline.Stop();
 	}
-	TimelineSwitch = 0;
 	WhiteToGreenTimeline.PlayFromStart();
 	SetOutlineColor(FLinearColor::Green);
 }
@@ -157,7 +142,6 @@ void ASphereTarget::PlayGreenToRedTimeline()
 	{
 		FadeAndReappearTimeline.Stop();
 	}
-	TimelineSwitch = 1;
 	GreenToRedTimeline.PlayFromStart();
 }
 
@@ -171,8 +155,12 @@ void ASphereTarget::PlayFadeAndReappearTimeline()
 	{
 		GreenToRedTimeline.Stop();
 	}
-	TimelineSwitch = 2;
-	FadeAndReappearTimeline.Play();
+	FadeAndReappearTimeline.PlayFromStart();
+}
+
+void ASphereTarget::SetColorToBeatGridColor()
+{
+	SetSphereAndOutlineColor(BeatGridPurple);
 }
 
 void ASphereTarget::SetSphereColor(const FLinearColor Output)
@@ -219,8 +207,8 @@ void ASphereTarget::HandleDestruction()
 	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale,
 	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("StartColor")));
 	
-	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear blueprint event */
-	if (GameModeActorStruct.IsBeatGridMode == true)
+	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear*/
+	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		SetCanBeDamaged(false);
 		PlayFadeAndReappearTimeline();
@@ -234,7 +222,6 @@ void ASphereTarget::HandleDestruction()
 void ASphereTarget::OnBeatGridTimerTimeOut()
 {
 	SetCanBeDamaged(false);
-	SetSphereAndOutlineColor(BeatGridPurple);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
 }
