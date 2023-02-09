@@ -113,17 +113,6 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
 
 void AVisualizerManager::DestroyVisualizers()
 {
-	if (Visualizers.IsEmpty())
-	{
-		return;
-	}
-	for (int i = 0; i < Visualizers.Num(); i++)
-	{
-		if (IsValid(Visualizers[i]))
-		{
-			Visualizers[i]->Destroy();
-		}
-	}
 	Visualizers.Empty();
 }
 
@@ -136,6 +125,10 @@ void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings PlayerSett
 			Visualizers[2]->Destroy();
 			Visualizers.SetNum(2);
 		}
+		return;
+	}
+	if (Visualizers.Num() > 2)
+	{
 		return;
 	}
 	Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(

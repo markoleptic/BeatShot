@@ -181,10 +181,12 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		OnTargetSpawned.Unbind();
 	}
-
-	VisualizerManager->DestroyVisualizers();
-	VisualizerManager->Destroy();
-
+	if (VisualizerManager)
+	{
+		VisualizerManager->DestroyVisualizers();
+		VisualizerManager->Destroy();
+	}
+	
 	if (AATracker)
 	{
 		AATracker->UnloadCapturerAudio();

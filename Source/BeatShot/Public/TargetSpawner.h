@@ -69,6 +69,47 @@ struct FRecentTargetStruct
 	}
 };
 
+/** A struct representing a point in a 2D grid with information about that point */
+USTRUCT()
+struct FGridPoint
+{
+	GENERATED_BODY()
+	
+	/** The coordinate for GridPoint, in XY space */
+	FIntPoint Point;
+	
+	/** A counter to increment this point */
+	int32 Count;
+	
+	void Init(const FIntPoint InitPoint)
+	{
+		Point = InitPoint;
+	}
+
+	FGridPoint()
+	{
+		Point = FIntPoint(0,0);
+		Count = 0;
+	}
+
+	/** Increment the Count */
+	FGridPoint operator++(int)
+	{
+		FGridPoint Temp = *this;
+		++Count;
+		return Temp;
+	}
+
+	FORCEINLINE bool operator == (const FGridPoint& Other) const
+	{
+		if (Point == Other.Point)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor
 {
@@ -243,9 +284,16 @@ private:
 	FActorSpawnParameters TargetSpawnParams;
 
 	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
+
+	int32 NumRowsGrid;
+
+	int32 NumColsGrids;
 	
 	std::vector<std::vector<int32>> SpawnAreaTotals;
 	std::vector<std::vector<int32>> SpawnAreaHits;
+
+	TArray<FGridPoint> SpawnAreaTotalsPoints;
+	TArray<FGridPoint> SpawnAreaHitsPoints;
 
 #pragma endregion
 
@@ -296,9 +344,7 @@ private:
 protected:
 
 #pragma region Experimental
-
-	void CreateVisualGrid();
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	AVisualGrid* VisualGrid;
 

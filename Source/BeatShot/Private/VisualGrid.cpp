@@ -8,7 +8,7 @@
 // Sets default values
 AVisualGrid::AVisualGrid()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	InstancedMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("InstancedMesh"));
 	RootComponent = InstancedMesh;
@@ -18,25 +18,26 @@ AVisualGrid::AVisualGrid()
 void AVisualGrid::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
 void AVisualGrid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AVisualGrid::CreateGrid(const int32 X, const int32 Y)
 {
-	UE_LOG(LogTemp, Display, TEXT("X: %d Y: %d"), X, Y);
-	for (int i = 0; i < X; i++)
+	int Count = 0;
+	for (int i = 0; i < Y; i++)
 	{
-		for (int j = 0; j < Y; j++)
+		for (int j = 0; j < X; j++)
 		{
-			InstancedMesh->AddInstance(FTransform(FRotator::ZeroRotator,FVector(0, i * 10 - (X*10.f/2.f), j * 10 - (Y*10.f/2.f)),  FVector(0.1)), false);
+			InstancedMesh->AddInstance(
+				FTransform(
+					FRotator::ZeroRotator,
+					FVector(0, j * 10 - (X * 10.f / 2.f), i * 10 - (Y * 10.f / 2.f)),
+					FVector(0.1)), false);
 		}
 	}
 }
-

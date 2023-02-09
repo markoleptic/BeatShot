@@ -29,6 +29,37 @@ void ATargetSpawner::BeginPlay()
 
 void ATargetSpawner::Destroyed()
 {
+	FString file = FPaths::ProjectDir();
+	file.Append(TEXT("AccuracyMatrix.csv"));
+	FString StringToWrite;
+	for (const FGridPoint Point : SpawnAreaHitsPoints)
+	{
+		StringToWrite.Append(FString::FromInt(Point.Count));
+		if (Point.Point.X == NumRowsGrid -1 )
+		{
+			StringToWrite.Append("\n");
+		}
+		else
+		{
+			StringToWrite.Append(",");
+		}
+	}
+	StringToWrite.Append("\n");
+	for (const FGridPoint Point : SpawnAreaTotalsPoints)
+	{
+		StringToWrite.Append(FString::FromInt(Point.Count));
+		if (Point.Point.X == NumRowsGrid -1 )
+		{
+			StringToWrite.Append("\n");
+		}
+		else
+		{
+			StringToWrite.Append(",");
+		}
+	}
+	
+	FFileHelper::SaveStringToFile(StringToWrite, *file);
+
 	Super::Destroyed();
 	if (BeatTrackTarget)
 	{
@@ -97,15 +128,15 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 		CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + DistanceFromFloor;
 	}
 
-	// /* Set how precise the 2D representation of SpawnArea should be */
-	// if (GameModeActorStruct.BoxBounds.Y * GameModeActorStruct.BoxBounds.Z <= 250000)
-	// {
-	// 	SpawnAreaScale = 5;
-	// }
-	// else
-	// {
-	// 	SpawnAreaScale = 10;
-	// }
+	/*/* Set how precise the 2D representation of SpawnArea should be #1#
+	if (GameModeActorStruct.BoxBounds.Y * GameModeActorStruct.BoxBounds.Z <= 250000)
+	{
+		SpawnAreaScale = 5;
+	}
+	else
+	{
+		SpawnAreaScale = 10;
+	}*/
 	SpawnAreaScale = 50;
 
 	/* Set new location & box extent */
@@ -123,24 +154,26 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	{
 		InitBeatGrid();
 	}
-	
+
+	NumRowsGrid = roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) + 1;
+	NumColsGrids = roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) + 1;
+
 	VisualGrid = GetWorld()->SpawnActor<AVisualGrid>(VisualGridClass, FVector(3990, 0, 1500),
 	                                                 FRotator::ZeroRotator);
-	VisualGrid->CreateGrid(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale),
-	                       roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
-
-	SpawnAreaTotals = {
-		static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)),
-		std::vector(static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)), 0)
-	};
-
-	SpawnAreaHits = {
-		static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)),
-		std::vector(static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)), 0)
-	};
+	VisualGrid->CreateGrid(NumRowsGrid, NumColsGrids);
+	SpawnAreaTotalsPoints.SetNum(NumRowsGrid * NumColsGrids);
+	SpawnAreaHitsPoints.SetNum(NumRowsGrid * NumColsGrids);
 	
-	UE_LOG(LogTemp, Display, TEXT("GridSize: %f %f"), GameModeActorStruct.BoxBounds.Y, GameModeActorStruct.BoxBounds.Z);
-	UE_LOG(LogTemp, Display, TEXT("GridSize: %f %f"), roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale), roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
+	for (int i = 0; i < NumColsGrids; i++)
+	{
+		for (int j = 0; j < NumRowsGrid; j++)
+		{
+			SpawnAreaHitsPoints[i * NumRowsGrid + j].Point = FIntPoint(j,i);
+			SpawnAreaTotalsPoints[i * NumRowsGrid + j].Point = FIntPoint(j,i);
+		}
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Size: %d"),SpawnAreaHitsPoints.Num());
 }
 
 void ATargetSpawner::InitBeatGrid()
@@ -253,7 +286,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
 			{
 				VisualGrid->InstancedMesh->SetCustomDataValue(
-					Point.Y + Point.X * roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale), 0,
+					Point.X + Point.Y * NumRowsGrid, 0,
 					1, true);
 			}
 
@@ -281,14 +314,13 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 
 		ActiveTargetArray.Emplace(SpawnTarget);
 		const FIntPoint PointSpaceLocation = ConvertLocationToPoint(SpawnLocation);
-		UE_LOG(LogTemp, Display, TEXT("Location converted to Point: %s"), *PointSpaceLocation.ToString());
 		RecentTargetArray.Emplace(FRecentTargetStruct(
 			SpawnTarget->Guid, GetBlockedPoints(PointSpaceLocation, TargetScale), TargetScale, PointSpaceLocation));
 
 		for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
 		{
 			VisualGrid->InstancedMesh->SetCustomDataValue(
-				Point.Y + Point.X * roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale), 0,
+				Point.X + Point.Y * NumRowsGrid, 0,
 				1, true);
 		}
 
@@ -459,12 +491,12 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	RemoveFromRecentDelegate.BindUFunction(this, FName("RemoveFromRecentTargetArray"), DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate,
 	                                       GameModeActorStruct.TargetSpawnCD + 0.01, false);
-	
+
 	if (GameModeActorStruct.IsSingleBeatMode)
 	{
 		SetShouldSpawn(true);
 	}
-	
+
 	if (DidExpire)
 	{
 		ConsecutiveTargetsHit = 0;
@@ -513,7 +545,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 			DynamicScaleFactor += 5;
 		}
 	}
-	
+
 	const FVector DestroyedTargetLocation = DestroyedTarget->GetActorLocation();
 	const FVector Location = {
 		DestroyedTargetLocation.X,
@@ -521,7 +553,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		DestroyedTargetLocation.Z +
 		SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z
 	};
-	
+
 	FIntPoint DestroyedTargetCenterPoint;
 	for (FRecentTargetStruct Struct : GetRecentTargetArray())
 	{
@@ -535,59 +567,22 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	const ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, Location);
 	
-	int32 TotalSpawns = 0;
-	int32 TotalHits = 0;
-	int32 BottomLeft = 0;
-	int32 TopLeft = 0;
-	int32 BottomRight = 0;
-	int32 TopRight = 0;
-	int32 Count = 0;
-	
-	for (std::vector<std::vector<int32>>::iterator Row = SpawnAreaTotals.begin(); Row != SpawnAreaTotals.end(); ++Row)
+	SpawnAreaTotalsPoints[DestroyedTargetCenterPoint.Y * NumRowsGrid + DestroyedTargetCenterPoint.X]++;
+	if (!DidExpire)
 	{
-		for (std::vector<int32>::iterator Col = Row->begin(); Col != Row->end(); ++Col)
-		{
-			Count++;
-			const int32 X = std::distance(SpawnAreaTotals.begin(), Row);
-			const int32 Y = std::distance(Row->begin(), Col);
-
-			/* Skip center target */
-			if (DestroyedTargetCenterPoint.X == X && DestroyedTargetCenterPoint.Y == Y)
-			{
-				if (X != static_cast<int32>(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) / 2.f)
-				&& Y != static_cast<int32>(roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)/2.f))
-				{
-					SpawnAreaTotals[X][Y] += 1;
-				}
-				if (!DidExpire)
-				{
-					SpawnAreaHits[X][Y] += 1;
-				}
-			}
-			
-			if (X < roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)/2.f && Y < roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)/2.f)
-			{
-				BottomLeft += SpawnAreaTotals[X][Y];
-			}
-			else if (X < roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)/2.f && Y >= roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)/2.f)
-			{
-				TopLeft += SpawnAreaTotals[X][Y];
-			}
-			else if (X >= roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)/2.f && Y < roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)/2.f)
-			{
-				TopRight += SpawnAreaTotals[X][Y];
-			}
-			else if (X >= roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)/2.f && Y >= roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)/2.f)
-			{
-				BottomRight += SpawnAreaTotals[X][Y];
-			}
-			TotalSpawns += SpawnAreaTotals[X][Y];
-			TotalHits += SpawnAreaHits[X][Y];
-		}
+		SpawnAreaHitsPoints[DestroyedTargetCenterPoint.Y * NumRowsGrid + DestroyedTargetCenterPoint.X]++;
 	}
-	UE_LOG(LogTemp, Display, TEXT("Count: %d"), Count);
-	UE_LOG(LogTemp, Display, TEXT("TopLeft: %d TopRight: %d BottomLeft: %d BottomRight: %d"), TopLeft, TopRight, BottomLeft, BottomRight);
-	UE_LOG(LogTemp, Display, TEXT("TotalSpawns: %d Total Hits: %d"), TotalSpawns, TotalHits);
+	/*FGridPoint* Pont = SpawnAreaTotalsPoints.FindByPredicate([&](FGridPoint GridPoint) {
+		return GridPoint.Point == DestroyedTargetCenterPoint;
+	});
+	if (Pont)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Pont %s"), *DestroyedTargetCenterPoint.ToString());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("NoPont %s"), *DestroyedTargetCenterPoint.ToString());
+	}*/
 }
 
 void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
@@ -675,11 +670,9 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 
 	if (GameModeActorStruct.IsSingleBeatMode)
 	{
-		NewSpawnLocation = ConvertPointToLocationSingleBeat(OpenPoints[RandomPoint]);
-		return NewSpawnLocation;
+		return ConvertPointToLocationSingleBeat(OpenPoints[RandomPoint]);
 	}
-	NewSpawnLocation = ConvertPointToLocation(OpenPoints[RandomPoint]);
-	return NewSpawnLocation;
+	return ConvertPointToLocation(OpenPoints[RandomPoint]);
 }
 
 FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
@@ -731,7 +724,7 @@ void ATargetSpawner::RemoveFromRecentTargetArray(const FGuid GuidToRemove)
 	for (const FIntPoint Point : StructToRemove.BlockedSpawnPoints)
 	{
 		VisualGrid->InstancedMesh->SetCustomDataValue(
-			Point.Y + Point.X * roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale), 0,
+			Point.X + Point.Y * NumRowsGrid, 0,
 			0, true);
 	}
 	RecentTargetArray.Remove(FRecentTargetStruct(GuidToRemove));
@@ -742,21 +735,23 @@ TArray<FIntPoint> ATargetSpawner::GetBlockedPoints(const FIntPoint Center, const
 	/* Multiply by 2 so that any point outside of circle is a valid spawn location */
 	const int32 Radius = roundf(
 		(Scale * SphereTargetRadius * 2 + GameModeActorStruct.MinDistanceBetweenTargets) / SpawnAreaScale);
+
+	/* First create a square, and clamp the square inside of the box bounds */
 	const int32 LeftSquare = FMath::Clamp(Center.X - Radius, 0,
-	                                      roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale));
+		roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale));
 	const int32 RightSquare = FMath::Clamp(Center.X + Radius, 0,
-	                                       roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale));
+	roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale));
 	const int32 BottomSquare = FMath::Clamp(Center.Y - Radius, 0,
-	                                        roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
+	roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
 	const int32 TopSquare = FMath::Clamp(Center.Y + Radius, 0,
-	                                     roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
+	roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
 
 	/* An array that represents invalid spawn points */
 	TArray<FIntPoint> BlockedPoints;
 	/* Iterate over a square section with length & width equal to sphere diameter */
-	for (int x = LeftSquare; x < RightSquare; x++)
+	for (int x = LeftSquare; x <= RightSquare; x++)
 	{
-		for (int y = BottomSquare; y < TopSquare; y++)
+		for (int y = BottomSquare; y <= TopSquare; y++)
 		{
 			/* Only add to BlockedPoints if inside circle radius */
 			if ((x - Center.X) * (x - Center.X) + (y - Center.Y) * (y - Center.Y) <=
@@ -797,8 +792,8 @@ TArray<FIntPoint> ATargetSpawner::GetValidSpawnPoints(const float Scale, const F
 
 	/* A 2D array representation of the space that the spawn area occupies */
 	std::vector SpawnArea = {
-		static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)),
-		std::vector(static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)), 0)
+		static_cast<unsigned long>(NumRowsGrid),
+		std::vector(static_cast<unsigned long>(NumColsGrids), 0)
 	};
 
 	/* Resizing the SpawnArea if Dynamic Spread type */
@@ -862,9 +857,9 @@ std::vector<std::vector<int32>> ATargetSpawner::ResizeCircleInSpawnArea(
 	                                     roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale));
 
 	/* Iterate over a square section with length & width equal to sphere diameter */
-	for (int x = LeftSquare; x < RightSquare; x++)
+	for (int x = LeftSquare; x <= RightSquare; x++)
 	{
-		for (int y = BottomSquare; y < TopSquare; y++)
+		for (int y = BottomSquare; y <= TopSquare; y++)
 		{
 			/* Only add to BlockedPoints if inside circle radius */
 			if ((x - Center.X) * (x - Center.X) + (y - Center.Y) * (y - Center.Y) <=
@@ -918,9 +913,9 @@ std::vector<std::vector<int32>> ATargetSpawner::ResizeSpawnAreaBounds(std::vecto
 
 FIntPoint ATargetSpawner::ConvertLocationToPoint(const FVector Location) const
 {
-	const int32 CenterXValue = (Location.Y + GameModeActorStruct.BoxBounds.Y) / SpawnAreaScale;
-	const int32 CenterYValue = (Location.Z + GameModeActorStruct.BoxBounds.Z - BoxBounds.Origin.Z) / SpawnAreaScale;
-	return FIntPoint(CenterXValue, CenterYValue);
+	const int32 RowValue = (Location.Y + GameModeActorStruct.BoxBounds.Y) / SpawnAreaScale;
+	const int32 ColValue = (Location.Z + GameModeActorStruct.BoxBounds.Z - BoxBounds.Origin.Z) / SpawnAreaScale;
+	return FIntPoint(RowValue, ColValue);
 }
 
 FVector ATargetSpawner::ConvertPointToLocation(const FIntPoint Point) const
@@ -935,38 +930,6 @@ FVector ATargetSpawner::ConvertPointToLocationSingleBeat(const FIntPoint Point) 
 	const int32 Y = Point.X * SpawnAreaScale - BoxBounds.BoxExtent.Y;
 	const int32 Z = Point.Y * SpawnAreaScale - BoxBounds.BoxExtent.Z + BoxBounds.Origin.Z;
 	return FVector(BoxBounds.Origin.X, Y, Z);
-}
-
-void ATargetSpawner::CreateVisualGrid()
-{
-	//VisualGrid = GetWorld()->SpawnActor<AStaticMeshActor>(AStaticMeshActor::StaticClass(), BoxBounds.Origin - FVector(6000, 0, 0), FRotator::ZeroRotator);
-	/* A 2D array representation of the space that the spawn area occupies */
-	//
-	// std::vector SpawnArea = {
-	// 	static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale)),
-	// 	std::vector(static_cast<unsigned long>(roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale)), 0)
-	// };
-	//
-	// /* Getting all valid spawn points */
-	// for (std::vector<std::vector<int32>>::iterator Row = SpawnArea.begin(); Row != SpawnArea.end(); ++Row)
-	// {
-	// 	for (std::vector<int32>::iterator Col = Row->begin(); Col != Row->end(); ++Col)
-	// 	{
-	// 		const int32 X = std::distance(SpawnArea.begin(), Row);
-	// 		const int32 Y = std::distance(Row->begin(), Col);
-	// 		UE_LOG(LogTemp, Display, TEXT("XY: %d %d"), X,Y);
-	// 		//const int32 VY = X * SpawnAreaScale - GameModeActorStruct.BoxBounds.Y;
-	// 		//const int32 VZ = Y * SpawnAreaScale - GameModeActorStruct.BoxBounds.Z + BoxBounds.Origin.Z;
-	// 		
-	// 		/*UStaticMeshComponent* Comp = NewObject<UStaticMeshComponent>(VisualGrid, UStaticMeshComponent::StaticClass());
-	// 		Comp->RegisterComponent();
-	// 		Comp->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-	// 		Comp->SetRelativeLocation(FVector(BoxBounds.Origin.X - 6000, VY, VZ));
-	// 		Comp->SetStaticMesh(VisualGridMesh);
-	// 		Comp->SetMaterial(0, VisualGridMaterial);
-	// 		Comp->SetWorldScale3D(FVector(0.01));*/
-	// 	}
-	// }
 }
 
 /*FVector ATargetSpawner::GenerateRandomTargetLocation(const ESpreadType SpreadType, const FVector& ScaledBoxExtent) const
@@ -1023,3 +986,125 @@ void ATargetSpawner::CreateVisualGrid()
 	NewSpawnLocation = NewSpawnLocation + Offset;
 	return NewSpawnLocation;
 }*/
+
+/*	int32 TotalSpawns = 0;
+	int32 TotalHits = 0;
+	int32 BottomLeft = 0;
+	int32 TopLeft = 0;
+	int32 BottomRight = 0;
+	int32 TopRight = 0;
+	int32 Count = 0;
+ *for (std::vector<std::vector<int32>>::iterator Row = SpawnAreaTotals.begin(); Row != SpawnAreaTotals.end(); ++Row)
+{
+	for (std::vector<int32>::iterator Col = Row->begin(); Col != Row->end(); ++Col)
+	{
+		Count++;
+		const int32 X = std::distance(SpawnAreaTotals.begin(), Row);
+		const int32 Y = std::distance(Row->begin(), Col);
+
+		/* Skip center target #1#
+		if (DestroyedTargetCenterPoint.X == X && DestroyedTargetCenterPoint.Y == Y)
+		{
+			if (X != static_cast<int32>(roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) / 2.f)
+				&& Y != static_cast<int32>(roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) / 2.f))
+			{
+				SpawnAreaTotals[X][Y] += 1;
+			}
+			if (!DidExpire)
+			{
+				SpawnAreaHits[X][Y] += 1;
+			}
+		}
+
+		if (X < roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) / 2.f && Y < roundf(
+			GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) / 2.f)
+		{
+			BottomLeft += SpawnAreaTotals[X][Y];
+		}
+		else if (X < roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) / 2.f && Y >= roundf(
+			GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) / 2.f)
+		{
+			TopLeft += SpawnAreaTotals[X][Y];
+		}
+		else if (X >= roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) / 2.f && Y < roundf(
+			GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) / 2.f)
+		{
+			TopRight += SpawnAreaTotals[X][Y];
+		}
+		else if (X >= roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) / 2.f && Y >= roundf(
+			GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) / 2.f)
+		{
+			BottomRight += SpawnAreaTotals[X][Y];
+		}
+		TotalSpawns += SpawnAreaTotals[X][Y];
+		TotalHits += SpawnAreaHits[X][Y];
+	}
+}
+UE_LOG(LogTemp, Display, TEXT("Count: %d"), Count);
+UE_LOG(LogTemp, Display, TEXT("TopLeft: %d TopRight: %d BottomLeft: %d BottomRight: %d"), TopLeft, TopRight,
+	   BottomLeft, BottomRight);
+UE_LOG(LogTemp, Display, TEXT("TotalSpawns: %d Total Hits: %d"), TotalSpawns, TotalHits);
+*/
+
+/*	SpawnAreaTotals = {
+	static_cast<unsigned long>(NumColsGrids),
+	std::vector(static_cast<unsigned long>(NumRowsGrid), 0)
+};
+
+SpawnAreaHits = {
+	static_cast<unsigned long>(NumColsGrids),
+	std::vector(static_cast<unsigned long>(NumRowsGrid), 0)
+};
+ *FString StringToWrite;
+for (auto& Row : SpawnAreaTotals)
+{
+	for (auto Col : Row)
+	{
+		StringToWrite.Append(FString::FromInt(Col) + ",");
+	}
+	StringToWrite.Append("\n");
+}
+UE_LOG(LogTemp, Display, TEXT("%s"),*StringToWrite);*/
+
+/*FString file = FPaths::ProjectDir();
+file.Append(TEXT("MyConfig.csv"));
+
+// We will use this FileManager to deal with the file.
+IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
+
+FString StringToWrite;
+for (auto& Row : SpawnAreaTotals)
+{
+	for (auto Col : Row)
+	{
+		StringToWrite.Append(FString::FromInt(Col) + ",");
+	}
+	StringToWrite.Append("\n");
+}
+
+// Always first check if the file that you want to manipulate exist.
+if (!FileManager.FileExists(*file))
+{
+	// We use the LoadFileToString to load the file into
+	if (FFileHelper::SaveStringToFile(StringToWrite, *file))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FileManipulation: Sucsesfuly Written: \"%s\" to the text file"),
+			   *StringToWrite);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("FileManipulation: Failed to write FString to file."));
+	}
+}
+else
+{
+	UE_LOG(LogTemp, Warning, TEXT("FileManipulation: ERROR: Can not read the file because it was not found."));
+	UE_LOG(LogTemp, Warning, TEXT("FileManipulation: Expected file location: %s"), *file);
+}*/
+
+/*for (auto& Point : SpawnAreaTotalsPoints)
+{
+	StringToWrite.Append(FString::FromInt(Point.Point.X) + "," + FString::FromInt(Point.Point.Y) + "," + FString::FromInt(Point.Count));
+	StringToWrite.Append("\n");
+}
+FFileHelper::SaveStringToFile(StringToWrite, *file);*/
