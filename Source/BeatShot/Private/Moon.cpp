@@ -16,13 +16,17 @@ AMoon::AMoon()
 	RootComponent = SphereComponent;
 	SphereComponent->SetMobility(EComponentMobility::Movable);
 	SphereComponent->SetSphereRadius(SphereCompRadius);
-	SphereComponent->SetRelativeRotation(DaytimeMoonRotation);
 
 	MoonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MoonMesh"));
 	MoonMesh->SetupAttachment(SphereComponent);
 	MoonMesh->SetRelativeLocation(MoonMeshOffset);
 	MoonMesh->SetWorldScale3D(MoonMeshScale);
 	MoonMesh->SetMobility(EComponentMobility::Movable);
+
+	MoonGlowMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MoonGlowMesh"));
+	MoonGlowMesh->SetupAttachment(MoonMesh);
+	MoonGlowMesh->SetWorldScale3D(MoonGlowMeshScale);
+	MoonGlowMesh->SetMobility(EComponentMobility::Movable);
 
 	MoonLight = CreateDefaultSubobject<UDirectionalLightComponent>(TEXT("MoonLight"));
 	MoonLight->SetupAttachment(MoonMesh);

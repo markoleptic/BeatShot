@@ -121,6 +121,7 @@ void ARangeLevelScriptActor::SetTimeOfDayToNight()
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", 1);
 	Daylight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 1);
+	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", 1);
 	Moon->MoonLight->SetIntensity(0.3);
 	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(WindowCoverOffset, 0,0));
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(WindowCoverOffset,0,0));
@@ -145,7 +146,7 @@ void ARangeLevelScriptActor::TransitionTimeOfDay(float Alpha)
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(CurrentWindowOffset,0,0));
 	
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", Value);
-	Moon->MoonLight->SetIntensity(0.3*Value);
+	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", Value);
 	
 	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Alpha);
 	Daylight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, CurrentLerpRotation - LastLerpRotation));
@@ -170,6 +171,7 @@ void ARangeLevelScriptActor::TransitionSkySphereMaterial(float Alpha)
 void ARangeLevelScriptActor::TransitionSkylightIntensity(float Alpha)
 {
 	Skylight->GetLightComponent()->SetIntensity(UKismetMathLibrary::Lerp(1, 50, Alpha));
+	Moon->MoonLight->SetIntensity(UKismetMathLibrary::Lerp(0, 0.3, Alpha));
 }
 
 void ARangeLevelScriptActor::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
