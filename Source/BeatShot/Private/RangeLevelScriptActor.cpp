@@ -41,9 +41,11 @@ void ARangeLevelScriptActor::BeginPlay()
 	SkylightIntensityTimeline.AddInterpFloat(SkylightIntensityCurve, OnTransitionSkylightTick);
 	SkylightIntensityReverseTimeline.AddInterpFloat(SkylightIntensityCurveReverse, OnTransitionSkylightTick);
 
+	SkySphere = SkySphere_Soft.Get();
+	Moon = Moon_Soft.Get();
 	SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
-		Cast<UStaticMeshComponent>(
-			SkySphere->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
+		Cast<UStaticMeshComponent>(SkySphere->
+			GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
 	InitialLeftWindowCoverLoc = LeftWindowCover->GetStaticMeshComponent()->GetRelativeLocation();
 	InitialRightWindowCoverLoc = RightWindowCover->GetStaticMeshComponent()->GetRelativeLocation();
 	if (LoadPlayerSettings().bNightModeUnlocked && LoadPlayerSettings().bNightModeSelected)

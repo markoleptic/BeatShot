@@ -162,16 +162,19 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 		InitBeatGrid();
 		return;
 		/* TODO: implement SpawnAreaPoints for BeatGrid */
-		NumRowsGrid = sqrt(GameModeActorStruct.NumTargetsAtOnceBeatGrid);
-		NumColsGrids = sqrt(GameModeActorStruct.NumTargetsAtOnceBeatGrid);
+		//NumRowsGrid = sqrt(GameModeActorStruct.NumTargetsAtOnceBeatGrid);
+		//NumColsGrids = sqrt(GameModeActorStruct.NumTargetsAtOnceBeatGrid);
 	}
 
 	NumRowsGrid = roundf(GameModeActorStruct.BoxBounds.Y * 2 / SpawnAreaScale) + 1;
 	NumColsGrids = roundf(GameModeActorStruct.BoxBounds.Z * 2 / SpawnAreaScale) + 1;
 
-	VisualGrid = GetWorld()->SpawnActor<AVisualGrid>(VisualGridClass, FVector(3990, 0, 1500),
-	                                                 FRotator::ZeroRotator);
-	VisualGrid->CreateGrid(NumRowsGrid, NumColsGrids);
+	if (GIsEditor)
+	{
+		VisualGrid = GetWorld()->SpawnActor<AVisualGrid>(VisualGridClass, FVector(3990, 0, 1500),
+												 FRotator::ZeroRotator);
+		VisualGrid->CreateGrid(NumRowsGrid, NumColsGrids);
+	}
 	SpawnAreaTotalsPoints.SetNum(NumRowsGrid * NumColsGrids);
 	SpawnAreaHitsPoints.SetNum(NumRowsGrid * NumColsGrids);
 	
@@ -292,18 +295,20 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			const FIntPoint PointSpaceLocation = ConvertLocationToPoint(SpawnLocation);
 			RecentTargetArray.Emplace(FRecentTargetStruct(
 				SpawnTarget->Guid, GetBlockedPoints(PointSpaceLocation, TargetScale), TargetScale, PointSpaceLocation));
-
-			for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
-			{
-				VisualGrid->InstancedMesh->SetCustomDataValue(
-					Point.X + Point.Y * NumRowsGrid, 0,
-					1, true);
-			}
-
-			/* Broadcast to GameModeActorBase that a target has spawned */
+			
 			if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
 			{
 				UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
+			}
+			
+			if (GIsEditor)
+			{
+				for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
+				{
+					VisualGrid->InstancedMesh->SetCustomDataValue(
+						Point.X + Point.Y * NumRowsGrid, 0,
+						1, true);
+				}
 			}
 		}
 	}
@@ -327,17 +332,19 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 		RecentTargetArray.Emplace(FRecentTargetStruct(
 			SpawnTarget->Guid, GetBlockedPoints(PointSpaceLocation, TargetScale), TargetScale, PointSpaceLocation));
 
-		for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
-		{
-			VisualGrid->InstancedMesh->SetCustomDataValue(
-				Point.X + Point.Y * NumRowsGrid, 0,
-				1, true);
-		}
-
-		/* Broadcast to GameModeActorBase that a target has spawned */
 		if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
 		{
 			UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
+		}
+			
+		if (GIsEditor)
+		{
+			for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
+			{
+				VisualGrid->InstancedMesh->SetCustomDataValue(
+					Point.X + Point.Y * NumRowsGrid, 0,
+					1, true);
+			}
 		}
 
 		if (SpawnLocation == BoxBounds.Origin)
@@ -735,13 +742,17 @@ void ATargetSpawner::RemoveFromRecentTargetArray(const FGuid GuidToRemove)
 			StructToRemove = Struct;
 		}
 	}
+	RecentTargetArray.Remove(FRecentTargetStruct(GuidToRemove));
+	if (!GIsEditor)
+	{
+		return;
+	}
 	for (const FIntPoint Point : StructToRemove.BlockedSpawnPoints)
 	{
 		VisualGrid->InstancedMesh->SetCustomDataValue(
 			Point.X + Point.Y * NumRowsGrid, 0,
 			0, true);
 	}
-	RecentTargetArray.Remove(FRecentTargetStruct(GuidToRemove));
 }
 
 TArray<FIntPoint> ATargetSpawner::GetBlockedPoints(const FIntPoint Center, const float Scale) const

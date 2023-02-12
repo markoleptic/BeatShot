@@ -9,6 +9,7 @@
 #include "WidgetComponents/VideoSettingButton.h"
 #include "SettingsMenuWidget.generated.h"
 
+class UColorSelectWidget;
 class UPopupMessageWidget;
 class USavedTextWidget;
 class UCheckBox;
@@ -194,6 +195,15 @@ protected:
 
 #pragma endregion
 
+	/** TARGET COLOR */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Target Color")
+	UColorSelectWidget* PeakTargetColor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Target Color")
+	UColorSelectWidget* FadeTargetColor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Target Color")
+	UCheckBox* UseSeparateOutlineColorCheckbox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Target Color")
+	UColorSelectWidget* TargetOutlineColor;
 	/** FRAME LIMIT */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Frame Limit")
 	UEditableTextBox* FrameLimitMenuValue;
@@ -213,12 +223,21 @@ protected:
 	/** VSYNC */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "VSync")
 	UCheckBox* VSyncEnabledCheckBox;
-	/** FPSCOUNTER */
+	/** FPS COUNTER */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "FPS Counter")
 	UCheckBox* FPSCounterCheckBox;
 
 	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
 	FIntPoint LastConfirmedResolution;
+
+	UFUNCTION()
+	void OnPeakTargetColorChanged(const FLinearColor& NewColor);
+	UFUNCTION()
+	void OnFadeTargetColorChanged(const FLinearColor& NewColor);
+	UFUNCTION()
+	void UseSeparateOutlineColorCheckStateChanged(const bool bIsChecked);
+	UFUNCTION()
+	void OnTargetOutlineColorChanged(const FLinearColor& NewColor);
 	
 	UFUNCTION()
 	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);

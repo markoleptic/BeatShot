@@ -49,14 +49,22 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void RefreshSkySphereMaterial();
 
-	/** Reference to SkySphere in Range level */
+	/** Soft Reference to SkySphere in Range level */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftObjectPtr<AActor> SkySphere_Soft;
+
+	/** Soft Reference to Moon in Range level */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftObjectPtr<AMoon> Moon_Soft;
+	
+	/** Hard Reference to SkySphere in Range level */
+	UPROPERTY()
 	AActor* SkySphere;
 
-	/** Reference to Moon in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	/** Hard Reference to Moon in Range level */
+	UPROPERTY()
 	AMoon* Moon;
-
+	
 	/** Reference to left roof mesh to move */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	AStaticMeshActor* LeftWindowCover;
@@ -160,7 +168,7 @@ protected:
 
 	const float CycleSpeed = 20;
 
-	const float WindowCoverOffset = 1700;
+	const float WindowCoverOffset = -1700;
 
 	float LastLerpRotation;
 };

@@ -124,6 +124,18 @@ struct FPlayerSettings
 	UPROPERTY(BlueprintReadOnly)
 	FString LastSelectedOutputAudioDevice;
 
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor PeakTargetColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor FadeTargetColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bUseSeparateOutlineColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor TargetOutlineColor;
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
@@ -152,6 +164,10 @@ struct FPlayerSettings
 		CombatTextFrequency = 5;
 		LastSelectedInputAudioDevice = "";
 		LastSelectedOutputAudioDevice = "";
+		PeakTargetColor = FLinearColor::Green;
+		FadeTargetColor = FLinearColor::Red;
+		bUseSeparateOutlineColor = false;
+		TargetOutlineColor = FLinearColor::White;
 	}
 
 	void ResetStruct()
@@ -182,6 +198,10 @@ struct FPlayerSettings
 		CombatTextFrequency = 5;
 		LastSelectedInputAudioDevice = "";
 		LastSelectedOutputAudioDevice = "";
+		PeakTargetColor = FLinearColor::Green;
+		FadeTargetColor = FLinearColor::Red;
+		bUseSeparateOutlineColor = false;
+		TargetOutlineColor = FLinearColor::White;
 	}
 
 	void ResetVideoAndSoundSettings()
@@ -193,6 +213,10 @@ struct FPlayerSettings
 		FrameRateLimitGame = 0;
 		bShowStreakCombatText = true;
 		CombatTextFrequency = 5;
+		PeakTargetColor = FLinearColor::Green;
+		FadeTargetColor = FLinearColor::Red;
+		bUseSeparateOutlineColor = false;
+		TargetOutlineColor = FLinearColor::White;
 	}
 
 	void ResetCrossHair()

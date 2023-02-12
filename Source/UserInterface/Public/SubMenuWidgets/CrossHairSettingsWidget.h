@@ -12,15 +12,13 @@
 DECLARE_DELEGATE_OneParam(FOnCrossHairSettingsChanged, const FPlayerSettings&);
 
 class USavedTextWidget;
+class UColorSelectWidget;
 class UCrossHairWidget;
 class USlider;
 class UImage;
 class UEditableTextBox;
 class UButton;
 
-/**
- * 
- */
 UCLASS()
 class USERINTERFACE_API UCrossHairSettingsWidget : public UUserWidget, public ISaveLoadInterface
 {
@@ -38,16 +36,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UCrossHairWidget* CrossHairWidget;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* ColorAValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* ColorRValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* ColorGValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* ColorBValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* HexValue;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UColorSelectWidget* ColorSelectWidget;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* InnerOffsetValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -58,15 +49,7 @@ protected:
 	UEditableTextBox* OutlineOpacityValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* OutlineWidthValue;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* ColorASlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* ColorRSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* ColorGSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* ColorBSlider;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* InnerOffsetSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -77,9 +60,6 @@ protected:
 	USlider* OutlineOpacitySlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* OutlineWidthSlider;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UImage* ColorPreview;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
@@ -91,17 +71,9 @@ protected:
 	UButton* SaveCrossHairButton;
 
 private:
-	
+
 	UFUNCTION()
-	void OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnHexValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnColorChanged(const FLinearColor& NewColor);
 	UFUNCTION()
 	void OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
@@ -112,15 +84,7 @@ private:
 	void OnOutlineOpacityValueChange(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnOutlineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
-
-	UFUNCTION()
-	void OnColorASliderChange(const float NewValue);
-	UFUNCTION()
-	void OnColorRSliderChange(const float NewValue);
-	UFUNCTION()
-	void OnColorGSliderChange(const float NewValue);
-	UFUNCTION()
-	void OnColorBSliderChange(const float NewValue);
+	
 	UFUNCTION()
 	void OnInnerOffsetSliderChange(const float NewValue);
 	UFUNCTION()

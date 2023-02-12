@@ -20,6 +20,7 @@
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "SubMenuWidgets/AASettingsWidget.h"
 #include "SubMenuWidgets/CrossHairSettingsWidget.h"
+#include "WidgetComponents/ColorSelectWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
 #include "WidgetComponents/SlideRightButton.h"
 #include "WidgetComponents/VideoSettingButton.h"
@@ -201,14 +202,17 @@ void USettingsMenuWidget::NativeConstruct()
 	MenuSoundValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget::OnMenuSoundValueChanged);
 	MusicSoundValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget::OnMusicSoundValueChanged);
 
+	PeakTargetColor->OnColorChanged.BindUFunction(this, "OnPeakTargetColorChanged");
+	FadeTargetColor->OnColorChanged.BindUFunction(this, "OnFadeTargetColorChanged");
+	UseSeparateOutlineColorCheckbox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget::UseSeparateOutlineColorCheckStateChanged);
+	TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnTargetOutlineColorChanged");
+	
 	WindowModeComboBox->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget::OnWindowModeSelectionChanged);
 	ResolutionComboBox->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget::OnResolutionSelectionChanged);
 
 	FrameLimitMenuValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget::OnFrameLimitMenuValueChanged);
 	FrameLimitGameValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget::OnFrameLimitGameValueChanged);
-
 	VSyncEnabledCheckBox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget::OnVSyncEnabledCheckStateChanged);
-
 	FPSCounterCheckBox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget::OnFPSCounterCheckStateChanged);
 
 	CombatTextFrequency->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget::OnCombatTextFrequencyValueChanged);
@@ -243,6 +247,15 @@ void USettingsMenuWidget::NativeConstruct()
 
 void USettingsMenuWidget::InitializeSettings()
 {
+	PeakTargetColor->InitializeColor(InitialPlayerSettings.PeakTargetColor);
+	PeakTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_Peak"));
+	FadeTargetColor->InitializeColor(InitialPlayerSettings.FadeTargetColor);
+	FadeTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_Fade"));
+	UseSeparateOutlineColorCheckbox->SetIsChecked(InitialPlayerSettings.bUseSeparateOutlineColor);
+	UseSeparateOutlineColorCheckStateChanged(InitialPlayerSettings.bUseSeparateOutlineColor);
+	TargetOutlineColor->InitializeColor(InitialPlayerSettings.TargetOutlineColor);
+	TargetOutlineColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_Outline"));
+	
 	SensSlider->SetValue(InitialPlayerSettings.Sensitivity);
 	CurrentSensitivityValue->SetText(FText::AsNumber(InitialPlayerSettings.Sensitivity));
 
@@ -498,6 +511,32 @@ void USettingsMenuWidget::OnMusicSoundValueChanged(const FText& NewValue, ETextC
 {
 	ChangeSliderOnValueChange(NewValue, MusicSoundSlider, 1);
 	NewPlayerSettings.MusicVolume = roundf(FCString::Atof(*NewValue.ToString()));
+}
+
+void USettingsMenuWidget::OnPeakTargetColorChanged(const FLinearColor& NewColor)
+{
+	NewPlayerSettings.PeakTargetColor = NewColor;
+}
+
+void USettingsMenuWidget::OnFadeTargetColorChanged(const FLinearColor& NewColor)
+{
+	NewPlayerSettings.FadeTargetColor = NewColor;
+}
+
+void USettingsMenuWidget::UseSeparateOutlineColorCheckStateChanged(const bool bIsChecked)
+{
+	NewPlayerSettings.bUseSeparateOutlineColor = bIsChecked;
+	if (bIsChecked)
+	{
+		TargetOutlineColor->SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+	TargetOutlineColor->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void USettingsMenuWidget::OnTargetOutlineColorChanged(const FLinearColor& NewColor)
+{
+	NewPlayerSettings.TargetOutlineColor = NewColor;
 }
 
 void USettingsMenuWidget::OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType)
