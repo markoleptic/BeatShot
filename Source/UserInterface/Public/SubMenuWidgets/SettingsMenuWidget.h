@@ -204,6 +204,8 @@ protected:
 	UCheckBox* UseSeparateOutlineColorCheckbox;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Target Color")
 	UColorSelectWidget* TargetOutlineColor;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Target Color")
+	UColorSelectWidget* BeatGridInactiveColor;
 	/** FRAME LIMIT */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "Frame Limit")
 	UEditableTextBox* FrameLimitMenuValue;
@@ -238,6 +240,8 @@ protected:
 	void UseSeparateOutlineColorCheckStateChanged(const bool bIsChecked);
 	UFUNCTION()
 	void OnTargetOutlineColorChanged(const FLinearColor& NewColor);
+	UFUNCTION()
+	void OnBeatGridInactiveColorChanged(const FLinearColor& NewColor);
 	
 	UFUNCTION()
 	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveGamePlayerSettings.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "Gun_AK47.generated.h"
@@ -201,4 +202,8 @@ private:
 
 	/** The duration of each kickback animation */
 	float KickbackDuration = 0.2f;
+
+public:
+	UPROPERTY()
+	FPlayerSettings PlayerSettings;
 };

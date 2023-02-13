@@ -42,7 +42,7 @@ void UCrossHairSettingsWidget::NativeConstruct()
 void UCrossHairSettingsWidget::SetCrossHairOptions(const FPlayerSettings& CrossHairSettings)
 {
 	ColorSelectWidget->InitializeColor(CrossHairSettings.CrossHairColor);
-
+	ColorSelectWidget->SetBorderColors(true, true);
 	InnerOffsetValue->SetText(FText::AsNumber(CrossHairSettings.InnerOffset));
 	LineLengthValue->SetText(FText::AsNumber(CrossHairSettings.LineLength));
 	LineWidthValue->SetText(FText::AsNumber(CrossHairSettings.LineWidth));

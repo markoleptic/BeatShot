@@ -191,13 +191,21 @@ void AGun_AK47::TraceForward() const
 		if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
 		{
 			UGameplayStatics::ApplyDamage(HitTarget, 1.f, PlayerController, Character, UDamageType::StaticClass());
-			HitTarget->SetSphereColor(FLinearColor::Green);
+			HitTarget->SetSphereColor(PlayerSettings.PeakTargetColor);
+			if (!PlayerSettings.bUseSeparateOutlineColor)
+			{
+				HitTarget->SetOutlineColor(PlayerSettings.PeakTargetColor);
+			}
 			return;
 		}
 	}
 	if (TrackingTarget)
 	{
-		TrackingTarget->SetSphereColor(FLinearColor::Red);
+		TrackingTarget->SetSphereColor(PlayerSettings.FadeTargetColor);
+		if (!PlayerSettings.bUseSeparateOutlineColor)
+		{
+			TrackingTarget->SetOutlineColor(PlayerSettings.FadeTargetColor);
+		}
 	}
 }
 

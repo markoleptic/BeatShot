@@ -10,7 +10,7 @@
 // Sets default values
 AVisualizerManager::AVisualizerManager()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 }
 
@@ -36,20 +36,20 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings PlayerSetti
 
 	Visualizers.Empty();
 	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
-							  &VisualizerLocation,
-							  &VisualizerRotation,
-							  SpawnParameters)));
+		                      &VisualizerLocation,
+		                      &VisualizerRotation,
+		                      SpawnParameters)));
 	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
-							  &Visualizer2Location,
-							  &VisualizerRotation,
-							  SpawnParameters)));
+		                      &Visualizer2Location,
+		                      &VisualizerRotation,
+		                      SpawnParameters)));
 	if (PlayerSettings.bShowLightVisualizers)
 	{
 		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(
-						  GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
-												 SpawnParameters)));
+			                      GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
+			                                             SpawnParameters)));
 	}
-	
+
 	for (AVisualizerBase* Visualizer : Visualizers)
 	{
 		Visualizer->InitializeVisualizer();
@@ -62,7 +62,8 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 	{
 		return UKismetMathLibrary::MapRangeClamped(CurrentSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 	}
-	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
+	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0,
+	                                           MaxSpectrumValues[Index], 0, 1);
 }
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
@@ -113,28 +114,39 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
 
 void AVisualizerManager::DestroyVisualizers()
 {
+	if (Visualizers.IsEmpty())
+	{
+		return;
+	}
 	Visualizers.Empty();
 }
 
 void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings PlayerSettings)
 {
-	if (!PlayerSettings.bShowLightVisualizers)
+	if (Visualizers.IsEmpty())
 	{
-		if (Visualizers.Num() > 2)
-		{
-			Visualizers[2]->Destroy();
-			Visualizers.SetNum(2);
-		}
 		return;
 	}
+	if (!PlayerSettings.bShowLightVisualizers)
+	{
+		ABeamVisualizer* FoundBeamVisualizer = nullptr;
+		if (Visualizers.FindItemByClass(&FoundBeamVisualizer))
+		{
+			Visualizers.Remove(FoundBeamVisualizer);
+			FoundBeamVisualizer->Destroy();
+		}
+		Visualizers.Shrink();
+		return;
+	}
+	
 	if (Visualizers.Num() > 2)
 	{
 		return;
 	}
-	Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(
-				  GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
-										 SpawnParameters)));
-	Visualizers[2]->InitializeVisualizer();
+	const int32 NewIndex = Visualizers.Emplace(Cast<ABeamVisualizer>(
+		GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
+		                       SpawnParameters)));
+	Visualizers[NewIndex]->InitializeVisualizer();
 }
 
 void AVisualizerManager::UpdateAASettings(const FAASettingsStruct NewAASettings)
@@ -145,5 +157,3 @@ void AVisualizerManager::UpdateAASettings(const FAASettingsStruct NewAASettings)
 		Visualizer->UpdateAASettings(NewAASettings);
 	}
 }
-
-

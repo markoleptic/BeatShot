@@ -51,7 +51,8 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FGameModeActorStruct GameModeActorStruct;
-	
+
+	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;
 	
 	bool bLastSavedShowOpenFileDialog;

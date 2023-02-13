@@ -30,7 +30,7 @@ protected:
 public:
 	void InitializeColor(const FLinearColor& NewColor);
 
-	void SetAlphaEnabled(const bool bShowAlpha);
+	void SetBorderColors(const bool bStartLeftLight, const bool bShowAlpha);
 
 	FOnColorChanged OnColorChanged;
 
@@ -61,11 +61,21 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UImage* ColorPreview;
-
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* LeftBorder;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* AlphaBorder;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* HexBorder;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* RBorder;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* GBorder;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* BBorder;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBorder* ColorPreviewBorder;
 
 private:
 	

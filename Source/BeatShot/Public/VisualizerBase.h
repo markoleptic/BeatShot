@@ -41,8 +41,6 @@ public:
 	UFUNCTION()
 	virtual void UpdateAASettings(const FAASettingsStruct AASettingsStruct);
 
-	
-
 protected:
 
 	/** Sets the initial visualizer spawn location */

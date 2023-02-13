@@ -291,8 +291,10 @@ private:
 	
 	std::vector<std::vector<int32>> SpawnAreaTotals;
 	std::vector<std::vector<int32>> SpawnAreaHits;
-
+	
+	UPROPERTY()
 	TArray<FGridPoint> SpawnAreaTotalsPoints;
+	UPROPERTY()
 	TArray<FGridPoint> SpawnAreaHitsPoints;
 
 #pragma endregion

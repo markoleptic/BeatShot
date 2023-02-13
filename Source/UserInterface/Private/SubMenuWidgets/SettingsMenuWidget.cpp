@@ -204,6 +204,7 @@ void USettingsMenuWidget::NativeConstruct()
 
 	PeakTargetColor->OnColorChanged.BindUFunction(this, "OnPeakTargetColorChanged");
 	FadeTargetColor->OnColorChanged.BindUFunction(this, "OnFadeTargetColorChanged");
+	BeatGridInactiveColor->OnColorChanged.BindUFunction(this, "OnBeatGridInactiveColorChanged");
 	UseSeparateOutlineColorCheckbox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget::UseSeparateOutlineColorCheckStateChanged);
 	TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnTargetOutlineColorChanged");
 	
@@ -249,12 +250,22 @@ void USettingsMenuWidget::InitializeSettings()
 {
 	PeakTargetColor->InitializeColor(InitialPlayerSettings.PeakTargetColor);
 	PeakTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_Peak"));
+	PeakTargetColor->SetBorderColors(false, false);
+	
 	FadeTargetColor->InitializeColor(InitialPlayerSettings.FadeTargetColor);
 	FadeTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_Fade"));
+	FadeTargetColor->SetBorderColors(true, false);
+
+	BeatGridInactiveColor->InitializeColor(InitialPlayerSettings.BeatGridInactiveTargetColor);
+	BeatGridInactiveColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_BeatGridInactive"));
+	BeatGridInactiveColor->SetBorderColors(false, false);
+	
 	UseSeparateOutlineColorCheckbox->SetIsChecked(InitialPlayerSettings.bUseSeparateOutlineColor);
 	UseSeparateOutlineColorCheckStateChanged(InitialPlayerSettings.bUseSeparateOutlineColor);
+	
 	TargetOutlineColor->InitializeColor(InitialPlayerSettings.TargetOutlineColor);
 	TargetOutlineColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "TargetColor_Outline"));
+	TargetOutlineColor->SetBorderColors(false, false);
 	
 	SensSlider->SetValue(InitialPlayerSettings.Sensitivity);
 	CurrentSensitivityValue->SetText(FText::AsNumber(InitialPlayerSettings.Sensitivity));
@@ -537,6 +548,11 @@ void USettingsMenuWidget::UseSeparateOutlineColorCheckStateChanged(const bool bI
 void USettingsMenuWidget::OnTargetOutlineColorChanged(const FLinearColor& NewColor)
 {
 	NewPlayerSettings.TargetOutlineColor = NewColor;
+}
+
+void USettingsMenuWidget::OnBeatGridInactiveColorChanged(const FLinearColor& NewColor)
+{
+	NewPlayerSettings.BeatGridInactiveTargetColor = NewColor;
 }
 
 void USettingsMenuWidget::OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType)

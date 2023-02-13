@@ -44,20 +44,49 @@ void UColorSelectWidget::InitializeColor(const FLinearColor& NewColor)
 	ColorPreview->SetColorAndOpacity(Color);
 }
 
-void UColorSelectWidget::SetAlphaEnabled(const bool bShowAlpha)
+void UColorSelectWidget::SetBorderColors(const bool bStartLeftLight, const bool bShowAlpha)
 {
-	if (bShowAlpha)
-	{
-		AlphaBorder->SetVisibility(ESlateVisibility::Collapsed);
-		FSlateBrush LightBrush = FSlateBrush();
-		LightBrush.TintColor = FLinearColor(0,0,0,0.1);
-		HexBorder->SetBrush(LightBrush);
-		return;
-	}
-	AlphaBorder->SetVisibility(ESlateVisibility::Visible);
+	FSlateBrush LightBrush = FSlateBrush();
+	LightBrush.TintColor = FLinearColor(0,0,0,0.1);
 	FSlateBrush DarkBrush = FSlateBrush();
 	DarkBrush.TintColor = FLinearColor(0,0,0,0.2);
-	HexBorder->SetBrush(DarkBrush);
+	
+	if (bStartLeftLight)
+	{
+		LeftBorder->SetBrush(LightBrush);
+		RBorder->SetBrush(DarkBrush);
+		GBorder->SetBrush(DarkBrush);
+		BBorder->SetBrush(DarkBrush);
+		ColorPreviewBorder->SetBrush(LightBrush);
+		if (bShowAlpha)
+		{
+			AlphaBorder->SetVisibility(ESlateVisibility::Visible);
+			AlphaBorder->SetBrush(DarkBrush);
+			HexBorder->SetBrush(DarkBrush);
+		}
+		else
+		{
+			AlphaBorder->SetVisibility(ESlateVisibility::Collapsed);
+			HexBorder->SetBrush(DarkBrush);
+		}
+		return;
+	}
+	LeftBorder->SetBrush(DarkBrush);
+	RBorder->SetBrush(LightBrush);
+	GBorder->SetBrush(LightBrush);
+	BBorder->SetBrush(LightBrush);
+	ColorPreviewBorder->SetBrush(DarkBrush);
+	if (bShowAlpha)
+	{
+		AlphaBorder->SetVisibility(ESlateVisibility::Visible);
+		AlphaBorder->SetBrush(LightBrush);
+		HexBorder->SetBrush(LightBrush);
+	}
+	else
+	{
+		AlphaBorder->SetVisibility(ESlateVisibility::Collapsed);
+		HexBorder->SetBrush(LightBrush);
+	}
 }
 
 void UColorSelectWidget::SetColorText(const FText& Key)
@@ -185,7 +214,7 @@ void UColorSelectWidget::OnColorBSliderChange(const float NewValue)
 }
 
 float UColorSelectWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-	USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+                                                   USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);

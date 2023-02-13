@@ -136,6 +136,9 @@ struct FPlayerSettings
 	UPROPERTY(BlueprintReadOnly)
 	FLinearColor TargetOutlineColor;
 
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor BeatGridInactiveTargetColor;
+
 	FPlayerSettings()
 	{
 		Sensitivity = 0.3f;
@@ -168,6 +171,7 @@ struct FPlayerSettings
 		FadeTargetColor = FLinearColor::Red;
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = FLinearColor::White;
+		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
 	}
 
 	void ResetStruct()
@@ -202,6 +206,7 @@ struct FPlayerSettings
 		FadeTargetColor = FLinearColor::Red;
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = FLinearColor::White;
+		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
 	}
 
 	void ResetVideoAndSoundSettings()

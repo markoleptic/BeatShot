@@ -189,6 +189,7 @@ void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettin
 		{
 			Gun->bShowBulletDecals = PlayerSettings.bShowBulletDecals;
 		}
+		Gun->PlayerSettings = PlayerSettings;
 	}
 }
 

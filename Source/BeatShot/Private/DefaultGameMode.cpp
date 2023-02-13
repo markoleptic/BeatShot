@@ -146,20 +146,9 @@ void ADefaultGameMode::BindGameModeDelegates()
 
 void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
 {
-	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
-		UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (ShowPostGameMenu)
-	{
-		Controller->ShowPostGameMenu();
-	}
 	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
-
-	//Hide HUD and countdown
-	Controller->HidePlayerHUD();
-	Controller->HideCountdown();
-	Controller->HideCrossHair();
 
 	if (TargetSpawner)
 	{
@@ -177,10 +166,7 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	{
 		Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun->OnShotFired.Unbind();
 	}
-	if (OnTargetSpawned.IsBoundToObject(this))
-	{
-		OnTargetSpawned.Unbind();
-	}
+
 	if (VisualizerManager)
 	{
 		VisualizerManager->DestroyVisualizers();
@@ -198,6 +184,18 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 		AAPlayer->UnloadCapturerAudio();
 		AAPlayer->UnloadPlayerAudio();
 		AAPlayer = nullptr;
+	}
+
+	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
+	UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	//Hide HUD and countdown
+	Controller->HidePlayerHUD();
+	Controller->HideCountdown();
+	Controller->HideCrossHair();
+	
+	if (ShowPostGameMenu)
+	{
+		Controller->ShowPostGameMenu();
 	}
 }
 

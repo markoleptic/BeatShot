@@ -298,3 +298,4 @@ TargetColor_Peak,Peak Target Color
 TargetColor_Fade,Fade Target Color
 TargetColor_Outline,Target Outline Color
 TargetColor_UseSeparateOutline,Use Separate Outline Color
+TargetColor_BeatGridInactive,Inactive BeatGrid Target Color

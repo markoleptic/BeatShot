@@ -6,6 +6,8 @@
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "SaveGameCustomGameMode.h"
+#include "SaveGamePlayerSettings.h"
+#include "SaveLoadInterface.h"
 #include "SphereTarget.generated.h"
 
 class UDefaultHealthComponent;
@@ -18,7 +20,7 @@ class UCurveLinearColor;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
-class BEATSHOT_API ASphereTarget : public AActor
+class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -65,13 +67,13 @@ protected:
 	UMaterialInstanceDynamic* MID_TargetOutline;
 
 	UPROPERTY(EditDefaultsOnly)
-	UCurveLinearColor* FadeAndReappearCurve;
+	UCurveFloat* FadeAndReappearCurve;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UCurveFloat* WhiteToPeakCurve;
 
 	UPROPERTY(EditDefaultsOnly)
-	UCurveLinearColor* WhiteToGreenCurve;
-
-	UPROPERTY(EditDefaultsOnly)
-	UCurveLinearColor* GreenToRedCurve;
+	UCurveFloat* PeakToFadeCurve;
 
 public:
 	
@@ -83,23 +85,16 @@ public:
 	
 	FOnLifeSpanExpired OnLifeSpanExpired;
 
-	/** All of the FOnTimelineLinearColor bind to this function,
-	*   so that the color of the sphere is changed based on the timeline positions.
-	*   Also called by Gun to change the color for BeatTrack modes */
+	/** Sets the color of the Target Material */
 	UFUNCTION()
 	void SetSphereColor(const FLinearColor Output);
-	
+
+	/** Sets the color of the Target Outline Material */
 	UFUNCTION()
 	void SetOutlineColor(const FLinearColor Output);
 
-	UFUNCTION()
-	void SetSphereAndOutlineColor(const FLinearColor Output);
-
 	UPROPERTY()
 	FTimerHandle TimeSinceSpawn;
-
-	UPROPERTY()
-	FTimerHandle ValidScoreTargetTime;
 
 	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
 	FGameModeActorStruct GameModeActorStruct;
@@ -111,13 +106,13 @@ public:
 
 private:
 
-	/** Play the WhiteToGreenTimeline, which corresponds to the WhiteToGreenCurve */
+	/** Play the WhiteToPeakTimeline, which corresponds to the WhiteToGreenCurve */
 	UFUNCTION()
-	void PlayWhiteToGreenTimeline();
+	void PlayWhiteToPeakTimeline();
 
-	/** Play the WhiteToGreenTimeline, which corresponds to the WhiteToGreenCurve */
+	/** Play the WhiteToPeakTimeline, which corresponds to the WhiteToGreenCurve */
 	UFUNCTION()
-	void PlayGreenToRedTimeline();
+	void PlayPeakToFadeTimeline();
 
 	/** Briefly makes the target higher opacity. Only used for BeatGrid */
 	UFUNCTION()
@@ -126,10 +121,21 @@ private:
 	/** Set the color to BeatGrid color */
 	UFUNCTION()
 	void SetColorToBeatGridColor();
+
+	UFUNCTION()
+	void WhiteToPeak(const float Alpha);
+
+	UFUNCTION()
+	void PeakToFade(const float Alpha);
+
+	UFUNCTION()
+	void FadeAndReappear(const float Alpha);
+ 
+	FPlayerSettings PlayerSettings;
 	
 	FTimeline FadeAndReappearTimeline;
-	FTimeline WhiteToGreenTimeline;
-	FTimeline GreenToRedTimeline;
+	FTimeline WhiteToPeakTimeline;
+	FTimeline PeakToFadeTimeline;
 
 	/** Switch that is changed in the PlayTimeline functions so that all timelines aren't always ticked */
 	int32 TimelineSwitch = -1;
@@ -153,12 +159,8 @@ private:
 	/** The scale that was applied when spawned */
 	float TargetScale = 1.f;
 
-	/** Color for BeatGrid targets that aren't active. */
-	FLinearColor BeatGridPurple = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
-
 	/** The ratio between the scale of the BaseMesh to OutlineMesh, used to apply a constant proportioned outline
 	 *  regardless of the scale of the target */
 	const float BaseToOutlineRatio = 0.9;
 };
-
 

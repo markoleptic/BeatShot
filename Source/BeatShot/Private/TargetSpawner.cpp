@@ -62,7 +62,6 @@ void ATargetSpawner::Destroyed()
 		FFileHelper::SaveStringToFile(StringToWrite, *file);
 	}
 	
-	Super::Destroyed();
 	if (BeatTrackTarget)
 	{
 		BeatTrackTarget->Destroy();
@@ -78,6 +77,8 @@ void ATargetSpawner::Destroyed()
 	{
 		VisualGrid->Destroy();
 	}
+
+	Super::Destroyed();
 }
 
 void ATargetSpawner::Tick(float DeltaTime)
