@@ -39,7 +39,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChange, const FPlay
 /** Broadcast when AudioAnalyzer settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, const FAASettingsStruct&, RefreshedAASettings);
 
-/** Broadcast from GameModesWidget, AASettingsWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should
+/** Broadcast from GameModesWidget, SettingsMenuWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should
  *  start, restart, or stop */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, FGameModeTransitionState& TransitionState);
 

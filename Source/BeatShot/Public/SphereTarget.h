@@ -16,20 +16,16 @@ class UNiagaraSystem;
 class UCurveFloat;
 class UCurveLinearColor;
 
-/** Target Spawner binds to this function to receive info about how target was destroyed */
+/** Broadcasts info about the destroyed target state */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-
-public:
+	
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
-
-	/** Sets the scale for the BaseMesh and the OutlineMesh */
-	void SetSphereScale(const FVector NewScale);
 
 protected:
 	
@@ -67,23 +63,21 @@ protected:
 	UMaterialInstanceDynamic* MID_TargetOutline;
 
 	UPROPERTY(EditDefaultsOnly)
-	UCurveFloat* FadeAndReappearCurve;
-	
-	UPROPERTY(EditDefaultsOnly)
-	UCurveFloat* WhiteToPeakCurve;
+	UCurveFloat* StartToPeakCurve;
 
 	UPROPERTY(EditDefaultsOnly)
-	UCurveFloat* PeakToFadeCurve;
+	UCurveFloat* PeakToEndCurve;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UCurveFloat* FadeAndReappearCurve;
 
 public:
 	
 	/** Called in TargetSpawner to activate a BeatGrid target */
 	void StartBeatGridTimer(float Lifespan);
 
-	/* Called from DefaultHealthComponent when a SphereTarget receives damage. */
-	void HandleDestruction();
-	
-	FOnLifeSpanExpired OnLifeSpanExpired;
+	/** Sets the scale for the BaseMesh and the OutlineMesh */
+	void SetSphereScale(const FVector NewScale);
 
 	/** Sets the color of the Target Material */
 	UFUNCTION()
@@ -93,28 +87,37 @@ public:
 	UFUNCTION()
 	void SetOutlineColor(const FLinearColor Output);
 
+	/** Called from DefaultHealthComponent when a SphereTarget receives damage. */
+	void HandleDestruction();
+
+	/** Target Spawner binds to this function to receive info about how target was destroyed */
+	FOnLifeSpanExpired OnLifeSpanExpired;
+
+	/** The length of the time the target was alive for */
 	UPROPERTY()
 	FTimerHandle TimeSinceSpawn;
 
 	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
+	UPROPERTY()
 	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UDefaultHealthComponent* HealthComp;
 
+	UPROPERTY()
 	FGuid Guid;
 
 private:
 
-	/** Play the WhiteToPeakTimeline, which corresponds to the WhiteToGreenCurve */
+	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
-	void PlayWhiteToPeakTimeline();
+	void PlayStartToPeakTimeline();
 
-	/** Play the WhiteToPeakTimeline, which corresponds to the WhiteToGreenCurve */
+	/** Play the PeakToEndTimeline, which corresponds to the PeakToEndCurve */
 	UFUNCTION()
-	void PlayPeakToFadeTimeline();
+	void PlayPeakToEndTimeline();
 
-	/** Briefly makes the target higher opacity. Only used for BeatGrid */
+	/** Briefly makes the target lower opacity, and sets the color back to BeatGridInactive color */
 	UFUNCTION()
 	void PlayFadeAndReappearTimeline();
 
@@ -123,29 +126,27 @@ private:
 	void SetColorToBeatGridColor();
 
 	UFUNCTION()
-	void WhiteToPeak(const float Alpha);
+	void StartToPeak(const float Alpha);
 
 	UFUNCTION()
-	void PeakToFade(const float Alpha);
+	void PeakToEnd(const float Alpha);
 
 	UFUNCTION()
 	void FadeAndReappear(const float Alpha);
- 
-	FPlayerSettings PlayerSettings;
-	
-	FTimeline FadeAndReappearTimeline;
-	FTimeline WhiteToPeakTimeline;
-	FTimeline PeakToFadeTimeline;
 
-	/** Switch that is changed in the PlayTimeline functions so that all timelines aren't always ticked */
-	int32 TimelineSwitch = -1;
-	
 	/** Unlike other modes which use LifeSpanExpired to notify TargetSpawner of their expiration,
 	 *  BeatGrid needs to use this function since the the targets aren't going to be destroyed,
 	 *  but instead just deactivated */
 	UFUNCTION()
 	void OnBeatGridTimerTimeOut();
 
+	UPROPERTY()
+	FPlayerSettings_Game PlayerSettings;
+	
+	FTimeline StartToPeakTimeline;
+	FTimeline PeakToEndTimeline;
+	FTimeline FadeAndReappearTimeline;
+	
 	/** Set the max health of the target */
 	void SetMaxHealth(float NewMaxHealth) const;
 

@@ -9,7 +9,7 @@
 #include "Delegates/DelegateCombinations.h"
 #include "CrossHairSettingsWidget.generated.h"
 
-DECLARE_DELEGATE_OneParam(FOnCrossHairSettingsChanged, const FPlayerSettings&);
+DECLARE_MULTICAST_DELEGATE(FOnSettingsSaved_CrossHair);
 
 class USavedTextWidget;
 class UColorSelectWidget;
@@ -30,7 +30,7 @@ public:
 
 	/** Executed after new CrossHair settings are saved. Parent widget (SettingsMenuWidget) and calls its
 	 *  OnPlayerSettingsChanged delegate */
-	FOnCrossHairSettingsChanged OnCrossHairSettingsChanged;
+	FOnSettingsSaved_CrossHair OnSettingsSaved_CrossHair;
 
 protected:
 
@@ -111,9 +111,9 @@ private:
 										   const float GridSnapSize);
 	
 	/** Fills out all CrossHair Settings given PlayerSettings */
-	void SetCrossHairOptions(const FPlayerSettings& CrossHairSettings);
+	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);
 	/** The PlayerSettings that were initially loaded */
-	FPlayerSettings InitialCrossHairSettings;
+	FPlayerSettings_CrossHair InitialCrossHairSettings;
 	/** The PlayerSettings that are changed when interacting with the CrossHairSettingsWidget */
-	FPlayerSettings NewCrossHairSettings;
+	FPlayerSettings_CrossHair NewCrossHairSettings;
 };

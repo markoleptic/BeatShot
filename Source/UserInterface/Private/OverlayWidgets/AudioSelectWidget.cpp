@@ -107,14 +107,14 @@ void UAudioSelectWidget::OnCaptureAudioButtonClicked()
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Visible);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 
-	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	const FAASettingsStruct PlayerSettings = LoadAASettings();
 	InAudioDevices->SetSelectedOption(PlayerSettings.LastSelectedInputAudioDevice);
 	OutAudioDevices->SetSelectedOption(PlayerSettings.LastSelectedOutputAudioDevice);
 }
 
 void UAudioSelectWidget::OnStartButtonClicked()
 {
-	FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	FAASettingsStruct PlayerSettings = LoadAASettings();
 	if (!InAudioDevices->GetSelectedOption().IsEmpty())
 	{
 		PlayerSettings.LastSelectedInputAudioDevice = InAudioDevices->GetSelectedOption();
@@ -123,7 +123,7 @@ void UAudioSelectWidget::OnStartButtonClicked()
 	{
 		PlayerSettings.LastSelectedOutputAudioDevice = OutAudioDevices->GetSelectedOption();
 	}
-	SavePlayerSettings(PlayerSettings);
+	SaveAASettings(PlayerSettings);
 	if(!OnStartButtonClickedDelegate.ExecuteIfBound(AudioSelectStruct))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnStartButtonClickedDelegate not bound."));

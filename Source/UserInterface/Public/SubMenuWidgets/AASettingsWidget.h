@@ -10,7 +10,8 @@
 #include "WidgetComponents/BandThresholdWidget.h"
 #include "AASettingsWidget.generated.h"
 
-DECLARE_DYNAMIC_DELEGATE(FOnRestartButtonClicked);
+DECLARE_DELEGATE(FOnRestartButtonClicked);
+DECLARE_DELEGATE(FOnSettingsSaved_AudioAnalyzer);
 
 class USlider;
 class UButton;
@@ -37,11 +38,9 @@ public:
 
 	virtual void NativeConstruct() override;
 	
-	UPROPERTY()
 	FOnRestartButtonClicked OnRestartButtonClicked;
-
-	UPROPERTY()
-	FOnAASettingsChange OnAASettingsChange;
+	
+	FOnSettingsSaved_AudioAnalyzer OnSettingsSaved_AudioAnalyzer;
 	
 	/** Do specific things if this instance of AASettings belongs to MainMenuWidget */
 	void InitMainMenuChild();
@@ -52,49 +51,42 @@ protected:
 	UVerticalBox* BandChannelBounds;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UVerticalBox* BandThresholdBounds;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	TSubclassOf<UBandChannelWidget> BandChannelWidgetClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	TSubclassOf<UBandThresholdWidget> BandThresholdWidgetClass;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	UBandChannelWidget* BandChannelWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
 	UBandThresholdWidget* BandThresholdWidget;
-	
-	UPROPERTY()
-	FAASettingsStruct AASettings;
-	UPROPERTY()
-	FAASettingsStruct NewAASettings;
-
-	UFUNCTION()
-	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
-	UFUNCTION()
-	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
-	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UComboBoxString* NumBandChannels;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	USlider* TimeWindowSlider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UEditableTextBox* TimeWindowValue;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UButton* ResetAASettingsButton;
+	UButton* ResetButton_AASettings;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UButton* SaveAASettingsButton;
+	UButton* SaveButton_AASettings;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UButton* SaveAndRestartButton;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
 	
+	UPROPERTY()
+	FAASettingsStruct AASettings;
+	UPROPERTY()
+	FAASettingsStruct NewAASettings;
+	
+	UFUNCTION()
+	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
+	UFUNCTION()
+	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
 	UFUNCTION()
 	void OnNumBandChannelsSelectionChanged(FString NewNum, ESelectInfo::Type SelectType);
 	

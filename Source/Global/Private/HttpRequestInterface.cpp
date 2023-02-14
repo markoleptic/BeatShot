@@ -8,16 +8,16 @@
 
 bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings PlayerSettings)
 {
-	if (PlayerSettings.HasLoggedInHttp == true)
+	if (PlayerSettings.User.HasLoggedInHttp == true)
 	{
-		if (PlayerSettings.LoginCookie.IsEmpty())
+		if (PlayerSettings.User.LoginCookie.IsEmpty())
 		{
 			return false;
 		}
 		FDateTime CookieExpireDate;
-		const int32 ExpiresStartPos = PlayerSettings.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive,
+		const int32 ExpiresStartPos = PlayerSettings.User.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive,
 		                                                              ESearchDir::FromStart, 0);
-		const FString RightChopped = PlayerSettings.LoginCookie.RightChop(ExpiresStartPos + 8);
+		const FString RightChopped = PlayerSettings.User.LoginCookie.RightChop(ExpiresStartPos + 8);
 		const FString CookieExpireString = RightChopped.Left(
 			RightChopped.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, 0));
 		FDateTime::ParseHttpDate(CookieExpireString, CookieExpireDate);
@@ -57,11 +57,11 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, FOnLogi
 			TSharedPtr<FJsonObject> LoginResponseObj;
 			const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
 			FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
-			PlayerSettings.HasLoggedInHttp = true;
-			PlayerSettings.Username = LoginResponseObj->GetStringField("username");
-			PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
+			PlayerSettings.User.HasLoggedInHttp = true;
+			PlayerSettings.User.Username = LoginResponseObj->GetStringField("username");
+			PlayerSettings.User.LoginCookie = Response->GetHeader("set-cookie");
 			OnLoginResponse.Execute(PlayerSettings, Response->GetContentAsString(), Response->GetResponseCode());
-			UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
+			UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.User.Username);
 		});
 	LoginRequest->ProcessRequest();
 }

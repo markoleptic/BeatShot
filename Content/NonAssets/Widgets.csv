@@ -106,10 +106,12 @@ FAQ_SpreadType_Static_Narrow,An unchanged spawn area size of 1600 horizontal spr
 FAQ_SpreadType_Static_Wide,An unchanged spawn area size of 3200 horizontal spread and 1000 vertical spread
 FAQ_TargetSpawnCooldown,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
 FAQ_VerticalSpread,"The height (up-down) of the possible spawn area. 1000 is most of the height of the spawn wall, with small gaps on the top and bottom so the target doesn't clip."
-Game_CombatText,Show Streak Combat Text
+Game_CombatTextShow,Show Streak Combat Text
 Game_CombatTextFrequency,Streak Combat Text Frequency
 Game_FPSCounter,FPS Counter
 Game_FPSLimitGame,FPS Limit Game
+Game_Target,Target Settings
+Game_CombatText,Combat Text
 Game_FPSLimitMenu,FPS Limit Menus
 GitHubButtonText,Create Github Issue here
 GitHubIssueMessage,"If you're playing this right now, the game in an early alpha state. Things are likely to break and possibly not be implemented. If you have any suggestions whatsoever, don't hesitate to submit an bug report or feature request on Github. "
@@ -231,6 +233,7 @@ MenuOption_Scoring,Scoring
 MenuOption_Sensitivity,Sensitivity
 MenuOption_Settings,Settings
 MenuOption_StandardGameModes,Standard Game Modes
+MenuOption_Game,Game
 MenuOption_VideoAndSound,Video and Sound
 PausedText,Paused
 QM_BackButtonText,Back
@@ -294,8 +297,19 @@ SBW_NoAccount,Your scores were saved locally but were not uploaded to the databa
 SBW_DidNotSaveScores,Your scores weren't saved because you didn't select a name for your custom game mode or your score was 0.
 SBW_SavedScoresButNotLoggedIn,Your scores were saved to the database but there was a problem loading your profile in the web browser. Go to the main menu to sign in again.
 SBW_SavedScoresLocallyOnly,Your scores were saved locally but there was a problem posting your scores to the database. Your scores will be uploaded to the database the next time there is a successful connection to it. Go to the main menu to sign in again.
-TargetColor_Peak,Peak Target Color
-TargetColor_Fade,Fade Target Color
-TargetColor_Outline,Target Outline Color
-TargetColor_UseSeparateOutline,Use Separate Outline Color
-TargetColor_BeatGridInactive,Inactive BeatGrid Target Color
+SM_TargetColor_Start,Start Target Color
+SM_TargetColor_Peak,Peak Target Color
+SM_TargetColor_End,End Target Color
+SM_TargetColor_Outline,Target Outline Color
+SM_TargetColor_UseSeparateOutline,Use Separate Outline Color
+SM_TargetColor_BeatGridInactive,Inactive BeatGrid Target Color
+SM_Saved_Game,Game Settings saved
+SM_Saved_VideoAndSound,Video and Sound Settings Saved
+SM_Saved_AudioAnalyzer,Audio Analyzer Settings Saved
+SM_Saved_Sensitivity,Sensitivity Settings Saved
+SM_Saved_CrossHair,Crosshair Settings Saved
+SM_Save_Game,Save Game Settings
+SM_Save_VideoAndSound,Save Video and Sound Settings
+SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
+SM_Save_Sensitivity,Save Sensitivity Settings
+SM_Save_CrossHair,Save Crosshair Settings

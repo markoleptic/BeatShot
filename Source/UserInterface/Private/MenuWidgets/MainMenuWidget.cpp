@@ -147,7 +147,7 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)
 		return;
 	}
 	SignInStateText->SetText(FText::FromString("Signed in as"));
-	UsernameText->SetText(FText::FromString(LoadPlayerSettings().Username));
+	UsernameText->SetText(FText::FromString(LoadPlayerSettings().User.Username));
 }
 
 void UMainMenuWidget::OnQuitButtonClicked()

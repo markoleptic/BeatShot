@@ -43,7 +43,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings PlayerSetti
 		                      &Visualizer2Location,
 		                      &VisualizerRotation,
 		                      SpawnParameters)));
-	if (PlayerSettings.bShowLightVisualizers)
+	if (PlayerSettings.Game.bShowLightVisualizers)
 	{
 		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(
 			                      GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
@@ -118,6 +118,10 @@ void AVisualizerManager::DestroyVisualizers()
 	{
 		return;
 	}
+	for (AVisualizerBase* Visualizer : Visualizers)
+	{
+		Visualizer->Destroy();
+	}
 	Visualizers.Empty();
 }
 
@@ -127,7 +131,7 @@ void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings PlayerSett
 	{
 		return;
 	}
-	if (!PlayerSettings.bShowLightVisualizers)
+	if (!PlayerSettings.Game.bShowLightVisualizers)
 	{
 		ABeamVisualizer* FoundBeamVisualizer = nullptr;
 		if (Visualizers.FindItemByClass(&FoundBeamVisualizer))

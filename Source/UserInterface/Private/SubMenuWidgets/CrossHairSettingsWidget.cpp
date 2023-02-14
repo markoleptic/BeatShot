@@ -33,13 +33,13 @@ void UCrossHairSettingsWidget::NativeConstruct()
 	SaveCrossHairButton->OnClicked.AddDynamic(this, &UCrossHairSettingsWidget::OnSaveCrossHairButtonClicked);
 
 	ColorSelectWidget->OnColorChanged.BindUFunction(this, "OnColorChanged");
-
-	InitialCrossHairSettings = LoadPlayerSettings();
+	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Save_CrossHair"));
+	InitialCrossHairSettings = LoadPlayerSettings().CrossHair;
 	NewCrossHairSettings = InitialCrossHairSettings;
 	SetCrossHairOptions(InitialCrossHairSettings);
 }
 
-void UCrossHairSettingsWidget::SetCrossHairOptions(const FPlayerSettings& CrossHairSettings)
+void UCrossHairSettingsWidget::SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings)
 {
 	ColorSelectWidget->InitializeColor(CrossHairSettings.CrossHairColor);
 	ColorSelectWidget->SetBorderColors(true, true);
@@ -136,7 +136,7 @@ void UCrossHairSettingsWidget::OnOutlineWidthSliderChange(const float NewValue)
 
 void UCrossHairSettingsWidget::OnResetToDefaultButtonClicked()
 {
-	NewCrossHairSettings.ResetCrossHair();
+	NewCrossHairSettings = FPlayerSettings_CrossHair();
 	SetCrossHairOptions(NewCrossHairSettings);
 }
 
@@ -149,18 +149,15 @@ void UCrossHairSettingsWidget::OnRevertCrossHairButtonClicked()
 void UCrossHairSettingsWidget::OnSaveCrossHairButtonClicked()
 {
 	/** Load settings again in case the user changed other settings before navigating to crosshair settings */
-	FPlayerSettings MostRecentSettings = LoadPlayerSettings();
-	MostRecentSettings.LineWidth = NewCrossHairSettings.LineWidth;
-	MostRecentSettings.LineLength = NewCrossHairSettings.LineLength;
-	MostRecentSettings.InnerOffset = NewCrossHairSettings.InnerOffset;
-	MostRecentSettings.CrossHairColor = NewCrossHairSettings.CrossHairColor;
-	MostRecentSettings.OutlineOpacity = NewCrossHairSettings.OutlineOpacity;
-	MostRecentSettings.OutlineWidth = NewCrossHairSettings.OutlineWidth;
-	SavePlayerSettings(MostRecentSettings);
-	if (!OnCrossHairSettingsChanged.ExecuteIfBound(MostRecentSettings))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnCrossHairSettingsChanged not bound."));
-	}
+	FPlayerSettings Settings = LoadPlayerSettings();
+	Settings.CrossHair.LineWidth = NewCrossHairSettings.LineWidth;
+	Settings.CrossHair.LineLength = NewCrossHairSettings.LineLength;
+	Settings.CrossHair.InnerOffset = NewCrossHairSettings.InnerOffset;
+	Settings.CrossHair.CrossHairColor = NewCrossHairSettings.CrossHairColor;
+	Settings.CrossHair.OutlineOpacity = NewCrossHairSettings.OutlineOpacity;
+	Settings.CrossHair.OutlineWidth = NewCrossHairSettings.OutlineWidth;
+	SavePlayerSettings(Settings);
+	OnSettingsSaved_CrossHair.Broadcast();
 	SavedTextWidget->PlayFadeInFadeOut();
 	InitialCrossHairSettings = NewCrossHairSettings;
 }

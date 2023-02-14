@@ -36,15 +36,88 @@ struct FLoginPayload
 	}
 };
 
-/* Used to load and save player settings */
+/* Game settings */
 USTRUCT(BlueprintType)
-struct FPlayerSettings
+struct FPlayerSettings_Game
 {
 	GENERATED_USTRUCT_BODY()
 
-	// Sensitivity of DefaultCharacter
 	UPROPERTY(BlueprintReadOnly)
-	float Sensitivity;
+	FLinearColor StartTargetColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor PeakTargetColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor EndTargetColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bUseSeparateOutlineColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor TargetOutlineColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor BeatGridInactiveTargetColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowStreakCombatText;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 CombatTextFrequency;
+
+	/* Range settings */
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShouldRecoil;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bAutomaticFire;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowBulletDecals;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bNightModeSelected;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowLightVisualizers;
+
+	FPlayerSettings_Game()
+	{
+		bShowStreakCombatText = true;
+		CombatTextFrequency = 5;
+		StartTargetColor = FLinearColor::White;
+		PeakTargetColor = FLinearColor::Green;
+		EndTargetColor = FLinearColor::Red;
+		bUseSeparateOutlineColor = false;
+		TargetOutlineColor = FLinearColor::White;
+		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
+		bShouldRecoil = true;
+		bAutomaticFire = true;
+		bShowBulletDecals = true;
+		bNightModeSelected = false;
+		bShowLightVisualizers = false;
+	}
+
+	void ResetGameSettings()
+	{
+		bShowStreakCombatText = true;
+		CombatTextFrequency = 5;
+		StartTargetColor = FLinearColor::White;
+		PeakTargetColor = FLinearColor::Green;
+		EndTargetColor = FLinearColor::Red;
+		bUseSeparateOutlineColor = false;
+		TargetOutlineColor = FLinearColor::White;
+		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
+	}
+};
+
+/* Video and sound settings */
+USTRUCT(BlueprintType)
+struct FPlayerSettings_VideoAndSound
+{
+	GENERATED_USTRUCT_BODY()
 
 	// GlobalVolume, which also affects Menu and Music volume
 	UPROPERTY(BlueprintReadOnly)
@@ -59,6 +132,32 @@ struct FPlayerSettings
 	float MusicVolume;
 
 	UPROPERTY(BlueprintReadOnly)
+	int32 FrameRateLimitMenu;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 FrameRateLimitGame;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowFPSCounter;
+
+	FPlayerSettings_VideoAndSound()
+	{
+		GlobalVolume = 50.f;
+		MenuVolume = 50.f;
+		MusicVolume = 10.f;
+		FrameRateLimitMenu = 144;
+		FrameRateLimitGame = 0;
+		bShowFPSCounter = false;
+	}
+};
+
+/* CrossHair settings */
+USTRUCT(BlueprintType)
+struct FPlayerSettings_User
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
 	FString Username;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -66,6 +165,24 @@ struct FPlayerSettings
 
 	UPROPERTY(BlueprintReadOnly)
 	FString LoginCookie;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool bNightModeUnlocked;
+
+	FPlayerSettings_User()
+	{
+		HasLoggedInHttp = false;
+		Username = "";
+		LoginCookie = "";
+		bNightModeUnlocked = false;
+	}
+};
+
+/* CrossHair settings */
+USTRUCT(BlueprintType)
+struct FPlayerSettings_CrossHair
+{
+	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 LineWidth;
@@ -85,153 +202,61 @@ struct FPlayerSettings
 	UPROPERTY(BlueprintReadOnly)
 	int32 OutlineWidth;
 
+	FPlayerSettings_CrossHair()
+	{
+		LineWidth = 4;
+		LineLength = 10;
+		InnerOffset = 6;
+		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
+		OutlineOpacity = 1.f;
+		OutlineWidth = 20;
+	}
+};
+
+/* Used to load and save player settings */
+USTRUCT(BlueprintType)
+struct FPlayerSettings
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	FPlayerSettings_User User;
+	
 	UPROPERTY(BlueprintReadWrite)
-	bool bShouldRecoil;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bAutomaticFire;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bShowBulletDecals;
+	FPlayerSettings_Game Game;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bNightModeUnlocked;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bNightModeSelected;
-
-	UPROPERTY(BlueprintReadWrite)
-	bool bShowLightVisualizers;
+	FPlayerSettings_VideoAndSound VideoAndSound;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bShowFPSCounter;
-
+	FPlayerSettings_CrossHair CrossHair;
+	
+	// Sensitivity of DefaultCharacter
 	UPROPERTY(BlueprintReadOnly)
-	int32 FrameRateLimitMenu;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 FrameRateLimitGame;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bShowStreakCombatText;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 CombatTextFrequency;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString LastSelectedInputAudioDevice;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString LastSelectedOutputAudioDevice;
-
-	UPROPERTY(BlueprintReadOnly)
-	FLinearColor PeakTargetColor;
-
-	UPROPERTY(BlueprintReadOnly)
-	FLinearColor FadeTargetColor;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool bUseSeparateOutlineColor;
-
-	UPROPERTY(BlueprintReadOnly)
-	FLinearColor TargetOutlineColor;
-
-	UPROPERTY(BlueprintReadOnly)
-	FLinearColor BeatGridInactiveTargetColor;
+	float Sensitivity;
 
 	FPlayerSettings()
 	{
+		User = FPlayerSettings_User();
+		Game = FPlayerSettings_Game();
+		VideoAndSound = FPlayerSettings_VideoAndSound();
+		CrossHair = FPlayerSettings_CrossHair();
 		Sensitivity = 0.3f;
-		GlobalVolume = 50.f;
-		MenuVolume = 50.f;
-		MusicVolume = 10.f;
-		HasLoggedInHttp = false;
-		Username = "";
-		LoginCookie = "";
-		LineWidth = 4;
-		LineLength = 10;
-		InnerOffset = 6;
-		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
-		OutlineOpacity = 1.f;
-		OutlineWidth = 20;
-		bShouldRecoil = true;
-		bAutomaticFire = true;
-		bShowBulletDecals = true;
-		bNightModeUnlocked = false;
-		bNightModeSelected = false;
-		bShowLightVisualizers = false;
-		bShowFPSCounter = false;
-		FrameRateLimitMenu = 144;
-		FrameRateLimitGame = 0;
-		bShowStreakCombatText = true;
-		CombatTextFrequency = 5;
-		LastSelectedInputAudioDevice = "";
-		LastSelectedOutputAudioDevice = "";
-		PeakTargetColor = FLinearColor::Green;
-		FadeTargetColor = FLinearColor::Red;
-		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = FLinearColor::White;
-		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
 	}
 
-	void ResetStruct()
+	void ResetGameSettings()
 	{
-		Sensitivity = 0.3f;
-		GlobalVolume = 50.f;
-		MenuVolume = 50.f;
-		MusicVolume = 10.f;
-		HasLoggedInHttp = false;
-		Username = "";
-		LoginCookie = "";
-		LineWidth = 4;
-		LineLength = 10;
-		InnerOffset = 6;
-		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
-		OutlineOpacity = 1.f;
-		OutlineWidth = 20;
-		bShouldRecoil = true;
-		bAutomaticFire = true;
-		bShowBulletDecals = true;
-		bNightModeUnlocked = false;
-		bNightModeSelected = false;
-		bShowLightVisualizers = false;
-		bShowFPSCounter = false;
-		FrameRateLimitMenu = 144;
-		FrameRateLimitGame = 0;
-		bShowStreakCombatText = true;
-		CombatTextFrequency = 5;
-		LastSelectedInputAudioDevice = "";
-		LastSelectedOutputAudioDevice = "";
-		PeakTargetColor = FLinearColor::Green;
-		FadeTargetColor = FLinearColor::Red;
-		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = FLinearColor::White;
-		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
+		Game.ResetGameSettings();
 	}
 
 	void ResetVideoAndSoundSettings()
 	{
-		GlobalVolume = 50.f;
-		MenuVolume = 50.f;
-		MusicVolume = 10.f;
-		FrameRateLimitMenu = 144;
-		FrameRateLimitGame = 0;
-		bShowStreakCombatText = true;
-		CombatTextFrequency = 5;
-		PeakTargetColor = FLinearColor::Green;
-		FadeTargetColor = FLinearColor::Red;
-		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = FLinearColor::White;
+		VideoAndSound = FPlayerSettings_VideoAndSound();
 	}
 
 	void ResetCrossHair()
 	{
-		LineWidth = 4;
-		LineLength = 10;
-		InnerOffset = 6;
-		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
-		OutlineOpacity = 1.f;
-		OutlineWidth = 20;
+		CrossHair = FPlayerSettings_CrossHair();
 	}
 };
 
@@ -264,6 +289,12 @@ struct FAASettingsStruct
 	// Max number of band channels allowed
 	int32 MaxNumBandChannels = 32;
 
+	UPROPERTY(BlueprintReadOnly)
+	FString LastSelectedInputAudioDevice;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString LastSelectedOutputAudioDevice;
+
 	FAASettingsStruct()
 	{
 		BandLimits = {
@@ -283,6 +314,8 @@ struct FAASettingsStruct
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
 		MaxNumBandChannels = 32;
+		LastSelectedInputAudioDevice = "";
+		LastSelectedOutputAudioDevice = "";
 	}
 
 	void ResetStruct()

@@ -176,18 +176,18 @@ void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettin
 	Sensitivity = PlayerSettings.Sensitivity;
 	if (Gun)
 	{
-		if (Gun->bAutomaticFire != PlayerSettings.bAutomaticFire ||
-			Gun->bShouldRecoil != PlayerSettings.bShouldRecoil)
+		if (Gun->bAutomaticFire != PlayerSettings.Game.bAutomaticFire ||
+			Gun->bShouldRecoil != PlayerSettings.Game.bShouldRecoil)
 		{
 			Gun->StopFire();
 			Camera->SetRelativeRotation(FRotator(0, 0, 0));
 			CameraRecoilComp->SetRelativeRotation(FRotator(0, 0, 0));
-			Gun->bShouldRecoil = PlayerSettings.bShouldRecoil;
-			Gun->bAutomaticFire = PlayerSettings.bAutomaticFire;
+			Gun->bShouldRecoil = PlayerSettings.Game.bShouldRecoil;
+			Gun->bAutomaticFire = PlayerSettings.Game.bAutomaticFire;
 		}
-		if (Gun->bShowBulletDecals != PlayerSettings.bShowBulletDecals)
+		if (Gun->bShowBulletDecals != PlayerSettings.Game.bShowBulletDecals)
 		{
-			Gun->bShowBulletDecals = PlayerSettings.bShowBulletDecals;
+			Gun->bShowBulletDecals = PlayerSettings.Game.bShowBulletDecals;
 		}
 		Gun->PlayerSettings = PlayerSettings;
 	}

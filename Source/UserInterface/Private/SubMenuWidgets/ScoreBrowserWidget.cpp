@@ -32,7 +32,7 @@ void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 void UScoreBrowserWidget::InitializeScoringOverlay()
 {
 	/* If user has logged in before, check Refresh Token */
-	if (const FPlayerSettings PlayerSettings = LoadPlayerSettings(); PlayerSettings.HasLoggedInHttp)
+	if (const FPlayerSettings PlayerSettings = LoadPlayerSettings(); PlayerSettings.User.HasLoggedInHttp)
 	{
 		if (!IsRefreshTokenValid(PlayerSettings))
 		{
@@ -43,7 +43,7 @@ void UScoreBrowserWidget::InitializeScoringOverlay()
 		{
 			/* If logged in and has valid refresh token */
 			OnAccessTokenResponseDelegate.BindUFunction(this, "OnAccessTokenResponse");
-			RequestAccessToken(PlayerSettings.LoginCookie, OnAccessTokenResponseDelegate);
+			RequestAccessToken(PlayerSettings.User.LoginCookie, OnAccessTokenResponseDelegate);
 		}
 	}
 	/* Show Register screen if new user */
@@ -79,6 +79,7 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 	default:
 		{
 			SetOverlayText("SBW_SavedScoresLocallyOnly");
+			
 			return;
 		}
 	}
@@ -98,11 +99,11 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 	}
 	if (MinDateScore.CustomGameModeName.IsEmpty())
 	{
-		BrowserWidget->LoadDefaultGameModesURL(LoadPlayerSettings().Username);
+		BrowserWidget->LoadDefaultGameModesURL(LoadPlayerSettings().User.Username);
 	}
 	else
 	{
-		BrowserWidget->LoadCustomGameModesURL(LoadPlayerSettings().Username);
+		BrowserWidget->LoadCustomGameModesURL(LoadPlayerSettings().User.Username);
 	}
 }
 
@@ -163,11 +164,11 @@ void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings& PlayerSetti
 	else
 	{
 		FPlayerSettings PlayerSettingsToSave = LoadPlayerSettings();
-		PlayerSettingsToSave.HasLoggedInHttp = PlayerSettings.HasLoggedInHttp;
-		PlayerSettingsToSave.Username = PlayerSettings.Username;
-		PlayerSettingsToSave.LoginCookie = PlayerSettings.LoginCookie;
+		PlayerSettingsToSave.User.HasLoggedInHttp = PlayerSettings.User.HasLoggedInHttp;
+		PlayerSettingsToSave.User.Username = PlayerSettings.User.Username;
+		PlayerSettingsToSave.User.LoginCookie = PlayerSettings.User.LoginCookie;
 		SavePlayerSettings(PlayerSettingsToSave);
-		LoginInfo.Username = PlayerSettings.Username;
+		LoginInfo.Username = PlayerSettings.User.Username;
 		LoginUserBrowser(LoginInfo);
 	}
 	LoginInfo = FLoginPayload();
@@ -223,7 +224,7 @@ void UScoreBrowserWidget::OnAccessTokenResponse(const FString& AccessToken)
 {
 	if (!AccessToken.IsEmpty())
 	{
-		BrowserWidget->LoadProfileURL(ISaveLoadInterface::LoadPlayerSettings().Username);
+		BrowserWidget->LoadProfileURL(ISaveLoadInterface::LoadPlayerSettings().User.Username);
 	}
 	else
 	{

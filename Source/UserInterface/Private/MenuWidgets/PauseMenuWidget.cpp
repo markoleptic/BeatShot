@@ -27,7 +27,7 @@ void UPauseMenuWidget::NativeConstruct()
 	PauseMenuWidgets.Add(QuitButton, PauseScreen);
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
-	SettingsMenuWidget->AASettingsWidget->OnRestartButtonClicked.BindDynamic(this, &UPauseMenuWidget::OnRestartCurrentModeClicked);
+	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "OnRestartCurrentModeClicked");
 	FadeInWidget();
 }
 

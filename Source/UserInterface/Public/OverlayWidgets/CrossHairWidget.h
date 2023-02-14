@@ -18,7 +18,7 @@ class USERINTERFACE_API UCrossHairWidget : public UUserWidget, public ISaveLoadI
 
 public:
 
-	void InitializeCrossHair(const FPlayerSettings& PlayerSettings);
+	void InitializeCrossHair(const FPlayerSettings_CrossHair& CrossHairSettings);
 
 protected:
 

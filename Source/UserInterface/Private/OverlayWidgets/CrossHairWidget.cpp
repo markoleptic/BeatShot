@@ -8,20 +8,20 @@
 #include "Components/OverlaySlot.h"
 #include "Components/ScaleBox.h"
 
-void UCrossHairWidget::InitializeCrossHair(const FPlayerSettings& PlayerSettings)
+void UCrossHairWidget::InitializeCrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
 {
-	SetLineWidth(PlayerSettings.LineWidth);
-	SetLineLength(PlayerSettings.LineLength);
-	SetOutlineWidth(PlayerSettings.OutlineWidth);
-	SetOutlineOpacity(PlayerSettings.OutlineOpacity);
-	SetImageColor(PlayerSettings.CrossHairColor);
-	SetInnerOffset(PlayerSettings.InnerOffset);
+	SetLineWidth(CrossHairSettings.LineWidth);
+	SetLineLength(CrossHairSettings.LineLength);
+	SetOutlineWidth(CrossHairSettings.OutlineWidth);
+	SetOutlineOpacity(CrossHairSettings.OutlineOpacity);
+	SetImageColor(CrossHairSettings.CrossHairColor);
+	SetInnerOffset(CrossHairSettings.InnerOffset);
 }
 
 void UCrossHairWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	InitializeCrossHair(LoadPlayerSettings());
+	InitializeCrossHair(LoadPlayerSettings().CrossHair);
 }
 
 void UCrossHairWidget::SetLineWidth(const int32 NewWidthValue)
@@ -86,5 +86,5 @@ void UCrossHairWidget::SetInnerOffset(const int32 NewOffsetValue)
 
 void UCrossHairWidget::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)
 {
-	InitializeCrossHair(PlayerSettings);
+	InitializeCrossHair(PlayerSettings.CrossHair);
 }

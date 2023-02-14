@@ -27,44 +27,54 @@ class BEATSHOT_API ADefaultPlayerController : public APlayerController, public I
 	virtual void BeginPlay() override;
 
 public:
+	/** Sets the enabled state of the pawn */
 	void SetPlayerEnabledState(const bool bPlayerEnabled);
+	
 	UFUNCTION(BlueprintCallable)
 	void ShowMainMenu();
 	UFUNCTION(BlueprintCallable)
 	void HideMainMenu();
+	
 	UFUNCTION(BlueprintCallable)
 	void ShowPauseMenu();
 	UFUNCTION(BlueprintCallable)
 	void HidePauseMenu();
+	
 	void ShowCrossHair();
 	void HideCrossHair();
+	
 	void ShowPlayerHUD();
 	void HidePlayerHUD();
+	
 	void ShowCountdown();
 	void HideCountdown();
+	
 	void ShowPostGameMenu();
 	void HidePostGameMenu();
+	
 	void ShowFPSCounter();
 	void HideFPSCounter();
+	
 	void FadeScreenToBlack();
 	void FadeScreenFromBlack();
-	bool IsPlayerHUDActive() const;
+	
+	UFUNCTION()
+	void OnPostScoresResponseReceived(const ELoginState& LoginState);
+	
 	UFUNCTION(BlueprintCallable)
-	bool IsPostGameMenuActive() const;
+	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
+	
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void HandlePause();
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
+
+	/** Whether or not the countdown widget is active, called by the gun */
+	UPROPERTY()
 	bool CountdownActive;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-	UPlayerHUD* PlayerHUD;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Countdown")
-	UCountdownWidget* Countdown;
 
+	/** Delegate that executes when the ScreenFadeWidget completes its animation*/
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
-	
-	bool IsCrossHairActive() const { if(CrossHair) {return true;} return false; };
 
-private:
+protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -81,15 +91,25 @@ private:
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
+
+private:
+	UFUNCTION()
+	void OnFadeScreenFromBlackFinish();
+	UFUNCTION()
+	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
 	
-	UPROPERTY()
-	UPostGameMenuWidget* PostGameMenuWidget;
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
 	UPROPERTY()
 	UCrossHairWidget* CrossHair;
 	UPROPERTY()
+	UPlayerHUD* PlayerHUD;
+	UPROPERTY()
 	UPauseMenuWidget* PauseMenu;
+	UPROPERTY()
+	UCountdownWidget* Countdown;
+	UPROPERTY()
+	UPostGameMenuWidget* PostGameMenuWidget;
 	UPROPERTY()
 	UFPSCounterWidget* FPSCounter;
 	UPROPERTY()
@@ -97,17 +117,6 @@ private:
 
 	bool PlayerHUDActive;
 	bool PostGameMenuActive;
-	
 	const int32 ZOrderFadeScreen = 20;
 	const int32 ZOrderFPSCounter = 19;
-	
-	UFUNCTION()
-	void OnFadeScreenFromBlackFinish();
-	UFUNCTION()
-	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
-
-public:
-	
-	UFUNCTION()
-	void OnPostScoresResponseReceived(const ELoginState& LoginState);
 };

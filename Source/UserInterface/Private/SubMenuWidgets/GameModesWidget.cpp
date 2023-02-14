@@ -1180,6 +1180,7 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 			GameModeActorStruct.AudioFormat = AudioSelectStruct.AudioFormat;
 			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
 			OnGameModeStateChanged.Broadcast(GameModeTransitionState);
+			AudioSelectWidget->FadeOut();
 		});
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();

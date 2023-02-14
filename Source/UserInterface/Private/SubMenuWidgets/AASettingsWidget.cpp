@@ -20,11 +20,13 @@ void UAASettingsWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ResetAASettingsButton->OnClicked.AddDynamic(this, &UAASettingsWidget::ResetAASettings);
-	SaveAASettingsButton->OnClicked.AddDynamic(this, &UAASettingsWidget::SortAndCheckOverlap);
+	ResetButton_AASettings->OnClicked.AddDynamic(this, &UAASettingsWidget::ResetAASettings);
+	SaveButton_AASettings->OnClicked.AddDynamic(this, &UAASettingsWidget::SortAndCheckOverlap);
 	SaveAndRestartButton->OnClicked.AddDynamic(this, &UAASettingsWidget::SortAndCheckOverlap);
 	NumBandChannels->OnSelectionChanged.AddDynamic(this, &UAASettingsWidget::OnNumBandChannelsSelectionChanged);
 
+	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
+	
 	AASettings = ISaveLoadInterface::LoadAASettings();
 	NewAASettings = AASettings;
 	const FAASettingsStruct DefaultAASettings = FAASettingsStruct();
@@ -65,7 +67,7 @@ void UAASettingsWidget::NativeConstruct()
 }
 
 void UAASettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue,
-	const bool bIsMinValue)
+                                                const bool bIsMinValue)
 {
 	if (bIsMinValue)
 	{
@@ -152,7 +154,10 @@ void UAASettingsWidget::PopulateAASettings()
 void UAASettingsWidget::SaveAASettingsToSlot()
 {
 	SaveAASettings(NewAASettings);
-	OnAASettingsChange.Broadcast(NewAASettings);
+	if (!OnSettingsSaved_AudioAnalyzer.ExecuteIfBound())
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnSettingsSaved_AudioAnalyzer not bound."));
+	}
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
@@ -216,8 +221,9 @@ void UAASettingsWidget::SortAndCheckOverlap()
 		LastEndThreshold = NewAASettings.BandLimits[i].Y;
 	}
 	SaveAASettingsToSlot();
-	if (!OnRestartButtonClicked.ExecuteIfBound()) {
-		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound. (But shouldn't be if in main menu)"));
+	if (!OnRestartButtonClicked.ExecuteIfBound())
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
 	}
 }
 

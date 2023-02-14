@@ -44,10 +44,7 @@ void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
 
-	PlayerSettings = LoadPlayerSettings();
-
-	UE_LOG(LogTemp, Display, TEXT("PeakColor: %s"), *PlayerSettings.PeakTargetColor.ToString());
-	UE_LOG(LogTemp, Display, TEXT("FadeColor: %s"), *PlayerSettings.FadeTargetColor.ToString());
+	PlayerSettings = LoadPlayerSettings().Game;
 
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	Material = BaseMesh->GetMaterial(0);
@@ -70,27 +67,27 @@ void ASphereTarget::BeginPlay()
 	const float PeakToFadeMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
 	
 	/* White to Peak Target Color */
-	FOnTimelineFloat OnWhiteToPeak;
-	OnWhiteToPeak.BindUFunction(this, FName("WhiteToPeak"));
-	WhiteToPeakTimeline.AddInterpFloat(WhiteToPeakCurve, OnWhiteToPeak);
+	FOnTimelineFloat OnStartToPeak;
+	OnStartToPeak.BindUFunction(this, FName("StartToPeak"));
+	StartToPeakTimeline.AddInterpFloat(StartToPeakCurve, OnStartToPeak);
 
-	/* Play PeakToFade when WhiteToPeak is finished */
+	/* Play PeakToEnd when StartToPeak is finished */
 	FOnTimelineEvent OnWhiteToPeakFinished;
-	OnWhiteToPeakFinished.BindUFunction(this, FName("PlayPeakToFadeTimeline"));
-	WhiteToPeakTimeline.SetTimelineFinishedFunc(OnWhiteToPeakFinished);
+	OnWhiteToPeakFinished.BindUFunction(this, FName("PlayPeakToEndTimeline"));
+	StartToPeakTimeline.SetTimelineFinishedFunc(OnWhiteToPeakFinished);
 	
 	/* Peak Color to Fade Color */
 	FOnTimelineFloat OnPeakToFade;
-	OnPeakToFade.BindUFunction(this, FName("PeakToFade"));
-	PeakToFadeTimeline.AddInterpFloat(PeakToFadeCurve, OnPeakToFade);
+	OnPeakToFade.BindUFunction(this, FName("PeakToEnd"));
+	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
 	/* Fade the target from transparent to BeatGridInactiveColor */
 	FOnTimelineFloat OnFadeAndReappear;
 	OnFadeAndReappear.BindUFunction(this, FName("FadeAndReappear"));
 	FadeAndReappearTimeline.AddInterpFloat(FadeAndReappearCurve, OnFadeAndReappear);
 
-	WhiteToPeakTimeline.SetPlayRate(WhiteToPeakMultiplier);
-	PeakToFadeTimeline.SetPlayRate(PeakToFadeMultiplier);
+	StartToPeakTimeline.SetPlayRate(WhiteToPeakMultiplier);
+	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
 	FadeAndReappearTimeline.SetPlayRate(WhiteToPeakMultiplier);
 
 	if (GameModeActorStruct.IsBeatGridMode)
@@ -101,20 +98,20 @@ void ASphereTarget::BeginPlay()
 		SetColorToBeatGridColor();
 		FOnTimelineEvent OnPeakToFadeFinished;
 		OnPeakToFadeFinished.BindUFunction(this, FName("SetColorToBeatGridColor"));
-		PeakToFadeTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
+		PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
 	}
 	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
-		SetSphereColor(PlayerSettings.FadeTargetColor);
-		SetOutlineColor(PlayerSettings.FadeTargetColor);
+		SetSphereColor(PlayerSettings.EndTargetColor);
+		SetOutlineColor(PlayerSettings.EndTargetColor);
 		HealthComp->ShouldUpdateTotalPossibleDamage = true;
 	}
 	else
 	{
 		SetLifeSpan(GameModeActorStruct.TargetMaxLifeSpan);
-		PlayWhiteToPeakTimeline();
+		PlayStartToPeakTimeline();
 		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GameModeActorStruct.TargetMaxLifeSpan, false);
 	}
 }
@@ -122,8 +119,8 @@ void ASphereTarget::BeginPlay()
 void ASphereTarget::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	WhiteToPeakTimeline.TickTimeline(DeltaSeconds);
-	PeakToFadeTimeline.TickTimeline(DeltaSeconds);
+	StartToPeakTimeline.TickTimeline(DeltaSeconds);
+	PeakToEndTimeline.TickTimeline(DeltaSeconds);
 	FadeAndReappearTimeline.TickTimeline(DeltaSeconds);
 }
 
@@ -131,44 +128,44 @@ void ASphereTarget::StartBeatGridTimer(const float Lifespan)
 {
 	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
 	SetCanBeDamaged(true);
-	PlayWhiteToPeakTimeline();
+	PlayStartToPeakTimeline();
 }
 
-void ASphereTarget::PlayWhiteToPeakTimeline()
+void ASphereTarget::PlayStartToPeakTimeline()
 {
 	if (FadeAndReappearTimeline.IsPlaying())
 	{
 		FadeAndReappearTimeline.Stop();
 	}
-	if (PeakToFadeTimeline.IsPlaying())
+	if (PeakToEndTimeline.IsPlaying())
 	{
-		PeakToFadeTimeline.Stop();
+		PeakToEndTimeline.Stop();
 	}
-	WhiteToPeakTimeline.PlayFromStart();
+	StartToPeakTimeline.PlayFromStart();
 }
 
-void ASphereTarget::PlayPeakToFadeTimeline()
+void ASphereTarget::PlayPeakToEndTimeline()
 {
-	if (WhiteToPeakTimeline.IsPlaying())
+	if (StartToPeakTimeline.IsPlaying())
 	{
-		WhiteToPeakTimeline.Stop();
+		StartToPeakTimeline.Stop();
 	}
 	if (FadeAndReappearTimeline.IsPlaying())
 	{
 		FadeAndReappearTimeline.Stop();
 	}
-	PeakToFadeTimeline.PlayFromStart();
+	PeakToEndTimeline.PlayFromStart();
 }
 
 void ASphereTarget::PlayFadeAndReappearTimeline()
 {
-	if (WhiteToPeakTimeline.IsPlaying())
+	if (StartToPeakTimeline.IsPlaying())
 	{
-		WhiteToPeakTimeline.Stop();
+		StartToPeakTimeline.Stop();
 	}
-	if (PeakToFadeTimeline.IsPlaying())
+	if (PeakToEndTimeline.IsPlaying())
 	{
-		PeakToFadeTimeline.Stop();
+		PeakToEndTimeline.Stop();
 	}
 	FadeAndReappearTimeline.PlayFromStart();
 }
@@ -179,9 +176,9 @@ void ASphereTarget::SetColorToBeatGridColor()
 	SetOutlineColor(PlayerSettings.BeatGridInactiveTargetColor);
 }
 
-void ASphereTarget::WhiteToPeak(const float Alpha)
+void ASphereTarget::StartToPeak(const float Alpha)
 {
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(FLinearColor::White, PlayerSettings.PeakTargetColor, Alpha);
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor, Alpha);
 	SetSphereColor(Color);
 	if (!PlayerSettings.bUseSeparateOutlineColor)
 	{
@@ -189,9 +186,9 @@ void ASphereTarget::WhiteToPeak(const float Alpha)
 	}
 }
 
-void ASphereTarget::PeakToFade(const float Alpha)
+void ASphereTarget::PeakToEnd(const float Alpha)
 {
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.FadeTargetColor, Alpha);
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor, Alpha);
 	SetSphereColor(Color);
 	if (!PlayerSettings.bUseSeparateOutlineColor)
 	{
@@ -248,7 +245,7 @@ void ASphereTarget::HandleDestruction()
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		SetCanBeDamaged(false);
-		PeakToFadeTimeline.Stop();
+		PeakToEndTimeline.Stop();
 		PlayFadeAndReappearTimeline();
 	}
 	else

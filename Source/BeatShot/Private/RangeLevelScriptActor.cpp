@@ -48,7 +48,7 @@ void ARangeLevelScriptActor::BeginPlay()
 			GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
 	InitialLeftWindowCoverLoc = LeftWindowCover->GetStaticMeshComponent()->GetRelativeLocation();
 	InitialRightWindowCoverLoc = RightWindowCover->GetStaticMeshComponent()->GetRelativeLocation();
-	if (LoadPlayerSettings().bNightModeUnlocked && LoadPlayerSettings().bNightModeSelected)
+	if (LoadPlayerSettings().User.bNightModeUnlocked && LoadPlayerSettings().Game.bNightModeSelected)
 	{
 		SetTimeOfDayToNight();
 	}
@@ -73,9 +73,9 @@ void ARangeLevelScriptActor::OnTargetDestroyed(const float TimeAlive, const int3
 	}
 	if (NewStreak > StreakThreshold)
 	{
-		if (FPlayerSettings Settings = LoadPlayerSettings(); !Settings.bNightModeUnlocked)
+		if (FPlayerSettings Settings = LoadPlayerSettings(); !Settings.User.bNightModeUnlocked)
 		{
-			Settings.bNightModeUnlocked = true;
+			Settings.User.bNightModeUnlocked = true;
 			SavePlayerSettings(Settings);
 			Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.
 				Broadcast(Settings);
@@ -178,11 +178,11 @@ void ARangeLevelScriptActor::TransitionSkylightIntensity(float Alpha)
 
 void ARangeLevelScriptActor::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
 {
-	if (!PlayerSettings.bNightModeUnlocked)
+	if (!PlayerSettings.User.bNightModeUnlocked)
 	{
 		return;
 	}
-	if (PlayerSettings.bNightModeSelected)
+	if (PlayerSettings.Game.bNightModeSelected)
 	{
 		if (TimeOfDay == ETimeOfDay::Day)
 		{

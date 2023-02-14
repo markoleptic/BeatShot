@@ -20,12 +20,11 @@
 #include "OverlayWidgets/ScreenFadeWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
-#include "SubMenuWidgets/AASettingsWidget.h"
 
 void ADefaultPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	if (LoadPlayerSettings().bShowFPSCounter)
+	if (LoadPlayerSettings().VideoAndSound.bShowFPSCounter)
 	{
 		ShowFPSCounter();
 	}
@@ -54,7 +53,7 @@ void ADefaultPlayerController::ShowMainMenu()
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUFunction(Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
@@ -75,24 +74,24 @@ void ADefaultPlayerController::ShowPauseMenu()
 		HandlePause();
 		HidePauseMenu();
 	});
-	PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChanged);
+	PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChanged);
 	if (ADefaultCharacter* DefaultCharacter = Cast<ADefaultCharacter>(GetPawn()))
 	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(DefaultCharacter, &ADefaultCharacter::OnUserSettingsChange);
+		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(DefaultCharacter, &ADefaultCharacter::OnUserSettingsChange);
 	}
 	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
-		PauseMenu->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
+		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
+		PauseMenu->SettingsMenuWidget->OnAASettingsChanged.AddUniqueDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
 	}
 	if (CrossHair)
 	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
+		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
 	}
 	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(
 		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
 	PauseMenu->AddToViewport();
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
@@ -102,7 +101,7 @@ void ADefaultPlayerController::HidePauseMenu()
 	{
 		PauseMenu->RemoveFromViewport();
 		PauseMenu = nullptr;
-		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitGame);
+		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
 		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	}
 }
@@ -166,7 +165,7 @@ void ADefaultPlayerController::ShowCountdown()
 	Countdown->StartAAManagerPlayback.BindUFunction(GameMode, "StartAAManagerPlayback");
 	Countdown->AddToViewport();
 	CountdownActive = true;
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitGame);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
@@ -183,7 +182,7 @@ void ADefaultPlayerController::HideCountdown()
 void ADefaultPlayerController::ShowPostGameMenu()
 {
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChanged);
+	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(this, &ADefaultPlayerController::OnPlayerSettingsChanged);
 	if (UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
 		PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUFunction(GI, "HandleGameModeTransition");
@@ -191,24 +190,23 @@ void ADefaultPlayerController::ShowPostGameMenu()
 	}
 	if (Cast<ADefaultCharacter>(GetPawn()))
 	{
-		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(Cast<ADefaultCharacter>(GetPawn()), &ADefaultCharacter::OnUserSettingsChange);
+		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(Cast<ADefaultCharacter>(GetPawn()), &ADefaultCharacter::OnUserSettingsChange);
 	}
 	if (CrossHair)
 	{
-		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
+		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
 	}
 	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		
-		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
-		PostGameMenuWidget->SettingsMenuWidget->AASettingsWidget->OnAASettingsChange.AddDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
+		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(GameMode, &ADefaultGameMode::RefreshPlayerSettings);
+		PostGameMenuWidget->SettingsMenuWidget->OnAASettingsChanged.AddUniqueDynamic(GameMode, &ADefaultGameMode::RefreshAASettings);
 	}
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
 	SetInputMode(FInputModeUIOnly());
 	SetShowMouseCursor(true);
 	SetPlayerEnabledState(false);
-	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().FrameRateLimitMenu);
+	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
@@ -219,6 +217,13 @@ void ADefaultPlayerController::OnPostScoresResponseReceived(const ELoginState& L
 		return;
 	}
 	PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(LoginState);
+	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		if (GameMode->OnPostScoresResponse.IsBoundToObject(this))
+		{
+			GameMode->OnPostScoresResponse.RemoveAll(this);
+		}
+	}
 }
 
 void ADefaultPlayerController::HidePostGameMenu()
@@ -290,20 +295,10 @@ void ADefaultPlayerController::OnFadeScreenFromBlackFinish()
 	}
 }
 
-bool ADefaultPlayerController::IsPlayerHUDActive() const
-{
-	return PlayerHUDActive;
-}
-
-bool ADefaultPlayerController::IsPostGameMenuActive() const
-{
-	return PostGameMenuActive;
-}
-
 void ADefaultPlayerController::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
 {
 	UE_LOG(LogTemp, Display, TEXT("OnPlayerSettingsChanged called"));
-	if (PlayerSettings.bShowFPSCounter)
+	if (PlayerSettings.VideoAndSound.bShowFPSCounter)
 	{
 		if (!FPSCounter)
 		{

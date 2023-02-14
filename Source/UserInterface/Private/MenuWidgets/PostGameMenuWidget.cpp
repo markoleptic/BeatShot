@@ -27,7 +27,7 @@ void UPostGameMenuWidget::NativeConstruct()
 	QuitButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnQuitButtonClicked);
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
-	SettingsMenuWidget->AASettingsWidget->OnRestartButtonClicked.BindDynamic(this, &UPostGameMenuWidget::Restart);
+	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "Restart");
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);

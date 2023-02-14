@@ -81,7 +81,7 @@ void ULoginWidget::ShowRegisterScreen()
 
 void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
-	if (LoadPlayerSettings().HasLoggedInHttp)
+	if (LoadPlayerSettings().User.HasLoggedInHttp)
 	{
 		NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
 		NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);

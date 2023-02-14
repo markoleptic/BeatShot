@@ -26,9 +26,6 @@ void ADefaultGameMode::BeginPlay()
 	InitializeGameMode();
 	OnPostScoresResponse.AddUFunction(this, "OnPostScoresResponseReceived");
 	OnAccessTokenResponse.BindUFunction(this, "OnAccessTokenResponseReceived");
-	OnPostScoresResponse.AddUFunction(
-		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)),
-		"OnPostScoresResponseReceived");
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
 		this, &ADefaultGameMode::RefreshPlayerSettings);
 }
@@ -157,8 +154,6 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 		TargetSpawner = nullptr;
 	}
 
-	HandleScoreSaving(ShouldSavePlayerScores);
-
 	/** Unbinding delegates */
 	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
 			UGameplayStatics::GetPlayerController(GetWorld(), 0)); Cast<ADefaultCharacter>(PlayerController->GetPawn())
@@ -172,7 +167,7 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 		VisualizerManager->DestroyVisualizers();
 		VisualizerManager->Destroy();
 	}
-	
+
 	if (AATracker)
 	{
 		AATracker->UnloadCapturerAudio();
@@ -187,16 +182,20 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	}
 
 	ADefaultPlayerController* Controller = Cast<ADefaultPlayerController>(
-	UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	//Hide HUD and countdown
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
 	Controller->HidePlayerHUD();
 	Controller->HideCountdown();
 	Controller->HideCrossHair();
-	
+
 	if (ShowPostGameMenu)
 	{
 		Controller->ShowPostGameMenu();
+		OnPostScoresResponse.AddUFunction(
+			Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)),
+			"OnPostScoresResponseReceived");
 	}
+	HandleScoreSaving(ShouldSavePlayerScores);
 }
 
 void ADefaultGameMode::SpawnNewTarget(const bool bNewTargetState)
@@ -254,13 +253,15 @@ void ADefaultGameMode::StartAAManagerPlayback()
 			if (GameModeActorStruct.SongPath.IsEmpty())
 			{
 				AATracker->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
-				SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AATracker);
+				SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
+				                   LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
 			}
 			/* BeatTrack or game mode with no delay */
 			else
 			{
 				AATracker->Play();
-				SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AATracker);
+				SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
+				                   LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
 			}
 		}
 		else
@@ -373,7 +374,7 @@ void ADefaultGameMode::InitializeAudioManagers()
 	                                     AASettings.NumBandChannels);
 	//AATracker->InitPitchTrackingConfig(EAA_ChannelSelectionMode::All_in_one, -1, 0.02, 0.19);
 	SetAAManagerVolume(0, 0, AATracker);
-	
+
 	if (GameModeActorStruct.PlayerDelay < 0.01f)
 	{
 		UsingAAPlayer = 0;
@@ -434,7 +435,8 @@ void ADefaultGameMode::PlayAAPlayer()
 	case EAudioFormat::None: break;
 	}
 	UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer"));
-	SetAAManagerVolume(LoadPlayerSettings().GlobalVolume, LoadPlayerSettings().MusicVolume, AAPlayer);
+	SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume, LoadPlayerSettings().VideoAndSound.MusicVolume,
+	                   AAPlayer);
 }
 
 void ADefaultGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume,
@@ -500,9 +502,10 @@ void ADefaultGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASet
 
 void ADefaultGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings)
 {
-	SetAAManagerVolume(RefreshedPlayerSettings.GlobalVolume, RefreshedPlayerSettings.MusicVolume);
-	bShowStreakCombatText = RefreshedPlayerSettings.bShowStreakCombatText;
-	CombatTextFrequency = RefreshedPlayerSettings.CombatTextFrequency;
+	SetAAManagerVolume(RefreshedPlayerSettings.VideoAndSound.GlobalVolume,
+	                   RefreshedPlayerSettings.VideoAndSound.MusicVolume);
+	bShowStreakCombatText = RefreshedPlayerSettings.Game.bShowStreakCombatText;
+	CombatTextFrequency = RefreshedPlayerSettings.Game.CombatTextFrequency;
 	if (VisualizerManager)
 	{
 		VisualizerManager->UpdateVisualizerStates(RefreshedPlayerSettings);
@@ -610,12 +613,12 @@ FPlayerScore ADefaultGameMode::GetCompletedPlayerScores()
 
 void ADefaultGameMode::SaveScoresToDatabase()
 {
-	if (!LoadPlayerSettings().HasLoggedInHttp)
+	if (!LoadPlayerSettings().User.HasLoggedInHttp)
 	{
 		OnPostScoresResponse.Broadcast(ELoginState::NewUser);
 		return;
 	}
-	RequestAccessToken(LoadPlayerSettings().LoginCookie, OnAccessTokenResponse);
+	RequestAccessToken(LoadPlayerSettings().User.LoginCookie, OnAccessTokenResponse);
 }
 
 void ADefaultGameMode::OnAccessTokenResponseReceived(const FString AccessToken)
@@ -634,7 +637,7 @@ void ADefaultGameMode::OnAccessTokenResponseReceived(const FString AccessToken)
 			ScoresNotSavedToDB.Emplace(PlayerScoreObj);
 		}
 	}
-	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().Username, AccessToken, OnPostScoresResponse);
+	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().User.Username, AccessToken, OnPostScoresResponse);
 }
 
 void ADefaultGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
