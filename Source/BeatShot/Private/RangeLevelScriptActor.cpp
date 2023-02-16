@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "RangeLevelScriptActor.h"
@@ -43,6 +43,8 @@ void ARangeLevelScriptActor::BeginPlay()
 
 	SkySphere = SkySphere_Soft.Get();
 	Moon = Moon_Soft.Get();
+	Daylight = Daylight_Soft.Get();
+	Skylight = Skylight_Soft.Get();
 	SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
 		Cast<UStaticMeshComponent>(SkySphere->
 			GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -24,10 +24,6 @@ class UTextBlock;
 class USavedTextWidget;
 class UProgressBar;
 class UPopupMessageWidget;
-
-/**
- * 
- */
 
 UCLASS()
 class USERINTERFACE_API UAASettingsWidget : public UUserWidget, public ISaveLoadInterface

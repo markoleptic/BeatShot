@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -7,9 +7,6 @@
 #include "Components/Image.h"
 #include "ScreenFadeWidget.generated.h"
 
-/**
- * 
- */
 DECLARE_MULTICAST_DELEGATE(FOnFadeFromBlackFinish);
 
 DECLARE_MULTICAST_DELEGATE(FOnFadeToBlackFinish);

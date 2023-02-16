@@ -256,7 +256,7 @@ SaveButtonText,Save
 Sensitivity_CSGO,New Sensitivity (CS:GO):
 Sensitivity_Current,Current Sensitivity:
 Sensitivity_HintText,Enter here
-Sensitivity_Info,"Beatshot uses Valorant sensitivity by default, but you can also enter your CSGO sensitivity. If you don't have either of those values, you can use an online converter to get your Valorant sensitivity."
+Sensitivity_Info,"BeatShot uses Valorant sensitivity by default, but you can also enter your CSGO sensitivity. If you don't have either of those values, you can use an online converter to get your Valorant sensitivity."
 Sensitivity_Valorant,New Sensitivity (Valorant/Beatshot):
 SettingsSavedText,Settings Saved
 Sound_Game,In Game Sound
@@ -313,3 +313,4 @@ SM_Save_VideoAndSound,Save Video and Sound Settings
 SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
 SM_Save_Sensitivity,Save Sensitivity Settings
 SM_Save_CrossHair,Save Crosshair Settings
+GameTitle,BeatShot

@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -12,7 +12,6 @@ class ASkyLight;
 class AStaticMeshActor;
 class AVolumetricCloud;
 class ADirectionalLight;
-class ARectLight;
 class UCurveFloat;
 class AMoon;
 class UMaterialInstanceDynamic;
@@ -56,6 +55,14 @@ protected:
 	/** Soft Reference to Moon in Range level */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<AMoon> Moon_Soft;
+
+	/** Soft Reference to Daylight in Range level */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftObjectPtr<ADirectionalLight> Daylight_Soft;
+
+	/** Soft Reference to Skylight in Range level */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSoftObjectPtr<ASkyLight> Skylight_Soft;
 	
 	/** Hard Reference to SkySphere in Range level */
 	UPROPERTY()
@@ -74,24 +81,16 @@ protected:
 	AStaticMeshActor* RightWindowCover;
 	
 	/** Reference to SkySphere dynamic material instance */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	UMaterialInstanceDynamic* SkySphereMaterial;
 
 	/** Reference to Daylight directional light in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	ADirectionalLight* Daylight;
 
-	/** Reference to Moonlight directional light in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ADirectionalLight* Moonlight;
-
 	/** Reference to Skylight directional light in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY()
 	ASkyLight* Skylight;
-	
-	/** Reference to rectangular light near the TargetSpawner */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ARectLight* TargetSpawnerLight;
 
 	/** The threshold to activate night mode if not yet unlocked */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

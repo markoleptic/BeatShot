@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "VisualizerManager.h"
@@ -7,20 +7,17 @@
 #include "BeamVisualizer.h"
 #include "Kismet/KismetMathLibrary.h"
 
-// Sets default values
 AVisualizerManager::AVisualizerManager()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-// Called when the game starts or when spawned
 void AVisualizerManager::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
 void AVisualizerManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

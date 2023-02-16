@@ -1,10 +1,12 @@
-﻿#include "HttpRequestInterface.h"
+﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+
+
+#include "HttpRequestInterface.h"
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
 #include "SaveGamePlayerScore.h"
 #include "SaveGamePlayerSettings.h"
 #include "Interfaces/IHttpResponse.h"
-
 
 bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings PlayerSettings)
 {

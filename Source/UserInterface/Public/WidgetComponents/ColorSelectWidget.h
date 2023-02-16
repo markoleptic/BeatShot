@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -6,19 +6,16 @@
 #include "Blueprint/UserWidget.h"
 #include "ColorSelectWidget.generated.h"
 
-class UTextBlock;
-class UBorder;
 DECLARE_DELEGATE_OneParam(FOnColorChanged, const FLinearColor& NewColor);
 
+class UTextBlock;
+class UBorder;
 class USavedTextWidget;
 class USlider;
 class UImage;
 class UEditableTextBox;
 class UButton;
 
-/**
- * 
- */
 UCLASS()
 class USERINTERFACE_API UColorSelectWidget : public UUserWidget
 {

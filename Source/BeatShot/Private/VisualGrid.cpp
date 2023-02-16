@@ -1,11 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
 #include "VisualGrid.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 
-// Sets default values
 AVisualGrid::AVisualGrid()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -14,13 +13,11 @@ AVisualGrid::AVisualGrid()
 	RootComponent = InstancedMesh;
 }
 
-// Called when the game starts or when spawned
 void AVisualGrid::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-// Called every frame
 void AVisualGrid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

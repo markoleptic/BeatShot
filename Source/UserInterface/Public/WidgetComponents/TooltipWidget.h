@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -7,9 +7,7 @@
 #include "TooltipWidget.generated.h"
 
 class UTextBlock;
-/**
- * 
- */
+
 UCLASS()
 class USERINTERFACE_API UTooltipWidget : public UUserWidget
 {

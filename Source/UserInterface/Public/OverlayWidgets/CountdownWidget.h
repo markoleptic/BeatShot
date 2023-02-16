@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -13,9 +13,7 @@ DECLARE_DELEGATE(FStartAAManagerPlayback);
 class UImage;
 class UMaterialInstanceDynamic;
 class UTextBlock;
-/**
- * 
- */
+
 UCLASS()
 class USERINTERFACE_API UCountdownWidget : public UUserWidget
 {

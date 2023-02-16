@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
@@ -7,10 +7,6 @@
 #include "Engine/StaticMeshActor.h"
 #include "WallMenu.generated.h"
 
-
-/**
- * 
- */
 UCLASS()
 class BEATSHOT_API AWallMenu : public AStaticMeshActor, public ISaveLoadInterface
 {

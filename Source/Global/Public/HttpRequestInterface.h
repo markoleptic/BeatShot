@@ -1,4 +1,6 @@
-﻿#pragma once
+﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+
+#pragma once
 
 #include "SaveGamePlayerScore.h"
 #include "SaveGamePlayerSettings.h"
@@ -7,7 +9,7 @@
 /** Broadcast if refresh token is invalid */
 DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString AccessToken);
 
-/** Broadcast when a login response is received from Beatshot website */
+/** Broadcast when a login response is received from BeatShot website */
 DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FPlayerSettings& PlayerSettings, const FString ResponseMsg, const int32 ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */

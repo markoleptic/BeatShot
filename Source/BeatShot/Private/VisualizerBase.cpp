@@ -1,5 +1,6 @@
-﻿#include "VisualizerBase.h"
+﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
+#include "VisualizerBase.h"
 
 AVisualizerBase::AVisualizerBase()
 {

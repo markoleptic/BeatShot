@@ -1,11 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "TooltipImage.h"
 #include "Blueprint/UserWidget.h"
-#include "Delegates/DelegateCombinations.h"
 #include "ConstrainedSlider.generated.h"
 
 class UButton;
