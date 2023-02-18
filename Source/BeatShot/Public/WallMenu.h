@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/Actor.h"
 #include "SaveLoadInterface.h"
-#include "Engine/StaticMeshActor.h"
 #include "WallMenu.generated.h"
 
 UCLASS()
-class BEATSHOT_API AWallMenu : public AStaticMeshActor, public ISaveLoadInterface
+class BEATSHOT_API AWallMenu : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 

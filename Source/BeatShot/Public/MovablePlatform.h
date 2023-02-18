@@ -6,8 +6,10 @@
 #include "GameFramework/Actor.h"
 #include "MovablePlatform.generated.h"
 
+class AWallMenu;
 class UBoxComponent;
 class UWallMenuComponent;
+class UChildActorComponent;
 
 UCLASS()
 class BEATSHOT_API AMovablePlatform : public AActor
@@ -46,12 +48,18 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* ControlBox;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AWallMenu> WallMenuClass;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UWallMenuComponent* WallMenuComponent;
+	UChildActorComponent* WallMenuComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UBoxComponent* TriggerVolume;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	AWallMenu* WallMenu;
 
 	/** The height to interpolate to */
 	FVector TargetFloorHeight;

@@ -3,8 +3,8 @@
 
 #include "MovablePlatform.h"
 #include "DefaultCharacter.h"
+#include "WallMenu.h"
 #include "DefaultPlayerController.h"
-#include "WallMenuComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -26,16 +26,20 @@ AMovablePlatform::AMovablePlatform()
 	ControlBox = CreateDefaultSubobject<UStaticMeshComponent>("ControlBox");
 	ControlBox->SetupAttachment(ControlBase);
 
-	WallMenuComponent = CreateDefaultSubobject<UWallMenuComponent>("WallMenuComponent");
+	WallMenuComponent = CreateDefaultSubobject<UChildActorComponent>("WallMenuComponent");
 	WallMenuComponent->SetupAttachment(Floor);
 }
 
 void AMovablePlatform::BeginPlay()
 {
 	Super::BeginPlay();
-	ADefaultCharacter* Character = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	Character->OnInteractDelegate.BindUFunction(this, "MovePlatformUp");
-	Character->OnShiftInteractDelegate.BindUFunction(this, "MovePlatformDown");
+	if (ADefaultCharacter* Character = Cast<ADefaultCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
+	{
+		Character->OnInteractDelegate.BindUFunction(this, "MovePlatformUp");
+		Character->OnShiftInteractDelegate.BindUFunction(this, "MovePlatformDown");
+	}
+	
+	WallMenu = Cast<AWallMenu>(WallMenuComponent->GetChildActor());
 	
 	TriggerVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnTriggerVolumeBeginOverlap);
 	TriggerVolume->OnComponentEndOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnTriggerVolumeEndOverlap);
