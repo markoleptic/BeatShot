@@ -7,141 +7,20 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AccuracyMatrix.csv" beforeDir="false" afterPath="$PROJECT_DIR$/AccuracyMatrix.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BeatShotSmall.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultGame.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultGame.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultCharacter.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultPlayerController.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultPlayerController.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_WallMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_WallMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_Platform.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_PlatformControl.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_PlatformControl.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/Mappings/MC_Base.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Mappings/MC_Base.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Lighting.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Lighting.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Lighting_Auto3.umap" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/PreMergedSMs.umap" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Untitled.umap" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot.Target.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BeamVisualizer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BeamVisualizer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BeatShot.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BeatShot.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultCharacter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameInstance.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultGameMode.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultHealthComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultHealthComponent.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultPlayerController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/DefaultPlayerController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/FloatingTextActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/FloatingTextActor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Gun_AK47.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Gun_AK47.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/MainMenuGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/MainMenuGameMode.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Moon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Moon.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Projectile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Projectile.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeLevelScriptActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeLevelScriptActor.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SimpleBeamLight.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SimpleBeamLight.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/StaticCubeVisualizer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/StaticCubeVisualizer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SteamManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SteamManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/VisualGrid.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/VisualGrid.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/VisualizerBase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/VisualizerBase.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/VisualizerManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/VisualizerManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/WallMenu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/WallMenu.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BeamVisualizer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BeamVisualizer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BeatShot.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BeatShot.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultCharacter.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameInstance.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultGameMode.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultHealthComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultHealthComponent.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultPlayerController.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/DefaultPlayerController.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/FloatingTextActor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/FloatingTextActor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/MainMenuGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/MainMenuGameMode.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Moon.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Moon.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Projectile.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Projectile.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RangeLevelScriptActor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RangeLevelScriptActor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SimpleBeamLight.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SimpleBeamLight.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/StaticCubeVisualizer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/StaticCubeVisualizer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SteamManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SteamManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/VisualGrid.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/VisualGrid.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/VisualizerBase.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/VisualizerBase.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/VisualizerManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/VisualizerManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/WallMenu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/WallMenu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Global.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Global.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Private/GlobalModule.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Private/GlobalModule.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Private/HttpRequestInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Private/HttpRequestInterface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/HttpRequestInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/HttpRequestInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PauseMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PauseMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PostGameMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PostGameMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/CountdownWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/CountdownWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/CrossHairWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/CrossHairWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/FPSCounterWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/FPSCounterWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PlayerHUD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PlayerHUD.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PopupMessageWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PopupMessageWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/QuitMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/QuitMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/ScreenFadeWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/ScreenFadeWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/AASettingsWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/AASettingsWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CrossHairSettingsWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CrossHairSettingsWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/FAQWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/FAQWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameSettingsWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameSettingsWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SensitivitySettingsWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SensitivitySettingsWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/VideoAndSoundSettingsWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/VideoAndSoundSettingsWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/UserInterfaceModule.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/UserInterfaceModule.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BandChannelWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BandChannelWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BandThresholdWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BandThresholdWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ColorSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ColorSelectWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ConstrainedSlider.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ConstrainedSlider.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeButton.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeButton.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/SavedTextWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/SavedTextWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/SlideRightButton.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/SlideRightButton.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/TooltipImage.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/TooltipImage.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/TooltipWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/TooltipWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/VideoSettingButton.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/VideoSettingButton.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/WebBrowserWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/WebBrowserWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/MainMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/MainMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PauseMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PauseMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PostGameMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PostGameMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/CountdownWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/CountdownWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/CrossHairWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/CrossHairWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/FPSCounterWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/FPSCounterWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/LoginWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/LoginWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/PlayerHUD.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/PlayerHUD.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/PopupMessageWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/PopupMessageWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/QuitMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/QuitMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/ScreenFadeWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/ScreenFadeWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/AASettingsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/AASettingsWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CrossHairSettingsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CrossHairSettingsWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/FAQWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/FAQWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameSettingsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameSettingsWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/ScoreBrowserWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/ScoreBrowserWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SensitivitySettingsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SensitivitySettingsWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/VideoAndSoundSettingsWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/VideoAndSoundSettingsWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BandChannelWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BandChannelWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BandThresholdWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BandThresholdWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ColorSelectWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ColorSelectWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ConstrainedSlider.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ConstrainedSlider.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/SavedTextWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/SavedTextWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/SlideRightButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/SlideRightButton.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/TooltipImage.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/TooltipImage.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/TooltipWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/TooltipWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/VideoSettingButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/VideoSettingButton.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/WebBrowserWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/WebBrowserWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -356,6 +235,7 @@
       <workItem from="1676427350348" duration="763000" />
       <workItem from="1676576830464" duration="1153000" />
       <workItem from="1676583146527" duration="754000" />
+      <workItem from="1676675164282" duration="20839000" />
     </task>
     <servers />
   </component>

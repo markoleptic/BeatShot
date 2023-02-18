@@ -161,13 +161,22 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this,
 			                                         &ADefaultCharacter::StopFire);
 		}
+		if (InteractAction)
+		{
+			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ADefaultCharacter::OnInteractStarted);
+			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ADefaultCharacter::OnInteractCompleted);
+		}
+		if (ShiftInteractAction)
+		{
+			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Started, this, &ADefaultCharacter::OnShiftInteractStarted);
+			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Completed, this, &ADefaultCharacter::OnShiftInteractCompleted);
+		}
 	}
 }
 
 void ADefaultCharacter::Destroyed()
 {
 	Super::Destroyed();
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.RemoveDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
 }
 
 void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
@@ -250,6 +259,39 @@ void ADefaultCharacter::StopWalk()
 		UpdateMovementValues(EMovementType::Sprinting);
 	}
 	bHoldingWalk = false;
+}
+
+void ADefaultCharacter::OnInteractStarted(const FInputActionInstance& Instance)
+{
+	if (!OnInteractDelegate.ExecuteIfBound(0))
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
+	}
+}
+
+void ADefaultCharacter::OnInteractCompleted(const FInputActionInstance& Instance)
+{
+	if (!OnInteractDelegate.ExecuteIfBound(1))
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
+	}
+}
+
+void ADefaultCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance)
+{
+	UE_LOG(LogTemp, Display, TEXT("shift itneract started"));
+	if (!OnShiftInteractDelegate.ExecuteIfBound(0))
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
+	}
+}
+
+void ADefaultCharacter::OnShiftInteractCompleted(const FInputActionInstance& Instance)
+{
+	if (!OnShiftInteractDelegate.ExecuteIfBound(1))
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
+	}
 }
 
 void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType)

@@ -57,6 +57,9 @@ public:
 	
 	void FadeScreenToBlack();
 	void FadeScreenFromBlack();
+
+	void ShowInteractInfo();
+	void HideInteractInfo();
 	
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const ELoginState& LoginState);
@@ -91,6 +94,8 @@ protected:
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UUserWidget> InteractInfoWidgetClass;
 
 private:
 	UFUNCTION()
@@ -114,6 +119,8 @@ private:
 	UFPSCounterWidget* FPSCounter;
 	UPROPERTY()
 	UScreenFadeWidget* ScreenFadeWidget;
+	UPROPERTY()
+	UUserWidget* InteractInfoWidget;
 
 	bool PlayerHUDActive;
 	bool PostGameMenuActive;

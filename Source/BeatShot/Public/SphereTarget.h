@@ -12,9 +12,9 @@
 
 class UDefaultHealthComponent;
 class UCapsuleComponent;
+class UTimelineComponent;
 class UNiagaraSystem;
 class UCurveFloat;
-class UCurveLinearColor;
 
 /** Broadcasts info about the destroyed target state */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);

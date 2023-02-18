@@ -11,7 +11,6 @@
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/TimelineComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 

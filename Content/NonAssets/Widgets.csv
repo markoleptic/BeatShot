@@ -314,3 +314,5 @@ SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
 SM_Save_Sensitivity,Save Sensitivity Settings
 SM_Save_CrossHair,Save Crosshair Settings
 GameTitle,BeatShot
+Interact_MoveUp,Hold E to move platform up
+Interact_MoveDown,Hold Shift+E to move platform down

@@ -285,6 +285,24 @@ void ADefaultPlayerController::FadeScreenFromBlack()
 	ScreenFadeWidget->FadeFromBlack();
 }
 
+void ADefaultPlayerController::ShowInteractInfo()
+{
+	if (InteractInfoWidget == nullptr)
+	{
+		InteractInfoWidget = CreateWidget<UUserWidget>(this, InteractInfoWidgetClass);
+		InteractInfoWidget->AddToViewport(ZOrderFPSCounter);
+	}
+}
+
+void ADefaultPlayerController::HideInteractInfo()
+{
+	if (InteractInfoWidget)
+	{
+		InteractInfoWidget->RemoveFromViewport();
+		InteractInfoWidget = nullptr;
+	}
+}
+
 void ADefaultPlayerController::OnFadeScreenFromBlackFinish()
 {
 	if (ScreenFadeWidget)

@@ -10,7 +10,11 @@
 #include "GameFramework/Character.h"
 #include "DefaultCharacter.generated.h"
 
+DECLARE_DELEGATE_OneParam(FOnInteractDelegate, const int32);
+DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
+
 struct FInputActionValue;
+struct FInputActionInstance;
 class AGun_AK47;
 class UNiagaraSystem;
 class AProjectile;
@@ -140,6 +144,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	AGun_AK47* Gun;
 
+	FOnInteractDelegate OnInteractDelegate;
+
+	FOnShiftInteractDelegate OnShiftInteractDelegate;
+
 private:
 	/** Begin firing gun */
 	void StartFire() const;
@@ -168,6 +176,18 @@ private:
 
 	/** Change movement state from walk */
 	void StopWalk();
+
+	/** Triggered on pressing E or Shift + E */
+	void OnInteractStarted(const FInputActionInstance& Instance);
+
+	/** Triggered on pressing E or Shift + E */
+	void OnInteractCompleted(const FInputActionInstance& Instance);
+
+	/** Triggered on pressing E or Shift + E */
+	void OnShiftInteractStarted(const FInputActionInstance& Instance);
+	
+	/** Triggered on pressing E or Shift + E */
+	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
 
 	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
 	UFUNCTION()
@@ -238,6 +258,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
 	UInputAction* InteractAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
+	UInputAction* ShiftModifierAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
+	UInputAction* ShiftInteractAction;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input | Actions")
 	UInputAction* ScrollAction;
