@@ -11,6 +11,15 @@ class UBoxComponent;
 class UWallMenuComponent;
 class UChildActorComponent;
 
+UENUM(BlueprintType)
+enum class EPlatformTransitionType : uint8
+{
+	None UMETA(DisplayName, "MoveUpByInteract"),
+	MoveUpByInteract UMETA(DisplayName, "MoveUpByInteract"),
+	MoveDownByInteract UMETA(DisplayName, "MoveDownByInteract"),
+	MoveDownByStepOff UMETA(DisplayName, "MoveDownByStepOff")
+};
+
 UCLASS()
 class BEATSHOT_API AMovablePlatform : public AActor
 {
@@ -29,7 +38,7 @@ class BEATSHOT_API AMovablePlatform : public AActor
 	void MovePlatformDown(const int32 Stop);
 
 	UFUNCTION()
-	void OnFloorElevationTimelineTick(const float Alpha);
+	void InterpFloorElevation(const float DeltaSeconds);
 
 	UFUNCTION()
 	void OnTriggerVolumeBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
@@ -37,6 +46,14 @@ class BEATSHOT_API AMovablePlatform : public AActor
 
 	UFUNCTION()
 	void OnTriggerVolumeEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UFUNCTION()
+	void OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnCharacterStepOffFloor(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 protected:
@@ -56,19 +73,22 @@ protected:
 	UChildActorComponent* WallMenuComponent;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UBoxComponent* TriggerVolume;
+	UBoxComponent* ControlTriggerVolume;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* FloorTriggerVolume;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	AWallMenu* WallMenu;
 
-	/** The height to interpolate to */
-	FVector TargetFloorHeight;
+	/** The movement state for the platform */
+	EPlatformTransitionType PlatformTransitionType;
 
-	/** Whether or not the player is in collision volume and pressing an Interact key, or not */
-	bool bSafeToChangeElevation;
+	/** Whether or not the player is is overlapping the ControlTriggerVolume */
+	bool bPlayerIsOverlappingControl;
 
-	/** Whether or not the player is pressing an Interact key or not */
-	bool bAllowPlatformMovement;
+	/** Whether or not the player is overlapping the FloorTriggerVolume */
+	bool bPlayerIsOverlappingFloor;
 	
 	const FVector MaxFloorHeight = {-4000, 0, 500};
 

@@ -14,11 +14,13 @@ AMovablePlatform::AMovablePlatform()
 	PrimaryActorTick.bCanEverTick = true;
 
 	Floor = CreateDefaultSubobject<UStaticMeshComponent>("Floor");
-	Floor->SetupAttachment(TriggerVolume);
 	RootComponent = Floor;
 
-	TriggerVolume = CreateDefaultSubobject<UBoxComponent>("TriggerVolume");
-	TriggerVolume->SetupAttachment(Floor);
+	ControlTriggerVolume = CreateDefaultSubobject<UBoxComponent>("ControlTriggerVolume");
+	ControlTriggerVolume->SetupAttachment(Floor);
+
+	FloorTriggerVolume = CreateDefaultSubobject<UBoxComponent>("FloorTriggerVolume");
+	FloorTriggerVolume->SetupAttachment(Floor);
 	
 	ControlBase = CreateDefaultSubobject<UStaticMeshComponent>("ControlBase");
 	ControlBase->SetupAttachment(Floor);
@@ -28,6 +30,8 @@ AMovablePlatform::AMovablePlatform()
 
 	WallMenuComponent = CreateDefaultSubobject<UChildActorComponent>("WallMenuComponent");
 	WallMenuComponent->SetupAttachment(Floor);
+
+	PlatformTransitionType = EPlatformTransitionType::None;
 }
 
 void AMovablePlatform::BeginPlay()
@@ -41,57 +45,79 @@ void AMovablePlatform::BeginPlay()
 	
 	WallMenu = Cast<AWallMenu>(WallMenuComponent->GetChildActor());
 	
-	TriggerVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnTriggerVolumeBeginOverlap);
-	TriggerVolume->OnComponentEndOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnTriggerVolumeEndOverlap);
+	ControlTriggerVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnTriggerVolumeBeginOverlap);
+	ControlTriggerVolume->OnComponentEndOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnTriggerVolumeEndOverlap);
+	FloorTriggerVolume->OnComponentBeginOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnCharacterStepOnFloor);
+	FloorTriggerVolume->OnComponentEndOverlap.AddUniqueDynamic(this, &AMovablePlatform::OnCharacterStepOffFloor);
 }
 
 void AMovablePlatform::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (!bAllowPlatformMovement || !bSafeToChangeElevation)
+	if (PlatformTransitionType == EPlatformTransitionType::None)
 	{
 		return;
 	}
-	OnFloorElevationTimelineTick(DeltaSeconds);
+	if (!bPlayerIsOverlappingControl && bPlayerIsOverlappingFloor)
+	{
+		return;
+	}
+	InterpFloorElevation(DeltaSeconds);
 }
 
 void AMovablePlatform::MovePlatformUp(const int32 Stop)
 {
-	if (!bAllowPlatformMovement)
+	if (!bPlayerIsOverlappingControl)
 	{
 		return;
 	}
-	TargetFloorHeight = MaxFloorHeight;
 	switch (Stop)
 	{
 	case 0:
-		bSafeToChangeElevation = true;
+		PlatformTransitionType = EPlatformTransitionType::MoveUpByInteract;
 		break;
-	default:
-		bSafeToChangeElevation = false;
+	case 1:
+		PlatformTransitionType = EPlatformTransitionType::None;
+		break;
+	default: break;
 	}
 }
 
 void AMovablePlatform::MovePlatformDown(const int32 Stop)
 {
-	if (!bAllowPlatformMovement)
+	if (!bPlayerIsOverlappingControl)
 	{
 		return;
 	}
-	TargetFloorHeight = MinFloorHeight;
 	switch (Stop)
 	{
 	case 0:
-		bSafeToChangeElevation = true;
+		PlatformTransitionType = EPlatformTransitionType::MoveDownByInteract;
 		break;
-	default:
-		bSafeToChangeElevation = false;
+	case 1:
+		PlatformTransitionType = EPlatformTransitionType::None;
+		break;
+	default: break;
 	}
 }
 
-void AMovablePlatform::OnFloorElevationTimelineTick(const float Alpha)
+void AMovablePlatform::InterpFloorElevation(const float DeltaSeconds)
 {
-	const FVector Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), TargetFloorHeight, Alpha, 75);
+	FVector Location;
+	switch (PlatformTransitionType)
+	{
+	case EPlatformTransitionType::MoveUpByInteract:
+		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), MaxFloorHeight, DeltaSeconds, 75);
+		break;
+	case EPlatformTransitionType::MoveDownByInteract:
+		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), MinFloorHeight, DeltaSeconds, 75);
+		break;
+	case EPlatformTransitionType::MoveDownByStepOff:
+		Location = UKismetMathLibrary::VInterpTo_Constant(Floor->GetComponentLocation(), MinFloorHeight, DeltaSeconds, 75);
+		break;
+	case EPlatformTransitionType::None: return;
+	default: return;
+	}
 	Floor->SetWorldLocation(Location);
 }
 
@@ -101,7 +127,7 @@ void AMovablePlatform::OnTriggerVolumeBeginOverlap(UPrimitiveComponent* Overlapp
 	if (Cast<ADefaultCharacter>(OtherActor))
 	{
 		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowInteractInfo();
-		bAllowPlatformMovement = true;
+		bPlayerIsOverlappingControl = true;
 	}
 }
 
@@ -111,7 +137,28 @@ void AMovablePlatform::OnTriggerVolumeEndOverlap(UPrimitiveComponent* Overlapped
 	if (Cast<ADefaultCharacter>(OtherActor))
 	{
 		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->HideInteractInfo();
-		bAllowPlatformMovement = false;
-		bSafeToChangeElevation = false;
+		bPlayerIsOverlappingControl = false;
+		PlatformTransitionType = EPlatformTransitionType::None;
 	}
 }
+
+void AMovablePlatform::OnCharacterStepOnFloor(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (Cast<ADefaultCharacter>(OtherActor))
+	{
+		bPlayerIsOverlappingFloor = true;
+	}
+}
+
+void AMovablePlatform::OnCharacterStepOffFloor(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+	if (Cast<ADefaultCharacter>(OtherActor))
+	{
+		PlatformTransitionType = EPlatformTransitionType::MoveDownByStepOff;
+		bPlayerIsOverlappingFloor = false;
+	}
+}
+
+
