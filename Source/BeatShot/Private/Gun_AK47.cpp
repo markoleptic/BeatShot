@@ -69,10 +69,6 @@ void AGun_AK47::Tick(float DeltaTime)
 
 void AGun_AK47::Fire()
 {
-	if (!bCanFire)
-	{
-		return;
-	}
 	FHitResult Hit;
 	FRotator ShotDirectionRotation = Character->ShotDirection->GetComponentRotation();
 	FVector MuzzleLocation = MeshComp->GetSocketTransform("Muzzle").GetLocation();
@@ -119,6 +115,16 @@ void AGun_AK47::Fire()
 	ShotsFired++;
 	if (bShouldRecoil)
 	{
+		RecoilTimeline.SetPlayRate(1.f);
+		/* Resume timeline if it hasn't fully recovered */
+		if (RecoilTimeline.IsReversing())
+		{
+			RecoilTimeline.Play();
+		}
+		else
+		{
+			RecoilTimeline.PlayFromStart();
+		}
 		bShouldKickback = true;
 		KickbackAlpha = 0.f;
 	}
@@ -133,19 +139,6 @@ void AGun_AK47::StartFire()
 	if (!bCanFire || bIsFiring)
 	{
 		return;
-	}
-	if (bShouldRecoil)
-	{
-		RecoilTimeline.SetPlayRate(1.f);
-		/* Resume timeline if it hasn't fully recovered */
-		if (RecoilTimeline.IsReversing())
-		{
-			RecoilTimeline.Play();
-		}
-		else
-		{
-			RecoilTimeline.PlayFromStart();
-		}
 	}
 	bIsFiring = true;
 	if (bAutomaticFire)
@@ -173,6 +166,67 @@ void AGun_AK47::StopFire()
 	/* Reverse the timeline so that it takes time to recover to the beginning */
 	RecoilTimeline.SetPlayRate(5.454545f);
 	RecoilTimeline.Reverse();
+}
+
+void AGun_AK47::Fire_AimBot()
+{
+	FHitResult Hit;
+	FRotator ShotDirectionRotation = Character->ShotDirection->GetComponentRotation();
+	FVector MuzzleLocation = MeshComp->GetSocketTransform("Muzzle").GetLocation();
+	FRotator MuzzleRotation = MeshComp->GetSocketTransform("Muzzle").Rotator();
+	FVector StartTrace = Character->ShotDirection->GetComponentLocation();
+	FVector EndTrace = StartTrace + UKismetMathLibrary::RotateAngleAxis(
+			UKismetMathLibrary::RotateAngleAxis(Character->ShotDirection->GetForwardVector(),
+			                                    -CurrentShotRecoilRotation.Pitch,
+			                                    Character->ShotDirection->GetRightVector()),
+			CurrentShotRecoilRotation.Yaw, Character->ShotDirection->GetUpVector())
+		* FVector(TraceDistance, TraceDistance, TraceDistance);
+	/* Trace the character's pov to get location to fire projectile */
+	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit,
+	                                                 StartTrace, EndTrace, ECC_GameTraceChannel1,
+	                                                 FCollisionQueryParams::DefaultQueryParam);
+	/* Spawn the projectile at the muzzle */
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass,
+	                                                              MuzzleLocation, ShotDirectionRotation,
+	                                                              ProjectileSpawnParams);
+	if (!Projectile) { return; }
+	/* Set the projectile's initial trajectory */
+	if (bHit)
+	{
+		Projectile->FireInDirection(UKismetMathLibrary::FindLookAtRotation(
+			MuzzleLocation,
+			Hit.ImpactPoint).Vector());
+	}
+	/* Update number of shots fired */
+	if (!PlayerController->CountdownActive &&
+		!TrackingTarget)
+	{
+		if (!OnShotFired.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnShotFired not bound."));
+		}
+	}
+	/* Update how many shots fired for recoil purposes */
+	ShotsFired++;
+	 if (bShouldRecoil)
+	 {
+	 	RecoilTimeline.SetPlayRate(1.f);
+	 	/* Resume timeline if it hasn't fully recovered */
+	 	if (RecoilTimeline.IsReversing())
+	 	{
+	 		RecoilTimeline.Play();
+	 	}
+	 	else
+	 	{
+	 		RecoilTimeline.PlayFromStart();
+	 	}
+	 	bShouldKickback = true;
+	 	KickbackAlpha = 0.f;
+	 }
+	ShowMuzzleFlash(MuzzleRotation);
+	PlayGunshotSound();
+	ShotBulletDecal(Hit);
+	PlayRecoilAnimation();
 }
 
 void AGun_AK47::EnableFire()

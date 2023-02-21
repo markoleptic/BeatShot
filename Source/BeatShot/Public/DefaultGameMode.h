@@ -20,8 +20,7 @@ class ASphereTarget;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
-
-DECLARE_DELEGATE(FOnTargetSpawned);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned, ASphereTarget* SpawnedTarget);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float, TimeAlive, const int32, NewStreak, const FVector, Position);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
 DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
@@ -173,16 +172,16 @@ public:
 	FOnBeatTrackTargetSpawned OnBeatTrackTargetSpawned;
 
 	/** Delegate that is executed every time a target has been spawned.
-	*   GameModeActorBase binds to it, while TargetSpawner executes it */
+	*   DefaultGameMode (this) binds to it, while TargetSpawner executes it */
 	FOnTargetSpawned OnTargetSpawned;
 
 	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data.
-	 *  GameModeActorBase binds to it, while TargetSpawner executes it */
+	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
 	UPROPERTY(BlueprintAssignable)
 	FOnTargetDestroyed OnTargetDestroyed;
 
 	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
-	 *  GameModeActorBase binds to it, while TargetSpawner executes it */
+	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
 	FUpdateScoresToHUD UpdateScoresToHUD;
 
 #pragma endregion
@@ -277,7 +276,7 @@ private:
 	/** Function bound to DefaultGameMode's OnTargetSpawned delegate to keep track of number of targets spawned.
 	 *  Executed by TargetSpawner */
 	UFUNCTION()
-	void UpdateTargetsSpawned();
+	void UpdateTargetsSpawned(ASphereTarget* SpawnedTarget);
 
 	/** Function bound to Gun_AK47's FOnShotFired delegate to keep track of number of targets spawned.
 	 *  Executed by Gun_AK47 */

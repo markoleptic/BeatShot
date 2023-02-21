@@ -297,10 +297,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			RecentTargetArray.Emplace(FRecentTargetStruct(
 				SpawnTarget->Guid, GetBlockedPoints(PointSpaceLocation, TargetScale), TargetScale, PointSpaceLocation));
 			
-			if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
-			{
-				UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
-			}
+			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
 			
 			if (GIsEditor)
 			{
@@ -333,11 +330,8 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 		RecentTargetArray.Emplace(FRecentTargetStruct(
 			SpawnTarget->Guid, GetBlockedPoints(PointSpaceLocation, TargetScale), TargetScale, PointSpaceLocation));
 
-		if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
-		}
-			
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
+		
 		if (GIsEditor)
 		{
 			for (const FIntPoint Point : GetBlockedPoints(PointSpaceLocation, TargetScale))
@@ -462,10 +456,7 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	if (ActiveBeatGridTarget)
 	{
 		ActiveBeatGridTarget->StartBeatGridTimer(GameModeActorStruct.TargetMaxLifeSpan);
-		if (!Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnTargetSpawned not bound."));
-		}
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(ActiveBeatGridTarget);
 	}
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{

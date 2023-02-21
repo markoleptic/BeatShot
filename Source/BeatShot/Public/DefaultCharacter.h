@@ -72,7 +72,6 @@ class BEATSHOT_API ADefaultCharacter : public ACharacter, public ISaveLoadInterf
 	GENERATED_BODY()
 
 protected:
-	
 	/** Sets default values for this character's properties */
 	ADefaultCharacter();
 
@@ -90,11 +89,6 @@ protected:
 
 	/** Called to remove any dynamic delegate binding */
 	virtual void Destroyed() override;
-
-	/** Handles updates to the movement state and changes relevant values accordingly
-	*	@param NewMovementType The new movement state of the player
-	*/
-	void UpdateMovementValues(EMovementType NewMovementType);
 
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
@@ -120,20 +114,37 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Data")
 	TMap<EMovementType, FMovementTypeVariables> MovementDataMap;
 
-public:
+	UPROPERTY(EditDefaultsOnly)
+	UCurveFloat* Curve_AimBotRotationSpeed;
 
+public:
 	/** Called when PlayerSettings are changed while Character is spawned */
 	UFUNCTION()
 	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
+
+	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the
+	 *  spawned target to the ActiveTargets_AimBot queue */
+	UFUNCTION()
+	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
+
+	/** Sets the bEnabled_AimBot state */
+	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
+
+	/** Sets the speed of the timeline playback */
+	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD) { TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD; }
 
 	/** Reference to direction of fire */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* ShotDirection;
 
+	/** Additional layer of rotation to use for aim bot */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	USceneComponent* AimBotCameraComp;
+
 	/** Additional layer of rotation to use for more realistic recoil */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USceneComponent* CameraRecoilComp;
-	
+
 	/** Returns HandMesh **/
 	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
@@ -144,20 +155,28 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	AGun_AK47* Gun;
 
+	/** Executed when interact is pressed */
 	FOnInteractDelegate OnInteractDelegate;
 
+	/** Executed when shift interact is pressed */
 	FOnShiftInteractDelegate OnShiftInteractDelegate;
 
 private:
+	/** Handles updates to the movement state and changes relevant values accordingly
+	 *	@param NewMovementType The new movement state of the player
+	 */
+	void UpdateMovementValues(EMovementType NewMovementType);
+	
 	/** Begin firing gun */
 	void StartFire() const;
 
 	/** Stop firing gun, if automatic fire */
+	UFUNCTION()
 	void StopFire() const;
 
 	/** Move the character left/right and forward/back
-	*	@param Value The value passed in by the Input Component
-	*/
+	 *	@param Value The value passed in by the Input Component
+	 */
 	void Move(const FInputActionValue& Value);
 
 	/** Look left/right and up/down
@@ -185,13 +204,26 @@ private:
 
 	/** Triggered on pressing E or Shift + E */
 	void OnShiftInteractStarted(const FInputActionInstance& Instance);
-	
+
 	/** Triggered on pressing E or Shift + E */
 	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
 
 	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
 	UFUNCTION()
 	void PassTrackingTargetToGun(ASphereTarget* TrackingTarget);
+
+	/** Float interpolation function bound to AimBotTimeline, which sets the rotation of the camera */
+	UFUNCTION()
+	void OnTimelineTick_AimBot(const float Alpha);
+	
+	/** Executes when the AimBotTimeline completes. Shoots the target at the front of the queue and pops it, then calls
+	 *  DestroyNextTarget_AimBot() */
+	UFUNCTION()
+	void OnTimelineCompleted_AimBot();
+
+	/** Sets new values for StartRotation_AimBot and TargetRotation_AimBot based on next target location in ActiveTargets_AimBot,
+	 *  and plays AimBotTimeline */
+	void DestroyNextTarget_AimBot();
 
 	/** Whether the player is holding the crouch button */
 	bool bHoldingCrouch;
@@ -205,8 +237,14 @@ private:
 	/** Whether the character is crouching */
 	bool bIsCrouching;
 
+	/** Whether the AimBot is active */
+	bool bEnabled_AimBot;
+
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;
+
+	/** Playback rate for AimBotTimeline */
+	float TimelinePlaybackRate_AimBot;
 
 	/** Enumerator holding the 3 possible movement states defined by EMovementType */
 	UPROPERTY()
@@ -223,6 +261,21 @@ private:
 	/** The rate at which the character crouches */
 	UPROPERTY(EditDefaultsOnly, Category = "Movement | Crouch")
 	float CrouchSpeed = 10.0f;
+
+	/** Timeline for interpolating the rotation to aim at the target to destroy */
+	FTimeline AimBotTimeline;
+
+	/** A queue of target locations that have not yet been destroyed */
+	TQueue<FVector> ActiveTargets_AimBot;
+
+	/** The rotation at the start of the rotation interpolation */
+	FRotator StartRotation_AimBot;
+
+	/** The rotation to interpolate over the course of the timeline */
+	FRotator TargetRotation_AimBot;
+
+	/** Delegate to call StopFire() shortly after AimBot has called StartFire() */
+	FTimerDelegate StopFire_AimBot;
 
 	/** Input actions bound inside of the the blueprint for this class */
 

@@ -130,15 +130,28 @@ void ADefaultGameMode::StartGameModeTimers()
 
 void ADefaultGameMode::BindGameModeDelegates()
 {
-	Cast<ADefaultCharacter>(
-			Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn())->Gun->
-		OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
-	OnTargetSpawned.BindUFunction(this, FName("UpdateTargetsSpawned"));
-	OnTargetDestroyed.AddUniqueDynamic(this, &ADefaultGameMode::UpdatePlayerScores);
+	if (ADefaultCharacter* Character = Cast<ADefaultCharacter>(
+		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
+	{
+		if (!Character->Gun->OnShotFired.IsBoundToObject(this))
+		{
+			Character->Gun->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
+		}
+		if (!OnTargetSpawned.IsBoundToObject(Character))
+		{
+			OnTargetSpawned.AddUFunction(Character, FName("OnTargetSpawned_AimBot"));
+		}
+		Character->SetTimelinePlaybackRate_AimBot(GameModeActorStruct.TargetSpawnCD);
+	}
+	if (!OnTargetSpawned.IsBoundToObject(this))
+	{
+		OnTargetSpawned.AddUFunction(this, FName("UpdateTargetsSpawned"));
+	}
 	if (GameModeActorStruct.IsBeatTrackMode)
 	{
 		OnBeatTrackTargetSpawned.AddUFunction(this, FName("OnBeatTrackTargetSpawnedCallback"));
 	}
+	OnTargetDestroyed.AddUniqueDynamic(this, &ADefaultGameMode::UpdatePlayerScores);
 }
 
 void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
@@ -155,11 +168,21 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 	}
 
 	/** Unbinding delegates */
-	if (const ADefaultPlayerController* PlayerController = Cast<ADefaultPlayerController>(
-			UGameplayStatics::GetPlayerController(GetWorld(), 0)); Cast<ADefaultCharacter>(PlayerController->GetPawn())
-		->Gun)
+	if (ADefaultCharacter* Character = Cast<ADefaultCharacter>(
+		Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 	{
-		Cast<ADefaultCharacter>(PlayerController->GetPawn())->Gun->OnShotFired.Unbind();
+		if (Character->Gun->OnShotFired.IsBoundToObject(this))
+		{
+			Character->Gun->OnShotFired.Unbind();
+		}
+	}
+	if (OnTargetSpawned.IsBoundToObject(this))
+	{
+		OnTargetSpawned.RemoveAll(this);
+	}
+	if (OnBeatTrackTargetSpawned.IsBoundToObject(this))
+	{
+		OnBeatTrackTargetSpawned.RemoveAll(this);
 	}
 
 	if (VisualizerManager)
@@ -230,39 +253,29 @@ void ADefaultGameMode::OnGameModeLengthTimerComplete()
 
 void ADefaultGameMode::StartAAManagerPlayback()
 {
-	if (!AATracker)
-	{
-		return;
-	}
-
 	/* If delay is large enough, play AATracker and then AAPlayer after the delay */
 	if (GameModeActorStruct.PlayerDelay >= 0.01f)
 	{
 		GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ADefaultGameMode::PlayAAPlayer,
 		                                GameModeActorStruct.PlayerDelay, false);
 	}
-	if (!GameModeActorStruct.SongPath.IsEmpty())
+	
+	if (GameModeActorStruct.AudioFormat == EAudioFormat::File)
 	{
 		AATracker->Play();
+		if (GameModeActorStruct.PlayerDelay < 0.1f)
+		{
+			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
+							   LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
+		}
 	}
 	else
 	{
 		if (GameModeActorStruct.PlayerDelay < 0.01f)
 		{
-			/* Using capture audio */
-			if (GameModeActorStruct.SongPath.IsEmpty())
-			{
 				AATracker->StartCapture(GameModeActorStruct.bPlaybackAudio, false);
 				SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
 				                   LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
-			}
-			/* BeatTrack or game mode with no delay */
-			else
-			{
-				AATracker->Play();
-				SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
-				                   LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
-			}
 		}
 		else
 		{
@@ -710,7 +723,7 @@ void ADefaultGameMode::UpdateTrackingScore(const float DamageTaken, const float 
 	}
 }
 
-void ADefaultGameMode::UpdateTargetsSpawned()
+void ADefaultGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 {
 	CurrentPlayerScore.TargetsSpawned++;
 	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))

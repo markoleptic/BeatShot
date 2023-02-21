@@ -18,6 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 ADefaultCharacter::ADefaultCharacter()
 {
@@ -25,15 +26,17 @@ ADefaultCharacter::ADefaultCharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCapsuleComponent()->InitCapsuleSize(55.f, DefaultCapsuleHalfHeight);
-
-	// Spawning the spring arm component
+	
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
 	SpringArmComponent->SetupAttachment(RootComponent);
 
+	AimBotCameraComp = CreateDefaultSubobject<USceneComponent>("AimBotCameraComp");
+	AimBotCameraComp->SetupAttachment(SpringArmComponent);
+
 	ShotDirection = CreateDefaultSubobject<UArrowComponent>("ShotDirection");
-	ShotDirection->SetupAttachment(SpringArmComponent);
+	ShotDirection->SetupAttachment(AimBotCameraComp);
 
 	CameraRecoilComp = CreateDefaultSubobject<USceneComponent>("CameraRecoilComp");
 	CameraRecoilComp->SetupAttachment(ShotDirection);
@@ -77,6 +80,13 @@ void ADefaultCharacter::BeginPlay()
 		GameMode->OnBeatTrackTargetSpawned.AddUFunction(this, "PassTrackingTargetToGun");
 	}
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
+	
+	FOnTimelineFloat OnTimelineFloat;
+	OnTimelineFloat.BindUFunction(this, FName("OnTimelineTick_AimBot"));
+	FOnTimelineEvent OnTimelineEvent;
+	OnTimelineEvent.BindUFunction(this, FName("OnTimelineCompleted_AimBot"));
+	AimBotTimeline.SetTimelineFinishedFunc(OnTimelineEvent);
+	AimBotTimeline.AddInterpFloat(Curve_AimBotRotationSpeed, OnTimelineFloat);
 }
 
 void ADefaultCharacter::PawnClientRestart()
@@ -111,6 +121,8 @@ void ADefaultCharacter::Tick(float DeltaTime)
 	                                             DeltaTime, CrouchSpeed);
 	/* Sets the half height of the capsule component to the new interpolated half height */
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
+
+	AimBotTimeline.TickTimeline(DeltaTime);
 }
 
 void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -279,7 +291,6 @@ void ADefaultCharacter::OnInteractCompleted(const FInputActionInstance& Instance
 
 void ADefaultCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance)
 {
-	UE_LOG(LogTemp, Display, TEXT("shift itneract started"));
 	if (!OnShiftInteractDelegate.ExecuteIfBound(0))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnInteractDelegate not bound."));
@@ -324,4 +335,47 @@ void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType
 void ADefaultCharacter::PassTrackingTargetToGun(ASphereTarget* TrackingTarget)
 {
 	Gun->TrackingTarget = TrackingTarget;
+}
+
+void ADefaultCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
+{
+	ActiveTargets_AimBot.Enqueue(SpawnedTarget->GetActorLocation());
+	if (!AimBotTimeline.IsPlaying())
+	{
+		DestroyNextTarget_AimBot();
+	}
+}
+
+void ADefaultCharacter::OnTimelineTick_AimBot(const float Alpha)
+{
+	GetController()->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation_AimBot, TargetRotation_AimBot, Alpha, true));
+}
+
+void ADefaultCharacter::OnTimelineCompleted_AimBot()
+{
+	ActiveTargets_AimBot.Pop();
+	Gun->Fire_AimBot();
+	if (!AimBotTimeline.IsPlaying())
+	{
+		DestroyNextTarget_AimBot();
+	}
+}
+
+void ADefaultCharacter::DestroyNextTarget_AimBot()
+{
+	if (!ActiveTargets_AimBot.IsEmpty())
+	{
+		FVector TargetLocation;
+		if (ActiveTargets_AimBot.Peek(TargetLocation))
+		{
+			StartRotation_AimBot = GetController()->GetControlRotation();
+			StartRotation_AimBot.Normalize();
+			FVector Loc;
+			FRotator Rot;
+			GetController()->GetActorEyesViewPoint(Loc, Rot);
+			TargetRotation_AimBot = UKismetMathLibrary::FindLookAtRotation(Loc, TargetLocation);
+			AimBotTimeline.SetPlayRate(TimelinePlaybackRate_AimBot);
+			AimBotTimeline.PlayFromStart();
+		}
+	}
 }

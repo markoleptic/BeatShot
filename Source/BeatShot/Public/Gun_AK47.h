@@ -44,6 +44,9 @@ public:
 	/** Stops the timer that allows for automatic fire */
 	void StopFire();
 
+	/** Fires the gun once */
+	void Fire_AimBot();
+
 	/** Allows the player to fire again */
 	void EnableFire();
 
