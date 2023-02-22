@@ -668,16 +668,6 @@ void ADefaultGameMode::OnPostScoresResponseReceived(const ELoginState& LoginStat
 
 void ADefaultGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector Position)
 {
-	FString Hit;
-	if (TimeElapsed == -1)
-	{
-		Hit = "Miss";
-	}
-	else
-	{
-		Hit = "Hit";
-	}
-	UE_LOG(LogTemp, Display, TEXT("%s, Position: %s"), *Hit, *Position.ToString());
 	if (GameModeActorStruct.IsBeatTrackMode == true || TimeElapsed == -1)
 	{
 		return;

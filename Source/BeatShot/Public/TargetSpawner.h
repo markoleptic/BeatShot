@@ -25,6 +25,10 @@ struct FRecentTargetStruct
 	/** A 2D representation of the area the target spawned. This is stored so that the points can be freed when
 	 *  the target expires or is destroyed. */
 	TArray<FIntPoint> BlockedSpawnPoints;
+
+	TArray<FVector> OverlappingPoints;
+
+	FVector CenterVector;
 	
 	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid TargetGuid;
@@ -42,10 +46,10 @@ struct FRecentTargetStruct
 		Center = FIntPoint(-5000, -5000);
 	}
 
-	FRecentTargetStruct(const FGuid GuidToRemove)
+	FRecentTargetStruct(const FGuid Guid)
 	{
 		BlockedSpawnPoints = TArray<FIntPoint>();
-		TargetGuid = GuidToRemove;
+		TargetGuid = Guid;
 		TargetScale = 0.f;
 		Center = FIntPoint(-5000, -5000);
 	}
@@ -57,6 +61,14 @@ struct FRecentTargetStruct
 		TargetGuid = NewTargetGuid;
 		TargetScale = NewTargetScale;
 		Center = NewCenter;
+	}
+
+	FRecentTargetStruct(const FGuid NewTargetGuid, const TArray<FVector> Points, const float NewTargetScale, const FVector NewCenter)
+	{
+		TargetGuid = NewTargetGuid;
+		OverlappingPoints = Points;
+		TargetScale = NewTargetScale;
+		CenterVector = NewCenter;
 	}
 
 	FORCEINLINE bool operator == (const FRecentTargetStruct& Other) const
@@ -185,6 +197,9 @@ private:
 	/** Returns an array of valid spawn points by creating a new 2D array and filling out the values based on the
 	 *  contents of RecentTargetArray, the scale of the new target to spawn, and the current BoxExtent */
 	TArray<FIntPoint> GetValidSpawnPoints(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
+
+	
+	TArray<FVector> GetValidSpawnPoints2(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
 	
 	/** Returns a copy of the RecentTargetArray, used to determine future target spawn locations */
 	TArray<FRecentTargetStruct> GetRecentTargetArray();
@@ -276,21 +291,30 @@ private:
 	UPROPERTY()
 	TArray<FRecentTargetStruct> RecentTargetArray;
 
+	UPROPERTY()
+	TArray<FRecentTargetStruct> RecentTargetArray2;
+
 	/** Scale the 2D representation of the spawn area down by this factor */
 	int32 SpawnAreaScale;
+
+	/** Scale the 2D representation of the spawn area down by this factor */
+	int32 SpawnAreaScaleScoring;
 
 	FTimerDelegate RemoveFromRecentDelegate;
 
 	FActorSpawnParameters TargetSpawnParams;
 
 	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
+	
+	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
 
 	int32 NumRowsGrid;
+	int32 NumRowsGridScoring;
 
 	int32 NumColsGrids;
-	
-	std::vector<std::vector<int32>> SpawnAreaTotals;
-	std::vector<std::vector<int32>> SpawnAreaHits;
+	int32 NumColsGridsScoring;
+	//std::vector<std::vector<int32>> SpawnAreaTotals;
+	//std::vector<std::vector<int32>> SpawnAreaHits;
 	
 	UPROPERTY()
 	TArray<FGridPoint> SpawnAreaTotalsPoints;
@@ -355,3 +379,5 @@ protected:
 
 #pragma endregion
 };
+
+
