@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include <vector>
 #include "SphereTarget.h"
 #include "SaveGameCustomGameMode.h"
 #include "GameFramework/Actor.h"
@@ -22,10 +21,6 @@ struct FRecentTargetStruct
 {
 	GENERATED_BODY()
 	
-	/** A 2D representation of the area the target spawned. This is stored so that the points can be freed when
-	 *  the target expires or is destroyed. */
-	TArray<FIntPoint> BlockedSpawnPoints;
-
 	TArray<FVector> OverlappingPoints;
 
 	FVector CenterVector;
@@ -36,31 +31,16 @@ struct FRecentTargetStruct
 	/** The scale of the target, as it is in the world */
 	float TargetScale;
 
-	/** The center of the target*/
-	FIntPoint Center;
-
 	FRecentTargetStruct()
 	{
-		BlockedSpawnPoints = TArray<FIntPoint>();
+		CenterVector = FVector::ZeroVector;
 		TargetScale = 0.f;
-		Center = FIntPoint(-5000, -5000);
 	}
 
 	FRecentTargetStruct(const FGuid Guid)
 	{
-		BlockedSpawnPoints = TArray<FIntPoint>();
 		TargetGuid = Guid;
 		TargetScale = 0.f;
-		Center = FIntPoint(-5000, -5000);
-	}
-	
-	FRecentTargetStruct(const FGuid NewTargetGuid, const TArray<FIntPoint> NewBlockedSpawnPoints,
-	                    const float NewTargetScale, const FIntPoint NewCenter)
-	{
-		BlockedSpawnPoints = NewBlockedSpawnPoints;
-		TargetGuid = NewTargetGuid;
-		TargetScale = NewTargetScale;
-		Center = NewCenter;
 	}
 
 	FRecentTargetStruct(const FGuid NewTargetGuid, const TArray<FVector> Points, const float NewTargetScale, const FVector NewCenter)
@@ -191,39 +171,11 @@ private:
 	UFUNCTION()
 	void RemoveFromRecentTargetArray(const FGuid GuidToRemove);
 	
-	/** Returns an array of points containing the area of the target that was spawned */
-	TArray<FIntPoint> GetBlockedPoints(const FIntPoint Center, const float Scale) const;
-
-	/** Returns an array of valid spawn points by creating a new 2D array and filling out the values based on the
-	 *  contents of RecentTargetArray, the scale of the new target to spawn, and the current BoxExtent */
-	TArray<FIntPoint> GetValidSpawnPoints(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
-
-	
+	/** Returns an array of valid spawn points */
 	TArray<FVector> GetValidSpawnPoints2(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
-	
+
 	/** Returns a copy of the RecentTargetArray, used to determine future target spawn locations */
-	TArray<FRecentTargetStruct> GetRecentTargetArray();
-
-	/** Modifies a circle of points in OutSpawnArea. Returns the modified OutSpawnArea */
-	std::vector<std::vector<int32>> ResizeCircleInSpawnArea(const FIntPoint Center, const float Scale,
-															std::vector<std::vector<int32>>& OutSpawnArea) const;
-
-	/** Simulates lowering the size of a BoxExtent, but since OutSpawnArea is centered at (0,0), the function
-	 *  modifies the outer edges by setting the edge point values equal to 2 (Out of bounds).
-	 *  Returns the modified OutSpawnArea */
-	std::vector<std::vector<int32>> ResizeSpawnAreaBounds(std::vector<std::vector<int32>>& OutSpawnArea,
-														  const FVector& BoxExtent) const;
-
-	/** Returns a point in 2D space with origin at (0,0) given an absolute world location */
-	FIntPoint ConvertLocationToPoint(const FVector Location) const;
-
-	/** Returns the absolute world location given a point in 2D space with origin at (0,0) based on the original
-	 *  BoxExtent from GameModeActorStruct.BoxBounds */
-	FVector ConvertPointToLocation(const FIntPoint Point) const;
-	
-	/** Returns the absolute world location given a point in 2D space with origin at (0,0) based on the current
-	 *  BoxExtent from BoxBounds.BoxExtent */
-	FVector ConvertPointToLocationSingleBeat(const FIntPoint Point) const;
+	TArray<FRecentTargetStruct> GetRecentTargetArray2();
 	
 	/** Find the next spawn location for a target */
 	//FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
@@ -284,13 +236,10 @@ private:
 	 *  OnTargetTimeout */
 	UPROPERTY()
 	TArray<ASphereTarget*> ActiveTargetArray;
-
+	
 	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
 	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
 	 *  OnTargetTimeout */
-	UPROPERTY()
-	TArray<FRecentTargetStruct> RecentTargetArray;
-
 	UPROPERTY()
 	TArray<FRecentTargetStruct> RecentTargetArray2;
 
@@ -299,6 +248,12 @@ private:
 
 	/** Scale the 2D representation of the spawn area down by this factor */
 	int32 SpawnAreaScaleScoring;
+
+	/** Scale the 2D representation of the spawn area down by this factor */
+	float SpawnMemoryScale;
+
+	/** Scale the 2D representation of the spawn area down by this factor */
+	FTransform SpawnMemoryTransform;
 
 	FTimerDelegate RemoveFromRecentDelegate;
 
