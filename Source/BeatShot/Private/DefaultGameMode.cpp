@@ -137,10 +137,6 @@ void ADefaultGameMode::BindGameModeDelegates()
 		{
 			Character->Gun->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
 		}
-		if (!OnTargetSpawned.IsBoundToObject(Character))
-		{
-			OnTargetSpawned.AddUFunction(Character, FName("OnTargetSpawned_AimBot"));
-		}
 		Character->SetTimelinePlaybackRate_AimBot(GameModeActorStruct.TargetSpawnCD);
 	}
 	if (!OnTargetSpawned.IsBoundToObject(this))
@@ -263,7 +259,7 @@ void ADefaultGameMode::StartAAManagerPlayback()
 	if (GameModeActorStruct.AudioFormat == EAudioFormat::File)
 	{
 		AATracker->Play();
-		if (GameModeActorStruct.PlayerDelay < 0.1f)
+		if (GameModeActorStruct.PlayerDelay < 0.01f)
 		{
 			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
 							   LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);

@@ -32,6 +32,8 @@ enum class ESpreadType : uint8
 	StaticWide UMETA(DisplayName, "Static Wide")
 };
 
+inline bool IsDynamicSpreadType(const ESpreadType SpreadType) { return (SpreadType == ESpreadType::DynamicEdgeOnly || SpreadType == ESpreadType::DynamicRandom); }
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::StaticWide);
 
 /** Enum representing the default game mode difficulties */

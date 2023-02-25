@@ -17,7 +17,7 @@ class AVisualGrid;
 
 /** A struct representing the space in the grid that a recently spawned target occupies */
 USTRUCT()
-struct FRecentTargetStruct
+struct FRecentTarget
 {
 	GENERATED_BODY()
 	
@@ -31,19 +31,19 @@ struct FRecentTargetStruct
 	/** The scale of the target, as it is in the world */
 	float TargetScale;
 
-	FRecentTargetStruct()
+	FRecentTarget()
 	{
 		CenterVector = FVector::ZeroVector;
 		TargetScale = 0.f;
 	}
 
-	FRecentTargetStruct(const FGuid Guid)
+	FRecentTarget(const FGuid Guid)
 	{
 		TargetGuid = Guid;
 		TargetScale = 0.f;
 	}
 
-	FRecentTargetStruct(const FGuid NewTargetGuid, const TArray<FVector> Points, const float NewTargetScale, const FVector NewCenter)
+	FRecentTarget(const FGuid NewTargetGuid, const TArray<FVector> Points, const float NewTargetScale, const FVector NewCenter)
 	{
 		TargetGuid = NewTargetGuid;
 		OverlappingPoints = Points;
@@ -51,7 +51,7 @@ struct FRecentTargetStruct
 		CenterVector = NewCenter;
 	}
 
-	FORCEINLINE bool operator == (const FRecentTargetStruct& Other) const
+	FORCEINLINE bool operator == (const FRecentTarget& Other) const
 	{
 		if (TargetGuid == Other.TargetGuid)
 		{
@@ -95,6 +95,58 @@ struct FGridPoint
 	FORCEINLINE bool operator == (const FGridPoint& Other) const
 	{
 		if (Point == Other.Point)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
+/** A struct representing a point in a 2D grid with information about that point */
+USTRUCT()
+struct FVectorCounter
+{
+	GENERATED_BODY()
+
+	/** Unscaled, world spawn location point */
+	FVector Point;
+	
+	/** The total number of target spawns at this point */
+	int32 TotalSpawns;
+
+	/** The total number of target hits by player at this point */
+	int32 TotalHits;
+
+	FVectorCounter()
+	{
+		Point = FVector();
+		TotalSpawns = 0;
+		TotalHits = 0;
+	}
+
+	FVectorCounter(const FVector NewPoint)
+	{
+		Point = NewPoint;
+		TotalSpawns = 0;
+		TotalHits = 0;
+	}
+
+	FORCEINLINE bool operator == (const FVectorCounter& Other) const
+	{
+		if (Point.Equals(Other.Point))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	FORCEINLINE bool operator < (const FVectorCounter& Other) const
+	{
+		if (Point.Z > Other.Point.Z)
+		{
+			return true;
+		}
+		if (Point.Z == Other.Point.Z && Point.Y < Other.Point.Y)
 		{
 			return true;
 		}
@@ -168,27 +220,51 @@ private:
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
+	/** Removes the RecentTargetStruct associated with the GuidToRemove from RecentTargets */
 	UFUNCTION()
-	void RemoveFromRecentTargetArray(const FGuid GuidToRemove);
+	void RemoveFromRecentTargets(const FGuid GuidToRemove);
 	
 	/** Returns an array of valid spawn points */
-	TArray<FVector> GetValidSpawnPoints2(const float Scale, const FVector& BoxExtent, const bool bIsDynamicSpreadType);
+	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
 
 	/** Returns a copy of the RecentTargetArray, used to determine future target spawn locations */
-	TArray<FRecentTargetStruct> GetRecentTargetArray2();
+	TArray<FRecentTarget> GetRecentTargets() const;
+
+	/** Returns SpawnBox's BoxExtents as they are in the game, before any scaling or dynamic changes */
+	FVector GetBoxExtents_Unscaled_Static() const;
+
+	/** Returns SpawnBox's current BoxExtents, scaled by SpawnMemoryScale */
+	FVector GetBoxExtents_Scaled_Current() const;
+
+	/** Returns SpawnBox's original BoxExtents, scaled by SpawnMemoryScale */
+	FVector GetBoxExtents_Scaled_Static() const;
+
+	/** Returns SpawnBox's origin, as it is in the game */
+	FVector GetBoxOrigin_Unscaled() const;
+
+	/** Returns SpawnBox's origin, scaled by SpawnMemoryScale */
+	FVector GetBoxOrigin_Scaled() const;
 	
-	/** Find the next spawn location for a target */
-	//FVector GenerateRandomTargetLocation(ESpreadType SpreadType, const FVector& ScaledBoxExtent) const;
+	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
+	void SetBoxExtents_Dynamic() const;
+
+	/** Sets CustomDataValues for VisualGrid */
+	void UpdateVisualGrid(const FVector Center, const int32 CustomDataValue) const;
+
+	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
+	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
+
+	/** Initializes the SpawnCounter array */
+	void InitializeSpawnCounter();
+
+	/** Clamps a point inside the SpawnBox's BoxBounds */
+	FVector ClampInsideBox(FVector VectorToClamp) const;
 
 #pragma region General Spawning Variables
 
 	/** The spawn area */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	UBoxComponent* SpawnBox;
-
-	/** The bounds of the spawn area */
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	FBoxSphereBounds BoxBounds;
 
 	/** Whether or not the last target spawned in center of spawn area, used for SingleBeat */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
@@ -241,40 +317,23 @@ private:
 	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
 	 *  OnTargetTimeout */
 	UPROPERTY()
-	TArray<FRecentTargetStruct> RecentTargetArray2;
-
-	/** Scale the 2D representation of the spawn area down by this factor */
-	int32 SpawnAreaScale;
-
-	/** Scale the 2D representation of the spawn area down by this factor */
-	int32 SpawnAreaScaleScoring;
+	TArray<FRecentTarget> RecentTargets;
 
 	/** Scale the 2D representation of the spawn area down by this factor */
 	float SpawnMemoryScale;
-
-	/** Scale the 2D representation of the spawn area down by this factor */
-	FTransform SpawnMemoryTransform;
 
 	FTimerDelegate RemoveFromRecentDelegate;
 
 	FActorSpawnParameters TargetSpawnParams;
 
 	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
-	
-	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
 
 	int32 NumRowsGrid;
-	int32 NumRowsGridScoring;
-
 	int32 NumColsGrids;
-	int32 NumColsGridsScoring;
-	//std::vector<std::vector<int32>> SpawnAreaTotals;
-	//std::vector<std::vector<int32>> SpawnAreaHits;
-	
-	UPROPERTY()
-	TArray<FGridPoint> SpawnAreaTotalsPoints;
-	UPROPERTY()
-	TArray<FGridPoint> SpawnAreaHitsPoints;
+
+	/** An array storing every possible point the target could spawn at, the total spawns at the point, and the total
+	 *  player hits at that point */
+	TArray<FVectorCounter> SpawnCounter;
 
 #pragma endregion
 
@@ -334,5 +393,6 @@ protected:
 
 #pragma endregion
 };
+
 
 

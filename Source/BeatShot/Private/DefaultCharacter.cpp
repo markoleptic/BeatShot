@@ -32,11 +32,8 @@ ADefaultCharacter::ADefaultCharacter()
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
 	SpringArmComponent->SetupAttachment(RootComponent);
 
-	AimBotCameraComp = CreateDefaultSubobject<USceneComponent>("AimBotCameraComp");
-	AimBotCameraComp->SetupAttachment(SpringArmComponent);
-
 	ShotDirection = CreateDefaultSubobject<UArrowComponent>("ShotDirection");
-	ShotDirection->SetupAttachment(AimBotCameraComp);
+	ShotDirection->SetupAttachment(SpringArmComponent);
 
 	CameraRecoilComp = CreateDefaultSubobject<USceneComponent>("CameraRecoilComp");
 	CameraRecoilComp->SetupAttachment(ShotDirection);
@@ -87,6 +84,7 @@ void ADefaultCharacter::BeginPlay()
 	OnTimelineEvent.BindUFunction(this, FName("OnTimelineCompleted_AimBot"));
 	AimBotTimeline.SetTimelineFinishedFunc(OnTimelineEvent);
 	AimBotTimeline.AddInterpFloat(Curve_AimBotRotationSpeed, OnTimelineFloat);
+	bEnabled_AimBot = false;
 }
 
 void ADefaultCharacter::PawnClientRestart()
@@ -122,6 +120,10 @@ void ADefaultCharacter::Tick(float DeltaTime)
 	/* Sets the half height of the capsule component to the new interpolated half height */
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 
+	if (!bEnabled_AimBot)
+	{
+		return;
+	}
 	AimBotTimeline.TickTimeline(DeltaTime);
 }
 

@@ -137,24 +137,20 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* ShotDirection;
 
-	/** Additional layer of rotation to use for aim bot */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	USceneComponent* AimBotCameraComp;
-
 	/** Additional layer of rotation to use for more realistic recoil */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USceneComponent* CameraRecoilComp;
+
+	/** Reference to gun */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	AGun_AK47* Gun;
 
 	/** Returns HandMesh **/
 	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
 
 	/** Returns Camera **/
 	UCameraComponent* GetCamera() const { return Camera; }
-
-	/** Reference to gun */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	AGun_AK47* Gun;
-
+	
 	/** Executed when interact is pressed */
 	FOnInteractDelegate OnInteractDelegate;
 

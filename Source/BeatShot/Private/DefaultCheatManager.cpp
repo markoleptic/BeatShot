@@ -1,5 +1,4 @@
 ﻿#include "DefaultCheatManager.h"
-
 #include "DefaultCharacter.h"
 #include "DefaultGameMode.h"
 #include "DefaultPlayerController.h"
@@ -10,7 +9,7 @@ void UDefaultCheatManager::InitCheatManager()
 	ReceiveInitCheatManager();
 }
 
-void UDefaultCheatManager::SetAimBotEnabled(const bool bEnable)
+void UDefaultCheatManager::SetAimBotEnabled(const bool bEnable) const
 {
 	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	ADefaultCharacter* Character = Cast<ADefaultCharacter>(Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());

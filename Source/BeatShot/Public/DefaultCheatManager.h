@@ -14,5 +14,5 @@ protected:
 	virtual void InitCheatManager() override;
 
 	UFUNCTION(exec)
-	void SetAimBotEnabled(const bool bEnable);
+	void SetAimBotEnabled(const bool bEnable) const;
 };
