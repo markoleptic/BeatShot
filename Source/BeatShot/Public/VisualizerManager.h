@@ -26,8 +26,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	void InitializeVisualizers(const FPlayerSettings PlayerSettings);
 
@@ -65,8 +63,8 @@ public:
 	UPROPERTY()
 	FAASettingsStruct AASettings;
 
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumVariance;
+	// UPROPERTY(VisibleAnywhere)
+	// TArray<float> SpectrumVariance;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> AvgSpectrumValues;
@@ -77,11 +75,11 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> CurrentCubeSpectrumValues;
 
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumPeaks;
+	// UPROPERTY(VisibleAnywhere)
+	// TArray<float> SpectrumPeaks;
 
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> SpectrumPeakEnergy;
+	// UPROPERTY(VisibleAnywhere)
+	// TArray<float> SpectrumPeakEnergy;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> MaxSpectrumValues;

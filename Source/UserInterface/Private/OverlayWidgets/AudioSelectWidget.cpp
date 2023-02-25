@@ -141,7 +141,7 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 		GameUserSettings->ApplySettings(false);
 		bWasInFullScreenMode = false;
 	}
-	if (FileNames.Num() == 0 || FileNames[0].IsEmpty())
+	if (FileNames.IsEmpty() || FileNames[0].IsEmpty())
 	{
 		ShowSongPathErrorMessage();
 		return;
@@ -180,7 +180,6 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 		AudioSelectStruct.SongTitle = Title;
 	}
 	AudioSelectStruct.SongLength = Manager->GetTotalDuration();
-	
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Visible);
 	SongTitleBox->SetVisibility(ESlateVisibility::Visible);
 	SongLengthBox->SetVisibility(ESlateVisibility::Collapsed);

@@ -1179,6 +1179,11 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 			GameModeActorStruct.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
 			GameModeActorStruct.AudioFormat = AudioSelectStruct.AudioFormat;
 			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
+			/* Override the player delay to zero if using Capture */
+			if (GameModeActorStruct.AudioFormat == EAudioFormat::Capture)
+			{
+				GameModeActorStruct.PlayerDelay = 0.f;
+			}
 			OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 			AudioSelectWidget->FadeOut();
 		});

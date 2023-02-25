@@ -5,7 +5,6 @@
 #include "SaveGamePlayerSettings.h"
 #include "DefaultGameInstance.h"
 #include "DefaultPlayerController.h"
-#include "DefaultGameMode.h"
 #include "SphereTarget.h"
 #include "Gun_AK47.h"
 #include "Camera/CameraComponent.h"
@@ -69,12 +68,6 @@ void ADefaultCharacter::BeginPlay()
 	if (IsLocallyControlled())
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
-	}
-	if (ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-	{
-		UE_LOG(LogTemp, Display, TEXT("DefaultCharacter accessing GameMode in beginplay"));
-		GameMode->OnGameModeInit.BindUFunction(Gun, "SetShouldTrace");
-		GameMode->OnBeatTrackTargetSpawned.AddUFunction(this, "PassTrackingTargetToGun");
 	}
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
 	

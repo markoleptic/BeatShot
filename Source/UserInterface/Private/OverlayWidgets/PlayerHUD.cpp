@@ -19,20 +19,6 @@ void UPlayerHUD::NativeConstruct()
 	SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
 }
 
-void UPlayerHUD::NativeDestruct()
-{
-	// ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	// if (GameMode->UpdateScoresToHUD.IsBoundToObject(this))
-	// {
-	// 	GameMode->UpdateScoresToHUD.Unbind();
-	// }
-	// if (GameMode->OnAAManagerSecondPassed.IsBoundToObject(this))
-	// {
-	// 	GameMode->OnAAManagerSecondPassed.Unbind();
-	// }
-	Super::NativeDestruct();
-}
-
 void UPlayerHUD::UpdateAllElements(const FPlayerScore NewPlayerScoreStruct)
 {
 	/** Display default game mode names if not custom */

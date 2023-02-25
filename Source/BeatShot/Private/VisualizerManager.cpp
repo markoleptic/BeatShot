@@ -18,18 +18,12 @@ void AVisualizerManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AVisualizerManager::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AVisualizerManager::InitializeVisualizers(const FPlayerSettings PlayerSettings)
 {
-	AvgSpectrumValues.SetNum(AASettings.NumBandChannels);
-	CurrentSpectrumValues.SetNum(AASettings.NumBandChannels);
-	MaxSpectrumValues.SetNum(AASettings.NumBandChannels);
+	AvgSpectrumValues.Init(0, AASettings.NumBandChannels);
+	CurrentSpectrumValues.Init(0, AASettings.NumBandChannels);
 	MaxSpectrumValues.Init(1, AASettings.NumBandChannels);
-	CurrentCubeSpectrumValues.SetNum(AASettings.NumBandChannels);
+	CurrentCubeSpectrumValues.Init(0, AASettings.NumBandChannels);
 
 	Visualizers.Empty();
 	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
@@ -65,6 +59,10 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
 {
+	if (Visualizers.IsEmpty())
+	{
+		return;
+	}
 	for (int i = 0; i < SpectrumValues.Num(); i++)
 	{
 		if (SpectrumValues[i] > MaxSpectrumValues[i])

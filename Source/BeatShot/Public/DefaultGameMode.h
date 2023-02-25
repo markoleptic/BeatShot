@@ -20,14 +20,12 @@ class ASphereTarget;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned, ASphereTarget* SpawnedTarget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float, TimeAlive, const int32, NewStreak, const FVector, Position);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector Position);
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
-DECLARE_DELEGATE_OneParam(FOnGameModeInit, const bool bShouldTrace);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
-/* Passes a reference to the spawned BeatTrackTarget */
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeatTrackTargetSpawned, ASphereTarget* TrackingTarget);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32, NewStreak, const FVector, Position);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector Position);
 
 UCLASS()
 class BEATSHOT_API ADefaultGameMode : public AGameModeBase, public ISaveLoadInterface, public IHttpRequestInterface
@@ -71,29 +69,30 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AAPlayer;
 
-	int32 UsingAAPlayer = 0;
-
 #pragma endregion
 
 #pragma region StartStopGameMode
 
 public:
-	/** Entry point into starting game. Spawn GameModeActorBase, TargetSpawner, and Visualizer and calls OpenSongFileDialog.
+	/** Entry point into starting game. Spawn TargetSpawner, Visualizers 
 	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
 	void InitializeGameMode();
 
-	/** Called from Countdown widget when the countdown has completed */
+	/** Allows TargetSpawner to start spawning targets, starts timers, shows PlayerHUD, CrossHair, and hides the
+	 *  countdown widget. Called from Countdown widget when the countdown has completed */
 	UFUNCTION()
 	void StartGameMode();
-
-	void StartGameModeTimers();
-
-	void BindGameModeDelegates();
-
+	
 	/** Destroys all actors involved in a game mode and optionally save scores */
 	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
 
 private:
+	/** Starts all DefaultGameMode timers */
+	void StartGameModeTimers();
+
+	/** Binds all delegates associated with DefaultGameMode */
+	void BindGameModeDelegates();
+	
 	/** Function to tell TargetSpawner to spawn a new target */
 	void SpawnNewTarget(bool bNewTargetState);
 
@@ -101,7 +100,7 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	FTimerHandle GameModeLengthTimer;
 
-	/** Reports to DefaultGameMode when the song has finished */
+	/** Calls EndGameMode after finding parameters for it */
 	UFUNCTION()
 	void OnGameModeLengthTimerComplete();
 
@@ -124,6 +123,9 @@ private:
 	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
 	void InitializeAudioManagers();
 
+	/** Retrieves all AudioAnalyzer data on tick */
+	void OnTick_AudioAnalyzers(const float DeltaSeconds);
+
 	/** play AAPlayer, used as callback function to set delay from AATracker */
 	UFUNCTION()
 	void PlayAAPlayer();
@@ -131,9 +133,7 @@ private:
 	/** Change volume of given AAManager, or if none provided change Player/Tracker volume */
 	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
 
-	/** Callback function for OnSecondPassedTimer, executes OnAAManagerSecondPassed */
-	UFUNCTION()
-	void OnSecondPassed();
+	void OnAAManagerError() { bShouldTick = false; UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));}
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
@@ -158,18 +158,9 @@ private:
 #pragma region PublicDelegates
 
 public:
-	/** Delegate that is executed when GameModeActorBase is initialized. This is so the character is informed that the
-	 *  Gun needs to perform line tracing for BeatTrack game modes, but otherwise can skip line tracing.
-	 *  DefaultCharacter binds to it, while DefaultGameMode (this) executes it */
-	FOnGameModeInit OnGameModeInit;
-
 	/** Delegate that is executed every second to update the progress into song on PlayerHUD.
 	 *  PlayerHUD binds to it, while DefaultGameMode (this) executes it */
-	FOnAAManagerSecondPassed OnAAManagerSecondPassed;
-
-	/** Broadcasts when a BeatTrack target has been spawned.
-	 *  DefaultCharacter binds to it, while TargetSpawner executes it */
-	FOnBeatTrackTargetSpawned OnBeatTrackTargetSpawned;
+	FOnAAManagerSecondPassed OnSecondPassed;
 
 	/** Delegate that is executed every time a target has been spawned.
 	*   DefaultGameMode (this) binds to it, while TargetSpawner executes it */
@@ -177,7 +168,6 @@ public:
 
 	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data.
 	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
-	UPROPERTY(BlueprintAssignable)
 	FOnTargetDestroyed OnTargetDestroyed;
 
 	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
@@ -282,8 +272,8 @@ private:
 	 *  Executed by Gun_AK47 */
 	UFUNCTION()
 	void UpdateShotsFired();
-	
-	UFUNCTION()
+
+	/** Called by UpdatePlayerScores to update the streak */
 	void UpdateStreak(int32 Streak, FVector Location);
 
 	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
@@ -292,17 +282,16 @@ private:
 	/** Called by UpdatePlayerScores or UpdatingTrackingScores to recalculate the high score if needed  */
 	void UpdateHighScore();
 
-	/** Function bound to OnBeatTrackTargetSpawned delegate.
-	 *  Binds the tracking target's health component's OnBeatTrackTick delegate to UpdateTrackingScore */
+	/** Callback function for OnSecondPassedTimer, executes OnSecondPassed */
 	UFUNCTION()
-	void OnBeatTrackTargetSpawnedCallback(ASphereTarget* TrackingTarget);
+	void OnSecondPassedCallback();
 
 #pragma endregion
 
 #pragma region Utility
 
 	/** Checks if the value is NaN so we don't save a NaN value */
-	float CheckFloatNaN(const float ValueToCheck, const float ValueToRound);
+	static float CheckFloatNaN(const float ValueToCheck, const float ValueToRound);
 
 #pragma endregion
 };

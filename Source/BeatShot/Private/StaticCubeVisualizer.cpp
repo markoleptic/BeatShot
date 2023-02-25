@@ -16,11 +16,6 @@ void AStaticCubeVisualizer::BeginPlay()
 	SetVisualizerOffset(CubeOffset);
 }
 
-void AStaticCubeVisualizer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void AStaticCubeVisualizer::InitializeVisualizer()
 {
 	Super::InitializeVisualizer();

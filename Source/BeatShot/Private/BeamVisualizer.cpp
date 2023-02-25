@@ -18,11 +18,6 @@ void ABeamVisualizer::BeginPlay()
 	SetVisualizerOffset(BeamLightOffset);
 }
 
-void ABeamVisualizer::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void ABeamVisualizer::InitializeVisualizer()
 {
 	Super::InitializeVisualizer();

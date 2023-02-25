@@ -26,8 +26,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Tick(float DeltaTime) override;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Meshes")
 	UStaticMesh* CubeMesh;
 

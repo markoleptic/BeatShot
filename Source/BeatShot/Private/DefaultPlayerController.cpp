@@ -127,7 +127,7 @@ void ADefaultPlayerController::ShowPlayerHUD()
 	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ADefaultGameMode* GameMode = Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.BindUFunction(PlayerHUD, FName("UpdateAllElements"));
-	GameMode->OnAAManagerSecondPassed.BindUFunction(PlayerHUD, FName("UpdateSongProgress"));
+	GameMode->OnSecondPassed.BindUFunction(PlayerHUD, FName("UpdateSongProgress"));
 	if (GI->GameModeActorStruct.IsBeatTrackMode)
 	{
 		PlayerHUD->TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);

@@ -26,8 +26,8 @@ ARangeLevelScriptActor::ARangeLevelScriptActor()
 void ARangeLevelScriptActor::BeginPlay()
 {
 	Super::BeginPlay();
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.AddUniqueDynamic(
-		this, &ARangeLevelScriptActor::OnTargetDestroyed);
+	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.AddUFunction(
+		this, "OnTargetDestroyed");
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
 		this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
 	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
@@ -69,24 +69,23 @@ void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 
 void ARangeLevelScriptActor::OnTargetDestroyed(const float TimeAlive, const int32 NewStreak, const FVector Position)
 {
-	if (TimeOfDay == ETimeOfDay::DayToNight || TimeOfDay == ETimeOfDay::NightToDay)
+	if (TimeOfDay == ETimeOfDay::DayToNight || TimeOfDay == ETimeOfDay::NightToDay || NewStreak < StreakThreshold)
 	{
 		return;
 	}
-	if (NewStreak > StreakThreshold)
+
+	if (FPlayerSettings Settings = LoadPlayerSettings(); !Settings.User.bNightModeUnlocked)
 	{
-		if (FPlayerSettings Settings = LoadPlayerSettings(); !Settings.User.bNightModeUnlocked)
+		Settings.User.bNightModeUnlocked = true;
+		SavePlayerSettings(Settings);
+		Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.
+			Broadcast(Settings);
+		if (TimeOfDay == ETimeOfDay::Day)
 		{
-			Settings.User.bNightModeUnlocked = true;
-			SavePlayerSettings(Settings);
-			Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.
-				Broadcast(Settings);
-			if (TimeOfDay == ETimeOfDay::Day)
-			{
-				BeginTransitionToNight();
-			}
+			BeginTransitionToNight();
 		}
 	}
+
 }
 
 void ARangeLevelScriptActor::OnTimelineCompletedCallback()

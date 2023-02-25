@@ -439,10 +439,8 @@ void ATargetSpawner::SetNewTrackingDirection()
 		                                                        FRotator::ZeroRotator, TargetSpawnParams);
 		BeatTrackTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		LocationBeforeDirectionChange = SpawnBox->Bounds.Origin;
-
-		/** Broadcast to GameModeActorBase and DefaultCharacter that a BeatTrack target has spawned */
-		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnBeatTrackTargetSpawned.Broadcast(
-			BeatTrackTarget);
+		
+		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(BeatTrackTarget);
 	}
 	if (BeatTrackTarget)
 	{

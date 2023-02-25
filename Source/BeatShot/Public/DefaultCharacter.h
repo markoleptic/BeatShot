@@ -133,6 +133,10 @@ public:
 	/** Sets the speed of the timeline playback */
 	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD) { TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD; }
 
+	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
+	UFUNCTION()
+	void PassTrackingTargetToGun(ASphereTarget* TrackingTarget);
+
 	/** Reference to direction of fire */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
 	UArrowComponent* ShotDirection;
@@ -203,10 +207,6 @@ private:
 
 	/** Triggered on pressing E or Shift + E */
 	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
-
-	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
-	UFUNCTION()
-	void PassTrackingTargetToGun(ASphereTarget* TrackingTarget);
 
 	/** Float interpolation function bound to AimBotTimeline, which sets the rotation of the camera */
 	UFUNCTION()

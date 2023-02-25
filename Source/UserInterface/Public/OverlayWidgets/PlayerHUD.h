@@ -21,7 +21,6 @@ class USERINTERFACE_API UPlayerHUD : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* TargetBar;
@@ -59,7 +58,7 @@ public:
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD. Called from GameModeActorBase */
 	UFUNCTION()
 	void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
-	/** Callback function for OnAAManagerSecondPassed to update the current song progress. Called every second by DefaultGameMode */
+	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
 	UFUNCTION()
 	void UpdateSongProgress(const float PlaybackTime);
 
