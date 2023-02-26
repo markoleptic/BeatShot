@@ -36,7 +36,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInterface* VisualGridMaterial;
 
-	void SetCustomDataValues(const TArray<FVector> Points, const FVector Center, const FVector Extent, const float scale, const int32 Value);
+	void SetCustomDataValues(const TArray<FVector> Points, const FVector Center, const FVector Extents, const float RowScale, const float ColScale, const int32 Value);
 
 	int32 NumRowsGrid;
 	int32 NumColsGrid;

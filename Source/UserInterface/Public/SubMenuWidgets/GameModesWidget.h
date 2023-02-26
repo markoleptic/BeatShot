@@ -239,7 +239,7 @@ protected:
 	const float MaxPlayerDelayValue = 0.5;
 	const float PlayerDelayGridSnapSize = 0.01;
 
-	const float MinLifespanValue = 0.1;
+	const float MinLifespanValue = 0.25;
 	const float MaxLifespanValue = 2;
 	const float LifespanGridSnapSize = 0.01;
 	
@@ -257,7 +257,8 @@ protected:
 	const float MaxVerticalSpreadValue = 1000;
 	const float MinForwardSpreadValue = 100;
 	const float MaxForwardSpreadValue = 5000;
-	const float SpreadGridSnapSize = 10;
+	const float HorizontalSpreadGridSnapSize = 50;
+	const float VerticalSpreadGridSnapSize = 25;
 	
 	
 	const float MinTargetScaleValue = 0.1;

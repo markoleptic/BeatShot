@@ -241,24 +241,18 @@ private:
 
 	/** Returns SpawnBox's origin, as it is in the game */
 	FVector GetBoxOrigin_Unscaled() const;
-
-	/** Returns SpawnBox's origin, scaled by SpawnMemoryScale */
-	FVector GetBoxOrigin_Scaled() const;
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
 	void SetBoxExtents_Dynamic() const;
 
 	/** Sets CustomDataValues for VisualGrid */
-	void UpdateVisualGrid(const FVector Center, const int32 CustomDataValue) const;
+	void UpdateVisualGrid(const TArray<FVector> Points, const int32 CustomDataValue) const;
 
 	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
 	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
 
 	/** Initializes the SpawnCounter array */
 	void InitializeSpawnCounter();
-
-	/** Clamps a point inside the SpawnBox's BoxBounds */
-	FVector ClampInsideBox(FVector VectorToClamp) const;
 
 #pragma region General Spawning Variables
 
@@ -318,18 +312,17 @@ private:
 	 *  OnTargetTimeout */
 	UPROPERTY()
 	TArray<FRecentTarget> RecentTargets;
+	
 
 	/** Scale the 2D representation of the spawn area down by this factor */
 	float SpawnMemoryScale;
+	float SpawnMemoryScaleZ;
 
 	FTimerDelegate RemoveFromRecentDelegate;
 
 	FActorSpawnParameters TargetSpawnParams;
 
 	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
-
-	int32 NumRowsGrid;
-	int32 NumColsGrids;
 
 	/** An array storing every possible point the target could spawn at, the total spawns at the point, and the total
 	 *  player hits at that point */

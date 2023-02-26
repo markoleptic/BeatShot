@@ -504,8 +504,8 @@ void UGameModesWidget::OnHeadShotOnlyCheckStateChanged(const bool bHeadshotOnly)
 	VerticalSpreadSlider->SetLocked(false);
 	VerticalSpreadValue->SetIsReadOnly(false);
 	OnEditableTextBoxChanged(FText::AsNumber(MaxVerticalSpreadValue), VerticalSpreadValue, VerticalSpreadSlider,
-	                         SpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
-	OnSliderChanged(MaxVerticalSpreadValue, VerticalSpreadValue, SpreadGridSnapSize);
+	                         VerticalSpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
+	OnSliderChanged(MaxVerticalSpreadValue, VerticalSpreadValue, VerticalSpreadGridSnapSize);
 }
 
 void UGameModesWidget::OnMinTargetDistanceSliderChanged(const float NewMinTargetDistance)
@@ -522,23 +522,23 @@ void UGameModesWidget::OnMinTargetDistanceValueCommitted(const FText& NewMinTarg
 
 void UGameModesWidget::OnHorizontalSpreadSliderChanged(const float NewHorizontalSpread)
 {
-	OnSliderChanged(NewHorizontalSpread, HorizontalSpreadValue, SpreadGridSnapSize);
+	OnSliderChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadGridSnapSize);
 }
 
 void UGameModesWidget::OnHorizontalSpreadValueCommitted(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, SpreadGridSnapSize,
+	OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, HorizontalSpreadGridSnapSize,
 	                         MinHorizontalSpreadValue, MaxHorizontalSpreadValue);
 }
 
 void UGameModesWidget::OnVerticalSpreadSliderChanged(const float NewVerticalSpread)
 {
-	OnSliderChanged(NewVerticalSpread, VerticalSpreadValue, SpreadGridSnapSize);
+	OnSliderChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadGridSnapSize);
 }
 
 void UGameModesWidget::OnVerticalSpreadValueCommitted(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, SpreadGridSnapSize,
+	OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, VerticalSpreadGridSnapSize,
 	                         MinVerticalSpreadValue, MaxVerticalSpreadValue);
 }
 
@@ -554,12 +554,12 @@ void UGameModesWidget::OnForwardSpreadCheckStateChanged(const bool bUseForwardSp
 
 void UGameModesWidget::OnForwardSpreadSliderChanged(const float NewForwardSpread)
 {
-	OnSliderChanged(NewForwardSpread, ForwardSpreadValue, SpreadGridSnapSize);
+	OnSliderChanged(NewForwardSpread, ForwardSpreadValue, HorizontalSpreadGridSnapSize);
 }
 
 void UGameModesWidget::OnForwardSpreadValueCommitted(const FText& NewForwardSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewForwardSpread, ForwardSpreadValue, ForwardSpreadSlider, SpreadGridSnapSize,
+	OnEditableTextBoxChanged(NewForwardSpread, ForwardSpreadValue, ForwardSpreadSlider, HorizontalSpreadGridSnapSize,
 	                         MinForwardSpreadValue, MaxForwardSpreadValue);
 }
 
@@ -885,14 +885,14 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 	ReturnStruct.BoxBounds = FVector(0,
 	                                 FMath::GridSnap(
 		                                 FMath::Clamp(HorizontalSpreadSlider->GetValue(), MinHorizontalSpreadValue,
-		                                              MaxHorizontalSpreadValue), SpreadGridSnapSize),
+		                                              MaxHorizontalSpreadValue), HorizontalSpreadGridSnapSize),
 	                                 FMath::GridSnap(
 		                                 FMath::Clamp(VerticalSpreadSlider->GetValue(), MinVerticalSpreadValue,
-		                                              MaxVerticalSpreadValue), SpreadGridSnapSize));
+		                                              MaxVerticalSpreadValue), VerticalSpreadGridSnapSize));
 	ReturnStruct.bMoveTargetsForward = ForwardSpreadCheckBox->IsChecked();
 	ReturnStruct.MoveForwardDistance = FMath::GridSnap(
 		FMath::Clamp(ForwardSpreadSlider->GetValue(), MinForwardSpreadValue, MaxForwardSpreadValue),
-		SpreadGridSnapSize);
+		HorizontalSpreadGridSnapSize);
 	ReturnStruct.UseDynamicSizing = DynamicTargetScaleCheckBox->IsChecked();
 	ReturnStruct.MinTargetScale = FMath::GridSnap(
 		FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue),

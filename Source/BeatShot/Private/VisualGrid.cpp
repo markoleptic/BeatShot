@@ -43,20 +43,16 @@ void AVisualGrid::CreateGrid(const int32 X, const int32 Y)
 	UE_LOG(LogTemp, Display, TEXT("CountfromCreateGrid: %d"), Count);
 }
 
-void AVisualGrid::SetCustomDataValues(const TArray<FVector> Points, const FVector Center, const FVector Extent, const float scale, 
-	const int32 Value)
+void AVisualGrid::SetCustomDataValues(const TArray<FVector> Points, const FVector Center, const FVector Extents, const float RowScale, const float ColScale, const int32 Value)
 {
-	const FTransform SpawnMemoryTransform =  FTransform(FRotator::ZeroRotator, FVector::ZeroVector, FVector(scale));
-	const FBox Box = FBox::BuildAABB(Center, Extent).TransformBy(SpawnMemoryTransform);
-	FVector BoxCenter;
-	FVector Extents;
-	Box.GetCenterAndExtents(BoxCenter, Extents);
-				
+	
 	for (const FVector Vector : Points)
 	{
-		const float FloatValue = roundf((Vector.Y + Extents.Y) + (((NumRowsGrid)* (NumColsGrid-1)) - (roundf(BoxCenter.Z + Extents.Z - Vector.Z) * NumRowsGrid)));
+		FVector(Center.X, Vector.Y * RowScale, Center.Z + Vector.Z * ColScale);
+		const int32 Y = (Extents.Y + Vector.Y) * RowScale;
+		const int32 Z = ((Extents.Z + Vector.Z - Center.Z) * ColScale) * NumRowsGrid;
 		InstancedMesh->SetCustomDataValue(
-			FloatValue, 0,
+			Y + Z, 0,
 			Value, true);
 	}
 }
