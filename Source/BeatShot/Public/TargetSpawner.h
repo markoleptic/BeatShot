@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SphereTarget.h"
 #include "SaveGameCustomGameMode.h"
+#include "SaveGamePlayerScore.h"
 #include "GameFramework/Actor.h"
 #include "TargetSpawner.generated.h"
 
@@ -169,15 +170,33 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION(CallInEditor)
+	void ShowDebug_SpawnBox();
+	
+	UFUNCTION(CallInEditor)
+	void HideDebug_SpawnBox();
+
+	UFUNCTION(CallInEditor)
+	void ShowDebug_SpawnMemory();
+
+	UFUNCTION(CallInEditor)
+	void HideDebug_SpawnMemory();
+
+	bool bShowDebug_SpawnBox;
+	bool bShowDebug_SpawnMemory;
+
 public:
 	/* Called from selected DefaultGameMode */
 	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 
-	/* Called from selected GameModeActorBase */
+	/* Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
 
 	/* Called from DefaultGameMode */
 	void CallSpawnFunction();
+
+	/* Called from DefaultGameMode, returns the player accuracy matrix */
+	TArray<F2DArray> GetLocationAccuracy();
 
 private:
 	/** Create BeatGrid Targets */
@@ -223,6 +242,9 @@ private:
 	/** Removes the RecentTargetStruct associated with the GuidToRemove from RecentTargets */
 	UFUNCTION()
 	void RemoveFromRecentTargets(const FGuid GuidToRemove);
+
+	/** Adds a FRecentTarget to the RecentTargets array */
+	int32 AddToRecentTargets(FRecentTarget RecentTarget);
 	
 	/** Returns an array of valid spawn points */
 	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
@@ -233,10 +255,10 @@ private:
 	/** Returns SpawnBox's BoxExtents as they are in the game, before any scaling or dynamic changes */
 	FVector GetBoxExtents_Unscaled_Static() const;
 
-	/** Returns SpawnBox's current BoxExtents, scaled by SpawnMemoryScale */
+	/** Returns SpawnBox's current BoxExtents, scaled by SpawnMemoryScaleY */
 	FVector GetBoxExtents_Scaled_Current() const;
 
-	/** Returns SpawnBox's original BoxExtents, scaled by SpawnMemoryScale */
+	/** Returns SpawnBox's original BoxExtents, scaled by SpawnMemoryScaleY */
 	FVector GetBoxExtents_Scaled_Static() const;
 
 	/** Returns SpawnBox's origin, as it is in the game */
@@ -314,8 +336,9 @@ private:
 	TArray<FRecentTarget> RecentTargets;
 	
 
-	/** Scale the 2D representation of the spawn area down by this factor */
-	float SpawnMemoryScale;
+	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
+	float SpawnMemoryScaleY;
+	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
 	float SpawnMemoryScaleZ;
 
 	FTimerDelegate RemoveFromRecentDelegate;

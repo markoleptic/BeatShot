@@ -257,8 +257,8 @@ protected:
 	const float MaxVerticalSpreadValue = 1000;
 	const float MinForwardSpreadValue = 100;
 	const float MaxForwardSpreadValue = 5000;
-	const float HorizontalSpreadGridSnapSize = 50;
-	const float VerticalSpreadGridSnapSize = 25;
+	const float HorizontalSpreadGridSnapSize = 100;
+	const float VerticalSpreadGridSnapSize = 100;
 	
 	
 	const float MinTargetScaleValue = 0.1;

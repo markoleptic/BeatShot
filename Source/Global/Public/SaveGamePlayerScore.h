@@ -7,6 +7,16 @@
 #include "GameFramework/SaveGame.h"
 #include "SaveGamePlayerScore.generated.h"
 
+/* Why aren't 2d arrays a thing */
+USTRUCT()
+struct F2DArray
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	TArray<float> Accuracy;
+};
+
 /* Used to load and save player scores */
 USTRUCT(BlueprintType)
 struct FPlayerScore
@@ -80,6 +90,10 @@ struct FPlayerScore
 	/* The maximum consecutive targets hit in a row */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 Streak;
+
+	/* The accuracy at each point in the grid */
+	UPROPERTY()
+	TArray<F2DArray> LocationAccuracy;
 
 	/* Whether or not this instance has been saved to the database yet */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")

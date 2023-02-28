@@ -128,6 +128,7 @@ void ADefaultGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool
 
 	if (TargetSpawner)
 	{
+		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
 		TargetSpawner->SetShouldSpawn(false);
 		TargetSpawner->Destroy();
 		TargetSpawner = nullptr;
