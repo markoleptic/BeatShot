@@ -290,8 +290,9 @@ private:
 
 #pragma region Utility
 
-	/** Checks if the value is NaN so we don't save a NaN value */
-	static float CheckFloatNaN(const float ValueToCheck, const float ValueToRound);
+	static float FloatDivide(const float Num, const float Denom);
 
 #pragma endregion
 };
+
+

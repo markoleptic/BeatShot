@@ -495,12 +495,14 @@ void ADefaultGameMode::LoadMatchingPlayerScores()
 
 void ADefaultGameMode::HandleScoreSaving(const bool bShouldSavePlayerScores)
 {
-	const FPlayerScore Scores = GetCompletedPlayerScores();
-	if (!bShouldSavePlayerScores || Scores.Score <= 0.f)
+	/** don't save scores if score is zero */
+	if (!bShouldSavePlayerScores || CurrentPlayerScore.Score <= 0 || (CurrentPlayerScore.GameModeActorName == EGameModeActorName::Custom &&
+			CurrentPlayerScore.CustomGameModeName == ""))
 	{
 		OnPostScoresResponse.Broadcast(ELoginState::None);
 		return;
 	}
+	const FPlayerScore Scores = GetCompletedPlayerScores();
 	TArray<FPlayerScore> AllSavedScores = LoadPlayerScores();
 	AllSavedScores.Emplace(Scores);
 	SavePlayerScores(AllSavedScores);
@@ -509,37 +511,21 @@ void ADefaultGameMode::HandleScoreSaving(const bool bShouldSavePlayerScores)
 
 FPlayerScore ADefaultGameMode::GetCompletedPlayerScores()
 {
-	/** don't save scores if score is zero */
-	if (CurrentPlayerScore.Score <= 0 ||
-		(CurrentPlayerScore.GameModeActorName == EGameModeActorName::Custom &&
-			CurrentPlayerScore.CustomGameModeName == ""))
-	{
-		return FPlayerScore();
-	}
-
 	/** save current time */
 	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
-	if (CurrentPlayerScore.TotalPossibleDamage > 0.01f)
+	if (GameModeActorStruct.IsBeatTrackMode)
 	{
-		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage,
-		                                            100);
-		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.Score / CurrentPlayerScore.TotalPossibleDamage,
-		                                              100);
+		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
+		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
 	}
 	else
 	{
-		CurrentPlayerScore.AvgTimeOffset = CheckFloatNaN(
-			CurrentPlayerScore.TotalTimeOffset / CurrentPlayerScore.TargetsHit, 1000);
-		CurrentPlayerScore.Accuracy = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.ShotsFired, 100);
-		CurrentPlayerScore.Completion = CheckFloatNaN(CurrentPlayerScore.TargetsHit / CurrentPlayerScore.TargetsSpawned,
-		                                              100);
+		CurrentPlayerScore.AvgTimeOffset = FloatDivide(CurrentPlayerScore.TotalTimeOffset, CurrentPlayerScore.TargetsHit);
+		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.ShotsFired);
+		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.TargetsSpawned);
 	}
-	CurrentPlayerScore.HighScore = CheckFloatNaN(CurrentPlayerScore.HighScore, 100);
-	CurrentPlayerScore.Score = CheckFloatNaN(CurrentPlayerScore.Score, 100);
-	CurrentPlayerScore.SongLength = CheckFloatNaN(CurrentPlayerScore.SongLength, 100);
-
 	return CurrentPlayerScore;
 }
 
@@ -649,7 +635,6 @@ void ADefaultGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 		{
 			Character->PassTrackingTargetToGun(SpawnedTarget);
 		}
-
 	}
 }
 
@@ -684,6 +669,7 @@ void ADefaultGameMode::UpdateStreak(const int32 Streak, const FVector Location)
 void ADefaultGameMode::UpdateTargetsHit()
 {
 	CurrentPlayerScore.TargetsHit++;
+	UE_LOG(LogTemp, Display, TEXT("TargetsHit: %d"), CurrentPlayerScore.TargetsHit);
 }
 
 void ADefaultGameMode::UpdateHighScore()
@@ -694,15 +680,14 @@ void ADefaultGameMode::UpdateHighScore()
 	}
 }
 
-float ADefaultGameMode::CheckFloatNaN(const float ValueToCheck, const float ValueToRound)
+float ADefaultGameMode::FloatDivide(const float Num, const float Denom)
 {
-	if (!isnan(roundf(ValueToRound * ValueToCheck) / ValueToRound))
+	if (Denom == 0)
 	{
-		return roundf(ValueToRound * ValueToCheck) / ValueToRound;
+		return 0;
 	}
-	return 0;
+	return Num / Denom;
 }
-
 
 //AATracker->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCaptureTracker);
 //AAPlayer->OnCapturedData.RemoveDynamic(this, &ADefaultGameMode::FeedStreamCapturePlayer);

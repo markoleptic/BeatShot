@@ -261,13 +261,13 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 	F2DArray Row = F2DArray();
 	for (const FVectorCounter Counter : SpawnCounter)
 	{
-		if (Counter.TotalSpawns != 0)
+		if (Counter.TotalSpawns == -1)
 		{
-			Row.Accuracy.Add(static_cast<float>(Counter.TotalHits) / static_cast<float>(Counter.TotalSpawns));
+			Row.Accuracy.Add(-1);
 		}
 		else
 		{
-			Row.Accuracy.Add(0.f);
+			Row.Accuracy.Add(static_cast<float>(Counter.TotalHits) / static_cast<float>(Counter.TotalSpawns));
 		}
 		if (Counter.Point.Y == GetBoxExtents_Unscaled_Static().Y)
 		{
@@ -482,7 +482,14 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 {
 	if (const int32 Index = SpawnCounter.Find(FVectorCounter(DestroyedTarget->GetActorLocation())); Index != INDEX_NONE)
 	{
-		SpawnCounter[Index].TotalSpawns++;
+		if (SpawnCounter[Index].TotalSpawns == -1)
+		{
+			SpawnCounter[Index].TotalSpawns = 1;
+		}
+		else
+		{
+			SpawnCounter[Index].TotalSpawns++;
+		}
 		if (!DidExpire)
 		{
 			SpawnCounter[Index].TotalHits++;
@@ -826,7 +833,7 @@ TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector Center, const
 void ATargetSpawner::InitializeSpawnCounter()
 {
 	const FVector Extents = GetBoxExtents_Unscaled_Static();
-	for (float Z = -Extents.Z; Z <= Extents.Z + 0.01; Z += 1/SpawnMemoryScaleZ)
+	for (float Z = Extents.Z; Z >= -Extents.Z - 0.01; Z -= 1/SpawnMemoryScaleZ)
 	{
 		for (float Y = -Extents.Y; Y <= Extents.Y + 0.01; Y += 1/SpawnMemoryScaleY)
 		{

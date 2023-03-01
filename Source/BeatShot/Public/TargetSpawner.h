@@ -128,7 +128,7 @@ struct FVectorCounter
 	FVectorCounter(const FVector NewPoint)
 	{
 		Point = NewPoint;
-		TotalSpawns = 0;
+		TotalSpawns = -1;
 		TotalHits = 0;
 	}
 
