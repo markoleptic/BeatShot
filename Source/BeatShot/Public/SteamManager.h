@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "ThirdParty/Steamworks/Steamv151/sdk/public/steam/steam_api.h"
+#include "ThirdParty/Steamworks/Steamv153/sdk/public/steam/steam_api.h"
 #include "SteamManager.generated.h"
 
 class UDefaultGameInstance;

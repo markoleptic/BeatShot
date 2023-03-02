@@ -14,7 +14,6 @@ class UBoxComponent;
 class UMaterialInterface;
 class AStaticMeshActor;
 class UActorComponent;
-class AVisualGrid;
 
 /** A struct representing the space in the grid that a recently spawned target occupies */
 USTRUCT()
@@ -38,8 +37,9 @@ struct FRecentTarget
 		TargetScale = 0.f;
 	}
 
-	FRecentTarget(const FGuid Guid)
+	explicit FRecentTarget(const FGuid Guid)
 	{
+		CenterVector = FVector::ZeroVector;
 		TargetGuid = Guid;
 		TargetScale = 0.f;
 	}
@@ -55,47 +55,6 @@ struct FRecentTarget
 	FORCEINLINE bool operator == (const FRecentTarget& Other) const
 	{
 		if (TargetGuid == Other.TargetGuid)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
-/** A struct representing a point in a 2D grid with information about that point */
-USTRUCT()
-struct FGridPoint
-{
-	GENERATED_BODY()
-	
-	/** The coordinate for GridPoint, in XY space */
-	FIntPoint Point;
-	
-	/** A counter to increment this point */
-	int32 Count;
-	
-	void Init(const FIntPoint InitPoint)
-	{
-		Point = InitPoint;
-	}
-
-	FGridPoint()
-	{
-		Point = FIntPoint(0,0);
-		Count = 0;
-	}
-
-	/** Increment the Count */
-	FGridPoint operator++(int)
-	{
-		FGridPoint Temp = *this;
-		++Count;
-		return Temp;
-	}
-
-	FORCEINLINE bool operator == (const FGridPoint& Other) const
-	{
-		if (Point == Other.Point)
 		{
 			return true;
 		}
@@ -182,20 +141,17 @@ protected:
 	UFUNCTION(CallInEditor)
 	void HideDebug_SpawnMemory();
 
-	bool bShowDebug_SpawnBox;
-	bool bShowDebug_SpawnMemory;
-
 public:
-	/* Called from selected DefaultGameMode */
+	/** Called from selected DefaultGameMode */
 	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
 
-	/* Called from selected DefaultGameMode */
+	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
 
-	/* Called from DefaultGameMode */
+	/** Called from DefaultGameMode */
 	void CallSpawnFunction();
 
-	/* Called from DefaultGameMode, returns the player accuracy matrix */
+	/** Called from DefaultGameMode, returns the player accuracy matrix */
 	TArray<F2DArray> GetLocationAccuracy();
 
 private:
@@ -239,26 +195,35 @@ private:
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
+	/** Adds a FRecentTarget to the RecentTargets array */
+	int32 AddToRecentTargets(const ASphereTarget* SpawnTarget, const float Scale);
+
+	/** Adds a SphereTarget to the ActiveTargets array */
+	int32 AddToActiveTargets(ASphereTarget* SpawnTarget);
+
 	/** Removes the RecentTargetStruct associated with the GuidToRemove from RecentTargets */
 	UFUNCTION()
 	void RemoveFromRecentTargets(const FGuid GuidToRemove);
 
-	/** Adds a FRecentTarget to the RecentTargets array */
-	int32 AddToRecentTargets(FRecentTarget RecentTarget);
+	/** Removes the DestroyedTarget from ActiveTargets */
+	void RemoveFromActiveTargets(ASphereTarget* SpawnTarget);
 	
 	/** Returns an array of valid spawn points */
 	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
 
-	/** Returns a copy of the RecentTargetArray, used to determine future target spawn locations */
-	TArray<FRecentTarget> GetRecentTargets() const;
+	/** Returns a copy of the RecentTargets, used to determine future target spawn locations */
+	TArray<FRecentTarget> GetRecentTargets() const { return RecentTargets; }
 
-	/** Returns SpawnBox's BoxExtents as they are in the game, before any scaling or dynamic changes */
+	/** Returns a copy of ActiveTargets, used to move targets forward if game mode permits */
+	TArray<ASphereTarget*> GetActiveTargets() const { return ActiveTargets; }
+
+	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any scaling or dynamic changes */
 	FVector GetBoxExtents_Unscaled_Static() const;
 
-	/** Returns SpawnBox's current BoxExtents, scaled by SpawnMemoryScaleY */
+	/** Returns SpawnBox's current BoxExtents, scaled by SpawnMemoryScaleY and SpawnMemoryScaleZ */
 	FVector GetBoxExtents_Scaled_Current() const;
 
-	/** Returns SpawnBox's original BoxExtents, scaled by SpawnMemoryScaleY */
+	/** Returns SpawnBox's original BoxExtents, scaled by SpawnMemoryScaleY and SpawnMemoryScaleZ */
 	FVector GetBoxExtents_Scaled_Static() const;
 
 	/** Returns SpawnBox's origin, as it is in the game */
@@ -266,9 +231,6 @@ private:
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
 	void SetBoxExtents_Dynamic() const;
-
-	/** Sets CustomDataValues for VisualGrid */
-	void UpdateVisualGrid(const TArray<FVector> Points, const int32 CustomDataValue) const;
 
 	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
 	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
@@ -282,19 +244,71 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	UBoxComponent* SpawnBox;
 
-	/** Whether or not the last target spawned in center of spawn area, used for SingleBeat */
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	bool LastTargetSpawnedCenter = false;
-
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	TSubclassOf<ASphereTarget> ActorToSpawn;
 
+	/** The spawn area */
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	UCurveFloat* DynamicSpawnCurve;
+
+	/** Initialized at start of game mode by DefaultGameMode */
+	FGameModeActorStruct GameModeActorStruct;
+
+	/** Whether or not the last target spawned in center of spawn area, used for SingleBeat */
+	bool LastTargetSpawnedCenter = false;
+	
 	/** Changed by GameModeActorBase */
-	bool ShouldSpawn;
+	bool ShouldSpawn = false;
 
 	/** Whether or not to skip the spawn of this target if a new Target location was not found */
-	bool bSkipNextSpawn;
+	bool bSkipNextSpawn = false;
+
+	/** Whether or not to show Debug SpawnBox outline */
+	bool bShowDebug_SpawnBox = false;
+
+	/** Whether or not to show Debug components showing the SpawnMemory */
+	bool bShowDebug_SpawnMemory = false;
+	
+	/** Location to spawn the next/current target */
+	FVector SpawnLocation;
+	
+	/** Consecutively destroyed targets */
+	int32 ConsecutiveTargetsHit;
+
+	/** The time to use when looking up values from DynamicSpawnCurve */
+	int32 DynamicSpawnScale;
+
+	/** An array of active SphereTargets that have not been destroyed, used to move targets forward */
+	UPROPERTY()
+	TArray<ASphereTarget*> ActiveTargets;
+	
+	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
+	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
+	 *  OnTargetTimeout */
+	UPROPERTY()
+	TArray<FRecentTarget> RecentTargets;
+
+	/** Stores all possible spawn locations and the total spawns & player hits at each location */
+	TArray<FVectorCounter> SpawnCounter;
+
+	/** The scale to apply to the next/current target */
+	float TargetScale;
+	
+	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
+	float SpawnMemoryScaleY;
+	
+	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
+	float SpawnMemoryScaleZ;
+
+	/** Delegate used to bind a timer handle to RemoveFromRecentTargets() inside of OnTargetTimeout() */
+	FTimerDelegate RemoveFromRecentDelegate;
+
+	/** Spawn parameters for ASphereTarget */
+	FActorSpawnParameters TargetSpawnParams;
+
+	/** The default location to spawn the SpawnBox */
+	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
 
 	/** Base size of the sphere target */
 	const float SphereTargetRadius = 50.f;
@@ -308,48 +322,7 @@ private:
 	/** Distance between floor and HeadshotHeight */
 	const float HeadshotHeight = 160.f;
 
-	/** Initialized at start of game mode by DefaultGameMode */
-	FGameModeActorStruct GameModeActorStruct;
-
-	/** Location to spawn the next/current target */
-	FVector SpawnLocation;
-
-	/** The scale to apply to the next/current target */
-	float TargetScale;
-
-	/** consecutively destroyed targets */
-	int32 ConsecutiveTargetsHit;
-
-	/** number used to dynamically change spawn area size and target size, if dynamic settings are enabled */
-	int32 DynamicScaleFactor;
-
-	/** An array of SphereTargets used to move targets forward after they have spawned (if game mode settings permit).
-	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
-	 *  OnTargetTimeout */
-	UPROPERTY()
-	TArray<ASphereTarget*> ActiveTargetArray;
-	
-	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
-	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
-	 *  OnTargetTimeout */
-	UPROPERTY()
-	TArray<FRecentTarget> RecentTargets;
-	
-
-	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
-	float SpawnMemoryScaleY;
-	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
-	float SpawnMemoryScaleZ;
-
-	FTimerDelegate RemoveFromRecentDelegate;
-
-	FActorSpawnParameters TargetSpawnParams;
-
-	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
-
-	/** An array storing every possible point the target could spawn at, the total spawns at the point, and the total
-	 *  player hits at that point */
-	TArray<FVectorCounter> SpawnCounter;
+	const FVector MaxBoxExtent = {0, 1600, 500};
 
 #pragma endregion
 
@@ -396,19 +369,6 @@ private:
 	bool InitialBeatGridTargetActivated;
 
 #pragma endregion
-
-protected:
-
-#pragma region Experimental
 	
-	UPROPERTY(EditDefaultsOnly)
-	AVisualGrid* VisualGrid;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AVisualGrid> VisualGridClass;
-
-#pragma endregion
 };
-
-
 

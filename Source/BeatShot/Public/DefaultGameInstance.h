@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ThirdParty/Steamworks/Steamv151/sdk/public/steam/steam_api.h"
+#include "ThirdParty/Steamworks/Steamv153/sdk/public/steam/steam_api.h"
 #include "SaveGameCustomGameMode.h"
 #include "SaveLoadInterface.h"
 #include "Engine/GameInstance.h"

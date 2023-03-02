@@ -14,10 +14,10 @@ class UChildActorComponent;
 UENUM(BlueprintType)
 enum class EPlatformTransitionType : uint8
 {
-	None UMETA(DisplayName, "MoveUpByInteract"),
-	MoveUpByInteract UMETA(DisplayName, "MoveUpByInteract"),
-	MoveDownByInteract UMETA(DisplayName, "MoveDownByInteract"),
-	MoveDownByStepOff UMETA(DisplayName, "MoveDownByStepOff")
+	None UMETA(DisplayName="MoveUpByInteract"),
+	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
+	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")
 };
 
 UCLASS()

@@ -12,11 +12,11 @@
 UENUM(BlueprintType)
 enum class EGameModeActorName : uint8
 {
-	Custom UMETA(DisplayName, "Custom"),
-	SingleBeat UMETA(DisplayName, "SingleBeat"),
-	MultiBeat UMETA(DisplayName, "MultiBeat"),
-	BeatGrid UMETA(DisplayName, "BeatGrid"),
-	BeatTrack UMETA(DisplayName, "BeatTrack")
+	Custom UMETA(DisplayName="Custom"),
+	SingleBeat UMETA(DisplayName="SingleBeat"),
+	MultiBeat UMETA(DisplayName="MultiBeat"),
+	BeatGrid UMETA(DisplayName="BeatGrid"),
+	BeatTrack UMETA(DisplayName="BeatTrack")
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
@@ -25,11 +25,11 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGa
 UENUM(BlueprintType)
 enum class ESpreadType : uint8
 {
-	None UMETA(DisplayName, "None"),
-	DynamicEdgeOnly UMETA(DisplayName, "Dynamic Edge Only"),
-	DynamicRandom UMETA(DisplayName, "Dynamic Random"),
-	StaticNarrow UMETA(DisplayName, "Static Narrow"),
-	StaticWide UMETA(DisplayName, "Static Wide")
+	None UMETA(DisplayName="None"),
+	DynamicEdgeOnly UMETA(DisplayName="Dynamic Edge Only"),
+	DynamicRandom UMETA(DisplayName="Dynamic Random"),
+	StaticNarrow UMETA(DisplayName="Static Narrow"),
+	StaticWide UMETA(DisplayName="Static Wide")
 };
 
 inline bool IsDynamicSpreadType(const ESpreadType SpreadType) { return (SpreadType == ESpreadType::DynamicEdgeOnly || SpreadType == ESpreadType::DynamicRandom); }
@@ -40,10 +40,10 @@ ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::Static
 UENUM(BlueprintType)
 enum class EGameModeDifficulty : uint8
 {
-	None UMETA(DisplayName, "None"),
-	Normal UMETA(DisplayName, "Normal"),
-	Hard UMETA(DisplayName, "Hard"),
-	Death UMETA(DisplayName, "Death")
+	None UMETA(DisplayName="None"),
+	Normal UMETA(DisplayName="Normal"),
+	Hard UMETA(DisplayName="Hard"),
+	Death UMETA(DisplayName="Death")
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
@@ -52,9 +52,9 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGa
 UENUM()
 enum class EAudioFormat : uint8
 {
-	None UMETA(DisplayName, "None"),
-	File UMETA(DisplayName, "File"),
-	Capture UMETA(DisplayName, "Capture")
+	None UMETA(DisplayName="None"),
+	File UMETA(DisplayName="File"),
+	Capture UMETA(DisplayName="Capture")
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Capture);
 
