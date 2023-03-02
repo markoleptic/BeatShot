@@ -12,15 +12,15 @@
 UENUM()
 enum class ESettingType : uint8
 {
-	AntiAliasing UMETA(DisplayName, "AntiAliasing"),
-	GlobalIllumination UMETA(DisplayName, "GlobalIllumination"),
-	PostProcessing UMETA(DisplayName, "PostProcessing"),
-	Reflection UMETA(DisplayName, "Reflection"),
-	Shadow UMETA(DisplayName, "Shadow"),
-	Shading UMETA(DisplayName, "Shading"),
-	Texture UMETA(DisplayName, "Texture"),
-	ViewDistance UMETA(DisplayName, "ViewDistance"),
-	VisualEffect UMETA(DisplayName, "VisualEffect")
+	AntiAliasing UMETA(DisplayName="AntiAliasing"),
+	GlobalIllumination UMETA(DisplayName="GlobalIllumination"),
+	PostProcessing UMETA(DisplayName="PostProcessing"),
+	Reflection UMETA(DisplayName="Reflection"),
+	Shadow UMETA(DisplayName="Shadow"),
+	Shading UMETA(DisplayName="Shading"),
+	Texture UMETA(DisplayName="Texture"),
+	ViewDistance UMETA(DisplayName="ViewDistance"),
+	VisualEffect UMETA(DisplayName="VisualEffect")
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ESettingType, ESettingType::AntiAliasing, ESettingType::VisualEffect);

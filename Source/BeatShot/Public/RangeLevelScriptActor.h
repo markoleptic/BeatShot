@@ -20,10 +20,10 @@ class UMaterialInstanceDynamic;
 UENUM(BlueprintType)
 enum class ETimeOfDay : uint8
 {
-	Day UMETA(DisplayName, "Day"),
-	Night UMETA(DisplayName, "Night"),
-	DayToNight UMETA(DisplayName, "DayToNight"),
-	NightToDay UMETA(DisplayName, "NightToDay"),
+	Day UMETA(DisplayName="Day"),
+	Night UMETA(DisplayName="Night"),
+	DayToNight UMETA(DisplayName="DayToNight"),
+	NightToDay UMETA(DisplayName="NightToDay"),
 };
 
 UCLASS()

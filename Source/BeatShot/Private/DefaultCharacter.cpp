@@ -208,12 +208,12 @@ void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettin
 	}
 }
 
-void ADefaultCharacter::StartFire() const
+void ADefaultCharacter::StartFire()
 {
 	Gun->StartFire();
 }
 
-void ADefaultCharacter::StopFire() const
+void ADefaultCharacter::StopFire()
 {
 	Gun->StopFire();
 }

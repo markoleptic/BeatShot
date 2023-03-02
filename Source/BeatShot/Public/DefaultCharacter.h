@@ -34,9 +34,9 @@ class UInputMappingContext;
 UENUM(BlueprintType)
 enum class EMovementType : uint8
 {
-	Sprinting UMETA(DisplayName, "Sprinting"),
-	Walking UMETA(DisplayName, "Walking"),
-	Crouching UMETA(DisplayName, "Crouching")
+	Sprinting UMETA(DisplayName="Sprinting"),
+	Walking UMETA(DisplayName="Walking"),
+	Crouching UMETA(DisplayName="Crouching")
 };
 
 /** Used to store movement properties for different movement types */
@@ -168,11 +168,11 @@ private:
 	void UpdateMovementValues(EMovementType NewMovementType);
 	
 	/** Begin firing gun */
-	void StartFire() const;
+	void StartFire();
 
 	/** Stop firing gun, if automatic fire */
 	UFUNCTION()
-	void StopFire() const;
+	void StopFire();
 
 	/** Move the character left/right and forward/back
 	 *	@param Value The value passed in by the Input Component

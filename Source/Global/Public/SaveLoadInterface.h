@@ -11,11 +11,11 @@
 UENUM()
 enum class ETransitionState : uint8
 {
-	StartFromMainMenu UMETA(DisplayName, "StartFromMainMenu"),
-	StartFromPostGameMenu UMETA(DisplayName, "StartFromPostGameMenu"),
-	Restart UMETA(DisplayName, "Restart"),
-	QuitToMainMenu UMETA(DisplayName, "QuitToMainMenu"),
-	QuitToDesktop UMETA(DisplayName, "QuitToDesktop")
+	StartFromMainMenu UMETA(DisplayName="StartFromMainMenu"),
+	StartFromPostGameMenu UMETA(DisplayName="StartFromPostGameMenu"),
+	Restart UMETA(DisplayName="Restart"),
+	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
+	QuitToDesktop UMETA(DisplayName="QuitToDesktop")
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::QuitToDesktop);
 

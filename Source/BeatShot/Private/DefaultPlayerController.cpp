@@ -61,7 +61,7 @@ void ADefaultPlayerController::HideMainMenu()
 {
 	if (MainMenu)
 	{
-		MainMenu->RemoveFromViewport();
+		MainMenu->RemoveFromParent();
 		MainMenu = nullptr;
 	}
 }
@@ -99,7 +99,7 @@ void ADefaultPlayerController::HidePauseMenu()
 {
 	if (PauseMenu)
 	{
-		PauseMenu->RemoveFromViewport();
+		PauseMenu->RemoveFromParent();
 		PauseMenu = nullptr;
 		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
 		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
@@ -116,7 +116,7 @@ void ADefaultPlayerController::HideCrossHair()
 {
 	if (CrossHair)
 	{
-		CrossHair->RemoveFromViewport();
+		CrossHair->RemoveFromParent();
 		CrossHair = nullptr;
 	}
 }
@@ -143,7 +143,7 @@ void ADefaultPlayerController::HidePlayerHUD()
 {
 	if (PlayerHUD)
 	{
-		PlayerHUD->RemoveFromViewport();
+		PlayerHUD->RemoveFromParent();
 		PlayerHUD = nullptr;
 		PlayerHUDActive = false;
 	}
@@ -173,7 +173,7 @@ void ADefaultPlayerController::HideCountdown()
 {
 	if (Countdown)
 	{
-		Countdown->RemoveFromViewport();
+		Countdown->RemoveFromParent();
 		Countdown = nullptr;
 		CountdownActive = false;
 	}
@@ -230,7 +230,7 @@ void ADefaultPlayerController::HidePostGameMenu()
 {
 	if (PostGameMenuWidget)
 	{
-		PostGameMenuWidget->RemoveFromViewport();
+		PostGameMenuWidget->RemoveFromParent();
 		PostGameMenuWidget = nullptr;
 		PostGameMenuActive = false;
 		SetInputMode(FInputModeGameOnly());
@@ -252,7 +252,7 @@ void ADefaultPlayerController::HideFPSCounter()
 {
 	if (FPSCounter)
 	{
-		FPSCounter->RemoveFromViewport();
+		FPSCounter->RemoveFromParent();
 		FPSCounter = nullptr;
 	}
 }
@@ -298,7 +298,7 @@ void ADefaultPlayerController::HideInteractInfo()
 {
 	if (InteractInfoWidget)
 	{
-		InteractInfoWidget->RemoveFromViewport();
+		InteractInfoWidget->RemoveFromParent();
 		InteractInfoWidget = nullptr;
 	}
 }
@@ -308,7 +308,7 @@ void ADefaultPlayerController::OnFadeScreenFromBlackFinish()
 	if (ScreenFadeWidget)
 	{
 		ScreenFadeWidget->OnFadeFromBlackFinish.RemoveAll(this);
-		ScreenFadeWidget->RemoveFromViewport();
+		ScreenFadeWidget->RemoveFromParent();
 		ScreenFadeWidget = nullptr;
 	}
 }

@@ -343,14 +343,14 @@ struct FAASettingsStruct
 UENUM()
 enum class ELoginState : uint8
 {
-	None UMETA(DisplayName, "None"),
-	NewUser UMETA(DisplayName, "NewUser"),
-	LoggedInHttp UMETA(DisplayName, "LoggedInHttp"),
-	LoggedInHttpAndBrowser UMETA(DisplayName, "LoggedInHttpAndBrowser"),
-	InvalidHttp UMETA(DisplayName, "InvalidHttp"),
-	InvalidBrowser UMETA(DisplayName, "InvalidBrowser"),
-	InvalidCredentials UMETA(DisplayName, "InvalidCredentials"),
-	TimeOut UMETA(DisplayName, "TimeOut"),
+	None UMETA(DisplayName="None"),
+	NewUser UMETA(DisplayName="NewUser"),
+	LoggedInHttp UMETA(DisplayName="LoggedInHttp"),
+	LoggedInHttpAndBrowser UMETA(DisplayName="LoggedInHttpAndBrowser"),
+	InvalidHttp UMETA(DisplayName="InvalidHttp"),
+	InvalidBrowser UMETA(DisplayName="InvalidBrowser"),
+	InvalidCredentials UMETA(DisplayName="InvalidCredentials"),
+	TimeOut UMETA(DisplayName="TimeOut"),
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ELoginState, ELoginState::None, ELoginState::TimeOut);
