@@ -41,7 +41,7 @@ void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 Channe
 
 void UBandThresholdWidget::OnValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float Value = FMath::GridSnap(FMath::Clamp(FCString::Atof(*NewValue.ToString()), ThresholdSlider->MinValue, ThresholdSlider->MaxValue), 0.1);
+	const float Value = FMath::GridSnap(FMath::Clamp(FCString::Atof(*NewValue.ToString()), ThresholdSlider->GetMinValue(), ThresholdSlider->GetMaxValue()), 0.1);
 	ThresholdValue->SetText(FText::AsNumber(Value));
 	ThresholdSlider->SetValue(Value);
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))

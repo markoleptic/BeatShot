@@ -30,19 +30,18 @@ void ARangeLevelScriptActor::BeginPlay()
 		this, "OnTargetDestroyed");
 	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
 		this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
-	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
-	OnTransitionTick.BindUFunction(this, FName("TransitionTimeOfDay"));
-	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionSkySphereMaterial"));
-	OnTransitionSkylightTick.BindUFunction(this, FName("TransitionSkylightIntensity"));
-	TransitionTimeline.SetTimelineFinishedFunc(OnTimelineCompleted);
-	TransitionTimeline.AddInterpFloat(MovementCurve, OnTransitionTick);
-	TransitionTimeline.AddInterpFloat(SkyMaterialCurve, OnTransitionMaterialTick);
 	
-	SkylightIntensityTimeline.AddInterpFloat(SkylightIntensityCurve, OnTransitionSkylightTick);
-	SkylightIntensityReverseTimeline.AddInterpFloat(SkylightIntensityCurveReverse, OnTransitionSkylightTick);
+	OnTimelineVector.BindUFunction(this, FName("TransitionTimeOfDay"));
+	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionSkySphereMaterial"));
+	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
+
+	TransitionTimeline.AddInterpVector(LightCurve, OnTimelineVector);
+	TransitionTimeline.AddInterpFloat(SkyMaterialCurve, OnTransitionMaterialTick);
+	TransitionTimeline.SetTimelineFinishedFunc(OnTimelineCompleted);
 
 	SkySphere = SkySphere_Soft.Get();
 	Moon = Moon_Soft.Get();
+	Moonlight = Moon->MoonLight;
 	Daylight = Daylight_Soft.Get();
 	Skylight = Skylight_Soft.Get();
 	SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
@@ -50,6 +49,7 @@ void ARangeLevelScriptActor::BeginPlay()
 			GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
 	InitialLeftWindowCoverLoc = LeftWindowCover->GetStaticMeshComponent()->GetRelativeLocation();
 	InitialRightWindowCoverLoc = RightWindowCover->GetStaticMeshComponent()->GetRelativeLocation();
+	
 	if (LoadPlayerSettings().User.bNightModeUnlocked && LoadPlayerSettings().Game.bNightModeSelected)
 	{
 		SetTimeOfDayToNight();
@@ -62,8 +62,6 @@ void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 	if (TransitionTimeline.IsPlaying())
 	{
 		TransitionTimeline.TickTimeline(DeltaSeconds);
-		SkylightIntensityTimeline.TickTimeline(DeltaSeconds);
-		SkylightIntensityReverseTimeline.TickTimeline(DeltaSeconds);
 	}
 }
 
@@ -85,7 +83,6 @@ void ARangeLevelScriptActor::OnTargetDestroyed(const float TimeAlive, const int3
 			BeginTransitionToNight();
 		}
 	}
-
 }
 
 void ARangeLevelScriptActor::OnTimelineCompletedCallback()
@@ -104,8 +101,6 @@ void ARangeLevelScriptActor::BeginTransitionToNight()
 	TimeOfDay = ETimeOfDay::DayToNight;
 	TransitionTimeline.SetPlayRate(1.f / CycleSpeed);
 	TransitionTimeline.PlayFromStart();
-	SkylightIntensityTimeline.SetPlayRate(1.f / CycleSpeed);
-	SkylightIntensityTimeline.PlayFromStart();
 }
 
 void ARangeLevelScriptActor::BeginTransitionToDay()
@@ -114,8 +109,6 @@ void ARangeLevelScriptActor::BeginTransitionToDay()
 	TimeOfDay = ETimeOfDay::NightToDay;
 	TransitionTimeline.SetPlayRate(1.f / CycleSpeed);
 	TransitionTimeline.PlayFromStart();
-	SkylightIntensityReverseTimeline.SetPlayRate(1.f / CycleSpeed);
-	SkylightIntensityReverseTimeline.PlayFromStart();
 }
 
 void ARangeLevelScriptActor::SetTimeOfDayToNight()
@@ -125,35 +118,51 @@ void ARangeLevelScriptActor::SetTimeOfDayToNight()
 	Daylight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 1);
 	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", 1);
-	Moon->MoonLight->SetIntensity(0.3);
+	Moon->MoonLight->SetIntensity(MaxMoonlightIntensity);
 	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(WindowCoverOffset, 0,0));
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(WindowCoverOffset,0,0));
-	Skylight->GetLightComponent()->SetIntensity(50);
+	Skylight->GetLightComponent()->SetIntensity(NightSkylightIntensity);
 	RefreshSkySphereMaterial();
 }
 
-void ARangeLevelScriptActor::TransitionTimeOfDay(float Alpha)
+void ARangeLevelScriptActor::TransitionTimeOfDay(const FVector Vector)
 {
 	float Value;
+	float DaylightValue;
+	float MoonlightValue;
+	float SkylightValue;
+	float MoonValue;
 	
 	if (TimeOfDay == ETimeOfDay::DayToNight)
 	{
-		Value = UKismetMathLibrary::Lerp(0, 1, Alpha);
+		Value = UKismetMathLibrary::Lerp(0, 1, Vector.X);
+		DaylightValue = UKismetMathLibrary::Lerp(0, MaxDaylightIntensity, 1 - Vector.Z);
+		MoonlightValue = UKismetMathLibrary::Lerp(0, MaxMoonlightIntensity, Vector.Z);
+		MoonValue = UKismetMathLibrary::Lerp(0, 1, Vector.Z);
+		SkylightValue = UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity, Vector.Z);
 	}
 	else
 	{
-		Value = UKismetMathLibrary::Lerp(1, 0, Alpha);
+		Value = UKismetMathLibrary::Lerp(1, 0, Vector.X);
+		DaylightValue = UKismetMathLibrary::Lerp(MaxDaylightIntensity, 0, 1 - Vector.Z);
+		MoonlightValue = UKismetMathLibrary::Lerp(MaxMoonlightIntensity, 0, Vector.Z);
+		MoonValue = UKismetMathLibrary::Lerp(1, 0, Vector.Z);
+		SkylightValue = UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity, Vector.Y);
 	}
 	const float CurrentWindowOffset = UKismetMathLibrary::Lerp(0, WindowCoverOffset, Value);
 	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(CurrentWindowOffset,0,0));
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(CurrentWindowOffset,0,0));
 	
-	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", Value);
-	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", Value);
-	
-	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Alpha);
+	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Vector.X);
 	Daylight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, CurrentLerpRotation - LastLerpRotation));
 	LastLerpRotation = CurrentLerpRotation;
+	
+	Daylight->GetLightComponent()->SetIntensity(DaylightValue);
+	Moonlight->SetIntensity(MoonlightValue);
+	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", MoonValue);
+	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", MoonValue);
+	Skylight->GetLightComponent()->SetIntensity(SkylightValue);
+	
 	RefreshSkySphereMaterial();
 }
 
@@ -169,12 +178,6 @@ void ARangeLevelScriptActor::TransitionSkySphereMaterial(float Alpha)
 		Value = UKismetMathLibrary::Lerp(1, 0, Alpha);
 	}
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", Value);
-}
-
-void ARangeLevelScriptActor::TransitionSkylightIntensity(float Alpha)
-{
-	Skylight->GetLightComponent()->SetIntensity(UKismetMathLibrary::Lerp(1, 50, Alpha));
-	Moon->MoonLight->SetIntensity(UKismetMathLibrary::Lerp(0, 0.3, Alpha));
 }
 
 void ARangeLevelScriptActor::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
@@ -198,3 +201,4 @@ void ARangeLevelScriptActor::OnPlayerSettingsChanged(const FPlayerSettings& Play
 		}
 	}
 }
+

@@ -47,23 +47,18 @@ void UWebBrowserWidget::HandleUserLogin(const FLoginPayload LoginPayload)
 	{
 		UserProfileURL = ProfileURL + LoginPayload.Username;
 	}
-	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, FTimerDelegate::CreateLambda([&]
+
+	CheckboxDelegate.BindLambda([this]
 	{
-		GetWorld()->GetTimerManager().ClearTimer(CheckCheckboxDelay);
 		Browser->ExecuteJavascript(CheckPersistScript);
-		GetWorld()->GetTimerManager().SetTimer(ClickLoginDelay, FTimerDelegate::CreateLambda([&]
-		{
-			GetWorld()->GetTimerManager().ClearTimer(ClickLoginDelay);
-			// if (const FPlayerSettings PlayerSettings = Cast<UDefaultGameInstance>(
-			// 		UGameplayStatics::GetGameInstance(GetWorld()))->
-			// 	LoadPlayerSettings(); PlayerSettings.HasLoggedInHttp)
-			// {
-			// 	UserProfileURL = ProfileURL + PlayerSettings.Username;
-			// }
-			Browser->ExecuteJavascript(ClickLoginScript);
-			OnURLChanged();
-		}), 0.1f, false);
-	}), 0.1f, false);
+		GetWorld()->GetTimerManager().SetTimer(ClickLoginDelay, ClickLoginDelegate, 0.1f, false);
+	});
+	ClickLoginDelegate.BindLambda([this]
+	{
+		Browser->ExecuteJavascript(ClickLoginScript);
+		OnURLChanged();
+	});
+	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, CheckboxDelegate, 0.1f, false);
 }
 
 bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
@@ -89,7 +84,7 @@ bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
 
 void UWebBrowserWidget::OnURLChanged()
 {
-	GetWorld()->GetTimerManager().SetTimer(CheckURLTimer, FTimerDelegate::CreateLambda([&]
+	CheckURLDelegate.BindLambda([this]
 	{
 		const FString URL = Browser->GetUrl();
 		URLCheckAttempts++;
@@ -108,5 +103,26 @@ void UWebBrowserWidget::OnURLChanged()
 			OnURLLoaded.Broadcast(true);
 			GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
 		}
-	}), 0.5f, true);
+	});
+	GetWorld()->GetTimerManager().SetTimer(CheckURLTimer, CheckURLDelegate, 0.5f, true);
+	// GetWorld()->GetTimerManager().SetTimer(CheckURLTimer, FTimerDelegate::CreateLambda([&]
+	// {
+	// 	const FString URL = Browser->GetUrl();
+	// 	URLCheckAttempts++;
+	// 	if (URLCheckAttempts > 6)
+	// 	{
+	// 		OnURLLoaded.Broadcast(false);
+	// 		UserProfileURL = "";
+	// 		URLCheckAttempts = 0;
+	// 		GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
+	// 		return;
+	// 	}
+	// 	if (UKismetStringLibrary::StartsWith(URL, UserProfileURL, ESearchCase::IgnoreCase))
+	// 	{
+	// 		UserProfileURL = "";
+	// 		URLCheckAttempts = 0;
+	// 		OnURLLoaded.Broadcast(true);
+	// 		GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
+	// 	}
+	// }), 0.5f, true);
 }

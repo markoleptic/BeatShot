@@ -83,7 +83,10 @@ void ASphereTarget::BeginPlay()
 	/* Fade the target from transparent to BeatGridInactiveColor */
 	FOnTimelineFloat OnFadeAndReappear;
 	OnFadeAndReappear.BindUFunction(this, FName("FadeAndReappear"));
+	FOnTimelineEvent OnFadeAndReappearFinished;
+	OnFadeAndReappearFinished.BindUFunction(this, FName("ShowTargetOutline"));
 	FadeAndReappearTimeline.AddInterpFloat(FadeAndReappearCurve, OnFadeAndReappear);
+	FadeAndReappearTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
 
 	StartToPeakTimeline.SetPlayRate(WhiteToPeakMultiplier);
 	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
@@ -95,12 +98,15 @@ void ASphereTarget::BeginPlay()
 		SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		SetColorToBeatGridColor();
+		SetSphereColor(PlayerSettings.BeatGridInactiveTargetColor);
+		SetOutlineColor(PlayerSettings.BeatGridInactiveTargetColor);
 		FOnTimelineEvent OnPeakToFadeFinished;
 		OnPeakToFadeFinished.BindUFunction(this, FName("SetColorToBeatGridColor"));
 		PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
 	}
 	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
+		bIsBeatTrackTarget = true;
 		SetLifeSpan(0);
 		SetMaxHealth(1000000);
 		SetSphereColor(PlayerSettings.EndTargetColor);
@@ -166,6 +172,7 @@ void ASphereTarget::PlayFadeAndReappearTimeline()
 	{
 		PeakToEndTimeline.Stop();
 	}
+	MID_TargetOutline->SetScalarParameterValue(TEXT("ShowOutline"), 0.f);
 	FadeAndReappearTimeline.PlayFromStart();
 }
 
@@ -258,6 +265,11 @@ void ASphereTarget::OnBeatGridTimerTimeOut()
 	SetCanBeDamaged(false);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
+}
+
+void ASphereTarget::ShowTargetOutline()
+{
+	MID_TargetOutline->SetScalarParameterValue(TEXT("ShowOutline"), 1.f);
 }
 
 void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,

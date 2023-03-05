@@ -25,7 +25,7 @@ void USlideRightButton::SlideButton(const bool bIsActiveSelection)
 		{
 			return;
 		}
-		if (HorizontalBox->RenderTransform.Translation.X > -40)
+		if (HorizontalBox->GetRenderTransform().Translation.X > -40)
 		{
 			SlideButtonLeft();
 		}

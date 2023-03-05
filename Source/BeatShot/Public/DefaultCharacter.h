@@ -87,9 +87,6 @@ protected:
 	/** Called to bind functionality to input */
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
-	/** Called to remove any dynamic delegate binding */
-	virtual void Destroyed() override;
-
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USpringArmComponent* SpringArmComponent;
@@ -123,7 +120,7 @@ public:
 	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
 
 	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the
-	 *  spawned target to the ActiveTargets_AimBot queue */
+	 *  spawned target to the ActiveTargetLocations_AimBot queue */
 	UFUNCTION()
 	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
 
@@ -132,10 +129,6 @@ public:
 
 	/** Sets the speed of the timeline playback */
 	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD) { TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD; }
-
-	/** Passes the spawned TrackingTarget to the Gun, so it can change the targets colors if the hit trace misses */
-	UFUNCTION()
-	void PassTrackingTargetToGun(ASphereTarget* TrackingTarget);
 
 	/** Reference to direction of fire */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
@@ -154,6 +147,10 @@ public:
 
 	/** Returns Camera **/
 	UCameraComponent* GetCamera() const { return Camera; }
+
+	/** Simulates human lag by continuing to track towards provided direction */
+	UFUNCTION()
+	void OnBeatTrackDirectionChanged(const FVector Location);
 	
 	/** Executed when interact is pressed */
 	FOnInteractDelegate OnInteractDelegate;
@@ -217,7 +214,7 @@ private:
 	UFUNCTION()
 	void OnTimelineCompleted_AimBot();
 
-	/** Sets new values for StartRotation_AimBot and TargetRotation_AimBot based on next target location in ActiveTargets_AimBot,
+	/** Sets new values for StartRotation_AimBot and TargetRotation_AimBot based on next target location in ActiveTargetLocations_AimBot,
 	 *  and plays AimBotTimeline */
 	void DestroyNextTarget_AimBot();
 
@@ -262,7 +259,10 @@ private:
 	FTimeline AimBotTimeline;
 
 	/** A queue of target locations that have not yet been destroyed */
-	TQueue<FVector> ActiveTargets_AimBot;
+	TQueue<FVector> ActiveTargetLocations_AimBot;
+
+	/** A queue of target locations that have not yet been destroyed */
+	TQueue<ASphereTarget*> ActiveTargets_AimBot;
 
 	/** The rotation at the start of the rotation interpolation */
 	FRotator StartRotation_AimBot;
@@ -272,6 +272,18 @@ private:
 
 	/** Delegate to call StopFire() shortly after AimBot has called StartFire() */
 	FTimerDelegate StopFire_AimBot;
+
+	/** Whether or not the player is simulating human lag */
+	bool bIsLagging = false;
+
+	/** Location for Character to keep tracking towards to simulate human lag */
+	FVector LagLocation;
+
+	/** Timer Delegate to switch bIsLagging to false */
+	FTimerDelegate LagDelegate;
+
+	/** Timer for how long the character should track after the target has changed directions */
+	FTimerHandle LagHandle;
 
 	/** Input actions bound inside of the the blueprint for this class */
 

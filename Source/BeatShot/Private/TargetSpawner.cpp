@@ -22,7 +22,7 @@ ATargetSpawner::ATargetSpawner()
 void ATargetSpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	TargetSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::DontSpawnIfColliding;
+	TargetSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 }
 
 void ATargetSpawner::Destroyed()
@@ -258,7 +258,6 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 		}
 		if (Counter.Point.Y == MaxBoxExtent.Y)
 		{
-			
 			if (Counter.Point.Z == GetBoxOrigin_Unscaled().Z)
 			{
 				SpawnAreaTotals.Emplace(CurrentRow);
@@ -271,7 +270,7 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 			else
 			{
 				F2DArray AveragedRow = F2DArray();
-				for (int i = 0; i< LowerRowHalf.Accuracy.Num(); i++)
+				for (int i = 0; i < LowerRowHalf.Accuracy.Num(); i++)
 				{
 					if (LowerRowHalf.Accuracy[i] == -1.f && CurrentRow.Accuracy[i] != -1.f)
 					{
@@ -469,6 +468,10 @@ void ATargetSpawner::SetNewTrackingDirection()
 	}
 	if (BeatTrackTarget)
 	{
+		if (!OnBeatTrackDirectionChanged.ExecuteIfBound(EndLocation))
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnBeatTrackDirectionChanged not bound."));
+		}
 		LocationBeforeDirectionChange = BeatTrackTarget->GetActorLocation();
 		const float NewTargetScale = GetNextTargetScale();
 		BeatTrackTarget->SetSphereScale(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
@@ -493,7 +496,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		ConsecutiveTargetsHit++;
 		DynamicSpawnScale = FMath::Clamp(DynamicSpawnScale + 1, 0, 100);
 	}
-	
+
 	if (const int32 Index = SpawnCounter.Find(FVectorCounter(DestroyedTarget->GetActorLocation())); Index != INDEX_NONE)
 	{
 		switch (SpawnCounter[Index].TotalSpawns)
@@ -608,31 +611,62 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 
 FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
 {
-	/* try to spawn at origin if available */
-	FVector LocationToReturn = SpawnBox->Bounds.Origin;
+	const FVector NewExtent = FVector(0, GetBoxExtents_Unscaled_Static().Y * 0.5,
+	                                  GetBoxExtents_Unscaled_Static().Z * 0.5);
 
-	/* So we don't get stuck in infinite loop */
-	int OverloadProtect = 0;
-	bool IsInsideBox = true;
-	while (IsInsideBox)
+	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(
+		SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Unscaled_Static().Y * 0.5,
+		                                  -GetBoxExtents_Unscaled_Static().Z * 0.5),
+		NewExtent);
+
+	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(
+		SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Unscaled_Static().Y * 0.5,
+		                                  -GetBoxExtents_Unscaled_Static().Z * 0.5),
+		NewExtent);
+
+	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(
+		SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Unscaled_Static().Y * 0.5,
+		                                  GetBoxExtents_Unscaled_Static().Z * 0.5),
+		NewExtent);
+
+	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(
+		SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Unscaled_Static().Y * 0.5,
+		                                  GetBoxExtents_Unscaled_Static().Z * 0.5),
+		NewExtent);
+
+	TArray<FVector> PossibleLocations;
+	PossibleLocations.Add(BotLeft);
+	PossibleLocations.Add(BotRight);
+	PossibleLocations.Add(TopLeft);
+	PossibleLocations.Add(TopRight);
+	
+	if (LocationBeforeChange.Y < 0)
 	{
-		if (OverloadProtect > 20)
+		if (LocationBeforeChange.Z < GetBoxOrigin_Unscaled().Z)
 		{
-			break;
+			PossibleLocations.Remove(BotLeft);
 		}
-		LocationToReturn = UKismetMathLibrary::RandomPointInBoundingBox(
-			SpawnBox->Bounds.Origin, SpawnBox->Bounds.BoxExtent);
-		if (UKismetMathLibrary::IsPointInBox(LocationBeforeChange +
-		                                     UKismetMathLibrary::GetDirectionUnitVector(
-			                                     LocationBeforeChange, LocationToReturn) *
-		                                     BeatTrackTargetSpeed * GameModeActorStruct.TargetSpawnCD,
-		                                     SpawnBox->Bounds.Origin, SpawnBox->Bounds.BoxExtent))
+		else
 		{
-			IsInsideBox = false;
+			PossibleLocations.Remove(TopLeft);
 		}
-		OverloadProtect++;
 	}
-	return LocationToReturn;
+	else
+	{
+		if (LocationBeforeChange.Z < GetBoxOrigin_Unscaled().Z)
+		{
+			PossibleLocations.Remove(BotRight);
+		}
+		else
+		{
+			PossibleLocations.Remove(TopRight);
+		}
+	}
+	
+	PossibleLocations.Shrink();
+	const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
+	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) *
+		BeatTrackTargetSpeed * GameModeActorStruct.TargetSpawnCD;
 }
 
 void ATargetSpawner::MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const

@@ -58,6 +58,12 @@ private:
 	UFUNCTION()
 	void OnURLChanged();
 
+	FTimerDelegate CheckboxDelegate;
+
+	FTimerDelegate ClickLoginDelegate;
+
+	FTimerDelegate CheckURLDelegate;
+
 	/* Timer to delay clicking the Checkbox on the login page */
 	FTimerHandle CheckCheckboxDelay;
 

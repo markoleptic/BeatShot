@@ -24,8 +24,13 @@ ADefaultCharacter::ADefaultCharacter()
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	//GetCapsuleComponent()->InitCapsuleSize(35.f, 90.f);
 	GetCapsuleComponent()->InitCapsuleSize(55.f, DefaultCapsuleHalfHeight);
-	
+
+	//GetMesh()->SetupAttachment(GetCapsuleComponent());
+	//GetMesh()->SetRelativeLocation(FVector(0,0,-88.f));
+	//GetMesh()->SetRelativeRotation(FRotator(0,0,-90.f));
+
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	SpringArmComponent->bUsePawnControlRotation = true;
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
@@ -55,6 +60,7 @@ ADefaultCharacter::ADefaultCharacter()
 	GunActorComp = CreateDefaultSubobject<UChildActorComponent>("GunActorComp");
 	GunActorComp->SetChildActorClass(GunClass);
 	GunActorComp->SetupAttachment(HandsMesh, "GripPoint");
+	//GunActorComp->SetupAttachment(GetMesh(), "GripPoint");
 	GunActorComp->CreateChildActor();
 }
 
@@ -69,8 +75,9 @@ void ADefaultCharacter::BeginPlay()
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
-	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ADefaultCharacter::OnUserSettingsChange);
-	
+	Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
+		this, &ADefaultCharacter::OnUserSettingsChange);
+
 	FOnTimelineFloat OnTimelineFloat;
 	OnTimelineFloat.BindUFunction(this, FName("OnTimelineTick_AimBot"));
 	FOnTimelineEvent OnTimelineEvent;
@@ -113,11 +120,37 @@ void ADefaultCharacter::Tick(float DeltaTime)
 	/* Sets the half height of the capsule component to the new interpolated half height */
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 
-	if (!bEnabled_AimBot)
+	if (!bEnabled_AimBot || ActiveTargets_AimBot.IsEmpty())
 	{
 		return;
 	}
-	AimBotTimeline.TickTimeline(DeltaTime);
+
+	FVector Loc;
+	FRotator Rot;
+	GetController()->GetActorEyesViewPoint(Loc, Rot);
+	Rot.Normalize();
+	ASphereTarget* Target;
+	ActiveTargets_AimBot.Peek(Target);
+	if (!Target->IsBeatTrackTarget())
+	{
+		AimBotTimeline.TickTimeline(DeltaTime);
+		return;
+	}
+	
+	FRotator NewRot;
+	if (bIsLagging)
+	{
+		NewRot = UKismetMathLibrary::RInterpTo_Constant(
+			Rot, UKismetMathLibrary::FindLookAtRotation(Loc, LagLocation), DeltaTime,
+			FMath::FRandRange(10.f, 15.f));
+	}
+	else
+	{
+		NewRot = UKismetMathLibrary::RInterpTo(
+			Rot, UKismetMathLibrary::FindLookAtRotation(Loc,  Target->GetActorLocation()), DeltaTime,
+			FMath::FRandRange(11.f, 15.f));
+	}
+	GetController()->SetControlRotation(NewRot);
 }
 
 void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -170,20 +203,19 @@ void ADefaultCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		}
 		if (InteractAction)
 		{
-			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &ADefaultCharacter::OnInteractStarted);
-			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this, &ADefaultCharacter::OnInteractCompleted);
+			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this,
+			                                         &ADefaultCharacter::OnInteractStarted);
+			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this,
+			                                         &ADefaultCharacter::OnInteractCompleted);
 		}
 		if (ShiftInteractAction)
 		{
-			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Started, this, &ADefaultCharacter::OnShiftInteractStarted);
-			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Completed, this, &ADefaultCharacter::OnShiftInteractCompleted);
+			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Started, this,
+			                                         &ADefaultCharacter::OnShiftInteractStarted);
+			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Completed, this,
+			                                         &ADefaultCharacter::OnShiftInteractCompleted);
 		}
 	}
-}
-
-void ADefaultCharacter::Destroyed()
-{
-	Super::Destroyed();
 }
 
 void ADefaultCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
@@ -300,6 +332,17 @@ void ADefaultCharacter::OnShiftInteractCompleted(const FInputActionInstance& Ins
 	}
 }
 
+void ADefaultCharacter::OnBeatTrackDirectionChanged(const FVector Location)
+{
+	LagLocation = Location;
+	bIsLagging = true;
+	LagDelegate.BindLambda([this]
+	{
+		bIsLagging = false;
+	});
+	GetWorld()->GetTimerManager().SetTimer(LagHandle, LagDelegate, FMath::FRandRange(0.1f, 0.2f), false);
+}
+
 void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType)
 {
 	// Clearing sprinting and crouching flags
@@ -327,14 +370,9 @@ void ADefaultCharacter::UpdateMovementValues(const EMovementType NewMovementType
 	}
 }
 
-void ADefaultCharacter::PassTrackingTargetToGun(ASphereTarget* TrackingTarget)
-{
-	Gun->TrackingTarget = TrackingTarget;
-}
-
 void ADefaultCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
 {
-	ActiveTargets_AimBot.Enqueue(SpawnedTarget->GetActorLocation());
+	ActiveTargets_AimBot.Enqueue(SpawnedTarget);
 	if (!AimBotTimeline.IsPlaying())
 	{
 		DestroyNextTarget_AimBot();
@@ -343,7 +381,14 @@ void ADefaultCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
 
 void ADefaultCharacter::OnTimelineTick_AimBot(const float Alpha)
 {
-	GetController()->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation_AimBot, TargetRotation_AimBot, Alpha, true));
+	FVector Loc;
+	FRotator Rot;
+	GetController()->GetActorEyesViewPoint(Loc, Rot);
+	ASphereTarget* Target;
+	ActiveTargets_AimBot.Peek(Target);
+	GetController()->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation_AimBot,
+	                                                              UKismetMathLibrary::FindLookAtRotation(
+		                                                              Loc, Target->GetActorLocation()), Alpha, true));
 }
 
 void ADefaultCharacter::OnTimelineCompleted_AimBot()
@@ -358,17 +403,13 @@ void ADefaultCharacter::OnTimelineCompleted_AimBot()
 
 void ADefaultCharacter::DestroyNextTarget_AimBot()
 {
-	if (!ActiveTargets_AimBot.IsEmpty())
+	if (!ActiveTargetLocations_AimBot.IsEmpty())
 	{
 		FVector TargetLocation;
-		if (ActiveTargets_AimBot.Peek(TargetLocation))
+		if (ActiveTargetLocations_AimBot.Peek(TargetLocation))
 		{
 			StartRotation_AimBot = GetController()->GetControlRotation();
 			StartRotation_AimBot.Normalize();
-			FVector Loc;
-			FRotator Rot;
-			GetController()->GetActorEyesViewPoint(Loc, Rot);
-			TargetRotation_AimBot = UKismetMathLibrary::FindLookAtRotation(Loc, TargetLocation);
 			AimBotTimeline.SetPlayRate(TimelinePlaybackRate_AimBot);
 			AimBotTimeline.PlayFromStart();
 		}

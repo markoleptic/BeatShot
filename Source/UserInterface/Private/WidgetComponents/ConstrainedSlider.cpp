@@ -75,8 +75,8 @@ void UConstrainedSlider::OnCheckStateChanged(const bool bIsChecked)
 		}
 		else
 		{
-			const float MinMidValue = RoundValue((MinSlider->MaxValue + MinSlider->MinValue) / 2);
-			const float MaxMidValue = RoundValue((MaxSlider->MaxValue + MaxSlider->MinValue) / 2);
+			const float MinMidValue = RoundValue((MinSlider->GetMaxValue() + MinSlider->GetMinValue()) / 2);
+			const float MaxMidValue = RoundValue((MaxSlider->GetMaxValue() + MaxSlider->GetMinValue()) / 2);
 			MinSlider->SetValue(MinMidValue);
 			MaxSlider->SetValue(MaxMidValue);
 			OnMinSliderChanged(MinMidValue);
@@ -151,10 +151,10 @@ float UConstrainedSlider::CheckConstraints(const float NewValue, const bool bIsM
 	/** Checking constraints for a MinSlider or MinValue */
 	if (bIsMin)
 	{
-		return RoundValue(FMath::Clamp(NewValue, MinSlider->MinValue, MinSlider->MaxValue));
+		return RoundValue(FMath::Clamp(NewValue, MinSlider->GetMinValue(), MinSlider->GetMaxValue()));
 	}
 	/** Checking constraints for a MaxSlider or MaxValue */
-	return RoundValue(FMath::Clamp(NewValue, MaxSlider->MinValue, MaxSlider->MaxValue));
+	return RoundValue(FMath::Clamp(NewValue, MaxSlider->GetMinValue(), MaxSlider->GetMaxValue()));
 }
 
 float UConstrainedSlider::RoundValue(const float ValueToRound) const

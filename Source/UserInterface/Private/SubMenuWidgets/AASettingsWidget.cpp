@@ -198,7 +198,17 @@ void UAASettingsWidget::SortAndCheckOverlap()
 		}
 		return false;
 	});
-	NewAASettings.BandLimits.Sort();
+	NewAASettings.BandLimits.Sort([](const FVector2d& A, const FVector2d& B) {
+		if (A.X < B.X)
+		{
+			return true;
+		}
+		if (A.X == B.X && A.Y < B.Y)
+		{
+			return true;
+		}
+		return false;
+	});
 	NewAASettings.NumBandChannels = NewAASettings.BandLimits.Num();
 	NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.BandLimits.Num());
 	PopulateAASettings();

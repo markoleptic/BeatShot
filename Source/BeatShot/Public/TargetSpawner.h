@@ -15,6 +15,8 @@ class UMaterialInterface;
 class AStaticMeshActor;
 class UActorComponent;
 
+DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector);
+
 /** A struct representing the space in the grid that a recently spawned target occupies */
 USTRUCT()
 struct FRecentTarget
@@ -121,6 +123,9 @@ class BEATSHOT_API ATargetSpawner : public AActor
 
 public:
 	ATargetSpawner();
+
+	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
+	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
 
 protected:
 	virtual void BeginPlay() override;

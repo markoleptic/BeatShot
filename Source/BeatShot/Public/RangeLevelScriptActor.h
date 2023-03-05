@@ -8,11 +8,13 @@
 #include "Engine/LevelScriptActor.h"
 #include "RangeLevelScriptActor.generated.h"
 
+class UDirectionalLightComponent;
 class ASkyLight;
 class AStaticMeshActor;
 class AVolumetricCloud;
 class ADirectionalLight;
 class UCurveFloat;
+class UCurveVector;
 class AMoon;
 class UMaterialInstanceDynamic;
 
@@ -88,54 +90,45 @@ protected:
 	UPROPERTY()
 	ADirectionalLight* Daylight;
 
+	/** Reference to Daylight directional light in Range level */
+	UPROPERTY()
+	UDirectionalLightComponent* Moonlight;
+
 	/** Reference to Skylight directional light in Range level */
 	UPROPERTY()
 	ASkyLight* Skylight;
 
 	/** The threshold to activate night mode if not yet unlocked */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 StreakThreshold = 1;
+	int32 StreakThreshold = 50;
 
-	/** The curve to link to OnTransitionTick and TransitionTimeline */
+	/** The curve to link to OnTimelineVector and TransitionTimeline */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* MovementCurve;
+	UCurveVector* LightCurve;
 
 	/** The curve to link to OnTransitionMaterialTick and TransitionTimeline */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UCurveFloat* SkyMaterialCurve;
 
-	/** The curve to link to OnTransitionSkylightTick and TransitionTimeline */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* SkylightIntensityCurve;
-
-	/** The curve to link to OnTransitionSkylightTick and TransitionTimeline */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* SkylightIntensityCurveReverse;
-
 	ETimeOfDay TimeOfDay;
 
 	FTimeline TransitionTimeline;
 
-	FTimeline SkylightIntensityTimeline;
-
-	FTimeline SkylightIntensityReverseTimeline;
-
-	/** Link TransitionTimeline, MovementCurve to the function TransitionTimeOfDay() */
-	FOnTimelineFloat OnTransitionTick;
+	/** Link TransitionTimeline, LightCurve to the function SetLightFromVectorCurve() */
+	FOnTimelineVector OnTimelineVector;
 
 	/** Link TransitionTimeline, SkyMaterialCurve to the function TransitionSkySphereMaterial() */
 	FOnTimelineFloat OnTransitionMaterialTick;
-
-	/** Link SkylightIntensityTimeline, SkylightIntensityCurve to the function TransitionSkylightIntensity() */
-	FOnTimelineFloat OnTransitionSkylightTick;
 
 	/** Link TransitionTimeline to the function OnTimelineCompletedCallback() */
 	FOnTimelineEvent OnTimelineCompleted;
 
 	/** Changes TimeOfDay and plays TransitionTimeline */
+	UFUNCTION(BlueprintCallable)
 	void BeginTransitionToNight();
 
 	/** Changes TimeOfDay and plays TransitionTimeline */
+	UFUNCTION(BlueprintCallable)
 	void BeginTransitionToDay();
 
 	/** Instantly changes all settings to Night */
@@ -145,22 +138,18 @@ protected:
 	UFUNCTION()
 	void OnTimelineCompletedCallback();
 
-	/** Executes on every tick of TransitionTimeline, reads from MovementCurve */
+	/** Executes on every tick of TransitionTimeline, reads from LightCurve */
 	UFUNCTION()
-	void TransitionTimeOfDay(float Alpha);
+	void TransitionTimeOfDay(const FVector Vector);
 
 	/** Executes on every tick of TransitionTimeline, reads from SkyMaterialCurve */
 	UFUNCTION()
 	void TransitionSkySphereMaterial(float Alpha);
 
-	/** Executes on every tick of SkylightIntensityTimeline, reads from SkylightIntensityCurve */
-	UFUNCTION()
-	void TransitionSkylightIntensity(float Alpha);
-
 	/** Callback function to respond to NightMode change from WallMenu */
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
-
+	
 	FVector InitialLeftWindowCoverLoc;
 
 	FVector InitialRightWindowCoverLoc;
@@ -169,5 +158,19 @@ protected:
 
 	const float WindowCoverOffset = -1700;
 
+	UPROPERTY(EditAnywhere)
+	float MaxMoonlightIntensity = 1.f;
+
+	UPROPERTY(EditAnywhere)
+	float MaxDaylightIntensity = 15.f;
+
+	UPROPERTY(EditAnywhere)
+	float DaySkylightIntensity = 1.5f;
+
+	UPROPERTY(EditAnywhere)
+	float NightSkylightIntensity = 35.f;
+
 	float LastLerpRotation;
 };
+
+

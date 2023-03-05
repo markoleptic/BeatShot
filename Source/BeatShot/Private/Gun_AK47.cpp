@@ -115,16 +115,6 @@ void AGun_AK47::Fire()
 	ShotsFired++;
 	if (bShouldRecoil)
 	{
-		RecoilTimeline.SetPlayRate(1.f);
-		/* Resume timeline if it hasn't fully recovered */
-		if (RecoilTimeline.IsReversing())
-		{
-			RecoilTimeline.Play();
-		}
-		else
-		{
-			RecoilTimeline.PlayFromStart();
-		}
 		bShouldKickback = true;
 		KickbackAlpha = 0.f;
 	}
@@ -139,6 +129,19 @@ void AGun_AK47::StartFire()
 	if (!bCanFire || bIsFiring)
 	{
 		return;
+	}
+	if (bShouldRecoil)
+	{
+		RecoilTimeline.SetPlayRate(1.f);
+		/* Resume timeline if it hasn't fully recovered */
+		if (RecoilTimeline.IsReversing())
+		{
+			RecoilTimeline.Play();
+		}
+		else
+		{
+			RecoilTimeline.PlayFromStart();
+		}
 	}
 	bIsFiring = true;
 	if (bAutomaticFire)

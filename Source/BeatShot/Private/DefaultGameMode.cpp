@@ -10,7 +10,6 @@
 #include "FloatingTextActor.h"
 #include "TargetSpawner.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetTextLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogAudioData);
@@ -629,12 +628,13 @@ void ADefaultGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 	/** Update tracking score if a Tracking target has spawned */
 	if (GameModeActorStruct.IsBeatTrackMode && !SpawnedTarget->HealthComp->OnBeatTrackTick.IsBoundToObject(this))
 	{
-		SpawnedTarget->HealthComp->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
 		if (ADefaultCharacter* Character = Cast<ADefaultCharacter>(
 	Cast<ADefaultPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 		{
-			Character->PassTrackingTargetToGun(SpawnedTarget);
+			TargetSpawner->OnBeatTrackDirectionChanged.BindUFunction(Character, "OnBeatTrackDirectionChanged");
+			Character->Gun->TrackingTarget = SpawnedTarget;
 		}
+		SpawnedTarget->HealthComp->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
 	}
 }
 
