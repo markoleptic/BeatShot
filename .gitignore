@@ -61,6 +61,7 @@ Build/*
 Plugins/
 
 Content/**/Assets/
+Content/DynamicVolumetricSky
 
 # Whitelist PakBlacklist-<BuildConfiguration>.txt files
 #!Build/*/
@@ -102,5 +103,11 @@ Plugins/**/Intermediate/*
 # End of https://www.toptal.com/developers/gitignore/api/unrealengine
 Content/Levels/Range.umap
 Windows/
+AssetPacks/
+Content/ControlRig
+ModSciInteriors/
+MSPresets/
+Megascans/
+ResearchMegaPack/
 SDATAPROVIDERACTIVITYFILTER.ipch
 SMSWINDOW.ipch

@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 using UnrealBuildTool;
 using System.Collections.Generic;
@@ -9,7 +9,6 @@ public class BeatShotTarget : TargetRules
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "BeatShot" } );
-		ExtraModuleNames.Add("MainMenu");
+		ExtraModuleNames.AddRange( new string[] { "BeatShot", "UserInterface", "Global" } );
 	}
 }

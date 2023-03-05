@@ -1,0 +1,318 @@
+Key,SourceString
+AA_AlwaysText,These Settings Can Always Be Changed
+AA_BandChannelLower,Lower Bound:
+AA_BandChannelText,Channel
+AA_BandChannelUnit,(Hertz)
+AA_BandChannelUpper,Upper Bound:
+AA_BandLimits,Band Limits
+AA_BandLimits_Help,Here you can define custom frequency bounds for up to 32 channels. Must have no overlap (Closed Intervals).
+AA_BandLimitThreshold,Band Limit Threshold
+AA_BandLimitThreshold_Help,The threshold value changes how sensitive the analyzer is to music. Values greater than Threshold * Average trigger a target to spawn.
+AA_BandLimitThresholdError,One or more band limits are overlapping. Remove the overlap to save your settings.
+AA_NumBandChannels,Number of Band Channels
+AA_ResetButtonText,Reset Analyzer Settings
+AA_RestartText,These Settings Require a GameMode Restart to Take Effect
+AA_SaveAndRestartButtonText,Save Analyzer Settings and Restart GameMode
+AA_SaveButtonText,Save Analyzer Settings
+AA_ThresholdText,Threshold:
+AA_TimeWindow,Time Window (Duration to capture beat tracking)
+AF_AudioDeviceHeader,Audio Devices
+AF_AudioDeviceButtonText,Audio Device
+AF_BackButtonText,Back
+AF_FileButtonText,MP3/OGG File
+AF_InputDeviceText,Input
+AF_InputDeviceText2,(device for game to listen to)
+AF_LoadFileButtonText,Load Song File
+AF_OutputAudioDevice,Output
+AF_OutputAudioDevice_2,(device to output music to if different from default)
+AF_SongInfoHeader,Song Info
+AF_SendPlayback,Send Playback to Output
+AF_SongLength,Song Length:
+AF_SongTitle,Or enter a new Song Title:
+AF_SongTitle_HintText,Song Title
+AF_SongTitleComboBox_Caption,Choose a previously played song title
+AF_StartButtonText,Start
+AF_Title,Select an Audio Format
+AF_Warning1,Provide the song title and length if you wish to save your scores.
+AF_Warning2,"If you don't provide both, the game mode will continue indefinitely."
+ASW_SongPathErrorButton,Okay
+ASW_SongPathErrorMessage,"There was a problem loading the song. Make sure the song is in mp3 or ogg format. If this problem persists, please contact support."
+ASW_SongPathErrorTitle,Error
+Category_Game,Game
+Category_Sound,Sound
+Category_Video,Video
+CH_Color,Color
+CH_ColorOpacity,Opacity
+CH_HexValue,Hex Value
+CH_InnerGap,Inner Gap
+CH_LineLength,Line Length
+CH_LineWidth,Line Width
+CH_OutlineOpacity,Outline Opacity
+CH_OutlineWidth,Outline Width
+CH_RevertToLastSaved,Revert to Last Saved
+ConfirmVideoSettingsPopupButton1,Confirm
+ConfirmVideoSettingsPopupButton2,Revert
+ConfirmVideoSettingsPopupMessage,Settings will be reverted if not confirmed in 10 seconds
+ConfirmVideoSettingsPopupTitle,Confirm Video Settings?
+CountdownText,Click Anywhere to Begin
+FAQ_BaseGameMode,"There are four base game modes: MultiBeat, SingleBeat, BeatTrack, and BeatGrid. A game mode must derive from one of these."
+FAQ_BeatGrid_Info_1,"Spawns a static grid that activates individual targets, which allows them to be damaged for a brief period of time before returning to inactive."
+FAQ_BeatGrid_Info_2,"Only activates adjacent targets by default, but this setting can be changed."
+FAQ_BeatTrack_Info_1,Only spawns one target that cannot be destroyed by the player. The player hovers the crosshair over the target to gain score.
+FAQ_BeatTrack_Info_2,The target will always prefer to change direction away from the edges of the spawn area.
+FAQ_CenterTargets,The spawn area is centered in the middle of the wall rather than placed as low as possible without colliding into the ground.
+FAQ_CompletelyRandomTargets,Adjacent-only will only activate a target that was adjacent to a previously activated target. Completely random will choose a target in the grid at random.
+FAQ_ConstantTargetSize,The scale/size of the target will remain constant throughout the game mode.
+FAQ_ConstantTrackingSpeed,The speed of the target will remain constant throughout the game mode.
+FAQ_CustomGameModeName,"What your new game mode will be saved as. Can't be the name of a preset game mode, but you can override custom game modes you create."
+FAQ_DynamicTargetSize,"Variable target sizing. Gradually adjusts the target scale from Max Target Scale to Min Target Scale, based on consecutive targets hit."
+FAQ_EvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
+FAQ_ForwardSpread,How far the targets will move forward by the end of their lifespan.
+FAQ_GameModeDifficulty,"Base settings that change the difficulty for a game mode. Changed settings include: Spawn Beat Delay, Target Spawn Cooldown, Target Max Lifespan, Min Target Scale, MaxTargetScale, Number of Targets (if BeatGrid), Min Tracking Speed (if BeatTrack), Max Tracking Speed (if BeatTrack)."
+FAQ_GameModeTemplate,The preset game modes or user-created saved game modes.
+FAQ_HeadshotOnly,Targets will only spawn at headshot height.
+FAQ_HorizontalSpread,"The width (left-right) of the possible spawn area. 3200 is from the left wall to the right wall, with a small gap on each side so the target doesn't clip."
+FAQ_MaximumTargetLifespan,"How long the target will live, even if not shot. This doesn't apply to BeatTrack."
+FAQ_MaxTargetScale,"The maximum scale/size of the target. If using Dynamic Target Scaling, this will be the starting scale."
+FAQ_MaxTrackingSpeed,The maximum speed at which the tracking target will travel before changing directions.
+FAQ_MinDistanceBetweenTargets,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
+FAQ_MinTargetScale,"The minimum scale/size of the target. If using Dynamic Target Scaling, this will be the size at which the target gradually shrinks to."
+FAQ_MinTrackingSpeed,The minimum speed at which the tracking target will travel before changing directions.
+FAQ_MoveTargetsForward,Targets will move forward from their spawn location. The end location depends on what is input for Forward Spread. The speed at which they reach the Forward Spread depends on the Maximum Target Lifespan
+FAQ_MultiBeat_Info_1,Spawns targets continuously whether or not you're destroying them.
+FAQ_MultiBeat_Info_2,The random spawning system will spawn the target in the exact middle more frequently than other locations.
+FAQ_NumberOfTargets,How many targets are in the grid.
+FAQ_Scoring_CustomGameModes_1,Scores for custom game modes are specific to each custom game mode name and each song.
+FAQ_Scoring_General_Content_1,"""Specific to each song"" means that the game considers a song equal to another if it has the same Song Title. If you care about tracking your consistency for a given song, make sure to always use the same song title."
+FAQ_Scoring_General_Content_2,"When playing a song from a file, the song title is saved from metadata if possible, but otherwise uses the filename."
+FAQ_Scoring_General_Header,General Scoring Information
+FAQ_Scoring_MultiTarget_Content_1,"Players recieve the maximum score for destroying the target +- 0.05s from the Spawn Beat Delay. The score recieved drops off linearly from the peak based on the time away from the peak color, down a minimum of half of the max score."
+FAQ_Scoring_MultiTarget_Content_2,"The theoretical maximum score for any game mode in this category is 100,000."
+FAQ_Scoring_MultiTarget_Content_3,The maximum score for any given target is based on dividing the maximum total score by how many targets could spawn during the length of song (Maximum total score divided by (Song Length divided by Target Spawn Cooldown)).
+FAQ_Scoring_MultiTarget_Header,"Game modes that spawn more than one target (MultiBeat, SingleBeat, BeatGrid):"
+FAQ_Scoring_SingleTarget_Content_1,BeatTrack game modes grant one point of score per game tick that the player's crosshair is on the target.
+FAQ_Scoring_SingleTarget_Content_2,BeatTrack accuracy is total server ticks with crosshair on target divided by total server ticks.
+FAQ_Scoring_SingleTarget_Header,BeatTrack game modes:
+FAQ_Scoring_StandardGameModes_1,"Scores for standard game modes are specific to each song, each difficulty, and each game mode. They are not specific to each spread type, but that might change in the future."
+FAQ_SingleBeat_Info_1,"Only spawns one target at a time, and only spawns new target if target recieved damage or maximum lifespan expired."
+FAQ_SingleBeat_Info_2,Every other target will spawn in the center of the spawn area.
+FAQ_SpawnBeatDelay,Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time.
+FAQ_SpreadType,"There are two types of spread that control how far the targets can spawn from the center of the spawn area. Dynamic spread lowers the spawn area based on consecutive targets hit, while static spread does not change the spawn area."
+FAQ_SpreadType_Dynamic,"Variable-sized spawn area. Gradually adjusts the horizontal/vertical spread from their maximums to a minimum of half, based on consecutive targets hit."
+FAQ_SpreadType_Dynamic_EdgeOnly,Dynamic spread type where only targets only spawn on the edge/border of the variable-sized spawn area. Default for SingleBeat.
+FAQ_SpreadType_Dynamic_Random,Dynamic spread type where targets are spawned anywhere within the variable-sized spawn area. Default for MultiBeat.
+FAQ_SpreadType_Static,The spawn area size doesn't change.
+FAQ_SpreadType_Static_Narrow,An unchanged spawn area size of 1600 horizontal spread and 500 vertical spread
+FAQ_SpreadType_Static_Wide,An unchanged spawn area size of 3200 horizontal spread and 1000 vertical spread
+FAQ_TargetSpawnCooldown,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
+FAQ_VerticalSpread,"The height (up-down) of the possible spawn area. 1000 is most of the height of the spawn wall, with small gaps on the top and bottom so the target doesn't clip."
+Game_CombatTextShow,Show Streak Combat Text
+Game_CombatTextFrequency,Streak Combat Text Frequency
+Game_FPSCounter,FPS Counter
+Game_FPSLimitGame,FPS Limit Game
+Game_Target,Target Settings
+Game_CombatText,Combat Text
+Game_FPSLimitMenu,FPS Limit Menus
+GitHubButtonText,Create Github Issue here
+GitHubIssueMessage,"If you're playing this right now, the game in an early alpha state. Things are likely to break and possibly not be implemented. If you have any suggestions whatsoever, don't hesitate to submit an bug report or feature request on Github. "
+GM_AllGameModesRemovedText,All custom game modes removed
+GM_BaseGameMode,Base Game Mode
+GM_BeatGrid,Beat Grid
+GM_BeatGrid_Info,MultiBeat but in a grid.
+GM_BeatGridSpecific,BeatGrid specific
+GM_BeatTrack,Beat Track
+GM_BeatTrack_Info,"Only one target is spawned, tracking style."
+GM_BeatTrackSpecific,BeatTrack specific
+GM_CenterTargets,Center Targets in Middle of Wall
+GM_CompletelyRandomTargets,Completely Random Targets (vs Only Adjacent Targets)
+GM_ConstantTargetSize,Constant Target Scale
+GM_ConstantTrackingSpeed,Constant Tracking Speed
+GM_CustomGameModeName,New Custom Game Mode Name
+GM_CustomizeSelected,Customize Selected
+GM_Difficulty_Death,Death
+GM_Difficulty_Hard,Hard
+GM_Difficulty_Normal,Normal
+GM_DynamicSpread,Dynamic
+GM_DynamicTargetSize,Dynamic Target Size (Performance-based)
+GM_EvenSpacing,Even Vertical/Horizontal Spacing
+GM_ForwardSpread,Forward Spread
+GM_GameModeDifficulty,Game Mode Difficulty
+GM_GameModeRemovedText,Game mode removed
+GM_GameModeSavedText,saved
+GM_GameModeTemplate,Game Mode Template
+GM_General,General
+GM_General_Info,"Select a template to see default values for different game modes. You can save custom game modes based on any game mode templates, and everything can be customized."
+GM_HeadshotOnly,Headshot Height Targets Only
+GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
+GM_MaximumTargetLifespan,Maximum Target Lifespan
+GM_MaxTargetScale,Max Target Scale
+GM_MaxTrackingSpeed,Max Tracking Speed
+GM_MinDistanceBetweenTargets,Minimum Distance Between Targets
+GM_MinTargetScale,Min Target Scale
+GM_MinTrackingSpeed,Min Tracking Speed
+GM_MoveTargetsForward,Move Targets Forward
+GM_MultiBeat,Multi Beat
+GM_MultiBeat_Info,Spawns targets continuously.
+GM_NarrowSpread,Narrow
+GM_NumberOfTargets,Number of Targets
+GM_OverwriteCancel,Cancel
+GM_OverwriteConfirm,Confirm
+GM_OverwritePopupTitle,Overwrite Existing Game Mode?
+GM_PlayFromDefault,Play
+GM_RemoveAllCustom,Remove All Custom
+GM_RemoveCustom,Remove Custom
+GM_SaveAndStartGame,Save and Start Game
+GM_SaveCustom,Save Custom
+GM_SingleBeat,Single Beat
+GM_SingleBeat_Info,One target at a time.
+GM_Sizing,Target Sizing
+GM_SpawnBeatDelay,Spawn Beat Delay
+GM_Spread,Target Spread
+GM_SpreadSelectTitle,Select A Spread
+GM_SpreadType,Spread Type
+GM_Standard_Info,Hop right into a session by selecting a game mode with default configured difficulty
+GM_StartCustom,Start Custom
+GM_StartWithoutSaving,Start Without Saving
+GM_TargetSpawnCooldown,Target Spawn Cooldown
+GM_Time,Time Related
+GM_VerticalSpread,Vertical Spread (Max if Dynamic)
+GM_WideSpread,Wide
+HUD_Accuracy,Accuracy:
+HUD_HighScore,High Score:
+HUD_Score,Score:
+HUD_ShotsFired,Shots Fired:
+HUD_Streak,Streak:
+HUD_TargetsHit,Targets Hit:
+HUD_TargetsSpawned,Targets Spawned:
+Login_BrowserLoginErrorText,"The game received a valid response from the server, but couldn't log you in to the website in the browser."
+Login_ContinueWithoutBodyTextLogin,"You won't be able to see your played game data, but it will still be saved locally if you decide to sign in later."
+Login_ContinueWithoutBodyTextRegister,"You won't be able to see your played game data, but it will still be saved locally if you ever decide to make an account."
+Login_ContinueWithoutCancelButtonTextLogin,Go Back and Sign In
+Login_ContinueWithoutCancelButtonTextRegister,Go Back and Register
+Login_ContinueWithoutConfirmButtonText,Yes I'm Sure
+Login_ContinueWithoutTitleTextLogin,Are you sure you want to continue without signing in?
+Login_ContinueWithoutTitleTextRegister,Are you sure you want to continue without registering?
+Login_EmailText,Email:
+Login_GotoLoginText,Already have an account?
+Login_GotoRegisterButtonText,Don't have an account?
+Login_InvalidCredentialsText,"Incorrect username, email, and/or password."
+Login_LoggedInBodyText,You've been logged in and won't have to login again until your cookie expires.
+Login_LoggedInTitleText,Login Success
+Login_LoginButtonText,Login
+Login_LoginErrorText,Something went wrong or your login expired. Please sign again to see your scores.
+Login_LoginSubtitleText,You can use your username OR email.
+Login_LoginTitleText,Sign In
+Login_MissingInfoError,Please enter your username/email and password to login.
+Login_MissingInfoErrorText,Please enter your username/email and password to login.
+Login_NoLoginButtonText,Continue without signing in
+Login_NoRegisterText,Continue without Registering
+Login_OkayButtonText,Sick
+Login_PasswordText,Password:
+Login_RegisterBody1,Signs you in each time you start the game
+Login_RegisterBody2,Saves your scores in the cloud
+Login_RegisterBody3,Grants access to detailed score data online and in game
+Login_RegisterBodyTitle,Registering for an account automatically:
+Login_RegisterButtonText,Register
+Login_RegisterTitleText,It looks like you don't have an account yet
+Login_TimeOutErrorText,Couldn't connect to BeatShot servers.
+Login_UsernameText,Username:
+LoginState_NotSignedIn,Not Signed In
+LoginState_SignedIn,Signed in as
+MenuOption_AASettings,Audio Analyzer
+MenuOption_AudioAnalyzer,Audio Analyzer
+MenuOption_CrossHair,Crosshair
+MenuOption_CustomGameModes,Custom Game Modes
+MenuOption_FAQ,FAQ
+MenuOption_GameModes,Game Modes
+MenuOption_PatchNotes,Patch Notes
+MenuOption_PlayAgain,Play Again
+MenuOption_Quit,Quit
+MenuOption_Restart,Restart Current Mode
+MenuOption_Scores,Scores
+MenuOption_Scoring,Scoring
+MenuOption_Sensitivity,Sensitivity
+MenuOption_Settings,Settings
+MenuOption_StandardGameModes,Standard Game Modes
+MenuOption_Game,Game
+MenuOption_VideoAndSound,Video and Sound
+PausedText,Paused
+QM_BackButtonText,Back
+QM_QuitDesktopButtonText,Quit to Desktop
+QM_QuitMainMenuButtonText,Quit to Main Menu
+QM_QuitTitle,Quit
+QM_QuitWithoutButtonText,Quit without saving
+QM_RestartTitle,Restart
+QM_RestartWithoutButtonText,Restart without saving
+QM_SaveQuitButtonText,Save and quit
+QM_SaveRestartButtonText,Save and Restart
+QM_SaveText,Save current game mode scores?
+QualityButtonText_Epic,Epic
+QualityButtonText_High,High
+QualityButtonText_Low,Low
+QualityButtonText_Medium,Medium
+ResetSettingsButtonText,Reset to Default
+ResumeButtonText,Resume Game
+SaveButtonText,Save
+Sensitivity_CSGO,New Sensitivity (CS:GO):
+Sensitivity_Current,Current Sensitivity:
+Sensitivity_HintText,Enter here
+Sensitivity_Info,"BeatShot uses Valorant sensitivity by default, but you can also enter your CSGO sensitivity. If you don't have either of those values, you can use an online converter to get your Valorant sensitivity."
+Sensitivity_Valorant,New Sensitivity (Valorant/Beatshot):
+SettingsSavedText,Settings Saved
+Sound_Game,In Game Sound
+Sound_Global,Global Sound
+Sound_MainMenu,Menu Sound
+SpreadType_Dynamic_EdgeOnly,Dynamic Edge Only
+SpreadType_Dynamic_Random,Dynamic Random
+SpreadType_Static,Static
+SpreadType_Static_Narrow,Static Narrow
+SpreadType_Static_Wide,Static Wide
+Video_AntiAliasing,Anti-Aliasing Quality
+Video_GlobalIllumination,Global Illumination Quality
+Video_PostProcessing,Post Processing Quality
+Video_Reflection,Reflection Quality
+Video_Resolution,Resolution
+Video_Shading,Shading Quality
+Video_Shadow,Shadow Quality
+Video_Texture,Texture Quality
+Video_ViewDistance,View Distance
+Video_VisualEffect,Visual Effect Quality
+Video_Vsync,Enable VSync
+Video_WindowMode,Window Mode
+WallMenu_Auto,AUTO
+WallMenu_BulletDecals,BULLET DECALS
+WallMenu_FireRate,FIRE RATE
+WallMenu_Off,OFF
+WallMenu_On,ON
+WallMenu_Recoil,RECOIL
+WallMenu_NightMode,NIGHT MODE
+WallMenu_ShapeVisualizer,SHAPE VISUALIZERS
+WallMenu_LightVisualizer,LIGHT VISUALIZERS
+WallMenu_Semi,SEMI
+WelcomeMessage,Welcome to
+WindowMode_Fullscreen,Fullscreen
+WindowMode_FullscreenWindowed,Fullscreen Windowed
+WindowMode_Windowed,Windowed
+SBW_NoAccount,Your scores were saved locally but were not uploaded to the database. Create an account in the main menu to see your scores.
+SBW_DidNotSaveScores,Your scores weren't saved because you didn't select a name for your custom game mode or your score was 0.
+SBW_SavedScoresButNotLoggedIn,Your scores were saved to the database but there was a problem loading your profile in the web browser. Go to the main menu to sign in again.
+SBW_SavedScoresLocallyOnly,Your scores were saved locally but there was a problem posting your scores to the database. Your scores will be uploaded to the database the next time there is a successful connection to it. Go to the main menu to sign in again.
+SM_TargetColor_Start,Start Target Color
+SM_TargetColor_Peak,Peak Target Color
+SM_TargetColor_End,End Target Color
+SM_TargetColor_Outline,Target Outline Color
+SM_TargetColor_UseSeparateOutline,Use Separate Outline Color
+SM_TargetColor_BeatGridInactive,Inactive BeatGrid Target Color
+SM_Saved_Game,Game Settings saved
+SM_Saved_VideoAndSound,Video and Sound Settings Saved
+SM_Saved_AudioAnalyzer,Audio Analyzer Settings Saved
+SM_Saved_Sensitivity,Sensitivity Settings Saved
+SM_Saved_CrossHair,Crosshair Settings Saved
+SM_Save_Game,Save Game Settings
+SM_Save_VideoAndSound,Save Video and Sound Settings
+SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
+SM_Save_Sensitivity,Save Sensitivity Settings
+SM_Save_CrossHair,Save Crosshair Settings
+GameTitle,BeatShot
+Interact_MoveUp,Hold E to move platform up
+Interact_MoveDown,Hold Shift+E to move platform down
