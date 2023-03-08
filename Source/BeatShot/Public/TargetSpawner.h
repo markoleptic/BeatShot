@@ -7,6 +7,7 @@
 #include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerScore.h"
 #include "GameFramework/Actor.h"
+#include "BeatShot/BeatShot.h"
 #include "TargetSpawner.generated.h"
 
 class ASphereTarget;
@@ -16,105 +17,6 @@ class AStaticMeshActor;
 class UActorComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector);
-
-/** A struct representing the space in the grid that a recently spawned target occupies */
-USTRUCT()
-struct FRecentTarget
-{
-	GENERATED_BODY()
-	
-	TArray<FVector> OverlappingPoints;
-
-	FVector CenterVector;
-	
-	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
-	FGuid TargetGuid;
-
-	/** The scale of the target, as it is in the world */
-	float TargetScale;
-
-	FRecentTarget()
-	{
-		CenterVector = FVector::ZeroVector;
-		TargetScale = 0.f;
-	}
-
-	explicit FRecentTarget(const FGuid Guid)
-	{
-		CenterVector = FVector::ZeroVector;
-		TargetGuid = Guid;
-		TargetScale = 0.f;
-	}
-
-	FRecentTarget(const FGuid NewTargetGuid, const TArray<FVector> Points, const float NewTargetScale, const FVector NewCenter)
-	{
-		TargetGuid = NewTargetGuid;
-		OverlappingPoints = Points;
-		TargetScale = NewTargetScale;
-		CenterVector = NewCenter;
-	}
-
-	FORCEINLINE bool operator == (const FRecentTarget& Other) const
-	{
-		if (TargetGuid == Other.TargetGuid)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
-/** A struct representing a point in a 2D grid with information about that point */
-USTRUCT()
-struct FVectorCounter
-{
-	GENERATED_BODY()
-
-	/** Unscaled, world spawn location point */
-	FVector Point;
-	
-	/** The total number of target spawns at this point */
-	int32 TotalSpawns;
-
-	/** The total number of target hits by player at this point */
-	int32 TotalHits;
-
-	FVectorCounter()
-	{
-		Point = FVector();
-		TotalSpawns = 0;
-		TotalHits = 0;
-	}
-
-	FVectorCounter(const FVector NewPoint)
-	{
-		Point = NewPoint;
-		TotalSpawns = -1;
-		TotalHits = 0;
-	}
-
-	FORCEINLINE bool operator == (const FVectorCounter& Other) const
-	{
-		if (Point.Equals(Other.Point))
-		{
-			return true;
-		}
-		return false;
-	}
-
-	FORCEINLINE bool operator < (const FVectorCounter& Other) const
-	{
-		if (Point.Z > Other.Point.Z)
-		{
-			return true;
-		}
-		if (Point.Z == Other.Point.Z && Point.Y < Other.Point.Y)
-		{
-			return true;
-		}
-		return false;
-	}
-};
 
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor

@@ -13,7 +13,7 @@ public class BeatShot : ModuleRules
 			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "Global", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks"
 		});
 		PrivateDependencyModuleNames.AddRange(new[]
-			{ "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer", "EnhancedInput", "InputCore" });
+			{ "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer", "EnhancedInput", "InputCore", "GameplayAbilities", "GameplayTags", "GameplayTasks" });
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
 		PrivateIncludePaths.Add(

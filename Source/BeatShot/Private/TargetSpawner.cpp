@@ -2,7 +2,7 @@
 
 #include "TargetSpawner.h"
 #include "SphereTarget.h"
-#include "DefaultGameMode.h"
+#include "BSGameMode.h"
 #include "Components/BoxComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -153,28 +153,27 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 void ATargetSpawner::InitBeatGrid()
 {
 	// clear any variables that could have been used prior to a restart
-	if (RecentBeatGridIndices.IsEmpty() == false)
+	if (!RecentBeatGridIndices.IsEmpty())
 	{
 		RecentBeatGridIndices.Empty();
 		RecentBeatGridIndices.Shrink();
 	}
-	if (SpawnedBeatGridTargets.IsEmpty() == false)
+	if (!SpawnedBeatGridTargets.IsEmpty())
 	{
 		SpawnedBeatGridTargets.Empty();
 		SpawnedBeatGridTargets.Shrink();
 	}
-
 	if (ActiveBeatGridTarget)
 	{
 		ActiveBeatGridTarget = nullptr;
 	}
 
-	LastBeatGridIndex = -1.f;
+	LastBeatGridIndex = -1;
 	InitialBeatGridTargetActivated = false;
 
 	const float HalfWidth = round(SpawnBox->Bounds.BoxExtent.Y);
 	const float HalfHeight = round(SpawnBox->Bounds.BoxExtent.Z);
-	const float NumTargets = (sqrt(GameModeActorStruct.BeatGridSize));
+	const float NumTargets = sqrt(GameModeActorStruct.BeatGridSize);
 	FVector BeatGridSpawnLocation = SpawnBox->Bounds.Origin;
 	const float OuterSpacing = 100.f;
 	const float BasicHSpacing = (HalfWidth - OuterSpacing) * 2 / (NumTargets - 1);
@@ -203,7 +202,7 @@ void ATargetSpawner::InitBeatGrid()
 			}
 
 			if (ASphereTarget* BeatGridTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn,
-				BeatGridSpawnLocation, SpawnBox->GetComponentRotation()))
+			BeatGridSpawnLocation, FRotator::ZeroRotator, TargetSpawnParams))
 			{
 				BeatGridTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 				const float NewTargetScale = GetNextTargetScale();
@@ -307,7 +306,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			AddToActiveTargets(SpawnTarget);
 			AddToRecentTargets(SpawnTarget, TargetScale);
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
 		}
 		else
 		{
@@ -330,7 +329,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			AddToActiveTargets(SpawnTarget);
 			AddToRecentTargets(SpawnTarget, TargetScale);
-			Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
 		}
 		if (SpawnLocation == SpawnBox->Bounds.Origin)
 		{
@@ -445,7 +444,7 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	if (ActiveBeatGridTarget)
 	{
 		ActiveBeatGridTarget->StartBeatGridTimer(GameModeActorStruct.TargetMaxLifeSpan);
-		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(
+		Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(
 			ActiveBeatGridTarget);
 	}
 	if (GameModeActorStruct.IsSingleBeatMode == true)
@@ -464,7 +463,7 @@ void ATargetSpawner::SetNewTrackingDirection()
 		BeatTrackTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		LocationBeforeDirectionChange = SpawnBox->Bounds.Origin;
 
-		Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(BeatTrackTarget);
+		Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(BeatTrackTarget);
 	}
 	if (BeatTrackTarget)
 	{
@@ -530,7 +529,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		DestroyedTargetLocation.Z +
 		SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z
 	};
-	Cast<ADefaultGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.Broadcast(
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.Broadcast(
 		TimeAlive, ConsecutiveTargetsHit, Location);
 
 	if (bShowDebug_SpawnBox)

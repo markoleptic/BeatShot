@@ -10,7 +10,7 @@
 
 class UHorizontalBox;
 class ABeatAimGameModeBase;
-class ADefaultCharacter;
+class ABSCharacter;
 class UProgressBar;
 class UTextBlock;
 

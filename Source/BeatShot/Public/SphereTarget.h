@@ -10,7 +10,7 @@
 #include "SaveLoadInterface.h"
 #include "SphereTarget.generated.h"
 
-class UDefaultHealthComponent;
+class UBSHealthComponent;
 class UCapsuleComponent;
 class UTimelineComponent;
 class UNiagaraSystem;
@@ -102,7 +102,7 @@ public:
 	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	UDefaultHealthComponent* HealthComp;
+	UBSHealthComponent* HealthComp;
 
 	UPROPERTY()
 	FGuid Guid;

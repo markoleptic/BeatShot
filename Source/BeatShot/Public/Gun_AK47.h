@@ -10,10 +10,10 @@
 #include "Gun_AK47.generated.h"
 
 class ASphereTarget;
-class ADefaultPlayerController;
+class ABSPlayerController;
 class UNiagaraSystem;
-class UDefaultGameInstance;
-class ADefaultCharacter;
+class UBSGameInstance;
+class ABSCharacter;
 class USkeletalMeshComponent;
 class UAnimMontage;
 
@@ -182,11 +182,11 @@ private:
 
 	/** Reference to owning character */
 	UPROPERTY(VisibleAnywhere, Category = "References")
-	ADefaultCharacter* Character;
+	ABSCharacter* Character;
 
 	/** Reference to player controller */
 	UPROPERTY(VisibleAnywhere, Category = "References")
-	ADefaultPlayerController* PlayerController;
+	ABSPlayerController* PlayerController;
 
 	/** The spawn parameters for the bullet */
 	FActorSpawnParameters ProjectileSpawnParams;

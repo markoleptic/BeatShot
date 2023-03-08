@@ -5,7 +5,7 @@
 #include "ThirdParty/Steamworks/Steamv153/sdk/public/steam/steam_api.h"
 #include "SteamManager.generated.h"
 
-class UDefaultGameInstance;
+class UBSGameInstance;
 
 UCLASS()
 class BEATSHOT_API USteamManager : public UObject
@@ -19,10 +19,10 @@ public:
 
 	void InitializeSteamManager();
 
-	void AssignGameInstance(UDefaultGameInstance* InDefaultGameInstance);
+	void AssignGameInstance(UBSGameInstance* InDefaultGameInstance);
 
 	UPROPERTY()
-	UDefaultGameInstance *DefaultGameInstance;
+	UBSGameInstance *DefaultGameInstance;
 	
 private:
 	//Steam Callback Setups Using STEAM_CALLBACK_MANUAL()

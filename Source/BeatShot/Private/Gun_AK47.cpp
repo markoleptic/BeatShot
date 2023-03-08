@@ -2,9 +2,9 @@
 
 
 #include "Gun_AK47.h"
-#include "DefaultCharacter.h"
-#include "DefaultPlayerController.h"
-#include "DefaultGameInstance.h"
+#include "BSCharacter.h"
+#include "BSPlayerController.h"
+#include "BSGameInstance.h"
 #include "Projectile.h"
 #include "SphereTarget.h"
 #include "NiagaraFunctionLibrary.h"
@@ -38,11 +38,11 @@ void AGun_AK47::BeginPlay()
 {
 	Super::BeginPlay();
 
-	const UDefaultGameInstance* GI = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this));
-	Character = Cast<ADefaultCharacter>(GetParentActor());
-	PlayerController = Character->GetController<ADefaultPlayerController>();
+	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this));
+	Character = Cast<ABSCharacter>(GetParentActor());
+	PlayerController = Character->GetController<ABSPlayerController>();
 	BulletDecalInstance = UMaterialInstanceDynamic::Create(BulletDecalMaterial,
-	                                                       GetInstigatorController<ADefaultPlayerController>());
+	                                                       GetInstigatorController<ABSPlayerController>());
 	ProjectileSpawnParams.Owner = Character;
 	ProjectileSpawnParams.Instigator = Character;
 	bShouldTrace = GI->GameModeActorStruct.IsBeatTrackMode;

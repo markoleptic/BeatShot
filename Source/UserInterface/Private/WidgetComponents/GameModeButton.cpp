@@ -7,10 +7,18 @@
 void UGameModeButton::NativeConstruct()
 {
 	Super::NativeConstruct();
-	Button->OnClicked.AddUniqueDynamic(this, &UGameModeButton::OnButtonClickedCallback);
+	Button->OnClicked.AddUniqueDynamic(this, &UGameModeButton::OnButtonClicked);
 }
 
-void UGameModeButton::OnButtonClickedCallback()
+void UGameModeButton::OnButtonClicked()
 {
 	OnGameModeButtonClicked.Broadcast(this);
+}
+
+void UGameModeButton::SetDefaults(EGameModeDifficulty GameModeDifficulty, EGameModeActorName GameModeActorName,
+	UGameModeButton* NextButton)
+{
+	Difficulty = GameModeDifficulty;
+	GameModeName = GameModeActorName;
+	Next = NextButton;
 }

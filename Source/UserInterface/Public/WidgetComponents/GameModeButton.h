@@ -11,6 +11,7 @@ class UButton;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeButtonClicked, const UGameModeButton*, GameModeButton);
 
+/** Simple UButton wrapper that stores info about a GameMode, and a pointer to the next game mode button */
 UCLASS()
 class USERINTERFACE_API UGameModeButton : public UUserWidget
 {
@@ -20,15 +21,19 @@ class USERINTERFACE_API UGameModeButton : public UUserWidget
 
 public:
 	UFUNCTION()
-	void OnButtonClickedCallback();
+	void OnButtonClicked();
+
+	void SetDefaults(EGameModeDifficulty GameModeDifficulty, EGameModeActorName GameModeActorName, UGameModeButton* NextButton);
+	
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UButton* Button;
-	UPROPERTY()
-	int32 Quality;
+	
 	UPROPERTY()
 	EGameModeDifficulty Difficulty;
+	
 	UPROPERTY()
 	EGameModeActorName GameModeName;
+	
 	UPROPERTY()
 	UGameModeButton* Next;
 

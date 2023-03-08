@@ -2,8 +2,8 @@
 
 
 #include "Projectile.h"
-#include "DefaultGameInstance.h"
-#include "DefaultPlayerController.h"
+#include "BSGameInstance.h"
+#include "BSPlayerController.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
@@ -30,7 +30,7 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 
-	if (Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct.IsBeatTrackMode == true)
+	if (Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		Damage = 0.f;
 	}
@@ -54,7 +54,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent,
 	}
 	if (OtherActor != nullptr && OtherActor != this && OtherComponent != nullptr) //&& OtherComponent->IsSimulatingPhysics()
 	{
-		ADefaultPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ADefaultPlayerController>();
+		ABSPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ABSPlayerController>();
 		UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 	}
 	Destroy();

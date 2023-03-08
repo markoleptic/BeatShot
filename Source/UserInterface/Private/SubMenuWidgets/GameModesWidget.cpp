@@ -44,69 +44,34 @@ void UGameModesWidget::NativeConstruct()
 
 	/** Default Game Mode widgets */
 	{
-		BeatGridNormalButton->Difficulty = EGameModeDifficulty::Normal;
-		BeatGridHardButton->Difficulty = EGameModeDifficulty::Hard;
-		BeatGridDeathButton->Difficulty = EGameModeDifficulty::Death;
-		BeatGridNormalButton->GameModeName = EGameModeActorName::BeatGrid;
-		BeatGridHardButton->GameModeName = EGameModeActorName::BeatGrid;
-		BeatGridDeathButton->GameModeName = EGameModeActorName::BeatGrid;
-		BeatGridNormalButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		SingleBeatNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::SingleBeat, SingleBeatHardButton);
+		SingleBeatHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::SingleBeat, SingleBeatDeathButton);
+		SingleBeatDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::SingleBeat, MultiBeatNormalButton);
+
+		MultiBeatNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::MultiBeat, MultiBeatHardButton);
+		MultiBeatHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::MultiBeat, MultiBeatDeathButton);
+		MultiBeatDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::MultiBeat, BeatGridNormalButton);
+		
+		BeatGridNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::BeatGrid, BeatGridHardButton);
+		BeatGridHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::BeatGrid, BeatGridDeathButton);
+		BeatGridDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::BeatGrid, BeatTrackNormalButton);
+		
+		BeatTrackNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::BeatTrack, BeatTrackHardButton);
+		BeatTrackHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::BeatTrack, BeatTrackDeathButton);
+		BeatTrackDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::BeatTrack, SingleBeatNormalButton);
+
+		SingleBeatNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		SingleBeatHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		SingleBeatDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		MultiBeatNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		MultiBeatHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		MultiBeatDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		BeatGridNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
 		BeatGridHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		BeatGridDeathButton->OnGameModeButtonClicked.
-		                     AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-
-		MultiBeatNormalButton->Difficulty = EGameModeDifficulty::Normal;
-		MultiBeatHardButton->Difficulty = EGameModeDifficulty::Hard;
-		MultiBeatDeathButton->Difficulty = EGameModeDifficulty::Death;
-		MultiBeatNormalButton->GameModeName = EGameModeActorName::MultiBeat;
-		MultiBeatHardButton->GameModeName = EGameModeActorName::MultiBeat;
-		MultiBeatDeathButton->GameModeName = EGameModeActorName::MultiBeat;
-		MultiBeatNormalButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		MultiBeatHardButton->OnGameModeButtonClicked.
-		                     AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		MultiBeatDeathButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-
-		SingleBeatNormalButton->Difficulty = EGameModeDifficulty::Normal;
-		SingleBeatHardButton->Difficulty = EGameModeDifficulty::Hard;
-		SingleBeatDeathButton->Difficulty = EGameModeDifficulty::Death;
-		SingleBeatNormalButton->GameModeName = EGameModeActorName::SingleBeat;
-		SingleBeatHardButton->GameModeName = EGameModeActorName::SingleBeat;
-		SingleBeatDeathButton->GameModeName = EGameModeActorName::SingleBeat;
-		SingleBeatNormalButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		SingleBeatHardButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		SingleBeatDeathButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-
-		BeatTrackNormalButton->Difficulty = EGameModeDifficulty::Normal;
-		BeatTrackHardButton->Difficulty = EGameModeDifficulty::Hard;
-		BeatTrackDeathButton->Difficulty = EGameModeDifficulty::Death;
-		BeatTrackNormalButton->GameModeName = EGameModeActorName::BeatTrack;
-		BeatTrackHardButton->GameModeName = EGameModeActorName::BeatTrack;
-		BeatTrackDeathButton->GameModeName = EGameModeActorName::BeatTrack;
-		BeatTrackNormalButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		BeatTrackHardButton->OnGameModeButtonClicked.
-		                     AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-		BeatTrackDeathButton->OnGameModeButtonClicked.AddDynamic(
-			this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
-
-		BeatGridNormalButton->Next = BeatGridHardButton;
-		BeatGridHardButton->Next = BeatGridDeathButton;
-		BeatGridDeathButton->Next = MultiBeatNormalButton;
-		MultiBeatNormalButton->Next = MultiBeatHardButton;
-		MultiBeatHardButton->Next = MultiBeatDeathButton;
-		MultiBeatDeathButton->Next = SingleBeatNormalButton;
-		SingleBeatNormalButton->Next = SingleBeatHardButton;
-		SingleBeatHardButton->Next = SingleBeatDeathButton;
-		SingleBeatDeathButton->Next = BeatTrackNormalButton;
-		BeatTrackNormalButton->Next = BeatTrackHardButton;
-		BeatTrackHardButton->Next = BeatTrackDeathButton;
-		BeatTrackDeathButton->Next = BeatGridNormalButton;
+		BeatGridDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		BeatTrackNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		BeatTrackHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
+		BeatTrackDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModeButtonClicked);
 	}
 
 	/** Spread Type widgets */
@@ -119,10 +84,8 @@ void UGameModesWidget::NativeConstruct()
 
 	/** Default GameModes Array */
 	{
-		GameModeActorDefaults.Add(
-			FGameModeActorStruct(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
-		GameModeActorDefaults.Add(
-			FGameModeActorStruct(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
+		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
+		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
 		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::SingleBeat,
 		                                               EGameModeDifficulty::Normal,
 		                                               ESpreadType::DynamicEdgeOnly));
@@ -723,8 +686,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 		BaseGameModeComboBox->SetSelectedOption("BeatGrid");
 		ConstantBeatGridSpacingCheckBox->SetIsChecked(true);
 		RandomizeNextBeatGridTargetCheckBox->SetIsChecked(InputGameModeActorStruct.RandomizeBeatGrid);
-		NumBeatGridTargetsComboBox->SetSelectedOption(
-			FString::FromInt(InputGameModeActorStruct.NumTargetsAtOnceBeatGrid));
+		NumBeatGridTargetsComboBox->SetSelectedOption(FString::FromInt(InputGameModeActorStruct.BeatGridSize));
 	}
 	else
 	{
@@ -829,13 +791,13 @@ void UGameModesWidget::PopulateGameModeNameComboBox(const FString& GameModeOptio
 
 FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 {
-	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && CustomGameModeETB->GetText().IsEmpty())
-	{
-		return FGameModeActorStruct();
-	}
 	FGameModeActorStruct ReturnStruct;
 	ReturnStruct.GameModeActorName = EGameModeActorName::Custom;
-	if (!CustomGameModeETB->GetText().IsEmptyOrWhitespace())
+	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && CustomGameModeETB->GetText().IsEmptyOrWhitespace())
+	{
+		ReturnStruct.CustomGameModeName = "";
+	}
+	else if (!CustomGameModeETB->GetText().IsEmptyOrWhitespace())
 	{
 		ReturnStruct.CustomGameModeName = CustomGameModeETB->GetText().ToString();
 	}
@@ -902,7 +864,7 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 		TargetScaleSnapSize);
 	ReturnStruct.RandomizeBeatGrid = RandomizeNextBeatGridTargetCheckBox->IsChecked();
 	/** TODO: Constant BeatGrid Spacing option*/
-	ReturnStruct.NumTargetsAtOnceBeatGrid = FCString::Atoi(*NumBeatGridTargetsComboBox->GetSelectedOption());
+	ReturnStruct.BeatGridSize = FCString::Atoi(*NumBeatGridTargetsComboBox->GetSelectedOption());
 	ReturnStruct.MinTrackingSpeed = FMath::GridSnap(
 		FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinTargetSpeedValue, MaxTargetSpeedValue),
 		TargetSpeedSnapSize);

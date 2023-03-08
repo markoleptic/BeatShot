@@ -2,8 +2,8 @@
 
 
 #include "SphereTarget.h"
-#include "DefaultGameInstance.h"
-#include "DefaultHealthComponent.h"
+#include "BSGameInstance.h"
+#include "BSHealthComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
@@ -26,7 +26,7 @@ ASphereTarget::ASphereTarget()
 	OutlineMesh = CreateDefaultSubobject<UStaticMeshComponent>("Outline Mesh");
 	OutlineMesh->SetupAttachment(BaseMesh);
 	
-	HealthComp = CreateDefaultSubobject<UDefaultHealthComponent>("Health Component");
+	HealthComp = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
 	
 	InitialLifeSpan = 1.5f;
 	Guid = FGuid::NewGuid();
@@ -61,7 +61,7 @@ void ASphereTarget::BeginPlay()
 		SetOutlineColor(PlayerSettings.TargetOutlineColor);
 	}
 	
-	GameModeActorStruct = Cast<UDefaultGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
+	GameModeActorStruct = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
 	const float WhiteToPeakMultiplier = 1 / GameModeActorStruct.PlayerDelay;
 	const float PeakToFadeMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
 	

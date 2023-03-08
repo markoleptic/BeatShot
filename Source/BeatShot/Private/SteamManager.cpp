@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "SteamManager.h"
-#include "DefaultGameInstance.h"
+#include "BSGameInstance.h"
 
 USteamManager::USteamManager()
 {
@@ -19,7 +19,7 @@ void USteamManager::InitializeSteamManager()
 	UE_LOG(LogTemp, Display, TEXT("OnSteamOverlayActiveCallback.Register called"));
 }
 
-void USteamManager::AssignGameInstance(UDefaultGameInstance* InDefaultGameInstance)
+void USteamManager::AssignGameInstance(UBSGameInstance* InDefaultGameInstance)
 {
 	DefaultGameInstance = InDefaultGameInstance;
 	UE_LOG(LogTemp, Display, TEXT("New Game Instance Assigned to USteamManager"));
