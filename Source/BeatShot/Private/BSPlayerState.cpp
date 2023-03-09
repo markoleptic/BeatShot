@@ -20,19 +20,27 @@ ABSPlayerState::ABSPlayerState()
 	// Adding it as a subobject of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
 	AttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>(TEXT("AttributeSetBase"));
-	
+
 	// Set PlayerState's NetUpdateFrequency to the same as the Character.
 	// Default is very low for PlayerStates and introduces perceived lag in the ability system.
 	// 100 is probably way too high for a shipping game, you can adjust to fit your needs.
 	NetUpdateFrequency = 100.0f;
 }
 
-UAbilitySystemComponent * ABSPlayerState::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ABSPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
 
-UBSAttributeSetBase * ABSPlayerState::GetAttributeSetBase() const
+void ABSPlayerState::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	check(AbilitySystemComponent);
+	AbilitySystemComponent->InitAbilityActorInfo(this, GetPawn());
+}
+
+UBSAttributeSetBase* ABSPlayerState::GetAttributeSetBase() const
 {
 	return AttributeSetBase;
 }
@@ -55,10 +63,9 @@ float ABSPlayerState::GetMaxHealth() const
 void ABSPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	AttributeSetBase->SetMoveSpeed(400.f);
 }
 
-void ABSPlayerState::HealthChanged(const FOnAttributeChangeData & Data)
+void ABSPlayerState::HealthChanged(const FOnAttributeChangeData& Data)
 {
 	float Health = Data.NewValue;
 
@@ -86,7 +93,7 @@ void ABSPlayerState::HealthChanged(const FOnAttributeChangeData & Data)
 	// }
 }
 
-void ABSPlayerState::MaxHealthChanged(const FOnAttributeChangeData & Data)
+void ABSPlayerState::MaxHealthChanged(const FOnAttributeChangeData& Data)
 {
 	float MaxHealth = Data.NewValue;
 

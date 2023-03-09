@@ -15,28 +15,22 @@ public:
 #define ACTOR_ROLE_FSTRING *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(GetLocalRole()))
 #define GET_ACTOR_ROLE_FSTRING(Actor) *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(Actor->GetLocalRole()))
 
-UENUM(BlueprintType)
-enum class EBSAbilityInputID : uint8
-{
-	None			UMETA(DisplayName = "None"),
-	Sprint			UMETA(DisplayName = "Sprint"),
-	Jump			UMETA(DisplayName = "Jump")
-};
-
 /** A struct representing the space in the grid that a recently spawned target occupies */
 USTRUCT()
 struct FRecentTarget
 {
 	GENERATED_BODY()
-	
+
+	/** An array of points that were inside the SpawnBox and inside the target */
 	TArray<FVector> OverlappingPoints;
 
+	/** The location of the center of the target */
 	FVector CenterVector;
 	
 	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid TargetGuid;
 
-	/** The scale of the target, as it is in the world */
+	/** The scale of the target relative to the world */
 	float TargetScale;
 
 	FRecentTarget()

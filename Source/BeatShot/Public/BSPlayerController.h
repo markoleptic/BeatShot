@@ -16,6 +16,8 @@ class UPlayerHUD;
 class UMainMenuWidget;
 class UPauseMenuWidget;
 class UCountdownWidget;
+class ABSPlayerState;
+class UBSAbilitySystemComponent;
 
 DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
@@ -25,6 +27,12 @@ class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveL
 	GENERATED_BODY()
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|PlayerController")
+	ABSPlayerState* GetBSPlayerState() const;
+
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|PlayerController")
+	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const;
 
 public:
 	/** Sets the enabled state of the pawn */
@@ -83,6 +91,9 @@ public:
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
 protected:
+	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
+	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	UPROPERTY(EditDefaultsOnly)

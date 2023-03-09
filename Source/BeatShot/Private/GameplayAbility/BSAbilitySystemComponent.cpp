@@ -2,8 +2,6 @@
 
 #include "GameplayAbility/BSGameplayAbility.h"
 
-UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_AbilityInputBlocked, "Gameplay.AbilityInputBlocked");
-
 void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceASC, float UnmitigatedDamage,
                                               float MitigatedDamage)
 {
@@ -12,12 +10,6 @@ void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceA
 
 void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
-	if (HasMatchingGameplayTag(TAG_Gameplay_AbilityInputBlocked))
-	{
-		ClearAbilityInput();
-		return;
-	}
-
 	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
 	AbilitiesToActivate.Reset();
 

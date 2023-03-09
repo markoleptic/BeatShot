@@ -8,7 +8,6 @@ UBSInputConfig::UBSInputConfig(const FObjectInitializer& ObjectInitializer)
 
 const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
 {
-	UE_LOG(LogTemp, Display, TEXT("NativeInputActions size %d"), NativeInputActions.Num());
 	for (const FBSInputAction& Action : NativeInputActions)
 	{
 		if (Action.InputAction && (Action.InputTag == InputTag))

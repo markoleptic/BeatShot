@@ -8,7 +8,6 @@
 #include "BSAbilitySystemComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FReceivedDamageDelegate, UBSAbilitySystemComponent*, SourceASC, float, UnmitigatedDamage, float, MitigatedDamage);
-BEATSHOT_API UE_DECLARE_GAMEPLAY_TAG_EXTERN(TAG_Gameplay_AbilityInputBlocked);
 
 UCLASS()
 class BEATSHOT_API UBSAbilitySystemComponent : public UAbilitySystemComponent
@@ -38,6 +37,4 @@ public:
 
 	// Handles to abilities that have their input held.
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
-
-	
 };

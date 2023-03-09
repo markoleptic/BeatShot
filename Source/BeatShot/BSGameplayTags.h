@@ -2,89 +2,49 @@
 
 #pragma once
 
-#include "Containers/Map.h"
 #include "GameplayTagContainer.h"
-#include "HAL/Platform.h"
-
-class UGameplayTagsManager;
 
 /**
  *	Singleton containing native gameplay tags.
  */
 struct FBSGameplayTags
 {
-public:
-
 	static const FBSGameplayTags& Get() { return GameplayTags; }
+	static void InitializeTags();
+	
+	FGameplayTag GameplayCue_Sprint;
+	
+	FGameplayTag Event;
+	FGameplayTag Event_Montage;
+	FGameplayTag Event_Montage_SpawnProjectile;
+	
+	FGameplayTag Input;
+	FGameplayTag Input_Move;
+	FGameplayTag Input_Look;
+	FGameplayTag Input_Crouch;
+	FGameplayTag Input_Fire;
+	FGameplayTag Input_Sprint;
+	FGameplayTag Input_Jump;
 
-	static void InitializeNativeTags();
-
-	static FGameplayTag FindTagByString(FString TagString, bool bMatchPartialString = false);
-
-public:
-
-	FGameplayTag Ability_ActivateFail_IsDead;
-	FGameplayTag Ability_ActivateFail_Cooldown;
-	FGameplayTag Ability_ActivateFail_Cost;
-	FGameplayTag Ability_ActivateFail_TagsBlocked;
-	FGameplayTag Ability_ActivateFail_TagsMissing;
-	FGameplayTag Ability_ActivateFail_Networking;
-	FGameplayTag Ability_ActivateFail_ActivationGroup;
-
-	FGameplayTag Ability_Behavior_SurvivesDeath;
-
-	FGameplayTag InputTag_Move;
-	FGameplayTag InputTag_Look;
-	FGameplayTag InputTag_Crouch;
-	FGameplayTag InputTag_Sprint;
-	FGameplayTag InputTag_AutoRun;
-
-	// Initialization states for the GameFrameworkComponentManager, these are registered in order by LyraGameInstance and some actors will skip right to GameplayReady
-
-	/** Actor/component has initially spawned and can be extended */
-	FGameplayTag InitState_Spawned;
-
-	/** All required data has been loaded/replicated and is ready for initialization */
-	FGameplayTag InitState_DataAvailable;
-
-	/** The available data has been initialized for this actor/component, but it is not ready for full gameplay */
-	FGameplayTag InitState_DataInitialized;
-
-	/** The actor/component is fully ready for active gameplay */
-	FGameplayTag InitState_GameplayReady;
-
-	FGameplayTag GameplayEvent_Death;
-	FGameplayTag GameplayEvent_Reset;
-	FGameplayTag GameplayEvent_RequestReset;
-
-	FGameplayTag SetByCaller_Damage;
-	FGameplayTag SetByCaller_Heal;
-
-	FGameplayTag Cheat_GodMode;
-	FGameplayTag Cheat_UnlimitedHealth;
-
-	FGameplayTag Status_Crouching;
-	FGameplayTag Status_AutoRunning;
-	FGameplayTag Status_Death;
-	FGameplayTag Status_Death_Dying;
-	FGameplayTag Status_Death_Dead;
-
-	FGameplayTag Movement_Mode_Walking;
-	FGameplayTag Movement_Mode_NavWalking;
-	FGameplayTag Movement_Mode_Falling;
-	FGameplayTag Movement_Mode_Swimming;
-	FGameplayTag Movement_Mode_Flying;
-	FGameplayTag Movement_Mode_Custom;
-
-	TMap<uint8, FGameplayTag> MovementModeTagMap;
-	TMap<uint8, FGameplayTag> CustomMovementModeTagMap;
+	FGameplayTag State;
+	FGameplayTag State_Crouching;
+	FGameplayTag State_Firing;
+	FGameplayTag State_Jumping;
+	FGameplayTag State_Moving;
+	FGameplayTag State_Sprinting;
+	FGameplayTag State_PlayingBSGameMode;
+	
+	FGameplayTag Target;
+	FGameplayTag Target_State;
+	FGameplayTag Target_State_Grid;
+	FGameplayTag Target_State_Single;
+	FGameplayTag Target_State_Multi;
+	FGameplayTag Target_State_Tracking;
 
 protected:
 
-	void AddAllTags(UGameplayTagsManager& Manager);
-	void AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);
-	void AddMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 MovementMode);
-	void AddCustomMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 CustomMovementMode);
+	void AddAllTags();
+	void AddTag(FGameplayTag& OutTag, const FString& TagName);
 
 private:
 

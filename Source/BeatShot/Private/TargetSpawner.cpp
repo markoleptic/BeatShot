@@ -27,28 +27,6 @@ void ATargetSpawner::BeginPlay()
 
 void ATargetSpawner::Destroyed()
 {
-	// if (!SpawnCounter.IsEmpty())
-	// {
-	// 	SpawnCounter.Sort();
-	// 	FString file = FPaths::ProjectDir();
-	// 	file.Append(TEXT("AccuracyMatrix.csv"));
-	// 	FString StringToWrite;
-	//
-	// 	for (FVectorCounter Counter : SpawnCounter)
-	// 	{
-	// 		if (Counter.TotalSpawns != 0)
-	// 		{
-	// 			StringToWrite.Append(FString::SanitizeFloat(Counter.Point.Y) + "," + FString::SanitizeFloat(Counter.Point.Z) + ",");
-	// 			StringToWrite.Append(FString::FromInt(Counter.TotalSpawns) + ",");
-	// 			StringToWrite.Append(FString::FromInt(Counter.TotalHits));
-	// 			StringToWrite.Append("\n");
-	// 		}
-	// 	}
-	// 	FFileHelper::SaveStringToFile(StringToWrite, *file);
-	// 	SpawnCounter.Empty();
-	// 	SpawnCounter.Shrink();
-	// }
-
 	if (BeatTrackTarget)
 	{
 		BeatTrackTarget->Destroy();
@@ -241,10 +219,15 @@ void ATargetSpawner::CallSpawnFunction()
 
 TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 {
+	const double StartTime = FPlatformTime::Seconds();
 	TArray<F2DArray> SpawnAreaTotals;
 	bool OddRow = true;
 	F2DArray LowerRowHalf = F2DArray();
 	F2DArray CurrentRow = F2DArray();
+	FString File = FPaths::ProjectDir();
+	File.Append(TEXT("AccuracyMatrix.csv"));
+	FString StringToWrite;
+	
 	for (const FVectorCounter Counter : SpawnCounter)
 	{
 		if (Counter.TotalSpawns == -1)
@@ -260,6 +243,7 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 			if (Counter.Point.Z == GetBoxOrigin_Unscaled().Z)
 			{
 				SpawnAreaTotals.Emplace(CurrentRow);
+				AppendStringLocAccRow(CurrentRow, StringToWrite);
 			}
 			else if (OddRow)
 			{
@@ -285,11 +269,18 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 					}
 				}
 				SpawnAreaTotals.Emplace(AveragedRow);
+				AppendStringLocAccRow(CurrentRow, StringToWrite);
 				OddRow = true;
 			}
 			CurrentRow = F2DArray();
 		}
 	}
+	FFileHelper::SaveStringToFile(StringToWrite, *File);
+	SpawnCounter.Empty();
+	SpawnCounter.Shrink();
+
+	const double EndTime = FPlatformTime::Seconds();
+	UE_LOG(LogTemp, Display, TEXT("TotalTimeTaken: %f"),EndTime-StartTime);
 	return SpawnAreaTotals;
 }
 
@@ -835,6 +826,15 @@ void ATargetSpawner::InitializeSpawnCounter()
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
+}
+
+void ATargetSpawner::AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo)
+{
+	for (const float AccValue : Row.Accuracy)
+	{
+		StringToWriteTo.Append(FString::SanitizeFloat(AccValue) + ",");
+	}
+	StringToWriteTo.Append("\n");
 }
 
 void ATargetSpawner::ShowDebug_SpawnBox()

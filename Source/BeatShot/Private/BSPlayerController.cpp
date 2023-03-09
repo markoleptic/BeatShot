@@ -2,8 +2,8 @@
 
 
 #include "BSPlayerController.h"
-
 #include "AbilitySystemComponent.h"
+#include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "BSCharacter.h"
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
@@ -33,6 +33,17 @@ void ABSPlayerController::BeginPlay()
 	}
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
+}
+
+ABSPlayerState* ABSPlayerController::GetBSPlayerState() const
+{
+	return CastChecked<ABSPlayerState>(PlayerState, ECastCheckedType::NullAllowed);
+}
+
+UBSAbilitySystemComponent* ABSPlayerController::GetBSAbilitySystemComponent() const
+{
+	const ABSPlayerState* PS = GetBSPlayerState();
+	return (PS ? PS->GetBSAbilitySystemComponent() : nullptr);
 }
 
 void ABSPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
@@ -244,6 +255,17 @@ void ABSPlayerController::OnPossess(APawn* InPawn)
 void ABSPlayerController::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
+}
+
+void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)
+{
+	Super::PreProcessInput(DeltaTime, bGamePaused);
+}
+
+void ABSPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
+{
+	Super::PostProcessInput(DeltaTime, bGamePaused);
+	GetBSAbilitySystemComponent()->ProcessAbilityInput(DeltaTime, IsPaused());
 }
 
 void ABSPlayerController::HidePostGameMenu()

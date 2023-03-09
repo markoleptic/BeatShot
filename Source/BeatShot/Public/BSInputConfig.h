@@ -18,7 +18,7 @@ USTRUCT(BlueprintType)
 struct FBSInputAction
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<const UInputAction> InputAction = nullptr;
 
@@ -35,13 +35,12 @@ class UBSInputConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-
 	UBSInputConfig(const FObjectInitializer& ObjectInitializer);
 
-	UFUNCTION(BlueprintCallable, Category = "BS|Pawn")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Pawn")
 	const UInputAction* FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
 
-	UFUNCTION(BlueprintCallable, Category = "BS|Pawn")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Pawn")
 	const UInputAction* FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
 
 	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and must be manually bound.

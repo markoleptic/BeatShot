@@ -5,12 +5,14 @@
 #include "BSGameMode.h"
 #include "BSPlayerController.h"
 #include "SteamManager.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "Kismet/GameplayStatics.h"
 
 void UBSGameInstance::Init()
 {
 	Super::Init();
 	InitializeCPPElements();
+	FBSGameplayTags::InitializeTags();
 }
 
 bool UBSGameInstance::InitializeCPPElements()

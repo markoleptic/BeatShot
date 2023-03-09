@@ -9,6 +9,8 @@
 #include "GameplayEffectTypes.h"
 #include "BSPlayerState.generated.h"
 
+class UBSAbilitySystemComponent;
+
 UCLASS()
 class BEATSHOT_API ABSPlayerState : public APlayerState, public IAbilitySystemInterface
 {
@@ -19,6 +21,11 @@ public:
 
 	// Implement IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "Lyra|PlayerState")
+	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const { return AbilitySystemComponent; }
+
+	virtual void PostInitializeComponents() override;
 
 	class UBSAttributeSetBase* GetAttributeSetBase() const;
 
@@ -33,10 +40,10 @@ public:
 
 protected:
 	UPROPERTY()
-	class UBSAbilitySystemComponent* AbilitySystemComponent;
+	UBSAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
-	class UBSAttributeSetBase* AttributeSetBase;
+	UBSAttributeSetBase* AttributeSetBase;
 
 	FDelegateHandle HealthChangedDelegateHandle;
 	FDelegateHandle MaxHealthChangedDelegateHandle;

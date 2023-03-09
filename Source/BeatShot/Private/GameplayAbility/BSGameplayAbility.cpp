@@ -74,7 +74,7 @@ void UBSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo,
 {
 	Super::OnAvatarSet(ActorInfo, Spec);
 
-	if (ActivateAbilityOnGranted)
+	if (ActivationPolicy == EBSAbilityActivationPolicy::OnSpawn)
 	{
 		ActorInfo->AbilitySystemComponent->TryActivateAbility(Spec.Handle, false);
 	}

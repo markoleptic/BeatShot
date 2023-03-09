@@ -21,17 +21,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "GameplayAbilitySpec.h"
-#include "GameplayAbilitySpecHandle.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
-#include "GameplayAbility/BSGameplayAbility.h"
+#include "GameplayAbility/BSAbilitySet.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
 #include "Kismet/KismetMathLibrary.h"
-
-UE_DEFINE_GAMEPLAY_TAG(InputTag_Look,"InputTag.Look");
-UE_DEFINE_GAMEPLAY_TAG(InputTag_Move,"InputTag.Move");
-UE_DEFINE_GAMEPLAY_TAG(InputTag_Sprint,"InputTag.Sprint");
-
 
 ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
@@ -121,16 +115,6 @@ void ABSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	// /* Sets the new Target Half Height based on whether the player is crouching or standing */
-	// const float TargetHalfHeight = (MovementState == EMovementType::Crouching
-	// 	                                ? CrouchedCapsuleHalfHeight
-	// 	                                : DefaultCapsuleHalfHeight);
-	// /* Interpolates between the current height and the target height */
-	// const float NewHalfHeight = FMath::FInterpTo(GetCapsuleComponent()->GetScaledCapsuleHalfHeight(), TargetHalfHeight,
-	//                                              DeltaTime, CrouchSpeed);
-	// /* Sets the half height of the capsule component to the new interpolated half height */
-	// GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
-
 	if (!bEnabled_AimBot || ActiveTargets_AimBot.IsEmpty())
 	{
 		return;
@@ -170,48 +154,6 @@ void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		if (JumpAction)
-		{
-			// Jumping
-			PlayerEnhancedInputComponent->
-				BindAction(JumpAction, ETriggerEvent::Started, this, &ABSCharacter::Jump);
-		}
-		// if (SprintAction)
-		// {
-		// 	// Sprinting
-		// 	PlayerEnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this,
-		// 	                                         &ABSCharacter::StartWalk);
-		// 	PlayerEnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this,
-		// 	                                         &ABSCharacter::StopWalk);
-		// }
-		// if (MovementAction)
-		// {
-		// 	// Move forward/back + left/right inputs
-		// 	PlayerEnhancedInputComponent->BindAction(MovementAction, ETriggerEvent::Triggered, this,
-		// 	                                         &ABSCharacter::Move);
-		// }
-		// if (LookAction)
-		// {
-		// 	// Look up/down + left/right
-		// 	PlayerEnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this,
-		// 	                                         &ABSCharacter::Look);
-		// }
-		if (CrouchAction)
-		{
-			// Crouching
-			PlayerEnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this,
-			                                         &ABSCharacter::StartCrouch);
-			PlayerEnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this,
-			                                         &ABSCharacter::ReleaseCrouch);
-		}
-		if (FiringAction)
-		{
-			// Firing
-			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Started, this,
-			                                         &ABSCharacter::StartFire);
-			PlayerEnhancedInputComponent->BindAction(FiringAction, ETriggerEvent::Completed, this,
-			                                         &ABSCharacter::StopFire);
-		}
 		if (InteractAction)
 		{
 			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this,
@@ -252,17 +194,17 @@ void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 	}
 }
 
-void ABSCharacter::StartFire()
+void ABSCharacter::Input_StartFire()
 {
 	Gun->StartFire();
 }
 
-void ABSCharacter::StopFire()
+void ABSCharacter::Input_StopFire()
 {
 	Gun->StopFire();
 }
 
-void ABSCharacter::Move(const FInputActionValue& Value)
+void ABSCharacter::Input_Move(const FInputActionValue& Value)
 {
 	// Moving the player
 	if (Value.GetMagnitude() != 0.0f)
@@ -272,45 +214,46 @@ void ABSCharacter::Move(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacter::Look(const FInputActionValue& Value)
+void ABSCharacter::Input_Look(const FInputActionValue& Value)
 {
 	AddControllerPitchInput(Value[1] / 14.2789148024750118991f * Sensitivity);
 	AddControllerYawInput(Value[0] / 14.2789148024750118991f * Sensitivity);
 }
 
-void ABSCharacter::ReleaseCrouch()
+void ABSCharacter::Input_Crouch(const FInputActionInstance& Instance)
 {
-	// bHoldingCrouch = false;
-	// if (MovementState == EMovementType::Walking)
-	// {
-	// 	return;
-	// }
-	// UpdateMovementValues(EMovementType::Sprinting);
+	ToggleCrouch();
 }
 
-void ABSCharacter::StartCrouch()
+void ABSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	// bHoldingCrouch = true;
-	// if (GetCharacterMovement()->IsMovingOnGround())
-	// {
-	// 	UpdateMovementValues(EMovementType::Crouching);
-	// }
+	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	{
+		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 1);
+	}
+	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
-void ABSCharacter::StartWalk()
+void ABSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	// UE_LOG(LogTemp, Display, TEXT("StartWalk called"));
-	// bHoldingWalk = true;
-	// UpdateMovementValues(EMovementType::Walking);
+	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	{
+		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 0);
+	}
+	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
-void ABSCharacter::StopWalk()
+void ABSCharacter::ToggleCrouch()
 {
-	// if (MovementState == EMovementType::Walking)
-	// {
-	// 	UpdateMovementValues(EMovementType::Sprinting);
-	// }
-	// bHoldingWalk = false;
+	const UBSCharacterMovementComponent* MoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
+	if (bIsCrouched || MoveComp->bWantsToCrouch)
+	{
+		UnCrouch();
+	}
+	else if (MoveComp->IsMovingOnGround())
+	{
+		Crouch();
+	}
 }
 
 void ABSCharacter::OnInteractStarted(const FInputActionInstance& Instance)
@@ -354,33 +297,6 @@ void ABSCharacter::OnBeatTrackDirectionChanged(const FVector Location)
 		bIsLagging = false;
 	});
 	GetWorld()->GetTimerManager().SetTimer(LagHandle, LagDelegate, FMath::FRandRange(0.1f, 0.2f), false);
-}
-
-void ABSCharacter::UpdateMovementValues(const EMovementType NewMovementType)
-{
-	// Clearing sprinting and crouching flags
-	bIsWalking = false;
-	bIsCrouching = false;
-
-	// Updating the movement state
-	MovementState = NewMovementType;
-
-	//GunActorComp->SetCanFire(MovementDataMap[MovementState].bCanFire);
-	GetCharacterMovement()->MaxAcceleration = MovementDataMap[MovementState].MaxAcceleration;
-	GetCharacterMovement()->BrakingDecelerationWalking = MovementDataMap[MovementState].BreakingDecelerationWalking;
-	GetCharacterMovement()->GroundFriction = MovementDataMap[MovementState].GroundFriction;
-	GetCharacterMovement()->MaxWalkSpeed = MovementDataMap[MovementState].MaxWalkSpeed;
-
-
-	// Updating sprinting and crouching flags
-	if (MovementState == EMovementType::Crouching)
-	{
-		bIsCrouching = true;
-	}
-	if (MovementState == EMovementType::Walking)
-	{
-		bIsWalking = true;
-	}
 }
 
 void ABSCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
@@ -458,7 +374,7 @@ void ABSCharacter::OnRep_PlayerState()
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
 	if (PS)
 	{
-		UE_LOG(LogTemp, Display, TEXT("PS Exists"));
+		UE_LOG(LogTemp, Display, TEXT("OnRep_PlayerState() called and Player State Exists"));
 		// Set the ASC for clients. Server does this in PossessedBy.
 		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 
@@ -475,11 +391,6 @@ UAbilitySystemComponent* ABSCharacter::GetAbilitySystemComponent() const
 	return AbilitySystemComponent.Get();
 }
 
-int32 ABSCharacter::GetAbilityLevel(EBSAbilityInputID AbilityID) const
-{
-	return 1;
-}
-
 void ABSCharacter::RemoveCharacterAbilities()
 {
 	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || !AbilitySystemComponent->bCharacterAbilitiesGiven)
@@ -487,23 +398,8 @@ void ABSCharacter::RemoveCharacterAbilities()
 		UE_LOG(LogTemp, Display, TEXT("Something wrong with RemoveCharacterAbilities()"));
 		return;
 	}
-
-	// Remove any abilities added from a previous call. This checks to make sure the ability is in the startup 'CharacterAbilities' array.
-	TArray<FGameplayAbilitySpecHandle> AbilitiesToRemove;
-	for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
-	{
-		if ((Spec.SourceObject == this) && CharacterAbilities.Contains(Spec.Ability->GetClass()))
-		{
-			AbilitiesToRemove.Add(Spec.Handle);
-		}
-	}
-
-	// Do in two passes so the removal happens after we have the full list
-	for (int32 i = 0; i < AbilitiesToRemove.Num(); i++)
-	{
-		AbilitySystemComponent->ClearAbility(AbilitiesToRemove[i]);
-	}
-
+	
+	AbilitySet_GrantedHandles.TakeFromAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()));
 	AbilitySystemComponent->bCharacterAbilitiesGiven = false;
 }
 
@@ -540,21 +436,30 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 
 	Subsystem->ClearAllMappings();
 	
-	if (UBSInputConfig* IC = InputConfig)
+	if (const UBSInputConfig* LoadedConfig = InputConfig)
 	{
-		UBSInputComponent* BSIC = CastChecked<UBSInputComponent>(PlayerInputComponent);
+		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(PlayerInputComponent);
 		const FBSGameplayTags& GameplayTags = FBSGameplayTags::Get();
-		BSIC->AddInputMappings(IC, Subsystem);
-
+		BSInputComponent->AddInputMappings(LoadedConfig, Subsystem);
+		
 		TArray<uint32> BindHandles;
-		BSIC->BindAbilityActions(IC, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-		BSIC->BindNativeAction(IC, InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Move, /*bLogIfNotFound=*/ true);
-		BSIC->BindNativeAction(IC, InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Look, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Started, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Completed, this, &ThisClass::Input_StopFire, /*bLogIfNotFound=*/ true);
 	}
 }
 
 void ABSCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
+	if (const UBSAbilitySystemComponent* ASC = CastChecked<UBSAbilitySystemComponent, UAbilitySystemComponent>(GetAbilitySystemComponent()))
+	{
+		ASC->GetOwnedGameplayTags(TagContainer);
+	}
 }
 
 bool ABSCharacter::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
@@ -572,40 +477,39 @@ bool ABSCharacter::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagCo
 	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
 }
 
-void ABSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
-{
-	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
-}
-
-void ABSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
-{
-	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
-}
-
 void ABSCharacter::AddCharacterAbilities()
 {
 	// Grant abilities, but only on the server	
 	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || AbilitySystemComponent->bCharacterAbilitiesGiven)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Not authorized to grant abilities %s"), *FString(__FUNCTION__));
 		return;
 	}
-
-	for (TSubclassOf<UBSGameplayAbility>& StartupAbility : CharacterAbilities)
+	
+	for (const UBSAbilitySet* AbilitySet : AbilitySets)
 	{
-		AbilitySystemComponent->GiveAbility(
-			FGameplayAbilitySpec(StartupAbility, GetAbilityLevel(StartupAbility.GetDefaultObject()->AbilityID), static_cast<int32>(StartupAbility.GetDefaultObject()->AbilityInputID), this));
+		if (AbilitySet)
+		{
+			AbilitySet->GiveToAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()), &AbilitySet_GrantedHandles);
+		}
 	}
-
 	AbilitySystemComponent->bCharacterAbilitiesGiven = true;
 }
 
 void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 {
-	UE_LOG(LogTemp, Display, TEXT("An input ability tag was pressed"));
 	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagPressed(InputTag);
 }
 
 void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
+	UE_LOG(LogTemp, Display, TEXT("%s , an Input_Ability was released."), *InputTag.ToString());
+	FGameplayTagContainer TagContainer;
+	GetOwnedGameplayTags(TagContainer);
+	for (FGameplayTag Tag : TagContainer)
+	{
+		if (Tag.IsValid())
+			UE_LOG(LogTemp, Display, TEXT("Tag: %s"), *Tag.ToString());
+	}
 	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
 }

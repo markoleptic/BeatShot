@@ -145,6 +145,9 @@ private:
 	/** Initializes the SpawnCounter array */
 	void InitializeSpawnCounter();
 
+	/** Returns a string representation of an accuracy row */
+	void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
+
 #pragma region General Spawning Variables
 
 	/** The spawn area */
