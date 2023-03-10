@@ -18,17 +18,18 @@ class BEATSHOT_API UBSCharacterMovementComponent : public UCharacterMovementComp
 public:
 	UBSCharacterMovementComponent();
 
+	void SetSprintSpeedMultiplier(float NewSpringSpeedMultiplier);
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sprint")
 	float SprintSpeedMultiplier;
-	
+
 	uint8 bRequestToStartSprinting : 1;
 
 	virtual float GetMaxSpeed() const override;
-	
+
 	// Sprint
 	UFUNCTION(BlueprintCallable, Category = "Sprint")
 	void StartSprinting();
 	UFUNCTION(BlueprintCallable, Category = "Sprint")
 	void StopSprinting();
 };
-

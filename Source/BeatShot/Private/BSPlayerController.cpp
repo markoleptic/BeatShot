@@ -102,8 +102,7 @@ void ABSPlayerController::ShowPauseMenu()
 	{
 		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
 	}
-	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(
-		Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
+	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
@@ -172,8 +171,7 @@ void ABSPlayerController::ShowCountdown()
 	}
 	FadeScreenFromBlack();
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
-	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->
-	                         GameModeActorStruct.PlayerDelay;
+	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	Countdown->OnCountdownCompleted.BindUFunction(GameMode, "StartGameMode");
 	Countdown->StartAAManagerPlayback.BindUFunction(GameMode, "StartAAManagerPlayback");

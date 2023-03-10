@@ -70,15 +70,13 @@ bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
 	Browser->ExecuteJavascript(InitialInputEventScript);
 	if (!LoginPayload.Username.IsEmpty())
 	{
-		Browser->ExecuteJavascript(
-			SetElementUsernameScript + LoginPayload.Username + "');" + DispatchUsernameChangeEventScript);
+		Browser->ExecuteJavascript(SetElementUsernameScript + LoginPayload.Username + "');" + DispatchUsernameChangeEventScript);
 	}
 	else
 	{
 		Browser->ExecuteJavascript(SetElementEmailScript + LoginPayload.Email + "');" + DispatchEmailChangeEventScript);
 	}
-	Browser->ExecuteJavascript(
-		SetElementPasswordScript + LoginPayload.Password + "');" + DispatchPasswordChangeEventScript);
+	Browser->ExecuteJavascript(SetElementPasswordScript + LoginPayload.Password + "');" + DispatchPasswordChangeEventScript);
 	return true;
 }
 

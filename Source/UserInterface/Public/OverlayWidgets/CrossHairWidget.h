@@ -17,13 +17,11 @@ class USERINTERFACE_API UCrossHairWidget : public UUserWidget, public ISaveLoadI
 	GENERATED_BODY()
 
 public:
-
 	void InitializeCrossHair(const FPlayerSettings_CrossHair& CrossHairSettings);
 
 protected:
-
 	virtual void NativeConstruct() override;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScaleBox* LeftContainer;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -61,7 +59,6 @@ protected:
 	UImage* BottomImage;
 
 public:
-	
 	/** Changes the width of the containers */
 	void SetLineWidth(const int32 NewWidthValue);
 	/** Changes the length of the containers */
@@ -78,5 +75,3 @@ public:
 	UFUNCTION()
 	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
 };
-
-

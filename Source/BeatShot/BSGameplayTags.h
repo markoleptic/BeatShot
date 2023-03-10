@@ -4,6 +4,8 @@
 
 #include "GameplayTagContainer.h"
 
+class UGameplayTagsManager;
+
 /**
  *	Singleton containing native gameplay tags.
  */
@@ -11,13 +13,13 @@ struct FBSGameplayTags
 {
 	static const FBSGameplayTags& Get() { return GameplayTags; }
 	static void InitializeTags();
-	
+
 	FGameplayTag GameplayCue_Sprint;
-	
+
 	FGameplayTag Event;
 	FGameplayTag Event_Montage;
 	FGameplayTag Event_Montage_SpawnProjectile;
-	
+
 	FGameplayTag Input;
 	FGameplayTag Input_Move;
 	FGameplayTag Input_Look;
@@ -25,6 +27,8 @@ struct FBSGameplayTags
 	FGameplayTag Input_Fire;
 	FGameplayTag Input_Sprint;
 	FGameplayTag Input_Jump;
+	FGameplayTag Input_Interact;
+	FGameplayTag Input_ShiftInteract;
 
 	FGameplayTag State;
 	FGameplayTag State_Crouching;
@@ -33,7 +37,7 @@ struct FBSGameplayTags
 	FGameplayTag State_Moving;
 	FGameplayTag State_Sprinting;
 	FGameplayTag State_PlayingBSGameMode;
-	
+
 	FGameplayTag Target;
 	FGameplayTag Target_State;
 	FGameplayTag Target_State_Grid;
@@ -42,11 +46,9 @@ struct FBSGameplayTags
 	FGameplayTag Target_State_Tracking;
 
 protected:
-
-	void AddAllTags();
-	void AddTag(FGameplayTag& OutTag, const FString& TagName);
+	void AddAllTags(UGameplayTagsManager& Manager);
+	void AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment);
 
 private:
-
 	static FBSGameplayTags GameplayTags;
 };

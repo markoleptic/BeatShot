@@ -50,8 +50,7 @@ void UBSHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const U
 			DamagedTarget->HandleDestruction();
 		}
 		// BeatTrack modes, handle score based on damage
-		else if (Health > 101 &&
-			DamagedTarget->GameModeActorStruct.IsBeatTrackMode == true)
+		else if (Health > 101 && DamagedTarget->GameModeActorStruct.IsBeatTrackMode == true)
 		{
 			if (!OnBeatTrackTick.ExecuteIfBound(Damage, TotalPossibleDamage))
 			{
@@ -60,4 +59,3 @@ void UBSHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const U
 		}
 	}
 }
-

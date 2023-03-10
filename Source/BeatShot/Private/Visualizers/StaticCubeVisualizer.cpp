@@ -28,8 +28,7 @@ void AStaticCubeVisualizer::InitializeVisualizer()
 
 	for (int i = 0; i < AASettings.NumBandChannels; i++)
 	{
-		Cubes.EmplaceAt(
-			i, NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), TEXT("Cube " + i)));
+		Cubes.EmplaceAt(i, NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass(), TEXT("Cube " + i)));
 		UStaticMeshComponent* Visualizer = Cubes[i];
 		Visualizer->RegisterComponent();
 		Visualizer->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);

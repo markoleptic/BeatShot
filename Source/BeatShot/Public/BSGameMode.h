@@ -44,7 +44,7 @@ protected:
 	/* The TargetSpawner class to spawn */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
-	
+
 	/** The FloatingTextActor class to spawn */
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
@@ -60,7 +60,7 @@ protected:
 	/** The Visualizer Manager */
 	UPROPERTY(BlueprintReadOnly)
 	AVisualizerManager* VisualizerManager;
-	
+
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AATracker;
@@ -82,7 +82,7 @@ public:
 	 *  countdown widget. Called from Countdown widget when the countdown has completed */
 	UFUNCTION()
 	void StartGameMode();
-	
+
 	/** Destroys all actors involved in a game mode and optionally save scores */
 	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
 
@@ -92,7 +92,7 @@ private:
 
 	/** Binds all delegates associated with DefaultGameMode */
 	void BindGameModeDelegates();
-	
+
 	/** Function to tell TargetSpawner to spawn a new target */
 	void SpawnNewTarget(bool bNewTargetState);
 
@@ -133,7 +133,11 @@ private:
 	/** Change volume of given AAManager, or if none provided change Player/Tracker volume */
 	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
 
-	void OnAAManagerError() { bShouldTick = false; UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));}
+	void OnAAManagerError()
+	{
+		bShouldTick = false;
+		UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));
+	}
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
@@ -199,10 +203,10 @@ private:
 
 	/** Calls RequestAccessToken if player has logged in before */
 	void SaveScoresToDatabase();
-	
+
 	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
 	FOnAccessTokenResponse OnAccessTokenResponse;
-	
+
 public:
 	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
 	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
@@ -245,7 +249,7 @@ private:
 	FGameModeActorStruct GameModeActorStruct;
 
 	const FVector TargetSpawnerLocation = {3730, 0, 750};
-	
+
 	const FActorSpawnParameters SpawnParameters;
 
 #pragma endregion
@@ -294,5 +298,3 @@ private:
 
 #pragma endregion
 };
-
-

@@ -14,7 +14,7 @@ class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public ISaveLoadInt
 	GENERATED_BODY()
 
 	AMainMenuGameMode();
-	
+
 	virtual void BeginPlay() override;
 
 protected:

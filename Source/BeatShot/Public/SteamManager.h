@@ -11,10 +11,10 @@ UCLASS()
 class BEATSHOT_API USteamManager : public UObject
 {
 	GENERATED_BODY()
-	
+
 public:
 	USteamManager();
-	
+
 	~USteamManager();
 
 	void InitializeSteamManager();
@@ -22,11 +22,9 @@ public:
 	void AssignGameInstance(UBSGameInstance* InDefaultGameInstance);
 
 	UPROPERTY()
-	UBSGameInstance *DefaultGameInstance;
-	
+	UBSGameInstance* DefaultGameInstance;
+
 private:
 	//Steam Callback Setups Using STEAM_CALLBACK_MANUAL()
 	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveCallback);
-
-
 };

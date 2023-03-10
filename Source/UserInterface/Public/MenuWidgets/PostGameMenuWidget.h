@@ -35,7 +35,7 @@ protected:
 	TMap<USlideRightButton*, UVerticalBox*> MenuWidgets;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Scores;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -44,6 +44,7 @@ protected:
 	UVerticalBox* Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* FAQ;
+
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
@@ -53,6 +54,7 @@ public:
 	UQuitMenuWidget* QuitMenuWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
@@ -101,5 +103,4 @@ protected:
 	void OnQuitButtonClicked();
 	UFUNCTION()
 	void OnLoginStateChange(const ELoginState& LoginState, bool bIsPopup);
-
 };

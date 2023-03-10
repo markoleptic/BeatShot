@@ -21,7 +21,7 @@ class USERINTERFACE_API UPlayerHUD : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* TargetBar;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

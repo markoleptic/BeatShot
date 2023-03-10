@@ -15,27 +15,27 @@ UCLASS()
 class BEATSHOT_API ABSPlayerState : public APlayerState, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	ABSPlayerState();
 
 	// Implement IAbilitySystemInterface
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
-	UFUNCTION(BlueprintCallable, Category = "Lyra|PlayerState")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|PlayerState")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const { return AbilitySystemComponent; }
 
 	virtual void PostInitializeComponents() override;
 
 	class UBSAttributeSetBase* GetAttributeSetBase() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
 	float GetMoveSpeed() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
 	float GetHealth() const;
 
-	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
 	float GetMaxHealth() const;
 
 protected:
@@ -47,9 +47,12 @@ protected:
 
 	FDelegateHandle HealthChangedDelegateHandle;
 	FDelegateHandle MaxHealthChangedDelegateHandle;
+	FDelegateHandle MoveSpeedChangedDelegateHandle;
 
 	virtual void HealthChanged(const FOnAttributeChangeData& Data);
 	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data);
+	virtual void MoveSpeedChanged(const FOnAttributeChangeData& Data);
+	virtual void TagChange_State_Sprint(const FGameplayTag CallbackTag, int32 NewCount);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

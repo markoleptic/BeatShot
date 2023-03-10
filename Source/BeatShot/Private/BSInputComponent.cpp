@@ -8,8 +8,7 @@ UBSInputComponent::UBSInputComponent(const FObjectInitializer& ObjectInitializer
 {
 }
 
-void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
-	UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
@@ -31,15 +30,14 @@ void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
 	}*/
 }
 
-void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig,
-	UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
 
 	ULocalPlayer* LocalPlayer = InputSubsystem->GetLocalPlayer();
 	check(LocalPlayer);
-	
+
 	/*if (UGameUserSettings* LocalSettings = UGameUserSettings::GetGameUserSettings())
 	{
 		// Remove any registered input contexts

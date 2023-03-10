@@ -23,11 +23,11 @@ void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute
 	else if (Attribute == GetMoveSpeedAttribute())
 	{
 		// Cannot slow less than 150 units/s and cannot boost more than 1000 units/s
-		NewValue = FMath::Clamp<float>(NewValue, 150, 1000);
+		NewValue = FMath::Clamp<float>(NewValue, 1, 5);
 	}
 }
 
-void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallbackData & Data)
+void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
 }
@@ -41,7 +41,8 @@ void UBSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, MoveSpeed, COND_None, REPNOTIFY_Always);
 }
 
-void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData & AffectedAttribute, const FGameplayAttributeData & MaxAttribute, float NewMaxValue, const FGameplayAttribute & AffectedAttributeProperty)
+void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue,
+                                                      const FGameplayAttribute& AffectedAttributeProperty)
 {
 	UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent();
 	const float CurrentMaxValue = MaxAttribute.GetCurrentValue();

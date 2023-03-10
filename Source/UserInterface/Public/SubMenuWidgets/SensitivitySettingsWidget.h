@@ -24,7 +24,7 @@ class USERINTERFACE_API USensitivitySettingsWidget : public UUserWidget, public 
 
 public:
 	FOnSettingsSaved_Sensitivity OnSettingsSaved_Sensitivity;
-	
+
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
 	UTextBlock* CurrentSensitivityValue;
@@ -40,7 +40,7 @@ protected:
 	USavedTextWidget* SavedTextWidget;
 
 	float Sensitivity;
-	
+
 	UFUNCTION()
 	void OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()

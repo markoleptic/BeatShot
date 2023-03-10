@@ -5,16 +5,17 @@
 
 UBSCharacterMovementComponent::UBSCharacterMovementComponent()
 {
-	SprintSpeedMultiplier = 1.4f;
+	SprintSpeedMultiplier = 1.0f;
+}
+
+void UBSCharacterMovementComponent::SetSprintSpeedMultiplier(float NewSpringSpeedMultiplier)
+{
+	SprintSpeedMultiplier = NewSpringSpeedMultiplier;
 }
 
 float UBSCharacterMovementComponent::GetMaxSpeed() const
 {
-	if (bRequestToStartSprinting)
-	{
-		return SprintSpeedMultiplier * Super::GetMaxSpeed();
-	}
-	return Super::GetMaxSpeed();
+	return SprintSpeedMultiplier * Super::GetMaxSpeed();
 }
 
 void UBSCharacterMovementComponent::StartSprinting()

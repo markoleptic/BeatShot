@@ -15,8 +15,8 @@ enum class ETransitionState : uint8
 	StartFromPostGameMenu UMETA(DisplayName="StartFromPostGameMenu"),
 	Restart UMETA(DisplayName="Restart"),
 	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
-	QuitToDesktop UMETA(DisplayName="QuitToDesktop")
-};
+	QuitToDesktop UMETA(DisplayName="QuitToDesktop")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::QuitToDesktop);
 
 /* Information about the transition state of the game */
@@ -27,10 +27,10 @@ struct FGameModeTransitionState
 
 	/* The game mode transition to perform */
 	ETransitionState TransitionState;
-	
+
 	/* Whether or not to save current scores if the transition is Restart or Quit */
 	bool bSaveCurrentScores;
-	
+
 	/* The game mode properties, only used if Start or Restart */
 	FGameModeActorStruct GameModeActorStruct;
 };
@@ -52,24 +52,23 @@ class USaveLoadInterface : public UInterface
 };
 
 class GLOBAL_API ISaveLoadInterface
-{    
+{
 	GENERATED_BODY()
 
 public:
-	
 	virtual FAASettingsStruct LoadAASettings() const;
-	
+
 	virtual void SaveAASettings(const FAASettingsStruct AASettingsToSave);
-	
+
 	virtual FPlayerSettings LoadPlayerSettings() const;
-	
+
 	virtual void SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave);
-	
+
 	TArray<FGameModeActorStruct> LoadCustomGameModes() const;
 
 	void SaveCustomGameMode(const TArray<FGameModeActorStruct> GameModeArrayToSave);
-	
+
 	TArray<FPlayerScore> LoadPlayerScores() const;
-	
+
 	void SavePlayerScores(const TArray<FPlayerScore> PlayerScoreArrayToSave);
 };

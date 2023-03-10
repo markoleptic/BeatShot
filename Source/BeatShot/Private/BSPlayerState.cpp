@@ -5,6 +5,8 @@
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "BSCharacter.h"
+#include "BSCharacterMovementComponent.h"
+#include "BeatShot/BSGameplayTags.h"
 
 ABSPlayerState::ABSPlayerState()
 {
@@ -63,6 +65,17 @@ float ABSPlayerState::GetMaxHealth() const
 void ABSPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
+
+		if (AbilitySystemComponent)
+	{
+		// Attribute change callbacks
+		HealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetHealthAttribute()).AddUObject(this, &ABSPlayerState::HealthChanged);
+		MaxHealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMaxHealthAttribute()).AddUObject(this, &ABSPlayerState::MaxHealthChanged);
+		MoveSpeedChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMoveSpeedAttribute()).AddUObject(this, &ABSPlayerState::MoveSpeedChanged);
+
+		// Tag change callbacks
+		AbilitySystemComponent->RegisterGameplayTagEvent(FBSGameplayTags::Get().Input_Sprint, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ABSPlayerState::TagChange_State_Sprint);
+	}
 }
 
 void ABSPlayerState::HealthChanged(const FOnAttributeChangeData& Data)
@@ -118,4 +131,15 @@ void ABSPlayerState::MaxHealthChanged(const FOnAttributeChangeData& Data)
 	// 		HUD->SetMaxHealth(MaxHealth);
 	// 	}
 	// }
+}
+
+void ABSPlayerState::MoveSpeedChanged(const FOnAttributeChangeData& Data)
+{
+	Cast<UBSCharacterMovementComponent>(GetPawn()->GetMovementComponent())->SetSprintSpeedMultiplier(Data.NewValue);
+	UE_LOG(LogTemp, Display, TEXT("MoveSpeedChanged Callback called"));
+}
+
+void ABSPlayerState::TagChange_State_Sprint(const FGameplayTag CallbackTag, int32 NewCount)
+{
+	UE_LOG(LogTemp, Display, TEXT("TagChange_State_Sprint Callback called"));
 }

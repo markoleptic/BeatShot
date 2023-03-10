@@ -8,8 +8,7 @@ void FBSAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayAbilitySp
 {
 	if (Handle.IsValid())
 	{
-		const int32 NumAdded = AbilitySpecHandles.Add(Handle);
-		UE_LOG(LogTemp, Display, TEXT("Number of AbilitySpecHandles added: %d"), NumAdded);
+		AbilitySpecHandles.Add(Handle);
 	}
 }
 
@@ -17,15 +16,13 @@ void FBSAbilitySet_GrantedHandles::AddGameplayEffectHandle(const FActiveGameplay
 {
 	if (Handle.IsValid())
 	{
-		const int32 NumAdded = GameplayEffectHandles.Add(Handle);
-		UE_LOG(LogTemp, Display, TEXT("Number of GameplayEffectHandles added: %d"), NumAdded);
+		GameplayEffectHandles.Add(Handle);
 	}
 }
 
 void FBSAbilitySet_GrantedHandles::AddAttributeSet(UAttributeSet* Set)
 {
-	const int32 NumAdded = GrantedAttributeSets.Add(Set);
-	UE_LOG(LogTemp, Display, TEXT("Number of AttributeSets added: %d"), NumAdded);
+	GrantedAttributeSets.Add(Set);
 }
 
 void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC)
@@ -35,7 +32,6 @@ void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemCompone
 	if (!ASC->IsOwnerActorAuthoritative())
 	{
 		// Must be authoritative to give or take ability sets.
-		UE_LOG(LogTemp, Display, TEXT("Must be authoritative to give or take ability sets from %s"), *FString(__FUNCTION__));
 		return;
 	}
 
@@ -44,7 +40,6 @@ void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemCompone
 		if (Handle.IsValid())
 		{
 			ASC->ClearAbility(Handle);
-			UE_LOG(LogTemp, Display, TEXT("Cleared a valid FGameplayAbilitySpecHandle inside AbilitySpecHandles %s"), *FString(__FUNCTION__));
 		}
 	}
 
@@ -53,7 +48,6 @@ void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemCompone
 		if (Handle.IsValid())
 		{
 			ASC->RemoveActiveGameplayEffect(Handle);
-			UE_LOG(LogTemp, Display, TEXT("Cleared a valid FActiveGameplayEffectHandle inside GameplayEffectHandles %s"), *FString(__FUNCTION__));
 		}
 	}
 
@@ -71,14 +65,12 @@ UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super
 {
 }
 
-void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
-	FBSAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
+void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
 {
 	check(ASC);
 
 	if (!ASC->IsOwnerActorAuthoritative())
 	{
-		UE_LOG(LogTemp, Display, TEXT("Must be authoritative to give or take ability sets %s"), *FString(__FUNCTION__));
 		// Must be authoritative to give or take ability sets.
 		return;
 	}
@@ -101,8 +93,7 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 		AbilitySpec.DynamicAbilityTags.AddTag(AbilityToGrant.InputTag);
 
 		const FGameplayAbilitySpecHandle AbilitySpecHandle = ASC->GiveAbility(AbilitySpec);
-		
-		UE_LOG(LogTemp, Display, TEXT("Granted AbilitySpecHandle: %s %s"),*AbilitySpecHandle.ToString(), *FString(__FUNCTION__));
+
 		if (OutGrantedHandles)
 		{
 			OutGrantedHandles->AddAbilitySpecHandle(AbilitySpecHandle);
@@ -122,7 +113,6 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		const UGameplayEffect* GameplayEffect = EffectToGrant.GameplayEffect->GetDefaultObject<UGameplayEffect>();
 		const FActiveGameplayEffectHandle GameplayEffectHandle = ASC->ApplyGameplayEffectToSelf(GameplayEffect, EffectToGrant.EffectLevel, ASC->MakeEffectContext());
-		UE_LOG(LogTemp, Display, TEXT("Granted GameplayEffectHandle: %s %s"),*GameplayEffectHandle.ToString(), *FString(__FUNCTION__));
 		if (OutGrantedHandles)
 		{
 			OutGrantedHandles->AddGameplayEffectHandle(GameplayEffectHandle);
@@ -142,7 +132,6 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC,
 
 		UAttributeSet* NewSet = NewObject<UAttributeSet>(ASC->GetOwner(), SetToGrant.AttributeSet);
 		ASC->AddAttributeSetSubobject(NewSet);
-		NewSet->PrintDebug();
 
 		if (OutGrantedHandles)
 		{

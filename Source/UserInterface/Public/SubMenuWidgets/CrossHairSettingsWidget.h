@@ -27,18 +27,16 @@ class USERINTERFACE_API UCrossHairSettingsWidget : public UUserWidget, public IS
 	virtual void NativeConstruct() override;
 
 public:
-
 	/** Executed after new CrossHair settings are saved. Parent widget (SettingsMenuWidget) and calls its
 	 *  OnPlayerSettingsChanged delegate */
 	FOnSettingsSaved_CrossHair OnSettingsSaved_CrossHair;
 
 protected:
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UCrossHairWidget* CrossHairWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UColorSelectWidget* ColorSelectWidget;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* InnerOffsetValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -49,7 +47,7 @@ protected:
 	UEditableTextBox* OutlineOpacityValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* OutlineWidthValue;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* InnerOffsetSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -60,7 +58,7 @@ protected:
 	USlider* OutlineOpacitySlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* OutlineWidthSlider;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -71,7 +69,6 @@ protected:
 	UButton* SaveCrossHairButton;
 
 private:
-
 	UFUNCTION()
 	void OnColorChanged(const FLinearColor& NewColor);
 	UFUNCTION()
@@ -84,7 +81,7 @@ private:
 	void OnOutlineOpacityValueChange(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnOutlineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
-	
+
 	UFUNCTION()
 	void OnInnerOffsetSliderChange(const float NewValue);
 	UFUNCTION()
@@ -103,13 +100,10 @@ private:
 	UFUNCTION()
 	void OnSaveCrossHairButtonClicked();
 
-	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-												USlider* SliderToChange,
-												const float GridSnapSize, const float Min, const float Max);
+	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
 
-	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
-										   const float GridSnapSize);
-	
+	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize);
+
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);
 	/** The PlayerSettings that were initially loaded */

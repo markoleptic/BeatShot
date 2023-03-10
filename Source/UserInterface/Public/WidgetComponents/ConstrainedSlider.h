@@ -29,6 +29,7 @@ struct FConstrainedSliderStruct
 };
 
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnMinValueChanged, float, MinValue);
+
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnMaxValueChanged, float, MaxValue);
 
 UCLASS()
@@ -39,7 +40,6 @@ class USERINTERFACE_API UConstrainedSlider : public UUserWidget
 	virtual void NativeConstruct() override;
 
 public:
-	
 	/** Initializes the Sliders and EditableTextBoxes' with text and values */
 	void InitConstrainedSlider(const FConstrainedSliderStruct InStruct);
 	/** Updates the Slider Values by calling OnMinSliderChanged and OnMaxSliderChanged, and updates the Checkbox checked state if necessary */
@@ -57,9 +57,8 @@ public:
 	USlider* MinSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* MaxSlider;
-	
+
 protected:
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* CheckboxText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -88,14 +87,11 @@ protected:
 	/** Checks the constraints for the MaxValue, changes the value for MaxSlider, and calls MaxSliderChanged */
 	UFUNCTION()
 	void OnMaxValueCommitted(const FText& NewMax, ETextCommit::Type CommitType);
-	
+
 	/** Struct containing information for the Sliders and EditableTextBoxes */
 	FConstrainedSliderStruct SliderStruct;
 	/** Returns the rounded value of ValueToRound according to the GridSnapSize */
 	float RoundValue(const float ValueToRound) const;
 	/** Clamps the NewValue to the appropriate Slider Min and Max Values, and returns the new rounded value */
 	float CheckConstraints(const float NewValue, const bool bIsMin) const;
-
 };
-
-

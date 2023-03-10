@@ -27,10 +27,9 @@ public:
 	FOnSettingsSaved_Game OnSettingsSaved_Game;
 
 protected:
-
 	/** Fills all widgets with values from NewSettings */
 	void PopulateSettings();
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
 	UColorSelectWidget* StartTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
@@ -47,7 +46,7 @@ protected:
 	UEditableTextBox* CombatTextFrequency;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
 	UCheckBox* ShowStreakCombatTextCheckBox;
-	
+
 	UFUNCTION()
 	void OnStartTargetColorChanged(const FLinearColor& NewColor);
 	UFUNCTION()

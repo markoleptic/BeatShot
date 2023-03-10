@@ -21,26 +21,25 @@ void UGameSettingsWidget::NativeConstruct()
 	UseSeparateOutlineColorCheckbox->OnCheckStateChanged.AddDynamic(this, &UGameSettingsWidget::UseSeparateOutlineColorCheckStateChanged);
 	TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnTargetOutlineColorChanged");
 	CombatTextFrequency->OnTextCommitted.AddDynamic(this, &UGameSettingsWidget::OnCombatTextFrequencyValueChanged);
-	ShowStreakCombatTextCheckBox->OnCheckStateChanged.AddDynamic(
-		this, &UGameSettingsWidget::OnShowCombatTextCheckStateChanged);
-	
+	ShowStreakCombatTextCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingsWidget::OnShowCombatTextCheckStateChanged);
+
 	ResetButton_Game->OnClicked.AddDynamic(this, &UGameSettingsWidget::OnResetButtonClicked_Game);
 	SaveButton_Game->OnClicked.AddDynamic(this, &UGameSettingsWidget::OnSaveButtonClicked_Game);
 
 	NewSettings = LoadPlayerSettings().Game;
-	
+
 	StartTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_TargetColor_Start"));
 	StartTargetColor->SetBorderColors(false, false);
-	
+
 	PeakTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_TargetColor_Peak"));
 	PeakTargetColor->SetBorderColors(true, false);
-	
+
 	EndTargetColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_TargetColor_End"));
 	EndTargetColor->SetBorderColors(false, false);
-	
+
 	BeatGridInactiveColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_TargetColor_BeatGridInactive"));
 	BeatGridInactiveColor->SetBorderColors(true, false);
-	
+
 	TargetOutlineColor->SetColorText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_TargetColor_Outline"));
 	TargetOutlineColor->SetBorderColors(true, false);
 
@@ -54,10 +53,10 @@ void UGameSettingsWidget::PopulateSettings()
 	EndTargetColor->InitializeColor(NewSettings.EndTargetColor);
 	BeatGridInactiveColor->InitializeColor(NewSettings.BeatGridInactiveTargetColor);
 	TargetOutlineColor->InitializeColor(NewSettings.TargetOutlineColor);
-	
+
 	UseSeparateOutlineColorCheckbox->SetIsChecked(NewSettings.bUseSeparateOutlineColor);
 	UseSeparateOutlineColorCheckStateChanged(NewSettings.bUseSeparateOutlineColor);
-	
+
 	ShowStreakCombatTextCheckBox->SetIsChecked(NewSettings.bShowStreakCombatText);
 	CombatTextFrequency->SetText(FText::AsNumber(NewSettings.CombatTextFrequency));
 }
@@ -112,8 +111,7 @@ void UGameSettingsWidget::OnShowCombatTextCheckStateChanged(const bool bIsChecke
 		CombatTextFrequency->SetText(FText());
 		return;
 	}
-	NewSettings.CombatTextFrequency = UKismetMathLibrary::GridSnap_Float(
-		FCString::Atof(*CombatTextFrequency->GetText().ToString()), 1);
+	NewSettings.CombatTextFrequency = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*CombatTextFrequency->GetText().ToString()), 1);
 }
 
 void UGameSettingsWidget::OnSaveButtonClicked_Game()

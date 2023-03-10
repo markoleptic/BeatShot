@@ -16,10 +16,10 @@ void UPauseMenuWidget::NativeConstruct()
 	ResumeButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnResumeButtonClicked);
 	SettingsButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnSettingsButtonClicked);
 	FAQButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnFAQButtonClicked);
-	
+
 	RestartCurrentModeButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnRestartCurrentModeClicked);
 	QuitButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
-	
+
 	PauseMenuWidgets.Add(ResumeButton, PauseScreen);
 	PauseMenuWidgets.Add(RestartCurrentModeButton, PauseScreen);
 	PauseMenuWidgets.Add(SettingsButton, SettingsMenu);

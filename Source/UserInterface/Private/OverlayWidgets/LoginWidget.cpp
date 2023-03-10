@@ -48,16 +48,13 @@ void ULoginWidget::NativeConstruct()
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ULoginWidget::LoginButtonClicked()
 {
-	if ((UsernameTextBox->GetText().IsEmpty() && EmailTextBox->GetText().IsEmpty()) || PasswordTextBox->GetText().
-		IsEmpty())
+	if ((UsernameTextBox->GetText().IsEmpty() && EmailTextBox->GetText().IsEmpty()) || PasswordTextBox->GetText().IsEmpty())
 	{
 		ErrorBox->SetVisibility(ESlateVisibility::Visible);
 		SetErrorText("MissingInfoErrorText");
 		return;
 	}
-	const FLoginPayload LoginPayload = FLoginPayload(UsernameTextBox->GetText().ToString(),
-	                                                 EmailTextBox->GetText().ToString(),
-	                                                 PasswordTextBox->GetText().ToString());
+	const FLoginPayload LoginPayload = FLoginPayload(UsernameTextBox->GetText().ToString(), EmailTextBox->GetText().ToString(), PasswordTextBox->GetText().ToString());
 	OnLoginButtonClicked.Broadcast(LoginPayload, bIsPopup);
 	PlayFadeOutLogin();
 }
@@ -85,12 +82,9 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 	{
 		NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
 		NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
-		ContinueWithoutTitleText->SetText(
-			FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
-		ContinueWithoutBodyText->SetText(
-			FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
-		ContinueWithoutCancelButtonText->SetText(
-			FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
+		ContinueWithoutTitleText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
+		ContinueWithoutBodyText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
+		ContinueWithoutCancelButtonText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
 	}
 	if (!Key.IsEmpty())
 	{

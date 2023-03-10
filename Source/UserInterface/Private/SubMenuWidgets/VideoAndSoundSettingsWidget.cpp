@@ -19,184 +19,182 @@ void UVideoAndSoundSettingsWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-		AAQ0->SettingType = ESettingType::AntiAliasing;
-		AAQ1->SettingType = ESettingType::AntiAliasing;
-		AAQ2->SettingType = ESettingType::AntiAliasing;
-		AAQ3->SettingType = ESettingType::AntiAliasing;
-		AAQ0->Quality = 0;
-		AAQ1->Quality = 1;
-		AAQ2->Quality = 2;
-		AAQ3->Quality = 3;
-		AAQ0->Next = AAQ1;
-		AAQ1->Next = AAQ2;
-		AAQ2->Next = AAQ3;
-		AAQ3->Next = AAQ0;
-		AAQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		AAQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		AAQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		AAQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	AAQ0->SettingType = ESettingType::AntiAliasing;
+	AAQ1->SettingType = ESettingType::AntiAliasing;
+	AAQ2->SettingType = ESettingType::AntiAliasing;
+	AAQ3->SettingType = ESettingType::AntiAliasing;
+	AAQ0->Quality = 0;
+	AAQ1->Quality = 1;
+	AAQ2->Quality = 2;
+	AAQ3->Quality = 3;
+	AAQ0->Next = AAQ1;
+	AAQ1->Next = AAQ2;
+	AAQ2->Next = AAQ3;
+	AAQ3->Next = AAQ0;
+	AAQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	AAQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	AAQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	AAQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		GIQ0->SettingType = ESettingType::GlobalIllumination;
-		GIQ1->SettingType = ESettingType::GlobalIllumination;
-		GIQ2->SettingType = ESettingType::GlobalIllumination;
-		GIQ3->SettingType = ESettingType::GlobalIllumination;
-		GIQ0->Quality = 0;
-		GIQ1->Quality = 1;
-		GIQ2->Quality = 2;
-		GIQ3->Quality = 3;
-		GIQ0->Next = GIQ1;
-		GIQ1->Next = GIQ2;
-		GIQ2->Next = GIQ3;
-		GIQ3->Next = GIQ0;
-		GIQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		GIQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		GIQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		GIQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	GIQ0->SettingType = ESettingType::GlobalIllumination;
+	GIQ1->SettingType = ESettingType::GlobalIllumination;
+	GIQ2->SettingType = ESettingType::GlobalIllumination;
+	GIQ3->SettingType = ESettingType::GlobalIllumination;
+	GIQ0->Quality = 0;
+	GIQ1->Quality = 1;
+	GIQ2->Quality = 2;
+	GIQ3->Quality = 3;
+	GIQ0->Next = GIQ1;
+	GIQ1->Next = GIQ2;
+	GIQ2->Next = GIQ3;
+	GIQ3->Next = GIQ0;
+	GIQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	GIQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	GIQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	GIQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		PPQ0->SettingType = ESettingType::PostProcessing;
-		PPQ1->SettingType = ESettingType::PostProcessing;
-		PPQ2->SettingType = ESettingType::PostProcessing;
-		PPQ3->SettingType = ESettingType::PostProcessing;
-		PPQ0->Quality = 0;
-		PPQ1->Quality = 1;
-		PPQ2->Quality = 2;
-		PPQ3->Quality = 3;
-		PPQ0->Next = PPQ1;
-		PPQ1->Next = PPQ2;
-		PPQ2->Next = PPQ3;
-		PPQ3->Next = PPQ0;
-		PPQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		PPQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		PPQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		PPQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	PPQ0->SettingType = ESettingType::PostProcessing;
+	PPQ1->SettingType = ESettingType::PostProcessing;
+	PPQ2->SettingType = ESettingType::PostProcessing;
+	PPQ3->SettingType = ESettingType::PostProcessing;
+	PPQ0->Quality = 0;
+	PPQ1->Quality = 1;
+	PPQ2->Quality = 2;
+	PPQ3->Quality = 3;
+	PPQ0->Next = PPQ1;
+	PPQ1->Next = PPQ2;
+	PPQ2->Next = PPQ3;
+	PPQ3->Next = PPQ0;
+	PPQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	PPQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	PPQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	PPQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		RQ0->SettingType = ESettingType::Reflection;
-		RQ1->SettingType = ESettingType::Reflection;
-		RQ2->SettingType = ESettingType::Reflection;
-		RQ3->SettingType = ESettingType::Reflection;
-		RQ0->Quality = 0;
-		RQ1->Quality = 1;
-		RQ2->Quality = 2;
-		RQ3->Quality = 3;
-		RQ0->Next = RQ1;
-		RQ1->Next = RQ2;
-		RQ2->Next = RQ3;
-		RQ3->Next = RQ0;
-		RQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		RQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		RQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		RQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	RQ0->SettingType = ESettingType::Reflection;
+	RQ1->SettingType = ESettingType::Reflection;
+	RQ2->SettingType = ESettingType::Reflection;
+	RQ3->SettingType = ESettingType::Reflection;
+	RQ0->Quality = 0;
+	RQ1->Quality = 1;
+	RQ2->Quality = 2;
+	RQ3->Quality = 3;
+	RQ0->Next = RQ1;
+	RQ1->Next = RQ2;
+	RQ2->Next = RQ3;
+	RQ3->Next = RQ0;
+	RQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	RQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	RQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	RQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		SWQ0->SettingType = ESettingType::Shadow;
-		SWQ1->SettingType = ESettingType::Shadow;
-		SWQ2->SettingType = ESettingType::Shadow;
-		SWQ3->SettingType = ESettingType::Shadow;
-		SWQ0->Quality = 0;
-		SWQ1->Quality = 1;
-		SWQ2->Quality = 2;
-		SWQ3->Quality = 3;
-		SWQ0->Next = SWQ1;
-		SWQ1->Next = SWQ2;
-		SWQ2->Next = SWQ3;
-		SWQ3->Next = SWQ0;
-		SWQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		SWQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		SWQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		SWQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SWQ0->SettingType = ESettingType::Shadow;
+	SWQ1->SettingType = ESettingType::Shadow;
+	SWQ2->SettingType = ESettingType::Shadow;
+	SWQ3->SettingType = ESettingType::Shadow;
+	SWQ0->Quality = 0;
+	SWQ1->Quality = 1;
+	SWQ2->Quality = 2;
+	SWQ3->Quality = 3;
+	SWQ0->Next = SWQ1;
+	SWQ1->Next = SWQ2;
+	SWQ2->Next = SWQ3;
+	SWQ3->Next = SWQ0;
+	SWQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SWQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SWQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SWQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		SGQ0->SettingType = ESettingType::Shading;
-		SGQ1->SettingType = ESettingType::Shading;
-		SGQ2->SettingType = ESettingType::Shading;
-		SGQ3->SettingType = ESettingType::Shading;
-		SGQ0->Quality = 0;
-		SGQ1->Quality = 1;
-		SGQ2->Quality = 2;
-		SGQ3->Quality = 3;
-		SGQ0->Next = SGQ1;
-		SGQ1->Next = SGQ2;
-		SGQ2->Next = SGQ3;
-		SGQ3->Next = SGQ0;
-		SGQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		SGQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		SGQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		SGQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SGQ0->SettingType = ESettingType::Shading;
+	SGQ1->SettingType = ESettingType::Shading;
+	SGQ2->SettingType = ESettingType::Shading;
+	SGQ3->SettingType = ESettingType::Shading;
+	SGQ0->Quality = 0;
+	SGQ1->Quality = 1;
+	SGQ2->Quality = 2;
+	SGQ3->Quality = 3;
+	SGQ0->Next = SGQ1;
+	SGQ1->Next = SGQ2;
+	SGQ2->Next = SGQ3;
+	SGQ3->Next = SGQ0;
+	SGQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SGQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SGQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	SGQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		TQ0->SettingType = ESettingType::Texture;
-		TQ1->SettingType = ESettingType::Texture;
-		TQ2->SettingType = ESettingType::Texture;
-		TQ3->SettingType = ESettingType::Texture;
-		TQ0->Quality = 0;
-		TQ1->Quality = 1;
-		TQ2->Quality = 2;
-		TQ3->Quality = 3;
-		TQ0->Next = TQ1;
-		TQ1->Next = TQ2;
-		TQ2->Next = TQ3;
-		TQ3->Next = TQ0;
-		TQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		TQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		TQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		TQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	TQ0->SettingType = ESettingType::Texture;
+	TQ1->SettingType = ESettingType::Texture;
+	TQ2->SettingType = ESettingType::Texture;
+	TQ3->SettingType = ESettingType::Texture;
+	TQ0->Quality = 0;
+	TQ1->Quality = 1;
+	TQ2->Quality = 2;
+	TQ3->Quality = 3;
+	TQ0->Next = TQ1;
+	TQ1->Next = TQ2;
+	TQ2->Next = TQ3;
+	TQ3->Next = TQ0;
+	TQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	TQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	TQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	TQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		VDQ0->SettingType = ESettingType::ViewDistance;
-		VDQ1->SettingType = ESettingType::ViewDistance;
-		VDQ2->SettingType = ESettingType::ViewDistance;
-		VDQ3->SettingType = ESettingType::ViewDistance;
-		VDQ0->Quality = 0;
-		VDQ1->Quality = 1;
-		VDQ2->Quality = 2;
-		VDQ3->Quality = 3;
-		VDQ0->Next = VDQ1;
-		VDQ1->Next = VDQ2;
-		VDQ2->Next = VDQ3;
-		VDQ3->Next = VDQ0;
-		VDQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		VDQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		VDQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		VDQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VDQ0->SettingType = ESettingType::ViewDistance;
+	VDQ1->SettingType = ESettingType::ViewDistance;
+	VDQ2->SettingType = ESettingType::ViewDistance;
+	VDQ3->SettingType = ESettingType::ViewDistance;
+	VDQ0->Quality = 0;
+	VDQ1->Quality = 1;
+	VDQ2->Quality = 2;
+	VDQ3->Quality = 3;
+	VDQ0->Next = VDQ1;
+	VDQ1->Next = VDQ2;
+	VDQ2->Next = VDQ3;
+	VDQ3->Next = VDQ0;
+	VDQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VDQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VDQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VDQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
-		VEQ0->SettingType = ESettingType::VisualEffect;
-		VEQ1->SettingType = ESettingType::VisualEffect;
-		VEQ2->SettingType = ESettingType::VisualEffect;
-		VEQ3->SettingType = ESettingType::VisualEffect;
-		VEQ0->Quality = 0;
-		VEQ1->Quality = 1;
-		VEQ2->Quality = 2;
-		VEQ3->Quality = 3;
-		VEQ0->Next = VEQ1;
-		VEQ1->Next = VEQ2;
-		VEQ2->Next = VEQ3;
-		VEQ3->Next = VEQ0;
-		VEQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		VEQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		VEQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
-		VEQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VEQ0->SettingType = ESettingType::VisualEffect;
+	VEQ1->SettingType = ESettingType::VisualEffect;
+	VEQ2->SettingType = ESettingType::VisualEffect;
+	VEQ3->SettingType = ESettingType::VisualEffect;
+	VEQ0->Quality = 0;
+	VEQ1->Quality = 1;
+	VEQ2->Quality = 2;
+	VEQ3->Quality = 3;
+	VEQ0->Next = VEQ1;
+	VEQ1->Next = VEQ2;
+	VEQ2->Next = VEQ3;
+	VEQ3->Next = VEQ0;
+	VEQ0->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VEQ1->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VEQ2->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
+	VEQ3->OnButtonClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked);
 
 	/* Sound */
-	
+
 	GlobalSoundSlider->OnValueChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnGlobalSoundSliderChanged);
 	MenuSoundSlider->OnValueChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnMenuSoundSliderChanged);
 	MusicSoundSlider->OnValueChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnMusicSoundSliderChanged);
 	GlobalSoundValue->OnTextCommitted.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnGlobalSoundValueChanged);
 	MenuSoundValue->OnTextCommitted.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnMenuSoundValueChanged);
 	MusicSoundValue->OnTextCommitted.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnMusicSoundValueChanged);
-	
+
 	/* Video */
-	
+
 	WindowModeComboBox->OnSelectionChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnWindowModeSelectionChanged);
 	ResolutionComboBox->OnSelectionChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnResolutionSelectionChanged);
 	FrameLimitMenuValue->OnTextCommitted.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnFrameLimitMenuValueChanged);
 	FrameLimitGameValue->OnTextCommitted.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnFrameLimitGameValueChanged);
 	VSyncEnabledCheckBox->OnCheckStateChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnVSyncEnabledCheckStateChanged);
 	FPSCounterCheckBox->OnCheckStateChanged.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnFPSCounterCheckStateChanged);
-	
+
 	/* Loading and Saving */
-	
-	ResetButton_VideoAndSound->OnClicked.AddDynamic(
-		this, &UVideoAndSoundSettingsWidget::OnResetButtonClicked_VideoAndSound);
-	SaveButton_VideoAndSound->OnClicked.AddDynamic(
-		this, &UVideoAndSoundSettingsWidget::OnSaveButtonClicked_VideoAndSound);
-	
+
+	ResetButton_VideoAndSound->OnClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnResetButtonClicked_VideoAndSound);
+	SaveButton_VideoAndSound->OnClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnSaveButtonClicked_VideoAndSound);
+
 	NewSettings = LoadPlayerSettings().VideoAndSound;
 	PopulateSettings();
 }
@@ -268,8 +266,7 @@ void UVideoAndSoundSettingsWidget::SetVideoSettingButtonBackgroundColor(UVideoSe
 	}
 }
 
-UVideoSettingButton* UVideoAndSoundSettingsWidget::FindVideoSettingButtonFromQuality(const int32 Quality,
-	ESettingType SettingType)
+UVideoSettingButton* UVideoAndSoundSettingsWidget::FindVideoSettingButtonFromQuality(const int32 Quality, ESettingType SettingType)
 {
 	UVideoSettingButton* Head = nullptr;
 	switch (SettingType)
@@ -327,8 +324,7 @@ UVideoSettingButton* UVideoAndSoundSettingsWidget::FindVideoSettingButtonFromQua
 	return Head;
 }
 
-void UVideoAndSoundSettingsWidget::OnWindowModeSelectionChanged(const FString SelectedOption,
-	ESelectInfo::Type SelectionType)
+void UVideoAndSoundSettingsWidget::OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -351,16 +347,14 @@ void UVideoAndSoundSettingsWidget::OnWindowModeSelectionChanged(const FString Se
 	ShowConfirmVideoSettingsMessage();
 }
 
-void UVideoAndSoundSettingsWidget::OnResolutionSelectionChanged(const FString SelectedOption,
-	ESelectInfo::Type SelectionType)
+void UVideoAndSoundSettingsWidget::OnResolutionSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType)
 {
 	FString LeftS;
 	FString RightS;
 	SelectedOption.Split("x", &LeftS, &RightS);
 	LeftS = UKismetStringLibrary::Replace(LeftS, ",", "");
 	RightS = UKismetStringLibrary::Replace(RightS, ",", "");
-	const FIntPoint NewResolution = FIntPoint(FCString::Atoi(*LeftS),
-											  FCString::Atoi(*RightS));
+	const FIntPoint NewResolution = FIntPoint(FCString::Atoi(*LeftS), FCString::Atoi(*RightS));
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	LastConfirmedResolution = Settings->GetScreenResolution();
 	Settings->SetScreenResolution(NewResolution);
@@ -430,12 +424,10 @@ void UVideoAndSoundSettingsWidget::PopulateResolutionComboBox()
 	{
 		if (!bIsWindowedFullscreen)
 		{
-			ResolutionComboBox->AddOption(
-				FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
+			ResolutionComboBox->AddOption(FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
 			if (Resolution == LastConfirmedResolution)
 			{
-				ResolutionComboBox->SetSelectedOption(
-					FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
+				ResolutionComboBox->SetSelectedOption(FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
 			}
 		}
 		else
@@ -448,10 +440,8 @@ void UVideoAndSoundSettingsWidget::PopulateResolutionComboBox()
 	}
 	if (bIsWindowedFullscreen)
 	{
-		ResolutionComboBox->AddOption(
-			FString::FormatAsNumber(MaxResolution.X) + "x" + FString::FormatAsNumber(MaxResolution.Y));
-		ResolutionComboBox->SetSelectedOption(
-			FString::FormatAsNumber(MaxResolution.X) + "x" + FString::FormatAsNumber(MaxResolution.Y));
+		ResolutionComboBox->AddOption(FString::FormatAsNumber(MaxResolution.X) + "x" + FString::FormatAsNumber(MaxResolution.Y));
+		ResolutionComboBox->SetSelectedOption(FString::FormatAsNumber(MaxResolution.X) + "x" + FString::FormatAsNumber(MaxResolution.Y));
 	}
 }
 
@@ -530,7 +520,7 @@ void UVideoAndSoundSettingsWidget::PopulateSettings()
 	FPSCounterCheckBox->SetIsChecked(NewSettings.bShowFPSCounter);
 	FrameLimitGameValue->SetText(FText::AsNumber(NewSettings.FrameRateLimitGame));
 	FrameLimitMenuValue->SetText(FText::AsNumber(NewSettings.FrameRateLimitMenu));
-	
+
 	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
 	{
 	case EWindowMode::Fullscreen:
@@ -558,25 +548,15 @@ void UVideoAndSoundSettingsWidget::PopulateSettings()
 
 	const UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
 	LastConfirmedResolution = GameUserSettings->GetScreenResolution();
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetAntiAliasingQuality(), ESettingType::AntiAliasing));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetGlobalIlluminationQuality(),
-		                                  ESettingType::GlobalIllumination));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetPostProcessingQuality(), ESettingType::PostProcessing));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetReflectionQuality(), ESettingType::Reflection));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetShadowQuality(), ESettingType::Shadow));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetShadingQuality(), ESettingType::Shading));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetTextureQuality(), ESettingType::Texture));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetViewDistanceQuality(), ESettingType::ViewDistance));
-	OnVideoQualityButtonClicked(
-		FindVideoSettingButtonFromQuality(GameUserSettings->GetVisualEffectQuality(), ESettingType::VisualEffect));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetAntiAliasingQuality(), ESettingType::AntiAliasing));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetGlobalIlluminationQuality(), ESettingType::GlobalIllumination));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetPostProcessingQuality(), ESettingType::PostProcessing));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetReflectionQuality(), ESettingType::Reflection));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetShadowQuality(), ESettingType::Shadow));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetShadingQuality(), ESettingType::Shading));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetTextureQuality(), ESettingType::Texture));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetViewDistanceQuality(), ESettingType::ViewDistance));
+	OnVideoQualityButtonClicked(FindVideoSettingButtonFromQuality(GameUserSettings->GetVisualEffectQuality(), ESettingType::VisualEffect));
 }
 
 void UVideoAndSoundSettingsWidget::ShowConfirmVideoSettingsMessage()
@@ -585,15 +565,12 @@ void UVideoAndSoundSettingsWidget::ShowConfirmVideoSettingsMessage()
 	if (PopupMessageWidget)
 	{
 		PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupTitle"),
-							  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage"),
-							  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton1"),
-							  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton2"));
-		PopupMessageWidget->Button1->OnClicked.AddDynamic(
-			this, &UVideoAndSoundSettingsWidget::OnConfirmVideoSettingsButtonClicked);
-		PopupMessageWidget->Button2->OnClicked.AddDynamic(
-			this, &UVideoAndSoundSettingsWidget::OnCancelVideoSettingsButtonClicked);
-		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, this,
-											   &UVideoAndSoundSettingsWidget::OnCancelVideoSettingsButtonClicked, 10.f, false);
+		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage"),
+		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton1"),
+		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton2"));
+		PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnConfirmVideoSettingsButtonClicked);
+		PopupMessageWidget->Button2->OnClicked.AddDynamic(this, &UVideoAndSoundSettingsWidget::OnCancelVideoSettingsButtonClicked);
+		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, this, &UVideoAndSoundSettingsWidget::OnCancelVideoSettingsButtonClicked, 10.f, false);
 	}
 }
 
@@ -642,16 +619,14 @@ void UVideoAndSoundSettingsWidget::OnCancelVideoSettingsButtonClicked()
 	PopupMessageWidget->FadeOut();
 }
 
-float UVideoAndSoundSettingsWidget::ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange,
-													 const float SnapSize)
+float UVideoAndSoundSettingsWidget::ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange, const float SnapSize)
 {
 	const float NewValue = UKismetMathLibrary::GridSnap_Float(SliderValue, SnapSize);
 	TextBoxToChange->SetText(FText::AsNumber(NewValue));
 	return NewValue;
 }
 
-float UVideoAndSoundSettingsWidget::ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange,
-													 const float SnapSize)
+float UVideoAndSoundSettingsWidget::ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange, const float SnapSize)
 {
 	const float NewValue = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*TextValue.ToString()), SnapSize);
 	SliderToChange->SetValue(NewValue);

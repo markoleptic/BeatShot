@@ -12,7 +12,7 @@
 void UPlayerHUD::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	/** Initial value update */
 	TargetBar->SetPercent(0.f);
 	Accuracy->SetText(FText::AsPercent(0.f));
@@ -33,8 +33,7 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore NewPlayerScoreStruct)
 	}
 	/** show song title and total song length */
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
-	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(
-		UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength), 3)));
+	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength), 3)));
 	/** Beat Track changes how stats are displayed */
 	if (NewPlayerScoreStruct.TotalPossibleDamage > 0.01f)
 	{

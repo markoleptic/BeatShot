@@ -32,9 +32,7 @@ enum class EBSAbilityActivationGroup : uint8
 
 	// Ability blocks all other exclusive abilities from activating.
 	Exclusive_Blocking,
-
-	MAX UMETA(Hidden)
-};
+	MAX UMETA(Hidden)};
 
 UCLASS()
 class BEATSHOT_API UBSGameplayAbility : public UGameplayAbility

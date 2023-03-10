@@ -16,8 +16,7 @@ enum class EGameModeActorName : uint8
 	SingleBeat UMETA(DisplayName="SingleBeat"),
 	MultiBeat UMETA(DisplayName="MultiBeat"),
 	BeatGrid UMETA(DisplayName="BeatGrid"),
-	BeatTrack UMETA(DisplayName="BeatTrack")
-};
+	BeatTrack UMETA(DisplayName="BeatTrack")};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
 
@@ -29,8 +28,7 @@ enum class ESpreadType : uint8
 	DynamicEdgeOnly UMETA(DisplayName="Dynamic Edge Only"),
 	DynamicRandom UMETA(DisplayName="Dynamic Random"),
 	StaticNarrow UMETA(DisplayName="Static Narrow"),
-	StaticWide UMETA(DisplayName="Static Wide")
-};
+	StaticWide UMETA(DisplayName="Static Wide")};
 
 inline bool IsDynamicSpreadType(const ESpreadType SpreadType) { return (SpreadType == ESpreadType::DynamicEdgeOnly || SpreadType == ESpreadType::DynamicRandom); }
 
@@ -43,8 +41,7 @@ enum class EGameModeDifficulty : uint8
 	None UMETA(DisplayName="None"),
 	Normal UMETA(DisplayName="Normal"),
 	Hard UMETA(DisplayName="Hard"),
-	Death UMETA(DisplayName="Death")
-};
+	Death UMETA(DisplayName="Death")};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
@@ -54,8 +51,8 @@ enum class EAudioFormat : uint8
 {
 	None UMETA(DisplayName="None"),
 	File UMETA(DisplayName="File"),
-	Capture UMETA(DisplayName="Capture")
-};
+	Capture UMETA(DisplayName="Capture")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Capture);
 
 #pragma endregion
@@ -84,7 +81,7 @@ struct FGameModeActorStruct
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
 	bool bPlaybackAudio;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
 	EAudioFormat AudioFormat;
 
@@ -192,8 +189,7 @@ struct FGameModeActorStruct
 
 	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const
 	{
-		if (GameModeActorName == Other.GameModeActorName &&
-			CustomGameModeName.Equals(Other.CustomGameModeName))
+		if (GameModeActorName == Other.GameModeActorName && CustomGameModeName.Equals(Other.CustomGameModeName))
 		{
 			return true;
 		}
@@ -243,9 +239,7 @@ struct FGameModeActorStruct
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 	}
 
-	FGameModeActorStruct(EGameModeActorName GameModeActor,
-	                     EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal,
-	                     ESpreadType NewSpreadType = ESpreadType::None)
+	FGameModeActorStruct(EGameModeActorName GameModeActor, EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, ESpreadType NewSpreadType = ESpreadType::None)
 	{
 		// Parameters
 		GameModeActorName = GameModeActor;
@@ -493,7 +487,6 @@ class GLOBAL_API USaveGameCustomGameMode : public USaveGame
 	GENERATED_BODY()
 
 public:
-
 	UPROPERTY()
 	TArray<FGameModeActorStruct> CustomGameModes;
 };

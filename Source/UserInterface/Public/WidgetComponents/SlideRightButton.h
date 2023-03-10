@@ -16,7 +16,7 @@ class USERINTERFACE_API USlideRightButton : public UUserWidget
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
-	
+
 public:
 	/** The font information for the Button */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
@@ -30,23 +30,23 @@ public:
 	/** The Button that provides us with OnClicked event */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* Button;
-	
+
 protected:
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* SlideButtonAnim;
 	UFUNCTION()
 	void SlideButtonRight() { PlayAnimationForward(SlideButtonAnim); }
+
 	UFUNCTION()
 	void SlideButtonLeft() { PlayAnimationReverse(SlideButtonAnim); }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* HorizontalBox;
-	
+
 	/** The widget to display the instance specific ButtonText */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ButtonDisplayText;
-	
+
 	/** Delegate used to remove the overlay from WebBrowserOverlay after FadeOut */
 	UPROPERTY()
 	FWidgetAnimationDynamicEvent ActivatedButtonDelegate;

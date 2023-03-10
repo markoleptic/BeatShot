@@ -12,8 +12,8 @@ UCLASS()
 class BEATSHOT_API ABeamVisualizer : public AVisualizerBase
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	ABeamVisualizer();
 
 	/** Calls the parent implementation and spawns a new array of visualizers given the current AASettings */
@@ -24,16 +24,16 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
-	
+
 private:
 	TArray<FLinearColor> BeatColors;
 
 	const FVector InitialBeamLightLocation = {0, 0, 1340};
 
 	const FRotator BeamLightRotation = {0, 0, 0};
-	
+
 	const FVector BeamLightOffset = {0, 100, 0};
 };

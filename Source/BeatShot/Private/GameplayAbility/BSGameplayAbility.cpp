@@ -25,9 +25,7 @@ UBSGameplayAbility::UBSGameplayAbility()
 
 UBSAbilitySystemComponent* UBSGameplayAbility::GetBSAbilitySystemComponentFromActorInfo() const
 {
-	return (CurrentActorInfo
-		        ? Cast<UBSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get())
-		        : nullptr);
+	return (CurrentActorInfo ? Cast<UBSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr);
 }
 
 ABSPlayerController* UBSGameplayAbility::GetBSPlayerControllerFromActorInfo() const

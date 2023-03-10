@@ -12,10 +12,8 @@ UCLASS()
 class USERINTERFACE_API UTooltipWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TooltipDescriptor;
-	
 };

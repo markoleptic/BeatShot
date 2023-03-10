@@ -239,7 +239,7 @@ protected:
 
 	/** Fills all widgets with values from NewSettings */
 	void PopulateSettings();
-	
+
 	/** Saves the Video and Sound Settings */
 	UFUNCTION()
 	void OnSaveButtonClicked_VideoAndSound();
@@ -256,26 +256,26 @@ protected:
 
 	/** The color used to change the VideoSettingButton color to when selected */
 	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
-	
+
 	/** The color used to change the VideoSettingButton color to when not selected */
 	const FLinearColor White = FLinearColor::White;
-	
+
 	/** Rounds the slider value to the snap size and sets the corresponding text box text to the rounded value */
 	UFUNCTION()
 	float ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange, const float SnapSize);
-	
+
 	/** Rounds the text value to the snap size and sets the corresponding slider value to the rounded value */
 	UFUNCTION()
 	float ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange, const float SnapSize);
-	
+
 	/** Adds the ConfirmVideoSettingsMessage to viewport, and starts the RevertVideoSettingsTimer */
 	UFUNCTION()
 	void ShowConfirmVideoSettingsMessage();
-	
+
 	/** Stops the RevertVideoSettingsTimer and applies the video settings and closes the ConfirmVideoSettingsMessage */
 	UFUNCTION()
 	void OnConfirmVideoSettingsButtonClicked();
-	
+
 	/** Reverts the video settings and closes the ConfirmVideoSettingsMessage */
 	UFUNCTION()
 	void OnCancelVideoSettingsButtonClicked();

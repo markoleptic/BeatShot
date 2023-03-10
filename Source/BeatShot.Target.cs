@@ -5,10 +5,11 @@ using System.Collections.Generic;
 
 public class BeatShotTarget : TargetRules
 {
-	public BeatShotTarget( TargetInfo Target) : base(Target)
+	public BeatShotTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
-		ExtraModuleNames.AddRange( new string[] { "BeatShot", "UserInterface", "Global" } );
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+		ExtraModuleNames.AddRange(new string[] { "BeatShot", "UserInterface", "Global" });
 	}
 }

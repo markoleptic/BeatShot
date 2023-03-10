@@ -7,10 +7,10 @@
 
 AMoon::AMoon()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	SphereComponent	= CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->SetMobility(EComponentMobility::Movable);
 	SphereComponent->SetSphereRadius(SphereCompRadius);
@@ -40,6 +40,4 @@ void AMoon::BeginPlay()
 void AMoon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
-

@@ -24,8 +24,7 @@ const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayT
 	return nullptr;
 }
 
-const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplayTag& InputTag,
-	bool bLogNotFound) const
+const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
 {
 	for (const FBSInputAction& Action : AbilityInputActions)
 	{

@@ -22,7 +22,7 @@ UCLASS()
 class BEATSHOT_API UBSAttributeSetBase : public UAttributeSet
 {
 	GENERATED_BODY()
-	
+
 public:
 	UBSAttributeSetBase();
 
@@ -62,7 +62,7 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
-	
+
 	UFUNCTION()
 	virtual void OnRep_MoveSpeed(const FGameplayAttributeData& OldMoveSpeed);
 };

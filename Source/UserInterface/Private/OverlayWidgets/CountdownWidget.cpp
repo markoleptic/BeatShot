@@ -24,8 +24,7 @@ void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (!GetWorld()->GetTimerManager().IsTimerActive(CountDownTimer) || GetWorld()->GetTimerManager().
-		GetTimerRemaining(CountDownTimer) < 0)
+	if (!GetWorld()->GetTimerManager().IsTimerActive(CountDownTimer) || GetWorld()->GetTimerManager().GetTimerRemaining(CountDownTimer) < 0)
 	{
 		return;
 	}
@@ -50,8 +49,7 @@ void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 
 void UCountdownWidget::StartCountDownTimer()
 {
-	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdownWidget::StartGameMode, CountdownTimerLength,
-	                                       false);
+	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdownWidget::StartGameMode, CountdownTimerLength, false);
 }
 
 void UCountdownWidget::StartGameMode() const

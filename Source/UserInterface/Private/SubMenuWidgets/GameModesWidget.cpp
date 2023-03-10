@@ -34,8 +34,7 @@ void UGameModesWidget::NativeConstruct()
 
 		DefaultGameModesButton->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnDefaultGameModesButtonClicked);
 		CustomGameModesButton->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnCustomGameModesButtonClicked);
-		CustomizeFromStandardButton->OnClicked.
-		                             AddDynamic(this, &UGameModesWidget::OnCustomizeFromStandardButtonClicked);
+		CustomizeFromStandardButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnCustomizeFromStandardButtonClicked);
 		PlayFromStandardButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnPlayFromStandardButtonClicked);
 
 		PlayFromStandardButton->SetIsEnabled(false);
@@ -51,11 +50,11 @@ void UGameModesWidget::NativeConstruct()
 		MultiBeatNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::MultiBeat, MultiBeatHardButton);
 		MultiBeatHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::MultiBeat, MultiBeatDeathButton);
 		MultiBeatDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::MultiBeat, BeatGridNormalButton);
-		
+
 		BeatGridNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::BeatGrid, BeatGridHardButton);
 		BeatGridHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::BeatGrid, BeatGridDeathButton);
 		BeatGridDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::BeatGrid, BeatTrackNormalButton);
-		
+
 		BeatTrackNormalButton->SetDefaults(EGameModeDifficulty::Normal, EGameModeActorName::BeatTrack, BeatTrackHardButton);
 		BeatTrackHardButton->SetDefaults(EGameModeDifficulty::Hard, EGameModeActorName::BeatTrack, BeatTrackDeathButton);
 		BeatTrackDeathButton->SetDefaults(EGameModeDifficulty::Death, EGameModeActorName::BeatTrack, SingleBeatNormalButton);
@@ -86,12 +85,8 @@ void UGameModesWidget::NativeConstruct()
 	{
 		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::BeatGrid, EGameModeDifficulty::Normal));
 		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::BeatTrack, EGameModeDifficulty::Normal));
-		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::SingleBeat,
-		                                               EGameModeDifficulty::Normal,
-		                                               ESpreadType::DynamicEdgeOnly));
-		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::MultiBeat,
-		                                               EGameModeDifficulty::Normal,
-		                                               ESpreadType::DynamicRandom));
+		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::SingleBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicEdgeOnly));
+		GameModeActorDefaults.Add(FGameModeActorStruct(EGameModeActorName::MultiBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicRandom));
 	}
 
 	/** Save Start Custom Buttons */
@@ -120,8 +115,7 @@ void UGameModesWidget::NativeConstruct()
 		GameModeNameComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::OnGameModeNameSelectionChange);
 		CustomGameModeETB->OnTextChanged.AddDynamic(this, &UGameModesWidget::OnCustomGameModeETBChange);
 		BaseGameModeComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::OnBaseGameModeSelectionChange);
-		GameModeDifficultyComboBox->OnSelectionChanged.AddDynamic(
-			this, &UGameModesWidget::OnGameModeDifficultySelectionChange);
+		GameModeDifficultyComboBox->OnSelectionChanged.AddDynamic(this, &UGameModesWidget::OnGameModeDifficultySelectionChange);
 		PlayerDelaySlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnPlayerDelaySliderChanged);
 		PlayerDelayValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnPlayerDelayValueCommitted);
 		LifespanSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnLifespanSliderChanged);
@@ -135,12 +129,10 @@ void UGameModesWidget::NativeConstruct()
 		HorizontalSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnHorizontalSpreadValueCommitted);
 		VerticalSpreadSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnVerticalSpreadSliderChanged);
 		VerticalSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnVerticalSpreadValueCommitted);
-		ForwardSpreadCheckBox->OnCheckStateChanged.
-		                       AddDynamic(this, &UGameModesWidget::OnForwardSpreadCheckStateChanged);
+		ForwardSpreadCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget::OnForwardSpreadCheckStateChanged);
 		ForwardSpreadSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnForwardSpreadSliderChanged);
 		ForwardSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnForwardSpreadValueCommitted);
-		ConstantBeatGridSpacingCheckBox->OnCheckStateChanged.AddDynamic(
-			this, &UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged);
+		ConstantBeatGridSpacingCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged);
 
 		FConstrainedSliderStruct TargetScaleSliderStruct;
 		TargetScaleSliderStruct.MinConstraintLower = MinTargetScaleValue;
@@ -149,12 +141,9 @@ void UGameModesWidget::NativeConstruct()
 		TargetScaleSliderStruct.MaxConstraintUpper = MaxTargetScaleValue;
 		TargetScaleSliderStruct.DefaultMinValue = MinTargetScaleValue;
 		TargetScaleSliderStruct.DefaultMaxValue = MaxTargetScaleValue;
-		TargetScaleSliderStruct.MaxText = FText::FromStringTable(
-			"/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTargetScale");
-		TargetScaleSliderStruct.MinText = FText::FromStringTable(
-			"/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTargetScale");
-		TargetScaleSliderStruct.CheckboxText = FText::FromStringTable(
-			"/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTargetSize");
+		TargetScaleSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTargetScale");
+		TargetScaleSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTargetScale");
+		TargetScaleSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTargetSize");
 		TargetScaleSliderStruct.bSyncSlidersAndValues = false;
 		TargetScaleSliderStruct.GridSnapSize = TargetScaleSnapSize;
 		TargetScaleConstrained->InitConstrainedSlider(TargetScaleSliderStruct);
@@ -181,12 +170,9 @@ void UGameModesWidget::NativeConstruct()
 		TrackingSpeedSliderStruct.MaxConstraintUpper = MaxTargetSpeedValue;
 		TrackingSpeedSliderStruct.DefaultMinValue = MinTargetSpeedValue;
 		TrackingSpeedSliderStruct.DefaultMaxValue = MaxTargetSpeedValue;
-		TrackingSpeedSliderStruct.MaxText = FText::FromStringTable(
-			"/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTrackingSpeed");
-		TrackingSpeedSliderStruct.MinText = FText::FromStringTable(
-			"/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
-		TrackingSpeedSliderStruct.CheckboxText = FText::FromStringTable(
-			"/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
+		TrackingSpeedSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTrackingSpeed");
+		TrackingSpeedSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
+		TrackingSpeedSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
 		TrackingSpeedSliderStruct.bSyncSlidersAndValues = false;
 		TrackingSpeedSliderStruct.GridSnapSize = TargetSpeedSnapSize;
 		TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
@@ -196,42 +182,24 @@ void UGameModesWidget::NativeConstruct()
 	{
 		Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
 
-		GameModeTemplateQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "GameModeTemplate");
-		CustomGameModeNameQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "CustomGameModeName");
-		BaseGameModeQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "BaseGameMode");
-		GameModeDifficultyQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "GameModeDifficulty");
-		SpawnBeatDelayQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay");
-		LifespanQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "Lifespan");
-		TargetSpawnCDQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance");
-		HeadshotHeightQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "HeadshotHeight");
-		ForwardSpreadQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread");
-		CenterTargetsQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "CenterTargets");
-		MinDistanceQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance");
-		SpreadTypeQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpreadType");
-		DynamicTargetScaleQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "DynamicTargetScale");
-		BeatGridEvenSpacingQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridEvenSpacing");
-		BeatGridAdjacentOnlyQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly");
-		BeatGridNumTargetsQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridNumTargets");
-		TargetScaleConstrained->CheckboxQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConstantTargetScale");
-		TargetSpeedConstrained->CheckboxQMark->TooltipText = FText::FromStringTable(
-			"/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatTrackConstantSpeed");
+		GameModeTemplateQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "GameModeTemplate");
+		CustomGameModeNameQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "CustomGameModeName");
+		BaseGameModeQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BaseGameMode");
+		GameModeDifficultyQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "GameModeDifficulty");
+		SpawnBeatDelayQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay");
+		LifespanQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Lifespan");
+		TargetSpawnCDQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance");
+		HeadshotHeightQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "HeadshotHeight");
+		ForwardSpreadQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread");
+		CenterTargetsQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "CenterTargets");
+		MinDistanceQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance");
+		SpreadTypeQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpreadType");
+		DynamicTargetScaleQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "DynamicTargetScale");
+		BeatGridEvenSpacingQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridEvenSpacing");
+		BeatGridAdjacentOnlyQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly");
+		BeatGridNumTargetsQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridNumTargets");
+		TargetScaleConstrained->CheckboxQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConstantTargetScale");
+		TargetSpeedConstrained->CheckboxQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatTrackConstantSpeed");
 
 		GameModeTemplateQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		CustomGameModeNameQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
@@ -249,10 +217,8 @@ void UGameModesWidget::NativeConstruct()
 		BeatGridEvenSpacingQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		BeatGridAdjacentOnlyQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		BeatGridNumTargetsQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
-		TargetScaleConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(
-			this, &UGameModesWidget::OnTooltipImageHovered);
-		TargetSpeedConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(
-			this, &UGameModesWidget::OnTooltipImageHovered);
+		TargetScaleConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		TargetSpeedConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 	}
 
 	OnDefaultGameModesButtonClicked();
@@ -277,8 +243,7 @@ void UGameModesWidget::OnDefaultGameModeButtonClicked(const UGameModeButton* Gam
 {
 	DefaultGameModeActorName = GameModeButton->GameModeName;
 	DefaultGameModeDifficulty = GameModeButton->Difficulty;
-	const FGameModeActorStruct SelectedGameMode = FGameModeActorStruct(GameModeButton->GameModeName,
-	                                                                   GameModeButton->Difficulty);
+	const FGameModeActorStruct SelectedGameMode = FGameModeActorStruct(GameModeButton->GameModeName, GameModeButton->Difficulty);
 	GameModeNameComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(GameModeButton->GameModeName).ToString());
 	PopulateGameModeOptions(SelectedGameMode);
 	SetGameModeButtonBackgroundColor(GameModeButton);
@@ -287,8 +252,7 @@ void UGameModesWidget::OnDefaultGameModeButtonClicked(const UGameModeButton* Gam
 	NarrowSpreadButton->SetBackgroundColor(White);
 
 	/** Don't show SpreadSelect if BeatGrid or BeatTrack */
-	if (SelectedGameMode.GameModeActorName == EGameModeActorName::BeatGrid ||
-		SelectedGameMode.GameModeActorName == EGameModeActorName::BeatTrack)
+	if (SelectedGameMode.GameModeActorName == EGameModeActorName::BeatGrid || SelectedGameMode.GameModeActorName == EGameModeActorName::BeatTrack)
 	{
 		SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
 		PlayFromStandardButton->SetIsEnabled(true);
@@ -329,8 +293,7 @@ void UGameModesWidget::OnDynamicSpreadButtonClicked()
 	{
 		DefaultGameModeSpreadType = ESpreadType::DynamicEdgeOnly;
 	}
-	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName,
-	                                             DefaultGameModeDifficulty, DefaultGameModeSpreadType));
+	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, DefaultGameModeSpreadType));
 	PlayFromStandardButton->SetIsEnabled(true);
 }
 
@@ -341,8 +304,7 @@ void UGameModesWidget::OnNarrowSpreadButtonClicked()
 	NarrowSpreadButton->SetBackgroundColor(BeatShotBlue);
 	WideSpreadButton->SetBackgroundColor(White);
 	DefaultGameModeSpreadType = ESpreadType::StaticNarrow;
-	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName,
-	                                             DefaultGameModeDifficulty, ESpreadType::StaticNarrow));
+	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, ESpreadType::StaticNarrow));
 	PlayFromStandardButton->SetIsEnabled(true);
 }
 
@@ -353,8 +315,7 @@ void UGameModesWidget::OnWideSpreadButtonClicked()
 	NarrowSpreadButton->SetBackgroundColor(White);
 	WideSpreadButton->SetBackgroundColor(BeatShotBlue);
 	DefaultGameModeSpreadType = ESpreadType::StaticWide;
-	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName,
-	                                             DefaultGameModeDifficulty, ESpreadType::StaticWide));
+	PopulateGameModeOptions(FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, ESpreadType::StaticWide));
 	PlayFromStandardButton->SetIsEnabled(true);
 }
 
@@ -364,8 +325,7 @@ void UGameModesWidget::OnCustomizeFromStandardButtonClicked()
 }
 
 
-void UGameModesWidget::OnGameModeNameSelectionChange(const FString SelectedGameModeName,
-                                                     const ESelectInfo::Type SelectionType)
+void UGameModesWidget::OnGameModeNameSelectionChange(const FString SelectedGameModeName, const ESelectInfo::Type SelectionType)
 {
 	if (IsDefaultGameMode(SelectedGameModeName))
 	{
@@ -385,8 +345,7 @@ void UGameModesWidget::OnCustomGameModeETBChange(const FText& NewCustomGameModeT
 	UpdateSaveStartButtonStates();
 }
 
-void UGameModesWidget::OnBaseGameModeSelectionChange(const FString SelectedBaseGameMode,
-                                                     const ESelectInfo::Type SelectionType)
+void UGameModesWidget::OnBaseGameModeSelectionChange(const FString SelectedBaseGameMode, const ESelectInfo::Type SelectionType)
 {
 	/** TODO: Is this necessary*/
 	if (SelectionType != ESelectInfo::Type::Direct)
@@ -395,8 +354,7 @@ void UGameModesWidget::OnBaseGameModeSelectionChange(const FString SelectedBaseG
 	}
 }
 
-void UGameModesWidget::OnGameModeDifficultySelectionChange(const FString SelectedDifficulty,
-                                                           const ESelectInfo::Type SelectionType)
+void UGameModesWidget::OnGameModeDifficultySelectionChange(const FString SelectedDifficulty, const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -413,8 +371,7 @@ void UGameModesWidget::OnGameModeDifficultySelectionChange(const FString Selecte
 	}
 	if (EnumDifficulty != EGameModeDifficulty::None)
 	{
-		const FGameModeActorStruct GameModeActorStruct = FGameModeActorStruct(
-			GetDefaultGameMode(BaseGameModeComboBox->GetSelectedOption()).GameModeActorName, EnumDifficulty);
+		const FGameModeActorStruct GameModeActorStruct = FGameModeActorStruct(GetDefaultGameMode(BaseGameModeComboBox->GetSelectedOption()).GameModeActorName, EnumDifficulty);
 		PopulateGameModeOptions(GameModeActorStruct);
 	}
 }
@@ -426,9 +383,7 @@ void UGameModesWidget::OnPlayerDelaySliderChanged(const float NewPlayerDelay)
 
 void UGameModesWidget::OnPlayerDelayValueCommitted(const FText& NewPlayerDelay, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewPlayerDelay, PlayerDelayValue, PlayerDelaySlider, PlayerDelayGridSnapSize,
-	                         MinPlayerDelayValue,
-	                         MaxPlayerDelayValue);
+	OnEditableTextBoxChanged(NewPlayerDelay, PlayerDelayValue, PlayerDelaySlider, PlayerDelayGridSnapSize, MinPlayerDelayValue, MaxPlayerDelayValue);
 }
 
 void UGameModesWidget::OnLifespanSliderChanged(const float NewLifespan)
@@ -438,8 +393,7 @@ void UGameModesWidget::OnLifespanSliderChanged(const float NewLifespan)
 
 void UGameModesWidget::OnLifespanValueCommitted(const FText& NewLifespan, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewLifespan, LifespanValue, LifespanSlider, LifespanGridSnapSize, MinLifespanValue,
-	                         MaxLifespanValue);
+	OnEditableTextBoxChanged(NewLifespan, LifespanValue, LifespanSlider, LifespanGridSnapSize, MinLifespanValue, MaxLifespanValue);
 }
 
 void UGameModesWidget::OnTargetSpawnCDSliderChanged(const float NewTargetSpawnCD)
@@ -449,8 +403,7 @@ void UGameModesWidget::OnTargetSpawnCDSliderChanged(const float NewTargetSpawnCD
 
 void UGameModesWidget::OnTargetSpawnCDValueCommitted(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewTargetSpawnCD, TargetSpawnCDValue, TargetSpawnCDSlider, TargetSpawnCDGridSnapSize,
-	                         MinTargetSpawnCDValue, MaxTargetSpawnCDValue);
+	OnEditableTextBoxChanged(NewTargetSpawnCD, TargetSpawnCDValue, TargetSpawnCDSlider, TargetSpawnCDGridSnapSize, MinTargetSpawnCDValue, MaxTargetSpawnCDValue);
 }
 
 void UGameModesWidget::OnHeadShotOnlyCheckStateChanged(const bool bHeadshotOnly)
@@ -466,8 +419,7 @@ void UGameModesWidget::OnHeadShotOnlyCheckStateChanged(const bool bHeadshotOnly)
 
 	VerticalSpreadSlider->SetLocked(false);
 	VerticalSpreadValue->SetIsReadOnly(false);
-	OnEditableTextBoxChanged(FText::AsNumber(MaxVerticalSpreadValue), VerticalSpreadValue, VerticalSpreadSlider,
-	                         VerticalSpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
+	OnEditableTextBoxChanged(FText::AsNumber(MaxVerticalSpreadValue), VerticalSpreadValue, VerticalSpreadSlider, VerticalSpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
 	OnSliderChanged(MaxVerticalSpreadValue, VerticalSpreadValue, VerticalSpreadGridSnapSize);
 }
 
@@ -476,11 +428,9 @@ void UGameModesWidget::OnMinTargetDistanceSliderChanged(const float NewMinTarget
 	OnSliderChanged(NewMinTargetDistance, MinTargetDistanceValue, MinTargetDistanceGridSnapSize);
 }
 
-void UGameModesWidget::OnMinTargetDistanceValueCommitted(const FText& NewMinTargetDistance,
-                                                         ETextCommit::Type CommitType)
+void UGameModesWidget::OnMinTargetDistanceValueCommitted(const FText& NewMinTargetDistance, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewMinTargetDistance, MinTargetDistanceValue, MinTargetDistanceSlider,
-	                         MinTargetDistanceGridSnapSize, MinMinTargetDistanceValue, MaxMinTargetDistanceValue);
+	OnEditableTextBoxChanged(NewMinTargetDistance, MinTargetDistanceValue, MinTargetDistanceSlider, MinTargetDistanceGridSnapSize, MinMinTargetDistanceValue, MaxMinTargetDistanceValue);
 }
 
 void UGameModesWidget::OnHorizontalSpreadSliderChanged(const float NewHorizontalSpread)
@@ -490,8 +440,7 @@ void UGameModesWidget::OnHorizontalSpreadSliderChanged(const float NewHorizontal
 
 void UGameModesWidget::OnHorizontalSpreadValueCommitted(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, HorizontalSpreadGridSnapSize,
-	                         MinHorizontalSpreadValue, MaxHorizontalSpreadValue);
+	OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, HorizontalSpreadGridSnapSize, MinHorizontalSpreadValue, MaxHorizontalSpreadValue);
 }
 
 void UGameModesWidget::OnVerticalSpreadSliderChanged(const float NewVerticalSpread)
@@ -501,8 +450,7 @@ void UGameModesWidget::OnVerticalSpreadSliderChanged(const float NewVerticalSpre
 
 void UGameModesWidget::OnVerticalSpreadValueCommitted(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, VerticalSpreadGridSnapSize,
-	                         MinVerticalSpreadValue, MaxVerticalSpreadValue);
+	OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, VerticalSpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
 }
 
 void UGameModesWidget::OnForwardSpreadCheckStateChanged(const bool bUseForwardSpread)
@@ -522,8 +470,7 @@ void UGameModesWidget::OnForwardSpreadSliderChanged(const float NewForwardSpread
 
 void UGameModesWidget::OnForwardSpreadValueCommitted(const FText& NewForwardSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewForwardSpread, ForwardSpreadValue, ForwardSpreadSlider, HorizontalSpreadGridSnapSize,
-	                         MinForwardSpreadValue, MaxForwardSpreadValue);
+	OnEditableTextBoxChanged(NewForwardSpread, ForwardSpreadValue, ForwardSpreadSlider, HorizontalSpreadGridSnapSize, MinForwardSpreadValue, MaxForwardSpreadValue);
 }
 
 void UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing)
@@ -662,16 +609,11 @@ bool UGameModesWidget::CheckAllBeatGridConstraints()
 	FDefaultValueHelper::ParseInt(ToConvert, MaxTargets);
 	MaxTargets = sqrt(MaxTargets);
 
-	if (
-		TargetWidth >= ((Width - 200 - HSpacing * MaxTargets + HSpacing) / MaxTargets) ||
-		TargetHeight >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / MaxTargets) ||
-		Width <= (TargetWidth * MaxTargets + HSpacing * MaxTargets - HSpacing + 200) ||
-		Height <= (TargetHeight * MaxTargets + VSpacing * MaxTargets - VSpacing + 200) ||
-		MaxTargets >= ((Width - 200 - HSpacing * MaxTargets + HSpacing) / TargetWidth) ||
-		MaxTargets >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / TargetHeight) ||
-		HSpacing >= ((Width - TargetWidth * MaxTargets - 200) / (MaxTargets - 1)) ||
-		VSpacing >= ((Height - TargetHeight * MaxTargets - 200) / (MaxTargets - 1))
-	)
+	if (TargetWidth >= ((Width - 200 - HSpacing * MaxTargets + HSpacing) / MaxTargets) || TargetHeight >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / MaxTargets) || Width <= (TargetWidth *
+			MaxTargets + HSpacing * MaxTargets - HSpacing + 200) || Height <= (TargetHeight * MaxTargets + VSpacing * MaxTargets - VSpacing + 200) || MaxTargets >= ((Width - 200 - HSpacing *
+			MaxTargets +
+			HSpacing) / TargetWidth) || MaxTargets >= ((Height - 200 - VSpacing * MaxTargets + VSpacing) / TargetHeight) || HSpacing >= ((Width - TargetWidth * MaxTargets - 200) / (MaxTargets - 1)) ||
+		VSpacing >= ((Height - TargetHeight * MaxTargets - 200) / (MaxTargets - 1)))
 	{
 		return false;
 	}
@@ -701,8 +643,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 		LifespanValue->SetIsReadOnly(true);
 		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Collapsed);
 		SpreadTypeBox->SetVisibility(ESlateVisibility::Collapsed);
-		TargetSpeedConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTrackingSpeed,
-		                                            InputGameModeActorStruct.MaxTrackingSpeed);
+		TargetSpeedConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTrackingSpeed, InputGameModeActorStruct.MaxTrackingSpeed);
 	}
 	else
 	{
@@ -718,17 +659,14 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	{
 		BaseGameModeComboBox->SetSelectedOption("SingleBeat");
 	}
-	if (!InputGameModeActorStruct.IsBeatGridMode &&
-		!InputGameModeActorStruct.IsBeatTrackMode &&
-		!InputGameModeActorStruct.IsSingleBeatMode)
+	if (!InputGameModeActorStruct.IsBeatGridMode && !InputGameModeActorStruct.IsBeatTrackMode && !InputGameModeActorStruct.IsSingleBeatMode)
 	{
 		BaseGameModeComboBox->SetSelectedOption("MultiBeat");
 		LifespanSlider->SetLocked(false);
 		LifespanValue->SetIsReadOnly(false);
 	}
 
-	GameModeDifficultyComboBox->SetSelectedOption(
-		UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeDifficulty).ToString());
+	GameModeDifficultyComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeDifficulty).ToString());
 	PlayerDelaySlider->SetValue(InputGameModeActorStruct.PlayerDelay);
 	PlayerDelayValue->SetText(FText::AsNumber(InputGameModeActorStruct.PlayerDelay));
 	LifespanSlider->SetValue(InputGameModeActorStruct.TargetMaxLifeSpan);
@@ -741,7 +679,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	MinTargetDistanceValue->SetText(FText::AsNumber(InputGameModeActorStruct.MinDistanceBetweenTargets));
 
 	FString StringSpread = UEnum::GetDisplayValueAsText(InputGameModeActorStruct.SpreadType).ToString();
-	
+
 	if (InputGameModeActorStruct.SpreadType == ESpreadType::DynamicEdgeOnly)
 	{
 		StringSpread.InsertAt(11, " ");
@@ -751,13 +689,12 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	{
 		StringSpread.InsertAt(7, " ");
 	}
-	else if (InputGameModeActorStruct.SpreadType == ESpreadType::StaticNarrow ||
-		InputGameModeActorStruct.SpreadType == ESpreadType::StaticWide)
+	else if (InputGameModeActorStruct.SpreadType == ESpreadType::StaticNarrow || InputGameModeActorStruct.SpreadType == ESpreadType::StaticWide)
 	{
 		StringSpread.InsertAt(6, " ");
 	}
 	SpreadTypeComboBox->SetSelectedOption(StringSpread);
-	
+
 	HorizontalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Y);
 	HorizontalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Y));
 	VerticalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Z);
@@ -765,8 +702,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	ForwardSpreadCheckBox->SetIsChecked(InputGameModeActorStruct.bMoveTargetsForward);
 	ForwardSpreadSlider->SetValue(InputGameModeActorStruct.MoveForwardDistance);
 	ForwardSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.MoveForwardDistance));
-	TargetScaleConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTargetScale,
-	                                            InputGameModeActorStruct.MaxTargetScale);
+	TargetScaleConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTargetScale, InputGameModeActorStruct.MaxTargetScale);
 }
 
 void UGameModesWidget::PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect)
@@ -831,62 +767,40 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 		ReturnStruct.IsSingleBeatMode = false;
 	}
 	ReturnStruct.GameModeDifficulty = EGameModeDifficulty::None;
-	ReturnStruct.PlayerDelay = FMath::GridSnap(
-		FMath::Clamp(PlayerDelaySlider->GetValue(), MinPlayerDelayValue, MaxPlayerDelayValue), PlayerDelayGridSnapSize);
-	ReturnStruct.TargetMaxLifeSpan = FMath::GridSnap(
-		FMath::Clamp(LifespanSlider->GetValue(), MinLifespanValue, MaxLifespanValue), LifespanGridSnapSize);
-	ReturnStruct.TargetSpawnCD = FMath::GridSnap(
-		FMath::Clamp(TargetSpawnCDSlider->GetValue(), MinTargetSpawnCDValue, MaxTargetSpawnCDValue),
-		TargetSpawnCDGridSnapSize);
+	ReturnStruct.PlayerDelay = FMath::GridSnap(FMath::Clamp(PlayerDelaySlider->GetValue(), MinPlayerDelayValue, MaxPlayerDelayValue), PlayerDelayGridSnapSize);
+	ReturnStruct.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(LifespanSlider->GetValue(), MinLifespanValue, MaxLifespanValue), LifespanGridSnapSize);
+	ReturnStruct.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(TargetSpawnCDSlider->GetValue(), MinTargetSpawnCDValue, MaxTargetSpawnCDValue), TargetSpawnCDGridSnapSize);
 	ReturnStruct.HeadshotHeight = HeadShotOnlyCheckBox->IsChecked();
 	ReturnStruct.WallCentered = WallCenteredCheckBox->IsChecked();
-	ReturnStruct.MinDistanceBetweenTargets = FMath::GridSnap(
-		FMath::Clamp(MinTargetDistanceSlider->GetValue(), MinMinTargetDistanceValue, MaxMinTargetDistanceValue),
-		MinTargetDistanceGridSnapSize);
+	ReturnStruct.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(MinTargetDistanceSlider->GetValue(), MinMinTargetDistanceValue, MaxMinTargetDistanceValue), MinTargetDistanceGridSnapSize);
 	ReturnStruct.SpreadType = GetSpreadType();
-	ReturnStruct.BoxBounds = FVector(0,
-	                                 FMath::GridSnap(
-		                                 FMath::Clamp(HorizontalSpreadSlider->GetValue(), MinHorizontalSpreadValue,
-		                                              MaxHorizontalSpreadValue), HorizontalSpreadGridSnapSize),
-	                                 FMath::GridSnap(
-		                                 FMath::Clamp(VerticalSpreadSlider->GetValue(), MinVerticalSpreadValue,
-		                                              MaxVerticalSpreadValue), VerticalSpreadGridSnapSize));
+	ReturnStruct.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(HorizontalSpreadSlider->GetValue(), MinHorizontalSpreadValue, MaxHorizontalSpreadValue), HorizontalSpreadGridSnapSize),
+	                                 FMath::GridSnap(FMath::Clamp(VerticalSpreadSlider->GetValue(), MinVerticalSpreadValue, MaxVerticalSpreadValue), VerticalSpreadGridSnapSize));
 	ReturnStruct.bMoveTargetsForward = ForwardSpreadCheckBox->IsChecked();
-	ReturnStruct.MoveForwardDistance = FMath::GridSnap(
-		FMath::Clamp(ForwardSpreadSlider->GetValue(), MinForwardSpreadValue, MaxForwardSpreadValue),
-		HorizontalSpreadGridSnapSize);
+	ReturnStruct.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(ForwardSpreadSlider->GetValue(), MinForwardSpreadValue, MaxForwardSpreadValue), HorizontalSpreadGridSnapSize);
 	ReturnStruct.UseDynamicSizing = DynamicTargetScaleCheckBox->IsChecked();
-	ReturnStruct.MinTargetScale = FMath::GridSnap(
-		FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue),
-		TargetScaleSnapSize);
-	ReturnStruct.MaxTargetScale = FMath::GridSnap(
-		FMath::Clamp(TargetScaleConstrained->MaxSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue),
-		TargetScaleSnapSize);
+	ReturnStruct.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue), TargetScaleSnapSize);
+	ReturnStruct.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MaxSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue), TargetScaleSnapSize);
 	ReturnStruct.RandomizeBeatGrid = RandomizeNextBeatGridTargetCheckBox->IsChecked();
 	/** TODO: Constant BeatGrid Spacing option*/
 	ReturnStruct.BeatGridSize = FCString::Atoi(*NumBeatGridTargetsComboBox->GetSelectedOption());
-	ReturnStruct.MinTrackingSpeed = FMath::GridSnap(
-		FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinTargetSpeedValue, MaxTargetSpeedValue),
-		TargetSpeedSnapSize);
-	ReturnStruct.MaxTrackingSpeed = FMath::GridSnap(
-		FMath::Clamp(TargetSpeedConstrained->MaxSlider->GetValue(), MinTargetSpeedValue, MaxTargetSpeedValue),
-		TargetSpeedSnapSize);
+	ReturnStruct.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinTargetSpeedValue, MaxTargetSpeedValue), TargetSpeedSnapSize);
+	ReturnStruct.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MaxSlider->GetValue(), MinTargetSpeedValue, MaxTargetSpeedValue), TargetSpeedSnapSize);
 	return ReturnStruct;
 }
 
 void UGameModesWidget::SaveCustomGameModeToSlot(const FGameModeActorStruct GameModeToSave)
 {
 	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
-	const int32 NumRemoved = CustomGameModesArray.RemoveAll(
-		[&GameModeToSave](const FGameModeActorStruct& MatchingStruct)
-		{
-			return MatchingStruct.CustomGameModeName == GameModeToSave.CustomGameModeName;
-		});
+	const int32 NumRemoved = CustomGameModesArray.RemoveAll([&GameModeToSave](const FGameModeActorStruct& MatchingStruct)
+	{
+		return MatchingStruct.CustomGameModeName == GameModeToSave.CustomGameModeName;
+	});
 	UE_LOG(LogTemp, Display, TEXT("NumRemoved %d"), NumRemoved);
 	CustomGameModesArray.Shrink();
 	CustomGameModesArray.Add(GameModeToSave);
 	SaveCustomGameMode(CustomGameModesArray);
-	const TArray SavedText = { FText::FromString(GameModeToSave.CustomGameModeName), FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_GameModeSavedText") };
+	const TArray SavedText = {FText::FromString(GameModeToSave.CustomGameModeName), FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_GameModeSavedText")};
 	SavedTextWidget->SetSavedText(FText::Join(FText::FromString(" "), SavedText));
 	SavedTextWidget->PlayFadeInFadeOut();
 }
@@ -894,11 +808,10 @@ void UGameModesWidget::SaveCustomGameModeToSlot(const FGameModeActorStruct GameM
 void UGameModesWidget::RemoveCustomGameMode(const FString& CustomGameModeName)
 {
 	TArray<FGameModeActorStruct> CustomGameModesArray = LoadCustomGameModes();
-	const int32 NumRemoved = CustomGameModesArray.RemoveAll(
-		[&CustomGameModeName](const FGameModeActorStruct& MatchingStruct)
-		{
-			return MatchingStruct.CustomGameModeName == CustomGameModeName;
-		});
+	const int32 NumRemoved = CustomGameModesArray.RemoveAll([&CustomGameModeName](const FGameModeActorStruct& MatchingStruct)
+	{
+		return MatchingStruct.CustomGameModeName == CustomGameModeName;
+	});
 	CustomGameModesArray.Shrink();
 	SaveCustomGameMode(CustomGameModesArray);
 	if (NumRemoved >= 1)
@@ -937,8 +850,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		RemoveSelectedCustomButton->SetIsEnabled(false);
 		return;
 	}
-	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && CustomGameModeETB->GetText().
-		IsEmptyOrWhitespace())
+	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && CustomGameModeETB->GetText().IsEmptyOrWhitespace())
 	{
 		SaveCustomButton->SetIsEnabled(false);
 		SaveCustomAndStartButton->SetIsEnabled(false);
@@ -958,8 +870,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		return;
 	}
 
-	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && !CustomGameModeETB->GetText().
-		IsEmptyOrWhitespace())
+	if (IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption()) && !CustomGameModeETB->GetText().IsEmptyOrWhitespace())
 	{
 		SaveCustomButton->SetIsEnabled(true);
 		SaveCustomAndStartButton->SetIsEnabled(true);
@@ -1051,29 +962,22 @@ void UGameModesWidget::ShowConfirmOverwriteMessage(const bool bStartGameAfter)
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	if (PopupMessageWidget)
 	{
-		PopupMessageWidget->InitPopup(FText::FromStringTable(
-			                              "/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwritePopupTitle"),
-		                              FText::GetEmpty(),
-		                              FText::FromStringTable(
-			                              "/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteConfirm"),
-		                              FText::FromStringTable(
-			                              "/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteCancel"));
+		PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwritePopupTitle"), FText::GetEmpty(),
+		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteConfirm"),
+		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteCancel"));
 		PopupMessageWidget->AddToViewport();
 		PopupMessageWidget->FadeIn();
 	}
 
 	if (bStartGameAfter)
 	{
-		PopupMessageWidget->Button1->OnClicked.AddDynamic(
-			this, &UGameModesWidget::OnConfirmOverwriteButtonClickedAndStartGame);
+		PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UGameModesWidget::OnConfirmOverwriteButtonClickedAndStartGame);
 	}
 	else
 	{
-		PopupMessageWidget->Button1->OnClicked.AddDynamic(
-			this, &UGameModesWidget::OnConfirmOverwriteButtonClicked);
+		PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UGameModesWidget::OnConfirmOverwriteButtonClicked);
 	}
-	PopupMessageWidget->Button2->OnClicked.AddDynamic(
-		this, &UGameModesWidget::OnCancelOverwriteButtonClicked);
+	PopupMessageWidget->Button2->OnClicked.AddDynamic(this, &UGameModesWidget::OnCancelOverwriteButtonClicked);
 }
 
 void UGameModesWidget::OnConfirmOverwriteButtonClicked()
@@ -1110,45 +1014,43 @@ void UGameModesWidget::OnCancelOverwriteButtonClicked()
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
 	AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda(
-		[this, bStartFromDefaultGameMode](const FAudioSelectStruct AudioSelectStruct)
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode](const FAudioSelectStruct AudioSelectStruct)
+	{
+		FGameModeTransitionState GameModeTransitionState;
+		FGameModeActorStruct GameModeActorStruct;
+		GameModeTransitionState.bSaveCurrentScores = false;
+		if (bIsMainMenuChild)
 		{
-			FGameModeTransitionState GameModeTransitionState;
-			FGameModeActorStruct GameModeActorStruct;
-			GameModeTransitionState.bSaveCurrentScores = false;
-			if (bIsMainMenuChild)
-			{
-				GameModeTransitionState.TransitionState = ETransitionState::StartFromMainMenu;
-			}
-			else
-			{
-				GameModeTransitionState.TransitionState = ETransitionState::StartFromPostGameMenu;
-			}
-			if (bStartFromDefaultGameMode)
-			{
-				GameModeActorStruct = FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty,
-				                                           DefaultGameModeSpreadType);
-			}
-			else
-			{
-				GameModeActorStruct = GetCustomGameModeOptions();
-			}
-			GameModeActorStruct.SongTitle = AudioSelectStruct.SongTitle;
-			GameModeActorStruct.GameModeLength = AudioSelectStruct.SongLength;
-			GameModeActorStruct.InAudioDevice = AudioSelectStruct.InAudioDevice;
-			GameModeActorStruct.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
-			GameModeActorStruct.SongPath = AudioSelectStruct.SongPath;
-			GameModeActorStruct.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
-			GameModeActorStruct.AudioFormat = AudioSelectStruct.AudioFormat;
-			GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
-			/* Override the player delay to zero if using Capture */
-			if (GameModeActorStruct.AudioFormat == EAudioFormat::Capture)
-			{
-				GameModeActorStruct.PlayerDelay = 0.f;
-			}
-			OnGameModeStateChanged.Broadcast(GameModeTransitionState);
-			AudioSelectWidget->FadeOut();
-		});
+			GameModeTransitionState.TransitionState = ETransitionState::StartFromMainMenu;
+		}
+		else
+		{
+			GameModeTransitionState.TransitionState = ETransitionState::StartFromPostGameMenu;
+		}
+		if (bStartFromDefaultGameMode)
+		{
+			GameModeActorStruct = FGameModeActorStruct(DefaultGameModeActorName, DefaultGameModeDifficulty, DefaultGameModeSpreadType);
+		}
+		else
+		{
+			GameModeActorStruct = GetCustomGameModeOptions();
+		}
+		GameModeActorStruct.SongTitle = AudioSelectStruct.SongTitle;
+		GameModeActorStruct.GameModeLength = AudioSelectStruct.SongLength;
+		GameModeActorStruct.InAudioDevice = AudioSelectStruct.InAudioDevice;
+		GameModeActorStruct.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
+		GameModeActorStruct.SongPath = AudioSelectStruct.SongPath;
+		GameModeActorStruct.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
+		GameModeActorStruct.AudioFormat = AudioSelectStruct.AudioFormat;
+		GameModeTransitionState.GameModeActorStruct = GameModeActorStruct;
+		/* Override the player delay to zero if using Capture */
+		if (GameModeActorStruct.AudioFormat == EAudioFormat::Capture)
+		{
+			GameModeActorStruct.PlayerDelay = 0.f;
+		}
+		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
+		AudioSelectWidget->FadeOut();
+	});
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();
 }
@@ -1169,7 +1071,7 @@ ESpreadType UGameModesWidget::GetSpreadType() const
 	for (const ESpreadType Spread : TEnumRange<ESpreadType>())
 	{
 		FString StringSpread = UEnum::GetDisplayValueAsText(Spread).ToString();
-		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"),*StringSpread);
+		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"), *StringSpread);
 		if (Spread == ESpreadType::DynamicEdgeOnly)
 		{
 			StringSpread.InsertAt(11, " ");
@@ -1183,7 +1085,7 @@ ESpreadType UGameModesWidget::GetSpreadType() const
 		{
 			StringSpread.InsertAt(6, " ");
 		}
-		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"),*StringSpread);
+		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"), *StringSpread);
 		if (StringSpread.Equals(SelectedSpread))
 		{
 			return Spread;
@@ -1247,9 +1149,7 @@ bool UGameModesWidget::IsCustomGameMode(const FString& GameModeName) const
 	return false;
 }
 
-void UGameModesWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-                                                USlider* SliderToChange,
-                                                const float GridSnapSize, const float Min, const float Max)
+void UGameModesWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
@@ -1258,8 +1158,7 @@ void UGameModesWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEdit
 	SliderToChange->SetValue(SnappedValue);
 }
 
-void UGameModesWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
-                                       const float GridSnapSize)
+void UGameModesWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize)
 {
 	TextBoxToChange->SetText(FText::AsNumber(FMath::GridSnap(NewValue, GridSnapSize)));
 }

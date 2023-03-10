@@ -16,8 +16,8 @@ AA_SaveAndRestartButtonText,Save Analyzer Settings and Restart GameMode
 AA_SaveButtonText,Save Analyzer Settings
 AA_ThresholdText,Threshold:
 AA_TimeWindow,Time Window (Duration to capture beat tracking)
-AF_AudioDeviceHeader,Audio Devices
 AF_AudioDeviceButtonText,Audio Device
+AF_AudioDeviceHeader,Audio Devices
 AF_BackButtonText,Back
 AF_FileButtonText,MP3/OGG File
 AF_InputDeviceText,Input
@@ -25,8 +25,8 @@ AF_InputDeviceText2,(device for game to listen to)
 AF_LoadFileButtonText,Load Song File
 AF_OutputAudioDevice,Output
 AF_OutputAudioDevice_2,(device to output music to if different from default)
-AF_SongInfoHeader,Song Info
 AF_SendPlayback,Send Playback to Output
+AF_SongInfoHeader,Song Info
 AF_SongLength,Song Length:
 AF_SongTitle,Or enter a new Song Title:
 AF_SongTitle_HintText,Song Title
@@ -106,13 +106,14 @@ FAQ_SpreadType_Static_Narrow,An unchanged spawn area size of 1600 horizontal spr
 FAQ_SpreadType_Static_Wide,An unchanged spawn area size of 3200 horizontal spread and 1000 vertical spread
 FAQ_TargetSpawnCooldown,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
 FAQ_VerticalSpread,"The height (up-down) of the possible spawn area. 1000 is most of the height of the spawn wall, with small gaps on the top and bottom so the target doesn't clip."
-Game_CombatTextShow,Show Streak Combat Text
+Game_CombatText,Combat Text
 Game_CombatTextFrequency,Streak Combat Text Frequency
+Game_CombatTextShow,Show Streak Combat Text
 Game_FPSCounter,FPS Counter
 Game_FPSLimitGame,FPS Limit Game
-Game_Target,Target Settings
-Game_CombatText,Combat Text
 Game_FPSLimitMenu,FPS Limit Menus
+Game_Target,Target Settings
+GameTitle,BeatShot
 GitHubButtonText,Create Github Issue here
 GitHubIssueMessage,"If you're playing this right now, the game in an early alpha state. Things are likely to break and possibly not be implemented. If you have any suggestions whatsoever, don't hesitate to submit an bug report or feature request on Github. "
 GM_AllGameModesRemovedText,All custom game modes removed
@@ -184,6 +185,8 @@ HUD_ShotsFired,Shots Fired:
 HUD_Streak,Streak:
 HUD_TargetsHit,Targets Hit:
 HUD_TargetsSpawned,Targets Spawned:
+Interact_MoveDown,Hold Shift+E to move platform down
+Interact_MoveUp,Hold E to move platform up
 Login_BrowserLoginErrorText,"The game received a valid response from the server, but couldn't log you in to the website in the browser."
 Login_ContinueWithoutBodyTextLogin,"You won't be able to see your played game data, but it will still be saved locally if you decide to sign in later."
 Login_ContinueWithoutBodyTextRegister,"You won't be able to see your played game data, but it will still be saved locally if you ever decide to make an account."
@@ -223,6 +226,7 @@ MenuOption_AudioAnalyzer,Audio Analyzer
 MenuOption_CrossHair,Crosshair
 MenuOption_CustomGameModes,Custom Game Modes
 MenuOption_FAQ,FAQ
+MenuOption_Game,Game
 MenuOption_GameModes,Game Modes
 MenuOption_PatchNotes,Patch Notes
 MenuOption_PlayAgain,Play Again
@@ -233,7 +237,6 @@ MenuOption_Scoring,Scoring
 MenuOption_Sensitivity,Sensitivity
 MenuOption_Settings,Settings
 MenuOption_StandardGameModes,Standard Game Modes
-MenuOption_Game,Game
 MenuOption_VideoAndSound,Video and Sound
 PausedText,Paused
 QM_BackButtonText,Back
@@ -253,12 +256,32 @@ QualityButtonText_Medium,Medium
 ResetSettingsButtonText,Reset to Default
 ResumeButtonText,Resume Game
 SaveButtonText,Save
+SBW_DidNotSaveScores,Your scores weren't saved because you didn't select a name for your custom game mode or your score was 0.
+SBW_NoAccount,Your scores were saved locally but were not uploaded to the database. Create an account in the main menu to see your scores.
+SBW_SavedScoresButNotLoggedIn,Your scores were saved to the database but there was a problem loading your profile in the web browser. Go to the main menu to sign in again.
+SBW_SavedScoresLocallyOnly,Your scores were saved locally but there was a problem posting your scores to the database. Your scores will be uploaded to the database the next time there is a successful connection to it. Go to the main menu to sign in again.
 Sensitivity_CSGO,New Sensitivity (CS:GO):
 Sensitivity_Current,Current Sensitivity:
 Sensitivity_HintText,Enter here
 Sensitivity_Info,"BeatShot uses Valorant sensitivity by default, but you can also enter your CSGO sensitivity. If you don't have either of those values, you can use an online converter to get your Valorant sensitivity."
 Sensitivity_Valorant,New Sensitivity (Valorant/Beatshot):
 SettingsSavedText,Settings Saved
+SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
+SM_Save_CrossHair,Save Crosshair Settings
+SM_Save_Game,Save Game Settings
+SM_Save_Sensitivity,Save Sensitivity Settings
+SM_Save_VideoAndSound,Save Video and Sound Settings
+SM_Saved_AudioAnalyzer,Audio Analyzer Settings Saved
+SM_Saved_CrossHair,Crosshair Settings Saved
+SM_Saved_Game,Game Settings saved
+SM_Saved_Sensitivity,Sensitivity Settings Saved
+SM_Saved_VideoAndSound,Video and Sound Settings Saved
+SM_TargetColor_BeatGridInactive,Inactive BeatGrid Target Color
+SM_TargetColor_End,End Target Color
+SM_TargetColor_Outline,Target Outline Color
+SM_TargetColor_Peak,Peak Target Color
+SM_TargetColor_Start,Start Target Color
+SM_TargetColor_UseSeparateOutline,Use Separate Outline Color
 Sound_Game,In Game Sound
 Sound_Global,Global Sound
 Sound_MainMenu,Menu Sound
@@ -282,37 +305,14 @@ Video_WindowMode,Window Mode
 WallMenu_Auto,AUTO
 WallMenu_BulletDecals,BULLET DECALS
 WallMenu_FireRate,FIRE RATE
+WallMenu_LightVisualizer,LIGHT VISUALIZERS
+WallMenu_NightMode,NIGHT MODE
 WallMenu_Off,OFF
 WallMenu_On,ON
 WallMenu_Recoil,RECOIL
-WallMenu_NightMode,NIGHT MODE
-WallMenu_ShapeVisualizer,SHAPE VISUALIZERS
-WallMenu_LightVisualizer,LIGHT VISUALIZERS
 WallMenu_Semi,SEMI
+WallMenu_ShapeVisualizer,SHAPE VISUALIZERS
 WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen
 WindowMode_FullscreenWindowed,Fullscreen Windowed
 WindowMode_Windowed,Windowed
-SBW_NoAccount,Your scores were saved locally but were not uploaded to the database. Create an account in the main menu to see your scores.
-SBW_DidNotSaveScores,Your scores weren't saved because you didn't select a name for your custom game mode or your score was 0.
-SBW_SavedScoresButNotLoggedIn,Your scores were saved to the database but there was a problem loading your profile in the web browser. Go to the main menu to sign in again.
-SBW_SavedScoresLocallyOnly,Your scores were saved locally but there was a problem posting your scores to the database. Your scores will be uploaded to the database the next time there is a successful connection to it. Go to the main menu to sign in again.
-SM_TargetColor_Start,Start Target Color
-SM_TargetColor_Peak,Peak Target Color
-SM_TargetColor_End,End Target Color
-SM_TargetColor_Outline,Target Outline Color
-SM_TargetColor_UseSeparateOutline,Use Separate Outline Color
-SM_TargetColor_BeatGridInactive,Inactive BeatGrid Target Color
-SM_Saved_Game,Game Settings saved
-SM_Saved_VideoAndSound,Video and Sound Settings Saved
-SM_Saved_AudioAnalyzer,Audio Analyzer Settings Saved
-SM_Saved_Sensitivity,Sensitivity Settings Saved
-SM_Saved_CrossHair,Crosshair Settings Saved
-SM_Save_Game,Save Game Settings
-SM_Save_VideoAndSound,Save Video and Sound Settings
-SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
-SM_Save_Sensitivity,Save Sensitivity Settings
-SM_Save_CrossHair,Save Crosshair Settings
-GameTitle,BeatShot
-Interact_MoveUp,Hold E to move platform up
-Interact_MoveDown,Hold Shift+E to move platform down

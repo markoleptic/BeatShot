@@ -14,4 +14,3 @@ void UTooltipImage::OnTooltipImageHoveredCallback()
 {
 	OnTooltipImageHovered.Broadcast(this, TooltipText);
 }
-

@@ -51,16 +51,18 @@ protected:
 	UVerticalBox* SettingsMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* FAQ;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
+
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UGameModesWidget* GameModesWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
@@ -89,7 +91,7 @@ protected:
 	UButton* GitHubIssueButton;
 
 #pragma	endregion
-	
+
 private:
 	/** Calls SlideButton() from SlideRightButton and sets the associated widget to active in the MainMenuSwitcher */
 	UFUNCTION()
@@ -121,5 +123,3 @@ private:
 
 	const FString GitHubURL = "https://github.com/markoleptic/BeatShot/issues/new/choose";
 };
-
-

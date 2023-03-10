@@ -95,7 +95,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	ULoginWidget* LoginWidget;
-	
+
 private:
 	/** Calls HandleLoginUser function in LoginWidget */
 	UFUNCTION()
@@ -117,7 +117,7 @@ private:
 
 	/** Delegate passed to OnLoginResponse(), which calls OnHttpLoginResponse */
 	FOnLoginResponse OnLoginResponse;
-	
+
 	/** Delegate passed to RequestAccessToken(), which calls OnAccessTokenResponse */
 	FOnAccessTokenResponse OnAccessTokenResponseDelegate;
 

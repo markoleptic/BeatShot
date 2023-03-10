@@ -33,7 +33,7 @@ public:
 	/** Activates the Niagara System, sets the BeamWidth parameter, and plays the ColorTimeline */
 	UFUNCTION()
 	void UpdateNiagaraBeam(const float Alpha);
-	
+
 	void SetTrackOnUpdate(const bool bShouldTrackOnUpdate) { bTrackOnUpdate = bShouldTrackOnUpdate; }
 
 	/** Main function that calls all other SetColor functions */
@@ -51,7 +51,7 @@ private:
 	/** Deactivates the Niagara System and stops the ColorTimeline */
 	UFUNCTION()
 	void OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent);
-	
+
 	/** Traces a line forward from SpotlightHead and if a blocking hit is found, sets the BeamEndLight to the correct
 	 *  location and rotation. Disables the BeamEndLight if not blocking hit is found */
 	UFUNCTION()
@@ -74,7 +74,7 @@ protected:
 	/** Niagara component that Niagara System SimpleBeam resides in */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UNiagaraComponent* SimpleBeamComponent;
-	
+
 	/** The actual spotlight light that appears at the end of the SimpleBeam */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpotLightComponent* Spotlight;
@@ -82,10 +82,10 @@ protected:
 	/** Indirect lighting applied to the area at the end of the SimpleBeam */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpotLightComponent* BeamEndLight;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USceneComponent* LightPositionComponent;
-	
+
 	/** Niagara system for the visible beam of light */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Niagara")
 	UNiagaraSystem* SimpleBeam;
@@ -112,10 +112,10 @@ protected:
 private:
 	/** The index of this instance inside an array of this type */
 	int32 Index;
-	
+
 	/** The timeline to link to the LightColorCurve */
 	FTimeline ColorTimeline;
-	
+
 	/** The timeline to link to the LightMovementCurve */
 	FTimeline LightPositionTimeline;
 
@@ -144,7 +144,7 @@ private:
 	const FVector DefaultSpotlightHeadOffset = {0, 0, -41};
 	const FRotator DefaultSpotlightHeadRotation = {-90, 0, 0};
 	const FVector DefaultSpotlightOffset = {22, 0, 0};
-	
+
 	/** The maximum width of the beam, used to scale the alpha value */
 	const float MaxBeamWidth = 50;
 

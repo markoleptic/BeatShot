@@ -14,4 +14,4 @@ void FBeatShot::ShutdownModule()
 	FDefaultGameModuleImpl::ShutdownModule();
 }
 
-IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, BeatShot, "BeatShot" );
+IMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, BeatShot, "BeatShot");

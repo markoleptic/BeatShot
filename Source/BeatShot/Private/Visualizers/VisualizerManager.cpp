@@ -26,19 +26,11 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings PlayerSetti
 	CurrentCubeSpectrumValues.Init(0, AASettings.NumBandChannels);
 
 	Visualizers.Empty();
-	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
-		                      &VisualizerLocation,
-		                      &VisualizerRotation,
-		                      SpawnParameters)));
-	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass,
-		                      &Visualizer2Location,
-		                      &VisualizerRotation,
-		                      SpawnParameters)));
+	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &VisualizerLocation, &VisualizerRotation, SpawnParameters)));
+	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &Visualizer2Location, &VisualizerRotation, SpawnParameters)));
 	if (PlayerSettings.Game.bShowLightVisualizers)
 	{
-		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(
-			                      GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
-			                                             SpawnParameters)));
+		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation, SpawnParameters)));
 	}
 
 	for (AVisualizerBase* Visualizer : Visualizers)
@@ -53,8 +45,7 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 	{
 		return UKismetMathLibrary::MapRangeClamped(CurrentSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 	}
-	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0,
-	                                           MaxSpectrumValues[Index], 0, 1);
+	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 }
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
@@ -137,14 +128,12 @@ void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings PlayerSett
 		Visualizers.Shrink();
 		return;
 	}
-	
+
 	if (Visualizers.Num() > 2)
 	{
 		return;
 	}
-	const int32 NewIndex = Visualizers.Emplace(Cast<ABeamVisualizer>(
-		GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation,
-		                       SpawnParameters)));
+	const int32 NewIndex = Visualizers.Emplace(Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation, SpawnParameters)));
 	Visualizers[NewIndex]->InitializeVisualizer();
 }
 

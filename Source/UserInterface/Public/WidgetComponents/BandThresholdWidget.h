@@ -7,8 +7,7 @@
 #include "BandThresholdWidget.generated.h"
 
 
-DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index,
-                             const float NewValue);
+DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
 class UBorder;
 class USlider;
 class UEditableTextBox;
@@ -18,7 +17,7 @@ UCLASS()
 class USERINTERFACE_API UBandThresholdWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 	virtual void NativeConstruct() override;
 
 public:
@@ -30,7 +29,7 @@ public:
 	void SetDefaultValue(const float Value, const int32 ChannelIndex);
 
 	int32 Index;
-	
+
 protected:
 	UFUNCTION()
 	void OnValueCommitted(const FText& NewValue, ETextCommit::Type CommitType);

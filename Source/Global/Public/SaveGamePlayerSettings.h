@@ -221,7 +221,7 @@ struct FPlayerSettings
 
 	UPROPERTY(BlueprintReadOnly)
 	FPlayerSettings_User User;
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	FPlayerSettings_Game Game;
 
@@ -230,7 +230,7 @@ struct FPlayerSettings
 
 	UPROPERTY(BlueprintReadOnly)
 	FPlayerSettings_CrossHair CrossHair;
-	
+
 	// Sensitivity of DefaultCharacter
 	UPROPERTY(BlueprintReadOnly)
 	float Sensitivity;
@@ -298,18 +298,10 @@ struct FAASettingsStruct
 	FAASettingsStruct()
 	{
 		BandLimits = {
-			FVector2d(0,44),
-			FVector2d(45,88),
-			FVector2d(89,177),
-			FVector2d(178,355),
-			FVector2d(356,710),
-			FVector2d(711,1420),
-			FVector2d(1421,2840),
-			FVector2d(2841,5680),
-			FVector2d(5681,11360),
-			FVector2d(11361,22720),
+			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
+			FVector2d(5681, 11360), FVector2d(11361, 22720),
 		};
-		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
+		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
 		NumBandChannels = 10;
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
@@ -321,18 +313,10 @@ struct FAASettingsStruct
 	void ResetStruct()
 	{
 		BandLimits = {
-			FVector2d(0,44),
-			FVector2d(45,88),
-			FVector2d(89,177),
-			FVector2d(178,355),
-			FVector2d(356,710),
-			FVector2d(711,1420),
-			FVector2d(1421,2840),
-			FVector2d(2841,5680),
-			FVector2d(5681,11360),
-			FVector2d(11361,22720),
+			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
+			FVector2d(5681, 11360), FVector2d(11361, 22720),
 		};
-		BandLimitsThreshold = {2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1,2.1};
+		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
 		NumBandChannels = 10;
 		TimeWindow = 0.02f;
 		HistorySize = 30.f;
@@ -361,7 +345,6 @@ class GLOBAL_API USaveGamePlayerSettings : public USaveGame
 	GENERATED_BODY()
 
 public:
-	
 	UPROPERTY(BlueprintReadOnly)
 	FPlayerSettings PlayerSettings;
 

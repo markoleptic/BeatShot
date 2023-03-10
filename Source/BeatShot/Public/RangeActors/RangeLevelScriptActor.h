@@ -22,11 +22,9 @@ class UMaterialInstanceDynamic;
 UCLASS()
 class BEATSHOT_API ARangeLevelScriptActor : public ALevelScriptActor, public ISaveLoadInterface
 {
-	
 	GENERATED_BODY()
 
 protected:
-	
 	ARangeLevelScriptActor();
 
 	virtual void BeginPlay() override;
@@ -56,7 +54,7 @@ protected:
 	/** Soft Reference to Skylight in Range level */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<ASkyLight> Skylight_Soft;
-	
+
 	/** Hard Reference to SkySphere in Range level */
 	UPROPERTY()
 	AActor* SkySphere;
@@ -64,7 +62,7 @@ protected:
 	/** Hard Reference to Moon in Range level */
 	UPROPERTY()
 	AMoon* Moon;
-	
+
 	/** Reference to left roof mesh to move */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	AStaticMeshActor* LeftWindowCover;
@@ -72,7 +70,7 @@ protected:
 	/** Reference to right roof mesh to move */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	AStaticMeshActor* RightWindowCover;
-	
+
 	/** Reference to SkySphere dynamic material instance */
 	UPROPERTY()
 	UMaterialInstanceDynamic* SkySphereMaterial;
@@ -140,7 +138,7 @@ protected:
 	/** Callback function to respond to NightMode change from WallMenu */
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
-	
+
 	FVector InitialLeftWindowCoverLoc;
 
 	FVector InitialRightWindowCoverLoc;
@@ -163,5 +161,3 @@ protected:
 
 	float LastLerpRotation;
 };
-
-

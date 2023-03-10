@@ -16,4 +16,3 @@ void UVideoSettingButton::OnButtonClickedCallback()
 {
 	OnButtonClicked.Broadcast(this);
 }
-

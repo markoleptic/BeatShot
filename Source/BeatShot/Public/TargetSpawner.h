@@ -38,7 +38,7 @@ protected:
 
 	UFUNCTION(CallInEditor)
 	void ShowDebug_SpawnBox();
-	
+
 	UFUNCTION(CallInEditor)
 	void HideDebug_SpawnBox();
 
@@ -64,10 +64,10 @@ public:
 private:
 	/** Create BeatGrid Targets */
 	void InitBeatGrid();
-	
+
 	/** Spawn a MultiBeat on beat */
 	void SpawnMultiBeatTarget();
-	
+
 	/** Spawn a SingleBeat on beat */
 	void SpawnSingleBeatTarget();
 
@@ -82,11 +82,11 @@ private:
 	*   based on consecutive targets hit */
 	UFUNCTION()
 	void OnTargetTimeout(bool DidExpire, float TimeAlive, ASphereTarget* DestroyedTarget);
-	
+
 	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
 	UFUNCTION()
 	void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
-	
+
 	/** Calls functions to get the next target's location and scale */
 	void FindNextTargetProperties();
 
@@ -114,7 +114,7 @@ private:
 
 	/** Removes the DestroyedTarget from ActiveTargets */
 	void RemoveFromActiveTargets(ASphereTarget* SpawnTarget);
-	
+
 	/** Returns an array of valid spawn points */
 	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
 
@@ -135,7 +135,7 @@ private:
 
 	/** Returns SpawnBox's origin, as it is in the game */
 	FVector GetBoxOrigin_Unscaled() const;
-	
+
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
 	void SetBoxExtents_Dynamic() const;
 
@@ -167,7 +167,7 @@ private:
 
 	/** Whether or not the last target spawned in center of spawn area, used for SingleBeat */
 	bool LastTargetSpawnedCenter = false;
-	
+
 	/** Changed by GameModeActorBase */
 	bool ShouldSpawn = false;
 
@@ -179,10 +179,10 @@ private:
 
 	/** Whether or not to show Debug components showing the SpawnMemory */
 	bool bShowDebug_SpawnMemory = false;
-	
+
 	/** Location to spawn the next/current target */
 	FVector SpawnLocation;
-	
+
 	/** Consecutively destroyed targets */
 	int32 ConsecutiveTargetsHit;
 
@@ -192,7 +192,7 @@ private:
 	/** An array of active SphereTargets that have not been destroyed, used to move targets forward */
 	UPROPERTY()
 	TArray<ASphereTarget*> ActiveTargets;
-	
+
 	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
 	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
 	 *  OnTargetTimeout */
@@ -204,10 +204,10 @@ private:
 
 	/** The scale to apply to the next/current target */
 	float TargetScale;
-	
+
 	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
 	float SpawnMemoryScaleY;
-	
+
 	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
 	float SpawnMemoryScaleZ;
 
@@ -237,7 +237,7 @@ private:
 #pragma endregion
 
 #pragma region BeatTrack Variables
-	
+
 	/** Only one tracking target spawns, so we store a ref to it to manipulate its behavior */
 	UPROPERTY()
 	ASphereTarget* BeatTrackTarget;
@@ -279,6 +279,4 @@ private:
 	bool InitialBeatGridTargetActivated;
 
 #pragma endregion
-	
 };
-

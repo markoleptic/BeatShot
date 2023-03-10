@@ -10,7 +10,6 @@ class BEATSHOT_API UBSCheatManager : public UCheatManager
 	GENERATED_BODY()
 
 protected:
-
 	virtual void InitCheatManager() override;
 
 	UFUNCTION(exec)

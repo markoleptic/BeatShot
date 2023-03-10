@@ -49,14 +49,10 @@ void UCrossHairWidget::SetLineLength(const float NewLengthValue)
 
 void UCrossHairWidget::SetOutlineWidth(const int32 NewWidthValue)
 {
-	Cast<UOverlaySlot>(TopScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue,
-	                                                          NewWidthValue));
-	Cast<UOverlaySlot>(BottomScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue,
-	                                                             NewWidthValue));
-	Cast<UOverlaySlot>(LeftScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue,
-	                                                           NewWidthValue));
-	Cast<UOverlaySlot>(RightScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue,
-	                                                            NewWidthValue));
+	Cast<UOverlaySlot>(TopScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(BottomScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(LeftScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(RightScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
 }
 
 void UCrossHairWidget::SetOutlineOpacity(const float NewOpacityValue)

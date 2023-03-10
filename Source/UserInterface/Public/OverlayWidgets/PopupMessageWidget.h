@@ -16,12 +16,10 @@ class USERINTERFACE_API UPopupMessageWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
 public:
-	
 	UFUNCTION(BlueprintCallable)
 	void InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, FText Button2TextInput = FText::GetEmpty()) const;
 	UFUNCTION()
@@ -34,7 +32,6 @@ public:
 	UButton* Button2;
 
 protected:
-	
 	FWidgetAnimationDynamicEvent FadeOutPopupMessageDelegate;
 	UFUNCTION()
 	void OnFadeOutPopupMessageFinish();
@@ -51,5 +48,3 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInMessage;
 };
-
-

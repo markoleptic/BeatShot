@@ -20,17 +20,18 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 	// NumberFormattingOptions.SetRoundingMode(ER)
 	BandChannelMin->SetText(FText::AsNumber(Values.X));
 	BandChannelMax->SetText(FText::AsNumber(Values.Y));
-	const TArray ChannelNumber = { FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"),
-		FText::FromString(FString::FromInt(ChannelIndex + 1)),
-		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelUnit") };
+	const TArray ChannelNumber = {
+		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"), FText::FromString(FString::FromInt(ChannelIndex + 1)),
+		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelUnit")
+	};
 	ChannelText->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
 
 	FSlateBrush LightBrush = FSlateBrush();
-	LightBrush.TintColor = FLinearColor(0,0,0,0.1);
+	LightBrush.TintColor = FLinearColor(0, 0, 0, 0.1);
 	FSlateBrush DarkBrush = FSlateBrush();
-	DarkBrush.TintColor = FLinearColor(0,0,0,0.2);
-	
+	DarkBrush.TintColor = FLinearColor(0, 0, 0, 0.2);
+
 	if (ChannelIndex == 0 || ChannelIndex % 2 == 0)
 	{
 		ChannelTextBorder->SetBrush(DarkBrush);
@@ -47,7 +48,7 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 
 void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), "," ,""));
+	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
 	if (NewFloatValue < AbsoluteMin)
 	{
 		BandChannelMin->SetText(FText::AsNumber(0));
@@ -66,7 +67,7 @@ void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit:
 
 void UBandChannelWidget::OnMaxValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), "," ,""));
+	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
 	if (NewFloatValue < AbsoluteMin)
 	{
 		BandChannelMax->SetText(FText::AsNumber(0));

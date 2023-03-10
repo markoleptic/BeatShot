@@ -33,12 +33,12 @@ public:
 
 	UPROPERTY()
 	FOnAASettingsChange OnAASettingsChanged;
-	
+
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	UFUNCTION()
 	void OnPlayerSettingsSaved();
 
@@ -48,10 +48,14 @@ protected:
 	FGameModeTransitionState RestartState;
 
 	UFUNCTION()
-	void OnRestartButtonClicked_AudioAnalyzer() { if (!OnRestartButtonClicked.ExecuteIfBound()) {
-		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
-	} }
-	
+	void OnRestartButtonClicked_AudioAnalyzer()
+	{
+		if (!OnRestartButtonClicked.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+		}
+	}
+
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
 	TMap<USlideRightButton*, UVerticalBox*> MenuWidgets;
@@ -60,57 +64,61 @@ protected:
 
 	/** Containers for each widget in SettingsMenu */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SM_Game;
+	UVerticalBox* Game;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SM_VideoAndSound;
+	UVerticalBox* VideoAndSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SM_AudioAnalyzer;
+	UVerticalBox* AudioAnalyzer;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SM_Sensitivity;
+	UVerticalBox* Sensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SM_CrossHair;
-	
+	UVerticalBox* CrossHair;
+
 	/* --------------- */
 	/* SubMenu Widgets */
 	/* --------------- */
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UGameSettingsWidget* SM_Game_Widget;
+	UGameSettingsWidget* Game_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVideoAndSoundSettingsWidget* SM_VideoAndSound_Widget;
+	UVideoAndSoundSettingsWidget* VideoAndSound_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USensitivitySettingsWidget* SM_Sensitivity_Widget;
+	USensitivitySettingsWidget* Sensitivity_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCrossHairSettingsWidget* SM_CrossHair_Widget;
+	UCrossHairSettingsWidget* CrossHair_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UAASettingsWidget* SM_AudioAnalyzer_Widget;
-	
+	UAASettingsWidget* AudioAnalyzer_Widget;
+
 	/* ------------------ */
 	/* Navigation Buttons */
 	/* ------------------ */
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SM_Game_Button;
+	USlideRightButton* Game_Button;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SM_VideoAndSound_Button;
+	USlideRightButton* VideoAndSound_Button;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SM_AudioAnalyzer_Button;
+	USlideRightButton* AudioAnalyzer_Button;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SM_Sensitivity_Button;
+	USlideRightButton* Sensitivity_Button;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SM_CrossHair_Button;
+	USlideRightButton* CrossHair_Button;
 
 	/** Function to Play the Slide Animation for Navigation Buttons */
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	UFUNCTION()
-	void OnSM_Game_ButtonClicked() { SlideButtons(SM_Game_Button); }
+	void On_Game_ButtonClicked() { SlideButtons(Game_Button); }
+
 	UFUNCTION()
-	void OnSM_VideoAndSound_ButtonClicked() { SlideButtons(SM_VideoAndSound_Button); }
+	void On_VideoAndSound_ButtonClicked() { SlideButtons(VideoAndSound_Button); }
+
 	UFUNCTION()
-	void OnSM_AudioAnalyzer_ButtonClicked() { SlideButtons(SM_AudioAnalyzer_Button); }
+	void On_AudioAnalyzer_ButtonClicked() { SlideButtons(AudioAnalyzer_Button); }
+
 	UFUNCTION()
-	void OnSM_Sensitivity_ButtonClicked() { SlideButtons(SM_Sensitivity_Button); }
+	void On_Sensitivity_ButtonClicked() { SlideButtons(Sensitivity_Button); }
+
 	UFUNCTION()
-	void OnSM_CrossHair_ButtonClicked() { SlideButtons(SM_CrossHair_Button); }
+	void On_CrossHair_ButtonClicked() { SlideButtons(CrossHair_Button); }
 };

@@ -13,7 +13,7 @@
 void USensitivitySettingsWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	NewSensitivityValue->OnTextCommitted.AddDynamic(this, &USensitivitySettingsWidget::OnNewSensitivityValue);
 	NewSensitivityCsgoValue->OnTextCommitted.AddDynamic(this, &USensitivitySettingsWidget::OnNewSensitivityCsgoValue);
 	SensSlider->OnValueChanged.AddDynamic(this, &USensitivitySettingsWidget::OnSensitivitySliderChanged);

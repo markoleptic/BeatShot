@@ -79,11 +79,11 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 	default:
 		{
 			SetOverlayText("SBW_SavedScoresLocallyOnly");
-			
+
 			return;
 		}
 	}
-	
+
 	int64 MinTimeDifference = FDateTime::MinValue().ToUnixTimestamp();
 	FPlayerScore MinDateScore = FPlayerScore();
 	/** Could probably just use the last value in PlayerScoreArray, but just to be sure: */
@@ -109,8 +109,7 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 
 void UScoreBrowserWidget::SetOverlayText(const FString& Key)
 {
-	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-	                                            Key));
+	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
 	FadeInText();
 }
 

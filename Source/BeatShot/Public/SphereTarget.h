@@ -23,18 +23,17 @@ UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-	
+
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
 
 protected:
-	
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
 	/** Ticks the timelines */
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	/** Called when a non BeatGrid target lifespan has expired */
 	virtual void LifeSpanExpired() override;
 
@@ -67,12 +66,11 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* PeakToEndCurve;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* FadeAndReappearCurve;
 
 public:
-	
 	/** Called in TargetSpawner to activate a BeatGrid target */
 	void StartBeatGridTimer(float Lifespan);
 
@@ -111,7 +109,6 @@ public:
 	bool IsBeatTrackTarget() const { return bIsBeatTrackTarget; }
 
 private:
-
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
 	void PlayStartToPeakTimeline();
@@ -148,18 +145,17 @@ private:
 
 	UPROPERTY()
 	FPlayerSettings_Game PlayerSettings;
-	
+
 	FTimeline StartToPeakTimeline;
 	FTimeline PeakToEndTimeline;
 	FTimeline FadeAndReappearTimeline;
-	
+
 	/** Set the max health of the target */
 	void SetMaxHealth(float NewMaxHealth) const;
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
-	void PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,
-	                         const FLinearColor ColorWhenDestroyed) const;
-	
+	void PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const;
+
 	bool bIsBeatTrackTarget = false;
 
 	/** Base radius for sphere target. */
@@ -172,4 +168,3 @@ private:
 	 *  regardless of the scale of the target */
 	const float BaseToOutlineRatio = 0.9;
 };
-

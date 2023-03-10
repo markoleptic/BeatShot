@@ -18,7 +18,7 @@ void UPostGameMenuWidget::NativeConstruct()
 	MenuWidgets.Add(GameModesButton, GameModes);
 	MenuWidgets.Add(SettingsButton, Settings);
 	MenuWidgets.Add(FAQButton, FAQ);
-	
+
 	ScoresButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnScoresButtonClicked);
 	PlayAgainButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::Restart);
 	GameModesButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnGameModesButtonClicked);

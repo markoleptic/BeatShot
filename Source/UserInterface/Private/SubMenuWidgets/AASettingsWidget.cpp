@@ -27,19 +27,19 @@ void UAASettingsWidget::NativeConstruct()
 	NumBandChannels->OnSelectionChanged.AddDynamic(this, &UAASettingsWidget::OnNumBandChannelsSelectionChanged);
 
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
-	
+
 	AASettings = ISaveLoadInterface::LoadAASettings();
 	NewAASettings = AASettings;
 	const FAASettingsStruct DefaultAASettings = FAASettingsStruct();
-	
+
 	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
-		NumBandChannels->AddOption(FString::FromInt(i+1));
+		NumBandChannels->AddOption(FString::FromInt(i + 1));
 	}
 
 	UBandChannelWidget* PreviousBandChannel = nullptr;
 	UBandThresholdWidget* PreviousBandThreshold = nullptr;
-	
+
 	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
 		UBandChannelWidget* CurrentBandChannel = CreateWidget<UBandChannelWidget>(this, BandChannelWidgetClass);
@@ -48,7 +48,7 @@ void UAASettingsWidget::NativeConstruct()
 		BandChannelBounds->AddChild(Cast<UBandChannelWidget>(CurrentBandChannel));
 		CurrentBandThreshold->OnThresholdValueCommitted.BindUFunction(this, "OnBandThresholdChanged");
 		BandThresholdBounds->AddChild(Cast<UBandThresholdWidget>(CurrentBandThreshold));
-		
+
 		if (i == 0)
 		{
 			BandChannelWidget = CurrentBandChannel;
@@ -67,8 +67,7 @@ void UAASettingsWidget::NativeConstruct()
 	PopulateAASettings();
 }
 
-void UAASettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue,
-                                                const bool bIsMinValue)
+void UAASettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue)
 {
 	if (bIsMinValue)
 	{
@@ -80,8 +79,7 @@ void UAASettingsWidget::OnChannelValueCommitted(const UBandChannelWidget* BandCh
 	}
 }
 
-void UAASettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index,
-	const float NewValue)
+void UAASettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue)
 {
 	NewAASettings.BandLimitsThreshold[Index] = NewValue;
 }
@@ -111,7 +109,7 @@ void UAASettingsWidget::PopulateAASettings()
 	NumBandChannels->SetSelectedIndex(NewAASettings.NumBandChannels - 1);
 	BandChannelWidget->SetDefaultValues(NewAASettings.BandLimits[0], 0);
 	BandThresholdWidget->SetDefaultValue(NewAASettings.BandLimitsThreshold[0], 0);
-	
+
 	UBandChannelWidget* PreviousBandChannel = nullptr;
 	UBandThresholdWidget* PreviousBandThreshold = nullptr;
 	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
@@ -122,7 +120,7 @@ void UAASettingsWidget::PopulateAASettings()
 			PreviousBandChannel = BandChannelWidget;
 			PreviousBandThreshold = BandThresholdWidget;
 		}
-		
+
 		if (NewAASettings.NumBandChannels > i)
 		{
 			PreviousBandChannel->SetDefaultValues(NewAASettings.BandLimits[i], i);
@@ -139,7 +137,7 @@ void UAASettingsWidget::PopulateAASettings()
 		}
 		else
 		{
-			PreviousBandChannel->SetDefaultValues(FVector2d(0,0), i);
+			PreviousBandChannel->SetDefaultValues(FVector2d(0, 0), i);
 			PreviousBandThreshold->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[0], i);
 			PreviousBandChannel->SetVisibility(ESlateVisibility::Collapsed);
 			PreviousBandThreshold->SetVisibility(ESlateVisibility::Collapsed);
@@ -147,7 +145,7 @@ void UAASettingsWidget::PopulateAASettings()
 		PreviousBandChannel = PreviousBandChannel->Next;
 		PreviousBandThreshold = PreviousBandThreshold->Next;
 	}
-	
+
 	TimeWindowSlider->SetValue(NewAASettings.TimeWindow);
 	TimeWindowValue->SetText(FText::AsNumber(NewAASettings.TimeWindow, &FNumberFormattingOptions::DefaultNoGrouping()));
 }
@@ -179,7 +177,7 @@ void UAASettingsWidget::ResetAASettings()
 		}
 		else
 		{
-			CurrentBandChannel->Next->SetDefaultValues(FVector2d(0,0), i);
+			CurrentBandChannel->Next->SetDefaultValues(FVector2d(0, 0), i);
 			CurrentBandThreshold->Next->SetDefaultValue(DefaultAASettings.BandLimitsThreshold[0], i);
 		}
 		CurrentBandChannel = CurrentBandChannel->Next;
@@ -190,15 +188,16 @@ void UAASettingsWidget::ResetAASettings()
 
 void UAASettingsWidget::SortAndCheckOverlap()
 {
-	NewAASettings.BandLimits.RemoveAll([this] (const FVector2d& BandLimit)
+	NewAASettings.BandLimits.RemoveAll([this](const FVector2d& BandLimit)
 	{
-		if (BandLimit == FVector2d(0,0))
+		if (BandLimit == FVector2d(0, 0))
 		{
 			return true;
 		}
 		return false;
 	});
-	NewAASettings.BandLimits.Sort([](const FVector2d& A, const FVector2d& B) {
+	NewAASettings.BandLimits.Sort([](const FVector2d& A, const FVector2d& B)
+	{
 		if (A.X < B.X)
 		{
 			return true;
@@ -242,8 +241,8 @@ void UAASettingsWidget::ShowBandLimitErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorTitle"),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandLimitThresholdError"),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandLimitThresholdError"),
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
 	PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UAASettingsWidget::HideSongPathErrorMessage);
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();

@@ -29,28 +29,28 @@ void UColorSelectWidget::NativeConstruct()
 void UColorSelectWidget::InitializeColor(const FLinearColor& NewColor)
 {
 	Color = NewColor;
-	
+
 	ColorAValue->SetText(FText::AsNumber(roundf(Color.A * 100)));
 	ColorRValue->SetText(FText::AsNumber(roundf(Color.R * 255)));
 	ColorGValue->SetText(FText::AsNumber(roundf(Color.G * 255)));
 	ColorBValue->SetText(FText::AsNumber(roundf(Color.B * 255)));
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
-	
+
 	ColorASlider->SetValue(roundf(Color.A * 100));
 	ColorRSlider->SetValue(roundf(Color.R * 255));
 	ColorGSlider->SetValue(roundf(Color.G * 255));
 	ColorBSlider->SetValue(roundf(Color.B * 255));
-	
+
 	ColorPreview->SetColorAndOpacity(Color);
 }
 
 void UColorSelectWidget::SetBorderColors(const bool bStartLeftLight, const bool bShowAlpha)
 {
 	FSlateBrush LightBrush = FSlateBrush();
-	LightBrush.TintColor = FLinearColor(0,0,0,0.1);
+	LightBrush.TintColor = FLinearColor(0, 0, 0, 0.1);
 	FSlateBrush DarkBrush = FSlateBrush();
-	DarkBrush.TintColor = FLinearColor(0,0,0,0.2);
-	
+	DarkBrush.TintColor = FLinearColor(0, 0, 0, 0.2);
+
 	if (bStartLeftLight)
 	{
 		LeftBorder->SetBrush(LightBrush);
@@ -213,8 +213,7 @@ void UColorSelectWidget::OnColorBSliderChange(const float NewValue)
 	}
 }
 
-float UColorSelectWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-                                                   USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+float UColorSelectWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
@@ -224,8 +223,7 @@ float UColorSelectWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UE
 	return SnappedValue;
 }
 
-float UColorSelectWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
-	const float GridSnapSize)
+float UColorSelectWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize)
 {
 	const float SnappedValue = FMath::GridSnap(NewValue, GridSnapSize);
 	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));

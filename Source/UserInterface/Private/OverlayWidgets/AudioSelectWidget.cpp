@@ -37,10 +37,9 @@ void UAudioSelectWidget::NativeConstruct()
 
 	Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
 
-	PlaybackAudioQMark->TooltipText = FText::FromStringTable(
-		"/Game/StringTables/ST_Tooltips.ST_Tooltips", "PlaybackAudio");
+	PlaybackAudioQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "PlaybackAudio");
 	PlaybackAudioQMark->OnTooltipImageHovered.AddDynamic(this, &UAudioSelectWidget::OnTooltipImageHovered);
-	
+
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
 	TArray<FString> OutAudioDeviceList;
 	TArray<FString> InAudioDeviceList;
@@ -124,7 +123,7 @@ void UAudioSelectWidget::OnStartButtonClicked()
 		PlayerSettings.LastSelectedOutputAudioDevice = OutAudioDevices->GetSelectedOption();
 	}
 	SaveAASettings(PlayerSettings);
-	if(!OnStartButtonClickedDelegate.ExecuteIfBound(AudioSelectStruct))
+	if (!OnStartButtonClickedDelegate.ExecuteIfBound(AudioSelectStruct))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnStartButtonClickedDelegate not bound."));
 	}
@@ -147,7 +146,7 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 		return;
 	}
 	AudioSelectStruct.SongPath = FileNames[0];
-	
+
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
 	if (!Manager->InitPlayerAudio(AudioSelectStruct.SongPath))
 	{
@@ -157,8 +156,7 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 	}
 	/* set Song length and song title in GameModeActorStruct if using song file */
 	FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
-	Manager->GetMetadata(Filename, Extension, MetaType, Title,
-						   Artist, Album, Year, Genre);
+	Manager->GetMetadata(Filename, Extension, MetaType, Title, Artist, Album, Year, Genre);
 	if (Title.IsEmpty())
 	{
 		if (SongTitleComboBox->FindOptionIndex(Filename) == -1)
@@ -212,8 +210,7 @@ void UAudioSelectWidget::OnSecondsValueCommitted(const FText& NewSeconds, ETextC
 	AudioSelectStruct.SongLength = FMath::Clamp(FCString::Atoi(*Minutes->GetText().ToString()), 0, 99) * 60 + ClampedValue;
 }
 
-void UAudioSelectWidget::OnInAudioDeviceSelectionChanged(const FString SelectedInAudioDevice,
-	const ESelectInfo::Type SelectionType)
+void UAudioSelectWidget::OnInAudioDeviceSelectionChanged(const FString SelectedInAudioDevice, const ESelectInfo::Type SelectionType)
 {
 	UE_LOG(LogTemp, Display, TEXT("Selection changed"));
 	AudioSelectStruct.InAudioDevice = SelectedInAudioDevice;
@@ -226,8 +223,7 @@ void UAudioSelectWidget::OnInAudioDeviceSelectionChanged(const FString SelectedI
 	}
 }
 
-void UAudioSelectWidget::OnOutAudioDeviceSelectionChanged(const FString SelectedOutAudioDevice,
-	const ESelectInfo::Type SelectionType)
+void UAudioSelectWidget::OnOutAudioDeviceSelectionChanged(const FString SelectedOutAudioDevice, const ESelectInfo::Type SelectionType)
 {
 	AudioSelectStruct.OutAudioDevice = SelectedOutAudioDevice;
 	if (OutAudioDevices->GetSelectedIndex() != -1 && InAudioDevices->GetSelectedIndex() != -1)
@@ -239,8 +235,7 @@ void UAudioSelectWidget::OnOutAudioDeviceSelectionChanged(const FString Selected
 	}
 }
 
-void UAudioSelectWidget::OnSongTitleSelectionChanged(const FString SelectedSongTitle,
-	const ESelectInfo::Type SelectionType)
+void UAudioSelectWidget::OnSongTitleSelectionChanged(const FString SelectedSongTitle, const ESelectInfo::Type SelectionType)
 {
 	AudioSelectStruct.SongTitle = SelectedSongTitle;
 }
@@ -264,8 +259,7 @@ void UAudioSelectWidget::PopulateSongOptionComboBox()
 void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutFileNames)
 {
 	/** Cheap fix to make sure open file dialog is always on top of the game */
-	if (UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings(); GameUserSettings->
-		GetFullscreenMode() == EWindowMode::Fullscreen)
+	if (UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings(); GameUserSettings->GetFullscreenMode() == EWindowMode::Fullscreen)
 	{
 		bWasInFullScreenMode = true;
 		GameUserSettings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
@@ -283,8 +277,8 @@ void UAudioSelectWidget::ShowSongPathErrorMessage()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(GetWorld(), PopupMessageClass);
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorTitle"),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorMessage"),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorMessage"),
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
 	PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UAudioSelectWidget::HideSongPathErrorMessage);
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();

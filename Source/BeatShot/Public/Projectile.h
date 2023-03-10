@@ -15,8 +15,8 @@ UCLASS()
 class BEATSHOT_API AProjectile : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AProjectile();
 
@@ -28,35 +28,28 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-
 	UFUNCTION()
-		void FireInDirection(const FVector& ShootDirection) const;
+	void FireInDirection(const FVector& ShootDirection) const;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
-		UProjectileMovementComponent* ProjectileMovement;
+	UProjectileMovementComponent* ProjectileMovement;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-		UStaticMeshComponent* ProjectileMesh;
+	UStaticMeshComponent* ProjectileMesh;
 
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-		UMaterialInterface* BulletDecalMaterial;
+	UMaterialInterface* BulletDecalMaterial;
 
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-		UMaterialInstanceDynamic* BulletDecalInstance;
+	UMaterialInstanceDynamic* BulletDecalInstance;
 
 private:
-
 	UFUNCTION()
-		void OnHit(UPrimitiveComponent* HitComponent,
-			AActor* OtherActor,
-			UPrimitiveComponent* OtherComponent,
-			FVector NormalImpulse,
-			const FHitResult& Hit);
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
-		float Damage = 1000.f;
+	float Damage = 1000.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
-		UClass* DamageTypeClass;
+	UClass* DamageTypeClass;
 };
-

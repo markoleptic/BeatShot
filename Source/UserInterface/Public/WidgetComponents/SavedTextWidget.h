@@ -15,7 +15,6 @@ class USERINTERFACE_API USavedTextWidget : public UUserWidget
 	GENERATED_BODY()
 
 protected:
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* SavedText;
 
@@ -23,9 +22,8 @@ protected:
 	UWidgetAnimation* FadeInFadeOut;
 
 public:
-	
 	UFUNCTION()
 	void PlayFadeInFadeOut() { PlayAnimationForward(FadeInFadeOut); }
 
-	void SetSavedText(const FText& Text) {SavedText->SetText(Text); }
+	void SetSavedText(const FText& Text) { SavedText->SetText(Text); }
 };

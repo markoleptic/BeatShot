@@ -31,18 +31,16 @@ class USERINTERFACE_API UAASettingsWidget : public UUserWidget, public ISaveLoad
 	GENERATED_BODY()
 
 public:
-
 	virtual void NativeConstruct() override;
-	
+
 	FOnRestartButtonClicked OnRestartButtonClicked;
-	
+
 	FOnSettingsSaved_AudioAnalyzer OnSettingsSaved_AudioAnalyzer;
-	
+
 	/** Do specific things if this instance of AASettings belongs to MainMenuWidget */
 	void InitMainMenuChild();
 
 protected:
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
 	UVerticalBox* BandChannelBounds;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
@@ -73,31 +71,31 @@ protected:
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
-	
+
 	UPROPERTY()
 	FAASettingsStruct AASettings;
 	UPROPERTY()
 	FAASettingsStruct NewAASettings;
-	
+
 	UFUNCTION()
 	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
 	UFUNCTION()
 	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
 	UFUNCTION()
 	void OnNumBandChannelsSelectionChanged(FString NewNum, ESelectInfo::Type SelectType);
-	
+
 	/** Update values in Settings Menu to match AASettings */
 	UFUNCTION()
 	void PopulateAASettings();
-	
+
 	/** Save AASettings to Save slot */
 	UFUNCTION()
 	void SaveAASettingsToSlot();
-	
+
 	/** Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save */
 	UFUNCTION()
 	void ResetAASettings();
-	
+
 	/** Sorts NewAASettings and checks for overlapping Band Channels. Calls ShowBandLimitErrorMessage() if it finds
 	 *  an overlap */
 	UFUNCTION()
@@ -109,8 +107,6 @@ protected:
 	/** Hides the error message */
 	UFUNCTION()
 	void HideSongPathErrorMessage();
-	
+
 	const float Hundredths = 0.01f;
 };
-
-

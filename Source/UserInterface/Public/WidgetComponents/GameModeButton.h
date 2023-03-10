@@ -16,7 +16,7 @@ UCLASS()
 class USERINTERFACE_API UGameModeButton : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 	virtual void NativeConstruct() override;
 
 public:
@@ -24,16 +24,16 @@ public:
 	void OnButtonClicked();
 
 	void SetDefaults(EGameModeDifficulty GameModeDifficulty, EGameModeActorName GameModeActorName, UGameModeButton* NextButton);
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UButton* Button;
-	
+
 	UPROPERTY()
 	EGameModeDifficulty Difficulty;
-	
+
 	UPROPERTY()
 	EGameModeActorName GameModeName;
-	
+
 	UPROPERTY()
 	UGameModeButton* Next;
 

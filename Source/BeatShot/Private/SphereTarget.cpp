@@ -19,15 +19,15 @@ ASphereTarget::ASphereTarget()
 	PrimaryActorTick.bCanEverTick = true;
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("Capsule Collider");
 	RootComponent = CapsuleComp;
-	
+
 	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
 	BaseMesh->SetupAttachment(CapsuleComp);
-	
+
 	OutlineMesh = CreateDefaultSubobject<UStaticMeshComponent>("Outline Mesh");
 	OutlineMesh->SetupAttachment(BaseMesh);
-	
+
 	HealthComp = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
-	
+
 	InitialLifeSpan = 1.5f;
 	Guid = FGuid::NewGuid();
 }
@@ -60,11 +60,11 @@ void ASphereTarget::BeginPlay()
 	{
 		SetOutlineColor(PlayerSettings.TargetOutlineColor);
 	}
-	
+
 	GameModeActorStruct = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
 	const float WhiteToPeakMultiplier = 1 / GameModeActorStruct.PlayerDelay;
 	const float PeakToFadeMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
-	
+
 	/* White to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
 	OnStartToPeak.BindUFunction(this, FName("StartToPeak"));
@@ -74,7 +74,7 @@ void ASphereTarget::BeginPlay()
 	FOnTimelineEvent OnWhiteToPeakFinished;
 	OnWhiteToPeakFinished.BindUFunction(this, FName("PlayPeakToEndTimeline"));
 	StartToPeakTimeline.SetTimelineFinishedFunc(OnWhiteToPeakFinished);
-	
+
 	/* Peak Color to Fade Color */
 	FOnTimelineFloat OnPeakToFade;
 	OnPeakToFade.BindUFunction(this, FName("PeakToEnd"));
@@ -244,9 +244,8 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale,
-	                    MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
-	
+	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+
 	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear*/
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
@@ -272,15 +271,11 @@ void ASphereTarget::ShowTargetOutline()
 	MID_TargetOutline->SetScalarParameterValue(TEXT("ShowOutline"), 1.f);
 }
 
-void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius,
-                                        const FLinearColor ColorWhenDestroyed) const
+void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const
 {
 	if (NS_Standard_Explosion)
 	{
-		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-			GetWorld(),
-			NS_Standard_Explosion,
-			ExplosionLocation);
+		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Standard_Explosion, ExplosionLocation);
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
 	}

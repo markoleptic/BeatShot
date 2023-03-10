@@ -16,8 +16,7 @@ class UTextBlock;
 class UButton;
 class UHorizontalBox;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool,
-                                             bIsPopup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool, bIsPopup);
 
 UCLASS()
 class USERINTERFACE_API ULoginWidget : public UUserWidget, public ISaveLoadInterface

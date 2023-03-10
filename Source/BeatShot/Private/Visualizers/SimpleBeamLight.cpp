@@ -22,7 +22,7 @@ ASimpleBeamLight::ASimpleBeamLight()
 	SpotlightLimb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightLimb"));
 	SpotlightLimb->SetupAttachment(SpotlightBase);
 	SpotlightLimb->SetRelativeLocation(DefaultSpotlightLimbOffset);
-	
+
 	SpotlightHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightHead"));
 	SpotlightHead->SetupAttachment(SpotlightLimb);
 	SpotlightHead->SetRelativeLocation(DefaultSpotlightHeadOffset);
@@ -34,7 +34,7 @@ ASimpleBeamLight::ASimpleBeamLight()
 
 	LightPositionComponent = CreateDefaultSubobject<USceneComponent>("LightPosition");
 	LightPositionComponent->SetupAttachment(SpotlightBase);
-	
+
 	BeamEndLight = CreateDefaultSubobject<USpotLightComponent>(TEXT("BeamEndLight"));
 	BeamEndLight->SetupAttachment(LightPositionComponent);
 	BeamEndLight->SetAutoActivate(false);
@@ -50,14 +50,14 @@ void ASimpleBeamLight::BeginPlay()
 	Super::BeginPlay();
 
 	LineTrace(SpotlightHead->GetForwardVector() * FVector(TraceDistance));
-	
+
 	EmissiveLightBulbMaterial = SpotlightHead->GetMaterial(1);
 	EmissiveLightBulb = UMaterialInstanceDynamic::Create(EmissiveLightBulbMaterial, this);
 	SpotlightHead->SetMaterial(1, EmissiveLightBulb);
-	
+
 	Spotlight->SetInnerConeAngle(InnerConeAngle);
 	Spotlight->SetOuterConeAngle(OuterConeAngle);
-	
+
 	ColorTimelineDelegate.BindUFunction(this, FName("SetLightIntensities"));
 	ColorTimeline.AddInterpLinearColor(LightColorCurve, ColorTimelineDelegate);
 	TimelineVectorDelegate.BindUFunction(this, FName("UpdateBeamEndLightPosition"));
@@ -155,8 +155,7 @@ void ASimpleBeamLight::LineTrace(const FVector EndLocation)
 {
 	const FVector StartLoc = SpotlightHead->GetComponentLocation();
 	//DrawDebugLine(GetWorld(), StartLoc, EndLocation, FColor::Red, false, 0.5f);
-	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLocation, ECC_Camera,
-	                                                         FCollisionQueryParams::DefaultQueryParam))
+	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartLoc, EndLocation, ECC_Camera, FCollisionQueryParams::DefaultQueryParam))
 	{
 		const FVector HitLoc = Hit.Location;
 		const FVector HitNormal = Hit.Normal;

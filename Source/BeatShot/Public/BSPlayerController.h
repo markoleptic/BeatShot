@@ -37,44 +37,44 @@ class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveL
 public:
 	/** Sets the enabled state of the pawn */
 	void SetPlayerEnabledState(const bool bPlayerEnabled);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void ShowMainMenu();
 	UFUNCTION(BlueprintCallable)
 	void HideMainMenu();
-	
+
 	UFUNCTION(BlueprintCallable)
 	void ShowPauseMenu();
 	UFUNCTION(BlueprintCallable)
 	void HidePauseMenu();
-	
+
 	void ShowCrossHair();
 	void HideCrossHair();
-	
+
 	void ShowPlayerHUD();
 	void HidePlayerHUD();
-	
+
 	void ShowCountdown();
 	void HideCountdown();
-	
+
 	void ShowPostGameMenu();
 	void HidePostGameMenu();
-	
+
 	void ShowFPSCounter();
 	void HideFPSCounter();
-	
+
 	void FadeScreenToBlack();
 	void FadeScreenFromBlack();
 
 	void ShowInteractInfo();
 	void HideInteractInfo();
-	
+
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const ELoginState& LoginState);
-	
+
 	UFUNCTION(BlueprintCallable)
 	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
-	
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 	void HandlePause();
 
@@ -93,7 +93,7 @@ public:
 protected:
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -118,7 +118,7 @@ private:
 	void OnFadeScreenFromBlackFinish();
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
-	
+
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
 	UPROPERTY()

@@ -26,7 +26,7 @@ struct FRecentTarget
 
 	/** The location of the center of the target */
 	FVector CenterVector;
-	
+
 	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid TargetGuid;
 
@@ -54,7 +54,7 @@ struct FRecentTarget
 		CenterVector = NewCenter;
 	}
 
-	FORCEINLINE bool operator == (const FRecentTarget& Other) const
+	FORCEINLINE bool operator ==(const FRecentTarget& Other) const
 	{
 		if (TargetGuid == Other.TargetGuid)
 		{
@@ -72,7 +72,7 @@ struct FVectorCounter
 
 	/** Unscaled, world spawn location point */
 	FVector Point;
-	
+
 	/** The total number of target spawns at this point */
 	int32 TotalSpawns;
 
@@ -93,7 +93,7 @@ struct FVectorCounter
 		TotalHits = 0;
 	}
 
-	FORCEINLINE bool operator == (const FVectorCounter& Other) const
+	FORCEINLINE bool operator ==(const FVectorCounter& Other) const
 	{
 		if (Point.Equals(Other.Point))
 		{
@@ -102,7 +102,7 @@ struct FVectorCounter
 		return false;
 	}
 
-	FORCEINLINE bool operator < (const FVectorCounter& Other) const
+	FORCEINLINE bool operator <(const FVectorCounter& Other) const
 	{
 		if (Point.Z > Other.Point.Z)
 		{
@@ -121,8 +121,7 @@ enum class EMovementType : uint8
 {
 	Sprinting UMETA(DisplayName="Sprinting"),
 	Walking UMETA(DisplayName="Walking"),
-	Crouching UMETA(DisplayName="Crouching")
-};
+	Crouching UMETA(DisplayName="Crouching")};
 
 /** Enum representing the different times of the day */
 UENUM(BlueprintType)
@@ -167,5 +166,4 @@ enum class EPlatformTransitionType : uint8
 	None UMETA(DisplayName="MoveUpByInteract"),
 	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
 	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
-	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")
-};
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};

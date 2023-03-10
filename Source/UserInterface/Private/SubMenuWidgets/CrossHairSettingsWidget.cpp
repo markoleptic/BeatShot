@@ -15,13 +15,13 @@
 void UCrossHairSettingsWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	InnerOffsetValue->OnTextCommitted.AddDynamic(this, &UCrossHairSettingsWidget::OnInnerOffsetValueChange);
 	LineLengthValue->OnTextCommitted.AddDynamic(this, &UCrossHairSettingsWidget::OnLineLengthValueChange);
 	LineWidthValue->OnTextCommitted.AddDynamic(this, &UCrossHairSettingsWidget::OnLineWidthValueChange);
 	OutlineOpacityValue->OnTextCommitted.AddDynamic(this, &UCrossHairSettingsWidget::OnOutlineOpacityValueChange);
 	OutlineWidthValue->OnTextCommitted.AddDynamic(this, &UCrossHairSettingsWidget::OnOutlineWidthValueChange);
-	
+
 	InnerOffsetSlider->OnValueChanged.AddDynamic(this, &UCrossHairSettingsWidget::OnInnerOffsetSliderChange);
 	LineLengthSlider->OnValueChanged.AddDynamic(this, &UCrossHairSettingsWidget::OnLineLengthSliderChange);
 	LineWidthSlider->OnValueChanged.AddDynamic(this, &UCrossHairSettingsWidget::OnLineWidthSliderChange);
@@ -48,13 +48,13 @@ void UCrossHairSettingsWidget::SetCrossHairOptions(const FPlayerSettings_CrossHa
 	LineWidthValue->SetText(FText::AsNumber(CrossHairSettings.LineWidth));
 	OutlineOpacityValue->SetText(FText::AsNumber(roundf(CrossHairSettings.OutlineOpacity * 100)));
 	OutlineWidthValue->SetText(FText::AsNumber(CrossHairSettings.OutlineWidth));
-	
+
 	InnerOffsetSlider->SetValue(CrossHairSettings.InnerOffset);
 	LineLengthSlider->SetValue(CrossHairSettings.LineLength);
 	LineWidthSlider->SetValue(CrossHairSettings.LineWidth);
 	OutlineOpacitySlider->SetValue(roundf(CrossHairSettings.OutlineOpacity * 100));
 	OutlineWidthSlider->SetValue(CrossHairSettings.OutlineWidth);
-	
+
 	CrossHairWidget->InitializeCrossHair(CrossHairSettings);
 }
 
@@ -162,9 +162,8 @@ void UCrossHairSettingsWidget::OnSaveCrossHairButtonClicked()
 	InitialCrossHairSettings = NewCrossHairSettings;
 }
 
-float  UCrossHairSettingsWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
-												USlider* SliderToChange,
-												const float GridSnapSize, const float Min, const float Max)
+float UCrossHairSettingsWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min,
+                                                         const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
@@ -174,8 +173,7 @@ float  UCrossHairSettingsWidget::OnEditableTextBoxChanged(const FText& NewTextVa
 	return SnappedValue;
 }
 
-float UCrossHairSettingsWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
-									   const float GridSnapSize)
+float UCrossHairSettingsWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize)
 {
 	const float SnappedValue = FMath::GridSnap(NewValue, GridSnapSize);
 	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));

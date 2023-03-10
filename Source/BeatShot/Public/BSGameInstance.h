@@ -21,9 +21,8 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 	GENERATED_BODY()
 
 	virtual void Init() override;
-	
+
 public:
-	
 	UPROPERTY(BlueprintReadOnly, Category = "Steamworks")
 	USteamManager* SteamManager;
 
@@ -42,22 +41,20 @@ public:
 
 	UFUNCTION()
 	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
-	
+
 	UFUNCTION()
 	void StartGameMode() const;
-	
+
 	UFUNCTION()
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;
-	
+
 	bool bLastSavedShowOpenFileDialog;
 
 	FOnPlayerSettingsChange OnPlayerSettingsChange;
 };
-
-

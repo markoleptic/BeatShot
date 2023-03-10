@@ -46,5 +46,5 @@ private:
 
 	const int32 CustomDepthStencilValue = 0;
 
-	const FVector CubeOffset = FVector(0,-110, 0);
+	const FVector CubeOffset = FVector(0, -110, 0);
 };

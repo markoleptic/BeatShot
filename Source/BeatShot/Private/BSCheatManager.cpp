@@ -13,7 +13,7 @@ void UBSCheatManager::SetAimBotEnabled(const bool bEnable) const
 {
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
-	
+
 	if (!GameMode || !Character)
 	{
 		return;

@@ -12,7 +12,7 @@ USTRUCT()
 struct F2DArray
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY()
 	TArray<float> Accuracy;
 };
@@ -157,7 +157,6 @@ class GLOBAL_API USaveGamePlayerScore : public USaveGame
 	GENERATED_BODY()
 
 public:
-
 	// Map to store all scores, accessible by GameMode
 	UPROPERTY()
 	TArray<FPlayerScore> PlayerScoreArray;

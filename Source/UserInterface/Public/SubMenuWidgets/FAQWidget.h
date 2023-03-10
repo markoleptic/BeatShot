@@ -18,11 +18,10 @@ class USERINTERFACE_API UFAQWidget : public UUserWidget
 	virtual void NativeConstruct() override;
 
 protected:
-
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
 	TMap<USlideRightButton*, UBorder*> MenuWidgets;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlideRightButton* GameModesButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -40,11 +39,10 @@ protected:
 	UBorder* AudioAnalyzerBox;
 
 private:
-
 	/** Function to Play the Slide Animation for Navigation Buttons */
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
-	
+
 	UFUNCTION()
 	void OnGameModesButtonClicked();
 	UFUNCTION()

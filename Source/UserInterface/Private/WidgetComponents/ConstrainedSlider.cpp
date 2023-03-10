@@ -30,17 +30,17 @@ void UConstrainedSlider::InitConstrainedSlider(const FConstrainedSliderStruct In
 	SliderStruct.MinConstraintUpper = RoundValue(SliderStruct.MinConstraintUpper);
 	SliderStruct.MaxConstraintLower = RoundValue(SliderStruct.MaxConstraintLower);
 	SliderStruct.MaxConstraintUpper = RoundValue(SliderStruct.MaxConstraintUpper);
-	
+
 	CheckboxText->SetText(SliderStruct.CheckboxText);
 	Checkbox->SetIsChecked(SliderStruct.bSyncSlidersAndValues);
-	
+
 	MinText->SetText(SliderStruct.MinText);
 	MaxText->SetText(SliderStruct.MaxText);
 	MinSlider->SetMinValue(SliderStruct.MinConstraintLower);
 	MinSlider->SetMaxValue(SliderStruct.MinConstraintUpper);
 	MaxSlider->SetMinValue(SliderStruct.MaxConstraintLower);
 	MaxSlider->SetMaxValue(SliderStruct.MaxConstraintUpper);
-	
+
 	MinSlider->SetValue(SliderStruct.DefaultMinValue);
 	MaxSlider->SetValue(SliderStruct.DefaultMaxValue);
 	MinValue->SetText(FText::AsNumber(SliderStruct.DefaultMinValue));
@@ -132,7 +132,7 @@ void UConstrainedSlider::OnMaxSliderChanged(const float NewMax)
 
 void UConstrainedSlider::OnMinValueCommitted(const FText& NewMin, ETextCommit::Type CommitType)
 {
-	const FString NewMinString = UKismetStringLibrary::Replace(NewMin.ToString(), "," ,"");
+	const FString NewMinString = UKismetStringLibrary::Replace(NewMin.ToString(), ",", "");
 	const float NewMinValue = CheckConstraints(FCString::Atof(*NewMinString), true);
 	MinSlider->SetValue(NewMinValue);
 	OnMinSliderChanged(NewMinValue);
@@ -140,7 +140,7 @@ void UConstrainedSlider::OnMinValueCommitted(const FText& NewMin, ETextCommit::T
 
 void UConstrainedSlider::OnMaxValueCommitted(const FText& NewMax, ETextCommit::Type CommitType)
 {
-	const FString NewMaxString = UKismetStringLibrary::Replace(NewMax.ToString(), "," ,"");
+	const FString NewMaxString = UKismetStringLibrary::Replace(NewMax.ToString(), ",", "");
 	const float NewMaxValue = CheckConstraints(FCString::Atof(*NewMaxString), false);
 	MaxSlider->SetValue(NewMaxValue);
 	OnMaxSliderChanged(NewMaxValue);

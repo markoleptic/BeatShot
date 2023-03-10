@@ -5,14 +5,12 @@
 #include "BSGameMode.h"
 #include "BSPlayerController.h"
 #include "SteamManager.h"
-#include "BeatShot/BSGameplayTags.h"
 #include "Kismet/GameplayStatics.h"
 
 void UBSGameInstance::Init()
 {
 	Super::Init();
 	InitializeCPPElements();
-	FBSGameplayTags::InitializeTags();
 }
 
 bool UBSGameInstance::InitializeCPPElements()
@@ -22,7 +20,7 @@ bool UBSGameInstance::InitializeCPPElements()
 		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Failed"));
 		return false;
 	}
-	
+
 	if (EnableUSteamManagerFeatures && SteamUser() != nullptr)
 	{
 		SteamManager = NewObject<USteamManager>(this);
@@ -49,24 +47,21 @@ void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
 {
 	if (bIsOverlayActive)
 	{
-		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
-	UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		PlayerController->HandlePause();
 	}
 }
 
 void UBSGameInstance::StartGameMode() const
 {
-	ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
-		UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	if (PlayerController->IsPaused())
 	{
 		PlayerController->HandlePause();
 	}
 	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this]
 	{
-		ABSPlayerController* Controller = Cast<ABSPlayerController>(
-			UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		Controller->HideMainMenu();
 		Controller->HidePostGameMenu();
 		Controller->HidePauseMenu();
@@ -101,22 +96,18 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 	case ETransitionState::Restart:
 		{
 			UE_LOG(LogTemp, Display, TEXT("Restarting"));
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
-				NewGameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
 			StartGameMode();
 			break;
 		}
 	case ETransitionState::QuitToMainMenu:
 		{
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
-				NewGameModeTransitionState.bSaveCurrentScores, false);
-			ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
-				UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 			PlayerController->FadeScreenToBlack();
 			PlayerController->OnScreenFadeToBlackFinish.BindLambda([this]
 			{
-				ABSPlayerController* Controller = Cast<ABSPlayerController>(
-					UGameplayStatics::GetPlayerController(GetWorld(), 0));
+				ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 				Controller->HidePostGameMenu();
 				Controller->HidePauseMenu();
 				UGameplayStatics::OpenLevel(GetWorld(), "MainMenuLevel");
@@ -125,10 +116,8 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		}
 	case ETransitionState::QuitToDesktop:
 		{
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
-				NewGameModeTransitionState.bSaveCurrentScores, false);
-			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-			                               EQuitPreference::Quit, false);
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
 			break;
 		}
 	default:

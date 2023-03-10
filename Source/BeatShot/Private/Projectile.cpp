@@ -41,9 +41,7 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AProjectile::OnHit(UPrimitiveComponent* HitComponent, 
-	AActor* OtherActor, UPrimitiveComponent* OtherComponent, 
-	FVector NormalImpulse, const FHitResult& Hit)
+void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// Get the owning actor of the projectile
 	const AActor* MyOwner = GetOwner();
@@ -64,7 +62,3 @@ void AProjectile::FireInDirection(const FVector& ShootDirection) const
 {
 	ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
 }
-
-
-
-

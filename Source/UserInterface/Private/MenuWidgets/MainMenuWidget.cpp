@@ -152,6 +152,5 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)
 
 void UMainMenuWidget::OnQuitButtonClicked()
 {
-	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-	                               EQuitPreference::Quit, false);
+	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
 }

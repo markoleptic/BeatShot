@@ -20,10 +20,9 @@ class USERINTERFACE_API UScreenFadeWidget : public UUserWidget
 	virtual void NativeDestruct() override;
 
 public:
-
 	FOnFadeFromBlackFinish OnFadeFromBlackFinish;
 	FOnFadeToBlackFinish OnFadeToBlackFinish;
-	
+
 	UFUNCTION(BlueprintCallable)
 	void FadeFromBlack();
 	UFUNCTION(BlueprintCallable)

@@ -20,8 +20,7 @@ enum class ESettingType : uint8
 	Shading UMETA(DisplayName="Shading"),
 	Texture UMETA(DisplayName="Texture"),
 	ViewDistance UMETA(DisplayName="ViewDistance"),
-	VisualEffect UMETA(DisplayName="VisualEffect")
-};
+	VisualEffect UMETA(DisplayName="VisualEffect")};
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ESettingType, ESettingType::AntiAliasing, ESettingType::VisualEffect);
 

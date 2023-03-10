@@ -16,9 +16,8 @@ class USERINTERFACE_API UTooltipImage : public UUserWidget
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
-	
+
 public:
-	
 	UFUNCTION()
 	void OnTooltipImageHoveredCallback();
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))

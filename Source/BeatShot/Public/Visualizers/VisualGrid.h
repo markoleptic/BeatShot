@@ -12,8 +12,8 @@ UCLASS()
 class BEATSHOT_API AVisualGrid : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AVisualGrid();
 
@@ -21,7 +21,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -40,5 +40,4 @@ public:
 
 	int32 NumRowsGrid;
 	int32 NumColsGrid;
-
 };

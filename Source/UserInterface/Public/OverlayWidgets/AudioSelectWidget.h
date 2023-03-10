@@ -19,7 +19,7 @@ struct FAudioSelectStruct
 	float SongLength = 0;
 
 	FString SongPath = "";
-	
+
 	FString SongTitle = "";
 
 	FString InAudioDevice = "";
@@ -90,7 +90,7 @@ protected:
 	void OnPlaybackAudioCheckStateChanged(const bool bIsChecked);
 
 	void PopulateSongOptionComboBox();
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* AudioFromFileButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -101,14 +101,14 @@ protected:
 	UButton* StartButton;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* LoadFileButton;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* AudioDeviceBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* InAudioDevices;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxString* OutAudioDevices;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* SongTitleLengthBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -135,7 +135,7 @@ protected:
 	/** Updates the tooltip text and shows the tooltip at the location of the Button (which is just the question mark image) */
 	UFUNCTION()
 	void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow);
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
@@ -145,7 +145,7 @@ protected:
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
-	
+
 	/** Opens file dialog for song selection. The Implementation version only checks the fullscreen mode,
 	 *  and changes it to Windowed Fullscreen if necessary */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
@@ -155,24 +155,24 @@ private:
 	/** Displays an error message upon failed AudioAnalyzer initialization */
 	UFUNCTION()
 	void ShowSongPathErrorMessage();
-	
+
 	/** Hides the error message */
 	UFUNCTION()
 	void HideSongPathErrorMessage();
 
 	/** Number formatting options for song length text boxes */
 	FNumberFormattingOptions NumberFormattingOptions;
-	
+
 	/** The color used to change the GameModeButton color to when selected */
 	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
-	
+
 	/** The color used to change the GameModeButton color to when not selected */
 	const FLinearColor White = FLinearColor::White;
 
 	/** Contains information relating to the audio format the user has selected. Passed to GameModesWidget
 	 *  using OnStartButtonClickedDelegate */
 	FAudioSelectStruct AudioSelectStruct;
-	
+
 	/** Whether or not the user was in fullscreen mode before OpenFileDialog */
 	bool bWasInFullScreenMode;
 };

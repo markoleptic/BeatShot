@@ -102,8 +102,7 @@ private:
 		"var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; var event = new Event('input', { bubbles: true});";
 
 	/* Javascript to check the persist checkbox */
-	const FString CheckPersistScript =
-		"document.getElementById('persist').checked=true; document.getElementById('persist').click();";
+	const FString CheckPersistScript = "document.getElementById('persist').checked=true; document.getElementById('persist').click();";
 
 	/* Javascript to click the login button */
 	const FString ClickLoginScript = "document.getElementById('login-button').click()";

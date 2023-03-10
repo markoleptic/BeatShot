@@ -27,14 +27,13 @@
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
-ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) :
-Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
+ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	bAlwaysRelevant = true;
-	
+
 	GetCapsuleComponent()->InitCapsuleSize(55.f, DefaultCapsuleHalfHeight);
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
@@ -80,8 +79,7 @@ void ABSCharacter::BeginPlay()
 	{
 		PlayerController->SetInputMode(FInputModeGameOnly());
 	}
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(
-		this, &ABSCharacter::OnUserSettingsChange);
+	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSCharacter::OnUserSettingsChange);
 
 	FOnTimelineFloat OnTimelineFloat;
 	OnTimelineFloat.BindUFunction(this, FName("OnTimelineTick_AimBot"));
@@ -100,8 +98,7 @@ void ABSCharacter::PawnClientRestart()
 	if (const ABSPlayerController* PlayerController = Cast<ABSPlayerController>(GetController()))
 	{
 		/* Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller */
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
 			Subsystem->ClearAllMappings();
@@ -114,7 +111,7 @@ void ABSCharacter::PawnClientRestart()
 void ABSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	
+
 	if (!bEnabled_AimBot || ActiveTargets_AimBot.IsEmpty())
 	{
 		return;
@@ -131,19 +128,15 @@ void ABSCharacter::Tick(float DeltaTime)
 		AimBotTimeline.TickTimeline(DeltaTime);
 		return;
 	}
-	
+
 	FRotator NewRot;
 	if (bIsLagging)
 	{
-		NewRot = UKismetMathLibrary::RInterpTo_Constant(
-			Rot, UKismetMathLibrary::FindLookAtRotation(Loc, LagLocation), DeltaTime,
-			FMath::FRandRange(10.f, 15.f));
+		NewRot = UKismetMathLibrary::RInterpTo_Constant(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, LagLocation), DeltaTime, FMath::FRandRange(10.f, 15.f));
 	}
 	else
 	{
-		NewRot = UKismetMathLibrary::RInterpTo(
-			Rot, UKismetMathLibrary::FindLookAtRotation(Loc,  Target->GetActorLocation()), DeltaTime,
-			FMath::FRandRange(11.f, 15.f));
+		NewRot = UKismetMathLibrary::RInterpTo(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), DeltaTime, FMath::FRandRange(11.f, 15.f));
 	}
 	GetController()->SetControlRotation(NewRot);
 }
@@ -151,25 +144,7 @@ void ABSCharacter::Tick(float DeltaTime)
 void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UEnhancedInputComponent* PlayerEnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
-	{
-		if (InteractAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this,
-			                                         &ABSCharacter::OnInteractStarted);
-			PlayerEnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, this,
-			                                         &ABSCharacter::OnInteractCompleted);
-		}
-		if (ShiftInteractAction)
-		{
-			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Started, this,
-			                                         &ABSCharacter::OnShiftInteractStarted);
-			PlayerEnhancedInputComponent->BindAction(ShiftInteractAction, ETriggerEvent::Completed, this,
-			                                         &ABSCharacter::OnShiftInteractCompleted);
-		}
-		InitializePlayerInput(InputComponent);
-	}
+	InitializePlayerInput(InputComponent);
 }
 
 void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
@@ -177,8 +152,7 @@ void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 	Sensitivity = PlayerSettings.Sensitivity;
 	if (Gun)
 	{
-		if (Gun->bAutomaticFire != PlayerSettings.Game.bAutomaticFire ||
-			Gun->bShouldRecoil != PlayerSettings.Game.bShouldRecoil)
+		if (Gun->bAutomaticFire != PlayerSettings.Game.bAutomaticFire || Gun->bShouldRecoil != PlayerSettings.Game.bShouldRecoil)
 		{
 			Gun->StopFire();
 			Camera->SetRelativeRotation(FRotator(0, 0, 0));
@@ -216,8 +190,8 @@ void ABSCharacter::Input_Move(const FInputActionValue& Value)
 
 void ABSCharacter::Input_Look(const FInputActionValue& Value)
 {
-	AddControllerPitchInput(Value[1] / 14.2789148024750118991f * Sensitivity);
-	AddControllerYawInput(Value[0] / 14.2789148024750118991f * Sensitivity);
+	AddControllerPitchInput(Value[1] / SensitivityMultiplier * Sensitivity);
+	AddControllerYawInput(Value[0] / SensitivityMultiplier * Sensitivity);
 }
 
 void ABSCharacter::Input_Crouch(const FInputActionInstance& Instance)
@@ -240,7 +214,7 @@ void ABSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdj
 	{
 		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 0);
 	}
-	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
+	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
 void ABSCharacter::ToggleCrouch()
@@ -315,9 +289,7 @@ void ABSCharacter::OnTimelineTick_AimBot(const float Alpha)
 	GetController()->GetActorEyesViewPoint(Loc, Rot);
 	ASphereTarget* Target;
 	ActiveTargets_AimBot.Peek(Target);
-	GetController()->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation_AimBot,
-	                                                              UKismetMathLibrary::FindLookAtRotation(
-		                                                              Loc, Target->GetActorLocation()), Alpha, true));
+	GetController()->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation_AimBot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, true));
 }
 
 void ABSCharacter::OnTimelineCompleted_AimBot()
@@ -348,19 +320,19 @@ void ABSCharacter::DestroyNextTarget_AimBot()
 void ABSCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	
+
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
 	if (PS)
 	{
 		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
 		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
-	
+
 		// AI won't have PlayerControllers so we can init again here just to be sure. No harm in initing twice for heroes that have PlayerControllers.
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
-	
+
 		// Set the AttributeSetBase for convenience attribute functions
 		AttributeSetBase = PS->GetAttributeSetBase();
-	
+
 		// If we handle players disconnecting and rejoining in the future, we'll have to change this so that possession from rejoining doesn't reset attributes.
 		// For now assume possession = spawn/respawn.
 		AddCharacterAbilities();
@@ -370,7 +342,7 @@ void ABSCharacter::PossessedBy(AController* NewController)
 void ABSCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
-	
+
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
 	if (PS)
 	{
@@ -398,57 +370,41 @@ void ABSCharacter::RemoveCharacterAbilities()
 		UE_LOG(LogTemp, Display, TEXT("Something wrong with RemoveCharacterAbilities()"));
 		return;
 	}
-	
+
 	AbilitySet_GrantedHandles.TakeFromAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()));
 	AbilitySystemComponent->bCharacterAbilitiesGiven = false;
-}
-
-float ABSCharacter::GetMoveSpeed() const
-{
-	if (AttributeSetBase.IsValid())
-	{
-		return AttributeSetBase->GetMoveSpeed();
-	}
-
-	return 0.0f;
-}
-
-float ABSCharacter::GetMoveSpeedBaseValue() const
-{
-	if (AttributeSetBase.IsValid())
-	{
-		return AttributeSetBase->GetMoveSpeedAttribute().GetGameplayAttributeData(AttributeSetBase.Get())->GetBaseValue();
-	}
-
-	return 0.0f;
 }
 
 void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);
-	
+
 	const APlayerController* PC = GetController<APlayerController>();
 	check(PC);
 
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
-			UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
 	check(Subsystem);
 
+	/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
 	Subsystem->ClearAllMappings();
-	
+	/* Add each mapping context, along with their priority values. Higher values out-prioritize lower values */
+	Subsystem->AddMappingContext(BaseMappingContext, BaseMappingPriority);
+
 	if (const UBSInputConfig* LoadedConfig = InputConfig)
 	{
 		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(PlayerInputComponent);
 		const FBSGameplayTags& GameplayTags = FBSGameplayTags::Get();
-		BSInputComponent->AddInputMappings(LoadedConfig, Subsystem);
-		
 		TArray<uint32> BindHandles;
 		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Started, this, &ThisClass::OnInteractStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this, &ThisClass::OnInteractStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Started, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Completed, this, &ThisClass::Input_StopFire, /*bLogIfNotFound=*/ true);
 	}
@@ -482,10 +438,9 @@ void ABSCharacter::AddCharacterAbilities()
 	// Grant abilities, but only on the server	
 	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || AbilitySystemComponent->bCharacterAbilitiesGiven)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Not authorized to grant abilities %s"), *FString(__FUNCTION__));
 		return;
 	}
-	
+
 	for (const UBSAbilitySet* AbilitySet : AbilitySets)
 	{
 		if (AbilitySet)
@@ -503,13 +458,5 @@ void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	UE_LOG(LogTemp, Display, TEXT("%s , an Input_Ability was released."), *InputTag.ToString());
-	FGameplayTagContainer TagContainer;
-	GetOwnedGameplayTags(TagContainer);
-	for (FGameplayTag Tag : TagContainer)
-	{
-		if (Tag.IsValid())
-			UE_LOG(LogTemp, Display, TEXT("Tag: %s"), *Tag.ToString());
-	}
 	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
 }

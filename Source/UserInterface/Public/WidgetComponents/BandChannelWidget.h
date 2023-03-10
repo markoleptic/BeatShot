@@ -7,8 +7,7 @@
 #include "Delegates/DelegateCombinations.h"
 #include "BandChannelWidget.generated.h"
 
-DECLARE_DELEGATE_FourParams(FOnChannelValueCommitted, const UBandChannelWidget* BandChannel, const int32 Index,
-                                               const float NewValue, const bool bIsMinValue);
+DECLARE_DELEGATE_FourParams(FOnChannelValueCommitted, const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
 class UBorder;
 class UEditableTextBox;
 class UTextBlock;
@@ -17,7 +16,7 @@ UCLASS()
 class USERINTERFACE_API UBandChannelWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 	virtual void NativeConstruct() override;
 
 public:

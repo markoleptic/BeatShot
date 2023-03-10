@@ -55,8 +55,7 @@ void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings PlayerSettings
 
 void ISaveLoadInterface::SaveCustomGameMode(const TArray<FGameModeActorStruct> GameModeArrayToSave)
 {
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(
-	UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
 		SaveCustomGameModeObject->CustomGameModes = GameModeArrayToSave;
 		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
@@ -68,13 +67,11 @@ TArray<FGameModeActorStruct> ISaveLoadInterface::LoadCustomGameModes() const
 	USaveGameCustomGameMode* SaveGameCustomGameMode;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
 	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(
-			UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
+		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
 	}
 	else
 	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(
-			UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
+		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
 	}
 	if (SaveGameCustomGameMode)
 	{

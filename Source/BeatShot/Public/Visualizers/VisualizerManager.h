@@ -16,8 +16,8 @@ UCLASS()
 class BEATSHOT_API AVisualizerManager : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AVisualizerManager();
 
@@ -25,12 +25,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
-
+public:
 	void InitializeVisualizers(const FPlayerSettings PlayerSettings);
 
 	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
-	
+
 	void UpdateVisualizers(const TArray<float> SpectrumValues);
 
 	void DestroyVisualizers();
@@ -50,7 +49,7 @@ public:
 	/** The spawned Visualizers */
 	UPROPERTY(BlueprintReadOnly)
 	TArray<AVisualizerBase*> Visualizers;
-		
+
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
 	UAudioAnalyzerManager* AATracker;
@@ -85,14 +84,13 @@ public:
 	TArray<float> MaxSpectrumValues;
 
 	const FVector TargetSpawnerLocation = {3730, 0, 750};
-	
-	const FVector VisualizerLocation = {4000,-1950, 210};
+
+	const FVector VisualizerLocation = {4000, -1950, 210};
 	const FVector Visualizer2Location = {4000, 1950, 210};
 	const FRotator VisualizerRotation = {0, 90, 90};
 
-	const FVector BeamVisualizerLocation = {0,1920,1320};
-	const FRotator BeamRotation = {0,0,0};
-	
-	const FActorSpawnParameters SpawnParameters;
+	const FVector BeamVisualizerLocation = {0, 1920, 1320};
+	const FRotator BeamRotation = {0, 0, 0};
 
+	const FActorSpawnParameters SpawnParameters;
 };

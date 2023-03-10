@@ -15,7 +15,7 @@ public class UserInterface : ModuleRules
 			{ "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer", "OnlineSubsystem" });
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
-		
+
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 
 		// Uncomment if you are using online features

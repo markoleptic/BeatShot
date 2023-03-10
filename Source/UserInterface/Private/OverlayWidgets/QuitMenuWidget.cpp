@@ -91,7 +91,6 @@ void UQuitMenuWidget::OnRestart()
 	TransitionState.TransitionState = ETransitionState::Restart;
 	TransitionState.bSaveCurrentScores = bShouldSaveScores;
 	OnGameModeStateChanged.Broadcast(TransitionState);
-
 }
 
 void UQuitMenuWidget::CollapseWidget()

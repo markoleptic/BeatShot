@@ -16,9 +16,6 @@
 #include "GameplayAbility/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 
-DECLARE_DELEGATE_OneParam(FOnInteractDelegate, const int32);
-DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
-
 struct FInputActionValue;
 struct FInputActionInstance;
 class AGun_AK47;
@@ -39,9 +36,11 @@ class UInputMappingContext;
 class UBSAttributeSetBase;
 class UBSAbilitySystemComponent;
 
+DECLARE_DELEGATE_OneParam(FOnInteractDelegate, const int32);
+DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
+
 UCLASS()
-class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface,
-                                  public IGameplayTagAssetInterface
+class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
 
@@ -58,8 +57,16 @@ protected:
 	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
-	/** Called to bind functionality to input */
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
+	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+
+	// Grant abilities on the Server. The Ability Specs will be replicated to the owning client. Called from inside PossessedBy().
+	virtual void AddCharacterAbilities();
+
+	/** Removes all CharacterAbilities. Can only be called by the Server. Removing on the Server will remove from Client too. */
+	virtual void RemoveCharacterAbilities();
 
 	/** The spring arm component, which is required to enable 'use control rotation' */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
@@ -81,62 +88,37 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BeatShot|Components")
 	UChildActorComponent* GunActorComp;
 
-	// Input configuration used by player controlled pawns to create input mappings and bind input actions.
+	/** Sets the height of the player's capsule component when standing */
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
+	float DefaultCapsuleHalfHeight = 96.f;
+
+	/** Input configuration used by player controlled pawns to create input mappings and bind input actions. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Input")
 	TObjectPtr<UBSInputConfig> InputConfig;
 
-	// Default abilities, attributes, and effects
+	/** Default abilities, attributes, and effects */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TArray<TObjectPtr<UBSAbilitySet>> AbilitySets;
 
-public:
-#pragma region AbilitySystem
-
-	virtual void PossessedBy(AController* NewController) override;
-
-	virtual void OnRep_PlayerState() override;
-
-	// Implement IAbilitySystemInterface
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	// Removes all CharacterAbilities. Can only be called by the Server. Removing on the Server will remove from Client too.
-	virtual void RemoveCharacterAbilities();
-
-	// Gets the Current value of MoveSpeed
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
-	float GetMoveSpeed() const;
-
-	// Gets the Base value of MoveSpeed
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
-	float GetMoveSpeedBaseValue() const;
-	
-	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
-
-protected:
 	TWeakObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
 	TWeakObjectPtr<UBSAttributeSetBase> AttributeSetBase;
 	FBSAbilitySet_GrantedHandles AbilitySet_GrantedHandles;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	FText CharacterName;
+public:
+	/** Implement IAbilitySystemInterface */
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
+	/** Implement IGameplayTagAssetInterface */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
 	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 
-	// Grant abilities on the Server. The Ability Specs will be replicated to the owning client.
-	virtual void AddCharacterAbilities();
-
-#pragma endregion
-
-public:
 	/** Called when PlayerSettings are changed while Character is spawned */
 	UFUNCTION()
 	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
 
-	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the
-	 *  spawned target to the ActiveTargetLocations_AimBot queue */
+	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()
 	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
 
@@ -147,22 +129,7 @@ public:
 	bool IsEnabled_AimBot() const { return bEnabled_AimBot; }
 
 	/** Sets the speed of the timeline playback */
-	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD)
-	{
-		TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD;
-	}
-
-	/** Reference to direction of fire */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	UArrowComponent* ShotDirection;
-
-	/** Additional layer of rotation to use for more realistic recoil */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
-	USceneComponent* CameraRecoilComp;
-
-	/** Reference to gun */
-	UPROPERTY()
-	AGun_AK47* Gun;
+	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD) { TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD; }
 
 	/** Returns HandMesh **/
 	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
@@ -173,6 +140,18 @@ public:
 	/** Simulates human lag by continuing to track towards provided direction */
 	UFUNCTION()
 	void OnBeatTrackDirectionChanged(const FVector Location);
+
+	/** Reference to direction of fire */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BeatShot|Components")
+	UArrowComponent* ShotDirection;
+
+	/** Additional layer of rotation to use for more realistic recoil */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
+	USceneComponent* CameraRecoilComp;
+
+	/** Reference to gun */
+	UPROPERTY()
+	AGun_AK47* Gun;
 
 	/** Executed when interact is pressed */
 	FOnInteractDelegate OnInteractDelegate;
@@ -191,13 +170,11 @@ private:
 	UFUNCTION()
 	void OnTimelineTick_AimBot(const float Alpha);
 
-	/** Executes when the AimBotTimeline completes. Shoots the target at the front of the queue and pops it, then calls
-	 *  DestroyNextTarget_AimBot() */
+	/** Executes when the AimBotTimeline completes. Shoots the target at the front of the queue and pops it, then calls DestroyNextTarget_AimBot() */
 	UFUNCTION()
 	void OnTimelineCompleted_AimBot();
 
-	/** Sets new values for StartRotation_AimBot and TargetRotation_AimBot based on next target location in ActiveTargetLocations_AimBot,
-	 *  and plays AimBotTimeline */
+	/** Sets new values for StartRotation_AimBot and TargetRotation_AimBot based on next target location in ActiveTargetLocations_AimBot, and plays AimBotTimeline */
 	void DestroyNextTarget_AimBot();
 
 	/** Timeline for interpolating the rotation to aim at the target to destroy */
@@ -274,72 +251,23 @@ private:
 	/** Triggered on releasing Shift + E */
 	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
 
+	/** Let ASC know an ability bound to an input was pressed. */
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+
+	/** Let ASC know an ability bound to an input was released. */
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
+
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;
 
-	/** Sets the height of the player's capsule component when standing */
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Crouch")
-	float DefaultCapsuleHalfHeight = 96.f;
-
-	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
-
-	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
-
-	/** Input actions bound inside of the the blueprint for this class */
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* MovementAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* LookAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* JumpAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* SprintAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* CrouchAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* FiringAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* PrimaryWeaponAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* SecondaryWeaponAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* ReloadAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* AimAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* InteractAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* ShiftModifierAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* ShiftInteractAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* ScrollAction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Actions")
-	UInputAction* PauseAction;
-
-	/** Input Mappings */
-
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Mappings")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
 	// ReSharper disable once UnrealHeaderToolError
 	UInputMappingContext* BaseMappingContext;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Input|Mappings")
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
 	int32 BaseMappingPriority = 0;
+
+	const float SensitivityMultiplier = 14.2789148024750118991f;
 
 #pragma endregion
 };

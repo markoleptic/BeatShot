@@ -14,7 +14,7 @@ class UGameplayEffect;
 class UAttributeSet;
 class UBSAbilitySystemComponent;
 
-/** Data used by the ability set to grant gameplay abilities. */
+/** Associate a BSGameplayAbility with a GameplayTag. Also includes Ability Level */
 USTRUCT(BlueprintType)
 struct FBSAbilitySet_GameplayAbility
 {
@@ -33,7 +33,7 @@ struct FBSAbilitySet_GameplayAbility
 	FGameplayTag InputTag;
 };
 
-/** Data used by the ability set to grant gameplay effects. */
+/** Contains the gameplay effect and the effect level */
 USTRUCT(BlueprintType)
 struct FBSAbilitySet_GameplayEffect
 {
@@ -48,16 +48,15 @@ struct FBSAbilitySet_GameplayEffect
 	float EffectLevel = 1.0f;
 };
 
-/** Data used by the ability set to grant attribute sets. */
+/** AttributeSet Wrapper */
 USTRUCT(BlueprintType)
 struct FBSAbilitySet_AttributeSet
 {
 	GENERATED_BODY()
-	
+
 	// Gameplay effect to grant.
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UAttributeSet> AttributeSet;
-
 };
 
 /** Data used to store handles to what has been granted by the ability set. */
@@ -71,7 +70,6 @@ struct FBSAbilitySet_GrantedHandles
 	void TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC);
 
 protected:
-
 	// Handles to the granted abilities.
 	UPROPERTY()
 	TArray<FGameplayAbilitySpecHandle> AbilitySpecHandles;
@@ -85,13 +83,14 @@ protected:
 	TArray<TObjectPtr<UAttributeSet>> GrantedAttributeSets;
 };
 
+
+/** A data asset that contains GameplayAbilities, GameplayEffects, and AttributeSets that should be granted to the owner */
 UCLASS(BlueprintType, Const)
 class UBSAbilitySet : public UDataAsset
 {
 	GENERATED_BODY()
 
 public:
-	
 	UBSAbilitySet(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// Grants the ability set to the specified ability system component.
@@ -99,7 +98,6 @@ public:
 	void GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject = nullptr) const;
 
 protected:
-
 	// Gameplay abilities to grant when this ability set is granted.
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay Abilities", meta=(TitleProperty=Ability))
 	TArray<FBSAbilitySet_GameplayAbility> GrantedGameplayAbilities;
@@ -112,5 +110,3 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Attribute Sets", meta=(TitleProperty=AttributeSet))
 	TArray<FBSAbilitySet_AttributeSet> GrantedAttributes;
 };
-
-

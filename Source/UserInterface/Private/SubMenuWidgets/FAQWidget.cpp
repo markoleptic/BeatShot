@@ -10,15 +10,15 @@
 void UFAQWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	MenuWidgets.Add(GameModesButton, GameModesBox);
 	MenuWidgets.Add(ScoringButton, ScoringBox);
 	MenuWidgets.Add(AudioAnalyzerButton, AudioAnalyzerBox);
-	
+
 	GameModesButton->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnGameModesButtonClicked);
 	ScoringButton->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnScoringButtonClicked);
 	AudioAnalyzerButton->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnAudioAnalyzerButtonClicked);
-	
+
 	SlideButtons(GameModesButton);
 }
 

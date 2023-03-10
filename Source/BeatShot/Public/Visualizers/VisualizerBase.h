@@ -15,8 +15,8 @@ UCLASS()
 class BEATSHOT_API AVisualizerBase : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	AVisualizerBase();
 
 protected:
@@ -26,8 +26,7 @@ protected:
 
 	virtual void Destroyed() override;
 
-public:	
-
+public:
 	/** Destroys any existing components and repopulates based on AASettings.NumBandChannels */
 	UFUNCTION()
 	virtual void InitializeVisualizer();
@@ -42,7 +41,6 @@ public:
 	virtual void UpdateAASettings(const FAASettingsStruct AASettingsStruct);
 
 protected:
-
 	/** Sets the initial visualizer spawn location */
 	void SetInitialLocation(const FVector Location) { InitialVisualizerLocation = Location; }
 
@@ -51,7 +49,7 @@ protected:
 
 	/** Sets offset used to space out the visualizers */
 	void SetVisualizerOffset(const FVector Offset) { VisualizerOffset = Offset; }
-	
+
 	/** AudioAnalyzer settings */
 	FAASettingsStruct AASettings;
 
@@ -65,7 +63,7 @@ protected:
 	FVector VisualizerOffset;
 
 	const FActorSpawnParameters SpawnParameters;
-	
+
 	/** An array of spawned visualizers */
 	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> Visualizers;
