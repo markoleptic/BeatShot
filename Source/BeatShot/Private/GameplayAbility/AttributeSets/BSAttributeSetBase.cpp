@@ -8,9 +8,10 @@
 
 UBSAttributeSetBase::UBSAttributeSetBase()
 {
-	Health = 100.f;
-	MoveSpeed = 1.f;
+	Health= 100.f;
 	MaxHealth = 100.f;
+	MoveSpeed = 1.f;
+	Damage = 0.f;
 }
 
 void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -45,6 +46,32 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 			OnHealthReachZero.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
 		}
 	}
+
+	if (Data.EvaluatedData.Attribute == GetDamageAttribute())
+	{
+		// Convert into -Health and then clamp
+		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), MinimumHealth, GetMaxHealth()));
+		SetDamage(0.0f);
+	}
+	else if (Data.EvaluatedData.Attribute == GetHealthAttribute())
+	{
+		// Clamp and fall into out of health handling below
+		SetHealth(FMath::Clamp(GetHealth(), MinimumHealth, GetMaxHealth()));
+	}
+
+	if (GetHealth() <= 0.0f && !bOutOfHealth)
+	{
+		if (OnHealthReachZero.IsBound())
+		{
+			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
+			AActor* Instigator = EffectContext.GetOriginalInstigator();
+			AActor* Causer = EffectContext.GetEffectCauser();
+			OnHealthReachZero.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
+		}
+	}
+
+	// Check health again in case an event above changed it.
+	bOutOfHealth = GetHealth() <= 0.0f;
 }
 
 void UBSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -17,9 +17,6 @@ UBSGA_FireGun::UBSGA_FireGun()
 	AbilityTags.AddTag(FBSGameplayTags::Get().Ability_Fire);
 	ActivationOwnedTags.AddTag(FBSGameplayTags::Get().State_Firing);
 	TargetBlockedTags.AddTag(FBSGameplayTags::Get().State_Firing);
-	Damage = 666.0f;
-	ProjectileSpeed = 250000.f;
-	TraceDistance = 10000.f;
 }
 
 void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -73,7 +70,7 @@ void UBSGA_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData Even
 			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		}
 
-		FTransform MuzzleTransform = Character->Gun->MeshComp->GetSocketTransform("Muzzle");
+		const FVector MuzzleLoc = Character->Gun->MeshComp->GetSocketTransform("Muzzle").GetLocation();
 		FVector StartTrace = Character->ShotDirection->GetComponentLocation();
 		FVector ForwardVector = Character->ShotDirection->GetForwardVector();
 		float AngleDeg = -Character->Gun->CurrentShotRecoilRotation.Pitch;
@@ -83,20 +80,18 @@ void UBSGA_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData Even
 		FVector Axis2 = Character->ShotDirection->GetUpVector();
 		FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, AngleDeg2, Axis2);
 		FVector EndTrace = StartTrace + RotatedVector2 * FVector(TraceDistance);
-
-		/* Set the projectile's initial trajectory */
-		FVector ProjectileVector;
-		if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_GameTraceChannel1, FCollisionQueryParams::DefaultQueryParam))
+		
+		FTransform Transform;
+		if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
 		{
-			ProjectileVector = UKismetMathLibrary::FindLookAtRotation(MuzzleTransform.GetLocation(), Hit.ImpactPoint).Vector();
-			//MuzzleTransform.SetRotation(UKismetMathLibrary::FindLookAtRotation(MuzzleTransform.GetLocation(), Hit.ImpactPoint).Quaternion());
+			Transform = {UKismetMathLibrary::FindLookAtRotation(MuzzleLoc, Hit.ImpactPoint), MuzzleLoc, FVector(1.f)};
+			//DrawDebugLine(GetWorld(), StartTrace, Hit.ImpactPoint, FColor::Blue, false, 10.f);
+			//DrawDebugLine(GetWorld(), MuzzleTransform.GetLocation(), Hit.ImpactPoint, FColor::Red, false, 10.f);
 		}
 		else
 		{
-			ProjectileVector = UKismetMathLibrary::FindLookAtRotation(MuzzleTransform.GetLocation(), EndTrace).Vector();
-			//MuzzleTransform.SetRotation(UKismetMathLibrary::FindLookAtRotation(MuzzleTransform.GetLocation(), EndTrace).Quaternion());
+			Transform = {UKismetMathLibrary::FindLookAtRotation(MuzzleLoc, EndTrace), MuzzleLoc, FVector(1.f)};
 		}
-		//MuzzleTransform.SetScale3D(FVector(1.f));
 		
 		FGameplayEffectSpecHandle DamageEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageGameplayEffect, GetAbilityLevel());
 		
@@ -106,12 +101,12 @@ void UBSGA_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData Even
 		FActorSpawnParameters SpawnParameters;
 		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		
-		AProjectile* Projectile = GetWorld()->SpawnActorDeferred<AProjectile>(ProjectileClass, MuzzleTransform, GetOwningActorFromActorInfo(),
+		AProjectile* Projectile = GetWorld()->SpawnActorDeferred<AProjectile>(ProjectileClass, Transform, GetOwningActorFromActorInfo(),
 			Character, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 		Projectile->DamageEffectSpecHandle = DamageEffectSpecHandle;
-		Projectile->FinishSpawning(MuzzleTransform);
-		//Projectile->FireInDirection(ProjectileVector);
-		DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Red, false, 10.f);
+		Projectile->ProjectileMovement->InitialSpeed = ProjectileSpeed;
+		Projectile->ProjectileMovement->MaxSpeed = ProjectileSpeed;
+		Projectile->FinishSpawning(Transform, true);
 	}
 	else
 	{

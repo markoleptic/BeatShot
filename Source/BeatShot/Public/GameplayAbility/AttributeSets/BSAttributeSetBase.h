@@ -18,10 +18,6 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 // Delegate used to broadcast attribute events.
 DECLARE_MULTICAST_DELEGATE_FourParams(FBSAttributeEvent, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/, const FGameplayEffectSpec& /*EffectSpec*/, float /*EffectMagnitude*/);
 
-
-/**
- * 
- */
 UCLASS()
 class BEATSHOT_API UBSAttributeSetBase : public UAttributeSet
 {
@@ -58,6 +54,7 @@ public:
 	FGameplayAttributeData Damage;
 	ATTRIBUTE_ACCESSORS(UBSAttributeSetBase, Damage)
 
+	// Delegate to notify when the Health attribute has reached zero
 	mutable FBSAttributeEvent OnHealthReachZero;
 
 protected:
@@ -68,6 +65,11 @@ protected:
 	/**
 	* These OnRep functions exist to make sure that the ability system internal representations are synchronized properly during replication
 	**/
+
+	// Used to track when the health reaches 0.
+	bool bOutOfHealth;
+
+	const float MinimumHealth = 0.0f;
 
 	UFUNCTION()
 	virtual void OnRep_Health(const FGameplayAttributeData& OldHealth);

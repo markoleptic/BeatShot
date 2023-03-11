@@ -28,15 +28,15 @@ public:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 protected:
+	
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float Damage = 666.0f;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float Damage;
+	float ProjectileSpeed = 250000.f;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float ProjectileSpeed;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float TraceDistance;
+	float TraceDistance = 100000.f;
 
 	UFUNCTION()
 	void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);

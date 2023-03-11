@@ -26,8 +26,8 @@ AProjectile::AProjectile()
 	RootComponent = ProjectileMesh;
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>("Projectile Movement");
 	ProjectileMovement->SetUpdatedComponent(ProjectileMesh);
-	ProjectileMovement->InitialSpeed = 100.f;
-	ProjectileMovement->MaxSpeed = 100.f;
+	ProjectileMovement->InitialSpeed = 10000.f;
+	ProjectileMovement->MaxSpeed = 10000.f;
 	InitialLifeSpan = 1.0f;
 	DamageTypeClass = UDamageType::StaticClass();
 }
