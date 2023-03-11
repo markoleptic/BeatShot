@@ -8,6 +8,9 @@
 
 UBSAttributeSetBase::UBSAttributeSetBase()
 {
+	Health = 100.f;
+	MoveSpeed = 1.f;
+	MaxHealth = 100.f;
 }
 
 void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -30,6 +33,18 @@ void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute
 void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
+	
+	if (GetHealth() <=0.0f)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Health less than 0 UBSAttributeSetBase"));
+		if (OnHealthReachZero.IsBound())
+		{
+			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();
+			AActor* Instigator = EffectContext.GetOriginalInstigator();
+			AActor* Causer = EffectContext.GetEffectCauser();
+			OnHealthReachZero.Broadcast(Instigator, Causer, Data.EffectSpec, Data.EvaluatedData.Magnitude);
+		}
+	}
 }
 
 void UBSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

@@ -15,6 +15,10 @@ GAMEPLAYATTRIBUTE_VALUE_GETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
 GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+// Delegate used to broadcast attribute events.
+DECLARE_MULTICAST_DELEGATE_FourParams(FBSAttributeEvent, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/, const FGameplayEffectSpec& /*EffectSpec*/, float /*EffectMagnitude*/);
+
+
 /**
  * 
  */
@@ -47,6 +51,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "MoveSpeed", ReplicatedUsing = OnRep_MoveSpeed)
 	FGameplayAttributeData MoveSpeed;
 	ATTRIBUTE_ACCESSORS(UBSAttributeSetBase, MoveSpeed)
+	
+	// Damage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health
+	// Temporary value that only exists on the Server. Not replicated.
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
+	FGameplayAttributeData Damage;
+	ATTRIBUTE_ACCESSORS(UBSAttributeSetBase, Damage)
+
+	mutable FBSAttributeEvent OnHealthReachZero;
 
 protected:
 	// Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes.

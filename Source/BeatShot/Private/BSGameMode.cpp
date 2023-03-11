@@ -575,14 +575,14 @@ void ABSGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 	}
 
 	/** Update tracking score if a Tracking target has spawned */
-	if (GameModeActorStruct.IsBeatTrackMode && !SpawnedTarget->HealthComp->OnBeatTrackTick.IsBoundToObject(this))
+	if (GameModeActorStruct.IsBeatTrackMode && !SpawnedTarget->HealthComponent->OnBeatTrackTick.IsBoundToObject(this))
 	{
 		if (ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 		{
 			TargetSpawner->OnBeatTrackDirectionChanged.BindUFunction(Character, "OnBeatTrackDirectionChanged");
 			Character->Gun->TrackingTarget = SpawnedTarget;
 		}
-		SpawnedTarget->HealthComp->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
+		SpawnedTarget->HealthComponent->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
 	}
 }
 

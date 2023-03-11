@@ -15,9 +15,14 @@ void FBSGameplayTags::InitializeTags()
 void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
 	AddTag(GameplayCue_Sprint, "GameplayCue.Sprint","");
+	AddTag(GameplayCue_FireGun_Impact, "GameplayCue.FireGun.Impact","");
+
+	AddTag(Data, "Data","");
+	AddTag(Data_Damage, "Data.Damage","");
 
 	AddTag(Event, "Event","");
 	AddTag(Event_Montage, "Event.Montage","");
+	AddTag(Event_Montage_EndAbility, "Event.Montage.EndAbility","");
 	AddTag(Event_Montage_SpawnProjectile, "Event.Montage.SpawnProjectile","");
 
 	AddTag(Input, "Input","");
@@ -29,6 +34,14 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_Jump, "Input.Jump","");
 	AddTag(Input_Interact, "Input.Interact","");
 	AddTag(Input_ShiftInteract, "Input.ShiftInteract","");
+	
+	AddTag(Ability, "Ability","");
+	AddTag(Ability_Fire, "Ability.Fire","");
+	AddTag(Ability_Jump, "Ability.Jump","");
+	AddTag(Ability_Sprint, "Ability.Sprint","");
+	AddTag(Ability_Crouch, "Ability.Crouch","");
+	AddTag(Ability_Interact, "Ability.Interact","");
+	AddTag(Ability_ShiftInteract, "Ability.ShiftInteract","");
 
 	AddTag(State, "State","");
 	AddTag(State_Crouching, "State.Crouching","");

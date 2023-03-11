@@ -15,9 +15,14 @@ struct FBSGameplayTags
 	static void InitializeTags();
 
 	FGameplayTag GameplayCue_Sprint;
+	FGameplayTag GameplayCue_FireGun_Impact;
+
+	FGameplayTag Data;
+	FGameplayTag Data_Damage;
 
 	FGameplayTag Event;
 	FGameplayTag Event_Montage;
+	FGameplayTag Event_Montage_EndAbility;
 	FGameplayTag Event_Montage_SpawnProjectile;
 
 	FGameplayTag Input;
@@ -29,6 +34,14 @@ struct FBSGameplayTags
 	FGameplayTag Input_Jump;
 	FGameplayTag Input_Interact;
 	FGameplayTag Input_ShiftInteract;
+
+	FGameplayTag Ability;
+	FGameplayTag Ability_Fire;
+	FGameplayTag Ability_Jump;
+	FGameplayTag Ability_Sprint;
+	FGameplayTag Ability_Crouch;
+	FGameplayTag Ability_Interact;
+	FGameplayTag Ability_ShiftInteract;
 
 	FGameplayTag State;
 	FGameplayTag State_Crouching;

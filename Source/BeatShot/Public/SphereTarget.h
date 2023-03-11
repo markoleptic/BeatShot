@@ -3,29 +3,36 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
+#include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "SphereTarget.generated.h"
 
 class UBSHealthComponent;
+class UBSAbilitySystemComponent;
 class UCapsuleComponent;
 class UTimelineComponent;
 class UNiagaraSystem;
 class UCurveFloat;
+class UBSAttributeSetBase;
 
 /** Broadcasts info about the destroyed target state */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
-class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface
+class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
+
+public:
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -36,6 +43,14 @@ protected:
 
 	/** Called when a non BeatGrid target lifespan has expired */
 	virtual void LifeSpanExpired() override;
+
+	// Actual hard pointer to AbilitySystemComponent
+	UPROPERTY()
+	UBSAbilitySystemComponent* HardRefAbilitySystemComponent;
+
+	// Actual hard pointer to AttributeSetBase
+	UPROPERTY()
+	UBSAttributeSetBase* HardRefAttributeSetBase;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UCapsuleComponent* CapsuleComp;
@@ -86,6 +101,7 @@ public:
 	void SetOutlineColor(const FLinearColor Output);
 
 	/** Called from DefaultHealthComponent when a SphereTarget receives damage. */
+	UFUNCTION()
 	void HandleDestruction();
 
 	/** Target Spawner binds to this function to receive info about how target was destroyed */
@@ -100,7 +116,7 @@ public:
 	FGameModeActorStruct GameModeActorStruct;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	UBSHealthComponent* HealthComp;
+	UBSHealthComponent* HealthComponent;
 
 	UPROPERTY()
 	FGuid Guid;

@@ -171,6 +171,7 @@ void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 void ABSCharacter::Input_StartFire()
 {
 	Gun->StartFire();
+	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagPressed(FBSGameplayTags::Get().Input_Fire);
 }
 
 void ABSCharacter::Input_StopFire()

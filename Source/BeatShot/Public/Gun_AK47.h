@@ -168,6 +168,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Gun State")
 	bool bIsFiring;
 
+public:
+	
 	/** The current rotation value pulled from the vector curve (only the x and y values are used),
 	 *  added to control rotation during fire */
 	UPROPERTY(VisibleAnywhere, Category = "Recoil")
@@ -176,6 +178,8 @@ private:
 	/** Same as CurrentShotRecoilRotation but applied at half the scale */
 	UPROPERTY(VisibleAnywhere, Category = "Recoil")
 	FRotator CurrentShotCameraRecoilRotation;
+
+private:
 
 	/** Offset the muzzle flash a fixed amount */
 	FVector MuzzleFlashOffset = FVector(5, 0, 0);

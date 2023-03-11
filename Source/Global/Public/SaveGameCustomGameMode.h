@@ -64,127 +64,127 @@ struct FGameModeActorStruct
 	GENERATED_BODY()
 
 	/* The song title */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString SongTitle;
 
 	/* The default game mode name, or custom if custom */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	EGameModeActorName GameModeActorName;
 
 	/* Custom game mode name if custom, otherwise empty string */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString CustomGameModeName;
 
 	/* Default game mode difficulties, or none if custom */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	EGameModeDifficulty GameModeDifficulty;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	bool bPlaybackAudio;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	EAudioFormat AudioFormat;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString InAudioDevice;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString OutAudioDevice;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Defining Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString SongPath;
 
 	/* Whether or not the game mode derives from BeatTrack */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
 	bool IsBeatTrackMode;
 
 	/* Whether or not the game mode derives from SingleBeat */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
 	bool IsSingleBeatMode;
 
 	/* Whether or not the game mode derives from BeatGrid */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
 	bool IsBeatGridMode;
 
 	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
 	 * If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	ESpreadType SpreadType;
 
 	/* Whether or not to dynamically change the size of targets as consecutive targets are hit */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	bool UseDynamicSizing;
 
 	/* Length of song */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float GameModeLength;
 
 	/* Sets the minimum time between target spawns */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float TargetSpawnCD;
 
 	/* Sets the minimum distance between recent target spawns */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float MinDistanceBetweenTargets;
 
 	/* Min multiplier to target size */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float MinTargetScale;
 
 	/* Max multiplier to target size */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float MaxTargetScale;
 
 	/* Whether or not to spawn targets only at headshot height */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	bool HeadshotHeight;
 
 	/* Whether or not to center spawn area in the center of wall, vs as close to the ground as possible */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	bool WallCentered;
 
 	/* Maximum time in which target will stay on screen */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float TargetMaxLifeSpan;
 
 	/* The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	FVector BoxBounds;
 
 	/* Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float PlayerDelay;
 
 	/* Whether or not to move the targets forward towards the player after spawning */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	bool bMoveTargetsForward;
 
 	/* Whether or not to move the targets forward towards the player after spawning */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float MoveForwardDistance;
 
 	/* The minimum speed multiplier for Tracking Game Mode */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	float MinTrackingSpeed;
 
 	/* The maximum speed multiplier for Tracking Game Mode */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	float MaxTrackingSpeed;
 
 	/* The number of BeatGrid targets, only square-able numbers */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 BeatGridSize;
 
 	/* Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	bool RandomizeBeatGrid;
 
 	/* The space between BeatGrid targets */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	FVector2D BeatGridSpacing;
 
 	/* not implemented yet */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumTargetsAtOnceBeatGrid;
 
 	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const

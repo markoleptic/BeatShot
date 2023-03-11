@@ -11,6 +11,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -26,10 +27,27 @@ ASphereTarget::ASphereTarget()
 	OutlineMesh = CreateDefaultSubobject<UStaticMeshComponent>("Outline Mesh");
 	OutlineMesh->SetupAttachment(BaseMesh);
 
-	HealthComp = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
+	HealthComponent = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
 
+	// Create ability system component, and set it to be explicitly replicated
+	HardRefAbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+
+	// Create the attribute set, this replicates by default
+	// Adding it as a subobject of the owning actor of an AbilitySystemComponent
+	// automatically registers the AttributeSet with the AbilitySystemComponent
+	HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>(TEXT("AttributeSetBase"));
+	HardRefAbilitySystemComponent->SetIsReplicated(true);
+
+	// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
+	HardRefAbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+	
 	InitialLifeSpan = 1.5f;
 	Guid = FGuid::NewGuid();
+}
+
+UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
+{
+	return HardRefAbilitySystemComponent;
 }
 
 void ASphereTarget::SetSphereScale(const FVector NewScale)
@@ -42,6 +60,13 @@ void ASphereTarget::SetSphereScale(const FVector NewScale)
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (IsValid(GetAbilitySystemComponent()))
+	{
+		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
+		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent);
+		HealthComponent->OnOutOfHealth.BindUFunction(this, "HandleDestruction");
+	}
 
 	PlayerSettings = LoadPlayerSettings().Game;
 
@@ -111,7 +136,7 @@ void ASphereTarget::BeginPlay()
 		SetMaxHealth(1000000);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 		SetOutlineColor(PlayerSettings.EndTargetColor);
-		HealthComp->ShouldUpdateTotalPossibleDamage = true;
+		HealthComponent->ShouldUpdateTotalPossibleDamage = true;
 	}
 	else
 	{
@@ -283,5 +308,5 @@ void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const f
 
 void ASphereTarget::SetMaxHealth(const float NewMaxHealth) const
 {
-	HealthComp->SetMaxHealth(NewMaxHealth);
+	HealthComponent->SetMaxHealth(NewMaxHealth);
 }

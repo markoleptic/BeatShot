@@ -7,6 +7,7 @@ UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_AbilityInputBlocked, "Gameplay.AbilityInputB
 
 void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage)
 {
+	UE_LOG(LogTemp, Display, TEXT("Damage: %f"), UnmitigatedDamage);
 	ReceivedDamage.Broadcast(SourceASC, UnmitigatedDamage, MitigatedDamage);
 }
 

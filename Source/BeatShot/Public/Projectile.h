@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayEffect.h"
+#include "GameplayEffectTypes.h"
 #include "GameFramework/Actor.h"
 #include "Projectile.generated.h"
 
@@ -24,9 +26,6 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
 public:
 	UFUNCTION()
 	void FireInDirection(const FVector& ShootDirection) const;
@@ -42,6 +41,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
 	UMaterialInstanceDynamic* BulletDecalInstance;
+
+	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn = true))
+	FGameplayEffectSpecHandle DamageEffectSpecHandle;
 
 private:
 	UFUNCTION()
