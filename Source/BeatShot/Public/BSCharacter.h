@@ -1,5 +1,4 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
-// Credit to Dan Kestranek.
 
 #pragma once
 
@@ -20,15 +19,11 @@ struct FInputActionValue;
 struct FInputActionInstance;
 class AGun_AK47;
 class UNiagaraSystem;
-class AProjectile;
 class ABSPlayerController;
-class UBSGameInstance;
 class USceneComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
-class USoundBase;
-class UAnimMontage;
 class UAnimInstance;
 class UCurveFloat;
 class UInputAction;
@@ -43,54 +38,98 @@ UCLASS()
 class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
-
-protected:
-	/** Sets default values for this character's properties */
+	
+public:
+	
 	ABSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	/** Called when the game starts or when spawned */
+	/** Implement IAbilitySystemInterface */
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
+	ABSPlayerController* GetBSPlayerController() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
+	ABSPlayerState* GetBSPlayerState() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
+	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const;
+
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
+	USkeletalMeshComponent* GetHandsMesh() const;
+
+	/** Implement IGameplayTagAssetInterface */
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
+	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+
+	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD);
+	UCameraComponent* GetCamera() const;
+	USceneComponent* GetCameraRecoilComponent() const;
+	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
+	bool IsEnabled_AimBot() const { return bEnabled_AimBot; }
+	
+	UFUNCTION(BlueprintCallable)
+	AGun_AK47* GetGun() const;
+	
+	/** Called when PlayerSettings are changed while Character is spawned */
+	UFUNCTION()
+	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
+
+	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
+	UFUNCTION()
+	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
+
+	/** Simulates human lag by continuing to track towards provided direction */
+	UFUNCTION()
+	void OnBeatTrackDirectionChanged(const FVector Location);
+
+	/** Executed when interact is pressed */
+	FOnInteractDelegate OnInteractDelegate;
+
+	/** Executed when shift interact is pressed */
+	FOnShiftInteractDelegate OnShiftInteractDelegate;
+	
+protected:
+	
 	virtual void BeginPlay() override;
-
-	/** Sets the Mapping Context in Player Controller */
 	virtual void PawnClientRestart() override;
-
-	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
 
-	// Grant abilities on the Server. The Ability Specs will be replicated to the owning client. Called from inside PossessedBy().
+	/** Grant abilities on the Server. The Ability Specs will be replicated to the owning client. Called from inside PossessedBy(). */
 	virtual void AddCharacterAbilities();
 
 	/** Removes all CharacterAbilities. Can only be called by the Server. Removing on the Server will remove from Client too. */
 	virtual void RemoveCharacterAbilities();
 
-	/** The spring arm component, which is required to enable 'use control rotation' */
+	/** The spring arm component */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
-	USpringArmComponent* SpringArmComponent;
+	TObjectPtr<USpringArmComponent> SpringArmComponent;
 
 	/** The skeletal mesh for hands that hold the gun */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
-	USkeletalMeshComponent* HandsMesh;
+	TObjectPtr<USkeletalMeshComponent> HandsMesh;
 
 	/** Camera component */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
-	UCameraComponent* Camera;
-
-	/** The blueprint class associated with the gun to spawn */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
-	TSubclassOf<AGun_AK47> GunClass;
+	TObjectPtr<UCameraComponent> CameraComponent;
 
 	/** Reference to child gun actor component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BeatShot|Components")
-	UChildActorComponent* GunActorComp;
+	TObjectPtr<UChildActorComponent> GunComponent;
 
-	/** Sets the height of the player's capsule component when standing */
-	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Input")
-	float DefaultCapsuleHalfHeight = 96.f;
+	/** Additional layer of rotation to use for more realistic recoil */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
+	TObjectPtr<USceneComponent> CameraRecoilComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
+	TSubclassOf<UAnimInstance> AnimClassLayers;
 
 	/** Input configuration used by player controlled pawns to create input mappings and bind input actions. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Input")
@@ -104,64 +143,8 @@ protected:
 	TWeakObjectPtr<UBSAttributeSetBase> AttributeSetBase;
 	FBSAbilitySet_GrantedHandles AbilitySet_GrantedHandles;
 
-public:
-	/** Implement IAbilitySystemInterface */
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	/** Implement IGameplayTagAssetInterface */
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
-	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-
-	/** Called when PlayerSettings are changed while Character is spawned */
-	UFUNCTION()
-	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
-
-	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
-	UFUNCTION()
-	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
-
-	/** Sets the bEnabled_AimBot state */
-	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
-
-	/** Returns the bEnabled_AimBot state */
-	bool IsEnabled_AimBot() const { return bEnabled_AimBot; }
-
-	/** Sets the speed of the timeline playback */
-	void SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD) { TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD; }
-
-	/** Returns HandMesh **/
-	USkeletalMeshComponent* GetHandsMesh() const { return HandsMesh; }
-
-	/** Returns Camera **/
-	UCameraComponent* GetCamera() const { return Camera; }
-
-	/** Simulates human lag by continuing to track towards provided direction */
-	UFUNCTION()
-	void OnBeatTrackDirectionChanged(const FVector Location);
-
-	/** Reference to direction of fire */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "BeatShot|Components")
-	UArrowComponent* ShotDirection;
-
-	/** Additional layer of rotation to use for more realistic recoil */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
-	USceneComponent* CameraRecoilComp;
-
-	/** Reference to gun */
-	UPROPERTY()
-	AGun_AK47* Gun;
-
-	/** Executed when interact is pressed */
-	FOnInteractDelegate OnInteractDelegate;
-
-	/** Executed when shift interact is pressed */
-	FOnShiftInteractDelegate OnShiftInteractDelegate;
-
 #pragma region Aimbot
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* Curve_AimBotRotationSpeed;
 

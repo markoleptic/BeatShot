@@ -4,19 +4,12 @@
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "Camera/CameraComponent.h"
-#include "Components/ArrowComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameplayAbility/Tasks/BSAT_PlayMontageAndWaitForEvent.h"
-#include "Kismet/KismetMathLibrary.h"
 
 UBSGA_FireGun::UBSGA_FireGun()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	AbilityTags.AddTag(FBSGameplayTags::Get().Input_Fire);
-	AbilityTags.AddTag(FBSGameplayTags::Get().Ability_Fire);
-	ActivationOwnedTags.AddTag(FBSGameplayTags::Get().State_Firing);
-	TargetBlockedTags.AddTag(FBSGameplayTags::Get().State_Firing);
 }
 
 void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -28,9 +21,10 @@ void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, con
 	}
 
 	UAnimMontage* MontageToPlay = FireHipMontage;
-	// Play fire montage and wait for event telling us to spawn the projectile
+	// Play fire montage and wait for event telling us to spawn the projectile.
+	// Event.Montage.SpawnProjectile is broadcast in the first frame of the montage.
 	UBSAT_PlayMontageAndWaitForEvent* Task = UBSAT_PlayMontageAndWaitForEvent::PlayMontageAndWaitForEvent(this, NAME_None, MontageToPlay, FGameplayTagContainer(), 1.0f, NAME_None, false, 1.0f);
-	//Task->OnBlendOut.AddDynamic(this, &UBSGA_FireGun::OnCompleted);
+	Task->OnBlendOut.AddDynamic(this, &UBSGA_FireGun::OnCompleted);
 	Task->OnCompleted.AddDynamic(this, &UBSGA_FireGun::OnCompleted);
 	Task->OnInterrupted.AddDynamic(this, &UBSGA_FireGun::OnCancelled);
 	Task->OnCancelled.AddDynamic(this, &UBSGA_FireGun::OnCancelled);
@@ -52,6 +46,7 @@ void UBSGA_FireGun::OnCompleted(FGameplayTag EventTag, FGameplayEventData EventD
 
 void UBSGA_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)
 {
+	UE_LOG(LogTemp, Display, TEXT("Event Tag: %s"), *EventTag.ToString());
 	// Montage told us to end the ability before the montage finished playing.
 	// Montage was set to continue playing animation even after ability ends so this is okay.
 	if (EventTag == FGameplayTag::RequestGameplayTag(FName("Event.Montage.EndAbility")))
@@ -61,7 +56,6 @@ void UBSGA_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData Even
 	}
 
 	// Only spawn projectiles on the Server.
-	// Predicting projectiles is an advanced topic not covered in this example.
 	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FGameplayTag::RequestGameplayTag(FName("Event.Montage.SpawnProjectile")))
 	{
 		ABSCharacter* Character = Cast<ABSCharacter>(GetAvatarActorFromActorInfo());
@@ -70,30 +64,8 @@ void UBSGA_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData Even
 			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 		}
 
-		const FVector MuzzleLoc = Character->Gun->MeshComp->GetSocketTransform("Muzzle").GetLocation();
-		FVector StartTrace = Character->ShotDirection->GetComponentLocation();
-		FVector ForwardVector = Character->ShotDirection->GetForwardVector();
-		float AngleDeg = -Character->Gun->CurrentShotRecoilRotation.Pitch;
-		FVector Axis = Character->ShotDirection->GetRightVector();
-		FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(ForwardVector, AngleDeg, Axis);
-		float AngleDeg2 = Character->Gun->CurrentShotRecoilRotation.Yaw;
-		FVector Axis2 = Character->ShotDirection->GetUpVector();
-		FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, AngleDeg2, Axis2);
-		FVector EndTrace = StartTrace + RotatedVector2 * FVector(TraceDistance);
-		
-		FTransform Transform;
-		if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
-		{
-			Transform = {UKismetMathLibrary::FindLookAtRotation(MuzzleLoc, Hit.ImpactPoint), MuzzleLoc, FVector(1.f)};
-			//DrawDebugLine(GetWorld(), StartTrace, Hit.ImpactPoint, FColor::Blue, false, 10.f);
-			//DrawDebugLine(GetWorld(), MuzzleTransform.GetLocation(), Hit.ImpactPoint, FColor::Red, false, 10.f);
-		}
-		else
-		{
-			Transform = {UKismetMathLibrary::FindLookAtRotation(MuzzleLoc, EndTrace), MuzzleLoc, FVector(1.f)};
-		}
-		
-		FGameplayEffectSpecHandle DamageEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageGameplayEffect, GetAbilityLevel());
+		const FTransform Transform = Character->GetGun()->GetTraceTransform();
+		const FGameplayEffectSpecHandle DamageEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageGameplayEffect, GetAbilityLevel());
 		
 		// Pass the damage to the Damage Execution Calculation through a SetByCaller value on the GameplayEffectSpec
 		DamageEffectSpecHandle.Data.Get()->SetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, Damage);

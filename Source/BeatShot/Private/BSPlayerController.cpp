@@ -33,6 +33,15 @@ void ABSPlayerController::BeginPlay()
 	}
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
+	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		GameMode->OnGameModeStarted.AddLambda([&]
+		{
+			ShowCrossHair();
+			ShowPlayerHUD();
+			HideCountdown();
+		});
+	}
 }
 
 ABSPlayerState* ABSPlayerController::GetBSPlayerState() const

@@ -3,6 +3,7 @@
 #include "GameplayAbility/Tasks/BSAT_PlayMontageAndWaitForEvent.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemGlobals.h"
+#include "BSCharacter.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 
 UBSAT_PlayMontageAndWaitForEvent::UBSAT_PlayMontageAndWaitForEvent(const FObjectInitializer& ObjectInitializer)
@@ -24,6 +25,11 @@ void UBSAT_PlayMontageAndWaitForEvent::Activate()
 	if (BSAbilitySystemComponent)
 	{
 		const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
+		//UAnimInstance* AnimInstance;
+		// if (Cast<ABSCharacter>(Ability->GetCurrentActorInfo()->OwnerActor.Get()))
+		// {
+		// 	
+		// }
 		UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance();
 		if (AnimInstance != nullptr)
 		{
@@ -83,6 +89,7 @@ void UBSAT_PlayMontageAndWaitForEvent::ExternalCancel()
 {
 	check(AbilitySystemComponent.IsValid());
 
+	UE_LOG(LogTemp, Display, TEXT("ExternalCancel"));
 	OnAbilityCancelled();
 
 	Super::ExternalCancel();
@@ -116,6 +123,7 @@ void UBSAT_PlayMontageAndWaitForEvent::OnDestroy(bool AbilityEnded)
 		Ability->OnGameplayAbilityCancelled.Remove(CancelledHandle);
 		if (AbilityEnded && bStopWhenAbilityEnds)
 		{
+			UE_LOG(LogTemp, Display, TEXT("OnDestroy bStopWhenAbilityEnds"));
 			StopPlayingMontage();
 		}
 	}
@@ -147,6 +155,7 @@ UBSAT_PlayMontageAndWaitForEvent* UBSAT_PlayMontageAndWaitForEvent::PlayMontageA
 
 bool UBSAT_PlayMontageAndWaitForEvent::StopPlayingMontage()
 {
+	UE_LOG(LogTemp, Display, TEXT("StopPlayingMontage in UBSAT_PlayMontageAndWaitForEvent"));
 	const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
 	if (!ActorInfo)
 	{
@@ -174,6 +183,7 @@ bool UBSAT_PlayMontageAndWaitForEvent::StopPlayingMontage()
 				MontageInstance->OnMontageEnded.Unbind();
 			}
 
+			UE_LOG(LogTemp, Display, TEXT("StopPlayingMontage in UBSAT_PlayMontageAndWaitForEvent 2"));
 			AbilitySystemComponent->CurrentMontageStop();
 			return true;
 		}
@@ -189,6 +199,7 @@ UBSAbilitySystemComponent* UBSAT_PlayMontageAndWaitForEvent::GetTargetASC()
 
 void UBSAT_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted)
 {
+	
 	if (Ability && Ability->GetCurrentMontage() == MontageToPlay)
 	{
 		if (Montage == MontageToPlay)
@@ -208,6 +219,7 @@ void UBSAT_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage* Montag
 
 	if (bInterrupted)
 	{
+		UE_LOG(LogTemp, Display, TEXT("OnMontageBlendingOut bInterrupted"));
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnInterrupted.Broadcast(FGameplayTag(), FGameplayEventData());
@@ -215,6 +227,7 @@ void UBSAT_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage* Montag
 	}
 	else
 	{
+		UE_LOG(LogTemp, Display, TEXT("OnMontageBlendingOut !bInterrupted"));
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnBlendOut.Broadcast(FGameplayTag(), FGameplayEventData());
@@ -224,6 +237,7 @@ void UBSAT_PlayMontageAndWaitForEvent::OnMontageBlendingOut(UAnimMontage* Montag
 
 void UBSAT_PlayMontageAndWaitForEvent::OnAbilityCancelled()
 {
+	UE_LOG(LogTemp, Display, TEXT("OnAbilityCancelled"));
 	if (StopPlayingMontage())
 	{
 		// Let the BP handle the interrupt as well
@@ -236,14 +250,15 @@ void UBSAT_PlayMontageAndWaitForEvent::OnAbilityCancelled()
 
 void UBSAT_PlayMontageAndWaitForEvent::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	UE_LOG(LogTemp, Display, TEXT("OnMontageEnded"));
 	if (!bInterrupted)
 	{
+		
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnCompleted.Broadcast(FGameplayTag(), FGameplayEventData());
 		}
 	}
-
 	EndTask();
 }
 
@@ -253,7 +268,6 @@ void UBSAT_PlayMontageAndWaitForEvent::OnGameplayEvent(FGameplayTag EventTag, co
 	{
 		FGameplayEventData TempData = *Payload;
 		TempData.EventTag = EventTag;
-
 		EventReceived.Broadcast(EventTag, TempData);
 	}
 }

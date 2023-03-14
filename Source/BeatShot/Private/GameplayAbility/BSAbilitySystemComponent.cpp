@@ -1,6 +1,8 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "GameplayAbility/BSAbilitySystemComponent.h"
+#include "BSAnimInstance.h"
+#include "BSCharacter.h"
 #include "GameplayAbility/BSGameplayAbility.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_AbilityInputBlocked, "Gameplay.AbilityInputBlocked");
@@ -13,7 +15,18 @@ void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceA
 
 void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
+	FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
+
+	// if (Cast<ABSCharacter>(InAvatarActor))
+	// {
+	// }
+	
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+
+	if (UBSAnimInstance* AnimInstance = Cast<UBSAnimInstance>(ActorInfo->GetAnimInstance()))
+	{
+		AnimInstance->InitializeWithAbilitySystem(this);
+	}
 }
 
 void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)

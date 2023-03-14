@@ -55,11 +55,10 @@ void ABSGameMode::InitializeGameMode()
 
 void ABSGameMode::StartGameMode()
 {
-	ABSPlayerController* DefaultPlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	DefaultPlayerController->ShowCrossHair();
-	DefaultPlayerController->ShowPlayerHUD();
-	DefaultPlayerController->HideCountdown();
-
+	if (OnGameModeStarted.IsBound())
+	{
+		OnGameModeStarted.Broadcast();
+	}
 	LoadMatchingPlayerScores();
 	BindGameModeDelegates();
 
@@ -88,17 +87,17 @@ void ABSGameMode::BindGameModeDelegates()
 {
 	if (ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 	{
-		if (!Character->Gun->OnShotFired.IsBoundToObject(this))
+		if (!Character->GetGun()->OnShotFired.IsBoundToObject(this))
 		{
-			Character->Gun->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
+			Character->GetGun()->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
 		}
 		if (GameModeActorStruct.IsBeatTrackMode)
 		{
-			Character->Gun->SetShouldTrace(true);
+			Character->GetGun()->SetShouldTrace(true);
 		}
 		else
 		{
-			Character->Gun->SetShouldTrace(false);
+			Character->GetGun()->SetShouldTrace(false);
 		}
 		Character->SetTimelinePlaybackRate_AimBot(GameModeActorStruct.TargetSpawnCD);
 	}
@@ -129,9 +128,9 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 	/** Unbinding delegates */
 	if (const ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 	{
-		if (Character->Gun->OnShotFired.IsBoundToObject(this))
+		if (Character->GetGun()->OnShotFired.IsBoundToObject(this))
 		{
-			Character->Gun->OnShotFired.Unbind();
+			Character->GetGun()->OnShotFired.Unbind();
 		}
 	}
 	if (OnTargetSpawned.IsBoundToObject(this))
@@ -580,7 +579,7 @@ void ABSGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 		if (ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 		{
 			TargetSpawner->OnBeatTrackDirectionChanged.BindUFunction(Character, "OnBeatTrackDirectionChanged");
-			Character->Gun->TrackingTarget = SpawnedTarget;
+			Character->GetGun()->TrackingTarget = SpawnedTarget;
 		}
 		SpawnedTarget->HealthComponent->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
 	}

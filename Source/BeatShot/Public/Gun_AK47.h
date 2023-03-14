@@ -61,6 +61,8 @@ public:
 	UFUNCTION()
 	void SetShouldTrace(const bool bNewShouldTrace) { bShouldTrace = bNewShouldTrace; }
 
+	FTransform GetTraceTransform() const;
+
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;
 
@@ -129,9 +131,6 @@ private:
 	/** Spawns a bullet decal at the Hit result location */
 	void ShotBulletDecal(const FHitResult& Hit) const;
 
-	/** Plays the recoil animation located in DefaultCharacter */
-	void PlayRecoilAnimation() const;
-
 	/** The timeline set from RecoilVectorCurve */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	FTimeline RecoilTimeline;
@@ -156,10 +155,6 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	UNiagaraSystem* NS_MuzzleFlash;
 
-	/** AnimMontage to play each time we fire */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UAnimMontage* FireAnimation;
-
 	/** Used in recoil to make sure the first shot has properly applied recoil */
 	UPROPERTY(VisibleAnywhere, Category = "Gun State")
 	int32 ShotsFired;
@@ -179,18 +174,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Recoil")
 	FRotator CurrentShotCameraRecoilRotation;
 
+	ABSCharacter* GetBSCharacter() const;
+
 private:
 
 	/** Offset the muzzle flash a fixed amount */
 	FVector MuzzleFlashOffset = FVector(5, 0, 0);
-
-	/** Reference to owning character */
-	UPROPERTY(VisibleAnywhere, Category = "References")
-	ABSCharacter* Character;
-
-	/** Reference to player controller */
-	UPROPERTY(VisibleAnywhere, Category = "References")
-	ABSPlayerController* PlayerController;
 
 	/** The spawn parameters for the bullet */
 	FActorSpawnParameters ProjectileSpawnParams;

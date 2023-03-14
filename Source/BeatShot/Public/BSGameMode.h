@@ -26,6 +26,7 @@ DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive
 DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
 DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector Position);
+DECLARE_MULTICAST_DELEGATE(OnGameModeStarted);
 
 UCLASS()
 class BEATSHOT_API ABSGameMode : public AGameModeBase, public ISaveLoadInterface, public IHttpRequestInterface
@@ -177,6 +178,8 @@ public:
 	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
 	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
 	FUpdateScoresToHUD UpdateScoresToHUD;
+
+	OnGameModeStarted OnGameModeStarted;
 
 #pragma endregion
 

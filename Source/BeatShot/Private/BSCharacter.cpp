@@ -1,5 +1,4 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
-// Credit to Dan Kestranek.
 
 #include "BSCharacter.h"
 #include "BSCharacterMovementComponent.h"
@@ -14,80 +13,133 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
-#include "Components/ArrowComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "GameplayAbilitySpec.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/BSAbilitySet.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
 #include "Kismet/KismetMathLibrary.h"
 
-ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
+ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) :
+Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(CharacterMovementComponentName).
+	DoNotCreateDefaultSubobject(MeshComponentName))
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	bAlwaysRelevant = true;
 
-	GetCapsuleComponent()->InitCapsuleSize(55.f, DefaultCapsuleHalfHeight);
-
-	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
 	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->TargetArmLength = 0.f;
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
 	SpringArmComponent->SetupAttachment(RootComponent);
 
-	ShotDirection = CreateDefaultSubobject<UArrowComponent>("ShotDirection");
-	ShotDirection->SetupAttachment(SpringArmComponent);
-
-	CameraRecoilComp = CreateDefaultSubobject<USceneComponent>("CameraRecoilComp");
-	CameraRecoilComp->SetupAttachment(ShotDirection);
-
-	Camera = CreateDefaultSubobject<UCameraComponent>("First Person Camera");
-	Camera->SetupAttachment(CameraRecoilComp);
-	Camera->bUsePawnControlRotation = false;
-	Camera->SetFieldOfView(103);
-	Camera->PostProcessSettings.MotionBlurAmount = 0;
-	Camera->PostProcessSettings.bOverride_MotionBlurMax = 0;
+	CameraRecoilComponent = CreateDefaultSubobject<USceneComponent>("Camera Recoil Component");
+	CameraRecoilComponent->SetupAttachment(SpringArmComponent);
+	
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera Component");
+	CameraComponent->SetupAttachment(CameraRecoilComponent);
+	CameraComponent->SetFieldOfView(103);
+	CameraComponent->PostProcessSettings.MotionBlurAmount = 0;
+	CameraComponent->PostProcessSettings.bOverride_MotionBlurMax = 0;
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>("Character Mesh");
-	HandsMesh->SetOnlyOwnerSee(true);
-	HandsMesh->SetupAttachment(Camera);
+	HandsMesh->SetupAttachment(CameraComponent);
 	HandsMesh->bCastDynamicShadow = false;
 	HandsMesh->CastShadow = false;
 	HandsMesh->SetRelativeRotation(FRotator(1.53f, -15.20f, 8.32f));
 	HandsMesh->SetRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
 
-	GunActorComp = CreateDefaultSubobject<UChildActorComponent>("GunActorComp");
-	GunActorComp->SetChildActorClass(GunClass);
-	GunActorComp->SetupAttachment(HandsMesh, "GripPoint");
-	GunActorComp->CreateChildActor();
+	GunComponent = CreateDefaultSubobject<UChildActorComponent>("Gun Component");
+	GunComponent->SetupAttachment(GetHandsMesh(), "weapon_r");
+	GunComponent->CreateChildActor();
+
+	UBSCharacterMovementComponent* BSMoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
+	BSMoveComp->GravityScale = 1.0f;
+	BSMoveComp->MaxAcceleration = 2400.0f;
+	BSMoveComp->BrakingFrictionFactor = 1.0f;
+	BSMoveComp->BrakingFriction = 6.0f;
+	BSMoveComp->GroundFriction = 8.0f;
+	BSMoveComp->BrakingDecelerationWalking = 1400.0f;
+	BSMoveComp->bUseControllerDesiredRotation = false;
+	BSMoveComp->bOrientRotationToMovement = false;
+	BSMoveComp->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
+	BSMoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
+	BSMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
+	BSMoveComp->bCanWalkOffLedgesWhenCrouching = true;
+	BSMoveComp->SetCrouchedHalfHeight(65.0f);
+
+	bEnabled_AimBot = false;
+}
+
+USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
+{
+	return Cast<USkeletalMeshComponent>(HandsMesh);
+}
+
+UCameraComponent* ABSCharacter::GetCamera() const
+{
+	return Cast<UCameraComponent>(CameraComponent);
+}
+
+AGun_AK47* ABSCharacter::GetGun() const
+{
+	return Cast<AGun_AK47>(GunComponent->GetChildActor());
+}
+
+USceneComponent* ABSCharacter::GetCameraRecoilComponent() const
+{
+	return Cast<USceneComponent>(CameraRecoilComponent);
+}
+
+UAbilitySystemComponent* ABSCharacter::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent.Get();
+}
+
+ABSPlayerController* ABSCharacter::GetBSPlayerController() const
+{
+	return CastChecked<ABSPlayerController>(Controller, ECastCheckedType::NullAllowed);
+}
+
+ABSPlayerState* ABSCharacter::GetBSPlayerState() const
+{
+	return CastChecked<ABSPlayerState>(GetPlayerState(), ECastCheckedType::NullAllowed);
+}
+
+UBSAbilitySystemComponent* ABSCharacter::GetBSAbilitySystemComponent() const
+{
+	return Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent());
 }
 
 void ABSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Gun = Cast<AGun_AK47>(GunActorComp->GetChildActor());
+	if (AnimClassLayers && IsValid(GetMesh()))
+	{
+		GetMesh()->LinkAnimClassLayers(AnimClassLayers);
+	}
+	
 	OnUserSettingsChange(LoadPlayerSettings());
-	ABSPlayerController* PlayerController = GetController<ABSPlayerController>();
+
 	if (IsLocallyControlled())
 	{
-		PlayerController->SetInputMode(FInputModeGameOnly());
+		GetBSPlayerController()->SetInputMode(FInputModeGameOnly());
 	}
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSCharacter::OnUserSettingsChange);
-
+	
+	UBSGameInstance* GameInstance = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GameInstance->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSCharacter::OnUserSettingsChange);
+	
 	FOnTimelineFloat OnTimelineFloat;
 	OnTimelineFloat.BindUFunction(this, FName("OnTimelineTick_AimBot"));
 	FOnTimelineEvent OnTimelineEvent;
 	OnTimelineEvent.BindUFunction(this, FName("OnTimelineCompleted_AimBot"));
 	AimBotTimeline.SetTimelineFinishedFunc(OnTimelineEvent);
 	AimBotTimeline.AddInterpFloat(Curve_AimBotRotationSpeed, OnTimelineFloat);
-	bEnabled_AimBot = false;
 }
 
 void ABSCharacter::PawnClientRestart()
@@ -150,33 +202,34 @@ void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 {
 	Sensitivity = PlayerSettings.Sensitivity;
-	if (Gun)
+	if (GetGun())
 	{
-		if (Gun->bAutomaticFire != PlayerSettings.Game.bAutomaticFire || Gun->bShouldRecoil != PlayerSettings.Game.bShouldRecoil)
+		if (GetGun()->bAutomaticFire != PlayerSettings.Game.bAutomaticFire || GetGun()->bShouldRecoil != PlayerSettings.Game.bShouldRecoil)
 		{
-			Gun->StopFire();
-			Camera->SetRelativeRotation(FRotator(0, 0, 0));
-			CameraRecoilComp->SetRelativeRotation(FRotator(0, 0, 0));
-			Gun->bShouldRecoil = PlayerSettings.Game.bShouldRecoil;
-			Gun->bAutomaticFire = PlayerSettings.Game.bAutomaticFire;
+			GetGun()->StopFire();
+			GetCamera()->SetRelativeRotation(FRotator(0, 0, 0));
+			GetCameraRecoilComponent()->SetRelativeRotation(FRotator(0, 0, 0));
+			GetGun()->bShouldRecoil = PlayerSettings.Game.bShouldRecoil;
+			GetGun()->bAutomaticFire = PlayerSettings.Game.bAutomaticFire;
 		}
-		if (Gun->bShowBulletDecals != PlayerSettings.Game.bShowBulletDecals)
+		if (GetGun()->bShowBulletDecals != PlayerSettings.Game.bShowBulletDecals)
 		{
-			Gun->bShowBulletDecals = PlayerSettings.Game.bShowBulletDecals;
+			GetGun()->bShowBulletDecals = PlayerSettings.Game.bShowBulletDecals;
 		}
-		Gun->PlayerSettings = PlayerSettings;
+		GetGun()->PlayerSettings = PlayerSettings;
 	}
 }
 
 void ABSCharacter::Input_StartFire()
 {
-	Gun->StartFire();
+	GetGun()->StartFire();
+	/* TODO: Fix scuffed firing. Probably put a cooldown on firing and pass in with BindAbilityActions */
 	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagPressed(FBSGameplayTags::Get().Input_Fire);
 }
 
 void ABSCharacter::Input_StopFire()
 {
-	Gun->StopFire();
+	GetGun()->StopFire();
 }
 
 void ABSCharacter::Input_Move(const FInputActionValue& Value)
@@ -296,7 +349,7 @@ void ABSCharacter::OnTimelineTick_AimBot(const float Alpha)
 void ABSCharacter::OnTimelineCompleted_AimBot()
 {
 	ActiveTargets_AimBot.Pop();
-	Gun->Fire_AimBot();
+	GetGun()->Fire_AimBot();
 	if (!AimBotTimeline.IsPlaying())
 	{
 		DestroyNextTarget_AimBot();
@@ -359,9 +412,14 @@ void ABSCharacter::OnRep_PlayerState()
 	}
 }
 
-UAbilitySystemComponent* ABSCharacter::GetAbilitySystemComponent() const
+void ABSCharacter::SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD)
 {
-	return AbilitySystemComponent.Get();
+	TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD;
+}
+
+void ABSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 void ABSCharacter::RemoveCharacterAbilities()
@@ -403,10 +461,10 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Started, this, &ThisClass::OnInteractStarted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this, &ThisClass::OnInteractStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this, &ThisClass::OnInteractCompleted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Started, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Triggered, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Completed, this, &ThisClass::Input_StopFire, /*bLogIfNotFound=*/ true);
 	}
 }

@@ -19,8 +19,6 @@ UBSHealthComponent::UBSHealthComponent()
 void UBSHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	//Health = MaxHealth;
-	//GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UBSHealthComponent::DamageTaken);
 	TotalPossibleDamage = 0.f;
 }
 

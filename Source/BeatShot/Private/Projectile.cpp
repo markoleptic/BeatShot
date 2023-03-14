@@ -2,10 +2,7 @@
 
 
 #include "Projectile.h"
-
-#include "BSCharacter.h"
 #include "BSGameInstance.h"
-#include "BSPlayerController.h"
 #include "SphereTarget.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
@@ -37,6 +34,8 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 	ProjectileMesh->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 
+	// TODO: Disable damage ability of projectile during BeatTrack mode
+	// Or remove shoot ability during  beattrack, but would have to give it back at start of other modes
 	if (Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct.IsBeatTrackMode == true)
 	{
 		Damage = 0.f;
@@ -56,15 +55,12 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		if (Cast<ASphereTarget>(OtherActor))
 		{
+			// Pass the HitResult to the GameplayEffectSpec
 			UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(Cast<ASphereTarget>(OtherActor)->GetAbilitySystemComponent());
 			DamageEffectSpecHandle.Data.Get()->GetContext().AddHitResult(Hit);
-			UE_LOG(LogTemp, Display, TEXT("%s"), *DamageEffectSpecHandle.Data->GetEffectContext().ToString());
 			ASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
 		}
 	}
-
-	//ABSPlayerController* MyOwnerInstigator = MyOwner->GetInstigatorController<ABSPlayerController>();
-	//UGameplayStatics::ApplyDamage(OtherActor, Damage, MyOwnerInstigator, this, DamageTypeClass);
 	Destroy();
 }
 
