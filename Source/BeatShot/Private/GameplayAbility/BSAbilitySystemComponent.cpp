@@ -3,24 +3,17 @@
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "BSAnimInstance.h"
 #include "BSCharacter.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSGameplayAbility.h"
-
-UE_DEFINE_GAMEPLAY_TAG(TAG_Gameplay_AbilityInputBlocked, "Gameplay.AbilityInputBlocked");
 
 void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage)
 {
-	UE_LOG(LogTemp, Display, TEXT("Damage: %f"), UnmitigatedDamage);
 	ReceivedDamage.Broadcast(SourceASC, UnmitigatedDamage, MitigatedDamage);
 }
 
 void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
 	FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
-
-	// if (Cast<ABSCharacter>(InAvatarActor))
-	// {
-	// }
-	
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
 	if (UBSAnimInstance* AnimInstance = Cast<UBSAnimInstance>(ActorInfo->GetAnimInstance()))
@@ -196,7 +189,7 @@ void UBSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& S
 
 void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
-	if (HasMatchingGameplayTag(TAG_Gameplay_AbilityInputBlocked))
+	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Disabled))
 	{
 		ClearAbilityInput();
 		return;

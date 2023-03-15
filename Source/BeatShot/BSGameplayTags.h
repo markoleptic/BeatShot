@@ -15,6 +15,7 @@ struct FBSGameplayTags
 	static void InitializeTags();
 
 	FGameplayTag GameplayCue_Sprint;
+	FGameplayTag GameplayCue_MuzzleFlash;
 	FGameplayTag GameplayCue_FireGun_Impact;
 
 	FGameplayTag Data;
@@ -34,6 +35,7 @@ struct FBSGameplayTags
 	FGameplayTag Input_Jump;
 	FGameplayTag Input_Interact;
 	FGameplayTag Input_ShiftInteract;
+	FGameplayTag Input_Disabled;
 
 	FGameplayTag Ability;
 	FGameplayTag Ability_Fire;
@@ -57,6 +59,10 @@ struct FBSGameplayTags
 	FGameplayTag Target_State_Single;
 	FGameplayTag Target_State_Multi;
 	FGameplayTag Target_State_Tracking;
+
+	FGameplayTag Cheat;
+	FGameplayTag Cheat_AimBot;
+	
 
 protected:
 	void AddAllTags(UGameplayTagsManager& Manager);

@@ -4,12 +4,10 @@
 #include "Gun_AK47.h"
 #include "BSCharacter.h"
 #include "BSPlayerController.h"
-#include "BSGameInstance.h"
 #include "Projectile.h"
 #include "SphereTarget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
-#include "Components/DecalComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -44,8 +42,6 @@ void AGun_AK47::BeginPlay()
 	Super::BeginPlay();
 
 	BulletDecalInstance = UMaterialInstanceDynamic::Create(BulletDecalMaterial, GetInstigatorController<ABSPlayerController>());
-	ProjectileSpawnParams.Owner = GetBSCharacter();
-	ProjectileSpawnParams.Instigator = GetBSCharacter();
 
 	/* Bind UpdateRecoilPattern to the Recoil vector curve and timeline */
 	FOnTimelineVector RecoilProgressFunction;
@@ -122,54 +118,6 @@ void AGun_AK47::StopFire()
 	/* Reverse the timeline so that it takes time to recover to the beginning */
 	RecoilTimeline.SetPlayRate(5.454545f);
 	RecoilTimeline.Reverse();
-}
-
-void AGun_AK47::Fire_AimBot()
-{
-	FHitResult Hit;
-	UArrowComponent* ArrowComponent = GetBSCharacter()->GetArrowComponent();
-	FTransform MuzzletTransform = MeshComp->GetSocketTransform("Muzzle");
-	FVector EndTrace = ArrowComponent->GetComponentLocation() + UKismetMathLibrary::RotateAngleAxis(
-		UKismetMathLibrary::RotateAngleAxis(ArrowComponent->GetForwardVector(), -CurrentShotRecoilRotation.Pitch, ArrowComponent->GetRightVector()), CurrentShotRecoilRotation.Yaw,
-		ArrowComponent->GetUpVector()) * FVector(TraceDistance);
-	/* Trace the character's pov to get location to fire projectile */
-	bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, ArrowComponent->GetComponentLocation(), EndTrace, ECC_GameTraceChannel1, FCollisionQueryParams::DefaultQueryParam);
-	/* Spawn the projectile at the muzzle */
-	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, MuzzletTransform.GetLocation(), ArrowComponent->GetComponentRotation(), ProjectileSpawnParams);
-	if (!Projectile) { return; }
-	/* Set the projectile's initial trajectory */
-	if (bHit)
-	{
-		Projectile->FireInDirection(UKismetMathLibrary::FindLookAtRotation( MuzzletTransform.GetLocation(), Hit.ImpactPoint).Vector());
-	}
-	/* Update number of shots fired */
-	if (!GetBSCharacter()->GetBSPlayerController()->CountdownActive && !TrackingTarget)
-	{
-		if (!OnShotFired.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnShotFired not bound."));
-		}
-	}
-	/* Update how many shots fired for recoil purposes */
-	ShotsFired++;
-	if (bShouldRecoil)
-	{
-		RecoilTimeline.SetPlayRate(1.f);
-		/* Resume timeline if it hasn't fully recovered */
-		if (RecoilTimeline.IsReversing())
-		{
-			RecoilTimeline.Play();
-		}
-		else
-		{
-			RecoilTimeline.PlayFromStart();
-		}
-		bShouldKickback = true;
-		KickbackAlpha = 0.f;
-	}
-	ShowMuzzleFlash(MuzzletTransform.GetRotation().Rotator());
-	PlayGunshotSound();
-	ShotBulletDecal(Hit);
 }
 
 void AGun_AK47::EnableFire()
@@ -279,47 +227,3 @@ void AGun_AK47::UpdateRecoilPattern(const FVector Output)
 		CurrentShotRecoilRotation = FRotator(0, 0, 0);
 	}
 }
-
-void AGun_AK47::ShowMuzzleFlash(const FRotator& MuzzleRotation) const
-{
-	/** Play Muzzle flash */
-	if (NS_MuzzleFlash)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAttached(NS_MuzzleFlash, MeshComp, TEXT("Muzzle"), MuzzleFlashOffset, MuzzleRotation, EAttachLocation::SnapToTarget, true);
-	}
-}
-
-void AGun_AK47::PlayGunshotSound() const
-{
-	/** Play the sound if specified */
-	if (FireSound)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetBSCharacter()->GetActorLocation());
-	}
-}
-
-void AGun_AK47::ShotBulletDecal(const FHitResult& Hit) const
-{
-	/** Try to create decal at hit location */
-	if (BulletDecalInstance && BulletDecalMaterial && bShowBulletDecals)
-	{
-		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecalInstance, FVector(4, 4, 4), Hit.ImpactPoint, Hit.Normal.Rotation(), 0.f);
-		if (!Decal)
-		{
-			return;
-		}
-		Decal->SetFadeScreenSize(0.f);
-		Decal->SetFadeOut(1, 2, true);
-	}
-}
-
-
-/** Debug line for what actor is looking at
- * DrawDebugLine(GetWorld(), StartTrace,
- *	EndTrace, FColor::Red, false, 10.f);
-*/
-
-/** Debug line going from muzzle to where actor is looking at
- * DrawDebugLine(GetWorld(), MuzzleLocation,
- *	Hit.ImpactPoint, FColor::Emerald, false, 10.f);
-*/

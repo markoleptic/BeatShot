@@ -45,9 +45,13 @@ public:
 	UPROPERTY(BlueprintReadWrite, Meta = (ExposeOnSpawn = true))
 	FGameplayEffectSpecHandle DamageEffectSpecHandle;
 
+	bool bSpawnDecalOnHit;
+
 private:
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	void SpawnDecal(const FHitResult& Hit, const float StartDelay ,const float FadeDuration) const;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Combat")
 	float Damage = 1000.f;

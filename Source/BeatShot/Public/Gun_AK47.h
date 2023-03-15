@@ -44,14 +44,13 @@ public:
 	/** Stops the timer that allows for automatic fire */
 	void StopFire();
 
-	/** Fires the gun once */
-	void Fire_AimBot();
-
 	/** Allows the player to fire again */
 	void EnableFire();
 
 	/** Returns whether the weapon can fire or not */
 	bool CanFire() const { return bCanFire; }
+
+	bool IsFiring() const { return bIsFiring; }
 
 	/** Update the weapon's ability to fire
 	 *	@param bNewFire The new state of the weapon's ability to fire
@@ -122,15 +121,6 @@ private:
 	UFUNCTION()
 	void UpdateRecoilPattern(FVector Output);
 
-	/** Plays the muzzle flash Niagara effect */
-	void ShowMuzzleFlash(const FRotator& MuzzleRotation) const;
-
-	/** Plays the gunshot sound (no gunshot sound atm) */
-	void PlayGunshotSound() const;
-
-	/** Spawns a bullet decal at the Hit result location */
-	void ShotBulletDecal(const FHitResult& Hit) const;
-
 	/** The timeline set from RecoilVectorCurve */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	FTimeline RecoilTimeline;
@@ -146,14 +136,6 @@ private:
 	/** The timer that handles automatic fire */
 	UPROPERTY(EditDefaultsOnly, Category = "Gun State")
 	FTimerHandle ShotDelay;
-
-	/** Sound to play each time we fire */
-	UPROPERTY(EditDefaultsOnly, Category = "Sound")
-	USoundBase* FireSound;
-
-	/** Muzzle flash effect */
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	UNiagaraSystem* NS_MuzzleFlash;
 
 	/** Used in recoil to make sure the first shot has properly applied recoil */
 	UPROPERTY(VisibleAnywhere, Category = "Gun State")
@@ -177,12 +159,6 @@ public:
 	ABSCharacter* GetBSCharacter() const;
 
 private:
-
-	/** Offset the muzzle flash a fixed amount */
-	FVector MuzzleFlashOffset = FVector(5, 0, 0);
-
-	/** The spawn parameters for the bullet */
-	FActorSpawnParameters ProjectileSpawnParams;
 
 	/** Determines if the player can fire */
 	bool bCanFire;

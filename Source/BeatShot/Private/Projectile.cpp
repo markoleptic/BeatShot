@@ -4,6 +4,7 @@
 #include "Projectile.h"
 #include "BSGameInstance.h"
 #include "SphereTarget.h"
+#include "Components/DecalComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "GameFramework/DamageType.h"
@@ -45,21 +46,27 @@ void AProjectile::BeginPlay()
 void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// Get the owning actor of the projectile
-	if (!GetOwner() || !HasAuthority() || !OtherActor->CanBeDamaged() || !OtherActor || OtherActor == GetInstigator())
+	if (!GetOwner() || !HasAuthority() || !OtherActor || OtherActor == GetInstigator())
+	{
+		Destroy();
+		return;
+	}
+	if (bSpawnDecalOnHit)
+	{
+		SpawnDecal(Hit, 1, 2);
+	}
+	if (!OtherActor->CanBeDamaged())
 	{
 		Destroy();
 		return;
 	}
 
-	if (OtherActor->Implements<IAbilitySystemInterface::UClassType>())
+	if (OtherActor->Implements<IAbilitySystemInterface::UClassType>() && Cast<ASphereTarget>(OtherActor))
 	{
-		if (Cast<ASphereTarget>(OtherActor))
-		{
-			// Pass the HitResult to the GameplayEffectSpec
-			UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(Cast<ASphereTarget>(OtherActor)->GetAbilitySystemComponent());
-			DamageEffectSpecHandle.Data.Get()->GetContext().AddHitResult(Hit);
-			ASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
-		}
+		// Pass the HitResult to the GameplayEffectSpec
+		UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(Cast<ASphereTarget>(OtherActor)->GetAbilitySystemComponent());
+		DamageEffectSpecHandle.Data.Get()->GetContext().AddHitResult(Hit);
+		ASC->ApplyGameplayEffectSpecToSelf(*DamageEffectSpecHandle.Data.Get());
 	}
 	Destroy();
 }
@@ -67,4 +74,19 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 void AProjectile::FireInDirection(const FVector& ShootDirection) const
 {
 	ProjectileMovement->Velocity = ShootDirection * ProjectileMovement->InitialSpeed;
+}
+
+void AProjectile::SpawnDecal(const FHitResult& Hit, const float StartDelay, const float FadeDuration) const
+{
+	/** Try to create decal at hit location */
+	if (BulletDecalInstance && BulletDecalMaterial && bSpawnDecalOnHit)
+	{
+		UDecalComponent* Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), BulletDecalInstance, FVector(4, 4, 4), Hit.ImpactPoint, Hit.Normal.Rotation(), 0.f);
+		if (!Decal)
+		{
+			return;
+		}
+		Decal->SetFadeScreenSize(0.f);
+		Decal->SetFadeOut(StartDelay, FadeDuration, true);
+	}
 }

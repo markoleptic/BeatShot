@@ -15,6 +15,7 @@ void FBSGameplayTags::InitializeTags()
 void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
 	AddTag(GameplayCue_Sprint, "GameplayCue.Sprint","");
+	AddTag(GameplayCue_MuzzleFlash, "GameplayCue.MuzzleFlash","");
 	AddTag(GameplayCue_FireGun_Impact, "GameplayCue.FireGun.Impact","");
 
 	AddTag(Data, "Data","");
@@ -34,6 +35,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_Jump, "Input.Jump","");
 	AddTag(Input_Interact, "Input.Interact","");
 	AddTag(Input_ShiftInteract, "Input.ShiftInteract","");
+	AddTag(Input_Disabled, "Input.ShiftInteract","");
 	
 	AddTag(Ability, "Ability","");
 	AddTag(Ability_Fire, "Ability.Fire","");
@@ -57,6 +59,9 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Target_State_Single, "Target.State.Single","");
 	AddTag(Target_State_Multi, "Target.State.Multi","");
 	AddTag(Target_State_Tracking, "Target.State.Tracking","");
+
+	AddTag(Cheat, "Cheat","");
+	AddTag(Cheat_AimBot, "Cheat.AimBot","");
 }
 
 void FBSGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

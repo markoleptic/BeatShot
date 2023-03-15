@@ -5,15 +5,17 @@
 #include "CoreMinimal.h"
 #include "BSGameplayAbility.h"
 #include "Projectile.h"
-#include "BSGA_FireGun.generated.h"
+#include "BSGameplayAbility_FireGun.generated.h"
 
+
+class ABSCharacter;
 UCLASS()
-class BEATSHOT_API UBSGA_FireGun : public UBSGameplayAbility
+class BEATSHOT_API UBSGameplayAbility_FireGun : public UBSGameplayAbility
 {
 	GENERATED_BODY()
 	
 public:
-	UBSGA_FireGun();
+	UBSGameplayAbility_FireGun();
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* FireHipMontage;
@@ -23,8 +25,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TSubclassOf<UGameplayEffect> DamageGameplayEffect;
-
-	/** Actually activate ability, do not call this directly. We'll call it from APAHeroCharacter::ActivateAbilitiesWithTags(). */
+	
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
 
 protected:
@@ -39,11 +40,18 @@ protected:
 	float TraceDistance = 100000.f;
 
 	UFUNCTION()
-	void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);
+	virtual void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);
 
 	UFUNCTION()
-	void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
+	virtual void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
 
 	UFUNCTION()
-	void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
+	virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
+
+	UFUNCTION()
+	void OnReleased(float TimeHeld);
+
+	void SpawnProjectile(ABSCharacter* ActorCharacter) const;
+
+	void PlayMontage();
 };

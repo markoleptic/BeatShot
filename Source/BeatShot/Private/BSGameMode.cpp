@@ -99,7 +99,10 @@ void ABSGameMode::BindGameModeDelegates()
 		{
 			Character->GetGun()->SetShouldTrace(false);
 		}
-		Character->SetTimelinePlaybackRate_AimBot(GameModeActorStruct.TargetSpawnCD);
+		if (!OnTargetSpawned.IsBoundToObject(Character))
+		{
+			OnTargetSpawned.AddUFunction(Character, FName("OnTargetSpawned_AimBot"));
+		}
 	}
 	if (!OnTargetSpawned.IsBoundToObject(this))
 	{

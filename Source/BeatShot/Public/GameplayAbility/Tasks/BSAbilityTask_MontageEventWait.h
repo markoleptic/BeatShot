@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "BSAT_PlayMontageAndWaitForEvent.generated.h"
+#include "BSAbilityTask_MontageEventWait.generated.h"
 
 class UBSAbilitySystemComponent;
 
 /** Delegate type used, EventTag and Payload may be empty if it came from the montage callbacks */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBSPlayMontageAndWaitForEventDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMontageEventWait, FGameplayTag, EventTag, FGameplayEventData, EventData);
 
 /**
  * This task combines PlayMontageAndWait and WaitForEvent into one task, so you can wait for multiple types of activations such as from a melee combo
@@ -18,13 +18,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FBSPlayMontageAndWaitForEventDelega
  * It is expected that each game will have a set of game-specific tasks to do what they want
  */
 UCLASS()
-class BEATSHOT_API UBSAT_PlayMontageAndWaitForEvent : public UAbilityTask
+class BEATSHOT_API UBSAbilityTask_MontageEventWait : public UAbilityTask
 {
 	GENERATED_BODY()
 	
 public:
 	// Constructor and overrides
-	UBSAT_PlayMontageAndWaitForEvent(const FObjectInitializer& ObjectInitializer);
+	UBSAbilityTask_MontageEventWait(const FObjectInitializer& ObjectInitializer);
 
 	/**
 	* The Blueprint node for this task, PlayMontageAndWaitForEvent, has some black magic from the plugin that automagically calls Activate()
@@ -37,23 +37,23 @@ public:
 
 	/** The montage completely finished playing */
 	UPROPERTY(BlueprintAssignable)
-	FBSPlayMontageAndWaitForEventDelegate OnCompleted;
+	FMontageEventWait OnCompleted;
 
 	/** The montage started blending out */
 	UPROPERTY(BlueprintAssignable)
-	FBSPlayMontageAndWaitForEventDelegate OnBlendOut;
+	FMontageEventWait OnBlendOut;
 
 	/** The montage was interrupted */
 	UPROPERTY(BlueprintAssignable)
-	FBSPlayMontageAndWaitForEventDelegate OnInterrupted;
+	FMontageEventWait OnInterrupted;
 
 	/** The ability task was explicitly cancelled by another ability */
 	UPROPERTY(BlueprintAssignable)
-	FBSPlayMontageAndWaitForEventDelegate OnCancelled;
+	FMontageEventWait OnCancelled;
 
 	/** One of the triggering gameplay events happened */
 	UPROPERTY(BlueprintAssignable)
-	FBSPlayMontageAndWaitForEventDelegate EventReceived;
+	FMontageEventWait EventReceived;
 
 	/**
 	 * Play a montage and wait for it end. If a gameplay event happens that matches EventTags (or EventTags is empty), the EventReceived delegate will fire with a tag and event data.
@@ -61,15 +61,17 @@ public:
 	 * On normal execution, OnBlendOut is called when the montage is blending out, and OnCompleted when it is completely done playing
 	 * OnInterrupted is called if another montage overwrites this, and OnCancelled is called if the ability or task is cancelled
 	 *
+	 * @param OwningAbility The owner of this task
 	 * @param TaskInstanceName Set to override the name of this task, for later querying
 	 * @param MontageToPlay The montage to play on the character
 	 * @param EventTags Any gameplay events matching this tag will activate the EventReceived callback. If empty, all events will trigger callback
 	 * @param Rate Change to play the montage faster or slower
+	 * @param StartSection Start Section
 	 * @param bStopWhenAbilityEnds If true, this montage will be aborted if the ability ends normally. It is always stopped when the ability is explicitly cancelled
 	 * @param AnimRootMotionTranslationScale Change to modify size of root motion or set to 0 to block it entirely
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAT_PlayMontageAndWaitForEvent* PlayMontageAndWaitForEvent(
+	static UBSAbilityTask_MontageEventWait* PlayMontageAndWaitForEvent(
 			UGameplayAbility* OwningAbility,
 			FName TaskInstanceName,
 			UAnimMontage* MontageToPlay,
@@ -105,15 +107,15 @@ private:
 	bool bStopWhenAbilityEnds;
 
 	/** Checks if the ability is playing a montage and stops that montage, returns true if a montage was stopped, false if not. */
-	bool StopPlayingMontage();
+	bool StopPlayingMontage() const;
 
 	/** Returns our ability system component */
-	UBSAbilitySystemComponent* GetTargetASC();
+	UBSAbilitySystemComponent* GetTargetASC() const;
 
-	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted);
-	void OnAbilityCancelled();
+	void OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted) const;
+	void OnAbilityCancelled() const;
 	void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload);
+	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const;
 
 	FOnMontageBlendingOutStarted BlendingOutDelegate;
 	FOnMontageEnded MontageEndedDelegate;

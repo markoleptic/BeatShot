@@ -1,5 +1,4 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
-// Copyright 2020 Dan Kestranek.
 
 #pragma once
 

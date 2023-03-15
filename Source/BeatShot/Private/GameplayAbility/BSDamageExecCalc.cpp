@@ -1,5 +1,6 @@
-﻿#include "GameplayAbility/BSDamageExecCalc.h"
+﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
+#include "GameplayAbility/BSDamageExecCalc.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"

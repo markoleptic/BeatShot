@@ -80,6 +80,18 @@ USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
 	return Cast<USkeletalMeshComponent>(HandsMesh);
 }
 
+ASphereTarget* ABSCharacter::PeekActiveTargets() const
+{
+	ASphereTarget* Target;
+	ActiveTargets_AimBot.Peek(Target);
+	return Target;
+}
+
+float ABSCharacter::GetAimBotPlaybackSpeed() const
+{
+	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct.TargetSpawnCD;
+}
+
 UCameraComponent* ABSCharacter::GetCamera() const
 {
 	return Cast<UCameraComponent>(CameraComponent);
@@ -133,13 +145,6 @@ void ABSCharacter::BeginPlay()
 	
 	UBSGameInstance* GameInstance = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GameInstance->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSCharacter::OnUserSettingsChange);
-	
-	FOnTimelineFloat OnTimelineFloat;
-	OnTimelineFloat.BindUFunction(this, FName("OnTimelineTick_AimBot"));
-	FOnTimelineEvent OnTimelineEvent;
-	OnTimelineEvent.BindUFunction(this, FName("OnTimelineCompleted_AimBot"));
-	AimBotTimeline.SetTimelineFinishedFunc(OnTimelineEvent);
-	AimBotTimeline.AddInterpFloat(Curve_AimBotRotationSpeed, OnTimelineFloat);
 }
 
 void ABSCharacter::PawnClientRestart()
@@ -163,34 +168,6 @@ void ABSCharacter::PawnClientRestart()
 void ABSCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (!bEnabled_AimBot || ActiveTargets_AimBot.IsEmpty())
-	{
-		return;
-	}
-
-	FVector Loc;
-	FRotator Rot;
-	GetController()->GetActorEyesViewPoint(Loc, Rot);
-	Rot.Normalize();
-	ASphereTarget* Target;
-	ActiveTargets_AimBot.Peek(Target);
-	if (!Target->IsBeatTrackTarget())
-	{
-		AimBotTimeline.TickTimeline(DeltaTime);
-		return;
-	}
-
-	FRotator NewRot;
-	if (bIsLagging)
-	{
-		NewRot = UKismetMathLibrary::RInterpTo_Constant(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, LagLocation), DeltaTime, FMath::FRandRange(10.f, 15.f));
-	}
-	else
-	{
-		NewRot = UKismetMathLibrary::RInterpTo(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), DeltaTime, FMath::FRandRange(11.f, 15.f));
-	}
-	GetController()->SetControlRotation(NewRot);
 }
 
 void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -223,8 +200,6 @@ void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 void ABSCharacter::Input_StartFire()
 {
 	GetGun()->StartFire();
-	/* TODO: Fix scuffed firing. Probably put a cooldown on firing and pass in with BindAbilityActions */
-	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagPressed(FBSGameplayTags::Get().Input_Fire);
 }
 
 void ABSCharacter::Input_StopFire()
@@ -316,60 +291,16 @@ void ABSCharacter::OnShiftInteractCompleted(const FInputActionInstance& Instance
 	}
 }
 
-void ABSCharacter::OnBeatTrackDirectionChanged(const FVector Location)
-{
-	LagLocation = Location;
-	bIsLagging = true;
-	LagDelegate.BindLambda([this]
-	{
-		bIsLagging = false;
-	});
-	GetWorld()->GetTimerManager().SetTimer(LagHandle, LagDelegate, FMath::FRandRange(0.1f, 0.2f), false);
-}
-
 void ABSCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
 {
 	ActiveTargets_AimBot.Enqueue(SpawnedTarget);
-	if (!AimBotTimeline.IsPlaying())
-	{
-		DestroyNextTarget_AimBot();
-	}
 }
 
-void ABSCharacter::OnTimelineTick_AimBot(const float Alpha)
-{
-	FVector Loc;
-	FRotator Rot;
-	GetController()->GetActorEyesViewPoint(Loc, Rot);
-	ASphereTarget* Target;
-	ActiveTargets_AimBot.Peek(Target);
-	GetController()->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation_AimBot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, true));
-}
-
-void ABSCharacter::OnTimelineCompleted_AimBot()
+void ABSCharacter::PopActiveTargets()
 {
 	ActiveTargets_AimBot.Pop();
-	GetGun()->Fire_AimBot();
-	if (!AimBotTimeline.IsPlaying())
-	{
-		DestroyNextTarget_AimBot();
-	}
 }
 
-void ABSCharacter::DestroyNextTarget_AimBot()
-{
-	if (!ActiveTargetLocations_AimBot.IsEmpty())
-	{
-		FVector TargetLocation;
-		if (ActiveTargetLocations_AimBot.Peek(TargetLocation))
-		{
-			StartRotation_AimBot = GetController()->GetControlRotation();
-			StartRotation_AimBot.Normalize();
-			AimBotTimeline.SetPlayRate(TimelinePlaybackRate_AimBot);
-			AimBotTimeline.PlayFromStart();
-		}
-	}
-}
 
 void ABSCharacter::PossessedBy(AController* NewController)
 {
@@ -410,11 +341,6 @@ void ABSCharacter::OnRep_PlayerState()
 		// Set the AttributeSetBase for convenience attribute functions
 		AttributeSetBase = PS->GetAttributeSetBase();
 	}
-}
-
-void ABSCharacter::SetTimelinePlaybackRate_AimBot(const float TargetSpawnCD)
-{
-	TimelinePlaybackRate_AimBot = 1.f / TargetSpawnCD;
 }
 
 void ABSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -464,8 +390,8 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this, &ThisClass::OnInteractCompleted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Triggered, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Completed, this, &ThisClass::Input_StopFire, /*bLogIfNotFound=*/ true);
+		//BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Triggered, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
+		//BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Completed, this, &ThisClass::Input_StopFire, /*bLogIfNotFound=*/ true);
 	}
 }
 
@@ -517,5 +443,10 @@ void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
+	// TODO: Properly fix the FireGun GameplayAbility to call this when input is released.
+	if (InputTag == FBSGameplayTags::Get().Input_Fire)
+	{
+		Input_StopFire();
+	}
 	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
 }
