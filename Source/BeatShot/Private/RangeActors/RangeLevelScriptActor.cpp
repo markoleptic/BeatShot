@@ -26,8 +26,14 @@ ARangeLevelScriptActor::ARangeLevelScriptActor()
 void ARangeLevelScriptActor::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
 	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.AddUFunction(this, "OnTargetDestroyed");
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
+	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddDynamic(this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
 
 	OnTimelineVector.BindUFunction(this, FName("TransitionTimeOfDay"));
 	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionSkySphereMaterial"));

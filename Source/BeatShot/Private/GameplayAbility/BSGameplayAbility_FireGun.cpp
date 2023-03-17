@@ -22,12 +22,26 @@ void UBSGameplayAbility_FireGun::ActivateAbility(const FGameplayAbilitySpecHandl
 		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
 	}
 	
+	PlayMontage();
+
+	if (GetBSCharacterFromActorInfo())
+	{
+		GetBSCharacterFromActorInfo()->GetGun()->StartFire();
+	}
+
+	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority)
+	{
+		// Spawn the bullet projectile
+		SpawnProjectile(GetBSCharacterFromActorInfo());
+
+		// Don't really know where to properly put this but this executes the muzzle flash Niagara effect (GC_MuzzleFlash)
+		K2_ExecuteGameplayCue(FBSGameplayTags::Get().GameplayCue_MuzzleFlash, MakeEffectContext(CurrentSpecHandle, CurrentActorInfo));
+	}
+	
 	// Currently doesn't work or just gets overriden by task repeating over and over
 	UAbilityTask_WaitInputRelease* ReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this, true);
 	ReleaseTask->OnRelease.AddDynamic(this, &UBSGameplayAbility_FireGun::OnReleased);
 	ReleaseTask->ReadyForActivation();
-	
-	PlayMontage();
 }
 
 void UBSGameplayAbility_FireGun::OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData)
@@ -45,21 +59,17 @@ void UBSGameplayAbility_FireGun::EventReceived(FGameplayTag EventTag, FGameplayE
 	// Only spawn projectiles on the Server.
 	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FBSGameplayTags::Get().Event_Montage_SpawnProjectile)
 	{
-		if (GetBSCharacterFromActorInfo())
-		{
-			EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-		}
-
-		// Spawn the bullet projectile
-		SpawnProjectile(GetBSCharacterFromActorInfo());
-
-		// Don't really know where to properly put this but this executes the muzzle flash Niagara effect (GC_MuzzleFlash)
-		K2_ExecuteGameplayCue(FBSGameplayTags::Get().GameplayCue_MuzzleFlash, MakeEffectContext(CurrentSpecHandle, CurrentActorInfo));
+		// // Spawn the bullet projectile
+		// SpawnProjectile(GetBSCharacterFromActorInfo());
+		//
+		// // Don't really know where to properly put this but this executes the muzzle flash Niagara effect (GC_MuzzleFlash)
+		// K2_ExecuteGameplayCue(FBSGameplayTags::Get().GameplayCue_MuzzleFlash, MakeEffectContext(CurrentSpecHandle, CurrentActorInfo));
 	}
 }
 
 void UBSGameplayAbility_FireGun::OnReleased(float TimeHeld)
 {
+	UE_LOG(LogTemp, Display, TEXT("Released: %f"), FPlatformTime::Seconds());
 	if (const ABSCharacter* Character = GetBSCharacterFromActorInfo())
 	{
 		Character->GetGun()->StopFire();
@@ -85,16 +95,12 @@ void UBSGameplayAbility_FireGun::SpawnProjectile(ABSCharacter* ActorCharacter) c
 	Projectile->ProjectileMovement->MaxSpeed = ProjectileSpeed;
 	Projectile->bSpawnDecalOnHit = ActorCharacter->LoadPlayerSettings().Game.bShowBulletDecals;
 	Projectile->FinishSpawning(Transform, true);
-	if (!ActorCharacter->GetGun()->IsFiring())
-	{
-		ActorCharacter->GetGun()->StartFire();
-	}
 }
 
 void UBSGameplayAbility_FireGun::PlayMontage()
 {
 	UBSAbilityTask_MontageEventWait* Task = UBSAbilityTask_MontageEventWait::PlayMontageAndWaitForEvent(this, NAME_None, FireHipMontage, FGameplayTagContainer(), 1.0f,
-	NAME_None, true, 1.0f);
+	NAME_None, false, 1.0f);
 	Task->OnBlendOut.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCompleted);
 	Task->OnCompleted.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCompleted);
 	Task->OnInterrupted.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCancelled);

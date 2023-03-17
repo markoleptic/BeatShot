@@ -7,29 +7,31 @@
 #include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerScore.h"
 #include "SaveLoadInterface.h"
-#include "GameFramework/GameModeBase.h"
+#include "GameFramework/GameMode.h"
 #include "BSGameMode.generated.h"
 
 class AVisualizerManager;
+class ABSCharacter;
 class AVisualizerBase;
 class ABeamVisualizer;
 class AStaticCubeVisualizer;
 class AFloatingTextActor;
 class ATargetSpawner;
 class ASphereTarget;
+class ABSPlayerController;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned, ASphereTarget* SpawnedTarget);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector Position);
-DECLARE_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
-DECLARE_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
+DECLARE_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector Position);
 DECLARE_MULTICAST_DELEGATE(OnGameModeStarted);
 
 UCLASS()
-class BEATSHOT_API ABSGameMode : public AGameModeBase, public ISaveLoadInterface, public IHttpRequestInterface
+class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, public IHttpRequestInterface
 {
 	GENERATED_BODY()
 
@@ -39,36 +41,51 @@ class BEATSHOT_API ABSGameMode : public AGameModeBase, public ISaveLoadInterface
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+	virtual void PostLoad() override;
+
+	virtual void Logout(AController* Exiting) override;
+
+	ABSCharacter* SpawnPlayer(ABSPlayerController* PlayerController);
+
+	UPROPERTY()
+	TArray<ABSPlayerController*> Controllers;
+
 #pragma region Classes
 
 protected:
 	/* The TargetSpawner class to spawn */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
 	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
 
 	/** The FloatingTextActor class to spawn */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
 	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
 
 	/** The VisualizerManager class to spawn */
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
 	TSubclassOf<AVisualizerManager> VisualizerManagerClass;
 
+	/** The VisualizerManager class to spawn */
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
+	TSubclassOf<ACharacter> CharacterClass;
+
 	/* The spawned TargetSpawner */
-	UPROPERTY(BlueprintReadOnly)
-	ATargetSpawner* TargetSpawner;
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Actors")
+	TObjectPtr<ATargetSpawner> TargetSpawner;
 
 	/** The Visualizer Manager */
-	UPROPERTY(BlueprintReadOnly)
-	AVisualizerManager* VisualizerManager;
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Actors")
+	TObjectPtr<AVisualizerManager> VisualizerManager;
 
 	/* The spawned AATracker object */
-	UPROPERTY(BlueprintReadOnly)
-	UAudioAnalyzerManager* AATracker;
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
+	TObjectPtr<UAudioAnalyzerManager> AATracker;
 
 	/* The spawned AAPlayer object */
-	UPROPERTY(BlueprintReadOnly)
-	UAudioAnalyzerManager* AAPlayer;
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
+	TObjectPtr<UAudioAnalyzerManager> AAPlayer;
 
 #pragma endregion
 
@@ -98,7 +115,7 @@ private:
 	void SpawnNewTarget(bool bNewTargetState);
 
 	/** Timer that spans the length of the song */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Timer")
 	FTimerHandle GameModeLengthTimer;
 
 	/** Calls EndGameMode after finding parameters for it */
@@ -117,7 +134,7 @@ public:
 	void StartAAManagerPlayback();
 
 	/** Called from DefaultPlayerController when the game is paused */
-	UFUNCTION(BlueprintCallable, Category = "AudioAnalyzer Settings")
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|AudioAnalyzer")
 	void PauseAAManager(bool ShouldPause);
 
 private:
@@ -179,7 +196,12 @@ public:
 	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
 	FUpdateScoresToHUD UpdateScoresToHUD;
 
+	/** Broadcasts when the countdown has completed and the actual game has began. */
 	OnGameModeStarted OnGameModeStarted;
+	
+	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
+	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
+	FOnPostScoresResponse OnPostScoresResponse;
 
 #pragma endregion
 
@@ -209,15 +231,9 @@ private:
 
 	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
 	FOnAccessTokenResponse OnAccessTokenResponse;
-
-public:
-	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
-	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
-	FOnPostScoresResponse OnPostScoresResponse;
-
-private:
+	
 	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Score")
 	FPlayerScore CurrentPlayerScore;
 
 	/** Max score per target based on total amount of targets that could spawn */
@@ -248,7 +264,7 @@ private:
 	int32 CombatTextFrequency;
 
 	/** The game mode defining properties */
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "BeatShot|General")
 	FGameModeActorStruct GameModeActorStruct;
 
 	const FVector TargetSpawnerLocation = {3730, 0, 750};

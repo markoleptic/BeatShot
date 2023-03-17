@@ -35,7 +35,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_Jump, "Input.Jump","");
 	AddTag(Input_Interact, "Input.Interact","");
 	AddTag(Input_ShiftInteract, "Input.ShiftInteract","");
-	AddTag(Input_Disabled, "Input.ShiftInteract","");
+	AddTag(Input_Disabled, "Input.Disabled","");
 	
 	AddTag(Ability, "Ability","");
 	AddTag(Ability_Fire, "Ability.Fire","");

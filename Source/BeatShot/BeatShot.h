@@ -82,7 +82,7 @@ struct FVectorCounter
 	FVectorCounter()
 	{
 		Point = FVector();
-		TotalSpawns = 0;
+		TotalSpawns = -1;
 		TotalHits = 0;
 	}
 
@@ -111,6 +111,48 @@ struct FVectorCounter
 		if (Point.Z == Other.Point.Z && Point.Y < Other.Point.Y)
 		{
 			return true;
+		}
+		return false;
+	}
+};
+
+/** A struct representing a point in a 2D grid with information about that point */
+USTRUCT()
+struct FSmallVectorCounter
+{
+	GENERATED_BODY()
+
+	/** Unscaled, world spawn location point */
+	TArray<FVector> Points;
+
+	/** The total number of target spawns at this point */
+	int32 TotalSpawns;
+
+	/** The total number of target hits by player at this point */
+	int32 TotalHits;
+
+	FSmallVectorCounter()
+	{
+		Points = TArray<FVector>();
+		TotalSpawns = -1;
+		TotalHits = 0;
+	}
+
+	FSmallVectorCounter(const TArray<FVector> NewPoints)
+	{
+		Points = NewPoints;
+		TotalSpawns = -1;
+		TotalHits = 0;
+	}
+
+	FORCEINLINE bool operator ==(const FSmallVectorCounter& Other) const
+	{
+		for (const FVector Point : Other.Points)
+		{
+			if (Points.Contains(Point))
+			{
+				return true;
+			}
 		}
 		return false;
 	}

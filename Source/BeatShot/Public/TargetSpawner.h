@@ -202,6 +202,17 @@ private:
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
 	TArray<FVectorCounter> SpawnCounter;
 
+	/** Stores all possible spawn locations and the total spawns & player hits at each location, scaled by 1/2 */
+	TArray<FSmallVectorCounter> SmallSpawnCounter;
+
+	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
+
+	TArray<FSmallVectorCounter> GetSmallSpawnCounter() const { return SmallSpawnCounter; }
+
+	void SaveSmallSpawnCounterToFile() const;
+
+	FVector TryGetSpawnLocationFromFile() const;
+
 	/** The scale to apply to the next/current target */
 	float TargetScale;
 

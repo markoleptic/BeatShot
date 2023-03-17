@@ -4,6 +4,7 @@
 
 #include "Containers/Array.h"
 #include "Engine/DataAsset.h"
+#include "InputTriggers.h"
 #include "GameplayTagContainer.h"
 #include "BSInputConfig.generated.h"
 
@@ -24,6 +25,9 @@ struct FBSInputAction
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (Categories = "InputTag"))
 	FGameplayTag InputTag;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (Categories = "TriggerEvent"))
+	ETriggerEvent PressedTriggerEvent = ETriggerEvent::Triggered;
 };
 
 /**

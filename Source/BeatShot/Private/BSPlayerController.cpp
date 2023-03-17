@@ -27,6 +27,29 @@
 void ABSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	if (HasAuthority())
+	{
+		if (IsLocalController())
+		{
+			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+		}
+	}
+	else
+	{
+		if (IsLocalController())
+		{
+			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+		}
+	}
+
 	if (LoadPlayerSettings().VideoAndSound.bShowFPSCounter)
 	{
 		ShowFPSCounter();
@@ -72,6 +95,10 @@ void ABSPlayerController::SetPlayerEnabledState(const bool bPlayerEnabled)
 
 void ABSPlayerController::ShowMainMenu()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	FadeScreenFromBlack();
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
@@ -91,6 +118,10 @@ void ABSPlayerController::HideMainMenu()
 
 void ABSPlayerController::ShowPauseMenu()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	PauseMenu = CreateWidget<UPauseMenuWidget>(this, PauseMenuClass);
 	PauseMenu->ResumeGame.BindLambda([&]
 	{
@@ -119,6 +150,10 @@ void ABSPlayerController::ShowPauseMenu()
 
 void ABSPlayerController::HidePauseMenu()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (PauseMenu)
 	{
 		PauseMenu->RemoveFromParent();
@@ -130,6 +165,10 @@ void ABSPlayerController::HidePauseMenu()
 
 void ABSPlayerController::ShowCrossHair()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	CrossHair = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
 	CrossHair->AddToViewport();
 }
@@ -145,11 +184,15 @@ void ABSPlayerController::HideCrossHair()
 
 void ABSPlayerController::ShowPlayerHUD()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
 	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	GameMode->UpdateScoresToHUD.BindUFunction(PlayerHUD, FName("UpdateAllElements"));
-	GameMode->OnSecondPassed.BindUFunction(PlayerHUD, FName("UpdateSongProgress"));
+	GameMode->UpdateScoresToHUD.AddUFunction(PlayerHUD, FName("UpdateAllElements"));
+	GameMode->OnSecondPassed.AddUFunction(PlayerHUD, FName("UpdateSongProgress"));
 	if (GI->GameModeActorStruct.IsBeatTrackMode)
 	{
 		PlayerHUD->TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -173,6 +216,10 @@ void ABSPlayerController::HidePlayerHUD()
 
 void ABSPlayerController::ShowCountdown()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	SetControlRotation(FRotator(0, 0, 0));
 	if (GetPawn() != nullptr)
 	{
@@ -192,6 +239,10 @@ void ABSPlayerController::ShowCountdown()
 
 void ABSPlayerController::HideCountdown()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (Countdown)
 	{
 		Countdown->RemoveFromParent();
@@ -202,6 +253,10 @@ void ABSPlayerController::HideCountdown()
 
 void ABSPlayerController::ShowPostGameMenu()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
 	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(this, &ABSPlayerController::OnPlayerSettingsChanged);
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
@@ -233,6 +288,10 @@ void ABSPlayerController::ShowPostGameMenu()
 
 void ABSPlayerController::OnPostScoresResponseReceived(const ELoginState& LoginState)
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (!PostGameMenuWidget)
 	{
 		return;
@@ -264,6 +323,11 @@ void ABSPlayerController::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 }
 
+ABSCharacter* ABSPlayerController::GetBSCharacter() const
+{
+	return Cast<ABSCharacter>(GetPawn());
+}
+
 void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)
 {
 	Super::PreProcessInput(DeltaTime, bGamePaused);
@@ -272,6 +336,10 @@ void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGam
 void ABSPlayerController::PostProcessInput(const float DeltaTime, const bool bGamePaused)
 {
 	Super::PostProcessInput(DeltaTime, bGamePaused);
+	if (!IsLocalController() || !HasAuthority())
+	{
+		return;
+	}
 	GetBSAbilitySystemComponent()->ProcessAbilityInput(DeltaTime, IsPaused());
 }
 
@@ -325,6 +393,10 @@ void ABSPlayerController::FadeScreenToBlack()
 
 void ABSPlayerController::FadeScreenFromBlack()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (!ScreenFadeWidget)
 	{
 		ScreenFadeWidget = CreateWidget<UScreenFadeWidget>(this, ScreenFadeClass);
@@ -336,7 +408,7 @@ void ABSPlayerController::FadeScreenFromBlack()
 
 void ABSPlayerController::ShowInteractInfo()
 {
-	if (InteractInfoWidget == nullptr)
+	if (!InteractInfoWidget)
 	{
 		InteractInfoWidget = CreateWidget<UUserWidget>(this, InteractInfoWidgetClass);
 		InteractInfoWidget->AddToViewport(ZOrderFPSCounter);

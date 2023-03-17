@@ -74,9 +74,10 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	/* RLProject */
 	if (GameModeActorStruct.CustomGameModeName.Equals("RLProject"))
 	{
-		GameModeActorStruct.BoxBounds.Y = 2048;
-		GameModeActorStruct.BoxBounds.Z = 1024;
-		SpawnMemoryScaleY = 1.f / 128.f;
+		GameModeActorStruct.BoxBounds.Y = 2000;
+		GameModeActorStruct.BoxBounds.Z = 1000;
+		SpawnMemoryScaleY = 1.f / 100.f;
+		SpawnMemoryScaleZ = 1.f / 100.f;
 	}
 	else
 	{
@@ -218,17 +219,17 @@ void ATargetSpawner::CallSpawnFunction()
 
 TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 {
-	const double StartTime = FPlatformTime::Seconds();
-	TArray<F2DArray> SpawnAreaTotals;
-	bool OddRow = true;
+	/*FString File = FPaths::ProjectDir();
+	File.Append(TEXT("AccuracyMatrix.csv"));
+	FString StringToWrite;*/
+	TArray<F2DArray> OutArray;
 	F2DArray LowerRowHalf = F2DArray();
 	F2DArray CurrentRow = F2DArray();
-	FString File = FPaths::ProjectDir();
-	File.Append(TEXT("AccuracyMatrix.csv"));
-	FString StringToWrite;
-
-	for (const FVectorCounter Counter : SpawnCounter)
+	bool OddRow = true;
+	float Total = 0.f;
+	for (const FVectorCounter Counter : GetSpawnCounter())
 	{
+		Total += Counter.TotalHits + Counter.TotalSpawns;
 		if (Counter.TotalSpawns == -1)
 		{
 			CurrentRow.Accuracy.Add(-1);
@@ -237,13 +238,18 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 		{
 			CurrentRow.Accuracy.Add(static_cast<float>(Counter.TotalHits) / static_cast<float>(Counter.TotalSpawns));
 		}
-		if (Counter.Point.Y == MaxBoxExtent.Y)
+		// End of "row" or left-to-right
+		if (Counter.Point.Y == GetBoxExtents_Unscaled_Static().Y)
 		{
+			OutArray.Emplace(CurrentRow);
+			// AppendStringLocAccRow(CurrentRow, StringToWrite);
+			// Don't average the middle row
 			if (Counter.Point.Z == GetBoxOrigin_Unscaled().Z)
 			{
-				SpawnAreaTotals.Emplace(CurrentRow);
-				AppendStringLocAccRow(CurrentRow, StringToWrite);
+				OutArray.Emplace(CurrentRow);
+				//AppendStringLocAccRow(CurrentRow, StringToWrite);
 			}
+			// Save the current row as the 1/2 of a row
 			else if (OddRow)
 			{
 				LowerRowHalf = CurrentRow;
@@ -267,20 +273,15 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy()
 						AveragedRow.Accuracy.Add((LowerRowHalf.Accuracy[i] + CurrentRow.Accuracy[i]) / 2);
 					}
 				}
-				SpawnAreaTotals.Emplace(AveragedRow);
-				AppendStringLocAccRow(CurrentRow, StringToWrite);
+				OutArray.Emplace(AveragedRow);
+				//AppendStringLocAccRow(CurrentRow, StringToWrite);
 				OddRow = true;
 			}
 			CurrentRow = F2DArray();
 		}
 	}
-	FFileHelper::SaveStringToFile(StringToWrite, *File);
-	SpawnCounter.Empty();
-	SpawnCounter.Shrink();
-
-	const double EndTime = FPlatformTime::Seconds();
-	UE_LOG(LogTemp, Display, TEXT("TotalTimeTaken: %f"), EndTime-StartTime);
-	return SpawnAreaTotals;
+	//FFileHelper::SaveStringToFile(StringToWrite, *File);
+	return OutArray;
 }
 
 void ATargetSpawner::SpawnMultiBeatTarget()
@@ -295,6 +296,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			AddToActiveTargets(SpawnTarget);
 			AddToRecentTargets(SpawnTarget, TargetScale);
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
+			SaveSmallSpawnCounterToFile();
 		}
 		else
 		{
@@ -496,6 +498,25 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		UE_LOG(LogTemp, Warning, TEXT("NOTFOUND! %s"), *DestroyedTarget->GetActorLocation().ToString());
 	}
 
+	TArray<FVector> Temp;
+	Temp.Add(DestroyedTarget->GetActorLocation());
+	if (const int32 Index = SmallSpawnCounter.Find(FSmallVectorCounter(Temp)); Index != INDEX_NONE)
+	{
+		switch (SmallSpawnCounter[Index].TotalSpawns)
+		{
+		case -1: SmallSpawnCounter[Index].TotalSpawns = 1;
+			break;
+		default: SmallSpawnCounter[Index].TotalSpawns++;
+		}
+		if (!DidExpire)
+		{
+			SmallSpawnCounter[Index].TotalHits++;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("NOTFOUND! %s"), *DestroyedTarget->GetActorLocation().ToString());
+	}
 	RemoveFromActiveTargets(DestroyedTarget);
 	FTimerHandle TimerHandle;
 	RemoveFromRecentDelegate.BindUFunction(this, FName("RemoveFromRecentTargets"), DestroyedTarget->Guid);
@@ -557,14 +578,7 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 	}
 
 	bSkipNextSpawn = false;
-
-	if (GameModeActorStruct.CustomGameModeName.Equals("RLProject"))
-	{
-		const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0, Open.Num() - 1);
-		return Open[RandomPoint];
-	}
-	const FVector Origin = GetBoxOrigin_Unscaled();
-	if (Open.ContainsByPredicate([&Origin](const FVector Element)
+	if (const FVector Origin = GetBoxOrigin_Unscaled(); Open.ContainsByPredicate([&Origin](const FVector Element)
 	{
 		if (Element.Equals(Origin))
 		{
@@ -773,14 +787,74 @@ TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector Center, const
 
 void ATargetSpawner::InitializeSpawnCounter()
 {
-	for (float Z = -500; Z <= 500.01; Z += 1 / SpawnMemoryScaleZ)
+	const FVector Extents = GetBoxExtents_Unscaled_Static();
+	for (float Z = -Extents.Z; Z <= Extents.Z + 0.01; Z += 1 / SpawnMemoryScaleZ)
 	{
-		for (float Y = -1600; Y <= 1600.01; Y += 1 / SpawnMemoryScaleY)
+		for (float Y = -Extents.Y; Y <= Extents.Y + 0.01; Y += 1 / SpawnMemoryScaleY)
 		{
 			SpawnCounter.Emplace(FVectorCounter(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z)));
+			UE_LOG(LogTemp, Display, TEXT("%s"), *FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z).ToString());
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
+
+	int Count = 0;
+	TArray<FVector> CombinedPoints;
+	for (float Z = -Extents.Z; Z < Extents.Z;)
+	{
+		for (float Y = -Extents.Y; Y < Extents.Y;)
+		{
+			if (Y == 0.f && Z == 0.f)
+			{
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z));
+				Count++;
+			}
+			else if (Z == 0.f)
+			{
+				Count++;
+				Count++;
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z));
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y + 1 / SpawnMemoryScaleZ, GetBoxOrigin_Unscaled().Z + Z));
+			}
+			else if (Y == 0.f)
+			{
+				Count++;
+				Count++;
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z));
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z + (1 / SpawnMemoryScaleZ)));
+			}
+			else
+			{
+				Count += 4;
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z));
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y + 1 / SpawnMemoryScaleZ, GetBoxOrigin_Unscaled().Z + Z));
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z + (1 / SpawnMemoryScaleZ)));
+				CombinedPoints.Add(FVector(GetBoxOrigin_Unscaled().X, Y + 1 / SpawnMemoryScaleZ, GetBoxOrigin_Unscaled().Z + Z + (1 / SpawnMemoryScaleZ)));
+			}
+
+			SmallSpawnCounter.Emplace(FSmallVectorCounter(CombinedPoints));
+			CombinedPoints = TArray<FVector>();
+
+			if (Y == -1 / SpawnMemoryScaleY || Y == 0)
+			{
+				Y += 1 / SpawnMemoryScaleY;
+			}
+			else
+			{
+				Y += 1 / SpawnMemoryScaleY * 2.f;
+			}
+		}
+		if (Z == -1 / SpawnMemoryScaleZ || Z == 0)
+		{
+			Z += 1 / SpawnMemoryScaleZ;
+		}
+		else
+		{
+			Z += 1 / SpawnMemoryScaleZ * 2.f;
+		}
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("SmallSpawnCounter: %d %d %llu"), SmallSpawnCounter.Num(), Count, SmallSpawnCounter.GetAllocatedSize());
 }
 
 void ATargetSpawner::AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo)
@@ -790,6 +864,63 @@ void ATargetSpawner::AppendStringLocAccRow(const F2DArray Row, FString& StringTo
 		StringToWriteTo.Append(FString::SanitizeFloat(AccValue) + ",");
 	}
 	StringToWriteTo.Append("\n");
+}
+
+void ATargetSpawner::SaveSmallSpawnCounterToFile() const
+{
+	FString File = FPaths::ProjectDir();
+	File.Append(TEXT("AccuracyMatrix.csv"));
+	FString StringToWrite;
+	float Accuracy = 0.f;
+	for (const FSmallVectorCounter Counter : GetSmallSpawnCounter())
+	{
+		if (Counter.TotalSpawns == -1.f)
+		{
+			Accuracy = -1.f;
+		}
+		else
+		{
+			Accuracy += static_cast<float>(Counter.TotalHits) / Counter.TotalSpawns;
+		}
+		StringToWrite.Append(FString::SanitizeFloat(Accuracy) + ",");
+		if (const float YMax = GetBoxExtents_Unscaled_Static().Y; Counter.Points.ContainsByPredicate([&YMax](const FVector Element)
+		{
+			if (Element.Y == YMax)
+			{
+				return true;
+			}
+			return false;
+		}))
+		{
+			StringToWrite.Append("\n");
+		}
+		Accuracy = 0.f;
+	}
+	FFileHelper::SaveStringToFile(StringToWrite, *File);
+}
+
+FVector ATargetSpawner::TryGetSpawnLocationFromFile() const
+{
+	FString File = FPaths::ProjectDir();
+	File.Append(TEXT("SpawnLocation.txt"));
+	FString StringFromFile;
+	FFileHelper::LoadFileToString(StringFromFile, *File);
+	const int32 Index = FCString::Atoi(*StringFromFile);
+	const TArray<FSmallVectorCounter> Copy = GetSmallSpawnCounter();
+	if (Index >= Copy.Num())
+	{
+		return GetBoxOrigin_Unscaled();
+	}
+	if (Copy[Index].Points.Num() > 1)
+	{
+		const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0, Copy.Num() - 1);
+		return Copy[Index].Points[RandomPoint];
+	}
+	if (Copy[Index].Points.Num() == 1)
+	{
+		return Copy[Index].Points[0];
+	}
+	return GetBoxOrigin_Unscaled();
 }
 
 void ATargetSpawner::ShowDebug_SpawnBox()

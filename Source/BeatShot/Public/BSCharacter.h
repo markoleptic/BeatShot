@@ -59,7 +59,7 @@ public:
 	USkeletalMeshComponent* GetHandsMesh() const;
 
 	UFUNCTION(BlueprintCallable)
-	ASphereTarget* PeekActiveTargets() const;
+	ASphereTarget* PeekActiveTargets();
 
 	UFUNCTION(BlueprintCallable)
 	void PopActiveTargets();
@@ -88,6 +88,14 @@ public:
 	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()
 	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
+
+	/** Let ASC know an ability bound to an input was pressed. */
+	UFUNCTION(BlueprintCallable)
+	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
+
+	UFUNCTION(BlueprintCallable)
+	/** Let ASC know an ability bound to an input was released. */
+	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
 	/** Executed when interact is pressed */
 	FOnInteractDelegate OnInteractDelegate;
@@ -131,9 +139,6 @@ protected:
 	/** Additional layer of rotation to use for more realistic recoil */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
 	TObjectPtr<USceneComponent> CameraRecoilComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BeatShot|Components")
-	TSubclassOf<UAnimInstance> AnimClassLayers;
 
 	/** Input configuration used by player controlled pawns to create input mappings and bind input actions. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BeatShot|Input")
@@ -194,12 +199,6 @@ private:
 
 	/** Triggered on releasing Shift + E */
 	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
-
-	/** Let ASC know an ability bound to an input was pressed. */
-	void Input_AbilityInputTagPressed(FGameplayTag InputTag);
-
-	/** Let ASC know an ability bound to an input was released. */
-	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
 
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;

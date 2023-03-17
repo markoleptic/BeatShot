@@ -9,6 +9,7 @@
 #include "BSPlayerController.h"
 #include "FloatingTextActor.h"
 #include "TargetSpawner.h"
+#include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 
@@ -38,18 +39,66 @@ void ABSGameMode::Tick(float DeltaSeconds)
 	OnTick_AudioAnalyzers(DeltaSeconds);
 }
 
+void ABSGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	ABSPlayerController* NewBSPlayer = Cast<ABSPlayerController>(NewPlayer);
+	Controllers.Add(NewBSPlayer);
+	
+	if (const ABSCharacter* Character = SpawnPlayer(NewBSPlayer))
+	{
+		NewBSPlayer->ShowCountdown();
+		
+		if (!Character->GetGun()->OnShotFired.IsBoundToObject(this))
+		{
+			Character->GetGun()->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
+		}
+		if (GameModeActorStruct.IsBeatTrackMode)
+		{
+			Character->GetGun()->SetShouldTrace(true);
+		}
+		else
+		{
+			Character->GetGun()->SetShouldTrace(false);
+		}
+	}
+}
+
+void ABSGameMode::PostLoad()
+{
+	Super::PostLoad();
+}
+
+void ABSGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	Controllers.Remove(Cast<ABSPlayerController>(Exiting));
+}
+
+ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
+{
+	if (ABSCharacter* Character = PlayerController->GetBSCharacter())
+	{
+		Character->Destroy();
+	}
+	const APlayerStart* ChosenPlayerStart = Cast<APlayerStart>(ChoosePlayerStart(PlayerController));
+	ABSCharacter* SpawnedCharacter = GetWorld()->SpawnActor<ABSCharacter>(CharacterClass, ChosenPlayerStart->GetTransform());
+	PlayerController->Possess(SpawnedCharacter);
+	return SpawnedCharacter;
+}
+
 void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
 	RefreshPlayerSettings(LoadPlayerSettings());
 	GameModeActorStruct = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
-	TargetSpawner = Cast<ATargetSpawner>(GetWorld()->SpawnActor(TargetSpawnerClass, &TargetSpawnerLocation, &FRotator::ZeroRotator, SpawnParameters));
+	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
 	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
 	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
 	VisualizerManager->InitializeVisualizers(LoadPlayerSettings());
 	InitializeAudioManagers();
-	Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowCountdown();
+	BindGameModeDelegates();
 	bShouldTick = true;
 }
 
@@ -60,12 +109,7 @@ void ABSGameMode::StartGameMode()
 		OnGameModeStarted.Broadcast();
 	}
 	LoadMatchingPlayerScores();
-	BindGameModeDelegates();
-
-	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
-	{
-		UE_LOG(LogTemp, Display, TEXT("Initial UpdateScoresToHUD failed."));
-	}
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 	StartGameModeTimers();
 	TargetSpawner->SetShouldSpawn(true);
 }
@@ -85,25 +129,6 @@ void ABSGameMode::StartGameModeTimers()
 
 void ABSGameMode::BindGameModeDelegates()
 {
-	if (ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
-	{
-		if (!Character->GetGun()->OnShotFired.IsBoundToObject(this))
-		{
-			Character->GetGun()->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
-		}
-		if (GameModeActorStruct.IsBeatTrackMode)
-		{
-			Character->GetGun()->SetShouldTrace(true);
-		}
-		else
-		{
-			Character->GetGun()->SetShouldTrace(false);
-		}
-		if (!OnTargetSpawned.IsBoundToObject(Character))
-		{
-			OnTargetSpawned.AddUFunction(Character, FName("OnTargetSpawned_AimBot"));
-		}
-	}
 	if (!OnTargetSpawned.IsBoundToObject(this))
 	{
 		OnTargetSpawned.AddUFunction(this, FName("UpdateTargetsSpawned"));
@@ -124,26 +149,19 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 	{
 		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
 		TargetSpawner->SetShouldSpawn(false);
+		if (OnTargetSpawned.IsBoundToObject(TargetSpawner))
+		{
+			OnTargetSpawned.RemoveAll(TargetSpawner);
+		}
+		if (OnTargetDestroyed.IsBoundToObject(TargetSpawner))
+		{
+			OnTargetDestroyed.RemoveAll(TargetSpawner);
+		}
 		TargetSpawner->Destroy();
 		TargetSpawner = nullptr;
 	}
 
 	/** Unbinding delegates */
-	if (const ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
-	{
-		if (Character->GetGun()->OnShotFired.IsBoundToObject(this))
-		{
-			Character->GetGun()->OnShotFired.Unbind();
-		}
-	}
-	if (OnTargetSpawned.IsBoundToObject(this))
-	{
-		OnTargetSpawned.RemoveAll(this);
-	}
-	if (OnTargetDestroyed.IsBoundToObject(this))
-	{
-		OnTargetDestroyed.RemoveAll(this);
-	}
 	if (VisualizerManager)
 	{
 		VisualizerManager->DestroyVisualizers();
@@ -162,16 +180,29 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		AAPlayer = nullptr;
 	}
 
-	ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-
-	Controller->HidePlayerHUD();
-	Controller->HideCountdown();
-	Controller->HideCrossHair();
-
-	if (ShowPostGameMenu)
+	for (ABSPlayerController* Controller : Controllers)
 	{
-		Controller->ShowPostGameMenu();
-		OnPostScoresResponse.AddUFunction(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0)), "OnPostScoresResponseReceived");
+		Controller->HidePlayerHUD();
+		Controller->HideCountdown();
+		Controller->HideCrossHair();
+
+		if (const ABSCharacter* Character = Controller->GetBSCharacter())
+		{
+			if (Character->GetGun()->OnShotFired.IsBoundToObject(this))
+			{
+				Character->GetGun()->OnShotFired.Unbind();
+			}
+		}
+		
+		if (Controller->IsLocalController())
+		{
+			OnPostScoresResponse.AddUFunction(Controller, "OnPostScoresResponseReceived");
+		}
+
+		if (ShowPostGameMenu)
+		{
+			Controller->ShowPostGameMenu();
+		}
 	}
 	HandleScoreSaving(ShouldSavePlayerScores);
 }
@@ -377,10 +408,7 @@ void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float Music
 
 void ABSGameMode::OnSecondPassedCallback()
 {
-	if (!OnSecondPassed.ExecuteIfBound(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer)))
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnSecondPassed not bound."));;
-	}
+	OnSecondPassed.Broadcast(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 }
 
 void ABSGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASettings)
@@ -551,10 +579,7 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 	UpdateStreak(NewStreak, Position);
 	UpdateHighScore();
 	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - GameModeActorStruct.PlayerDelay);
-	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
-	{
-		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
-	}
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
 void ABSGameMode::UpdateTrackingScore(const float DamageTaken, const float TotalPossibleDamage)
@@ -562,19 +587,13 @@ void ABSGameMode::UpdateTrackingScore(const float DamageTaken, const float Total
 	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
 	CurrentPlayerScore.Score += DamageTaken;
 	UpdateHighScore();
-	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
-	{
-		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
-	}
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
 void ABSGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 {
 	CurrentPlayerScore.TargetsSpawned++;
-	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
-	{
-		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
-	}
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 
 	/** Update tracking score if a Tracking target has spawned */
 	if (GameModeActorStruct.IsBeatTrackMode && !SpawnedTarget->HealthComponent->OnBeatTrackTick.IsBoundToObject(this))
@@ -591,10 +610,7 @@ void ABSGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 void ABSGameMode::UpdateShotsFired()
 {
 	CurrentPlayerScore.ShotsFired++;
-	if (!UpdateScoresToHUD.ExecuteIfBound(CurrentPlayerScore))
-	{
-		UE_LOG(LogTemp, Display, TEXT("UpdateScoresToHUD not bound."));
-	}
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
 void ABSGameMode::UpdateStreak(const int32 Streak, const FVector Location)
@@ -618,7 +634,6 @@ void ABSGameMode::UpdateStreak(const int32 Streak, const FVector Location)
 void ABSGameMode::UpdateTargetsHit()
 {
 	CurrentPlayerScore.TargetsHit++;
-	UE_LOG(LogTemp, Display, TEXT("TargetsHit: %d"), CurrentPlayerScore.TargetsHit);
 }
 
 void ABSGameMode::UpdateHighScore()

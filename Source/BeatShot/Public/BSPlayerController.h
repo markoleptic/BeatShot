@@ -7,6 +7,7 @@
 #include "SaveLoadInterface.h"
 #include "BSPlayerController.generated.h"
 
+class ABSCharacter;
 class ULoginWidget;
 class UFPSCounterWidget;
 class UScreenFadeWidget;
@@ -59,13 +60,13 @@ public:
 
 	void ShowPostGameMenu();
 	void HidePostGameMenu();
-
+	
 	void ShowFPSCounter();
 	void HideFPSCounter();
-
+	
 	void FadeScreenToBlack();
 	void FadeScreenFromBlack();
-
+	
 	void ShowInteractInfo();
 	void HideInteractInfo();
 
@@ -89,6 +90,8 @@ public:
 
 	/** Delegate that executes when the ScreenFadeWidget completes its animation*/
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
+
+	ABSCharacter* GetBSCharacter() const;
 
 protected:
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;

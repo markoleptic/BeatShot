@@ -19,8 +19,6 @@ UBSGameplayAbility::UBSGameplayAbility()
 {
 	// Default to Instance Per Actor
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	ActivationPolicy = EBSAbilityActivationPolicy::OnInputTriggered;
-	ActivationGroup = EBSAbilityActivationGroup::Independent;
 }
 
 UBSAbilitySystemComponent* UBSGameplayAbility::GetBSAbilitySystemComponentFromActorInfo() const

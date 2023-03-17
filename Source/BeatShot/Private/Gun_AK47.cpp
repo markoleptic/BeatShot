@@ -65,6 +65,10 @@ void AGun_AK47::Tick(float DeltaTime)
 
 void AGun_AK47::Fire()
 {
+	if (!OnShotFired.ExecuteIfBound())
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnShotFired not bound"));
+	}
 	ShotsFired++;
 	if (bShouldRecoil)
 	{
@@ -151,8 +155,8 @@ FTransform AGun_AK47::GetTraceTransform() const
 
 void AGun_AK47::TraceForward() const
 {
-	const FVector StartTrace = GetBSCharacter()->GetArrowComponent()->GetComponentLocation();
-	const FVector EndTrace = GetBSCharacter()->GetArrowComponent()->GetForwardVector() * FVector(TraceDistance, TraceDistance, TraceDistance);
+	const FVector StartTrace = GetBSCharacter()->GetCamera()->GetComponentLocation();
+	const FVector EndTrace = GetBSCharacter()->GetCamera()->GetForwardVector() * FVector(TraceDistance, TraceDistance, TraceDistance);
 	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_GameTraceChannel1, FCollisionQueryParams::DefaultQueryParam))
 	{
 		if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))

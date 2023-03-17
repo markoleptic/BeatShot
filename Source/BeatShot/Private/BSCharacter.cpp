@@ -21,8 +21,8 @@
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/BSAbilitySet.h"
+#include "GameplayAbility/BSGameplayAbility_FireGun.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
-#include "Kismet/KismetMathLibrary.h"
 
 ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) :
 Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(CharacterMovementComponentName).
@@ -30,6 +30,7 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bAlwaysRelevant = true;
+	bReplicates = true;
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm Component"));
 	SpringArmComponent->bUsePawnControlRotation = true;
@@ -80,11 +81,19 @@ USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
 	return Cast<USkeletalMeshComponent>(HandsMesh);
 }
 
-ASphereTarget* ABSCharacter::PeekActiveTargets() const
+ASphereTarget* ABSCharacter::PeekActiveTargets()
 {
 	ASphereTarget* Target;
-	ActiveTargets_AimBot.Peek(Target);
-	return Target;
+	while (!ActiveTargets_AimBot.IsEmpty())
+	{
+		ActiveTargets_AimBot.Peek(Target);
+		if (IsValid(Target))
+		{
+			return Target;
+		}
+		PopActiveTargets();
+	}
+	return nullptr;
 }
 
 float ABSCharacter::GetAimBotPlaybackSpeed() const
@@ -130,11 +139,6 @@ UBSAbilitySystemComponent* ABSCharacter::GetBSAbilitySystemComponent() const
 void ABSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (AnimClassLayers && IsValid(GetMesh()))
-	{
-		GetMesh()->LinkAnimClassLayers(AnimClassLayers);
-	}
 	
 	OnUserSettingsChange(LoadPlayerSettings());
 
@@ -194,6 +198,29 @@ void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 			GetGun()->bShowBulletDecals = PlayerSettings.Game.bShowBulletDecals;
 		}
 		GetGun()->PlayerSettings = PlayerSettings;
+	}
+	TArray<FGameplayAbilitySpec*> Specs;
+	FGameplayTagContainer Container;
+	Container.AddTag(FBSGameplayTags::Get().Input_Fire);
+	GetAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Specs);
+	if(!Specs.IsEmpty())
+	{
+		if (PlayerSettings.Game.bAutomaticFire)
+		{
+			if (UBSGameplayAbility* Ability = Cast<UBSGameplayAbility>(Specs[0]->Ability))
+			{
+				Ability->ActivationPolicy = EBSAbilityActivationPolicy::WhileInputActive;
+				GetAbilitySystemComponent()->MarkAbilitySpecDirty(*Specs[0]);
+			}
+		}
+		else
+		{
+			if (UBSGameplayAbility* Ability = Cast<UBSGameplayAbility>(Specs[0]->Ability))
+			{
+				Ability->ActivationPolicy = EBSAbilityActivationPolicy::OnInputTriggered;
+				GetAbilitySystemComponent()->MarkAbilitySpecDirty(*Specs[0]);
+			}
+		}
 	}
 }
 
@@ -390,8 +417,6 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this, &ThisClass::OnInteractCompleted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
-		//BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Triggered, this, &ThisClass::Input_StartFire, /*bLogIfNotFound=*/ true);
-		//BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Fire, ETriggerEvent::Completed, this, &ThisClass::Input_StopFire, /*bLogIfNotFound=*/ true);
 	}
 }
 
@@ -443,10 +468,9 @@ void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 
 void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
-	// TODO: Properly fix the FireGun GameplayAbility to call this when input is released.
+	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
 	if (InputTag == FBSGameplayTags::Get().Input_Fire)
 	{
-		Input_StopFire();
+		GetGun()->StopFire();
 	}
-	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
 }
