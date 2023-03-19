@@ -324,7 +324,6 @@ void UGameModesWidget::OnCustomizeFromStandardButtonClicked()
 	OnCustomGameModesButtonClicked();
 }
 
-
 void UGameModesWidget::OnGameModeNameSelectionChange(const FString SelectedGameModeName, const ESelectInfo::Type SelectionType)
 {
 	if (IsDefaultGameMode(SelectedGameModeName))

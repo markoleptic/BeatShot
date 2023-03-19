@@ -55,7 +55,7 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	HandsMesh->SetRelativeLocation(FVector(-17.69f, -10.50f, -149.11f));
 
 	GunComponent = CreateDefaultSubobject<UChildActorComponent>("Gun Component");
-	GunComponent->SetupAttachment(GetHandsMesh(), "weapon_r");
+	GunComponent->SetupAttachment(HandsMesh, "weapon_r");
 	GunComponent->CreateChildActor();
 
 	UBSCharacterMovementComponent* BSMoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
@@ -327,7 +327,6 @@ void ABSCharacter::PopActiveTargets()
 {
 	ActiveTargets_AimBot.Pop();
 }
-
 
 void ABSCharacter::PossessedBy(AController* NewController)
 {

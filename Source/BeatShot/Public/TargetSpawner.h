@@ -18,10 +18,94 @@ class UActorComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector);
 
+/* -------BEGIN------- */
+/*    RLProject Code   */
+/* ------------------- */
+
+/** A struct representing the space in the grid that a recently spawned target occupies */
+USTRUCT()
+struct FPythonPair
+{
+	GENERATED_BODY()
+
+	/** The location of the target spawned before Current */
+	FVector Previous;
+
+	/** The location spawned after Previous */
+	FVector Current;
+
+	FPythonPair()
+	{
+		Previous = FVector::ZeroVector;
+		Current = FVector::ZeroVector;
+	}
+
+	FPythonPair(const FVector PreviousPoint, const FVector CurrentPoint)
+	{
+		Previous = PreviousPoint;
+		Current = CurrentPoint;
+	}
+
+	FORCEINLINE bool operator ==(const FPythonPair& Other) const
+	{
+		if (Current == Other.Current)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
+/* --------END-------- */
+/*    RLProject Code   */
+/* ------------------- */
+
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor
 {
 	GENERATED_BODY()
+
+	/* -------BEGIN------- */
+	/*    RLProject Code   */
+	/* ------------------- */
+
+#pragma region RLProject
+
+	/** An FIFO queue of (PreviousLocation, NextLocation), where NextLocation.Z is whether or not the target was destroyed by player. Coordinates are in Python space */
+	TQueue<FPythonPair> PythonTargetPairs;
+
+	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired. Coordinates are in Python space */
+	TArray<FPythonPair> ActivePythonTargetPairs;
+
+	/** Writes a popped FPythonPair from PythonTargetPairs to WriteLocationFilePath */
+	void WriteTargetPairToFile();
+
+	/** Returns a world location retrieved from ReadLocationFilePath, or a zero vector if invalid */
+	FVector TryGetSpawnLocationFromFile() const;
+
+	/** Finds the target inside of ActivePythonTargetPairsUpdates, updates reward based on whether or not the target was hit, and adds to head of PythonTargetPairs */
+	void UpdatePythonTargetReward(const FVector& WorldLocation, const bool bHit);
+
+	/** Adds two consecutively spawned targets to ActivePythonTargetPairs immediately after NextWorldLocation has been spawned */
+	void AddToActivePythonTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
+
+	/** Translates a world location to a coordinate readable by Python. The Z coordinate is the reward */
+	FVector ConvertUnrealLocToPythonLoc(const FVector& WorldLocation, const bool bHit) const;
+
+	/** Location of the previously spawned target, in world space */
+	FVector PreviousSpawnLocation;
+
+	/** File location to save location pairs and rewards to be read by Python */
+	const FString WriteLocationFilePath = "C:/Users/marka/Documents/git/CS4033_ML/RLProject/Accuracy.csv";
+
+	/** File location to read spawn locations from */
+	const FString ReadLocationFilePath = "C:/Users/marka/Documents/git/CS4033_ML/RLProject/SpawnLocation.txt";
+
+#pragma endregion
+
+	/* --------END-------- */
+	/*    RLProject Code   */
+	/* ------------------- */
 
 public:
 	ATargetSpawner();
@@ -59,7 +143,7 @@ public:
 	void CallSpawnFunction();
 
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
-	TArray<F2DArray> GetLocationAccuracy();
+	TArray<F2DArray> GetLocationAccuracy() const;
 
 private:
 	/** Create BeatGrid Targets */
@@ -146,7 +230,7 @@ private:
 	void InitializeSpawnCounter();
 
 	/** Returns a string representation of an accuracy row */
-	void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
+	static void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
 
 #pragma region General Spawning Variables
 
@@ -202,16 +286,8 @@ private:
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
 	TArray<FVectorCounter> SpawnCounter;
 
-	/** Stores all possible spawn locations and the total spawns & player hits at each location, scaled by 1/2 */
-	TArray<FSmallVectorCounter> SmallSpawnCounter;
-
+	/** Returns a copy of the SpawnCounter */
 	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
-
-	TArray<FSmallVectorCounter> GetSmallSpawnCounter() const { return SmallSpawnCounter; }
-
-	void SaveSmallSpawnCounterToFile() const;
-
-	FVector TryGetSpawnLocationFromFile() const;
 
 	/** The scale to apply to the next/current target */
 	float TargetScale;

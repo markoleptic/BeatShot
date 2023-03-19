@@ -67,6 +67,7 @@ void UBSGameInstance::StartGameMode() const
 		Controller->HidePauseMenu();
 		if (GetWorld()->GetMapName().Contains("Range"))
 		{
+			Controller->ShowCountdown();
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->InitializeGameMode();
 		}
 		else
