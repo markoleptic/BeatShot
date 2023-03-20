@@ -2,15 +2,21 @@
 
 This project is a standalone FPS aim trainer that controls target behavior by analyzing user selected music in real time.
 
-**Download Development Build here (BeatShot-Windows.rar) [here](https://github.com/markoleptic/BeatShot/releases/download/v0.3.1/Beatshot-Windows-v0.3.1.rar) or go to Releases**
+**[WISHLIST ON STEAM](https://store.steampowered.com/app/2126580/BeatShot/)**
 
 In Game                    |  Customize Game Mode Menu
 :-------------------------:|:-------------------------:
-![](https://user-images.githubusercontent.com/86213229/193479200-82c7c70c-517e-4164-908b-2f172d599a75.png)  |  ![](https://user-images.githubusercontent.com/86213229/193479337-fe8a5ed2-0d71-4a5f-b3a2-524c74aa65a3.png)
+![](https://user-images.githubusercontent.com/86213229/226467498-79851ec5-62b9-4614-a804-eccbb0c1c623.png)  |  ![](https://user-images.githubusercontent.com/86213229/226468050-38d159c3-f3b4-40cf-8c24-aa9a1836879c.png)
+
+## What I'm working on / Planned Features:
+- Show example videos for default game modes
+- Create AI system tailored to player goals: (I've created a Reinforcement Learning program in Python, but have yet to transfer code to C++ or find a way to connect the two reliably
+- Game Optimization (its not great right now)
+- (Maybe) Game mode that cycles between multiple game modes within one song
+- (Maybe) Multiplayer
 
 ## Features
-
-- standard sensitivity settings (Options for CS:GO and Valorant), video & audio settings
+- standard sensitivity settings (Options for CS:GO and Valorant), video & audio settings, target color settings, crosshair settings
 - four base gamemodes with 3 base difficulties:
     - MultiBeat: continuously spawn targets
     - SingleBeat: only one at a time
@@ -20,26 +26,26 @@ In Game                    |  Customize Game Mode Menu
 - Full auto/semi-auto fire modes
 
 ### BeatShot is designed to enable players to have full control over the game. Create custom game modes using:
-
-- any base game mode & difficulty as a template
+- any base game mode & difficulty as a template, or from another custom game mode
 - headshot height only mode
 - time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
 - max target lifespan
 - min distance between targets
 - spawn area height/width
 - target spawn cooldown
-- mininum and maximum size of targets
-- mininum and maximum speed of targets (BeatGrid and BeatGrid derived modes only)
+- minimum and maximum size of targets
+- minimum and maximum speed of targets (BeatGrid and BeatGrid derived modes only)
+- dynamic target sizing
+- dynamic spawn area sizing
+- moving targets forward over time
 
 ### Customize the audio analysis using:
-
-- 1-4 user defined frequency band channels (e.g. 0-87 Hz for a bass channel)
+- User defined frequency band channels (e.g. 0-87 Hz for a bass channel)
 - band limit threshold for each band channel
-    - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. higher threshold ->
-      lower analyzer sensitivity -> less targets spawned
+    - The threshold value changes how sensitive the analyzer is to beats within any given channel. Values greater than Threshold * Average trigger a target to attempt to spawn. 
+    - higher threshold -> lower analyzer sensitivity -> less targets spawned
 
 ## Getting .mp3/.ogg files:
-
 1. To convert Spotify playlists into Youtube playlists, I use [Soundiiz](https://soundiiz.com/) (also works with Apple Music, etc.)
 2. You can use [this application](https://github.com/shaked6540/YoutubePlaylistDownloader) to download entire playlists from YouTube. Download and install. *You might need restart the application
    after you open it for the first time for it to work correctly.*
@@ -47,34 +53,15 @@ In Game                    |  Customize Game Mode Menu
 4. Select where you want the files to be downloaded to at the top.
 5. Under the Audio heading, make sure the box with "Convert videos to" is checked, then select either ogg or mp3.
 
-## What I'm working on / Planned Features:
-
-### Planned changes to base game
-
-- Show example videos for main game modes
-- Create AI system tailored to player goals:
-    - Choose priority of accuracy, timing, etc.
-- Togglable Day/Night mode
-- Togglable music visualizations
-- Game Optimization (its not great right now)
-
-### Planned game mode changes
-
-- (Maybe) Game mode that cycles between multiple game modes within one song
-
-#### Planned game mode options to add
-
-- spawn targets in quick succession nearby to one another
-- change target size based on accuracy/timing accuracy
-    - gradually decrease target size if player has hit consecutive targets in a row, but incrementally increase target size when they miss
-
 ## More In-Game Screenshots:
 
-                                          Audio Analyzer Settings                                           |  Customize Game Mode Menu
-:----------------------------------------------------------------------------------------------------------:|:-------------------------:
- ![](https://user-images.githubusercontent.com/86213229/193479582-644be4d8-5769-40bd-a018-23b12aa34c4d.png) |  ![](https://user-images.githubusercontent.com/86213229/193479593-28d8a5d3-e1f8-45e6-a167-679c7985177e.png)
+Audio Analyzer Settings    |  SongSlection
+:-------------------------:|:-------------------------:
+![](https://user-images.githubusercontent.com/86213229/226468236-f9458581-675d-43b8-80ee-d2684edda763.png) | ![](https://user-images.githubusercontent.com/86213229/226467354-7a28e9aa-c9ed-428d-8a2a-7c7adf98eb7b.png)
+Website Integration        |  NightTime
+![](https://user-images.githubusercontent.com/86213229/226467406-3a05d922-05e7-4d52-a722-0b3ebb071c4d.png) | ![](https://user-images.githubusercontent.com/86213229/226467534-aa06b55a-5f9f-4620-a9da-70a2927b8352.png)
 
 ## Collaboration / Copyright
+I plan to release this game on Steam in a few months. This project is on GitHub because Unreal Engine is real handful to learn, so perhaps there's some code that I've used in this project that could help someone else out. If you wish to collaborate or want to reach out for any reason, you can contact me on Discord @Markoleptic#6174.
 
-I plan to release this as a free game on Steam in a few months. If you wish to collaborate, I can try to help provide you with more plugin files that might be necessary to run the game in the engine.
 Note that copying my work and releasing a game based on my work is a violation of the Unreal Engine UELA and United States Copyright Laws.
