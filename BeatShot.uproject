@@ -26,7 +26,7 @@
 			"Name": "Global",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
-		}
+		},
 	],
 	"Plugins": [
 		{

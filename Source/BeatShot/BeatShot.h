@@ -15,6 +15,91 @@ public:
 #define ACTOR_ROLE_FSTRING *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(GetLocalRole()))
 #define GET_ACTOR_ROLE_FSTRING(Actor) *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(Actor->GetLocalRole()))
 
+/** A struct representing two consecutively spawned targets */
+USTRUCT()
+struct FPythonPair
+{
+	GENERATED_BODY()
+
+	/** The location of the target spawned before Current */
+	FVector Previous;
+
+	/** The location spawned after Previous */
+	FVector Current;
+
+	FPythonPair()
+	{
+		Previous = FVector::ZeroVector;
+		Current = FVector::ZeroVector;
+	}
+
+	FPythonPair(const FVector PreviousPoint, const FVector CurrentPoint)
+	{
+		Previous = PreviousPoint;
+		Current = CurrentPoint;
+	}
+
+	FPythonPair(const FVector CurrentPoint)
+	{
+		Previous = FVector::ZeroVector;
+		Current = CurrentPoint;
+	}
+
+	FORCEINLINE bool operator ==(const FPythonPair& Other) const
+	{
+		if (Current.Y == Other.Current.Y && Current.Z == Other.Current.Z)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
+/** A struct representing two consecutively spawned targets */
+USTRUCT()
+struct FTargetPair
+{
+	GENERATED_BODY()
+
+	/** The location of the target spawned before Current */
+	FVector Previous;
+
+	/** The location spawned after Previous */
+	FVector Current;
+
+	float Reward;
+
+	FTargetPair()
+	{
+		Previous = FVector::ZeroVector;
+		Current = FVector::ZeroVector;
+		Reward = 0.f;
+	}
+
+	FTargetPair(const FVector CurrentPoint)
+	{
+		Previous = FVector::ZeroVector;
+		Current = CurrentPoint;
+		Reward = 0.f;
+	}
+
+	FTargetPair(const FVector PreviousPoint, const FVector CurrentPoint)
+	{
+		Previous = PreviousPoint;
+		Current = CurrentPoint;
+		Reward = 0.f;
+	}
+
+	FORCEINLINE bool operator ==(const FTargetPair& Other) const
+	{
+		if (Current.Y == Other.Current.Y && Current.Z == Other.Current.Z)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
 /** A struct representing the space in the grid that a recently spawned target occupies */
 USTRUCT()
 struct FRecentTarget
@@ -73,38 +158,67 @@ struct FVectorCounter
 	/** Unscaled, world spawn location point */
 	FVector Point;
 
+	FVector ActualChosenPoint;
+
 	/** The total number of target spawns at this point */
 	int32 TotalSpawns;
 
 	/** The total number of target hits by player at this point */
 	int32 TotalHits;
 
+	float IncrementY;
+	
+	float IncrementZ;
+
 	FVectorCounter()
 	{
 		Point = FVector();
+		ActualChosenPoint = FVector();
 		TotalSpawns = -1;
 		TotalHits = 0;
+		IncrementY = 0.f;
+		IncrementZ = 0.f;
 	}
 
 	FVectorCounter(const FVector NewPoint)
 	{
 		Point = NewPoint;
+		ActualChosenPoint = FVector();
 		TotalSpawns = -1;
 		TotalHits = 0;
+		IncrementY = 0.f;
+		IncrementZ = 0.f;
+	}
+
+	FVectorCounter(const FVector NewPoint, const float IncY, const float IncZ)
+	{
+		Point = NewPoint;
+		ActualChosenPoint = FVector();
+		TotalSpawns = -1;
+		TotalHits = 0;
+		IncrementY = IncY;
+		IncrementZ = IncZ;
 	}
 
 	FORCEINLINE bool operator ==(const FVectorCounter& Other) const
 	{
-		if (Point.Equals(Other.Point))
+		if (Other.Point.Y >= Point.Y && Other.Point.Y < Point.Y + IncrementY
+			&& (Other.Point.Z >= Point.Z && Other.Point.Z < Point.Z + IncrementZ))
 		{
 			return true;
 		}
 		return false;
+		
+		// if (Point.Y == Other.Point.Y && Point.Z == Other.Point.Z)
+		// {
+		// 	return true;
+		// }
+		// return false;
 	}
 
 	FORCEINLINE bool operator <(const FVectorCounter& Other) const
 	{
-		if (Point.Z > Other.Point.Z)
+		if (Point.Z < Other.Point.Z)
 		{
 			return true;
 		}
@@ -113,6 +227,13 @@ struct FVectorCounter
 			return true;
 		}
 		return false;
+	}
+
+	FVector GetRandomSubPoint() const
+	{
+		const float Y = FMath::FRandRange(Point.Y, Point.Y + IncrementY);
+		const float Z = FMath::FRandRange(Point.Z, Point.Z + IncrementZ);
+		return FVector(Point.X, Y, Z);
 	}
 };
 

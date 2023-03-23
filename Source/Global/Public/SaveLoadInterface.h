@@ -71,4 +71,9 @@ public:
 	TArray<FPlayerScore> LoadPlayerScores() const;
 
 	void SavePlayerScores(const TArray<FPlayerScore> PlayerScoreArrayToSave);
+
+	TArray<FQTableWrapper> LoadQTables() const;
+
+	void SaveQTables(const TArray<FQTableWrapper> QTablesToSave);
+
 };

@@ -195,13 +195,7 @@ struct FGameModeActorStruct
 		}
 		return false;
 	}
-
-	/*FORCEINLINE uint32 GetTypeHash(const FGameModeActorStruct& Other)
-	{
-		const uint32 Hash = FCrc::MemCrc32(&Other, sizeof(FGameModeActorStruct));
-		return Hash;
-	}*/
-
+	
 	/* Generic initialization */
 	FGameModeActorStruct()
 	{

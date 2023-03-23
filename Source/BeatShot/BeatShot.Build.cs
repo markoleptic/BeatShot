@@ -6,20 +6,21 @@ public class BeatShot : ModuleRules
 {
 	public BeatShot(ReadOnlyTargetRules Target) : base(Target)
 	{
+		bEnableUndefinedIdentifierWarnings = false;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "Global", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks", "GameplayAbilities"
+			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "Global", "NumCpp", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks", "GameplayAbilities", "ParallelcubeAudioAnalyzer","ParallelcubeTaglib"
 		});
 		PrivateDependencyModuleNames.AddRange(new[]
-			{ "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer", "EnhancedInput", "InputCore", "GameplayAbilities", "GameplayTags", "GameplayTasks" });
+			{ "EnhancedInput", "InputCore", "GameplayAbilities", "GameplayTags", "GameplayTasks"});
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
-		PrivateIncludePaths.Add(
-			"../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");
-		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
-		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb");
+		// PrivateIncludePaths.Add(
+		// 	"../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");
+		// PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
+		// PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb");
 
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 

@@ -103,3 +103,27 @@ void ISaveLoadInterface::SavePlayerScores(const TArray<FPlayerScore> PlayerScore
 		}
 	}
 }
+
+TArray<FQTableWrapper> ISaveLoadInterface::LoadQTables() const
+{
+	USaveGamePlayerScore* SaveGamePlayerScore;
+	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
+	{
+		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
+		return SaveGamePlayerScore->QTables;
+	}
+	SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
+	return SaveGamePlayerScore->QTables;
+}
+
+void ISaveLoadInterface::SaveQTables(const TArray<FQTableWrapper> QTablesToSave)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+	{
+		SaveGamePlayerScores->QTables = QTablesToSave;
+		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
+		}
+	}
+}

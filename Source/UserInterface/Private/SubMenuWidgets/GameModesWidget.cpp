@@ -652,8 +652,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Visible);
 		SpreadTypeBox->SetVisibility(ESlateVisibility::Visible);
 	}
-
-
+	
 	if (InputGameModeActorStruct.IsSingleBeatMode)
 	{
 		BaseGameModeComboBox->SetSelectedOption("SingleBeat");
@@ -664,7 +663,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 		LifespanSlider->SetLocked(false);
 		LifespanValue->SetIsReadOnly(false);
 	}
-
+	
 	GameModeDifficultyComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InputGameModeActorStruct.GameModeDifficulty).ToString());
 	PlayerDelaySlider->SetValue(InputGameModeActorStruct.PlayerDelay);
 	PlayerDelayValue->SetText(FText::AsNumber(InputGameModeActorStruct.PlayerDelay));
@@ -699,6 +698,16 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	VerticalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Z);
 	VerticalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Z));
 	ForwardSpreadCheckBox->SetIsChecked(InputGameModeActorStruct.bMoveTargetsForward);
+
+	if (InputGameModeActorStruct.bMoveTargetsForward)
+	{
+		ForwardSpreadBox->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		ForwardSpreadBox->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	
 	ForwardSpreadSlider->SetValue(InputGameModeActorStruct.MoveForwardDistance);
 	ForwardSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.MoveForwardDistance));
 	TargetScaleConstrained->UpdateDefaultValues(InputGameModeActorStruct.MinTargetScale, InputGameModeActorStruct.MaxTargetScale);

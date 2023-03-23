@@ -9,19 +9,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RLBase.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RLBase.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AccuracyMatrix.csv" beforeDir="false" afterPath="$PROJECT_DIR$/AccuracyMatrix.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultGame.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultGame.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_Gun_AK47.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_Gun_AK47.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_SphereTarget.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_SphereTarget.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BeatShot.uproject" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.uproject" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot.Target.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Global.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Global.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,18 +34,34 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/algorithm" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared/ntverp.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/Developer/GraphColor/Private/appconst.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/Developer/GraphColor/Private/listcoll.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/Developer/GraphColor/Private/stack.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/ThirdParty/Steamworks/Steamv151/sdk/public/steam/matchmakingtypes.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/ThirdParty/Steamworks/Steamv155/sdk/public/steam/matchmakingtypes.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Runtime/Engine/Private/Character.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/Boost.Build.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/crc.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/date_time/date_facet.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/date_time/date_parsing.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/date_time/gregorian/greg_month.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/date_time/gregorian/greg_serialize.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/date_time/posix_time/posix_time.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/ref.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/scoped_ptr.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/shared_ptr.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/smart_ptr/shared_ptr.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/type_index.hpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/type_traits/detail/config.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/kissfft.hh" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools/kiss_fftnd.c" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools/kiss_fftr.c" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/tagunion.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/toolkit/tfile.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/toolkit/tfile.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/utf8-cpp/core.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot.Target.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSAssetManager.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSAssetManager.h" root0="FORCE_HIGHLIGHTING" />
@@ -69,7 +90,7 @@
     <scope name="BeatShotBase" pattern="file:Source/BeatShot/Private/BS*" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="Toolset" />
+    <option name="selectedTabId" value="CurrentFile" />
   </component>
   <component name="ProjectId" id="2KRC04cNVjlpl4YTRGVI2u7QKyx" />
   <component name="ProjectViewState">
@@ -79,14 +100,16 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
-    &quot;DebuggerViewTab_PTCS_FirstProportionKey&quot;: &quot;0.41843972&quot;,
+    &quot;DebuggerViewTab_PTCS_FirstProportionKey&quot;: &quot;0.4473151&quot;,
     &quot;DebuggerViewTab_PTCS_LastProportionKey&quot;: &quot;0.0&quot;,
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;TODO_SCOPE&quot;: &quot;All Places&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.4474708&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.environmentSetup&quot;,
+    &quot;ezargs.lastUsed&quot;: &quot;&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -134,7 +157,7 @@
         <option name="PLATFORM" value="Win64" />
         <option name="PROJECT_FILE_PATH" value="$PROJECT_DIR$/Intermediate/ProjectFiles/BeatShot.vcxproj" />
         <option name="EXE_PATH" value="$(LocalDebuggerCommand)" />
-        <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments)" />
+        <option name="PROGRAM_PARAMETERS" value="$(LocalDebuggerCommandArguments) NUMCPP_NO_USE_BOOST" />
         <option name="WORKING_DIRECTORY" value="$(LocalDebuggerWorkingDirectory)" />
         <option name="PASS_PARENT_ENVS" value="1" />
         <option name="USE_EXTERNAL_CONSOLE" value="0" />
@@ -210,6 +233,10 @@
         <option name="Build" />
       </method>
     </configuration>
+    <list>
+      <item itemvalue="C++ Project.BeatShot" />
+      <item itemvalue="C++ Project.UE5" />
+    </list>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SvnConfiguration">
@@ -312,6 +339,28 @@
       <workItem from="1679079984312" duration="2572000" />
       <workItem from="1679100147310" duration="13418000" />
       <workItem from="1679158503885" duration="21868000" />
+      <workItem from="1679424353393" duration="13490000" />
+      <workItem from="1679509596946" duration="669000" />
+      <workItem from="1679510307020" duration="401000" />
+      <workItem from="1679511560480" duration="114000" />
+      <workItem from="1679511817472" duration="970000" />
+      <workItem from="1679512824919" duration="2713000" />
+      <workItem from="1679516152047" duration="128000" />
+      <workItem from="1679516312352" duration="2687000" />
+      <workItem from="1679519416773" duration="771000" />
+      <workItem from="1679520515551" duration="366000" />
+      <workItem from="1679521468716" duration="7740000" />
+      <workItem from="1679530219844" duration="1053000" />
+      <workItem from="1679531371236" duration="462000" />
+      <workItem from="1679532002125" duration="874000" />
+      <workItem from="1679533139723" duration="1103000" />
+      <workItem from="1679534396330" duration="22171000" />
+      <workItem from="1679595912011" duration="1174000" />
+      <workItem from="1679597364157" duration="357000" />
+      <workItem from="1679598271639" duration="18000" />
+      <workItem from="1679598334241" duration="2541000" />
+      <workItem from="1679601019211" duration="5141000" />
+      <workItem from="1679606323446" duration="7121000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

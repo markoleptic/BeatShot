@@ -5,6 +5,16 @@
 #include "CoreMinimal.h"
 #include "SaveGameCustomGameMode.h"
 #include "GameFramework/SaveGame.h"
+THIRD_PARTY_INCLUDES_START
+#pragma push_macro("check")
+#undef check
+#pragma warning (push)
+#pragma warning (disable : 4191)
+#pragma warning (disable : 4686)
+#include "NumCpp/Public/NumCpp.hpp"
+#pragma warning (pop)
+#pragma pop_macro("check")
+THIRD_PARTY_INCLUDES_END
 #include "SaveGamePlayerScore.generated.h"
 
 /* Why aren't 2d arrays a thing */
@@ -15,6 +25,44 @@ struct F2DArray
 
 	UPROPERTY()
 	TArray<float> Accuracy;
+};
+
+/* A QTable associated with a game mode. Must be unique for each game mode */
+USTRUCT()
+struct FQTableWrapper
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	EGameModeActorName GameModeActorName;
+
+	UPROPERTY()
+	FString CustomGameModeName;
+	
+	nc::NdArray<float> QTable;
+
+	FQTableWrapper()
+	{
+		QTable = nc::NdArray<float>();
+		CustomGameModeName = "";
+		GameModeActorName = EGameModeActorName::Custom;
+	}
+
+	FQTableWrapper(const EGameModeActorName InGameModeActorName, const FString InCustomGameModeName)
+	{
+		QTable = nc::NdArray<float>();
+		GameModeActorName = InGameModeActorName;
+		CustomGameModeName = InCustomGameModeName;
+	}
+
+	FORCEINLINE bool operator ==(const FQTableWrapper& Other) const
+	{
+		if (GameModeActorName == Other.GameModeActorName && CustomGameModeName.Equals(Other.CustomGameModeName))
+		{
+			return true;
+		}
+		return false;
+	}
 };
 
 /* Used to load and save player scores */
@@ -157,7 +205,11 @@ class GLOBAL_API USaveGamePlayerScore : public USaveGame
 	GENERATED_BODY()
 
 public:
-	// Map to store all scores, accessible by GameMode
+	/* Array containing all saved score instances */
 	UPROPERTY()
 	TArray<FPlayerScore> PlayerScoreArray;
+
+	/* Array containing all game mode QTable pairs */
+	UPROPERTY()
+	TArray<FQTableWrapper> QTables;
 };

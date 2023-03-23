@@ -1,6 +1,5 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-using System.IO;
 using UnrealBuildTool;
 
 public class UserInterface : ModuleRules
@@ -9,10 +8,10 @@ public class UserInterface : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "Global", "EasyFileDialog", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks"
+			"Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "Global", "EasyFileDialog", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks", "ParallelcubeAudioAnalyzer", "ParallelcubeTaglib"
 		});
 		PrivateDependencyModuleNames.AddRange(new[]
-			{ "ParallelcubeTaglib", "ParallelcubeAudioAnalyzer", "OnlineSubsystem" });
+			{ "OnlineSubsystem" });
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
 
