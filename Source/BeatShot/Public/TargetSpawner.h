@@ -13,9 +13,6 @@
 
 class ASphereTarget;
 class UBoxComponent;
-class UMaterialInterface;
-class AStaticMeshActor;
-class UActorComponent;
 class URLBase;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector);
@@ -25,62 +22,7 @@ class BEATSHOT_API ATargetSpawner : public AActor
 {
 	GENERATED_BODY()
 
-#pragma region RLAgent
-
-	/** An FIFO queue of (PreviousLocation, NextLocation), where NextLocation.Z is whether or not the target was destroyed by player. Coordinates are in Python space */
-	TQueue<FPythonPair> PythonTargetPairs;
-
-	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired. Coordinates are in Python space */
-	TArray<FPythonPair> ActivePythonTargetPairs;
-
-	/** Writes a popped FPythonPair from PythonTargetPairs to WriteLocationFilePath */
-	void WriteTargetPairToFile();
-
-	/** Returns a world location retrieved from ReadLocationFilePath, or a zero vector if invalid */
-	FVector TryGetSpawnLocationFromFile() const;
-
-	/** Finds the target inside of ActivePythonTargetPairsUpdates, updates reward based on whether or not the target was hit, and adds to head of PythonTargetPairs */
-	void UpdatePythonTargetReward(const FVector& WorldLocation, const bool bHit);
-
-	/** Adds two consecutively spawned targets to ActivePythonTargetPairs immediately after NextWorldLocation has been spawned */
-	void AddToActivePythonTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
-
-	/** Translates a world location to a coordinate readable by Python. The Z coordinate is the reward */
-	FVector ConvertUnrealLocToPythonLoc(const FVector& WorldLocation, const bool bHit) const;
-
-	/** Location of the previously spawned target, in world space */
-	FVector PreviousSpawnLocation;
-
-	/** File location to save location pairs and rewards to be read by Python */
-	const FString WriteLocationFilePath = "C:/Users/marka/Documents/git/CS4033_ML/RLProject/Accuracy.csv";
-
-	/** File location to read spawn locations from */
-	const FString ReadLocationFilePath = "C:/Users/marka/Documents/git/CS4033_ML/RLProject/SpawnLocation.txt";
-
-	/** An FIFO queue of (PreviousLocation, NextLocation) that represent destroyed or timed out targets */
-	TQueue<FTargetPair> TargetPairs;
-
-	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired.
-	 *  Added directly after being spawned, removed and added to TargetPairs queue upon being destroyed */
-	TArray<FTargetPair> ActiveTargetPairs;
-
-	/** Reinforcement Learning Agent */
-	UPROPERTY()
-	URLBase* RLBase;
-
-	/** Updates a TargetPair's reward based on if hit or not. Removes from ActiveTargetPairs and adds to TargetPairs queue */
-	void UpdateRLAgentReward(const FVector& WorldLocation, const bool bHit);
-
-	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
-	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
-
-	/** Calls the UpdateQTable and UpdateRewards functions for the RLAgent */
-	void UpdateRLAgent(const FAlgoInput& In) const;
-
-	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
-	FVector TryGetSpawnLocationFromRLAgent();
-
-#pragma endregion
+	friend class ABSGameMode;
 
 public:
 	ATargetSpawner();
@@ -264,7 +206,7 @@ private:
 	/** Returns a copy of the SpawnCounter */
 	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
 
-	FVectorCounter GetVectorCounterFromPoint(const FVector Point);
+	FVectorCounter GetVectorCounterFromPoint(const FVector Point) const;
 
 	/** The scale to apply to the next/current target */
 	float TargetScale;
@@ -341,6 +283,36 @@ private:
 
 	/** Whether or not the first BeatGrid target has been activated */
 	bool InitialBeatGridTargetActivated;
+
+#pragma endregion
+
+#pragma region RLAgent
+
+	/** Updates a TargetPair's reward based on if hit or not. Removes from ActiveTargetPairs and adds to TargetPairs queue */
+	void UpdateRLAgentReward(const FVector& WorldLocation, const bool bHit);
+
+	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
+	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
+
+	/** Calls the UpdateQTable and UpdateRewards functions for the RLAgent */
+	void UpdateRLAgent(const FAlgoInput& In) const;
+
+	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
+	FVector TryGetSpawnLocationFromRLAgent();
+
+	/** Location of the previously spawned target, in world space */
+	FVector PreviousSpawnLocation;
+
+	/** An FIFO queue of (PreviousLocation, NextLocation) that represent destroyed or timed out targets */
+	TQueue<FTargetPair> TargetPairs;
+
+	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired.
+	 *  Added directly after being spawned, removed and added to TargetPairs queue upon being destroyed */
+	TArray<FTargetPair> ActiveTargetPairs;
+
+	/** Reinforcement Learning Agent */
+	UPROPERTY()
+	URLBase* RLBase;
 
 #pragma endregion
 };

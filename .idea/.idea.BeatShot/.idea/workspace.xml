@@ -9,24 +9,31 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RLBase.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RLBase.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Physics/BSCollisionChannels.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BeatShot.uproject" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.uproject" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot.Target.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/FireGun/GA_FireGun.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Abilities/FireGun/GA_FireGun.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/FireGun/GE_FireGunDamage.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_Gun_AK47.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_Gun_AK47.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_Projectile.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_Projectile.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GC_FireGun.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GC_MuzzleFlash.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GC_MuzzleFlash.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSGameplayAbility_FireGun.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSGameplayAbility_FireGun.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Gun_AK47.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Gun_AK47.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Projectile.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Projectile.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RLBase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RLBase.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility_FireGun.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility_FireGun.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Projectile.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Projectile.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RLBase.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RLBase.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Global.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Global.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,7 +97,7 @@
     <scope name="BeatShotBase" pattern="file:Source/BeatShot/Private/BS*" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="SWEA" />
   </component>
   <component name="ProjectId" id="2KRC04cNVjlpl4YTRGVI2u7QKyx" />
   <component name="ProjectViewState">
@@ -361,6 +368,8 @@
       <workItem from="1679598334241" duration="2541000" />
       <workItem from="1679601019211" duration="5141000" />
       <workItem from="1679606323446" duration="7121000" />
+      <workItem from="1679626951682" duration="22916000" />
+      <workItem from="1679759140670" duration="4853000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

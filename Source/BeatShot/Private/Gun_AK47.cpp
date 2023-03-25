@@ -4,9 +4,9 @@
 #include "Gun_AK47.h"
 #include "BSCharacter.h"
 #include "BSPlayerController.h"
-#include "Projectile.h"
 #include "SphereTarget.h"
 #include "NiagaraFunctionLibrary.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -22,45 +22,51 @@ AGun_AK47::AGun_AK47()
 	RootComponent = MeshComp;
 	MuzzleLocationComp = CreateDefaultSubobject<USceneComponent>("Muzzle Location");
 	MuzzleLocationComp->SetupAttachment(MeshComp, "Muzzle");
-	TraceDistance = 999999;
 	bCanFire = true;
 	bIsFiring = false;
 	KickbackAlpha = 0.f;
 	KickbackAngle = 0.f;
 	bShouldKickback = false;
-	CurrentShotRecoilRotation = FRotator();
-	CurrentShotCameraRecoilRotation = FRotator();
-}
-
-ABSCharacter* AGun_AK47::GetBSCharacter() const
-{
-	return Cast<ABSCharacter>(GetParentActor());
 }
 
 void AGun_AK47::BeginPlay()
 {
 	Super::BeginPlay();
 
-	BulletDecalInstance = UMaterialInstanceDynamic::Create(BulletDecalMaterial, GetInstigatorController<ABSPlayerController>());
-
-	/* Bind UpdateRecoilPattern to the Recoil vector curve and timeline */
+	/* Bind UpdateRecoil to the Recoil vector curve and timeline */
 	FOnTimelineVector RecoilProgressFunction;
-	RecoilProgressFunction.BindUFunction(this, FName("UpdateRecoilPattern"));
-	RecoilTimeline.AddInterpVector(RecoilVectorCurve, RecoilProgressFunction);
+	RecoilProgressFunction.BindUFunction(this, FName("UpdateRecoil"));
+	RecoilTimeline.AddInterpVector(RecoilCurve, RecoilProgressFunction);
 }
 
 void AGun_AK47::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	RecoilTimeline.TickTimeline(DeltaTime);
 	if (bShouldRecoil)
 	{
-		UpdateRecoilAndKickback(DeltaTime);
+		UpdateKickbackAndRecoil(DeltaTime);
 	}
-	/* only do tracing for BeatTrack game modes */
-	if (bShouldTrace)
-	{
-		TraceForward();
-	}
+}
+
+void AGun_AK47::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	TagContainer.AppendTags(GameplayTags);
+}
+
+bool AGun_AK47::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
+{
+	return IGameplayTagAssetInterface::HasMatchingGameplayTag(TagToCheck);
+}
+
+bool AGun_AK47::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+{
+	return IGameplayTagAssetInterface::HasAllMatchingGameplayTags(TagContainer);
+}
+
+bool AGun_AK47::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+{
+	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
 }
 
 void AGun_AK47::Fire()
@@ -79,7 +85,7 @@ void AGun_AK47::Fire()
 
 void AGun_AK47::StartFire()
 {
-	if (!bCanFire || bIsFiring)
+	if (!bCanFire)
 	{
 		return;
 	}
@@ -97,100 +103,84 @@ void AGun_AK47::StartFire()
 		}
 	}
 	bIsFiring = true;
-	if (bAutomaticFire)
-	{
-		/* sets a timer for firing the weapon - if bAutomaticFire is true then this timer will repeat until cleared by StopFire(), leading to fully automatic fire */
-		GetWorldTimerManager().SetTimer(ShotDelay, this, &AGun_AK47::Fire, 0.11f, true, 0.0f);
-	}
-	else
-	{
-		Fire();
-	}
+	Fire();
 }
 
 void AGun_AK47::StopFire()
 {
-	if (bAutomaticFire || GetWorldTimerManager().IsTimerActive(ShotDelay))
-	{
-		/* Stops the gun firing (for automatic fire) */
-		GetWorldTimerManager().ClearTimer(ShotDelay);
-	}
 	bIsFiring = false;
 	CurrentShotRecoilRotation = FRotator(0, 0, 0);
 	CurrentShotCameraRecoilRotation = FRotator(0, 0, 0);
 	ShotsFired = 0;
+	
 	/* Reverse the timeline so that it takes time to recover to the beginning */
 	RecoilTimeline.SetPlayRate(5.454545f);
 	RecoilTimeline.Reverse();
 }
 
-void AGun_AK47::EnableFire()
+ABSCharacter* AGun_AK47::GetBSCharacter() const
 {
-	bCanFire = true;
+	return Cast<ABSCharacter>(GetParentActor());
 }
 
-FTransform AGun_AK47::GetTraceTransform() const
+FRotator AGun_AK47::GetCurrentRecoilRotation() const
 {
-	UCameraComponent* Camera = GetBSCharacter()->GetCamera();
-	FVector MuzzleLoc = MeshComp->GetSocketTransform("Muzzle").GetLocation();
-	float AngleDeg = -CurrentShotRecoilRotation.Pitch;
-	float AngleDeg2 = CurrentShotRecoilRotation.Yaw;
-	FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(Camera->GetForwardVector(), AngleDeg, Camera->GetRightVector());
-	FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, AngleDeg2, Camera->GetUpVector());
-	FVector EndTrace = Camera->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
-		
-	FTransform Transform;
-	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, Camera->GetComponentLocation(), EndTrace, ECC_Visibility, FCollisionQueryParams::DefaultQueryParam))
-	{
-		Transform = {UKismetMathLibrary::FindLookAtRotation(MuzzleLoc, Hit.ImpactPoint), MuzzleLoc, FVector(1.f)};
-		//DrawDebugLine(GetWorld(),  Camera->GetComponentLocation(), Hit.ImpactPoint, FColor::Blue, false, 10.f);
-		//DrawDebugLine(GetWorld(), MuzzleLoc, Hit.ImpactPoint, FColor::Red, false, 10.f);
-	}
-	else
-	{
-		Transform = {UKismetMathLibrary::FindLookAtRotation(MuzzleLoc, EndTrace), MuzzleLoc, FVector(1.f)};
-	}
-	return Transform;
+	return FRotator(-CurrentShotRecoilRotation.Pitch, CurrentShotRecoilRotation.Yaw, CurrentShotRecoilRotation.Roll);
 }
 
-void AGun_AK47::TraceForward() const
+FVector AGun_AK47::GetMuzzleLocation() const
 {
-	const FVector StartTrace = GetBSCharacter()->GetCamera()->GetComponentLocation();
-	const FVector EndTrace = GetBSCharacter()->GetCamera()->GetForwardVector() * FVector(TraceDistance, TraceDistance, TraceDistance);
-	if (FHitResult Hit; GetWorld()->LineTraceSingleByChannel(Hit, StartTrace, EndTrace, ECC_GameTraceChannel1, FCollisionQueryParams::DefaultQueryParam))
-	{
-		if (ASphereTarget* HitTarget = Cast<ASphereTarget>(Hit.GetActor()))
-		{
-			UGameplayStatics::ApplyDamage(HitTarget, 1.f, GetBSCharacter()->GetBSPlayerController(), GetBSCharacter(), UDamageType::StaticClass());
-			HitTarget->SetSphereColor(PlayerSettings.Game.PeakTargetColor);
-			if (!PlayerSettings.Game.bUseSeparateOutlineColor)
-			{
-				HitTarget->SetOutlineColor(PlayerSettings.Game.PeakTargetColor);
-			}
-			return;
-		}
-	}
-	if (TrackingTarget)
-	{
-		TrackingTarget->SetSphereColor(PlayerSettings.Game.EndTargetColor);
-		if (!PlayerSettings.Game.bUseSeparateOutlineColor)
-		{
-			TrackingTarget->SetOutlineColor(PlayerSettings.Game.EndTargetColor);
-		}
-	}
+	return MuzzleLocationComp->GetComponentLocation();
 }
 
-void AGun_AK47::UpdateRecoilAndKickback(const float DeltaTime)
+void AGun_AK47::SetFireRate(const bool bAutomatic)
 {
-	RecoilTimeline.TickTimeline(DeltaTime);
-	UpdateCameraKickback(DeltaTime);
+	StopFire();
+	GetBSCharacter()->GetCamera()->SetRelativeRotation(FRotator(0, 0, 0));
+	GetBSCharacter()->GetCameraRecoilComponent()->SetRelativeRotation(FRotator(0, 0, 0));
+	bAutomaticFire = bAutomatic;
+	if (bAutomatic)
+	{
+		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
+		return;
+	}
+	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
+}
+
+void AGun_AK47::SetShouldRecoil(const bool bRecoil)
+{
+	StopFire();
+	GetBSCharacter()->GetCamera()->SetRelativeRotation(FRotator(0, 0, 0));
+	GetBSCharacter()->GetCameraRecoilComponent()->SetRelativeRotation(FRotator(0, 0, 0));
+	bShouldRecoil = bRecoil;
+	if (bRecoil)
+	{
+		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_Recoil);
+		return;
+	}
+	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_Recoil);
+}
+
+void AGun_AK47::SetShowDecals(const bool bShowDecals)
+{
+	if (bShowDecals)
+	{
+		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+		return;
+	}
+	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+}
+
+void AGun_AK47::UpdateKickbackAndRecoil(const float DeltaTime)
+{
+	UpdateKickback(DeltaTime);
 	const FRotator Current = GetBSCharacter()->GetCamera()->GetRelativeRotation();
-	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime, 4);
+	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime, CameraRecoilInterpSpeed);
 	GetBSCharacter()->GetCamera()->SetRelativeRotation(UpdatedRotation);
 	GetBSCharacter()->GetCameraRecoilComponent()->SetRelativeRotation(FRotator(KickbackAngle, 0, 0));
 }
 
-void AGun_AK47::UpdateCameraKickback(const float DeltaTime)
+void AGun_AK47::UpdateKickback(const float DeltaTime)
 {
 	if (bShouldKickback)
 	{
@@ -211,7 +201,7 @@ void AGun_AK47::UpdateCameraKickback(const float DeltaTime)
 	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration);
 }
 
-void AGun_AK47::UpdateRecoilPattern(const FVector Output)
+void AGun_AK47::UpdateRecoil(const FVector Output)
 {
 	if (!bIsFiring)
 	{
@@ -224,10 +214,9 @@ void AGun_AK47::UpdateRecoilPattern(const FVector Output)
 		CurrentShotCameraRecoilRotation.Pitch = Output.Y * 0.5;
 		CurrentShotRecoilRotation.Yaw = Output.X;
 		CurrentShotRecoilRotation.Pitch = Output.Y;
+		return;
 	}
-	else
-	{
-		CurrentShotCameraRecoilRotation = FRotator(0, 0, 0);
-		CurrentShotRecoilRotation = FRotator(0, 0, 0);
-	}
+	CurrentShotCameraRecoilRotation = FRotator(0, 0, 0);
+	CurrentShotRecoilRotation = FRotator(0, 0, 0);
+
 }

@@ -53,6 +53,10 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(State_Sprinting, "State.Sprinting","");
 	AddTag(State_PlayingBSGameMode, "State.PlayingBSGameMode","");
 
+	AddTag(State_Weapon_AutomaticFire, "State.Weapon.AutomaticFire","");
+	AddTag(State_Weapon_ShowDecals, "State.Weapon.ShowDecals","");
+	AddTag(State_Weapon_Recoil, "State.Weapon.Recoil","");
+
 	AddTag(Target, "Target","");
 	AddTag(Target_State, "Target.State","");
 	AddTag(Target_State_Grid, "Target.State.Grid","");

@@ -1,10 +1,9 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
-// Credit to whoisEllie on Github for some code used in this class
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
+#include "GameplayTagAssetInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "Gun_AK47.generated.h"
@@ -20,7 +19,7 @@ class UAnimMontage;
 DECLARE_DELEGATE(FOnShotFired);
 
 UCLASS()
-class BEATSHOT_API AGun_AK47 : public AActor
+class BEATSHOT_API AGun_AK47 : public AActor, public IGameplayTagAssetInterface 
 {
 	GENERATED_BODY()
 
@@ -33,149 +32,138 @@ class BEATSHOT_API AGun_AK47 : public AActor
 	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
+	/** Implement IGameplayTagAssetInterface */
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
+	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+
 public:
-	/** Make the weapon Fire a Projectile */
-	UFUNCTION()
-	void Fire();
 
 	/** Starts firing the gun (sets the timer for automatic fire) */
+	UFUNCTION(BlueprintCallable)
 	void StartFire();
 
 	/** Stops the timer that allows for automatic fire */
+	UFUNCTION(BlueprintCallable)
 	void StopFire();
 
-	/** Allows the player to fire again */
-	void EnableFire();
+	/** Returns the current spread rotation (Pitch and Yaw at the current time). Used by FireGun ability */
+	UFUNCTION(BlueprintCallable)
+	FRotator GetCurrentRecoilRotation() const;
 
-	/** Returns whether the weapon can fire or not */
-	bool CanFire() const { return bCanFire; }
+	/** Returns the location of the muzzle */
+	UFUNCTION(BlueprintCallable)
+	FVector GetMuzzleLocation() const;
 
-	bool IsFiring() const { return bIsFiring; }
-
-	/** Update the weapon's ability to fire
-	 *	@param bNewFire The new state of the weapon's ability to fire
-	 */
+	UFUNCTION(BlueprintCallable)
 	void SetCanFire(const bool bNewFire) { bCanFire = bNewFire; }
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void SetShouldTrace(const bool bNewShouldTrace) { bShouldTrace = bNewShouldTrace; }
 
-	FTransform GetTraceTransform() const;
+	UFUNCTION(BlueprintCallable)
+	void SetFireRate(const bool bAutomatic);
 
+	UFUNCTION(BlueprintCallable)
+	void SetShouldRecoil(const bool bRecoil);
+
+	UFUNCTION(BlueprintCallable)
+	void SetShowDecals(const bool bShowDecals);
+
+	/** Returns whether the weapon can fire or not */
+	UFUNCTION(BlueprintCallable)
+	bool CanFire() const { return bCanFire; }
+
+	UFUNCTION(BlueprintCallable)
+	bool IsFiring() const { return bIsFiring; }
+	
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;
+
+protected:
 
 	/** The skeletal mesh of the gun */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
 
-	/** The location of the gun */
+	/** The location of the muzzle */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USceneComponent* MuzzleLocationComp;
 
 	/** Vector curve that implements vertical and horizontal recoil */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Recoil")
-	UCurveVector* RecoilVectorCurve;
+	UCurveVector* RecoilCurve;
 
-	/** Float curve that implements a screen kickback effect */
+	/** Float curve that implements a screen kickback (camera shake) effect */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Recoil")
 	UCurveFloat* KickbackCurve;
 
-	/** The material interface for the bullet decal */
-	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-	UMaterialInterface* BulletDecalMaterial;
+	UFUNCTION(BlueprintCallable)
+	ABSCharacter* GetBSCharacter() const;
 
-	/** The MID for the bullet decal */
-	UPROPERTY(EditAnywhere, Category = "Materials", BlueprintReadWrite)
-	UMaterialInstanceDynamic* BulletDecalInstance;
-
-	/** Reference to the tracking target that was obtained from FOnBeatTrackTargetSpawned,
-	*   so we can change color of target based on the line trace */
-	UPROPERTY()
-	ASphereTarget* TrackingTarget;
-
-	/** Whether or not to recoil the gun */
-	bool bShouldRecoil;
-
-	/** Whether or not to fire the gun continuously */
-	bool bAutomaticFire;
-
-	/** Whether or not to trace on tick for BeatTrack */
-	bool bShouldTrace;
-
-	/** Whether or not to trace on tick for BeatTrack */
-	bool bShowBulletDecals;
-
-private:
+	/** Increments ShotsFired, executes OnShotFired, and sets bShouldKickback to true */
+	UFUNCTION()
+	void Fire();
+	
 	/** Controls gun recoil, camera recoil, and kickback inside of OnTick */
-	void UpdateRecoilAndKickback(float DeltaTime);
+	void UpdateKickbackAndRecoil(float DeltaTime);
 
 	/** Update the screen-shake-like camera recoil */
-	void UpdateCameraKickback(float DeltaTime);
+	void UpdateKickback(float DeltaTime);
 
-	/** Changes the color of the target based on a line trace from the gun to player's crosshair */
-	void TraceForward() const;
-
-	/** Update CurrentShotRecoils to vector at the current time into the spray.
-	 *  Bound to RecoilTimeline, which corresponds to the RecoilVectorCurve */
+	/** Updates CurrentShotRecoilRotation and CurrentShotCameraRecoilRotation. Bound to RecoilTimeline, which corresponds to the RecoilCurve */
 	UFUNCTION()
-	void UpdateRecoilPattern(FVector Output);
+	void UpdateRecoil(FVector Output);
 
-	/** The timeline set from RecoilVectorCurve */
-	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	/** The timeline corresponding to RecoilCurve */
 	FTimeline RecoilTimeline;
-
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
-	TSubclassOf<class AProjectile> ProjectileClass;
-
-	/** How far to trace forward to look for a collision */
-	UPROPERTY(VisibleAnywhere, Category = "Recoil")
-	float TraceDistance;
-
-	/** The timer that handles automatic fire */
-	UPROPERTY(EditDefaultsOnly, Category = "Gun State")
-	FTimerHandle ShotDelay;
-
-	/** Used in recoil to make sure the first shot has properly applied recoil */
-	UPROPERTY(VisibleAnywhere, Category = "Gun State")
-	int32 ShotsFired;
-
-	/** Whether or not the player is holding down left click */
-	UPROPERTY(VisibleAnywhere, Category = "Gun State")
-	bool bIsFiring;
-
-public:
 	
-	/** The current rotation value pulled from the vector curve (only the x and y values are used),
-	 *  added to control rotation during fire */
-	UPROPERTY(VisibleAnywhere, Category = "Recoil")
+	/** The current rotation representing the spread for the bullet, used when the gun is fired */
 	FRotator CurrentShotRecoilRotation;
 
 	/** Same as CurrentShotRecoilRotation but applied at half the scale */
-	UPROPERTY(VisibleAnywhere, Category = "Recoil")
 	FRotator CurrentShotCameraRecoilRotation;
 
-	ABSCharacter* GetBSCharacter() const;
-
-private:
-
+	/** Whether or not the player is holding down left click */
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsFiring;
+	
 	/** Determines if the player can fire */
+	UPROPERTY(BlueprintReadWrite)
 	bool bCanFire;
 
+	/** Whether or not to recoil the gun */
+	UPROPERTY(BlueprintReadWrite)
+	bool bShouldRecoil;
+
+	/** Whether or not to increment KickbackAngle, which is applied to the owning character's CameraRecoilComponent */
+	bool bShouldKickback;
+
+	/** Whether or not to fire the gun continuously */
+	UPROPERTY(BlueprintReadWrite)
+	bool bAutomaticFire;
+
+	/** Whether or not to trace on tick for BeatTrack */
+	UPROPERTY(BlueprintReadWrite)
+	bool bShouldTrace;
+
+	UPROPERTY(EditDefaultsOnly)
+	float CameraRecoilInterpSpeed = 4.f;
+	
 	/** The accumulated delta seconds since the last camera kickback duration */
 	float KickbackAlpha;
 
 	/** The value pulled from the KickbackCurve at time KickbackAlpha divided by KickbackDuration */
 	float KickbackAngle;
 
-	/** Whether or not to play the kickback animation */
-	bool bShouldKickback;
-
 	/** The duration of each kickback animation */
 	float KickbackDuration = 0.2f;
 
-public:
-	UPROPERTY()
-	FPlayerSettings PlayerSettings;
+	/** Used in recoil to make sure the first shot has properly applied recoil */
+	UPROPERTY(BlueprintReadWrite)
+	int32 ShotsFired;
+
+private:
+	FGameplayTagContainer GameplayTags;
 };

@@ -23,11 +23,14 @@ void URLBase::Init(const EGameModeActorName GameModeActorName, const FString Cus
 	{
 		if (const int32 Index = QTables.Find(FQTableWrapper(GameModeActorName, CustomGameModeName)); Index != INDEX_NONE)
 		{
-			QTableWrapper = QTables[Index];
-			QTable = QTableWrapper.QTable;
+			if (QTables[Index].QTable.numCols() == ColSize && QTables[Index].QTable.numRows() == RowSize)
+			{
+				QTableWrapper = QTables[Index];
+				QTable = QTableWrapper.QTable;
+				return;
+			}
 		}
 	}
-
 	QTable = nc::zeros<float>(nc::Shape(Size, Size));
 }
 
@@ -88,54 +91,3 @@ void URLBase::SaveQTable()
 	QTables.Add(QTableWrapper);
 	SaveQTables(QTables);
 }
-
-void URLBase::BeginDestroy()
-{
-	SaveQTable();
-	UObject::BeginDestroy();
-}
-
-
-// nc::NdArray<float> Table = nc::zeros<float>(nc::Shape(2, 10));
-// Table(0,0) = 0;
-// Table(0,1) = 0;
-// Table(0,2) = 3;
-// Table(0,3) = 0;
-// Table(0,4) = 0;
-// Table(0,5) = 0;
-// Table(0,6) = 0;
-// Table(0,7) = 0;
-// Table(0,8) = 0;
-// Table(0,9) = 15;
-// Table(1,0) = 0;
-// Table(1,1) = 0;
-// Table(1,2) = 0;
-// Table(1,3) = 0;
-// Table(1,4) = 0;
-// Table(1,5) = 0;
-// Table(1,6) = 4;
-// Table(1,7) = 0;
-// Table(1,8) = 8;
-// Table(1,9) = 0;
-	
-// auto Max = Table.max(nc::Axis::ROW);
-// for (auto Hey : Max)
-// {
-// 	UE_LOG(LogTemp, Display, TEXT("maxROW: %f"), Hey);
-// }
-// auto Max2 = Table.max(nc::Axis::COL);
-// for (auto Hey : Max2)
-// {
-// 	UE_LOG(LogTemp, Display, TEXT("MaxCOL: %f"), Hey);
-// }
-// auto MaxRow = Table.argmax(nc::Axis::ROW);
-// for (auto Hey : MaxRow)
-// {
-// 	UE_LOG(LogTemp, Display, TEXT("argmaxROW: %u"), Hey);
-// }
-// auto MaxCol = Table.argmax(nc::Axis::COL);
-// for (auto Hey : MaxCol)
-// {
-// 	UE_LOG(LogTemp, Display, TEXT("argmaxCOL: %u"), Hey);
-// }
-// return 0;

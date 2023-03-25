@@ -4,10 +4,11 @@
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
 #include "GameplayCueNotifyTypes.h"
-#include "Abilities/Tasks/AbilityTask_WaitInputRelease.h"
-#include "BeatShot/BSGameplayTags.h"
+#include "Camera/CameraComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Physics/BSCollisionChannels.h"
 #include "GameplayAbility/Tasks/BSAbilityTask_MontageEventWait.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UBSGameplayAbility_FireGun::UBSGameplayAbility_FireGun()
 {
@@ -15,97 +16,106 @@ UBSGameplayAbility_FireGun::UBSGameplayAbility_FireGun()
 }
 
 void UBSGameplayAbility_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	const FGameplayEventData* TriggerEventData)
+                                                 const FGameplayEventData* TriggerEventData)
 {
-	if (!CommitAbility(Handle, ActorInfo, ActivationInfo))
-	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-	}
-	
-	PlayMontage();
+	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
+	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(
+		this, &ThisClass::OnTargetDataReadyCallback);
 
-	if (GetBSCharacterFromActorInfo())
-	{
-		GetBSCharacterFromActorInfo()->GetGun()->StartFire();
-	}
-
-	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority)
-	{
-		// Spawn the bullet projectile
-		SpawnProjectile(GetBSCharacterFromActorInfo());
-
-		// Don't really know where to properly put this but this executes the muzzle flash Niagara effect (GC_MuzzleFlash)
-		K2_ExecuteGameplayCue(FBSGameplayTags::Get().GameplayCue_MuzzleFlash, MakeEffectContext(CurrentSpecHandle, CurrentActorInfo));
-	}
-	
-	// Currently doesn't work or just gets overriden by task repeating over and over
-	UAbilityTask_WaitInputRelease* ReleaseTask = UAbilityTask_WaitInputRelease::WaitInputRelease(this, true);
-	ReleaseTask->OnRelease.AddDynamic(this, &UBSGameplayAbility_FireGun::OnReleased);
-	ReleaseTask->ReadyForActivation();
+	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGameplayAbility_FireGun::OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData)
+void UBSGameplayAbility_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+                                            bool bReplicateEndAbility, bool bWasCancelled)
 {
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
+	if (IsEndAbilityValid(Handle, ActorInfo))
+	{
+		if (ScopeLockCount > 0)
+		{
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
+			return;
+		}
+
+		UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+		check(MyAbilityComponent);
+
+		// When ability ends, consume target data and remove delegate
+		MyAbilityComponent->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).Remove(OnTargetDataReadyCallbackDelegateHandle);
+		MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+
+		Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+	}
 }
 
-void UBSGameplayAbility_FireGun::OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData)
+void UBSGameplayAbility_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
 {
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, false);
+	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
+	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
+	{
+		FScopedPredictionWindow ScopedPrediction(MyAbilityComponent);
+
+		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
+		const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
+
+		const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
+		if (bShouldNotifyServer)
+		{
+			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag,
+			                                                      MyAbilityComponent->ScopedPredictionKey);
+		}
+
+		if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
+		{
+			// Let the blueprint do stuff like apply effects to the targets
+			OnTargetDataReady(LocalTargetDataHandle);
+		}
+		else
+		{
+			K2_EndAbility();
+		}
+	}
+
+	// We've processed the data
+	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 }
 
-void UBSGameplayAbility_FireGun::EventReceived(FGameplayTag EventTag, FGameplayEventData EventData)
+void UBSGameplayAbility_FireGun::StartTargeting()
+{
+	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
+	FScopedPredictionWindow ScopedPrediction(Component, CurrentActivationInfo.GetActivationPredictionKey());
+	FHitResult HitResult = SingleWeaponTrace();
+	FGameplayAbilityTargetDataHandle TargetData;
+	FGameplayAbilityTargetData_SingleTargetHit* SingleTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
+	TargetData.Add(SingleTargetData);
+	SingleTargetData->HitResult = HitResult;
+	OnTargetDataReadyCallback(TargetData, FGameplayTag());
+}
+
+void UBSGameplayAbility_FireGun::SpawnProjectile(ABSCharacter* ActorCharacter, const FVector& EndLocation)
 {
 	// Only spawn projectiles on the Server.
-	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority && EventTag == FBSGameplayTags::Get().Event_Montage_SpawnProjectile)
+	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority)
 	{
-		// // Spawn the bullet projectile
-		// SpawnProjectile(GetBSCharacterFromActorInfo());
-		//
-		// // Don't really know where to properly put this but this executes the muzzle flash Niagara effect (GC_MuzzleFlash)
-		// K2_ExecuteGameplayCue(FBSGameplayTags::Get().GameplayCue_MuzzleFlash, MakeEffectContext(CurrentSpecHandle, CurrentActorInfo));
+		const FVector MuzzleLocation = ActorCharacter->GetGun()->GetMuzzleLocation();
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		const FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, EndLocation);
+		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, LookAt, SpawnParameters);
+		Projectile->SetInstigator(ActorCharacter);
+		Projectile->ProjectileMovement->InitialSpeed = ProjectileSpeed;
+		Projectile->ProjectileMovement->MaxSpeed = ProjectileSpeed;
 	}
 }
 
-void UBSGameplayAbility_FireGun::OnReleased(float TimeHeld)
+FHitResult UBSGameplayAbility_FireGun::SingleWeaponTrace() const
 {
-	UE_LOG(LogTemp, Display, TEXT("Released: %f"), FPlatformTime::Seconds());
-	if (const ABSCharacter* Character = GetBSCharacterFromActorInfo())
-	{
-		Character->GetGun()->StopFire();
-	}
-	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, true, true);
-}
-
-void UBSGameplayAbility_FireGun::SpawnProjectile(ABSCharacter* ActorCharacter) const
-{
-	const FTransform Transform = ActorCharacter->GetGun()->GetTraceTransform();
-	const FGameplayEffectSpecHandle DamageEffectSpecHandle = MakeOutgoingGameplayEffectSpec(DamageGameplayEffect, GetAbilityLevel());
-	
-	// Pass the damage to the Damage Execution Calculation through a SetByCaller value on the GameplayEffectSpec
-	DamageEffectSpecHandle.Data.Get()->SetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, Damage);
-		
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		
-	AProjectile* Projectile = GetWorld()->SpawnActorDeferred<AProjectile>(ProjectileClass, Transform, GetOwningActorFromActorInfo(),
-		ActorCharacter, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	Projectile->DamageEffectSpecHandle = DamageEffectSpecHandle;
-	Projectile->ProjectileMovement->InitialSpeed = ProjectileSpeed;
-	Projectile->ProjectileMovement->MaxSpeed = ProjectileSpeed;
-	Projectile->bSpawnDecalOnHit = ActorCharacter->LoadPlayerSettings().Game.bShowBulletDecals;
-	Projectile->FinishSpawning(Transform, true);
-}
-
-void UBSGameplayAbility_FireGun::PlayMontage()
-{
-	UBSAbilityTask_MontageEventWait* Task = UBSAbilityTask_MontageEventWait::PlayMontageAndWaitForEvent(this, NAME_None, FireHipMontage, FGameplayTagContainer(), 1.0f,
-	NAME_None, false, 1.0f);
-	Task->OnBlendOut.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCompleted);
-	Task->OnCompleted.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCompleted);
-	Task->OnInterrupted.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCancelled);
-	Task->OnCancelled.AddDynamic(this, &UBSGameplayAbility_FireGun::OnCancelled);
-	Task->EventReceived.AddDynamic(this, &UBSGameplayAbility_FireGun::EventReceived);
-	// Activate the AbilityTask
-	Task->ReadyForActivation();
+	FHitResult HitResult;
+	const UCameraComponent* Camera = GetBSCharacterFromActorInfo()->GetCamera();
+	const FRotator CurrentRecoilRotation = GetBSCharacterFromActorInfo()->GetGun()->GetCurrentRecoilRotation();
+	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(Camera->GetForwardVector(), CurrentRecoilRotation.Pitch, Camera->GetRightVector());
+	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, Camera->GetUpVector());
+	const FVector EndTrace = Camera->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
+	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true, /*IgnoreActor=*/ GetAvatarActorFromActorInfo());
+	GetWorld()->LineTraceSingleByChannel(HitResult, Camera->GetComponentLocation(), EndTrace, BS_TraceChannel_Weapon, TraceParams);
+	return HitResult;
 }

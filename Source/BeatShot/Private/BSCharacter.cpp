@@ -183,22 +183,13 @@ void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 {
 	Sensitivity = PlayerSettings.Sensitivity;
-	if (GetGun())
+	if (AGun_AK47* Gun = GetGun())
 	{
-		if (GetGun()->bAutomaticFire != PlayerSettings.Game.bAutomaticFire || GetGun()->bShouldRecoil != PlayerSettings.Game.bShouldRecoil)
-		{
-			GetGun()->StopFire();
-			GetCamera()->SetRelativeRotation(FRotator(0, 0, 0));
-			GetCameraRecoilComponent()->SetRelativeRotation(FRotator(0, 0, 0));
-			GetGun()->bShouldRecoil = PlayerSettings.Game.bShouldRecoil;
-			GetGun()->bAutomaticFire = PlayerSettings.Game.bAutomaticFire;
-		}
-		if (GetGun()->bShowBulletDecals != PlayerSettings.Game.bShowBulletDecals)
-		{
-			GetGun()->bShowBulletDecals = PlayerSettings.Game.bShowBulletDecals;
-		}
-		GetGun()->PlayerSettings = PlayerSettings;
+		Gun->SetShouldRecoil(PlayerSettings.Game.bShouldRecoil);
+		Gun->SetFireRate(PlayerSettings.Game.bAutomaticFire);
+		Gun->SetShowDecals(PlayerSettings.Game.bShowBulletDecals);
 	}
+	
 	TArray<FGameplayAbilitySpec*> Specs;
 	FGameplayTagContainer Container;
 	Container.AddTag(FBSGameplayTags::Get().Input_Fire);

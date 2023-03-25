@@ -13,45 +13,54 @@ UCLASS()
 class BEATSHOT_API UBSGameplayAbility_FireGun : public UBSGameplayAbility
 {
 	GENERATED_BODY()
-	
+
 public:
 	UBSGameplayAbility_FireGun();
 
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	                             const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
+	                        bool bWasCancelled) override;
+
+protected:
+	/** The firing animation to play */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* FireHipMontage;
 
+	/** The projectile class to spawn */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TSubclassOf<AProjectile> ProjectileClass;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TSubclassOf<UGameplayEffect> DamageGameplayEffect;
-	
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
-
-protected:
-	
+	/** The damage to apply on trace hit */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float Damage = 666.0f;
 
+	/** The speed fire the projectile at */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float ProjectileSpeed = 250000.f;
 
+	/** How far to trace forward from Character camera */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float TraceDistance = 100000.f;
 
-	UFUNCTION()
-	virtual void OnCancelled(FGameplayTag EventTag, FGameplayEventData EventData);
+	/** Performs non-gameplay related tasks like muzzle flash, camera recoil, and decal spawning */
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
 
-	UFUNCTION()
-	virtual void OnCompleted(FGameplayTag EventTag, FGameplayEventData EventData);
+	/** Calls OnTargetDataReady */
+	void OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
 
-	UFUNCTION()
-	virtual void EventReceived(FGameplayTag EventTag, FGameplayEventData EventData);
+	/** Performs a WeaponTrace and calls OnTargetDataReadyCallback */
+	UFUNCTION(BlueprintCallable)
+	void StartTargeting();
 
-	UFUNCTION()
-	void OnReleased(float TimeHeld);
+	/** Spawns a projectile starting at the Character's Weapon's MuzzleLocation socket and travels towards EndLocation */
+	UFUNCTION(BlueprintCallable)
+	void SpawnProjectile(ABSCharacter* ActorCharacter, const FVector& EndLocation);
 
-	void SpawnProjectile(ABSCharacter* ActorCharacter) const;
+	/** Performs single bullet trace */
+	FHitResult SingleWeaponTrace() const;
 
-	void PlayMontage();
+private:
+	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
 };

@@ -149,6 +149,10 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 	{
 		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
 		TargetSpawner->SetShouldSpawn(false);
+		if (TargetSpawner->RLBase)
+		{
+			TargetSpawner->RLBase->SaveQTable();
+		}
 		if (OnTargetSpawned.IsBoundToObject(TargetSpawner))
 		{
 			OnTargetSpawned.RemoveAll(TargetSpawner);
@@ -601,7 +605,7 @@ void ABSGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
 		if (ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
 		{
 			TargetSpawner->OnBeatTrackDirectionChanged.BindUFunction(Character, "OnBeatTrackDirectionChanged");
-			Character->GetGun()->TrackingTarget = SpawnedTarget;
+			//Character->GetGun()->TrackingTarget = SpawnedTarget;
 		}
 		SpawnedTarget->HealthComponent->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
 	}
@@ -652,58 +656,3 @@ float ABSGameMode::FloatDivide(const float Num, const float Denom)
 	}
 	return Num / Denom;
 }
-
-//AATracker->OnCapturedData.RemoveDynamic(this, &ABSGameMode::FeedStreamCaptureTracker);
-//AAPlayer->OnCapturedData.RemoveDynamic(this, &ABSGameMode::FeedStreamCapturePlayer);
-
-// if (!AATracker->InitLoopbackAudio())
-// {
-// 	ShowSongPathErrorMessage();
-// 	bShouldTick = false;
-// 	UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
-// 	return;
-// }
-// AATracker->SetDefaultDeviceLoopbackAudio(*AudioDeviceList[6]);
-// if (!AATracker->InitLoopbackAudio())
-// {
-// 	ShowSongPathErrorMessage();
-// 	bShouldTick = false;
-// 	UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
-// 	return;
-// }
-
-
-// AATracker->InitSpectrumConfigWLimits(
-// EAA_ChannelSelectionMode::All_in_one, 0,
-// AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
-// false, 1);
-
-// AATracker->InitSpectrumConfigWLimits(
-// 	EAA_ChannelSelectionMode::All_in_one, 0,
-// 	AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize,
-// 	true, 1);
-// OnAAPlayerLoaded.Broadcast(AATracker);
-
-//AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, AudioBufferSeconds);
-//AATracker->SetDefaultDeviceStreamAudio(*OutAudioDevice);
-//AATracker->InitStreamAudio(1, 48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
-//AATracker->OnCapturedData.AddUniqueDynamic(this, &ABSGameMode::FeedStreamCaptureTracker);
-
-//AAPlayer->SetDefaultDeviceStreamAudio(*OutAudioDevice);
-//AAPlayer->InitStreamAudio(1, 48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int,1.f, bPlaybackAudio);
-//AAPlayer->OnCapturedData.AddUniqueDynamic(this, &ABSGameMode::FeedStreamCapturePlayer);
-
-/*Visualizer2 = Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(VisualizerClass,
-												  &Visualizer2Location,
-												  &FRotator::ZeroRotator,
-												  SpawnParameters));*/
-
-/*void ABSGameMode::FeedStreamCaptureTracker(const TArray<uint8>& StreamData)
-{
-	AATracker->FeedStreamCapture(StreamData);
-}
-
-void ABSGameMode::FeedStreamCapturePlayer(const TArray<uint8>& StreamData)
-{
-	AAPlayer->FeedStreamCapture(StreamData);
-}*/
