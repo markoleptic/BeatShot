@@ -5,16 +5,6 @@
 #include "CoreMinimal.h"
 #include "SaveGameCustomGameMode.h"
 #include "GameFramework/SaveGame.h"
-THIRD_PARTY_INCLUDES_START
-#pragma push_macro("check")
-#undef check
-#pragma warning (push)
-#pragma warning (disable : 4191)
-#pragma warning (disable : 4686)
-#include "NumCpp/Public/NumCpp.hpp"
-#pragma warning (pop)
-#pragma pop_macro("check")
-THIRD_PARTY_INCLUDES_END
 #include "SaveGamePlayerScore.generated.h"
 
 /* Why aren't 2d arrays a thing */
@@ -38,21 +28,32 @@ struct FQTableWrapper
 
 	UPROPERTY()
 	FString CustomGameModeName;
-	
-	nc::NdArray<float> QTable;
+
+	UPROPERTY()
+	TArray<float> QTable;
+
+	UPROPERTY()
+	int32 RowSize;
+
+	UPROPERTY()
+	int32 ColSize;
 
 	FQTableWrapper()
 	{
-		QTable = nc::NdArray<float>();
+		QTable = TArray<float>();
 		CustomGameModeName = "";
 		GameModeActorName = EGameModeActorName::Custom;
+		RowSize = 0;
+		ColSize = 0;
 	}
 
 	FQTableWrapper(const EGameModeActorName InGameModeActorName, const FString InCustomGameModeName)
 	{
-		QTable = nc::NdArray<float>();
+		QTable = TArray<float>();
 		GameModeActorName = InGameModeActorName;
 		CustomGameModeName = InCustomGameModeName;
+		RowSize = 0;
+		ColSize = 0;
 	}
 
 	FORCEINLINE bool operator ==(const FQTableWrapper& Other) const

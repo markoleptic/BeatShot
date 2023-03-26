@@ -144,7 +144,7 @@ private:
 	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
 
 	/** Initializes the SpawnCounter array */
-	void InitializeSpawnCounter();
+	FIntPoint InitializeSpawnCounter();
 
 	/** Returns a string representation of an accuracy row */
 	static void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
@@ -295,7 +295,7 @@ private:
 	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
 
 	/** Calls the UpdateQTable and UpdateRewards functions for the RLAgent */
-	void UpdateRLAgent(const FAlgoInput& In) const;
+	void UpdateRLAgent(const FAlgoInput In);
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
 	FVector TryGetSpawnLocationFromRLAgent();

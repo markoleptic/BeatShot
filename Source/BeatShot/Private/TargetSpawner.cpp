@@ -118,10 +118,19 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 		InitBeatGrid();
 		return;
 	}
-	InitializeSpawnCounter();
+	FIntPoint RowsColumns = InitializeSpawnCounter();
 	
 	RLBase = NewObject<URLBase>();
-	RLBase->Init(GameModeActorStruct.GameModeActorName, GameModeActorStruct.CustomGameModeName, GetSpawnCounter().Num(), 1.f, 0.9f, 0.9f);
+	FRLAgentParams Params;
+	Params.GameModeActorName = GameModeActorStruct.GameModeActorName;
+	Params.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
+	Params.Size = GetSpawnCounter().Num();
+	Params.Rows = RowsColumns.X;
+	Params.Columns = RowsColumns.Y;
+	Params.InEpsilon = 0.9f;
+	Params.InGamma = 0.9f;
+	Params.InAlpha = 0.9f;
+	RLBase->Init(Params);
 }
 
 void ATargetSpawner::InitBeatGrid()
@@ -504,8 +513,8 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		{
 			SpawnCounter[Index].TotalHits++;
 		}
-
-		UpdateRLAgentReward(Location, !DidExpire);
+		const bool bTargetWasHit = !DidExpire;
+		UpdateRLAgentReward(Location, bTargetWasHit);
 	}
 	else
 	{
@@ -580,6 +589,11 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 		}))
 		{
 			UE_LOG(LogTemp, Display, TEXT("Successful Spawn Location suggested by RLAgent."));
+			FVectorCounter Found = GetVectorCounterFromPoint(Location);
+			Found.ActualChosenPoint = Found.GetRandomSubPoint();
+			FVector Center = Found.Point + FVector(0, Found.IncrementY / 2.f, Found.IncrementZ / 2.f);
+			DrawDebugBox(GetWorld(), Center, FVector(0, Found.IncrementY, Found.IncrementZ), FColor::Orange, false, 1.f);
+			return Found.GetRandomSubPoint();
 			return Location;
 		}
 		UE_LOG(LogTemp, Display, TEXT("Unable to Spawn Location suggested by RLAgent. %s"), *Location.ToString());
@@ -596,14 +610,13 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 	{
 		return Origin;
 	}
-	
 	const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0, OpenLocations.Num() - 1);
-	return OpenLocations[RandomPoint];
-	//FVectorCounter Found = GetVectorCounterFromPoint(OpenLocations[RandomPoint]);
-	//Found.ActualChosenPoint = Found.GetRandomSubPoint();
-	//FVector Center = Found.Point + FVector(0, Found.IncrementY / 2.f, Found.IncrementZ / 2.f);
-	//DrawDebugBox(GetWorld(), Center, FVector(0, Found.IncrementY, Found.IncrementZ), FColor::Orange, false, 1.f);
-	//return Found.GetRandomSubPoint();
+	FVectorCounter Found = GetVectorCounterFromPoint(OpenLocations[RandomPoint]);
+	Found.ActualChosenPoint = Found.GetRandomSubPoint();
+	FVector Center = Found.Point + FVector(0, Found.IncrementY / 2.f, Found.IncrementZ / 2.f);
+	DrawDebugBox(GetWorld(), Center, FVector(0, Found.IncrementY, Found.IncrementZ), FColor::Orange, false, 1.f);
+	return Found.ActualChosenPoint;
+	//return OpenLocations[RandomPoint];
 }
 
 FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
@@ -742,6 +755,10 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
 			}
 		}
 	}
+
+	/* TODO: remove points that are on the edge and could cause collision if choosing a random subtarget,
+	 * TODO: alternatively find the points most surrounded by other points */
+	
 	AllPoints.Shrink();
 	return AllPoints;
 }
@@ -778,71 +795,79 @@ void ATargetSpawner::SetBoxExtents_Dynamic() const
 
 TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector Center, const float Scale) const
 {
-	const FVector NewCenter = FVector(0, Center.Y * SpawnMemoryScaleY, (Center.Z - GetBoxOrigin_Unscaled().Z) * SpawnMemoryScaleZ);
-	const float Radius = ((Scale * SphereTargetRadius * 2) + (GameModeActorStruct.MinDistanceBetweenTargets / 2.f)) * SpawnMemoryScaleZ;
-	const FSphere Sphere = FSphere(NewCenter, Radius);
-	const FVector Extents = GetBoxExtents_Scaled_Static();
+	const float Radius = Scale * SphereTargetRadius * 2.f + GameModeActorStruct.MinDistanceBetweenTargets / 2.f;
+	const FSphere Sphere = FSphere(Center, Radius);
+
+	/*const float Left = UKismetMathLibrary::GridSnap_Float(Center.Y - Radius, 10.0);
+	const float Right = UKismetMathLibrary::GridSnap_Float(Center.Y + Radius, 10.0);
+	const float Down = UKismetMathLibrary::GridSnap_Float(Center.Z - Radius, 10.0);
+	const float Up = UKismetMathLibrary::GridSnap_Float(Center.Z + Radius, 10.0);*/
+	const FVector Extents = GetBoxExtents_Unscaled_Static();
 	TArray<FVector> BlockedPoints;
-	for (float Z = -Extents.Z; Z <= Extents.Z + 0.01; Z++)
+	const float YInc = roundf(1/SpawnMemoryScaleY);
+	const float ZInc = roundf(1/SpawnMemoryScaleZ);
+	for (float Z = (GetBoxOrigin_Unscaled().Z - Extents.Z); Z <= (GetBoxOrigin_Unscaled().Z + Extents.Z + 0.01); Z+=ZInc)
 	{
-		for (float Y = -Extents.Y; Y <= Extents.Y + 0.01; Y++)
+		for (float Y = -Extents.Y; Y <= Extents.Y+0.01; Y+=YInc)
 		{
-			if (FVector Loc = FVector(0, Y, Z); Sphere.IsInside(Loc))
+			if (FVector Loc = FVector(GetBoxOrigin_Unscaled().X, Y, Z); Sphere.IsInside(Loc))
 			{
-				BlockedPoints.AddUnique(FVector(GetBoxOrigin_Unscaled().X, Loc.Y * (1 / SpawnMemoryScaleY), GetBoxOrigin_Unscaled().Z + Loc.Z * (1 / SpawnMemoryScaleZ)));
+				BlockedPoints.AddUnique(Loc);
 			}
 		}
 	}
-	//UE_LOG(LogTemp, Display, TEXT("Count: %d"), Count);
-	//UE_LOG(LogTemp, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
+	//DrawDebugSphere(GetWorld(), Center, Scale * SphereTargetRadius * 2 + (GameModeActorStruct.MinDistanceBetweenTargets / 2.f), 32, FColor::Magenta, false, 0.5f);
+	UE_LOG(LogTemp, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
 	return BlockedPoints;
 }
 
-void ATargetSpawner::InitializeSpawnCounter()
+FIntPoint ATargetSpawner::InitializeSpawnCounter()
 {
 	const FVector Extents = GetBoxExtents_Unscaled_Static();
 	const float ZInc = 1 / SpawnMemoryScaleZ;
 	const float YInc = 1 / SpawnMemoryScaleY;
 	//int BigCount = 0;
-	int ZCount = 0;
+	int ColumnCount = 0;
+	int RowCount = 0;
 	for (float Z = -Extents.Z; Z <= Extents.Z + 0.01; Z += ZInc)
 	{
-		int YCount = 0;
+		RowCount = 0;
 		for (float Y = -Extents.Y; Y <= Extents.Y + 0.01; Y += YInc)
 		{
 			SpawnCounter.Emplace(FVectorCounter(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z), YInc, ZInc));
-			//TArray<FVector> SubPoints;
-			// if (Z == Extents.Z || Y == Extents.Y)
-			// {○
-			// 	continue;
-			// }
-			// int SmallCount = 0;
-			// const float ZSubInc = Z + ZInc;
-			// const float YSubInc = Y + YInc;
-			// for (float SubZ = Z; SubZ < ZSubInc; SubZ+=1.f)
-			// {
-			// 	for (float SubY = Y; SubY< YSubInc; SubY+=1.f)
-			// 	{
-			// 		SubPoints.Emplace(FVector(GetBoxOrigin_Unscaled().X, SubY, GetBoxOrigin_Unscaled().Z + SubZ));
-			// 		BigCount++;
-			// 		SmallCount++;
-			// 	}
-			// }
-			// float SubZ = Z;
-			// float SubY = Y;
-			// UE_LOG(LogTemp, Display, TEXT("SubZ %f"), SubZ);
-			// UE_LOG(LogTemp, Display, TEXT("SubZ %f"), SubZ + ZInc);
-			// UE_LOG(LogTemp, Display, TEXT("SubY %f"), SubY);
-			// UE_LOG(LogTemp, Display, TEXT("SubY %f"), SubY + YInc);
-			// UE_LOG(LogTemp, Display, TEXT("Small Count %d"), SmallCount);
-			// UE_LOG(LogTemp, Display, TEXT("%s"), *FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z).ToString());
-			YCount++;
+			/*TArray<FVector> SubPoints;
+			 if (Z == Extents.Z || Y == Extents.Y)
+			 {○
+			 	continue;
+			 }
+			 int SmallCount = 0;
+			 const float ZSubInc = Z + ZInc;
+			 const float YSubInc = Y + YInc;
+			 for (float SubZ = Z; SubZ < ZSubInc; SubZ+=1.f)
+			 {
+			 	for (float SubY = Y; SubY< YSubInc; SubY+=1.f)
+			 	{
+			 		SubPoints.Emplace(FVector(GetBoxOrigin_Unscaled().X, SubY, GetBoxOrigin_Unscaled().Z + SubZ));
+			 		BigCount++;
+			 		SmallCount++;
+			 	}
+			 }
+			 float SubZ = Z;
+			 float SubY = Y;
+			 UE_LOG(LogTemp, Display, TEXT("SubZ %f"), SubZ);
+			 UE_LOG(LogTemp, Display, TEXT("SubZ %f"), SubZ + ZInc);
+			 UE_LOG(LogTemp, Display, TEXT("SubY %f"), SubY);
+			 UE_LOG(LogTemp, Display, TEXT("SubY %f"), SubY + YInc);
+			 UE_LOG(LogTemp, Display, TEXT("Small Count %d"), SmallCount);
+			 UE_LOG(LogTemp, Display, TEXT("%s"), *FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z).ToString());*/
+			RowCount++;
 		}
-		UE_LOG(LogTemp, Display, TEXT("YCount %d"), YCount);
-		ZCount++;
+		// UE_LOG(LogTemp, Display, TEXT("YCount %d"), RowCount);
+		ColumnCount++;
 	}
-	UE_LOG(LogTemp, Display, TEXT("ZCount %d "), ZCount);
+	// UE_LOG(LogTemp, Display, TEXT("ZCount %d "), ColumnCount);
 	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
+	return FIntPoint(RowCount, ColumnCount);
 }
 
 FVectorCounter ATargetSpawner::GetVectorCounterFromPoint(const FVector Point) const
@@ -872,7 +897,11 @@ void ATargetSpawner::UpdateRLAgentReward(const FVector& WorldLocation, const boo
 	/* Update reward */
 	if (bHit)
 	{
-		FoundTargetPair.Reward = -1.f;
+		FoundTargetPair.Reward = 0.f;
+	}
+	else
+	{
+		FoundTargetPair.Reward = 1.f;
 	}
 	ActiveTargetPairs.Remove(FoundTargetPair);
 	TargetPairs.Enqueue(FoundTargetPair);
@@ -902,14 +931,11 @@ FVector ATargetSpawner::TryGetSpawnLocationFromRLAgent()
 		return FVector::ZeroVector;
 	}
 	
-	const FAlgoInput In(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward);
-	UpdateRLAgent(In);
-
-	UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for Index %d: %d"), State2Index, Action2Index);
+	UpdateRLAgent(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
 	return SpawnCounter[Action2Index].Point;
 }
 
-void ATargetSpawner::UpdateRLAgent(const FAlgoInput& In) const
+void ATargetSpawner::UpdateRLAgent(const FAlgoInput In)
 {
 	RLBase->UpdateEpisodeRewards(In.Reward);
 	RLBase->UpdateQTable(In);

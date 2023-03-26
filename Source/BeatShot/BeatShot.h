@@ -17,46 +17,6 @@ public:
 
 /** A struct representing two consecutively spawned targets */
 USTRUCT()
-struct FPythonPair
-{
-	GENERATED_BODY()
-
-	/** The location of the target spawned before Current */
-	FVector Previous;
-
-	/** The location spawned after Previous */
-	FVector Current;
-
-	FPythonPair()
-	{
-		Previous = FVector::ZeroVector;
-		Current = FVector::ZeroVector;
-	}
-
-	FPythonPair(const FVector PreviousPoint, const FVector CurrentPoint)
-	{
-		Previous = PreviousPoint;
-		Current = CurrentPoint;
-	}
-
-	FPythonPair(const FVector CurrentPoint)
-	{
-		Previous = FVector::ZeroVector;
-		Current = CurrentPoint;
-	}
-
-	FORCEINLINE bool operator ==(const FPythonPair& Other) const
-	{
-		if (Current.Y == Other.Current.Y && Current.Z == Other.Current.Z)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
-/** A struct representing two consecutively spawned targets */
-USTRUCT()
 struct FTargetPair
 {
 	GENERATED_BODY()
@@ -155,9 +115,13 @@ struct FVectorCounter
 {
 	GENERATED_BODY()
 
-	/** Unscaled, world spawn location point */
+	/** Unscaled, world spawn location point. Bottom left of the square sub-area */
 	FVector Point;
 
+	/** The center of the square sub-area */
+	FVector Center;
+
+	/** The chosen point for this vector counter, it might be different than Point, but will be within the sub-area bounded by incrementY and incrementZ */
 	FVector ActualChosenPoint;
 
 	/** The total number of target spawns at this point */
@@ -198,6 +162,7 @@ struct FVectorCounter
 		TotalHits = 0;
 		IncrementY = IncY;
 		IncrementZ = IncZ;
+		Center = FVector(Point.X, roundf(Point.Y + IncrementY / 2.f), roundf(Point.Z + IncrementZ / 2.f));
 	}
 
 	FORCEINLINE bool operator ==(const FVectorCounter& Other) const
@@ -208,7 +173,6 @@ struct FVectorCounter
 			return true;
 		}
 		return false;
-		
 		// if (Point.Y == Other.Point.Y && Point.Z == Other.Point.Z)
 		// {
 		// 	return true;
@@ -231,8 +195,8 @@ struct FVectorCounter
 
 	FVector GetRandomSubPoint() const
 	{
-		const float Y = FMath::FRandRange(Point.Y, Point.Y + IncrementY);
-		const float Z = FMath::FRandRange(Point.Z, Point.Z + IncrementZ);
+		const float Y = roundf(FMath::FRandRange(Point.Y, Point.Y + IncrementY));
+		const float Z = roundf(FMath::FRandRange(Point.Z, Point.Z + IncrementZ));
 		return FVector(Point.X, Y, Z);
 	}
 };
