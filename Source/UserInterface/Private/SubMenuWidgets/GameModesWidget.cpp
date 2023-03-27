@@ -675,23 +675,8 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	WallCenteredCheckBox->SetIsChecked(InputGameModeActorStruct.WallCentered);
 	MinTargetDistanceSlider->SetValue(InputGameModeActorStruct.MinDistanceBetweenTargets);
 	MinTargetDistanceValue->SetText(FText::AsNumber(InputGameModeActorStruct.MinDistanceBetweenTargets));
-
-	FString StringSpread = UEnum::GetDisplayValueAsText(InputGameModeActorStruct.SpreadType).ToString();
-
-	if (InputGameModeActorStruct.SpreadType == ESpreadType::DynamicEdgeOnly)
-	{
-		StringSpread.InsertAt(11, " ");
-		StringSpread.InsertAt(7, " ");
-	}
-	else if (InputGameModeActorStruct.SpreadType == ESpreadType::DynamicRandom)
-	{
-		StringSpread.InsertAt(7, " ");
-	}
-	else if (InputGameModeActorStruct.SpreadType == ESpreadType::StaticNarrow || InputGameModeActorStruct.SpreadType == ESpreadType::StaticWide)
-	{
-		StringSpread.InsertAt(6, " ");
-	}
-	SpreadTypeComboBox->SetSelectedOption(StringSpread);
+	
+	SpreadTypeComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InputGameModeActorStruct.SpreadType).ToString());
 
 	HorizontalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Y);
 	HorizontalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Y));
@@ -1078,28 +1063,12 @@ ESpreadType UGameModesWidget::GetSpreadType() const
 	}
 	for (const ESpreadType Spread : TEnumRange<ESpreadType>())
 	{
-		FString StringSpread = UEnum::GetDisplayValueAsText(Spread).ToString();
-		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"), *StringSpread);
-		if (Spread == ESpreadType::DynamicEdgeOnly)
-		{
-			StringSpread.InsertAt(11, " ");
-			StringSpread.InsertAt(7, " ");
-		}
-		else if (Spread == ESpreadType::DynamicRandom)
-		{
-			StringSpread.InsertAt(7, " ");
-		}
-		else if (Spread == ESpreadType::StaticNarrow || Spread == ESpreadType::StaticWide)
-		{
-			StringSpread.InsertAt(6, " ");
-		}
-		UE_LOG(LogTemp, Display, TEXT("SpreadType: %s"), *StringSpread);
-		if (StringSpread.Equals(SelectedSpread))
+		if (UEnum::GetDisplayValueAsText(Spread).ToString().Equals(SelectedSpread))
 		{
 			return Spread;
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("Didn't get match"));
+	UE_LOG(LogTemp, Display, TEXT("Didn't get ESpreadType match"));
 	return ESpreadType::None;
 }
 

@@ -10,8 +10,9 @@ URLBase::URLBase()
 
 nc::NdArray<float> URLBase::ScaleQTable(const int32 SpawnCounterRows, const int32 SpawnCounterColumns)
 {
-	NumColsPerScaledCol = SpawnCounterRows / ColScale;
-	NumRowsPerScaledRow = SpawnCounterColumns / RowScale;
+	NumColsPerScaledCol = SpawnCounterColumns / ColScale;
+	NumRowsPerScaledRow = SpawnCounterRows / RowScale;
+	UE_LOG(LogTemp, Display, TEXT("SpawnCounterColumns: %d SpawnCounterRows: %d"), SpawnCounterColumns, SpawnCounterRows);
 	UE_LOG(LogTemp, Display, TEXT("NumColsPerScaledCol: %d NumRowsPerScaledRow: %d"), NumColsPerScaledCol, NumRowsPerScaledRow);
 	return nc::zeros<float>(nc::Shape(ColScale * RowScale, ColScale * RowScale));
 }
@@ -20,17 +21,19 @@ int32 URLBase::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex
 {
 	const float ScaledAreaSize = static_cast<float>(NumColsPerScaledCol * NumRowsPerScaledRow);
 	const int32 NewIndex = floorf(static_cast<float>(SpawnCounterIndex) / ScaledAreaSize);
-	UE_LOG(LogTemp, Display, TEXT("SpawnCounterIndex: %d QTableIndex: %d"), SpawnCounterIndex, NewIndex);
+	//UE_LOG(LogTemp, Display, TEXT("SpawnCounterIndex: %d QTableIndex: %d"), SpawnCounterIndex, NewIndex);
 	return NewIndex;
 }
 
 int32 URLBase::GetSpawnCounterIndexFromQTableIndex(const int32 QTableIndex) const
 {
 	const int32 ScaledAreaSize = NumColsPerScaledCol * NumRowsPerScaledRow;
-	const int32 Max = (QTableIndex * ScaledAreaSize + ScaledAreaSize) - 1;
-	const int32 Min = (QTableIndex * ScaledAreaSize) - 1;
+	int32 Max = QTableIndex * ScaledAreaSize + ScaledAreaSize;
+	const int32 Min = QTableIndex * ScaledAreaSize;
+	/* Don't include Max max value */
+	Max = Max - 1;
 	const int32 RandNum = FMath::RandRange(Min, Max);
-	UE_LOG(LogTemp, Display, TEXT("QTableIndex: %d Min %d Max %d Result: RandNum %d"), QTableIndex, Min, Max, RandNum);
+	//UE_LOG(LogTemp, Display, TEXT("GetSCIFromQTI QTI: %d Min %d Max %d Result: RandNum %d"), QTableIndex, Min, Max, RandNum);
 	return RandNum;
 }
 
@@ -44,7 +47,7 @@ nc::NdArray<float> URLBase::GetQTableFromTArray(const FQTableWrapper& InWrapper)
 			Out(i, j) = InWrapper.QTable[(InWrapper.RowSize * j) + i];
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.size());
+	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.numCols());
 	return Out;
 }
 
@@ -117,7 +120,12 @@ int32 URLBase::GetRandomAction() const
 
 int32 URLBase::GetMaxActionIndex(const int32 QTableIndex) const
 {
-	return QTable.argmax(nc::Axis::COL)(0,QTableIndex);
+	const int32 Index = QTable.argmax(nc::Axis::COL)(0,QTableIndex);
+	if (Index == INDEX_NONE)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetMaxActionIndex return INDEX_NONE for QTableIndex of %d"), QTableIndex);
+	}
+	return Index;
 }
 
 void URLBase::UpdateQTable(const FAlgoInput In)
@@ -132,7 +140,7 @@ void URLBase::UpdateQTable(const FAlgoInput In)
 	const float Target = InCopy.Reward + Gamma * QTable(InCopy.StateIndex_2, InCopy.ActionIndex_2);
 	const float NewValue = QTable(InCopy.StateIndex, InCopy.ActionIndex) + Alpha * (Target - Predict);
 
-	UE_LOG(LogTemp, Display, TEXT("New QTable Value for SpawnCounterIndex [%d, %d] QTableIndex [%d, %d]: %f"), In.StateIndex, In.ActionIndex, InCopy.StateIndex, InCopy.ActionIndex, NewValue);
+	//UE_LOG(LogTemp, Display, TEXT("New QTable Value for SpawnCounterIndex [%d, %d] QTableIndex [%d, %d]: %f"), In.StateIndex, In.ActionIndex, InCopy.StateIndex, InCopy.ActionIndex, NewValue);
 	
 	QTable(InCopy.StateIndex, InCopy.ActionIndex) = NewValue;
 }

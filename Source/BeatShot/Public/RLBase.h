@@ -112,22 +112,28 @@ class BEATSHOT_API URLBase : public UObject, public ISaveLoadInterface
 	int32 NumRowsPerScaledRow;
 
 	/** How many columns the SpawnCounter total columns are divided into */
-	int32 ColScale = 3;
+	int32 ColScale = 5;
 
 	/** How many rows the SpawnCounter total rows are divided into */
-	int32 RowScale = 3;
+	int32 RowScale = 5;
 
+	/** Returns the QTable scaled by ColScale & RowScale, dependent on SpawnCounter Rows & Columns */
 	nc::NdArray<float> ScaleQTable(const int32 SpawnCounterRows, const int32 SpawnCounterColumns);
 
+	/** Converts a SpawnCounterIndex to a QTableIndex */
 	int32 GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
 
+	/** Converts a QTableIndex to a SpawnCounterIndex */
 	int32 GetSpawnCounterIndexFromQTableIndex(const int32 QTableIndex) const;
 
+	/** Converts a TArray of floats to an NdArray */
 	nc::NdArray<float> GetQTableFromTArray(const FQTableWrapper& InWrapper) const;
 
+	/** Converts an NdArray of floats to a TArray of floats, so that it can be serialized and saved */
 	TArray<float> GetTArrayFromQTable(nc::NdArray<float> InQTable);
 
 public:
+	/** Initializes the QTable, called by TargetSpawner */
 	void Init(const FRLAgentParams& AgentParams);
 
 	/** Returns the index of the next target to spawn, based on the Epsilon value */

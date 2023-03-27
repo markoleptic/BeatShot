@@ -116,8 +116,14 @@ private:
 	/** Removes the DestroyedTarget from ActiveTargets */
 	void RemoveFromActiveTargets(ASphereTarget* SpawnTarget);
 
+	/** Removes points from the InArray that don't have an adjacent point to the top and to the left. Used so that it's safe to spawn a target within a square area */
+	void RemoveEdgePoints(TArray<FVector>& In) const;
+	
+	/** Removes the union of points that are outside of the current BoxExtent */
+	void RemoveDynamicScaledExtents(TArray<FVector>& In) const;
+
 	/** Returns an array of valid spawn points */
-	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
+	TArray<FVector> GetValidSpawnLocations(const float Scale);
 
 	/** Returns a copy of the RecentTargets, used to determine future target spawn locations */
 	TArray<FRecentTarget> GetRecentTargets() const { return RecentTargets; }
@@ -125,24 +131,36 @@ private:
 	/** Returns a copy of ActiveTargets, used to move targets forward if game mode permits */
 	TArray<ASphereTarget*> GetActiveTargets() const { return ActiveTargets; }
 
-	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any scaling or dynamic changes */
-	FVector GetBoxExtents_Unscaled_Static() const;
+	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
+	FVector GetBoxExtents_Static() const;
 
-	/** Returns SpawnBox's current BoxExtents, scaled by SpawnMemoryScaleY and SpawnMemoryScaleZ */
-	FVector GetBoxExtents_Scaled_Current() const;
+	/** Returns SpawnBox's current BoxExtents after dynamic changes */
+	FVector GetBoxExtents_Dynamic() const;
 
-	/** Returns SpawnBox's original BoxExtents, scaled by SpawnMemoryScaleY and SpawnMemoryScaleZ */
-	FVector GetBoxExtents_Scaled_Static() const;
+	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
+	TArray<EDirection> GetBorderingDirections(TArray<FVector> ValidLocations, FVector Location) const;
+
+	/** Returns a vector representing the BoxBounds extrema. If PositiveExtrema is equal to 1, the positive extrema is returned. Otherwise the negative extrema is returned */
+	FVector GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const;
+
+	/** Returns a copy of the SpawnCounter */
+	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
+
+	/** Returns the VectorCounter corresponding to the point */
+	FVectorCounter GetVectorCounterFromPoint(const FVector Point) const;
 
 	/** Returns SpawnBox's origin, as it is in the game */
-	FVector GetBoxOrigin_Unscaled() const;
-
-	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
-	void SetBoxExtents_Dynamic() const;
+	FVector GetBoxOrigin() const;
 
 	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
 	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
 
+	/** Returns an array constructed on initialization containing all spawn locations */
+	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
+	
+	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
+	void SetBoxExtents_Dynamic() const;
+	
 	/** Initializes the SpawnCounter array */
 	FIntPoint InitializeSpawnCounter();
 
@@ -203,10 +221,14 @@ private:
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
 	TArray<FVectorCounter> SpawnCounter;
 
-	/** Returns a copy of the SpawnCounter */
-	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
+	/** All Spawn Locations that were generated on initialization */
+	TArray<FVector> AllSpawnLocations;
 
-	FVectorCounter GetVectorCounterFromPoint(const FVector Point) const;
+	/** The smallest possible extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
+	FVector StaticMinExtrema;
+
+	/** The largest possible extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
+	FVector StaticMaxExtrema;
 
 	/** The scale to apply to the next/current target */
 	float TargetScale;
@@ -216,6 +238,12 @@ private:
 
 	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
 	float SpawnMemoryScaleZ;
+
+	/** Incremental step value used to iterate through SpawnCounter locations */
+	int32 SpawnMemoryIncY;
+
+	/** Incremental step value used to iterate through SpawnCounter locations */
+	int32 SpawnMemoryIncZ;
 
 	/** Delegate used to bind a timer handle to RemoveFromRecentTargets() inside of OnTargetTimeout() */
 	FTimerDelegate RemoveFromRecentDelegate;
@@ -237,8 +265,6 @@ private:
 
 	/** Distance between floor and HeadshotHeight */
 	const float HeadshotHeight = 160.f;
-
-	const FVector MaxBoxExtent = {0, 1600, 500};
 
 #pragma endregion
 
@@ -316,3 +342,4 @@ private:
 
 #pragma endregion
 };
+

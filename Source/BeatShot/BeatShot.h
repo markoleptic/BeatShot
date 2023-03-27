@@ -15,6 +15,40 @@ public:
 #define ACTOR_ROLE_FSTRING *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(GetLocalRole()))
 #define GET_ACTOR_ROLE_FSTRING(Actor) *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(Actor->GetLocalRole()))
 
+UENUM(BlueprintType)
+enum class EMovementType : uint8
+{
+	Sprinting UMETA(DisplayName="Sprinting"),
+	Walking UMETA(DisplayName="Walking"),
+	Crouching UMETA(DisplayName="Crouching")};
+
+/** Enum representing the different times of the day */
+UENUM(BlueprintType)
+enum class ETimeOfDay : uint8
+{
+	Day UMETA(DisplayName="Day"),
+	Night UMETA(DisplayName="Night"),
+	DayToNight UMETA(DisplayName="DayToNight"),
+	NightToDay UMETA(DisplayName="NightToDay"),
+};
+
+UENUM(BlueprintType)
+enum class EPlatformTransitionType : uint8
+{
+	None UMETA(DisplayName="MoveUpByInteract"),
+	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
+	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};
+
+UENUM(BlueprintType)
+enum class EDirection : uint8
+{
+	Left UMETA(DisplayName="Left"),
+	Right UMETA(DisplayName="Right"),
+	Up UMETA(DisplayName="Up"),
+	Down UMETA(DisplayName="Down"),
+};
+
 /** A struct representing two consecutively spawned targets */
 USTRUCT()
 struct FTargetPair
@@ -193,71 +227,33 @@ struct FVectorCounter
 		return false;
 	}
 
-	FVector GetRandomSubPoint() const
+	FVector GetRandomSubPoint(const TArray<EDirection> BlockedDirections) const
 	{
-		const float Y = roundf(FMath::FRandRange(Point.Y, Point.Y + IncrementY));
-		const float Z = roundf(FMath::FRandRange(Point.Z, Point.Z + IncrementZ));
+		float MinY = Point.Y;
+		float MaxY = Point.Y + IncrementY;
+		float MinZ = Point.Z;
+		float MaxZ = Point.Z + IncrementZ;
+		if (BlockedDirections.Contains(EDirection::Left))
+		{
+			MinY = Center.Y;
+		}
+		if (BlockedDirections.Contains(EDirection::Right))
+		{
+			MaxY = Center.Y;
+		}
+		if (BlockedDirections.Contains(EDirection::Down))
+		{
+			MinZ = Center.Z;
+		}
+		if (BlockedDirections.Contains(EDirection::Up))
+		{
+			MaxZ = Center.Z;
+		}
+		
+		const float Y = roundf(FMath::FRandRange(MinY, MaxY));
+		const float Z = roundf(FMath::FRandRange(MinZ, MaxZ));
 		return FVector(Point.X, Y, Z);
 	}
-};
-
-/** A struct representing a point in a 2D grid with information about that point */
-USTRUCT()
-struct FSmallVectorCounter
-{
-	GENERATED_BODY()
-
-	/** Unscaled, world spawn location point */
-	TArray<FVector> Points;
-
-	/** The total number of target spawns at this point */
-	int32 TotalSpawns;
-
-	/** The total number of target hits by player at this point */
-	int32 TotalHits;
-
-	FSmallVectorCounter()
-	{
-		Points = TArray<FVector>();
-		TotalSpawns = -1;
-		TotalHits = 0;
-	}
-
-	FSmallVectorCounter(const TArray<FVector> NewPoints)
-	{
-		Points = NewPoints;
-		TotalSpawns = -1;
-		TotalHits = 0;
-	}
-
-	FORCEINLINE bool operator ==(const FSmallVectorCounter& Other) const
-	{
-		for (const FVector Point : Other.Points)
-		{
-			if (Points.Contains(Point))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-};
-
-UENUM(BlueprintType)
-enum class EMovementType : uint8
-{
-	Sprinting UMETA(DisplayName="Sprinting"),
-	Walking UMETA(DisplayName="Walking"),
-	Crouching UMETA(DisplayName="Crouching")};
-
-/** Enum representing the different times of the day */
-UENUM(BlueprintType)
-enum class ETimeOfDay : uint8
-{
-	Day UMETA(DisplayName="Day"),
-	Night UMETA(DisplayName="Night"),
-	DayToNight UMETA(DisplayName="DayToNight"),
-	NightToDay UMETA(DisplayName="NightToDay"),
 };
 
 /** Used to store movement properties for different movement types */
@@ -286,11 +282,3 @@ struct FMovementTypeVariables
 		MaxWalkSpeed = 0.f;
 	}
 };
-
-UENUM(BlueprintType)
-enum class EPlatformTransitionType : uint8
-{
-	None UMETA(DisplayName="MoveUpByInteract"),
-	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
-	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
-	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};

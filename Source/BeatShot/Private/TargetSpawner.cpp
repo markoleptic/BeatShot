@@ -73,8 +73,11 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	/* Initialize local copy of struct passed by GameModeActorBase */
 	GameModeActorStruct = NewGameModeActor;
 
-	SpawnMemoryScaleY = 1.f / 100.f;
+	SpawnMemoryScaleY = 1.f / 50.f;
 	SpawnMemoryScaleZ = 1.f / 50.f;
+
+	SpawnMemoryIncY = roundf(1 / SpawnMemoryScaleY);
+	SpawnMemoryIncZ = roundf(1 / SpawnMemoryScaleZ);
 
 	/* GameMode menu uses the full width, while box bounds are only half width / half height */
 	GameModeActorStruct.BoxBounds.X = 0.f;
@@ -97,14 +100,21 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 		CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + DistanceFromFloor;
 	}
 
+	
 	/* Set new location & box extent */
 	SpawnBox->SetRelativeLocation(CenterOfSpawnBox);
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
+	StaticMinExtrema = SpawnBox->Bounds.GetBoxExtrema(0);
+	StaticMaxExtrema = SpawnBox->Bounds.GetBoxExtrema(1);
+	if (IsDynamicSpreadType(GameModeActorStruct.SpreadType))
+	{
+		SpawnBox->SetBoxExtent(GameModeActorStruct.MinBoxBounds);
+	}
 
 	/* Initial target spawn location */
 	SpawnLocation = SpawnBox->Bounds.Origin;
 	PreviousSpawnLocation = SpawnLocation;
-	
+
 	/* Initial target size */
 	TargetScale = GetNextTargetScale();
 
@@ -119,7 +129,7 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 		return;
 	}
 	FIntPoint RowsColumns = InitializeSpawnCounter();
-	
+
 	RLBase = NewObject<URLBase>();
 	FRLAgentParams Params;
 	Params.GameModeActorName = GameModeActorStruct.GameModeActorName;
@@ -243,12 +253,12 @@ TArray<F2DArray> ATargetSpawner::GetLocationAccuracy() const
 			CurrentRow.Accuracy.Add(static_cast<float>(Counter.TotalHits) / static_cast<float>(Counter.TotalSpawns));
 		}
 		// End of "row" or left-to-right
-		if (Counter.Point.Y == GetBoxExtents_Unscaled_Static().Y)
+		if (Counter.Point.Y == GetBoxExtents_Static().Y)
 		{
 			OutArray.Emplace(CurrentRow);
 			// AppendStringLocAccRow(CurrentRow, StringToWrite);
 			// Don't average the middle row
-			if (Counter.Point.Z == GetBoxOrigin_Unscaled().Z)
+			if (Counter.Point.Z == GetBoxOrigin().Z)
 			{
 				OutArray.Emplace(CurrentRow);
 				//AppendStringLocAccRow(CurrentRow, StringToWrite);
@@ -494,7 +504,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		ConsecutiveTargetsHit++;
 		DynamicSpawnScale = FMath::Clamp(DynamicSpawnScale + 1, 0, 100);
 	}
-	
+
 	const FVector Location = DestroyedTarget->GetActorLocation();
 	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z};
 	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
@@ -508,7 +518,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		default: SpawnCounter[Index].TotalSpawns++;
 			break;
 		}
-		
+
 		if (!DidExpire)
 		{
 			SpawnCounter[Index].TotalHits++;
@@ -525,7 +535,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	FTimerHandle TimerHandle;
 	RemoveFromRecentDelegate.BindUFunction(this, FName("RemoveFromRecentTargets"), DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, GameModeActorStruct.TargetSpawnCD, false);
-	
+
 	if (bShowDebug_SpawnBox)
 	{
 		DrawDebugBox(GetWorld(), SpawnBox->Bounds.Origin, SpawnBox->Bounds.BoxExtent, FColor::Orange, false, 1);
@@ -562,44 +572,58 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 	if (GameModeActorStruct.IsSingleBeatMode && !LastTargetSpawnedCenter)
 	{
 		bSkipNextSpawn = false;
-		return GetBoxOrigin_Unscaled();
+		return GetBoxOrigin();
 	}
 	/* Change the BoxExtent of the SpawnBox if dynamic */
 	if (IsDynamicSpreadType(SpreadType))
 	{
 		SetBoxExtents_Dynamic();
 	}
-	
+
 	TArray<FVector> OpenLocations = GetValidSpawnLocations(NewTargetScale);
 	if (OpenLocations.IsEmpty())
 	{
+		UE_LOG(LogTemp, Display, TEXT("OpenLocations is empty."));
 		bSkipNextSpawn = true;
-		return GetBoxOrigin_Unscaled();
+		return GetBoxOrigin();
 	}
 
+	if (bShowDebug_SpawnBox)
+	{
+		for (const FVector Vector : OpenLocations)
+		{
+			FVector Loc = FVector(Vector.X, Vector.Y + SpawnMemoryIncY / 2.f, Vector.Z + SpawnMemoryIncZ / 2.f);
+			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Emerald, false, GameModeActorStruct.TargetSpawnCD);
+		}
+	}
+
+	bSkipNextSpawn = false;
+	
 	if (const FVector Location = TryGetSpawnLocationFromRLAgent(); Location != FVector::ZeroVector)
 	{
 		if (OpenLocations.ContainsByPredicate([&Location](const FVector Element)
 		{
 			if (Element.Equals(Location))
 			{
+				UE_LOG(LogTemp, Display, TEXT("Successful Spawn Location suggested by RLAgent."));
 				return true;
 			}
 			return false;
 		}))
 		{
-			UE_LOG(LogTemp, Display, TEXT("Successful Spawn Location suggested by RLAgent."));
 			FVectorCounter Found = GetVectorCounterFromPoint(Location);
-			Found.ActualChosenPoint = Found.GetRandomSubPoint();
-			FVector Center = Found.Point + FVector(0, Found.IncrementY / 2.f, Found.IncrementZ / 2.f);
-			DrawDebugBox(GetWorld(), Center, FVector(0, Found.IncrementY, Found.IncrementZ), FColor::Orange, false, 1.f);
-			return Found.GetRandomSubPoint();
-			return Location;
+			Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
+			if (bShowDebug_SpawnBox)
+			{
+				DrawDebugBox(GetWorld(), Found.Center, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Red, false, 0.5);
+			}
+			//UE_LOG(LogTemp, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found.Point.ToString(), *Found.Center.ToString(), *Found.ActualChosenPoint.ToString());
+			return Found.ActualChosenPoint;
 		}
 		UE_LOG(LogTemp, Display, TEXT("Unable to Spawn Location suggested by RLAgent. %s"), *Location.ToString());
 	}
-	
-	if (const FVector Origin = GetBoxOrigin_Unscaled(); OpenLocations.ContainsByPredicate([&Origin](const FVector Element)
+
+	if (const FVector Origin = GetBoxOrigin(); OpenLocations.ContainsByPredicate([&Origin](const FVector Element)
 	{
 		if (Element.Equals(Origin))
 		{
@@ -608,32 +632,36 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 		return false;
 	}))
 	{
+		if (bShowDebug_SpawnBox)
+		{
+			FVector Loc = FVector(Origin.X, Origin.Y + SpawnMemoryIncY / 2.f, Origin.Z + SpawnMemoryIncZ / 2.f);
+			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Red, false, 0.5);
+		}
 		return Origin;
 	}
 	const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0, OpenLocations.Num() - 1);
 	FVectorCounter Found = GetVectorCounterFromPoint(OpenLocations[RandomPoint]);
-	Found.ActualChosenPoint = Found.GetRandomSubPoint();
-	FVector Center = Found.Point + FVector(0, Found.IncrementY / 2.f, Found.IncrementZ / 2.f);
-	DrawDebugBox(GetWorld(), Center, FVector(0, Found.IncrementY, Found.IncrementZ), FColor::Orange, false, 1.f);
+	Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
+	if (bShowDebug_SpawnBox)
+	{
+		DrawDebugBox(GetWorld(), Found.Center, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Red, false, 0.5);
+	}
+	//UE_LOG(LogTemp, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found.Point.ToString(), *Found.Center.ToString(), *Found.ActualChosenPoint.ToString());
 	return Found.ActualChosenPoint;
 	//return OpenLocations[RandomPoint];
 }
 
 FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
 {
-	const FVector NewExtent = FVector(0, GetBoxExtents_Unscaled_Static().Y * 0.5, GetBoxExtents_Unscaled_Static().Z * 0.5);
+	const FVector NewExtent = FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
 
-	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Unscaled_Static().Y * 0.5, -GetBoxExtents_Unscaled_Static().Z * 0.5),
-	                                                                     NewExtent);
+	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
 
-	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Unscaled_Static().Y * 0.5, -GetBoxExtents_Unscaled_Static().Z * 0.5),
-	                                                                      NewExtent);
+	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
 
-	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Unscaled_Static().Y * 0.5, GetBoxExtents_Unscaled_Static().Z * 0.5),
-	                                                                     NewExtent);
+	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
 
-	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Unscaled_Static().Y * 0.5, GetBoxExtents_Unscaled_Static().Z * 0.5),
-	                                                                      NewExtent);
+	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
 
 	TArray<FVector> PossibleLocations;
 	PossibleLocations.Add(BotLeft);
@@ -643,7 +671,7 @@ FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBefore
 
 	if (LocationBeforeChange.Y < 0)
 	{
-		if (LocationBeforeChange.Z < GetBoxOrigin_Unscaled().Z)
+		if (LocationBeforeChange.Z < GetBoxOrigin().Z)
 		{
 			PossibleLocations.Remove(BotLeft);
 		}
@@ -654,7 +682,7 @@ FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBefore
 	}
 	else
 	{
-		if (LocationBeforeChange.Z < GetBoxOrigin_Unscaled().Z)
+		if (LocationBeforeChange.Z < GetBoxOrigin().Z)
 		{
 			PossibleLocations.Remove(BotRight);
 		}
@@ -706,10 +734,11 @@ void ATargetSpawner::RemoveFromActiveTargets(ASphereTarget* SpawnTarget)
 	ActiveTargets = Targets;
 }
 
-TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
+TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale)
 {
-	const FVector Extents = GetBoxExtents_Scaled_Current();
 	TArray<FRecentTarget> RecentTargetsCopy = GetRecentTargets();
+	TArray<FVector> AllPoints = GetAllSpawnLocations();
+	
 	/* Resizing Overlapping Points if necessary */
 	for (FRecentTarget Struct : RecentTargetsCopy)
 	{
@@ -719,31 +748,34 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
 		}
 	}
 
-	TArray<FVector> AllPoints;
-	/* Populate AllPoints with all possible spawn locations at current time */
-	if (GameModeActorStruct.SpreadType == ESpreadType::DynamicEdgeOnly)
+	switch (GameModeActorStruct.SpreadType)
 	{
+	case ESpreadType::DynamicEdgeOnly:
+
+		/* TODO: Fix this since the max Y and max Z were removed */
+		/*
+		FVector NegativeExtents = GetBoxExtrema(0, true);
+		FVector PositiveExtents = GetBoxExtrema(1, true);
 		for (float Y = roundf(-Extents.Y); Y <= roundf(Extents.Y) + 0.01; Y++)
 		{
-			AllPoints.AddUnique(FVector(GetBoxOrigin_Unscaled().X, Y * (1 / SpawnMemoryScaleY), GetBoxOrigin_Unscaled().Z + -Extents.Z * (1 / SpawnMemoryScaleZ)));
-			AllPoints.AddUnique(FVector(GetBoxOrigin_Unscaled().X, Y * (1 / SpawnMemoryScaleY), GetBoxOrigin_Unscaled().Z + Extents.Z * (1 / SpawnMemoryScaleZ)));
+			AllPoints.AddUnique(FVector(GetBoxOrigin().X, Y * SpawnMemoryIncY, GetBoxOrigin().Z + -Extents.Z * SpawnMemoryIncZ));
+			AllPoints.AddUnique(FVector(GetBoxOrigin().X, Y * SpawnMemoryIncY, GetBoxOrigin().Z + Extents.Z * SpawnMemoryIncZ));
 		}
 		for (float Z = roundf(-Extents.Z); Z <= roundf(Extents.Z) + 0.01; Z++)
 		{
-			AllPoints.AddUnique(FVector(GetBoxOrigin_Unscaled().X, -Extents.Y * (1 / SpawnMemoryScaleY), GetBoxOrigin_Unscaled().Z + Z * (1 / SpawnMemoryScaleZ)));
-			AllPoints.AddUnique(FVector(GetBoxOrigin_Unscaled().X, Extents.Y * (1 / SpawnMemoryScaleY), GetBoxOrigin_Unscaled().Z + Z * (1 / SpawnMemoryScaleZ)));
-		}
+			AllPoints.AddUnique(FVector(GetBoxOrigin().X, -Extents.Y * SpawnMemoryIncY, GetBoxOrigin().Z + Z * SpawnMemoryIncZ));
+			AllPoints.AddUnique(FVector(GetBoxOrigin().X, Extents.Y * SpawnMemoryIncY, GetBoxOrigin().Z + Z * SpawnMemoryIncZ));
+		}*/
+		break;
+	case ESpreadType::DynamicRandom: RemoveDynamicScaledExtents(AllPoints);
+		break;
+	case ESpreadType::None:
+		break;
+	case ESpreadType::StaticNarrow: break;
+	case ESpreadType::StaticWide: break;
+	default: break;
 	}
-	else
-	{
-		for (float Z = -Extents.Z; Z <= Extents.Z + 0.01; Z++)
-		{
-			for (float Y = -Extents.Y; Y <= Extents.Y + 0.01; Y++)
-			{
-				AllPoints.Emplace(FVector(GetBoxOrigin_Unscaled().X, Y * (1 / SpawnMemoryScaleY), GetBoxOrigin_Unscaled().Z + Z * (1 / SpawnMemoryScaleZ)));
-			}
-		}
-	}
+
 	/* Remove any overlapping points from AllPoints */
 	for (FRecentTarget Struct : RecentTargetsCopy)
 	{
@@ -755,30 +787,123 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
 			}
 		}
 	}
-
-	/* TODO: remove points that are on the edge and could cause collision if choosing a random subtarget,
-	 * TODO: alternatively find the points most surrounded by other points */
-	
-	AllPoints.Shrink();
+	RemoveEdgePoints(AllPoints);
 	return AllPoints;
 }
 
-FVector ATargetSpawner::GetBoxExtents_Unscaled_Static() const
+void ATargetSpawner::RemoveDynamicScaledExtents(TArray<FVector>& In) const
+{
+	//UE_LOG(LogTemp, Display, TEXT("Size before removing ScaledExtents: %d"), In.Num());
+	/* Dynamic will always be smaller than the static */
+	const FVector NegativeExtrema = GetBoxExtrema(0, true);
+	const FVector PositiveExtrema = GetBoxExtrema(1, true);
+	TArray<FVector> Remove;
+	for (FVector Vector : In)
+	{
+		if (Vector.Y < NegativeExtrema.Y || Vector.Y > PositiveExtrema.Y || Vector.Z < NegativeExtrema.Z || Vector.Z > PositiveExtrema.Z)
+		{
+			Remove.Add(Vector);
+		}
+	}
+	for (FVector Vector : Remove)
+	{
+		In.Remove(Vector);
+	}
+	//UE_LOG(LogTemp, Display, TEXT("Size after removing ScaledExtents: %d"), In.Num());
+}
+
+void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
+{
+	const FVector MaxExtrema = GetBoxExtrema(1, true);
+	TArray<FVector> Remove;
+	for (FVector Vector : In)
+	{
+		int Count = 2;
+		const FVector Right = Vector + FVector(0, SpawnMemoryIncY, 0);
+		const FVector Top = Vector + FVector(0, 0, SpawnMemoryIncZ);
+		
+		if (Right.Y != MaxExtrema.Y)
+		{
+			if (!In.Contains(Right))
+			{
+				Count--;
+			}
+		}
+		if (Top.Z != MaxExtrema.Z)
+		{
+			if (!In.Contains(Top))
+			{
+				Count--;
+			}
+		}
+		if (Count != 2)
+		{
+			Remove.Add(Vector);
+		}
+	}
+	int Count = 0;
+	for (FVector Vector : Remove)
+	{
+		In.Remove(Vector);
+		Count++;
+	}
+	UE_LOG(LogTemp, Display, TEXT("Removed Edge Points: %d"), Count);
+}
+
+TArray<EDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector> ValidLocations, const FVector Location) const
+{
+	TArray<EDirection> Directions;
+	const FVector MinExtrema = GetBoxExtrema(0, true);
+	const FVector MaxExtrema = GetBoxExtrema(1, true);
+	const FVector Left = Location + FVector(0, -SpawnMemoryIncY, 0);
+	const FVector Right = Location + FVector(0, SpawnMemoryIncY, 0);
+	const FVector Up = Location + FVector(0, 0, SpawnMemoryIncZ);
+	const FVector Down = Location + FVector(0, 0, -SpawnMemoryIncZ);
+
+	if (Left.Y != MinExtrema.Y && !ValidLocations.Contains(Left))
+	{
+		Directions.Add(EDirection::Left);
+	}
+	if (Right.Y != MaxExtrema.Y && !ValidLocations.Contains(Right))
+	{
+		Directions.Add(EDirection::Right);
+	}
+	if (Up.Z != MaxExtrema.Z && !ValidLocations.Contains(Up))
+	{
+		Directions.Add(EDirection::Up);
+	}
+	if (Down.Z != MinExtrema.Z && !ValidLocations.Contains(Down))
+	{
+		Directions.Add(EDirection::Down);
+	}
+	return Directions;
+}
+
+FVector ATargetSpawner::GetBoxExtrema(const int32 PositiveExtreme, const bool bDynamic) const
+{
+	if (bDynamic)
+	{
+		//UE_LOG(LogTemp, Display, TEXT("Extrema %s"), *SpawnBox->Bounds.GetBoxExtrema(PositiveExtreme).ToString());
+		return SpawnBox->Bounds.GetBoxExtrema(PositiveExtreme);
+	}
+	if (PositiveExtreme == 1)
+	{
+		return StaticMaxExtrema;
+	}
+	return StaticMinExtrema;
+}
+
+FVector ATargetSpawner::GetBoxExtents_Static() const
 {
 	return FVector(0, GameModeActorStruct.BoxBounds.Y, GameModeActorStruct.BoxBounds.Z);
 }
 
-FVector ATargetSpawner::GetBoxExtents_Scaled_Current() const
+FVector ATargetSpawner::GetBoxExtents_Dynamic() const
 {
-	return FVector(0, SpawnBox->Bounds.BoxExtent.Y * SpawnMemoryScaleY, SpawnBox->Bounds.BoxExtent.Z * SpawnMemoryScaleZ);
+	return SpawnBox->Bounds.BoxExtent;
 }
 
-FVector ATargetSpawner::GetBoxExtents_Scaled_Static() const
-{
-	return FVector(0, SpawnMemoryScaleY * GameModeActorStruct.BoxBounds.Y, SpawnMemoryScaleZ * GameModeActorStruct.BoxBounds.Z);
-}
-
-FVector ATargetSpawner::GetBoxOrigin_Unscaled() const
+FVector ATargetSpawner::GetBoxOrigin() const
 {
 	return SpawnBox->Bounds.Origin;
 }
@@ -786,10 +911,10 @@ FVector ATargetSpawner::GetBoxOrigin_Unscaled() const
 void ATargetSpawner::SetBoxExtents_Dynamic() const
 {
 	const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Unscaled_Static().Y, GetBoxExtents_Unscaled_Static().Y * 0.5f, NewFactor);
-	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Unscaled_Static().Z, GetBoxExtents_Unscaled_Static().Z * 0.5f, NewFactor);
-	const float Y = FMath::GridSnap(LerpY, 1 / SpawnMemoryScaleY);
-	const float Z = FMath::GridSnap(LerpZ, 1 / SpawnMemoryScaleZ);
+	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Y, GetBoxExtents_Static().Y * 0.5f, NewFactor);
+	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Z, GetBoxExtents_Static().Z * 0.5f, NewFactor);
+	const float Y = FMath::GridSnap(LerpY, SpawnMemoryIncY);
+	const float Z = FMath::GridSnap(LerpZ, SpawnMemoryIncZ);
 	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
 }
 
@@ -797,44 +922,43 @@ TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector Center, const
 {
 	const float Radius = Scale * SphereTargetRadius * 2.f + GameModeActorStruct.MinDistanceBetweenTargets / 2.f;
 	const FSphere Sphere = FSphere(Center, Radius);
-
-	/*const float Left = UKismetMathLibrary::GridSnap_Float(Center.Y - Radius, 10.0);
-	const float Right = UKismetMathLibrary::GridSnap_Float(Center.Y + Radius, 10.0);
-	const float Down = UKismetMathLibrary::GridSnap_Float(Center.Z - Radius, 10.0);
-	const float Up = UKismetMathLibrary::GridSnap_Float(Center.Z + Radius, 10.0);*/
-	const FVector Extents = GetBoxExtents_Unscaled_Static();
+	const FVector NegativeExtents = GetBoxExtrema(0, false);
+	const FVector PositiveExtents = GetBoxExtrema(1, false);
 	TArray<FVector> BlockedPoints;
-	const float YInc = roundf(1/SpawnMemoryScaleY);
-	const float ZInc = roundf(1/SpawnMemoryScaleZ);
-	for (float Z = (GetBoxOrigin_Unscaled().Z - Extents.Z); Z <= (GetBoxOrigin_Unscaled().Z + Extents.Z + 0.01); Z+=ZInc)
+	int Count = 0;
+	for (float Z = NegativeExtents.Z; Z < PositiveExtents.Z; Z += SpawnMemoryIncZ)
 	{
-		for (float Y = -Extents.Y; Y <= Extents.Y+0.01; Y+=YInc)
+		for (float Y = NegativeExtents.Y; Y < PositiveExtents.Y; Y += SpawnMemoryIncY)
 		{
-			if (FVector Loc = FVector(GetBoxOrigin_Unscaled().X, Y, Z); Sphere.IsInside(Loc))
+			Count++;
+			if (FVector Loc = FVector(GetBoxOrigin().X, Y, Z); Sphere.IsInside(Loc))
 			{
 				BlockedPoints.AddUnique(Loc);
 			}
 		}
 	}
+	//UE_LOG(LogTemp, Display, TEXT("GetOverlappingPoints Count %d"), Count);
 	//DrawDebugSphere(GetWorld(), Center, Scale * SphereTargetRadius * 2 + (GameModeActorStruct.MinDistanceBetweenTargets / 2.f), 32, FColor::Magenta, false, 0.5f);
-	UE_LOG(LogTemp, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
+	//UE_LOG(LogTemp, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
 	return BlockedPoints;
 }
 
 FIntPoint ATargetSpawner::InitializeSpawnCounter()
 {
-	const FVector Extents = GetBoxExtents_Unscaled_Static();
-	const float ZInc = 1 / SpawnMemoryScaleZ;
-	const float YInc = 1 / SpawnMemoryScaleY;
+	const FVector NegativeExtents = GetBoxExtrema(0, false);
+	const FVector PositiveExtents = GetBoxExtrema(1, false);
+	
 	//int BigCount = 0;
 	int ColumnCount = 0;
 	int RowCount = 0;
-	for (float Z = -Extents.Z; Z <= Extents.Z + 0.01; Z += ZInc)
+
+	for (float Z = NegativeExtents.Z; Z < PositiveExtents.Z; Z += SpawnMemoryIncZ)
 	{
 		RowCount = 0;
-		for (float Y = -Extents.Y; Y <= Extents.Y + 0.01; Y += YInc)
+		for (float Y = NegativeExtents.Y; Y < PositiveExtents.Y; Y += SpawnMemoryIncY)
 		{
-			SpawnCounter.Emplace(FVectorCounter(FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z), YInc, ZInc));
+			SpawnCounter.Emplace(FVectorCounter(FVector(GetBoxOrigin().X, Y, Z), SpawnMemoryIncY, SpawnMemoryIncZ));
+			AllSpawnLocations.Emplace(FVector(GetBoxOrigin().X, Y, Z));
 			/*TArray<FVector> SubPoints;
 			 if (Z == Extents.Z || Y == Extents.Y)
 			 {○
@@ -847,7 +971,7 @@ FIntPoint ATargetSpawner::InitializeSpawnCounter()
 			 {
 			 	for (float SubY = Y; SubY< YSubInc; SubY+=1.f)
 			 	{
-			 		SubPoints.Emplace(FVector(GetBoxOrigin_Unscaled().X, SubY, GetBoxOrigin_Unscaled().Z + SubZ));
+			 		SubPoints.Emplace(FVector(GetBoxOrigin().X, SubY, GetBoxOrigin().Z + SubZ));
 			 		BigCount++;
 			 		SmallCount++;
 			 	}
@@ -859,13 +983,11 @@ FIntPoint ATargetSpawner::InitializeSpawnCounter()
 			 UE_LOG(LogTemp, Display, TEXT("SubY %f"), SubY);
 			 UE_LOG(LogTemp, Display, TEXT("SubY %f"), SubY + YInc);
 			 UE_LOG(LogTemp, Display, TEXT("Small Count %d"), SmallCount);
-			 UE_LOG(LogTemp, Display, TEXT("%s"), *FVector(GetBoxOrigin_Unscaled().X, Y, GetBoxOrigin_Unscaled().Z + Z).ToString());*/
+			 UE_LOG(LogTemp, Display, TEXT("%s"), *FVector(GetBoxOrigin().X, Y, GetBoxOrigin().Z + Z).ToString());*/
 			RowCount++;
 		}
-		// UE_LOG(LogTemp, Display, TEXT("YCount %d"), RowCount);
 		ColumnCount++;
 	}
-	// UE_LOG(LogTemp, Display, TEXT("ZCount %d "), ColumnCount);
 	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
 	return FIntPoint(RowCount, ColumnCount);
 }
@@ -873,7 +995,7 @@ FIntPoint ATargetSpawner::InitializeSpawnCounter()
 FVectorCounter ATargetSpawner::GetVectorCounterFromPoint(const FVector Point) const
 {
 	TArray<FVectorCounter> SpawnCounterCopy = GetSpawnCounter();
-	for (const FVectorCounter VectorCounter: SpawnCounterCopy)
+	for (const FVectorCounter VectorCounter : SpawnCounterCopy)
 	{
 		if (VectorCounter.Point.Y == Point.Y && VectorCounter.Point.Z == Point.Z)
 		{
@@ -909,7 +1031,7 @@ void ATargetSpawner::UpdateRLAgentReward(const FVector& WorldLocation, const boo
 
 void ATargetSpawner::AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation)
 {
-	ActiveTargetPairs.Emplace(PreviousWorldLocation ,NextWorldLocation);
+	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
 }
 
 FVector ATargetSpawner::TryGetSpawnLocationFromRLAgent()
@@ -920,17 +1042,18 @@ FVector ATargetSpawner::TryGetSpawnLocationFromRLAgent()
 		return FVector::ZeroVector;
 	}
 	TargetPairs.Pop();
-	
+
 	const int32 StateIndex = SpawnCounter.Find(TargetPair.Previous);
 	const int32 State2Index = SpawnCounter.Find(TargetPair.Current);
 	const int32 ActionIndex = State2Index;
 	const int32 Action2Index = RLBase->GetNextActionIndex(State2Index);
 
-	if (Action2Index >= SpawnCounter.Num())
+	if (Action2Index >= SpawnCounter.Num() || Action2Index == INDEX_NONE)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"),*TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
 		return FVector::ZeroVector;
 	}
-	
+
 	UpdateRLAgent(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
 	return SpawnCounter[Action2Index].Point;
 }

@@ -151,6 +151,10 @@ struct FGameModeActorStruct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	FVector BoxBounds;
 
+	/* The min size of the target spawn BoundingBox. Dimensions are half of BoxBounds */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
+	FVector MinBoxBounds;
+
 	/* Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float PlayerDelay;
@@ -231,6 +235,7 @@ struct FGameModeActorStruct
 		BeatGridSpacing = FVector2D::ZeroVector;
 		BeatGridSize = 0.f;
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
+		MinBoxBounds = FVector(0.f, 3200.f, 1000.f);
 	}
 
 	FGameModeActorStruct(EGameModeActorName GameModeActor, EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, ESpreadType NewSpreadType = ESpreadType::None)
@@ -271,6 +276,7 @@ struct FGameModeActorStruct
 		MaxTrackingSpeed = 500.f;
 		BeatGridSize = 0.f;
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
+		MinBoxBounds = FVector(0.f, 3200.f, 1000.f);
 
 		// BeatGrid
 		if (GameModeActor == EGameModeActorName::BeatGrid)
@@ -392,6 +398,7 @@ struct FGameModeActorStruct
 				SpreadType = ESpreadType::DynamicRandom;
 				UseDynamicSizing = true;
 				BoxBounds = FVector(0.f, 2000.f, 800.f);
+				MinBoxBounds = 0.5f * BoxBounds;
 			}
 		}
 		// SingleBeat
@@ -441,6 +448,7 @@ struct FGameModeActorStruct
 				SpreadType = ESpreadType::DynamicEdgeOnly;
 				UseDynamicSizing = true;
 				BoxBounds = FVector(0.f, 2000.f, 800.f);
+				MinBoxBounds = 0.5f * BoxBounds;
 			}
 		}
 	}
