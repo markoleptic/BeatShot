@@ -164,6 +164,9 @@ struct FVectorCounter
 	/** The total number of target hits by player at this point */
 	int32 TotalHits;
 
+	/** The index inside SpawnCounter for this VectorCounter */
+	int32 Index;
+
 	float IncrementY;
 	
 	float IncrementZ;
@@ -176,6 +179,7 @@ struct FVectorCounter
 		TotalHits = 0;
 		IncrementY = 0.f;
 		IncrementZ = 0.f;
+		Index = -1;
 	}
 
 	FVectorCounter(const FVector NewPoint)
@@ -186,10 +190,12 @@ struct FVectorCounter
 		TotalHits = 0;
 		IncrementY = 0.f;
 		IncrementZ = 0.f;
+		Index = -1;
 	}
 
-	FVectorCounter(const FVector NewPoint, const float IncY, const float IncZ)
+	FVectorCounter(const int32 NewIndex, const FVector NewPoint, const float IncY, const float IncZ)
 	{
+		Index = NewIndex;
 		Point = NewPoint;
 		ActualChosenPoint = FVector();
 		TotalSpawns = -1;

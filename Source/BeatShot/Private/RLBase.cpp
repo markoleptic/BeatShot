@@ -27,6 +27,7 @@ int32 URLBase::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex
 
 int32 URLBase::GetSpawnCounterIndexFromQTableIndex(const int32 QTableIndex) const
 {
+	/* TODO: Probably a better method that doesn't involve random numbers */
 	const int32 ScaledAreaSize = NumColsPerScaledCol * NumRowsPerScaledRow;
 	int32 Max = QTableIndex * ScaledAreaSize + ScaledAreaSize;
 	const int32 Min = QTableIndex * ScaledAreaSize;
@@ -111,6 +112,57 @@ int32 URLBase::GetNextActionIndex(const int32 SpawnCounterIndex) const
 	return GetRandomAction();
 }
 
+int32 URLBase::ChooseNextActionIndex(const TArray<int32> SpawnCounterIndices) const
+{
+	if (FMath::FRandRange(0, 1.f) > Epsilon)
+	{
+		/*TArray<int32> QTablesIndices;
+		for (const int Index : SpawnCounterIndices)
+		{
+			QTablesIndices.AddUnique(GetQTableIndexFromSpawnCounterIndex(Index));
+		}
+		for (const int32 Index : QTablesIndices)
+		{
+			UE_LOG(LogTemp, Display, TEXT("QTablesIndices: %d"), Index);
+		}*/
+		
+		FIntPoint IndexRange = ChooseBestActionIndices(SpawnCounterIndices);
+
+		if (IndexRange == FIntPoint::ZeroValue)
+		{
+			UE_LOG(LogTemp, Display, TEXT("No acceptable index range found"));
+
+			/* TODO: Bound GetRandomAction */
+			//return GetRandomAction();
+			return INDEX_NONE;
+		}
+		
+		TArray<int32> ValidChosenPoints = SpawnCounterIndices.FilterByPredicate([&IndexRange] (const int32& Value)
+		{
+			if (Value >= IndexRange.X && Value <= IndexRange.Y)
+			{
+				return true;
+			}
+			return false;
+		});
+		
+		if (!ValidChosenPoints.IsEmpty())
+		{
+			UE_LOG(LogTemp, Display, TEXT("Acceptable Index Range: %d %d"), ValidChosenPoints[0], ValidChosenPoints.Last());
+			return ValidChosenPoints[FMath::RandRange(0, ValidChosenPoints.Num() - 1)];
+		}
+		UE_LOG(LogTemp, Display, TEXT("No acceptable index range found"));
+
+		/* TODO: Bound GetRandomAction */
+		//return GetRandomAction();
+		return INDEX_NONE;
+	}
+	
+	/* TODO: Bound GetRandomAction */
+	return INDEX_NONE;
+	// return GetRandomAction();
+}
+
 int32 URLBase::GetRandomAction() const
 {
 	const int32 MaxValue = NumColsPerScaledCol * RowScale * NumRowsPerScaledRow * ColScale;
@@ -126,6 +178,49 @@ int32 URLBase::GetMaxActionIndex(const int32 QTableIndex) const
 		UE_LOG(LogTemp, Warning, TEXT("GetMaxActionIndex return INDEX_NONE for QTableIndex of %d"), QTableIndex);
 	}
 	return Index;
+}
+
+FIntPoint URLBase::ChooseBestActionIndices(const TArray<int32> SpawnCounterIndices) const
+{
+	//float MaxValue = -INFINITY;
+	//int32 MaxIndex = INDEX_NONE;
+	const int32 ScaledAreaSize = NumColsPerScaledCol * NumRowsPerScaledRow;
+	auto MaxIndices = QTable.argmax(nc::Axis::COL);
+	
+	/* Basically argmax but in descending order */
+	auto MaxesReverseSort = flip(QTable.max(nc::Axis::COL).argsort(nc::Axis::COL));
+	
+	for (int j = 0; j < static_cast<int>(MaxesReverseSort.numCols()); j++)
+	{
+		const int32 ChosenIndex = MaxesReverseSort(0, j);
+		int32 Max = ChosenIndex * ScaledAreaSize + ScaledAreaSize;
+		const int32 Min = ChosenIndex * ScaledAreaSize;
+		Max = Max - 1;
+		if (SpawnCounterIndices.ContainsByPredicate([&Min, &Max] (const int32 Value)
+		{
+			if (Value >= Min || Value <= Max)
+			{
+				return true;
+			}
+			return false;
+		}))
+		{
+			return FIntPoint(Min, Max);
+		}
+		//UE_LOG(LogTemp, Display, TEXT("Sorted Max indices %u"), MaxesReverseSort(0, j));
+	}
+	return FIntPoint::ZeroValue;
+
+	/*for (const int Index : SpawnCounterIndices)
+	{
+		if (MaxIndices(0, Index) > MaxValue)
+		{
+			MaxValue = MaxIndices(0, Index);
+			MaxIndex = Index;
+		}
+		UE_LOG(LogTemp, Display, TEXT("QTable Index: %d Value at max index: %f"), Index, MaxValue);
+	}*/
+	//return GetSpawnCounterIndexFromQTableIndex(MaxIndex);
 }
 
 void URLBase::UpdateQTable(const FAlgoInput In)
@@ -181,3 +276,16 @@ void URLBase::SaveQTable()
 	QTables.Add(QTableWrapper);
 	SaveQTables(QTables);
 }
+
+/*for(int j = 0; j < static_cast<int>(MaxIndices.numCols()); j++)
+{
+	UE_LOG(LogTemp, Display, TEXT("Max indices / values %u %f"), MaxIndices(0,j), Maxes(0, MaxIndices(0,j)));
+}
+for(int j = 0; j < static_cast<int>(Maxes.numCols()); j++)
+{
+	UE_LOG(LogTemp, Display, TEXT("Maxes %f"), Maxes(0, j));
+}
+for(int j = 0; j < static_cast<int>(MaxesReverseSort.numCols()); j++)
+{
+	UE_LOG(LogTemp, Display, TEXT("Sorted Max indices %u"), MaxesReverseSort(0, j));
+}*/

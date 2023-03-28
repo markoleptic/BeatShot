@@ -139,11 +139,16 @@ public:
 	/** Returns the index of the next target to spawn, based on the Epsilon value */
 	int32 GetNextActionIndex(const int32 SpawnCounterIndex) const;
 
+	/** Returns the index of the next target to spawn, based on the Epsilon value */
+	int32 ChooseNextActionIndex(const TArray<int32> SpawnCounterIndices) const;
+
 	/** Returns a random SpawnCounterIndex */
 	int32 GetRandomAction() const;
 
 	/** Returns the index of the next target to spawn, using a greedy approach */
 	int32 GetMaxActionIndex(const int32 QTableIndex) const;
+
+	FIntPoint ChooseBestActionIndices(const TArray<int32> SpawnCounterIndices) const;
 
 	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */
 	virtual void UpdateQTable(const FAlgoInput In);

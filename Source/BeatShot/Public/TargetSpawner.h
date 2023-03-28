@@ -63,6 +63,9 @@ public:
 	TArray<F2DArray> GetLocationAccuracy() const;
 
 private:
+	/** Initializes the SpawnCounter array */
+	FIntPoint InitializeSpawnCounter();
+	
 	/** Create BeatGrid Targets */
 	void InitBeatGrid();
 
@@ -100,6 +103,48 @@ private:
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;
 
+	/** Returns an array of valid spawn points */
+	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
+	
+	/** Returns an array constructed on initialization containing all spawn locations */
+	TArray<FVector> GetAllSpawnLocations() const;
+	
+	/** Returns an array that contains the contains all spawn locations without the locations outside of the current box extent */
+	TArray<FVector> GetAllDynamicRandomSpawnLocations() const;
+	
+	/** Returns an array containing only the edge points of the spawn box, used for Dynamic Edge Only (Single Beat exclusive mode) */
+	TArray<FVector> GetAllEdgeOnlySpawnLocations() const;
+	
+	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
+	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
+
+	/** Returns an array of all points that are occupied by recent targets, readjusted by scale if needed */
+	TArray<FVector> GetAllOverlappingPoints(const float Scale) const;
+
+	/** Returns a copy of the RecentTargets, used to determine future target spawn locations */
+	TArray<FRecentTarget> GetRecentTargets() const { return RecentTargets; }
+
+	/** Returns a copy of ActiveTargets, used to move targets forward if game mode permits */
+	TArray<ASphereTarget*> GetActiveTargets() const { return ActiveTargets; }
+
+	/** Returns a copy of the SpawnCounter */
+	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
+
+	/** Returns SpawnBox's origin, as it is in the game */
+	FVector GetBoxOrigin() const;
+
+	/** Returns a vector representing the BoxBounds extrema. If PositiveExtrema is equal to 1, the positive extrema is returned. Otherwise the negative extrema is returned */
+	FVector GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const;
+	
+	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
+	FVector GetBoxExtents_Static() const;
+
+	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
+	TArray<EDirection> GetBorderingDirections(TArray<FVector> ValidLocations, FVector Location) const;
+
+	/** Returns the VectorCounter corresponding to the point */
+	FVectorCounter GetVectorCounterFromPoint(const FVector Point) const;
+	
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
@@ -119,50 +164,8 @@ private:
 	/** Removes points from the InArray that don't have an adjacent point to the top and to the left. Used so that it's safe to spawn a target within a square area */
 	void RemoveEdgePoints(TArray<FVector>& In) const;
 	
-	/** Removes the union of points that are outside of the current BoxExtent */
-	void RemoveDynamicScaledExtents(TArray<FVector>& In) const;
-
-	/** Returns an array of valid spawn points */
-	TArray<FVector> GetValidSpawnLocations(const float Scale);
-
-	/** Returns a copy of the RecentTargets, used to determine future target spawn locations */
-	TArray<FRecentTarget> GetRecentTargets() const { return RecentTargets; }
-
-	/** Returns a copy of ActiveTargets, used to move targets forward if game mode permits */
-	TArray<ASphereTarget*> GetActiveTargets() const { return ActiveTargets; }
-
-	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
-	FVector GetBoxExtents_Static() const;
-
-	/** Returns SpawnBox's current BoxExtents after dynamic changes */
-	FVector GetBoxExtents_Dynamic() const;
-
-	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
-	TArray<EDirection> GetBorderingDirections(TArray<FVector> ValidLocations, FVector Location) const;
-
-	/** Returns a vector representing the BoxBounds extrema. If PositiveExtrema is equal to 1, the positive extrema is returned. Otherwise the negative extrema is returned */
-	FVector GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const;
-
-	/** Returns a copy of the SpawnCounter */
-	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
-
-	/** Returns the VectorCounter corresponding to the point */
-	FVectorCounter GetVectorCounterFromPoint(const FVector Point) const;
-
-	/** Returns SpawnBox's origin, as it is in the game */
-	FVector GetBoxOrigin() const;
-
-	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
-	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
-
-	/** Returns an array constructed on initialization containing all spawn locations */
-	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
-	
-	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
+	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
 	void SetBoxExtents_Dynamic() const;
-	
-	/** Initializes the SpawnCounter array */
-	FIntPoint InitializeSpawnCounter();
 
 	/** Returns a string representation of an accuracy row */
 	static void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
@@ -320,11 +323,8 @@ private:
 	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
 	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
 
-	/** Calls the UpdateQTable and UpdateRewards functions for the RLAgent */
-	void UpdateRLAgent(const FAlgoInput In);
-
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
-	FVector TryGetSpawnLocationFromRLAgent();
+	int32 TryGetSpawnLocationFromRLAgent(const TArray<FVector>& OpenLocations);
 
 	/** Location of the previously spawned target, in world space */
 	FVector PreviousSpawnLocation;
@@ -342,4 +342,3 @@ private:
 
 #pragma endregion
 };
-
