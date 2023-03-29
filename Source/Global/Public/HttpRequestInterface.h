@@ -7,10 +7,10 @@
 #include "HttpRequestInterface.generated.h"
 
 /** Broadcast if refresh token is invalid */
-DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString AccessToken);
+DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString& AccessToken);
 
 /** Broadcast when a login response is received from BeatShot website */
-DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FPlayerSettings& PlayerSettings, const FString ResponseMsg, const int32 ResponseCode);
+DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FPlayerSettings& PlayerSettings, const FString& ResponseMsg, const int32 ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostScoresResponse, const ELoginState& LoginState);
@@ -32,14 +32,14 @@ public:
 
 	/** Requests a short lived access token given a valid login cookie. Executes supplied OnAccessTokenResponse
 	 *  with an access token */
-	void RequestAccessToken(const FString LoginCookie, FOnAccessTokenResponse& OnAccessTokenResponse) const;
+	void RequestAccessToken(const FString& LoginCookie, FOnAccessTokenResponse& OnAccessTokenResponse) const;
 
 	/** Checks to see if the user has a refresh token and if it has expired or not */
-	static bool IsRefreshTokenValid(const FPlayerSettings PlayerSettings);
+	static bool IsRefreshTokenValid(const FPlayerSettings& PlayerSettings);
 
 	/* Converts ScoresToPost to a JSON string and sends an http post request to BeatShot website given a valid
 	 * access token. Executes supplied OnPostResponse with the login state */
-	void PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString Username, const FString AccessToken, FOnPostScoresResponse& OnPostResponse) const;
+	void PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& Username, const FString& AccessToken, FOnPostScoresResponse& OnPostResponse) const;
 
 private:
 	FString LoginEndpoint = "https://beatshot.gg/api/login";

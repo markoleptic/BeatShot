@@ -22,13 +22,11 @@ class ABSPlayerController;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
-
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned, ASphereTarget* SpawnedTarget);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector Position);
-DECLARE_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore PlayerScore);
+DECLARE_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore& PlayerScore);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector Position);
-DECLARE_MULTICAST_DELEGATE(OnGameModeStarted);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector& Position);
+DECLARE_DELEGATE(FOnStreakThresholdPassed)
+DECLARE_MULTICAST_DELEGATE(FOnGameModeStarted);
 
 UCLASS()
 class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, public IHttpRequestInterface
@@ -86,6 +84,12 @@ protected:
 	/* The spawned AAPlayer object */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
 	TObjectPtr<UAudioAnalyzerManager> AAPlayer;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
+	TSubclassOf<class UGameplayAbility> TrackGunAbility;
+
+public:
+	ATargetSpawner* GetTargetSpawner() const { return TargetSpawner.Get(); }
 
 #pragma endregion
 
@@ -146,10 +150,10 @@ private:
 
 	/** play AAPlayer, used as callback function to set delay from AATracker */
 	UFUNCTION()
-	void PlayAAPlayer();
+	void PlayAAPlayer() const;
 
 	/** Change volume of given AAManager, or if none provided change Player/Tracker volume */
-	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr);
+	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr) const;
 
 	void OnAAManagerError()
 	{
@@ -175,6 +179,12 @@ private:
 	/** The time elapsed since last target spawn */
 	float Elapsed;
 
+	TArray<bool> Beats;
+	TArray<float> SpectrumValues;
+	TArray<float> SpectrumVariance;
+	TArray<int32> BpmCurrent;
+	TArray<int32> BpmTotal;
+
 #pragma endregion
 
 #pragma region PublicDelegates
@@ -184,24 +194,19 @@ public:
 	 *  PlayerHUD binds to it, while DefaultGameMode (this) executes it */
 	FOnAAManagerSecondPassed OnSecondPassed;
 
-	/** Delegate that is executed every time a target has been spawned.
-	*   DefaultGameMode (this) binds to it, while TargetSpawner executes it */
-	FOnTargetSpawned OnTargetSpawned;
-
-	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data.
-	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
-	FOnTargetDestroyed OnTargetDestroyed;
-
 	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
 	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
 	FUpdateScoresToHUD UpdateScoresToHUD;
 
 	/** Broadcasts when the countdown has completed and the actual game has began. */
-	OnGameModeStarted OnGameModeStarted;
+	FOnGameModeStarted OnGameModeStarted;
 	
 	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
 	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
 	FOnPostScoresResponse OnPostScoresResponse;
+
+	/** Called if the streak threshold is passed and user has not unlocked night mode */
+	FOnStreakThresholdPassed OnStreakThresholdPassed;
 
 #pragma endregion
 
@@ -217,7 +222,7 @@ private:
 
 	/** Function bound to the response of an access token, which is broadcast from RequestAccessToken() */
 	UFUNCTION()
-	void OnAccessTokenResponseReceived(const FString AccessToken);
+	void OnAccessTokenResponseReceived(const FString& AccessToken);
 
 	/** Function bound to the response of posting player scores to database, which is broadcast from PostPlayerScores() */
 	UFUNCTION()
@@ -267,6 +272,13 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "BeatShot|General")
 	FGameModeActorStruct GameModeActorStruct;
 
+	/** The threshold to activate night mode if not yet unlocked */
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|General")
+	int32 StreakThreshold = 50;
+
+	/** Whether or not night mode has been unlocked */
+	bool bNightModeUnlocked;
+
 	const FVector TargetSpawnerLocation = {3730, 0, 750};
 
 	const FActorSpawnParameters SpawnParameters;
@@ -275,10 +287,9 @@ private:
 
 #pragma region HUDUpdate
 
-	/** Function bound to DefaultGameMode's OnTargetDestroyed delegate, which is executed by TargetSpawner.
-	 *  Passes the time that the target was alive for */
+	/** Function bound to TargetSpawner's OnTargetDestroyed delegate, passes the time that the target was alive for */
 	UFUNCTION()
-	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector Position);
+	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position);
 
 	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
 	 *  which passes the current damage taken, and the total possible damage. Executed on tick
@@ -289,7 +300,7 @@ private:
 	/** Function bound to DefaultGameMode's OnTargetSpawned delegate to keep track of number of targets spawned.
 	 *  Executed by TargetSpawner */
 	UFUNCTION()
-	void UpdateTargetsSpawned(ASphereTarget* SpawnedTarget);
+	void UpdateTargetsSpawned();
 
 	/** Function bound to Gun_AK47's FOnShotFired delegate to keep track of number of targets spawned.
 	 *  Executed by Gun_AK47 */
@@ -297,7 +308,7 @@ private:
 	void UpdateShotsFired();
 
 	/** Called by UpdatePlayerScores to update the streak */
-	void UpdateStreak(int32 Streak, FVector Location);
+	void UpdateStreak(const int32 Streak, const FVector& Location);
 
 	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
 	void UpdateTargetsHit();
@@ -307,7 +318,7 @@ private:
 
 	/** Callback function for OnSecondPassedTimer, executes OnSecondPassed */
 	UFUNCTION()
-	void OnSecondPassedCallback();
+	void OnSecondPassedCallback() const;
 
 #pragma endregion
 

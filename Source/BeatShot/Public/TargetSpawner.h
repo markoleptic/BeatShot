@@ -15,7 +15,11 @@ class ASphereTarget;
 class UBoxComponent;
 class URLBase;
 
-DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector);
+DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBeatTrackTargetDamaged, const float Damage, const float MaxHealth);
+DECLARE_MULTICAST_DELEGATE(FOnTargetSpawned);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned_AimBot, ASphereTarget* Target);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector& Position);
 
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor
@@ -26,9 +30,6 @@ class BEATSHOT_API ATargetSpawner : public AActor
 
 public:
 	ATargetSpawner();
-
-	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
-	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
 
 protected:
 	virtual void BeginPlay() override;
@@ -62,6 +63,20 @@ public:
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
 	TArray<F2DArray> GetLocationAccuracy() const;
 
+	/** Delegate that is executed every time a target has been spawned. */
+	FOnTargetSpawned OnTargetSpawned;
+
+	FOnTargetSpawned_AimBot OnTargetSpawned_AimBot;
+	
+	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
+	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
+
+	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data. */
+	FOnTargetDestroyed OnTargetDestroyed;
+
+	/** Delegate that is executed when a player damages a BeatTrack target. */
+	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
+
 private:
 	/** Initializes the SpawnCounter array */
 	FIntPoint InitializeSpawnCounter();
@@ -86,6 +101,9 @@ private:
 	*   based on consecutive targets hit */
 	UFUNCTION()
 	void OnTargetTimeout(bool DidExpire, float TimeAlive, ASphereTarget* DestroyedTarget);
+
+	/** Broadcasts OnBeatTrackTargetDamaged when a BeatTrack target was damaged by a player */
+	void OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float MaxHealth);
 
 	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
 	UFUNCTION()
@@ -116,7 +134,7 @@ private:
 	TArray<FVector> GetAllEdgeOnlySpawnLocations() const;
 	
 	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
-	TArray<FVector> GetOverlappingPoints(const FVector Center, const float Scale) const;
+	TArray<FVector> GetOverlappingPoints(const FVector& Center, const float Scale) const;
 
 	/** Returns an array of all points that are occupied by recent targets, readjusted by scale if needed */
 	TArray<FVector> GetAllOverlappingPoints(const float Scale) const;
@@ -140,10 +158,10 @@ private:
 	FVector GetBoxExtents_Static() const;
 
 	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
-	TArray<EDirection> GetBorderingDirections(TArray<FVector> ValidLocations, FVector Location) const;
+	TArray<EDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const;
 
 	/** Returns the VectorCounter corresponding to the point */
-	FVectorCounter GetVectorCounterFromPoint(const FVector Point) const;
+	FVectorCounter GetVectorCounterFromPoint(const FVector& Point) const;
 	
 	/** An array of spawned targets that is used to move targets forward towards the player on tick */
 	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;

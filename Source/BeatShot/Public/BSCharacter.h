@@ -33,6 +33,7 @@ class UBSAbilitySystemComponent;
 
 DECLARE_DELEGATE_OneParam(FOnInteractDelegate, const int32);
 DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetAddedToQueue);
 
 UCLASS()
 class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
@@ -66,6 +67,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetAimBotPlaybackSpeed() const;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTargetAddedToQueue OnTargetAddedToQueue;
 
 	/** Implement IGameplayTagAssetInterface */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
@@ -175,16 +179,6 @@ private:
 	/** Toggles crouching */
 	void Input_Crouch(const FInputActionInstance& Instance);
 
-	/** Begin firing gun */
-	void Input_StartFire();
-
-	/** Stop firing gun, if automatic fire */
-	UFUNCTION()
-	void Input_StopFire();
-
-	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
-	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
-
 	/** Crouches or un-crouches based on current state */
 	void ToggleCrouch();
 
@@ -200,6 +194,9 @@ private:
 	/** Triggered on releasing Shift + E */
 	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
 
+	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
+	
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;
 

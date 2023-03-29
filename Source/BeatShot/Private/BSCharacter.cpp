@@ -215,16 +215,6 @@ void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
 	}
 }
 
-void ABSCharacter::Input_StartFire()
-{
-	GetGun()->StartFire();
-}
-
-void ABSCharacter::Input_StopFire()
-{
-	GetGun()->StopFire();
-}
-
 void ABSCharacter::Input_Move(const FInputActionValue& Value)
 {
 	// Moving the player
@@ -277,7 +267,7 @@ void ABSCharacter::ToggleCrouch()
 	}
 }
 
-void ABSCharacter::OnInteractStarted(const FInputActionInstance& Instance)
+void ABSCharacter::OnInteractStarted(const FInputActionInstance& Instance) 
 {
 	if (!OnInteractDelegate.ExecuteIfBound(0))
 	{
@@ -285,7 +275,7 @@ void ABSCharacter::OnInteractStarted(const FInputActionInstance& Instance)
 	}
 }
 
-void ABSCharacter::OnInteractCompleted(const FInputActionInstance& Instance)
+void ABSCharacter::OnInteractCompleted(const FInputActionInstance& Instance) 
 {
 	if (!OnInteractDelegate.ExecuteIfBound(1))
 	{
@@ -293,7 +283,7 @@ void ABSCharacter::OnInteractCompleted(const FInputActionInstance& Instance)
 	}
 }
 
-void ABSCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance)
+void ABSCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance) 
 {
 	if (!OnShiftInteractDelegate.ExecuteIfBound(0))
 	{
@@ -301,7 +291,7 @@ void ABSCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance)
 	}
 }
 
-void ABSCharacter::OnShiftInteractCompleted(const FInputActionInstance& Instance)
+void ABSCharacter::OnShiftInteractCompleted(const FInputActionInstance& Instance) 
 {
 	if (!OnShiftInteractDelegate.ExecuteIfBound(1))
 	{
@@ -312,6 +302,7 @@ void ABSCharacter::OnShiftInteractCompleted(const FInputActionInstance& Instance
 void ABSCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
 {
 	ActiveTargets_AimBot.Enqueue(SpawnedTarget);
+	OnTargetAddedToQueue.Broadcast();
 }
 
 void ABSCharacter::PopActiveTargets()
@@ -459,8 +450,4 @@ void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)
 void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent())->AbilityInputTagReleased(InputTag);
-	if (InputTag == FBSGameplayTags::Get().Input_Fire)
-	{
-		GetGun()->StopFire();
-	}
 }

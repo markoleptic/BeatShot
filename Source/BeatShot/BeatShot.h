@@ -213,11 +213,6 @@ struct FVectorCounter
 			return true;
 		}
 		return false;
-		// if (Point.Y == Other.Point.Y && Point.Z == Other.Point.Z)
-		// {
-		// 	return true;
-		// }
-		// return false;
 	}
 
 	FORCEINLINE bool operator <(const FVectorCounter& Other) const
@@ -256,8 +251,8 @@ struct FVectorCounter
 			MaxZ = Center.Z;
 		}
 		
-		const float Y = roundf(FMath::FRandRange(MinY, MaxY));
-		const float Z = roundf(FMath::FRandRange(MinZ, MaxZ));
+		const float Y = roundf(FMath::FRandRange(MinY, MaxY - 1.f));
+		const float Z = roundf(FMath::FRandRange(MinZ, MaxZ - 1.f));
 		return FVector(Point.X, Y, Z);
 	}
 };

@@ -1,8 +1,9 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "TargetSpawner.h"
+
+#include "BSHealthComponent.h"
 #include "SphereTarget.h"
-#include "BSGameMode.h"
 #include "RLBase.h"
 #include "Components/BoxComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
@@ -28,7 +29,6 @@ void ATargetSpawner::BeginPlay()
 
 void ATargetSpawner::Destroyed()
 {
-	RLBase->PrintRewards();
 	if (BeatTrackTarget)
 	{
 		BeatTrackTarget->Destroy();
@@ -40,7 +40,6 @@ void ATargetSpawner::Destroyed()
 			Target->Destroy();
 		}
 	}
-
 	Super::Destroyed();
 }
 
@@ -73,12 +72,6 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	/* Initialize local copy of struct passed by GameModeActorBase */
 	GameModeActorStruct = NewGameModeActor;
 
-	SpawnMemoryScaleY = 1.f / 50.f;
-	SpawnMemoryScaleZ = 1.f / 50.f;
-
-	SpawnMemoryIncY = roundf(1 / SpawnMemoryScaleY);
-	SpawnMemoryIncZ = roundf(1 / SpawnMemoryScaleZ);
-
 	/* GameMode menu uses the full width, while box bounds are only half width / half height */
 	GameModeActorStruct.BoxBounds.X = 0.f;
 	GameModeActorStruct.BoxBounds.Y = GameModeActorStruct.BoxBounds.Y / 2.f;
@@ -100,7 +93,44 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 		CenterOfSpawnBox.Z = GameModeActorStruct.BoxBounds.Z + DistanceFromFloor;
 	}
 
+	const int32 Width = GameModeActorStruct.BoxBounds.Y * 2;
+	const int32 Height = GameModeActorStruct.BoxBounds.Z * 2;
+	TArray PreferredScales = { 100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40 };
+	bool bWidthScaleSelected = false;
+	bool bHeightScaleSelected = false;
+	for (const int32 Scale : PreferredScales)
+	{
+		if (!bWidthScaleSelected)
+		{
+			if (Width / Scale % 5 == 0 || Width / Scale % 3 == 0)
+			{
+				SpawnMemoryScaleY = 1.f / static_cast<float>(Scale);
+				bWidthScaleSelected = true;
+			}
+		}
+		if (!bHeightScaleSelected)
+		{
+			if (Height / Scale % 5 == 0 || Height / Scale % 3 == 0)
+			{
+				SpawnMemoryScaleZ = 1.f / static_cast<float>(Scale);
+				bHeightScaleSelected = true;
+			}
+		}
+		if (bHeightScaleSelected && bWidthScaleSelected)
+		{
+			break;
+		}
+	}
+	if (!bWidthScaleSelected || !bHeightScaleSelected)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Couldn't Find Height/Width"));
+		SpawnMemoryScaleY = 1.f / 50.f;
+		SpawnMemoryScaleZ = 1.f / 50.f;
+	}
 
+	SpawnMemoryIncY = roundf(1 / SpawnMemoryScaleY);
+	SpawnMemoryIncZ = roundf(1 / SpawnMemoryScaleZ);
+	
 	/* Set new location & box extent */
 	SpawnBox->SetRelativeLocation(CenterOfSpawnBox);
 	SpawnBox->SetBoxExtent(GameModeActorStruct.BoxBounds);
@@ -137,7 +167,7 @@ void ATargetSpawner::InitializeGameModeActor(const FGameModeActorStruct NewGameM
 	Params.Size = GetSpawnCounter().Num();
 	Params.Rows = RowsColumns.X;
 	Params.Columns = RowsColumns.Y;
-	Params.InEpsilon = 0.9f;
+	Params.InEpsilon = 0.5f;
 	Params.InGamma = 0.9f;
 	Params.InAlpha = 0.9f;
 	RLBase->Init(Params);
@@ -333,7 +363,8 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			AddToActiveTargets(SpawnTarget);
 			AddToRecentTargets(SpawnTarget, TargetScale);
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
+			OnTargetSpawned.Broadcast();
+			OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
 
 			if (!PreviousSpawnLocation.Equals(SpawnLocation))
 			{
@@ -360,7 +391,8 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			AddToActiveTargets(SpawnTarget);
 			AddToRecentTargets(SpawnTarget, TargetScale);
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(SpawnTarget);
+			OnTargetSpawned.Broadcast();
+			OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
 
 			if (!PreviousSpawnLocation.Equals(SpawnLocation))
 			{
@@ -481,7 +513,8 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	if (ActiveBeatGridTarget)
 	{
 		ActiveBeatGridTarget->StartBeatGridTimer(GameModeActorStruct.TargetMaxLifeSpan);
-		Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(ActiveBeatGridTarget);
+		OnTargetSpawned.Broadcast();
+		OnTargetSpawned_AimBot.Broadcast(ActiveBeatGridTarget);
 	}
 	if (GameModeActorStruct.IsSingleBeatMode == true)
 	{
@@ -496,9 +529,9 @@ void ATargetSpawner::SetNewTrackingDirection()
 		/** Initial tracking target spawn */
 		BeatTrackTarget = GetWorld()->SpawnActor<ASphereTarget>(ActorToSpawn, SpawnBox->Bounds.Origin, FRotator::ZeroRotator, TargetSpawnParams);
 		BeatTrackTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
+		BeatTrackTarget->HealthComponent->OnHealthChanged.AddUObject(this, &ATargetSpawner::OnBeatTrackTargetHealthChanged);
 		LocationBeforeDirectionChange = SpawnBox->Bounds.Origin;
-
-		Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetSpawned.Broadcast(BeatTrackTarget);
+		OnTargetSpawned.Broadcast();
 	}
 	if (BeatTrackTarget)
 	{
@@ -531,7 +564,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 
 	const FVector Location = DestroyedTarget->GetActorLocation();
 	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z};
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
+	OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
 
 	if (const int32 Index = SpawnCounter.Find(Location); Index != INDEX_NONE)
 	{
@@ -557,13 +590,18 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 
 	RemoveFromActiveTargets(DestroyedTarget);
 	FTimerHandle TimerHandle;
-	RemoveFromRecentDelegate.BindUFunction(this, FName("RemoveFromRecentTargets"), DestroyedTarget->Guid);
+	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, GameModeActorStruct.TargetSpawnCD, false);
 
 	if (bShowDebug_SpawnBox)
 	{
 		DrawDebugBox(GetWorld(), SpawnBox->Bounds.Origin, SpawnBox->Bounds.BoxExtent, FColor::Orange, false, 1);
 	}
+}
+
+void ATargetSpawner::OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float MaxHealth)
+{
+	OnBeatTrackTargetDamaged.Broadcast(OldValue - NewValue, MaxHealth);
 }
 
 void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
@@ -634,7 +672,6 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 	{
 		FVectorCounter Found = GetSpawnCounter()[ChosenPoint];
 		Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
-		UE_LOG(LogTemp, Display, TEXT("Successful Spawn Location suggested by RLAgent. %s"), *Found.ActualChosenPoint.ToString());
 		return Found.ActualChosenPoint;
 	}
 	UE_LOG(LogTemp, Display, TEXT("Unable to Spawn Location suggested by RLAgent."));
@@ -769,7 +806,7 @@ TArray<FVector> ATargetSpawner::GetAllEdgeOnlySpawnLocations() const
 	return Edges;
 }
 
-TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector Center, const float Scale) const
+TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector& Center, const float Scale) const
 {
 	const float Radius = Scale * SphereTargetRadius * 2.f + GameModeActorStruct.MinDistanceBetweenTargets / 2.f;
 	const FSphere Sphere = FSphere(Center, Radius);
@@ -844,7 +881,7 @@ FVector ATargetSpawner::GetBoxExtents_Static() const
 	return FVector(0, GameModeActorStruct.BoxBounds.Y, GameModeActorStruct.BoxBounds.Z);
 }
 
-TArray<EDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector> ValidLocations, const FVector Location) const
+TArray<EDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const
 {
 	TArray<EDirection> Directions;
 	const FVector MinExtrema = GetBoxExtrema(0, true);
@@ -873,7 +910,7 @@ TArray<EDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector> 
 	return Directions;
 }
 
-FVectorCounter ATargetSpawner::GetVectorCounterFromPoint(const FVector Point) const
+FVectorCounter ATargetSpawner::GetVectorCounterFromPoint(const FVector& Point) const
 {
 	const int32 Index = GetSpawnCounter().Find(Point);
 	if (Index == INDEX_NONE)
@@ -971,7 +1008,7 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Red, false, GameModeActorStruct.TargetSpawnCD);
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("Removed Edge Points: %d"), Count);
+	//UE_LOG(LogTemp, Display, TEXT("Removed Edge Points: %d"), Count);
 }
 
 void ATargetSpawner::SetBoxExtents_Dynamic() const
@@ -1006,7 +1043,7 @@ void ATargetSpawner::UpdateRLAgentReward(const FVector& WorldLocation, const boo
 	/* Update reward */
 	if (bHit)
 	{
-		FoundTargetPair.Reward = 0.f;
+		FoundTargetPair.Reward = -1.f;
 	}
 	else
 	{
@@ -1023,26 +1060,6 @@ void ATargetSpawner::AddToActiveTargetPairs(const FVector& PreviousWorldLocation
 
 int32 ATargetSpawner::TryGetSpawnLocationFromRLAgent(const TArray<FVector>& OpenLocations)
 {
-	/* Updating RL Agent */
-	FTargetPair TargetPair;
-	if (!TargetPairs.Peek(TargetPair))
-	{
-		return INDEX_NONE;
-	}
-	TargetPairs.Pop();
-	const int32 StateIndex = SpawnCounter.Find(TargetPair.Previous);
-	const int32 State2Index = SpawnCounter.Find(TargetPair.Current);
-	const int32 ActionIndex = State2Index;
-	const int32 Action2Index = RLBase->GetNextActionIndex(State2Index);
-	if (Action2Index >= SpawnCounter.Num() || Action2Index == INDEX_NONE)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
-		return INDEX_NONE;
-	}
-	const FAlgoInput Input(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward);
-	RLBase->UpdateEpisodeRewards(TargetPair.Reward);
-	RLBase->UpdateQTable(Input);
-
 	/* Converting all OpenLocations to indices */
 	TArray<int32> Indices;
 	const TArray<FVectorCounter> SpawnCounterCopy = GetSpawnCounter();
@@ -1054,11 +1071,32 @@ int32 ATargetSpawner::TryGetSpawnLocationFromRLAgent(const TArray<FVector>& Open
 			Indices.Add(FoundIndex);
 		}
 	}
-	if (Indices.IsEmpty())
+	//UE_LOG(LogTemp, Display, TEXT("Indices Size inside TryGetSpawnLocationFromRLAgent %d"), Indices.Num());
+	
+	/* Updating RL Agent */
+	FTargetPair TargetPair;
+	if (!TargetPairs.Peek(TargetPair) || Indices.IsEmpty())
 	{
+		UE_LOG(LogTemp, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 		return INDEX_NONE;
 	}
-	UE_LOG(LogTemp, Display, TEXT("Indices Size inside TryGetSpawnLocationFromRLAgent %d"), Indices.Num());
+	TargetPairs.Pop();
+	const int32 StateIndex = SpawnCounter.Find(TargetPair.Previous);
+	const int32 State2Index = SpawnCounter.Find(TargetPair.Current);
+	const int32 ActionIndex = State2Index;
+	const int32 Action2Index = RLBase->GetMaxActionIndex(State2Index);
+
+	/* Don't update RLAgent if something went wrong */
+	if (Action2Index < SpawnCounter.Num() && Action2Index != INDEX_NONE)
+	{
+		RLBase->UpdateEpisodeRewards(TargetPair.Reward);
+		RLBase->UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
+	}
+	
 	return RLBase->ChooseNextActionIndex(Indices);
 	//return SpawnCounterCopy[RLBase->ChooseNextActionIndex(Indices)];
 	//return SpawnCounter[Action2Index].Point;

@@ -24,15 +24,22 @@ class UBSAttributeSetBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
-class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface, public IAbilitySystemInterface
+class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
 {
 	GENERATED_BODY()
+
+	friend class ATargetSpawner;
 
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
 
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	/** Implement IGameplayTagAssetInterface */
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
+	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -121,9 +128,6 @@ public:
 	UPROPERTY()
 	FGuid Guid;
 
-	/** Returns whether or not this target is a BeatTrack target */
-	bool IsBeatTrackTarget() const { return bIsBeatTrackTarget; }
-
 private:
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
@@ -158,6 +162,8 @@ private:
 
 	UFUNCTION()
 	void ShowTargetOutline();
+	
+	FGameplayTagContainer GameplayTags;
 
 	UPROPERTY()
 	FPlayerSettings_Game PlayerSettings;
@@ -171,8 +177,6 @@ private:
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
 	void PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const;
-
-	bool bIsBeatTrackTarget = false;
 
 	/** Base radius for sphere target. */
 	const float BaseSphereRadius = 50.f;

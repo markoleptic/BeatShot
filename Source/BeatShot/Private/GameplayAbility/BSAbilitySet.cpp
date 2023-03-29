@@ -1,8 +1,14 @@
-﻿#include "GameplayAbility/BSAbilitySet.h"
+﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
+
+#include "GameplayAbility/BSAbilitySet.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/BSGameplayAbility.h"
+
+UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
+{
+}
 
 void FBSAbilitySet_GrantedHandles::AddAbilitySpecHandle(const FGameplayAbilitySpecHandle& Handle)
 {
@@ -59,10 +65,6 @@ void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemCompone
 	AbilitySpecHandles.Reset();
 	GameplayEffectHandles.Reset();
 	GrantedAttributeSets.Reset();
-}
-
-UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
-{
 }
 
 void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const

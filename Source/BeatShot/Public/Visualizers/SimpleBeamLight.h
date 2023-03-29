@@ -38,11 +38,11 @@ public:
 
 	/** Main function that calls all other SetColor functions */
 	UFUNCTION()
-	void SetLightColor(const FLinearColor Color);
+	void SetLightColor(const FLinearColor& Color);
 
 	/** Main function that varies all light intensities based on the alpha value from LightColorCurve */
 	UFUNCTION()
-	void SetLightIntensities(const FLinearColor Color);
+	void SetLightIntensities(const FLinearColor& Color);
 
 	/** Set the index of this SimpleBeamLight */
 	void SetIndex(const int32 NewIndex) { Index = NewIndex; }
@@ -55,7 +55,7 @@ private:
 	/** Traces a line forward from SpotlightHead and if a blocking hit is found, sets the BeamEndLight to the correct
 	 *  location and rotation. Disables the BeamEndLight if not blocking hit is found */
 	UFUNCTION()
-	void LineTrace(const FVector EndLocation);
+	void LineTrace(const FVector& EndLocation);
 
 	/** Rotates the SpotlightLimb and SpotlightHead and then calls LineTrace */
 	UFUNCTION()

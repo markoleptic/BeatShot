@@ -42,7 +42,7 @@ void AVisualizerBase::UpdateVisualizer(const int32 Index, const float SpectrumAl
 {
 }
 
-void AVisualizerBase::UpdateAASettings(const FAASettingsStruct AASettingsStruct)
+void AVisualizerBase::UpdateAASettings(const FAASettingsStruct& AASettingsStruct)
 {
 	AASettings = AASettingsStruct;
 	InitializeVisualizer();

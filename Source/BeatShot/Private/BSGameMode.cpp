@@ -5,11 +5,11 @@
 #include "Visualizers/VisualizerManager.h"
 #include "BSCharacter.h"
 #include "BSGameInstance.h"
-#include "BSHealthComponent.h"
 #include "BSPlayerController.h"
 #include "FloatingTextActor.h"
 #include "TargetSpawner.h"
 #include "GameFramework/PlayerStart.h"
+#include "GameplayAbility/BSGameplayAbility_TrackGun.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetTextLibrary.h"
 
@@ -24,8 +24,8 @@ void ABSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 	InitializeGameMode();
-	OnPostScoresResponse.AddUFunction(this, "OnPostScoresResponseReceived");
-	OnAccessTokenResponse.BindUFunction(this, "OnAccessTokenResponseReceived");
+	OnPostScoresResponse.AddUObject(this, &ABSGameMode::OnPostScoresResponseReceived);
+	OnAccessTokenResponse.BindUObject(this, &ABSGameMode::OnAccessTokenResponseReceived);
 	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSGameMode::RefreshPlayerSettings);
 }
 
@@ -51,7 +51,7 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 		
 		if (!Character->GetGun()->OnShotFired.IsBoundToObject(this))
 		{
-			Character->GetGun()->OnShotFired.BindUFunction(this, FName("UpdateShotsFired"));
+			Character->GetGun()->OnShotFired.BindUObject(this, &ABSGameMode::UpdateShotsFired);
 		}
 		if (GameModeActorStruct.IsBeatTrackMode)
 		{
@@ -93,10 +93,21 @@ void ABSGameMode::InitializeGameMode()
 	LastTargetOnSet = false;
 	RefreshPlayerSettings(LoadPlayerSettings());
 	GameModeActorStruct = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
+	
 	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
 	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
+	
 	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
 	VisualizerManager->InitializeVisualizers(LoadPlayerSettings());
+
+	if (GameModeActorStruct.IsBeatTrackMode)
+	{
+		ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
+		UBSGameplayAbility* AbilityCDO = TrackGunAbility->GetDefaultObject<UBSGameplayAbility>();
+		const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1);
+		Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+	}
+	
 	InitializeAudioManagers();
 	BindGameModeDelegates();
 	bShouldTick = true;
@@ -129,13 +140,17 @@ void ABSGameMode::StartGameModeTimers()
 
 void ABSGameMode::BindGameModeDelegates()
 {
-	if (!OnTargetSpawned.IsBoundToObject(this))
+	if (!GetTargetSpawner()->OnTargetSpawned.IsBoundToObject(this))
 	{
-		OnTargetSpawned.AddUFunction(this, FName("UpdateTargetsSpawned"));
+		GetTargetSpawner()->OnTargetSpawned.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 	}
-	if (!OnTargetDestroyed.IsBoundToObject(this))
+	if (!GetTargetSpawner()->OnTargetDestroyed.IsBoundToObject(this))
 	{
-		OnTargetDestroyed.AddUFunction(this, FName("UpdatePlayerScores"));
+		GetTargetSpawner()->OnTargetDestroyed.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
+	}
+	if (GameModeActorStruct.IsBeatTrackMode && !GetTargetSpawner()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
+	{
+		GetTargetSpawner()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
 	}
 }
 
@@ -153,13 +168,17 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		{
 			TargetSpawner->RLBase->SaveQTable();
 		}
-		if (OnTargetSpawned.IsBoundToObject(TargetSpawner))
+		if (GetTargetSpawner()->OnTargetSpawned.IsBoundToObject(this))
 		{
-			OnTargetSpawned.RemoveAll(TargetSpawner);
+			GetTargetSpawner()->OnTargetSpawned.RemoveAll(this);
 		}
-		if (OnTargetDestroyed.IsBoundToObject(TargetSpawner))
+		if (GetTargetSpawner()->OnTargetDestroyed.IsBoundToObject(this))
 		{
-			OnTargetDestroyed.RemoveAll(TargetSpawner);
+			GetTargetSpawner()->OnTargetDestroyed.RemoveAll(this);
+		}
+		if (GetTargetSpawner()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
+		{
+			GetTargetSpawner()->OnBeatTrackTargetDamaged.RemoveAll(this);
 		}
 		TargetSpawner->Destroy();
 		TargetSpawner = nullptr;
@@ -342,12 +361,6 @@ void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)
 {
 	Elapsed += DeltaSeconds;
 
-	TArray<bool> Beats;
-	TArray<float> SpectrumValues;
-	TArray<float> SpectrumVariance;
-	TArray<int32> BpmCurrent;
-	TArray<int32> BpmTotal;
-
 	AATracker->GetBeatTrackingWLimitsWThreshold(Beats, SpectrumValues, BpmCurrent, BpmTotal, AASettings.BandLimitsThreshold);
 	for (const bool Beat : Beats)
 	{
@@ -366,7 +379,7 @@ void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)
 	VisualizerManager->UpdateVisualizers(SpectrumValues);
 }
 
-void ABSGameMode::PlayAAPlayer()
+void ABSGameMode::PlayAAPlayer() const
 {
 	if (!AAPlayer)
 	{
@@ -377,7 +390,7 @@ void ABSGameMode::PlayAAPlayer()
 	UE_LOG(LogTemp, Display, TEXT("Now Playing AAPlayer %f"), AAPlayer->GetPlaybackVolume());
 }
 
-void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume, UAudioAnalyzerManager* AAManager)
+void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float MusicVolume, UAudioAnalyzerManager* AAManager) const
 {
 	if (AAManager)
 	{
@@ -410,7 +423,7 @@ void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float Music
 	}
 }
 
-void ABSGameMode::OnSecondPassedCallback()
+void ABSGameMode::OnSecondPassedCallback() const
 {
 	OnSecondPassed.Broadcast(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 }
@@ -426,6 +439,7 @@ void ABSGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSe
 	SetAAManagerVolume(RefreshedPlayerSettings.VideoAndSound.GlobalVolume, RefreshedPlayerSettings.VideoAndSound.MusicVolume);
 	bShowStreakCombatText = RefreshedPlayerSettings.Game.bShowStreakCombatText;
 	CombatTextFrequency = RefreshedPlayerSettings.Game.CombatTextFrequency;
+	bNightModeUnlocked = RefreshedPlayerSettings.User.bNightModeUnlocked;
 	if (VisualizerManager)
 	{
 		VisualizerManager->UpdateVisualizerStates(RefreshedPlayerSettings);
@@ -524,7 +538,7 @@ void ABSGameMode::SaveScoresToDatabase()
 	RequestAccessToken(LoadPlayerSettings().User.LoginCookie, OnAccessTokenResponse);
 }
 
-void ABSGameMode::OnAccessTokenResponseReceived(const FString AccessToken)
+void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
 {
 	if (AccessToken.IsEmpty())
 	{
@@ -556,7 +570,7 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 	}
 }
 
-void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector Position)
+void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position)
 {
 	if (GameModeActorStruct.IsBeatTrackMode == true || TimeElapsed == -1)
 	{
@@ -594,21 +608,10 @@ void ABSGameMode::UpdateTrackingScore(const float DamageTaken, const float Total
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
-void ABSGameMode::UpdateTargetsSpawned(ASphereTarget* SpawnedTarget)
+void ABSGameMode::UpdateTargetsSpawned()
 {
 	CurrentPlayerScore.TargetsSpawned++;
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
-
-	/** Update tracking score if a Tracking target has spawned */
-	if (GameModeActorStruct.IsBeatTrackMode && !SpawnedTarget->HealthComponent->OnBeatTrackTick.IsBoundToObject(this))
-	{
-		if (ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn()))
-		{
-			TargetSpawner->OnBeatTrackDirectionChanged.BindUFunction(Character, "OnBeatTrackDirectionChanged");
-			//Character->GetGun()->TrackingTarget = SpawnedTarget;
-		}
-		SpawnedTarget->HealthComponent->OnBeatTrackTick.BindUFunction(this, FName("UpdateTrackingScore"));
-	}
 }
 
 void ABSGameMode::UpdateShotsFired()
@@ -617,7 +620,7 @@ void ABSGameMode::UpdateShotsFired()
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
-void ABSGameMode::UpdateStreak(const int32 Streak, const FVector Location)
+void ABSGameMode::UpdateStreak(const int32 Streak, const FVector& Location)
 {
 	if (Streak > CurrentPlayerScore.Streak)
 	{
@@ -632,6 +635,19 @@ void ABSGameMode::UpdateStreak(const int32 Streak, const FVector Location)
 				FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
 			}
 		}
+	}
+
+	if (Streak > StreakThreshold && !bNightModeUnlocked)
+	{
+		if (!OnStreakThresholdPassed.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnStreakThresholdPassed not bound."));
+		}
+		FPlayerSettings Settings = LoadPlayerSettings();
+		bNightModeUnlocked = true;
+		Settings.User.bNightModeUnlocked = true;
+		SavePlayerSettings(Settings);
+		Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.Broadcast(Settings);
 	}
 }
 

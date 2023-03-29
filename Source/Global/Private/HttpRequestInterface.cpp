@@ -8,7 +8,7 @@
 #include "SaveGamePlayerSettings.h"
 #include "Interfaces/IHttpResponse.h"
 
-bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings PlayerSettings)
+bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings& PlayerSettings)
 {
 	if (PlayerSettings.User.HasLoggedInHttp == true)
 	{
@@ -65,7 +65,7 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, FOnLogi
 	LoginRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::RequestAccessToken(const FString LoginCookie, FOnAccessTokenResponse& OnAccessTokenResponse) const
+void IHttpRequestInterface::RequestAccessToken(const FString& LoginCookie, FOnAccessTokenResponse& OnAccessTokenResponse) const
 {
 	const FHttpRequestRef AccessTokenRequest = FHttpModule::Get().CreateRequest();
 	AccessTokenRequest->SetURL(RefreshEndpoint);
@@ -95,11 +95,11 @@ void IHttpRequestInterface::RequestAccessToken(const FString LoginCookie, FOnAcc
 	AccessTokenRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString Username, const FString AccessToken, FOnPostScoresResponse& OnPostResponse) const
+void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& Username, const FString& AccessToken, FOnPostScoresResponse& OnPostResponse) const
 {
 	FJsonScore JsonScores;
 	// Add all elements that haven't been saved to database to the JsonScores Scores array
-	for (const FPlayerScore PlayerScoreObject : ScoresToPost)
+	for (const FPlayerScore& PlayerScoreObject : ScoresToPost)
 	{
 		if (!PlayerScoreObject.bSavedToDatabase)
 		{

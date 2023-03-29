@@ -32,7 +32,7 @@ void ARangeLevelScriptActor::BeginPlay()
 		return;
 	}
 	
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnTargetDestroyed.AddUFunction(this, "OnTargetDestroyed");
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnStreakThresholdPassed.BindUObject(this, &ARangeLevelScriptActor::OnStreakThresholdPassed);
 	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddDynamic(this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
 
 	OnTimelineVector.BindUFunction(this, FName("TransitionTimeOfDay"));
@@ -67,22 +67,15 @@ void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 	}
 }
 
-void ARangeLevelScriptActor::OnTargetDestroyed(const float TimeAlive, const int32 NewStreak, const FVector Position)
+void ARangeLevelScriptActor::OnStreakThresholdPassed()
 {
-	if (TimeOfDay == ETimeOfDay::DayToNight || TimeOfDay == ETimeOfDay::NightToDay || NewStreak < StreakThreshold)
+	if (TimeOfDay == ETimeOfDay::DayToNight || TimeOfDay == ETimeOfDay::NightToDay)
 	{
 		return;
 	}
-
-	if (FPlayerSettings Settings = LoadPlayerSettings(); !Settings.User.bNightModeUnlocked)
+	if (TimeOfDay == ETimeOfDay::Day)
 	{
-		Settings.User.bNightModeUnlocked = true;
-		SavePlayerSettings(Settings);
-		Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.Broadcast(Settings);
-		if (TimeOfDay == ETimeOfDay::Day)
-		{
-			BeginTransitionToNight();
-		}
+		BeginTransitionToNight();
 	}
 }
 

@@ -39,8 +39,8 @@ void AMovablePlatform::BeginPlay()
 	Super::BeginPlay();
 	if (ABSCharacter* Character = Cast<ABSCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)))
 	{
-		Character->OnInteractDelegate.BindUFunction(this, "MovePlatformUp");
-		Character->OnShiftInteractDelegate.BindUFunction(this, "MovePlatformDown");
+		Character->OnInteractDelegate.BindUObject(this, &AMovablePlatform::MovePlatformUp);
+		Character->OnShiftInteractDelegate.BindUObject(this, &AMovablePlatform::MovePlatformDown);
 	}
 
 	WallMenu = Cast<AWallMenu>(WallMenuComponent->GetChildActor());

@@ -7,6 +7,7 @@
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraComponent.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
@@ -50,6 +51,26 @@ UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
 	return HardRefAbilitySystemComponent;
 }
 
+void ASphereTarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	TagContainer.AppendTags(GameplayTags);
+}
+
+bool ASphereTarget::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
+{
+	return IGameplayTagAssetInterface::HasMatchingGameplayTag(TagToCheck);
+}
+
+bool ASphereTarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+{
+	return IGameplayTagAssetInterface::HasAllMatchingGameplayTags(TagContainer);
+}
+
+bool ASphereTarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+{
+	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
+}
+
 void ASphereTarget::SetSphereScale(const FVector NewScale)
 {
 	TargetScale = NewScale.X;
@@ -65,7 +86,7 @@ void ASphereTarget::BeginPlay()
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
 		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent);
-		HealthComponent->OnOutOfHealth.BindUFunction(this, "HandleDestruction");
+		HealthComponent->OnOutOfHealth.BindUObject(this, &ASphereTarget::HandleDestruction);
 	}
 
 	PlayerSettings = LoadPlayerSettings().Game;
@@ -120,7 +141,7 @@ void ASphereTarget::BeginPlay()
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		SetLifeSpan(0);
-		SetMaxHealth(1000000);
+		HardRefAttributeSetBase->SetMaxHealth(1000000);
 		SetCanBeDamaged(false);
 		SetColorToBeatGridColor();
 		SetSphereColor(PlayerSettings.BeatGridInactiveTargetColor);
@@ -128,15 +149,15 @@ void ASphereTarget::BeginPlay()
 		FOnTimelineEvent OnPeakToFadeFinished;
 		OnPeakToFadeFinished.BindUFunction(this, FName("SetColorToBeatGridColor"));
 		PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
+		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Grid);
 	}
 	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
-		bIsBeatTrackTarget = true;
 		SetLifeSpan(0);
-		SetMaxHealth(1000000);
+		HardRefAttributeSetBase->SetMaxHealth(1000000);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 		SetOutlineColor(PlayerSettings.EndTargetColor);
-		HealthComponent->ShouldUpdateTotalPossibleDamage = true;
+		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
 	}
 	else
 	{
@@ -304,9 +325,4 @@ void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const f
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
 	}
-}
-
-void ASphereTarget::SetMaxHealth(const float NewMaxHealth) const
-{
-	HealthComponent->SetMaxHealth(NewMaxHealth);
 }

@@ -113,7 +113,7 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 	NiagaraComponent->Deactivate();
 }
 
-void ASimpleBeamLight::SetLightColor(const FLinearColor Color)
+void ASimpleBeamLight::SetLightColor(const FLinearColor& Color)
 {
 	LightColor = Color;
 	if (EmissiveLightBulb)
@@ -131,7 +131,7 @@ void ASimpleBeamLight::SetLightColor(const FLinearColor Color)
 	SimpleBeamComponent->SetColorParameter(TEXT("User.BeamColor"), Color);
 }
 
-void ASimpleBeamLight::SetLightIntensities(const FLinearColor Color)
+void ASimpleBeamLight::SetLightIntensities(const FLinearColor& Color)
 {
 	if (EmissiveLightBulb)
 	{
@@ -151,7 +151,7 @@ void ASimpleBeamLight::SetLightIntensities(const FLinearColor Color)
 	}
 }
 
-void ASimpleBeamLight::LineTrace(const FVector EndLocation)
+void ASimpleBeamLight::LineTrace(const FVector& EndLocation)
 {
 	const FVector StartLoc = SpotlightHead->GetComponentLocation();
 	//DrawDebugLine(GetWorld(), StartLoc, EndLocation, FColor::Red, false, 0.5f);

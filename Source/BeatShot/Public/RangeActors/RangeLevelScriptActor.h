@@ -31,9 +31,9 @@ protected:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	/** Changes TimeOfDay if NewStreak is greater than StreakThreshold */
+	/** Changes TimeOfDay */
 	UFUNCTION()
-	void OnTargetDestroyed(const float TimeAlive, const int32 NewStreak, const FVector Position);
+	void OnStreakThresholdPassed();
 
 	/** Calls RefreshMaterial function in SkySphere */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -86,10 +86,6 @@ protected:
 	/** Reference to Skylight directional light in Range level */
 	UPROPERTY()
 	ASkyLight* Skylight;
-
-	/** The threshold to activate night mode if not yet unlocked */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 StreakThreshold = 50;
 
 	/** The curve to link to OnTimelineVector and TransitionTimeline */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

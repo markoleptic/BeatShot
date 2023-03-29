@@ -76,16 +76,87 @@ struct FRLAgentParams
 	}
 };
 
+/** A struct each each element represents one QTable index mapping to multiple SpawnCounter indices */
+USTRUCT()
+struct FQTableIndex
+{
+	GENERATED_BODY()
+
+	int32 QTableIndex;
+	TArray<int32> SpawnCounterIndices;
+
+	FQTableIndex()
+	{
+		QTableIndex = INDEX_NONE;
+		SpawnCounterIndices = TArray<int32>();
+	}
+	FQTableIndex(const int32 InQTableIndex)
+	{
+		QTableIndex = InQTableIndex;
+		SpawnCounterIndices = TArray<int32>();
+	}
+
+	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
+	{
+		if (Other.QTableIndex == QTableIndex)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
 UCLASS()
 class BEATSHOT_API URLBase : public UObject, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
+public:
 	URLBase();
+	
+	/** Initializes the QTable, called by TargetSpawner */
+	void Init(const FRLAgentParams& AgentParams);
 
-	/** A 2D array where the row and column have size equal to the number of possible spawn points.
-	 *  An element in the array represents the expected reward from starting at spawn location RowIndex
-	 *  and spawning a target at ColumnIndex. */
+	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */
+	virtual void UpdateQTable(const FAlgoInput& In);
+
+	/** Updates EpisodeRewards by appending to the array */
+	virtual void UpdateEpisodeRewards(const float RewardReceived);
+	
+	/** Returns the QTable index corresponding to the maximum reward from starting at QTableIndex, using a greedy approach. Used to update Q-Table, but not to get actual spawn locations */
+	int32 GetMaxActionIndex(const int32 SpawnCounterIndex) const;
+
+	/** Returns the SpawnCounter index of the next target to spawn, based on the Epsilon value */
+	int32 ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) const;
+
+	/** Prints the Q-Table to Unreal console */
+	void PrintRewards();
+
+	/** Saves the Q-Table to slot */
+	void SaveQTable();
+
+private:
+	/** Returns a random SpawnCounter index from the provided SpawnCounterIndices */
+	int32 ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices) const;
+
+	/** First computes a reverse-sorted array containing QTable indices where the rewards is highest. Then checks to see if there is a valid SpawnCounter index that corresponds to the QTable index.
+	 *  If there isn't, it goes to the next QTable index until there are no options left, in which case it returns INDEX_NONE. Returns a SpawnCounter index */
+	int32 ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const;
+
+	/** Converts a SpawnCounterIndex to a QTableIndex */
+	int32 GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
+
+	/** Returns all SpawnCounter indices corresponding to the QTableIndex */
+	TArray<int32> GetSpawnCounterIndexRange(const int32 QTableIndex) const;
+	
+	/** Converts a TArray of floats to an NdArray */
+	nc::NdArray<float> GetQTableFromTArray(const FQTableWrapper& InWrapper) const;
+
+	/** Converts an NdArray of floats to a TArray of floats, so that it can be serialized and saved */
+	static TArray<float> GetTArrayFromQTable(nc::NdArray<float> InQTable);
+
+	/** A 2D array where the row and column have size equal to the number of possible spawn points. An element in the array represents the expected reward from starting at spawn location RowIndex
+	 *  and spawning a target at ColumnIndex. Its a scaled down version of the SpawnCounter where each each point in Q-Table represents multiple points in a square area inside the SpawnCounter */
 	nc::NdArray<float> QTable;
 
 	/** An array that accumulates the current episodes rewards. Not used for gameplay events */
@@ -104,61 +175,28 @@ class BEATSHOT_API URLBase : public UObject, public ISaveLoadInterface
 	/** The exploration/exploitation balance factor. A value = 1 will result in only choosing random values (explore),
 	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
 	float Epsilon;
-
-	/** The number of column entries in SpawnCounter size are in a single column entry of the QTable */
-	int32 NumColsPerScaledCol;
 	
-	/** The number of row entries in SpawnCounter size are in a single column entry of the QTable */
-	int32 NumRowsPerScaledRow;
+	/** The number of rows in SpawnCounter array */
+	int32 NumSpawnCounterRows;
 
-	/** How many columns the SpawnCounter total columns are divided into */
-	int32 ColScale = 5;
+	/** The number of columns in SpawnCounter array */
+	int32 NumSpawnCounterColumns;
 
 	/** How many rows the SpawnCounter total rows are divided into */
 	int32 RowScale = 5;
 
-	/** Returns the QTable scaled by ColScale & RowScale, dependent on SpawnCounter Rows & Columns */
-	nc::NdArray<float> ScaleQTable(const int32 SpawnCounterRows, const int32 SpawnCounterColumns);
+	/** How many columns the SpawnCounter total columns are divided into */
+	int32 ColScale = 5;
 
-	/** Converts a SpawnCounterIndex to a QTableIndex */
-	int32 GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
+	/** The size of both dimensions of the QTable (RowScale * ColScale) */
+	int32 Size;
 
-	/** Converts a QTableIndex to a SpawnCounterIndex */
-	int32 GetSpawnCounterIndexFromQTableIndex(const int32 QTableIndex) const;
+	/** NumSpawnCounterRows divided by RowScale */
+	int32 NumRowsPerScaledRow;
 
-	/** Converts a TArray of floats to an NdArray */
-	nc::NdArray<float> GetQTableFromTArray(const FQTableWrapper& InWrapper) const;
+	/** NumSpawnCounterColumns divided by ColScale */
+	int32 NumColsPerScaledCol;
 
-	/** Converts an NdArray of floats to a TArray of floats, so that it can be serialized and saved */
-	TArray<float> GetTArrayFromQTable(nc::NdArray<float> InQTable);
-
-public:
-	/** Initializes the QTable, called by TargetSpawner */
-	void Init(const FRLAgentParams& AgentParams);
-
-	/** Returns the index of the next target to spawn, based on the Epsilon value */
-	int32 GetNextActionIndex(const int32 SpawnCounterIndex) const;
-
-	/** Returns the index of the next target to spawn, based on the Epsilon value */
-	int32 ChooseNextActionIndex(const TArray<int32> SpawnCounterIndices) const;
-
-	/** Returns a random SpawnCounterIndex */
-	int32 GetRandomAction() const;
-
-	/** Returns the index of the next target to spawn, using a greedy approach */
-	int32 GetMaxActionIndex(const int32 QTableIndex) const;
-
-	FIntPoint ChooseBestActionIndices(const TArray<int32> SpawnCounterIndices) const;
-
-	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */
-	virtual void UpdateQTable(const FAlgoInput In);
-
-	/** Updates EpisodeRewards by appending to the array */
-	virtual void UpdateEpisodeRewards(const float RewardReceived);
-
-	/** Prints the Q-Table to Unreal console */
-	void PrintRewards();
-
-	/** Saves the Q-Table to slot */
-	void SaveQTable();
+	/** An array of structs where each element represents one QTable index that maps to multiple SpawnCounter indices */
+	TArray<FQTableIndex> QTableIndices;
 };

@@ -229,8 +229,8 @@ void ABSPlayerController::ShowCountdown()
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
 	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	Countdown->OnCountdownCompleted.BindUFunction(GameMode, "StartGameMode");
-	Countdown->StartAAManagerPlayback.BindUFunction(GameMode, "StartAAManagerPlayback");
+	Countdown->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
+	Countdown->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);
 	Countdown->AddToViewport();
 	CountdownActive = true;
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);

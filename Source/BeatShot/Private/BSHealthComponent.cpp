@@ -2,7 +2,6 @@
 
 
 #include "BSHealthComponent.h"
-
 #include "GameplayEffectExtension.h"
 #include "SphereTarget.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
@@ -30,7 +29,8 @@ void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& Chang
 		const FGameplayEffectContextHandle& EffectContext = ChangeData.GEModData->EffectSpec.GetEffectContext();
 		Instigator =  EffectContext.GetOriginalInstigator();
 	}
-	BSHealth_AttributeChanged.Broadcast(this, AttributeSetBase->GetHealth(), AttributeSetBase->GetHealth(), Instigator);
+	OnHealthChanged.Broadcast(Instigator, AttributeSetBase->GetHealth(), AttributeSetBase->GetHealth(), AttributeSetBase->GetMaxHealth());
+	//BSHealth_AttributeChanged.Broadcast(this, AttributeSetBase->GetHealth(), AttributeSetBase->GetHealth(), Instigator);
 }
 
 void UBSHealthComponent::HandleMaxHealthChanged(const FOnAttributeChangeData& ChangeData)
@@ -53,14 +53,6 @@ void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 void UBSHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (ShouldUpdateTotalPossibleDamage)
-	{
-		TotalPossibleDamage++;
-		if (!OnBeatTrackTick.ExecuteIfBound(0.f, TotalPossibleDamage))
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnBeatTrackTick not bound."));
-		}
-	}
 }
 
 void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC)
@@ -92,32 +84,3 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UBSAttributeSetBase::GetHealthAttribute()).AddUObject(this, &ThisClass::HandleHealthChanged);
 	AttributeSetBase->OnHealthReachZero.AddUObject(this, &ThisClass::HandleOutOfHealth);
 }
-
-void UBSHealthComponent::SetMaxHealth(float NewMaxHealth)
-{
-	//MaxHealth = NewMaxHealth;
-	//Health = MaxHealth;
-}
-
-// void UBSHealthComponent::DamageTaken(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* Instigator, AActor* DamageCauser)
-// {
-// 	if (Damage <= 0.f) return;
-//
-// 	Health -= Damage;
-//
-// 	if (ASphereTarget* DamagedTarget = Cast<ASphereTarget>(DamagedActor))
-// 	{
-// 		if (Health <= 0.f || DamagedTarget->GameModeActorStruct.IsBeatGridMode == true)
-// 		{
-// 			DamagedTarget->HandleDestruction();
-// 		}
-// 		// BeatTrack modes, handle score based on damage
-// 		else if (Health > 101 && DamagedTarget->GameModeActorStruct.IsBeatTrackMode == true)
-// 		{
-// 			if (!OnBeatTrackTick.ExecuteIfBound(Damage, TotalPossibleDamage))
-// 			{
-// 				UE_LOG(LogTemp, Display, TEXT("OnBeatTrackTick not bound."));
-// 			}
-// 		}
-// 	}
-// }

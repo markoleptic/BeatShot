@@ -3,6 +3,7 @@
 #include "BSCharacter.h"
 #include "BSGameMode.h"
 #include "BSPlayerController.h"
+#include "TargetSpawner.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -23,9 +24,9 @@ void UBSCheatManager::SetAimBotEnabled(const bool bEnable) const
 	}
 	if (bEnable)
 	{
-		if (!GameMode->OnTargetSpawned.IsBoundToObject(Character))
+		if (!GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
 		{
-			GameMode->OnTargetSpawned.AddUFunction(Character, FName("OnTargetSpawned_AimBot"));
+			GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 		}
 		UBSGameplayAbility* AbilityCDO = AimBotAbility->GetDefaultObject<UBSGameplayAbility>();
 		const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1);
@@ -33,9 +34,9 @@ void UBSCheatManager::SetAimBotEnabled(const bool bEnable) const
 	}
 	else
 	{
-		if (GameMode->OnTargetSpawned.IsBoundToObject(Character))
+		if (GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
 		{
-			GameMode->OnTargetSpawned.RemoveAll(Character);
+			GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.RemoveAll(Character);
 		}
 		FGameplayTagContainer Container;
 		TArray<FGameplayAbilitySpec*> Activatable;
