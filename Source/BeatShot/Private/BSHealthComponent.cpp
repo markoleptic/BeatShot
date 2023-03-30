@@ -4,6 +4,7 @@
 #include "BSHealthComponent.h"
 #include "GameplayEffectExtension.h"
 #include "SphereTarget.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
 #include "GameFramework/Actor.h"
 
@@ -13,6 +14,7 @@ UBSHealthComponent::UBSHealthComponent()
 	SetIsReplicatedByDefault(true);
 	AbilitySystemComponent = nullptr;
 	AttributeSetBase = nullptr;
+	TotalPossibleDamage = 0.f;
 }
 
 void UBSHealthComponent::BeginPlay()
@@ -29,7 +31,7 @@ void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& Chang
 		const FGameplayEffectContextHandle& EffectContext = ChangeData.GEModData->EffectSpec.GetEffectContext();
 		Instigator =  EffectContext.GetOriginalInstigator();
 	}
-	OnHealthChanged.Broadcast(Instigator, AttributeSetBase->GetHealth(), AttributeSetBase->GetHealth(), AttributeSetBase->GetMaxHealth());
+	OnHealthChanged.Broadcast(Instigator, ChangeData.OldValue, ChangeData.NewValue, TotalPossibleDamage);
 	//BSHealth_AttributeChanged.Broadcast(this, AttributeSetBase->GetHealth(), AttributeSetBase->GetHealth(), Instigator);
 }
 
@@ -53,11 +55,16 @@ void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 void UBSHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (ShouldUpdateTotalPossibleDamage)
+	{
+		TotalPossibleDamage++;
+	}
 }
 
-void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC)
+void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer)
 {
-	AActor* Owner = GetOwner();
+	const AActor* Owner = GetOwner();
 	check(Owner);
 
 	if (AbilitySystemComponent)
@@ -83,4 +90,9 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	// Register to listen for attribute changes.
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UBSAttributeSetBase::GetHealthAttribute()).AddUObject(this, &ThisClass::HandleHealthChanged);
 	AttributeSetBase->OnHealthReachZero.AddUObject(this, &ThisClass::HandleOutOfHealth);
+	
+	if (GameplayTagContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Tracking))
+	{
+		ShouldUpdateTotalPossibleDamage = true;
+	}
 }

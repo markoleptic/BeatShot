@@ -22,7 +22,7 @@ class ABSPlayerController;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
-DECLARE_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, FPlayerScore& PlayerScore);
+DECLARE_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, const FPlayerScore& PlayerScore);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector& Position);
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
@@ -295,7 +295,7 @@ private:
 	 *  which passes the current damage taken, and the total possible damage. Executed on tick
 	 *  by SphereTarget */
 	UFUNCTION()
-	void UpdateTrackingScore(float DamageTaken, float TotalPossibleDamage);
+	void UpdateTrackingScore(const float OldValue, const float NewValue, const float TotalPossibleDamage);
 
 	/** Function bound to DefaultGameMode's OnTargetSpawned delegate to keep track of number of targets spawned.
 	 *  Executed by TargetSpawner */

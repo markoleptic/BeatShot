@@ -34,7 +34,7 @@ ASphereTarget::ASphereTarget()
 	HardRefAbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
 
 	// Create the attribute set, this replicates by default
-	// Adding it as a subobject of the owning actor of an AbilitySystemComponent
+	// Adding it as a sub object of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
 	HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>(TEXT("AttributeSetBase"));
 	HardRefAbilitySystemComponent->SetIsReplicated(true);
@@ -44,6 +44,22 @@ ASphereTarget::ASphereTarget()
 	
 	InitialLifeSpan = 1.5f;
 	Guid = FGuid::NewGuid();
+}
+
+void ASphereTarget::InitTarget(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings)
+{
+	GameModeActorStruct = InGameModeActorStruct;
+	PlayerSettings = InPlayerSettings.Game;
+	if (GameModeActorStruct.IsBeatGridMode)
+	{
+		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Grid);
+	}
+	else if (GameModeActorStruct.IsBeatTrackMode)
+	{
+		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
+		HardRefAttributeSetBase->InitMaxHealth(1000000);
+		HardRefAttributeSetBase->InitHealth(1000000);
+	}
 }
 
 UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
@@ -71,7 +87,7 @@ bool ASphereTarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagC
 	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
 }
 
-void ASphereTarget::SetSphereScale(const FVector NewScale)
+void ASphereTarget::SetSphereScale(const FVector& NewScale)
 {
 	TargetScale = NewScale.X;
 	BaseMesh->SetRelativeScale3D(NewScale * BaseToOutlineRatio);
@@ -81,16 +97,18 @@ void ASphereTarget::SetSphereScale(const FVector NewScale)
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (IsValid(GetAbilitySystemComponent()))
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
-		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent);
+		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent, GameplayTags);
 		HealthComponent->OnOutOfHealth.BindUObject(this, &ASphereTarget::HandleDestruction);
+		if (GameModeActorStruct.IsBeatGridMode)
+		{
+			HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::HandleTemporaryDestruction);
+		}
 	}
-
-	PlayerSettings = LoadPlayerSettings().Game;
-
+	
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	Material = BaseMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
@@ -106,32 +124,32 @@ void ASphereTarget::BeginPlay()
 	{
 		SetOutlineColor(PlayerSettings.TargetOutlineColor);
 	}
-
-	GameModeActorStruct = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
+	
 	const float WhiteToPeakMultiplier = 1 / GameModeActorStruct.PlayerDelay;
 	const float PeakToFadeMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
 
 	/* White to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
-	OnStartToPeak.BindUFunction(this, FName("StartToPeak"));
+	OnStartToPeak.BindDynamic(this, &ASphereTarget::StartToPeak);
 	StartToPeakTimeline.AddInterpFloat(StartToPeakCurve, OnStartToPeak);
 
 	/* Play PeakToEnd when StartToPeak is finished */
 	FOnTimelineEvent OnWhiteToPeakFinished;
-	OnWhiteToPeakFinished.BindUFunction(this, FName("PlayPeakToEndTimeline"));
+	OnWhiteToPeakFinished.BindDynamic(this, &ASphereTarget::PlayPeakToEndTimeline);
 	StartToPeakTimeline.SetTimelineFinishedFunc(OnWhiteToPeakFinished);
 
 	/* Peak Color to Fade Color */
 	FOnTimelineFloat OnPeakToFade;
-	OnPeakToFade.BindUFunction(this, FName("PeakToEnd"));
+	OnPeakToFade.BindDynamic(this, &ASphereTarget::PeakToEnd);
 	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
 	/* Fade the target from transparent to BeatGridInactiveColor */
 	FOnTimelineFloat OnFadeAndReappear;
-	OnFadeAndReappear.BindUFunction(this, FName("FadeAndReappear"));
-	FOnTimelineEvent OnFadeAndReappearFinished;
-	OnFadeAndReappearFinished.BindUFunction(this, FName("ShowTargetOutline"));
+	OnFadeAndReappear.BindDynamic(this, &ASphereTarget::FadeAndReappear);
 	FadeAndReappearTimeline.AddInterpFloat(FadeAndReappearCurve, OnFadeAndReappear);
+	
+	FOnTimelineEvent OnFadeAndReappearFinished;
+	OnFadeAndReappearFinished.BindDynamic(this, &ASphereTarget::ASphereTarget::ShowTargetOutline);
 	FadeAndReappearTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
 
 	StartToPeakTimeline.SetPlayRate(WhiteToPeakMultiplier);
@@ -141,23 +159,19 @@ void ASphereTarget::BeginPlay()
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
 		SetLifeSpan(0);
-		HardRefAttributeSetBase->SetMaxHealth(1000000);
-		SetCanBeDamaged(false);
+		ApplyImmunityEffect();
 		SetColorToBeatGridColor();
 		SetSphereColor(PlayerSettings.BeatGridInactiveTargetColor);
 		SetOutlineColor(PlayerSettings.BeatGridInactiveTargetColor);
 		FOnTimelineEvent OnPeakToFadeFinished;
-		OnPeakToFadeFinished.BindUFunction(this, FName("SetColorToBeatGridColor"));
+		OnPeakToFadeFinished.BindDynamic(this, &ASphereTarget::SetColorToBeatGridColor);
 		PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
-		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Grid);
 	}
 	else if (GameModeActorStruct.IsBeatTrackMode)
 	{
 		SetLifeSpan(0);
-		HardRefAttributeSetBase->SetMaxHealth(1000000);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 		SetOutlineColor(PlayerSettings.EndTargetColor);
-		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
 	}
 	else
 	{
@@ -178,7 +192,7 @@ void ASphereTarget::Tick(float DeltaSeconds)
 void ASphereTarget::StartBeatGridTimer(const float Lifespan)
 {
 	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
-	SetCanBeDamaged(true);
+	GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Damageable);
 	PlayStartToPeakTimeline();
 }
 
@@ -255,12 +269,17 @@ void ASphereTarget::FadeAndReappear(const float Alpha)
 	SetOutlineColor(Color);
 }
 
-void ASphereTarget::SetSphereColor(const FLinearColor Output)
+void ASphereTarget::ApplyImmunityEffect()
+{
+	GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+}
+
+void ASphereTarget::SetSphereColor(const FLinearColor& Output)
 {
 	MID_TargetColorChanger->SetVectorParameterValue(TEXT("Color"), Output);
 }
 
-void ASphereTarget::SetOutlineColor(const FLinearColor Output)
+void ASphereTarget::SetOutlineColor(const FLinearColor& Output)
 {
 	MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), Output);
 }
@@ -273,8 +292,7 @@ void ASphereTarget::LifeSpanExpired()
 
 void ASphereTarget::HandleDestruction()
 {
-	/* Beat Track shouldn't reach this */
-	if (GameModeActorStruct.IsBeatTrackMode == true)
+	if (GameModeActorStruct.IsBeatTrackMode || GameModeActorStruct.IsBeatGridMode)
 	{
 		return;
 	}
@@ -291,23 +309,44 @@ void ASphereTarget::HandleDestruction()
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+	Destroy();
+}
 
-	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear*/
+void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
+{
+	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear */
 	if (GameModeActorStruct.IsBeatGridMode)
 	{
-		SetCanBeDamaged(false);
+		/* Get the time that the sphere was alive for */
+		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+		if (TimeAlive < 0 || TimeAlive >= GameModeActorStruct.TargetMaxLifeSpan)
+		{
+			return;
+		}
+
+		/* Broadcast that the target has been destroyed by player */
 		PeakToEndTimeline.Stop();
+		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
+		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+		PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+		ApplyImmunityEffect();
 		PlayFadeAndReappearTimeline();
 	}
-	else
-	{
-		Destroy();
-	}
+}
+
+FLinearColor ASphereTarget::GetPeakTargetColor() const
+{
+	return PlayerSettings.PeakTargetColor;
+}
+
+FLinearColor ASphereTarget::GetEndTargetColor() const
+{
+	return PlayerSettings.EndTargetColor;
 }
 
 void ASphereTarget::OnBeatGridTimerTimeOut()
 {
-	SetCanBeDamaged(false);
+	ApplyImmunityEffect();
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
 }
@@ -317,7 +356,7 @@ void ASphereTarget::ShowTargetOutline()
 	MID_TargetOutline->SetScalarParameterValue(TEXT("ShowOutline"), 1.f);
 }
 
-void ASphereTarget::PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const
+void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& ColorWhenDestroyed) const
 {
 	if (NS_Standard_Explosion)
 	{

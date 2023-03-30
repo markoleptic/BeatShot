@@ -37,7 +37,6 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 	
 	if (GetHealth() <=0.0f)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Health less than 0 UBSAttributeSetBase"));
 		if (OnHealthReachZero.IsBound())
 		{
 			const FGameplayEffectContextHandle& EffectContext = Data.EffectSpec.GetEffectContext();

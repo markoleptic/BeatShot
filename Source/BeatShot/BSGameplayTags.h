@@ -39,6 +39,7 @@ struct FBSGameplayTags
 
 	FGameplayTag Ability;
 	FGameplayTag Ability_Fire;
+	FGameplayTag Ability_Track;
 	FGameplayTag Ability_Jump;
 	FGameplayTag Ability_Sprint;
 	FGameplayTag Ability_Crouch;
@@ -59,6 +60,8 @@ struct FBSGameplayTags
 
 	FGameplayTag Target;
 	FGameplayTag Target_State;
+	FGameplayTag Target_State_Damageable;
+	FGameplayTag Target_State_Immune;
 	FGameplayTag Target_State_Grid;
 	FGameplayTag Target_State_Single;
 	FGameplayTag Target_State_Multi;

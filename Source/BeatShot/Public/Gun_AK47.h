@@ -40,9 +40,9 @@ class BEATSHOT_API AGun_AK47 : public AActor, public IGameplayTagAssetInterface
 
 public:
 
-	/** Starts firing the gun (sets the timer for automatic fire) */
+	/** Increments ShotsFired, executes OnShotFired */
 	UFUNCTION(BlueprintCallable)
-	void StartFire();
+	void Fire();
 
 	/** Stops the timer that allows for automatic fire */
 	UFUNCTION(BlueprintCallable)
@@ -70,6 +70,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetShowDecals(const bool bShowDecals);
+
+	UFUNCTION(BlueprintCallable)
+	void Recoil();
 
 	/** Returns whether the weapon can fire or not */
 	UFUNCTION(BlueprintCallable)
@@ -101,10 +104,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable)
 	ABSCharacter* GetBSCharacter() const;
-
-	/** Increments ShotsFired, executes OnShotFired, and sets bShouldKickback to true */
-	UFUNCTION()
-	void Fire();
 	
 	/** Controls gun recoil, camera recoil, and kickback inside of OnTick */
 	void UpdateKickbackAndRecoil(float DeltaTime);
@@ -132,10 +131,6 @@ protected:
 	/** Determines if the player can fire */
 	UPROPERTY(BlueprintReadWrite)
 	bool bCanFire;
-
-	/** Whether or not to recoil the gun */
-	UPROPERTY(BlueprintReadWrite)
-	bool bShouldRecoil;
 
 	/** Whether or not to increment KickbackAngle, which is applied to the owning character's CameraRecoilComponent */
 	bool bShouldKickback;

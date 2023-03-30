@@ -184,13 +184,16 @@ void UBSAbilityTask_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage
 	{
 		if (Montage == MontageToPlay)
 		{
-			AbilitySystemComponent->ClearAnimatingAbility(Ability);
-			// Reset AnimRootMotionTranslationScale
-			ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-			if (Character && (Character->GetLocalRole() == ROLE_Authority ||
-				(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+			if (AbilitySystemComponent.IsValid())
 			{
-				Character->SetAnimRootMotionTranslationScale(1.f);
+				AbilitySystemComponent->ClearAnimatingAbility(Ability);
+				// Reset AnimRootMotionTranslationScale
+				ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
+				if (Character && (Character->GetLocalRole() == ROLE_Authority ||
+					(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+				{
+					Character->SetAnimRootMotionTranslationScale(1.f);
+				}
 			}
 		}
 	}

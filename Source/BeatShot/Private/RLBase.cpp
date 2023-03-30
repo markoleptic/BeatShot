@@ -90,6 +90,7 @@ void URLBase::UpdateQTable(const FAlgoInput& In)
 	//UE_LOG(LogTemp, Display, TEXT("New QTable Value for SpawnCounterIndex [%d, %d] QTableIndex [%d, %d]: %f"), In.StateIndex, In.ActionIndex, InCopy.StateIndex, InCopy.ActionIndex, NewValue);
 	
 	QTable(InCopy.StateIndex, InCopy.ActionIndex) = NewValue;
+	UpdateQTableWidget();
 }
 
 void URLBase::UpdateEpisodeRewards(const float RewardReceived)
@@ -128,15 +129,16 @@ int32 URLBase::ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) c
 	return ChooseRandomActionIndex(SpawnCounterIndices);
 }
 
-void URLBase::PrintRewards()
+void URLBase::PrintRewards() const
 {
 	FString Row;
-	for(int j = 0; j < static_cast<int>(QTable.numCols()); j++)
+	nc::NdArray<float> QTableCopy = GetQTable();
+	for(int j = 0; j < static_cast<int>(QTableCopy.numCols()); j++)
 	{
 		Row.Empty();
-		for(int i = 0; i < static_cast<int>(QTable.numRows()); i++)
+		for(int i = 0; i < static_cast<int>(QTableCopy.numRows()); i++)
 		{
-			float Value = round(QTable(i,j) * 100.0) / 100.0;
+			const float Value = round(QTableCopy(i,j) * 100.0) / 100.0;
 			if (Value >= 0.f)
 			{
 				Row.Append("+" + FString::SanitizeFloat(Value, 2) + " ");
@@ -150,7 +152,7 @@ void URLBase::PrintRewards()
 	}
 
 	int i = 0;
-	nc::NdArray<double> FlippedMean = flipud(mean(QTable, nc::Axis::ROW).reshape(RowScale,ColScale));
+	nc::NdArray<double> FlippedMean = flipud(mean(GetQTable(), nc::Axis::ROW).reshape(RowScale,ColScale));
 	Row.Empty();
 	for (const double It : FlippedMean)
 	{
@@ -164,7 +166,7 @@ void URLBase::PrintRewards()
 			Row.Append(FString::SanitizeFloat(Value, 2) + " ");
 		}
 		i++;
-		if (i % 5 == 0)
+		if (i % RowScale == 0)
 		{
 			UE_LOG(LogTemp, Display, TEXT("%s"), *Row);
 			Row.Empty();
@@ -185,6 +187,16 @@ void URLBase::SaveQTable()
 	QTables.Add(QTableWrapper);
 	SaveQTables(QTables);
 	PrintRewards();
+}
+
+TArray<float> URLBase::GetTArrayQTable() const
+{
+	return GetTArrayFromQTable(flipud(mean(GetQTable(), nc::Axis::ROW).reshape(RowScale,ColScale)));
+}
+
+nc::NdArray<float> URLBase::GetQTable() const
+{
+	return QTable;
 }
 
 int32 URLBase::ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices) const
@@ -251,7 +263,7 @@ nc::NdArray<float> URLBase::GetQTableFromTArray(const FQTableWrapper& InWrapper)
 	return Out;
 }
 
-TArray<float> URLBase::GetTArrayFromQTable(nc::NdArray<float> InQTable)
+TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
 {
 	TArray<float> Out;
 	Out.Init(0.f, InQTable.size());
@@ -264,4 +276,25 @@ TArray<float> URLBase::GetTArrayFromQTable(nc::NdArray<float> InQTable)
 	}
 	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.Num());
 	return Out;
+}
+
+TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
+{
+	TArray<float> Out;
+	Out.Init(0.f, InQTable.size());
+	for(int j = 0; j < static_cast<int>(InQTable.numCols()); j++)
+	{
+		for(int i = 0; i < static_cast<int>(InQTable.numRows()); i++)
+		{
+			Out[(static_cast<int>(InQTable.numRows()) * j) + i] = InQTable(i, j);
+		}
+	}
+	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.Num());
+	return Out;
+}
+
+void URLBase::UpdateQTableWidget() const
+{
+	const nc::NdArray<double> FlippedMean = flipud(mean(GetQTable(), nc::Axis::ROW).reshape(RowScale,ColScale));
+	OnQTableUpdate.Broadcast(GetTArrayFromQTable(FlippedMean));
 }

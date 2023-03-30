@@ -16,7 +16,7 @@ class UBoxComponent;
 class URLBase;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBeatTrackTargetDamaged, const float Damage, const float MaxHealth);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnBeatTrackTargetDamaged, const float OldValue, const float NewValue, const float TotalPossibleDamage);
 DECLARE_MULTICAST_DELEGATE(FOnTargetSpawned);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned_AimBot, ASphereTarget* Target);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector& Position);
@@ -39,20 +39,17 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(CallInEditor)
-	void ShowDebug_SpawnBox();
+	void ToggleDebug_SpawnBox();
+	
+	UFUNCTION(CallInEditor)
+	void ToggleDebug_SpawnMemory();
 
 	UFUNCTION(CallInEditor)
-	void HideDebug_SpawnBox();
-
-	UFUNCTION(CallInEditor)
-	void ShowDebug_SpawnMemory();
-
-	UFUNCTION(CallInEditor)
-	void HideDebug_SpawnMemory();
+	void ToggleRLAgentWidget();
 
 public:
 	/** Called from selected DefaultGameMode */
-	void InitializeGameModeActor(FGameModeActorStruct NewGameModeActor);
+	void InitTargetSpawner(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings);
 
 	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
@@ -103,7 +100,8 @@ private:
 	void OnTargetTimeout(bool DidExpire, float TimeAlive, ASphereTarget* DestroyedTarget);
 
 	/** Broadcasts OnBeatTrackTargetDamaged when a BeatTrack target was damaged by a player */
-	void OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float MaxHealth);
+	UFUNCTION()
+	void OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
 
 	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
 	UFUNCTION()
@@ -188,6 +186,8 @@ private:
 	/** Returns a string representation of an accuracy row */
 	static void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
 
+	void UpdatePlayerSettings(const FPlayerSettings& InPlayerSettings);
+
 #pragma region General Spawning Variables
 
 	/** The spawn area */
@@ -219,6 +219,9 @@ private:
 
 	/** Whether or not to show Debug components showing the SpawnMemory */
 	bool bShowDebug_SpawnMemory = false;
+
+	/** Whether or not to show the RLAgentWidget */
+	bool bShowDebug_RLAgentWidget = false;
 
 	/** Location to spawn the next/current target */
 	FVector SpawnLocation;
@@ -286,6 +289,8 @@ private:
 
 	/** Distance between floor and HeadshotHeight */
 	const float HeadshotHeight = 160.f;
+
+	FPlayerSettings PlayerSettings;
 
 #pragma endregion
 

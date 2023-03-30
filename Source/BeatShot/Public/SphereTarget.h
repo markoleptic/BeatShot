@@ -8,7 +8,6 @@
 #include "GameFramework/Actor.h"
 #include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerSettings.h"
-#include "SaveLoadInterface.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "SphereTarget.generated.h"
 
@@ -24,7 +23,7 @@ class UBSAttributeSetBase;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
 UCLASS()
-class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
+class BEATSHOT_API ASphereTarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
 {
 	GENERATED_BODY()
 
@@ -32,14 +31,6 @@ class BEATSHOT_API ASphereTarget : public AActor, public ISaveLoadInterface, pub
 
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
-
-public:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-	/** Implement IGameplayTagAssetInterface */
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
-	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -77,6 +68,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UMaterialInterface* OutlineMaterial;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Abilities")
+	TSubclassOf<UGameplayEffect> TargetImmunity;
+
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInstanceDynamic* MID_TargetColorChanger;
 
@@ -93,24 +87,42 @@ protected:
 	UCurveFloat* FadeAndReappearCurve;
 
 public:
+
+	void InitTarget(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings);
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
+	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	
 	/** Called in TargetSpawner to activate a BeatGrid target */
 	void StartBeatGridTimer(float Lifespan);
 
 	/** Sets the scale for the BaseMesh and the OutlineMesh */
-	void SetSphereScale(const FVector NewScale);
+	void SetSphereScale(const FVector& NewScale);
 
 	/** Sets the color of the Target Material */
-	UFUNCTION()
-	void SetSphereColor(const FLinearColor Output);
+	UFUNCTION(BlueprintCallable)
+	void SetSphereColor(const FLinearColor& Output);
 
 	/** Sets the color of the Target Outline Material */
-	UFUNCTION()
-	void SetOutlineColor(const FLinearColor Output);
+	UFUNCTION(BlueprintCallable)
+	void SetOutlineColor(const FLinearColor& Output);
 
 	/** Called from DefaultHealthComponent when a SphereTarget receives damage. */
 	UFUNCTION()
 	void HandleDestruction();
 
+	UFUNCTION()
+	void HandleTemporaryDestruction(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetPeakTargetColor() const;
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetEndTargetColor() const;
+	
 	/** Target Spawner binds to this function to receive info about how target was destroyed */
 	FOnLifeSpanExpired OnLifeSpanExpired;
 
@@ -154,6 +166,8 @@ private:
 	UFUNCTION()
 	void FadeAndReappear(const float Alpha);
 
+	void ApplyImmunityEffect();
+
 	/** Unlike other modes which use LifeSpanExpired to notify TargetSpawner of their expiration,
 	 *  BeatGrid needs to use this function since the the targets aren't going to be destroyed,
 	 *  but instead just deactivated */
@@ -172,11 +186,8 @@ private:
 	FTimeline PeakToEndTimeline;
 	FTimeline FadeAndReappearTimeline;
 
-	/** Set the max health of the target */
-	void SetMaxHealth(float NewMaxHealth) const;
-
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
-	void PlayExplosionEffect(const FVector ExplosionLocation, const float SphereRadius, const FLinearColor ColorWhenDestroyed) const;
+	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& ColorWhenDestroyed) const;
 
 	/** Base radius for sphere target. */
 	const float BaseSphereRadius = 50.f;

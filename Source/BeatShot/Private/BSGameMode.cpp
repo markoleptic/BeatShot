@@ -8,6 +8,7 @@
 #include "BSPlayerController.h"
 #include "FloatingTextActor.h"
 #include "TargetSpawner.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
 #include "GameplayAbility/BSGameplayAbility_TrackGun.h"
 #include "Kismet/GameplayStatics.h"
@@ -91,21 +92,31 @@ void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
-	RefreshPlayerSettings(LoadPlayerSettings());
+	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	RefreshPlayerSettings(PlayerSettings);
 	GameModeActorStruct = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GameModeActorStruct;
 	
 	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
-	TargetSpawner->InitializeGameModeActor(GameModeActorStruct);
+	TargetSpawner->InitTargetSpawner(GameModeActorStruct, PlayerSettings);
 	
 	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
-	VisualizerManager->InitializeVisualizers(LoadPlayerSettings());
+	VisualizerManager->InitializeVisualizers(PlayerSettings);
+
+	const ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
+	FGameplayTagContainer Container;
+	TArray<FGameplayAbilitySpec*> Activatable;
+	Container.AddTag(FBSGameplayTags::Get().Ability_Track);
+	UBSGameplayAbility* TrackGunAbilityCDO = TrackGunAbility->GetDefaultObject<UBSGameplayAbility>();
+	const FGameplayAbilitySpec AbilitySpec(TrackGunAbilityCDO, 1);
+	Character->GetBSAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Activatable);
 
 	if (GameModeActorStruct.IsBeatTrackMode)
 	{
-		ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
-		UBSGameplayAbility* AbilityCDO = TrackGunAbility->GetDefaultObject<UBSGameplayAbility>();
-		const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1);
-		Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+		Character->GetBSAbilitySystemComponent()->TryActivateAbilityByClass(TrackGunAbility);
+	}
+	else if (!GameModeActorStruct.IsBeatTrackMode && Activatable[0]->IsActive())
+	{
+		Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbilityCDO);
 	}
 	
 	InitializeAudioManagers();
@@ -148,7 +159,7 @@ void ABSGameMode::BindGameModeDelegates()
 	{
 		GetTargetSpawner()->OnTargetDestroyed.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
 	}
-	if (GameModeActorStruct.IsBeatTrackMode && !GetTargetSpawner()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
+	if (!GetTargetSpawner()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
 	{
 		GetTargetSpawner()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
 	}
@@ -209,13 +220,13 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		Controller->HideCountdown();
 		Controller->HideCrossHair();
 
-		if (const ABSCharacter* Character = Controller->GetBSCharacter())
+		/*if (const ABSCharacter* Character = Controller->GetBSCharacter())
 		{
 			if (Character->GetGun()->OnShotFired.IsBoundToObject(this))
 			{
 				Character->GetGun()->OnShotFired.Unbind();
 			}
-		}
+		}*/
 		
 		if (Controller->IsLocalController())
 		{
@@ -440,9 +451,14 @@ void ABSGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSe
 	bShowStreakCombatText = RefreshedPlayerSettings.Game.bShowStreakCombatText;
 	CombatTextFrequency = RefreshedPlayerSettings.Game.CombatTextFrequency;
 	bNightModeUnlocked = RefreshedPlayerSettings.User.bNightModeUnlocked;
+	
 	if (VisualizerManager)
 	{
 		VisualizerManager->UpdateVisualizerStates(RefreshedPlayerSettings);
+	}
+	if (TargetSpawner)
+	{
+		TargetSpawner->UpdatePlayerSettings(RefreshedPlayerSettings);
 	}
 }
 
@@ -600,10 +616,11 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
-void ABSGameMode::UpdateTrackingScore(const float DamageTaken, const float TotalPossibleDamage)
+void ABSGameMode::UpdateTrackingScore(const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
+	UE_LOG(LogTemp, Display, TEXT("OldValue %f NewValue %f TotalPossibleDamage %f"),OldValue,NewValue, TotalPossibleDamage);
 	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
-	CurrentPlayerScore.Score += DamageTaken;
+	CurrentPlayerScore.Score += abs(OldValue - NewValue);
 	UpdateHighScore();
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }

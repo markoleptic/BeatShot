@@ -57,7 +57,7 @@ public:
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD. Called from GameModeActorBase */
 	UFUNCTION()
-	void UpdateAllElements(FPlayerScore NewPlayerScoreStruct);
+	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct);
 	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
 	UFUNCTION()
 	void UpdateSongProgress(const float PlaybackTime);

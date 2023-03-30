@@ -20,6 +20,7 @@
 #include "OverlayWidgets/CrossHairWidget.h"
 #include "OverlayWidgets/FPSCounterWidget.h"
 #include "OverlayWidgets/PlayerHUD.h"
+#include "OverlayWidgets/RLAgentWidget.h"
 #include "OverlayWidgets/ScreenFadeWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
@@ -212,6 +213,7 @@ void ABSPlayerController::HidePlayerHUD()
 		PlayerHUD = nullptr;
 		PlayerHUDActive = false;
 	}
+	HideRLAgentWidget();
 }
 
 void ABSPlayerController::ShowCountdown()
@@ -408,6 +410,10 @@ void ABSPlayerController::FadeScreenFromBlack()
 
 void ABSPlayerController::ShowInteractInfo()
 {
+	if (!IsLocalController())
+	{
+		return;
+	}
 	if (!InteractInfoWidget)
 	{
 		InteractInfoWidget = CreateWidget<UUserWidget>(this, InteractInfoWidgetClass);
@@ -421,6 +427,30 @@ void ABSPlayerController::HideInteractInfo()
 	{
 		InteractInfoWidget->RemoveFromParent();
 		InteractInfoWidget = nullptr;
+	}
+}
+
+void ABSPlayerController::ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns, const TArray<float>& QTable)
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (!RLAgentWidget)
+	{
+		RLAgentWidget = CreateWidget<URLAgentWidget>(this, RLAgentWidgetClass);
+		OnQTableUpdate.AddUObject(RLAgentWidget, &URLAgentWidget::UpdatePanel);
+		RLAgentWidget->InitQTable(Rows, Columns, QTable);
+		RLAgentWidget->AddToViewport();
+	}
+}
+
+void ABSPlayerController::HideRLAgentWidget()
+{
+	if (RLAgentWidget)
+	{
+		RLAgentWidget->RemoveFromParent();
+		RLAgentWidget = nullptr;
 	}
 }
 

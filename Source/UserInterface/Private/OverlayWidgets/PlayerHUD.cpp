@@ -19,7 +19,7 @@ void UPlayerHUD::NativeConstruct()
 	SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
 }
 
-void UPlayerHUD::UpdateAllElements(const FPlayerScore NewPlayerScoreStruct)
+void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
 {
 	/** Display default game mode names if not custom */
 	if (NewPlayerScoreStruct.CustomGameModeName.Equals(""))
@@ -37,11 +37,11 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore NewPlayerScoreStruct)
 	/** Beat Track changes how stats are displayed */
 	if (NewPlayerScoreStruct.TotalPossibleDamage > 0.01f)
 	{
-		const float Score = round(NewPlayerScoreStruct.Score);
+		const float Score = roundf(NewPlayerScoreStruct.Score);
 		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
-		const float HighScore = round(NewPlayerScoreStruct.HighScore);
+		const float HighScore = roundf(NewPlayerScoreStruct.HighScore);
 		/** Update Accuracy progress bar and Accuracy percentage text */
-		if (!(isnan(Score / TotalPossibleDamage)))
+		if (!isnan(Score / TotalPossibleDamage))
 		{
 			TargetBar->SetPercent(Score / TotalPossibleDamage);
 			Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));

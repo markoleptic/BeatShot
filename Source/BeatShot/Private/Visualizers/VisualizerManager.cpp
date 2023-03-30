@@ -18,7 +18,7 @@ void AVisualizerManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AVisualizerManager::InitializeVisualizers(const FPlayerSettings PlayerSettings)
+void AVisualizerManager::InitializeVisualizers(const FPlayerSettings& PlayerSettings)
 {
 	AvgSpectrumValues.Init(0, AASettings.NumBandChannels);
 	CurrentSpectrumValues.Init(0, AASettings.NumBandChannels);
@@ -33,9 +33,12 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings PlayerSetti
 		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation, SpawnParameters)));
 	}
 
-	for (AVisualizerBase* Visualizer : Visualizers)
+	for (const TObjectPtr<AVisualizerBase> Visualizer : Visualizers)
 	{
-		Visualizer->InitializeVisualizer();
+		if (Visualizer)
+		{
+			Visualizer->InitializeVisualizer();
+		}
 	}
 }
 
@@ -48,7 +51,7 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 }
 
-void AVisualizerManager::UpdateVisualizers(const TArray<float> SpectrumValues)
+void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
 {
 	if (Visualizers.IsEmpty())
 	{
@@ -111,7 +114,7 @@ void AVisualizerManager::DestroyVisualizers()
 	Visualizers.Empty();
 }
 
-void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings PlayerSettings)
+void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings& PlayerSettings)
 {
 	if (Visualizers.IsEmpty())
 	{
@@ -137,7 +140,7 @@ void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings PlayerSett
 	Visualizers[NewIndex]->InitializeVisualizer();
 }
 
-void AVisualizerManager::UpdateAASettings(const FAASettingsStruct NewAASettings)
+void AVisualizerManager::UpdateAASettings(const FAASettingsStruct& NewAASettings)
 {
 	AASettings = NewAASettings;
 	for (AVisualizerBase* Visualizer : Visualizers)

@@ -39,6 +39,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	
 	AddTag(Ability, "Ability","");
 	AddTag(Ability_Fire, "Ability.Fire","");
+	AddTag(Ability_Track, "Ability.Track","");
 	AddTag(Ability_Jump, "Ability.Jump","");
 	AddTag(Ability_Sprint, "Ability.Sprint","");
 	AddTag(Ability_Crouch, "Ability.Crouch","");
@@ -59,6 +60,8 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(Target, "Target","");
 	AddTag(Target_State, "Target.State","");
+	AddTag(Target_State_Damageable, "Target.State.Damageable","");
+	AddTag(Target_State_Immune, "Target.State.Immune","");
 	AddTag(Target_State_Grid, "Target.State.Grid","");
 	AddTag(Target_State_Single, "Target.State.Single","");
 	AddTag(Target_State_Multi, "Target.State.Multi","");

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CoreUObject.h"
 #include "SaveLoadInterface.h"
+#include "BeatShot/BeatShot.h"
 THIRD_PARTY_INCLUDES_START
 #pragma push_macro("check")
 #undef check
@@ -130,10 +131,19 @@ public:
 	int32 ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) const;
 
 	/** Prints the Q-Table to Unreal console */
-	void PrintRewards();
+	void PrintRewards() const;
 
 	/** Saves the Q-Table to slot */
 	void SaveQTable();
+
+	int32 GetNumCols() const { return ColScale; }
+	int32 GetNumRows() const { return RowScale; }
+
+	TArray<float> GetTArrayQTable() const;
+
+	nc::NdArray<float> GetQTable() const;
+
+	FOnQTableUpdate OnQTableUpdate;
 
 private:
 	/** Returns a random SpawnCounter index from the provided SpawnCounterIndices */
@@ -153,7 +163,12 @@ private:
 	nc::NdArray<float> GetQTableFromTArray(const FQTableWrapper& InWrapper) const;
 
 	/** Converts an NdArray of floats to a TArray of floats, so that it can be serialized and saved */
-	static TArray<float> GetTArrayFromQTable(nc::NdArray<float> InQTable);
+	static TArray<float> GetTArrayFromQTable(const nc::NdArray<float>& InQTable);
+
+	/** Converts an NdArray of floats to a TArray of floats, so that it can be passed to widget */
+	static TArray<float> GetTArrayFromQTable(const nc::NdArray<double>& InQTable);
+
+	void UpdateQTableWidget() const;
 
 	/** A 2D array where the row and column have size equal to the number of possible spawn points. An element in the array represents the expected reward from starting at spawn location RowIndex
 	 *  and spawning a target at ColumnIndex. Its a scaled down version of the SpawnCounter where each each point in Q-Table represents multiple points in a square area inside the SpawnCounter */

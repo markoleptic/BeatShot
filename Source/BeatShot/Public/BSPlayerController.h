@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
+#include "BeatShot/BeatShot.h"
 #include "SaveLoadInterface.h"
 #include "BSPlayerController.generated.h"
 
+class URLAgentWidget;
 class ABSCharacter;
 class ULoginWidget;
 class UFPSCounterWidget;
@@ -66,9 +68,11 @@ public:
 	
 	void FadeScreenToBlack();
 	void FadeScreenFromBlack();
-	
 	void ShowInteractInfo();
 	void HideInteractInfo();
+	
+	void ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns, const TArray<float>& QTable);
+	void HideRLAgentWidget();
 
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const ELoginState& LoginState);
@@ -115,6 +119,8 @@ protected:
 	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> InteractInfoWidgetClass;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<URLAgentWidget> RLAgentWidgetClass;
 
 private:
 	UFUNCTION()
@@ -140,6 +146,8 @@ private:
 	UScreenFadeWidget* ScreenFadeWidget;
 	UPROPERTY()
 	UUserWidget* InteractInfoWidget;
+	UPROPERTY()
+	URLAgentWidget* RLAgentWidget;
 
 	bool PlayerHUDActive;
 	bool PostGameMenuActive;

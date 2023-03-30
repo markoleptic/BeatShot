@@ -4,8 +4,7 @@
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
 #include "Camera/CameraComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Physics/BSCollisionChannels.h"
+#include "GameplayAbility/Tasks/BSAbilityTask_TickTrace.h"
 
 UBSGameplayAbility_TrackGun::UBSGameplayAbility_TrackGun()
 {
@@ -19,14 +18,31 @@ void UBSGameplayAbility_TrackGun::ActivateAbility(const FGameplayAbilitySpecHand
 	
 	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(
 		this, &ThisClass::OnTargetDataReadyCallback);
-	
+
+	TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
+	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
+	TickTraceTask->ReadyForActivation();
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
 void UBSGameplayAbility_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
+	if (TickTraceTask)
+	{
+		TickTraceTask->EndTask();
+	}
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+}
+
+void UBSGameplayAbility_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+{
+	if (TickTraceTask)
+	{
+		TickTraceTask->EndTask();
+	}
+	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
 void UBSGameplayAbility_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
@@ -61,27 +77,11 @@ void UBSGameplayAbility_TrackGun::OnTargetDataReadyCallback(const FGameplayAbili
 	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 }
 
-void UBSGameplayAbility_TrackGun::StartTargeting()
+void UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit(const FHitResult& HitResult)
 {
-	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
-	FScopedPredictionWindow ScopedPrediction(Component, CurrentActivationInfo.GetActivationPredictionKey());
-	FHitResult HitResult = SingleWeaponTrace();
 	FGameplayAbilityTargetDataHandle TargetData;
 	FGameplayAbilityTargetData_SingleTargetHit* SingleTargetData = new FGameplayAbilityTargetData_SingleTargetHit();
 	TargetData.Add(SingleTargetData);
 	SingleTargetData->HitResult = HitResult;
 	OnTargetDataReadyCallback(TargetData, FGameplayTag());
-}
-
-FHitResult UBSGameplayAbility_TrackGun::SingleWeaponTrace() const
-{
-	FHitResult HitResult;
-	const UCameraComponent* Camera = GetBSCharacterFromActorInfo()->GetCamera();
-	const FRotator CurrentRecoilRotation = GetBSCharacterFromActorInfo()->GetGun()->GetCurrentRecoilRotation();
-	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(Camera->GetForwardVector(), CurrentRecoilRotation.Pitch, Camera->GetRightVector());
-	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, Camera->GetUpVector());
-	const FVector EndTrace = Camera->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
-	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true, /*IgnoreActor=*/ GetAvatarActorFromActorInfo());
-	GetWorld()->LineTraceSingleByChannel(HitResult, Camera->GetComponentLocation(), EndTrace, BS_TraceChannel_Weapon, TraceParams);
-	return HitResult;
 }

@@ -12,7 +12,7 @@ class UBSAttributeSetBase;
 
 DECLARE_DELEGATE(FOnOutOfHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FBSHealth_AttributeChanged, UBSHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
-DECLARE_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue, const float MaxHealth);
+DECLARE_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
 
 UCLASS(ClassGroup=(Custom), meta= (BlueprintSpawnableComponent))
 class BEATSHOT_API UBSHealthComponent : public UActorComponent
@@ -27,6 +27,9 @@ protected:
 	/** Called when the game starts */
 	virtual void BeginPlay() override;
 
+	/** Called every frame */
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	// Ability system used by this component.
 	UPROPERTY()
 	TObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
@@ -40,19 +43,17 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	/** Called every frame */
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	// Initialize the component using an ability system component.
-	UFUNCTION(BlueprintCallable, Category = "Lyra|Health")
-	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC);
+	
+	/** Initialize the component using an ability system component */
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Health")
+	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer);
 
 	/** The maximum amount of damage that can be dealt to a target */
 	float TotalPossibleDamage;
 
 	/** Whether or not to update TotalPossibleDamage */
 	bool ShouldUpdateTotalPossibleDamage = false;
-
+	
 	FOnOutOfHealth OnOutOfHealth;
 	
 	FBSHealth_AttributeChanged BSHealth_AttributeChanged;

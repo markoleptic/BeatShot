@@ -6,7 +6,6 @@
 #include "BSGameplayAbility.h"
 #include "BSGameplayAbility_TrackGun.generated.h"
 
-
 class ABSCharacter;
 UCLASS()
 class BEATSHOT_API UBSGameplayAbility_TrackGun : public UBSGameplayAbility
@@ -20,12 +19,13 @@ public:
 								 const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 							bool bWasCancelled) override;
+	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 protected:
 	
 	/** The damage to apply on trace hit */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float Damage = 666.0f;
+	float Damage = 1.0f;
 
 	/** How far to trace forward from Character camera */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
@@ -37,15 +37,13 @@ protected:
 
 	/** Calls OnTargetDataReady */
 	void OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
-
-	/** Performs a WeaponTrace and calls OnTargetDataReadyCallback */
-	UFUNCTION(BlueprintCallable)
-	void StartTargeting();
-
-	/** Performs single bullet trace */
-	FHitResult SingleWeaponTrace() const;
+	
+	UFUNCTION()
+	void OnTickTraceHitResultHit(const FHitResult& HitResult);
 
 private:
-	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
+
+	TObjectPtr<class UBSAbilityTask_TickTrace> TickTraceTask;
 	
+	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
 };

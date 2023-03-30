@@ -26,17 +26,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void InitializeVisualizers(const FPlayerSettings PlayerSettings);
+	void InitializeVisualizers(const FPlayerSettings& PlayerSettings);
 
 	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
 
-	void UpdateVisualizers(const TArray<float> SpectrumValues);
+	void UpdateVisualizers(const TArray<float>& SpectrumValues);
 
 	void DestroyVisualizers();
 
-	void UpdateVisualizerStates(const FPlayerSettings PlayerSettings);
+	void UpdateVisualizerStates(const FPlayerSettings& PlayerSettings);
 
-	void UpdateAASettings(const FAASettingsStruct NewAASettings);
+	void UpdateAASettings(const FAASettingsStruct& NewAASettings);
 
 	/* The base Visualizer class to spawn */
 	UPROPERTY(EditDefaultsOnly)
@@ -48,15 +48,15 @@ public:
 
 	/** The spawned Visualizers */
 	UPROPERTY(BlueprintReadOnly)
-	TArray<AVisualizerBase*> Visualizers;
+	TArray<TObjectPtr<AVisualizerBase>> Visualizers;
 
 	/* The spawned AATracker object */
 	UPROPERTY(BlueprintReadOnly)
-	UAudioAnalyzerManager* AATracker;
+	TObjectPtr<UAudioAnalyzerManager> AATracker;
 
 	/* The spawned AAPlayer object */
 	UPROPERTY(BlueprintReadOnly)
-	UAudioAnalyzerManager* AAPlayer;
+	TObjectPtr<UAudioAnalyzerManager> AAPlayer;
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()

@@ -3,7 +3,6 @@
 
 #include "Gun_AK47.h"
 #include "BSCharacter.h"
-#include "BSPlayerController.h"
 #include "SphereTarget.h"
 #include "NiagaraFunctionLibrary.h"
 #include "BeatShot/BSGameplayTags.h"
@@ -43,7 +42,7 @@ void AGun_AK47::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	RecoilTimeline.TickTimeline(DeltaTime);
-	if (bShouldRecoil)
+	if (HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_Recoil))
 	{
 		UpdateKickbackAndRecoil(DeltaTime);
 	}
@@ -71,39 +70,16 @@ bool AGun_AK47::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagConta
 
 void AGun_AK47::Fire()
 {
+	if (!bCanFire)
+	{
+		return;
+	}
+	bIsFiring = true;
 	if (!OnShotFired.ExecuteIfBound())
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnShotFired not bound"));
 	}
 	ShotsFired++;
-	if (bShouldRecoil)
-	{
-		bShouldKickback = true;
-		KickbackAlpha = 0.f;
-	}
-}
-
-void AGun_AK47::StartFire()
-{
-	if (!bCanFire)
-	{
-		return;
-	}
-	if (bShouldRecoil)
-	{
-		RecoilTimeline.SetPlayRate(1.f);
-		/* Resume timeline if it hasn't fully recovered */
-		if (RecoilTimeline.IsReversing())
-		{
-			RecoilTimeline.Play();
-		}
-		else
-		{
-			RecoilTimeline.PlayFromStart();
-		}
-	}
-	bIsFiring = true;
-	Fire();
 }
 
 void AGun_AK47::StopFire()
@@ -152,7 +128,6 @@ void AGun_AK47::SetShouldRecoil(const bool bRecoil)
 	StopFire();
 	GetBSCharacter()->GetCamera()->SetRelativeRotation(FRotator(0, 0, 0));
 	GetBSCharacter()->GetCameraRecoilComponent()->SetRelativeRotation(FRotator(0, 0, 0));
-	bShouldRecoil = bRecoil;
 	if (bRecoil)
 	{
 		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_Recoil);
@@ -169,6 +144,22 @@ void AGun_AK47::SetShowDecals(const bool bShowDecals)
 		return;
 	}
 	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+}
+
+void AGun_AK47::Recoil()
+{
+	RecoilTimeline.SetPlayRate(1.f);
+	/* Resume timeline if it hasn't fully recovered */
+	if (RecoilTimeline.IsReversing())
+	{
+		RecoilTimeline.Play();
+	}
+	else
+	{
+		RecoilTimeline.PlayFromStart();
+	}
+	bShouldKickback = true;
+	KickbackAlpha = 0.f;
 }
 
 void AGun_AK47::UpdateKickbackAndRecoil(const float DeltaTime)
