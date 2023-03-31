@@ -51,10 +51,13 @@ public:
 
 	UFUNCTION()
 	void UpdatePanel(const TArray<float>& QTable);
-	
-	void InitQTable(const int32 Rows, const int32 Columns);
+
+	UFUNCTION()
+	void UpdatePanel2(const TArray<float>& QTable);
 	
 	void InitQTable(const int32 Rows, const int32 Columns, const TArray<float>& QTable);
+
+	void InitQTable2(const int32 Rows, const int32 Columns, const TArray<float>& QTable);
 
 	FLinearColor InterpColor(const float Value) const;
 
@@ -62,11 +65,20 @@ public:
 	
 	float MaxValue = 0.5f;
 
+	float MinValue2 = -0.5f;
+	
+	float MaxValue2 = 0.5f;
+
 	TArray<FAgentPoint> Points;
+
+	TArray<FAgentPoint> Points2;
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UUniformGridPanel* GridPanel;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UUniformGridPanel* GridPanel2;
 };
 
 

@@ -61,8 +61,8 @@ struct FRLAgentParams
 	float InAlpha;
 	float InGamma;
 	float InEpsilon;
-	int32 Rows;
-	int32 Columns;
+	int32 Height;
+	int32 Width;
 
 	FRLAgentParams()
 	{
@@ -72,8 +72,8 @@ struct FRLAgentParams
 		InAlpha = 0;
 		InGamma = 0;
 		InEpsilon = 0;
-		Rows = 0;
-		Columns = 0;
+		Height = 0;
+		Width = 0;
 	}
 };
 
@@ -136,13 +136,16 @@ public:
 	/** Saves the Q-Table to slot */
 	void SaveQTable();
 
-	int32 GetNumCols() const { return ColScale; }
-	int32 GetNumRows() const { return RowScale; }
+	int32 GetWidth() const { return ScaledWidth; }
+	int32 GetHeight() const { return ScaledHeight; }
 
+	/** Returns a TArray version of the QTable, used to update widget */
 	TArray<float> GetTArrayQTable() const;
 
+	/** Returns a copy of the QTable */
 	nc::NdArray<float> GetQTable() const;
 
+	/** Delegate that broadcasts when the QTable is updated */
 	FOnQTableUpdate OnQTableUpdate;
 
 private:
@@ -168,6 +171,7 @@ private:
 	/** Converts an NdArray of floats to a TArray of floats, so that it can be passed to widget */
 	static TArray<float> GetTArrayFromQTable(const nc::NdArray<double>& InQTable);
 
+	/** Broadcasts OnQTableUpdate delegate */
 	void UpdateQTableWidget() const;
 
 	/** A 2D array where the row and column have size equal to the number of possible spawn points. An element in the array represents the expected reward from starting at spawn location RowIndex
@@ -192,25 +196,28 @@ private:
 	float Epsilon;
 	
 	/** The number of rows in SpawnCounter array */
-	int32 NumSpawnCounterRows;
+	int32 SpawnCounterHeight;
 
 	/** The number of columns in SpawnCounter array */
-	int32 NumSpawnCounterColumns;
+	int32 SpawnCounterWidth;
 
-	/** How many rows the SpawnCounter total rows are divided into */
-	int32 RowScale = 5;
+	/** The size of the SpawnCounter array */
+	int32 SpawnCounterSize;
 
-	/** How many columns the SpawnCounter total columns are divided into */
-	int32 ColScale = 5;
+	/** How many rows the SpawnCounterHeight is divided into */
+	int32 ScaledHeight = 5;
 
-	/** The size of both dimensions of the QTable (RowScale * ColScale) */
-	int32 Size;
+	/** The number of the SpawnCounterWidth is divided into */
+	int32 ScaledWidth = 5;
 
-	/** NumSpawnCounterRows divided by RowScale */
-	int32 NumRowsPerScaledRow;
+	/** The size of both dimensions of the QTable (ScaledHeight * ScaledWidth) */
+	int32 ScaledSize;
 
-	/** NumSpawnCounterColumns divided by ColScale */
-	int32 NumColsPerScaledCol;
+	/** SpawnCounterHeight divided by ScaledHeight */
+	int32 HeightScaleFactor;
+
+	/** SpawnCounterWidth divided by ScaledWidth */
+	int32 WidthScaleFactor;
 
 	/** An array of structs where each element represents one QTable index that maps to multiple SpawnCounter indices */
 	TArray<FQTableIndex> QTableIndices;

@@ -119,18 +119,18 @@ void ATargetSpawner::InitTargetSpawner(const FGameModeActorStruct& InGameModeAct
 		return;
 	}
 
-	const int32 Width = GameModeActorStruct.BoxBounds.Y * 2;
-	const int32 Height = GameModeActorStruct.BoxBounds.Z * 2;
-	TArray PreferredScales = { 100, 90, 80, 75, 70, 60, 50 };
+	const int32 HalfWidth = GameModeActorStruct.BoxBounds.Y;
+	const int32 HalfHeight = GameModeActorStruct.BoxBounds.Z;
+	TArray PreferredScales = { 100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 30, 25, 20, 15, 10, 5 };
 	bool bWidthScaleSelected = false;
 	bool bHeightScaleSelected = false;
 	for (const int32 Scale : PreferredScales)
 	{
 		if (!bWidthScaleSelected)
 		{
-			if (Width % Scale == 0)
+			if (HalfWidth % Scale == 0)
 			{
-				if (Width / Scale % 5 == 0 || Width / Scale % 3 == 0)
+				if (HalfWidth / Scale % 5 == 0)
 				{
 					SpawnMemoryScaleY = 1.f / static_cast<float>(Scale);
 					bWidthScaleSelected = true;
@@ -139,9 +139,9 @@ void ATargetSpawner::InitTargetSpawner(const FGameModeActorStruct& InGameModeAct
 		}
 		if (!bHeightScaleSelected)
 		{
-			if (Height % Scale == 0)
+			if (HalfHeight % Scale == 0)
 			{
-				if (Height / Scale % 5 == 0 || Height / Scale % 3 == 0)
+				if (HalfHeight / Scale % 5 == 0)
 				{
 					SpawnMemoryScaleZ = 1.f / static_cast<float>(Scale);
 					bHeightScaleSelected = true;
@@ -163,6 +163,8 @@ void ATargetSpawner::InitTargetSpawner(const FGameModeActorStruct& InGameModeAct
 
 	SpawnMemoryIncY = roundf(1 / SpawnMemoryScaleY);
 	SpawnMemoryIncZ = roundf(1 / SpawnMemoryScaleZ);
+
+	MinOverlapRadius = (SpawnMemoryIncY + SpawnMemoryIncZ) / 2.f;
 
 	if (IsDynamicSpreadType(GameModeActorStruct.SpreadType))
 	{
@@ -190,18 +192,22 @@ void ATargetSpawner::InitTargetSpawner(const FGameModeActorStruct& InGameModeAct
 	UE_LOG(LogTemp, Display, TEXT("Y %f Z %f"), Y, Z);
 
 	
-	const FIntPoint RowsColumns = InitializeSpawnCounter();
+	const FIntPoint HeightWidth = InitializeSpawnCounter();
 
+	if (!GameModeActorStruct.bEnableRLAgent)
+	{
+		return;
+	}
 	RLBase = NewObject<URLBase>();
 	FRLAgentParams Params;
 	Params.GameModeActorName = GameModeActorStruct.GameModeActorName;
 	Params.CustomGameModeName = GameModeActorStruct.CustomGameModeName;
 	Params.Size = GetSpawnCounter().Num();
-	Params.Rows = RowsColumns.X;
-	Params.Columns = RowsColumns.Y;
-	Params.InEpsilon = 0.5f;
-	Params.InGamma = 0.9f;
-	Params.InAlpha = 0.9f;
+	Params.Height = HeightWidth.X;
+	Params.Width = HeightWidth.Y;
+	Params.InEpsilon = GameModeActorStruct.Epsilon;
+	Params.InGamma = GameModeActorStruct.Gamma;
+	Params.InAlpha = GameModeActorStruct.Alpha;
 	RLBase->Init(Params);
 }
 
@@ -301,23 +307,23 @@ FIntPoint ATargetSpawner::InitializeSpawnCounter()
 	const FVector NegativeExtents = GetBoxExtrema(0, false);
 	const FVector PositiveExtents = GetBoxExtrema(1, false);
 
-	int ColumnCount = 0;
-	int RowCount = 0;
+	int Width = 0;
+	int Height = 0;
 	int Index = 0;
 	for (float Z = NegativeExtents.Z; Z < PositiveExtents.Z; Z += SpawnMemoryIncZ)
 	{
-		RowCount = 0;
+		Width = 0;
 		for (float Y = NegativeExtents.Y; Y < PositiveExtents.Y; Y += SpawnMemoryIncY)
 		{
 			SpawnCounter.Emplace(FVectorCounter(Index, FVector(GetBoxOrigin().X, Y, Z), SpawnMemoryIncY, SpawnMemoryIncZ));
 			AllSpawnLocations.Emplace(FVector(GetBoxOrigin().X, Y, Z));
 			Index++;
-			RowCount++;
+			Width++;
 		}
-		ColumnCount++;
+		Height++;
 	}
 	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
-	return FIntPoint(RowCount, ColumnCount);
+	return FIntPoint(Height, Width);
 }
 
 void ATargetSpawner::InitBeatGrid()
@@ -399,7 +405,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 		OnTargetSpawned.Broadcast();
 		OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
 
-		if (!PreviousSpawnLocation.Equals(SpawnLocation))
+		if (!PreviousSpawnLocation.Equals(SpawnLocation) && GameModeActorStruct.bEnableRLAgent)
 		{
 			AddToActiveTargetPairs(PreviousSpawnLocation, SpawnLocation);
 		}
@@ -421,7 +427,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 		AddToActiveTargets(SpawnTarget);
 		AddToRecentTargets(SpawnTarget, TargetScale);
 
-		if (!PreviousSpawnLocation.Equals(SpawnLocation))
+		if (!PreviousSpawnLocation.Equals(SpawnLocation) && GameModeActorStruct.bEnableRLAgent)
 		{
 			AddToActiveTargetPairs(PreviousSpawnLocation, SpawnLocation);
 		}
@@ -621,7 +627,10 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 			SpawnCounter[Index].TotalHits++;
 		}
 		const bool bTargetWasHit = !DidExpire;
-		UpdateRLAgentReward(Location, bTargetWasHit);
+		if (GameModeActorStruct.bEnableRLAgent)
+		{
+			UpdateRLAgentReward(Location, bTargetWasHit);
+		}
 	}
 	else
 	{
@@ -702,22 +711,24 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 	{
 		return GetBoxOrigin();
 	}
-	
-	const int32 ChosenPoint = TryGetSpawnLocationFromRLAgent(OpenLocations);
-	if (ChosenPoint != INDEX_NONE)
+
+	if (GameModeActorStruct.bEnableRLAgent)
 	{
-		FVectorCounter Found = GetSpawnCounter()[ChosenPoint];
-		Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
-		return Found.ActualChosenPoint;
+		const int32 ChosenPoint = TryGetSpawnLocationFromRLAgent(OpenLocations);
+		if (ChosenPoint != INDEX_NONE)
+		{
+			FVectorCounter Found = GetSpawnCounter()[ChosenPoint];
+			Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
+			return Found.ActualChosenPoint;
+		}
+		UE_LOG(LogTemp, Display, TEXT("Unable to Spawn Location suggested by RLAgent."));
 	}
-	UE_LOG(LogTemp, Display, TEXT("Unable to Spawn Location suggested by RLAgent."));
 	
 	const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0, OpenLocations.Num() - 1);
 	FVectorCounter Found = GetVectorCounterFromPoint(OpenLocations[RandomPoint]);
 	Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
 	//UE_LOG(LogTemp, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found.Point.ToString(), *Found.Center.ToString(), *Found.ActualChosenPoint.ToString());
 	return Found.ActualChosenPoint;
-	//return OpenLocations[RandomPoint];
 }
 
 FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
@@ -844,7 +855,8 @@ TArray<FVector> ATargetSpawner::GetAllEdgeOnlySpawnLocations() const
 
 TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector& Center, const float Scale) const
 {
-	const float Radius = Scale * SphereTargetRadius * 2.f + GameModeActorStruct.MinDistanceBetweenTargets / 2.f;
+	float Radius = Scale * SphereTargetRadius * 2.f + GameModeActorStruct.MinDistanceBetweenTargets / 2.f;
+	Radius = FMath::Max(Radius, MinOverlapRadius);
 	const FSphere Sphere = FSphere(Center, Radius);
 	const FVector NegativeExtents = GetBoxExtrema(0, false);
 	const FVector PositiveExtents = GetBoxExtrema(1, false);
@@ -874,7 +886,7 @@ TArray<FVector> ATargetSpawner::GetAllOverlappingPoints(const float Scale) const
 	for (FRecentTarget Struct : GetRecentTargets())
 	{
 		TArray<FVector> CurrentBlockedLocations;
-		if (Struct.TargetScale < Scale)
+		if (Scale > Struct.TargetScale)
 		{
 			CurrentBlockedLocations = GetOverlappingPoints(Struct.CenterVector, Scale);
 		}
@@ -1054,9 +1066,6 @@ void ATargetSpawner::SetBoxExtents_Dynamic() const
 	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Z, GetBoxExtents_Static().Z * 0.5f, NewFactor);
 	const float Y = FMath::GridSnap(LerpY, SpawnMemoryIncY);
 	const float Z = FMath::GridSnap(LerpZ, SpawnMemoryIncZ);
-	UE_LOG(LogTemp, Display, TEXT("SpawnMemoryIncY %dSpawnMemoryIncZ %d"), SpawnMemoryIncY, SpawnMemoryIncZ);
-	UE_LOG(LogTemp, Display, TEXT("SpawnMemoryScaleY %f SpawnMemoryScaleZ %f"), SpawnMemoryScaleY, SpawnMemoryScaleZ);
-	UE_LOG(LogTemp, Display, TEXT("NewFactor %f LerpY %f LerpZ %f GridSnapY %f GridSnapZ %f"), NewFactor, LerpY, LerpZ, Y, Z);
 	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
 }
 
@@ -1106,6 +1115,7 @@ void ATargetSpawner::UpdateRLAgentReward(const FVector& WorldLocation, const boo
 	}
 	ActiveTargetPairs.Remove(FoundTargetPair);
 	TargetPairs.Enqueue(FoundTargetPair);
+	UpdateRLAgent();
 }
 
 void ATargetSpawner::AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation)
@@ -1113,7 +1123,7 @@ void ATargetSpawner::AddToActiveTargetPairs(const FVector& PreviousWorldLocation
 	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
 }
 
-int32 ATargetSpawner::TryGetSpawnLocationFromRLAgent(const TArray<FVector>& OpenLocations)
+int32 ATargetSpawner::TryGetSpawnLocationFromRLAgent(const TArray<FVector>& OpenLocations) const
 {
 	/* Converting all OpenLocations to indices */
 	TArray<int32> Indices;
@@ -1126,35 +1136,42 @@ int32 ATargetSpawner::TryGetSpawnLocationFromRLAgent(const TArray<FVector>& Open
 			Indices.Add(FoundIndex);
 		}
 	}
-	//UE_LOG(LogTemp, Display, TEXT("Indices Size inside TryGetSpawnLocationFromRLAgent %d"), Indices.Num());
-	
-	/* Updating RL Agent */
-	FTargetPair TargetPair;
-	if (!TargetPairs.Peek(TargetPair) || Indices.IsEmpty())
+	if (Indices.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 		return INDEX_NONE;
 	}
-	TargetPairs.Pop();
-	const int32 StateIndex = SpawnCounter.Find(TargetPair.Previous);
-	const int32 State2Index = SpawnCounter.Find(TargetPair.Current);
-	const int32 ActionIndex = State2Index;
-	const int32 Action2Index = RLBase->GetMaxActionIndex(State2Index);
-
-	/* Don't update RLAgent if something went wrong */
-	if (Action2Index < SpawnCounter.Num() && Action2Index != INDEX_NONE)
-	{
-		RLBase->UpdateEpisodeRewards(TargetPair.Reward);
-		RLBase->UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
-	}
-	
 	return RLBase->ChooseNextActionIndex(Indices);
-	//return SpawnCounterCopy[RLBase->ChooseNextActionIndex(Indices)];
-	//return SpawnCounter[Action2Index].Point;
+}
+
+void ATargetSpawner::UpdateRLAgent()
+{
+	const TArray<FVectorCounter> SpawnCounterCopy = GetSpawnCounter();
+	while (!TargetPairs.IsEmpty())
+	{
+		FTargetPair TargetPair;
+		if (!TargetPairs.Peek(TargetPair))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
+			break;
+		}
+		const int32 StateIndex = SpawnCounterCopy.Find(TargetPair.Previous);
+		const int32 State2Index = SpawnCounterCopy.Find(TargetPair.Current);
+		const int32 ActionIndex = State2Index;
+		const int32 Action2Index = RLBase->GetMaxActionIndex(State2Index);
+
+		/* Don't update RLAgent if something went wrong */
+		if (Action2Index < SpawnCounter.Num() && Action2Index != INDEX_NONE)
+		{
+			RLBase->UpdateEpisodeRewards(TargetPair.Reward);
+			RLBase->UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
+		}
+		TargetPairs.Pop();
+	}
 }
 
 void ATargetSpawner::ToggleDebug_SpawnBox()
@@ -1170,10 +1187,15 @@ void ATargetSpawner::ToggleDebug_SpawnMemory()
 void ATargetSpawner::ToggleRLAgentWidget()
 {
 	bShowDebug_RLAgentWidget = !bShowDebug_RLAgentWidget;
-	if (bShowDebug_RLAgentWidget)
+	if (!RLBase)
 	{
-		Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->ShowRLAgentWidget(RLBase->OnQTableUpdate, RLBase->GetNumRows(), RLBase->GetNumCols(), RLBase->GetTArrayQTable());
 		return;
 	}
-	Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->HideRLAgentWidget();
+	ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (bShowDebug_RLAgentWidget)
+	{
+		Controller->ShowRLAgentWidget(RLBase->OnQTableUpdate, RLBase->GetHeight(), RLBase->GetWidth(), RLBase->GetTArrayQTable());
+		return;
+	}
+	Controller->HideRLAgentWidget();
 }

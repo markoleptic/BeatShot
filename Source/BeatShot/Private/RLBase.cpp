@@ -13,50 +13,51 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 	Alpha = AgentParams.InAlpha;
 	Gamma = AgentParams.InGamma;
 	Epsilon = AgentParams.InEpsilon;
-	NumSpawnCounterRows = AgentParams.Rows;
-	NumSpawnCounterColumns =  AgentParams.Columns;
+	SpawnCounterHeight = AgentParams.Height;
+	SpawnCounterWidth =  AgentParams.Width;
+	SpawnCounterSize = SpawnCounterHeight * SpawnCounterWidth;
 	
-	if (AgentParams.Columns % 5 == 0)
+	if (SpawnCounterHeight % 5 != 0 || SpawnCounterWidth % 5 != 0 )
 	{
-		ColScale = 5;
-	}
-	else
-	{
-		ColScale = 3;
-	}
-	if (AgentParams.Rows % 5 == 0)
-	{
-		RowScale = 5;
-	}
-	else
-	{
-		RowScale = 3;
+		UE_LOG(LogTemp, Warning, TEXT("SpawnCounter is not compatible with QTable size"));
 	}
 
-	NumColsPerScaledCol = NumSpawnCounterColumns / ColScale;
-	NumRowsPerScaledRow = NumSpawnCounterRows / RowScale;
-	Size = ColScale * RowScale;
+	WidthScaleFactor = SpawnCounterWidth / ScaledWidth;
+	HeightScaleFactor = SpawnCounterHeight / ScaledHeight;
+	ScaledSize = ScaledWidth * ScaledHeight;
 	
 	QTableWrapper.CustomGameModeName = AgentParams.CustomGameModeName;
 	QTableWrapper.GameModeActorName = AgentParams.GameModeActorName;
-	QTableWrapper.ColSize = ColScale * RowScale;
-	QTableWrapper.RowSize = ColScale * RowScale;
+	QTableWrapper.RowSize = ScaledSize;
+	QTableWrapper.ColSize = ScaledSize;
 
-	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), NumSpawnCounterRows, NumSpawnCounterColumns);
-	QTable = nc::zeros<float>(nc::Shape(Size, Size));
+	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), SpawnCounterHeight, SpawnCounterWidth);
+	UE_LOG(LogTemp, Display, TEXT("QTableRows: %d QTableColumns: %d"), ScaledHeight, ScaledWidth);
+
+	/* Each row in QTable has size equal to ScaledSize, and so does each column */
+	QTable = nc::zeros<float>(nc::Shape(ScaledSize, ScaledSize));
 	
 	/* Initialize struct array containing mappings for each QTable index to multiple SpawnCounter indices */
-	for (int i  = 0; i < Size; i++)
+	for (int i = 0; i < ScaledSize; i++)
 	{
 		QTableIndices.Add(FQTableIndex(i));
 	}
-	for (int i  = 0; i < NumSpawnCounterColumns * NumSpawnCounterRows; i++)
+	
+	for (int i  = 0; i < SpawnCounterSize; i++)
 	{
 		if (const int32 Found = QTableIndices.Find(GetQTableIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
 		{
 			QTableIndices[Found].SpawnCounterIndices.AddUnique(i);
 		}
 	}
+	
+	/*for (FQTableIndex Index : QTableIndices)
+	{
+		for (int32 SubIndex : Index.SpawnCounterIndices)
+		{
+			UE_LOG(LogTemp, Display, TEXT("QTableIndex: %d SpawnCounterIndex: %d"), Index.QTableIndex, SubIndex);
+		}
+	}*/
 	
 	if (const TArray<FQTableWrapper> QTables = LoadQTables(); !QTables.IsEmpty())
 	{
@@ -102,7 +103,8 @@ void URLBase::UpdateEpisodeRewards(const float RewardReceived)
 
 int32 URLBase::GetMaxActionIndex(const int32 SpawnCounterIndex) const
 {
-	const int32 Index = QTable.argmax(nc::Axis::COL)(0,GetQTableIndexFromSpawnCounterIndex(SpawnCounterIndex));
+	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetQTableIndexFromSpawnCounterIndex(SpawnCounterIndex));
+	//UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for SpawnCounterIndex %d: %d"), SpawnCounterIndex, Index);
 	if (Index == INDEX_NONE)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("GetMaxActionIndex return INDEX_NONE for QTableIndex of %d"), GetQTableIndexFromSpawnCounterIndex(SpawnCounterIndex));
@@ -152,7 +154,7 @@ void URLBase::PrintRewards() const
 	}
 
 	int i = 0;
-	nc::NdArray<double> FlippedMean = flipud(mean(GetQTable(), nc::Axis::ROW).reshape(RowScale,ColScale));
+	nc::NdArray<double> FlippedMean = flipud(mean(GetQTable(), nc::Axis::ROW).reshape(ScaledHeight,ScaledWidth));
 	Row.Empty();
 	for (const double It : FlippedMean)
 	{
@@ -166,7 +168,7 @@ void URLBase::PrintRewards() const
 			Row.Append(FString::SanitizeFloat(Value, 2) + " ");
 		}
 		i++;
-		if (i % RowScale == 0)
+		if (i % ScaledHeight == 0)
 		{
 			UE_LOG(LogTemp, Display, TEXT("%s"), *Row);
 			Row.Empty();
@@ -191,7 +193,7 @@ void URLBase::SaveQTable()
 
 TArray<float> URLBase::GetTArrayQTable() const
 {
-	return GetTArrayFromQTable(flipud(mean(GetQTable(), nc::Axis::ROW).reshape(RowScale,ColScale)));
+	return GetTArrayFromQTable(flipud(mean(GetQTable(), nc::Axis::ROW).reshape(ScaledHeight,ScaledWidth)));
 }
 
 nc::NdArray<float> URLBase::GetQTable() const
@@ -206,13 +208,45 @@ int32 URLBase::ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices)
 
 int32 URLBase::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const
 {
-	/* Basically argmax but in descending order */
-	auto MaxesReverseSort = flip(QTable.max(nc::Axis::COL).argsort(nc::Axis::COL));
+	FString Row;
+	FString Row2;
+	FString Row3;
+	FString Row4;
 	
-	for (int j = 0; j < static_cast<int>(MaxesReverseSort.numCols()); j++)
+	/* Basically argmax but in descending order */
+	auto MaxIndicesReverseSorted = flip(GetQTable().max(nc::Axis::ROW).argsort(nc::Axis::COL));
+	auto MaxesReverseSorted = GetQTable().max(nc::Axis::ROW).sort();
+
+	/* Averages instead of maxes */
+	auto AveragesReverseSorted = flip(mean(GetQTable(), nc::Axis::ROW).sort());
+	auto AverageIndicesReverseSorted = flip(mean(GetQTable(), nc::Axis::ROW).argsort(nc::Axis::COL));
+	
+	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
 	{
-		const int32 ChosenIndex = MaxesReverseSort(0, j);
+		const float MaxIndex = MaxIndicesReverseSorted(0, j);
+		const float AverageIndex = AverageIndicesReverseSorted(0, j);
+		const float MaxValue = roundf(MaxesReverseSorted(0, j) * 100.0) / 100.0;
+		const float AverageValue = roundf(AveragesReverseSorted(0, j) * 100.0) / 100.0;
+		
+		Row.Append(FString::SanitizeFloat(MaxIndex, 0) + " ");
+		Row2.Append(FString::SanitizeFloat(MaxValue, 2) + " ");
+		Row3.Append(FString::SanitizeFloat(AverageIndex, 0) + " ");
+		Row4.Append(FString::SanitizeFloat(AverageValue, 2) + " ");
+	}
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row);
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row2);
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row3);
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row4);
+	
+	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
+	{
+		/* Get the index from MaxesReverseSort */
+		const int32 ChosenIndex = MaxIndicesReverseSorted(0, j);
+
+		/* Get the SpawnCounter indices that the chosen index represents */
 		TArray<int32> UnfilteredSpawnCounterIndices = GetSpawnCounterIndexRange(ChosenIndex);
+
+		/* Remove any indices that aren't inside the current SpawnCounterIndices */
 		const TArray<int32> FilteredSpawnCounterIndices = UnfilteredSpawnCounterIndices.FilterByPredicate([&SpawnCounterIndices] (const int32& Value)
 		{
 			if (SpawnCounterIndices.Contains(Value))
@@ -221,10 +255,15 @@ int32 URLBase::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) c
 			}
 			return false;
 		});
-		
+
+		UE_LOG(LogTemp, Display, TEXT("FilteredSpawnIndices Size: %d"), FilteredSpawnCounterIndices.Num());
+
+		/* Return a random point inside the filtered spawn indices if not empty */
 		if (!FilteredSpawnCounterIndices.IsEmpty())
 		{
-			return FilteredSpawnCounterIndices[FMath::RandRange(0, FilteredSpawnCounterIndices.Num() - 1)];
+			const int32 RandomFilteredIndex = FMath::RandRange(0, FilteredSpawnCounterIndices.Num() - 1);
+			UE_LOG(LogTemp, Display, TEXT("RandomFilteredIndex: %d"), FilteredSpawnCounterIndices[RandomFilteredIndex]);
+			return FilteredSpawnCounterIndices[RandomFilteredIndex];
 		}
 	}
 	return INDEX_NONE;
@@ -233,14 +272,16 @@ int32 URLBase::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) c
 int32 URLBase::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
 {
 	/* First find the Row and Column number that corresponds to the SpawnCounter index */
-	const int32 SpawnCounterRowNum = SpawnCounterIndex / NumSpawnCounterColumns;
-	const int32 SpawnCounterColNum = SpawnCounterIndex % NumSpawnCounterColumns;
+	const int32 SpawnCounterRowNum = SpawnCounterIndex / SpawnCounterWidth;
+	const int32 SpawnCounterColNum = SpawnCounterIndex % SpawnCounterWidth;
 
 	/* Scale down the SpawnCounter row and column numbers */
-	const int32 QTableRow = SpawnCounterRowNum / NumRowsPerScaledRow;
-	const int32 QTableCol = SpawnCounterColNum / NumColsPerScaledCol;
-	const int32 QTableIndex = QTableRow * ColScale + QTableCol;
-	//UE_LOG(LogTemp, Display, TEXT("QTableRow: %d QTableCol: %d QTableIndex %d"), QTableRow, QTableCol, QTableIndex);
+	const int32 QTableRow = SpawnCounterRowNum / HeightScaleFactor;
+	const int32 QTableCol = SpawnCounterColNum / WidthScaleFactor /*% ScaledWidth*/;
+	const int32 QTableIndex = QTableRow * ScaledHeight + QTableCol;
+
+	//UE_LOG(LogTemp, Display, TEXT(" %d|   %d %d  %d %d   |%d"), SpawnCounterIndex, SpawnCounterRowNum, SpawnCounterColNum, QTableRow, QTableCol, QTableIndex);
+	
 	return QTableIndex;
 }
 
@@ -259,7 +300,6 @@ nc::NdArray<float> URLBase::GetQTableFromTArray(const FQTableWrapper& InWrapper)
 			Out(i, j) = InWrapper.QTable[(InWrapper.RowSize * j) + i];
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.numCols());
 	return Out;
 }
 
@@ -274,7 +314,6 @@ TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
 			Out[(static_cast<int>(InQTable.numRows()) * j) + i] = InQTable(i, j);
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.Num());
 	return Out;
 }
 
@@ -289,12 +328,10 @@ TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
 			Out[(static_cast<int>(InQTable.numRows()) * j) + i] = InQTable(i, j);
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("OutSize: %d"), Out.Num());
 	return Out;
 }
 
 void URLBase::UpdateQTableWidget() const
 {
-	const nc::NdArray<double> FlippedMean = flipud(mean(GetQTable(), nc::Axis::ROW).reshape(RowScale,ColScale));
-	OnQTableUpdate.Broadcast(GetTArrayFromQTable(FlippedMean));
+	OnQTableUpdate.Broadcast(GetTArrayQTable());
 }

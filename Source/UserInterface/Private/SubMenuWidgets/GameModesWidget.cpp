@@ -132,6 +132,13 @@ void UGameModesWidget::NativeConstruct()
 		ForwardSpreadCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget::OnForwardSpreadCheckStateChanged);
 		ForwardSpreadSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnForwardSpreadSliderChanged);
 		ForwardSpreadValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnForwardSpreadValueCommitted);
+		EnableAICheckBox->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget::OnEnableAICheckStateChanged);
+		AIAlphaSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnAIAlphaSliderChanged);
+		AIAlphaValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnAIAlphaValueCommitted);
+		AIEpsilonSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnAIEpsilonSliderChanged);
+		AIEpsilonValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnAIEpsilonValueCommitted);
+		AIGammaSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnAIGammaSliderChanged);
+		AIGammaValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnAIGammaValueCommitted);
 		ConstantBeatGridSpacingCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged);
 
 		FConstrainedSliderStruct TargetScaleSliderStruct;
@@ -198,6 +205,10 @@ void UGameModesWidget::NativeConstruct()
 		BeatGridEvenSpacingQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridEvenSpacing");
 		BeatGridAdjacentOnlyQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly");
 		BeatGridNumTargetsQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridNumTargets");
+		EnableAIQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "EnableAI");
+		AlphaQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Alpha");
+		EpsilonQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Epsilon");
+		GammaQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Gamma");
 		TargetScaleConstrained->CheckboxQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConstantTargetScale");
 		TargetSpeedConstrained->CheckboxQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatTrackConstantSpeed");
 
@@ -217,6 +228,10 @@ void UGameModesWidget::NativeConstruct()
 		BeatGridEvenSpacingQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		BeatGridAdjacentOnlyQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		BeatGridNumTargetsQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		EnableAIQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		AlphaQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		EpsilonQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+		GammaQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		TargetScaleConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 		TargetSpeedConstrained->CheckboxQMark->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
 	}
@@ -472,6 +487,50 @@ void UGameModesWidget::OnForwardSpreadValueCommitted(const FText& NewForwardSpre
 	OnEditableTextBoxChanged(NewForwardSpread, ForwardSpreadValue, ForwardSpreadSlider, HorizontalSpreadGridSnapSize, MinForwardSpreadValue, MaxForwardSpreadValue);
 }
 
+void UGameModesWidget::OnEnableAICheckStateChanged(const bool bEnableAI)
+{
+	if (bEnableAI)
+	{
+		AIAlphaBox->SetVisibility(ESlateVisibility::Visible);
+		AIEpsilonBox->SetVisibility(ESlateVisibility::Visible);
+		AIGammaBox->SetVisibility(ESlateVisibility::Visible);
+		return;
+	}
+	AIAlphaBox->SetVisibility(ESlateVisibility::Collapsed);
+	AIEpsilonBox->SetVisibility(ESlateVisibility::Collapsed);
+	AIGammaBox->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UGameModesWidget::OnAIAlphaSliderChanged(const float NewAlpha)
+{
+	OnSliderChanged(NewAlpha, AIAlphaValue, AlphaSnapSize);
+}
+
+void UGameModesWidget::OnAIAlphaValueCommitted(const FText& NewAlpha, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewAlpha, AIAlphaValue, AIAlphaSlider, AlphaSnapSize, MinAlphaValue, MaxAlphaValue);
+}
+
+void UGameModesWidget::OnAIEpsilonSliderChanged(const float NewEpsilon)
+{
+	OnSliderChanged(NewEpsilon, AIEpsilonValue, EpsilonSnapSize);
+}
+
+void UGameModesWidget::OnAIEpsilonValueCommitted(const FText& NewEpsilon, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewEpsilon, AIEpsilonValue, AIEpsilonSlider, EpsilonSnapSize, MinEpsilonValue, MaxEpsilonValue);
+}
+
+void UGameModesWidget::OnAIGammaSliderChanged(const float NewGamma)
+{
+	OnSliderChanged(NewGamma, AIGammaValue, GammaSnapSize);
+}
+
+void UGameModesWidget::OnAIGammaValueCommitted(const FText& NewGamma, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewGamma, AIGammaValue, AIGammaSlider, GammaSnapSize, MinGammaValue, MaxGammaValue);
+}
+
 void UGameModesWidget::OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing)
 {
 	/** TODO: Constrain BeatGridSpacing */
@@ -675,15 +734,13 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	WallCenteredCheckBox->SetIsChecked(InputGameModeActorStruct.WallCentered);
 	MinTargetDistanceSlider->SetValue(InputGameModeActorStruct.MinDistanceBetweenTargets);
 	MinTargetDistanceValue->SetText(FText::AsNumber(InputGameModeActorStruct.MinDistanceBetweenTargets));
-	
 	SpreadTypeComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InputGameModeActorStruct.SpreadType).ToString());
-
 	HorizontalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Y);
 	HorizontalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Y));
 	VerticalSpreadSlider->SetValue(InputGameModeActorStruct.BoxBounds.Z);
 	VerticalSpreadValue->SetText(FText::AsNumber(InputGameModeActorStruct.BoxBounds.Z));
 	ForwardSpreadCheckBox->SetIsChecked(InputGameModeActorStruct.bMoveTargetsForward);
-
+	
 	if (InputGameModeActorStruct.bMoveTargetsForward)
 	{
 		ForwardSpreadBox->SetVisibility(ESlateVisibility::Visible);
@@ -691,6 +748,35 @@ void UGameModesWidget::PopulateGameModeOptions(const FGameModeActorStruct& Input
 	else
 	{
 		ForwardSpreadBox->SetVisibility(ESlateVisibility::Collapsed);
+	}
+
+	if (InputGameModeActorStruct.IsBeatGridMode || InputGameModeActorStruct.IsBeatTrackMode)
+	{
+		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		AISpecificSettings->SetVisibility(ESlateVisibility::Visible);
+		EnableAICheckBox->SetIsChecked(InputGameModeActorStruct.bEnableRLAgent);
+		AIAlphaSlider->SetValue(InputGameModeActorStruct.Alpha);
+		AIAlphaValue->SetText(FText::AsNumber(InputGameModeActorStruct.Alpha));
+		AIGammaSlider->SetValue(InputGameModeActorStruct.Gamma);
+		AIGammaValue->SetText(FText::AsNumber(InputGameModeActorStruct.Gamma));
+		AIEpsilonSlider->SetValue(InputGameModeActorStruct.Epsilon);
+		AIEpsilonValue->SetText(FText::AsNumber(InputGameModeActorStruct.Epsilon));
+	}
+	
+	if (InputGameModeActorStruct.bEnableRLAgent && !InputGameModeActorStruct.IsBeatGridMode && !InputGameModeActorStruct.IsBeatTrackMode)
+	{
+		AIAlphaBox->SetVisibility(ESlateVisibility::Visible);
+		AIGammaBox->SetVisibility(ESlateVisibility::Visible);
+		AIEpsilonBox->SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		AIAlphaBox->SetVisibility(ESlateVisibility::Collapsed);
+		AIGammaBox->SetVisibility(ESlateVisibility::Collapsed);
+		AIEpsilonBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	
 	ForwardSpreadSlider->SetValue(InputGameModeActorStruct.MoveForwardDistance);
@@ -775,6 +861,12 @@ FGameModeActorStruct UGameModesWidget::GetCustomGameModeOptions()
 	ReturnStruct.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue), TargetScaleSnapSize);
 	ReturnStruct.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MaxSlider->GetValue(), MinTargetScaleValue, MaxTargetScaleValue), TargetScaleSnapSize);
 	ReturnStruct.RandomizeBeatGrid = RandomizeNextBeatGridTargetCheckBox->IsChecked();
+
+	ReturnStruct.bEnableRLAgent = EnableAICheckBox->IsChecked();
+	ReturnStruct.Alpha = FMath::GridSnap(FMath::Clamp(AIAlphaSlider->GetValue(), MinAlphaValue, MaxAlphaValue), AlphaSnapSize);
+	ReturnStruct.Epsilon = FMath::GridSnap(FMath::Clamp(AIEpsilonSlider->GetValue(), MinEpsilonValue, MaxEpsilonValue), EpsilonSnapSize);
+	ReturnStruct.Gamma = FMath::GridSnap(FMath::Clamp(AIGammaSlider->GetValue(), MinGammaValue, MaxGammaValue), GammaSnapSize);
+	
 	/** TODO: Constant BeatGrid Spacing option*/
 	ReturnStruct.BeatGridSize = FCString::Atoi(*NumBeatGridTargetsComboBox->GetSelectedOption());
 	ReturnStruct.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinTargetSpeedValue, MaxTargetSpeedValue), TargetSpeedSnapSize);

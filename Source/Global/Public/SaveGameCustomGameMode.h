@@ -79,18 +79,23 @@ struct FGameModeActorStruct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	EGameModeDifficulty GameModeDifficulty;
 
+	/* Whether or not to playback streamed audio */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	bool bPlaybackAudio;
 
+	/* The audio format type used for the AudioAnalyzer */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	EAudioFormat AudioFormat;
 
+	/* The input audio device */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString InAudioDevice;
 
+	/* The output audio device */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString OutAudioDevice;
 
+	/* The path to the song file */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString SongPath;
 
@@ -163,9 +168,26 @@ struct FGameModeActorStruct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	bool bMoveTargetsForward;
 
-	/* Whether or not to move the targets forward towards the player after spawning */
+	/* How far to move the target forward over its lifetime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float MoveForwardDistance;
+
+	/* Whether or not to enable the reinforcement learning agent to handle target spawning */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	bool bEnableRLAgent;
+	
+	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	float Alpha;
+
+	/** The exploration/exploitation balance factor. A value = 1 will result in only choosing random values (explore),
+	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	float Epsilon;
+	
+	/** Discount factor, or how much to value future rewards vs immediate rewards */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	float Gamma;
 
 	/* The minimum speed multiplier for Tracking Game Mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
@@ -191,6 +213,7 @@ struct FGameModeActorStruct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumTargetsAtOnceBeatGrid;
 
+	
 	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const
 	{
 		if (GameModeActorName == Other.GameModeActorName && CustomGameModeName.Equals(Other.CustomGameModeName))
@@ -226,6 +249,10 @@ struct FGameModeActorStruct
 		PlayerDelay = 0.3f;
 		bMoveTargetsForward = false;
 		MoveForwardDistance = 0.f;
+		bEnableRLAgent = false;
+		Alpha = 0.9f;
+		Epsilon = 0.9f;
+		Gamma = 0.9f;
 		SongTitle = "";
 		CustomGameModeName = "";
 		MinTrackingSpeed = 500.f;
@@ -258,6 +285,10 @@ struct FGameModeActorStruct
 		NumTargetsAtOnceBeatGrid = -1;
 		BeatGridSpacing = FVector2D::ZeroVector;
 		CustomGameModeName = "";
+		bEnableRLAgent = false;
+		Alpha = 0.9f;
+		Epsilon = 0.9f;
+		Gamma = 0.9f;
 
 		WallCentered = false;
 		IsBeatTrackMode = false;

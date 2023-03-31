@@ -213,6 +213,34 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
 	UConstrainedSlider* TargetScaleConstrained;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UBorder* AISpecificSettings;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UHorizontalBox* EnableAIBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UCheckBox* EnableAICheckBox;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UHorizontalBox* AIAlphaBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	USlider* AIAlphaSlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UEditableTextBox* AIAlphaValue;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UHorizontalBox* AIEpsilonBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	USlider* AIEpsilonSlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UEditableTextBox* AIEpsilonValue;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UHorizontalBox* AIGammaBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	USlider* AIGammaSlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UEditableTextBox* AIGammaValue;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UBorder* BeatGridSpecificSettings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
@@ -268,6 +296,18 @@ protected:
 	const float MaxTargetSpeedValue = 1000;
 	const float TargetSpeedSnapSize = 10;
 
+	const float MinAlphaValue = 0.1;
+	const float MaxAlphaValue = 1;
+	const float AlphaSnapSize = 0.01;
+	
+	const float MinEpsilonValue = 0;
+	const float MaxEpsilonValue = 1;
+	const float EpsilonSnapSize = 0.01;
+	
+	const float MinGammaValue = 0.1;
+	const float MaxGammaValue = 1;
+	const float GammaSnapSize = 0.01;
+
 private:
 	/** Populate Game Mode Options and changes the Custom Save Button states */
 	UFUNCTION()
@@ -317,6 +357,21 @@ private:
 	void OnForwardSpreadSliderChanged(const float NewForwardSpread);
 	UFUNCTION()
 	void OnForwardSpreadValueCommitted(const FText& NewForwardSpread, ETextCommit::Type CommitType);
+
+	UFUNCTION()
+	void OnEnableAICheckStateChanged(const bool bEnableAI);
+	UFUNCTION()
+	void OnAIAlphaSliderChanged(const float NewAlpha);
+	UFUNCTION()
+	void OnAIAlphaValueCommitted(const FText& NewAlpha, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnAIEpsilonSliderChanged(const float NewEpsilon);
+	UFUNCTION()
+	void OnAIEpsilonValueCommitted(const FText& NewEpsilon, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnAIGammaSliderChanged(const float NewGamma);
+	UFUNCTION()
+	void OnAIGammaValueCommitted(const FText& NewGamma, ETextCommit::Type CommitType);
 
 	UFUNCTION()
 	void OnConstantBeatGridSpacingCheckStateChanged(const bool bConstantBeatGridSpacing);
@@ -464,6 +519,16 @@ protected:
 	UTooltipImage* SpreadTypeQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* DynamicTargetScaleQMark;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* EnableAIQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* AlphaQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* EpsilonQMark;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* GammaQMark;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* BeatGridEvenSpacingQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")

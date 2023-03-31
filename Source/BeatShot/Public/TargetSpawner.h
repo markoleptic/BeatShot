@@ -63,6 +63,7 @@ public:
 	/** Delegate that is executed every time a target has been spawned. */
 	FOnTargetSpawned OnTargetSpawned;
 
+	/** Delegate that is executed every time a target has been spawned, and passes a pointer to that target. Used for aimbot */
 	FOnTargetSpawned_AimBot OnTargetSpawned_AimBot;
 	
 	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
@@ -186,6 +187,7 @@ private:
 	/** Returns a string representation of an accuracy row */
 	static void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
 
+	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings& InPlayerSettings);
 
 #pragma region General Spawning Variables
@@ -290,6 +292,9 @@ private:
 	/** Distance between floor and HeadshotHeight */
 	const float HeadshotHeight = 160.f;
 
+	/** Minimum overlap radius so that small targets do not overlap due to the spawn memory scale being much higher */
+	float MinOverlapRadius;
+
 	FPlayerSettings PlayerSettings;
 
 #pragma endregion
@@ -347,7 +352,10 @@ private:
 	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
-	int32 TryGetSpawnLocationFromRLAgent(const TArray<FVector>& OpenLocations);
+	int32 TryGetSpawnLocationFromRLAgent(const TArray<FVector>& OpenLocations) const;
+
+	/** Updates RLAgent's QTable until TargetPairs queue is empty */
+	void UpdateRLAgent();
 
 	/** Location of the previously spawned target, in world space */
 	FVector PreviousSpawnLocation;
