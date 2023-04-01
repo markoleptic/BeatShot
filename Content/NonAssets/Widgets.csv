@@ -321,3 +321,6 @@ GM_AI_EnableAI,Enable AI
 GM_AI_Alpha,Learning Rate
 GM_AI_Epsilon,Discount Factor
 GM_AI_Gamma,Exploration/Exploitation Ratio
+Video_Reflex,NVIDIA Reflex Low Latency
+Video_DLSS,NVIDIA DLSS
+Video_NIS,NVIDIA NIS

@@ -183,6 +183,31 @@ protected:
 
 #pragma	endregion
 
+#pragma region NVIDIA
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video|NVIDIA")
+	UComboBoxString* ReflexComboBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video|NVIDIA")
+	UTextBlock* DLSSText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video|NVIDIA")
+	UComboBoxString* DLSSComboBox;
+
+	bool bDLSSSupported = false;
+	bool bNISSupported = false;
+
+	UFUNCTION()
+	void OnReflexSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	UFUNCTION(BlueprintImplementableEvent)
+	/* Hopefully a temporary solution. Calls the GetReflexAvailable function from ReflexBlueprintLibrary */
+	bool GetReflexAvailable();
+	/* Hopefully a temporary solution. Calls the SetReflexMode function from ReflexBlueprintLibrary */
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetReflexMode(const EBudgetReflexMode Mode);
+	UFUNCTION()
+	void OnDLSSSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
+
+#pragma endregion
+
 #pragma region Sound
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")

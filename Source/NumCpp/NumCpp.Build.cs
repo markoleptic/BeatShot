@@ -5,6 +5,7 @@ public class NumCpp : ModuleRules
 {
 	public NumCpp(ReadOnlyTargetRules Target) : base(Target)
 	{
+		bEnableExceptions = true;
 		Type = ModuleType.External;
 		PublicDependencyModuleNames.AddRange(new[]
 			{ "Core", "CoreUObject", "Engine", "LocalBoost" });

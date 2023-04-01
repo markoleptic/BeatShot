@@ -3,6 +3,7 @@
 #include "OverlayWidgets/RLAgentWidget.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Overlay.h"
+#include "Components/OverlaySlot.h"
 #include "Components/UniformGridPanel.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -18,15 +19,20 @@ void URLAgentWidget::NativeDestruct()
 
 void URLAgentWidget::UpdatePanel(const TArray<float>& QTable)
 {
-	for (const float Value : QTable)
+	const int32 Middle = QTable.Num() / 2;
+	for (int i = 0; i < QTable.Num(); i++)
 	{
-		if (Value < MinValue)
+		if (i == Middle)
 		{
-			MinValue = Value;
+			continue;
 		}
-		if (Value > MaxValue)
+		if (QTable[i] < MinValue)
 		{
-			MaxValue = Value;
+			MinValue = QTable[i];
+		}
+		if (QTable[i] > MaxValue)
+		{
+			MaxValue = QTable[i];
 		}
 	}
 	FNumberFormattingOptions FormattingOptions;
@@ -38,6 +44,11 @@ void URLAgentWidget::UpdatePanel(const TArray<float>& QTable)
 	{
 		const float Value = roundf(QTable[i] * 100.f) / 100.f;
 		Points[i].Text->SetText(FText::AsNumber(Value, &FormattingOptions));
+		if (i == Middle)
+		{
+			Points[i].Image->SetColorAndOpacity(InterpColor((MinValue + MaxValue) / 2));
+			continue;
+		}
 		Points[i].Image->SetColorAndOpacity(InterpColor(QTable[i]));
 	}
 }
@@ -70,15 +81,20 @@ void URLAgentWidget::UpdatePanel2(const TArray<float>& QTable)
 
 void URLAgentWidget::InitQTable(const int32 Rows, const int32 Columns, const TArray<float>& QTable)
 {
-	for (const float Value : QTable)
+	const int32 Middle = QTable.Num() / 2;
+	for (int i = 0; i < QTable.Num(); i++)
 	{
-		if (Value < MinValue)
+		if (i == Middle)
 		{
-			MinValue = Value;
+			continue;
 		}
-		if (Value > MaxValue)
+		if (QTable[i] < MinValue)
 		{
-			MaxValue = Value;
+			MinValue = QTable[i];
+		}
+		if (QTable[i] > MaxValue)
+		{
+			MaxValue = QTable[i];
 		}
 	}
 	for (int j = 0; j < Columns; j++)
@@ -90,7 +106,9 @@ void URLAgentWidget::InitQTable(const int32 Rows, const int32 Columns, const TAr
 			UTextBlock* Text =  WidgetTree->ConstructWidget<UTextBlock>(DefaultText);
 			Text->SetColorAndOpacity(FSlateColor(FLinearColor(FColor::Black)));
 			Overlay->AddChildToOverlay(Image);
-			Overlay->AddChildToOverlay(Text);
+			UOverlaySlot* TextSlot = Overlay->AddChildToOverlay(Text);
+			TextSlot->SetVerticalAlignment(VAlign_Center);
+			TextSlot->SetHorizontalAlignment(HAlign_Center);
 			GridPanel->AddChildToUniformGrid(Overlay, i, j);
 			Points.Add(FAgentPoint(Image, Text));
 		}

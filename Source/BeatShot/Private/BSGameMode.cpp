@@ -163,6 +163,19 @@ void ABSGameMode::BindGameModeDelegates()
 	{
 		GetTargetSpawner()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
 	}
+	for (const ABSPlayerController* Controller : Controllers)
+	{
+		if (ABSCharacter* Character = Controller->GetBSCharacter())
+		{
+			if (Character->HasMatchingGameplayTag(FBSGameplayTags::Get().Cheat_AimBot))
+			{
+				if (!GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
+				{
+					GetTargetSpawner()->OnTargetSpawned_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
+				}
+			}
+		}
+	}
 }
 
 void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)

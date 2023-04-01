@@ -3,8 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DLSSLibrary.h"
+#include "NISLibrary.h"
 #include "GameFramework/SaveGame.h"
 #include "SaveGamePlayerSettings.generated.h"
+
+UENUM(BlueprintType)
+enum class EBudgetReflexMode : uint8
+{
+	Disabled = 0 UMETA(DisplayName="Disabled"),
+	Enabled = 1 UMETA(DisplayName="Enabled"),
+	EnabledPlusBoost = 3 UMETA(DisplayName="Enabled + Boost")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EBudgetReflexMode, EBudgetReflexMode::Disabled, EBudgetReflexMode::EnabledPlusBoost);
 
 /* Simple login payload */
 USTRUCT(BlueprintType)
@@ -140,6 +151,15 @@ struct FPlayerSettings_VideoAndSound
 	UPROPERTY(BlueprintReadOnly)
 	bool bShowFPSCounter;
 
+	UPROPERTY(BlueprintReadOnly)
+	UDLSSMode DLSSMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	UNISMode NISMode;
+
+	UPROPERTY(BlueprintReadWrite)
+	EBudgetReflexMode ReflexMode;
+
 	FPlayerSettings_VideoAndSound()
 	{
 		GlobalVolume = 50.f;
@@ -148,6 +168,9 @@ struct FPlayerSettings_VideoAndSound
 		FrameRateLimitMenu = 144;
 		FrameRateLimitGame = 0;
 		bShowFPSCounter = false;
+		DLSSMode = UDLSSMode::Auto;
+		NISMode = UNISMode::Custom;
+		ReflexMode = EBudgetReflexMode::Enabled;
 	}
 };
 

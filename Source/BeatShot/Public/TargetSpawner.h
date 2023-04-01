@@ -38,6 +38,7 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
+public:
 	UFUNCTION(CallInEditor)
 	void ToggleDebug_SpawnBox();
 	
@@ -47,7 +48,10 @@ protected:
 	UFUNCTION(CallInEditor)
 	void ToggleRLAgentWidget();
 
-public:
+	bool IsDebug_SpawnBoxActive() const { return bShowDebug_SpawnBox; }
+	bool IsDebug_SpawnMemoryActive() const { return bShowDebug_SpawnMemory; }
+	bool IsDebug_RLAgentWidgetActive() const { return bShowDebug_RLAgentWidget; }
+	
 	/** Called from selected DefaultGameMode */
 	void InitTargetSpawner(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings);
 

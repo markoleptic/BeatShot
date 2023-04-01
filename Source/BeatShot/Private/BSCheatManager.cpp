@@ -13,7 +13,7 @@ void UBSCheatManager::InitCheatManager()
 	ReceiveInitCheatManager();
 }
 
-void UBSCheatManager::SetAimBotEnabled(const bool bEnable) const
+void UBSCheatManager::ToggleAimBot()
 {
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
@@ -22,15 +22,17 @@ void UBSCheatManager::SetAimBotEnabled(const bool bEnable) const
 	{
 		return;
 	}
-	if (bEnable)
+	if (!bAimBotEnabled)
 	{
 		if (!GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
 		{
 			GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 		}
 		UBSGameplayAbility* AbilityCDO = AimBotAbility->GetDefaultObject<UBSGameplayAbility>();
-		const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1);
-		Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+		if (const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1); Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec).IsValid())
+		{
+			bAimBotEnabled = true;
+		}
 	}
 	else
 	{
@@ -48,6 +50,60 @@ void UBSCheatManager::SetAimBotEnabled(const bool bEnable) const
 			{
 				Character->GetBSAbilitySystemComponent()->ClearAbility(Spec->Handle);
 			}
+		}
+		bAimBotEnabled = false;
+	}
+}
+
+void UBSCheatManager::ToggleRLAgentWidget() const
+{
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleRLAgentWidget();
+}
+
+void UBSCheatManager::ToggleSpawnMemory() const
+{
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleDebug_SpawnMemory();
+}
+
+void UBSCheatManager::ToggleSpawnBox() const
+{
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleDebug_SpawnBox();
+}
+
+void UBSCheatManager::ToggleAllTargetSpawnerDebug() const
+{
+	const ATargetSpawner* TargetSpawner = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner();
+	const bool bBoxActive = TargetSpawner->IsDebug_SpawnBoxActive();
+	const bool bWidgetActive = TargetSpawner->IsDebug_RLAgentWidgetActive();
+	const bool bSpawnMemoryActive = TargetSpawner->IsDebug_SpawnMemoryActive();
+	if (!bBoxActive || !bWidgetActive || !bSpawnMemoryActive)
+	{
+		if (!bBoxActive)
+		{
+			ToggleSpawnBox();
+		}
+		if (!bWidgetActive)
+		{
+			ToggleRLAgentWidget();
+		}
+		if (!bSpawnMemoryActive)
+		{
+			ToggleSpawnMemory();
+		}
+	}
+	else
+	{
+		if (bBoxActive)
+		{
+			ToggleSpawnBox();
+		}
+		if (bWidgetActive)
+		{
+			ToggleRLAgentWidget();
+		}
+		if (bSpawnMemoryActive)
+		{
+			ToggleSpawnMemory();
 		}
 	}
 }

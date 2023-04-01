@@ -7,6 +7,7 @@ public class BeatShot : ModuleRules
 	public BeatShot(ReadOnlyTargetRules Target) : base(Target)
 	{
 		bEnableUndefinedIdentifierWarnings = false;
+		bEnableExceptions = true;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new[]
@@ -17,8 +18,6 @@ public class BeatShot : ModuleRules
 			{ "EnhancedInput", "InputCore", "GameplayAbilities", "GameplayTags", "GameplayTasks"});
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private");
 		PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130");
-		// PrivateIncludePaths.Add(
-		// 	"../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools");
 		// PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/Thirdparty/miniaudio/include");
 		// PrivateIncludePaths.Add("../Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb");
 

@@ -15,8 +15,22 @@ protected:
 	virtual void InitCheatManager() override;
 
 	UFUNCTION(exec)
-	void SetAimBotEnabled(const bool bEnable) const;
+	void ToggleAimBot();
+
+	UFUNCTION(exec)
+	void ToggleRLAgentWidget() const;
+
+	UFUNCTION(exec)
+	void ToggleSpawnMemory() const;
+
+	UFUNCTION(exec)
+	void ToggleSpawnBox() const;
+
+	UFUNCTION(exec)
+	void ToggleAllTargetSpawnerDebug() const;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;
+
+	bool bAimBotEnabled = false;
 };
