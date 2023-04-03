@@ -270,7 +270,7 @@ private:
 
 	/** The game mode defining properties */
 	UPROPERTY(VisibleAnywhere, Category = "BeatShot|General")
-	FGameModeActorStruct GameModeActorStruct;
+	FBSConfig BSConfig;
 
 	/** The threshold to activate night mode if not yet unlocked */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|General")

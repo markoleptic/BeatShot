@@ -88,7 +88,7 @@ protected:
 
 public:
 
-	void InitTarget(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings);
+	void InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
@@ -130,9 +130,9 @@ public:
 	UPROPERTY()
 	FTimerHandle TimeSinceSpawn;
 
-	/** Locally stored GameModeActorStruct to access GameMode properties without storing ref to game instance */
+	/** Locally stored BSConfig to access GameMode properties without storing ref to game instance */
 	UPROPERTY()
-	FGameModeActorStruct GameModeActorStruct;
+	FBSConfig BSConfig;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UBSHealthComponent* HealthComponent;

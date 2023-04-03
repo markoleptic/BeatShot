@@ -47,6 +47,7 @@ public:
 	/** Broadcasts to parent so it can slide menu button back to starting position */
 	UPROPERTY()
 	FOnExitQuitMenu OnExitQuitMenu;
+	
 	/** Bound to DefaultGameInstance when constructed in DefaultPlayerController */
 	FOnGameModeStateChanged OnGameModeStateChanged;
 

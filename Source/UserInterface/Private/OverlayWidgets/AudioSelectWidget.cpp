@@ -154,7 +154,7 @@ void UAudioSelectWidget::OnLoadFileButtonClicked()
 		UE_LOG(LogTemp, Display, TEXT("Init Tracker Error"));
 		return;
 	}
-	/* set Song length and song title in GameModeActorStruct if using song file */
+	/* set Song length and song title in BSConfig if using song file */
 	FString Filename, Extension, MetaType, Title, Artist, Album, Year, Genre;
 	Manager->GetMetadata(Filename, Extension, MetaType, Title, Artist, Album, Year, Genre);
 	if (Title.IsEmpty())

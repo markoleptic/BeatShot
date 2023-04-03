@@ -10,7 +10,7 @@
 
 /** Enum representing the default game mode names */
 UENUM(BlueprintType)
-enum class EGameModeActorName : uint8
+enum class EDefaultMode : uint8
 {
 	Custom UMETA(DisplayName="Custom"),
 	SingleBeat UMETA(DisplayName="SingleBeat"),
@@ -18,7 +18,7 @@ enum class EGameModeActorName : uint8
 	BeatGrid UMETA(DisplayName="BeatGrid"),
 	BeatTrack UMETA(DisplayName="BeatTrack")};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeActorName, EGameModeActorName::Custom, EGameModeActorName::BeatTrack);
+ENUM_RANGE_BY_FIRST_AND_LAST(EDefaultMode, EDefaultMode::Custom, EDefaultMode::BeatTrack);
 
 /** Enum representing the spread type of the targets */
 UENUM(BlueprintType)
@@ -57,9 +57,46 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Cap
 
 #pragma endregion
 
+/* Struct representing AI parameters */
+USTRUCT(BlueprintType)
+struct FBS_AIConfig
+{
+	GENERATED_BODY()
+	
+	/* Whether or not to enable the reinforcement learning agent to handle target spawning */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	bool bEnableRLAgent;
+	
+	/* The stored QTable for this game mode */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	TArray<float> QTable;
+	
+	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	float Alpha;
+
+	/** The exploration/exploitation balance factor. A value = 1 will result in only choosing random values (explore),
+	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	float Epsilon;
+	
+	/** Discount factor, or how much to value future rewards vs immediate rewards */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	float Gamma;
+
+	FBS_AIConfig()
+	{
+		bEnableRLAgent = false;
+		QTable = TArray<float>();
+		Alpha = 0.9f;
+		Epsilon = 0.9f;
+		Gamma = 0.9f;
+	}
+};
+
 /* Struct representing a game mode */
 USTRUCT(BlueprintType)
-struct FGameModeActorStruct
+struct FBSConfig
 {
 	GENERATED_BODY()
 
@@ -69,7 +106,7 @@ struct FGameModeActorStruct
 
 	/* The default game mode name, or custom if custom */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
-	EGameModeActorName GameModeActorName;
+	EDefaultMode DefaultMode;
 
 	/* Custom game mode name if custom, otherwise empty string */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
@@ -172,22 +209,9 @@ struct FGameModeActorStruct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float MoveForwardDistance;
 
-	/* Whether or not to enable the reinforcement learning agent to handle target spawning */
+	/* How far to move the target forward over its lifetime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
-	bool bEnableRLAgent;
-	
-	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
-	float Alpha;
-
-	/** The exploration/exploitation balance factor. A value = 1 will result in only choosing random values (explore),
-	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
-	float Epsilon;
-	
-	/** Discount factor, or how much to value future rewards vs immediate rewards */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
-	float Gamma;
+	FBS_AIConfig AIConfig;
 
 	/* The minimum speed multiplier for Tracking Game Mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
@@ -197,10 +221,14 @@ struct FGameModeActorStruct
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	float MaxTrackingSpeed;
 
-	/* The number of BeatGrid targets, only square-able numbers */
+	/* The number of horizontal BeatGrid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 BeatGridSize;
+	int32 NumHorizontalBeatGridTargets;
 
+	/* The number of vertical BeatGrid targets*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	int32 NumVerticalBeatGridTargets;
+	
 	/* Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	bool RandomizeBeatGrid;
@@ -212,11 +240,10 @@ struct FGameModeActorStruct
 	/* not implemented yet */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumTargetsAtOnceBeatGrid;
-
 	
-	FORCEINLINE bool operator==(const FGameModeActorStruct& Other) const
+	FORCEINLINE bool operator==(const FBSConfig& Other) const
 	{
-		if (GameModeActorName == Other.GameModeActorName && CustomGameModeName.Equals(Other.CustomGameModeName))
+		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName))
 		{
 			return true;
 		}
@@ -224,9 +251,9 @@ struct FGameModeActorStruct
 	}
 	
 	/* Generic initialization */
-	FGameModeActorStruct()
+	FBSConfig()
 	{
-		GameModeActorName = EGameModeActorName::Custom;
+		DefaultMode = EDefaultMode::Custom;
 		SpreadType = ESpreadType::None;
 		GameModeDifficulty = EGameModeDifficulty::Normal;
 		bPlaybackAudio = false;
@@ -249,26 +276,24 @@ struct FGameModeActorStruct
 		PlayerDelay = 0.3f;
 		bMoveTargetsForward = false;
 		MoveForwardDistance = 0.f;
-		bEnableRLAgent = false;
-		Alpha = 0.9f;
-		Epsilon = 0.9f;
-		Gamma = 0.9f;
+		AIConfig = FBS_AIConfig();
 		SongTitle = "";
 		CustomGameModeName = "";
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
+		NumHorizontalBeatGridTargets = 0;
+		NumVerticalBeatGridTargets = 0;
 		RandomizeBeatGrid = false;
 		NumTargetsAtOnceBeatGrid = -1;
 		BeatGridSpacing = FVector2D::ZeroVector;
-		BeatGridSize = 0.f;
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 		MinBoxBounds = FVector(0.f, 3200.f, 1000.f);
 	}
 
-	FGameModeActorStruct(EGameModeActorName GameModeActor, EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, ESpreadType NewSpreadType = ESpreadType::None)
+	FBSConfig(EDefaultMode InDefaultMode, EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, ESpreadType NewSpreadType = ESpreadType::None)
 	{
 		// Parameters
-		GameModeActorName = GameModeActor;
+		DefaultMode = InDefaultMode;
 		GameModeDifficulty = NewGameModeDifficulty;
 		SpreadType = NewSpreadType;
 
@@ -280,16 +305,8 @@ struct FGameModeActorStruct
 		SongPath = "";
 		GameModeLength = 0.f;
 		HeadshotHeight = false;
-		RandomizeBeatGrid = false;
 		SongTitle = "";
-		NumTargetsAtOnceBeatGrid = -1;
-		BeatGridSpacing = FVector2D::ZeroVector;
 		CustomGameModeName = "";
-		bEnableRLAgent = false;
-		Alpha = 0.9f;
-		Epsilon = 0.9f;
-		Gamma = 0.9f;
-
 		WallCentered = false;
 		IsBeatTrackMode = false;
 		IsSingleBeatMode = false;
@@ -305,12 +322,16 @@ struct FGameModeActorStruct
 		MaxTargetScale = 2.f;
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
-		BeatGridSize = 0.f;
+		NumTargetsAtOnceBeatGrid = -1;
+		RandomizeBeatGrid = false;
+		BeatGridSpacing = FVector2D::ZeroVector;
+		NumHorizontalBeatGridTargets = 0;
+		NumVerticalBeatGridTargets = 0;
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 		MinBoxBounds = FVector(0.f, 3200.f, 1000.f);
 
 		// BeatGrid
-		if (GameModeActor == EGameModeActorName::BeatGrid)
+		if (DefaultMode == EDefaultMode::BeatGrid)
 		{
 			SpreadType = ESpreadType::None;
 			IsBeatGridMode = true;
@@ -324,7 +345,9 @@ struct FGameModeActorStruct
 				TargetMaxLifeSpan = 1.2f;
 				MinTargetScale = 0.85f;
 				MaxTargetScale = 0.85f;
-				BeatGridSize = 25;
+				NumHorizontalBeatGridTargets = 5;
+				NumVerticalBeatGridTargets = 5;
+				BeatGridSpacing = FVector2D(75, 50);
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
 			{
@@ -333,7 +356,9 @@ struct FGameModeActorStruct
 				TargetMaxLifeSpan = 1.f;
 				MinTargetScale = 0.7f;
 				MaxTargetScale = 0.7f;
-				BeatGridSize = 25;
+				NumHorizontalBeatGridTargets = 10;
+				NumVerticalBeatGridTargets = 5;
+				BeatGridSpacing = FVector2D(75, 50);
 			}
 			else if (GameModeDifficulty == EGameModeDifficulty::Death)
 			{
@@ -342,11 +367,13 @@ struct FGameModeActorStruct
 				TargetMaxLifeSpan = 0.75f;
 				MinTargetScale = 0.5f;
 				MaxTargetScale = 0.5f;
-				BeatGridSize = 36;
+				NumHorizontalBeatGridTargets = 15;
+				NumVerticalBeatGridTargets = 10;
+				BeatGridSpacing = FVector2D(75, 50);
 			}
 		}
 		// BeatTrack
-		else if (GameModeActor == EGameModeActorName::BeatTrack)
+		else if (DefaultMode == EDefaultMode::BeatTrack)
 		{
 			SpreadType = ESpreadType::None;
 			WallCentered = true;
@@ -383,7 +410,7 @@ struct FGameModeActorStruct
 			}
 		}
 		// MultiBeat
-		else if (GameModeActor == EGameModeActorName::MultiBeat)
+		else if (DefaultMode == EDefaultMode::MultiBeat)
 		{
 			UseDynamicSizing = true;
 			// SpreadType = ESpreadType::DynamicRandom;
@@ -433,7 +460,7 @@ struct FGameModeActorStruct
 			}
 		}
 		// SingleBeat
-		else if (GameModeActor == EGameModeActorName::SingleBeat)
+		else if (DefaultMode == EDefaultMode::SingleBeat)
 		{
 			IsSingleBeatMode = true;
 			UseDynamicSizing = true;
@@ -484,9 +511,20 @@ struct FGameModeActorStruct
 		}
 	}
 
+	/** Returns an array of all default game modes */
+	static TArray<FBSConfig> GetDefaultGameModes()
+	{
+		TArray<FBSConfig> DefaultModes;
+		DefaultModes.Add(FBSConfig(EDefaultMode::BeatGrid, EGameModeDifficulty::Normal));
+		DefaultModes.Add(FBSConfig(EDefaultMode::BeatTrack, EGameModeDifficulty::Normal));
+		DefaultModes.Add(FBSConfig(EDefaultMode::SingleBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicEdgeOnly));
+		DefaultModes.Add(FBSConfig(EDefaultMode::MultiBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicRandom));
+		return DefaultModes;
+	}
+	
 	void ResetStruct()
 	{
-		GameModeActorName = EGameModeActorName::Custom;
+		DefaultMode = EDefaultMode::Custom;
 		SpreadType = ESpreadType::None;
 		MinDistanceBetweenTargets = 10.f;
 		GameModeLength = 0.f;
@@ -521,5 +559,5 @@ class GLOBAL_API USaveGameCustomGameMode : public USaveGame
 
 public:
 	UPROPERTY()
-	TArray<FGameModeActorStruct> CustomGameModes;
+	TArray<FBSConfig> CustomGameModes;
 };

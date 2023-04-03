@@ -32,7 +32,7 @@ struct FGameModeTransitionState
 	bool bSaveCurrentScores;
 
 	/* The game mode properties, only used if Start or Restart */
-	FGameModeActorStruct GameModeActorStruct;
+	FBSConfig BSConfig;
 };
 
 /** Broadcast when Player Settings are changed and saved */
@@ -43,7 +43,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAASettingsChange, const FAASettin
 
 /** Broadcast from GameModesWidget, SettingsMenuWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should
  *  start, restart, or stop */
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, FGameModeTransitionState& TransitionState);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);
 
 UINTERFACE()
 class USaveLoadInterface : public UInterface
@@ -64,16 +64,12 @@ public:
 
 	virtual void SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave);
 
-	TArray<FGameModeActorStruct> LoadCustomGameModes() const;
+	TArray<FBSConfig> LoadCustomGameModes() const;
 
-	void SaveCustomGameMode(const TArray<FGameModeActorStruct> GameModeArrayToSave);
+	void SaveCustomGameMode(const TArray<FBSConfig> GameModeArrayToSave);
 
 	TArray<FPlayerScore> LoadPlayerScores() const;
 
 	void SavePlayerScores(const TArray<FPlayerScore> PlayerScoreArrayToSave);
-
-	TArray<FQTableWrapper> LoadQTables() const;
-
-	void SaveQTables(const TArray<FQTableWrapper> QTablesToSave);
 
 };

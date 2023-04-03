@@ -2,6 +2,8 @@
 
 #include "RLBase.h"
 
+#include "Kismet/KismetMathLibrary.h"
+
 URLBase::URLBase()
 {
 	EpisodeRewards = nc::NdArray<float>(1);
@@ -13,8 +15,8 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 	Alpha = AgentParams.InAlpha;
 	Gamma = AgentParams.InGamma;
 	Epsilon = AgentParams.InEpsilon;
-	SpawnCounterHeight = AgentParams.Height;
-	SpawnCounterWidth =  AgentParams.Width;
+	SpawnCounterHeight = AgentParams.SpawnCounterHeight;
+	SpawnCounterWidth =  AgentParams.SpawnCounterWidth;
 	SpawnCounterSize = SpawnCounterHeight * SpawnCounterWidth;
 	
 	if (SpawnCounterHeight % 5 != 0 || SpawnCounterWidth % 5 != 0 )
@@ -25,14 +27,6 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 	WidthScaleFactor = SpawnCounterWidth / ScaledWidth;
 	HeightScaleFactor = SpawnCounterHeight / ScaledHeight;
 	ScaledSize = ScaledWidth * ScaledHeight;
-	
-	QTableWrapper.CustomGameModeName = AgentParams.CustomGameModeName;
-	QTableWrapper.GameModeActorName = AgentParams.GameModeActorName;
-	QTableWrapper.RowSize = ScaledSize;
-	QTableWrapper.ColSize = ScaledSize;
-
-	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), SpawnCounterHeight, SpawnCounterWidth);
-	UE_LOG(LogTemp, Display, TEXT("QTableRows: %d QTableColumns: %d"), ScaledHeight, ScaledWidth);
 
 	/* Each row in QTable has size equal to ScaledSize, and so does each column */
 	QTable = nc::zeros<float>(nc::Shape(ScaledSize, ScaledSize));
@@ -50,6 +44,13 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 			QTableIndices[Found].SpawnCounterIndices.AddUnique(i);
 		}
 	}
+
+	if (AgentParams.InQTable.Num() == QTable.size())
+	{
+		QTable = GetQTableFromTArray(AgentParams.InQTable);
+	}
+	UE_LOG(LogTemp, Display, TEXT("InQTable.Num() %d"), AgentParams.InQTable.Num());
+	UE_LOG(LogTemp, Display, TEXT("QTable.size() %u"), QTable.size());
 	
 	/*for (FQTableIndex Index : QTableIndices)
 	{
@@ -58,21 +59,9 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 			UE_LOG(LogTemp, Display, TEXT("QTableIndex: %d SpawnCounterIndex: %d"), Index.QTableIndex, SubIndex);
 		}
 	}*/
-	
-	if (const TArray<FQTableWrapper> QTables = LoadQTables(); !QTables.IsEmpty())
-	{
-		const int32 Index = QTables.Find(FQTableWrapper(AgentParams.GameModeActorName, AgentParams.CustomGameModeName));
-		if (Index != INDEX_NONE)
-		{
-			const FQTableWrapper FoundQTable = QTables[Index];
-			if (FoundQTable.QTable.Num() == QTable.size())
-			{
-				UE_LOG(LogTemp, Display, TEXT("QTable Match"));
-				QTable = GetQTableFromTArray(FoundQTable);
-				QTableWrapper = QTables[Index];
-			}
-		}
-	}
+
+	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), SpawnCounterHeight, SpawnCounterWidth);
+	UE_LOG(LogTemp, Display, TEXT("QTableRows: %d QTableColumns: %d"), ScaledHeight, ScaledWidth);
 	UE_LOG(LogTemp, Display, TEXT("QTable Size: %d"), QTable.size());
 }
 
@@ -176,24 +165,14 @@ void URLBase::PrintRewards() const
 	}
 }
 
-void URLBase::SaveQTable()
-{
-	QTableWrapper.QTable = GetTArrayFromQTable(QTable);
-	TArray<FQTableWrapper> QTables = LoadQTables();
-	if (const int32 Index = QTables.Find(QTableWrapper); Index != INDEX_NONE)
-	{
-		QTables[Index] = QTableWrapper;
-		SaveQTables(QTables);
-		return;
-	}
-	QTables.Add(QTableWrapper);
-	SaveQTables(QTables);
-	PrintRewards();
-}
-
-TArray<float> URLBase::GetTArrayQTable() const
+TArray<float> URLBase::GetAveragedTArrayFromQTable() const
 {
 	return GetTArrayFromQTable(flipud(mean(GetQTable(), nc::Axis::ROW).reshape(ScaledHeight,ScaledWidth)));
+}
+
+TArray<float> URLBase::GetSaveReadyQTable() const
+{
+	return GetTArrayFromQTable(GetQTable());
 }
 
 nc::NdArray<float> URLBase::GetQTable() const
@@ -290,14 +269,18 @@ TArray<int32> URLBase::GetSpawnCounterIndexRange(const int32 QTableIndex) const
 	return QTableIndices[QTableIndex].SpawnCounterIndices;
 }
 
-nc::NdArray<float> URLBase::GetQTableFromTArray(const FQTableWrapper& InWrapper) const
+nc::NdArray<float> URLBase::GetQTableFromTArray(const TArray<float>& InTArray) const
 {
-	nc::NdArray<float> Out = nc::zeros<float>(InWrapper.RowSize, InWrapper.ColSize);
-	for (int j = 0; j < InWrapper.ColSize; j++)
+	const int32 RowSize = UKismetMathLibrary::Sqrt(InTArray.Num());
+	const int32 ColSize = RowSize;
+	
+	nc::NdArray<float> Out = nc::zeros<float>(RowSize, ColSize);
+	
+	for (int j = 0; j < ColSize; j++)
 	{
-		for (int i = 0; i < InWrapper.RowSize; i++)
+		for (int i = 0; i < RowSize; i++)
 		{
-			Out(i, j) = InWrapper.QTable[(InWrapper.RowSize * j) + i];
+			Out(i, j) = InTArray[RowSize * j + i];
 		}
 	}
 	return Out;
@@ -305,13 +288,17 @@ nc::NdArray<float> URLBase::GetQTableFromTArray(const FQTableWrapper& InWrapper)
 
 TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
 {
+	const int32 RowSize = InQTable.numRows();
+	const int32 ColSize = InQTable.numCols();
+	
 	TArray<float> Out;
 	Out.Init(0.f, InQTable.size());
-	for(int j = 0; j < static_cast<int>(InQTable.numCols()); j++)
+	
+	for(int j = 0; j < ColSize; j++)
 	{
-		for(int i = 0; i < static_cast<int>(InQTable.numRows()); i++)
+		for(int i = 0; i < RowSize; i++)
 		{
-			Out[(static_cast<int>(InQTable.numRows()) * j) + i] = InQTable(i, j);
+			Out[RowSize * j + i] = InQTable(i, j);
 		}
 	}
 	return Out;
@@ -333,5 +320,5 @@ TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
 
 void URLBase::UpdateQTableWidget() const
 {
-	OnQTableUpdate.Broadcast(GetTArrayQTable());
+	OnQTableUpdate.Broadcast(GetAveragedTArrayFromQTable());
 }

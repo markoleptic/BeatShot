@@ -46,15 +46,15 @@ ASphereTarget::ASphereTarget()
 	Guid = FGuid::NewGuid();
 }
 
-void ASphereTarget::InitTarget(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings)
+void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings)
 {
-	GameModeActorStruct = InGameModeActorStruct;
+	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings.Game;
-	if (GameModeActorStruct.IsBeatGridMode)
+	if (BSConfig.IsBeatGridMode)
 	{
 		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Grid);
 	}
-	else if (GameModeActorStruct.IsBeatTrackMode)
+	else if (BSConfig.IsBeatTrackMode)
 	{
 		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
 		HardRefAttributeSetBase->InitMaxHealth(1000000);
@@ -103,7 +103,7 @@ void ASphereTarget::BeginPlay()
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
 		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent, GameplayTags);
 		HealthComponent->OnOutOfHealth.BindUObject(this, &ASphereTarget::HandleDestruction);
-		if (GameModeActorStruct.IsBeatGridMode)
+		if (BSConfig.IsBeatGridMode)
 		{
 			HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::HandleTemporaryDestruction);
 		}
@@ -125,8 +125,8 @@ void ASphereTarget::BeginPlay()
 		SetOutlineColor(PlayerSettings.TargetOutlineColor);
 	}
 	
-	const float WhiteToPeakMultiplier = 1 / GameModeActorStruct.PlayerDelay;
-	const float PeakToFadeMultiplier = 1 / (GameModeActorStruct.TargetMaxLifeSpan - GameModeActorStruct.PlayerDelay);
+	const float WhiteToPeakMultiplier = 1 / BSConfig.PlayerDelay;
+	const float PeakToFadeMultiplier = 1 / (BSConfig.TargetMaxLifeSpan - BSConfig.PlayerDelay);
 
 	/* White to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
@@ -156,7 +156,7 @@ void ASphereTarget::BeginPlay()
 	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
 	FadeAndReappearTimeline.SetPlayRate(WhiteToPeakMultiplier);
 
-	if (GameModeActorStruct.IsBeatGridMode)
+	if (BSConfig.IsBeatGridMode)
 	{
 		SetLifeSpan(0);
 		ApplyImmunityEffect();
@@ -167,7 +167,7 @@ void ASphereTarget::BeginPlay()
 		OnPeakToFadeFinished.BindDynamic(this, &ASphereTarget::SetColorToBeatGridColor);
 		PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
 	}
-	else if (GameModeActorStruct.IsBeatTrackMode)
+	else if (BSConfig.IsBeatTrackMode)
 	{
 		SetLifeSpan(0);
 		SetSphereColor(PlayerSettings.EndTargetColor);
@@ -175,9 +175,9 @@ void ASphereTarget::BeginPlay()
 	}
 	else
 	{
-		SetLifeSpan(GameModeActorStruct.TargetMaxLifeSpan);
+		SetLifeSpan(BSConfig.TargetMaxLifeSpan);
 		PlayStartToPeakTimeline();
-		GetWorldTimerManager().SetTimer(TimeSinceSpawn, GameModeActorStruct.TargetMaxLifeSpan, false);
+		GetWorldTimerManager().SetTimer(TimeSinceSpawn, BSConfig.TargetMaxLifeSpan, false);
 	}
 }
 
@@ -292,14 +292,14 @@ void ASphereTarget::LifeSpanExpired()
 
 void ASphereTarget::HandleDestruction()
 {
-	if (GameModeActorStruct.IsBeatTrackMode || GameModeActorStruct.IsBeatGridMode)
+	if (BSConfig.IsBeatTrackMode || BSConfig.IsBeatGridMode)
 	{
 		return;
 	}
 
 	/* Get the time that the sphere was alive for */
 	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-	if (TimeAlive < 0 || TimeAlive >= GameModeActorStruct.TargetMaxLifeSpan)
+	if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetMaxLifeSpan)
 	{
 		Destroy();
 		return;
@@ -315,11 +315,11 @@ void ASphereTarget::HandleDestruction()
 void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
 	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear */
-	if (GameModeActorStruct.IsBeatGridMode)
+	if (BSConfig.IsBeatGridMode)
 	{
 		/* Get the time that the sphere was alive for */
 		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-		if (TimeAlive < 0 || TimeAlive >= GameModeActorStruct.TargetMaxLifeSpan)
+		if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetMaxLifeSpan)
 		{
 			return;
 		}

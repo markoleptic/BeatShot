@@ -98,7 +98,7 @@ ASphereTarget* ABSCharacter::PeekActiveTargets()
 
 float ABSCharacter::GetAimBotPlaybackSpeed() const
 {
-	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct.TargetSpawnCD;
+	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.TargetSpawnCD;
 }
 
 UCameraComponent* ABSCharacter::GetCamera() const

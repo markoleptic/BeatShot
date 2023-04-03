@@ -13,16 +13,16 @@
 void UConstrainedSlider::NativeConstruct()
 {
 	Super::NativeConstruct();
+}
 
+void UConstrainedSlider::InitConstrainedSlider(const FConstrainedSliderStruct& InStruct)
+{
 	Checkbox->OnCheckStateChanged.AddDynamic(this, &UConstrainedSlider::OnCheckStateChanged);
 	MinSlider->OnValueChanged.AddDynamic(this, &UConstrainedSlider::OnMinSliderChanged);
 	MaxSlider->OnValueChanged.AddDynamic(this, &UConstrainedSlider::OnMaxSliderChanged);
 	MinValue->OnTextCommitted.AddDynamic(this, &UConstrainedSlider::OnMinValueCommitted);
 	MaxValue->OnTextCommitted.AddDynamic(this, &UConstrainedSlider::OnMaxValueCommitted);
-}
-
-void UConstrainedSlider::InitConstrainedSlider(const FConstrainedSliderStruct InStruct)
-{
+	
 	SliderStruct = InStruct;
 	SliderStruct.DefaultMinValue = RoundValue(SliderStruct.DefaultMinValue);
 	SliderStruct.DefaultMaxValue = RoundValue(SliderStruct.DefaultMaxValue);
@@ -100,15 +100,9 @@ void UConstrainedSlider::OnMinSliderChanged(const float NewMin)
 	{
 		MaxSlider->SetValue(NewMinValue);
 		MaxValue->SetText(FText::AsNumber(NewMinValue));
-		if (OnMaxValueChanged.IsBound())
-		{
-			OnMaxValueChanged.Execute(NewMinValue);
-		}
+		OnMaxValueChanged.Broadcast(NewMinValue);
 	}
-	if (OnMinValueChanged.IsBound())
-	{
-		OnMinValueChanged.Execute(NewMinValue);
-	}
+	OnMinValueChanged.Broadcast(NewMinValue);
 }
 
 void UConstrainedSlider::OnMaxSliderChanged(const float NewMax)
@@ -119,15 +113,9 @@ void UConstrainedSlider::OnMaxSliderChanged(const float NewMax)
 	{
 		MinSlider->SetValue(NewMaxValue);
 		MinValue->SetText(FText::AsNumber(NewMaxValue));
-		if (OnMinValueChanged.IsBound())
-		{
-			OnMinValueChanged.Execute(NewMaxValue);
-		}
+		OnMinValueChanged.Broadcast(NewMaxValue);
 	}
-	if (OnMaxValueChanged.IsBound())
-	{
-		OnMaxValueChanged.Execute(NewMaxValue);
-	}
+	OnMaxValueChanged.Broadcast(NewMaxValue);
 }
 
 void UConstrainedSlider::OnMinValueCommitted(const FText& NewMin, ETextCommit::Type CommitType)
@@ -146,7 +134,7 @@ void UConstrainedSlider::OnMaxValueCommitted(const FText& NewMax, ETextCommit::T
 	OnMaxSliderChanged(NewMaxValue);
 }
 
-float UConstrainedSlider::CheckConstraints(const float NewValue, const bool bIsMin) const
+float UConstrainedSlider::CheckConstraints(const float NewValue, const bool bIsMin)
 {
 	/** Checking constraints for a MinSlider or MinValue */
 	if (bIsMin)

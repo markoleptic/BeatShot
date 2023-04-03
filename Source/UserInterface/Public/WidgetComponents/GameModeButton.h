@@ -23,7 +23,7 @@ public:
 	UFUNCTION()
 	void OnButtonClicked();
 
-	void SetDefaults(EGameModeDifficulty GameModeDifficulty, EGameModeActorName GameModeActorName, UGameModeButton* NextButton);
+	void SetDefaults(EGameModeDifficulty GameModeDifficulty, EDefaultMode InDefaultMode, UGameModeButton* NextButton);
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UButton* Button;
@@ -32,7 +32,7 @@ public:
 	EGameModeDifficulty Difficulty;
 
 	UPROPERTY()
-	EGameModeActorName GameModeName;
+	EDefaultMode DefaultMode;
 
 	UPROPERTY()
 	UGameModeButton* Next;

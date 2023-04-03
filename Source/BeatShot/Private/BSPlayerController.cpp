@@ -103,7 +103,7 @@ void ABSPlayerController::ShowMainMenu()
 	FadeScreenFromBlack();
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
-	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUFunction(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
+	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -143,7 +143,7 @@ void ABSPlayerController::ShowPauseMenu()
 	{
 		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
 	}
-	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), "HandleGameModeTransition");
+	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
@@ -192,9 +192,9 @@ void ABSPlayerController::ShowPlayerHUD()
 	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
 	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	GameMode->UpdateScoresToHUD.AddUFunction(PlayerHUD, FName("UpdateAllElements"));
-	GameMode->OnSecondPassed.AddUFunction(PlayerHUD, FName("UpdateSongProgress"));
-	if (GI->GameModeActorStruct.IsBeatTrackMode)
+	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
+	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
+	if (GI->BSConfig.IsBeatTrackMode)
 	{
 		PlayerHUD->TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
 		PlayerHUD->StreakBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -229,7 +229,7 @@ void ABSPlayerController::ShowCountdown()
 	}
 	FadeScreenFromBlack();
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
-	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GameModeActorStruct.PlayerDelay;
+	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	Countdown->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
 	Countdown->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);
@@ -263,8 +263,8 @@ void ABSPlayerController::ShowPostGameMenu()
 	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(this, &ABSPlayerController::OnPlayerSettingsChanged);
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
 	{
-		PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUFunction(GI, "HandleGameModeTransition");
-		PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUFunction(GI, "HandleGameModeTransition");
+		PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+		PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	}
 	if (Cast<ABSCharacter>(GetPawn()))
 	{
@@ -404,7 +404,7 @@ void ABSPlayerController::FadeScreenFromBlack()
 		ScreenFadeWidget = CreateWidget<UScreenFadeWidget>(this, ScreenFadeClass);
 		ScreenFadeWidget->AddToViewport(ZOrderFadeScreen);
 	}
-	ScreenFadeWidget->OnFadeFromBlackFinish.AddUFunction(this, "OnFadeScreenFromBlackFinish");
+	ScreenFadeWidget->OnFadeFromBlackFinish.AddUObject(this, &ABSPlayerController::OnFadeScreenFromBlackFinish);
 	ScreenFadeWidget->FadeFromBlack();
 }
 

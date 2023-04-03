@@ -53,7 +53,7 @@ void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings PlayerSettings
 	}
 }
 
-void ISaveLoadInterface::SaveCustomGameMode(const TArray<FGameModeActorStruct> GameModeArrayToSave)
+void ISaveLoadInterface::SaveCustomGameMode(const TArray<FBSConfig> GameModeArrayToSave)
 {
 	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
@@ -62,7 +62,7 @@ void ISaveLoadInterface::SaveCustomGameMode(const TArray<FGameModeActorStruct> G
 	}
 }
 
-TArray<FGameModeActorStruct> ISaveLoadInterface::LoadCustomGameModes() const
+TArray<FBSConfig> ISaveLoadInterface::LoadCustomGameModes() const
 {
 	USaveGameCustomGameMode* SaveGameCustomGameMode;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
@@ -77,7 +77,7 @@ TArray<FGameModeActorStruct> ISaveLoadInterface::LoadCustomGameModes() const
 	{
 		return SaveGameCustomGameMode->CustomGameModes;
 	}
-	return TArray<FGameModeActorStruct>();
+	return TArray<FBSConfig>();
 }
 
 TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const
@@ -97,30 +97,6 @@ void ISaveLoadInterface::SavePlayerScores(const TArray<FPlayerScore> PlayerScore
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
 	{
 		SaveGamePlayerScores->PlayerScoreArray = PlayerScoreArrayToSave;
-		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
-		}
-	}
-}
-
-TArray<FQTableWrapper> ISaveLoadInterface::LoadQTables() const
-{
-	USaveGamePlayerScore* SaveGamePlayerScore;
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
-	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-		return SaveGamePlayerScore->QTables;
-	}
-	SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
-	return SaveGamePlayerScore->QTables;
-}
-
-void ISaveLoadInterface::SaveQTables(const TArray<FQTableWrapper> QTablesToSave)
-{
-	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
-	{
-		SaveGamePlayerScores->QTables = QTablesToSave;
 		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));

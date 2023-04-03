@@ -665,14 +665,23 @@ void UVideoAndSoundSettingsWidget::PopulateSettings()
 	
 	if (bDLSSSupported)
 	{
-		DLSSComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(NewSettings.DLSSMode).ToString());
+		/* Should only be the case if they haven't changed the default setting */
 		if (NewSettings.DLSSMode == UDLSSMode::Auto)
 		{
-			UDLSSLibrary::SetDLSSMode(GetWorld(), UDLSSLibrary::GetDefaultDLSSMode());
+			const UDLSSMode DefaultDLSSMode = UDLSSLibrary::GetDefaultDLSSMode();
+			UDLSSLibrary::SetDLSSMode(GetWorld(), DefaultDLSSMode);
+			DLSSComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(DefaultDLSSMode).ToString());
+			NewSettings.DLSSMode = DefaultDLSSMode;
+			FPlayerSettings PlayerSettings = LoadPlayerSettings();
+			PlayerSettings.VideoAndSound = NewSettings;
+			SavePlayerSettings(PlayerSettings);
+			OnSettingsSaved_VideoAndSound.Broadcast();
 		}
 		else
 		{
 			UDLSSLibrary::SetDLSSMode(GetWorld(), NewSettings.DLSSMode);
+			DLSSComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(NewSettings.DLSSMode).ToString());
+			
 		}
 	}
 	else if (!bDLSSSupported && bNISSupported)

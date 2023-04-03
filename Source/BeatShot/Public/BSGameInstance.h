@@ -12,7 +12,6 @@
 class AGameModeBase;
 class USteamManager;
 class ASphereTarget;
-class AGameModeActorBase;
 class ABSPlayerController;
 
 UCLASS()
@@ -49,7 +48,7 @@ public:
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 
 	UPROPERTY(EditDefaultsOnly)
-	FGameModeActorStruct GameModeActorStruct;
+	FBSConfig BSConfig;
 
 	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;

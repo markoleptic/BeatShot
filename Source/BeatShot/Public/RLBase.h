@@ -55,26 +55,29 @@ struct FRLAgentParams
 {
 	GENERATED_BODY()
 
-	EGameModeActorName GameModeActorName;
+	EDefaultMode DefaultMode;
 	FString CustomGameModeName;
 	int32 Size;
+	TArray<float> InQTable;
+	float SpawnCounterHeight;
+	float SpawnCounterWidth;
 	float InAlpha;
 	float InGamma;
 	float InEpsilon;
-	int32 Height;
-	int32 Width;
 
 	FRLAgentParams()
 	{
-		GameModeActorName = EGameModeActorName::Custom;
+		DefaultMode = EDefaultMode::Custom;
 		CustomGameModeName = "";
 		Size = 0;
-		InAlpha = 0;
-		InGamma = 0;
-		InEpsilon = 0;
-		Height = 0;
-		Width = 0;
+		InQTable = TArray<float>();
+		SpawnCounterHeight = 0.f;
+		SpawnCounterWidth = 0.f;
+		InAlpha = 0.f;
+		InGamma = 0.f;
+		InEpsilon = 0.f;
 	}
+	
 };
 
 /** A struct each each element represents one QTable index mapping to multiple SpawnCounter indices */
@@ -133,14 +136,14 @@ public:
 	/** Prints the Q-Table to Unreal console */
 	void PrintRewards() const;
 
-	/** Saves the Q-Table to slot */
-	void SaveQTable();
-
 	int32 GetWidth() const { return ScaledWidth; }
 	int32 GetHeight() const { return ScaledHeight; }
 
-	/** Returns a TArray version of the QTable, used to update widget */
-	TArray<float> GetTArrayQTable() const;
+	/** Returns a TArray version of the averaged flipped QTable, used to update widget */
+	TArray<float> GetAveragedTArrayFromQTable() const;
+
+	/** Returns a TArray version of the full QTable */
+	TArray<float> GetSaveReadyQTable() const;
 
 	/** Returns a copy of the QTable */
 	nc::NdArray<float> GetQTable() const;
@@ -163,7 +166,7 @@ private:
 	TArray<int32> GetSpawnCounterIndexRange(const int32 QTableIndex) const;
 	
 	/** Converts a TArray of floats to an NdArray */
-	nc::NdArray<float> GetQTableFromTArray(const FQTableWrapper& InWrapper) const;
+	nc::NdArray<float> GetQTableFromTArray(const TArray<float>& InTArray) const;
 
 	/** Converts an NdArray of floats to a TArray of floats, so that it can be serialized and saved */
 	static TArray<float> GetTArrayFromQTable(const nc::NdArray<float>& InQTable);
@@ -180,10 +183,6 @@ private:
 
 	/** An array that accumulates the current episodes rewards. Not used for gameplay events */
 	nc::NdArray<float> EpisodeRewards;
-
-	/** An wrapper around the QTable that also includes which game mode it corresponds to */
-	UPROPERTY()
-	FQTableWrapper QTableWrapper;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
 	float Alpha;

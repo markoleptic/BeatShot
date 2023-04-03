@@ -17,55 +17,6 @@ struct F2DArray
 	TArray<float> Accuracy;
 };
 
-/* A QTable associated with a game mode. Must be unique for each game mode */
-USTRUCT()
-struct FQTableWrapper
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	EGameModeActorName GameModeActorName;
-
-	UPROPERTY()
-	FString CustomGameModeName;
-
-	UPROPERTY()
-	TArray<float> QTable;
-
-	UPROPERTY()
-	int32 RowSize;
-
-	UPROPERTY()
-	int32 ColSize;
-
-	FQTableWrapper()
-	{
-		QTable = TArray<float>();
-		CustomGameModeName = "";
-		GameModeActorName = EGameModeActorName::Custom;
-		RowSize = 0;
-		ColSize = 0;
-	}
-
-	FQTableWrapper(const EGameModeActorName InGameModeActorName, const FString InCustomGameModeName)
-	{
-		QTable = TArray<float>();
-		GameModeActorName = InGameModeActorName;
-		CustomGameModeName = InCustomGameModeName;
-		RowSize = 0;
-		ColSize = 0;
-	}
-
-	FORCEINLINE bool operator ==(const FQTableWrapper& Other) const
-	{
-		if (GameModeActorName == Other.GameModeActorName && CustomGameModeName.Equals(Other.CustomGameModeName))
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
 /* Used to load and save player scores */
 USTRUCT(BlueprintType)
 struct FPlayerScore
@@ -74,7 +25,7 @@ struct FPlayerScore
 
 	/* The default game mode name, or custom if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
-	EGameModeActorName GameModeActorName;
+	EDefaultMode DefaultMode;
 
 	/* Custom game mode name if custom, otherwise empty string */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
@@ -150,7 +101,7 @@ struct FPlayerScore
 
 	FPlayerScore()
 	{
-		GameModeActorName = EGameModeActorName::Custom;
+		DefaultMode = EDefaultMode::Custom;
 		Difficulty = EGameModeDifficulty::None;
 		CustomGameModeName = "";
 		SongTitle = "";
@@ -171,7 +122,7 @@ struct FPlayerScore
 
 	void ResetStruct()
 	{
-		GameModeActorName = EGameModeActorName::Custom;
+		DefaultMode = EDefaultMode::Custom;
 		CustomGameModeName = "";
 		Difficulty = EGameModeDifficulty::None;
 		SongTitle = "";
@@ -209,8 +160,4 @@ public:
 	/* Array containing all saved score instances */
 	UPROPERTY()
 	TArray<FPlayerScore> PlayerScoreArray;
-
-	/* Array containing all game mode QTable pairs */
-	UPROPERTY()
-	TArray<FQTableWrapper> QTables;
 };

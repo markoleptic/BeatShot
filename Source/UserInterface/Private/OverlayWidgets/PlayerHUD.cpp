@@ -24,7 +24,7 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
 	/** Display default game mode names if not custom */
 	if (NewPlayerScoreStruct.CustomGameModeName.Equals(""))
 	{
-		GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.GameModeActorName));
+		GameModeNameText->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.DefaultMode));
 	}
 	/** display custom game mode if not a default game mode */
 	else

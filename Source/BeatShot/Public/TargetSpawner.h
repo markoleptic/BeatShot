@@ -53,7 +53,7 @@ public:
 	bool IsDebug_RLAgentWidgetActive() const { return bShowDebug_RLAgentWidget; }
 	
 	/** Called from selected DefaultGameMode */
-	void InitTargetSpawner(const FGameModeActorStruct& InGameModeActorStruct, const FPlayerSettings& InPlayerSettings);
+	void InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings);
 
 	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
@@ -209,12 +209,12 @@ private:
 	UCurveFloat* DynamicSpawnCurve;
 
 	/** Initialized at start of game mode by DefaultGameMode */
-	FGameModeActorStruct GameModeActorStruct;
+	FBSConfig BSConfig;
 
 	/** Whether or not the last target spawned in center of spawn area, used for SingleBeat */
 	bool LastTargetSpawnedCenter = false;
 
-	/** Changed by GameModeActorBase */
+	/** Whether or not the TargetSpawner is allowed to spawn a target at a given time */
 	bool ShouldSpawn = false;
 
 	/** Whether or not to skip the spawn of this target if a new Target location was not found */
@@ -259,6 +259,9 @@ private:
 
 	/** The largest possible extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
 	FVector StaticMaxExtrema;
+
+	/** The static extents for the spawn box. This is half the value that was passed in with the FBSConfig */
+	FVector StaticExtents;
 
 	/** The scale to apply to the next/current target */
 	float TargetScale;
