@@ -106,12 +106,12 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	/* Initial target size */
 	TargetScale = GetNextTargetScale();
 
-	if (BSConfig.IsBeatTrackMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		return;
 	}
 
-	if (BSConfig.IsBeatGridMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		InitBeatGrid();
 		return;
@@ -199,21 +199,21 @@ void ATargetSpawner::CallSpawnFunction()
 	{
 		return;
 	}
-	if (BSConfig.IsSingleBeatMode)
+	switch (BSConfig.BaseGameMode)
 	{
-		SpawnSingleBeatTarget();
-	}
-	else if (BSConfig.IsBeatTrackMode)
-	{
-		SetNewTrackingDirection();
-	}
-	else if (BSConfig.IsBeatGridMode)
-	{
-		ActivateBeatGridTarget();
-	}
-	else
-	{
+	case EDefaultMode::MultiBeat:
 		SpawnMultiBeatTarget();
+		break;
+	case EDefaultMode::SingleBeat:
+		SpawnSingleBeatTarget();
+		break;
+	case EDefaultMode::BeatTrack:
+		SetNewTrackingDirection();
+		break;
+	case EDefaultMode::BeatGrid:
+		ActivateBeatGridTarget();
+		break;
+	default: break;
 	}
 }
 
@@ -310,68 +310,48 @@ FIntPoint ATargetSpawner::InitializeSpawnCounter()
 
 void ATargetSpawner::InitBeatGrid()
 {
-	// clear any variables that could have been used prior to a restart
 	if (!RecentBeatGridIndices.IsEmpty())
 	{
 		RecentBeatGridIndices.Empty();
-		RecentBeatGridIndices.Shrink();
 	}
 	if (!SpawnedBeatGridTargets.IsEmpty())
 	{
 		SpawnedBeatGridTargets.Empty();
-		SpawnedBeatGridTargets.Shrink();
 	}
 	if (ActiveBeatGridTarget)
 	{
 		ActiveBeatGridTarget = nullptr;
 	}
 
-	LastBeatGridIndex = -1;
-	InitialBeatGridTargetActivated = false;
+	LastBeatGridIndex = INDEX_NONE;
 
-	const float HalfWidth = round(SpawnBox->Bounds.BoxExtent.Y);
-	const float HalfHeight = round(SpawnBox->Bounds.BoxExtent.Z);
+	const float MaxTargetSize = BSConfig.MaxTargetScale * SphereTargetRadius * 2;
+	const float HSpacing = BSConfig.BeatGridSpacing.X + MaxTargetSize;
+	const float VSpacing = BSConfig.BeatGridSpacing.Y + MaxTargetSize;
+	const float TotalWidth = HSpacing * (BSConfig.NumHorizontalBeatGridTargets - 1);
+	const float TotalHeight = VSpacing * (BSConfig.NumVerticalBeatGridTargets - 1);
 	
-	/* TODO: Implement vertical, horizontal targets and spacing */
-	
-	const int32 NumTargets = BSConfig.NumHorizontalBeatGridTargets;
-	FVector BeatGridSpawnLocation = SpawnBox->Bounds.Origin;
-	constexpr float OuterSpacing = 100.f;
-	const float BasicHSpacing = (HalfWidth - OuterSpacing) * 2 / (NumTargets - 1);
-	const float HStart = -HalfWidth + OuterSpacing;
-	const float BasicVSpacing = (HalfHeight - OuterSpacing) * 2 / (NumTargets - 1);
-	const float VStart = HalfHeight - OuterSpacing;
+	const float HStart = -TotalWidth / 2.f;
+	const float HEnd = TotalWidth / 2.f;
+	const float VStart = TotalHeight / 2.f;
+	const float VEnd = -TotalHeight / 2.f;
 
-	// Distributing only based on Spawn Height/Width and number of targets for now
-	for (int32 i = 0; i < NumTargets; i++)
+	int32 Index = 0;
+	for (float j = VStart; j >= VEnd; j -= VSpacing)
 	{
-		for (int32 j = 0; j < NumTargets; j++)
+		for (float i = HStart; i <= HEnd; i += HSpacing)
 		{
-			// initial top left spot
-			if (i == 0 && j == 0)
-			{
-				BeatGridSpawnLocation.Z += VStart;
-				BeatGridSpawnLocation.Y += HStart;
-			}
-			else if (i != 0 && j == 0)
-			{
-				BeatGridSpawnLocation.Y = HStart;
-			}
-			else if (i != 0 || j != 0)
-			{
-				BeatGridSpawnLocation.Y += BasicHSpacing;
-			}
-
+			FVector BeatGridSpawnLocation = FVector(GetBoxOrigin().X, i, GetBoxOrigin().Z + j);
 			ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, BeatGridSpawnLocation, FVector(1)),
 				this, nullptr, TargetSpawnParams.SpawnCollisionHandlingOverride);
 			SpawnTarget->InitTarget(BSConfig, PlayerSettings);
 			SpawnTarget->SetSphereScale(FVector(GetNextTargetScale()));
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			SpawnTarget->FinishSpawning(FTransform(), true);
+			BeatGridIndices.Emplace(FBeatGridIndex(Index, BSConfig.NumHorizontalBeatGridTargets, BSConfig.NumVerticalBeatGridTargets * BSConfig.NumHorizontalBeatGridTargets));
 			SpawnedBeatGridTargets.Add(SpawnTarget);
+			Index++;
 		}
-		BeatGridSpawnLocation.Y = HStart;
-		BeatGridSpawnLocation.Z -= BasicVSpacing;
 	}
 }
 
@@ -435,109 +415,67 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 
 void ATargetSpawner::ActivateBeatGridTarget()
 {
-	if (InitialBeatGridTargetActivated == false)
+	int32 ChosenTargetIndex;
+	if (LastBeatGridIndex == INDEX_NONE || BSConfig.RandomizeBeatGrid == true)
 	{
-		if (const int32 InitialArraySize = SpawnedBeatGridTargets.Num(); InitialArraySize > 0)
-		{
-			const int32 RandomIndex = FMath::RandRange(0, InitialArraySize - 1);
-			ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-			LastBeatGridIndex = RandomIndex;
-			InitialBeatGridTargetActivated = true;
-		}
+		ChosenTargetIndex = FMath::RandRange(0, SpawnedBeatGridTargets.Num() - 1);
 	}
-	else if (BSConfig.RandomizeBeatGrid == true)
+	else
 	{
-		const int32 ArraySize = SpawnedBeatGridTargets.Num();
-		const int32 RandomIndex = FMath::RandRange(0, ArraySize - 1);
-		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-	}
-	else if (BSConfig.RandomizeBeatGrid == false)
-	{
-		TArray<int32> SpawnCandidates;
-		const int32 MaxIndex = SpawnedBeatGridTargets.Num() - 1;
-		const int32 Width = sqrt(SpawnedBeatGridTargets.Num());
-		// const int32 Height = Width;
-		const int32 AdjFor = Width + 1;
-		const int32 AdjBack = Width - 1;
-		// corners
-		if (const int32 i = LastBeatGridIndex; i == 0)
+		int32 NumRemoved = 0;
+		TArray<int32> SpawnCandidates = BeatGridIndices[LastBeatGridIndex].GetBorderingIndices();
+		SpawnCandidates = SpawnCandidates.FilterByPredicate([&] (const int32& Index)
 		{
-			SpawnCandidates = {1, Width, AdjFor};
-		}
-		else if (i == AdjBack)
-		{
-			SpawnCandidates = {i - 1, i + AdjBack, i + Width};
-		}
-		else if (i == (Width * AdjBack))
-		{
-			SpawnCandidates = {i - Width, i - AdjBack, i + 1};
-		}
-		else if (i == MaxIndex)
-		{
-			SpawnCandidates = {i - AdjFor, i - Width, i - 1};
-		}
-		// top
-		else if (i > 0 && i < AdjBack)
-		{
-			SpawnCandidates = {i - 1, i + 1, i + AdjBack, i + Width, i + AdjFor};
-		}
-		//left
-		else if (i % Width == 0 && i < Width * AdjBack)
-		{
-			SpawnCandidates = {i - Width, i - AdjBack, i + 1, i + AdjFor, i + Width};
-		}
-		//bottom
-		else if (i > Width * AdjBack && i < MaxIndex)
-		{
-			SpawnCandidates = {i - AdjFor, i - Width, i - AdjBack, i - 1, i + 1};
-		}
-		//right
-		else if ((i + 1) % Width == 0 && i < MaxIndex)
-		{
-			SpawnCandidates = {i - AdjFor, i - Width, i - 1, i + AdjBack, i + Width};
-		}
-		//middle
-		else
-		{
-			SpawnCandidates = {i - AdjFor, i - Width, i - AdjBack, i - 1, i + 1, i + AdjBack, i + Width, i + AdjFor};
-		}
-
-		// remove recently spawned targets
-		if (RecentBeatGridIndices.IsEmpty() == false)
-		{
-			for (int32 j = 0; j < RecentBeatGridIndices.Num(); j++)
+			/* Only remove up to 2 indices for a corner */
+			if (BeatGridIndices[LastBeatGridIndex].IsCornerIndex() && NumRemoved >= 2)
 			{
-				if (SpawnCandidates.Contains(RecentBeatGridIndices[j]))
-				{
-					SpawnCandidates.Remove(RecentBeatGridIndices[j]);
-				}
+				return true;
 			}
+			/* Only remove up to 4 indices for a border */
+			if (BeatGridIndices[LastBeatGridIndex].IsBorderIndex() && NumRemoved >= 4)
+			{
+				return true;
+			}
+			/* Only remove up to 7 indices for a middle */
+			if (!BeatGridIndices[LastBeatGridIndex].IsBorderIndex() && !BeatGridIndices[LastBeatGridIndex].IsCornerIndex() && NumRemoved >= 7)
+			{
+				return true;
+			}
+			if (RecentBeatGridIndices.Contains(Index))
+			{
+				NumRemoved++;
+				return false;
+			}
+			return true;
+		});
+		const int32 RandomIndex = FMath::RandRange(0, SpawnCandidates.Num() - 1);
+		ChosenTargetIndex = SpawnCandidates[RandomIndex];
+		RecentBeatGridIndices.Insert(ChosenTargetIndex, 0);
+		RecentBeatGridIndices.SetNum(7);
+	}
+
+	ActiveBeatGridTarget = SpawnedBeatGridTargets[ChosenTargetIndex];
+	LastBeatGridIndex = ChosenTargetIndex;
+	ActiveBeatGridTarget->StartBeatGridTimer(BSConfig.TargetMaxLifeSpan);
+	OnTargetSpawned.Broadcast();
+	OnTargetSpawned_AimBot.Broadcast(ActiveBeatGridTarget);
+	
+	if (bShowDebug_SpawnMemory)
+	{
+		for (int i = 0; i < SpawnedBeatGridTargets.Num(); i++)
+		{
+			if (i == LastBeatGridIndex)
+			{
+				continue;
+			}
+			if (RecentBeatGridIndices.Contains(i))
+			{
+				SpawnedBeatGridTargets[i]->SetSphereColor(FLinearColor(FColor::Red));
+				SpawnedBeatGridTargets[i]->SetOutlineColor(FLinearColor(FColor::Red));
+				continue;
+			}
+			SpawnedBeatGridTargets[i]->SetColorToBeatGridColor();
 		}
-
-		// shrink after removing recently spawned target indices
-		SpawnCandidates.Shrink();
-
-		// choose a random adjacent target index
-		const int32 CandidateArraySize = SpawnCandidates.Num();
-		const int32 RandomBorderedIndex = FMath::RandRange(0, CandidateArraySize - 1);
-		const int32 RandomIndex = SpawnCandidates[RandomBorderedIndex];
-		ActiveBeatGridTarget = SpawnedBeatGridTargets[RandomIndex];
-
-		// update recently spawned target indices
-		LastBeatGridIndex = RandomIndex;
-		RecentBeatGridIndices.Insert(LastBeatGridIndex, 0);
-		RecentBeatGridIndices.SetNum(2);
-	}
-	/* only "spawn" target if it hasn't been destroyed */
-	if (ActiveBeatGridTarget)
-	{
-		ActiveBeatGridTarget->StartBeatGridTimer(BSConfig.TargetMaxLifeSpan);
-		OnTargetSpawned.Broadcast();
-		OnTargetSpawned_AimBot.Broadcast(ActiveBeatGridTarget);
-	}
-	if (BSConfig.IsSingleBeatMode == true)
-	{
-		SetShouldSpawn(false);
 	}
 }
 
@@ -573,7 +511,7 @@ void ATargetSpawner::SetNewTrackingDirection()
 
 void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive, ASphereTarget* DestroyedTarget)
 {
-	if (BSConfig.IsSingleBeatMode) SetShouldSpawn(true);
+	if (BSConfig.BaseGameMode == EDefaultMode::SingleBeat) SetShouldSpawn(true);
 	if (DidExpire)
 	{
 		ConsecutiveTargetsHit = 0;
@@ -594,7 +532,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetSpawnCD, false);
 
-	if (BSConfig.IsBeatGridMode || BSConfig.IsBeatTrackMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack || BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		return;
 	}
@@ -640,8 +578,7 @@ void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* Othe
 	/* Reverse direction if not longer overlapping spawn box */
 	if (Cast<ATargetSpawner>(OverlappedActor) || Cast<ASphereTarget>(OverlappedActor) && Cast<ASphereTarget>(OtherActor) || Cast<ATargetSpawner>(OtherActor))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnBeatTrackOverlapEnd"));
-		BeatTrackTargetDirection = BeatTrackTargetDirection * -1;
+		BeatTrackTargetDirection = -BeatTrackTargetDirection;
 	}
 }
 
@@ -663,7 +600,7 @@ float ATargetSpawner::GetNextTargetScale() const
 
 FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType, const float NewTargetScale)
 {
-	if (BSConfig.IsSingleBeatMode && !LastTargetSpawnedCenter)
+	if (BSConfig.BaseGameMode == EDefaultMode::SingleBeat && !LastTargetSpawnedCenter)
 	{
 		bSkipNextSpawn = false;
 		return GetBoxOrigin();
@@ -1003,7 +940,7 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 	const FVector MaxExtrema = GetBoxExtrema(1, true);
 	TArray<FVector> Remove;
 	// ReSharper disable once CppTooWideScope
-	const uint8 SingleBeatOrEdgeOnly = BSConfig.IsSingleBeatMode || BSConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
+	const uint8 SingleBeatOrEdgeOnly = BSConfig.BaseGameMode == EDefaultMode::SingleBeat || BSConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
 	switch (SingleBeatOrEdgeOnly)
 	{
 	case 1: for (FVector Vector : In)

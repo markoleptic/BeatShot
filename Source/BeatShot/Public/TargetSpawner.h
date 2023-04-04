@@ -339,14 +339,14 @@ private:
 	UPROPERTY(VisibleDefaultsOnly, Category = "BeatGrid")
 	TArray<ASphereTarget*> SpawnedBeatGridTargets;
 
+	/** Array containing all spawned BeatGrid targets and their indices. Also holds an array of all bordering indices for each index */
+	TArray<FBeatGridIndex> BeatGridIndices;
+
 	/** Array to keep track of the recently activated beat grid targets */
 	TArray<int32> RecentBeatGridIndices;
 
 	/** Index of the most recently activated beat grid target */
 	int32 LastBeatGridIndex;
-
-	/** Whether or not the first BeatGrid target has been activated */
-	bool InitialBeatGridTargetActivated;
 
 #pragma endregion
 

@@ -50,11 +50,11 @@ void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSetting
 {
 	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings.Game;
-	if (BSConfig.IsBeatGridMode)
+	if (InBSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Grid);
 	}
-	else if (BSConfig.IsBeatTrackMode)
+	else if (InBSConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
 		HardRefAttributeSetBase->InitMaxHealth(1000000);
@@ -103,7 +103,7 @@ void ASphereTarget::BeginPlay()
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
 		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent, GameplayTags);
 		HealthComponent->OnOutOfHealth.BindUObject(this, &ASphereTarget::HandleDestruction);
-		if (BSConfig.IsBeatGridMode)
+		if (BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 		{
 			HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::HandleTemporaryDestruction);
 		}
@@ -156,18 +156,16 @@ void ASphereTarget::BeginPlay()
 	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
 	FadeAndReappearTimeline.SetPlayRate(WhiteToPeakMultiplier);
 
-	if (BSConfig.IsBeatGridMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		SetLifeSpan(0);
 		ApplyImmunityEffect();
 		SetColorToBeatGridColor();
-		SetSphereColor(PlayerSettings.BeatGridInactiveTargetColor);
-		SetOutlineColor(PlayerSettings.BeatGridInactiveTargetColor);
 		FOnTimelineEvent OnPeakToFadeFinished;
 		OnPeakToFadeFinished.BindDynamic(this, &ASphereTarget::SetColorToBeatGridColor);
 		PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
 	}
-	else if (BSConfig.IsBeatTrackMode)
+	else if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		SetLifeSpan(0);
 		SetSphereColor(PlayerSettings.EndTargetColor);
@@ -292,7 +290,7 @@ void ASphereTarget::LifeSpanExpired()
 
 void ASphereTarget::HandleDestruction()
 {
-	if (BSConfig.IsBeatTrackMode || BSConfig.IsBeatGridMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack || BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		return;
 	}
@@ -315,7 +313,7 @@ void ASphereTarget::HandleDestruction()
 void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
 	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear */
-	if (BSConfig.IsBeatGridMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		/* Get the time that the sphere was alive for */
 		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);

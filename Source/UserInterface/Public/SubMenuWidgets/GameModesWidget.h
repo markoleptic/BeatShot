@@ -9,6 +9,7 @@
 #include "WidgetComponents/TooltipWidget.h"
 #include "WidgetComponents/ConstrainedSlider.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/HorizontalBox.h"
 #include "WidgetComponents/ConstrainedSlider_BeatGrid.h"
 #include "GameModesWidget.generated.h"
 
@@ -176,6 +177,8 @@ private:
 
 	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
 	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize) const;
+	
+	UTooltipImage* ConstructBeatGridWarningEMarkWidget(UHorizontalBox& BoxToPlaceIn);
 
 	/** The array of default Game Modes */
 	TArray<FBSConfig> DefaultModes;
@@ -188,6 +191,13 @@ private:
 	
 	/** The diameter of a target */
 	const float SphereDiameter = 100.f;
+
+	const FText BeatGridConstrainedText_Start = FText::FromString("There isn't enough space for BeatGrid options provided. Change ");
+	const FText BeatGridConstrainedText_HorizontalSuggest = FText::FromString("number of Horizontal Targets to less than");
+	const FText BeatGridConstrainedText_VerticalSuggest = FText::FromString("number of Vertical Targets to less than");
+	const FText BeatGridConstrainedText_ScaleSuggest = FText::FromString("maximum Target Scale to less than");
+	const FText BeatGridConstrainedText_HorizontalSpacingSuggest = FText::FromString("Horizontal Spacing to less than");
+	const FText BeatGridConstrainedText_VerticalSpacingSuggest = FText::FromString("Vertical Spacing to less than");
 
 #pragma region DefaultGameModes
 
@@ -354,6 +364,10 @@ protected:
 	UConstrainedSlider_BeatGrid* BeatGridSpacingConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UHorizontalBox* BeatGridNumHorizontalTooltipTextBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UHorizontalBox* BeatGridNumVerticalTooltipTextBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	USlider* BeatGridNumHorizontalTargetsSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UEditableTextBox* BeatGridNumHorizontalTargetsValue;
@@ -364,13 +378,17 @@ protected:
 	
 	FBeatGridUpdate_NumTargets BeatGridUpdate_NumVerticalTargets;
 	FBeatGridUpdate_NumTargets BeatGridUpdate_NumHorizontalTargets;
-	FBeatGridUpdate BeatGridUpdate_HorizontalSpread;
-	FBeatGridUpdate BeatGridUpdate_VerticalSpread;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UBorder* BeatTrackSpecificSettings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UConstrainedSlider* TargetSpeedConstrained;
+
+	bool bHorizontalTargetConstraint = false;
+	bool bVerticalTargetConstraint = false;
+	bool bTargetScaleConstraint = false;
+	bool bHorizontalSpacingConstraint = false;
+	bool bVerticalSpacingConstraint = false;
 	
 	const float MinPlayerDelayValue = 0;
 	const float MaxPlayerDelayValue = 0.5;
@@ -550,6 +568,25 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* BeatGridAdjacentOnlyQMark;
+	UPROPERTY(EditDefaultsOnly, Category = "Tooltip")
+	TSubclassOf<UTooltipImage> BeatGridWarningEMarkClass;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UHorizontalBox* NumHorizontalTargetsTextTooltipBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UHorizontalBox* NumVerticalTargetsTextTooltipBox;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
+	UTooltipImage* BeatGridWarningEMark_MaxTargetScale;
+	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
+	UTooltipImage* BeatGridWarningEMark_BeatGridNumHorizontalTargets;
+	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
+	UTooltipImage* BeatGridWarningEMark_BeatGridNumVerticalTargets;
+	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
+	UTooltipImage* BeatGridWarningEMark_BeatGridHorizontalSpacing;
+	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
+	UTooltipImage* BeatGridWarningEMark_BeatGridVerticalSpacing;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
 	UPROPERTY()

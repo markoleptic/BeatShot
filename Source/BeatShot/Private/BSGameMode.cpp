@@ -54,14 +54,6 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 		{
 			Character->GetGun()->OnShotFired.BindUObject(this, &ABSGameMode::UpdateShotsFired);
 		}
-		if (BSConfig.IsBeatTrackMode)
-		{
-			Character->GetGun()->SetShouldTrace(true);
-		}
-		else
-		{
-			Character->GetGun()->SetShouldTrace(false);
-		}
 	}
 }
 
@@ -110,11 +102,11 @@ void ABSGameMode::InitializeGameMode()
 	const FGameplayAbilitySpec AbilitySpec(TrackGunAbilityCDO, 1);
 	Character->GetBSAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Activatable);
 
-	if (BSConfig.IsBeatTrackMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		Character->GetBSAbilitySystemComponent()->TryActivateAbilityByClass(TrackGunAbility);
 	}
-	else if (!BSConfig.IsBeatTrackMode && Activatable[0]->IsActive())
+	else if (BSConfig.BaseGameMode != EDefaultMode::BeatTrack && Activatable[0]->IsActive())
 	{
 		Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbilityCDO);
 	}
@@ -544,17 +536,15 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
-	if (BSConfig.IsBeatTrackMode)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
 		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
+		return CurrentPlayerScore;
 	}
-	else
-	{
-		CurrentPlayerScore.AvgTimeOffset = FloatDivide(CurrentPlayerScore.TotalTimeOffset, CurrentPlayerScore.TargetsHit);
-		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.ShotsFired);
-		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.TargetsSpawned);
-	}
+	CurrentPlayerScore.AvgTimeOffset = FloatDivide(CurrentPlayerScore.TotalTimeOffset, CurrentPlayerScore.TargetsHit);
+	CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.ShotsFired);
+	CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.TargetsSpawned);
 	return CurrentPlayerScore;
 }
 
@@ -602,7 +592,7 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 
 void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position)
 {
-	if (BSConfig.IsBeatTrackMode == true || TimeElapsed == -1)
+	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack || TimeElapsed == -1)
 	{
 		return;
 	}

@@ -108,6 +108,10 @@ struct FBSConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	EDefaultMode DefaultMode;
 
+	/* The base game mode this game mode is based off of */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
+	EDefaultMode BaseGameMode;
+
 	/* Custom game mode name if custom, otherwise empty string */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString CustomGameModeName;
@@ -135,18 +139,6 @@ struct FBSConfig
 	/* The path to the song file */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Defining Properties")
 	FString SongPath;
-
-	/* Whether or not the game mode derives from BeatTrack */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
-	bool IsBeatTrackMode;
-
-	/* Whether or not the game mode derives from SingleBeat */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
-	bool IsSingleBeatMode;
-
-	/* Whether or not the game mode derives from BeatGrid */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BaseGameMode")
-	bool IsBeatGridMode;
 
 	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
 	 * If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
@@ -254,6 +246,7 @@ struct FBSConfig
 	FBSConfig()
 	{
 		DefaultMode = EDefaultMode::Custom;
+		BaseGameMode = EDefaultMode::MultiBeat;
 		SpreadType = ESpreadType::None;
 		GameModeDifficulty = EGameModeDifficulty::Normal;
 		bPlaybackAudio = false;
@@ -261,9 +254,6 @@ struct FBSConfig
 		InAudioDevice = "";
 		OutAudioDevice = "";
 		SongPath = "";
-		IsBeatTrackMode = false;
-		IsSingleBeatMode = false;
-		IsBeatGridMode = false;
 		UseDynamicSizing = false;
 		MinDistanceBetweenTargets = 10.f;
 		GameModeLength = 0.f;
@@ -294,6 +284,7 @@ struct FBSConfig
 	{
 		// Parameters
 		DefaultMode = InDefaultMode;
+		BaseGameMode = EDefaultMode::MultiBeat;
 		GameModeDifficulty = NewGameModeDifficulty;
 		SpreadType = NewSpreadType;
 
@@ -308,9 +299,6 @@ struct FBSConfig
 		SongTitle = "";
 		CustomGameModeName = "";
 		WallCentered = false;
-		IsBeatTrackMode = false;
-		IsSingleBeatMode = false;
-		IsBeatGridMode = false;
 		UseDynamicSizing = false;
 		MinDistanceBetweenTargets = 10.f;
 		PlayerDelay = 0.3f;
@@ -334,8 +322,8 @@ struct FBSConfig
 		if (DefaultMode == EDefaultMode::BeatGrid)
 		{
 			SpreadType = ESpreadType::None;
-			IsBeatGridMode = true;
-			BoxBounds = FVector(0.f, 1000.f, 1000.f);
+			BaseGameMode = EDefaultMode::BeatGrid;
+			BoxBounds = FVector(0.f, 3200.f, 1000.f);
 
 			// BeatGrid Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
@@ -376,8 +364,8 @@ struct FBSConfig
 		else if (DefaultMode == EDefaultMode::BeatTrack)
 		{
 			SpreadType = ESpreadType::None;
+			BaseGameMode = EDefaultMode::BeatTrack;
 			WallCentered = true;
-			IsBeatTrackMode = true;
 			PlayerDelay = 0.f;
 			TargetMaxLifeSpan = 0.f;
 			MinTrackingSpeed = 500.f;
@@ -413,6 +401,7 @@ struct FBSConfig
 		else if (DefaultMode == EDefaultMode::MultiBeat)
 		{
 			UseDynamicSizing = true;
+			BaseGameMode = EDefaultMode::MultiBeat;
 			// SpreadType = ESpreadType::DynamicRandom;
 			// MultiBeat Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
@@ -462,7 +451,7 @@ struct FBSConfig
 		// SingleBeat
 		else if (DefaultMode == EDefaultMode::SingleBeat)
 		{
-			IsSingleBeatMode = true;
+			BaseGameMode = EDefaultMode::SingleBeat;
 			UseDynamicSizing = true;
 			// SingleBeat Difficulties
 			if (GameModeDifficulty == EGameModeDifficulty::Normal)
@@ -534,9 +523,6 @@ struct FBSConfig
 		MaxTargetScale = 1.5f;
 		HeadshotHeight = false;
 		WallCentered = false;
-		IsBeatTrackMode = false;
-		IsSingleBeatMode = false;
-		IsBeatGridMode = false;
 		RandomizeBeatGrid = false;
 		UseDynamicSizing = false;
 		PlayerDelay = 0.3f;

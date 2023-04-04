@@ -259,6 +259,227 @@ struct FVectorCounter
 	}
 };
 
+UENUM(BlueprintType)
+enum class EBeatGridIndexType : uint8
+{
+	None UMETA(DisplayName="None"),
+	Corner_TopLeft UMETA(DisplayName="Corner_TopLeft"),
+	Corner_TopRight UMETA(DisplayName="Corner_TopRight"),
+	Corner_BottomRight UMETA(DisplayName="Corner_BottomRight"),
+	Corner_BottomLeft UMETA(DisplayName="Corner_BottomLeft"),
+	Border_Top UMETA(DisplayName="Border_Top"),
+	Border_Right UMETA(DisplayName="Border_Top"),
+	Border_Bottom UMETA(DisplayName="Border_Top"),
+	Border_Left UMETA(DisplayName="Border_Top"),
+	Middle UMETA(DisplayName="Middle"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EBeatGridIndexType, EBeatGridIndexType::Corner_TopLeft, EBeatGridIndexType::Middle);
+
+/** A struct representing a BeatGrid target index. Stores info about bordering indices */
+USTRUCT()
+struct FBeatGridIndex
+{
+	GENERATED_BODY()
+	
+	EBeatGridIndexType IndexType;
+	TArray<int32> BorderingIndices;
+	int32 Index;
+	int32 Width;
+	int32 Size;
+
+	FBeatGridIndex()
+	{
+		Index = -1;
+		Width = -1;
+		Size = -1;
+		IndexType = EBeatGridIndexType::None;
+		BorderingIndices = TArray<int32>();
+	}
+
+	explicit FBeatGridIndex(const int32 CheckIndex)
+	{
+		Index = CheckIndex;
+		Width = -1;
+		Size = -1;
+		IndexType = EBeatGridIndexType::None;
+		BorderingIndices = TArray<int32>();
+	}
+
+	FBeatGridIndex(const int32 NewIndex, const int32 NewWidth, const int32 NewSize)
+	{
+		Index = NewIndex;
+		Width = NewWidth;
+		Size = NewSize;
+		IndexType = GetIndexType();
+		BorderingIndices = InitBorderingIndices();
+	}
+
+	FORCEINLINE bool operator ==(const FBeatGridIndex& Other) const
+	{
+		if (Index == Other.Index)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/** Returns whether or not the index is a corner */
+	bool IsCornerIndex() const
+	{
+		if (IndexType == EBeatGridIndexType::Corner_TopLeft ||
+			IndexType == EBeatGridIndexType::Corner_TopRight ||
+			IndexType == EBeatGridIndexType::Corner_BottomRight ||
+			IndexType == EBeatGridIndexType::Corner_BottomLeft)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/** Returns whether or not the index is a border */
+	bool IsBorderIndex() const
+	{
+		if (IndexType == EBeatGridIndexType::Border_Top ||
+			IndexType == EBeatGridIndexType::Border_Right ||
+			IndexType == EBeatGridIndexType::Border_Bottom ||
+			IndexType == EBeatGridIndexType::Border_Left)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
+	TArray<int32> InitBorderingIndices() const
+	{
+		TArray<int32> ReturnArray = TArray<int32>();
+
+		const int32 TopLeft = Index - Width - 1;
+		const int32 Top = Index - Width;
+		const int32 TopRight = Index - Width + 1;
+		const int32 Right = Index + 1;
+		const int32 BottomRight = Index + Width + 1;
+		const int32 Bottom = Index + Width;
+		const int32 BottomLeft = Index + Width - 1;
+		const int32 Left = Index - 1;
+		
+		switch (IndexType)
+		{
+		case EBeatGridIndexType::None:
+			break;
+		case EBeatGridIndexType::Corner_TopLeft:
+			ReturnArray.Add(Right);
+			ReturnArray.Add(Bottom);
+			ReturnArray.Add(BottomRight);
+			break;
+		case EBeatGridIndexType::Corner_TopRight:
+			ReturnArray.Add(Left);
+			ReturnArray.Add(Bottom);
+			ReturnArray.Add(BottomLeft);
+			break;
+		case EBeatGridIndexType::Corner_BottomRight:
+			ReturnArray.Add(Left);
+			ReturnArray.Add(Top);
+			ReturnArray.Add(TopLeft);
+			break;
+		case EBeatGridIndexType::Corner_BottomLeft:
+			ReturnArray.Add(Right);
+			ReturnArray.Add(Top);
+			ReturnArray.Add(TopRight);
+			break;
+		case EBeatGridIndexType::Border_Top:
+			ReturnArray.Add(Left);
+			ReturnArray.Add(Right);
+			ReturnArray.Add(BottomRight);
+			ReturnArray.Add(Bottom);
+			ReturnArray.Add(BottomLeft);
+			break;
+		case EBeatGridIndexType::Border_Right:
+			ReturnArray.Add(TopLeft);
+			ReturnArray.Add(Top);
+			ReturnArray.Add(Left);
+			ReturnArray.Add(BottomLeft);
+			ReturnArray.Add(Bottom);
+			break;
+		case EBeatGridIndexType::Border_Bottom:
+			ReturnArray.Add(TopLeft);
+			ReturnArray.Add(Top);
+			ReturnArray.Add(TopRight);
+			ReturnArray.Add(Right);
+			ReturnArray.Add(Left);
+			break;
+		case EBeatGridIndexType::Border_Left:
+			ReturnArray.Add(Top);
+			ReturnArray.Add(TopRight);
+			ReturnArray.Add(Right);
+			ReturnArray.Add(BottomRight);
+			ReturnArray.Add(Bottom);
+			break;
+		case EBeatGridIndexType::Middle:
+			ReturnArray.Add(TopLeft);
+			ReturnArray.Add(Top);
+			ReturnArray.Add(TopRight);
+			ReturnArray.Add(Right);
+			ReturnArray.Add(BottomRight);
+			ReturnArray.Add(Bottom);
+			ReturnArray.Add(BottomLeft);
+			ReturnArray.Add(Left);
+			break;
+		}
+		return ReturnArray;
+	}
+
+	/** Returns the BorderingIndices array */
+	TArray<int32> GetBorderingIndices() const
+	{
+		return BorderingIndices;
+	}
+
+	/** Returns the corresponding index type depending on the index, size, and width */
+	EBeatGridIndexType GetIndexType() const
+	{
+		const int32 MaxIndex = Size - 1;
+		const int32 FirstRowLastIndex = Width - 1;
+		const int32 LastRowFirstIndex = Size - Width;
+		if (Index == 0) {
+			return EBeatGridIndexType::Corner_TopLeft;
+		}
+		if (Index == FirstRowLastIndex)
+		{
+			return EBeatGridIndexType::Corner_TopRight;
+		}
+		if (Index == MaxIndex)
+		{
+			return EBeatGridIndexType::Corner_BottomRight;
+		}
+		if (Index == LastRowFirstIndex)
+		{
+			return EBeatGridIndexType::Corner_BottomLeft;
+		}
+		// top
+		if (Index > 0 && Index < FirstRowLastIndex)
+		{
+			return EBeatGridIndexType::Border_Top;
+		}
+		// right
+		if ((Index + 1) % Width == 0 && Index < MaxIndex)
+		{
+			return EBeatGridIndexType::Border_Right;
+		}
+		// bottom
+		if (Index > LastRowFirstIndex && Index < MaxIndex)
+		{
+			return EBeatGridIndexType::Border_Bottom;
+		}
+		// left	
+		if (Index % Width == 0 && Index < LastRowFirstIndex)
+		{
+			return EBeatGridIndexType::Border_Left;
+		}
+		return EBeatGridIndexType::Middle;
+	}
+};
+
 /** Used to store movement properties for different movement types */
 USTRUCT(BlueprintType)
 struct FMovementTypeVariables

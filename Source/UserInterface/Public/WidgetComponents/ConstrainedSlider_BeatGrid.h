@@ -10,24 +10,28 @@ USTRUCT(BlueprintType)
 struct FBeatGridConstraints
 {
 	GENERATED_BODY()
-	
-	int32 MaxAllowedNumHorizontalTargets;
-	int32 MaxAllowedNumVerticalTargets;
-	float MinRequiredHorizontalSpread;
-	float MinRequiredVerticalSpread;
-	float MaxAllowedTargetScale;
+
+	/* Max allowed NumHorizontalTargets */
+	int32 NumHorizontalTargets;
+	/* Max allowed NumVerticalTargets */
+	int32 NumVerticalTargets;
+	/* Max allowed TargetScale */
+	float TargetScale;
+	/* Max allowed HorizontalSpacing */
+	float HorizontalSpacing;
+	/* Max allowed VerticalSpacing */
+	float VerticalSpacing;
 	
 	FBeatGridConstraints()
 	{
-		MaxAllowedNumHorizontalTargets = -1;
-		MaxAllowedNumVerticalTargets = -1;
-		MinRequiredHorizontalSpread = -1;
-		MinRequiredVerticalSpread = -1;
-		MaxAllowedTargetScale = -1;
+		NumHorizontalTargets = -1;
+		NumVerticalTargets = -1;
+		TargetScale = -1;
+		HorizontalSpacing = -1;
+		VerticalSpacing = -1;
 	}
 };
 
-DECLARE_DELEGATE_OneParam(FBeatGridUpdate, const float NewValue);
 DECLARE_DELEGATE_OneParam(FBeatGridUpdate_NumTargets, const int32 NewNumTargets);
 DECLARE_DELEGATE_OneParam(FOnBeatGridSpacingConstrained, const FBeatGridConstraints& BeatGridConstraints);
 
@@ -42,15 +46,11 @@ class USERINTERFACE_API UConstrainedSlider_BeatGrid : public UConstrainedSlider
 	GENERATED_BODY()
 
 public:
-	void UpdateBeatGridConstraints(const int32 NewNumHorizontalTargets, const int32 NewNumVerticalTargets, const float NewHorizontalSpread, const float NewVerticalSpread, const float NewMaxTargetScale);
+	void UpdateBeatGridConstraints(const int32 NewNumHorizontalTargets, const int32 NewNumVerticalTargets, const float NewMaxTargetScale);
 	UFUNCTION()
 	void OnBeatGridUpdate_NumVerticalTargets(const int32 NewNumVerticalTargets);
 	UFUNCTION()
 	void OnBeatGridUpdate_NumHorizontalTargets(const int32 NewNumHorizontalTargets);
-	UFUNCTION()
-	void OnBeatGridUpdate_HorizontalSpread(const float NewHorizontalSpread);
-	UFUNCTION()
-	void OnBeatGridUpdate_VerticalSpread(const float NewVerticalSpread);
 	UFUNCTION()
 	void OnBeatGridUpdate_MaxTargetScale(const float NewMaxTargetScale);
 
@@ -68,8 +68,8 @@ protected:
 	
 	int32 NumHorizontalTargets;
 	int32 NumVerticalTargets;
-	float HorizontalSpread;
-	float VerticalSpread;
+	const float HorizontalSpread = 3200.f;
+	const float VerticalSpread = 1000.f;
 	float MaxTargetSize;
 	
 	/** The diameter of a target */

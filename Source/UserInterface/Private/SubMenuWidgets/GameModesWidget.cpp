@@ -4,6 +4,7 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "SaveGameCustomGameMode.h"
+#include "Blueprint/WidgetTree.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
@@ -14,6 +15,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/HorizontalBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "Misc/DefaultValueHelper.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
@@ -207,8 +209,6 @@ void UGameModesWidget::BindAllDelegates()
 	BeatGridNumHorizontalTargetsValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnTextCommitted_BeatGridNumHorizontalTargets);
 	BeatGridNumVerticalTargetsSlider->OnValueChanged.AddDynamic(this, &UGameModesWidget::OnSliderChanged_BeatGridNumVerticalTargets);
 	BeatGridNumVerticalTargetsValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnTextCommitted_BeatGridNumVerticalTargets);
-	BeatGridUpdate_HorizontalSpread.BindUObject(BeatGridSpacingConstrained, &UConstrainedSlider_BeatGrid::OnBeatGridUpdate_HorizontalSpread);
-	BeatGridUpdate_VerticalSpread.BindUObject(BeatGridSpacingConstrained, &UConstrainedSlider_BeatGrid::OnBeatGridUpdate_VerticalSpread);
 	BeatGridUpdate_NumVerticalTargets.BindUObject(BeatGridSpacingConstrained, &UConstrainedSlider_BeatGrid::OnBeatGridUpdate_NumVerticalTargets);
 	BeatGridUpdate_NumHorizontalTargets.BindUObject(BeatGridSpacingConstrained, &UConstrainedSlider_BeatGrid::OnBeatGridUpdate_NumHorizontalTargets);
 	TargetScaleConstrained->OnMaxValueChanged.AddUObject(BeatGridSpacingConstrained, &UConstrainedSlider_BeatGrid::OnBeatGridUpdate_MaxTargetScale);
@@ -353,14 +353,12 @@ void UGameModesWidget::OnSliderChanged_MinTargetDistance(const float NewMinTarge
 
 void UGameModesWidget::OnSliderChanged_HorizontalSpread(const float NewHorizontalSpread)
 {
-	const float SnappedValue = OnSliderChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadGridSnapSize);
-	BeatGridUpdate_HorizontalSpread.Execute(SnappedValue);
+	OnSliderChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadGridSnapSize);
 }
 
 void UGameModesWidget::OnSliderChanged_VerticalSpread(const float NewVerticalSpread)
 {
-	const float SnappedValue = OnSliderChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadGridSnapSize);
-	BeatGridUpdate_VerticalSpread.Execute(SnappedValue);
+	OnSliderChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadGridSnapSize);
 }
 
 void UGameModesWidget::OnSliderChanged_ForwardSpread(const float NewForwardSpread)
@@ -417,14 +415,12 @@ void UGameModesWidget::OnTextCommitted_MinTargetDistance(const FText& NewMinTarg
 
 void UGameModesWidget::OnTextCommitted_HorizontalSpread(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, HorizontalSpreadGridSnapSize, MinHorizontalSpreadValue, MaxHorizontalSpreadValue);
-	BeatGridUpdate_HorizontalSpread.Execute(SnappedValue);
+	OnEditableTextBoxChanged(NewHorizontalSpread, HorizontalSpreadValue, HorizontalSpreadSlider, HorizontalSpreadGridSnapSize, MinHorizontalSpreadValue, MaxHorizontalSpreadValue);
 }
 
 void UGameModesWidget::OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, VerticalSpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
-	BeatGridUpdate_VerticalSpread.Execute(SnappedValue);
+	OnEditableTextBoxChanged(NewVerticalSpread, VerticalSpreadValue, VerticalSpreadSlider, VerticalSpreadGridSnapSize, MinVerticalSpreadValue, MaxVerticalSpreadValue);
 }
 
 void UGameModesWidget::OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType)
@@ -701,47 +697,218 @@ void UGameModesWidget::OnCheckStateChanged_EnableAI(const bool bEnableAI)
 
 void UGameModesWidget::OnBeatGridSpacingConstrained(const FBeatGridConstraints& BeatGridConstraints)
 {
+	/* TODO: Make this less ugly */
+	UE_LOG(LogTemp, Display, TEXT("%f %d %d"), BeatGridConstraints.TargetScale, BeatGridConstraints.NumHorizontalTargets, BeatGridConstraints.NumVerticalTargets);
+	TArray<FText> SuggestionValueArray;
+	if (BeatGridConstraints.NumHorizontalTargets != -1)
+	{
+		bHorizontalTargetConstraint = true;
+		if (BeatGridWarningEMark_BeatGridNumHorizontalTargets == nullptr)
+		{
+			BeatGridWarningEMark_BeatGridNumHorizontalTargets = ConstructBeatGridWarningEMarkWidget(*NumHorizontalTargetsTextTooltipBox);
+		}
+		SuggestionValueArray.Add(FText::Join(FText::FromString(" "), BeatGridConstrainedText_HorizontalSuggest, FText::AsNumber(BeatGridConstraints.NumHorizontalTargets)));
+	}
+	else
+	{
+		bHorizontalTargetConstraint = false;
+	}
+	if (BeatGridConstraints.NumVerticalTargets != -1)
+	{
+		bVerticalTargetConstraint = true;
+		if (BeatGridWarningEMark_BeatGridNumVerticalTargets == nullptr)
+		{
+			BeatGridWarningEMark_BeatGridNumVerticalTargets = ConstructBeatGridWarningEMarkWidget(*NumVerticalTargetsTextTooltipBox);
+		}
+		SuggestionValueArray.Add(FText::Join(FText::FromString(" "), BeatGridConstrainedText_VerticalSuggest, FText::AsNumber(BeatGridConstraints.NumVerticalTargets)));
+	}
+	else
+	{
+		bVerticalTargetConstraint = false;
+	}
+	if (BeatGridConstraints.TargetScale != -1.f)
+	{
+		bTargetScaleConstraint = true;
+		if (BeatGridWarningEMark_MaxTargetScale == nullptr)
+		{
+			BeatGridWarningEMark_MaxTargetScale = ConstructBeatGridWarningEMarkWidget(*TargetScaleConstrained->TextTooltipBox_Max);
+		}
+		SuggestionValueArray.Add(FText::Join(FText::FromString(" "), BeatGridConstrainedText_ScaleSuggest, FText::AsNumber(floorf(BeatGridConstraints.TargetScale * 100) / 100.f)));
+	}
+	else
+	{
+		bTargetScaleConstraint = false;
+	}
+
+	if (BeatGridConstraints.HorizontalSpacing != -1.f)
+	{
+		bHorizontalSpacingConstraint = true;
+		if (BeatGridWarningEMark_BeatGridHorizontalSpacing == nullptr)
+		{
+			BeatGridWarningEMark_BeatGridHorizontalSpacing = ConstructBeatGridWarningEMarkWidget(*BeatGridSpacingConstrained->TextTooltipBox_Min);
+		}
+		SuggestionValueArray.Add(FText::Join(FText::FromString(" "), BeatGridConstrainedText_HorizontalSpacingSuggest, FText::AsNumber(floorf(BeatGridConstraints.TargetScale * 100) / 100.f)));
+	}
+	else
+	{
+		bHorizontalSpacingConstraint = false;
+	}
+
+	if (BeatGridConstraints.VerticalSpacing != -1.f)
+	{
+		bVerticalSpacingConstraint = true;
+		if (BeatGridWarningEMark_BeatGridVerticalSpacing == nullptr)
+		{
+			BeatGridWarningEMark_BeatGridVerticalSpacing = ConstructBeatGridWarningEMarkWidget(*BeatGridSpacingConstrained->TextTooltipBox_Max);
+		}
+		SuggestionValueArray.Add(FText::Join(FText::FromString(" "), BeatGridConstrainedText_VerticalSpacingSuggest, FText::AsNumber(floorf(BeatGridConstraints.TargetScale * 100) / 100.f)));
+	}
+	else
+	{
+		bVerticalSpacingConstraint = false;
+	}
 	
+	const FText JoinedValues = FText::Join(FText::FromString(" or "), SuggestionValueArray);
+	const FText TooltipText = FText::Join(FText::FromString(" "), BeatGridConstrainedText_Start, JoinedValues);
+	
+	if (BeatGridWarningEMark_BeatGridNumHorizontalTargets)
+	{
+		if (!bHorizontalTargetConstraint)
+		{
+			BeatGridWarningEMark_BeatGridNumHorizontalTargets->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			BeatGridWarningEMark_BeatGridNumHorizontalTargets->TooltipText = TooltipText;
+			BeatGridWarningEMark_BeatGridNumHorizontalTargets->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	if (BeatGridWarningEMark_BeatGridNumVerticalTargets)
+	{
+		if (!bVerticalTargetConstraint)
+		{
+			BeatGridWarningEMark_BeatGridNumVerticalTargets->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			BeatGridWarningEMark_BeatGridNumVerticalTargets->TooltipText = TooltipText;
+			BeatGridWarningEMark_BeatGridNumVerticalTargets->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	if (BeatGridWarningEMark_MaxTargetScale)
+	{
+		if (!bTargetScaleConstraint)
+		{
+			BeatGridWarningEMark_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			BeatGridWarningEMark_MaxTargetScale->TooltipText = TooltipText;
+			BeatGridWarningEMark_MaxTargetScale->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	if (BeatGridWarningEMark_BeatGridHorizontalSpacing)
+	{
+		if (!bHorizontalSpacingConstraint)
+		{
+			BeatGridWarningEMark_BeatGridHorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			BeatGridWarningEMark_BeatGridHorizontalSpacing->TooltipText = TooltipText;
+			BeatGridWarningEMark_BeatGridHorizontalSpacing->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	if (BeatGridWarningEMark_BeatGridVerticalSpacing)
+	{
+		if (!bVerticalSpacingConstraint)
+		{
+			BeatGridWarningEMark_BeatGridVerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			BeatGridWarningEMark_BeatGridVerticalSpacing->TooltipText = TooltipText;
+			BeatGridWarningEMark_BeatGridVerticalSpacing->SetVisibility(ESlateVisibility::Visible);
+		}
+	}
+	if (bHorizontalTargetConstraint || bVerticalTargetConstraint || bTargetScaleConstraint || bHorizontalSpacingConstraint || bVerticalSpacingConstraint)
+	{
+		SaveCustomButton->SetIsEnabled(false);
+		SaveCustomAndStartButton->SetIsEnabled(false);
+		StartCustomButton->SetIsEnabled(false);
+		StartWithoutSavingButton->SetIsEnabled(false);
+		return;
+	}
+	SaveCustomButton->SetIsEnabled(true);
+	SaveCustomAndStartButton->SetIsEnabled(true);
+	StartCustomButton->SetIsEnabled(true);
+	StartWithoutSavingButton->SetIsEnabled(true);
 }
 
 void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
-	if (InBSConfig.IsBeatGridMode)
+	switch(InBSConfig.BaseGameMode)
 	{
+	case EDefaultMode::Custom:
+		break;
+	case EDefaultMode::SingleBeat:
+		BaseGameModeComboBox->SetSelectedOption("SingleBeat");
+		break;
+	case EDefaultMode::MultiBeat:
+		BaseGameModeComboBox->SetSelectedOption("MultiBeat");
+		break;
+	case EDefaultMode::BeatGrid:
 		BeatGridSpecificSettings->SetVisibility(ESlateVisibility::Visible);
 		BaseGameModeComboBox->SetSelectedOption("BeatGrid");
+		HorizontalSpreadSlider->SetLocked(true);
+		HorizontalSpreadValue->SetIsReadOnly(true);
+		VerticalSpreadSlider->SetLocked(true);
+		VerticalSpreadValue->SetIsReadOnly(true);
 		BeatGridSpacingConstrained->UpdateDefaultValues(InBSConfig.BeatGridSpacing.X, InBSConfig.BeatGridSpacing.Y);
-		BeatGridSpacingConstrained->UpdateBeatGridConstraints(InBSConfig.NumHorizontalBeatGridTargets, InBSConfig.NumVerticalBeatGridTargets,
-			InBSConfig.BoxBounds.Y, InBSConfig.BoxBounds.Z, InBSConfig.MaxTargetScale);
+		BeatGridSpacingConstrained->UpdateBeatGridConstraints(InBSConfig.NumHorizontalBeatGridTargets, InBSConfig.NumVerticalBeatGridTargets, InBSConfig.MaxTargetScale);
 		RandomizeNextBeatGridTargetCheckBox->SetIsChecked(InBSConfig.RandomizeBeatGrid);
-	}
-	else
-	{
-		BeatGridSpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	if (InBSConfig.IsBeatTrackMode)
-	{
+		BeatGridNumHorizontalTargetsSlider->SetValue(InBSConfig.NumHorizontalBeatGridTargets);
+		BeatGridNumHorizontalTargetsSlider->SetMinValue(MinNumBeatGridHorizontalTargetsValue);
+		BeatGridNumHorizontalTargetsSlider->SetMaxValue(MaxNumBeatGridHorizontalTargetsValue);
+		BeatGridNumHorizontalTargetsValue->SetText(FText::AsNumber(InBSConfig.NumHorizontalBeatGridTargets));
+		BeatGridNumVerticalTargetsSlider->SetValue(InBSConfig.NumVerticalBeatGridTargets);
+		BeatGridNumVerticalTargetsSlider->SetMinValue(MinNumBeatGridVerticalTargetsValue);
+		BeatGridNumVerticalTargetsSlider->SetMaxValue(MaxNumBeatGridVerticalTargetsValue);
+		BeatGridNumVerticalTargetsValue->SetText(FText::AsNumber(InBSConfig.NumVerticalBeatGridTargets));
+		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Collapsed);
+		SpreadTypeBox->SetVisibility(ESlateVisibility::Collapsed);
+		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	case EDefaultMode::BeatTrack:
 		BeatTrackSpecificSettings->SetVisibility(ESlateVisibility::Visible);
 		BaseGameModeComboBox->SetSelectedOption("BeatTrack");
 		LifespanSlider->SetLocked(true);
 		LifespanValue->SetIsReadOnly(true);
 		TargetSpeedConstrained->UpdateDefaultValues(InBSConfig.MinTrackingSpeed, InBSConfig.MaxTrackingSpeed);
+		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Collapsed);
+		SpreadTypeBox->SetVisibility(ESlateVisibility::Collapsed);
+		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	default:
+		break;
 	}
-	else
+
+
+	if (InBSConfig.BaseGameMode != EDefaultMode::BeatGrid)
+	{
+		BeatGridSpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
+		HorizontalSpreadSlider->SetLocked(false);
+		HorizontalSpreadValue->SetIsReadOnly(false);
+		VerticalSpreadSlider->SetLocked(false);
+		VerticalSpreadValue->SetIsReadOnly(false);
+	}
+	if (InBSConfig.BaseGameMode != EDefaultMode::BeatTrack)
 	{
 		BeatTrackSpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
 		LifespanSlider->SetLocked(false);
 		LifespanValue->SetIsReadOnly(false);
 	}
-
-	if (InBSConfig.IsBeatTrackMode || InBSConfig.IsBeatGridMode)
-	{
-		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Collapsed);
-		SpreadTypeBox->SetVisibility(ESlateVisibility::Collapsed);
-		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	else
+	if (InBSConfig.BaseGameMode != EDefaultMode::BeatTrack && InBSConfig.BaseGameMode != EDefaultMode::BeatGrid)
 	{
 		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Visible);
 		SpreadTypeBox->SetVisibility(ESlateVisibility::Visible);
@@ -753,7 +920,6 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		AIGammaValue->SetText(FText::AsNumber(InBSConfig.AIConfig.Gamma));
 		AIEpsilonSlider->SetValue(InBSConfig.AIConfig.Epsilon);
 		AIEpsilonValue->SetText(FText::AsNumber(InBSConfig.AIConfig.Epsilon));
-
 		if (InBSConfig.AIConfig.bEnableRLAgent)
 		{
 			AIAlphaBox->SetVisibility(ESlateVisibility::Visible);
@@ -767,16 +933,14 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 			AIEpsilonBox->SetVisibility(ESlateVisibility::Collapsed);
 		}
 	}
-	
-	if (InBSConfig.IsSingleBeatMode)
+
+	if (InBSConfig.bMoveTargetsForward)
 	{
-		BaseGameModeComboBox->SetSelectedOption("SingleBeat");
+		ForwardSpreadBox->SetVisibility(ESlateVisibility::Visible);
 	}
-	if (!InBSConfig.IsBeatGridMode && !InBSConfig.IsBeatTrackMode && !InBSConfig.IsSingleBeatMode)
+	else
 	{
-		BaseGameModeComboBox->SetSelectedOption("MultiBeat");
-		LifespanSlider->SetLocked(false);
-		LifespanValue->SetIsReadOnly(false);
+		ForwardSpreadBox->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	
 	GameModeDifficultyComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InBSConfig.GameModeDifficulty).ToString());
@@ -796,24 +960,6 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	VerticalSpreadSlider->SetValue(InBSConfig.BoxBounds.Z);
 	VerticalSpreadValue->SetText(FText::AsNumber(InBSConfig.BoxBounds.Z));
 	ForwardSpreadCheckBox->SetIsChecked(InBSConfig.bMoveTargetsForward);
-	BeatGridNumHorizontalTargetsSlider->SetValue(InBSConfig.NumHorizontalBeatGridTargets);
-	BeatGridNumHorizontalTargetsSlider->SetMinValue(MinNumBeatGridHorizontalTargetsValue);
-	BeatGridNumHorizontalTargetsSlider->SetMaxValue(MaxNumBeatGridHorizontalTargetsValue);
-	BeatGridNumHorizontalTargetsValue->SetText(FText::AsNumber(InBSConfig.NumHorizontalBeatGridTargets));
-	BeatGridNumVerticalTargetsSlider->SetValue(InBSConfig.NumVerticalBeatGridTargets);
-	BeatGridNumVerticalTargetsSlider->SetMinValue(MinNumBeatGridVerticalTargetsValue);
-	BeatGridNumVerticalTargetsSlider->SetMaxValue(MaxNumBeatGridVerticalTargetsValue);
-	BeatGridNumVerticalTargetsValue->SetText(FText::AsNumber(InBSConfig.NumVerticalBeatGridTargets));
-	
-	if (InBSConfig.bMoveTargetsForward)
-	{
-		ForwardSpreadBox->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		ForwardSpreadBox->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	
 	ForwardSpreadSlider->SetValue(InBSConfig.MoveForwardDistance);
 	ForwardSpreadValue->SetText(FText::AsNumber(InBSConfig.MoveForwardDistance));
 	TargetScaleConstrained->UpdateDefaultValues(InBSConfig.MinTargetScale, InBSConfig.MaxTargetScale);
@@ -856,30 +1002,14 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 		ReturnStruct.CustomGameModeName = GameModeNameComboBox->GetSelectedOption();
 	}
 
-	if (BaseGameModeComboBox->GetSelectedOption().Equals("BeatGrid"))
+	for (const EDefaultMode Mode : TEnumRange<EDefaultMode>())
 	{
-		ReturnStruct.IsBeatGridMode = true;
-		ReturnStruct.IsBeatTrackMode = false;
-		ReturnStruct.IsSingleBeatMode = false;
+		if (BaseGameModeComboBox->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
+		{
+			ReturnStruct.BaseGameMode = Mode;
+		}
 	}
-	else if (BaseGameModeComboBox->GetSelectedOption().Equals("BeatTrack"))
-	{
-		ReturnStruct.IsBeatGridMode = false;
-		ReturnStruct.IsBeatTrackMode = true;
-		ReturnStruct.IsSingleBeatMode = false;
-	}
-	else if (BaseGameModeComboBox->GetSelectedOption().Equals("SingleBeat"))
-	{
-		ReturnStruct.IsBeatGridMode = false;
-		ReturnStruct.IsBeatTrackMode = false;
-		ReturnStruct.IsSingleBeatMode = true;
-	}
-	else
-	{
-		ReturnStruct.IsBeatGridMode = false;
-		ReturnStruct.IsBeatTrackMode = false;
-		ReturnStruct.IsSingleBeatMode = false;
-	}
+
 	ReturnStruct.GameModeDifficulty = EGameModeDifficulty::None;
 	ReturnStruct.PlayerDelay = FMath::GridSnap(FMath::Clamp(PlayerDelaySlider->GetValue(), MinPlayerDelayValue, MaxPlayerDelayValue), PlayerDelayGridSnapSize);
 	ReturnStruct.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(LifespanSlider->GetValue(), MinLifespanValue, MaxLifespanValue), LifespanGridSnapSize);
@@ -946,6 +1076,16 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	else
 	{
 		RemoveAllCustomButton->SetIsEnabled(true);
+	}
+	if (BaseGameModeComboBox->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(EDefaultMode::BeatGrid).ToString()) && (
+		bHorizontalTargetConstraint || bVerticalTargetConstraint || bTargetScaleConstraint || bVerticalSpacingConstraint || bHorizontalSpacingConstraint))
+	{
+		SaveCustomButton->SetIsEnabled(false);
+		SaveCustomAndStartButton->SetIsEnabled(false);
+		StartCustomButton->SetIsEnabled(false);
+		SaveCustomAndStartButton->SetIsEnabled(false);
+		StartWithoutSavingButton->SetIsEnabled(false);
+		return;
 	}
 	if (GameModeNameComboBox->GetSelectedOption().IsEmpty())
 	{
@@ -1149,4 +1289,17 @@ float UGameModesWidget::OnSliderChanged(const float NewValue, UEditableTextBox* 
 	const float ReturnValue = FMath::GridSnap(NewValue, GridSnapSize);
 	TextBoxToChange->SetText(FText::AsNumber(ReturnValue));
 	return ReturnValue;
+}
+
+UTooltipImage* UGameModesWidget::ConstructBeatGridWarningEMarkWidget(UHorizontalBox& BoxToPlaceIn)
+{
+	UTooltipImage* BeatGridWarningEMarkWidget = WidgetTree->ConstructWidget<UTooltipImage>(BeatGridWarningEMarkClass);
+	BeatGridWarningEMarkWidget->OnTooltipImageHovered.AddDynamic(this, &UGameModesWidget::OnTooltipImageHovered);
+	UHorizontalBoxSlot* HorizontalBoxSlot = BoxToPlaceIn.AddChildToHorizontalBox(BeatGridWarningEMarkWidget);
+	check(HorizontalBoxSlot);
+	HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
+	FSlateChildSize BoxSlateChildSize;
+	BoxSlateChildSize.SizeRule = ESlateSizeRule::Fill;
+	HorizontalBoxSlot->SetSize(BoxSlateChildSize);
+	return BeatGridWarningEMarkWidget;
 }

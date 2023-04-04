@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "ConstrainedSlider.generated.h"
 
+class UHorizontalBox;
 class UButton;
 class UCheckBox;
 class USlider;
@@ -59,6 +60,10 @@ public:
 	USlider* MinSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* MaxSlider;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* TextTooltipBox_Max;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* TextTooltipBox_Min;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -73,6 +78,7 @@ protected:
 	UEditableTextBox* MinValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* MaxValue;
+	
 
 	/** Updates the Checkbox checked state, and calls the appropriate OnSliderChanged functions to update the values of the Sliders and EditableTextBoxes */
 	UFUNCTION()

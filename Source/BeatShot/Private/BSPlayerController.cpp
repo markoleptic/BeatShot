@@ -194,7 +194,7 @@ void ABSPlayerController::ShowPlayerHUD()
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
-	if (GI->BSConfig.IsBeatTrackMode)
+	if (GI->BSConfig.BaseGameMode == EDefaultMode::BeatGrid )
 	{
 		PlayerHUD->TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
 		PlayerHUD->StreakBox->SetVisibility(ESlateVisibility::Collapsed);

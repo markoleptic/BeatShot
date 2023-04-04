@@ -60,9 +60,6 @@ public:
 	void SetCanFire(const bool bNewFire) { bCanFire = bNewFire; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetShouldTrace(const bool bNewShouldTrace) { bShouldTrace = bNewShouldTrace; }
-
-	UFUNCTION(BlueprintCallable)
 	void SetFireRate(const bool bAutomatic);
 
 	UFUNCTION(BlueprintCallable)
@@ -139,10 +136,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	bool bAutomaticFire;
 
-	/** Whether or not to trace on tick for BeatTrack */
-	UPROPERTY(BlueprintReadWrite)
-	bool bShouldTrace;
-
 	UPROPERTY(EditDefaultsOnly)
 	float CameraRecoilInterpSpeed = 4.f;
 	
@@ -156,7 +149,6 @@ protected:
 	float KickbackDuration = 0.2f;
 
 	/** Used in recoil to make sure the first shot has properly applied recoil */
-	UPROPERTY(BlueprintReadWrite)
 	int32 ShotsFired;
 
 private:
