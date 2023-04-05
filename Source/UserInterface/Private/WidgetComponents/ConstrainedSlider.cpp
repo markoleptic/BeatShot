@@ -31,6 +31,25 @@ void UConstrainedSlider::InitConstrainedSlider(const FConstrainedSliderStruct& I
 	SliderStruct.MaxConstraintLower = RoundValue(SliderStruct.MaxConstraintLower);
 	SliderStruct.MaxConstraintUpper = RoundValue(SliderStruct.MaxConstraintUpper);
 
+	if (!InStruct.bShowMinLock)
+	{
+		MinLock->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		MinLock->SetVisibility(ESlateVisibility::Visible);
+	}
+	if (!InStruct.bShowMaxLock)
+	{
+		MaxLock->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		MinLock->SetVisibility(ESlateVisibility::Visible);
+	}
+	MinLock->OnCheckStateChanged.AddDynamic(this, &UConstrainedSlider::OnCheckStateChanged_MinLock);
+	MaxLock->OnCheckStateChanged.AddDynamic(this, &UConstrainedSlider::OnCheckStateChanged_MaxLock);
+	
 	CheckboxText->SetText(SliderStruct.CheckboxText);
 	Checkbox->SetIsChecked(SliderStruct.bSyncSlidersAndValues);
 
@@ -90,6 +109,20 @@ void UConstrainedSlider::OnCheckStateChanged(const bool bIsChecked)
 	MaxSlider->SetValue(SliderStruct.DefaultMaxValue);
 	OnMinSliderChanged(SliderStruct.DefaultMinValue);
 	OnMaxSliderChanged(SliderStruct.DefaultMaxValue);
+}
+
+void UConstrainedSlider::OnCheckStateChanged_MinLock(const bool bIsLocked)
+{
+	MinSlider->SetLocked(bIsLocked);
+	MinValue->SetIsReadOnly(bIsLocked);
+	OnMinLockStateChanged.Broadcast(bIsLocked, RoundValue(MinSlider->GetValue()));
+}
+
+void UConstrainedSlider::OnCheckStateChanged_MaxLock(const bool bIsLocked)
+{
+	MaxSlider->SetLocked(bIsLocked);
+	MaxValue->SetIsReadOnly(bIsLocked);
+	OnMaxLockStateChanged.Broadcast(bIsLocked, RoundValue(MaxSlider->GetValue()));
 }
 
 void UConstrainedSlider::OnMinSliderChanged(const float NewMin)

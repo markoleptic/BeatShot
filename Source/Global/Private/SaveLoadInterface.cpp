@@ -1,8 +1,9 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-
 #include "SaveLoadInterface.h"
+#include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerScore.h"
+#include "SaveGamePlayerSettings.h"
 #include "Kismet/GameplayStatics.h"
 
 FAASettingsStruct ISaveLoadInterface::LoadAASettings() const

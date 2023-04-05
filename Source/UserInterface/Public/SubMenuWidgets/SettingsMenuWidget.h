@@ -5,6 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "AASettingsWidget.h"
+#include "GlobalStructs.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"

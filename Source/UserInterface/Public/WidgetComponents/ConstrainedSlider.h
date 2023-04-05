@@ -27,11 +27,34 @@ struct FConstrainedSliderStruct
 	float DefaultMaxValue;
 	bool bSyncSlidersAndValues;
 	float GridSnapSize;
+	bool bShowMinLock;
+	bool bShowMaxLock;
+	
+	FConstrainedSliderStruct()
+	{
+		CheckboxText = FText();
+		MinText = FText();
+		MaxText = FText();
+		MinConstraintLower = 0.f;
+		MinConstraintUpper = 0.f;
+		MaxConstraintLower = 0.f;
+		MaxConstraintUpper = 0.f;
+		DefaultMinValue = 0.f;
+		DefaultMaxValue = 0.f;
+		bSyncSlidersAndValues = false;
+		GridSnapSize = 0.f;
+		bShowMinLock = false;
+		bShowMaxLock = false;
+	}
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMinValueChanged, float MinValue);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxValueChanged, float MaxValue);
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMinLockStateChanged, const bool bIsLocked, const float LastValue);
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMaxLockStateChanged, const bool bIsLocked, const float LastValue);
 
 UCLASS()
 class USERINTERFACE_API UConstrainedSlider : public UUserWidget
@@ -52,37 +75,54 @@ public:
 	
 	/** Executed when MaxSlider or MaxValue is changed */
 	FOnMaxValueChanged OnMaxValueChanged;
+
+	FOnMinLockStateChanged OnMinLockStateChanged;
+	
+	FOnMaxLockStateChanged OnMaxLockStateChanged;
 	
 	/** The Tooltip image for the Checkbox. The parent widget will bind to this widget's OnTooltipImageHovered delegate to display tooltip information */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* CheckboxQMark;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* MinSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* MaxSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* TextTooltipBox_Max;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TextTooltipBox_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* TextTooltipBox_Max;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* MinLock;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* MaxLock;
 protected:
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* MinValue;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* MaxValue;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* CheckboxText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* MinText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* MaxText;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* Checkbox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* MinValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* MaxValue;
 	
-
 	/** Updates the Checkbox checked state, and calls the appropriate OnSliderChanged functions to update the values of the Sliders and EditableTextBoxes */
 	UFUNCTION()
 	void OnCheckStateChanged(const bool bIsChecked);
+
+	UFUNCTION()
+	virtual void OnCheckStateChanged_MinLock(const bool bIsLocked);
+
+	UFUNCTION()
+	virtual void OnCheckStateChanged_MaxLock(const bool bIsLocked);
 	
 	/** Checks the constraints for the MinSlider, changes the MinValue text, and executes OnMinValueChanged. Changes MaxSlider, MaxValue, and calls OnMaxValueChanged if bSyncSlidersAndValues is true */
 	UFUNCTION()

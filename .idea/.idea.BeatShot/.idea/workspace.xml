@@ -9,26 +9,32 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Source/Global/Public/GlobalStructs.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ConstrainedSlider.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ConstrainedSlider.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ConstrainedSlider_BeatGrid.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ConstrainedSlider_BeatGrid.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Tooltip.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Tooltip.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSPlayerController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSPlayerController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Private/SaveLoadInterface.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/HttpRequestInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/HttpRequestInterface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGameCustomGameMode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerScore.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveLoadInterface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ConstrainedSlider.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ConstrainedSlider.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ConstrainedSlider_BeatGrid.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ConstrainedSlider_BeatGrid.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ConstrainedSlider.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ConstrainedSlider.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ConstrainedSlider_BeatGrid.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/ConstrainedSlider_BeatGrid.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/VideoSettingButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/VideoSettingButton.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +53,7 @@
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/ThirdParty/Steamworks/Steamv151/sdk/public/steam/matchmakingtypes.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/ThirdParty/Steamworks/Steamv155/sdk/public/steam/matchmakingtypes.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Developer/GraphColor/Private/GraphColor.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Developer/RigVMDeveloper/Private/RigVMModel/RigVMController.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Runtime/Engine/Private/Character.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/Boost.Build.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/crc.hpp" root0="SKIP_HIGHLIGHTING" />
@@ -64,6 +71,7 @@
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/kissfft.hh" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools/kiss_fftnd.c" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools/kiss_fftr.c" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/mpeg/id3v2/frames/textidentificationframe.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/tagunion.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/toolkit/tfile.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/toolkit/tfile.h" root0="SKIP_HIGHLIGHTING" />
@@ -382,6 +390,9 @@
       <workItem from="1680378130415" duration="8287000" />
       <workItem from="1680461189496" duration="32482000" />
       <workItem from="1680537146593" duration="39177000" />
+      <workItem from="1680627851569" duration="11915000" />
+      <workItem from="1680640123266" duration="11464000" />
+      <workItem from="1680658353602" duration="8587000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

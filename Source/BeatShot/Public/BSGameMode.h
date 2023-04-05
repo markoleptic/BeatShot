@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
-#include "SaveGameCustomGameMode.h"
-#include "SaveGamePlayerScore.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/GameMode.h"
 #include "BSGameMode.generated.h"

@@ -161,7 +161,7 @@ private:
 	FVector GetBoxExtents_Static() const;
 
 	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
-	TArray<EDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const;
+	TArray<EBorderingDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const;
 
 	/** Returns the VectorCounter corresponding to the point */
 	FVectorCounter GetVectorCounterFromPoint(const FVector& Point) const;

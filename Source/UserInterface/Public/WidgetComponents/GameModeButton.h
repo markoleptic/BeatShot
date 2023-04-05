@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveGameCustomGameMode.h"
+#include "GlobalEnums.h"
 #include "GameModeButton.generated.h"
 
 class UButton;

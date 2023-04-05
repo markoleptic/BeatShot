@@ -5,24 +5,10 @@
 #include "CoreMinimal.h"
 #include "BeatShot.generated.h"
 
-class FBeatShot : public FDefaultGameModuleImpl
-{
-public:
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
-};
-
 #define ACTOR_ROLE_FSTRING *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(GetLocalRole()))
 #define GET_ACTOR_ROLE_FSTRING(Actor) *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(Actor->GetLocalRole()))
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnQTableUpdate, const TArray<float>& UpdatedQTable);
-
-UENUM(BlueprintType)
-enum class EMovementType : uint8
-{
-	Sprinting UMETA(DisplayName="Sprinting"),
-	Walking UMETA(DisplayName="Walking"),
-	Crouching UMETA(DisplayName="Crouching")};
 
 /** Enum representing the different times of the day */
 UENUM(BlueprintType)
@@ -33,23 +19,46 @@ enum class ETimeOfDay : uint8
 	DayToNight UMETA(DisplayName="DayToNight"),
 	NightToDay UMETA(DisplayName="NightToDay"),
 };
+ENUM_RANGE_BY_FIRST_AND_LAST(ETimeOfDay, ETimeOfDay::Day, ETimeOfDay::NightToDay);
 
+/** Enum representing the ways in which the MovablePlatform can move */
 UENUM(BlueprintType)
 enum class EPlatformTransitionType : uint8
 {
 	None UMETA(DisplayName="MoveUpByInteract"),
 	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
 	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
-	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None, EPlatformTransitionType::MoveDownByStepOff);
 
+/** Enum representing the bordering directions for a target */
 UENUM(BlueprintType)
-enum class EDirection : uint8
+enum class EBorderingDirection : uint8
 {
 	Left UMETA(DisplayName="Left"),
 	Right UMETA(DisplayName="Right"),
 	Up UMETA(DisplayName="Up"),
 	Down UMETA(DisplayName="Down"),
 };
+ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::Down);
+
+/** Enum representing the types of BeatGrid Indices */
+UENUM(BlueprintType)
+enum class EBeatGridIndexType : uint8
+{
+	None UMETA(DisplayName="None"),
+	Corner_TopLeft UMETA(DisplayName="Corner_TopLeft"),
+	Corner_TopRight UMETA(DisplayName="Corner_TopRight"),
+	Corner_BottomRight UMETA(DisplayName="Corner_BottomRight"),
+	Corner_BottomLeft UMETA(DisplayName="Corner_BottomLeft"),
+	Border_Top UMETA(DisplayName="Border_Top"),
+	Border_Right UMETA(DisplayName="Border_Top"),
+	Border_Bottom UMETA(DisplayName="Border_Top"),
+	Border_Left UMETA(DisplayName="Border_Top"),
+	Middle UMETA(DisplayName="Middle"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EBeatGridIndexType, EBeatGridIndexType::Corner_TopLeft, EBeatGridIndexType::Middle);
 
 /** A struct representing two consecutively spawned targets */
 USTRUCT()
@@ -169,8 +178,10 @@ struct FVectorCounter
 	/** The index inside SpawnCounter for this VectorCounter */
 	int32 Index;
 
+	/** The horizontal spacing between the next VectorCounter point */
 	float IncrementY;
-	
+
+	/** The vertical spacing between the next VectorCounter point */
 	float IncrementZ;
 
 	FVectorCounter()
@@ -230,25 +241,25 @@ struct FVectorCounter
 		return false;
 	}
 
-	FVector GetRandomSubPoint(const TArray<EDirection> BlockedDirections) const
+	FVector GetRandomSubPoint(const TArray<EBorderingDirection> BlockedDirections) const
 	{
 		float MinY = Point.Y;
 		float MaxY = Point.Y + IncrementY;
 		float MinZ = Point.Z;
 		float MaxZ = Point.Z + IncrementZ;
-		if (BlockedDirections.Contains(EDirection::Left))
+		if (BlockedDirections.Contains(EBorderingDirection::Left))
 		{
 			MinY = Center.Y;
 		}
-		if (BlockedDirections.Contains(EDirection::Right))
+		if (BlockedDirections.Contains(EBorderingDirection::Right))
 		{
 			MaxY = Center.Y;
 		}
-		if (BlockedDirections.Contains(EDirection::Down))
+		if (BlockedDirections.Contains(EBorderingDirection::Down))
 		{
 			MinZ = Center.Z;
 		}
-		if (BlockedDirections.Contains(EDirection::Up))
+		if (BlockedDirections.Contains(EBorderingDirection::Up))
 		{
 			MaxZ = Center.Z;
 		}
@@ -258,22 +269,6 @@ struct FVectorCounter
 		return FVector(Point.X, Y, Z);
 	}
 };
-
-UENUM(BlueprintType)
-enum class EBeatGridIndexType : uint8
-{
-	None UMETA(DisplayName="None"),
-	Corner_TopLeft UMETA(DisplayName="Corner_TopLeft"),
-	Corner_TopRight UMETA(DisplayName="Corner_TopRight"),
-	Corner_BottomRight UMETA(DisplayName="Corner_BottomRight"),
-	Corner_BottomLeft UMETA(DisplayName="Corner_BottomLeft"),
-	Border_Top UMETA(DisplayName="Border_Top"),
-	Border_Right UMETA(DisplayName="Border_Top"),
-	Border_Bottom UMETA(DisplayName="Border_Top"),
-	Border_Left UMETA(DisplayName="Border_Top"),
-	Middle UMETA(DisplayName="Middle"),
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EBeatGridIndexType, EBeatGridIndexType::Corner_TopLeft, EBeatGridIndexType::Middle);
 
 /** A struct representing a BeatGrid target index. Stores info about bordering indices */
 USTRUCT()
@@ -480,29 +475,9 @@ struct FBeatGridIndex
 	}
 };
 
-/** Used to store movement properties for different movement types */
-USTRUCT(BlueprintType)
-struct FMovementTypeVariables
+class FBeatShot : public FDefaultGameModuleImpl
 {
-	GENERATED_BODY()
-
-	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-	float MaxAcceleration;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-	float BreakingDecelerationWalking;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-	float GroundFriction;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Movement Variables")
-	float MaxWalkSpeed;
-
-	FMovementTypeVariables()
-	{
-		MaxAcceleration = 0.f;
-		BreakingDecelerationWalking = 0.f;
-		GroundFriction = 0.f;
-		MaxWalkSpeed = 0.f;
-	}
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
 };

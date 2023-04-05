@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include "SaveGamePlayerScore.h"
-#include "SaveGamePlayerSettings.h"
+#include "GlobalStructs.h"
 #include "HttpRequestInterface.generated.h"
 
 /** Broadcast if refresh token is invalid */

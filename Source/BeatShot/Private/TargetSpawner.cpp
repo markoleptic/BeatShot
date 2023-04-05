@@ -857,9 +857,9 @@ FVector ATargetSpawner::GetBoxExtents_Static() const
 	return StaticExtents;
 }
 
-TArray<EDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const
+TArray<EBorderingDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const
 {
-	TArray<EDirection> Directions;
+	TArray<EBorderingDirection> Directions;
 	const FVector MinExtrema = GetBoxExtrema(0, true);
 	const FVector MaxExtrema = GetBoxExtrema(1, true);
 	const FVector Left = Location + FVector(0, -SpawnMemoryIncY, 0);
@@ -869,19 +869,19 @@ TArray<EDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector>&
 
 	if (Left.Y != MinExtrema.Y && !ValidLocations.Contains(Left))
 	{
-		Directions.Add(EDirection::Left);
+		Directions.Add(EBorderingDirection::Left);
 	}
 	if (Right.Y != MaxExtrema.Y && !ValidLocations.Contains(Right))
 	{
-		Directions.Add(EDirection::Right);
+		Directions.Add(EBorderingDirection::Right);
 	}
 	if (Up.Z != MaxExtrema.Z && !ValidLocations.Contains(Up))
 	{
-		Directions.Add(EDirection::Up);
+		Directions.Add(EBorderingDirection::Up);
 	}
 	if (Down.Z != MinExtrema.Z && !ValidLocations.Contains(Down))
 	{
-		Directions.Add(EDirection::Down);
+		Directions.Add(EBorderingDirection::Down);
 	}
 	return Directions;
 }
