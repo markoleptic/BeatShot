@@ -49,38 +49,17 @@ struct FConstrainedSliderStruct
 };
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMinValueChanged, float MinValue);
-
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxValueChanged, float MaxValue);
-
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMinLockStateChanged, const bool bIsLocked, const float LastValue);
-
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnMaxLockStateChanged, const bool bIsLocked, const float LastValue);
 
 UCLASS()
 class USERINTERFACE_API UConstrainedSlider : public UUserWidget
 {
+	friend class UGameModesWidget;
+	
 	GENERATED_BODY()
-
-	virtual void NativeConstruct() override;
-
-public:
-	/** Initializes the Sliders and EditableTextBoxes' with text and values */
-	virtual void InitConstrainedSlider(const FConstrainedSliderStruct& InStruct);
 	
-	/** Updates the Slider Values by calling OnMinSliderChanged and OnMaxSliderChanged, and updates the Checkbox checked state if necessary */
-	void UpdateDefaultValues(const float NewMinValue, const float NewMaxValue);
-	
-	/** Executed when MinSlider or MinValue is changed */
-	FOnMinValueChanged OnMinValueChanged;
-	
-	/** Executed when MaxSlider or MaxValue is changed */
-	FOnMaxValueChanged OnMaxValueChanged;
-
-	FOnMinLockStateChanged OnMinLockStateChanged;
-	
-	FOnMaxLockStateChanged OnMaxLockStateChanged;
-	
-	/** The Tooltip image for the Checkbox. The parent widget will bind to this widget's OnTooltipImageHovered delegate to display tooltip information */
+protected:
+	/** The Tooltip image for the Checkbox. The parent widget will bind to this widget's OnTooltipImageHoveredLocal delegate to display tooltip information */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* CheckboxQMark;
 	
@@ -98,7 +77,6 @@ public:
 	UCheckBox* MinLock;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* MaxLock;
-protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* MinValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -114,6 +92,20 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* Checkbox;
 	
+	virtual void NativeConstruct() override;
+	
+	/** Initializes the Sliders and EditableTextBoxes' with text and values */
+	virtual void InitConstrainedSlider(const FConstrainedSliderStruct& InStruct);
+	
+	/** Updates the Slider Values by calling OnSliderChanged_Min and OnSliderChanged_Max, and updates the Checkbox checked state if necessary */
+	void UpdateDefaultValues(const float NewMinValue, const float NewMaxValue);
+	
+	/** Executed when MinSlider or MinValue is changed */
+	FOnMinValueChanged OnMinValueChanged;
+	
+	/** Executed when MaxSlider or MaxValue is changed */
+	FOnMaxValueChanged OnMaxValueChanged;
+	
 	/** Updates the Checkbox checked state, and calls the appropriate OnSliderChanged functions to update the values of the Sliders and EditableTextBoxes */
 	UFUNCTION()
 	void OnCheckStateChanged(const bool bIsChecked);
@@ -126,19 +118,19 @@ protected:
 	
 	/** Checks the constraints for the MinSlider, changes the MinValue text, and executes OnMinValueChanged. Changes MaxSlider, MaxValue, and calls OnMaxValueChanged if bSyncSlidersAndValues is true */
 	UFUNCTION()
-	void OnMinSliderChanged(const float NewMin);
+	void OnSliderChanged_Min(const float NewMin);
 	
 	/** Checks the constraints for the MaxSlider, changes the MaxValue text, and executes OnMaxValueChanged. Changes MinSlider, MinValue, and calls OnMinValueChanged if bSyncSlidersAndValues is true */
 	UFUNCTION()
-	void OnMaxSliderChanged(const float NewMax);
+	void OnSliderChanged_Max(const float NewMax);
 	
 	/** Checks the constraints for the MinValue, changes the value for MinSlider, and calls MinSliderChanged */
 	UFUNCTION()
-	void OnMinValueCommitted(const FText& NewMin, ETextCommit::Type CommitType);
+	void OnTextCommitted_Min(const FText& NewMin, ETextCommit::Type CommitType);
 	
 	/** Checks the constraints for the MaxValue, changes the value for MaxSlider, and calls MaxSliderChanged */
 	UFUNCTION()
-	void OnMaxValueCommitted(const FText& NewMax, ETextCommit::Type CommitType);
+	void OnTextCommitted_Max(const FText& NewMax, ETextCommit::Type CommitType);
 
 	/** Struct containing information for the Sliders and EditableTextBoxes */
 	FConstrainedSliderStruct SliderStruct;
@@ -148,4 +140,7 @@ protected:
 	
 	/** Clamps the NewValue to the appropriate Slider Min and Max Values, and returns the new rounded value */
 	virtual float CheckConstraints(const float NewValue, const bool bIsMin);
+
+	/** Overrides a slider's max value */
+	void OverrideMaxValue(const bool bIsMin, const float ValueToOverride);
 };

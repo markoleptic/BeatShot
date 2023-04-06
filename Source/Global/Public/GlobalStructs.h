@@ -22,15 +22,15 @@ USTRUCT(BlueprintType)
 struct FBS_AIConfig
 {
 	GENERATED_BODY()
-	
+
 	/* Whether or not to enable the reinforcement learning agent to handle target spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	bool bEnableRLAgent;
-	
+
 	/* The stored QTable for this game mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	TArray<float> QTable;
-	
+
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	float Alpha;
@@ -39,7 +39,7 @@ struct FBS_AIConfig
 	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	float Epsilon;
-	
+
 	/** Discount factor, or how much to value future rewards vs immediate rewards */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	float Gamma;
@@ -51,6 +51,73 @@ struct FBS_AIConfig
 		Alpha = 0.9f;
 		Epsilon = 0.9f;
 		Gamma = 0.9f;
+	}
+};
+
+/* BeatGrid Configuration */
+USTRUCT(BlueprintType)
+struct FBeatGridConfig
+{
+	GENERATED_BODY()
+
+	/* The number of horizontal BeatGrid targets*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	int32 NumHorizontalBeatGridTargets;
+
+	/* The number of vertical BeatGrid targets*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	int32 NumVerticalBeatGridTargets;
+
+	/* Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	bool RandomizeBeatGrid;
+
+	/* The space between BeatGrid targets */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	FVector2D BeatGridSpacing;
+
+	/* not implemented yet */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	int32 NumTargetsAtOnceBeatGrid;
+
+	FBeatGridConfig()
+	{
+		NumHorizontalBeatGridTargets = 0;
+		NumVerticalBeatGridTargets = 0;
+		RandomizeBeatGrid = false;
+		NumTargetsAtOnceBeatGrid = -1;
+		BeatGridSpacing = FVector2D::ZeroVector;
+	}
+
+	void SetConfigByDifficulty(const EGameModeDifficulty Difficulty)
+	{
+		switch (Difficulty)
+		{
+		case EGameModeDifficulty::None: NumHorizontalBeatGridTargets = 0;
+			NumVerticalBeatGridTargets = 0;
+			RandomizeBeatGrid = false;
+			NumTargetsAtOnceBeatGrid = -1;
+			BeatGridSpacing = FVector2D::ZeroVector;
+			break;
+		case EGameModeDifficulty::Normal: NumHorizontalBeatGridTargets = 5;
+			NumVerticalBeatGridTargets = 5;
+			RandomizeBeatGrid = false;
+			NumTargetsAtOnceBeatGrid = -1;
+			BeatGridSpacing = FVector2D(75, 50);
+			break;
+		case EGameModeDifficulty::Hard: NumHorizontalBeatGridTargets = 10;
+			NumVerticalBeatGridTargets = 5;
+			RandomizeBeatGrid = false;
+			NumTargetsAtOnceBeatGrid = -1;
+			BeatGridSpacing = FVector2D(75, 50);
+			break;
+		case EGameModeDifficulty::Death: NumHorizontalBeatGridTargets = 15;
+			NumVerticalBeatGridTargets = 10;
+			RandomizeBeatGrid = false;
+			NumTargetsAtOnceBeatGrid = -1;
+			BeatGridSpacing = FVector2D(75, 50);
+			break;
+		}
 	}
 };
 
@@ -173,26 +240,9 @@ struct FBSConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	float MaxTrackingSpeed;
 
-	/* The number of horizontal BeatGrid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 NumHorizontalBeatGridTargets;
+	FBeatGridConfig BeatGridConfig;
 
-	/* The number of vertical BeatGrid targets*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 NumVerticalBeatGridTargets;
-	
-	/* Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	bool RandomizeBeatGrid;
-
-	/* The space between BeatGrid targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	FVector2D BeatGridSpacing;
-
-	/* not implemented yet */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 NumTargetsAtOnceBeatGrid;
-	
 	FORCEINLINE bool operator==(const FBSConfig& Other) const
 	{
 		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName))
@@ -201,7 +251,7 @@ struct FBSConfig
 		}
 		return false;
 	}
-	
+
 	/* Generic initialization */
 	FBSConfig()
 	{
@@ -231,16 +281,12 @@ struct FBSConfig
 		CustomGameModeName = "";
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
-		NumHorizontalBeatGridTargets = 0;
-		NumVerticalBeatGridTargets = 0;
-		RandomizeBeatGrid = false;
-		NumTargetsAtOnceBeatGrid = -1;
-		BeatGridSpacing = FVector2D::ZeroVector;
+		BeatGridConfig = FBeatGridConfig();
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 		MinBoxBounds = FVector(0.f, 3200.f, 1000.f);
 	}
 
-	FBSConfig(EDefaultMode InDefaultMode, EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, ESpreadType NewSpreadType = ESpreadType::None)
+	FBSConfig(const EDefaultMode InDefaultMode, const EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, const ESpreadType NewSpreadType = ESpreadType::None)
 	{
 		// Parameters
 		DefaultMode = InDefaultMode;
@@ -270,59 +316,137 @@ struct FBSConfig
 		MaxTargetScale = 2.f;
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
-		NumTargetsAtOnceBeatGrid = -1;
-		RandomizeBeatGrid = false;
-		BeatGridSpacing = FVector2D::ZeroVector;
-		NumHorizontalBeatGridTargets = 0;
-		NumVerticalBeatGridTargets = 0;
+		BeatGridConfig = FBeatGridConfig();
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 		MinBoxBounds = FVector(0.f, 3200.f, 1000.f);
 
-		// BeatGrid
-		if (DefaultMode == EDefaultMode::BeatGrid)
+		switch (DefaultMode)
 		{
+		case EDefaultMode::SingleBeat: BaseGameMode = EDefaultMode::SingleBeat;
+			UseDynamicSizing = true;
+			switch (GameModeDifficulty)
+			{
+			case EGameModeDifficulty::Normal:
+				PlayerDelay = 0.3f;
+				TargetSpawnCD = 0.3f;
+				TargetMaxLifeSpan = 0.8f;
+				MinTargetScale = 0.75f;
+				MaxTargetScale = 2.f;
+				break;
+			case EGameModeDifficulty::Hard:
+				PlayerDelay = 0.25f;
+				TargetSpawnCD = 0.25f;
+				TargetMaxLifeSpan = 0.65f;
+				MinTargetScale = 0.6f;
+				MaxTargetScale = 1.5f;
+				break;
+			case EGameModeDifficulty::Death:
+				PlayerDelay = 0.2f;
+				TargetSpawnCD = 0.2f;
+				TargetMaxLifeSpan = 0.45f;
+				MinTargetScale = 0.4f;
+				MaxTargetScale = 1.5f;
+				break;
+			case EGameModeDifficulty::None:
+				break;
+			}
+			switch (SpreadType)
+			{
+			case ESpreadType::StaticNarrow:
+				UseDynamicSizing = false;
+				BoxBounds = FVector(0.f, 1600.f, 500.f);
+				break;
+			case ESpreadType::StaticWide:
+				UseDynamicSizing = false;
+				BoxBounds = FVector(0.f, 3200.f, 1000.f);
+				break;
+			default:
+				SpreadType = ESpreadType::DynamicEdgeOnly;
+				UseDynamicSizing = true;
+				BoxBounds = FVector(0.f, 2000.f, 800.f);
+				MinBoxBounds = 0.5f * BoxBounds;
+				break;
+			}
+			break;
+		case EDefaultMode::MultiBeat:
+			UseDynamicSizing = true;
+			BaseGameMode = EDefaultMode::MultiBeat;
+			switch (GameModeDifficulty)
+			{
+			case EGameModeDifficulty::Normal:
+				PlayerDelay = 0.35f;
+				TargetSpawnCD = 0.35f;
+				TargetMaxLifeSpan = 1.f;
+				MinTargetScale = 0.75f;
+				MaxTargetScale = 2.f;
+				break;
+			case EGameModeDifficulty::Hard:
+				PlayerDelay = 0.3f;
+				TargetSpawnCD = 0.3f;
+				TargetMaxLifeSpan = 0.75f;
+				MinTargetScale = 0.6f;
+				MaxTargetScale = 1.5f;
+				break;
+			case EGameModeDifficulty::Death:
+				PlayerDelay = 0.25f;
+				TargetSpawnCD = 0.20f;
+				TargetMaxLifeSpan = 0.5f;
+				MinTargetScale = 0.4f;
+				MaxTargetScale = 1.25f;
+				break;
+			case EGameModeDifficulty::None: break;
+			}
+			switch (SpreadType)
+			{
+			case ESpreadType::StaticNarrow:
+				UseDynamicSizing = false;
+				BoxBounds = FVector(0.f, 1600.f, 500.f);
+				break;
+			case ESpreadType::StaticWide:
+				UseDynamicSizing = false;
+				BoxBounds = FVector(0.f, 3200.f, 1000.f);
+				break;
+			default:
+				SpreadType = ESpreadType::DynamicRandom;
+				UseDynamicSizing = true;
+				BoxBounds = FVector(0.f, 2000.f, 800.f);
+				MinBoxBounds = 0.5f * BoxBounds;
+				break;
+			}
+			break;
+		case EDefaultMode::BeatGrid:
 			SpreadType = ESpreadType::None;
 			BaseGameMode = EDefaultMode::BeatGrid;
 			BoxBounds = FVector(0.f, 3200.f, 1000.f);
-
-			// BeatGrid Difficulties
-			if (GameModeDifficulty == EGameModeDifficulty::Normal)
+			BeatGridConfig.SetConfigByDifficulty(GameModeDifficulty);
+			switch (GameModeDifficulty)
 			{
+			case EGameModeDifficulty::Normal:
 				PlayerDelay = 0.35f;
 				TargetSpawnCD = 0.35f;
 				TargetMaxLifeSpan = 1.2f;
 				MinTargetScale = 0.85f;
 				MaxTargetScale = 0.85f;
-				NumHorizontalBeatGridTargets = 5;
-				NumVerticalBeatGridTargets = 5;
-				BeatGridSpacing = FVector2D(75, 50);
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
-			{
+				break;
+			case EGameModeDifficulty::Hard:
 				PlayerDelay = 0.3f;
 				TargetSpawnCD = 0.30f;
 				TargetMaxLifeSpan = 1.f;
 				MinTargetScale = 0.7f;
 				MaxTargetScale = 0.7f;
-				NumHorizontalBeatGridTargets = 10;
-				NumVerticalBeatGridTargets = 5;
-				BeatGridSpacing = FVector2D(75, 50);
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Death)
-			{
+				break;
+			case EGameModeDifficulty::Death:
 				PlayerDelay = 0.25f;
 				TargetSpawnCD = 0.25f;
 				TargetMaxLifeSpan = 0.75f;
 				MinTargetScale = 0.5f;
 				MaxTargetScale = 0.5f;
-				NumHorizontalBeatGridTargets = 15;
-				NumVerticalBeatGridTargets = 10;
-				BeatGridSpacing = FVector2D(75, 50);
+				break;
+			case EGameModeDifficulty::None:
+				break;
 			}
-		}
-		// BeatTrack
-		else if (DefaultMode == EDefaultMode::BeatTrack)
-		{
+			break;
+		case EDefaultMode::BeatTrack:
 			SpreadType = ESpreadType::None;
 			BaseGameMode = EDefaultMode::BeatTrack;
 			WallCentered = true;
@@ -330,133 +454,34 @@ struct FBSConfig
 			TargetMaxLifeSpan = 0.f;
 			MinTrackingSpeed = 500.f;
 			MaxTrackingSpeed = 500.f;
-
-			// BeatTrack Difficulties
-			if (GameModeDifficulty == EGameModeDifficulty::Normal)
+			switch (GameModeDifficulty)
 			{
+			case EGameModeDifficulty::Normal:
 				MinTrackingSpeed = 400.f;
 				MaxTrackingSpeed = 500.f;
 				TargetSpawnCD = 0.75f;
 				MinTargetScale = 1.3f;
 				MaxTargetScale = 1.3f;
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
-			{
+				break;
+			case EGameModeDifficulty::Hard:
 				MinTrackingSpeed = 500.f;
 				MaxTrackingSpeed = 600.f;
 				TargetSpawnCD = 0.6f;
 				MinTargetScale = 1.f;
 				MaxTargetScale = 1.f;
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Death)
-			{
+				break;
+			case EGameModeDifficulty::Death:
 				MinTrackingSpeed = 500.f;
 				MaxTrackingSpeed = 700.f;
 				TargetSpawnCD = 0.45f;
 				MinTargetScale = 0.75f;
 				MaxTargetScale = 0.75;
+				break;
+			case EGameModeDifficulty::None:
+				break;
 			}
-		}
-		// MultiBeat
-		else if (DefaultMode == EDefaultMode::MultiBeat)
-		{
-			UseDynamicSizing = true;
-			BaseGameMode = EDefaultMode::MultiBeat;
-			// SpreadType = ESpreadType::DynamicRandom;
-			// MultiBeat Difficulties
-			if (GameModeDifficulty == EGameModeDifficulty::Normal)
-			{
-				PlayerDelay = 0.35f;
-				TargetSpawnCD = 0.35f;
-				TargetMaxLifeSpan = 1.f;
-				MinTargetScale = 0.75f;
-				MaxTargetScale = 2.f;
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
-			{
-				PlayerDelay = 0.3f;
-				TargetSpawnCD = 0.3f;
-				TargetMaxLifeSpan = 0.75f;
-				MinTargetScale = 0.6f;
-				MaxTargetScale = 1.5f;
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Death)
-			{
-				PlayerDelay = 0.25f;
-				TargetSpawnCD = 0.20f;
-				TargetMaxLifeSpan = 0.5f;
-				MinTargetScale = 0.4f;
-				MaxTargetScale = 1.25f;
-			}
-
-			// MultiBeat Spread Types, defaults to DynamicRandom
-			if (SpreadType == ESpreadType::StaticNarrow)
-			{
-				UseDynamicSizing = false;
-				BoxBounds = FVector(0.f, 1600.f, 500.f);
-			}
-			else if (SpreadType == ESpreadType::StaticWide)
-			{
-				UseDynamicSizing = false;
-				BoxBounds = FVector(0.f, 3200.f, 1000.f);
-			}
-			else
-			{
-				SpreadType = ESpreadType::DynamicRandom;
-				UseDynamicSizing = true;
-				BoxBounds = FVector(0.f, 2000.f, 800.f);
-				MinBoxBounds = 0.5f * BoxBounds;
-			}
-		}
-		// SingleBeat
-		else if (DefaultMode == EDefaultMode::SingleBeat)
-		{
-			BaseGameMode = EDefaultMode::SingleBeat;
-			UseDynamicSizing = true;
-			// SingleBeat Difficulties
-			if (GameModeDifficulty == EGameModeDifficulty::Normal)
-			{
-				PlayerDelay = 0.3f;
-				TargetSpawnCD = 0.3f;
-				TargetMaxLifeSpan = 0.8f;
-				MinTargetScale = 0.75f;
-				MaxTargetScale = 2.f;
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Hard)
-			{
-				PlayerDelay = 0.25f;
-				TargetSpawnCD = 0.25f;
-				TargetMaxLifeSpan = 0.65f;
-				MinTargetScale = 0.6f;
-				MaxTargetScale = 1.5f;
-			}
-			else if (GameModeDifficulty == EGameModeDifficulty::Death)
-			{
-				PlayerDelay = 0.2f;
-				TargetSpawnCD = 0.2f;
-				TargetMaxLifeSpan = 0.45f;
-				MinTargetScale = 0.4f;
-				MaxTargetScale = 1.5f;
-			}
-
-			// SingleBeat Spread Types, defaults to DynamicEdgeOnly
-			if (SpreadType == ESpreadType::StaticNarrow)
-			{
-				UseDynamicSizing = false;
-				BoxBounds = FVector(0.f, 1600.f, 500.f);
-			}
-			else if (SpreadType == ESpreadType::StaticWide)
-			{
-				UseDynamicSizing = false;
-				BoxBounds = FVector(0.f, 3200.f, 1000.f);
-			}
-			else
-			{
-				SpreadType = ESpreadType::DynamicEdgeOnly;
-				UseDynamicSizing = true;
-				BoxBounds = FVector(0.f, 2000.f, 800.f);
-				MinBoxBounds = 0.5f * BoxBounds;
-			}
+			break;
+		case EDefaultMode::Custom: break;
 		}
 	}
 
@@ -469,32 +494,6 @@ struct FBSConfig
 		DefaultModes.Add(FBSConfig(EDefaultMode::SingleBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicEdgeOnly));
 		DefaultModes.Add(FBSConfig(EDefaultMode::MultiBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicRandom));
 		return DefaultModes;
-	}
-	
-	void ResetStruct()
-	{
-		DefaultMode = EDefaultMode::Custom;
-		SpreadType = ESpreadType::None;
-		MinDistanceBetweenTargets = 10.f;
-		GameModeLength = 0.f;
-		TargetSpawnCD = 0.35f;
-		TargetMaxLifeSpan = 1.5f;
-		MinTargetScale = 0.8f;
-		MaxTargetScale = 1.5f;
-		HeadshotHeight = false;
-		WallCentered = false;
-		RandomizeBeatGrid = false;
-		UseDynamicSizing = false;
-		PlayerDelay = 0.3f;
-		SongTitle = "";
-		CustomGameModeName = "";
-		MinTrackingSpeed = 500.f;
-		MaxTrackingSpeed = 500.f;
-		NumTargetsAtOnceBeatGrid = -1;
-		BeatGridSpacing = FVector2D::ZeroVector;
-		BoxBounds.X = 0.f;
-		BoxBounds.Y = 1600.f;
-		BoxBounds.Z = 500.f;
 	}
 };
 

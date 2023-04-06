@@ -9,15 +9,20 @@
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
-#include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/HorizontalBox.h"
 #include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
 
+UTooltipWidget* UAudioSelectWidget::ConstructTooltipWidget()
+{
+	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
+}
+
 void UAudioSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetTooltipWidget(ConstructTooltipWidget());
 	NumberFormattingOptions.MinimumIntegralDigits = 2;
 	NumberFormattingOptions.MaximumIntegralDigits = 2;
 	BackButton->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::FadeOut);
@@ -35,10 +40,7 @@ void UAudioSelectWidget::NativeConstruct()
 	SongTitleComboBox->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnSongTitleSelectionChanged);
 	PlaybackAudioCheckbox->OnCheckStateChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnPlaybackAudioCheckStateChanged);
 
-	Tooltip = CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
-
-	PlaybackAudioQMark->TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "PlaybackAudio");
-	PlaybackAudioQMark->OnTooltipImageHovered.AddDynamic(this, &UAudioSelectWidget::OnTooltipImageHovered);
+	AddToTooltipData(PlaybackAudioQMark, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "PlaybackAudio"));
 
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
 	TArray<FString> OutAudioDeviceList;
@@ -265,12 +267,6 @@ void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutF
 		GameUserSettings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
 		GameUserSettings->ApplySettings(false);
 	}
-}
-
-void UAudioSelectWidget::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow)
-{
-	Tooltip->TooltipDescriptor->SetText(TooltipTextToShow);
-	HoveredTooltipImage->SetToolTip(Tooltip);
 }
 
 void UAudioSelectWidget::ShowSongPathErrorMessage()

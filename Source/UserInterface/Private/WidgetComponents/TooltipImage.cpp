@@ -12,5 +12,5 @@ void UTooltipImage::NativeConstruct()
 
 void UTooltipImage::OnTooltipImageHoveredCallback()
 {
-	OnTooltipImageHovered.Broadcast(this, TooltipText);
+	OnTooltipHovered.Broadcast(this);
 }

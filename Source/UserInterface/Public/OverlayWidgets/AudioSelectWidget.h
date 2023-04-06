@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "TooltipInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
 #include "AudioSelectWidget.generated.h"
@@ -45,11 +46,12 @@ class UEditableTextBox;
 class UWidgetAnimation;
 
 UCLASS()
-class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public ISaveLoadInterface, public ITooltipInterface
 {
 	GENERATED_BODY()
 
 protected:
+	virtual UTooltipWidget* ConstructTooltipWidget() override;
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
@@ -130,11 +132,6 @@ protected:
 	UTooltipImage* PlaybackAudioQMark;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	UPROPERTY()
-	UTooltipWidget* Tooltip;
-	/** Updates the tooltip text and shows the tooltip at the location of the Button (which is just the question mark image) */
-	UFUNCTION()
-	void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;

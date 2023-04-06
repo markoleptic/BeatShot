@@ -7,8 +7,7 @@
 #include "TooltipImage.generated.h"
 
 class UButton;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTooltipImageHovered, UTooltipImage*, TooltipImage, const FText&, TooltipText);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTooltipHovered, UTooltipImage*, TooltipImage);
 
 UCLASS()
 class USERINTERFACE_API UTooltipImage : public UUserWidget
@@ -20,10 +19,13 @@ class USERINTERFACE_API UTooltipImage : public UUserWidget
 public:
 	UFUNCTION()
 	void OnTooltipImageHoveredCallback();
+	
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UButton* Button;
+	
 	/** The tooltip text to display for this instance of TooltipImage */
 	FText TooltipText;
+	
 	/** Called when Button is hovered over */
-	FOnTooltipImageHovered OnTooltipImageHovered;
+	FOnTooltipHovered OnTooltipHovered;
 };

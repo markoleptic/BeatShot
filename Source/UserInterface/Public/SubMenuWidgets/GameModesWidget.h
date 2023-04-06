@@ -9,7 +9,7 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "WidgetComponents/TooltipWidget.h"
 #include "WidgetComponents/ConstrainedSlider.h"
-#include "WidgetComponents/ConstrainedSlider_BeatGrid.h"
+#include "..\WidgetComponents\BeatGridSettingsWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
@@ -28,11 +28,14 @@ class USlider;
 class UCheckBox;
 
 UCLASS()
-class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface, public ITooltipInterface
 {
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
+
+	virtual UTooltipWidget* ConstructTooltipWidget() override;
+	
 
 public:
 	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
@@ -53,8 +56,6 @@ protected:
 	UAudioSelectWidget* AudioSelectWidget;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
-	TSubclassOf<UTooltipImage> BeatGridWarningEMarkClass;
 	
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
@@ -210,39 +211,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UBorder* BeatGridSpecificSettings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UCheckBox* RandomizeNextBeatGridTargetCheckBox;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	USlider* BeatGridNumHorizontalTargetsSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UEditableTextBox* BeatGridNumHorizontalTargetsValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UCheckBox* BeatGridNumHorizontalTargetsLock;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	USlider* BeatGridNumVerticalTargetsSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UEditableTextBox* BeatGridNumVerticalTargetsValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UCheckBox* BeatGridNumVerticalTargetsLock;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UConstrainedSlider_BeatGrid* BeatGridSpacingConstrained;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UHorizontalBox* NumHorizontalTargetsTextTooltipBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UHorizontalBox* NumVerticalTargetsTextTooltipBox;
-	
-	FBeatGridUpdate_NumTargets BeatGridUpdate_NumVerticalTargets;
-	FBeatGridUpdate_NumTargets BeatGridUpdate_NumHorizontalTargets;
+	UBeatGridSettingsWidget* BeatGridSpacingConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UBorder* BeatTrackSpecificSettings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UConstrainedSlider* TargetSpeedConstrained;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
-	UTooltipWidget* Tooltip;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* GameModeTemplateQMark;
@@ -270,7 +244,6 @@ protected:
 	UTooltipImage* SpreadTypeQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* DynamicTargetScaleQMark;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* EnableAIQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
@@ -279,19 +252,6 @@ protected:
 	UTooltipImage* EpsilonQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* GammaQMark;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* BeatGridAdjacentOnlyQMark;
-	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
-	UTooltipImage* BeatGridWarningEMark_BeatGridNumHorizontalTargets;
-	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
-	UTooltipImage* BeatGridWarningEMark_BeatGridNumVerticalTargets;
-	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
-	UTooltipImage* BeatGridWarningEMark_MaxTargetScale;
-	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
-	UTooltipImage* BeatGridWarningEMark_BeatGridHorizontalSpacing;
-	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
-	UTooltipImage* BeatGridWarningEMark_BeatGridVerticalSpacing;
 
 	private:
 	/** Binds all widget delegates to functions */
@@ -299,7 +259,7 @@ protected:
 	
 	void SetHiddenConfigParameters(FBSConfig& Config);
 
-		/** Changes the background colors for the Game Mode of the ClickedButton */
+	/** Changes the background colors for the Game Mode of the ClickedButton */
 	void SetGameModeButtonBackgroundColor(const UGameModeButton* ClickedButton) const;
 	
 	/** Initializes all Custom game mode options based on the BSConfig */
@@ -343,12 +303,6 @@ protected:
 
 	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
 	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize) const;
-
-	/** Constructs and returns BeatGrid warning Tooltip widget, places inside corresponding HorizontalBox, and binds the mouseover event */
-	UTooltipImage* ConstructBeatGridWarningEMarkWidget(const EBeatGridConstraintType ConstraintType);
-
-	/** Shows or hides a BeatGrid warning Tooltip widget and updates the TooltipText. Constructs the widget if it does not exist */
-	void HandleBeatGridWarningDisplay(UTooltipImage* TooltipImage, const EBeatGridConstraintType ConstraintType, const FText& TooltipText, const bool bDisplay);
 	
 	UFUNCTION(Category = "Navigation")
 	void SlideButtons(const USlideRightButton* ActiveButton);
@@ -459,14 +413,6 @@ protected:
 	void OnSliderChanged_ForwardSpread(const float NewForwardSpread);
 	UFUNCTION()
 	void OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSliderChanged_BeatGridNumHorizontalTargets(const float NewNumHorizontalTargets);
-	UFUNCTION()
-	void OnTextCommitted_BeatGridNumHorizontalTargets(const FText& NewNumHorizontalTargets, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSliderChanged_BeatGridNumVerticalTargets(const float NewNumVerticalTargets);
-	UFUNCTION()
-	void OnTextCommitted_BeatGridNumVerticalTargets(const FText& NewNumVerticalTargets, ETextCommit::Type CommitType);
 
 	UFUNCTION()
 	void OnCheckStateChanged_EnableAI(const bool bEnableAI);
@@ -483,18 +429,6 @@ protected:
 	UFUNCTION()
 	void OnTextCommitted_AIGamma(const FText& NewGamma, ETextCommit::Type CommitType);
 
-	UFUNCTION()
-	void OnCheckStateChanged_BeatGridNumVerticalTargetsLock(const bool bIsLocked);
-	UFUNCTION()
-	void OnCheckStateChanged_BeatGridNumHorizontalTargetsLock(const bool bIsLocked);
-
-	UFUNCTION()
-	void OnBeatGridSpacingConstrained(const FBeatGridConstraints& BeatGridConstraints);
-	
-	/** Updates the tooltip text and shows the tooltip at the location of the Button (which is just the question mark image) */
-	UFUNCTION()
-	void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage, const FText& TooltipTextToShow);
-
 	/** The array of Default Game Mode */
 	TArray<FBSConfig> DefaultModes;
 	
@@ -506,16 +440,10 @@ protected:
 	
 	/** The difficulty for a selected Default Game Mode */
 	EGameModeDifficulty DefaultDifficulty;
-	
-	/** An array of current constraining parameter types for BeatGrid */
-	TArray<EBeatGridConstraintType> BeatGridConstraintTypes;
 
 	/** The color used to change the GameModeButton color to when selected */
 	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
 	
 	/** The color used to change the GameModeButton color to when not selected */
 	const FLinearColor White = FLinearColor::White;
-
-	/** Sizing mode for BeatGrid Warning Tooltip widget */
-	FSlateChildSize TooltipWarningSizing;
 };

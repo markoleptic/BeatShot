@@ -326,10 +326,10 @@ void ATargetSpawner::InitBeatGrid()
 	LastBeatGridIndex = INDEX_NONE;
 
 	const float MaxTargetSize = BSConfig.MaxTargetScale * SphereTargetRadius * 2;
-	const float HSpacing = BSConfig.BeatGridSpacing.X + MaxTargetSize;
-	const float VSpacing = BSConfig.BeatGridSpacing.Y + MaxTargetSize;
-	const float TotalWidth = HSpacing * (BSConfig.NumHorizontalBeatGridTargets - 1);
-	const float TotalHeight = VSpacing * (BSConfig.NumVerticalBeatGridTargets - 1);
+	const float HSpacing = BSConfig.BeatGridConfig.BeatGridSpacing.X + MaxTargetSize;
+	const float VSpacing = BSConfig.BeatGridConfig.BeatGridSpacing.Y + MaxTargetSize;
+	const float TotalWidth = HSpacing * (BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets - 1);
+	const float TotalHeight = VSpacing * (BSConfig.BeatGridConfig.NumVerticalBeatGridTargets - 1);
 	
 	const float HStart = -TotalWidth / 2.f;
 	const float HEnd = TotalWidth / 2.f;
@@ -348,7 +348,7 @@ void ATargetSpawner::InitBeatGrid()
 			SpawnTarget->SetSphereScale(FVector(GetNextTargetScale()));
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			SpawnTarget->FinishSpawning(FTransform(), true);
-			BeatGridIndices.Emplace(FBeatGridIndex(Index, BSConfig.NumHorizontalBeatGridTargets, BSConfig.NumVerticalBeatGridTargets * BSConfig.NumHorizontalBeatGridTargets));
+			BeatGridIndices.Emplace(FBeatGridIndex(Index, BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets, BSConfig.BeatGridConfig.NumVerticalBeatGridTargets * BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets));
 			SpawnedBeatGridTargets.Add(SpawnTarget);
 			Index++;
 		}
@@ -416,7 +416,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 void ATargetSpawner::ActivateBeatGridTarget()
 {
 	int32 ChosenTargetIndex;
-	if (LastBeatGridIndex == INDEX_NONE || BSConfig.RandomizeBeatGrid == true)
+	if (LastBeatGridIndex == INDEX_NONE || BSConfig.BeatGridConfig.RandomizeBeatGrid == true)
 	{
 		ChosenTargetIndex = FMath::RandRange(0, SpawnedBeatGridTargets.Num() - 1);
 	}
