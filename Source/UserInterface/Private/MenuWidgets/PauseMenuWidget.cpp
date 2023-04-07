@@ -6,7 +6,6 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/QuitMenuWidget.h"
-#include "SubMenuWidgets/AASettingsWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
 #include "WidgetComponents/SlideRightButton.h"
 

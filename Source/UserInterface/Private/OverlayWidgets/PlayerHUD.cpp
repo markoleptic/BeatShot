@@ -35,7 +35,7 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
 	SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
 	TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength), 3)));
 	/** Beat Track changes how stats are displayed */
-	if (NewPlayerScoreStruct.TotalPossibleDamage > 0.01f)
+	if (NewPlayerScoreStruct.DefaultMode == EDefaultMode::BeatTrack)
 	{
 		const float Score = roundf(NewPlayerScoreStruct.Score);
 		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;

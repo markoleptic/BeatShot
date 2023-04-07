@@ -2,7 +2,6 @@
 
 #include "BSCharacter.h"
 #include "BSCharacterMovementComponent.h"
-#include "SaveGamePlayerSettings.h"
 #include "BSGameInstance.h"
 #include "BSInputComponent.h"
 #include "BSPlayerController.h"
@@ -10,7 +9,6 @@
 #include "SphereTarget.h"
 #include "Gun_AK47.h"
 #include "Camera/CameraComponent.h"
-#include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "Components/SceneComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -98,7 +96,7 @@ ASphereTarget* ABSCharacter::PeekActiveTargets()
 
 float ABSCharacter::GetAimBotPlaybackSpeed() const
 {
-	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.TargetSpawnCD;
+	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.TargetConfig.TargetSpawnCD;
 }
 
 UCameraComponent* ABSCharacter::GetCamera() const

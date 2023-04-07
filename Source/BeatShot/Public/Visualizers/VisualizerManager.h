@@ -62,9 +62,6 @@ public:
 	UPROPERTY()
 	FAASettingsStruct AASettings;
 
-	// UPROPERTY(VisibleAnywhere)
-	// TArray<float> SpectrumVariance;
-
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> AvgSpectrumValues;
 
@@ -74,23 +71,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> CurrentCubeSpectrumValues;
 
-	// UPROPERTY(VisibleAnywhere)
-	// TArray<float> SpectrumPeaks;
-
-	// UPROPERTY(VisibleAnywhere)
-	// TArray<float> SpectrumPeakEnergy;
-
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> MaxSpectrumValues;
-
-	const FVector TargetSpawnerLocation = {3730, 0, 750};
-
-	const FVector VisualizerLocation = {4000, -1950, 210};
-	const FVector Visualizer2Location = {4000, 1950, 210};
-	const FRotator VisualizerRotation = {0, 90, 90};
-
-	const FVector BeamVisualizerLocation = {0, 1920, 1320};
-	const FRotator BeamRotation = {0, 0, 0};
 
 	const FActorSpawnParameters SpawnParameters;
 };

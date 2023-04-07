@@ -26,11 +26,11 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings& PlayerSett
 	CurrentCubeSpectrumValues.Init(0, AASettings.NumBandChannels);
 
 	Visualizers.Empty();
-	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &VisualizerLocation, &VisualizerRotation, SpawnParameters)));
-	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &Visualizer2Location, &VisualizerRotation, SpawnParameters)));
+	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &Constants::VisualizerLocation, &Constants::VisualizerRotation, SpawnParameters)));
+	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &Constants::Visualizer2Location, &Constants::VisualizerRotation, SpawnParameters)));
 	if (PlayerSettings.Game.bShowLightVisualizers)
 	{
-		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation, SpawnParameters)));
+		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &Constants::BeamVisualizerLocation, &Constants::BeamRotation, SpawnParameters)));
 	}
 
 	for (const TObjectPtr<AVisualizerBase> Visualizer : Visualizers)
@@ -136,7 +136,7 @@ void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings& PlayerSet
 	{
 		return;
 	}
-	const int32 NewIndex = Visualizers.Emplace(Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation, SpawnParameters)));
+	const int32 NewIndex = Visualizers.Emplace(Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &Constants::BeamVisualizerLocation, &Constants::BeamRotation, SpawnParameters)));
 	Visualizers[NewIndex]->InitializeVisualizer();
 }
 

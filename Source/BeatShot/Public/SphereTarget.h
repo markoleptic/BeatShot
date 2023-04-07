@@ -189,13 +189,6 @@ private:
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
 	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& ColorWhenDestroyed) const;
 
-	/** Base radius for sphere target. */
-	const float BaseSphereRadius = 50.f;
-
 	/** The scale that was applied when spawned */
 	float TargetScale = 1.f;
-
-	/** The ratio between the scale of the BaseMesh to OutlineMesh, used to apply a constant proportioned outline
-	 *  regardless of the scale of the target */
-	const float BaseToOutlineRatio = 0.9;
 };

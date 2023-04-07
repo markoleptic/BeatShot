@@ -130,13 +130,13 @@ void ABSGameMode::StartGameMode()
 
 void ABSGameMode::StartGameModeTimers()
 {
-	if (BSConfig.GameModeLength == 0.f)
+	if (BSConfig.AudioConfig.SongLength == 0.f)
 	{
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, 31536000, false);
 	}
 	else
 	{
-		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ABSGameMode::OnGameModeLengthTimerComplete, BSConfig.GameModeLength, false);
+		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ABSGameMode::OnGameModeLengthTimerComplete, BSConfig.AudioConfig.SongLength, false);
 	}
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ABSGameMode::OnSecondPassedCallback, 1.f, true);
 }
@@ -253,7 +253,7 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 	if (bNewTargetState && !LastTargetOnSet)
 	{
 		LastTargetOnSet = true;
-		if (Elapsed > BSConfig.TargetSpawnCD)
+		if (Elapsed > BSConfig.TargetConfig.TargetSpawnCD)
 		{
 			Elapsed = 0.f;
 			TargetSpawner->CallSpawnFunction();
@@ -278,13 +278,13 @@ void ABSGameMode::OnGameModeLengthTimerComplete()
 
 void ABSGameMode::StartAAManagerPlayback()
 {
-	switch (BSConfig.AudioFormat)
+	switch (BSConfig.AudioConfig.AudioFormat)
 	{
 	case EAudioFormat::File: AATracker->Play();
 		if (AAPlayer)
 		{
 			/* Start playing back audio from AAPlayer after the delay */
-			GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ABSGameMode::PlayAAPlayer, BSConfig.PlayerDelay, false);
+			GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ABSGameMode::PlayAAPlayer, BSConfig.AudioConfig.PlayerDelay, false);
 		}
 		else
 		{
@@ -294,7 +294,7 @@ void ABSGameMode::StartAAManagerPlayback()
 		break;
 	case EAudioFormat::Capture:
 		{
-			AATracker->StartCapture(BSConfig.bPlaybackAudio, false);
+			AATracker->StartCapture(BSConfig.AudioConfig.bPlaybackAudio, false);
 			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume, LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
 			break;
 		}
@@ -309,7 +309,7 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 	{
 		return;
 	}
-	switch (BSConfig.AudioFormat)
+	switch (BSConfig.AudioConfig.AudioFormat)
 	{
 	case EAudioFormat::File: AATracker->SetPaused(ShouldPause);
 		if (AAPlayer)
@@ -323,7 +323,7 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 		}
 		else
 		{
-			AATracker->StartCapture(BSConfig.bPlaybackAudio, false);
+			AATracker->StartCapture(BSConfig.AudioConfig.bPlaybackAudio, false);
 		}
 		break;
 	default: break;
@@ -335,16 +335,16 @@ void ABSGameMode::InitializeAudioManagers()
 	AASettings = LoadAASettings();
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
-	switch (BSConfig.AudioFormat)
+	switch (BSConfig.AudioConfig.AudioFormat)
 	{
-	case EAudioFormat::Capture: AATracker->SetDefaultDevicesCapturerAudio(*BSConfig.InAudioDevice, *BSConfig.OutAudioDevice);
-		if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f, BSConfig.bPlaybackAudio))
+	case EAudioFormat::Capture: AATracker->SetDefaultDevicesCapturerAudio(*BSConfig.AudioConfig.InAudioDevice, *BSConfig.AudioConfig.OutAudioDevice);
+		if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f, BSConfig.AudioConfig.bPlaybackAudio))
 		{
 			OnAAManagerError();
 			return;
 		}
 		break;
-	case EAudioFormat::File: if (!AATracker->InitPlayerAudio(BSConfig.SongPath))
+	case EAudioFormat::File: if (!AATracker->InitPlayerAudio(BSConfig.AudioConfig.SongPath))
 		{
 			OnAAManagerError();
 			return;
@@ -359,13 +359,13 @@ void ABSGameMode::InitializeAudioManagers()
 	SetAAManagerVolume(0, 0, AATracker);
 
 	/* AAPlayer will only be used if AudioFormat is File and PlayerDelay > 0.01f */
-	if (BSConfig.PlayerDelay < 0.01f)
+	if (BSConfig.AudioConfig.PlayerDelay < 0.01f)
 	{
 		AAPlayer = nullptr;
 		return;
 	}
 	AAPlayer = NewObject<UAudioAnalyzerManager>(this);
-	if (!AAPlayer->InitPlayerAudio(BSConfig.SongPath))
+	if (!AAPlayer->InitPlayerAudio(BSConfig.AudioConfig.SongPath))
 	{
 		OnAAManagerError();
 		return;
@@ -412,7 +412,7 @@ void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float Music
 {
 	if (AAManager)
 	{
-		switch (BSConfig.AudioFormat)
+		switch (BSConfig.AudioConfig.AudioFormat)
 		{
 		case EAudioFormat::File: AAManager->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
 			break;
@@ -430,7 +430,7 @@ void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float Music
 	}
 	if (AATracker)
 	{
-		switch (BSConfig.AudioFormat)
+		switch (BSConfig.AudioConfig.AudioFormat)
 		{
 		case EAudioFormat::File: AATracker->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
 			break;
@@ -477,7 +477,7 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	{
 		for (FPlayerScore ScoreObject : PlayerScores)
 		{
-			if (ScoreObject.CustomGameModeName.Equals(BSConfig.CustomGameModeName) && ScoreObject.SongTitle.Equals(BSConfig.SongTitle))
+			if (ScoreObject.CustomGameModeName.Equals(BSConfig.CustomGameModeName) && ScoreObject.SongTitle.Equals(BSConfig.AudioConfig.SongTitle))
 			{
 				if (ScoreObject.Score > CurrentPlayerScore.HighScore)
 				{
@@ -490,7 +490,7 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	{
 		for (FPlayerScore ScoreObject : PlayerScores)
 		{
-			if (ScoreObject.DefaultMode == BSConfig.DefaultMode && ScoreObject.SongTitle.Equals(BSConfig.SongTitle) && ScoreObject.Difficulty == BSConfig.GameModeDifficulty)
+			if (ScoreObject.DefaultMode == BSConfig.DefaultMode && ScoreObject.SongTitle.Equals(BSConfig.AudioConfig.SongTitle) && ScoreObject.Difficulty == BSConfig.GameModeDifficulty)
 			{
 				if (ScoreObject.Score > CurrentPlayerScore.HighScore)
 				{
@@ -500,18 +500,18 @@ void ABSGameMode::LoadMatchingPlayerScores()
 		}
 	}
 	CurrentPlayerScore.DefaultMode = BSConfig.DefaultMode;
-	CurrentPlayerScore.SongTitle = BSConfig.SongTitle;
-	CurrentPlayerScore.SongLength = BSConfig.GameModeLength;
+	CurrentPlayerScore.SongTitle = BSConfig.AudioConfig.SongTitle;
+	CurrentPlayerScore.SongLength = BSConfig.AudioConfig.SongLength;
 	CurrentPlayerScore.CustomGameModeName = BSConfig.CustomGameModeName;
 	CurrentPlayerScore.Difficulty = BSConfig.GameModeDifficulty;
 	CurrentPlayerScore.TotalPossibleDamage = 0.f;
-	if (BSConfig.GameModeLength == 0.f)
+	if (BSConfig.AudioConfig.SongLength == 0.f)
 	{
 		MaxScorePerTarget = 1000.f;
 	}
 	else
 	{
-		MaxScorePerTarget = 100000.f / ((BSConfig.GameModeLength - 1.f) / BSConfig.TargetSpawnCD);
+		MaxScorePerTarget = 100000.f / ((BSConfig.AudioConfig.SongLength - 1.f) / BSConfig.TargetConfig.TargetSpawnCD);
 	}
 }
 
@@ -597,17 +597,17 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 		return;
 	}
 
-	if (TimeElapsed <= BSConfig.PlayerDelay - 0.05f)
+	if (TimeElapsed <= BSConfig.AudioConfig.PlayerDelay - 0.05f)
 	{
-		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / BSConfig.PlayerDelay);
+		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / BSConfig.AudioConfig.PlayerDelay);
 	}
-	else if (TimeElapsed <= BSConfig.PlayerDelay + 0.05f)
+	else if (TimeElapsed <= BSConfig.AudioConfig.PlayerDelay + 0.05f)
 	{
 		CurrentPlayerScore.Score += MaxScorePerTarget;
 	}
-	else if (TimeElapsed <= BSConfig.TargetMaxLifeSpan)
+	else if (TimeElapsed <= BSConfig.TargetConfig.TargetMaxLifeSpan)
 	{
-		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - BSConfig.PlayerDelay + 0.05f) / (BSConfig.TargetMaxLifeSpan - (BSConfig.PlayerDelay + 0.05f)));
+		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, (TimeElapsed - BSConfig.AudioConfig.PlayerDelay + 0.05f) / (BSConfig.TargetConfig.TargetMaxLifeSpan - (BSConfig.AudioConfig.PlayerDelay + 0.05f)));
 		// UE_LOG(LogTemp, Display, TEXT("Last: %f"), FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2,
 		// (TimeElapsed - BSConfig.PlayerDelay + 0.05f) /
 		// (BSConfig.TargetMaxLifeSpan - (BSConfig.PlayerDelay + 0.05f))))
@@ -615,7 +615,7 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 	UpdateTargetsHit();
 	UpdateStreak(NewStreak, Position);
 	UpdateHighScore();
-	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - BSConfig.PlayerDelay);
+	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - BSConfig.AudioConfig.PlayerDelay);
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 

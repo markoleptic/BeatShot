@@ -46,14 +46,4 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UDirectionalLightComponent* MoonLight;
-
-	const FVector MoonMeshOffset = {250000, 0, 250000};
-
-	const FVector MoonGlowMeshScale = {2, 2, 2};
-
-	const FVector MoonMeshScale = {400, 400, 400};
-
-	const FVector MoonLightScale = {0.0025, 0.0025, 0.0025};
-
-	const float SphereCompRadius = 400000;
 };

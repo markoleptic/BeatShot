@@ -3,11 +3,9 @@
 #include "GameplayAbility/BSGameplayAbility_FireGun.h"
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
-#include "GameplayCueNotifyTypes.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Physics/BSCollisionChannels.h"
-#include "GameplayAbility/Tasks/BSAbilityTask_MontageEventWait.h"
 #include "Kismet/KismetMathLibrary.h"
 
 UBSGameplayAbility_FireGun::UBSGameplayAbility_FireGun()

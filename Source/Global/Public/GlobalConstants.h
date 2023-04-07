@@ -6,6 +6,65 @@ namespace Constants
 {
 	constexpr float MinValue_BandFrequency = 0;
 	constexpr float MaxValue_BandFrequency = 22720;
+
+	/** The length of the countdown timer */
+	constexpr int32 CountdownTimerLength = 3;
+
+	/** The ratio between the scale of the BaseMesh to OutlineMesh, used to apply a constant proportioned outline regardless of the scale of the target */
+	constexpr float BaseToOutlineRatio = 0.9;
+
+	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */
+	constexpr float CsgoMultiplier = 3.18;
+
+	const FVector VisualizerLocation = {4000, -1950, 210};
+	const FVector Visualizer2Location = {4000, 1950, 210};
+	const FRotator VisualizerRotation = {0, 90, 90};
+
+	const FVector BeamVisualizerLocation = {0, 1920, 1320};
+	const FRotator BeamRotation = {0, 0, 0};
+
+	constexpr float MinCubeHeightScale = 1;
+
+	constexpr float MaxCubeHeightScale = 4;
+
+	constexpr int32 CustomDepthStencilValue = 0;
+
+	const FVector CubeOffset = FVector(0, -110, 0);
+
+	/** The distance to trace the line */
+	constexpr float TraceDistance = 999999;
+
+	/** The max value of the Spotlight intensity */
+	constexpr float MaxSpotlightIntensity = 16000000;
+
+	/** The max value of the BeamEndLight intensity */
+	constexpr float MaxBeamEndLightIntensity = 80000;
+
+	const FVector DefaultSpotlightLimbOffset = {0, 0, -18};
+	const FVector DefaultSpotlightHeadOffset = {0, 0, -41};
+	const FRotator DefaultSpotlightHeadRotation = {-90, 0, 0};
+	const FVector DefaultSpotlightOffset = {22, 0, 0};
+	const FVector InitialBeamLightLocation = {0, 0, 1340};
+	const FRotator BeamLightRotation = {0, 0, 0};
+	const FVector BeamLightOffset = {0, 100, 0};
+
+	const FVector MoonMeshOffset = {250000, 0, 250000};
+	const FVector MoonGlowMeshScale = {2, 2, 2};
+	const FVector MoonMeshScale = {400, 400, 400};
+	const FVector MoonLightScale = {0.0025, 0.0025, 0.0025};
+	constexpr float SphereCompRadius = 400000;
+	const FVector MaxFloorHeight = {-4000, 0, 500};
+	const FVector MinFloorHeight = {-4000, 0, 0};
+
+	constexpr float CycleSpeed = 20;
+	constexpr float WindowCoverOffset = -1700;
+
+	/** The maximum width of the beam, used to scale the alpha value */
+	constexpr float MaxBeamWidth = 50;
+
+	/** Offset to apply to the location of the BeamEndLight */
+	constexpr float BeamEndLightOffset = 5;
+	
 	constexpr float SphereDiameter = 100.f;
 	constexpr float SphereRadius = 50.f;
 	
@@ -43,7 +102,9 @@ namespace Constants
 	constexpr float MinValue_TargetSpeed = 300;
 	constexpr float MaxValue_TargetSpeed = 1000;
 	constexpr float SnapSize_TargetSpeed = 10;
-
+	
+	// AI
+	
 	constexpr float MinValue_Alpha = 0.1;
 	constexpr float MaxValue_Alpha = 1;
 	constexpr float SnapSize_Alpha = 0.01;
@@ -55,7 +116,9 @@ namespace Constants
 	constexpr float MinValue_Gamma = 0.1;
 	constexpr float MaxValue_Gamma = 1;
 	constexpr float SnapSize_Gamma = 0.01;
-// BeatGrid
+	
+	// BeatGrid
+	
 	constexpr float MinValue_BeatGridHorizontalSpacing = 10;
 	constexpr float MaxValue_BeatGridHorizontalSpacing = 3200;
 	constexpr float SnapSize_BeatGridHorizontalSpacing = 10;
@@ -65,10 +128,22 @@ namespace Constants
 	constexpr float SnapSize_BeatGridVerticalSpacing = 10;
 	
 	constexpr int32 MinValue_NumBeatGridHorizontalTargets = 2;
-	constexpr int32 MaxValue_NumBeatGridHorizontalTargets = 40;
+	constexpr int32 MaxValue_NumBeatGridHorizontalTargets = 35;
 	constexpr int32 SnapSize_NumBeatGridHorizontalTargets = 1;
 
 	constexpr int32 MinValue_NumBeatGridVerticalTargets = 2;
-	constexpr int32 MaxValue_NumBeatGridVerticalTargets = 20;
+	constexpr int32 MaxValue_NumBeatGridVerticalTargets = 15;
 	constexpr int32 SnapSize_NumBeatGridVerticalTargets = 1;
+
+	/** The default location to spawn the SpawnBox */
+	const FVector DefaultTargetSpawnerLocation = {3700.f, 0.f, 160.f};
+
+	/** Minimum distance between floor and bottom of the SpawnBox */
+	constexpr float DistanceFromFloor = 110.f;
+
+	/** Distance between floor and HeadshotHeight */
+	constexpr float HeadshotHeight = 160.f;
+
+	/** The color used to change the GameModeButton color to when selected */
+	constexpr FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
 }

@@ -54,8 +54,6 @@ protected:
 private:
 	UPROPERTY()
 	FTimerHandle CountDownTimer;
-	/** The length of the countdown timer */
-	const int32 CountdownTimerLength = 3;
 	/** Whether or not NativeTick or StartGameModeMainMenu has called StartAAManagerPlayback from DefaultGameMode */
 	bool bHasCalledStartAAManagerPlayback = false;
 };

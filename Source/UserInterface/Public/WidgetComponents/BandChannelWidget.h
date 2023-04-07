@@ -46,7 +46,4 @@ protected:
 	UBorder* LowerBorder;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UBorder* UpperBorder;
-
-	const float AbsoluteMin = 0;
-	const float AbsoluteMax = 22720;
 };

@@ -4,12 +4,14 @@
 
 #include "BSHealthComponent.h"
 #include "BSPlayerController.h"
+#include "GlobalConstants.h"
 #include "SphereTarget.h"
 #include "RLBase.h"
 #include "Components/BoxComponent.h"
-#include "Components/InstancedStaticMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+
+using namespace Constants;
 
 ATargetSpawner::ATargetSpawner()
 {
@@ -54,7 +56,7 @@ void ATargetSpawner::Tick(float DeltaTime)
 		BeatTrackTarget->SetActorLocation(BeatTrackTargetLocation);
 	}
 
-	if (!BSConfig.bMoveTargetsForward)
+	if (!BSConfig.SpatialConfig.bMoveTargetsForward)
 	{
 		return;
 	}
@@ -75,26 +77,10 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	PlayerSettings = InPlayerSettings;
 
 	/* GameMode menu uses the full width, while box bounds are only half width / half height */
-	StaticExtents = FVector(0.f, BSConfig.BoxBounds.Y / 2.f, BSConfig.BoxBounds.Z / 2.f);
-
-	/* Set the center of spawn box based on user selection */
-	FVector CenterOfSpawnBox = StartingSpawnBoxLocation;
-	if (BSConfig.HeadshotHeight == true)
-	{
-		CenterOfSpawnBox.Z = HeadshotHeight;
-		StaticExtents.Z = 0.f;
-	}
-	else if (BSConfig.WallCentered == true)
-	{
-		CenterOfSpawnBox.Z = CenterBackWallHeight;
-	}
-	else
-	{
-		CenterOfSpawnBox.Z = StaticExtents.Z + DistanceFromFloor;
-	}
+	StaticExtents = BSConfig.SpatialConfig.GenerateTargetSpawnerBoxBounds();
 	
 	/* Set new location & box extent */
-	SpawnBox->SetRelativeLocation(CenterOfSpawnBox);
+	SpawnBox->SetRelativeLocation(BSConfig.SpatialConfig.GenerateSpawnBoxLocation());
 	SpawnBox->SetBoxExtent(StaticExtents);
 	StaticMinExtrema = SpawnBox->Bounds.GetBoxExtrema(0);
 	StaticMaxExtrema = SpawnBox->Bounds.GetBoxExtrema(1);
@@ -163,7 +149,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	SpawnMemoryIncZ = roundf(1.f / SpawnMemoryScaleZ);
 	MinOverlapRadius = (SpawnMemoryIncY + SpawnMemoryIncZ) / 2.f;
 
-	if (IsDynamicSpreadType(BSConfig.SpreadType))
+	if (IsDynamicSpreadType(BSConfig.SpatialConfig.SpreadType))
 	{
 		SetBoxExtents_Dynamic();
 	}
@@ -325,7 +311,7 @@ void ATargetSpawner::InitBeatGrid()
 
 	LastBeatGridIndex = INDEX_NONE;
 
-	const float MaxTargetSize = BSConfig.MaxTargetScale * SphereTargetRadius * 2;
+	const float MaxTargetSize = BSConfig.TargetConfig.MaxTargetScale * SphereRadius * 2;
 	const float HSpacing = BSConfig.BeatGridConfig.BeatGridSpacing.X + MaxTargetSize;
 	const float VSpacing = BSConfig.BeatGridConfig.BeatGridSpacing.Y + MaxTargetSize;
 	const float TotalWidth = HSpacing * (BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets - 1);
@@ -456,7 +442,7 @@ void ATargetSpawner::ActivateBeatGridTarget()
 
 	ActiveBeatGridTarget = SpawnedBeatGridTargets[ChosenTargetIndex];
 	LastBeatGridIndex = ChosenTargetIndex;
-	ActiveBeatGridTarget->StartBeatGridTimer(BSConfig.TargetMaxLifeSpan);
+	ActiveBeatGridTarget->StartBeatGridTimer(BSConfig.TargetConfig.TargetMaxLifeSpan);
 	OnTargetSpawned.Broadcast();
 	OnTargetSpawned_AimBot.Broadcast(ActiveBeatGridTarget);
 	
@@ -503,7 +489,7 @@ void ATargetSpawner::SetNewTrackingDirection()
 		LocationBeforeDirectionChange = BeatTrackTarget->GetActorLocation();
 		const float NewTargetScale = GetNextTargetScale();
 		BeatTrackTarget->SetSphereScale(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
-		BeatTrackTargetSpeed = FMath::FRandRange(BSConfig.MinTrackingSpeed, BSConfig.MaxTrackingSpeed);
+		BeatTrackTargetSpeed = FMath::FRandRange(BSConfig.BeatTrackConfig.MinTrackingSpeed, BSConfig.BeatTrackConfig.MaxTrackingSpeed);
 		EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
 		BeatTrackTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
 	}
@@ -524,13 +510,13 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	}
 
 	const FVector Location = DestroyedTarget->GetActorLocation();
-	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z};
+	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereRadius * DestroyedTarget->GetActorScale3D().Z};
 	OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
-
+	
 	RemoveFromActiveTargets(DestroyedTarget);
 	FTimerHandle TimerHandle;
 	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetSpawnCD, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
 
 	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack || BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
@@ -585,17 +571,17 @@ void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* Othe
 void ATargetSpawner::FindNextTargetProperties()
 {
 	TargetScale = GetNextTargetScale();
-	SpawnLocation = GetNextTargetSpawnLocation(BSConfig.SpreadType, TargetScale);
+	SpawnLocation = GetNextTargetSpawnLocation(BSConfig.SpatialConfig.SpreadType, TargetScale);
 }
 
 float ATargetSpawner::GetNextTargetScale() const
 {
-	if (BSConfig.UseDynamicSizing)
+	if (BSConfig.TargetConfig.UseDynamicSizing)
 	{
 		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-		return UKismetMathLibrary::Lerp(BSConfig.MinTargetScale, BSConfig.MaxTargetScale, NewFactor);
+		return UKismetMathLibrary::Lerp(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale, NewFactor);
 	}
-	return FMath::FRandRange(BSConfig.MinTargetScale, BSConfig.MaxTargetScale);
+	return FMath::FRandRange(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale);
 }
 
 FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType, const float NewTargetScale)
@@ -626,7 +612,7 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 		for (const FVector Vector : OpenLocations)
 		{
 			FVector Loc = FVector(Vector.X, Vector.Y + SpawnMemoryIncY / 2.f, Vector.Z + SpawnMemoryIncZ / 2.f);
-			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Emerald, false, BSConfig.TargetSpawnCD);
+			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Emerald, false, BSConfig.TargetConfig.TargetSpawnCD);
 		}
 	}
 
@@ -698,7 +684,7 @@ FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBefore
 
 	PossibleLocations.Shrink();
 	const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
-	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * BeatTrackTargetSpeed * BSConfig.TargetSpawnCD;
+	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * BeatTrackTargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
 }
 
 TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
@@ -706,7 +692,7 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
 	TArray<FVector> AllPoints;
 
 	/* Populate AllPoints according to SpreadType */
-	switch (BSConfig.SpreadType)
+	switch (BSConfig.SpatialConfig.SpreadType)
 	{
 	case ESpreadType::DynamicEdgeOnly: AllPoints = GetAllEdgeOnlySpawnLocations();
 		break;
@@ -783,7 +769,7 @@ TArray<FVector> ATargetSpawner::GetAllEdgeOnlySpawnLocations() const
 
 TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector& Center, const float Scale) const
 {
-	float Radius = Scale * SphereTargetRadius * 2.f + BSConfig.MinDistanceBetweenTargets / 2.f;
+	float Radius = Scale * SphereRadius * 2.f + BSConfig.SpatialConfig.MinDistanceBetweenTargets / 2.f;
 	Radius = FMath::Max(Radius, MinOverlapRadius);
 	const FSphere Sphere = FSphere(Center, Radius);
 	const FVector NegativeExtents = GetBoxExtrema(0, false);
@@ -900,8 +886,8 @@ FVectorCounter ATargetSpawner::GetVectorCounterFromPoint(const FVector& Point) c
 void ATargetSpawner::MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const
 {
 	const FVector Loc = SpawnTarget->GetActorLocation();
-	const FVector NewLoc = FVector(Loc.X - BSConfig.MoveForwardDistance, Loc.Y, Loc.Z);
-	SpawnTarget->SetActorLocation(UKismetMathLibrary::VInterpTo(Loc, NewLoc, DeltaTime, 1 / BSConfig.TargetMaxLifeSpan));
+	const FVector NewLoc = FVector(Loc.X - BSConfig.SpatialConfig.MoveForwardDistance, Loc.Y, Loc.Z);
+	SpawnTarget->SetActorLocation(UKismetMathLibrary::VInterpTo(Loc, NewLoc, DeltaTime, 1 / BSConfig.TargetConfig.TargetMaxLifeSpan));
 }
 
 int32 ATargetSpawner::AddToRecentTargets(const ASphereTarget* SpawnTarget, const float Scale)
@@ -940,7 +926,7 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 	const FVector MaxExtrema = GetBoxExtrema(1, true);
 	TArray<FVector> Remove;
 	// ReSharper disable once CppTooWideScope
-	const uint8 SingleBeatOrEdgeOnly = BSConfig.BaseGameMode == EDefaultMode::SingleBeat || BSConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
+	const uint8 SingleBeatOrEdgeOnly = BSConfig.BaseGameMode == EDefaultMode::SingleBeat || BSConfig.SpatialConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
 	switch (SingleBeatOrEdgeOnly)
 	{
 	case 1: for (FVector Vector : In)
@@ -981,7 +967,7 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 		if (bShowDebug_SpawnBox)
 		{
 			FVector Loc = FVector(Vector.X, Vector.Y + SpawnMemoryIncY / 2.f, Vector.Z + SpawnMemoryIncZ / 2.f);
-			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Red, false, BSConfig.TargetSpawnCD);
+			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnMemoryIncY / 2.f, SpawnMemoryIncZ / 2.f), FColor::Red, false, BSConfig.TargetConfig.TargetSpawnCD);
 		}
 	}
 	//UE_LOG(LogTemp, Display, TEXT("Removed Edge Points: %d"), Count);

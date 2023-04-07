@@ -49,7 +49,7 @@ void UBeatGridSettingsWidget::NativeConstruct()
 	MaxLock->SetIsChecked(true);
 }
 
-void UBeatGridSettingsWidget::InitializeBeatGrid(const FBeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox)
+void UBeatGridSettingsWidget::InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox)
 {
 	CurrentValues = InBeatGridConfig;
 	TargetScaleBox = InTargetScaleBox;
@@ -68,9 +68,9 @@ void UBeatGridSettingsWidget::InitializeBeatGrid(const FBeatGridConfig& InBeatGr
 	MaxValue->SetText(FText::AsNumber(InBeatGridConfig.BeatGridSpacing.Y));
 }
 
-FBeatGridConfig UBeatGridSettingsWidget::GetBeatGridConfig() const
+FBS_BeatGridConfig UBeatGridSettingsWidget::GetBeatGridConfig() const
 {
-	FBeatGridConfig ReturnConfig;
+	FBS_BeatGridConfig ReturnConfig;
 	ReturnConfig.BeatGridSpacing = FVector2D(
 	FMath::GridSnap(FMath::Clamp(MinSlider->GetValue(), MinValue_BeatGridHorizontalSpacing, MaxValue_BeatGridHorizontalSpacing), SnapSize_BeatGridHorizontalSpacing),
 	FMath::GridSnap(FMath::Clamp(MaxSlider->GetValue(), MinValue_BeatGridVerticalSpacing, MaxValue_BeatGridVerticalSpacing), SnapSize_BeatGridVerticalSpacing));
@@ -163,8 +163,8 @@ void UBeatGridSettingsWidget::OnCheckStateChanged_MaxLock(const bool bIsLocked)
 void UBeatGridSettingsWidget::OnBeatGridUpdate_MaxTargetScale(const float NewMaxTargetScale)
 {
 	MaxTargetSize = NewMaxTargetScale * SphereDiameter;
-	HorizontalSpread = StaticHorizontalSpread + MaxTargetSize;
-	VerticalSpread = StaticVerticalSpread + MaxTargetSize;
+	HorizontalSpread = MaxValue_BeatGridHorizontalSpacing + MaxTargetSize;
+	VerticalSpread = MaxValue_BeatGridVerticalSpacing + MaxTargetSize;
 	CheckBeatGridConstraints(EBeatGridConstraintType::TargetScale);
 }
 

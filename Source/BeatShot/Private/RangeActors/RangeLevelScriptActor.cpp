@@ -10,7 +10,6 @@
 #include "Components/LightComponent.h"
 #include "Components/SkyLightComponent.h"
 #include "Components/TimelineComponent.h"
-#include "Components/VolumetricCloudComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/RectLight.h"
 #include "Engine/SkyLight.h"
@@ -93,7 +92,7 @@ void ARangeLevelScriptActor::BeginTransitionToNight()
 {
 	LastLerpRotation = 0;
 	TimeOfDay = ETimeOfDay::DayToNight;
-	TransitionTimeline.SetPlayRate(1.f / CycleSpeed);
+	TransitionTimeline.SetPlayRate(1.f / Constants::CycleSpeed);
 	TransitionTimeline.PlayFromStart();
 }
 
@@ -101,7 +100,7 @@ void ARangeLevelScriptActor::BeginTransitionToDay()
 {
 	LastLerpRotation = 0;
 	TimeOfDay = ETimeOfDay::NightToDay;
-	TransitionTimeline.SetPlayRate(1.f / CycleSpeed);
+	TransitionTimeline.SetPlayRate(1.f / Constants::CycleSpeed);
 	TransitionTimeline.PlayFromStart();
 }
 
@@ -113,8 +112,8 @@ void ARangeLevelScriptActor::SetTimeOfDayToNight()
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 1);
 	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", 1);
 	Moon->MoonLight->SetIntensity(MaxMoonlightIntensity);
-	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(WindowCoverOffset, 0, 0));
-	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(WindowCoverOffset, 0, 0));
+	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(Constants::WindowCoverOffset, 0, 0));
+	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(Constants::WindowCoverOffset, 0, 0));
 	Skylight->GetLightComponent()->SetIntensity(NightSkylightIntensity);
 	RefreshSkySphereMaterial();
 }
@@ -143,7 +142,7 @@ void ARangeLevelScriptActor::TransitionTimeOfDay(const FVector Vector)
 		MoonValue = UKismetMathLibrary::Lerp(1, 0, Vector.Z);
 		SkylightValue = UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity, Vector.Y);
 	}
-	const float CurrentWindowOffset = UKismetMathLibrary::Lerp(0, WindowCoverOffset, Value);
+	const float CurrentWindowOffset = UKismetMathLibrary::Lerp(0, Constants::WindowCoverOffset, Value);
 	LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialLeftWindowCoverLoc + FVector(CurrentWindowOffset, 0, 0));
 	RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(InitialRightWindowCoverLoc + FVector(CurrentWindowOffset, 0, 0));
 

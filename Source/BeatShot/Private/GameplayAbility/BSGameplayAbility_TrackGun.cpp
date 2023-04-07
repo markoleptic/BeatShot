@@ -3,7 +3,6 @@
 #include "GameplayAbility/BSGameplayAbility_TrackGun.h"
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
-#include "Camera/CameraComponent.h"
 #include "GameplayAbility/Tasks/BSAbilityTask_TickTrace.h"
 
 UBSGameplayAbility_TrackGun::UBSGameplayAbility_TrackGun()

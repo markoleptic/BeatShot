@@ -160,12 +160,6 @@ private:
 	/** Number formatting options for song length text boxes */
 	FNumberFormattingOptions NumberFormattingOptions;
 
-	/** The color used to change the GameModeButton color to when selected */
-	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
-
-	/** The color used to change the GameModeButton color to when not selected */
-	const FLinearColor White = FLinearColor::White;
-
 	/** Contains information relating to the audio format the user has selected. Passed to GameModesWidget
 	 *  using OnStartButtonClickedDelegate */
 	FAudioSelectStruct AudioSelectStruct;

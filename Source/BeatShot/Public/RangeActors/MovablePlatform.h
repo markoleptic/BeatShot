@@ -77,8 +77,4 @@ protected:
 
 	/** Whether or not the player is overlapping the FloorTriggerVolume */
 	bool bPlayerIsOverlappingFloor;
-
-	const FVector MaxFloorHeight = {-4000, 0, 500};
-
-	const FVector MinFloorHeight = {-4000, 0, 0};
 };

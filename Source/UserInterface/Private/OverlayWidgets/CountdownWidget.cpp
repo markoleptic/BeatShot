@@ -2,6 +2,8 @@
 
 
 #include "OverlayWidgets/CountdownWidget.h"
+
+#include "GlobalConstants.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -49,7 +51,7 @@ void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 
 void UCountdownWidget::StartCountDownTimer()
 {
-	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdownWidget::StartGameMode, CountdownTimerLength, false);
+	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdownWidget::StartGameMode, Constants::CountdownTimerLength, false);
 }
 
 void UCountdownWidget::StartGameMode() const

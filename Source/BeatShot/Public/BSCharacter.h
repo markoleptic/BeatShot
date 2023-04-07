@@ -4,14 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Gun_AK47.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
 #include "BSInputConfig.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayTagContainer.h"
-#include "NativeGameplayTags.h"
 #include "GameplayAbility/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 

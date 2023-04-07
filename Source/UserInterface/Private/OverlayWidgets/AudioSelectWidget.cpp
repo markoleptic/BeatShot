@@ -90,8 +90,8 @@ void UAudioSelectWidget::OnAudioFromFileButtonClicked()
 	LoadFileButton->SetIsEnabled(true);
 	InAudioDevices->ClearSelection();
 	OutAudioDevices->ClearSelection();
-	AudioFromFileButton->SetBackgroundColor(BeatShotBlue);
-	CaptureAudioButton->SetBackgroundColor(White);
+	AudioFromFileButton->SetBackgroundColor(Constants::BeatShotBlue);
+	CaptureAudioButton->SetBackgroundColor(FLinearColor::White);
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Collapsed);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 }
@@ -103,8 +103,8 @@ void UAudioSelectWidget::OnCaptureAudioButtonClicked()
 	LoadFileButton->SetIsEnabled(false);
 	InAudioDevices->ClearSelection();
 	OutAudioDevices->ClearSelection();
-	AudioFromFileButton->SetBackgroundColor(White);
-	CaptureAudioButton->SetBackgroundColor(BeatShotBlue);
+	AudioFromFileButton->SetBackgroundColor(FLinearColor::White);
+	CaptureAudioButton->SetBackgroundColor(Constants::BeatShotBlue);
 	AudioDeviceBox->SetVisibility(ESlateVisibility::Visible);
 	SongTitleLengthBox->SetVisibility(ESlateVisibility::Collapsed);
 

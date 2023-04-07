@@ -120,8 +120,8 @@ public:
 
 private:
 	virtual void NativeConstruct() override;
-	void InitializeBeatGrid(const FBeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
-	FBeatGridConfig GetBeatGridConfig() const;
+	void InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
+	FBS_BeatGridConfig GetBeatGridConfig() const;
 	
 	UFUNCTION()
 	void OnConstrainedChanged_HorizontalSpacing(const float NewHorizontalSpacing);
@@ -178,7 +178,7 @@ private:
 	float GetMinRequiredVerticalSpread() const;
 
 	/** Stores the current slider values along with the HorizontalSpread & HorizontalSpread */
-	FBeatGridConfig CurrentValues;
+	FBS_BeatGridConfig CurrentValues;
 
 	/** Stores any actively constraining BeatGrid parameters */
 	TArray<EBeatGridConstraintType> ActiveConstraints;
@@ -202,13 +202,15 @@ private:
 
 	const float StaticHorizontalSpread = 3200.f;
 	const float StaticVerticalSpread = 1000.f;
+	
 	const FText OrDelimit = FText::FromString(" or ");
 	const FText NewLineDelimit = FText::FromString("\n");
 	const FText SpaceDelimit = FText::FromString(" ");
-	const FText SuggestStart = FText::FromString("Not enough space! Change one or more of the following:");
-	const FText HorizontalSuggest = FText::FromString("- Number of Horizontal Targets <=");
-	const FText VerticalSuggest = FText::FromString("- Number of Vertical Targets to <=");
-	const FText ScaleSuggest = FText::FromString("- Maximum Target Scale to <=");
-	const FText HorizontalSpacingSuggest = FText::FromString("- Horizontal Spacing to <=");
-	const FText VerticalSpacingSuggest = FText::FromString("- Vertical Spacing to <=");
+	
+	const FText SuggestStart = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_SuggestStart");
+	const FText HorizontalSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_NumHorizontalSuggest");
+	const FText VerticalSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_NumVerticalSuggest");
+	const FText ScaleSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_ScaleSuggest");
+	const FText HorizontalSpacingSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_HorizontalSpacingSuggest");
+	const FText VerticalSpacingSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_VerticalSpacingSuggest");
 };

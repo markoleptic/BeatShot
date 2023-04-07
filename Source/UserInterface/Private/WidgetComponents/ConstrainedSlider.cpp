@@ -200,49 +200,6 @@ float UConstrainedSlider::CheckConstraints(const float NewValue, const bool bIsM
 
 void UConstrainedSlider::OverrideMaxValue(const bool bIsMin, const float ValueToOverride)
 {
-	/*if (SliderStruct.bSyncSlidersAndValues)
-	{
-		MinSlider->SetMaxValue(ValueToOverride);
-		MaxSlider->SetMaxValue(ValueToOverride);
-		SliderStruct.MinConstraintUpper = ValueToOverride;
-		SliderStruct.MaxConstraintUpper = ValueToOverride;
-		if (MinSlider->GetValue() > ValueToOverride)
-		{
-			MinSlider->SetValue(ValueToOverride);
-			MinValue->SetText(FText::AsNumber(ValueToOverride));
-			OnMinValueChanged.Broadcast(ValueToOverride);
-		}
-		if (MaxSlider->GetValue() > ValueToOverride)
-		{
-			MaxSlider->SetValue(ValueToOverride);
-			MaxValue->SetText(FText::AsNumber(ValueToOverride));
-			OnMaxValueChanged.Broadcast(ValueToOverride);
-		}
-		return;
-	}
-
-	if (bIsMin)
-	{
-		MinSlider->SetMaxValue(ValueToOverride);
-		SliderStruct.MinConstraintUpper = ValueToOverride;
-		if (MinSlider->GetValue() > ValueToOverride)
-		{
-			MinSlider->SetValue(ValueToOverride);
-			MinValue->SetText(FText::AsNumber(ValueToOverride));
-			OnMinValueChanged.Broadcast(ValueToOverride);
-		}
-		return;
-	}
-	
-	MaxSlider->SetMaxValue(ValueToOverride);
-	SliderStruct.MaxConstraintUpper = ValueToOverride;
-	if (MaxSlider->GetValue() > ValueToOverride)
-	{
-		MaxSlider->SetValue(ValueToOverride);
-		MaxValue->SetText(FText::AsNumber(ValueToOverride));
-		OnMaxValueChanged.Broadcast(ValueToOverride);
-	}*/
-
 	if (SliderStruct.bSyncSlidersAndValues)
 	{
 		if (MinSlider->GetValue() > ValueToOverride)

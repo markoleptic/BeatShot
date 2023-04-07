@@ -2,7 +2,6 @@
 // Credit to Dan Kestranek.
 
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
-#include "BSCharacter.h"
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 

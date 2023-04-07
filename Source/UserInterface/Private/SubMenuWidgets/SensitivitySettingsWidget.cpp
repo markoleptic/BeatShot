@@ -39,16 +39,16 @@ void USensitivitySettingsWidget::OnNewSensitivityValue(const FText& NewValue, ET
 {
 	const float NewSensValue = FCString::Atof(*NewValue.ToString());
 	SensSlider->SetValue(NewSensValue);
-	NewSensitivityCsgoValue->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue * CsgoMultiplier)));
+	NewSensitivityCsgoValue->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue * Constants::CsgoMultiplier)));
 	Sensitivity = NewSensValue;
 }
 
 void USensitivitySettingsWidget::OnNewSensitivityCsgoValue(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewCsgoSensValue = FCString::Atof(*NewValue.ToString());
-	SensSlider->SetValue(NewCsgoSensValue / CsgoMultiplier);
-	NewSensitivityValue->SetText(FText::FromString(FString::SanitizeFloat(NewCsgoSensValue / CsgoMultiplier)));
-	Sensitivity = NewCsgoSensValue / CsgoMultiplier;
+	SensSlider->SetValue(NewCsgoSensValue / Constants::CsgoMultiplier);
+	NewSensitivityValue->SetText(FText::FromString(FString::SanitizeFloat(NewCsgoSensValue / Constants::CsgoMultiplier)));
+	Sensitivity = NewCsgoSensValue / Constants::CsgoMultiplier;
 }
 
 void USensitivitySettingsWidget::OnSensitivitySliderChanged(const float NewValue)
@@ -56,6 +56,6 @@ void USensitivitySettingsWidget::OnSensitivitySliderChanged(const float NewValue
 	const float NewSensValue = UKismetMathLibrary::GridSnap_Float(NewValue, 0.1);
 	SensSlider->SetValue(NewSensValue);
 	NewSensitivityValue->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue)));
-	NewSensitivityCsgoValue->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue * CsgoMultiplier)));
+	NewSensitivityCsgoValue->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue * Constants::CsgoMultiplier)));
 	Sensitivity = NewSensValue;
 }

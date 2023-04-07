@@ -3,7 +3,6 @@
 #include "GameplayAbility/Tasks/BSAbilityTask_MontageEventWait.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemGlobals.h"
-#include "BSCharacter.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 
 UBSAbilityTask_MontageEventWait::UBSAbilityTask_MontageEventWait(const FObjectInitializer& ObjectInitializer)

@@ -2,11 +2,8 @@
 
 
 #include "Projectile.h"
-#include "Components/DecalComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "GameplayAbility/BSAbilitySystemComponent.h"
-#include "Kismet/GameplayStatics.h"
 
 AProjectile::AProjectile()
 {

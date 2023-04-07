@@ -30,10 +30,4 @@ protected:
 
 private:
 	TArray<FLinearColor> BeatColors;
-
-	const FVector InitialBeamLightLocation = {0, 0, 1340};
-
-	const FRotator BeamLightRotation = {0, 0, 0};
-
-	const FVector BeamLightOffset = {0, 100, 0};
 };

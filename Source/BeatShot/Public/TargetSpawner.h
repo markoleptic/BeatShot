@@ -284,21 +284,6 @@ private:
 	/** Spawn parameters for ASphereTarget */
 	FActorSpawnParameters TargetSpawnParams;
 
-	/** The default location to spawn the SpawnBox */
-	const FVector StartingSpawnBoxLocation = {3700.f, 0.f, 160.f};
-
-	/** Base size of the sphere target */
-	const float SphereTargetRadius = 50.f;
-
-	/** Minimum distance between floor and bottom of the SpawnBox */
-	const float DistanceFromFloor = 110.f;
-
-	/** Distance between floor and center of designated Back Wall */
-	const float CenterBackWallHeight = 750.f;
-
-	/** Distance between floor and HeadshotHeight */
-	const float HeadshotHeight = 160.f;
-
 	/** Minimum overlap radius so that small targets do not overlap due to the spawn memory scale being much higher */
 	float MinOverlapRadius;
 

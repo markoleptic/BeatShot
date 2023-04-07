@@ -39,12 +39,4 @@ private:
 	/** Using this array instead of Visualizers array */
 	UPROPERTY(VisibleAnywhere)
 	TArray<UStaticMeshComponent*> Cubes;
-
-	const float MinCubeHeightScale = 1;
-
-	const float MaxCubeHeightScale = 4;
-
-	const int32 CustomDepthStencilValue = 0;
-
-	const FVector CubeOffset = FVector(0, -110, 0);
 };

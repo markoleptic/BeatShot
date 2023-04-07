@@ -2,7 +2,6 @@
 
 
 #include "SphereTarget.h"
-#include "BSGameInstance.h"
 #include "BSHealthComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -13,7 +12,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameplayAbility/AttributeSets/BSAttributeSetBase.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 ASphereTarget::ASphereTarget()
@@ -90,8 +88,8 @@ bool ASphereTarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagC
 void ASphereTarget::SetSphereScale(const FVector& NewScale)
 {
 	TargetScale = NewScale.X;
-	BaseMesh->SetRelativeScale3D(NewScale * BaseToOutlineRatio);
-	OutlineMesh->SetRelativeScale3D(FVector(1 / BaseToOutlineRatio));
+	BaseMesh->SetRelativeScale3D(NewScale * Constants::BaseToOutlineRatio);
+	OutlineMesh->SetRelativeScale3D(FVector(1 / Constants::BaseToOutlineRatio));
 }
 
 void ASphereTarget::BeginPlay()
@@ -125,8 +123,8 @@ void ASphereTarget::BeginPlay()
 		SetOutlineColor(PlayerSettings.TargetOutlineColor);
 	}
 	
-	const float WhiteToPeakMultiplier = 1 / BSConfig.PlayerDelay;
-	const float PeakToFadeMultiplier = 1 / (BSConfig.TargetMaxLifeSpan - BSConfig.PlayerDelay);
+	const float WhiteToPeakMultiplier = 1 / BSConfig.AudioConfig.PlayerDelay;
+	const float PeakToFadeMultiplier = 1 / (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay);
 
 	/* White to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
@@ -173,9 +171,9 @@ void ASphereTarget::BeginPlay()
 	}
 	else
 	{
-		SetLifeSpan(BSConfig.TargetMaxLifeSpan);
+		SetLifeSpan(BSConfig.TargetConfig.TargetMaxLifeSpan);
 		PlayStartToPeakTimeline();
-		GetWorldTimerManager().SetTimer(TimeSinceSpawn, BSConfig.TargetMaxLifeSpan, false);
+		GetWorldTimerManager().SetTimer(TimeSinceSpawn, BSConfig.TargetConfig.TargetMaxLifeSpan, false);
 	}
 }
 
@@ -297,7 +295,7 @@ void ASphereTarget::HandleDestruction()
 
 	/* Get the time that the sphere was alive for */
 	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-	if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetMaxLifeSpan)
+	if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetConfig.TargetMaxLifeSpan)
 	{
 		Destroy();
 		return;
@@ -306,7 +304,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+	PlayExplosionEffect(BaseMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
 	Destroy();
 }
 
@@ -317,7 +315,7 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 	{
 		/* Get the time that the sphere was alive for */
 		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
-		if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetMaxLifeSpan)
+		if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetConfig.TargetMaxLifeSpan)
 		{
 			return;
 		}
@@ -326,7 +324,7 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		PeakToEndTimeline.Stop();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-		PlayExplosionEffect(BaseMesh->GetComponentLocation(), BaseSphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+		PlayExplosionEffect(BaseMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
 		ApplyImmunityEffect();
 		PlayFadeAndReappearTimeline();
 	}

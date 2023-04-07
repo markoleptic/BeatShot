@@ -2,6 +2,8 @@
 
 
 #include "WidgetComponents/BandChannelWidget.h"
+
+#include "GlobalConstants.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
 #include "Components/Border.h"
@@ -49,14 +51,14 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
-	if (NewFloatValue < AbsoluteMin)
+	if (NewFloatValue < Constants::MinValue_BandFrequency)
 	{
-		BandChannelMin->SetText(FText::AsNumber(0));
+		BandChannelMin->SetText(FText::AsNumber(Constants::MinValue_BandFrequency));
 		return;
 	}
-	if (NewFloatValue > AbsoluteMax)
+	if (NewFloatValue > Constants::MaxValue_BandFrequency)
 	{
-		BandChannelMin->SetText(FText::AsNumber(22720));
+		BandChannelMin->SetText(FText::AsNumber(Constants::MaxValue_BandFrequency));
 		return;
 	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, true))
@@ -68,14 +70,14 @@ void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit:
 void UBandChannelWidget::OnMaxValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
-	if (NewFloatValue < AbsoluteMin)
+	if (NewFloatValue < Constants::MinValue_BandFrequency)
 	{
 		BandChannelMax->SetText(FText::AsNumber(0));
 		return;
 	}
-	if (NewFloatValue > AbsoluteMax)
+	if (NewFloatValue > Constants::MaxValue_BandFrequency)
 	{
-		BandChannelMax->SetText(FText::AsNumber(22720));
+		BandChannelMax->SetText(FText::AsNumber(Constants::MaxValue_BandFrequency));
 		return;
 	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, false))

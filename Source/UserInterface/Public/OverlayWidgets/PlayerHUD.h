@@ -61,6 +61,4 @@ public:
 	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
 	UFUNCTION()
 	void UpdateSongProgress(const float PlaybackTime);
-
-private:
 };

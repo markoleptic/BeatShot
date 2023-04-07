@@ -664,7 +664,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		VerticalSpreadSlider->SetLocked(true);
 		VerticalSpreadValue->SetIsReadOnly(true);
 		BeatGridSpacingConstrained->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetScaleConstrained->TextTooltipBox_Max);
-		BeatGridSpacingConstrained->OnBeatGridUpdate_MaxTargetScale(InBSConfig.MaxTargetScale);
+		BeatGridSpacingConstrained->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Collapsed);
 		SpreadTypeBox->SetVisibility(ESlateVisibility::Collapsed);
 		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
@@ -674,7 +674,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		BaseGameModeComboBox->SetSelectedOption("BeatTrack");
 		LifespanSlider->SetLocked(true);
 		LifespanValue->SetIsReadOnly(true);
-		TargetSpeedConstrained->UpdateDefaultValues(InBSConfig.MinTrackingSpeed, InBSConfig.MaxTrackingSpeed);
+		TargetSpeedConstrained->UpdateDefaultValues(InBSConfig.BeatTrackConfig.MinTrackingSpeed, InBSConfig.BeatTrackConfig.MaxTrackingSpeed);
 		MinTargetDistanceBox->SetVisibility(ESlateVisibility::Collapsed);
 		SpreadTypeBox->SetVisibility(ESlateVisibility::Collapsed);
 		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
@@ -724,7 +724,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		}
 	}
 
-	if (InBSConfig.bMoveTargetsForward)
+	if (InBSConfig.SpatialConfig.bMoveTargetsForward)
 	{
 		ForwardSpreadBox->SetVisibility(ESlateVisibility::Visible);
 	}
@@ -734,25 +734,25 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	}
 	
 	GameModeDifficultyComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InBSConfig.GameModeDifficulty).ToString());
-	PlayerDelaySlider->SetValue(InBSConfig.PlayerDelay);
-	PlayerDelayValue->SetText(FText::AsNumber(InBSConfig.PlayerDelay));
-	LifespanSlider->SetValue(InBSConfig.TargetMaxLifeSpan);
-	LifespanValue->SetText(FText::AsNumber(InBSConfig.TargetMaxLifeSpan));
-	TargetSpawnCDSlider->SetValue(InBSConfig.TargetSpawnCD);
-	TargetSpawnCDValue->SetText(FText::AsNumber(InBSConfig.TargetSpawnCD));
-	HeadShotOnlyCheckBox->SetIsChecked(InBSConfig.HeadshotHeight);
-	WallCenteredCheckBox->SetIsChecked(InBSConfig.WallCentered);
-	MinTargetDistanceSlider->SetValue(InBSConfig.MinDistanceBetweenTargets);
-	MinTargetDistanceValue->SetText(FText::AsNumber(InBSConfig.MinDistanceBetweenTargets));
-	SpreadTypeComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InBSConfig.SpreadType).ToString());
-	HorizontalSpreadSlider->SetValue(InBSConfig.BoxBounds.Y);
-	HorizontalSpreadValue->SetText(FText::AsNumber(InBSConfig.BoxBounds.Y));
-	VerticalSpreadSlider->SetValue(InBSConfig.BoxBounds.Z);
-	VerticalSpreadValue->SetText(FText::AsNumber(InBSConfig.BoxBounds.Z));
-	ForwardSpreadCheckBox->SetIsChecked(InBSConfig.bMoveTargetsForward);
-	ForwardSpreadSlider->SetValue(InBSConfig.MoveForwardDistance);
-	ForwardSpreadValue->SetText(FText::AsNumber(InBSConfig.MoveForwardDistance));
-	TargetScaleConstrained->UpdateDefaultValues(InBSConfig.MinTargetScale, InBSConfig.MaxTargetScale);
+	PlayerDelaySlider->SetValue(InBSConfig.AudioConfig.PlayerDelay);
+	PlayerDelayValue->SetText(FText::AsNumber(InBSConfig.AudioConfig.PlayerDelay));
+	LifespanSlider->SetValue(InBSConfig.TargetConfig.TargetMaxLifeSpan);
+	LifespanValue->SetText(FText::AsNumber(InBSConfig.TargetConfig.TargetMaxLifeSpan));
+	TargetSpawnCDSlider->SetValue(InBSConfig.TargetConfig.TargetSpawnCD);
+	TargetSpawnCDValue->SetText(FText::AsNumber(InBSConfig.TargetConfig.TargetSpawnCD));
+	HeadShotOnlyCheckBox->SetIsChecked(InBSConfig.SpatialConfig.bUseHeadshotHeight);
+	WallCenteredCheckBox->SetIsChecked(InBSConfig.SpatialConfig.bUseCustomFloorDistance);
+	MinTargetDistanceSlider->SetValue(InBSConfig.SpatialConfig.MinDistanceBetweenTargets);
+	MinTargetDistanceValue->SetText(FText::AsNumber(InBSConfig.SpatialConfig.MinDistanceBetweenTargets));
+	SpreadTypeComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InBSConfig.SpatialConfig.SpreadType).ToString());
+	HorizontalSpreadSlider->SetValue(InBSConfig.SpatialConfig.BoxBounds.Y);
+	HorizontalSpreadValue->SetText(FText::AsNumber(InBSConfig.SpatialConfig.BoxBounds.Y));
+	VerticalSpreadSlider->SetValue(InBSConfig.SpatialConfig.BoxBounds.Z);
+	VerticalSpreadValue->SetText(FText::AsNumber(InBSConfig.SpatialConfig.BoxBounds.Z));
+	ForwardSpreadCheckBox->SetIsChecked(InBSConfig.SpatialConfig.bMoveTargetsForward);
+	ForwardSpreadSlider->SetValue(InBSConfig.SpatialConfig.MoveForwardDistance);
+	ForwardSpreadValue->SetText(FText::AsNumber(InBSConfig.SpatialConfig.MoveForwardDistance));
+	TargetScaleConstrained->UpdateDefaultValues(InBSConfig.TargetConfig.MinTargetScale, InBSConfig.TargetConfig.MaxTargetScale);
 }
 
 void UGameModesWidget::PopulateGameModeNameComboBox(const FString& GameModeOptionToSelect)
@@ -801,20 +801,20 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	}
 
 	ReturnStruct.GameModeDifficulty = EGameModeDifficulty::None;
-	ReturnStruct.PlayerDelay = FMath::GridSnap(FMath::Clamp(PlayerDelaySlider->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
-	ReturnStruct.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(LifespanSlider->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
-	ReturnStruct.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(TargetSpawnCDSlider->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
-	ReturnStruct.HeadshotHeight = HeadShotOnlyCheckBox->IsChecked();
-	ReturnStruct.WallCentered = WallCenteredCheckBox->IsChecked();
-	ReturnStruct.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(MinTargetDistanceSlider->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
-	ReturnStruct.SpreadType = GetSpreadType();
-	ReturnStruct.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(HorizontalSpreadSlider->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
+	ReturnStruct.AudioConfig.PlayerDelay = FMath::GridSnap(FMath::Clamp(PlayerDelaySlider->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
+	ReturnStruct.TargetConfig.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(LifespanSlider->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
+	ReturnStruct.TargetConfig.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(TargetSpawnCDSlider->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
+	ReturnStruct.SpatialConfig.bUseHeadshotHeight = HeadShotOnlyCheckBox->IsChecked();
+	ReturnStruct.SpatialConfig.bUseCustomFloorDistance = WallCenteredCheckBox->IsChecked();
+	ReturnStruct.SpatialConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(MinTargetDistanceSlider->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
+	ReturnStruct.SpatialConfig.SpreadType = GetSpreadType();
+	ReturnStruct.SpatialConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(HorizontalSpreadSlider->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
 	                                 FMath::GridSnap(FMath::Clamp(VerticalSpreadSlider->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
-	ReturnStruct.bMoveTargetsForward = ForwardSpreadCheckBox->IsChecked();
-	ReturnStruct.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(ForwardSpreadSlider->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
-	ReturnStruct.UseDynamicSizing = DynamicTargetScaleCheckBox->IsChecked();
-	ReturnStruct.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
-	ReturnStruct.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MaxSlider->GetValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
+	ReturnStruct.SpatialConfig.bMoveTargetsForward = ForwardSpreadCheckBox->IsChecked();
+	ReturnStruct.SpatialConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(ForwardSpreadSlider->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
+	ReturnStruct.TargetConfig.UseDynamicSizing = DynamicTargetScaleCheckBox->IsChecked();
+	ReturnStruct.TargetConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MinSlider->GetValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
+	ReturnStruct.TargetConfig.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->MaxSlider->GetValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	
 	ReturnStruct.AIConfig.bEnableRLAgent = EnableAICheckBox->IsChecked();
 	ReturnStruct.AIConfig.Alpha = FMath::GridSnap(FMath::Clamp(AIAlphaSlider->GetValue(), MinValue_Alpha, MaxValue_Alpha), SnapSize_Alpha);
@@ -823,8 +823,8 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	
 	ReturnStruct.BeatGridConfig = BeatGridSpacingConstrained->GetBeatGridConfig();
 	
-	ReturnStruct.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
-	ReturnStruct.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MaxSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnStruct.BeatTrackConfig.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnStruct.BeatTrackConfig.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MaxSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	
 	return ReturnStruct;
 }
@@ -955,18 +955,18 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 			/* Get things like QTable that aren't populated in the menu */
 			SetHiddenConfigParameters(BSConfig);
 		}
-		BSConfig.SongTitle = AudioSelectStruct.SongTitle;
-		BSConfig.GameModeLength = AudioSelectStruct.SongLength;
-		BSConfig.InAudioDevice = AudioSelectStruct.InAudioDevice;
-		BSConfig.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
-		BSConfig.SongPath = AudioSelectStruct.SongPath;
-		BSConfig.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
-		BSConfig.AudioFormat = AudioSelectStruct.AudioFormat;
+		BSConfig.AudioConfig.SongTitle = AudioSelectStruct.SongTitle;
+		BSConfig.AudioConfig.SongLength = AudioSelectStruct.SongLength;
+		BSConfig.AudioConfig.InAudioDevice = AudioSelectStruct.InAudioDevice;
+		BSConfig.AudioConfig.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
+		BSConfig.AudioConfig.SongPath = AudioSelectStruct.SongPath;
+		BSConfig.AudioConfig.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
+		BSConfig.AudioConfig.AudioFormat = AudioSelectStruct.AudioFormat;
 		GameModeTransitionState.BSConfig = BSConfig;
 		/* Override the player delay to zero if using Capture */
-		if (BSConfig.AudioFormat == EAudioFormat::Capture)
+		if (BSConfig.AudioConfig.AudioFormat == EAudioFormat::Capture)
 		{
-			BSConfig.PlayerDelay = 0.f;
+			BSConfig.AudioConfig.PlayerDelay = 0.f;
 		}
 		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 		AudioSelectWidget->FadeOut();

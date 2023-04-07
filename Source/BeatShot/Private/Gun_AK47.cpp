@@ -4,11 +4,8 @@
 #include "Gun_AK47.h"
 #include "BSCharacter.h"
 #include "SphereTarget.h"
-#include "NiagaraFunctionLibrary.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "Camera/CameraComponent.h"
-#include "Components/ArrowComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 AGun_AK47::AGun_AK47()

@@ -229,7 +229,7 @@ void ABSPlayerController::ShowCountdown()
 	}
 	FadeScreenFromBlack();
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
-	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.PlayerDelay;
+	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.AudioConfig.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	Countdown->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
 	Countdown->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);

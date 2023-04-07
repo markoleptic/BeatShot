@@ -13,9 +13,9 @@ ABeamVisualizer::ABeamVisualizer()
 void ABeamVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	SetInitialLocation(InitialBeamLightLocation);
-	SetRotation(BeamLightRotation);
-	SetVisualizerOffset(BeamLightOffset);
+	SetInitialLocation(Constants::InitialBeamLightLocation);
+	SetRotation(Constants::BeamLightRotation);
+	SetVisualizerOffset(Constants::BeamLightOffset);
 }
 
 void ABeamVisualizer::InitializeVisualizer()

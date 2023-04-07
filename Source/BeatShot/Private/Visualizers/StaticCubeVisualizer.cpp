@@ -13,7 +13,7 @@ AStaticCubeVisualizer::AStaticCubeVisualizer()
 void AStaticCubeVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	SetVisualizerOffset(CubeOffset);
+	SetVisualizerOffset(Constants::CubeOffset);
 }
 
 void AStaticCubeVisualizer::InitializeVisualizer()
@@ -48,5 +48,5 @@ void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float Spec
 
 float AStaticCubeVisualizer::GetScaledHeight(const float SpectrumValue) const
 {
-	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, MinCubeHeightScale, MaxCubeHeightScale);
+	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, Constants::MinCubeHeightScale, Constants::MaxCubeHeightScale);
 }

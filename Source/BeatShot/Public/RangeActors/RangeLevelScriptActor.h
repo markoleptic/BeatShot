@@ -139,10 +139,6 @@ protected:
 
 	FVector InitialRightWindowCoverLoc;
 
-	const float CycleSpeed = 20;
-
-	const float WindowCoverOffset = -1700;
-
 	UPROPERTY(EditAnywhere)
 	float MaxMoonlightIntensity = 1.f;
 

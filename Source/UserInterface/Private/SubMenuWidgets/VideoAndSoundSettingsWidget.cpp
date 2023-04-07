@@ -769,7 +769,6 @@ void UVideoAndSoundSettingsWidget::OnCancelVideoSettingsButtonClicked()
 	PopupMessageWidget->FadeOut();
 }
 
-
 float UVideoAndSoundSettingsWidget::ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange, const float SnapSize)
 {
 	const float NewValue = UKismetMathLibrary::GridSnap_Float(SliderValue, SnapSize);

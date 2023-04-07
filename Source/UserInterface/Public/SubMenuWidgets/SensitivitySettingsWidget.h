@@ -50,7 +50,4 @@ protected:
 	/** Saves the Sensitivity Settings */
 	UFUNCTION()
 	void OnSaveButtonClicked_Sensitivity();
-
-	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */
-	const float CsgoMultiplier = 3.18;
 };

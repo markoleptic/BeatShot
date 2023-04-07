@@ -4,7 +4,6 @@
 #include "SubMenuWidgets/CrossHairSettingsWidget.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
-#include "Components/Image.h"
 #include "Math/Color.h"
 #include "Components/Slider.h"
 #include "Kismet/KismetStringLibrary.h"

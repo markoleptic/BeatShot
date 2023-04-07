@@ -22,3 +22,9 @@ EnableAI,"If checked, the game will spawn targets according to reinforcment lear
 Alpha,The alpha value. How quickly the reinforcement learning agent will learn.
 Epsilon,"The epsilon value. A value of 1 will result in only choosing random values (explore), while a value of zero will result in only choosing locations where your accuracy is lowest."
 Gamma,The gamma value. How much to value future rewards vs immediate rewards
+BeatGrid_SuggestStart,Not enough space! Change one or more of the following:
+BeatGrid_NumHorizontalSuggest,Number of Horizontal Targets <=
+BeatGrid_NumVerticalSuggest,Number of Vertical Targets to <=
+BeatGrid_ScaleSuggest,Maximum Target Scale to <=
+BeatGrid_HorizontalSpacingSuggest,Horizontal Spacing to <=
+BeatGrid_VerticalSpacingSuggest,Vertical Spacing to <=

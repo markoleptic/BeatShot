@@ -131,26 +131,6 @@ private:
 	/** Outer cone angle for the Spotlight */
 	float OuterConeAngle = 1.5;
 
-	/** The distance to trace the line */
-	const float TraceDistance = 999999;
-
-	/** The max value of the Spotlight intensity */
-	const float MaxSpotlightIntensity = 16000000;
-
-	/** The max value of the BeamEndLight intensity */
-	const float MaxBeamEndLightIntensity = 80000;
-
-	const FVector DefaultSpotlightLimbOffset = {0, 0, -18};
-	const FVector DefaultSpotlightHeadOffset = {0, 0, -41};
-	const FRotator DefaultSpotlightHeadRotation = {-90, 0, 0};
-	const FVector DefaultSpotlightOffset = {22, 0, 0};
-
-	/** The maximum width of the beam, used to scale the alpha value */
-	const float MaxBeamWidth = 50;
-
-	/** Offset to apply to the location of the BeamEndLight */
-	const float BeamEndLightOffset = 5;
-
 	/** Rotation (Yaw) of the SpotlightLimb from the SpotlightBase */
 	UPROPERTY(VisibleAnywhere)
 	float GimbalRotation;
