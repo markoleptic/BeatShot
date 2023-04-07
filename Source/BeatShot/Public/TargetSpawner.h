@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "RLBase.h"
 #include "SphereTarget.h"
-#include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerScore.h"
 #include "GameFramework/Actor.h"
 #include "BeatShot/BeatShot.h"
@@ -62,7 +61,10 @@ public:
 	void CallSpawnFunction();
 
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
-	TArray<F2DArray> GetLocationAccuracy() const;
+	TArray<FAccuracyRow> GetLocationAccuracy() const;
+
+	/** Called from DefaultGameMode, returns the player accuracy matrix */
+	FCommonScoreInfo GetCommonScoreInfo() const;
 
 	/** Delegate that is executed every time a target has been spawned. */
 	FOnTargetSpawned OnTargetSpawned;
@@ -189,10 +191,12 @@ private:
 	void SetBoxExtents_Dynamic() const;
 
 	/** Returns a string representation of an accuracy row */
-	static void AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo);
+	static void AppendStringLocAccRow(const FAccuracyRow Row, FString& StringToWriteTo);
 
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings& InPlayerSettings);
+
+	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
 
 #pragma region General Spawning Variables
 
@@ -277,6 +281,12 @@ private:
 
 	/** Incremental step value used to iterate through SpawnCounter locations */
 	int32 SpawnMemoryIncZ;
+
+	int32 SpawnCounterHeight;
+
+	int32 SpawnCounterWidth;
+
+	int32 SpawnCounterSize;
 
 	/** Delegate used to bind a timer handle to RemoveFromRecentTargets() inside of OnTargetTimeout() */
 	FTimerDelegate RemoveFromRecentDelegate;

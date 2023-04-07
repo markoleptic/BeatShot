@@ -16,4 +16,8 @@ public:
 	/* Array containing all saved score instances */
 	UPROPERTY()
 	TArray<FPlayerScore> PlayerScoreArray;
+
+	/* Map containing common score info for each unique defining config */
+	UPROPERTY()
+	TMap<FBS_DefiningConfig, FCommonScoreInfo> CommonScoreInfo;
 };

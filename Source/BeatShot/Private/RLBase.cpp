@@ -51,15 +51,6 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 	}
 	UE_LOG(LogTemp, Display, TEXT("InQTable.Num() %d"), AgentParams.InQTable.Num());
 	UE_LOG(LogTemp, Display, TEXT("QTable.size() %u"), QTable.size());
-	
-	/*for (FQTableIndex Index : QTableIndices)
-	{
-		for (int32 SubIndex : Index.SpawnCounterIndices)
-		{
-			UE_LOG(LogTemp, Display, TEXT("QTableIndex: %d SpawnCounterIndex: %d"), Index.QTableIndex, SubIndex);
-		}
-	}*/
-
 	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), SpawnCounterHeight, SpawnCounterWidth);
 	UE_LOG(LogTemp, Display, TEXT("QTableRows: %d QTableColumns: %d"), ScaledHeight, ScaledWidth);
 	UE_LOG(LogTemp, Display, TEXT("QTable Size: %d"), QTable.size());

@@ -40,4 +40,15 @@ public:
 	TArray<FPlayerScore> LoadPlayerScores() const;
 
 	void SavePlayerScores(const TArray<FPlayerScore> PlayerScoreArrayToSave);
+	
+	TArray<FPlayerScore> GetMatchingPlayerScores(const FPlayerScore& PlayerScore) const;
+
+	TMap<FBS_DefiningConfig, FCommonScoreInfo> LoadCommonScoreInfo() const;
+
+	void SaveCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave);
+
+	FCommonScoreInfo GetScoreInfoFromDefiningConfig(const FBS_DefiningConfig& DefiningConfig);
+
+	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
+	void UpdateCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
 };

@@ -160,6 +160,10 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	
 	const FIntPoint HeightWidth = InitializeSpawnCounter();
 
+	SpawnCounterHeight = HeightWidth.X;
+	SpawnCounterWidth =  HeightWidth.Y;
+	SpawnCounterSize = GetSpawnCounter().Num();
+
 	if (!BSConfig.AIConfig.bEnableRLAgent)
 	{
 		return;
@@ -203,71 +207,72 @@ void ATargetSpawner::CallSpawnFunction()
 	}
 }
 
-TArray<F2DArray> ATargetSpawner::GetLocationAccuracy() const
+TArray<FAccuracyRow> ATargetSpawner::GetLocationAccuracy() const
 {
-	/*FString File = FPaths::ProjectDir();
-	File.Append(TEXT("AccuracyMatrix.csv"));
-	FString StringToWrite;*/
-	TArray<F2DArray> OutArray;
-	F2DArray LowerRowHalf = F2DArray();
-	F2DArray CurrentRow = F2DArray();
-	bool OddRow = true;
-	float Total = 0.f;
-	for (const FVectorCounter Counter : GetSpawnCounter())
+	/* Each row in QTable has size equal to ScaledSize, and so does each column */
+	TArray<FAccuracyRow> OutArray;
+	OutArray.Init(FAccuracyRow(5), 5);
+	TArray<FQTableIndex> QTableIndices;
+	
+	for (int i = 0; i < 25; i++)
 	{
-		Total += Counter.TotalHits + Counter.TotalSpawns;
-		if (Counter.TotalSpawns == -1)
+		QTableIndices.Add(FQTableIndex(i));
+	}
+	
+	TArray<FVectorCounter> Counter = GetSpawnCounter();
+	
+	for (int i  = 0; i < SpawnCounterSize; i++)
+	{
+		if (const int32 Found = QTableIndices.Find(GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
 		{
-			CurrentRow.Accuracy.Add(-1);
-		}
-		else
-		{
-			CurrentRow.Accuracy.Add(static_cast<float>(Counter.TotalHits) / static_cast<float>(Counter.TotalSpawns));
-		}
-		// End of "row" or left-to-right
-		if (Counter.Point.Y == GetBoxExtents_Static().Y)
-		{
-			OutArray.Emplace(CurrentRow);
-			// AppendStringLocAccRow(CurrentRow, StringToWrite);
-			// Don't average the middle row
-			if (Counter.Point.Z == GetBoxOrigin().Z)
+			const int32 RowNum = Found / 5;
+			const int32 ColNum = Found % 5;
+
+			if (Counter[i].TotalSpawns != INDEX_NONE)
 			{
-				OutArray.Emplace(CurrentRow);
-				//AppendStringLocAccRow(CurrentRow, StringToWrite);
-			}
-			// Save the current row as the 1/2 of a row
-			else if (OddRow)
-			{
-				LowerRowHalf = CurrentRow;
-				OddRow = false;
-			}
-			else
-			{
-				F2DArray AveragedRow = F2DArray();
-				for (int i = 0; i < LowerRowHalf.Accuracy.Num(); i++)
+				if (OutArray[RowNum].TotalSpawns[ColNum] == INDEX_NONE)
 				{
-					if (LowerRowHalf.Accuracy[i] == -1.f && CurrentRow.Accuracy[i] != -1.f)
-					{
-						AveragedRow.Accuracy.Add(CurrentRow.Accuracy[i]);
-					}
-					else if (CurrentRow.Accuracy[i] == -1.f && LowerRowHalf.Accuracy[i] != -1.f)
-					{
-						AveragedRow.Accuracy.Add(LowerRowHalf.Accuracy[i]);
-					}
-					else
-					{
-						AveragedRow.Accuracy.Add((LowerRowHalf.Accuracy[i] + CurrentRow.Accuracy[i]) / 2);
-					}
+					OutArray[RowNum].TotalSpawns[ColNum] = 0;
 				}
-				OutArray.Emplace(AveragedRow);
-				//AppendStringLocAccRow(CurrentRow, StringToWrite);
-				OddRow = true;
+				OutArray[RowNum].TotalSpawns[ColNum] += Counter[i].TotalSpawns;
+				OutArray[RowNum].TotalHits[ColNum] += Counter[i].TotalHits;
 			}
-			CurrentRow = F2DArray();
 		}
 	}
-	//FFileHelper::SaveStringToFile(StringToWrite, *File);
+
+	for (FAccuracyRow& AccuracyRow : OutArray)
+	{
+		AccuracyRow.UpdateAccuracy();
+	}
 	return OutArray;
+}
+
+FCommonScoreInfo ATargetSpawner::GetCommonScoreInfo() const
+{
+	TArray<FQTableIndex> Indices;
+	for (int i = 0; i < 25; i++)
+	{
+		Indices.Add(FQTableIndex(i));
+	}
+
+	FCommonScoreInfo CommonScoreInfo = FCommonScoreInfo(25);
+	TArray<FVectorCounter> Counter = GetSpawnCounter();
+	for (int i = 0; i < SpawnCounterSize; i++)
+	{
+		if (const int32 Found = Indices.Find(GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
+		{
+			if (Counter[i].TotalSpawns != INDEX_NONE)
+			{
+				if (CommonScoreInfo.TotalSpawns[Found] == INDEX_NONE)
+				{
+					CommonScoreInfo.TotalSpawns[Found] = 0;
+				}
+				CommonScoreInfo.TotalSpawns[Found] += Counter[i].TotalSpawns;
+				CommonScoreInfo.TotalHits[Found] += Counter[i].TotalHits;
+			}
+		}
+	}
+	return CommonScoreInfo;
 }
 
 FIntPoint ATargetSpawner::InitializeSpawnCounter()
@@ -983,7 +988,7 @@ void ATargetSpawner::SetBoxExtents_Dynamic() const
 	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
 }
 
-void ATargetSpawner::AppendStringLocAccRow(const F2DArray Row, FString& StringToWriteTo)
+void ATargetSpawner::AppendStringLocAccRow(const FAccuracyRow Row, FString& StringToWriteTo)
 {
 	for (const float AccValue : Row.Accuracy)
 	{
@@ -1006,6 +1011,24 @@ void ATargetSpawner::UpdatePlayerSettings(const FPlayerSettings& InPlayerSetting
 	{
 		BeatTrackTarget->PlayerSettings = PlayerSettings.Game;
 	}
+}
+
+int32 ATargetSpawner::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
+{
+	/* First find the Row and Column number that corresponds to the SpawnCounter index */
+	const int32 SpawnCounterRowNum = SpawnCounterIndex / SpawnCounterWidth;
+	const int32 SpawnCounterColNum = SpawnCounterIndex % SpawnCounterWidth;
+
+	const int32 WidthScaleFactor = SpawnCounterWidth / 5;
+	const int32 HeightScaleFactor = SpawnCounterHeight / 5;
+	/* Scale down the SpawnCounter row and column numbers */
+	const int32 QTableRow = SpawnCounterRowNum / HeightScaleFactor;
+	const int32 QTableCol = SpawnCounterColNum / WidthScaleFactor /*% ScaledWidth*/;
+	const int32 QTableIndex = QTableRow * 5 + QTableCol;
+
+	//UE_LOG(LogTemp, Display, TEXT(" %d|   %d %d  %d %d   |%d"), SpawnCounterIndex, SpawnCounterRowNum, SpawnCounterColNum, QTableRow, QTableCol, QTableIndex);
+	
+	return QTableIndex;
 }
 
 void ATargetSpawner::UpdateRLAgentReward(const FVector& WorldLocation, const bool bHit)

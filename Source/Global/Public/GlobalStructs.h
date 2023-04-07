@@ -9,13 +9,170 @@
 
 
 USTRUCT()
-struct F2DArray
+struct FAccuracyRow
 {
 	GENERATED_BODY()
 
 	UPROPERTY()
 	TArray<float> Accuracy;
+	
+	TArray<int32> TotalSpawns;
+	TArray<int32> TotalHits;
+
+	FAccuracyRow()
+	{
+		Accuracy = TArray<float>();
+		TotalSpawns = TArray<int32>();
+		TotalHits = TArray<int32>();
+	}
+
+	FAccuracyRow(const int32 Size)
+	{
+		Accuracy = TArray<float>();
+		Accuracy.Init(-1.f, Size);
+		TotalSpawns = TArray<int32>();
+		TotalSpawns.Init(-1, Size);
+		TotalHits = TArray<int32>();
+		TotalHits.Init(0, Size);
+	}
+
+	void UpdateAccuracy()
+	{
+		for (int i = 0; i < Accuracy.Num(); i++)
+		{
+			if (TotalSpawns[i] == INDEX_NONE)
+			{
+				continue;
+			}
+			Accuracy[i] = static_cast<float>(TotalHits[i]) / static_cast<float>(TotalSpawns[i]);
+		}
+	}
 };
+
+USTRUCT(BlueprintType)
+struct FCommonScoreInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<float> Accuracy;
+
+	UPROPERTY()
+	TArray<int32> TotalSpawns;
+	
+	UPROPERTY()
+	TArray<int32> TotalHits;
+
+	FCommonScoreInfo()
+	{
+		Accuracy = TArray<float>();
+		TotalSpawns = TArray<int32>();
+		TotalHits = TArray<int32>();
+	}
+
+	FCommonScoreInfo(const int32 Size)
+	{
+		Accuracy = TArray<float>();
+		Accuracy.Init(-1.f, Size);
+		TotalSpawns = TArray<int32>();
+		TotalSpawns.Init(-1, Size);
+		TotalHits = TArray<int32>();
+		TotalHits.Init(0, Size);
+	}
+
+	/** Updates TotalSpawns, TotalHits, and calls UpdateAccuracy */
+	void UpdateCommonValues(const TArray<int32>& InTotalSpawns, const TArray<int32>& InTotalHits)
+	{
+		if (InTotalSpawns.Num() != TotalSpawns.Num() || InTotalHits.Num() != TotalHits.Num())
+		{
+			return;
+		}
+		for (int32 i = 0; i < InTotalSpawns.Num(); i++)
+		{
+			if (InTotalSpawns[i] != INDEX_NONE)
+			{
+				CheckTotalSpawns(i);
+				TotalSpawns[i] += InTotalSpawns[i];
+			}
+			TotalHits[i] += InTotalHits[i];
+		}
+		UpdateAccuracy();
+	}
+
+	/** Do not call directly, called inside UpdateCommonValues */
+	void UpdateAccuracy()
+	{
+		for (int i = 0; i < Accuracy.Num(); i++)
+		{
+			if (TotalSpawns[i] == INDEX_NONE)
+			{
+				continue;
+			}
+			Accuracy[i] = static_cast<float>(TotalHits[i]) / static_cast<float>(TotalSpawns[i]);
+		}
+	}
+
+	/** Switches a TotalSpawn index to zero if it has not been activated yet */
+	void CheckTotalSpawns(const int32 IndexToActivate)
+	{
+		if (TotalSpawns[IndexToActivate] == INDEX_NONE)
+		{
+			TotalSpawns[IndexToActivate] = 0;
+		}
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FBS_DefiningConfig
+{
+	GENERATED_BODY()
+	
+	/* The default game mode name, or custom if custom */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	EDefaultMode DefaultMode;
+
+	/* The base game mode this game mode is based off of */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	EDefaultMode BaseGameMode;
+
+	/* Custom game mode name if custom, otherwise empty string */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	FString CustomGameModeName;
+
+	/* Default game mode difficulties, or none if custom */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	EGameModeDifficulty Difficulty;
+
+	FBS_DefiningConfig()
+	{
+		DefaultMode = EDefaultMode::Custom;
+		BaseGameMode = EDefaultMode::MultiBeat;
+		CustomGameModeName = "";
+		Difficulty = EGameModeDifficulty::None;
+	}
+
+	FORCEINLINE bool operator==(const FBS_DefiningConfig& Other) const
+	{
+		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName))
+		{
+			if (!CustomGameModeName.IsEmpty())
+			{
+				return true;
+			}
+			if (CustomGameModeName.IsEmpty() && Difficulty == Other.Difficulty)
+			{
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
+};
+
+FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& MidiTime)
+{
+	return FCrc::MemCrc32(&MidiTime, sizeof(FBS_DefiningConfig));
+}
 
 USTRUCT(BlueprintType)
 struct FBS_AIConfig
@@ -381,7 +538,7 @@ struct FBSConfig
 		DefaultMode = EDefaultMode::Custom;
 		BaseGameMode = EDefaultMode::MultiBeat;
 		CustomGameModeName = "";
-		GameModeDifficulty = EGameModeDifficulty::Normal;
+		GameModeDifficulty = EGameModeDifficulty::None;
 		SpatialConfig.SpreadType = ESpreadType::None;
 		
 		AudioConfig = FBS_AudioConfig();
@@ -653,7 +810,7 @@ struct FPlayerScore
 
 	/* The accuracy at each point in the grid */
 	UPROPERTY()
-	TArray<F2DArray> LocationAccuracy;
+	TArray<FAccuracyRow> LocationAccuracy;
 
 	/* Whether or not this instance has been saved to the database yet */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
@@ -698,6 +855,23 @@ struct FPlayerScore
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
 		bSavedToDatabase = false;
+	}
+
+	FORCEINLINE bool operator==(const FPlayerScore& Other) const
+	{
+		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName) && SongTitle.Equals(Other.SongTitle))
+		{
+			if (!CustomGameModeName.IsEmpty())
+			{
+				return true;
+			}
+			if (CustomGameModeName.IsEmpty() && Difficulty == Other.Difficulty)
+			{
+				return true;
+			}
+			return false;
+		}
+		return false;
 	}
 };
 

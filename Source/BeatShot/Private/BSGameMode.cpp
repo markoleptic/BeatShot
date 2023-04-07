@@ -178,6 +178,12 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 
 	if (TargetSpawner)
 	{
+		FBS_DefiningConfig DefiningConfig;
+		DefiningConfig.Difficulty = BSConfig.GameModeDifficulty;
+		DefiningConfig.BaseGameMode = BSConfig.BaseGameMode;
+		DefiningConfig.DefaultMode = BSConfig.DefaultMode;
+		DefiningConfig.CustomGameModeName = BSConfig.CustomGameModeName;
+		UpdateCommonScoreInfo(DefiningConfig, TargetSpawner->GetCommonScoreInfo());
 		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
 		TargetSpawner->SetShouldSpawn(false);
 		/* Save the QTable */
@@ -472,39 +478,13 @@ void ABSGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSe
 void ABSGameMode::LoadMatchingPlayerScores()
 {
 	CurrentPlayerScore.ResetStruct();
-	const TArray<FPlayerScore> PlayerScores = LoadPlayerScores();
-	if (BSConfig.DefaultMode == EDefaultMode::Custom)
-	{
-		for (FPlayerScore ScoreObject : PlayerScores)
-		{
-			if (ScoreObject.CustomGameModeName.Equals(BSConfig.CustomGameModeName) && ScoreObject.SongTitle.Equals(BSConfig.AudioConfig.SongTitle))
-			{
-				if (ScoreObject.Score > CurrentPlayerScore.HighScore)
-				{
-					CurrentPlayerScore.HighScore = ScoreObject.Score;
-				}
-			}
-		}
-	}
-	else
-	{
-		for (FPlayerScore ScoreObject : PlayerScores)
-		{
-			if (ScoreObject.DefaultMode == BSConfig.DefaultMode && ScoreObject.SongTitle.Equals(BSConfig.AudioConfig.SongTitle) && ScoreObject.Difficulty == BSConfig.GameModeDifficulty)
-			{
-				if (ScoreObject.Score > CurrentPlayerScore.HighScore)
-				{
-					CurrentPlayerScore.HighScore = ScoreObject.Score;
-				}
-			}
-		}
-	}
 	CurrentPlayerScore.DefaultMode = BSConfig.DefaultMode;
 	CurrentPlayerScore.SongTitle = BSConfig.AudioConfig.SongTitle;
 	CurrentPlayerScore.SongLength = BSConfig.AudioConfig.SongLength;
 	CurrentPlayerScore.CustomGameModeName = BSConfig.CustomGameModeName;
 	CurrentPlayerScore.Difficulty = BSConfig.GameModeDifficulty;
 	CurrentPlayerScore.TotalPossibleDamage = 0.f;
+	
 	if (BSConfig.AudioConfig.SongLength == 0.f)
 	{
 		MaxScorePerTarget = 1000.f;
@@ -512,6 +492,23 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	else
 	{
 		MaxScorePerTarget = 100000.f / ((BSConfig.AudioConfig.SongLength - 1.f) / BSConfig.TargetConfig.TargetSpawnCD);
+	}
+	
+	const TArray<FPlayerScore> PlayerScores = LoadPlayerScores().FilterByPredicate([&] (const FPlayerScore& PlayerScore)
+	{
+		if (PlayerScore == CurrentPlayerScore)
+		{
+			return true;
+		}
+		return false;
+	});
+	
+	for (const FPlayerScore& ScoreObject : PlayerScores)
+	{
+		if (ScoreObject.Score > CurrentPlayerScore.HighScore)
+		{
+			CurrentPlayerScore.HighScore = ScoreObject.Score;
+		}
 	}
 }
 
