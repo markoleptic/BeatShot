@@ -7,7 +7,7 @@ SpawnBeatDelay,Time between initial spawning of the target (white) and the beat 
 Lifespan,"How long the target will live, even if not shot. This doesn't apply to BeatTrack."
 TargetSpawnCD,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
 HeadshotHeight,"If checked, the targests will only spawn at headshot height."
-CenterTargets,"If checked, the spawn area is centered in the middle of the wall rather than placed as low as possible without colliding into the ground."
+FloorDistance,Distance from floor to bottom of the spawn area.
 MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
 SpreadType,"There are two types of spread that control how far the targets can spawn from the center of the spawn area. Dynamic spread lowers the spawn area based on consecutive targets hit, while static spread does not change the spawn area."
 ConstantTargetScale,"If checked, the scale/size of the target will remain constant throughout the game mode."

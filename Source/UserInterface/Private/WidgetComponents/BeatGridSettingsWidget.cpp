@@ -8,7 +8,6 @@
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Slider.h"
-#include "Kismet/KismetStringLibrary.h"
 #include "WidgetComponents/TooltipWidget.h"
 
 using namespace Constants;
@@ -23,6 +22,22 @@ void UBeatGridSettingsWidget::NativeConstruct()
 	SetTooltipWidget(ConstructTooltipWidget());
 	AddToTooltipData(CheckboxQMark, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridEvenSpacing"));
 	AddToTooltipData(BeatGridAdjacentOnlyQMark, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly"));
+
+	/* BeatGrid Spacing TextBox and Slider */
+	FConstrainedSliderStruct BeatGridSliderStruct;
+	BeatGridSliderStruct.MinConstraintLower = MinValue_BeatGridHorizontalSpacing;
+	BeatGridSliderStruct.MinConstraintUpper = MaxValue_BeatGridHorizontalSpacing;
+	BeatGridSliderStruct.MaxConstraintLower = MinValue_BeatGridVerticalSpacing;
+	BeatGridSliderStruct.MaxConstraintUpper = MaxValue_BeatGridVerticalSpacing;
+	BeatGridSliderStruct.DefaultMinValue = MinValue_TargetScale;
+	BeatGridSliderStruct.DefaultMaxValue = MaxValue_TargetScale;
+	BeatGridSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_BeatGrid_HorizontalSpacing");
+	BeatGridSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_BeatGrid_VerticalSpacing");
+	BeatGridSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_EvenSpacing");
+	BeatGridSliderStruct.GridSnapSize = SnapSize_BeatGridVerticalSpacing;
+	BeatGridSliderStruct.bShowMaxLock = true;
+	BeatGridSliderStruct.bShowMinLock = true;
+	InitConstrainedSlider(BeatGridSliderStruct);
 
 	TooltipWarningSizing.SizeRule = ESlateSizeRule::Fill;
 	
@@ -414,23 +429,6 @@ TArray<FText> UBeatGridSettingsWidget::FilterTooltipText(const TArray<FText>& To
 		return NonEmptyTextEntries;
 	}
 	return LastResortArray;
-}
-
-float UBeatGridSettingsWidget::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max) const
-{
-	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
-	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
-	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
-	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));
-	SliderToChange->SetValue(SnappedValue);
-	return SnappedValue;
-}
-
-float UBeatGridSettingsWidget::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize) const
-{
-	const float ReturnValue = FMath::GridSnap(NewValue, GridSnapSize);
-	TextBoxToChange->SetText(FText::AsNumber(ReturnValue));
-	return ReturnValue;
 }
 
 int32 UBeatGridSettingsWidget::GetMaxAllowedNumHorizontalTargets() const

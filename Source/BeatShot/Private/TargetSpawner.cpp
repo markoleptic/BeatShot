@@ -1021,14 +1021,13 @@ int32 ATargetSpawner::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCou
 
 	const int32 WidthScaleFactor = SpawnCounterWidth / 5;
 	const int32 HeightScaleFactor = SpawnCounterHeight / 5;
-	/* Scale down the SpawnCounter row and column numbers */
-	const int32 QTableRow = SpawnCounterRowNum / HeightScaleFactor;
-	const int32 QTableCol = SpawnCounterColNum / WidthScaleFactor /*% ScaledWidth*/;
-	const int32 QTableIndex = QTableRow * 5 + QTableCol;
-
-	//UE_LOG(LogTemp, Display, TEXT(" %d|   %d %d  %d %d   |%d"), SpawnCounterIndex, SpawnCounterRowNum, SpawnCounterColNum, QTableRow, QTableCol, QTableIndex);
 	
-	return QTableIndex;
+	/* Scale down the SpawnCounter row and column numbers */
+	const int32 Row = SpawnCounterRowNum / HeightScaleFactor;
+	const int32 Col = SpawnCounterColNum / WidthScaleFactor;
+	const int32 Index = Row * 5 + Col;
+	
+	return Index;
 }
 
 void ATargetSpawner::UpdateRLAgentReward(const FVector& WorldLocation, const bool bHit)

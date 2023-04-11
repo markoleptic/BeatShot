@@ -102,6 +102,10 @@ namespace Constants
 	constexpr float MinValue_TargetSpeed = 300;
 	constexpr float MaxValue_TargetSpeed = 1000;
 	constexpr float SnapSize_TargetSpeed = 10;
+
+	constexpr float MinValue_FloorDistance = 110;
+	constexpr float MaxValue_FloorDistance = 1000;
+	constexpr float SnapSize_FloorDistance = 10;
 	
 	// AI
 	
@@ -138,11 +142,15 @@ namespace Constants
 	/** The default location to spawn the SpawnBox */
 	const FVector DefaultTargetSpawnerLocation = {3700.f, 0.f, 160.f};
 
-	/** Minimum distance between floor and bottom of the SpawnBox */
+	/** Default distance between floor and bottom of the SpawnBox */
 	constexpr float DistanceFromFloor = 110.f;
 
 	/** Distance between floor and HeadshotHeight */
 	constexpr float HeadshotHeight = 160.f;
+	
+	constexpr FLinearColor LightMenuBrushColor = FLinearColor(0, 0, 0, 0.1);
+
+	constexpr FLinearColor DarkMenuBrushColor = FLinearColor(0, 0, 0, 0.2);
 
 	/** The color used to change the GameModeButton color to when selected */
 	constexpr FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);

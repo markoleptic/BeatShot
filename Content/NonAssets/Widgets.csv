@@ -60,7 +60,6 @@ FAQ_BeatGrid_Info_1,"Spawns a static grid that activates individual targets, whi
 FAQ_BeatGrid_Info_2,"Only activates adjacent targets by default, but this setting can be changed."
 FAQ_BeatTrack_Info_1,Only spawns one target that cannot be destroyed by the player. The player hovers the crosshair over the target to gain score.
 FAQ_BeatTrack_Info_2,The target will always prefer to change direction away from the edges of the spawn area.
-FAQ_CenterTargets,The spawn area is centered in the middle of the wall rather than placed as low as possible without colliding into the ground.
 FAQ_CompletelyRandomTargets,Adjacent-only will only activate a target that was adjacent to a previously activated target. Completely random will choose a target in the grid at random.
 FAQ_ConstantTargetSize,The scale/size of the target will remain constant throughout the game mode.
 FAQ_ConstantTrackingSpeed,The speed of the target will remain constant throughout the game mode.
@@ -124,7 +123,7 @@ GM_BeatGridSpecific,BeatGrid specific
 GM_BeatTrack,Beat Track
 GM_BeatTrack_Info,"Only one target is spawned, tracking style."
 GM_BeatTrackSpecific,BeatTrack specific
-GM_CenterTargets,Center Targets in Middle of Wall
+GM_FloorDistance,Floor Distance
 GM_CompletelyRandomTargets,Completely Random Targets (vs Only Adjacent Targets)
 GM_ConstantTargetSize,Constant Target Scale
 GM_ConstantTrackingSpeed,Constant Tracking Speed

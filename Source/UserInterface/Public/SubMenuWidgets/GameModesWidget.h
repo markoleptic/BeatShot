@@ -9,10 +9,11 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "WidgetComponents/TooltipWidget.h"
 #include "WidgetComponents/ConstrainedSlider.h"
-#include "..\WidgetComponents\BeatGridSettingsWidget.h"
+#include "WidgetComponents/BeatGridSettingsWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
+class UGameModes_TargetSpread;
 class UAudioSelectWidget;
 class UHorizontalBox;
 class USavedTextWidget;
@@ -35,7 +36,6 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 	virtual void NativeConstruct() override;
 
 	virtual UTooltipWidget* ConstructTooltipWidget() override;
-	
 
 public:
 	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
@@ -56,6 +56,13 @@ protected:
 	UAudioSelectWidget* AudioSelectWidget;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Classes | TargetSpread")
+	TSubclassOf<UGameModes_TargetSpread> TargetSpreadClass;
+
+	TObjectPtr<UGameModes_TargetSpread> TargetSpread;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UVerticalBox* TargetSpreadBox;
 	
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
@@ -147,37 +154,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
 	UEditableTextBox* TargetSpawnCDValue;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UCheckBox* HeadShotOnlyCheckBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UCheckBox* WallCenteredCheckBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UHorizontalBox* MinTargetDistanceBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	USlider* MinTargetDistanceSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UEditableTextBox* MinTargetDistanceValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UComboBoxString* SpreadTypeComboBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	USlider* HorizontalSpreadSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UEditableTextBox* HorizontalSpreadValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	USlider* VerticalSpreadSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UEditableTextBox* VerticalSpreadValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UHorizontalBox* ForwardSpreadBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UCheckBox* ForwardSpreadCheckBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	USlider* ForwardSpreadSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UEditableTextBox* ForwardSpreadValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UHorizontalBox* SpreadTypeBox;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
 	UCheckBox* DynamicTargetScaleCheckBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
@@ -233,16 +209,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* TargetSpawnCDQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* HeadshotHeightQMark;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* CenterTargetsQMark;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* ForwardSpreadQMark;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* MinDistanceQMark;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* SpreadTypeQMark;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* DynamicTargetScaleQMark;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* EnableAIQMark;
@@ -283,9 +249,6 @@ protected:
 	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
 	void ShowAudioFormatSelect(const bool bStartFromDefaultGameMode);
 
-	/** Returns the ESpreadType corresponding to the SpreadType string */
-	ESpreadType GetSpreadType() const;
-
 	/** Returns the FBSConfig corresponding to the input DefaultMode string */
 	FBSConfig FindDefaultGameMode(const FString& GameModeName) const;
 
@@ -297,12 +260,6 @@ protected:
 
 	/** Returns whether or not the DefaultMode is already a custom game mode name */
 	bool IsCustomGameMode(const FString& GameModeName) const;
-
-	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
-	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max) const;
-
-	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
-	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize) const;
 	
 	UFUNCTION(Category = "Navigation")
 	void SlideButtons(const USlideRightButton* ActiveButton);
@@ -393,26 +350,6 @@ protected:
 	void OnSliderChanged_TargetSpawnCD(const float NewTargetSpawnCD);
 	UFUNCTION()
 	void OnTextCommitted_TargetSpawnCD(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly);
-	UFUNCTION()
-	void OnSliderChanged_MinTargetDistance(const float NewMinTargetDistance);
-	UFUNCTION()
-	void OnTextCommitted_MinTargetDistance(const FText& NewMinTargetDistance, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSliderChanged_HorizontalSpread(const float NewHorizontalSpread);
-	UFUNCTION()
-	void OnTextCommitted_HorizontalSpread(const FText& NewHorizontalSpread, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSliderChanged_VerticalSpread(const float NewVerticalSpread);
-	UFUNCTION()
-	void OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnCheckStateChanged_ForwardSpread(const bool bUseForwardSpread);
-	UFUNCTION()
-	void OnSliderChanged_ForwardSpread(const float NewForwardSpread);
-	UFUNCTION()
-	void OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType);
 
 	UFUNCTION()
 	void OnCheckStateChanged_EnableAI(const bool bEnableAI);
@@ -440,10 +377,4 @@ protected:
 	
 	/** The difficulty for a selected Default Game Mode */
 	EGameModeDifficulty DefaultDifficulty;
-
-	/** The color used to change the GameModeButton color to when selected */
-	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
-	
-	/** The color used to change the GameModeButton color to when not selected */
-	const FLinearColor White = FLinearColor::White;
 };

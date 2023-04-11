@@ -64,10 +64,13 @@ UCLASS()
 class USERINTERFACE_API UBeatGridSettingsWidget : public UConstrainedSlider, public ITooltipInterface
 {
 	GENERATED_BODY()
-
-	virtual UTooltipWidget* ConstructTooltipWidget() override;
-
+	
 	friend class UGameModesWidget;
+	
+	virtual UTooltipWidget* ConstructTooltipWidget() override;
+	virtual void NativeConstruct() override;
+	void InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
+	FBS_BeatGridConfig GetBeatGridConfig() const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
@@ -119,10 +122,6 @@ public:
 	FOnBeatGridUpdate_SaveStartButtonStates OnBeatGridUpdate_SaveStartButtonStates;
 
 private:
-	virtual void NativeConstruct() override;
-	void InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
-	FBS_BeatGridConfig GetBeatGridConfig() const;
-	
 	UFUNCTION()
 	void OnConstrainedChanged_HorizontalSpacing(const float NewHorizontalSpacing);
 	UFUNCTION()
@@ -162,12 +161,6 @@ private:
 	/** Returns a copy of a given tooltip text array without any empty text entries and optionally without the specific index's own text entry.
 	 *  Will return a last resort text if there are no applicable parameters */
 	static TArray<FText> FilterTooltipText(const TArray<FText>& TooltipTextArray, const int32 Index, const bool bShowSelfOnTooltip);
-	
-	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
-	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max) const;
-
-	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
-	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize) const;
 
 	int32 GetMaxAllowedNumHorizontalTargets() const;
 	int32 GetMaxAllowedNumVerticalTargets() const;

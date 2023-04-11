@@ -374,10 +374,6 @@ struct FBS_SpatialConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	bool bUseHeadshotHeight;
 
-	/* Whether or not to center spawn area in the center of wall, vs as close to the ground as possible */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	bool bUseCustomFloorDistance;
-
 	/* Whether or not to move the targets forward towards the player after spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	bool bMoveTargetsForward;
@@ -388,7 +384,7 @@ struct FBS_SpatialConfig
 
 	/* Distance from bottom of TargetSpawner BoxBounds to the floor */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	float CustomFloorDistance;
+	float FloorDistance;
 
 	/* How far to move the target forward over its lifetime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
@@ -406,13 +402,9 @@ struct FBS_SpatialConfig
 		{
 			SpawnBoxCenter.Z = Constants::HeadshotHeight;
 		}
-		else if (bUseCustomFloorDistance)
-		{
-			SpawnBoxCenter.Z = CustomFloorDistance;
-		}
 		else
 		{
-			SpawnBoxCenter.Z = GenerateTargetSpawnerBoxBounds().Z + Constants::DistanceFromFloor;
+			SpawnBoxCenter.Z = BoxBounds.Z / 2.f + FloorDistance;
 		}
 		return SpawnBoxCenter;
 	}
@@ -431,10 +423,9 @@ struct FBS_SpatialConfig
 	{
 		SpreadType = ESpreadType::None;
 		bUseHeadshotHeight = false;
-		bUseCustomFloorDistance = false;
 		bMoveTargetsForward = false;
 		MinDistanceBetweenTargets = 10.f;
-		CustomFloorDistance = 0.f;
+		FloorDistance = Constants::DistanceFromFloor;
 		MoveForwardDistance = 0.f;
 		BoxBounds = FVector(0.f, 3200.f, 1000.f);
 	}
