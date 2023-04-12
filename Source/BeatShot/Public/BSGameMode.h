@@ -161,7 +161,7 @@ private:
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
-	FAASettingsStruct AASettings;
+	FPlayerSettings_AudioAnalyzer AASettings;
 
 	/** A timer used to set the difference in start times between AATracker and AAPlayer */
 	UPROPERTY()
@@ -248,13 +248,10 @@ private:
 #pragma region Settings
 
 public:
-	/** Get PlayerSettings when PlayerSettings are updated */
-	UFUNCTION()
-	void RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings);
-
-	/** Get AASettings when AASettings are updated */
-	UFUNCTION()
-	void RefreshAASettings(const FAASettingsStruct& RefreshedAASettings);
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
+	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 private:
 	/** Whether or not to run tick functions */

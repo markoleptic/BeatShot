@@ -14,12 +14,10 @@ class BEATSHOT_API AWallMenu : public AActor, public ISaveLoadInterface
 
 	virtual void BeginPlay() override;
 
-	virtual void Destroyed() override;
-
 protected:
 	/** Displays which settings are on/off etc by lighting the correct words */
 	UFUNCTION(BlueprintImplementableEvent)
-	void InitializeSettings(const FPlayerSettings PlayerSettings);
+	void InitializeSettings(const FPlayerSettings_Game& GameSettings);
 
 	/** Overriden version so blueprint can use */
 	UFUNCTION(BlueprintCallable)
@@ -27,8 +25,7 @@ protected:
 
 	/** Overriden version so blueprint can use, also broadcasts GameInstance's OnPlayerSettingsChanged */
 	UFUNCTION(BlueprintCallable)
-	virtual void SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave) override;
+	virtual void SavePlayerSettings(const FPlayerSettings_Game& InGameSettings) override;
 
-	UFUNCTION()
-	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 };

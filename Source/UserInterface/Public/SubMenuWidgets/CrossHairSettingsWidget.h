@@ -3,13 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
 #include "CrossHairSettingsWidget.generated.h"
-
-DECLARE_MULTICAST_DELEGATE(FOnSettingsSaved_CrossHair);
 
 class USavedTextWidget;
 class UColorSelectWidget;
@@ -27,9 +24,7 @@ class USERINTERFACE_API UCrossHairSettingsWidget : public UUserWidget, public IS
 	virtual void NativeConstruct() override;
 
 public:
-	/** Executed after new CrossHair settings are saved. Parent widget (SettingsMenuWidget) and calls its
-	 *  OnPlayerSettingsChanged delegate */
-	FOnSettingsSaved_CrossHair OnSettingsSaved_CrossHair;
+	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_CrossHair; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
@@ -99,10 +94,6 @@ private:
 	void OnRevertCrossHairButtonClicked();
 	UFUNCTION()
 	void OnSaveCrossHairButtonClicked();
-
-	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
-
-	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize);
 
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);

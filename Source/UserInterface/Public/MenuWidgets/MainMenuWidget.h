@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "Blueprint/UserWidget.h"
@@ -22,9 +21,7 @@ class UOverlay;
 class UEditableTextBox;
 class UTextBlock;
 class UButton;
-/**
- * 
- */
+
 UCLASS()
 class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface
 {

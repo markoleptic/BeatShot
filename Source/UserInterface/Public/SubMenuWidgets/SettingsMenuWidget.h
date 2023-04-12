@@ -5,8 +5,10 @@
 
 #include "CoreMinimal.h"
 #include "AASettingsWidget.h"
-#include "GlobalStructs.h"
-#include "SaveLoadInterface.h"
+#include "CrossHairSettingsWidget.h"
+#include "GameSettingsWidget.h"
+#include "VideoAndSoundSettingsWidget.h"
+#include "SensitivitySettingsWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
@@ -20,7 +22,7 @@ class UWidgetSwitcher;
 
 
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -28,34 +30,20 @@ public:
 	/** Whether or not this instance of SettingsMenuWidget belongs to MainMenuWidget or not */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsMainMenuChild;
-
-	UPROPERTY()
-	FOnPlayerSettingsChange OnPlayerSettingsChanged;
-
-	UPROPERTY()
-	FOnAASettingsChange OnAASettingsChanged;
-
+	
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
+	FOnPlayerSettingsChanged_Game& GetGameDelegate() const { return Game_Widget->GetPublicGameSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_CrossHair& GetCrossHairDelegate() const { return CrossHair_Widget->GetPublicCrossHairSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_VideoAndSound& GetVideoAndSoundDelegate() const { return VideoAndSound_Widget->GetPublicVideoAndSoundSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_AudioAnalyzer& GetAudioAnalyzerDelegate() const { return AudioAnalyzer_Widget->GetPublicAudioAnalyzerSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_User& GetUserDelegate() const { return Sensitivity_Widget->GetPublicUserSettingsChangedDelegate();}
+	
 protected:
 	virtual void NativeConstruct() override;
 
 	UFUNCTION()
-	void OnPlayerSettingsSaved();
-
-	UFUNCTION()
-	void OnAASettingsSaved();
-
-	FGameModeTransitionState RestartState;
-
-	UFUNCTION()
-	void OnRestartButtonClicked_AudioAnalyzer()
-	{
-		if (!OnRestartButtonClicked.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
-		}
-	}
+	void OnRestartButtonClicked_AudioAnalyzer() const;
 
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()

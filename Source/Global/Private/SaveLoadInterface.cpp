@@ -6,30 +6,6 @@
 #include "SaveGamePlayerSettings.h"
 #include "Kismet/GameplayStatics.h"
 
-FAASettingsStruct ISaveLoadInterface::LoadAASettings() const
-{
-	USaveGamePlayerSettings* SaveGamePlayerSettings;
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
-	{
-		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0));
-	}
-	else
-	{
-		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
-	}
-	return SaveGamePlayerSettings->AASettings;
-}
-
-void ISaveLoadInterface::SaveAASettings(const FAASettingsStruct AASettingsToSave)
-{
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = LoadPlayerSettings();
-		SaveGameObject->AASettings = AASettingsToSave;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-}
-
 FPlayerSettings ISaveLoadInterface::LoadPlayerSettings() const
 {
 	USaveGamePlayerSettings* SaveGamePlayerSettings;
@@ -44,22 +20,67 @@ FPlayerSettings ISaveLoadInterface::LoadPlayerSettings() const
 	return SaveGamePlayerSettings->PlayerSettings;
 }
 
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave)
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_Game& InGameSettings)
 {
 	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
-		SaveGameObject->PlayerSettings = PlayerSettingsToSave;
-		SaveGameObject->AASettings = LoadAASettings();
+		SaveGameObject->PlayerSettings = LoadPlayerSettings();
+		SaveGameObject->PlayerSettings.Game = InGameSettings;
 		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
 	}
+	OnPlayerSettingsChangedDelegate_Game.Broadcast(InGameSettings);
 }
 
-void ISaveLoadInterface::SaveCustomGameMode(const TArray<FBSConfig> GameModeArrayToSave)
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InAudioAnalyzerSettings)
 {
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
 	{
-		SaveCustomGameModeObject->CustomGameModes = GameModeArrayToSave;
-		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+		SaveGameObject->PlayerSettings = LoadPlayerSettings();
+		SaveGameObject->PlayerSettings.AudioAnalyzer = InAudioAnalyzerSettings;
+		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
+	}
+	OnPlayerSettingsChangedDelegate_AudioAnalyzer.Broadcast(InAudioAnalyzerSettings);
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_User& InUserSettings)
+{
+	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+	{
+		SaveGameObject->PlayerSettings = LoadPlayerSettings();
+		SaveGameObject->PlayerSettings.User = InUserSettings;
+		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
+	}
+	OnPlayerSettingsChangedDelegate_User.Broadcast(InUserSettings);
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_CrossHair& InCrossHairSettings)
+{
+	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+	{
+		SaveGameObject->PlayerSettings = LoadPlayerSettings();
+		SaveGameObject->PlayerSettings.CrossHair = InCrossHairSettings;
+		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
+	}
+	OnPlayerSettingsChangedDelegate_CrossHair.Broadcast(InCrossHairSettings);
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
+{
+	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+	{
+		SaveGameObject->PlayerSettings = LoadPlayerSettings();
+		SaveGameObject->PlayerSettings.VideoAndSound = InVideoAndSoundSettings;
+		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
+	}
+	OnPlayerSettingsChangedDelegate_VideoAndSound.Broadcast(InVideoAndSoundSettings);
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings& InPlayerSettings)
+{
+	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+	{
+		SaveGameObject->PlayerSettings = InPlayerSettings;
+		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
 	}
 }
 
@@ -81,6 +102,15 @@ TArray<FBSConfig> ISaveLoadInterface::LoadCustomGameModes() const
 	return TArray<FBSConfig>();
 }
 
+void ISaveLoadInterface::SaveCustomGameMode(const TArray<FBSConfig>& GameModeArrayToSave)
+{
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	{
+		SaveCustomGameModeObject->CustomGameModes = GameModeArrayToSave;
+		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+	}
+}
+
 TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const
 {
 	USaveGamePlayerScore* SaveGamePlayerScore;
@@ -93,7 +123,7 @@ TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const
 	return SaveGamePlayerScore->PlayerScoreArray;
 }
 
-void ISaveLoadInterface::SavePlayerScores(const TArray<FPlayerScore> PlayerScoreArrayToSave)
+void ISaveLoadInterface::SavePlayerScores(const TArray<FPlayerScore>& PlayerScoreArrayToSave)
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
 	{
@@ -128,19 +158,7 @@ TMap<FBS_DefiningConfig, FCommonScoreInfo> ISaveLoadInterface::LoadCommonScoreIn
 	return SaveGamePlayerScore->CommonScoreInfo;
 }
 
-void ISaveLoadInterface::SaveCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave)
-{
-	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
-	{
-		SaveGamePlayerScores->CommonScoreInfo = MapToSave;
-		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SaveCommonScoreInfo Succeeded"));
-		}
-	}
-}
-
-FCommonScoreInfo ISaveLoadInterface::GetScoreInfoFromDefiningConfig(const FBS_DefiningConfig& DefiningConfig)
+FCommonScoreInfo ISaveLoadInterface::GetScoreInfoFromDefiningConfig(const FBS_DefiningConfig& DefiningConfig) const
 {
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> Map = LoadCommonScoreInfo();
 	if (Map.Find(DefiningConfig) == nullptr)
@@ -150,10 +168,42 @@ FCommonScoreInfo ISaveLoadInterface::GetScoreInfoFromDefiningConfig(const FBS_De
 	return *Map.Find(DefiningConfig);
 }
 
-void ISaveLoadInterface::UpdateCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave)
+void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave)
 {
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> Map = LoadCommonScoreInfo();
 	FCommonScoreInfo FoundOrAddedScoreInfo = Map.FindOrAdd(DefiningConfig);
 	FoundOrAddedScoreInfo.UpdateCommonValues(CommonScoreInfoToSave.TotalHits, CommonScoreInfoToSave.TotalSpawns);
-	SaveCommonScoreInfo(Map);
+	UpdateCommonScoreInfo(Map);
+}
+
+void ISaveLoadInterface::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+{
+}
+
+void ISaveLoadInterface::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
+{
+}
+
+void ISaveLoadInterface::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+{
+}
+
+void ISaveLoadInterface::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
+{
+}
+
+void ISaveLoadInterface::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+{
+}
+
+void ISaveLoadInterface::UpdateCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave) const
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+	{
+		SaveGamePlayerScores->CommonScoreInfo = MapToSave;
+		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("UpdateCommonScoreInfo Succeeded"));
+		}
+	}
 }

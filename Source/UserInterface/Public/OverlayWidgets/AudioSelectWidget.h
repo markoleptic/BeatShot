@@ -4,33 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "GlobalStructs.h"
 #include "TooltipInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
 #include "AudioSelectWidget.generated.h"
 
-/* Information about the transition state of the game */
-USTRUCT()
-struct FAudioSelectStruct
-{
-	GENERATED_BODY()
-
-	EAudioFormat AudioFormat;
-
-	float SongLength = 0;
-
-	FString SongPath = "";
-
-	FString SongTitle = "";
-
-	FString InAudioDevice = "";
-
-	FString OutAudioDevice = "";
-
-	bool bPlaybackAudio;
-};
-
-DECLARE_DELEGATE_OneParam(FOnStartButtonClicked, const FAudioSelectStruct AudioSelectStruct);
+DECLARE_DELEGATE_OneParam(FOnStartButtonClicked, const FBS_AudioConfig& AudioConfig);
 
 class UComboBoxString;
 class UVerticalBox;
@@ -162,7 +142,7 @@ private:
 
 	/** Contains information relating to the audio format the user has selected. Passed to GameModesWidget
 	 *  using OnStartButtonClickedDelegate */
-	FAudioSelectStruct AudioSelectStruct;
+	FBS_AudioConfig AudioConfig;
 
 	/** Whether or not the user was in fullscreen mode before OpenFileDialog */
 	bool bWasInFullScreenMode;

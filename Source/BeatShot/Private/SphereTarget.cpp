@@ -44,10 +44,10 @@ ASphereTarget::ASphereTarget()
 	Guid = FGuid::NewGuid();
 }
 
-void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings)
+void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
 	BSConfig = InBSConfig;
-	PlayerSettings = InPlayerSettings.Game;
+	PlayerSettings = InPlayerSettings;
 	if (InBSConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Grid);

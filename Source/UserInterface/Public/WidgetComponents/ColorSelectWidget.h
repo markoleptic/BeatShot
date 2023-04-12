@@ -95,9 +95,5 @@ private:
 	UFUNCTION()
 	void OnColorBSliderChange(const float NewValue);
 
-	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
-
-	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize);
-
 	FLinearColor Color;
 };

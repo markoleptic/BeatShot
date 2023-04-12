@@ -24,10 +24,20 @@ ABSGameMode::ABSGameMode()
 void ABSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	InitializeGameMode();
+
 	OnPostScoresResponse.AddUObject(this, &ABSGameMode::OnPostScoresResponseReceived);
 	OnAccessTokenResponse.BindUObject(this, &ABSGameMode::OnAccessTokenResponseReceived);
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSGameMode::RefreshPlayerSettings);
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_AudioAnalyzer);
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGameMode::OnPlayerSettingsChanged_Game);
+	GI->GetPublicUserSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGameMode::OnPlayerSettingsChanged_User);
+	GI->GetPublicAudioAnalyzerSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer);
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGameMode::OnPlayerSettingsChanged_VideoAndSound);
+
+	InitializeGameMode();
 }
 
 void ABSGameMode::Tick(float DeltaSeconds)
@@ -85,15 +95,14 @@ void ABSGameMode::InitializeGameMode()
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
-	RefreshPlayerSettings(PlayerSettings);
 	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->BSConfig;
 
 	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
-	TargetSpawner->InitTargetSpawner(BSConfig, PlayerSettings);
+	TargetSpawner->InitTargetSpawner(BSConfig, PlayerSettings.Game);
 
 	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
-	VisualizerManager->InitializeVisualizers(PlayerSettings);
-
+	VisualizerManager->InitializeVisualizers(PlayerSettings.Game);
+	
 	const ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
 	FGameplayTagContainer Container;
 	TArray<FGameplayAbilitySpec*> Activatable;
@@ -178,12 +187,9 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 
 	if (TargetSpawner)
 	{
-		FBS_DefiningConfig DefiningConfig;
-		DefiningConfig.Difficulty = BSConfig.GameModeDifficulty;
-		DefiningConfig.BaseGameMode = BSConfig.BaseGameMode;
-		DefiningConfig.DefaultMode = BSConfig.DefaultMode;
-		DefiningConfig.CustomGameModeName = BSConfig.CustomGameModeName;
-		UpdateCommonScoreInfo(DefiningConfig, TargetSpawner->GetCommonScoreInfo());
+		const FBS_DefiningConfig DefiningConfig(BSConfig.DefaultMode, BSConfig.BaseGameMode, BSConfig.CustomGameModeName, BSConfig.GameModeDifficulty);
+		const FCommonScoreInfo ScoreInfo = TargetSpawner->GetCommonScoreInfo();
+		SaveCommonScoreInfo(DefiningConfig, ScoreInfo);
 		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
 		TargetSpawner->SetShouldSpawn(false);
 		/* Save the QTable */
@@ -338,7 +344,7 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 
 void ABSGameMode::InitializeAudioManagers()
 {
-	AASettings = LoadAASettings();
+	AASettings = LoadPlayerSettings().AudioAnalyzer;
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
 	switch (BSConfig.AudioConfig.AudioFormat)
@@ -452,29 +458,6 @@ void ABSGameMode::OnSecondPassedCallback() const
 	OnSecondPassed.Broadcast(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 }
 
-void ABSGameMode::RefreshAASettings(const FAASettingsStruct& RefreshedAASettings)
-{
-	AASettings = RefreshedAASettings;
-	VisualizerManager->UpdateAASettings(RefreshedAASettings);
-}
-
-void ABSGameMode::RefreshPlayerSettings(const FPlayerSettings& RefreshedPlayerSettings)
-{
-	SetAAManagerVolume(RefreshedPlayerSettings.VideoAndSound.GlobalVolume, RefreshedPlayerSettings.VideoAndSound.MusicVolume);
-	bShowStreakCombatText = RefreshedPlayerSettings.Game.bShowStreakCombatText;
-	CombatTextFrequency = RefreshedPlayerSettings.Game.CombatTextFrequency;
-	bNightModeUnlocked = RefreshedPlayerSettings.User.bNightModeUnlocked;
-
-	if (VisualizerManager)
-	{
-		VisualizerManager->UpdateVisualizerStates(RefreshedPlayerSettings);
-	}
-	if (TargetSpawner)
-	{
-		TargetSpawner->UpdatePlayerSettings(RefreshedPlayerSettings);
-	}
-}
-
 void ABSGameMode::LoadMatchingPlayerScores()
 {
 	CurrentPlayerScore.ResetStruct();
@@ -553,6 +536,36 @@ void ABSGameMode::SaveScoresToDatabase()
 		return;
 	}
 	RequestAccessToken(LoadPlayerSettings().User.LoginCookie, OnAccessTokenResponse);
+}
+
+void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+{
+	bShowStreakCombatText = GameSettings.bShowStreakCombatText;
+	CombatTextFrequency = GameSettings.CombatTextFrequency;
+	if (VisualizerManager)
+	{
+		VisualizerManager->UpdateVisualizerStates(GameSettings);
+	}
+	if (TargetSpawner)
+	{
+		TargetSpawner->UpdatePlayerSettings(GameSettings);
+	}
+}
+
+void ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
+{
+	AASettings = AudioAnalyzerSettings;
+	VisualizerManager->UpdateAASettings(AudioAnalyzerSettings);
+}
+
+void ABSGameMode::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+{
+	bNightModeUnlocked = UserSettings.bNightModeUnlocked;
+}
+
+void ABSGameMode::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+{
+	SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume, VideoAndSoundSettings.MusicVolume);
 }
 
 void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
@@ -660,11 +673,10 @@ void ABSGameMode::UpdateStreak(const int32 Streak, const FVector& Location)
 		{
 			UE_LOG(LogTemp, Display, TEXT("OnStreakThresholdPassed not bound."));
 		}
-		FPlayerSettings Settings = LoadPlayerSettings();
+		FPlayerSettings_User Settings = LoadPlayerSettings().User;
+		Settings.bNightModeUnlocked = true;
 		bNightModeUnlocked = true;
-		Settings.User.bNightModeUnlocked = true;
 		SavePlayerSettings(Settings);
-		Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.Broadcast(Settings);
 	}
 }
 

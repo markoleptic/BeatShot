@@ -6,7 +6,6 @@
 #include "AbilitySystemInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
-#include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerSettings.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "SphereTarget.generated.h"
@@ -88,7 +87,7 @@ protected:
 
 public:
 
-	void InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings);
+	void InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;

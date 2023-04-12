@@ -19,7 +19,7 @@ void USensitivitySettingsWidget::NativeConstruct()
 	SensSlider->OnValueChanged.AddDynamic(this, &USensitivitySettingsWidget::OnSensitivitySliderChanged);
 	SaveButton_Sensitivity->OnClicked.AddDynamic(this, &USensitivitySettingsWidget::OnSaveButtonClicked_Sensitivity);
 
-	Sensitivity = LoadPlayerSettings().Sensitivity;
+	Sensitivity = LoadPlayerSettings().User.Sensitivity;
 	SensSlider->SetValue(Sensitivity);
 	CurrentSensitivityValue->SetText(FText::AsNumber(Sensitivity));
 }
@@ -27,12 +27,11 @@ void USensitivitySettingsWidget::NativeConstruct()
 void USensitivitySettingsWidget::OnSaveButtonClicked_Sensitivity()
 {
 	CurrentSensitivityValue->SetText(FText::AsNumber(SensSlider->GetValue()));
-	FPlayerSettings Settings = LoadPlayerSettings();
+	FPlayerSettings_User Settings = LoadPlayerSettings().User;
 	Settings.Sensitivity = SensSlider->GetValue();
 	SavePlayerSettings(Settings);
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_Sensitivity"));
 	SavedTextWidget->PlayFadeInFadeOut();
-	OnSettingsSaved_Sensitivity.Broadcast();
 }
 
 void USensitivitySettingsWidget::OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType)

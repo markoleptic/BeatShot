@@ -74,6 +74,10 @@ public:
 	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
 	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+
+	/** Implement ISaveLoadInterface */
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 	
 	UCameraComponent* GetCamera() const;
 	USceneComponent* GetCameraRecoilComponent() const;
@@ -82,10 +86,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	AGun_AK47* GetGun() const;
-	
-	/** Called when PlayerSettings are changed while Character is spawned */
-	UFUNCTION()
-	void OnUserSettingsChange(const FPlayerSettings& PlayerSettings);
 
 	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()

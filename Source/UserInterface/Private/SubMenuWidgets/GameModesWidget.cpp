@@ -23,6 +23,7 @@
 #include "WidgetComponents/SlideRightButton.h"
 #include "WidgetComponents/TooltipWidget.h"
 #include "SubMenuWidgets/GameModes_TargetSpread.h"
+#include "UserInterface.h"
 
 using namespace Constants;
 
@@ -279,62 +280,62 @@ void UGameModesWidget::OnSelectionChanged_GameModeDifficulty(const FString Selec
 
 void UGameModesWidget::OnSliderChanged_PlayerDelay(const float NewPlayerDelay)
 {
-	OnSliderChanged(NewPlayerDelay, PlayerDelayValue, SnapSize_PlayerDelay);
+	UUserInterface::OnSliderChanged(NewPlayerDelay, PlayerDelayValue, SnapSize_PlayerDelay);
 }
 
 void UGameModesWidget::OnSliderChanged_Lifespan(const float NewLifespan)
 {
-	OnSliderChanged(NewLifespan, LifespanValue, SnapSize_Lifespan);
+	UUserInterface::OnSliderChanged(NewLifespan, LifespanValue, SnapSize_Lifespan);
 }
 
 void UGameModesWidget::OnSliderChanged_TargetSpawnCD(const float NewTargetSpawnCD)
 {
-	OnSliderChanged(NewTargetSpawnCD, TargetSpawnCDValue, SnapSize_TargetSpawnCD);
+	UUserInterface::OnSliderChanged(NewTargetSpawnCD, TargetSpawnCDValue, SnapSize_TargetSpawnCD);
 }
 
 void UGameModesWidget::OnSliderChanged_AIAlpha(const float NewAlpha)
 {
-	OnSliderChanged(NewAlpha, AIAlphaValue, SnapSize_Alpha);
+	UUserInterface::OnSliderChanged(NewAlpha, AIAlphaValue, SnapSize_Alpha);
 }
 
 void UGameModesWidget::OnSliderChanged_AIEpsilon(const float NewEpsilon)
 {
-	OnSliderChanged(NewEpsilon, AIEpsilonValue, SnapSize_Epsilon);
+	UUserInterface::OnSliderChanged(NewEpsilon, AIEpsilonValue, SnapSize_Epsilon);
 }
 
 void UGameModesWidget::OnSliderChanged_AIGamma(const float NewGamma)
 {
-	OnSliderChanged(NewGamma, AIGammaValue, SnapSize_Gamma);
+	UUserInterface::OnSliderChanged(NewGamma, AIGammaValue, SnapSize_Gamma);
 }
 
 void UGameModesWidget::OnTextCommitted_PlayerDelay(const FText& NewPlayerDelay, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewPlayerDelay, PlayerDelayValue, PlayerDelaySlider, SnapSize_PlayerDelay, MinValue_PlayerDelay, MaxValue_PlayerDelay);
+	UUserInterface::OnEditableTextBoxChanged(NewPlayerDelay, PlayerDelayValue, PlayerDelaySlider, SnapSize_PlayerDelay, MinValue_PlayerDelay, MaxValue_PlayerDelay);
 }
 
 void UGameModesWidget::OnTextCommitted_Lifespan(const FText& NewLifespan, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewLifespan, LifespanValue, LifespanSlider, SnapSize_Lifespan, MinValue_Lifespan, MaxValue_Lifespan);
+	UUserInterface::OnEditableTextBoxChanged(NewLifespan, LifespanValue, LifespanSlider, SnapSize_Lifespan, MinValue_Lifespan, MaxValue_Lifespan);
 }
 
 void UGameModesWidget::OnTextCommitted_TargetSpawnCD(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewTargetSpawnCD, TargetSpawnCDValue, TargetSpawnCDSlider, SnapSize_TargetSpawnCD,MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD);
+	UUserInterface::OnEditableTextBoxChanged(NewTargetSpawnCD, TargetSpawnCDValue, TargetSpawnCDSlider, SnapSize_TargetSpawnCD,MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD);
 }
 
 void UGameModesWidget::OnTextCommitted_AIAlpha(const FText& NewAlpha, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewAlpha, AIAlphaValue, AIAlphaSlider, SnapSize_Alpha,MinValue_Alpha, MaxValue_Alpha);
+	UUserInterface::OnEditableTextBoxChanged(NewAlpha, AIAlphaValue, AIAlphaSlider, SnapSize_Alpha,MinValue_Alpha, MaxValue_Alpha);
 }
 
 void UGameModesWidget::OnTextCommitted_AIEpsilon(const FText& NewEpsilon, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewEpsilon, AIEpsilonValue, AIEpsilonSlider, SnapSize_Epsilon,MinValue_Epsilon, MaxValue_Epsilon);
+	UUserInterface::OnEditableTextBoxChanged(NewEpsilon, AIEpsilonValue, AIEpsilonSlider, SnapSize_Epsilon,MinValue_Epsilon, MaxValue_Epsilon);
 }
 
 void UGameModesWidget::OnTextCommitted_AIGamma(const FText& NewGamma, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewGamma, AIGammaValue, AIGammaSlider, SnapSize_Gamma,MinValue_Gamma, MaxValue_Gamma);
+	UUserInterface::OnEditableTextBoxChanged(NewGamma, AIGammaValue, AIGammaSlider, SnapSize_Gamma,MinValue_Gamma, MaxValue_Gamma);
 }
 
 void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UGameModeButton* GameModeButton)
@@ -814,7 +815,7 @@ void UGameModesWidget::ShowConfirmOverwriteMessage(const bool bStartGameAfter)
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
 	AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode](const FAudioSelectStruct AudioSelectStruct)
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode](const FBS_AudioConfig& AudioConfig)
 	{
 		FGameModeTransitionState GameModeTransitionState;
 		FBSConfig BSConfig;
@@ -838,13 +839,13 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 			/* Get things like QTable that aren't populated in the menu */
 			SetHiddenConfigParameters(BSConfig);
 		}
-		BSConfig.AudioConfig.SongTitle = AudioSelectStruct.SongTitle;
-		BSConfig.AudioConfig.SongLength = AudioSelectStruct.SongLength;
-		BSConfig.AudioConfig.InAudioDevice = AudioSelectStruct.InAudioDevice;
-		BSConfig.AudioConfig.OutAudioDevice = AudioSelectStruct.OutAudioDevice;
-		BSConfig.AudioConfig.SongPath = AudioSelectStruct.SongPath;
-		BSConfig.AudioConfig.bPlaybackAudio = AudioSelectStruct.bPlaybackAudio;
-		BSConfig.AudioConfig.AudioFormat = AudioSelectStruct.AudioFormat;
+		BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
+		BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
+		BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
+		BSConfig.AudioConfig.OutAudioDevice = AudioConfig.OutAudioDevice;
+		BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
+		BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
+		BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
 		GameModeTransitionState.BSConfig = BSConfig;
 		/* Override the player delay to zero if using Capture */
 		if (BSConfig.AudioConfig.AudioFormat == EAudioFormat::Capture)

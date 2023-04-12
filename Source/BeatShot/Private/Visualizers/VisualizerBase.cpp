@@ -11,7 +11,7 @@ AVisualizerBase::AVisualizerBase()
 void AVisualizerBase::BeginPlay()
 {
 	Super::BeginPlay();
-	AASettings = LoadAASettings();
+	AASettings = LoadPlayerSettings().AudioAnalyzer;
 }
 
 void AVisualizerBase::Tick(float DeltaTime)
@@ -42,7 +42,7 @@ void AVisualizerBase::UpdateVisualizer(const int32 Index, const float SpectrumAl
 {
 }
 
-void AVisualizerBase::UpdateAASettings(const FAASettingsStruct& AASettingsStruct)
+void AVisualizerBase::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& AASettingsStruct)
 {
 	AASettings = AASettingsStruct;
 	InitializeVisualizer();

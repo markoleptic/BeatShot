@@ -70,7 +70,7 @@ void ATargetSpawner::Tick(float DeltaTime)
 	}
 }
 
-void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings)
+void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
 	/* Initialize local copy of FBSConfig */
 	BSConfig = InBSConfig;
@@ -997,19 +997,19 @@ void ATargetSpawner::AppendStringLocAccRow(const FAccuracyRow Row, FString& Stri
 	StringToWriteTo.Append("\n");
 }
 
-void ATargetSpawner::UpdatePlayerSettings(const FPlayerSettings& InPlayerSettings)
+void ATargetSpawner::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 {
 	PlayerSettings = InPlayerSettings;
 	if (!ActiveTargets.IsEmpty())
 	{
 		for (ASphereTarget* Target : GetActiveTargets())
 		{
-			Target->PlayerSettings = PlayerSettings.Game;
+			Target->PlayerSettings = PlayerSettings;
 		}
 	}
 	if (BeatTrackTarget)
 	{
-		BeatTrackTarget->PlayerSettings = PlayerSettings.Game;
+		BeatTrackTarget->PlayerSettings = PlayerSettings;
 	}
 }
 

@@ -55,6 +55,11 @@ void ABSPlayerController::BeginPlay()
 	{
 		ShowFPSCounter();
 	}
+
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ABSPlayerController::ABSPlayerController::OnPlayerSettingsChanged);
+	
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
 	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
@@ -129,20 +134,15 @@ void ABSPlayerController::ShowPauseMenu()
 		HandlePause();
 		HidePauseMenu();
 	});
-	PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(this, &ABSPlayerController::OnPlayerSettingsChanged);
-	if (ABSCharacter* DefaultCharacter = Cast<ABSCharacter>(GetPawn()))
-	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(DefaultCharacter, &ABSCharacter::OnUserSettingsChange);
-	}
-	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(GameMode, &ABSGameMode::RefreshPlayerSettings);
-		PauseMenu->SettingsMenuWidget->OnAASettingsChanged.AddUniqueDynamic(GameMode, &ABSGameMode::RefreshAASettings);
-	}
-	if (CrossHair)
-	{
-		PauseMenu->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
-	}
+	
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetGameDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetVideoAndSoundDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetCrossHairDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetUserDelegate());
+	
 	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
@@ -171,6 +171,8 @@ void ABSPlayerController::ShowCrossHair()
 		return;
 	}
 	CrossHair = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->GetPublicCrossHairSettingsChangedDelegate().AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChanged_CrossHair);
 	CrossHair->AddToViewport();
 }
 
@@ -259,26 +261,19 @@ void ABSPlayerController::ShowPostGameMenu()
 	{
 		return;
 	}
+	
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetGameDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetVideoAndSoundDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetCrossHairDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetUserDelegate());
+	
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(this, &ABSPlayerController::OnPlayerSettingsChanged);
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
-	{
-		PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-		PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-	}
-	if (Cast<ABSCharacter>(GetPawn()))
-	{
-		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(Cast<ABSCharacter>(GetPawn()), &ABSCharacter::OnUserSettingsChange);
-	}
-	if (CrossHair)
-	{
-		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChange);
-	}
-	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-	{
-		PostGameMenuWidget->SettingsMenuWidget->OnPlayerSettingsChanged.AddUniqueDynamic(GameMode, &ABSGameMode::RefreshPlayerSettings);
-		PostGameMenuWidget->SettingsMenuWidget->OnAASettingsChanged.AddUniqueDynamic(GameMode, &ABSGameMode::RefreshAASettings);
-	}
+	PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+	PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
 	SetInputMode(FInputModeUIOnly());
@@ -464,10 +459,10 @@ void ABSPlayerController::OnFadeScreenFromBlackFinish()
 	}
 }
 
-void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
+void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings)
 {
 	UE_LOG(LogTemp, Display, TEXT("OnPlayerSettingsChanged called"));
-	if (PlayerSettings.VideoAndSound.bShowFPSCounter)
+	if (PlayerSettings.bShowFPSCounter)
 	{
 		if (!FPSCounter)
 		{

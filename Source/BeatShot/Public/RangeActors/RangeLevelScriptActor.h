@@ -132,8 +132,7 @@ protected:
 	void TransitionSkySphereMaterial(float Alpha);
 
 	/** Callback function to respond to NightMode change from WallMenu */
-	UFUNCTION()
-	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 
 	FVector InitialLeftWindowCoverLoc;
 

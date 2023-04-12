@@ -52,7 +52,7 @@ public:
 	bool IsDebug_RLAgentWidgetActive() const { return bShowDebug_RLAgentWidget; }
 	
 	/** Called from selected DefaultGameMode */
-	void InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings& InPlayerSettings);
+	void InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
 	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
@@ -194,7 +194,7 @@ private:
 	static void AppendStringLocAccRow(const FAccuracyRow Row, FString& StringToWriteTo);
 
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
-	void UpdatePlayerSettings(const FPlayerSettings& InPlayerSettings);
+	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 
 	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
 
@@ -297,7 +297,7 @@ private:
 	/** Minimum overlap radius so that small targets do not overlap due to the spawn memory scale being much higher */
 	float MinOverlapRadius;
 
-	FPlayerSettings PlayerSettings;
+	FPlayerSettings_Game PlayerSettings;
 
 #pragma endregion
 

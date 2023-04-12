@@ -126,7 +126,7 @@ private:
 	UFUNCTION()
 	void OnFadeScreenFromBlackFinish();
 	UFUNCTION()
-	void OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings);
+	void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings);
 
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;

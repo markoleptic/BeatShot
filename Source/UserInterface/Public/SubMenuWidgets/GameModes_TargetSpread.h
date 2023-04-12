@@ -43,6 +43,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_MinTargetDistance;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	UBSHorizontalBox* BSBox_MoveTargetsForward;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_ForwardSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
@@ -55,8 +58,6 @@ protected:
 	UBSHorizontalBox* BSBox_HorizontalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_VerticalSpread;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UBSHorizontalBox* BSBox_MoveTargetsForward;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	USlider* Slider_MinTargetDistance;
@@ -110,7 +111,7 @@ protected:
 	UFUNCTION()
 	void OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnCheckStateChanged_ForwardSpread(const bool bUseForwardSpread);
+	void OnCheckStateChanged_MoveTargetsForward(const bool bUseForwardSpread);
 	UFUNCTION()
 	void OnSliderChanged_ForwardSpread(const float NewForwardSpread);
 	UFUNCTION()

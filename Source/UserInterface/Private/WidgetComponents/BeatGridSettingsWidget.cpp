@@ -2,6 +2,7 @@
 
 #include "WidgetComponents/BeatGridSettingsWidget.h"
 #include "GlobalConstants.h"
+#include "UserInterface.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
@@ -110,26 +111,26 @@ void UBeatGridSettingsWidget::OnConstrainedChanged_VerticalSpacing(const float N
 
 void UBeatGridSettingsWidget::OnSliderChanged_BeatGridNumHorizontalTargets(const float NewNumHorizontalTargets)
 {
-	CurrentValues.NumHorizontalBeatGridTargets = OnSliderChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, SnapSize_NumBeatGridHorizontalTargets);
+	CurrentValues.NumHorizontalBeatGridTargets = UUserInterface::OnSliderChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, SnapSize_NumBeatGridHorizontalTargets);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumHorizontalTargets);
 }
 
 void UBeatGridSettingsWidget::OnSliderChanged_BeatGridNumVerticalTargets(const float NewNumVerticalTargets)
 {
-	CurrentValues.NumVerticalBeatGridTargets = OnSliderChanged(NewNumVerticalTargets, Value_NumVerticalTargets, SnapSize_NumBeatGridVerticalTargets);
+	CurrentValues.NumVerticalBeatGridTargets = UUserInterface::OnSliderChanged(NewNumVerticalTargets, Value_NumVerticalTargets, SnapSize_NumBeatGridVerticalTargets);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumVerticalTargets);
 }
 
 void UBeatGridSettingsWidget::OnTextCommitted_BeatGridNumHorizontalTargets(const FText& NewNumHorizontalTargets, ETextCommit::Type CommitType)
 {
-	CurrentValues.NumHorizontalBeatGridTargets = OnEditableTextBoxChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, Slider_NumHorizontalTargets,
+	CurrentValues.NumHorizontalBeatGridTargets = UUserInterface::OnEditableTextBoxChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, Slider_NumHorizontalTargets,
 		SnapSize_NumBeatGridHorizontalTargets, MinValue_BeatGridHorizontalSpacing, MaxValue_BeatGridHorizontalSpacing);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumHorizontalTargets);
 }
 
 void UBeatGridSettingsWidget::OnTextCommitted_BeatGridNumVerticalTargets(const FText& NewNumVerticalTargets, ETextCommit::Type CommitType)
 {
-	CurrentValues.NumVerticalBeatGridTargets = OnEditableTextBoxChanged(NewNumVerticalTargets, Value_NumVerticalTargets, Slider_NumVerticalTargets,
+	CurrentValues.NumVerticalBeatGridTargets = UUserInterface::OnEditableTextBoxChanged(NewNumVerticalTargets, Value_NumVerticalTargets, Slider_NumVerticalTargets,
 		SnapSize_NumBeatGridVerticalTargets, MinValue_BeatGridVerticalSpacing, MaxValue_BeatGridVerticalSpacing);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumVerticalTargets);
 }

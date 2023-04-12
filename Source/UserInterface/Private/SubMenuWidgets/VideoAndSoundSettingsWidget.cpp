@@ -586,10 +586,7 @@ void UVideoAndSoundSettingsWidget::OnMusicSoundValueChanged(const FText& NewValu
 void UVideoAndSoundSettingsWidget::OnSaveButtonClicked_VideoAndSound()
 {
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
-	FPlayerSettings PlayerSettings = LoadPlayerSettings();
-	PlayerSettings.VideoAndSound = NewSettings;
-	SavePlayerSettings(PlayerSettings);
-	OnSettingsSaved_VideoAndSound.Broadcast();
+	SavePlayerSettings(NewSettings);
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_VideoAndSound"));
 	SavedTextWidget->PlayFadeInFadeOut();
 }
@@ -672,16 +669,12 @@ void UVideoAndSoundSettingsWidget::PopulateSettings()
 			UDLSSLibrary::SetDLSSMode(GetWorld(), DefaultDLSSMode);
 			DLSSComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(DefaultDLSSMode).ToString());
 			NewSettings.DLSSMode = DefaultDLSSMode;
-			FPlayerSettings PlayerSettings = LoadPlayerSettings();
-			PlayerSettings.VideoAndSound = NewSettings;
-			SavePlayerSettings(PlayerSettings);
-			OnSettingsSaved_VideoAndSound.Broadcast();
+			SavePlayerSettings(NewSettings);
 		}
 		else
 		{
 			UDLSSLibrary::SetDLSSMode(GetWorld(), NewSettings.DLSSMode);
 			DLSSComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(NewSettings.DLSSMode).ToString());
-			
 		}
 	}
 	else if (!bDLSSSupported && bNISSupported)
@@ -693,10 +686,7 @@ void UVideoAndSoundSettingsWidget::PopulateSettings()
 			UNISLibrary::SetNISMode(DefaultNISMode);
 			DLSSComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(DefaultNISMode).ToString());
 			NewSettings.NISMode = DefaultNISMode;
-			FPlayerSettings PlayerSettings = LoadPlayerSettings();
-			PlayerSettings.VideoAndSound = NewSettings;
-			SavePlayerSettings(PlayerSettings);
-			OnSettingsSaved_VideoAndSound.Broadcast();
+			SavePlayerSettings(NewSettings);
 		}
 		else
 		{

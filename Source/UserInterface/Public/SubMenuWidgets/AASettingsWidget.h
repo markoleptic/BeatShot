@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "WidgetComponents/BandChannelWidget.h"
@@ -11,7 +10,6 @@
 #include "AASettingsWidget.generated.h"
 
 DECLARE_DELEGATE(FOnRestartButtonClicked);
-DECLARE_DELEGATE(FOnSettingsSaved_AudioAnalyzer);
 
 class USlider;
 class UButton;
@@ -35,10 +33,10 @@ public:
 
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
-	FOnSettingsSaved_AudioAnalyzer OnSettingsSaved_AudioAnalyzer;
-
 	/** Do specific things if this instance of AASettings belongs to MainMenuWidget */
 	void InitMainMenuChild();
+	
+	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_AudioAnalyzer; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
@@ -73,9 +71,9 @@ protected:
 	UPopupMessageWidget* PopupMessageWidget;
 
 	UPROPERTY()
-	FAASettingsStruct AASettings;
+	FPlayerSettings_AudioAnalyzer AASettings;
 	UPROPERTY()
-	FAASettingsStruct NewAASettings;
+	FPlayerSettings_AudioAnalyzer NewAASettings;
 
 	UFUNCTION()
 	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);

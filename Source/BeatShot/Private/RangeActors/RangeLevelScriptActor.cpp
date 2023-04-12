@@ -30,9 +30,12 @@ void ARangeLevelScriptActor::BeginPlay()
 	{
 		return;
 	}
-	
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->OnStreakThresholdPassed.BindUObject(this, &ARangeLevelScriptActor::OnStreakThresholdPassed);
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddDynamic(this, &ARangeLevelScriptActor::OnPlayerSettingsChanged);
+
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ARangeLevelScriptActor::OnPlayerSettingsChanged_Game);
+
+	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameMode->OnStreakThresholdPassed.BindUObject(this, &ARangeLevelScriptActor::OnStreakThresholdPassed);
 
 	OnTimelineVector.BindUFunction(this, FName("TransitionTimeOfDay"));
 	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionSkySphereMaterial"));
@@ -173,13 +176,13 @@ void ARangeLevelScriptActor::TransitionSkySphereMaterial(float Alpha)
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", Value);
 }
 
-void ARangeLevelScriptActor::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
+void ARangeLevelScriptActor::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	if (!PlayerSettings.User.bNightModeUnlocked)
+	if (!LoadPlayerSettings().User.bNightModeUnlocked)
 	{
 		return;
 	}
-	if (PlayerSettings.Game.bNightModeSelected)
+	if (GameSettings.bNightModeSelected)
 	{
 		if (TimeOfDay == ETimeOfDay::Day)
 		{

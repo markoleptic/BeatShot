@@ -28,9 +28,9 @@ void UAASettingsWidget::NativeConstruct()
 
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
 
-	AASettings = ISaveLoadInterface::LoadAASettings();
+	AASettings = ISaveLoadInterface::LoadPlayerSettings().AudioAnalyzer;
 	NewAASettings = AASettings;
-	const FAASettingsStruct DefaultAASettings = FAASettingsStruct();
+	const FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 
 	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
@@ -87,7 +87,7 @@ void UAASettingsWidget::OnBandThresholdChanged(const UBandThresholdWidget* BandT
 void UAASettingsWidget::OnNumBandChannelsSelectionChanged(FString NewNum, ESelectInfo::Type SelectType)
 {
 	NewAASettings.NumBandChannels = NumBandChannels->GetSelectedIndex() + 1;
-	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
+	FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 	if (const int ElementsToAdd = NewAASettings.NumBandChannels - NewAASettings.BandLimits.Num(); ElementsToAdd > 0)
 	{
 		for (int i = 0; i < ElementsToAdd; i ++)
@@ -112,7 +112,7 @@ void UAASettingsWidget::PopulateAASettings()
 
 	UBandChannelWidget* PreviousBandChannel = nullptr;
 	UBandThresholdWidget* PreviousBandThreshold = nullptr;
-	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
+	FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
 		if (i == 0)
@@ -152,22 +152,18 @@ void UAASettingsWidget::PopulateAASettings()
 
 void UAASettingsWidget::SaveAASettingsToSlot()
 {
-	SaveAASettings(NewAASettings);
-	if (!OnSettingsSaved_AudioAnalyzer.ExecuteIfBound())
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnSettingsSaved_AudioAnalyzer not bound."));
-	}
+	SavePlayerSettings(NewAASettings);
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void UAASettingsWidget::ResetAASettings()
 {
-	NewAASettings.ResetStruct();
+	NewAASettings.ResetToDefault();
 	UBandChannelWidget* CurrentBandChannel = BandChannelWidget;
 	UBandThresholdWidget* CurrentBandThreshold = BandThresholdWidget;
 	CurrentBandChannel->SetDefaultValues(NewAASettings.BandLimits[0], 0);
 	CurrentBandThreshold->SetDefaultValue(NewAASettings.BandLimitsThreshold[0], 0);
-	FAASettingsStruct DefaultAASettings = FAASettingsStruct();
+	FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 	for (int i = 1; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
 		if (DefaultAASettings.NumBandChannels > i)

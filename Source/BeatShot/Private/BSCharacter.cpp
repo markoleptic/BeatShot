@@ -137,16 +137,21 @@ UBSAbilitySystemComponent* ABSCharacter::GetBSAbilitySystemComponent() const
 void ABSCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	OnUserSettingsChange(LoadPlayerSettings());
 
 	if (IsLocallyControlled())
 	{
 		GetBSPlayerController()->SetInputMode(FInputModeGameOnly());
 	}
-	
-	UBSGameInstance* GameInstance = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GameInstance->OnPlayerSettingsChange.AddUniqueDynamic(this, &ABSCharacter::OnUserSettingsChange);
+
+	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
+	OnPlayerSettingsChanged_User(LoadPlayerSettings().User);
+
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSCharacter::OnPlayerSettingsChanged_Game);
+	GI->GetPublicUserSettingsChangedDelegate().AddUniqueDynamic(this, &ABSCharacter::OnPlayerSettingsChanged_User);
+
 }
 
 void ABSCharacter::PawnClientRestart()
@@ -176,41 +181,6 @@ void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	InitializePlayerInput(InputComponent);
-}
-
-void ABSCharacter::OnUserSettingsChange(const FPlayerSettings& PlayerSettings)
-{
-	Sensitivity = PlayerSettings.Sensitivity;
-	if (AGun_AK47* Gun = GetGun())
-	{
-		Gun->SetShouldRecoil(PlayerSettings.Game.bShouldRecoil);
-		Gun->SetFireRate(PlayerSettings.Game.bAutomaticFire);
-		Gun->SetShowDecals(PlayerSettings.Game.bShowBulletDecals);
-	}
-	
-	TArray<FGameplayAbilitySpec*> Specs;
-	FGameplayTagContainer Container;
-	Container.AddTag(FBSGameplayTags::Get().Input_Fire);
-	GetAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Specs);
-	if(!Specs.IsEmpty())
-	{
-		if (PlayerSettings.Game.bAutomaticFire)
-		{
-			if (UBSGameplayAbility* Ability = Cast<UBSGameplayAbility>(Specs[0]->Ability))
-			{
-				Ability->ActivationPolicy = EBSAbilityActivationPolicy::WhileInputActive;
-				GetAbilitySystemComponent()->MarkAbilitySpecDirty(*Specs[0]);
-			}
-		}
-		else
-		{
-			if (UBSGameplayAbility* Ability = Cast<UBSGameplayAbility>(Specs[0]->Ability))
-			{
-				Ability->ActivationPolicy = EBSAbilityActivationPolicy::OnInputTriggered;
-				GetAbilitySystemComponent()->MarkAbilitySpecDirty(*Specs[0]);
-			}
-		}
-	}
 }
 
 void ABSCharacter::Input_Move(const FInputActionValue& Value)
@@ -420,6 +390,45 @@ bool ABSCharacter::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagCo
 bool ABSCharacter::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
 {
 	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
+}
+
+void ABSCharacter::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+{
+	if (AGun_AK47* Gun = GetGun())
+	{
+		Gun->SetShouldRecoil(GameSettings.bShouldRecoil);
+		Gun->SetFireRate(GameSettings.bAutomaticFire);
+		Gun->SetShowDecals(GameSettings.bShowBulletDecals);
+	}
+	
+	TArray<FGameplayAbilitySpec*> Specs;
+	FGameplayTagContainer Container;
+	Container.AddTag(FBSGameplayTags::Get().Input_Fire);
+	GetAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Specs);
+	if(!Specs.IsEmpty())
+	{
+		if (GameSettings.bAutomaticFire)
+		{
+			if (UBSGameplayAbility* Ability = Cast<UBSGameplayAbility>(Specs[0]->Ability))
+			{
+				Ability->ActivationPolicy = EBSAbilityActivationPolicy::WhileInputActive;
+				GetAbilitySystemComponent()->MarkAbilitySpecDirty(*Specs[0]);
+			}
+		}
+		else
+		{
+			if (UBSGameplayAbility* Ability = Cast<UBSGameplayAbility>(Specs[0]->Ability))
+			{
+				Ability->ActivationPolicy = EBSAbilityActivationPolicy::OnInputTriggered;
+				GetAbilitySystemComponent()->MarkAbilitySpecDirty(*Specs[0]);
+			}
+		}
+	}
+}
+
+void ABSCharacter::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+{
+	Sensitivity = UserSettings.Sensitivity;
 }
 
 void ABSCharacter::AddCharacterAbilities()

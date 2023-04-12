@@ -2,10 +2,7 @@
 
 #pragma once
 
-DECLARE_MULTICAST_DELEGATE(FOnSettingsSaved_Game);
-
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "GameSettingsWidget.generated.h"
@@ -24,7 +21,7 @@ class USERINTERFACE_API UGameSettingsWidget : public UUserWidget, public ISaveLo
 	virtual void NativeConstruct() override;
 
 public:
-	FOnSettingsSaved_Game OnSettingsSaved_Game;
+	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
 
 protected:
 	/** Fills all widgets with values from NewSettings */

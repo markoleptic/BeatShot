@@ -37,7 +37,7 @@ public:
 
 	/** Saves the new AASettings and calls InitializeVisualizer() */
 	UFUNCTION()
-	virtual void UpdateAASettings(const FAASettingsStruct& AASettingsStruct);
+	virtual void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& AASettingsStruct);
 
 protected:
 	/** Sets the initial visualizer spawn location */
@@ -50,7 +50,7 @@ protected:
 	void SetVisualizerOffset(const FVector& Offset) { VisualizerOffset = Offset; }
 
 	/** AudioAnalyzer settings */
-	FAASettingsStruct AASettings;
+	FPlayerSettings_AudioAnalyzer AASettings;
 
 	/** Initial visualizer spawn location */
 	FVector InitialVisualizerLocation;

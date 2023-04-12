@@ -26,7 +26,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void InitializeVisualizers(const FPlayerSettings& PlayerSettings);
+	void InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings);
 
 	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
 
@@ -34,9 +34,9 @@ public:
 
 	void DestroyVisualizers();
 
-	void UpdateVisualizerStates(const FPlayerSettings& PlayerSettings);
+	void UpdateVisualizerStates(const FPlayerSettings_Game& PlayerSettings);
 
-	void UpdateAASettings(const FAASettingsStruct& NewAASettings);
+	void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings);
 
 	/* The base Visualizer class to spawn */
 	UPROPERTY(EditDefaultsOnly)
@@ -60,7 +60,7 @@ public:
 
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
-	FAASettingsStruct AASettings;
+	FPlayerSettings_AudioAnalyzer AASettings;
 
 	UPROPERTY(VisibleAnywhere)
 	TArray<float> AvgSpectrumValues;

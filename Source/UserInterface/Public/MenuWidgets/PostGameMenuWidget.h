@@ -17,9 +17,6 @@ class UScoreBrowserWidget;
 class UFAQWidget;
 class UQuitMenuWidget;
 
-/**
- * 
- */
 UCLASS()
 class USERINTERFACE_API UPostGameMenuWidget : public UUserWidget
 {

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "WidgetComponents/TooltipImage.h"
 #include "TooltipInterface.generated.h"
 
 class UButton;
@@ -33,13 +34,6 @@ struct FTooltipData
 		TooltipImage = InTooltipImage;
 		TooltipText = InTooltipText;
 		bAllowTextWrap = bInbAllowTextWrap;
-	}
-
-	FTooltipData(const UTooltipImage* InTooltipImage)
-	{
-		TooltipImage = InTooltipImage;
-		TooltipText = FText();
-		bAllowTextWrap = false;
 	}
 
 	bool operator==(const FTooltipData& Other) const
@@ -88,14 +82,9 @@ public:
 	/** All Tooltip Images are bound to this function */
 	UFUNCTION()
 	virtual void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage);
-	
+
+private:
 	TArray<FTooltipData> TooltipData;
 	
 	TSoftObjectPtr<UTooltipWidget> TooltipWidget;
-
-	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
-	float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max) const;
-
-	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
-	float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize) const;
 };

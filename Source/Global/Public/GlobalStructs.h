@@ -7,7 +7,7 @@
 #include "NISLibrary.h"
 #include "GlobalStructs.generated.h"
 
-
+/** Struct only used to save accuracy to database */
 USTRUCT()
 struct FAccuracyRow
 {
@@ -36,6 +36,7 @@ struct FAccuracyRow
 		TotalHits.Init(0, Size);
 	}
 
+	/** Updates the accuracy array based on all TotalSpawns and TotalHits */
 	void UpdateAccuracy()
 	{
 		for (int i = 0; i < Accuracy.Num(); i++)
@@ -49,6 +50,7 @@ struct FAccuracyRow
 	}
 };
 
+/** Struct containing any information to save between game mode sessions that does not define the game mode itself, e.g. accuracy */
 USTRUCT(BlueprintType)
 struct FCommonScoreInfo
 {
@@ -122,6 +124,8 @@ struct FCommonScoreInfo
 	}
 };
 
+/** Small Struct containing the information needed to distinguish between unique default game modes and unique custom game modes.
+ *  This info persists across different songs, which is why it is separate from FPlayerScore */
 USTRUCT(BlueprintType)
 struct FBS_DefiningConfig
 {
@@ -149,6 +153,14 @@ struct FBS_DefiningConfig
 		BaseGameMode = EDefaultMode::MultiBeat;
 		CustomGameModeName = "";
 		Difficulty = EGameModeDifficulty::None;
+	}
+
+	FBS_DefiningConfig(const EDefaultMode& InDefaultMode, const EDefaultMode& InBaseGameMode, const FString& InCustomGameModeName, const EGameModeDifficulty& InGameModeDifficulty)
+	{
+		DefaultMode = InDefaultMode;
+		BaseGameMode = InBaseGameMode;
+		CustomGameModeName = InCustomGameModeName;
+		Difficulty = InGameModeDifficulty;
 	}
 
 	FORCEINLINE bool operator==(const FBS_DefiningConfig& Other) const
@@ -474,7 +486,7 @@ struct FBS_BeatTrackConfig
 	}
 };
 
-/* Struct representing a game mode */
+/** Struct representing a game mode */
 USTRUCT(BlueprintType)
 struct FBSConfig
 {
@@ -725,7 +737,7 @@ struct FBSConfig
 	}
 };
 
-/* Used to load and save player scores */
+/** Used to load and save player scores */
 USTRUCT(BlueprintType)
 struct FPlayerScore
 {
@@ -866,7 +878,7 @@ struct FPlayerScore
 	}
 };
 
-/* Used to convert PlayerScoreArray to database scores */
+/** Used to convert PlayerScoreArray to database scores */
 USTRUCT(BlueprintType)
 struct FJsonScore
 {
@@ -876,7 +888,7 @@ struct FJsonScore
 	TArray<FPlayerScore> Scores;
 };
 
-/* Simple login payload */
+/** Simple login payload */
 USTRUCT(BlueprintType)
 struct FLoginPayload
 {
@@ -906,7 +918,7 @@ struct FLoginPayload
 	}
 };
 
-/* Game settings */
+/** Game settings */
 USTRUCT(BlueprintType)
 struct FPlayerSettings_Game
 {
@@ -936,7 +948,7 @@ struct FPlayerSettings_Game
 	UPROPERTY(BlueprintReadOnly)
 	int32 CombatTextFrequency;
 
-	/* Range settings */
+	/* Wall Menu settings */
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bShouldRecoil;
@@ -970,7 +982,8 @@ struct FPlayerSettings_Game
 		bShowLightVisualizers = false;
 	}
 
-	void ResetGameSettings()
+	/** Resets all game settings not on the wall menu */
+	void ResetToDefault()
 	{
 		bShowStreakCombatText = true;
 		CombatTextFrequency = 5;
@@ -983,7 +996,7 @@ struct FPlayerSettings_Game
 	}
 };
 
-/* Video and sound settings */
+/** Video and sound settings */
 USTRUCT(BlueprintType)
 struct FPlayerSettings_VideoAndSound
 {
@@ -1033,11 +1046,15 @@ struct FPlayerSettings_VideoAndSound
 	}
 };
 
-/* User settings */
+/** User settings */
 USTRUCT(BlueprintType)
 struct FPlayerSettings_User
 {
 	GENERATED_USTRUCT_BODY()
+
+	/* Sensitivity of DefaultCharacter */
+	UPROPERTY(BlueprintReadOnly)
+	float Sensitivity;
 
 	UPROPERTY(BlueprintReadOnly)
 	FString Username;
@@ -1053,6 +1070,7 @@ struct FPlayerSettings_User
 
 	FPlayerSettings_User()
 	{
+		Sensitivity = 0.3f;
 		HasLoggedInHttp = false;
 		Username = "";
 		LoginCookie = "";
@@ -1060,7 +1078,7 @@ struct FPlayerSettings_User
 	}
 };
 
-/* CrossHair settings */
+/** CrossHair settings */
 USTRUCT(BlueprintType)
 struct FPlayerSettings_CrossHair
 {
@@ -1095,7 +1113,72 @@ struct FPlayerSettings_CrossHair
 	}
 };
 
-/* Used to load and save player settings */
+/** Audio Analyzer specific settings */
+USTRUCT(BlueprintType)
+struct FPlayerSettings_AudioAnalyzer
+{
+	GENERATED_BODY()
+
+	/* Number of channels to break Tracker Sound frequencies into */
+	UPROPERTY(BlueprintReadOnly)
+	int NumBandChannels;
+
+	/* Array to store Threshold values for each active band channel */
+	UPROPERTY(BlueprintReadOnly)
+	TArray<float> BandLimitsThreshold;
+
+	/* Array to store band frequency channels */
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FVector2D> BandLimits;
+
+	/* Time window to take frequency sample */
+	UPROPERTY(BlueprintReadOnly)
+	float TimeWindow;
+
+	/* History size of frequency sample */
+	UPROPERTY(BlueprintReadOnly)
+	int HistorySize;
+
+	/* Max number of band channels allowed */
+	int32 MaxNumBandChannels = 32;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString LastSelectedInputAudioDevice;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString LastSelectedOutputAudioDevice;
+
+	FPlayerSettings_AudioAnalyzer()
+	{
+		BandLimits = {
+			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
+			FVector2d(5681, 11360), FVector2d(11361, 22720),
+		};
+		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
+		NumBandChannels = 10;
+		TimeWindow = 0.02f;
+		HistorySize = 30.f;
+		MaxNumBandChannels = 32;
+		LastSelectedInputAudioDevice = "";
+		LastSelectedOutputAudioDevice = "";
+	}
+
+	/** Resets all settings to default, but keeps audio device information */
+	void ResetToDefault()
+	{
+		BandLimits = {
+			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
+			FVector2d(5681, 11360), FVector2d(11361, 22720),
+		};
+		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
+		NumBandChannels = 10;
+		TimeWindow = 0.02f;
+		HistorySize = 30.f;
+		MaxNumBandChannels = 32;
+	}
+};
+
+/** Wrapper holding all player settings sub-structs */
 USTRUCT(BlueprintType)
 struct FPlayerSettings
 {
@@ -1113,9 +1196,8 @@ struct FPlayerSettings
 	UPROPERTY(BlueprintReadOnly)
 	FPlayerSettings_CrossHair CrossHair;
 
-	// Sensitivity of DefaultCharacter
 	UPROPERTY(BlueprintReadOnly)
-	float Sensitivity;
+	FPlayerSettings_AudioAnalyzer AudioAnalyzer;
 
 	FPlayerSettings()
 	{
@@ -1123,12 +1205,12 @@ struct FPlayerSettings
 		Game = FPlayerSettings_Game();
 		VideoAndSound = FPlayerSettings_VideoAndSound();
 		CrossHair = FPlayerSettings_CrossHair();
-		Sensitivity = 0.3f;
+		AudioAnalyzer = FPlayerSettings_AudioAnalyzer();
 	}
 
 	void ResetGameSettings()
 	{
-		Game.ResetGameSettings();
+		Game.ResetToDefault();
 	}
 
 	void ResetVideoAndSoundSettings()
@@ -1140,73 +1222,14 @@ struct FPlayerSettings
 	{
 		CrossHair = FPlayerSettings_CrossHair();
 	}
-};
 
-/* AudioAnalyzer Specific Settings */
-USTRUCT(BlueprintType)
-struct FAASettingsStruct
-{
-	GENERATED_BODY()
-
-	// Number of channels to break Tracker Sound frequencies into
-	UPROPERTY(BlueprintReadOnly)
-	int NumBandChannels;
-
-	// Array to store Threshold values for each active band channel
-	UPROPERTY(BlueprintReadOnly)
-	TArray<float> BandLimitsThreshold;
-
-	// Array to store band frequency channels
-	UPROPERTY(BlueprintReadOnly)
-	TArray<FVector2D> BandLimits;
-
-	// Time window to take frequency sample
-	UPROPERTY(BlueprintReadOnly)
-	float TimeWindow;
-
-	// History size of frequency sample
-	UPROPERTY(BlueprintReadOnly)
-	int HistorySize;
-
-	// Max number of band channels allowed
-	int32 MaxNumBandChannels = 32;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString LastSelectedInputAudioDevice;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString LastSelectedOutputAudioDevice;
-
-	FAASettingsStruct()
+	void ResetAudioAnalyzer()
 	{
-		BandLimits = {
-			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
-			FVector2d(5681, 11360), FVector2d(11361, 22720),
-		};
-		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
-		NumBandChannels = 10;
-		TimeWindow = 0.02f;
-		HistorySize = 30.f;
-		MaxNumBandChannels = 32;
-		LastSelectedInputAudioDevice = "";
-		LastSelectedOutputAudioDevice = "";
-	}
-
-	void ResetStruct()
-	{
-		BandLimits = {
-			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
-			FVector2d(5681, 11360), FVector2d(11361, 22720),
-		};
-		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
-		NumBandChannels = 10;
-		TimeWindow = 0.02f;
-		HistorySize = 30.f;
-		MaxNumBandChannels = 32;
+		AudioAnalyzer.ResetToDefault();
 	}
 };
 
-/* Information about the transition state of the game */
+/** Information about the transition state of the game */
 USTRUCT()
 struct FGameModeTransitionState
 {

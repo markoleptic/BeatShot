@@ -9,13 +9,10 @@
 void AWallMenu::BeginPlay()
 {
 	Super::BeginPlay();
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged);
-	InitializeSettings(LoadPlayerSettings());
-}
-
-void AWallMenu::Destroyed()
-{
-	Super::Destroyed();
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged_Game);
+	InitializeSettings(LoadPlayerSettings().Game);
 }
 
 FPlayerSettings AWallMenu::LoadPlayerSettings() const
@@ -23,13 +20,12 @@ FPlayerSettings AWallMenu::LoadPlayerSettings() const
 	return ISaveLoadInterface::LoadPlayerSettings();
 }
 
-void AWallMenu::SavePlayerSettings(const FPlayerSettings PlayerSettingsToSave)
+void AWallMenu::SavePlayerSettings(const FPlayerSettings_Game& InGameSettings)
 {
-	ISaveLoadInterface::SavePlayerSettings(PlayerSettingsToSave);
-	Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->OnPlayerSettingsChange.Broadcast(PlayerSettingsToSave);
+	ISaveLoadInterface::SavePlayerSettings(InGameSettings);
 }
 
-void AWallMenu::OnPlayerSettingsChanged(const FPlayerSettings& PlayerSettings)
+void AWallMenu::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	InitializeSettings(PlayerSettings);
+	InitializeSettings(GameSettings);
 }

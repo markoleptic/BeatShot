@@ -116,16 +116,13 @@ void UGameSettingsWidget::OnShowCombatTextCheckStateChanged(const bool bIsChecke
 
 void UGameSettingsWidget::OnSaveButtonClicked_Game()
 {
-	FPlayerSettings PlayerSettings = LoadPlayerSettings();
-	PlayerSettings.Game = NewSettings;
-	SavePlayerSettings(PlayerSettings);
-	OnSettingsSaved_Game.Broadcast();
+	SavePlayerSettings(NewSettings);
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_Game"));
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void UGameSettingsWidget::OnResetButtonClicked_Game()
 {
-	NewSettings = FPlayerSettings_Game();
+	NewSettings.ResetToDefault();
 	PopulateSettings();
 }

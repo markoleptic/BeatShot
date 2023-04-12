@@ -7,8 +7,6 @@
 #include "Blueprint/UserWidget.h"
 #include "SensitivitySettingsWidget.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOnSettingsSaved_Sensitivity);
-
 class UEditableTextBox;
 class UTextBlock;
 class USlider;
@@ -23,7 +21,8 @@ class USERINTERFACE_API USensitivitySettingsWidget : public UUserWidget, public 
 	virtual void NativeConstruct() override;
 
 public:
-	FOnSettingsSaved_Sensitivity OnSettingsSaved_Sensitivity;
+
+	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_User; }
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")

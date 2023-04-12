@@ -18,7 +18,7 @@ class UWidgetAnimation;
 class UScreenFadeWidget;
 
 UCLASS()
-class USERINTERFACE_API UQuitMenuWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UQuitMenuWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

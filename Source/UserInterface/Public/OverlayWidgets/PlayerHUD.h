@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "SaveGamePlayerScore.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/TextBlock.h"
 #include "PlayerHUD.generated.h"
 
 class UHorizontalBox;

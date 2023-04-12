@@ -15,7 +15,4 @@ class GLOBAL_API USaveGamePlayerSettings : public USaveGame
 public:
 	UPROPERTY(BlueprintReadOnly)
 	FPlayerSettings PlayerSettings;
-
-	UPROPERTY(BlueprintReadOnly)
-	FAASettingsStruct AASettings;
 };

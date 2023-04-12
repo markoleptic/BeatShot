@@ -3,13 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "WidgetComponents/VideoSettingButton.h"
 #include "VideoAndSoundSettingsWidget.generated.h"
-
-DECLARE_MULTICAST_DELEGATE(FOnSettingsSaved_VideoAndSound);
 
 class UPopupMessageWidget;
 class USavedTextWidget;
@@ -29,7 +26,8 @@ class USERINTERFACE_API UVideoAndSoundSettingsWidget : public UUserWidget, publi
 	virtual void NativeConstruct() override;
 
 public:
-	FOnSettingsSaved_VideoAndSound OnSettingsSaved_VideoAndSound;
+	
+	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
 
 #pragma region Video
 

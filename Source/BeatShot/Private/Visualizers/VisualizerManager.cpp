@@ -18,7 +18,7 @@ void AVisualizerManager::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AVisualizerManager::InitializeVisualizers(const FPlayerSettings& PlayerSettings)
+void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings)
 {
 	AvgSpectrumValues.Init(0, AASettings.NumBandChannels);
 	CurrentSpectrumValues.Init(0, AASettings.NumBandChannels);
@@ -28,7 +28,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings& PlayerSett
 	Visualizers.Empty();
 	Visualizers.EmplaceAt(0, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &Constants::VisualizerLocation, &Constants::VisualizerRotation, SpawnParameters)));
 	Visualizers.EmplaceAt(1, Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &Constants::Visualizer2Location, &Constants::VisualizerRotation, SpawnParameters)));
-	if (PlayerSettings.Game.bShowLightVisualizers)
+	if (PlayerSettings.bShowLightVisualizers)
 	{
 		Visualizers.EmplaceAt(2, Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &Constants::BeamVisualizerLocation, &Constants::BeamRotation, SpawnParameters)));
 	}
@@ -114,13 +114,13 @@ void AVisualizerManager::DestroyVisualizers()
 	Visualizers.Empty();
 }
 
-void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings& PlayerSettings)
+void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings_Game& PlayerSettings)
 {
 	if (Visualizers.IsEmpty())
 	{
 		return;
 	}
-	if (!PlayerSettings.Game.bShowLightVisualizers)
+	if (!PlayerSettings.bShowLightVisualizers)
 	{
 		ABeamVisualizer* FoundBeamVisualizer = nullptr;
 		if (Visualizers.FindItemByClass(&FoundBeamVisualizer))
@@ -140,7 +140,7 @@ void AVisualizerManager::UpdateVisualizerStates(const FPlayerSettings& PlayerSet
 	Visualizers[NewIndex]->InitializeVisualizer();
 }
 
-void AVisualizerManager::UpdateAASettings(const FAASettingsStruct& NewAASettings)
+void AVisualizerManager::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings)
 {
 	AASettings = NewAASettings;
 	for (AVisualizerBase* Visualizer : Visualizers)

@@ -79,7 +79,7 @@ void UCrossHairWidget::SetInnerOffset(const int32 NewOffsetValue)
 	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetPosition(FVector2d(NewOffsetValue, 0));
 }
 
-void UCrossHairWidget::OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings)
+void UCrossHairWidget::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
 {
-	InitializeCrossHair(PlayerSettings.CrossHair);
+	InitializeCrossHair(CrossHairSettings);
 }

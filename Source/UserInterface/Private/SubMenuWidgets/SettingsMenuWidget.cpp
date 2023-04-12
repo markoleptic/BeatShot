@@ -1,18 +1,12 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-// ReSharper disable CppMemberFunctionMayBeConst
-
 #include "SubMenuWidgets/SettingsMenuWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "Components/Button.h"
 #include "Components/Slider.h"
 #include "SubMenuWidgets/AASettingsWidget.h"
-#include "SubMenuWidgets/CrossHairSettingsWidget.h"
-#include "SubMenuWidgets/GameSettingsWidget.h"
-#include "SubMenuWidgets/SensitivitySettingsWidget.h"
-#include "SubMenuWidgets/VideoAndSoundSettingsWidget.h"
 #include "WidgetComponents/SlideRightButton.h"
 
 void USettingsMenuWidget::NativeConstruct()
@@ -31,16 +25,8 @@ void USettingsMenuWidget::NativeConstruct()
 	AudioAnalyzer_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_AudioAnalyzer_ButtonClicked);
 	Sensitivity_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_Sensitivity_ButtonClicked);
 	CrossHair_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_CrossHair_ButtonClicked);
-
-	Game_Widget->OnSettingsSaved_Game.AddUFunction(this, "OnPlayerSettingsSaved");
-	VideoAndSound_Widget->OnSettingsSaved_VideoAndSound.AddUFunction(this, "OnPlayerSettingsSaved");
-	AudioAnalyzer_Widget->OnSettingsSaved_AudioAnalyzer.BindUFunction(this, "OnAASettingsSaved");
+	
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
-	Sensitivity_Widget->OnSettingsSaved_Sensitivity.AddUFunction(this, "OnPlayerSettingsSaved");
-	CrossHair_Widget->OnSettingsSaved_CrossHair.AddUFunction(this, "OnPlayerSettingsSaved");
-
-	RestartState.TransitionState = ETransitionState::Restart;
-	RestartState.bSaveCurrentScores = false;
 
 	On_Game_ButtonClicked();
 
@@ -50,14 +36,12 @@ void USettingsMenuWidget::NativeConstruct()
 	}
 }
 
-void USettingsMenuWidget::OnPlayerSettingsSaved()
+void USettingsMenuWidget::OnRestartButtonClicked_AudioAnalyzer() const
 {
-	OnPlayerSettingsChanged.Broadcast(LoadPlayerSettings());
-}
-
-void USettingsMenuWidget::OnAASettingsSaved()
-{
-	OnAASettingsChanged.Broadcast(LoadAASettings());
+	if (!OnRestartButtonClicked.ExecuteIfBound())
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+	}
 }
 
 void USettingsMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)

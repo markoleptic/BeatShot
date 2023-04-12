@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "CrossHairWidget.generated.h"
 
@@ -72,6 +71,5 @@ public:
 	/** Changes the offset between the middle of the screen and the start of a container */
 	void SetInnerOffset(const int32 NewOffsetValue);
 	/** Reinitialize CrossHair if Player Settings change */
-	UFUNCTION()
-	void OnPlayerSettingsChange(const FPlayerSettings& PlayerSettings);
+	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;
 };

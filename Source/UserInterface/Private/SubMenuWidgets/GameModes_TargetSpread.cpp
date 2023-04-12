@@ -1,8 +1,9 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-
+// ReSharper disable CppMemberFunctionMayBeConst
 #include "SubMenuWidgets/GameModes_TargetSpread.h"
 #include "GlobalConstants.h"
+#include "UserInterface.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
@@ -29,7 +30,7 @@ void UGameModes_TargetSpread::NativeConstruct()
 	AddToTooltipData(QMark_MinDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
 	AddToTooltipData(QMark_SpreadType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpreadType"));
 	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModes_TargetSpread::OnCheckStateChanged_HeadShotOnly);
-	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModes_TargetSpread::OnCheckStateChanged_ForwardSpread);
+	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModes_TargetSpread::OnCheckStateChanged_MoveTargetsForward);
 	Slider_MinTargetDistance->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_MinTargetDistance);
 	Value_MinTargetDistance->OnTextCommitted.AddDynamic(this, &UGameModes_TargetSpread::OnTextCommitted_MinTargetDistance);
 	Slider_HorizontalSpread->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_HorizontalSpread);
@@ -44,6 +45,7 @@ void UGameModes_TargetSpread::NativeConstruct()
 
 void UGameModes_TargetSpread::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode)
 {
+	// Lock vertical and horizontal spread if HeadShot height only, otherwise unlock them
 	if (SpatialConfig.bUseHeadshotHeight)
 	{
 		Slider_VerticalSpread->SetLocked(true);
@@ -59,53 +61,41 @@ void UGameModes_TargetSpread::InitializeTargetSpread(const FBS_SpatialConfig& Sp
 		Value_VerticalSpread->SetIsReadOnly(false);
 	}
 
+	// Hide forward spread box if move targets forward is not enabled, otherwise show
 	if (SpatialConfig.bMoveTargetsForward)
 	{
-		CheckBox_ForwardSpread->SetVisibility(ESlateVisibility::Visible);
+		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Visible);
 	}
 	else
 	{
-		CheckBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
 	switch(BaseGameMode)
 	{
-	case EDefaultMode::Custom:
-		break;
-	case EDefaultMode::SingleBeat:
-		break;
-	case EDefaultMode::MultiBeat:
-		break;
 	case EDefaultMode::BeatGrid:
 		Slider_HorizontalSpread->SetLocked(true);
 		Value_HorizontalSpread->SetIsReadOnly(true);
 		Slider_VerticalSpread->SetLocked(true);
 		Value_VerticalSpread->SetIsReadOnly(true);
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Collapsed);
-		ComboBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EDefaultMode::BeatTrack:
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Collapsed);
-		ComboBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
 		break;
+	case EDefaultMode::Custom:
+	case EDefaultMode::SingleBeat:
+	case EDefaultMode::MultiBeat:
 	default:
-		break;
-	}
-
-	if (BaseGameMode != EDefaultMode::BeatTrack)
-	{
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Visible);
 		BSBox_SpreadType->SetVisibility(ESlateVisibility::Visible);
-	}
-
-	if (BaseGameMode != EDefaultMode::BeatGrid)
-	{
 		Slider_HorizontalSpread->SetLocked(false);
 		Value_HorizontalSpread->SetIsReadOnly(false);
 		Slider_VerticalSpread->SetLocked(false);
 		Value_VerticalSpread->SetIsReadOnly(false);
-		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Visible);
-		ComboBox_SpreadType->SetVisibility(ESlateVisibility::Visible);
+		break;
 	}
 
 	CheckBox_HeadShotOnly->SetIsChecked(SpatialConfig.bUseHeadshotHeight);
@@ -139,52 +129,52 @@ FBS_SpatialConfig UGameModes_TargetSpread::GetSpatialConfig() const
 
 void UGameModes_TargetSpread::OnTextCommitted_MinTargetDistance(const FText& NewMinTargetDistance, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewMinTargetDistance, Value_MinTargetDistance, Slider_MinTargetDistance, Constants::SnapSize_MinTargetDistance,MinValue_MinTargetDistance, MaxValue_MinTargetDistance);
+	UUserInterface::OnEditableTextBoxChanged(NewMinTargetDistance, Value_MinTargetDistance, Slider_MinTargetDistance, Constants::SnapSize_MinTargetDistance,MinValue_MinTargetDistance, MaxValue_MinTargetDistance);
 }
 
 void UGameModes_TargetSpread::OnTextCommitted_HorizontalSpread(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewHorizontalSpread, Value_HorizontalSpread, Slider_HorizontalSpread, SnapSize_HorizontalSpread, MinValue_HorizontalSpread, MaxValue_HorizontalSpread);
+	UUserInterface::OnEditableTextBoxChanged(NewHorizontalSpread, Value_HorizontalSpread, Slider_HorizontalSpread, SnapSize_HorizontalSpread, MinValue_HorizontalSpread, MaxValue_HorizontalSpread);
 }
 
 void UGameModes_TargetSpread::OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewVerticalSpread, Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+	UUserInterface::OnEditableTextBoxChanged(NewVerticalSpread, Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
 }
 
 void UGameModes_TargetSpread::OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewForwardSpread, Value_ForwardSpread, Slider_ForwardSpread, SnapSize_HorizontalSpread, MinValue_ForwardSpread, MaxValue_ForwardSpread);
+	UUserInterface::OnEditableTextBoxChanged(NewForwardSpread, Value_ForwardSpread, Slider_ForwardSpread, SnapSize_HorizontalSpread, MinValue_ForwardSpread, MaxValue_ForwardSpread);
 }
 
 void UGameModes_TargetSpread::OnTextCommitted_FloorDistance(const FText& NewFloorDistance, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewFloorDistance, Value_FloorDistance, Slider_FloorDistance, SnapSize_FloorDistance, MinValue_FloorDistance, MaxValue_FloorDistance);
+	UUserInterface::OnEditableTextBoxChanged(NewFloorDistance, Value_FloorDistance, Slider_FloorDistance, SnapSize_FloorDistance, MinValue_FloorDistance, MaxValue_FloorDistance);
 }
 
 void UGameModes_TargetSpread::OnSliderChanged_MinTargetDistance(const float NewMinTargetDistance)
 {
-	OnSliderChanged(NewMinTargetDistance, Value_MinTargetDistance, SnapSize_MinTargetDistance);
+	UUserInterface::OnSliderChanged(NewMinTargetDistance, Value_MinTargetDistance, SnapSize_MinTargetDistance);
 }
 
 void UGameModes_TargetSpread::OnSliderChanged_HorizontalSpread(const float NewHorizontalSpread)
 {
-	OnSliderChanged(NewHorizontalSpread, Value_HorizontalSpread, SnapSize_HorizontalSpread);
+	UUserInterface::OnSliderChanged(NewHorizontalSpread, Value_HorizontalSpread, SnapSize_HorizontalSpread);
 }
 
 void UGameModes_TargetSpread::OnSliderChanged_VerticalSpread(const float NewVerticalSpread)
 {
-	OnSliderChanged(NewVerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+	UUserInterface::OnSliderChanged(NewVerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
 }
 
 void UGameModes_TargetSpread::OnSliderChanged_ForwardSpread(const float NewForwardSpread)
 {
-	OnSliderChanged(NewForwardSpread, Value_ForwardSpread, SnapSize_HorizontalSpread);
+	UUserInterface::OnSliderChanged(NewForwardSpread, Value_ForwardSpread, SnapSize_HorizontalSpread);
 }
 
 void UGameModes_TargetSpread::OnSliderChanged_FloorDistance(const float NewFloorDistance)
 {
-	OnSliderChanged(NewFloorDistance, Value_FloorDistance, SnapSize_FloorDistance);
+	UUserInterface::OnSliderChanged(NewFloorDistance, Value_FloorDistance, SnapSize_FloorDistance);
 }
 
 ESpreadType UGameModes_TargetSpread::GetSpreadType() const
@@ -225,16 +215,16 @@ void UGameModes_TargetSpread::OnCheckStateChanged_HeadShotOnly(const bool bHeads
 	Value_FloorDistance->SetIsReadOnly(false);
 	Slider_VerticalSpread->SetLocked(false);
 	Value_VerticalSpread->SetIsReadOnly(false);
-	OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
-	OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+	UUserInterface::OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+	UUserInterface::OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
 }
 
-void UGameModes_TargetSpread::OnCheckStateChanged_ForwardSpread(const bool bUseForwardSpread)
+void UGameModes_TargetSpread::OnCheckStateChanged_MoveTargetsForward(const bool bUseForwardSpread)
 {
 	if (bUseForwardSpread)
 	{
-		CheckBox_ForwardSpread->SetVisibility(ESlateVisibility::Visible);
+		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Visible);
 		return;
 	}
-	CheckBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
+	BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
 }
