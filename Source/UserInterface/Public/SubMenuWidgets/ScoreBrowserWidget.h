@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveGamePlayerSettings.h"
 #include "SaveLoadInterface.h"
 #include "ScoreBrowserWidget.generated.h"
 

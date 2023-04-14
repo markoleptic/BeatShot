@@ -2,36 +2,43 @@
 
 
 #include "WidgetComponents/BSVerticalBox.h"
-
 #include "GlobalConstants.h"
 #include "WidgetComponents/BSHorizontalBox.h"
+#include "WidgetComponents/BSSettingCategoryWidget.h"
 
-TArray<TObjectPtr<UPanelSlot>>& UBSVerticalBox::GetBSHorizontalBoxSlots()
+UBSVerticalBox* UBSVerticalBox::GetBSBoxFromChildWidget(const TObjectPtr<UWidget>& InWidgetPtr) const
 {
-	return Slots;
-}
-
-void UBSVerticalBox::SetHorizontalBoxBorders()
-{
-	for (const TObjectPtr<UPanelSlot>& BoxSlot : GetBSHorizontalBoxSlots())
+	if (UBSVerticalBox* Box = WidgetBoxMap.FindRef(InWidgetPtr); Box != nullptr)
 	{
-		if (Cast<UBSHorizontalBox>(BoxSlot->Content))
-		{
-			Cast<UBSHorizontalBox>(BoxSlot->Content)->SetBorders();
-		}
+		return Box;
 	}
+	return nullptr;
 }
 
-void UBSVerticalBox::UpdateBackgroundColors()
+void UBSVerticalBox::UpdateBrushColors()
 {
-	bool bLastLeftBorderDark = false;
-	for (const TObjectPtr<UPanelSlot>& BoxSlot : GetBSHorizontalBoxSlots())
+	IterateThroughSlots_UpdateBrushColors(Slots, false);
+}
+
+bool UBSVerticalBox::IterateThroughSlots_UpdateBrushColors(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark)
+{
+	for (const TObjectPtr<UPanelSlot>& BoxSlot : InSlots)
 	{
-		if (BoxSlot->Content->GetVisibility() == ESlateVisibility::Collapsed || !Cast<UBSHorizontalBox>(BoxSlot->Content))
+		if (IsPanelSlotInAdditionalWidgetChildren(BoxSlot))
+		{
+			if (UBSVerticalBox* SubVerticalBox = GetBSBoxFromChildWidget(BoxSlot->Content))
+			{
+				bLastLeftBorderDark = SubVerticalBox->IterateThroughSlots_UpdateBrushColors(SubVerticalBox->Slots, bLastLeftBorderDark);
+			}
+			continue;
+		}
+
+		if (!Cast<UBSHorizontalBox>(BoxSlot->Content) || BoxSlot->Content->GetVisibility() == ESlateVisibility::Collapsed)
 		{
 			continue;
 		}
-		const UBSHorizontalBox* Box = Cast<UBSHorizontalBox>(BoxSlot->Content);
+		
+		UBSHorizontalBox* Box = Cast<UBSHorizontalBox>(BoxSlot->Content);
 		if (bLastLeftBorderDark)
 		{
 			Box->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
@@ -45,4 +52,27 @@ void UBSVerticalBox::UpdateBackgroundColors()
 			bLastLeftBorderDark = true;
 		}
 	}
+	return bLastLeftBorderDark;
+}
+
+void UBSVerticalBox::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox)
+{
+	if (InWidget && InBox)
+	{
+		WidgetBoxMap.Add(InWidget, InBox);
+	}
+}
+
+bool UBSVerticalBox::IsPanelSlotInAdditionalWidgetChildren(const TObjectPtr<UPanelSlot>& BoxSlot) const
+{
+	if (!BoxSlot || WidgetBoxMap.IsEmpty())
+	{
+		return false;
+	}
+	
+	if (WidgetBoxMap.Contains(BoxSlot->Content))
+	{
+		return true;
+	}
+	return false;
 }

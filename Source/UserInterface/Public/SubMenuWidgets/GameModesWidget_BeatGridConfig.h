@@ -3,10 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ConstrainedSlider.h"
+#include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "GlobalStructs.h"
 #include "TooltipInterface.h"
-#include "BeatGridSettingsWidget.generated.h"
+#include "WidgetComponents/BSSettingCategoryWidget.h"
+#include "GameModesWidget_BeatGridConfig.generated.h"
 
 /** Enum representing the different BeatGrid constraints */
 UENUM(BlueprintType)
@@ -19,6 +20,7 @@ enum class EBeatGridConstraintType : uint8
 	HorizontalSpacing		UMETA(DisplayName="HorizontalSpacing"),
 	VerticalSpacing			UMETA(DisplayName="VerticalSpacing")
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBeatGridConstraintType, EBeatGridConstraintType::None, EBeatGridConstraintType::VerticalSpacing);
 
 /** Struct containing which BeatGrid parameters are constrained and the tooltip text to show for all related parameters */
@@ -55,20 +57,23 @@ struct FBeatGridConstraints
 DECLARE_DELEGATE(FOnBeatGridUpdate_SaveStartButtonStates);
 
 class UTooltipWidget;
+class UBSHorizontalBox;
 class UCheckBox;
 class UEditableTextBox;
 class USlider;
 class UHorizontalBox;
 
 UCLASS()
-class USERINTERFACE_API UBeatGridSettingsWidget : public UConstrainedSlider, public ITooltipInterface
+class USERINTERFACE_API UGameModesWidget_BeatGridConfig : public UBSSettingCategoryWidget, public ITooltipInterface
 {
 	GENERATED_BODY()
 	
 	friend class UGameModesWidget;
-	
-	virtual UTooltipWidget* ConstructTooltipWidget() override;
 	virtual void NativeConstruct() override;
+	virtual UTooltipWidget* ConstructTooltipWidget() override;
+	virtual void InitSettingCategoryWidget() override;
+
+public:
 	void InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
 	FBS_BeatGridConfig GetBeatGridConfig() const;
 	
@@ -77,25 +82,35 @@ protected:
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipImage> BeatGridWarningEMarkClass;
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Spread")
+	TSubclassOf<UDoubleSyncedSliderAndTextBox> BeatGridSpreadConstrainedClass;
+	
 	TSoftObjectPtr<UHorizontalBox> TargetScaleBox;
+	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> BeatGridSpreadConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UBSHorizontalBox* BSBox_RandomizeNextTarget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UBSHorizontalBox* BSBox_NumHorizontalTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UBSHorizontalBox* BSBox_NumVerticalTargets;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UCheckBox* CheckBox_RandomizeNextTarget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UCheckBox* CheckBox_NumHorizontalTargetsLock;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UCheckBox* CheckBox_NumVerticalTargetsLock;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	USlider* Slider_NumHorizontalTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UEditableTextBox* Value_NumHorizontalTargets;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UCheckBox* CheckBox_NumHorizontalTargetsLock;
+	USlider* Slider_NumVerticalTargets;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	USlider* Slider_NumVerticalTargets;
+	UEditableTextBox* Value_NumHorizontalTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UEditableTextBox* Value_NumVerticalTargets;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UCheckBox* CheckBox_NumVerticalTargetsLock;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UHorizontalBox* Box_NumHorizontalTargetsTextTooltip;
@@ -140,8 +155,10 @@ private:
 	void OnCheckStateChanged_BeatGridNumVerticalTargetsLock(const bool bIsLocked);
 	UFUNCTION()
 	void OnCheckStateChanged_RandomizeNextTarget(const bool bIsChecked);
-	virtual void OnCheckStateChanged_MinLock(const bool bIsLocked) override;
-	virtual void OnCheckStateChanged_MaxLock(const bool bIsLocked) override;
+	UFUNCTION()
+	void OnCheckStateChanged_MinLock(const bool bIsLocked);
+	UFUNCTION()
+	void OnCheckStateChanged_MaxLock(const bool bIsLocked);
 	UFUNCTION()
 	void OnBeatGridUpdate_MaxTargetScale(const float NewMaxTargetScale);
 

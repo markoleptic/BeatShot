@@ -5,20 +5,35 @@
 
 #include "Components/Border.h"
 
-void UBSHorizontalBox::SetLeftBorderBrushTint(const FLinearColor& Color) const
+void UBSHorizontalBox::PostLoad()
+{
+	Super::PostLoad();
+	SetBorders();
+}
+
+void UBSHorizontalBox::SetLeftBorderBrushTint(const FLinearColor& Color)
 {
 	if (!LeftBorder)
 	{
-		return;
+		SetBorders();
+		if (!LeftBorder)
+		{
+			SetBorders();
+			return;
+		}
 	}
 	LeftBorder->SetBrushColor(Color);
 }
 
-void UBSHorizontalBox::SetRightBorderBrushTint(const FLinearColor& Color) const
+void UBSHorizontalBox::SetRightBorderBrushTint(const FLinearColor& Color)
 {
 	if (!RightBorder)
 	{
-		return;
+		SetBorders();
+		if (!RightBorder)
+		{
+			return;
+		}
 	}
 	RightBorder->SetBrushColor(Color);
 }

@@ -5,8 +5,10 @@
 #include "CoreMinimal.h"
 #include "TooltipImage.h"
 #include "Blueprint/UserWidget.h"
-#include "ConstrainedSlider.generated.h"
+#include "DoubleSyncedSliderAndTextBox.generated.h"
 
+class UBSVerticalBox;
+class UBSHorizontalBox;
 class UHorizontalBox;
 class UButton;
 class UCheckBox;
@@ -50,15 +52,28 @@ struct FConstrainedSliderStruct
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMinValueChanged, float MinValue);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxValueChanged, float MaxValue);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCheckStateChanged_Min, bool bIsChecked);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCheckStateChanged_Max, bool bIsChecked);
+
 
 UCLASS()
-class USERINTERFACE_API UConstrainedSlider : public UUserWidget
+class USERINTERFACE_API UDoubleSyncedSliderAndTextBox : public UUserWidget
 {
 	friend class UGameModesWidget;
 	
 	GENERATED_BODY()
 	
-protected:
+public:
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSVerticalBox* MainContainer;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_Max;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_CheckBox;
+	
 	/** The Tooltip image for the Checkbox. The parent widget will bind to this widget's OnTooltipImageHoveredLocal delegate to display tooltip information */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* CheckboxQMark;
@@ -91,9 +106,10 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* Checkbox;
-	
-	virtual void NativeConstruct() override;
-	
+
+	/** Overrides a slider's max value */
+	void OverrideMaxValue(const bool bIsMin, const float ValueToOverride);
+
 	/** Initializes the Sliders and EditableTextBoxes' with text and values */
 	virtual void InitConstrainedSlider(const FConstrainedSliderStruct& InStruct);
 	
@@ -105,6 +121,15 @@ protected:
 	
 	/** Executed when MaxSlider or MaxValue is changed */
 	FOnMaxValueChanged OnMaxValueChanged;
+
+	/** Executed when MinLock check state is changed */
+	FOnCheckStateChanged_Min OnCheckStateChanged_Min;
+
+	/** Executed when MaxLock check state is changed */
+	FOnCheckStateChanged_Max OnCheckStateChanged_Max;
+
+private:
+	virtual void NativeConstruct() override;
 	
 	/** Updates the Checkbox checked state, and calls the appropriate OnSliderChanged functions to update the values of the Sliders and EditableTextBoxes */
 	UFUNCTION()
@@ -140,7 +165,4 @@ protected:
 	
 	/** Clamps the NewValue to the appropriate Slider Min and Max Values, and returns the new rounded value */
 	virtual float CheckConstraints(const float NewValue, const bool bIsMin);
-
-	/** Overrides a slider's max value */
-	void OverrideMaxValue(const bool bIsMin, const float ValueToOverride);
 };

@@ -304,18 +304,18 @@ void UVideoAndSoundSettingsWidget::OnVideoQualityButtonClicked(UVideoSettingButt
 
 void UVideoAndSoundSettingsWidget::SetVideoSettingButtonBackgroundColor(UVideoSettingButton* ClickedButton)
 {
-	ClickedButton->Button->SetBackgroundColor(BeatShotBlue);
+	ClickedButton->Button->SetBackgroundColor(Constants::BeatShotBlue);
 	const int32 ClickedButtonQuality = ClickedButton->Quality;
 	UVideoSettingButton* Head = ClickedButton->Next;
 
 	while (Head->Quality != ClickedButtonQuality)
 	{
-		Head->Button->SetBackgroundColor(White);
+		Head->Button->SetBackgroundColor(FLinearColor::White);
 		Head = Head->Next;
 	}
 }
 
-UVideoSettingButton* UVideoAndSoundSettingsWidget::FindVideoSettingButtonFromQuality(const int32 Quality, ESettingType SettingType)
+UVideoSettingButton* UVideoAndSoundSettingsWidget::FindVideoSettingButtonFromQuality(const int32 Quality, const ESettingType& SettingType) const
 {
 	UVideoSettingButton* Head = nullptr;
 	switch (SettingType)

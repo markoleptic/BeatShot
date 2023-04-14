@@ -192,11 +192,10 @@ void ABSPlayerController::ShowPlayerHUD()
 		return;
 	}
 	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
-	const UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
-	if (GI->BSConfig.BaseGameMode == EDefaultMode::BeatGrid )
+	if (Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.BaseGameMode == EDefaultMode::BeatGrid )
 	{
 		PlayerHUD->TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
 		PlayerHUD->StreakBox->SetVisibility(ESlateVisibility::Collapsed);
@@ -273,12 +272,13 @@ void ABSPlayerController::ShowPostGameMenu()
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
 	PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
+	
 	SetInputMode(FInputModeUIOnly());
 	SetShowMouseCursor(true);
 	SetPlayerEnabledState(false);
+	
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -461,7 +461,6 @@ void ABSPlayerController::OnFadeScreenFromBlackFinish()
 
 void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings)
 {
-	UE_LOG(LogTemp, Display, TEXT("OnPlayerSettingsChanged called"));
 	if (PlayerSettings.bShowFPSCounter)
 	{
 		if (!FPSCounter)

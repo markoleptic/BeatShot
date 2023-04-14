@@ -21,6 +21,7 @@ class USERINTERFACE_API UGameSettingsWidget : public UUserWidget, public ISaveLo
 	virtual void NativeConstruct() override;
 
 public:
+	/** Returns OnPlayerSettingsChangedDelegate_Game, the delegate that is broadcast when this class saves Game settings */
 	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
 
 protected:
@@ -44,6 +45,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
 	UCheckBox* ShowStreakCombatTextCheckBox;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* SaveButton_Game;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* ResetButton_Game;
+
 	UFUNCTION()
 	void OnStartTargetColorChanged(const FLinearColor& NewColor);
 	UFUNCTION()
@@ -60,14 +68,7 @@ protected:
 	void OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnShowCombatTextCheckStateChanged(const bool bIsChecked);
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USavedTextWidget* SavedTextWidget;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* SaveButton_Game;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* ResetButton_Game;
-
+	
 	/** Saves the Game Settings */
 	UFUNCTION()
 	void OnSaveButtonClicked_Game();

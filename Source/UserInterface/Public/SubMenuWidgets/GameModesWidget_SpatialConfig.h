@@ -7,7 +7,7 @@
 #include "GlobalEnums.h"
 #include "GlobalStructs.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
-#include "GameModes_TargetSpread.generated.h"
+#include "GameModesWidget_SpatialConfig.generated.h"
 
 class UBSHorizontalBox;
 class UTooltipImage;
@@ -18,14 +18,16 @@ class UCheckBox;
 class UTooltipImage;
 
 UCLASS()
-class USERINTERFACE_API UGameModes_TargetSpread : public UBSSettingCategoryWidget, public ITooltipInterface
+class USERINTERFACE_API UGameModesWidget_SpatialConfig : public UBSSettingCategoryWidget, public ITooltipInterface
 {
 	GENERATED_BODY()
 	
 	friend class UGameModesWidget;
 	
-	virtual UTooltipWidget* ConstructTooltipWidget() override;
 	virtual void NativeConstruct() override;
+	virtual UTooltipWidget* ConstructTooltipWidget() override;
+
+public:
 	void InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode);
 	FBS_SpatialConfig GetSpatialConfig() const;
 
@@ -43,7 +45,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_MinTargetDistance;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_MoveTargetsForward;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")

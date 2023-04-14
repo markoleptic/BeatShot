@@ -4,7 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AASettingsWidget.h"
+#include "AudioAnalyzerSettingsWidget.h"
 #include "CrossHairSettingsWidget.h"
 #include "GameSettingsWidget.h"
 #include "VideoAndSoundSettingsWidget.h"
@@ -12,14 +12,9 @@
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
-class UCrossHairSettingsWidget;
-class UGameSettingsWidget;
-class UVideoAndSoundSettingsWidget;
-class USensitivitySettingsWidget;
 class USlideRightButton;
 class UVerticalBox;
 class UWidgetSwitcher;
-
 
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget : public UUserWidget
@@ -30,13 +25,23 @@ public:
 	/** Whether or not this instance of SettingsMenuWidget belongs to MainMenuWidget or not */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsMainMenuChild;
-	
+
+	/** Broadcast to owning widget that user has clicked restart button */
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
+	/** Returns the UGameSettings widget's OnPlayerSettingsChangedDelegate_Game, which is broadcast when the widget changes Game Settings */
 	FOnPlayerSettingsChanged_Game& GetGameDelegate() const { return Game_Widget->GetPublicGameSettingsChangedDelegate(); }
+
+	/** Returns the UCrossHairSettings widget's OnPlayerSettingsChangedDelegate_Game, which is broadcast when the widget changes Game Settings */
 	FOnPlayerSettingsChanged_CrossHair& GetCrossHairDelegate() const { return CrossHair_Widget->GetPublicCrossHairSettingsChangedDelegate(); }
+
+	/** Returns the UVideoAndSoundSettings widget's OnPlayerSettingsChangedDelegate_Game, which is broadcast when the widget changes Game Settings */
 	FOnPlayerSettingsChanged_VideoAndSound& GetVideoAndSoundDelegate() const { return VideoAndSound_Widget->GetPublicVideoAndSoundSettingsChangedDelegate(); }
+
+	/** Returns the UAASettings widget's OnPlayerSettingsChangedDelegate_AudioAnalyzer, which is broadcast when the widget changes Audio Analyzer Settings */
 	FOnPlayerSettingsChanged_AudioAnalyzer& GetAudioAnalyzerDelegate() const { return AudioAnalyzer_Widget->GetPublicAudioAnalyzerSettingsChangedDelegate(); }
+
+	/** Returns the USensitivity widget's OnPlayerSettingsChangedDelegate_User, which is broadcast when the widget changes User Settings */
 	FOnPlayerSettingsChanged_User& GetUserDelegate() const { return Sensitivity_Widget->GetPublicUserSettingsChangedDelegate();}
 	
 protected:
@@ -76,7 +81,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCrossHairSettingsWidget* CrossHair_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UAASettingsWidget* AudioAnalyzer_Widget;
+	UAudioAnalyzerSettingsWidget* AudioAnalyzer_Widget;
 
 	/* ------------------ */
 	/* Navigation Buttons */

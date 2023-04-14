@@ -7,11 +7,20 @@
 void UBSSettingCategoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	MainContainer->SetHorizontalBoxBorders();
+	InitSettingCategoryWidget();
+}
+
+void UBSSettingCategoryWidget::InitSettingCategoryWidget()
+{
 	UpdateBrushColors();
+}
+
+void UBSSettingCategoryWidget::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox)
+{
+	MainContainer->AddWidgetBoxPair(InWidget, InBox);
 }
 
 void UBSSettingCategoryWidget::UpdateBrushColors() const
 {
-	MainContainer->UpdateBackgroundColors();
+	MainContainer->UpdateBrushColors();
 }

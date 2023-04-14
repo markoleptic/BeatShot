@@ -5,15 +5,16 @@
 #include "CoreMinimal.h"
 #include "GlobalDelegates.h"
 #include "SaveLoadInterface.h"
+#include "TooltipInterface.h"
 #include "WidgetComponents/GameModeButton.h"
 #include "WidgetComponents/TooltipImage.h"
 #include "WidgetComponents/TooltipWidget.h"
-#include "WidgetComponents/ConstrainedSlider.h"
-#include "WidgetComponents/BeatGridSettingsWidget.h"
+#include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
-class UGameModes_TargetSpread;
+class UGameModesWidget_BeatGridConfig;
+class UGameModesWidget_SpatialConfig;
 class UAudioSelectWidget;
 class UHorizontalBox;
 class USavedTextWidget;
@@ -56,13 +57,18 @@ protected:
 	UAudioSelectWidget* AudioSelectWidget;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | TargetSpread")
-	TSubclassOf<UGameModes_TargetSpread> TargetSpreadClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Classes | Spatial Config")
+	TSubclassOf<UGameModesWidget_SpatialConfig> SpatialConfigClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Classes | BeatGrid Config")
+	TSubclassOf<UGameModesWidget_BeatGridConfig> BeatGridConfigClass;
 
-	TObjectPtr<UGameModes_TargetSpread> TargetSpread;
+	TObjectPtr<UGameModesWidget_SpatialConfig> SpatialConfig;
+	TObjectPtr<UGameModesWidget_BeatGridConfig> BeatGridConfig;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
-	UVerticalBox* TargetSpreadBox;
+	UVerticalBox* SpatialConfigBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UVerticalBox* BeatGridBox;
 	
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
@@ -157,7 +163,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
 	UCheckBox* DynamicTargetScaleCheckBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
-	UConstrainedSlider* TargetScaleConstrained;
+	UDoubleSyncedSliderAndTextBox* TargetScaleConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
 	UBorder* AISpecificSettings;
@@ -183,16 +189,11 @@ protected:
 	USlider* AIGammaSlider;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
 	UEditableTextBox* AIGammaValue;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UBorder* BeatGridSpecificSettings;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
-	UBeatGridSettingsWidget* BeatGridSpacingConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
 	UBorder* BeatTrackSpecificSettings;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack")
-	UConstrainedSlider* TargetSpeedConstrained;
+	UDoubleSyncedSliderAndTextBox* TargetSpeedConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* GameModeTemplateQMark;

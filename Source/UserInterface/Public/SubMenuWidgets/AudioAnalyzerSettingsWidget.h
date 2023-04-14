@@ -7,7 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "WidgetComponents/BandChannelWidget.h"
 #include "WidgetComponents/BandThresholdWidget.h"
-#include "AASettingsWidget.generated.h"
+#include "AudioAnalyzerSettingsWidget.generated.h"
 
 DECLARE_DELEGATE(FOnRestartButtonClicked);
 
@@ -24,18 +24,20 @@ class UProgressBar;
 class UPopupMessageWidget;
 
 UCLASS()
-class USERINTERFACE_API UAASettingsWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UAudioAnalyzerSettingsWidget : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
 public:
 	virtual void NativeConstruct() override;
 
+	/** Broadcast when the restart and save button is clicked to apply AudioAnalyzer settings that require a restart */
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
 	/** Do specific things if this instance of AASettings belongs to MainMenuWidget */
 	void InitMainMenuChild();
-	
+
+	/** Returns OnPlayerSettingsChangedDelegate_AudioAnalyzer, the delegate that is broadcast when this class saves Audio Analyzer settings */
 	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_AudioAnalyzer; }
 
 protected:

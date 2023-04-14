@@ -24,6 +24,7 @@ class USERINTERFACE_API UCrossHairSettingsWidget : public UUserWidget, public IS
 	virtual void NativeConstruct() override;
 
 public:
+	/** Returns OnPlayerSettingsChangedDelegate_CrossHair, the delegate that is broadcast when this class saves CrossHair settings */
 	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_CrossHair; }
 
 protected:

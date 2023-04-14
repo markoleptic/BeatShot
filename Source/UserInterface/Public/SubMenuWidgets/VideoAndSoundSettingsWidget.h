@@ -26,14 +26,21 @@ class USERINTERFACE_API UVideoAndSoundSettingsWidget : public UUserWidget, publi
 	virtual void NativeConstruct() override;
 
 public:
-	
+	/** Returns OnPlayerSettingsChangedDelegate_VideoAndSound, the delegate that is broadcast when this class saves Video and Sound settings */
 	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
 
-#pragma region Video
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
+	USoundClass* GlobalSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
+	USoundClass* MenuSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
+	USoundMix* GlobalSoundMix;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | PopUp")
+	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 
 #pragma region Quality
-
-protected:
+	
 	/* Anti-Aliasing */
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
@@ -141,7 +148,7 @@ protected:
 	void SetVideoSettingButtonBackgroundColor(UVideoSettingButton* ClickedButton);
 	/** Returns the associated button given the quality and SettingType */
 	UFUNCTION()
-	UVideoSettingButton* FindVideoSettingButtonFromQuality(const int32 Quality, ESettingType SettingType);
+	UVideoSettingButton* FindVideoSettingButtonFromQuality(const int32 Quality, const ESettingType& SettingType) const;
 
 #pragma endregion
 
@@ -157,56 +164,13 @@ protected:
 	UCheckBox* VSyncEnabledCheckBox;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UCheckBox* FPSCounterCheckBox;
-
-	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
-	FIntPoint LastConfirmedResolution;
-
-	UFUNCTION()
-	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnResolutionSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnFrameLimitMenuValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnFrameLimitGameValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnVSyncEnabledCheckStateChanged(const bool bIsChecked);
-	UFUNCTION()
-	void OnFPSCounterCheckStateChanged(const bool bIsChecked);
-
-	/** Clears and repopulates the ResolutionComboBox based on the resolutions from
-	 *  GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
-	UFUNCTION()
-	void PopulateResolutionComboBox();
-
-#pragma	endregion
-
-#pragma region NVIDIA
-
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video|NVIDIA")
+	
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video | NVIDIA")
 	UComboBoxString* ReflexComboBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video|NVIDIA")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
 	UTextBlock* DLSSText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video|NVIDIA")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
 	UComboBoxString* DLSSComboBox;
-
-	bool bDLSSSupported = false;
-	bool bNISSupported = false;
-
-	UFUNCTION()
-	void OnReflexSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION(BlueprintImplementableEvent)
-	/* Hopefully a temporary solution. Calls the GetReflexAvailable function from ReflexBlueprintLibrary */
-	bool GetReflexAvailable();
-	/* Hopefully a temporary solution. Calls the SetReflexMode function from ReflexBlueprintLibrary */
-	UFUNCTION(BlueprintImplementableEvent)
-	void SetReflexMode(const EBudgetReflexMode Mode);
-	UFUNCTION()
-	void OnDLSSSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-
-#pragma endregion
-
-#pragma region Sound
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
 	UEditableTextBox* GlobalSoundValue;
@@ -221,13 +185,31 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
 	USlider* MusicSoundSlider;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
-	USoundClass* GlobalSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
-	USoundClass* MenuSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
-	USoundMix* GlobalSoundMix;
-
+	UPROPERTY()
+	UPopupMessageWidget* PopupMessageWidget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* SaveButton_VideoAndSound;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UButton* ResetButton_VideoAndSound;
+	
+	UFUNCTION()
+	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnResolutionSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnFrameLimitMenuValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnFrameLimitGameValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnVSyncEnabledCheckStateChanged(const bool bIsChecked);
+	UFUNCTION()
+	void OnFPSCounterCheckStateChanged(const bool bIsChecked);
+	UFUNCTION()
+	void OnReflexSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnDLSSSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnGlobalSoundSliderChanged(const float NewValue);
 	UFUNCTION()
@@ -240,49 +222,19 @@ protected:
 	void OnMenuSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnMusicSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-
-#pragma endregion
-
-#pragma region LoadingAndSaving
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
-	UPROPERTY()
-	UPopupMessageWidget* PopupMessageWidget;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USavedTextWidget* SavedTextWidget;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* SaveButton_VideoAndSound;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* ResetButton_VideoAndSound;
-
-	/** The Player Settings that are changed during setting menu interaction */
-	UPROPERTY()
-	FPlayerSettings_VideoAndSound NewSettings;
-
-	/** Fills all widgets with values from NewSettings */
-	void PopulateSettings();
-
-	/** Saves the Video and Sound Settings */
+	
+	/** Clears and repopulates the ResolutionComboBox based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
 	UFUNCTION()
-	void OnSaveButtonClicked_VideoAndSound();
-
-	/** Reset Video and Sound Settings to defaults and repopulate in Settings Menu. Does not automatically save */
-	UFUNCTION()
-	void OnResetButtonClicked_VideoAndSound();
-
-#pragma endregion
-
-	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes */
-	UPROPERTY()
-	FTimerHandle RevertVideoSettingsTimer;
-
-	/** The color used to change the VideoSettingButton color to when selected */
-	const FLinearColor BeatShotBlue = FLinearColor(0.049707, 0.571125, 0.83077, 1.0);
-
-	/** The color used to change the VideoSettingButton color to when not selected */
-	const FLinearColor White = FLinearColor::White;
-
+	void PopulateResolutionComboBox();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	/** Hopefully a temporary solution. Calls the GetReflexAvailable function from ReflexBlueprintLibrary */
+	bool GetReflexAvailable();
+	
+	/** Hopefully a temporary solution. Calls the SetReflexMode function from ReflexBlueprintLibrary */
+	UFUNCTION(BlueprintImplementableEvent)
+	void SetReflexMode(const EBudgetReflexMode Mode);
+	
 	/** Rounds the slider value to the snap size and sets the corresponding text box text to the rounded value */
 	UFUNCTION()
 	float ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange, const float SnapSize);
@@ -302,4 +254,29 @@ protected:
 	/** Reverts the video settings and closes the ConfirmVideoSettingsMessage */
 	UFUNCTION()
 	void OnCancelVideoSettingsButtonClicked();
+
+	/** Fills all widgets with values from NewSettings */
+	void PopulateSettings();
+
+	/** Saves the Video and Sound Settings */
+	UFUNCTION()
+	void OnSaveButtonClicked_VideoAndSound();
+
+	/** Reset Video and Sound Settings to defaults and repopulate in Settings Menu. Does not automatically save */
+	UFUNCTION()
+	void OnResetButtonClicked_VideoAndSound();
+	
+	/** The Player Settings that are changed during setting menu interaction */
+	UPROPERTY()
+	FPlayerSettings_VideoAndSound NewSettings;
+
+	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
+	FIntPoint LastConfirmedResolution;
+
+	bool bDLSSSupported = false;
+	bool bNISSupported = false;
+	
+	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes */
+	UPROPERTY()
+	FTimerHandle RevertVideoSettingsTimer;
 };

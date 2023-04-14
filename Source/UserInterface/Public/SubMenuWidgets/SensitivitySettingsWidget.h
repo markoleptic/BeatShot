@@ -21,7 +21,7 @@ class USERINTERFACE_API USensitivitySettingsWidget : public UUserWidget, public 
 	virtual void NativeConstruct() override;
 
 public:
-
+	/** Returns OnPlayerSettingsChangedDelegate_User, the delegate that is broadcast when this class saves User settings */
 	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_User; }
 
 protected:

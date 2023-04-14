@@ -2,6 +2,7 @@
 
 
 // ReSharper disable CppMemberFunctionMayBeConst
+
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "GlobalConstants.h"
 #include "Blueprint/WidgetTree.h"
@@ -17,13 +18,14 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
-#include "WidgetComponents/ConstrainedSlider.h"
+#include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "WidgetComponents/GameModeButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 #include "WidgetComponents/SlideRightButton.h"
 #include "WidgetComponents/TooltipWidget.h"
-#include "SubMenuWidgets/GameModes_TargetSpread.h"
+#include "SubMenuWidgets/GameModesWidget_SpatialConfig.h"
 #include "UserInterface.h"
+#include "SubMenuWidgets/GameModesWidget_BeatGridConfig.h"
 
 using namespace Constants;
 
@@ -98,9 +100,12 @@ void UGameModesWidget::NativeConstruct()
 	TrackingSpeedSliderStruct.GridSnapSize = SnapSize_TargetSpeed;
 	TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
 
-	//UBSSettingCategoryWidget* TargetSpreadWidget = WidgetTree->ConstructWidget<UBSSettingCategoryWidget>(TargetSpreadClass);
-	TargetSpread = CreateWidget<UGameModes_TargetSpread>(this, TargetSpreadClass);
-	TargetSpreadBox->AddChildToVerticalBox(TargetSpread);
+	//UBSSettingCategoryWidget* TargetSpreadWidget = WidgetTree->ConstructWidget<UBSSettingCategoryWidget>(SpatialConfigClass);
+	SpatialConfig = CreateWidget<UGameModesWidget_SpatialConfig>(this, SpatialConfigClass);
+	SpatialConfigBox->AddChildToVerticalBox(SpatialConfig);
+
+	BeatGridConfig = CreateWidget<UGameModesWidget_BeatGridConfig>(this, BeatGridConfigClass);
+	BeatGridBox->AddChildToVerticalBox(BeatGridConfig);
 
 	/* Tooltips */
 	{
@@ -181,8 +186,8 @@ void UGameModesWidget::BindAllDelegates()
 	AIGammaValue->OnTextCommitted.AddDynamic(this, &UGameModesWidget::OnTextCommitted_AIGamma);
 
 	/** BeatGrid Options */
-	TargetScaleConstrained->OnMaxValueChanged.AddUObject(BeatGridSpacingConstrained, &UBeatGridSettingsWidget::OnBeatGridUpdate_MaxTargetScale);
-	BeatGridSpacingConstrained->OnBeatGridUpdate_SaveStartButtonStates.BindUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
+	TargetScaleConstrained->OnMaxValueChanged.AddUObject(BeatGridConfig, &UGameModesWidget_BeatGridConfig::OnBeatGridUpdate_MaxTargetScale);
+	BeatGridConfig->OnBeatGridUpdate_SaveStartButtonStates.BindUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
 }
 
 void UGameModesWidget::SetHiddenConfigParameters(FBSConfig& Config)
@@ -565,10 +570,10 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		BaseGameModeComboBox->SetSelectedOption("MultiBeat");
 		break;
 	case EDefaultMode::BeatGrid:
-		BeatGridSpecificSettings->SetVisibility(ESlateVisibility::Visible);
+		BeatGridBox->SetVisibility(ESlateVisibility::Visible);
 		BaseGameModeComboBox->SetSelectedOption("BeatGrid");
-		BeatGridSpacingConstrained->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetScaleConstrained->TextTooltipBox_Max);
-		BeatGridSpacingConstrained->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
+		BeatGridConfig->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetScaleConstrained->TextTooltipBox_Max);
+		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		AISpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EDefaultMode::BeatTrack:
@@ -585,7 +590,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	
 	if (InBSConfig.BaseGameMode != EDefaultMode::BeatGrid)
 	{
-		BeatGridSpecificSettings->SetVisibility(ESlateVisibility::Collapsed);
+		BeatGridBox->SetVisibility(ESlateVisibility::Collapsed);
 		AISpecificSettings->SetVisibility(ESlateVisibility::Visible);
 		EnableAICheckBox->SetIsChecked(InBSConfig.AIConfig.bEnableRLAgent);
 		AIAlphaSlider->SetValue(InBSConfig.AIConfig.Alpha);
@@ -635,7 +640,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		}
 	}
 
-	TargetSpread->InitializeTargetSpread(InBSConfig.SpatialConfig, InBSConfig.BaseGameMode);
+	SpatialConfig->InitializeTargetSpread(InBSConfig.SpatialConfig, InBSConfig.BaseGameMode);
 	GameModeDifficultyComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(InBSConfig.GameModeDifficulty).ToString());
 	PlayerDelaySlider->SetValue(InBSConfig.AudioConfig.PlayerDelay);
 	PlayerDelayValue->SetText(FText::AsNumber(InBSConfig.AudioConfig.PlayerDelay));
@@ -704,8 +709,8 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	ReturnStruct.AIConfig.Epsilon = FMath::GridSnap(FMath::Clamp(AIEpsilonSlider->GetValue(), MinValue_Epsilon, MaxValue_Epsilon), SnapSize_Epsilon);
 	ReturnStruct.AIConfig.Gamma = FMath::GridSnap(FMath::Clamp(AIGammaSlider->GetValue(), MinValue_Gamma, MaxValue_Gamma), SnapSize_Gamma);
 
-	ReturnStruct.SpatialConfig = TargetSpread->GetSpatialConfig();
-	ReturnStruct.BeatGridConfig = BeatGridSpacingConstrained->GetBeatGridConfig();
+	ReturnStruct.SpatialConfig = SpatialConfig->GetSpatialConfig();
+	ReturnStruct.BeatGridConfig = BeatGridConfig->GetBeatGridConfig();
 	
 	ReturnStruct.BeatTrackConfig.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	ReturnStruct.BeatTrackConfig.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MaxSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
@@ -737,7 +742,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 {
 	const bool bNoSavedCustom = LoadCustomGameModes().IsEmpty();
 	const bool bBeatGridMode = BaseGameModeComboBox->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(EDefaultMode::BeatGrid).ToString());
-	const bool bBeatGridIsConstrained = BeatGridSpacingConstrained->IsAnyParameterConstrained();
+	const bool bBeatGridIsConstrained = BeatGridConfig->IsAnyParameterConstrained();
 	const bool bDefaultMode = IsDefaultGameMode(GameModeNameComboBox->GetSelectedOption());
 	const bool bCustomMode = IsCustomGameMode(GameModeNameComboBox->GetSelectedOption());
 	const bool bGameModeNameComboBoxEmpty = GameModeNameComboBox->GetSelectedOption().IsEmpty();

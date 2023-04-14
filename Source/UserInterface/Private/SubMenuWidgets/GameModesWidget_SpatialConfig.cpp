@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 // ReSharper disable CppMemberFunctionMayBeConst
-#include "SubMenuWidgets/GameModes_TargetSpread.h"
+#include "SubMenuWidgets/GameModesWidget_SpatialConfig.h"
 #include "GlobalConstants.h"
 #include "UserInterface.h"
 #include "Components/CheckBox.h"
@@ -14,12 +14,12 @@
 
 using namespace Constants;
 
-UTooltipWidget* UGameModes_TargetSpread::ConstructTooltipWidget()
+UTooltipWidget* UGameModesWidget_SpatialConfig::ConstructTooltipWidget()
 {
 	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
 }
 
-void UGameModes_TargetSpread::NativeConstruct()
+void UGameModesWidget_SpatialConfig::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
@@ -29,21 +29,21 @@ void UGameModes_TargetSpread::NativeConstruct()
 	AddToTooltipData(QMark_ForwardSpread, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread"));
 	AddToTooltipData(QMark_MinDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
 	AddToTooltipData(QMark_SpreadType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpreadType"));
-	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModes_TargetSpread::OnCheckStateChanged_HeadShotOnly);
-	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModes_TargetSpread::OnCheckStateChanged_MoveTargetsForward);
-	Slider_MinTargetDistance->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_MinTargetDistance);
-	Value_MinTargetDistance->OnTextCommitted.AddDynamic(this, &UGameModes_TargetSpread::OnTextCommitted_MinTargetDistance);
-	Slider_HorizontalSpread->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_HorizontalSpread);
-	Value_HorizontalSpread->OnTextCommitted.AddDynamic(this, &UGameModes_TargetSpread::OnTextCommitted_HorizontalSpread);
-	Slider_VerticalSpread->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_VerticalSpread);
-	Value_VerticalSpread->OnTextCommitted.AddDynamic(this, &UGameModes_TargetSpread::OnTextCommitted_VerticalSpread);
-	Slider_ForwardSpread->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_ForwardSpread);
-	Value_ForwardSpread->OnTextCommitted.AddDynamic(this, &UGameModes_TargetSpread::OnTextCommitted_ForwardSpread);
-	Slider_FloorDistance->OnValueChanged.AddDynamic(this, &UGameModes_TargetSpread::OnSliderChanged_FloorDistance);
-	Value_FloorDistance->OnTextCommitted.AddDynamic(this, &UGameModes_TargetSpread::OnTextCommitted_FloorDistance);
+	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly);
+	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward);
+	Slider_MinTargetDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_MinTargetDistance);
+	Value_MinTargetDistance->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_MinTargetDistance);
+	Slider_HorizontalSpread->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_HorizontalSpread);
+	Value_HorizontalSpread->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_HorizontalSpread);
+	Slider_VerticalSpread->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_VerticalSpread);
+	Value_VerticalSpread->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_VerticalSpread);
+	Slider_ForwardSpread->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_ForwardSpread);
+	Value_ForwardSpread->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_ForwardSpread);
+	Slider_FloorDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance);
+	Value_FloorDistance->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_FloorDistance);
 }
 
-void UGameModes_TargetSpread::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode)
+void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode)
 {
 	// Lock vertical and horizontal spread if HeadShot height only, otherwise unlock them
 	if (SpatialConfig.bUseHeadshotHeight)
@@ -113,7 +113,7 @@ void UGameModes_TargetSpread::InitializeTargetSpread(const FBS_SpatialConfig& Sp
 	Value_ForwardSpread->SetText(FText::AsNumber(SpatialConfig.MoveForwardDistance));
 }
 
-FBS_SpatialConfig UGameModes_TargetSpread::GetSpatialConfig() const
+FBS_SpatialConfig UGameModesWidget_SpatialConfig::GetSpatialConfig() const
 {
 	FBS_SpatialConfig SpatialConfig;
 	SpatialConfig.bUseHeadshotHeight = CheckBox_HeadShotOnly->IsChecked();
@@ -127,57 +127,57 @@ FBS_SpatialConfig UGameModes_TargetSpread::GetSpatialConfig() const
 	return SpatialConfig;
 }
 
-void UGameModes_TargetSpread::OnTextCommitted_MinTargetDistance(const FText& NewMinTargetDistance, ETextCommit::Type CommitType)
+void UGameModesWidget_SpatialConfig::OnTextCommitted_MinTargetDistance(const FText& NewMinTargetDistance, ETextCommit::Type CommitType)
 {
 	UUserInterface::OnEditableTextBoxChanged(NewMinTargetDistance, Value_MinTargetDistance, Slider_MinTargetDistance, Constants::SnapSize_MinTargetDistance,MinValue_MinTargetDistance, MaxValue_MinTargetDistance);
 }
 
-void UGameModes_TargetSpread::OnTextCommitted_HorizontalSpread(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
+void UGameModesWidget_SpatialConfig::OnTextCommitted_HorizontalSpread(const FText& NewHorizontalSpread, ETextCommit::Type CommitType)
 {
 	UUserInterface::OnEditableTextBoxChanged(NewHorizontalSpread, Value_HorizontalSpread, Slider_HorizontalSpread, SnapSize_HorizontalSpread, MinValue_HorizontalSpread, MaxValue_HorizontalSpread);
 }
 
-void UGameModes_TargetSpread::OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
+void UGameModesWidget_SpatialConfig::OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType)
 {
 	UUserInterface::OnEditableTextBoxChanged(NewVerticalSpread, Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
 }
 
-void UGameModes_TargetSpread::OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType)
+void UGameModesWidget_SpatialConfig::OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType)
 {
 	UUserInterface::OnEditableTextBoxChanged(NewForwardSpread, Value_ForwardSpread, Slider_ForwardSpread, SnapSize_HorizontalSpread, MinValue_ForwardSpread, MaxValue_ForwardSpread);
 }
 
-void UGameModes_TargetSpread::OnTextCommitted_FloorDistance(const FText& NewFloorDistance, ETextCommit::Type CommitType)
+void UGameModesWidget_SpatialConfig::OnTextCommitted_FloorDistance(const FText& NewFloorDistance, ETextCommit::Type CommitType)
 {
 	UUserInterface::OnEditableTextBoxChanged(NewFloorDistance, Value_FloorDistance, Slider_FloorDistance, SnapSize_FloorDistance, MinValue_FloorDistance, MaxValue_FloorDistance);
 }
 
-void UGameModes_TargetSpread::OnSliderChanged_MinTargetDistance(const float NewMinTargetDistance)
+void UGameModesWidget_SpatialConfig::OnSliderChanged_MinTargetDistance(const float NewMinTargetDistance)
 {
 	UUserInterface::OnSliderChanged(NewMinTargetDistance, Value_MinTargetDistance, SnapSize_MinTargetDistance);
 }
 
-void UGameModes_TargetSpread::OnSliderChanged_HorizontalSpread(const float NewHorizontalSpread)
+void UGameModesWidget_SpatialConfig::OnSliderChanged_HorizontalSpread(const float NewHorizontalSpread)
 {
 	UUserInterface::OnSliderChanged(NewHorizontalSpread, Value_HorizontalSpread, SnapSize_HorizontalSpread);
 }
 
-void UGameModes_TargetSpread::OnSliderChanged_VerticalSpread(const float NewVerticalSpread)
+void UGameModesWidget_SpatialConfig::OnSliderChanged_VerticalSpread(const float NewVerticalSpread)
 {
 	UUserInterface::OnSliderChanged(NewVerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
 }
 
-void UGameModes_TargetSpread::OnSliderChanged_ForwardSpread(const float NewForwardSpread)
+void UGameModesWidget_SpatialConfig::OnSliderChanged_ForwardSpread(const float NewForwardSpread)
 {
 	UUserInterface::OnSliderChanged(NewForwardSpread, Value_ForwardSpread, SnapSize_HorizontalSpread);
 }
 
-void UGameModes_TargetSpread::OnSliderChanged_FloorDistance(const float NewFloorDistance)
+void UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance(const float NewFloorDistance)
 {
 	UUserInterface::OnSliderChanged(NewFloorDistance, Value_FloorDistance, SnapSize_FloorDistance);
 }
 
-ESpreadType UGameModes_TargetSpread::GetSpreadType() const
+ESpreadType UGameModesWidget_SpatialConfig::GetSpreadType() const
 {
 	const FString SelectedSpread = ComboBox_SpreadType->GetSelectedOption();
 	if (SelectedSpread.IsEmpty())
@@ -195,7 +195,7 @@ ESpreadType UGameModes_TargetSpread::GetSpreadType() const
 	return ESpreadType::None;
 }
 
-void UGameModes_TargetSpread::OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly)
+void UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly)
 {
 	if (bHeadshotOnly)
 	{
@@ -219,7 +219,7 @@ void UGameModes_TargetSpread::OnCheckStateChanged_HeadShotOnly(const bool bHeads
 	UUserInterface::OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
 }
 
-void UGameModes_TargetSpread::OnCheckStateChanged_MoveTargetsForward(const bool bUseForwardSpread)
+void UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward(const bool bUseForwardSpread)
 {
 	if (bUseForwardSpread)
 	{
