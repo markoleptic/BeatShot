@@ -65,11 +65,15 @@ struct FCommonScoreInfo
 	UPROPERTY()
 	TArray<int32> TotalHits;
 
+	UPROPERTY()
+	TArray<float> QTable;
+
 	FCommonScoreInfo()
 	{
 		Accuracy = TArray<float>();
 		TotalSpawns = TArray<int32>();
 		TotalHits = TArray<int32>();
+		QTable = TArray<float>();
 	}
 
 	FCommonScoreInfo(const int32 Size)
@@ -80,6 +84,7 @@ struct FCommonScoreInfo
 		TotalSpawns.Init(-1, Size);
 		TotalHits = TArray<int32>();
 		TotalHits.Init(0, Size);
+		QTable.Init(0.f, Size * Size);
 	}
 
 	/** Updates TotalSpawns, TotalHits, and calls UpdateAccuracy */
@@ -131,20 +136,20 @@ struct FBS_DefiningConfig
 {
 	GENERATED_BODY()
 	
-	/* The default game mode name, or custom if custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	/* The default game mode name. Custom game modes are ALWAYS Custom */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
 	EDefaultMode DefaultMode;
 
 	/* The base game mode this game mode is based off of */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
 	EDefaultMode BaseGameMode;
 
 	/* Custom game mode name if custom, otherwise empty string */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
 	FString CustomGameModeName;
 
 	/* Default game mode difficulties, or none if custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
 	EGameModeDifficulty Difficulty;
 
 	FBS_DefiningConfig()
@@ -167,10 +172,12 @@ struct FBS_DefiningConfig
 	{
 		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName))
 		{
+			/* Custom game modes don't have a difficulty preset */
 			if (!CustomGameModeName.IsEmpty())
 			{
 				return true;
 			}
+			/* Default game modes must match the difficulty to be considered equal */
 			if (CustomGameModeName.IsEmpty() && Difficulty == Other.Difficulty)
 			{
 				return true;
@@ -181,9 +188,9 @@ struct FBS_DefiningConfig
 	}
 };
 
-FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& MidiTime)
+FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& Config)
 {
-	return FCrc::MemCrc32(&MidiTime, sizeof(FBS_DefiningConfig));
+	return FCrc::MemCrc32(&Config, sizeof(FBS_DefiningConfig));
 }
 
 USTRUCT(BlueprintType)
@@ -194,10 +201,6 @@ struct FBS_AIConfig
 	/* Whether or not to enable the reinforcement learning agent to handle target spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	bool bEnableRLAgent;
-
-	/* The stored QTable for this game mode */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
-	TArray<float> QTable;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
@@ -215,7 +218,6 @@ struct FBS_AIConfig
 	FBS_AIConfig()
 	{
 		bEnableRLAgent = false;
-		QTable = TArray<float>();
 		Alpha = 0.9f;
 		Epsilon = 0.9f;
 		Gamma = 0.9f;
@@ -362,6 +364,10 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
 	float TargetMaxLifeSpan;
 
+	/* Delay between time between target spawn and peak green target color. Same as PlayerDelay in FBS_AudioConfig */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	float SpawnBeatDelay;
+
 	FBS_TargetConfig()
 	{
 		UseDynamicSizing = false;
@@ -369,6 +375,7 @@ struct FBS_TargetConfig
 		MaxTargetScale = 2.f;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
+		SpawnBeatDelay = 0.3f;
 	}
 };
 
@@ -491,44 +498,38 @@ USTRUCT(BlueprintType)
 struct FBSConfig
 {
 	GENERATED_BODY()
-	
-	/* The default game mode name, or custom if custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
-	EDefaultMode DefaultMode;
 
-	/* The base game mode this game mode is based off of */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
-	EDefaultMode BaseGameMode;
+	/** The defining config for a game mode, containing the names, base, difficulty */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	FBS_DefiningConfig DefiningConfig;
 
-	/* Custom game mode name if custom, otherwise empty string */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
-	FString CustomGameModeName;
-
-	/* Default game mode difficulties, or none if custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties")
-	EGameModeDifficulty GameModeDifficulty;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Audio")
-	FBS_AudioConfig AudioConfig;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
-	FBS_TargetConfig TargetConfig;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spacing")
-	FBS_SpatialConfig SpatialConfig;
-	
+	/** Contains info for the target spawner about how to handle the RLAgent */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
 	FBS_AIConfig AIConfig;
-	
+
+	/** Contains info for the AudioAnalyzer and PlayerHUD */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Audio")
+	FBS_AudioConfig AudioConfig;
+
+	/** Contains info for the target spawner for BeatGrid specific game modes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	FBS_BeatGridConfig BeatGridConfig;
 
+	/** Contains info for the target spawner for BeatTrack specific game modes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	FBS_BeatTrackConfig BeatTrackConfig;
 
+	/** Contains info for the target spawner about how to lay out the targets in space */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spacing")
+	FBS_SpatialConfig SpatialConfig;
+
+	/** Contains info for the target spawner about how to spawn the targets, as well as info to give the targets */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
+	FBS_TargetConfig TargetConfig;
+	
 	FORCEINLINE bool operator==(const FBSConfig& Other) const
 	{
-		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName))
+		if (DefiningConfig == Other.DefiningConfig)
 		{
 			return true;
 		}
@@ -538,41 +539,38 @@ struct FBSConfig
 	/* Generic initialization */
 	FBSConfig()
 	{
-		DefaultMode = EDefaultMode::Custom;
-		BaseGameMode = EDefaultMode::MultiBeat;
-		CustomGameModeName = "";
-		GameModeDifficulty = EGameModeDifficulty::None;
-		SpatialConfig.SpreadType = ESpreadType::None;
-		
-		AudioConfig = FBS_AudioConfig();
-		TargetConfig = FBS_TargetConfig();
-		SpatialConfig = FBS_SpatialConfig();
+		DefiningConfig = FBS_DefiningConfig();
 		AIConfig = FBS_AIConfig();
+		AudioConfig = FBS_AudioConfig();
 		BeatGridConfig = FBS_BeatGridConfig();
 		BeatTrackConfig = FBS_BeatTrackConfig();
+		SpatialConfig = FBS_SpatialConfig();
+		TargetConfig = FBS_TargetConfig();
 	}
 
 	FBSConfig(const EDefaultMode InDefaultMode, const EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, const ESpreadType NewSpreadType = ESpreadType::None)
 	{
-		DefaultMode = InDefaultMode;
-		BaseGameMode = EDefaultMode::MultiBeat;
-		CustomGameModeName = "";
-		GameModeDifficulty = NewGameModeDifficulty;
-		SpatialConfig.SpreadType = NewSpreadType;
-		
-		AudioConfig = FBS_AudioConfig();
-		TargetConfig = FBS_TargetConfig();
-		SpatialConfig = FBS_SpatialConfig();
+		DefiningConfig = FBS_DefiningConfig();
 		AIConfig = FBS_AIConfig();
+		AudioConfig = FBS_AudioConfig();
 		BeatGridConfig = FBS_BeatGridConfig();
 		BeatTrackConfig = FBS_BeatTrackConfig();
+		SpatialConfig = FBS_SpatialConfig();
+		TargetConfig = FBS_TargetConfig();
 
-		switch (DefaultMode)
+		DefiningConfig.DefaultMode = InDefaultMode;
+		DefiningConfig.BaseGameMode = EDefaultMode::MultiBeat;
+		DefiningConfig.CustomGameModeName = "";
+		DefiningConfig.Difficulty = NewGameModeDifficulty;
+
+		SpatialConfig.SpreadType = NewSpreadType;
+
+		switch (DefiningConfig.DefaultMode)
 		{
 		case EDefaultMode::SingleBeat:
-			BaseGameMode = EDefaultMode::SingleBeat;
+			DefiningConfig.BaseGameMode = EDefaultMode::SingleBeat;
 			TargetConfig.UseDynamicSizing = true;
-			switch (GameModeDifficulty)
+			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
 				AudioConfig.PlayerDelay = 0.3f;
@@ -616,9 +614,9 @@ struct FBSConfig
 			}
 			break;
 		case EDefaultMode::MultiBeat:
+			DefiningConfig.BaseGameMode = EDefaultMode::MultiBeat;
 			TargetConfig.UseDynamicSizing = true;
-			BaseGameMode = EDefaultMode::MultiBeat;
-			switch (GameModeDifficulty)
+			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
 				AudioConfig.PlayerDelay = 0.35f;
@@ -662,11 +660,11 @@ struct FBSConfig
 			}
 			break;
 		case EDefaultMode::BeatGrid:
-			SpatialConfig.SpreadType = ESpreadType::None;
-			BaseGameMode = EDefaultMode::BeatGrid;
+			DefiningConfig.BaseGameMode = EDefaultMode::BeatGrid;
+			BeatGridConfig.SetConfigByDifficulty(DefiningConfig.Difficulty);
 			SpatialConfig.BoxBounds = FVector(0.f, 3200.f, 1000.f);
-			BeatGridConfig.SetConfigByDifficulty(GameModeDifficulty);
-			switch (GameModeDifficulty)
+			SpatialConfig.SpreadType = ESpreadType::None;
+			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
 				AudioConfig.PlayerDelay = 0.35f;
@@ -694,12 +692,12 @@ struct FBSConfig
 			}
 			break;
 		case EDefaultMode::BeatTrack:
-			SpatialConfig.SpreadType = ESpreadType::None;
-			BaseGameMode = EDefaultMode::BeatTrack;
+			DefiningConfig.BaseGameMode = EDefaultMode::BeatTrack;
 			AudioConfig.PlayerDelay = 0.f;
+			BeatTrackConfig.SetConfigByDifficulty(DefiningConfig.Difficulty);
+			SpatialConfig.SpreadType = ESpreadType::None;
 			TargetConfig.TargetMaxLifeSpan = 0.f;
-			BeatTrackConfig.SetConfigByDifficulty(GameModeDifficulty);
-			switch (GameModeDifficulty)
+			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
 				TargetConfig.TargetSpawnCD = 0.75f;
@@ -723,6 +721,8 @@ struct FBSConfig
 		case EDefaultMode::Custom:
 			break;
 		}
+		/* SpawnBeatDelay is the same as PlayerDelay */
+		TargetConfig.SpawnBeatDelay = AudioConfig.PlayerDelay;
 	}
 
 	/** Returns an array of all default game modes */

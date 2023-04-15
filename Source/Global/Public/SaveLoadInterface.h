@@ -33,8 +33,6 @@ class GLOBAL_API ISaveLoadInterface
 {
 	GENERATED_BODY()
 
-	/* TODO: implement delegate that all interface implementers can subscribe to, hosted by GI */
-
 public:
 	
 	/** Loads all player settings from slot */
@@ -54,19 +52,37 @@ public:
 
 	/** Saves VideoAndSound settings, preserving all other settings */
 	virtual void SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
-
+	
 	/** Saves entire player settings, overwriting the previous player settings */
 	virtual void SavePlayerSettings(const FPlayerSettings& InPlayerSettings);
 
 	/** Loads all custom game modes from slot */
 	TArray<FBSConfig> LoadCustomGameModes() const;
 
-	/** Saves entire custom game mode array, overwriting the previous custom game mode array */
-	virtual void SaveCustomGameMode(const TArray<FBSConfig>& GameModeArrayToSave);
+	/** Saves a custom game mode to slot, checking if any matching exist and overriding if they do */
+	virtual void SaveCustomGameMode(const FBSConfig& ConfigToSave);
+
+	/** Removes a custom game mode and saves to slot */
+	virtual int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove);
+
+	/** Removes all custom game modes and saves to slot */
+	virtual void RemoveAllCustomGameModes();
+
+	/** Returns the FBSConfig corresponding to the input DefaultMode string */
+	FBSConfig FindDefaultGameMode(const FString& GameModeName) const;
+
+	/** Returns the FBSConfig corresponding to the input CustomGameModeName string */
+	FBSConfig FindCustomGameMode(const FString& CustomGameModeName) const;
+
+	/** Returns whether or not the DefaultMode is part of the game's default game modes */
+	bool IsDefaultGameMode(const FString& GameModeName) const;
+
+	/** Returns whether or not the DefaultMode is already a custom game mode name */
+	bool IsCustomGameMode(const FString& GameModeName) const;
 
 	/** Loads all player scores from slot */
 	TArray<FPlayerScore> LoadPlayerScores() const;
-
+	
 	/** Saves entire player score array, overwriting the previous player score array */
 	virtual void SavePlayerScores(const TArray<FPlayerScore>& PlayerScoreArrayToSave);
 

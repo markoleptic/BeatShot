@@ -111,11 +111,11 @@ void ABSGameMode::InitializeGameMode()
 	const FGameplayAbilitySpec AbilitySpec(TrackGunAbilityCDO, 1);
 	Character->GetBSAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Activatable);
 
-	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		Character->GetBSAbilitySystemComponent()->TryActivateAbilityByClass(TrackGunAbility);
 	}
-	else if (BSConfig.BaseGameMode != EDefaultMode::BeatTrack && Activatable[0]->IsActive())
+	else if (BSConfig.DefiningConfig.BaseGameMode != EDefaultMode::BeatTrack && Activatable[0]->IsActive())
 	{
 		Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbilityCDO);
 	}
@@ -187,25 +187,13 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 
 	if (TargetSpawner)
 	{
-		const FBS_DefiningConfig DefiningConfig(BSConfig.DefaultMode, BSConfig.BaseGameMode, BSConfig.CustomGameModeName, BSConfig.GameModeDifficulty);
-		const FCommonScoreInfo ScoreInfo = TargetSpawner->GetCommonScoreInfo();
-		SaveCommonScoreInfo(DefiningConfig, ScoreInfo);
-		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
 		TargetSpawner->SetShouldSpawn(false);
-		/* Save the QTable */
-		if (TargetSpawner->RLBase)
-		{
-			TargetSpawner->RLBase->PrintRewards();
-			BSConfig.AIConfig.QTable = TargetSpawner->RLBase->GetSaveReadyQTable();
-			TArray<FBSConfig> CustomGameModesArray = LoadCustomGameModes();
-			CustomGameModesArray.RemoveAll([&](const FBSConfig& MatchingConfig)
-			{
-				return MatchingConfig.CustomGameModeName == BSConfig.CustomGameModeName;
-			});
-			CustomGameModesArray.Shrink();
-			CustomGameModesArray.Add(BSConfig);
-			SaveCustomGameMode(CustomGameModesArray);
-		}
+		
+		/* Saves CommonScoreInfo like total spawns, hits, and QTable */
+		const FCommonScoreInfo ScoreInfo = TargetSpawner->GetCommonScoreInfo();
+		SaveCommonScoreInfo(BSConfig.DefiningConfig, ScoreInfo);
+		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
+		
 		if (GetTargetSpawner()->OnTargetSpawned.IsBoundToObject(this))
 		{
 			GetTargetSpawner()->OnTargetSpawned.RemoveAll(this);
@@ -461,11 +449,11 @@ void ABSGameMode::OnSecondPassedCallback() const
 void ABSGameMode::LoadMatchingPlayerScores()
 {
 	CurrentPlayerScore.ResetStruct();
-	CurrentPlayerScore.DefaultMode = BSConfig.DefaultMode;
+	CurrentPlayerScore.DefaultMode = BSConfig.DefiningConfig.DefaultMode;
 	CurrentPlayerScore.SongTitle = BSConfig.AudioConfig.SongTitle;
 	CurrentPlayerScore.SongLength = BSConfig.AudioConfig.SongLength;
-	CurrentPlayerScore.CustomGameModeName = BSConfig.CustomGameModeName;
-	CurrentPlayerScore.Difficulty = BSConfig.GameModeDifficulty;
+	CurrentPlayerScore.CustomGameModeName = BSConfig.DefiningConfig.CustomGameModeName;
+	CurrentPlayerScore.Difficulty = BSConfig.DefiningConfig.Difficulty;
 	CurrentPlayerScore.TotalPossibleDamage = 0.f;
 	
 	if (BSConfig.AudioConfig.SongLength == 0.f)
@@ -516,7 +504,7 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
-	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
 		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
@@ -576,12 +564,11 @@ void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
 		return;
 	}
 	TArray<FPlayerScore> ScoresNotSavedToDB;
-	TArray<FPlayerScore> AllPlayerScores = LoadPlayerScores();
-	for (FPlayerScore PlayerScoreObj : LoadPlayerScores())
+	for (const FPlayerScore& PlayerScoreObj : LoadPlayerScores())
 	{
 		if (!PlayerScoreObj.bSavedToDatabase)
 		{
-			ScoresNotSavedToDB.Emplace(PlayerScoreObj);
+			ScoresNotSavedToDB.Add(PlayerScoreObj);
 		}
 	}
 	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().User.Username, AccessToken, OnPostScoresResponse);
@@ -602,7 +589,7 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 
 void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position)
 {
-	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack || TimeElapsed == -1)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack || TimeElapsed == -1)
 	{
 		return;
 	}

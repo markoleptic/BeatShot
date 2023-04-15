@@ -9,26 +9,19 @@
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
 #include "WidgetComponents/BSHorizontalBox.h"
-#include "WidgetComponents/TooltipImage.h"
-#include "WidgetComponents/TooltipWidget.h"
 
 using namespace Constants;
-
-UTooltipWidget* UGameModesWidget_SpatialConfig::ConstructTooltipWidget()
-{
-	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
-}
 
 void UGameModesWidget_SpatialConfig::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetTooltipWidget(ConstructTooltipWidget());
 	AddToTooltipData(QMark_HeadshotHeight, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "HeadshotHeight"));
 	AddToTooltipData(QMark_FloorDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "FloorDistance"));
 	AddToTooltipData(QMark_ForwardSpread, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread"));
 	AddToTooltipData(QMark_MinDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
 	AddToTooltipData(QMark_SpreadType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpreadType"));
+	
 	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly);
 	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward);
 	Slider_MinTargetDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_MinTargetDistance);
@@ -41,6 +34,11 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 	Value_ForwardSpread->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_ForwardSpread);
 	Slider_FloorDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance);
 	Value_FloorDistance->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_FloorDistance);
+}
+
+void UGameModesWidget_SpatialConfig::InitSettingCategoryWidget()
+{
+	Super::InitSettingCategoryWidget();
 }
 
 void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode)

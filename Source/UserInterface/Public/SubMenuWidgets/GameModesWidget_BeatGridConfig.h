@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "GlobalStructs.h"
-#include "TooltipInterface.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "GameModesWidget_BeatGridConfig.generated.h"
 
@@ -54,7 +53,7 @@ struct FBeatGridConstraints
 	}
 };
 
-DECLARE_DELEGATE(FOnBeatGridUpdate_SaveStartButtonStates);
+DECLARE_MULTICAST_DELEGATE(FOnBeatGridUpdate_SaveStartButtonStates);
 
 class UTooltipWidget;
 class UBSHorizontalBox;
@@ -64,13 +63,12 @@ class USlider;
 class UHorizontalBox;
 
 UCLASS()
-class USERINTERFACE_API UGameModesWidget_BeatGridConfig : public UBSSettingCategoryWidget, public ITooltipInterface
+class USERINTERFACE_API UGameModesWidget_BeatGridConfig : public UBSSettingCategoryWidget
 {
 	GENERATED_BODY()
 	
 	friend class UGameModesWidget;
 	virtual void NativeConstruct() override;
-	virtual UTooltipWidget* ConstructTooltipWidget() override;
 	virtual void InitSettingCategoryWidget() override;
 
 public:
@@ -78,8 +76,6 @@ public:
 	FBS_BeatGridConfig GetBeatGridConfig() const;
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
-	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipImage> BeatGridWarningEMarkClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Spread")
@@ -118,7 +114,7 @@ protected:
 	UHorizontalBox* Box_NumVerticalTargetsTextTooltip;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* BeatGridAdjacentOnlyQMark;
+	UTooltipImage* QMark_BeatGridAdjacentOnly;
 	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
 	UTooltipImage* WarningEMark_NumHorizontalTargets;
 	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")

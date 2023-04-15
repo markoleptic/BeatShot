@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "RLBase.h"
 #include "SphereTarget.h"
+#include "SaveLoadInterface.h"
 #include "SaveGamePlayerScore.h"
 #include "GameFramework/Actor.h"
 #include "BeatShot/BeatShot.h"
@@ -21,7 +22,7 @@ DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned_AimBot, ASphereTarget* Targ
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector& Position);
 
 UCLASS()
-class BEATSHOT_API ATargetSpawner : public AActor
+class BEATSHOT_API ATargetSpawner : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 

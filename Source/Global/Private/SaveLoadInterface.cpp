@@ -102,13 +102,98 @@ TArray<FBSConfig> ISaveLoadInterface::LoadCustomGameModes() const
 	return TArray<FBSConfig>();
 }
 
-void ISaveLoadInterface::SaveCustomGameMode(const TArray<FBSConfig>& GameModeArrayToSave)
+void ISaveLoadInterface::SaveCustomGameMode(const FBSConfig& ConfigToSave)
 {
+	TArray<FBSConfig> CustomGameModesArray = LoadCustomGameModes();
+	if (const int32 Index = CustomGameModesArray.Find(ConfigToSave); Index != INDEX_NONE)
+	{
+		CustomGameModesArray[Index] = ConfigToSave;
+	}
+	else
+	{
+		CustomGameModesArray.Add(ConfigToSave);
+	}
 	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 	{
-		SaveCustomGameModeObject->CustomGameModes = GameModeArrayToSave;
+		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
 		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
 	}
+}
+
+int32 ISaveLoadInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove)
+{
+	TArray<FBSConfig> CustomGameModesArray = LoadCustomGameModes();
+	const int32 NumRemoved = CustomGameModesArray.Remove(ConfigToRemove);
+	CustomGameModesArray.Shrink();
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	{
+		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
+		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+	}
+	return NumRemoved;
+}
+
+void ISaveLoadInterface::RemoveAllCustomGameModes()
+{
+	const TArray<FBSConfig> Empty = TArray<FBSConfig>();
+	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	{
+		SaveCustomGameModeObject->CustomGameModes = Empty;
+		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+	}
+}
+
+FBSConfig ISaveLoadInterface::FindDefaultGameMode(const FString& GameModeName) const
+{
+	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
+	{
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.DefaultMode).ToString()))
+		{
+			return Mode;
+		}
+	}
+	return FBSConfig(EDefaultMode::Custom, EGameModeDifficulty::Normal);
+}
+
+FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeName) const
+{
+	for (const FBSConfig& Mode : LoadCustomGameModes())
+	{
+		if (Mode.DefiningConfig.CustomGameModeName.Equals(CustomGameModeName))
+		{
+			return Mode;
+		}
+	}
+	return FBSConfig(EDefaultMode::Custom, EGameModeDifficulty::Normal);
+}
+
+bool ISaveLoadInterface::IsDefaultGameMode(const FString& GameModeName) const
+{
+	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
+	{
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.DefaultMode).ToString()))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName) const
+{
+	if (IsDefaultGameMode(GameModeName))
+	{
+		return false;
+	}
+	
+	for (const FBSConfig& GameMode : LoadCustomGameModes())
+	{
+		if (GameMode.DefiningConfig.CustomGameModeName.Equals(GameModeName))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const

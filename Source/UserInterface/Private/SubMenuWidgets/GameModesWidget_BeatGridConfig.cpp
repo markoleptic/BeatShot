@@ -11,14 +11,8 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Slider.h"
 #include "WidgetComponents/BSVerticalBox.h"
-#include "WidgetComponents/TooltipWidget.h"
 
 using namespace Constants;
-
-UTooltipWidget* UGameModesWidget_BeatGridConfig::ConstructTooltipWidget()
-{
-	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
-}
 
 void UGameModesWidget_BeatGridConfig::InitSettingCategoryWidget()
 {
@@ -39,7 +33,7 @@ void UGameModesWidget_BeatGridConfig::NativeConstruct()
 	
 	SetTooltipWidget(ConstructTooltipWidget());
 	AddToTooltipData(BeatGridSpreadConstrained->CheckboxQMark, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridEvenSpacing"));
-	AddToTooltipData(BeatGridAdjacentOnlyQMark, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly"));
+	AddToTooltipData(QMark_BeatGridAdjacentOnly, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly"));
 	
 	/* BeatGrid Spacing TextBox and Slider */
 	FConstrainedSliderStruct BeatGridSliderStruct;
@@ -313,7 +307,7 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 		}
 	}
 	ActiveConstraints = BeatGridConstraints.ConstraintTypes;
-	OnBeatGridUpdate_SaveStartButtonStates.Execute();
+	OnBeatGridUpdate_SaveStartButtonStates.Broadcast();
 	UpdateAllWarningTooltips(BeatGridConstraints);
 }
 

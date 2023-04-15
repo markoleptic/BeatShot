@@ -92,12 +92,12 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	/* Initial target size */
 	TargetScale = GetNextTargetScale();
 
-	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		return;
 	}
 
-	if (BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		InitBeatGrid();
 		return;
@@ -171,9 +171,9 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	
 	RLBase = NewObject<URLBase>();
 	FRLAgentParams Params;
-	Params.InQTable = BSConfig.AIConfig.QTable;
-	Params.DefaultMode = BSConfig.DefaultMode;
-	Params.CustomGameModeName = BSConfig.CustomGameModeName;
+	Params.InQTable = GetScoreInfoFromDefiningConfig(InBSConfig.DefiningConfig).QTable;
+	Params.DefaultMode = BSConfig.DefiningConfig.DefaultMode;
+	Params.CustomGameModeName = BSConfig.DefiningConfig.CustomGameModeName;
 	Params.Size = GetSpawnCounter().Num();
 	Params.SpawnCounterHeight = HeightWidth.X;
 	Params.SpawnCounterWidth = HeightWidth.Y;
@@ -189,7 +189,7 @@ void ATargetSpawner::CallSpawnFunction()
 	{
 		return;
 	}
-	switch (BSConfig.BaseGameMode)
+	switch (BSConfig.DefiningConfig.BaseGameMode)
 	{
 	case EDefaultMode::MultiBeat:
 		SpawnMultiBeatTarget();
@@ -271,6 +271,11 @@ FCommonScoreInfo ATargetSpawner::GetCommonScoreInfo() const
 				CommonScoreInfo.TotalHits[Found] += Counter[i].TotalHits;
 			}
 		}
+	}
+	if (RLBase)
+	{
+		CommonScoreInfo.QTable = RLBase->GetSaveReadyQTable();
+		RLBase->PrintRewards();
 	}
 	return CommonScoreInfo;
 }
@@ -502,7 +507,7 @@ void ATargetSpawner::SetNewTrackingDirection()
 
 void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive, ASphereTarget* DestroyedTarget)
 {
-	if (BSConfig.BaseGameMode == EDefaultMode::SingleBeat) SetShouldSpawn(true);
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::SingleBeat) SetShouldSpawn(true);
 	if (DidExpire)
 	{
 		ConsecutiveTargetsHit = 0;
@@ -523,7 +528,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
 
-	if (BSConfig.BaseGameMode == EDefaultMode::BeatTrack || BSConfig.BaseGameMode == EDefaultMode::BeatGrid)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack || BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
 		return;
 	}
@@ -591,7 +596,7 @@ float ATargetSpawner::GetNextTargetScale() const
 
 FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType, const float NewTargetScale)
 {
-	if (BSConfig.BaseGameMode == EDefaultMode::SingleBeat && !LastTargetSpawnedCenter)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::SingleBeat && !LastTargetSpawnedCenter)
 	{
 		bSkipNextSpawn = false;
 		return GetBoxOrigin();
@@ -931,7 +936,7 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 	const FVector MaxExtrema = GetBoxExtrema(1, true);
 	TArray<FVector> Remove;
 	// ReSharper disable once CppTooWideScope
-	const uint8 SingleBeatOrEdgeOnly = BSConfig.BaseGameMode == EDefaultMode::SingleBeat || BSConfig.SpatialConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
+	const uint8 SingleBeatOrEdgeOnly = BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::SingleBeat || BSConfig.SpatialConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
 	switch (SingleBeatOrEdgeOnly)
 	{
 	case 1: for (FVector Vector : In)

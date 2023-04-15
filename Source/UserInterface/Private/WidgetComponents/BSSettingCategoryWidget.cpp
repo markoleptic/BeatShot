@@ -3,16 +3,23 @@
 
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "WidgetComponents/BSVerticalBox.h"
+#include "WidgetComponents/TooltipWidget.h"
 
 void UBSSettingCategoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetTooltipWidget(ConstructTooltipWidget());
 	InitSettingCategoryWidget();
 }
 
 void UBSSettingCategoryWidget::InitSettingCategoryWidget()
 {
 	UpdateBrushColors();
+}
+
+UTooltipWidget* UBSSettingCategoryWidget::ConstructTooltipWidget()
+{
+	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
 }
 
 void UBSSettingCategoryWidget::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox)

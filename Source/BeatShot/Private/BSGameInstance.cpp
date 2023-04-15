@@ -85,7 +85,6 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 	case ETransitionState::StartFromMainMenu:
 		{
 			BSConfig = NewGameModeTransitionState.BSConfig;
-			UE_LOG(LogTemp, Display, TEXT("BSConfig from GI %d"),BSConfig.AIConfig.QTable.Num());
 			StartGameMode();
 			break;
 		}

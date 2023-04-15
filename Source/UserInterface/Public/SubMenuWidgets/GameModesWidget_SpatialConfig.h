@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TooltipInterface.h"
 #include "GlobalEnums.h"
 #include "GlobalStructs.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
@@ -18,23 +17,19 @@ class UCheckBox;
 class UTooltipImage;
 
 UCLASS()
-class USERINTERFACE_API UGameModesWidget_SpatialConfig : public UBSSettingCategoryWidget, public ITooltipInterface
+class USERINTERFACE_API UGameModesWidget_SpatialConfig : public UBSSettingCategoryWidget
 {
 	GENERATED_BODY()
 	
 	friend class UGameModesWidget;
-	
 	virtual void NativeConstruct() override;
-	virtual UTooltipWidget* ConstructTooltipWidget() override;
+	virtual void InitSettingCategoryWidget() override;
 
 public:
 	void InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode);
 	FBS_SpatialConfig GetSpatialConfig() const;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
-	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UCheckBox* CheckBox_HeadShotOnly;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
