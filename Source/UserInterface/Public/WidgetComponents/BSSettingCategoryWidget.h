@@ -4,10 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "TooltipInterface.h"
+#include "BSVerticalBox.h"
 #include "Blueprint/UserWidget.h"
 #include "BSSettingCategoryWidget.generated.h"
-
-class UBSVerticalBox;
 
 /** Base Setting Category widget, with a BSVerticalBox acting as the main container */
 UCLASS()

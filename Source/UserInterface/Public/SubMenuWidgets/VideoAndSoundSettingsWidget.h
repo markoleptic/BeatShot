@@ -8,14 +8,11 @@
 #include "WidgetComponents/VideoSettingButton.h"
 #include "VideoAndSoundSettingsWidget.generated.h"
 
+class USettingsMenu_Sound;
+class USettingsMenu_Video;
 class UPopupMessageWidget;
 class USavedTextWidget;
-class UCheckBox;
-class USlider;
-class UEditableTextBox;
-class UComboBoxString;
 class UVerticalBox;
-class UTextBlock;
 class UButton;
 
 UCLASS()
@@ -30,160 +27,15 @@ public:
 	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
-	USoundClass* GlobalSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
-	USoundClass* MenuSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
-	USoundMix* GlobalSoundMix;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | PopUp")
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Video Settings")
+	TSubclassOf<USettingsMenu_Video> VideoSettingsClass;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound Settings")
+	TSubclassOf<USettingsMenu_Sound> SoundSettingsClass;
 
-#pragma region Quality
-	
-	/* Anti-Aliasing */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ3;
-
-	/* Global Illumination */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ3;
-
-	/* Post Processing */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ3;
-
-	/* Reflection */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ3;
-
-	/* Shadow */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ3;
-
-	/* Shading */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ3;
-
-	/* Texture */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ3;
-
-	/* View Distance */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ3;
-
-	/* Visual Effect */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ3;
-
-	/** Changes video settings quality depending on input button */
-	UFUNCTION()
-	void OnVideoQualityButtonClicked(UVideoSettingButton* ClickedButton);
-	/** Changes video settings background color */
-	UFUNCTION()
-	void SetVideoSettingButtonBackgroundColor(UVideoSettingButton* ClickedButton);
-	/** Returns the associated button given the quality and SettingType */
-	UFUNCTION()
-	UVideoSettingButton* FindVideoSettingButtonFromQuality(const int32 Quality, const ESettingType& SettingType) const;
-
-#pragma endregion
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UEditableTextBox* FrameLimitMenuValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UEditableTextBox* FrameLimitGameValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UComboBoxString* ResolutionComboBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UComboBoxString* WindowModeComboBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UCheckBox* VSyncEnabledCheckBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UCheckBox* FPSCounterCheckBox;
-	
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ReflexComboBox;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
-	UTextBlock* DLSSText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* DLSSComboBox;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	UEditableTextBox* GlobalSoundValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	UEditableTextBox* MenuSoundValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	UEditableTextBox* MusicSoundValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound ")
-	USlider* GlobalSoundSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	USlider* MenuSoundSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
-	USlider* MusicSoundSlider;
+	TSoftObjectPtr<USettingsMenu_Video> VideoSettings;
+	TSoftObjectPtr<USettingsMenu_Sound> SoundSettings;
 
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
@@ -193,55 +45,11 @@ protected:
 	UButton* SaveButton_VideoAndSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UButton* ResetButton_VideoAndSound;
-	
-	UFUNCTION()
-	void OnWindowModeSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnResolutionSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnFrameLimitMenuValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnFrameLimitGameValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnVSyncEnabledCheckStateChanged(const bool bIsChecked);
-	UFUNCTION()
-	void OnFPSCounterCheckStateChanged(const bool bIsChecked);
-	UFUNCTION()
-	void OnReflexSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnDLSSSelectionChanged(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnGlobalSoundSliderChanged(const float NewValue);
-	UFUNCTION()
-	void OnMenuSoundSliderChanged(const float NewValue);
-	UFUNCTION()
-	void OnMusicSoundSliderChanged(const float NewValue);
-	UFUNCTION()
-	void OnGlobalSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnMenuSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnMusicSoundValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	
-	/** Clears and repopulates the ResolutionComboBox based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
-	UFUNCTION()
-	void PopulateResolutionComboBox();
-	
-	UFUNCTION(BlueprintImplementableEvent)
-	/** Hopefully a temporary solution. Calls the GetReflexAvailable function from ReflexBlueprintLibrary */
-	bool GetReflexAvailable();
-	
-	/** Hopefully a temporary solution. Calls the SetReflexMode function from ReflexBlueprintLibrary */
-	UFUNCTION(BlueprintImplementableEvent)
-	void SetReflexMode(const EBudgetReflexMode Mode);
-	
-	/** Rounds the slider value to the snap size and sets the corresponding text box text to the rounded value */
-	UFUNCTION()
-	float ChangeValueOnSliderChange(const float SliderValue, UEditableTextBox* TextBoxToChange, const float SnapSize);
 
-	/** Rounds the text value to the snap size and sets the corresponding slider value to the rounded value */
-	UFUNCTION()
-	float ChangeSliderOnValueChange(const FText& TextValue, USlider* SliderToChange, const float SnapSize);
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* VideoSettingsBox;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* SoundSettingsBox;
 
 	/** Adds the ConfirmVideoSettingsMessage to viewport, and starts the RevertVideoSettingsTimer */
 	UFUNCTION()
@@ -255,9 +63,6 @@ protected:
 	UFUNCTION()
 	void OnCancelVideoSettingsButtonClicked();
 
-	/** Fills all widgets with values from NewSettings */
-	void PopulateSettings();
-
 	/** Saves the Video and Sound Settings */
 	UFUNCTION()
 	void OnSaveButtonClicked_VideoAndSound();
@@ -265,16 +70,6 @@ protected:
 	/** Reset Video and Sound Settings to defaults and repopulate in Settings Menu. Does not automatically save */
 	UFUNCTION()
 	void OnResetButtonClicked_VideoAndSound();
-	
-	/** The Player Settings that are changed during setting menu interaction */
-	UPROPERTY()
-	FPlayerSettings_VideoAndSound NewSettings;
-
-	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
-	FIntPoint LastConfirmedResolution;
-
-	bool bDLSSSupported = false;
-	bool bNISSupported = false;
 	
 	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes */
 	UPROPERTY()
