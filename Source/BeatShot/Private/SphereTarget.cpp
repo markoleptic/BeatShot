@@ -322,11 +322,11 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 
 		/* Broadcast that the target has been destroyed by player */
 		PeakToEndTimeline.Stop();
-		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		PlayExplosionEffect(BaseMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
 		ApplyImmunityEffect();
 		PlayFadeAndReappearTimeline();
+		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}
 }
 

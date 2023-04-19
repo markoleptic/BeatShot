@@ -327,10 +327,6 @@ private:
 
 #pragma region BeatGrid Variables
 
-	/** Currently activated beat grid target */
-	UPROPERTY(VisibleDefaultsOnly, Category = "BeatGrid")
-	ASphereTarget* ActiveBeatGridTarget;
-
 	/** Array to keep track of the grid of targets that do not de-spawn */
 	UPROPERTY(VisibleDefaultsOnly, Category = "BeatGrid")
 	TArray<ASphereTarget*> SpawnedBeatGridTargets;

@@ -314,10 +314,6 @@ void ATargetSpawner::InitBeatGrid()
 	{
 		SpawnedBeatGridTargets.Empty();
 	}
-	if (ActiveBeatGridTarget)
-	{
-		ActiveBeatGridTarget = nullptr;
-	}
 
 	LastBeatGridIndex = INDEX_NONE;
 
@@ -450,11 +446,12 @@ void ATargetSpawner::ActivateBeatGridTarget()
 		RecentBeatGridIndices.SetNum(7);
 	}
 
-	ActiveBeatGridTarget = SpawnedBeatGridTargets[ChosenTargetIndex];
+	ASphereTarget* ChosenTarget = SpawnedBeatGridTargets[ChosenTargetIndex];
 	LastBeatGridIndex = ChosenTargetIndex;
-	ActiveBeatGridTarget->StartBeatGridTimer(BSConfig.TargetConfig.TargetMaxLifeSpan);
+	ChosenTarget->StartBeatGridTimer(BSConfig.TargetConfig.TargetMaxLifeSpan);
+	AddToActiveTargets(ChosenTarget);
 	OnTargetSpawned.Broadcast();
-	OnTargetSpawned_AimBot.Broadcast(ActiveBeatGridTarget);
+	OnTargetSpawned_AimBot.Broadcast(ChosenTarget);
 	
 	if (bShowDebug_SpawnMemory)
 	{
@@ -528,8 +525,14 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack || BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
+		return;
+	}
+
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
+	{
+		DestroyedTarget->SetActorLocation(FVector(GetBoxOrigin().X, Location.Y, Location.Z));
 		return;
 	}
 	
