@@ -64,7 +64,7 @@ private:
 
 	FTimerDelegate CheckURLDelegate;
 
-	/* Timer to delay clicking the Checkbox on the login page */
+	/* Timer to delay clicking the Checkbox_SyncSlidersAndValues on the login page */
 	FTimerHandle CheckCheckboxDelay;
 
 	/* Timer to delay clicking the login button on the login page */

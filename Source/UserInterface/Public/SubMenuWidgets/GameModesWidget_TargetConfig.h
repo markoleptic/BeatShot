@@ -76,4 +76,8 @@ protected:
 	void OnTextCommitted_TargetSpawnCD(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_SpawnBeatDelay(const FText& NewPlayerDelay, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnCheckStateChanged_DynamicTargetScale(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ConstantTargetScale(const bool bIsChecked);
 };

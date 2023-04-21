@@ -55,6 +55,7 @@ void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSetting
 	else if (InBSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
 		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
+		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_PreGameModeStart);
 		HardRefAttributeSetBase->InitMaxHealth(1000000);
 		HardRefAttributeSetBase->InitHealth(1000000);
 	}
@@ -83,6 +84,11 @@ bool ASphereTarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagC
 bool ASphereTarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
 {
 	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
+}
+
+void ASphereTarget::RemoveGameplayTag(const FGameplayTag TagToRemove)
+{
+	GameplayTags.RemoveTag(TagToRemove);
 }
 
 void ASphereTarget::SetSphereScale(const FVector& NewScale)

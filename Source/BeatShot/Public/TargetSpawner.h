@@ -56,7 +56,7 @@ public:
 	void InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
 	/** Called from selected DefaultGameMode */
-	void SetShouldSpawn(const bool bShouldSpawn) { ShouldSpawn = bShouldSpawn; }
+	void SetShouldSpawn(const bool bShouldSpawn);
 
 	/** Called from DefaultGameMode */
 	void CallSpawnFunction();
@@ -98,8 +98,14 @@ private:
 	/** Active a BeatGrid target on beat */
 	void ActivateBeatGridTarget();
 
+	/** Initial BeatTrack target spawn */
+	void SpawnBeatTrackTarget();
+
 	/** Change the tracking target direction on beat */
 	void SetNewTrackingDirection();
+
+	/** Updates the position of the BeatTrack target on tick */
+	void OnTick_UpdateBeatTrackTargetLocation(const float DeltaTime);
 
 	/** The expiration or destruction of any non-BeatTrack target is bound to this function
 	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
@@ -113,7 +119,7 @@ private:
 
 	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
 	UFUNCTION()
-	void OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor);
+	void OnBeatTrackOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	/** Calls functions to get the next target's location and scale */
 	void FindNextTargetProperties();
@@ -204,6 +210,10 @@ private:
 	/** The spawn area */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	UBoxComponent* SpawnBox;
+
+	/** The spawn area for BeatTrack, used to reverse the direction if the BeatTrack target stops overlapping it */
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	UBoxComponent* BeatTrackSpawnBox;
 
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")

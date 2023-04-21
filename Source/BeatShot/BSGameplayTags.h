@@ -60,6 +60,7 @@ struct FBSGameplayTags
 
 	FGameplayTag Target;
 	FGameplayTag Target_State;
+	FGameplayTag Target_State_PreGameModeStart;
 	FGameplayTag Target_State_Damageable;
 	FGameplayTag Target_State_Immune;
 	FGameplayTag Target_State_Grid;

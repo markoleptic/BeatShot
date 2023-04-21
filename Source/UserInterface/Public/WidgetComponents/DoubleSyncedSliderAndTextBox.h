@@ -16,23 +16,40 @@ class USlider;
 class UTextBlock;
 class UEditableTextBox;
 
-struct FConstrainedSliderStruct
+struct FSyncedSlidersParams
 {
+	/* Text to show beside the Checkbox */
 	FText CheckboxText;
+	/* Text to show beside Slider_Min and Value_Min */
 	FText MinText;
+	/* Text to show beside Slider_Max and Value_Max */
 	FText MaxText;
+	/* Min value for Slider_Min and Value_Min */
 	float MinConstraintLower;
+	/* Min value for Slider_Max and Value_Max */
 	float MinConstraintUpper;
+	/* Max value for Slider_Min and Value_Min */
 	float MaxConstraintLower;
+	/* Max value for Slider_Max and Value_Max */
 	float MaxConstraintUpper;
+	/* Default value for Slider_Min and Value_Min */
 	float DefaultMinValue;
+	/* Default value for Slider_Max and Value_Max */
 	float DefaultMaxValue;
+	/* Whether or not to start synced */
 	bool bSyncSlidersAndValues;
+	/* Snap size for all values */
 	float GridSnapSize;
+	/* Whether or not to show the MinLock beside Slider_Min and Value_Min */
 	bool bShowMinLock;
+	/* Whether or not to show the MinLock beside Slider_Max and Value_Max */
 	bool bShowMaxLock;
+	/* Whether or not to start with MinLock set to locked */
+	bool bStartMinLocked;
+	/* Whether or not to start with MaxLock set to locked */
+	bool bStartMaxLocked;
 	
-	FConstrainedSliderStruct()
+	FSyncedSlidersParams()
 	{
 		CheckboxText = FText();
 		MinText = FText();
@@ -47,24 +64,22 @@ struct FConstrainedSliderStruct
 		GridSnapSize = 0.f;
 		bShowMinLock = false;
 		bShowMaxLock = false;
+		bStartMinLocked = false;
+		bStartMaxLocked = false;
 	}
 };
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnMinValueChanged, float MinValue);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnMaxValueChanged, float MaxValue);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCheckStateChanged_Min, bool bIsChecked);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCheckStateChanged_Max, bool bIsChecked);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnValueChanged_Synced, float Value);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCheckStateChanged_Synced, bool bIsChecked);
 
-
+/** Widget that syncs two sliders and two editable text boxes depending on whether or not a checkbox is checked. Useful for getting min/max values from user */
 UCLASS()
 class USERINTERFACE_API UDoubleSyncedSliderAndTextBox : public UUserWidget
 {
-	friend class UGameModesWidget;
 	
 	GENERATED_BODY()
-	
-public:
-	
+
+protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* MainContainer;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -74,95 +89,116 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_CheckBox;
 	
-	/** The Tooltip image for the Checkbox. The parent widget will bind to this widget's OnTooltipImageHoveredLocal delegate to display tooltip information */
+	/** The Tooltip image for the Checkbox_SyncSlidersAndValues. The parent widget will bind to this widget's OnTooltipImageHoveredLocal delegate to display tooltip information */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* CheckboxQMark;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* MinSlider;
+	USlider* Slider_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* MaxSlider;
+	USlider* Slider_Max;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TextTooltipBox_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TextTooltipBox_Max;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_Max;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* Text_Checkbox_SyncSlidersAndValues;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* Text_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* Text_Max;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* MinLock;
+	UCheckBox* Checkbox_MinLock;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* MaxLock;
+	UCheckBox* Checkbox_MaxLock;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* MinValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* MaxValue;
+	UCheckBox* Checkbox_SyncSlidersAndValues;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* CheckboxText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* MinText;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* MaxText;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* Checkbox;
+public:
+
+	/** Initializes the Sliders and EditableTextBoxes' with text and values */
+	virtual void InitConstrainedSlider(const FSyncedSlidersParams& InParams);
 
 	/** Overrides a slider's max value */
 	void OverrideMaxValue(const bool bIsMin, const float ValueToOverride);
-
-	/** Initializes the Sliders and EditableTextBoxes' with text and values */
-	virtual void InitConstrainedSlider(const FConstrainedSliderStruct& InStruct);
 	
-	/** Updates the Slider Values by calling OnSliderChanged_Min and OnSliderChanged_Max, and updates the Checkbox checked state if necessary */
-	void UpdateDefaultValues(const float NewMinValue, const float NewMaxValue);
+	/** Updates the Slider Values by calling OnSliderChanged_Min and OnSliderChanged_Max, and updates the Checkbox_SyncSlidersAndValues checked state if necessary */
+	void UpdateDefaultValues(const float NewMinValue, const float NewMaxValue, const bool bSync);
 	
-	/** Executed when MinSlider or MinValue is changed */
-	FOnMinValueChanged OnMinValueChanged;
+	/** Executed when Slider_Min or Value_Min is changed */
+	FOnValueChanged_Synced OnValueChanged_Min;
 	
-	/** Executed when MaxSlider or MaxValue is changed */
-	FOnMaxValueChanged OnMaxValueChanged;
+	/** Executed when Slider_Max or Value_Max is changed */
+	FOnValueChanged_Synced OnValueChanged_Max;
 
-	/** Executed when MinLock check state is changed */
-	FOnCheckStateChanged_Min OnCheckStateChanged_Min;
+	/** Executed when Checkbox_MinLock check state is changed */
+	FOnCheckStateChanged_Synced OnCheckStateChanged_Min;
 
-	/** Executed when MaxLock check state is changed */
-	FOnCheckStateChanged_Max OnCheckStateChanged_Max;
+	/** Executed when Checkbox_MaxLock check state is changed */
+	FOnCheckStateChanged_Synced OnCheckStateChanged_Max;
+	
+	/** Executed when the Checkbox_SyncSlidersAndValues check state is changed */
+	FOnCheckStateChanged_Synced OnCheckStateChanged_Sync;
+
+	UTooltipImage* GetCheckBoxQMark() const { return CheckboxQMark; }
+	UBSVerticalBox* GetMainContainer() const { return MainContainer; }
+	UHorizontalBox* GetTextTooltipBox_Min() const { return TextTooltipBox_Min; }
+	UHorizontalBox* GetTextTooltipBox_Max() const { return TextTooltipBox_Max; }
+	float GetMinValue() const;
+	float GetMaxValue() const;
+	bool GetIsSynced() const;
 
 private:
 	virtual void NativeConstruct() override;
+
+	/** Function to handle changing of Checkbox_SyncSlidersAndValues */
+	void SyncSlidersAndValues(const bool bSync);
 	
-	/** Updates the Checkbox checked state, and calls the appropriate OnSliderChanged functions to update the values of the Sliders and EditableTextBoxes */
+	/** Calls SyncSlidersAndValues and broadcast OnCheckStateChanged_Sync */
 	UFUNCTION()
-	void OnCheckStateChanged(const bool bIsChecked);
+	void OnCheckStateChanged_SyncSlidersAndValues(const bool bIsChecked);
 
 	UFUNCTION()
 	virtual void OnCheckStateChanged_MinLock(const bool bIsLocked);
 
 	UFUNCTION()
 	virtual void OnCheckStateChanged_MaxLock(const bool bIsLocked);
+
+	/** Function to handle changing of slider values. Broadcasts relevant delegates depending on sync mode */
+	void OnSliderChanged(const bool bIsSlider_Min, const float NewValue);
 	
-	/** Checks the constraints for the MinSlider, changes the MinValue text, and executes OnMinValueChanged. Changes MaxSlider, MaxValue, and calls OnMaxValueChanged if bSyncSlidersAndValues is true */
 	UFUNCTION()
 	void OnSliderChanged_Min(const float NewMin);
 	
-	/** Checks the constraints for the MaxSlider, changes the MaxValue text, and executes OnMaxValueChanged. Changes MinSlider, MinValue, and calls OnMinValueChanged if bSyncSlidersAndValues is true */
 	UFUNCTION()
 	void OnSliderChanged_Max(const float NewMax);
+
+	/** Function to handle changing of text values. Broadcasts relevant delegates depending on sync mode */
+	void OnTextCommitted(const bool bIsValue_Min, const FText& NewValue);
 	
-	/** Checks the constraints for the MinValue, changes the value for MinSlider, and calls MinSliderChanged */
 	UFUNCTION()
 	void OnTextCommitted_Min(const FText& NewMin, ETextCommit::Type CommitType);
 	
-	/** Checks the constraints for the MaxValue, changes the value for MaxSlider, and calls MaxSliderChanged */
 	UFUNCTION()
 	void OnTextCommitted_Max(const FText& NewMax, ETextCommit::Type CommitType);
-
+	
 	/** Struct containing information for the Sliders and EditableTextBoxes */
-	FConstrainedSliderStruct SliderStruct;
+	FSyncedSlidersParams SliderStruct;
 	
 	/** Returns the rounded value of ValueToRound according to the GridSnapSize */
 	float RoundValue(const float ValueToRound) const;
 	
 	/** Clamps the NewValue to the appropriate Slider Min and Max Values, and returns the new rounded value */
 	virtual float CheckConstraints(const float NewValue, const bool bIsMin);
+
+	float PreSyncedMinValue = -1.f;
+	float PreSyncedMaxValue = -1.f;
 };

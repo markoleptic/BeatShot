@@ -60,6 +60,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(Target, "Target","");
 	AddTag(Target_State, "Target.State","");
+	AddTag(Target_State_PreGameModeStart, "Target.State.PreGameModeStart","");
 	AddTag(Target_State_Damageable, "Target.State.Damageable","");
 	AddTag(Target_State_Immune, "Target.State.Immune","");
 	AddTag(Target_State_Grid, "Target.State.Grid","");

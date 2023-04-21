@@ -94,6 +94,7 @@ public:
 	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
 	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	void RemoveGameplayTag(FGameplayTag TagToRemove);
 	
 	/** Called in TargetSpawner to activate a BeatGrid target */
 	void StartBeatGridTimer(float Lifespan);

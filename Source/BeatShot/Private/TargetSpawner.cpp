@@ -7,6 +7,7 @@
 #include "GlobalConstants.h"
 #include "SphereTarget.h"
 #include "RLBase.h"
+#include "BeatShot/BSGameplayTags.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -17,6 +18,7 @@ ATargetSpawner::ATargetSpawner()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
+	BeatTrackSpawnBox = CreateDefaultSubobject<UBoxComponent>("BeatTrack SpawnBox");
 	RootComponent = SpawnBox;
 	SetShouldSpawn(false);
 	LastTargetSpawnedCenter = false;
@@ -49,13 +51,13 @@ void ATargetSpawner::Destroyed()
 void ATargetSpawner::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (IsValid(BeatTrackTarget))
-	{
-		BeatTrackTargetLocation = BeatTrackTarget->GetActorLocation();
-		BeatTrackTargetLocation += BeatTrackTargetDirection * BeatTrackTargetSpeed * DeltaTime;
-		BeatTrackTarget->SetActorLocation(BeatTrackTargetLocation);
-	}
 
+	if(BeatTrackTarget)
+	{
+		OnTick_UpdateBeatTrackTargetLocation(DeltaTime);
+		return;
+	}
+	
 	if (!BSConfig.SpatialConfig.bMoveTargetsForward)
 	{
 		return;
@@ -94,6 +96,10 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 
 	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
 	{
+		BeatTrackSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
+		BeatTrackSpawnBox->SetBoxExtent(FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
+		BeatTrackSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
+		SpawnBeatTrackTarget();
 		return;
 	}
 
@@ -183,9 +189,24 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	RLBase->Init(Params);
 }
 
+void ATargetSpawner::SetShouldSpawn(const bool bShouldSpawn)
+{
+	if (bShouldSpawn)
+	{
+		for (ASphereTarget* Target : GetActiveTargets())
+		{
+			if (Target->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
+			{
+				Target->RemoveGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart);
+			}
+		}
+	}
+	ShouldSpawn = bShouldSpawn;
+}
+
 void ATargetSpawner::CallSpawnFunction()
 {
-	if (ShouldSpawn == false)
+	if (!ShouldSpawn)
 	{
 		return;
 	}
@@ -472,34 +493,45 @@ void ATargetSpawner::ActivateBeatGridTarget()
 	}
 }
 
-void ATargetSpawner::SetNewTrackingDirection()
+void ATargetSpawner::SpawnBeatTrackTarget()
 {
 	if (!BeatTrackTarget)
 	{
-		/** Initial tracking target spawn */
-		
 		BeatTrackTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnBox->Bounds.Origin, FVector(1)),
 			this, nullptr, TargetSpawnParams.SpawnCollisionHandlingOverride);
 		BeatTrackTarget->InitTarget(BSConfig, PlayerSettings);
-		BeatTrackTarget->OnActorEndOverlap.AddDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		BeatTrackTarget->HealthComponent->OnHealthChanged.AddUObject(this, &ATargetSpawner::OnBeatTrackTargetHealthChanged);
+		AddToActiveTargets(BeatTrackTarget);
 		BeatTrackTarget->FinishSpawning(FTransform(), true);
 		LocationBeforeDirectionChange = SpawnBox->Bounds.Origin;
 		OnTargetSpawned.Broadcast();
 	}
-	if (BeatTrackTarget)
+}
+
+void ATargetSpawner::SetNewTrackingDirection()
+{
+	if (!OnBeatTrackDirectionChanged.ExecuteIfBound(EndLocation))
 	{
-		if (!OnBeatTrackDirectionChanged.ExecuteIfBound(EndLocation))
-		{
-			UE_LOG(LogTemp, Display, TEXT("OnBeatTrackDirectionChanged not bound."));
-		}
-		LocationBeforeDirectionChange = BeatTrackTarget->GetActorLocation();
-		const float NewTargetScale = GetNextTargetScale();
-		BeatTrackTarget->SetSphereScale(FVector(NewTargetScale, NewTargetScale, NewTargetScale));
-		BeatTrackTargetSpeed = FMath::FRandRange(BSConfig.BeatTrackConfig.MinTrackingSpeed, BSConfig.BeatTrackConfig.MaxTrackingSpeed);
-		EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
-		BeatTrackTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
+		UE_LOG(LogTemp, Display, TEXT("OnBeatTrackDirectionChanged not bound."));
 	}
+	
+	LocationBeforeDirectionChange = BeatTrackTarget->GetActorLocation();
+	const float NewTargetScale = GetNextTargetScale();
+	BeatTrackTarget->SetSphereScale(FVector(NewTargetScale));
+	BeatTrackTargetSpeed = FMath::FRandRange(BSConfig.BeatTrackConfig.MinTrackingSpeed, BSConfig.BeatTrackConfig.MaxTrackingSpeed);
+	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
+	BeatTrackTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
+}
+
+void ATargetSpawner::OnTick_UpdateBeatTrackTargetLocation(const float DeltaTime)
+{
+	if (BeatTrackTarget->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
+	{
+		return;
+	}
+	BeatTrackTargetLocation = BeatTrackTarget->GetActorLocation();
+	BeatTrackTargetLocation += BeatTrackTargetDirection * BeatTrackTargetSpeed * DeltaTime;
+	BeatTrackTarget->SetActorLocation(BeatTrackTargetLocation);
 }
 
 void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive, ASphereTarget* DestroyedTarget)
@@ -572,10 +604,10 @@ void ATargetSpawner::OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, con
 	OnBeatTrackTargetDamaged.Broadcast(OldValue, NewValue, TotalPossibleDamage);
 }
 
-void ATargetSpawner::OnBeatTrackOverlapEnd(AActor* OverlappedActor, AActor* OtherActor)
+void ATargetSpawner::OnBeatTrackOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	/* Reverse direction if not longer overlapping spawn box */
-	if (Cast<ATargetSpawner>(OverlappedActor) || Cast<ASphereTarget>(OverlappedActor) && Cast<ASphereTarget>(OtherActor) || Cast<ATargetSpawner>(OtherActor))
+	if (Cast<ASphereTarget>(OtherActor))
 	{
 		BeatTrackTargetDirection = -BeatTrackTargetDirection;
 	}
@@ -656,16 +688,13 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 
 FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
 {
-	const FVector NewExtent = FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
-
-	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
-
-	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
-
-	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
-
-	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
-
+	const FVector NewExtent = FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
+	
+	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
+	
 	TArray<FVector> PossibleLocations;
 	PossibleLocations.Add(BotLeft);
 	PossibleLocations.Add(BotRight);
@@ -695,7 +724,6 @@ FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBefore
 		}
 	}
 
-	PossibleLocations.Shrink();
 	const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
 	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * BeatTrackTargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
 }

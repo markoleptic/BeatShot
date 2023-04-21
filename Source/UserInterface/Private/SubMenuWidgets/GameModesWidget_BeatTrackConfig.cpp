@@ -17,7 +17,7 @@ void UGameModesWidget_BeatTrackConfig::NativeConstruct()
 	Super::NativeConstruct();
 
 	/* BeatTrack target speed TextBox and Slider */
-	FConstrainedSliderStruct TrackingSpeedSliderStruct;
+	FSyncedSlidersParams TrackingSpeedSliderStruct;
 	TrackingSpeedSliderStruct.MinConstraintLower = MinValue_TargetSpeed;
 	TrackingSpeedSliderStruct.MinConstraintUpper = MaxValue_TargetSpeed;
 	TrackingSpeedSliderStruct.MaxConstraintLower = MinValue_TargetSpeed;
@@ -28,28 +28,30 @@ void UGameModesWidget_BeatTrackConfig::NativeConstruct()
 	TrackingSpeedSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
 	TrackingSpeedSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
 	TrackingSpeedSliderStruct.GridSnapSize = SnapSize_TargetSpeed;
+	TrackingSpeedSliderStruct.bSyncSlidersAndValues = false;
 	TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
 
-	AddToTooltipData(TargetSpeedConstrained->CheckboxQMark, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatTrackConstantSpeed"));
+	AddToTooltipData(TargetSpeedConstrained->GetCheckBoxQMark(), FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatTrackConstantSpeed"));
 }
 
 void UGameModesWidget_BeatTrackConfig::InitSettingCategoryWidget()
 {
 	if (TargetSpeedConstrained)
 	{
-		AddWidgetBoxPair(TargetSpeedConstrained.Get(), TargetSpeedConstrained->MainContainer);
+		AddWidgetBoxPair(TargetSpeedConstrained.Get(), TargetSpeedConstrained->GetMainContainer());
 	}
 	Super::InitSettingCategoryWidget();
 }
 
 void UGameModesWidget_BeatTrackConfig::InitializeBeatTrackConfig(const FBS_BeatTrackConfig& InBeatTrackConfig, const EDefaultMode& BaseGameMode)
 {
+	TargetSpeedConstrained->UpdateDefaultValues(InBeatTrackConfig.MinTrackingSpeed, InBeatTrackConfig.MaxTrackingSpeed, InBeatTrackConfig.MinTrackingSpeed == InBeatTrackConfig.MaxTrackingSpeed);
 }
 
 FBS_BeatTrackConfig UGameModesWidget_BeatTrackConfig::GetBeatTrackConfig() const
 {
 	FBS_BeatTrackConfig ReturnConfig;
-	ReturnConfig.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MinSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
-	ReturnConfig.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->MaxSlider->GetValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMinValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMaxValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	return ReturnConfig;
 }

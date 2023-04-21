@@ -10,20 +10,35 @@
 #include "Components/EditableTextBox.h"
 #include "Kismet/KismetStringLibrary.h"
 
+float UDoubleSyncedSliderAndTextBox::GetMinValue() const
+{
+	return Slider_Min->GetValue();
+}
+
+float UDoubleSyncedSliderAndTextBox::GetMaxValue() const
+{
+	return Slider_Max->GetValue();
+}
+
+bool UDoubleSyncedSliderAndTextBox::GetIsSynced() const
+{
+	return Checkbox_SyncSlidersAndValues->IsChecked();
+}
+
 void UDoubleSyncedSliderAndTextBox::NativeConstruct()
 {
 	Super::NativeConstruct();
 }
 
-void UDoubleSyncedSliderAndTextBox::InitConstrainedSlider(const FConstrainedSliderStruct& InStruct)
+void UDoubleSyncedSliderAndTextBox::InitConstrainedSlider(const FSyncedSlidersParams& InParams)
 {
-	Checkbox->OnCheckStateChanged.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnCheckStateChanged);
-	MinSlider->OnValueChanged.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnSliderChanged_Min);
-	MaxSlider->OnValueChanged.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnSliderChanged_Max);
-	MinValue->OnTextCommitted.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnTextCommitted_Min);
-	MaxValue->OnTextCommitted.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnTextCommitted_Max);
+	Checkbox_SyncSlidersAndValues->OnCheckStateChanged.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_SyncSlidersAndValues);
+	Slider_Min->OnValueChanged.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnSliderChanged_Min);
+	Slider_Max->OnValueChanged.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnSliderChanged_Max);
+	Value_Min->OnTextCommitted.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnTextCommitted_Min);
+	Value_Max->OnTextCommitted.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnTextCommitted_Max);
 	
-	SliderStruct = InStruct;
+	SliderStruct = InParams;
 	SliderStruct.DefaultMinValue = RoundValue(SliderStruct.DefaultMinValue);
 	SliderStruct.DefaultMaxValue = RoundValue(SliderStruct.DefaultMaxValue);
 	SliderStruct.MinConstraintLower = RoundValue(SliderStruct.MinConstraintLower);
@@ -31,89 +46,62 @@ void UDoubleSyncedSliderAndTextBox::InitConstrainedSlider(const FConstrainedSlid
 	SliderStruct.MaxConstraintLower = RoundValue(SliderStruct.MaxConstraintLower);
 	SliderStruct.MaxConstraintUpper = RoundValue(SliderStruct.MaxConstraintUpper);
 
-	if (!InStruct.bShowMinLock)
+	if (!InParams.bShowMinLock)
 	{
-		MinLock->SetVisibility(ESlateVisibility::Collapsed);
+		Checkbox_MinLock->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	else
 	{
-		MinLock->SetVisibility(ESlateVisibility::Visible);
+		Checkbox_MinLock->SetVisibility(ESlateVisibility::Visible);
+		Checkbox_MinLock->SetIsChecked(InParams.bStartMinLocked);
 	}
-	if (!InStruct.bShowMaxLock)
+	if (!InParams.bShowMaxLock)
 	{
-		MaxLock->SetVisibility(ESlateVisibility::Collapsed);
+		Checkbox_MaxLock->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	else
 	{
-		MinLock->SetVisibility(ESlateVisibility::Visible);
+		Checkbox_MaxLock->SetVisibility(ESlateVisibility::Visible);
+		Checkbox_MaxLock->SetIsChecked(InParams.bStartMaxLocked);
 	}
-	MinLock->OnCheckStateChanged.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MinLock);
-	MaxLock->OnCheckStateChanged.AddDynamic(this, &UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MaxLock);
+	Checkbox_MinLock->OnCheckStateChanged.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MinLock);
+	Checkbox_MaxLock->OnCheckStateChanged.AddUniqueDynamic(this, &UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MaxLock);
 	
-	CheckboxText->SetText(SliderStruct.CheckboxText);
-	Checkbox->SetIsChecked(SliderStruct.bSyncSlidersAndValues);
+	Text_Checkbox_SyncSlidersAndValues->SetText(SliderStruct.CheckboxText);
+	Checkbox_SyncSlidersAndValues->SetIsChecked(SliderStruct.bSyncSlidersAndValues);
 
-	MinText->SetText(SliderStruct.MinText);
-	MaxText->SetText(SliderStruct.MaxText);
-	MinSlider->SetMinValue(SliderStruct.MinConstraintLower);
-	MinSlider->SetMaxValue(SliderStruct.MinConstraintUpper);
-	MaxSlider->SetMinValue(SliderStruct.MaxConstraintLower);
-	MaxSlider->SetMaxValue(SliderStruct.MaxConstraintUpper);
+	Text_Min->SetText(SliderStruct.MinText);
+	Text_Max->SetText(SliderStruct.MaxText);
+	
+	Slider_Min->SetMinValue(SliderStruct.MinConstraintLower);
+	Slider_Min->SetMaxValue(SliderStruct.MinConstraintUpper);
+	Slider_Max->SetMinValue(SliderStruct.MaxConstraintLower);
+	Slider_Max->SetMaxValue(SliderStruct.MaxConstraintUpper);
 
-	MinSlider->SetValue(SliderStruct.DefaultMinValue);
-	MaxSlider->SetValue(SliderStruct.DefaultMaxValue);
-	MinValue->SetText(FText::AsNumber(SliderStruct.DefaultMinValue));
-	MaxValue->SetText(FText::AsNumber(SliderStruct.DefaultMaxValue));
+	Slider_Min->SetValue(SliderStruct.DefaultMinValue);
+	Slider_Max->SetValue(SliderStruct.DefaultMaxValue);
+	Value_Min->SetText(FText::AsNumber(SliderStruct.DefaultMinValue));
+	Value_Max->SetText(FText::AsNumber(SliderStruct.DefaultMaxValue));
 }
 
-void UDoubleSyncedSliderAndTextBox::UpdateDefaultValues(const float NewMinValue, const float NewMaxValue)
+void UDoubleSyncedSliderAndTextBox::UpdateDefaultValues(const float NewMinValue, const float NewMaxValue, const bool bSync)
 {
 	SliderStruct.DefaultMinValue = RoundValue(NewMinValue);
 	SliderStruct.DefaultMaxValue = RoundValue(NewMaxValue);
-	if (SliderStruct.DefaultMinValue == SliderStruct.DefaultMaxValue)
+	if (bSync)
 	{
-		Checkbox->SetIsChecked(true);
-		OnCheckStateChanged(true);
+		Checkbox_SyncSlidersAndValues->SetIsChecked(true);
+		OnCheckStateChanged_SyncSlidersAndValues(true);
 		return;
 	}
-	Checkbox->SetIsChecked(false);
-	OnCheckStateChanged(false);
+	Checkbox_SyncSlidersAndValues->SetIsChecked(false);
+	OnCheckStateChanged_SyncSlidersAndValues(false);
 }
 
-void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged(const bool bIsChecked)
+void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_SyncSlidersAndValues(const bool bIsChecked)
 {
-	if (bIsChecked)
-	{
-		SliderStruct.bSyncSlidersAndValues = true;
-		
-		MaxSlider->SetMaxValue(MinSlider->GetMaxValue());
-		
-		if (SliderStruct.DefaultMinValue == SliderStruct.DefaultMaxValue)
-		{
-			MinSlider->SetValue(SliderStruct.DefaultMinValue);
-			MaxSlider->SetValue(SliderStruct.DefaultMaxValue);
-			OnSliderChanged_Min(SliderStruct.DefaultMinValue);
-			OnSliderChanged_Max(SliderStruct.DefaultMaxValue);
-		}
-		else
-		{
-			const float MinMidValue = RoundValue((MinSlider->GetMaxValue() + MinSlider->GetMinValue()) / 2);
-			const float MaxMidValue = RoundValue((MaxSlider->GetMaxValue() + MaxSlider->GetMinValue()) / 2);
-			MinSlider->SetValue(MinMidValue);
-			MaxSlider->SetValue(MaxMidValue);
-			OnSliderChanged_Min(MinMidValue);
-			OnSliderChanged_Max(MaxMidValue);
-		}
-		return;
-	}
-	/** Return the sliders to their original default values if the Contrain Checkbox is unchecked */
-	SliderStruct.bSyncSlidersAndValues = false;
-	MinSlider->SetMaxValue(SliderStruct.MinConstraintUpper);
-	MaxSlider->SetMaxValue(SliderStruct.MaxConstraintUpper);
-	MinSlider->SetValue(SliderStruct.DefaultMinValue);
-	MaxSlider->SetValue(SliderStruct.DefaultMaxValue);
-	OnSliderChanged_Min(SliderStruct.DefaultMinValue);
-	OnSliderChanged_Max(SliderStruct.DefaultMaxValue);
+	SyncSlidersAndValues(bIsChecked);
+	OnCheckStateChanged_Sync.Broadcast(bIsChecked);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MinLock(const bool bIsLocked)
@@ -126,113 +114,190 @@ void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MaxLock(const bool bIsLo
 	OnCheckStateChanged_Max.Broadcast(bIsLocked);
 }
 
+void UDoubleSyncedSliderAndTextBox::OnSliderChanged(const bool bIsSlider_Min, const float NewValue)
+{
+	const float ConstrainedValue = CheckConstraints(NewValue, bIsSlider_Min);
+	if (GetIsSynced())
+	{
+		if (bIsSlider_Min)
+		{
+			Slider_Max->SetValue(ConstrainedValue);
+		}
+		else
+		{
+			Slider_Min->SetValue(ConstrainedValue);
+		}
+		
+		Value_Min->SetText(FText::AsNumber(ConstrainedValue));
+		Value_Max->SetText(FText::AsNumber(ConstrainedValue));
+		OnValueChanged_Min.Broadcast(ConstrainedValue);
+		OnValueChanged_Max.Broadcast(ConstrainedValue);
+		return;
+	}
+	if (bIsSlider_Min)
+	{
+		Value_Min->SetText(FText::AsNumber(ConstrainedValue));
+		OnValueChanged_Min.Broadcast(ConstrainedValue);
+		return;
+	}
+	Value_Max->SetText(FText::AsNumber(ConstrainedValue));
+	OnValueChanged_Max.Broadcast(ConstrainedValue);
+}
+
 void UDoubleSyncedSliderAndTextBox::OnSliderChanged_Min(const float NewMin)
 {
-	const float NewMinValue = CheckConstraints(NewMin, true);
-	MinValue->SetText(FText::AsNumber(NewMinValue));
-	
-	if (SliderStruct.bSyncSlidersAndValues)
-	{
-		MaxSlider->SetValue(NewMinValue);
-		MaxValue->SetText(FText::AsNumber(NewMinValue));
-		OnMaxValueChanged.Broadcast(NewMinValue);
-	}
-	OnMinValueChanged.Broadcast(NewMinValue);
+	OnSliderChanged(true, NewMin);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnSliderChanged_Max(const float NewMax)
 {
-	const float NewMaxValue = CheckConstraints(NewMax, false);
-	MaxValue->SetText(FText::AsNumber(NewMaxValue));
-	
-	if (SliderStruct.bSyncSlidersAndValues)
+	OnSliderChanged(false, NewMax);
+}
+
+void UDoubleSyncedSliderAndTextBox::OnTextCommitted(const bool bIsValue_Min, const FText& NewValue)
+{
+	const float ConstrainedValue = CheckConstraints(FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", "")), true);
+	if (GetIsSynced())
 	{
-		MinSlider->SetValue(NewMaxValue);
-		MinValue->SetText(FText::AsNumber(NewMaxValue));
-		OnMinValueChanged.Broadcast(NewMaxValue);
+		Value_Max->SetText(FText::AsNumber(ConstrainedValue));
+		Value_Min->SetText(FText::AsNumber(ConstrainedValue));
+		Slider_Min->SetValue(ConstrainedValue);
+		Slider_Max->SetValue(ConstrainedValue);
+		OnValueChanged_Min.Broadcast(ConstrainedValue);
+		OnValueChanged_Max.Broadcast(ConstrainedValue);
+		return;
 	}
-	OnMaxValueChanged.Broadcast(NewMaxValue);
+	if (bIsValue_Min)
+	{
+		Value_Min->SetText(FText::AsNumber(ConstrainedValue));
+		Slider_Min->SetValue(ConstrainedValue);
+		OnValueChanged_Min.Broadcast(ConstrainedValue);
+		return;
+	}
+	Value_Max->SetText(FText::AsNumber(ConstrainedValue));
+	Slider_Max->SetValue(ConstrainedValue);
+	OnValueChanged_Max.Broadcast(ConstrainedValue);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnTextCommitted_Min(const FText& NewMin, ETextCommit::Type CommitType)
 {
-	const FString NewMinString = UKismetStringLibrary::Replace(NewMin.ToString(), ",", "");
-	const float NewMinValue = CheckConstraints(FCString::Atof(*NewMinString), true);
-	MinValue->SetText(FText::AsNumber(NewMinValue));
-	MinSlider->SetValue(NewMinValue);
-	
-	if (SliderStruct.bSyncSlidersAndValues)
-	{
-		MaxSlider->SetValue(NewMinValue);
-		MaxValue->SetText(FText::AsNumber(NewMinValue));
-		OnMaxValueChanged.Broadcast(NewMinValue);
-	}
-	OnMinValueChanged.Broadcast(NewMinValue);
+	OnTextCommitted(true, NewMin);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnTextCommitted_Max(const FText& NewMax, ETextCommit::Type CommitType)
 {
-	/* Remove commas */
-	const FString NewMaxString = UKismetStringLibrary::Replace(NewMax.ToString(), ",", "");
-	const float NewMaxValue = CheckConstraints(FCString::Atof(*NewMaxString), false);
-	MaxValue->SetText(FText::AsNumber(NewMaxValue));
-	MaxSlider->SetValue(NewMaxValue);
+	OnTextCommitted(false, NewMax);
+}
+
+void UDoubleSyncedSliderAndTextBox::SyncSlidersAndValues(const bool bSync)
+{
+	SliderStruct.bSyncSlidersAndValues = bSync;
 	
-	if (SliderStruct.bSyncSlidersAndValues)
+	if (bSync)
 	{
-		MinSlider->SetValue(NewMaxValue);
-		MinValue->SetText(FText::AsNumber(NewMaxValue));
-		OnMinValueChanged.Broadcast(NewMaxValue);
+		PreSyncedMinValue = Slider_Min->GetValue();
+		PreSyncedMaxValue = Slider_Max->GetValue();
+		
+		/* Set max values for both sliders */
+		if (Slider_Min->GetMaxValue() < Slider_Max->GetMaxValue())
+		{
+			Slider_Max->SetMaxValue(Slider_Min->GetMaxValue());
+		}
+		else
+		{
+			Slider_Min->SetMaxValue(Slider_Max->GetMaxValue());
+		}
+
+		/* Clamp slider values */
+		if (PreSyncedMaxValue > CheckConstraints(PreSyncedMaxValue, false))
+		{
+			Slider_Max->SetValue(CheckConstraints(PreSyncedMaxValue, false));
+		}
+		if (PreSyncedMinValue > CheckConstraints(PreSyncedMinValue, true))
+		{
+			Slider_Min->SetValue(CheckConstraints(PreSyncedMinValue, true));
+		}
+		
+		/* Default to choosing MaxValue for both */
+		if (Slider_Max->GetValue() != Slider_Min->GetValue())
+		{
+			Slider_Min->SetValue(Slider_Max->GetValue());
+		}
+		
+		/* Doesn't matter which slider we use since they are synced and will be the same */
+		OnSliderChanged(true, Slider_Min->GetValue());
+		return;
 	}
-	OnMaxValueChanged.Broadcast(NewMaxValue);
+	
+	/* Return the sliders to their original min/maxes */
+	Slider_Min->SetMaxValue(SliderStruct.MinConstraintUpper);
+	Slider_Max->SetMaxValue(SliderStruct.MaxConstraintUpper);
+	float NewMinValue;
+	float NewMaxValue;
+	
+	/* Use pre-synced values if possible */
+	if (PreSyncedMaxValue != -1.f && PreSyncedMinValue != -1.f)
+	{
+		NewMinValue = CheckConstraints(PreSyncedMinValue, true);
+		NewMaxValue = CheckConstraints(PreSyncedMaxValue, false);
+	}
+	else
+	{
+		NewMinValue = SliderStruct.DefaultMinValue;
+		NewMaxValue = SliderStruct.DefaultMaxValue;
+	}
+	Slider_Min->SetValue(NewMinValue);
+	Slider_Max->SetValue(NewMaxValue);
+	OnSliderChanged(true, NewMinValue);
+	OnSliderChanged(false, NewMaxValue);
 }
 
 float UDoubleSyncedSliderAndTextBox::CheckConstraints(const float NewValue, const bool bIsMin)
 {
-	/** Checking constraints for a MinSlider or MinValue */
+	/** Checking constraints for a Slider_Min or Value_Min */
 	if (bIsMin)
 	{
-		return RoundValue(FMath::Clamp(NewValue, MinSlider->GetMinValue(), MinSlider->GetMaxValue()));
+		return RoundValue(FMath::Clamp(NewValue, Slider_Min->GetMinValue(), Slider_Min->GetMaxValue()));
 	}
-	/** Checking constraints for a MaxSlider or MaxValue */
-	return RoundValue(FMath::Clamp(NewValue, MaxSlider->GetMinValue(), MaxSlider->GetMaxValue()));
+	/** Checking constraints for a Slider_Max or Value_Max */
+	return RoundValue(FMath::Clamp(NewValue, Slider_Max->GetMinValue(), Slider_Max->GetMaxValue()));
 }
 
 void UDoubleSyncedSliderAndTextBox::OverrideMaxValue(const bool bIsMin, const float ValueToOverride)
 {
-	if (SliderStruct.bSyncSlidersAndValues)
+	if (GetIsSynced())
 	{
-		if (MinSlider->GetValue() > ValueToOverride)
+		if (Slider_Min->GetValue() > ValueToOverride)
 		{
-			MinSlider->SetValue(ValueToOverride);
-			MinValue->SetText(FText::AsNumber(ValueToOverride));
-			OnMinValueChanged.Broadcast(ValueToOverride);
+			Slider_Min->SetValue(ValueToOverride);
+			Value_Min->SetText(FText::AsNumber(ValueToOverride));
+			OnValueChanged_Min.Broadcast(ValueToOverride);
 		}
-		if (MaxSlider->GetValue() > ValueToOverride)
+		if (Slider_Max->GetValue() > ValueToOverride)
 		{
-			MaxSlider->SetValue(ValueToOverride);
-			MaxValue->SetText(FText::AsNumber(ValueToOverride));
-			OnMaxValueChanged.Broadcast(ValueToOverride);
+			Slider_Max->SetValue(ValueToOverride);
+			Value_Max->SetText(FText::AsNumber(ValueToOverride));
+			OnValueChanged_Max.Broadcast(ValueToOverride);
 		}
 		return;
 	}
 
 	if (bIsMin)
 	{
-		if (MinSlider->GetValue() > ValueToOverride)
+		if (Slider_Min->GetValue() > ValueToOverride)
 		{
-			MinSlider->SetValue(ValueToOverride);
-			MinValue->SetText(FText::AsNumber(ValueToOverride));
-			OnMinValueChanged.Broadcast(ValueToOverride);
+			Slider_Min->SetValue(ValueToOverride);
+			Value_Min->SetText(FText::AsNumber(ValueToOverride));
+			OnValueChanged_Min.Broadcast(ValueToOverride);
 		}
 		return;
 	}
 	
-	if (MaxSlider->GetValue() > ValueToOverride)
+	if (Slider_Max->GetValue() > ValueToOverride)
 	{
-		MaxSlider->SetValue(ValueToOverride);
-		MaxValue->SetText(FText::AsNumber(ValueToOverride));
-		OnMaxValueChanged.Broadcast(ValueToOverride);
+		Slider_Max->SetValue(ValueToOverride);
+		Value_Max->SetText(FText::AsNumber(ValueToOverride));
+		OnValueChanged_Max.Broadcast(ValueToOverride);
 	}
 }
 

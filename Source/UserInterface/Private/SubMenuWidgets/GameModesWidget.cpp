@@ -149,7 +149,7 @@ void UGameModesWidget::BindAllDelegates()
 
 	DefiningConfig->OnRepopulateGameModeOptions.AddUObject(this, &UGameModesWidget::PopulateGameModeOptions);
 	DefiningConfig->OnDefiningConfigUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
-	TargetConfig->TargetScaleConstrained->OnMaxValueChanged.AddUObject(BeatGridConfig, &UGameModesWidget_BeatGridConfig::OnBeatGridUpdate_MaxTargetScale);
+	TargetConfig->TargetScaleConstrained->OnValueChanged_Max.AddUObject(BeatGridConfig, &UGameModesWidget_BeatGridConfig::OnBeatGridUpdate_MaxTargetScale);
 	BeatGridConfig->OnBeatGridUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
 }
 
@@ -355,7 +355,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		AIConfigBox->SetVisibility(ESlateVisibility::Collapsed);
 		BeatGridBox->SetVisibility(ESlateVisibility::Visible);
 		BeatTrackConfigBox->SetVisibility(ESlateVisibility::Collapsed);
-		BeatGridConfig->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetConfig->TargetScaleConstrained->TextTooltipBox_Max);
+		BeatGridConfig->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		break;
 	case EDefaultMode::BeatTrack:
