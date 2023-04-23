@@ -47,3 +47,7 @@ void AVisualizerBase::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& AASe
 	AASettings = AASettingsStruct;
 	InitializeVisualizer();
 }
+
+void AVisualizerBase::MarkRenderStateDirty()
+{
+}

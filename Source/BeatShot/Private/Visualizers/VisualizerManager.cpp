@@ -99,6 +99,8 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
 			MaxSpectrumValues[i] -= (AvgSpectrumValues[i] / 500);
 		}
 	}
+	Visualizers[0]->MarkRenderStateDirty();
+	Visualizers[1]->MarkRenderStateDirty();
 }
 
 void AVisualizerManager::DestroyVisualizers()

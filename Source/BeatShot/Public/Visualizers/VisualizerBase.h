@@ -39,6 +39,8 @@ public:
 	UFUNCTION()
 	virtual void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& AASettingsStruct);
 
+	virtual void MarkRenderStateDirty();
+
 protected:
 	/** Sets the initial visualizer spawn location */
 	void SetInitialLocation(const FVector& Location) { InitialVisualizerLocation = Location; }

@@ -29,7 +29,7 @@ namespace Constants
 
 	constexpr int32 CustomDepthStencilValue = 0;
 
-	const FVector CubeOffset = FVector(0, -110, 0);
+	const FVector CubeOffset = FVector(0, -120, 0);
 
 	/** The distance to trace the line */
 	constexpr float TraceDistance = 999999;
