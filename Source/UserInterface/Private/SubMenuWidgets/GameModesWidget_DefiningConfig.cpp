@@ -103,14 +103,12 @@ void UGameModesWidget_DefiningConfig::PopulateGameModeNameComboBox(const FString
 void UGameModesWidget_DefiningConfig::PopulateGameModeNameComboBoxAfterSave()
 {
 	const FString GameModeNameSelectedOption = ComboBox_GameModeName->GetSelectedOption();
-	const FString CustomGameModeName = ComboBox_GameModeName->GetSelectedOption();
-	
-	/** If user is saving custom game mode based on DefaultGameMode from ComboBox_GameModeName */
-	if (IsDefaultGameMode(GameModeNameSelectedOption))
+	const FString CustomGameModeName = TextBox_CustomGameModeName->GetText().ToString();
+
+	if (CustomGameModeName.IsEmpty())
 	{
-		PopulateGameModeNameComboBox(CustomGameModeName);
+		PopulateGameModeNameComboBox(GameModeNameSelectedOption);
 	}
-	/** If user is saving custom game mode based on CustomGameMode from ComboBox_GameModeName */
 	else
 	{
 		PopulateGameModeNameComboBox(CustomGameModeName);

@@ -39,6 +39,7 @@ public:
 	UFUNCTION()
 	virtual void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& AASettingsStruct);
 
+	/** If the visualizer is using an instanced static mesh, use this function to rerender the meshes */
 	virtual void MarkRenderStateDirty();
 
 protected:

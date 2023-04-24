@@ -255,6 +255,12 @@ void UGameModesWidget::OnButtonClicked_CustomizeFromStandard()
 
 void UGameModesWidget::OnButtonClicked_SaveCustom()
 {
+	if (IsDefaultGameMode(DefiningConfig->TextBox_CustomGameModeName->GetText().ToString()))
+	{
+		DefiningConfig->TextBox_CustomGameModeName->SetText(FText());
+		return;
+	}
+	
 	if (CheckForExistingAndDisplayOverwriteMessage(false))
 	{
 		return;
@@ -271,6 +277,12 @@ void UGameModesWidget::OnButtonClicked_StartWithoutSaving()
 
 void UGameModesWidget::OnButtonClicked_SaveCustomAndStart()
 {
+	if (IsDefaultGameMode(DefiningConfig->TextBox_CustomGameModeName->GetText().ToString()))
+	{
+		DefiningConfig->TextBox_CustomGameModeName->SetText(FText());
+		return;
+	}
+	
 	if (CheckForExistingAndDisplayOverwriteMessage(true))
 	{
 		return;
@@ -403,6 +415,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	const bool bIsCustomMode = IsCustomGameMode(DefiningConfig->ComboBox_GameModeName->GetSelectedOption());
 	const bool bGameModeNameComboBoxEmpty = DefiningConfig->ComboBox_GameModeName->GetSelectedOption().IsEmpty();
 	const bool bCustomTextEmpty = DefiningConfig->TextBox_CustomGameModeName->GetText().IsEmptyOrWhitespace();
+	const bool bInvalidCustomGameModeName = IsDefaultGameMode(DefiningConfig->TextBox_CustomGameModeName->GetText().ToString());
 
 	/* RemoveAll Button */
 	if (bNoSavedCustomGameModes)
@@ -425,7 +438,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	}
 	StartWithoutSavingButton->SetIsEnabled(true);
 	
-	if (bGameModeNameComboBoxEmpty || (bIsDefaultMode && bCustomTextEmpty))
+	if (bGameModeNameComboBoxEmpty || (bIsDefaultMode && bCustomTextEmpty) || bInvalidCustomGameModeName)
 	{
 		SaveCustomButton->SetIsEnabled(false);
 		SaveCustomAndStartButton->SetIsEnabled(false);
@@ -434,21 +447,12 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		return;
 	}
 
-	if (bIsCustomMode)
+	if (bIsCustomMode || (bIsDefaultMode && !bCustomTextEmpty))
 	{
 		SaveCustomButton->SetIsEnabled(true);
 		SaveCustomAndStartButton->SetIsEnabled(true);
 		StartCustomButton->SetIsEnabled(true);
 		RemoveSelectedCustomButton->SetIsEnabled(true);
-		return;
-	}
-
-	if (bIsDefaultMode && !bCustomTextEmpty)
-	{
-		SaveCustomButton->SetIsEnabled(true);
-		SaveCustomAndStartButton->SetIsEnabled(true);
-		StartCustomButton->SetIsEnabled(false);
-		RemoveSelectedCustomButton->SetIsEnabled(false);
 	}
 }
 
@@ -524,7 +528,9 @@ bool UGameModesWidget::CheckForExistingAndDisplayOverwriteMessage(const bool bSt
 {
 	const FString SelectedGameModeName = DefiningConfig->ComboBox_GameModeName->GetSelectedOption();
 	const FString CustomGameModeName = DefiningConfig->TextBox_CustomGameModeName->GetText().ToString();
-	if (IsCustomGameMode(SelectedGameModeName) && CustomGameModeName.IsEmpty())
+
+	if ((IsCustomGameMode(SelectedGameModeName) && CustomGameModeName.IsEmpty()) ||
+		IsCustomGameMode(CustomGameModeName))
 	{
 		ShowConfirmOverwriteMessage(bStartGameAfter);
 		return true;

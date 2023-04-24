@@ -485,7 +485,6 @@ void ATargetSpawner::ActivateBeatGridTarget()
 			if (RecentBeatGridIndices.Contains(i))
 			{
 				SpawnedBeatGridTargets[i]->SetSphereColor(FLinearColor(FColor::Red));
-				SpawnedBeatGridTargets[i]->SetOutlineColor(FLinearColor(FColor::Red));
 				continue;
 			}
 			SpawnedBeatGridTargets[i]->SetColorToBeatGridColor();
@@ -1040,12 +1039,8 @@ void ATargetSpawner::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSe
 	{
 		for (ASphereTarget* Target : GetActiveTargets())
 		{
-			Target->PlayerSettings = PlayerSettings;
+			Target->UpdatePlayerSettings(PlayerSettings);
 		}
-	}
-	if (BeatTrackTarget)
-	{
-		BeatTrackTarget->PlayerSettings = PlayerSettings;
 	}
 }
 

@@ -95,8 +95,13 @@ void ABSGameMode::InitializeGameMode()
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
+	OnPlayerSettingsChanged_Game(PlayerSettings.Game);
+	OnPlayerSettingsChanged_User(PlayerSettings.User);
+	OnPlayerSettingsChanged_AudioAnalyzer(PlayerSettings.AudioAnalyzer);
+	OnPlayerSettingsChanged_VideoAndSound(PlayerSettings.VideoAndSound);
+	
 	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->BSConfig;
-
+	
 	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
 	TargetSpawner->InitTargetSpawner(BSConfig, PlayerSettings.Game);
 
@@ -332,7 +337,6 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 
 void ABSGameMode::InitializeAudioManagers()
 {
-	AASettings = LoadPlayerSettings().AudioAnalyzer;
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 
 	switch (BSConfig.AudioConfig.AudioFormat)
@@ -543,7 +547,10 @@ void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameS
 void ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
 {
 	AASettings = AudioAnalyzerSettings;
-	VisualizerManager->UpdateAASettings(AudioAnalyzerSettings);
+	if (VisualizerManager)
+	{
+		VisualizerManager->UpdateAASettings(AudioAnalyzerSettings);
+	}
 }
 
 void ABSGameMode::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)

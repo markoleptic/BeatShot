@@ -170,7 +170,7 @@ struct FBS_DefiningConfig
 
 	FORCEINLINE bool operator==(const FBS_DefiningConfig& Other) const
 	{
-		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName))
+		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName, ESearchCase::IgnoreCase))
 		{
 			/* Custom game modes don't have a difficulty preset */
 			if (!CustomGameModeName.IsEmpty())

@@ -10,7 +10,7 @@ namespace Constants
 	/** The length of the countdown timer */
 	constexpr int32 CountdownTimerLength = 3;
 
-	/** The ratio between the scale of the BaseMesh to OutlineMesh, used to apply a constant proportioned outline regardless of the scale of the target */
+	/** The ratio between the scale of the SphereMesh to OutlineMesh, used to apply a constant proportioned outline regardless of the scale of the target */
 	constexpr float BaseToOutlineRatio = 0.9;
 
 	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */

@@ -20,25 +20,22 @@ ASphereTarget::ASphereTarget()
 	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("Capsule Collider");
 	RootComponent = CapsuleComp;
 
-	BaseMesh = CreateDefaultSubobject<UStaticMeshComponent>("Base Mesh");
-	BaseMesh->SetupAttachment(CapsuleComp);
-
-	OutlineMesh = CreateDefaultSubobject<UStaticMeshComponent>("Outline Mesh");
-	OutlineMesh->SetupAttachment(BaseMesh);
+	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>("Sphere Mesh");
+	SphereMesh->SetupAttachment(CapsuleComp);
 
 	HealthComponent = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
 
 	// Create ability system component, and set it to be explicitly replicated
-	HardRefAbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
-
+	AbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>("Ability System Component");
+	
 	// Create the attribute set, this replicates by default
 	// Adding it as a sub object of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
-	HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>(TEXT("AttributeSetBase"));
-	HardRefAbilitySystemComponent->SetIsReplicated(true);
+	HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>("Attribute Set Base");
+	AbilitySystemComponent->SetIsReplicated(true);
 
 	// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
-	HardRefAbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	
 	InitialLifeSpan = 1.5f;
 	Guid = FGuid::NewGuid();
@@ -63,7 +60,7 @@ void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSetting
 
 UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
 {
-	return HardRefAbilitySystemComponent;
+	return AbilitySystemComponent;
 }
 
 void ASphereTarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
@@ -91,11 +88,16 @@ void ASphereTarget::RemoveGameplayTag(const FGameplayTag TagToRemove)
 	GameplayTags.RemoveTag(TagToRemove);
 }
 
+void ASphereTarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
+{
+	PlayerSettings = InPlayerSettings;
+	SetUseSeparateOutlineColor(PlayerSettings.bUseSeparateOutlineColor);
+}
+
 void ASphereTarget::SetSphereScale(const FVector& NewScale)
 {
 	TargetScale = NewScale.X;
-	BaseMesh->SetRelativeScale3D(NewScale * Constants::BaseToOutlineRatio);
-	OutlineMesh->SetRelativeScale3D(FVector(1 / Constants::BaseToOutlineRatio));
+	SphereMesh->SetRelativeScale3D(NewScale);
 }
 
 void ASphereTarget::BeginPlay()
@@ -105,7 +107,7 @@ void ASphereTarget::BeginPlay()
 	if (IsValid(GetAbilitySystemComponent()))
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
-		HealthComponent->InitializeWithAbilitySystem(HardRefAbilitySystemComponent, GameplayTags);
+		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent, GameplayTags);
 		HealthComponent->OnOutOfHealth.BindUObject(this, &ASphereTarget::HandleDestruction);
 		if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
 		{
@@ -114,37 +116,29 @@ void ASphereTarget::BeginPlay()
 	}
 	
 	/* Use Color Changing Material, this is required in order to change color using C++ */
-	Material = BaseMesh->GetMaterial(0);
+	Material = SphereMesh->GetMaterial(0);
 	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
-	BaseMesh->SetMaterial(0, MID_TargetColorChanger);
-
-	/* Use Color Changing Material, this is required in order to change color using C++ */
-	OutlineMaterial = OutlineMesh->GetMaterial(0);
-	MID_TargetOutline = UMaterialInstanceDynamic::Create(OutlineMaterial, this);
-	OutlineMesh->SetMaterial(0, MID_TargetOutline);
+	SphereMesh->SetMaterial(0, MID_TargetColorChanger);
 
 	/* Set Outline Color */
-	if (PlayerSettings.bUseSeparateOutlineColor)
-	{
-		SetOutlineColor(PlayerSettings.TargetOutlineColor);
-	}
+	SetUseSeparateOutlineColor(PlayerSettings.bUseSeparateOutlineColor);
 	
-	const float WhiteToPeakMultiplier = 1 / BSConfig.AudioConfig.PlayerDelay;
+	const float StartToPeakMultiplier = 1 / BSConfig.AudioConfig.PlayerDelay;
 	const float PeakToFadeMultiplier = 1 / (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay);
 
-	/* White to Peak Target Color */
+	/* Start to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
-	OnStartToPeak.BindDynamic(this, &ASphereTarget::StartToPeak);
+	OnStartToPeak.BindDynamic(this, &ASphereTarget::InterpStartToPeakColor);
 	StartToPeakTimeline.AddInterpFloat(StartToPeakCurve, OnStartToPeak);
 
-	/* Play PeakToEnd when StartToPeak is finished */
-	FOnTimelineEvent OnWhiteToPeakFinished;
-	OnWhiteToPeakFinished.BindDynamic(this, &ASphereTarget::PlayPeakToEndTimeline);
-	StartToPeakTimeline.SetTimelineFinishedFunc(OnWhiteToPeakFinished);
+	/* Play InterpPeakToEndColor when InterpStartToPeakColor is finished */
+	FOnTimelineEvent OnStartToPeakFinished;
+	OnStartToPeakFinished.BindDynamic(this, &ASphereTarget::PlayPeakToEndTimeline);
+	StartToPeakTimeline.SetTimelineFinishedFunc(OnStartToPeakFinished);
 
 	/* Peak Color to Fade Color */
 	FOnTimelineFloat OnPeakToFade;
-	OnPeakToFade.BindDynamic(this, &ASphereTarget::PeakToEnd);
+	OnPeakToFade.BindDynamic(this, &ASphereTarget::InterpPeakToEndColor);
 	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
 	/* Fade the target from transparent to BeatGridInactiveColor */
@@ -152,13 +146,13 @@ void ASphereTarget::BeginPlay()
 	OnFadeAndReappear.BindDynamic(this, &ASphereTarget::FadeAndReappear);
 	FadeAndReappearTimeline.AddInterpFloat(FadeAndReappearCurve, OnFadeAndReappear);
 	
-	FOnTimelineEvent OnFadeAndReappearFinished;
-	OnFadeAndReappearFinished.BindDynamic(this, &ASphereTarget::ASphereTarget::ShowTargetOutline);
-	FadeAndReappearTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
+	// FOnTimelineEvent OnFadeAndReappearFinished;
+	// OnFadeAndReappearFinished.BindDynamic(this, &ASphereTarget::ASphereTarget::SetUseSeparateOutlineColor);
+	// FadeAndReappearTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
 
-	StartToPeakTimeline.SetPlayRate(WhiteToPeakMultiplier);
+	StartToPeakTimeline.SetPlayRate(StartToPeakMultiplier);
 	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
-	FadeAndReappearTimeline.SetPlayRate(WhiteToPeakMultiplier);
+	FadeAndReappearTimeline.SetPlayRate(StartToPeakMultiplier);
 
 	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
@@ -173,7 +167,6 @@ void ASphereTarget::BeginPlay()
 	{
 		SetLifeSpan(0);
 		SetSphereColor(PlayerSettings.EndTargetColor);
-		SetOutlineColor(PlayerSettings.EndTargetColor);
 	}
 	else
 	{
@@ -193,7 +186,7 @@ void ASphereTarget::Tick(float DeltaSeconds)
 
 void ASphereTarget::StartBeatGridTimer(const float Lifespan)
 {
-	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerTimeOut, Lifespan, false);
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerCompleted, Lifespan, false);
 	GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Damageable);
 	PlayStartToPeakTimeline();
 }
@@ -234,56 +227,62 @@ void ASphereTarget::PlayFadeAndReappearTimeline()
 	{
 		PeakToEndTimeline.Stop();
 	}
-	MID_TargetOutline->SetScalarParameterValue(TEXT("ShowOutline"), 0.f);
 	FadeAndReappearTimeline.PlayFromStart();
+	if (!SphereMesh->IsVisible())
+	{
+		SphereMesh->ToggleVisibility();
+	}
 }
 
 void ASphereTarget::SetColorToBeatGridColor()
 {
 	SetSphereColor(PlayerSettings.BeatGridInactiveTargetColor);
-	SetOutlineColor(PlayerSettings.BeatGridInactiveTargetColor);
+	if (PlayerSettings.bUseSeparateOutlineColor)
+	{
+		SetOutlineColor(PlayerSettings.TargetOutlineColor);
+	}
 }
 
-void ASphereTarget::StartToPeak(const float Alpha)
+void ASphereTarget::InterpStartToPeakColor(const float Alpha)
 {
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor, Alpha);
 	SetSphereColor(Color);
-	if (!PlayerSettings.bUseSeparateOutlineColor)
-	{
-		SetOutlineColor(Color);
-	}
 }
 
-void ASphereTarget::PeakToEnd(const float Alpha)
+void ASphereTarget::InterpPeakToEndColor(const float Alpha)
 {
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor, Alpha);
 	SetSphereColor(Color);
-	if (!PlayerSettings.bUseSeparateOutlineColor)
-	{
-		SetOutlineColor(Color);
-	}
 }
 
 void ASphereTarget::FadeAndReappear(const float Alpha)
 {
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(FLinearColor::Transparent, PlayerSettings.BeatGridInactiveTargetColor, Alpha);
 	SetSphereColor(Color);
-	SetOutlineColor(Color);
+	if (PlayerSettings.bUseSeparateOutlineColor)
+	{
+		const FLinearColor OutlineColor = UKismetMathLibrary::LinearColorLerp(FLinearColor::Transparent, PlayerSettings.TargetOutlineColor, Alpha);
+		SetOutlineColor(OutlineColor);
+	}
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ASphereTarget::ApplyImmunityEffect()
 {
-	GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	{
+		Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+	}
 }
 
-void ASphereTarget::SetSphereColor(const FLinearColor& Output)
+void ASphereTarget::SetSphereColor(const FLinearColor& Color)
 {
-	MID_TargetColorChanger->SetVectorParameterValue(TEXT("Color"), Output);
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("BaseColor"), Color);
 }
 
-void ASphereTarget::SetOutlineColor(const FLinearColor& Output)
+void ASphereTarget::SetOutlineColor(const FLinearColor& Color)
 {
-	MID_TargetOutline->SetVectorParameterValue(TEXT("Color"), Output);
+	MID_TargetColorChanger->SetVectorParameterValue(TEXT("OutlineColor"), Color);
 }
 
 void ASphereTarget::LifeSpanExpired()
@@ -310,7 +309,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(BaseMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+	PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
 	Destroy();
 }
 
@@ -329,7 +328,8 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		/* Broadcast that the target has been destroyed by player */
 		PeakToEndTimeline.Stop();
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-		PlayExplosionEffect(BaseMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+		SphereMesh->ToggleVisibility();
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
 		ApplyImmunityEffect();
 		PlayFadeAndReappearTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
@@ -346,23 +346,29 @@ FLinearColor ASphereTarget::GetEndTargetColor() const
 	return PlayerSettings.EndTargetColor;
 }
 
-void ASphereTarget::OnBeatGridTimerTimeOut()
+void ASphereTarget::OnBeatGridTimerCompleted()
 {
 	ApplyImmunityEffect();
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
 }
 
-void ASphereTarget::ShowTargetOutline()
+void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
 {
-	MID_TargetOutline->SetScalarParameterValue(TEXT("ShowOutline"), 1.f);
+	if (bUseSeparateOutlineColor)
+	{
+		SetOutlineColor(PlayerSettings.TargetOutlineColor);
+		MID_TargetColorChanger->SetScalarParameterValue("bUseSeparateOutlineColor", 1.f);
+		return;
+	}
+	MID_TargetColorChanger->SetScalarParameterValue("bUseSeparateOutlineColor", 0.f);
 }
 
 void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& ColorWhenDestroyed) const
 {
-	if (NS_Standard_Explosion)
+	if (TargetExplosion)
 	{
-		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), NS_Standard_Explosion, ExplosionLocation);
+		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion, ExplosionLocation);
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
 	}

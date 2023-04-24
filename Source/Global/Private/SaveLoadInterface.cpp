@@ -171,7 +171,7 @@ bool ISaveLoadInterface::IsDefaultGameMode(const FString& GameModeName) const
 {
 	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
 	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.DefaultMode).ToString()))
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.DefaultMode).ToString(), ESearchCase::IgnoreCase))
 		{
 			return true;
 		}
@@ -181,14 +181,9 @@ bool ISaveLoadInterface::IsDefaultGameMode(const FString& GameModeName) const
 
 bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName) const
 {
-	if (IsDefaultGameMode(GameModeName))
-	{
-		return false;
-	}
-	
 	for (const FBSConfig& GameMode : LoadCustomGameModes())
 	{
-		if (GameMode.DefiningConfig.CustomGameModeName.Equals(GameModeName))
+		if (GameMode.DefiningConfig.CustomGameModeName.Equals(GameModeName, ESearchCase::IgnoreCase))
 		{
 			return true;
 		}
