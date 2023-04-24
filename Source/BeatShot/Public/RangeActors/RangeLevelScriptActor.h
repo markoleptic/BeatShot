@@ -134,18 +134,27 @@ protected:
 	/** Callback function to respond to NightMode change from WallMenu */
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 
-	FVector InitialLeftWindowCoverLoc;
+	
+	FVector InitialLeftRoofLocation;
 
-	FVector InitialRightWindowCoverLoc;
+	FVector InitialRightRoofLocation;
+
+	/** Distance along the x-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
+	UPROPERTY(EditAnywhere, Category = "Day-Night Cycle")
+	float DayToNightRoofXTravelDistance = -1000.f;
+
+	/** Distance along the z-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
+	UPROPERTY(EditAnywhere, Category = "Day-Night Cycle")
+	float DayToNightRoofZTravelDistance = 20.f;
 
 	UPROPERTY(EditAnywhere)
 	float MaxMoonlightIntensity = 1.f;
 
 	UPROPERTY(EditAnywhere)
-	float MaxDaylightIntensity = 15.f;
+	float MaxDaylightIntensity = 18.f;
 
 	UPROPERTY(EditAnywhere)
-	float DaySkylightIntensity = 1.5f;
+	float DaySkylightIntensity = 3.f;
 
 	UPROPERTY(EditAnywhere)
 	float NightSkylightIntensity = 35.f;

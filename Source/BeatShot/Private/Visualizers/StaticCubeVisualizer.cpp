@@ -51,6 +51,7 @@ void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float Spec
 	InstancedVerticalOutlineMesh->UpdateInstanceTransform(Index, BaseAndSideTransform);
 	InstancedTopMesh->UpdateInstanceTransform(Index, FTransform(FRotator(), Index * VisualizerOffset + FVector(0, 0, CubeHeight * (NewHeightScale - 1)), FVector(MeshScale)));
 
+	InstancedBaseMesh->SetCustomDataValue(Index, 0, CustomDataValue, false);
 	InstancedVerticalOutlineMesh->SetCustomDataValue(Index, 0, CustomDataValue, false);
 	InstancedTopMesh->SetCustomDataValue(Index, 0, CustomDataValue, false);
 }

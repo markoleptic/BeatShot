@@ -16,8 +16,8 @@ namespace Constants
 	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */
 	constexpr float CsgoMultiplier = 3.18;
 
-	const FVector VisualizerLocation = {4000, -1950, 210};
-	const FVector Visualizer2Location = {4000, 1950, 210};
+	const FVector VisualizerLocation = {4000, -1935, 210};
+	const FVector Visualizer2Location = {4000, 1935, 210};
 	const FRotator VisualizerRotation = {0, 90, 90};
 
 	const FVector BeamVisualizerLocation = {0, 1920, 1320};
@@ -56,8 +56,7 @@ namespace Constants
 	const FVector MaxFloorHeight = {-4000, 0, 500};
 	const FVector MinFloorHeight = {-4000, 0, 0};
 
-	constexpr float CycleSpeed = 20;
-	constexpr float WindowCoverOffset = -1700;
+	constexpr float DayNightCycleSpeed = 20;
 
 	/** The maximum width of the beam, used to scale the alpha value */
 	constexpr float MaxBeamWidth = 50;
