@@ -50,7 +50,7 @@ protected:
 	UBSAttributeSetBase* HardRefAttributeSetBase;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	UCapsuleComponent* CapsuleComp;
+	UCapsuleComponent* CapsuleComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UStaticMeshComponent* SphereMesh;
@@ -76,7 +76,7 @@ protected:
 	UCurveFloat* PeakToEndCurve;
 
 	UPROPERTY(EditDefaultsOnly)
-	UCurveFloat* FadeAndReappearCurve;
+	UCurveFloat* ShrinkQuickAndGrowSlowCurve;
 
 public:
 
@@ -145,9 +145,9 @@ private:
 	UFUNCTION()
 	void PlayPeakToEndTimeline();
 
-	/** Briefly makes the target lower opacity, and sets the color back to BeatGridInactive color */
+	/** Quickly shrinks the target, then slowly takes it back to original size */
 	UFUNCTION()
-	void PlayFadeAndReappearTimeline();
+	void PlayShrinkQuickAndGrowSlowTimeline();
 
 	/** Set the color to BeatGrid color */
 	UFUNCTION()
@@ -162,7 +162,7 @@ private:
 	void InterpPeakToEndColor(const float Alpha);
 
 	UFUNCTION()
-	void FadeAndReappear(const float Alpha);
+	void InterpShrinkQuickAndGrowSlow(const float Alpha);
 
 	/** Applies the TargetImmunity gameplay effect to the target */
 	void ApplyImmunityEffect();
@@ -188,7 +188,7 @@ private:
 
 	FTimeline StartToPeakTimeline;
 	FTimeline PeakToEndTimeline;
-	FTimeline FadeAndReappearTimeline;
+	FTimeline ShrinkQuickAndGrowSlowTimeline;
 
 	/** The scale that was applied when spawned */
 	float TargetScale = 1.f;

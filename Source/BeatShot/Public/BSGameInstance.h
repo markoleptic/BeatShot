@@ -53,25 +53,44 @@ public:
 	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;
 
-	/** Adds an actor's FOnPlayerSettingsChanged_Game delegate to the call list */
+	/** Binds an actor's Game Settings delegate to the Game Instance's OnPlayerSettingsChanged_Game function,
+	 *  which broadcasts OnPlayerSettingsChangedDelegate_Game to all actors subscribed for updates */
 	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_Game& Delegate);
 
-	/** Adds an actor's FOnPlayerSettingsChanged_AudioAnalyzer delegate to the call list */
+	/** Binds an actor's Audio Analyzer Settings delegate to the Game Instance's OnPlayerSettingsChanged_AudioAnalyzer function,
+	 *  which broadcasts OnPlayerSettingsChangedDelegate_AudioAnalyzer to all actors subscribed for updates */
 	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_AudioAnalyzer& Delegate);
 
-	/** Adds an actor's FOnPlayerSettingsChanged_User delegate to the call list */
+	/** Binds an actor's User Settings delegate to the Game Instance's OnPlayerSettingsChanged_User function,
+	 *  which broadcasts OnPlayerSettingsChangedDelegate_User to all actors subscribed for updates */
 	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_User& Delegate);
 
-	/** Adds an actor's FOnPlayerSettingsChanged_CrossHair delegate to the call list */
+	/** Binds an actor's CrossHair Settings delegate to the Game Instance's OnPlayerSettingsChanged_CrossHair function,
+	 *  which broadcasts OnPlayerSettingsChangedDelegate_CrossHair to all actors subscribed for updates */
 	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_CrossHair& Delegate);
 
-	/** Adds an actor's FOnPlayerSettingsChanged_VideoAndSound delegate to the call list */
+	/** Binds an actor's Video and Sound Settings delegate to the Game Instance's OnPlayerSettingsChanged_VideoAndSound function,
+	 *  which broadcasts OnPlayerSettingsChangedDelegate_VideoAndSound to all actors subscribed for updates */
 	void AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_VideoAndSound& Delegate);
 
+	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_Game, which can be used to add a function to the delegate's call list.
+	 *  The function is then called any time a Game Setting is changed */
 	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_Game;}
+	
+	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_AudioAnalyzer, which can be used to add a function to the delegate's call list.
+	 *  The function is then called any time an Audio Analyzer Setting is changed */
 	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_AudioAnalyzer;}
+	
+	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_User, which can be used to add a function to the delegate's call list.
+	 *  The function is then called any time a User Setting is changed */
 	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_User;}
+	
+	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_CrossHair, which can be used to add a function to the delegate's call list.
+	 *  The function is then called any time a CrossHair Setting is changed */
 	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_CrossHair;}
+	
+	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_VideoAndSound, which can be used to add a function to the delegate's call list.
+	 *  The function is then called any time a Video And Sound Setting is changed */
 	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
 	
 private:

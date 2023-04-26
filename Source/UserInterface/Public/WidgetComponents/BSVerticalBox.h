@@ -25,7 +25,7 @@ public:
 
 private:
 	/** Returns whether or not the widget in the vertical box slot is in the WidgetBoxMap */
-	bool IsPanelSlotInAdditionalWidgetChildren(const TObjectPtr<UPanelSlot>& BoxSlot) const;
+	bool IsPanelSlotInWidgetBoxMap(const TObjectPtr<UPanelSlot>& BoxSlot) const;
 
 	/** Iterates through all slots and changes the Brush Color of the borders. If a slot's content widget is contained in WidgetBoxMap,
 	 *  it calls this function on the widget's associated BSVerticalBox */

@@ -24,7 +24,7 @@ bool UBSVerticalBox::IterateThroughSlots_UpdateBrushColors(TArray<TObjectPtr<UPa
 {
 	for (const TObjectPtr<UPanelSlot>& BoxSlot : InSlots)
 	{
-		if (IsPanelSlotInAdditionalWidgetChildren(BoxSlot))
+		if (IsPanelSlotInWidgetBoxMap(BoxSlot))
 		{
 			if (UBSVerticalBox* SubVerticalBox = GetBSBoxFromChildWidget(BoxSlot->Content))
 			{
@@ -63,7 +63,7 @@ void UBSVerticalBox::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox)
 	}
 }
 
-bool UBSVerticalBox::IsPanelSlotInAdditionalWidgetChildren(const TObjectPtr<UPanelSlot>& BoxSlot) const
+bool UBSVerticalBox::IsPanelSlotInWidgetBoxMap(const TObjectPtr<UPanelSlot>& BoxSlot) const
 {
 	if (!BoxSlot || WidgetBoxMap.IsEmpty())
 	{

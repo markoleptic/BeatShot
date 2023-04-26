@@ -7,7 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "WidgetComponents/BandChannelWidget.h"
 #include "WidgetComponents/BandThresholdWidget.h"
-#include "AudioAnalyzerSettingsWidget.generated.h"
+#include "SettingsMenuWidget_AudioAnalyzer.generated.h"
 
 DECLARE_DELEGATE(FOnRestartButtonClicked);
 
@@ -24,7 +24,7 @@ class UProgressBar;
 class UPopupMessageWidget;
 
 UCLASS()
-class USERINTERFACE_API UAudioAnalyzerSettingsWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 

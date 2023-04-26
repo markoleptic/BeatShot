@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
-#include "SensitivitySettingsWidget.generated.h"
+#include "SettingsMenuWidget_Sensitivity.generated.h"
 
 class UEditableTextBox;
 class UTextBlock;
@@ -14,7 +14,7 @@ class UButton;
 class USavedTextWidget;
 
 UCLASS()
-class USERINTERFACE_API USensitivitySettingsWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_Sensitivity : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 

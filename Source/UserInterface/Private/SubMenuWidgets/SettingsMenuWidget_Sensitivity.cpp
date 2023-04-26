@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/SensitivitySettingsWidget.h"
+#include "SubMenuWidgets/SettingsMenuWidget_Sensitivity.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
@@ -10,21 +10,21 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
-void USensitivitySettingsWidget::NativeConstruct()
+void USettingsMenuWidget_Sensitivity::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	NewSensitivityValue->OnTextCommitted.AddDynamic(this, &USensitivitySettingsWidget::OnNewSensitivityValue);
-	NewSensitivityCsgoValue->OnTextCommitted.AddDynamic(this, &USensitivitySettingsWidget::OnNewSensitivityCsgoValue);
-	SensSlider->OnValueChanged.AddDynamic(this, &USensitivitySettingsWidget::OnSensitivitySliderChanged);
-	SaveButton_Sensitivity->OnClicked.AddDynamic(this, &USensitivitySettingsWidget::OnSaveButtonClicked_Sensitivity);
+	NewSensitivityValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnNewSensitivityValue);
+	NewSensitivityCsgoValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnNewSensitivityCsgoValue);
+	SensSlider->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnSensitivitySliderChanged);
+	SaveButton_Sensitivity->OnClicked.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnSaveButtonClicked_Sensitivity);
 
 	Sensitivity = LoadPlayerSettings().User.Sensitivity;
 	SensSlider->SetValue(Sensitivity);
 	CurrentSensitivityValue->SetText(FText::AsNumber(Sensitivity));
 }
 
-void USensitivitySettingsWidget::OnSaveButtonClicked_Sensitivity()
+void USettingsMenuWidget_Sensitivity::OnSaveButtonClicked_Sensitivity()
 {
 	CurrentSensitivityValue->SetText(FText::AsNumber(SensSlider->GetValue()));
 	FPlayerSettings_User Settings = LoadPlayerSettings().User;
@@ -34,7 +34,7 @@ void USensitivitySettingsWidget::OnSaveButtonClicked_Sensitivity()
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
-void USensitivitySettingsWidget::OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_Sensitivity::OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewSensValue = FCString::Atof(*NewValue.ToString());
 	SensSlider->SetValue(NewSensValue);
@@ -42,7 +42,7 @@ void USensitivitySettingsWidget::OnNewSensitivityValue(const FText& NewValue, ET
 	Sensitivity = NewSensValue;
 }
 
-void USensitivitySettingsWidget::OnNewSensitivityCsgoValue(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_Sensitivity::OnNewSensitivityCsgoValue(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewCsgoSensValue = FCString::Atof(*NewValue.ToString());
 	SensSlider->SetValue(NewCsgoSensValue / Constants::CsgoMultiplier);
@@ -50,7 +50,7 @@ void USensitivitySettingsWidget::OnNewSensitivityCsgoValue(const FText& NewValue
 	Sensitivity = NewCsgoSensValue / Constants::CsgoMultiplier;
 }
 
-void USensitivitySettingsWidget::OnSensitivitySliderChanged(const float NewValue)
+void USettingsMenuWidget_Sensitivity::OnSensitivitySliderChanged(const float NewValue)
 {
 	const float NewSensValue = UKismetMathLibrary::GridSnap_Float(NewValue, 0.1);
 	SensSlider->SetValue(NewSensValue);

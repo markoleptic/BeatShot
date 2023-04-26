@@ -45,6 +45,11 @@ void UPopupMessageWidget::FadeOut()
 	PlayAnimationForward(FadeOutMessage);
 }
 
+void UPopupMessageWidget::ChangeMessageText(const FText& MessageInput)
+{
+	MessageText->SetText(MessageInput);
+}
+
 void UPopupMessageWidget::OnFadeOutPopupMessageFinish()
 {
 	RemoveFromParent();

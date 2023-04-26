@@ -17,11 +17,11 @@
 ASphereTarget::ASphereTarget()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	CapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("Capsule Collider");
-	RootComponent = CapsuleComp;
+	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
+	RootComponent = CapsuleComponent;
 
 	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>("Sphere Mesh");
-	SphereMesh->SetupAttachment(CapsuleComp);
+	SphereMesh->SetupAttachment(CapsuleComponent);
 
 	HealthComponent = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
 
@@ -97,7 +97,7 @@ void ASphereTarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSet
 void ASphereTarget::SetSphereScale(const FVector& NewScale)
 {
 	TargetScale = NewScale.X;
-	SphereMesh->SetRelativeScale3D(NewScale);
+	CapsuleComponent->SetRelativeScale3D(NewScale);
 }
 
 void ASphereTarget::BeginPlay()
@@ -142,17 +142,17 @@ void ASphereTarget::BeginPlay()
 	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
 	/* Fade the target from transparent to BeatGridInactiveColor */
-	FOnTimelineFloat OnFadeAndReappear;
-	OnFadeAndReappear.BindDynamic(this, &ASphereTarget::FadeAndReappear);
-	FadeAndReappearTimeline.AddInterpFloat(FadeAndReappearCurve, OnFadeAndReappear);
+	FOnTimelineFloat OnShrinkQuickAndGrowSlow;
+	OnShrinkQuickAndGrowSlow.BindDynamic(this, &ASphereTarget::InterpShrinkQuickAndGrowSlow);
+	ShrinkQuickAndGrowSlowTimeline.AddInterpFloat(ShrinkQuickAndGrowSlowCurve, OnShrinkQuickAndGrowSlow);
 	
 	// FOnTimelineEvent OnFadeAndReappearFinished;
 	// OnFadeAndReappearFinished.BindDynamic(this, &ASphereTarget::ASphereTarget::SetUseSeparateOutlineColor);
-	// FadeAndReappearTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
+	// ShrinkQuickAndGrowSlowTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
 
 	StartToPeakTimeline.SetPlayRate(StartToPeakMultiplier);
 	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
-	FadeAndReappearTimeline.SetPlayRate(StartToPeakMultiplier);
+	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakMultiplier);
 
 	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
@@ -181,7 +181,7 @@ void ASphereTarget::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	StartToPeakTimeline.TickTimeline(DeltaSeconds);
 	PeakToEndTimeline.TickTimeline(DeltaSeconds);
-	FadeAndReappearTimeline.TickTimeline(DeltaSeconds);
+	ShrinkQuickAndGrowSlowTimeline.TickTimeline(DeltaSeconds);
 }
 
 void ASphereTarget::StartBeatGridTimer(const float Lifespan)
@@ -193,9 +193,9 @@ void ASphereTarget::StartBeatGridTimer(const float Lifespan)
 
 void ASphereTarget::PlayStartToPeakTimeline()
 {
-	if (FadeAndReappearTimeline.IsPlaying())
+	if (ShrinkQuickAndGrowSlowTimeline.IsPlaying())
 	{
-		FadeAndReappearTimeline.Stop();
+		ShrinkQuickAndGrowSlowTimeline.Stop();
 	}
 	if (PeakToEndTimeline.IsPlaying())
 	{
@@ -210,14 +210,14 @@ void ASphereTarget::PlayPeakToEndTimeline()
 	{
 		StartToPeakTimeline.Stop();
 	}
-	if (FadeAndReappearTimeline.IsPlaying())
+	if (ShrinkQuickAndGrowSlowTimeline.IsPlaying())
 	{
-		FadeAndReappearTimeline.Stop();
+		ShrinkQuickAndGrowSlowTimeline.Stop();
 	}
 	PeakToEndTimeline.PlayFromStart();
 }
 
-void ASphereTarget::PlayFadeAndReappearTimeline()
+void ASphereTarget::PlayShrinkQuickAndGrowSlowTimeline()
 {
 	if (StartToPeakTimeline.IsPlaying())
 	{
@@ -227,11 +227,7 @@ void ASphereTarget::PlayFadeAndReappearTimeline()
 	{
 		PeakToEndTimeline.Stop();
 	}
-	FadeAndReappearTimeline.PlayFromStart();
-	if (!SphereMesh->IsVisible())
-	{
-		SphereMesh->ToggleVisibility();
-	}
+	ShrinkQuickAndGrowSlowTimeline.PlayFromStart();
 }
 
 void ASphereTarget::SetColorToBeatGridColor()
@@ -255,15 +251,9 @@ void ASphereTarget::InterpPeakToEndColor(const float Alpha)
 	SetSphereColor(Color);
 }
 
-void ASphereTarget::FadeAndReappear(const float Alpha)
+void ASphereTarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(FLinearColor::Transparent, PlayerSettings.BeatGridInactiveTargetColor, Alpha);
-	SetSphereColor(Color);
-	if (PlayerSettings.bUseSeparateOutlineColor)
-	{
-		const FLinearColor OutlineColor = UKismetMathLibrary::LinearColorLerp(FLinearColor::Transparent, PlayerSettings.TargetOutlineColor, Alpha);
-		SetOutlineColor(OutlineColor);
-	}
+	CapsuleComponent->SetRelativeScale3D(FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, TargetScale, Alpha)));
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
@@ -309,7 +299,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("Color")));
+	PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
 	Destroy();
 }
 
@@ -328,10 +318,9 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		/* Broadcast that the target has been destroyed by player */
 		PeakToEndTimeline.Stop();
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-		SphereMesh->ToggleVisibility();
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
 		ApplyImmunityEffect();
-		PlayFadeAndReappearTimeline();
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
+		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}
 }

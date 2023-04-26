@@ -30,6 +30,7 @@ public:
 	UButton* Button1;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UButton* Button2;
+	void ChangeMessageText(const FText& MessageInput);
 
 protected:
 	FWidgetAnimationDynamicEvent FadeOutPopupMessageDelegate;

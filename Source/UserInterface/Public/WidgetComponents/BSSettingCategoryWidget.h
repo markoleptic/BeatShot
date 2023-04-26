@@ -8,11 +8,19 @@
 #include "Blueprint/UserWidget.h"
 #include "BSSettingCategoryWidget.generated.h"
 
-/** Base Setting Category widget, with a BSVerticalBox acting as the main container */
+/** Base Setting Category widget, with a BSVerticalBox acting as the main container. The background colors of BSHorizontalBoxes inside the MainContainer are synced.
+ *  Additional containers can be added, but will not be synced with MainContainer or each other */
 UCLASS()
 class USERINTERFACE_API UBSSettingCategoryWidget : public UUserWidget, public ITooltipInterface
 {
 	GENERATED_BODY()
+
+public:
+	/** Calls UpdateBrushColors on all BSVerticalBoxes in Containers array. For each box, it iterates through the widget tree and alternates the Brush Color of each widget */
+	void UpdateBrushColors() const;
+
+	/** Returns the BSVerticalBox, the MainContainer for this widget */
+	UBSVerticalBox* GetMainContainer() const { return MainContainer; }
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -20,8 +28,12 @@ protected:
 	/** Override this function to set up more specific settings, such as calling AddWidgetBoxPair inside it */
 	virtual void InitSettingCategoryWidget();
 
-	/** Overriden from TooltipInterface, */
+	/** Overriden from TooltipInterface, creates the tooltip widget */
 	virtual UTooltipWidget* ConstructTooltipWidget() override;
+
+	/** Add another container separate from MainContainer that will also be called to update background colors,
+	 *  but will sync with MainContainers, or with each other */
+	void AddAdditionalContainers(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers);
 
 	/** Adds a widget-box pair to the WidgetBoxMap. Any widget-box pairs will be called when updating
 	 *  the background colors so that other child widgets that contain BSVerticalBoxes will match this one */
@@ -29,13 +41,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* MainContainer;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
+	UPROPERTY(EditDefaultsOnly, Category = "Setting Category Widget | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	
-public:
-	/** Calls UpdateBrushColors on the MainContainer which iterates through the widget tree and alternates the Brush Color of each widget */
-	void UpdateBrushColors() const;
 
-	/** Returns the BSVerticalBox, the MainContainer for this widget */
-	UBSVerticalBox* GetMainContainer() const { return MainContainer; }
+private:
+	TArray<TObjectPtr<UBSVerticalBox>> Containers;
 };

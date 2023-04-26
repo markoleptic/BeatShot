@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/GameSettingsWidget.h"
+#include "SubMenuWidgets/SettingsMenuWidget_Game.h"
 
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
@@ -10,7 +10,7 @@
 #include "WidgetComponents/ColorSelectWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
-void UGameSettingsWidget::NativeConstruct()
+void USettingsMenuWidget_Game::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -18,13 +18,13 @@ void UGameSettingsWidget::NativeConstruct()
 	PeakTargetColor->OnColorChanged.BindUFunction(this, "OnPeakTargetColorChanged");
 	EndTargetColor->OnColorChanged.BindUFunction(this, "OnEndTargetColorChanged");
 	BeatGridInactiveColor->OnColorChanged.BindUFunction(this, "OnBeatGridInactiveColorChanged");
-	UseSeparateOutlineColorCheckbox->OnCheckStateChanged.AddDynamic(this, &UGameSettingsWidget::UseSeparateOutlineColorCheckStateChanged);
+	UseSeparateOutlineColorCheckbox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_Game::UseSeparateOutlineColorCheckStateChanged);
 	TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnTargetOutlineColorChanged");
-	CombatTextFrequency->OnTextCommitted.AddDynamic(this, &UGameSettingsWidget::OnCombatTextFrequencyValueChanged);
-	ShowStreakCombatTextCheckBox->OnCheckStateChanged.AddDynamic(this, &UGameSettingsWidget::OnShowCombatTextCheckStateChanged);
+	CombatTextFrequency->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Game::OnCombatTextFrequencyValueChanged);
+	ShowStreakCombatTextCheckBox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_Game::OnShowCombatTextCheckStateChanged);
 
-	ResetButton_Game->OnClicked.AddDynamic(this, &UGameSettingsWidget::OnResetButtonClicked_Game);
-	SaveButton_Game->OnClicked.AddDynamic(this, &UGameSettingsWidget::OnSaveButtonClicked_Game);
+	ResetButton_Game->OnClicked.AddDynamic(this, &USettingsMenuWidget_Game::OnResetButtonClicked_Game);
+	SaveButton_Game->OnClicked.AddDynamic(this, &USettingsMenuWidget_Game::OnSaveButtonClicked_Game);
 
 	NewSettings = LoadPlayerSettings().Game;
 
@@ -46,7 +46,7 @@ void UGameSettingsWidget::NativeConstruct()
 	PopulateSettings();
 }
 
-void UGameSettingsWidget::PopulateSettings()
+void USettingsMenuWidget_Game::PopulateSettings()
 {
 	StartTargetColor->InitializeColor(NewSettings.StartTargetColor);
 	PeakTargetColor->InitializeColor(NewSettings.PeakTargetColor);
@@ -61,22 +61,22 @@ void UGameSettingsWidget::PopulateSettings()
 	CombatTextFrequency->SetText(FText::AsNumber(NewSettings.CombatTextFrequency));
 }
 
-void UGameSettingsWidget::OnStartTargetColorChanged(const FLinearColor& NewColor)
+void USettingsMenuWidget_Game::OnStartTargetColorChanged(const FLinearColor& NewColor)
 {
 	NewSettings.StartTargetColor = NewColor;
 }
 
-void UGameSettingsWidget::OnPeakTargetColorChanged(const FLinearColor& NewColor)
+void USettingsMenuWidget_Game::OnPeakTargetColorChanged(const FLinearColor& NewColor)
 {
 	NewSettings.PeakTargetColor = NewColor;
 }
 
-void UGameSettingsWidget::OnEndTargetColorChanged(const FLinearColor& NewColor)
+void USettingsMenuWidget_Game::OnEndTargetColorChanged(const FLinearColor& NewColor)
 {
 	NewSettings.EndTargetColor = NewColor;
 }
 
-void UGameSettingsWidget::UseSeparateOutlineColorCheckStateChanged(const bool bIsChecked)
+void USettingsMenuWidget_Game::UseSeparateOutlineColorCheckStateChanged(const bool bIsChecked)
 {
 	NewSettings.bUseSeparateOutlineColor = bIsChecked;
 	if (bIsChecked)
@@ -87,22 +87,22 @@ void UGameSettingsWidget::UseSeparateOutlineColorCheckStateChanged(const bool bI
 	TargetOutlineColor->SetVisibility(ESlateVisibility::Collapsed);
 }
 
-void UGameSettingsWidget::OnTargetOutlineColorChanged(const FLinearColor& NewColor)
+void USettingsMenuWidget_Game::OnTargetOutlineColorChanged(const FLinearColor& NewColor)
 {
 	NewSettings.TargetOutlineColor = NewColor;
 }
 
-void UGameSettingsWidget::OnBeatGridInactiveColorChanged(const FLinearColor& NewColor)
+void USettingsMenuWidget_Game::OnBeatGridInactiveColorChanged(const FLinearColor& NewColor)
 {
 	NewSettings.BeatGridInactiveTargetColor = NewColor;
 }
 
-void UGameSettingsWidget::OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_Game::OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	NewSettings.CombatTextFrequency = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*NewValue.ToString()), 1);
 }
 
-void UGameSettingsWidget::OnShowCombatTextCheckStateChanged(const bool bIsChecked)
+void USettingsMenuWidget_Game::OnShowCombatTextCheckStateChanged(const bool bIsChecked)
 {
 	CombatTextFrequency->SetIsReadOnly(!bIsChecked);
 	NewSettings.bShowStreakCombatText = bIsChecked;
@@ -114,14 +114,14 @@ void UGameSettingsWidget::OnShowCombatTextCheckStateChanged(const bool bIsChecke
 	NewSettings.CombatTextFrequency = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*CombatTextFrequency->GetText().ToString()), 1);
 }
 
-void UGameSettingsWidget::OnSaveButtonClicked_Game()
+void USettingsMenuWidget_Game::OnSaveButtonClicked_Game()
 {
 	SavePlayerSettings(NewSettings);
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_Game"));
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
-void UGameSettingsWidget::OnResetButtonClicked_Game()
+void USettingsMenuWidget_Game::OnResetButtonClicked_Game()
 {
 	NewSettings.ResetToDefault();
 	PopulateSettings();

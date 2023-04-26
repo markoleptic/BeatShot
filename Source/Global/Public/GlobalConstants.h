@@ -56,7 +56,12 @@ namespace Constants
 	const FVector MaxFloorHeight = {-4000, 0, 500};
 	const FVector MinFloorHeight = {-4000, 0, 0};
 
+	/** How much to shrink the target scale to during BeatGrid after successful hit */
+	constexpr float MinShrinkTargetScale = 0.1f;
+
 	constexpr float DayNightCycleSpeed = 20;
+
+	constexpr float VideoSettingsTimeoutLength = 10.f;
 
 	/** The maximum width of the beam, used to scale the alpha value */
 	constexpr float MaxBeamWidth = 50;

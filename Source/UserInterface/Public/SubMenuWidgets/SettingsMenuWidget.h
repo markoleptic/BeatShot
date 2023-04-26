@@ -4,11 +4,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AudioAnalyzerSettingsWidget.h"
-#include "CrossHairSettingsWidget.h"
-#include "GameSettingsWidget.h"
-#include "VideoAndSoundSettingsWidget.h"
-#include "SensitivitySettingsWidget.h"
+#include "SettingsMenuWidget_AudioAnalyzer.h"
+#include "SettingsMenuWidget_CrossHair.h"
+#include "SettingsMenuWidget_Game.h"
+#include "SettingsMenuWidget_VideoAndSound.h"
+#include "SettingsMenuWidget_Sensitivity.h"
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
@@ -73,15 +73,15 @@ protected:
 	/* --------------- */
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UGameSettingsWidget* Game_Widget;
+	USettingsMenuWidget_Game* Game_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVideoAndSoundSettingsWidget* VideoAndSound_Widget;
+	USettingsMenuWidget_VideoAndSound* VideoAndSound_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USensitivitySettingsWidget* Sensitivity_Widget;
+	USettingsMenuWidget_Sensitivity* Sensitivity_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCrossHairSettingsWidget* CrossHair_Widget;
+	USettingsMenuWidget_CrossHair* CrossHair_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UAudioAnalyzerSettingsWidget* AudioAnalyzer_Widget;
+	USettingsMenuWidget_AudioAnalyzer* AudioAnalyzer_Widget;
 
 	/* ------------------ */
 	/* Navigation Buttons */

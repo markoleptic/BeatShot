@@ -6,7 +6,7 @@
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
-#include "CrossHairSettingsWidget.generated.h"
+#include "SettingsMenuWidget_CrossHair.generated.h"
 
 class USavedTextWidget;
 class UColorSelectWidget;
@@ -17,7 +17,7 @@ class UEditableTextBox;
 class UButton;
 
 UCLASS()
-class USERINTERFACE_API UCrossHairSettingsWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
-#include "GameSettingsWidget.generated.h"
+#include "SettingsMenuWidget_Game.generated.h"
 
 class UCheckBox;
 class UEditableTextBox;
@@ -14,7 +14,7 @@ class UColorSelectWidget;
 class USavedTextWidget;
 
 UCLASS()
-class USERINTERFACE_API UGameSettingsWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_Game : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 

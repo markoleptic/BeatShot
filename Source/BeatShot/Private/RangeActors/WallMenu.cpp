@@ -12,7 +12,8 @@ void AWallMenu::BeginPlay()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
 	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged_Game);
-	InitializeSettings(LoadPlayerSettings().Game);
+	GI->GetPublicUserSettingsChangedDelegate().AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged_User);
+	InitializeSettings(LoadPlayerSettings().Game, LoadPlayerSettings().User);
 }
 
 FPlayerSettings AWallMenu::LoadPlayerSettings() const
@@ -27,5 +28,10 @@ void AWallMenu::SavePlayerSettings(const FPlayerSettings_Game& InGameSettings)
 
 void AWallMenu::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	InitializeSettings(GameSettings);
+	InitializeSettings(GameSettings, LoadPlayerSettings().User);
+}
+
+void AWallMenu::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+{
+	InitializeSettings(LoadPlayerSettings().Game, UserSettings);
 }

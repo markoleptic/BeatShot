@@ -625,7 +625,7 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 
 void ABSGameMode::UpdateTrackingScore(const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
-	UE_LOG(LogTemp, Display, TEXT("OldValue %f NewValue %f TotalPossibleDamage %f"), OldValue, NewValue, TotalPossibleDamage);
+	//UE_LOG(LogTemp, Display, TEXT("OldValue %f NewValue %f TotalPossibleDamage %f"), OldValue, NewValue, TotalPossibleDamage);
 	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
 	CurrentPlayerScore.Score += abs(OldValue - NewValue);
 	UpdateHighScore();
