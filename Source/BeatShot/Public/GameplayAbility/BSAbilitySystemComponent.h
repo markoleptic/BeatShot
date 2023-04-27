@@ -45,6 +45,9 @@ public:
 	/** Gets the ability target data associated with the given ability handle and activation info */
 	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
+	/** Wrapper around GetActivatableGameplayAbilitySpecsByAllMatchingTags to shorten code */
+	TArray<FGameplayAbilitySpec*> GetAbilitySpecsFromGameplayTag(const FGameplayTag& InputTag) const;
+
 protected:
 	virtual void AbilitySpecInputPressed(FGameplayAbilitySpec& Spec) override;
 	virtual void AbilitySpecInputReleased(FGameplayAbilitySpec& Spec) override;

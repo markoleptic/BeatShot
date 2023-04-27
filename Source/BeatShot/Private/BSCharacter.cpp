@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "InputMappingContext.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/BSAbilitySet.h"
@@ -186,7 +187,7 @@ void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 void ABSCharacter::Input_Move(const FInputActionValue& Value)
 {
 	// Moving the player
-	if (Value.GetMagnitude() != 0.0f)
+	if (Value.IsNonZero())
 	{
 		AddMovementInput(GetActorForwardVector(), Value[1]);
 		AddMovementInput(GetActorRightVector(), Value[0]);
@@ -357,7 +358,12 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		const FBSGameplayTags& GameplayTags = FBSGameplayTags::Get();
 		TArray<uint32> BindHandles;
 		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Forward, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Backward, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Left, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);

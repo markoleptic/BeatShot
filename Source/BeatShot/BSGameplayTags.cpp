@@ -28,6 +28,11 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(Input, "Input","");
 	AddTag(Input_Move, "Input.Move","");
+	AddTag(Input_Move_Forward, "Input.Move.Forward","");
+	AddTag(Input_Move_Backward, "Input.Move.Backward","");
+	AddTag(Input_Move_Left, "Input.Move.Left","");
+	AddTag(Input_Move_Right, "Input.Move.Right","");
+
 	AddTag(Input_Look, "Input.Look","");
 	AddTag(Input_Crouch, "Input.Crouch","");
 	AddTag(Input_Fire, "Input.Fire","");

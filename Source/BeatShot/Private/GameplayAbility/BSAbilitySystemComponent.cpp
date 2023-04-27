@@ -161,6 +161,19 @@ void UBSAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecH
 	}
 }
 
+TArray<FGameplayAbilitySpec*> UBSAbilitySystemComponent::GetAbilitySpecsFromGameplayTag(const FGameplayTag& InputTag) const
+{
+	FGameplayTagContainer Container;
+	TArray<FGameplayAbilitySpec*> Activatable;
+	Container.AddTag(InputTag);
+	GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Activatable);
+	if (!Activatable.IsEmpty())
+	{
+		return Activatable;
+	}
+	return TArray<FGameplayAbilitySpec*>();
+}
+
 void UBSAbilitySystemComponent::AbilitySpecInputPressed(FGameplayAbilitySpec& Spec)
 {
 	Super::AbilitySpecInputPressed(Spec);

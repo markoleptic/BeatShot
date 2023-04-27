@@ -176,7 +176,7 @@ private:
 	void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
-	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& ColorWhenDestroyed) const;
+	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* MID_TargetColorChanger;
@@ -192,4 +192,6 @@ private:
 
 	/** The scale that was applied when spawned */
 	float TargetScale = 1.f;
+
+	FLinearColor ColorWhenDestroyed;
 };

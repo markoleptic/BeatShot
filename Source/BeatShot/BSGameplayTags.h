@@ -28,6 +28,10 @@ struct FBSGameplayTags
 
 	FGameplayTag Input;
 	FGameplayTag Input_Move;
+	FGameplayTag Input_Move_Forward;
+	FGameplayTag Input_Move_Backward;
+	FGameplayTag Input_Move_Left;
+	FGameplayTag Input_Move_Right;
 	FGameplayTag Input_Look;
 	FGameplayTag Input_Crouch;
 	FGameplayTag Input_Fire;

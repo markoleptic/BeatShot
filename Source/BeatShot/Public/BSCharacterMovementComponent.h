@@ -47,7 +47,7 @@ public:
 	virtual float GetMaxSpeed() const override;
 
 	// Returns the current ground info.  Calling this will update the ground info if it's out of date.
-	UFUNCTION(BlueprintCallable, Category = "Lyra|CharacterMovement")
+	UFUNCTION(BlueprintCallable, Category = "CharacterMovement")
 	const FCharacterGroundInfo& GetGroundInfo();
 
 protected:

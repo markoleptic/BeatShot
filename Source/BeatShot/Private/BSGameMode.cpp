@@ -94,35 +94,40 @@ void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
+
+	/* Load settings */
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
 	OnPlayerSettingsChanged_Game(PlayerSettings.Game);
 	OnPlayerSettingsChanged_User(PlayerSettings.User);
 	OnPlayerSettingsChanged_AudioAnalyzer(PlayerSettings.AudioAnalyzer);
 	OnPlayerSettingsChanged_VideoAndSound(PlayerSettings.VideoAndSound);
-	
+
+	/* Get config from Game Instance */
 	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->BSConfig;
-	
+
+	/* Spawn TargetSpawner and VisualizerManager */
 	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
 	TargetSpawner->InitTargetSpawner(BSConfig, PlayerSettings.Game);
-
 	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
 	VisualizerManager->InitializeVisualizers(PlayerSettings.Game);
 	
-	const ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
-	FGameplayTagContainer Container;
-	TArray<FGameplayAbilitySpec*> Activatable;
-	Container.AddTag(FBSGameplayTags::Get().Ability_Track);
-	UBSGameplayAbility* TrackGunAbilityCDO = TrackGunAbility->GetDefaultObject<UBSGameplayAbility>();
-	const FGameplayAbilitySpec AbilitySpec(TrackGunAbilityCDO, 1);
-	Character->GetBSAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Activatable);
-
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	/* Handle abilities for different game modes */
+	for (const ABSPlayerController* Controller : Controllers)
 	{
-		Character->GetBSAbilitySystemComponent()->TryActivateAbilityByClass(TrackGunAbility);
-	}
-	else if (BSConfig.DefiningConfig.BaseGameMode != EDefaultMode::BeatTrack && Activatable[0]->IsActive())
-	{
-		Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbilityCDO);
+		const ABSCharacter* Character = Controller->GetBSCharacter();
+		const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Track);
+		if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+		{
+			if (AbilitySpecs.IsEmpty())
+			{
+				const FGameplayAbilitySpec AbilitySpec(TrackGunAbility->GetDefaultObject<UBSGameplayAbility>(), 1);
+				Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+			}
+		}
+		else if (BSConfig.DefiningConfig.BaseGameMode != EDefaultMode::BeatTrack && !AbilitySpecs.IsEmpty())
+		{
+			Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbility->GetDefaultObject<UBSGameplayAbility>());
+		}
 	}
 
 	InitializeAudioManagers();
@@ -140,6 +145,10 @@ void ABSGameMode::StartGameMode()
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 	StartGameModeTimers();
 	TargetSpawner->SetShouldSpawn(true);
+	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	{
+		TargetSpawner->CallSpawnFunction();
+	}
 }
 
 void ABSGameMode::StartGameModeTimers()
@@ -248,6 +257,15 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		if (ShowPostGameMenu)
 		{
 			Controller->ShowPostGameMenu();
+			const ABSCharacter* Character = Controller->GetBSCharacter();
+			if (Character->GetGun()->IsFiring())
+			{
+				if (const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Fire); !AbilitySpecs.IsEmpty())
+				{
+					Character->GetBSAbilitySystemComponent()->CancelAbilityHandle(AbilitySpecs[0]->Handle);
+					Character->GetBSAbilitySystemComponent()->ClearAbilityInput();
+				}
+			}
 		}
 	}
 	HandleScoreSaving(ShouldSavePlayerScores);

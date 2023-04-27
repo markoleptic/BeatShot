@@ -19,6 +19,8 @@ ASphereTarget::ASphereTarget()
 	PrimaryActorTick.bCanEverTick = true;
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
 	RootComponent = CapsuleComponent;
+	CapsuleComponent->SetCapsuleRadius(Constants::SphereRadius);
+	CapsuleComponent->SetCapsuleHalfHeight(Constants::SphereRadius);
 
 	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>("Sphere Mesh");
 	SphereMesh->SetupAttachment(CapsuleComponent);
@@ -141,7 +143,7 @@ void ASphereTarget::BeginPlay()
 	OnPeakToFade.BindDynamic(this, &ASphereTarget::InterpPeakToEndColor);
 	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
-	/* Fade the target from transparent to BeatGridInactiveColor */
+	/* Fade the target from ColorWhenDestroyed to BeatGridInactiveColor */
 	FOnTimelineFloat OnShrinkQuickAndGrowSlow;
 	OnShrinkQuickAndGrowSlow.BindDynamic(this, &ASphereTarget::InterpShrinkQuickAndGrowSlow);
 	ShrinkQuickAndGrowSlowTimeline.AddInterpFloat(ShrinkQuickAndGrowSlowCurve, OnShrinkQuickAndGrowSlow);
@@ -254,6 +256,8 @@ void ASphereTarget::InterpPeakToEndColor(const float Alpha)
 void ASphereTarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
 	CapsuleComponent->SetRelativeScale3D(FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, TargetScale, Alpha)));
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, PlayerSettings.BeatGridInactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
+	SetSphereColor(Color);
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
@@ -319,7 +323,8 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		PeakToEndTimeline.Stop();
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		ApplyImmunityEffect();
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
+		ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor"));
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, ColorWhenDestroyed);
 		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}
@@ -353,12 +358,12 @@ void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineCol
 	MID_TargetColorChanger->SetScalarParameterValue("bUseSeparateOutlineColor", 0.f);
 }
 
-void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& ColorWhenDestroyed) const
+void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
 {
 	if (TargetExplosion)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion, ExplosionLocation);
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
-		ExplosionComp->SetColorParameter(FName("SphereColor"), ColorWhenDestroyed);
+		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
 	}
 }
