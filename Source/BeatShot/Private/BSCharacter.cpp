@@ -16,7 +16,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "InputMappingContext.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/BSAbilitySet.h"
@@ -57,7 +56,7 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	GunComponent->SetupAttachment(HandsMesh, "weapon_r");
 	GunComponent->CreateChildActor();
 
-	UBSCharacterMovementComponent* BSMoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
+	/*UBSCharacterMovementComponent* BSMoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
 	BSMoveComp->GravityScale = 1.0f;
 	BSMoveComp->MaxAcceleration = 2400.0f;
 	BSMoveComp->BrakingFrictionFactor = 1.0f;
@@ -70,7 +69,7 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	BSMoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
 	BSMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
 	BSMoveComp->bCanWalkOffLedgesWhenCrouching = true;
-	BSMoveComp->SetCrouchedHalfHeight(65.0f);
+	BSMoveComp->SetCrouchedHalfHeight(65.0f);*/
 
 	bEnabled_AimBot = false;
 }
@@ -173,11 +172,6 @@ void ABSCharacter::PawnClientRestart()
 	}
 }
 
-void ABSCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
 void ABSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -200,9 +194,27 @@ void ABSCharacter::Input_Look(const FInputActionValue& Value)
 	AddControllerYawInput(Value[0] / SensitivityMultiplier * Sensitivity);
 }
 
-void ABSCharacter::Input_Crouch(const FInputActionInstance& Instance)
+void ABSCharacter::Input_Crouch(const FInputActionValue& Value)
 {
 	ToggleCrouch();
+}
+
+void ABSCharacter::Input_WalkStart(const FInputActionValue& Value)
+{
+	bWantsToWalk = true;
+	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	{
+		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().Input_Walk, 1);
+	}
+}
+
+void ABSCharacter::Input_WalkEnd(const FInputActionValue& Value)
+{
+	bWantsToWalk = false;
+	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	{
+		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().Input_Walk, 0);
+	}
 }
 
 void ABSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
@@ -236,7 +248,7 @@ void ABSCharacter::ToggleCrouch()
 	}
 }
 
-void ABSCharacter::OnInteractStarted(const FInputActionInstance& Instance) 
+void ABSCharacter::OnInteractStarted(const FInputActionValue& Value) 
 {
 	if (!OnInteractDelegate.ExecuteIfBound(0))
 	{
@@ -244,7 +256,7 @@ void ABSCharacter::OnInteractStarted(const FInputActionInstance& Instance)
 	}
 }
 
-void ABSCharacter::OnInteractCompleted(const FInputActionInstance& Instance) 
+void ABSCharacter::OnInteractCompleted(const FInputActionValue& Value) 
 {
 	if (!OnInteractDelegate.ExecuteIfBound(1))
 	{
@@ -252,7 +264,7 @@ void ABSCharacter::OnInteractCompleted(const FInputActionInstance& Instance)
 	}
 }
 
-void ABSCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance) 
+void ABSCharacter::OnShiftInteractStarted(const FInputActionValue& Value) 
 {
 	if (!OnShiftInteractDelegate.ExecuteIfBound(0))
 	{
@@ -260,7 +272,7 @@ void ABSCharacter::OnShiftInteractStarted(const FInputActionInstance& Instance)
 	}
 }
 
-void ABSCharacter::OnShiftInteractCompleted(const FInputActionInstance& Instance) 
+void ABSCharacter::OnShiftInteractCompleted(const FInputActionValue& Value) 
 {
 	if (!OnShiftInteractDelegate.ExecuteIfBound(1))
 	{
@@ -363,9 +375,13 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Backward, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Left, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		
+
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Triggered, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Started, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
+		
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Started, this, &ThisClass::Input_WalkStart, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Completed, this, &ThisClass::Input_WalkEnd, /*bLogIfNotFound=*/ true);
+
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Started, this, &ThisClass::OnInteractStarted, /*bLogIfNotFound=*/ true);
@@ -373,6 +389,19 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
 	}
+}
+
+bool ABSCharacter::IsSprinting() const
+{
+	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Walk))
+	{
+		return false;
+	}
+	if (GetVelocity().IsNearlyZero(0.01))
+	{
+		return false;
+	}
+	return true;
 }
 
 void ABSCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
@@ -405,13 +434,11 @@ void ABSCharacter::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& Game
 		Gun->SetShouldRecoil(GameSettings.bShouldRecoil);
 		Gun->SetFireRate(GameSettings.bAutomaticFire);
 		Gun->SetShowDecals(GameSettings.bShowBulletDecals);
+		Gun->SetShowTracers(GameSettings.bShowBulletTracers);
 	}
-	
-	TArray<FGameplayAbilitySpec*> Specs;
-	FGameplayTagContainer Container;
-	Container.AddTag(FBSGameplayTags::Get().Input_Fire);
-	GetAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container, Specs);
-	if(!Specs.IsEmpty())
+
+	/* Changing activation policy for FireGun ability based on automatic fire bool */
+	if(TArray<FGameplayAbilitySpec*> Specs = GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Input_Fire); !Specs.IsEmpty())
 	{
 		if (GameSettings.bAutomaticFire)
 		{

@@ -109,6 +109,8 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 	CheckBox_ForwardSpread->SetIsChecked(SpatialConfig.bMoveTargetsForward);
 	Slider_ForwardSpread->SetValue(SpatialConfig.MoveForwardDistance);
 	Value_ForwardSpread->SetText(FText::AsNumber(SpatialConfig.MoveForwardDistance));
+
+	UpdateBrushColors();
 }
 
 FBS_SpatialConfig UGameModesWidget_SpatialConfig::GetSpatialConfig() const

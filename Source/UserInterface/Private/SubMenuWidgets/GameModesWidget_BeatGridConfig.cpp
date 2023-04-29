@@ -92,6 +92,7 @@ void UGameModesWidget_BeatGridConfig::InitializeBeatGrid(const FBS_BeatGridConfi
 	Slider_NumVerticalTargets->SetMaxValue(MaxValue_NumBeatGridVerticalTargets);
 	Value_NumVerticalTargets->SetText(FText::AsNumber(InBeatGridConfig.NumVerticalBeatGridTargets));
 	BeatGridSpreadConstrained->UpdateDefaultValues(InBeatGridConfig.BeatGridSpacing.X, InBeatGridConfig.BeatGridSpacing.Y, InBeatGridConfig.BeatGridSpacing.X == InBeatGridConfig.BeatGridSpacing.Y);
+	UpdateBrushColors();
 }
 
 FBS_BeatGridConfig UGameModesWidget_BeatGridConfig::GetBeatGridConfig() const

@@ -10,6 +10,7 @@
 #include "BSInputConfig.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayTagContainer.h"
+#include "Character/PBPlayerCharacter.h"
 #include "GameplayAbility/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 
@@ -34,7 +35,7 @@ DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetAddedToQueue);
 
 UCLASS()
-class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
+class BEATSHOT_API ABSCharacter : public APBPlayerCharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
 	
@@ -58,6 +59,13 @@ public:
 	USkeletalMeshComponent* GetHandsMesh() const;
 
 	UFUNCTION(BlueprintCallable)
+	AGun_AK47* GetGun() const;
+
+	UCameraComponent* GetCamera() const;
+
+	USceneComponent* GetCameraRecoilComponent() const;
+
+	UFUNCTION(BlueprintCallable)
 	ASphereTarget* PeekActiveTargets();
 
 	UFUNCTION(BlueprintCallable)
@@ -68,25 +76,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTargetAddedToQueue OnTargetAddedToQueue;
-
-	/** Implement IGameplayTagAssetInterface */
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
-	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-
-	/** Implement ISaveLoadInterface */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 	
-	UCameraComponent* GetCamera() const;
-	USceneComponent* GetCameraRecoilComponent() const;
 	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
 	bool IsEnabled_AimBot() const { return bEnabled_AimBot; }
 	
-	UFUNCTION(BlueprintCallable)
-	AGun_AK47* GetGun() const;
-
 	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()
 	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
@@ -104,17 +97,30 @@ public:
 
 	/** Executed when shift interact is pressed */
 	FOnShiftInteractDelegate OnShiftInteractDelegate;
+
+	/** Implement IGameplayTagAssetInterface */
+	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
+	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	/** End Implement IGameplayTagAssetInterface */
+
+	/** Implement ISaveLoadInterface */
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
+	/** End Implement ISaveLoadInterface */
 	
 protected:
 	
 	virtual void BeginPlay() override;
 	virtual void PawnClientRestart() override;
-	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
 	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+
+	virtual bool IsSprinting() const override;
 
 	/** Grant abilities on the Server. The Ability Specs will be replicated to the owning client. Called from inside PossessedBy(). */
 	virtual void AddCharacterAbilities();
@@ -175,22 +181,28 @@ private:
 	void Input_Look(const FInputActionValue& Value);
 
 	/** Toggles crouching */
-	void Input_Crouch(const FInputActionInstance& Instance);
+	void Input_Crouch(const FInputActionValue& Value);
+
+	/** Walk instead of default sprint */
+	void Input_WalkStart(const FInputActionValue& Value);
+
+	/** Walk instead of default sprint */
+	void Input_WalkEnd(const FInputActionValue& Value);
 
 	/** Crouches or un-crouches based on current state */
 	void ToggleCrouch();
 
 	/** Triggered on pressing E */
-	void OnInteractStarted(const FInputActionInstance& Instance);
+	void OnInteractStarted(const FInputActionValue& Value);
 
 	/** Triggered on releasing E */
-	void OnInteractCompleted(const FInputActionInstance& Instance);
+	void OnInteractCompleted(const FInputActionValue& Value);
 
 	/** Triggered on pressing Shift + E */
-	void OnShiftInteractStarted(const FInputActionInstance& Instance);
+	void OnShiftInteractStarted(const FInputActionValue& Value);
 
 	/** Triggered on releasing Shift + E */
-	void OnShiftInteractCompleted(const FInputActionInstance& Instance);
+	void OnShiftInteractCompleted(const FInputActionValue& Value);
 
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;

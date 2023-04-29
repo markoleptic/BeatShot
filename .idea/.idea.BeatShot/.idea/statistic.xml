@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Statistic">
+    <option name="fileTypesIncluded" value="cpp;h" />
+    <option name="excludedDirectories">
+      <list>
+        <option value="$PROJECT_DIR$/Source/NumCpp" />
+        <option value="$PROJECT_DIR$/Source/Steam" />
+        <option value="$PROJECT_DIR$/Source/LocalBoost" />
+        <option value="$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine" />
+        <option value="$PROJECT_DIR$/Intermediate" />
+        <option value="$PROJECT_DIR$/Plugins" />
+      </list>
+    </option>
+  </component>
+</project>

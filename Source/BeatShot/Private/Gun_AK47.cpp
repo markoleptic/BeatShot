@@ -143,6 +143,16 @@ void AGun_AK47::SetShowDecals(const bool bShowDecals)
 	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
 }
 
+void AGun_AK47::SetShowTracers(const bool bShowTracers)
+{
+	if (bShowTracers)
+	{
+		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+		return;
+	}
+	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+}
+
 void AGun_AK47::Recoil()
 {
 	RecoilTimeline.SetPlayRate(1.f);

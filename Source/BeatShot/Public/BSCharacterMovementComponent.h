@@ -4,6 +4,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Character/PBPlayerMovement.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "BSCharacterMovementComponent.generated.h"
 
@@ -29,7 +30,7 @@ struct FCharacterGroundInfo
 
 
 UCLASS()
-class BEATSHOT_API UBSCharacterMovementComponent : public UCharacterMovementComponent
+class BEATSHOT_API UBSCharacterMovementComponent : public UPBPlayerMovement
 {
 	GENERATED_BODY()
 

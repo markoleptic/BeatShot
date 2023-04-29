@@ -46,6 +46,7 @@ void UGameModesWidget_BeatTrackConfig::InitSettingCategoryWidget()
 void UGameModesWidget_BeatTrackConfig::InitializeBeatTrackConfig(const FBS_BeatTrackConfig& InBeatTrackConfig, const EDefaultMode& BaseGameMode)
 {
 	TargetSpeedConstrained->UpdateDefaultValues(InBeatTrackConfig.MinTrackingSpeed, InBeatTrackConfig.MaxTrackingSpeed, InBeatTrackConfig.MinTrackingSpeed == InBeatTrackConfig.MaxTrackingSpeed);
+	UpdateBrushColors();
 }
 
 FBS_BeatTrackConfig UGameModesWidget_BeatTrackConfig::GetBeatTrackConfig() const

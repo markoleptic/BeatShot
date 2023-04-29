@@ -11,6 +11,7 @@
 class UBSHorizontalBox;
 class UDoubleSyncedSliderAndTextBox;
 class UCheckBox;
+class UComboBoxString;
 
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_TargetConfig : public UBSSettingCategoryWidget
@@ -31,28 +32,35 @@ protected:
 
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetScaleConstrained;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSHorizontalBox* BSBox_Lifespan;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSHorizontalBox* BSBox_TargetSpawnCD;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSHorizontalBox* BSBox_SpawnBeatDelay;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UBSHorizontalBox* BSBox_DynamicTargetScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UBSHorizontalBox* BSBox_LifetimeTargetScale;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	USlider* Slider_Lifespan;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	USlider* Slider_TargetSpawnCD;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	USlider* Slider_SpawnBeatDelay;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UEditableTextBox* Value_Lifespan;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UEditableTextBox* Value_TargetSpawnCD;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Time Related")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UEditableTextBox* Value_SpawnBeatDelay;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Sizing")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UComboBoxString* ComboBox_LifetimeTargetScale;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UCheckBox* CheckBox_DynamicTargetScale;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
@@ -63,6 +71,8 @@ protected:
 	UTooltipImage* QMark_DynamicTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_SpawnBeatDelay;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* QMark_LifetimeTargetScale;
 
 	UFUNCTION()
 	void OnSliderChanged_Lifespan(const float NewLifespan);
@@ -77,7 +87,11 @@ protected:
 	UFUNCTION()
 	void OnTextCommitted_SpawnBeatDelay(const FText& NewPlayerDelay, ETextCommit::Type CommitType);
 	UFUNCTION()
+	void OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
 	void OnCheckStateChanged_DynamicTargetScale(const bool bIsChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantTargetScale(const bool bIsChecked);
+
+	const FText NewLineDelimit = FText::FromString("\n");
 };

@@ -345,27 +345,31 @@ struct FBS_TargetConfig
 	GENERATED_BODY()
 
 	/* Whether or not to dynamically change the size of targets as consecutive targets are hit */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	bool UseDynamicSizing;
 	
 	/* Min multiplier to target size */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float MinTargetScale;
 
 	/* Max multiplier to target size */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float MaxTargetScale;
+
+	/* The method for handling changing target scale over it's lifetime */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
+	ELifetimeTargetScaleMethod LifetimeTargetScaleMethod;
 	
 	/* Sets the minimum time between target spawns */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float TargetSpawnCD;
 	
 	/* Maximum time in which target will stay on screen */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | General")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float TargetMaxLifeSpan;
 
 	/* Delay between time between target spawn and peak green target color. Same as PlayerDelay in FBS_AudioConfig */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float SpawnBeatDelay;
 
 	FBS_TargetConfig()
@@ -373,6 +377,7 @@ struct FBS_TargetConfig
 		UseDynamicSizing = false;
 		MinTargetScale = 0.8f;
 		MaxTargetScale = 2.f;
+		LifetimeTargetScaleMethod = ELifetimeTargetScaleMethod::None;
 		TargetSpawnCD = 0.35f;
 		TargetMaxLifeSpan = 1.5f;
 		SpawnBeatDelay = 0.3f;
@@ -958,6 +963,9 @@ struct FPlayerSettings_Game
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowBulletDecals;
+	
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowBulletTracers;
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bNightModeSelected;
@@ -978,6 +986,7 @@ struct FPlayerSettings_Game
 		bShouldRecoil = true;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
+		bShowBulletTracers = true;
 		bNightModeSelected = false;
 		bShowLightVisualizers = false;
 	}

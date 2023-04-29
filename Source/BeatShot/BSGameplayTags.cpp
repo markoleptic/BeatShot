@@ -37,6 +37,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_Crouch, "Input.Crouch","");
 	AddTag(Input_Fire, "Input.Fire","");
 	AddTag(Input_Sprint, "Input.Sprint","");
+	AddTag(Input_Walk, "Input.Walk","");
 	AddTag(Input_Jump, "Input.Jump","");
 	AddTag(Input_Interact, "Input.Interact","");
 	AddTag(Input_ShiftInteract, "Input.ShiftInteract","");
@@ -61,6 +62,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(State_Weapon_AutomaticFire, "State.Weapon.AutomaticFire","");
 	AddTag(State_Weapon_ShowDecals, "State.Weapon.ShowDecals","");
+	AddTag(State_Weapon_ShowTracers, "State.Weapon.ShowTracers","");
 	AddTag(State_Weapon_Recoil, "State.Weapon.Recoil","");
 
 	AddTag(Target, "Target","");

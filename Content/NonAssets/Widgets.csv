@@ -310,6 +310,7 @@ WallMenu_Off,OFF
 WallMenu_On,ON
 WallMenu_Recoil,RECOIL
 WallMenu_Semi,SEMI
+WallMenu_BulletTracers,BULLET TRACERS
 WallMenu_ShapeVisualizer,SHAPE VISUALIZERS
 WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen
@@ -327,3 +328,4 @@ GM_BeatGrid_HorizontalSpacing,Horizontal Spacing
 GM_BeatGrid_VerticalSpacing,Vertical Spacing
 GM_BeatGrid_NumVerticalTargets,Number of Vertical Targets
 GM_BeatGrid_NumHorizontalTargets,Number of Horizontal Targets
+GM_LifetimeTargetScale,Lifetime Target Scaling Method

@@ -73,6 +73,7 @@ FBS_DefiningConfig UGameModesWidget_DefiningConfig::GetDefiningConfig() const
 		if (ComboBox_BaseGameMode->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
 		{
 			ReturnConfig.BaseGameMode = Mode;
+			break;
 		}
 	}
 	return ReturnConfig;

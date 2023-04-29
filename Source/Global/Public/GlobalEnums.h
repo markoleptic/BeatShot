@@ -50,6 +50,16 @@ enum class EAudioFormat : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Capture);
 
+/** The method to handle changing target scale over it's lifetime */
+UENUM()
+enum class ELifetimeTargetScaleMethod : uint8
+{
+	None UMETA(DisplayName="None"),
+	Grow UMETA(DisplayName="Grow"),
+	Shrink UMETA(DisplayName="Shrink")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ELifetimeTargetScaleMethod, ELifetimeTargetScaleMethod::None, ELifetimeTargetScaleMethod::Shrink);
+
 /** Current player login state */
 UENUM()
 enum class ELoginState : uint8

@@ -35,6 +35,7 @@ struct FBSGameplayTags
 	FGameplayTag Input_Look;
 	FGameplayTag Input_Crouch;
 	FGameplayTag Input_Fire;
+	FGameplayTag Input_Walk;
 	FGameplayTag Input_Sprint;
 	FGameplayTag Input_Jump;
 	FGameplayTag Input_Interact;
@@ -60,6 +61,7 @@ struct FBSGameplayTags
 	
 	FGameplayTag State_Weapon_AutomaticFire;
 	FGameplayTag State_Weapon_ShowDecals;
+	FGameplayTag State_Weapon_ShowTracers;
 	FGameplayTag State_Weapon_Recoil;
 
 	FGameplayTag Target;

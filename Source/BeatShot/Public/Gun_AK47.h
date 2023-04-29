@@ -69,6 +69,9 @@ public:
 	void SetShowDecals(const bool bShowDecals);
 
 	UFUNCTION(BlueprintCallable)
+	void SetShowTracers(const bool bShowTracers);
+
+	UFUNCTION(BlueprintCallable)
 	void Recoil();
 
 	/** Returns whether the weapon can fire or not */

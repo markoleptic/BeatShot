@@ -90,6 +90,8 @@ void UGameModesWidget_AIConfig::InitializeAIConfig(const FBS_AIConfig& InAIConfi
 	default:
 		break;
 	}
+
+	UpdateBrushColors();
 }
 
 FBS_AIConfig UGameModesWidget_AIConfig::GetAIConfig() const

@@ -6,6 +6,7 @@
 #include "GlobalConstants.h"
 #include "UserInterface.h"
 #include "Components/CheckBox.h"
+#include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
 #include "WidgetComponents/BSVerticalBox.h"
@@ -35,6 +36,11 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	TargetScaleSliderStruct.bSyncSlidersAndValues = false;
 	TargetScaleConstrained->InitConstrainedSlider(TargetScaleSliderStruct);
 
+	for (const ELifetimeTargetScaleMethod& Method : TEnumRange<ELifetimeTargetScaleMethod>())
+	{
+		ComboBox_LifetimeTargetScale->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+
 	SetTooltipWidget(ConstructTooltipWidget());
 	
 	AddToTooltipData(QMark_Lifespan, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Lifespan"));
@@ -42,6 +48,10 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	AddToTooltipData(QMark_DynamicTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "DynamicTargetScale"));
 	AddToTooltipData(TargetScaleConstrained->GetCheckBoxQMark(), FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConstantTargetScale"));
 	AddToTooltipData(QMark_SpawnBeatDelay, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay"));
+	const TArray LifetimeTargetScaleJoin = { FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale"),
+		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Grow"),
+		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Shrink") };
+	AddToTooltipData(QMark_LifetimeTargetScale, FText::Join(NewLineDelimit, LifetimeTargetScaleJoin));
 
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_Lifespan);
 	Value_Lifespan->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_Lifespan);
@@ -51,6 +61,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Value_SpawnBeatDelay->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay);
 	CheckBox_DynamicTargetScale->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnCheckStateChanged_DynamicTargetScale);
 	TargetScaleConstrained->OnCheckStateChanged_Sync.AddUObject(this, &UGameModesWidget_TargetConfig::OnCheckStateChanged_ConstantTargetScale);
+	ComboBox_LifetimeTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod);
 }
 
 void UGameModesWidget_TargetConfig::InitSettingCategoryWidget()
@@ -98,6 +109,8 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_SpawnBeatDelay->SetText(FText::AsNumber(InTargetConfig.SpawnBeatDelay));
 	CheckBox_DynamicTargetScale->SetIsChecked(InTargetConfig.UseDynamicSizing);
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
+	
+	UpdateBrushColors();
 }
 
 FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
@@ -109,6 +122,16 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
+
+	for (const ELifetimeTargetScaleMethod& Method : TEnumRange<ELifetimeTargetScaleMethod>())
+	{
+		if (ComboBox_LifetimeTargetScale->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(Method).ToString()))
+		{
+			ReturnConfig.LifetimeTargetScaleMethod = Method;
+			break;
+		}
+	}
+
 	return ReturnConfig;
 }
 
@@ -140,6 +163,11 @@ void UGameModesWidget_TargetConfig::OnTextCommitted_TargetSpawnCD(const FText& N
 void UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay(const FText& NewPlayerDelay, ETextCommit::Type CommitType)
 {
 	UUserInterface::OnEditableTextBoxChanged(NewPlayerDelay, Value_SpawnBeatDelay, Slider_SpawnBeatDelay, SnapSize_PlayerDelay, MinValue_PlayerDelay, MaxValue_PlayerDelay);
+}
+
+void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
+{
+	
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_DynamicTargetScale(const bool bIsChecked)

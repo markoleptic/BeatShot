@@ -2,7 +2,6 @@
 // Credit to Dan Kestranek.
 
 #include "BSCharacterMovementComponent.h"
-
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/Character.h"
 
@@ -19,7 +18,8 @@ void UBSCharacterMovementComponent::SetSprintSpeedMultiplier(float NewSpringSpee
 
 float UBSCharacterMovementComponent::GetMaxSpeed() const
 {
-	return SprintSpeedMultiplier * Super::GetMaxSpeed();
+	//return SprintSpeedMultiplier * Super::GetMaxSpeed();
+	return Super::GetMaxSpeed();
 }
 
 const FCharacterGroundInfo& UBSCharacterMovementComponent::GetGroundInfo()
