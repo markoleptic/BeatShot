@@ -54,6 +54,18 @@ public:
 	/** Marks the render state dirty on any visualizers using instanced static meshes */
 	void MarkVisualizerRenderStateDirty();
 
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> AvgSpectrumValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> CurrentSpectrumValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> CurrentCubeSpectrumValues;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<float> MaxSpectrumValues;
+
 protected:
 	TArray<TObjectPtr<ABeamVisualizer>>& GetBeamVisualizers() { return BeamVisualizers; }
 	TArray<TObjectPtr<AStaticCubeVisualizer>>& GetCubeVisualizers() { return CubeVisualizers; }
@@ -74,29 +86,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TArray<TObjectPtr<AStaticCubeVisualizer>> CubeVisualizers;
 
-	/* The spawned AATracker object */
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UAudioAnalyzerManager> AATracker;
-
-	/* The spawned AAPlayer object */
-	UPROPERTY(BlueprintReadOnly)
-	TObjectPtr<UAudioAnalyzerManager> AAPlayer;
-
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer AASettings;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> AvgSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> CurrentSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> CurrentCubeSpectrumValues;
-
-	UPROPERTY(VisibleAnywhere)
-	TArray<float> MaxSpectrumValues;
 
 	const FActorSpawnParameters SpawnParameters;
 
