@@ -338,7 +338,7 @@ void ATargetSpawner::InitBeatGrid()
 
 	LastBeatGridIndex = INDEX_NONE;
 
-	const float MaxTargetSize = BSConfig.TargetConfig.MaxTargetScale * SphereRadius * 2;
+	const float MaxTargetSize = BSConfig.TargetConfig.MaxTargetScale * SphereTargetRadius * 2;
 	const float HSpacing = BSConfig.BeatGridConfig.BeatGridSpacing.X + MaxTargetSize;
 	const float VSpacing = BSConfig.BeatGridConfig.BeatGridSpacing.Y + MaxTargetSize;
 	const float TotalWidth = HSpacing * (BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets - 1);
@@ -548,7 +548,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	}
 
 	const FVector Location = DestroyedTarget->GetActorLocation();
-	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereRadius * DestroyedTarget->GetActorScale3D().Z};
+	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z};
 	OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
 	
 	RemoveFromActiveTargets(DestroyedTarget);
@@ -809,7 +809,7 @@ TArray<FVector> ATargetSpawner::GetAllEdgeOnlySpawnLocations() const
 
 TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector& Center, const float Scale) const
 {
-	float Radius = Scale * SphereRadius * 2.f + BSConfig.SpatialConfig.MinDistanceBetweenTargets / 2.f;
+	float Radius = Scale * SphereTargetRadius * 2.f + BSConfig.SpatialConfig.MinDistanceBetweenTargets / 2.f;
 	Radius = FMath::Max(Radius, MinOverlapRadius);
 	const FSphere Sphere = FSphere(Center, Radius);
 	const FVector NegativeExtents = GetBoxExtrema(0, false);

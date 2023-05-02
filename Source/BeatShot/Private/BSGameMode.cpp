@@ -90,6 +90,14 @@ ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
 	return SpawnedCharacter;
 }
 
+void ABSGameMode::RegisterVisualizers(const TArray<TSoftObjectPtr<AVisualizerBase>>& InVisualizers)
+{
+	if (VisualizerManager)
+	{
+		VisualizerManager->InitializeVisualizersFromWorld(InVisualizers);
+	}
+}
+
 void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;
@@ -108,8 +116,12 @@ void ABSGameMode::InitializeGameMode()
 	/* Spawn TargetSpawner and VisualizerManager */
 	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
 	TargetSpawner->InitTargetSpawner(BSConfig, PlayerSettings.Game);
-	VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
-	VisualizerManager->InitializeVisualizers(PlayerSettings.Game);
+
+	if (!VisualizerManager)
+	{
+		VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
+		VisualizerManager->InitializeVisualizers(PlayerSettings.Game, PlayerSettings.AudioAnalyzer);
+	}
 	
 	/* Handle abilities for different game modes */
 	for (const ABSPlayerController* Controller : Controllers)
@@ -227,8 +239,7 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 	/** Unbinding delegates */
 	if (VisualizerManager)
 	{
-		VisualizerManager->DestroyVisualizers();
-		VisualizerManager->Destroy();
+		VisualizerManager->DeactivateVisualizers();
 	}
 	if (AATracker)
 	{
@@ -554,7 +565,7 @@ void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameS
 	CombatTextFrequency = GameSettings.CombatTextFrequency;
 	if (VisualizerManager)
 	{
-		VisualizerManager->UpdateVisualizerStates(GameSettings);
+		VisualizerManager->UpdateVisualizerSettings(GameSettings);
 	}
 	if (TargetSpawner)
 	{

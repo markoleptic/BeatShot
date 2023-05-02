@@ -189,7 +189,7 @@ void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_MaxLock(const bool bIs
 
 void UGameModesWidget_BeatGridConfig::OnBeatGridUpdate_MaxTargetScale(const float NewMaxTargetScale)
 {
-	MaxTargetSize = NewMaxTargetScale * SphereDiameter;
+	MaxTargetSize = NewMaxTargetScale * SphereTargetDiameter;
 	HorizontalSpread = MaxValue_BeatGridHorizontalSpacing + MaxTargetSize;
 	VerticalSpread = MaxValue_BeatGridVerticalSpacing + MaxTargetSize;
 	CheckBeatGridConstraints(EBeatGridConstraintType::TargetScale);
@@ -250,7 +250,7 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 			SuggestionValueArray[1] = FText::Join(SpaceDelimit, VerticalSuggest,  FText::AsNumber(Value));
 		}
 	}
-	if (MaxTargetSize / SphereDiameter > GetMaxAllowedTargetScale())
+	if (MaxTargetSize / SphereTargetDiameter > GetMaxAllowedTargetScale())
 	{
 		BeatGridConstraints.ConstraintTypes.Add(EBeatGridConstraintType::TargetScale);
 		if (const float Value = floorf(GetMaxAllowedTargetScale() * 100.f) / 100.f; Value >= MinValue_TargetScale && Value <= MaxValue_TargetScale)
@@ -456,8 +456,8 @@ int32 UGameModesWidget_BeatGridConfig::GetMaxAllowedNumVerticalTargets() const
 
 float UGameModesWidget_BeatGridConfig::GetMaxAllowedTargetScale() const
 {
-	const float MaxAllowedHorizontal = (HorizontalSpread - CurrentValues.BeatGridSpacing.X * CurrentValues.NumHorizontalBeatGridTargets + CurrentValues.BeatGridSpacing.X) / (SphereDiameter * CurrentValues.NumHorizontalBeatGridTargets);
-	const float MaxAllowedVertical = (VerticalSpread - CurrentValues.BeatGridSpacing.Y * CurrentValues.NumVerticalBeatGridTargets + CurrentValues.BeatGridSpacing.Y) / (SphereDiameter * CurrentValues.NumVerticalBeatGridTargets);
+	const float MaxAllowedHorizontal = (HorizontalSpread - CurrentValues.BeatGridSpacing.X * CurrentValues.NumHorizontalBeatGridTargets + CurrentValues.BeatGridSpacing.X) / (SphereTargetDiameter * CurrentValues.NumHorizontalBeatGridTargets);
+	const float MaxAllowedVertical = (VerticalSpread - CurrentValues.BeatGridSpacing.Y * CurrentValues.NumVerticalBeatGridTargets + CurrentValues.BeatGridSpacing.Y) / (SphereTargetDiameter * CurrentValues.NumVerticalBeatGridTargets);
 	if (MaxAllowedVertical < MaxAllowedHorizontal)
 	{
 		return MaxAllowedVertical;

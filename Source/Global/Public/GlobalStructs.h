@@ -7,6 +7,8 @@
 #include "NISLibrary.h"
 #include "GlobalStructs.generated.h"
 
+using namespace Constants;
+
 /** Struct only used to save accuracy to database */
 USTRUCT()
 struct FAccuracyRow
@@ -218,9 +220,9 @@ struct FBS_AIConfig
 	FBS_AIConfig()
 	{
 		bEnableRLAgent = false;
-		Alpha = 0.9f;
-		Epsilon = 0.9f;
-		Gamma = 0.9f;
+		Alpha = DefaultAlpha;
+		Epsilon = DefaultEpsilon;
+		Gamma = DefaultGamma;
 	}
 };
 
@@ -228,7 +230,7 @@ USTRUCT(BlueprintType)
 struct FBS_BeatGridConfig
 {
 	GENERATED_BODY()
-
+	
 	/* The number of horizontal BeatGrid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumHorizontalBeatGridTargets;
@@ -251,40 +253,44 @@ struct FBS_BeatGridConfig
 
 	FBS_BeatGridConfig()
 	{
-		NumHorizontalBeatGridTargets = 0;
-		NumVerticalBeatGridTargets = 0;
+		NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Normal;
+		NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Normal;
 		RandomizeBeatGrid = false;
-		NumTargetsAtOnceBeatGrid = -1;
-		BeatGridSpacing = FVector2D::ZeroVector;
+		NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Normal;
+		BeatGridSpacing = BeatGridSpacing_Normal;
 	}
 
 	void SetConfigByDifficulty(const EGameModeDifficulty Difficulty)
 	{
 		switch (Difficulty)
 		{
-		case EGameModeDifficulty::None: NumHorizontalBeatGridTargets = 0;
+		case EGameModeDifficulty::None:
+			NumHorizontalBeatGridTargets = 0;
 			NumVerticalBeatGridTargets = 0;
 			RandomizeBeatGrid = false;
 			NumTargetsAtOnceBeatGrid = -1;
 			BeatGridSpacing = FVector2D::ZeroVector;
 			break;
-		case EGameModeDifficulty::Normal: NumHorizontalBeatGridTargets = 5;
-			NumVerticalBeatGridTargets = 5;
+		case EGameModeDifficulty::Normal:
+			NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Normal;
+			NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Normal;
 			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = -1;
-			BeatGridSpacing = FVector2D(75, 50);
+			NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Normal;
+			BeatGridSpacing = BeatGridSpacing_Normal;
 			break;
-		case EGameModeDifficulty::Hard: NumHorizontalBeatGridTargets = 10;
-			NumVerticalBeatGridTargets = 5;
+		case EGameModeDifficulty::Hard:
+			NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Hard;
+			NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Hard;
 			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = -1;
-			BeatGridSpacing = FVector2D(75, 50);
+			NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Hard;
+			BeatGridSpacing = BeatGridSpacing_Hard;
 			break;
-		case EGameModeDifficulty::Death: NumHorizontalBeatGridTargets = 15;
-			NumVerticalBeatGridTargets = 10;
+		case EGameModeDifficulty::Death:
+			NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Death;
+			NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Death;
 			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = -1;
-			BeatGridSpacing = FVector2D(75, 50);
+			NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Death;
+			BeatGridSpacing = BeatGridSpacing_Death;
 			break;
 		}
 	}
@@ -335,7 +341,7 @@ struct FBS_AudioConfig
 		SongPath = "";
 		SongTitle = "";
 		SongLength = 0.f;
-		PlayerDelay = 0.3f;
+		PlayerDelay = DefaultPlayerDelay;
 	}
 };
 
@@ -375,12 +381,12 @@ struct FBS_TargetConfig
 	FBS_TargetConfig()
 	{
 		UseDynamicSizing = false;
-		MinTargetScale = 0.8f;
-		MaxTargetScale = 2.f;
+		MinTargetScale = DefaultMinTargetScale;
+		MaxTargetScale = DefaultMaxTargetScale;
 		LifetimeTargetScaleMethod = ELifetimeTargetScaleMethod::None;
-		TargetSpawnCD = 0.35f;
-		TargetMaxLifeSpan = 1.5f;
-		SpawnBeatDelay = 0.3f;
+		TargetSpawnCD = DefaultTargetSpawnCD;
+		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
+		SpawnBeatDelay = DefaultSpawnBeatDelay;
 	}
 };
 
@@ -421,10 +427,10 @@ struct FBS_SpatialConfig
 	/** Returns the location to spawn the SpawnBox at */
 	FVector GenerateSpawnBoxLocation() const
 	{
-		FVector SpawnBoxCenter = Constants::DefaultTargetSpawnerLocation;
+		FVector SpawnBoxCenter = DefaultTargetSpawnerLocation;
 		if (bUseHeadshotHeight)
 		{
-			SpawnBoxCenter.Z = Constants::HeadshotHeight;
+			SpawnBoxCenter.Z = HeadshotHeight;
 		}
 		else
 		{
@@ -448,10 +454,10 @@ struct FBS_SpatialConfig
 		SpreadType = ESpreadType::None;
 		bUseHeadshotHeight = false;
 		bMoveTargetsForward = false;
-		MinDistanceBetweenTargets = 10.f;
-		FloorDistance = Constants::DistanceFromFloor;
+		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+		FloorDistance = DistanceFromFloor;
 		MoveForwardDistance = 0.f;
-		BoxBounds = FVector(0.f, 3200.f, 1000.f);
+		BoxBounds = DefaultSpawnBoxBounds;
 	}
 };
 
@@ -479,20 +485,20 @@ struct FBS_BeatTrackConfig
 		switch (Difficulty)
 		{
 		case EGameModeDifficulty::None:
-			MinTrackingSpeed = 500.f;
-			MaxTrackingSpeed = 500.f;
+			MinTrackingSpeed = MinTrackingSpeed_Normal;
+			MaxTrackingSpeed = MaxTrackingSpeed_Normal;
 			break;
 		case EGameModeDifficulty::Normal:
-			MinTrackingSpeed = 400.f;
-			MaxTrackingSpeed = 500.f;
+			MinTrackingSpeed = MinTrackingSpeed_Normal;
+			MaxTrackingSpeed = MaxTrackingSpeed_Normal;
 			break;
 		case EGameModeDifficulty::Hard:
-			MinTrackingSpeed = 500.f;
-			MaxTrackingSpeed = 600.f;
+			MinTrackingSpeed = MinTrackingSpeed_Hard;
+			MaxTrackingSpeed = MaxTrackingSpeed_Hard;
 			break;
 		case EGameModeDifficulty::Death:
-			MinTrackingSpeed = 500.f;
-			MaxTrackingSpeed = 700.f;
+			MinTrackingSpeed = MinTrackingSpeed_Death;
+			MaxTrackingSpeed = MaxTrackingSpeed_Death;
 			break;
 		}
 	}
@@ -578,25 +584,25 @@ struct FBSConfig
 			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				AudioConfig.PlayerDelay = 0.3f;
-				TargetConfig.TargetSpawnCD = 0.3f;
-				TargetConfig.TargetMaxLifeSpan = 0.8f;
-				TargetConfig.MinTargetScale = 0.75f;
-				TargetConfig.MaxTargetScale = 2.f;
+				AudioConfig.PlayerDelay = PlayerDelay_SingleBeat_Normal;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Normal;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Normal;
+				TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Normal;
+				TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				AudioConfig.PlayerDelay = 0.25f;
-				TargetConfig.TargetSpawnCD = 0.25f;
-				TargetConfig.TargetMaxLifeSpan = 0.65f;
-				TargetConfig.MinTargetScale = 0.6f;
-				TargetConfig.MaxTargetScale = 1.5f;
+				AudioConfig.PlayerDelay = PlayerDelay_SingleBeat_Hard;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Hard;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Hard;
+				TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Hard;
+				TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				AudioConfig.PlayerDelay = 0.2f;
-				TargetConfig.TargetSpawnCD = 0.2f;
-				TargetConfig.TargetMaxLifeSpan = 0.45f;
-				TargetConfig.MinTargetScale = 0.4f;
-				TargetConfig.MaxTargetScale = 1.5f;
+				AudioConfig.PlayerDelay = PlayerDelay_SingleBeat_Death;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Death;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Death;
+				TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Death;
+				TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
@@ -605,16 +611,16 @@ struct FBSConfig
 			{
 			case ESpreadType::StaticNarrow:
 				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = FVector(0.f, 1600.f, 500.f);
+				SpatialConfig.BoxBounds = BoxBounds_Narrow_SingleBeat;
 				break;
 			case ESpreadType::StaticWide:
 				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = FVector(0.f, 3200.f, 1000.f);
+				SpatialConfig.BoxBounds = BoxBounds_Wide_SingleBeat;
 				break;
 			default:
 				SpatialConfig.SpreadType = ESpreadType::DynamicEdgeOnly;
 				TargetConfig.UseDynamicSizing = true;
-				SpatialConfig.BoxBounds = FVector(0.f, 2000.f, 800.f);
+				SpatialConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
 				break;
 			}
 			break;
@@ -624,25 +630,25 @@ struct FBSConfig
 			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				AudioConfig.PlayerDelay = 0.35f;
-				TargetConfig.TargetSpawnCD = 0.35f;
-				TargetConfig.TargetMaxLifeSpan = 1.f;
-				TargetConfig.MinTargetScale = 0.75f;
-				TargetConfig.MaxTargetScale = 2.f;
+				AudioConfig.PlayerDelay = PlayerDelay_MultiBeat_Normal;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Normal;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Normal;
+				TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Normal;
+				TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				AudioConfig.PlayerDelay = 0.3f;
-				TargetConfig.TargetSpawnCD = 0.3f;
-				TargetConfig.TargetMaxLifeSpan = 0.75f;
-				TargetConfig.MinTargetScale = 0.6f;
-				TargetConfig.MaxTargetScale = 1.5f;
+				AudioConfig.PlayerDelay = PlayerDelay_MultiBeat_Hard;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Hard;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Hard;
+				TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Hard;
+				TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				AudioConfig.PlayerDelay = 0.25f;
-				TargetConfig.TargetSpawnCD = 0.20f;
-				TargetConfig.TargetMaxLifeSpan = 0.5f;
-				TargetConfig.MinTargetScale = 0.4f;
-				TargetConfig.MaxTargetScale = 1.25f;
+				AudioConfig.PlayerDelay = PlayerDelay_MultiBeat_Death;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Death;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Death;
+				TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Death;
+				TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
@@ -651,46 +657,46 @@ struct FBSConfig
 			{
 			case ESpreadType::StaticNarrow:
 				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = FVector(0.f, 1600.f, 500.f);
+				SpatialConfig.BoxBounds = BoxBounds_Narrow_MultiBeat;
 				break;
 			case ESpreadType::StaticWide:
 				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = FVector(0.f, 3200.f, 1000.f);
+				SpatialConfig.BoxBounds = BoxBounds_Wide_MultiBeat;
 				break;
 			default:
 				SpatialConfig.SpreadType = ESpreadType::DynamicRandom;
 				TargetConfig.UseDynamicSizing = true;
-				SpatialConfig.BoxBounds = FVector(0.f, 2000.f, 800.f);
+				SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
 				break;
 			}
 			break;
 		case EDefaultMode::BeatGrid:
 			DefiningConfig.BaseGameMode = EDefaultMode::BeatGrid;
 			BeatGridConfig.SetConfigByDifficulty(DefiningConfig.Difficulty);
-			SpatialConfig.BoxBounds = FVector(0.f, 3200.f, 1000.f);
+			SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
 			SpatialConfig.SpreadType = ESpreadType::None;
 			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				AudioConfig.PlayerDelay = 0.35f;
-				TargetConfig.TargetSpawnCD = 0.35f;
-				TargetConfig.TargetMaxLifeSpan = 1.2f;
-				TargetConfig.MinTargetScale = 0.85f;
-				TargetConfig.MaxTargetScale = 0.85f;
+				AudioConfig.PlayerDelay = PlayerDelay_BeatGrid_Normal;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Normal;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Normal;
+				TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Normal;
+				TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				AudioConfig.PlayerDelay = 0.3f;
-				TargetConfig.TargetSpawnCD = 0.30f;
-				TargetConfig.TargetMaxLifeSpan = 1.f;
-				TargetConfig.MinTargetScale = 0.7f;
-				TargetConfig.MaxTargetScale = 0.7f;
+				AudioConfig.PlayerDelay = PlayerDelay_BeatGrid_Hard;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Hard;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Hard;
+				TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Hard;
+				TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				AudioConfig.PlayerDelay = 0.25f;
-				TargetConfig.TargetSpawnCD = 0.25f;
-				TargetConfig.TargetMaxLifeSpan = 0.75f;
-				TargetConfig.MinTargetScale = 0.5f;
-				TargetConfig.MaxTargetScale = 0.5f;
+				AudioConfig.PlayerDelay = PlayerDelay_BeatGrid_Death;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Death;
+				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Death;
+				TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Death;
+				TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
@@ -698,26 +704,26 @@ struct FBSConfig
 			break;
 		case EDefaultMode::BeatTrack:
 			DefiningConfig.BaseGameMode = EDefaultMode::BeatTrack;
-			AudioConfig.PlayerDelay = 0.f;
+			AudioConfig.PlayerDelay = PlayerDelay_BeatTrack;
 			BeatTrackConfig.SetConfigByDifficulty(DefiningConfig.Difficulty);
 			SpatialConfig.SpreadType = ESpreadType::None;
-			TargetConfig.TargetMaxLifeSpan = 0.f;
+			TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatTrack;
 			switch (DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				TargetConfig.TargetSpawnCD = 0.75f;
-				TargetConfig.MinTargetScale = 1.3f;
-				TargetConfig.MaxTargetScale = 1.3f;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Normal;
+				TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Normal;
+				TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				TargetConfig.TargetSpawnCD = 0.6f;
-				TargetConfig.MinTargetScale = 1.f;
-				TargetConfig.MaxTargetScale = 1.f;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Hard;
+				TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Hard;
+				TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				TargetConfig.TargetSpawnCD = 0.45f;
-				TargetConfig.MinTargetScale = 0.75f;
-				TargetConfig.MaxTargetScale = 0.75;
+				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Death;
+				TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Death;
+				TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
@@ -954,7 +960,7 @@ struct FPlayerSettings_Game
 	int32 CombatTextFrequency;
 
 	/* Wall Menu settings */
-
+	
 	UPROPERTY(BlueprintReadWrite)
 	bool bShouldRecoil;
 
@@ -976,13 +982,13 @@ struct FPlayerSettings_Game
 	FPlayerSettings_Game()
 	{
 		bShowStreakCombatText = true;
-		CombatTextFrequency = 5;
-		StartTargetColor = FLinearColor::White;
-		PeakTargetColor = FLinearColor::Green;
-		EndTargetColor = FLinearColor::Red;
+		CombatTextFrequency = DefaultCombatTextFrequency;
+		StartTargetColor = DefaultStartTargetColor;
+		PeakTargetColor = DefaultPeakTargetColor;
+		EndTargetColor = DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = FLinearColor::White;
-		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
+		TargetOutlineColor = DefaultTargetOutlineColor;
+		BeatGridInactiveTargetColor = DefaultBeatGridInactiveTargetColor;
 		bShouldRecoil = true;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
@@ -995,13 +1001,13 @@ struct FPlayerSettings_Game
 	void ResetToDefault()
 	{
 		bShowStreakCombatText = true;
-		CombatTextFrequency = 5;
-		StartTargetColor = FLinearColor::White;
-		PeakTargetColor = FLinearColor::Green;
-		EndTargetColor = FLinearColor::Red;
+		CombatTextFrequency = DefaultCombatTextFrequency;
+		StartTargetColor = DefaultStartTargetColor;
+		PeakTargetColor = DefaultPeakTargetColor;
+		EndTargetColor = DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
-		TargetOutlineColor = FLinearColor::White;
-		BeatGridInactiveTargetColor = {83.f / 255.f, 0.f, 245.f / 255.f, 1.f};
+		TargetOutlineColor = DefaultTargetOutlineColor;
+		BeatGridInactiveTargetColor = DefaultBeatGridInactiveTargetColor;
 	}
 };
 
@@ -1043,11 +1049,11 @@ struct FPlayerSettings_VideoAndSound
 
 	FPlayerSettings_VideoAndSound()
 	{
-		GlobalVolume = 50.f;
-		MenuVolume = 50.f;
-		MusicVolume = 10.f;
-		FrameRateLimitMenu = 144;
-		FrameRateLimitGame = 0;
+		GlobalVolume = DefaultGlobalVolume;
+		MenuVolume = DefaultMenuVolume;
+		MusicVolume = DefaultMusicVolume;
+		FrameRateLimitMenu = DefaultFrameRateLimitMenu;
+		FrameRateLimitGame = DefaultFrameRateLimitGame;
 		bShowFPSCounter = false;
 		DLSSMode = UDLSSMode::Auto;
 		NISMode = UNISMode::Custom;
@@ -1079,7 +1085,7 @@ struct FPlayerSettings_User
 
 	FPlayerSettings_User()
 	{
-		Sensitivity = 0.3f;
+		Sensitivity = DefaultSensitivity;
 		HasLoggedInHttp = false;
 		Username = "";
 		LoginCookie = "";
@@ -1113,12 +1119,12 @@ struct FPlayerSettings_CrossHair
 
 	FPlayerSettings_CrossHair()
 	{
-		LineWidth = 4;
-		LineLength = 10;
-		InnerOffset = 6;
-		CrossHairColor = FLinearColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
-		OutlineOpacity = 1.f;
-		OutlineWidth = 20;
+		LineWidth = DefaultLineWidth;
+		LineLength = DefaultLineLength;
+		InnerOffset = DefaultInnerOffset;
+		CrossHairColor = DefaultCrossHairColor;
+		OutlineOpacity = DefaultOutlineOpacity;
+		OutlineWidth = DefaultOutlineWidth;
 	}
 };
 
@@ -1149,7 +1155,7 @@ struct FPlayerSettings_AudioAnalyzer
 	int HistorySize;
 
 	/* Max number of band channels allowed */
-	int32 MaxNumBandChannels = 32;
+	int32 MaxNumBandChannels;
 
 	UPROPERTY(BlueprintReadOnly)
 	FString LastSelectedInputAudioDevice;
@@ -1159,15 +1165,13 @@ struct FPlayerSettings_AudioAnalyzer
 
 	FPlayerSettings_AudioAnalyzer()
 	{
-		BandLimits = {
-			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
-			FVector2d(5681, 11360), FVector2d(11361, 22720),
-		};
-		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
-		NumBandChannels = 10;
-		TimeWindow = 0.02f;
-		HistorySize = 30.f;
-		MaxNumBandChannels = 32;
+		BandLimits = DefaultBandLimits;
+		BandLimitsThreshold = TArray<float>();
+		BandLimitsThreshold.Init(DefaultBandLimitThreshold, DefaultNumBandChannels);
+		NumBandChannels = DefaultNumBandChannels;
+		TimeWindow = DefaultTimeWindow;
+		HistorySize = DefaultHistorySize;
+		MaxNumBandChannels = DefaultMaxNumBandChannels;
 		LastSelectedInputAudioDevice = "";
 		LastSelectedOutputAudioDevice = "";
 	}
@@ -1175,15 +1179,13 @@ struct FPlayerSettings_AudioAnalyzer
 	/** Resets all settings to default, but keeps audio device information */
 	void ResetToDefault()
 	{
-		BandLimits = {
-			FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710), FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680),
-			FVector2d(5681, 11360), FVector2d(11361, 22720),
-		};
-		BandLimitsThreshold = {2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1, 2.1};
-		NumBandChannels = 10;
-		TimeWindow = 0.02f;
-		HistorySize = 30.f;
-		MaxNumBandChannels = 32;
+		BandLimits = DefaultBandLimits;
+		BandLimitsThreshold = TArray<float>();
+		BandLimitsThreshold.Init(DefaultBandLimitThreshold, DefaultNumBandChannels);
+		NumBandChannels = DefaultNumBandChannels;
+		TimeWindow = DefaultTimeWindow;
+		HistorySize = DefaultHistorySize;
+		MaxNumBandChannels = DefaultMaxNumBandChannels;
 	}
 };
 

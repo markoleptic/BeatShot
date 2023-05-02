@@ -18,12 +18,13 @@ class BEATSHOT_API AStaticCubeVisualizer : public AVisualizerBase
 public:
 	AStaticCubeVisualizer();
 
-	/** Deletes all existing visualizers and generates a new array of visualizers based on AASettings */
-	virtual void InitializeVisualizer() override;
+	/** Clears all StaticMeshInstances and generates new ones based on AASettings */
+	virtual void InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings) override;
 
 	/** Updates the CubeHeightScale and the RedGreenAlpha for a cube at Index */
 	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
 
+	/** Marks all instanced static meshes render states as dirty. Should be called by a VisualizerManager to limit the frequency of calls */
 	virtual void MarkRenderStateDirty() override;
 
 protected:

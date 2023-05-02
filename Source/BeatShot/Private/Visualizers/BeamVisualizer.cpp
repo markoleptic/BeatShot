@@ -13,39 +13,104 @@ ABeamVisualizer::ABeamVisualizer()
 void ABeamVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	SetInitialLocation(Constants::InitialBeamLightLocation);
-	SetRotation(Constants::BeamLightRotation);
-	SetVisualizerOffset(Constants::BeamLightOffset);
 }
 
-void ABeamVisualizer::InitializeVisualizer()
+void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	Super::InitializeVisualizer();
-
-	BeatColors.Emplace(FLinearColor(255 / 255.f, 0 / 255.f, 0 / 255.f));
-	BeatColors.Emplace(FLinearColor(255 / 255.f, 127 / 255.f, 0 / 255.f));
-	BeatColors.Emplace(FLinearColor(255 / 255.f, 255 / 255.f, 0 / 255.f));
-	BeatColors.Emplace(FLinearColor(127 / 255.f, 255 / 255.f, 0 / 255.f));
-	BeatColors.Emplace(FLinearColor(0 / 255.f, 255 / 255.f, 0 / 255.f));
-	BeatColors.Emplace(FLinearColor(0 / 255.f, 255 / 255.f, 127 / 255.f));
-	BeatColors.Emplace(FLinearColor(0 / 255.f, 255 / 255.f, 255 / 255.f));
-	BeatColors.Emplace(FLinearColor(0 / 255.f, 127 / 255.f, 255 / 255.f));
-	BeatColors.Emplace(FLinearColor(0 / 255.f, 0 / 255.f, 255 / 255.f));
-	BeatColors.Emplace(FLinearColor(127 / 255.f, 0 / 255.f, 255 / 255.f));
-
+	Super::InitializeVisualizer(InAASettings);
+	
 	FVector CurrentSpawnLoc = InitialVisualizerLocation - VisualizerOffset * (static_cast<float>(AASettings.NumBandChannels - 1) / 2);
 	for (int i = 0; i < AASettings.NumBandChannels; i++)
 	{
-		//CurrentSpawnLoc = i * VisualizerOffset + InitialVisualizerLocation;
-		Visualizers.EmplaceAt(i, Cast<ASimpleBeamLight>(GetWorld()->SpawnActor(SimpleBeamLightClass, &CurrentSpawnLoc, &VisualizerRotation, SpawnParameters)));
-		Cast<ASimpleBeamLight>(Visualizers[i])->SetLightColor(BeatColors[i]);
-		Cast<ASimpleBeamLight>(Visualizers[i])->SetLightIntensities(FLinearColor::Transparent);
-		Cast<ASimpleBeamLight>(Visualizers[i])->SetIndex(i);
+		ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(SimpleBeamLightClass, FTransform(VisualizerRotation, CurrentSpawnLoc), this);
+		if (i != 0)
+		{
+			Light->InitSimpleBeamLight(BeamLightColors[BeamLightColors.Num() % i], i, BeamLightLifetimes[BeamLightLifetimes.Num() % i], bMovingLights);
+		}
+		else
+		{
+			Light->InitSimpleBeamLight(BeamLightColors[0], 0, BeamLightLifetimes[0], bMovingLights);
+		}
+		Visualizers.Add(Light);
+		Light->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
+		Light->FinishSpawning(FTransform(), true);
 		CurrentSpawnLoc += VisualizerOffset;
+	}
+	
+	BeamLights.Empty();
+	for (const TObjectPtr<AActor> Light : GetVisualizers())
+	{
+		BeamLights.Add(Cast<ASimpleBeamLight>(Light));
+	}
+}
+
+void ABeamVisualizer::InitializeVisualizerFromWorld()
+{
+	int i = 0;
+	for (const TObjectPtr<AActor> Light : GetVisualizers())
+	{
+		if (ASimpleBeamLight* BeamLight = Cast<ASimpleBeamLight>(Light))
+		{
+			if (i != 0)
+			{
+				BeamLight->InitSimpleBeamLight(BeamLightColors[BeamLightColors.Num() % i], i, BeamLightLifetimes[BeamLightLifetimes.Num() % i], bMovingLights);
+			}
+			else
+			{
+				BeamLight->InitSimpleBeamLight(BeamLightColors[0], 0, BeamLightLifetimes[0], bMovingLights);
+			}
+			BeamLight->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
+			BeamLights.Add(BeamLight);
+		}
+		i++;
+	}
+}
+
+void ABeamVisualizer::ActivateVisualizer(const int32 Index)
+{
+	if (ActiveLightIndices.Contains(Index))
+	{
+		return;
+	}
+	GetSimpleBeamLights()[Index]->ActivateLightComponents();
+	ActiveLightIndices.Add(Index);
+}
+
+void ABeamVisualizer::DeactivateVisualizers()
+{
+	for (const TObjectPtr<ASimpleBeamLight> Light : GetSimpleBeamLights())
+	{
+		Light->DeactivateLightComponents();
+	}
+	ActiveLightIndices.Empty();
+}
+
+void ABeamVisualizer::OnBeamLightLifetimeCompleted(const int32 IndexToRemove)
+{
+	if (const int32 Index = ActiveLightIndices.Find(IndexToRemove); Index != INDEX_NONE)
+	{
+		ActiveLightIndices.Remove(IndexToRemove);
 	}
 }
 
 void ABeamVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
-	Cast<ASimpleBeamLight>(Visualizers[Index])->UpdateNiagaraBeam(SpectrumAlpha);
+}
+
+void ABeamVisualizer::SpawnBeamLight(const FLinearColor& Color, const float InLightDuration)
+{
+	ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(SimpleBeamLightClass, FTransform(VisualizerRotation, GetActorLocation() + VisualizerOffset), this);
+	Light->InitSimpleBeamLight(Color, GetSimpleBeamLights().Num(), InLightDuration, false);
+	Light->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
+	Visualizers.Add(Light);
+	BeamLights.Add(Cast<ASimpleBeamLight>(Light));
+	Light->FinishSpawning(FTransform(), true);
+}
+
+void ABeamVisualizer::AddBeamLightFromWorld(const TSoftObjectPtr<ASimpleBeamLight>& InBeamLight)
+{
+	InBeamLight->InitSimpleBeamLight(InBeamLight->GetLightColor(), GetSimpleBeamLights().Num(), InBeamLight->GetLightDuration(), false);
+	InBeamLight->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
+	Visualizers.Add(InBeamLight.Get());
+	BeamLights.Add(InBeamLight.Get());
 }

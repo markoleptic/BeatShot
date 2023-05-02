@@ -9,6 +9,7 @@
 #include "BeatShot/BeatShot.h"
 #include "RangeLevelScriptActor.generated.h"
 
+class AVisualizerBase;
 class UDirectionalLightComponent;
 class ASkyLight;
 class AStaticMeshActor;
@@ -54,6 +55,10 @@ protected:
 	/** Soft Reference to Skylight in Range level */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<ASkyLight> Skylight_Soft;
+
+	/** Soft Reference to any visualizers created in level */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<TSoftObjectPtr<AVisualizerBase>> Visualizers_Soft;
 
 	/** Hard Reference to SkySphere in Range level */
 	UPROPERTY()

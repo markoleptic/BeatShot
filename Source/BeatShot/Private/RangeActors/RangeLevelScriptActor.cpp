@@ -36,6 +36,7 @@ void ARangeLevelScriptActor::BeginPlay()
 
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->OnStreakThresholdPassed.BindUObject(this, &ARangeLevelScriptActor::OnStreakThresholdPassed);
+	GameMode->RegisterVisualizers(Visualizers_Soft);
 
 	OnTimelineVector.BindUFunction(this, FName("TransitionTimeOfDay"));
 	OnTransitionMaterialTick.BindUFunction(this, FName("TransitionSkySphereMaterial"));

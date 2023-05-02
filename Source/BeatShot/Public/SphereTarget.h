@@ -63,9 +63,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UNiagaraSystem* TargetExplosion;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	UMaterialInterface* Material;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Abilities")
 	TSubclassOf<UGameplayEffect> TargetImmunity;
 	
@@ -77,6 +74,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UCurveFloat* ShrinkQuickAndGrowSlowCurve;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* MID_TargetColorChanger;
 
 public:
 
@@ -177,9 +177,6 @@ private:
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
 	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* MID_TargetColorChanger;
 	
 	FGameplayTagContainer GameplayTags;
 

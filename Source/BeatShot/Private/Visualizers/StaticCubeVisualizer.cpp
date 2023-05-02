@@ -23,12 +23,12 @@ AStaticCubeVisualizer::AStaticCubeVisualizer()
 void AStaticCubeVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	SetVisualizerOffset(Constants::CubeOffset);
+	SetVisualizerOffset(CubeOffset);
 }
 
-void AStaticCubeVisualizer::InitializeVisualizer()
+void AStaticCubeVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	Super::InitializeVisualizer();
+	Super::InitializeVisualizer(InAASettings);
 
 	InstancedBaseMesh->ClearInstances();
 	InstancedVerticalOutlineMesh->ClearInstances();
@@ -45,7 +45,7 @@ void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float Spec
 	const float NewHeightScale = GetScaledHeight(SpectrumAlpha);
 	const FTransform BaseAndSideTransform(FRotator(), Index * VisualizerOffset, FVector(MeshScale, MeshScale, MeshScale * NewHeightScale));
 
-	const float CustomDataValue = (NewHeightScale - Constants::MinCubeHeightScale) / (Constants::MaxCubeHeightScale - Constants::MinCubeHeightScale);
+	const float CustomDataValue = (NewHeightScale - MinCubeHeightScale) / (MaxCubeHeightScale - MinCubeHeightScale);
 	
 	InstancedBaseMesh->UpdateInstanceTransform(Index, BaseAndSideTransform);
 	InstancedVerticalOutlineMesh->UpdateInstanceTransform(Index, BaseAndSideTransform);

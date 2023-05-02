@@ -8,12 +8,6 @@ AVisualizerBase::AVisualizerBase()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AVisualizerBase::BeginPlay()
-{
-	Super::BeginPlay();
-	AASettings = LoadPlayerSettings().AudioAnalyzer;
-}
-
 void AVisualizerBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -22,30 +16,33 @@ void AVisualizerBase::Tick(float DeltaTime)
 void AVisualizerBase::Destroyed()
 {
 	Super::Destroyed();
-	for (AActor* Visualizer : Visualizers)
-	{
-		Visualizer->Destroy();
-	}
-	Visualizers.Empty();
+	DeactivateVisualizers();
 }
 
-void AVisualizerBase::InitializeVisualizer()
+void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	for (AActor* Visualizer : Visualizers)
-	{
-		Visualizer->Destroy();
-	}
-	Visualizers.Empty();
+	AASettings = InAASettings;
+}
+
+void AVisualizerBase::InitializeVisualizerFromWorld()
+{
+}
+
+void AVisualizerBase::ActivateVisualizer(const int32 Index)
+{
+}
+
+void AVisualizerBase::DeactivateVisualizers()
+{
 }
 
 void AVisualizerBase::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
 }
 
-void AVisualizerBase::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& AASettingsStruct)
+void AVisualizerBase::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	AASettings = AASettingsStruct;
-	InitializeVisualizer();
+	InitializeVisualizer(InAASettings);
 }
 
 void AVisualizerBase::MarkRenderStateDirty()

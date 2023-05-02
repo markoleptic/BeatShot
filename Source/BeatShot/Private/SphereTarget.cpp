@@ -19,8 +19,8 @@ ASphereTarget::ASphereTarget()
 	PrimaryActorTick.bCanEverTick = true;
 	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
 	RootComponent = CapsuleComponent;
-	CapsuleComponent->SetCapsuleRadius(Constants::SphereRadius);
-	CapsuleComponent->SetCapsuleHalfHeight(Constants::SphereRadius);
+	CapsuleComponent->SetCapsuleRadius(SphereTargetRadius);
+	CapsuleComponent->SetCapsuleHalfHeight(SphereTargetRadius);
 
 	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>("Sphere Mesh");
 	SphereMesh->SetupAttachment(CapsuleComponent);
@@ -118,8 +118,7 @@ void ASphereTarget::BeginPlay()
 	}
 	
 	/* Use Color Changing Material, this is required in order to change color using C++ */
-	Material = SphereMesh->GetMaterial(0);
-	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(Material, this);
+	MID_TargetColorChanger = UMaterialInstanceDynamic::Create(SphereMesh->GetMaterial(0), this);
 	SphereMesh->SetMaterial(0, MID_TargetColorChanger);
 
 	/* Set Outline Color */
@@ -303,7 +302,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
+	PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereTargetRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
 	Destroy();
 }
 
@@ -324,7 +323,7 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		ApplyImmunityEffect();
 		ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor"));
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereRadius * TargetScale, ColorWhenDestroyed);
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereTargetRadius * TargetScale, ColorWhenDestroyed);
 		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}

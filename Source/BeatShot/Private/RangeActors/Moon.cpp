@@ -15,7 +15,7 @@ AMoon::AMoon()
 	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 	RootComponent = SphereComponent;
 	SphereComponent->SetMobility(EComponentMobility::Movable);
-	SphereComponent->SetSphereRadius(Constants::SphereCompRadius);
+	SphereComponent->SetSphereRadius(Constants::MoonOrbitRadius);
 
 	MoonMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MoonMesh"));
 	MoonMesh->SetupAttachment(SphereComponent);

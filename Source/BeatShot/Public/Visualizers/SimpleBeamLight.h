@@ -16,6 +16,8 @@ class USceneComponent;
 class UMaterialInterface;
 class UMaterialInstanceDynamic;
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeamLightLifetimeCompleted, const int32 OutIndex);
+
 UCLASS()
 class BEATSHOT_API ASimpleBeamLight : public AActor
 {
@@ -28,40 +30,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
-
-public:
-	/** Activates the Niagara System, sets the BeamWidth parameter, and plays the ColorTimeline */
-	UFUNCTION()
-	void UpdateNiagaraBeam(const float Alpha);
-
-	void SetTrackOnUpdate(const bool bShouldTrackOnUpdate) { bTrackOnUpdate = bShouldTrackOnUpdate; }
-
-	/** Main function that calls all other SetColor functions */
-	UFUNCTION()
-	void SetLightColor(const FLinearColor& Color);
-
-	/** Main function that varies all light intensities based on the alpha value from LightColorCurve */
-	UFUNCTION()
-	void SetLightIntensities(const FLinearColor& Color);
-
-	/** Set the index of this SimpleBeamLight */
-	void SetIndex(const int32 NewIndex) { Index = NewIndex; }
-
-private:
-	/** Deactivates the Niagara System and stops the ColorTimeline */
-	UFUNCTION()
-	void OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent);
-
-	/** Traces a line forward from SpotlightHead and if a blocking hit is found, sets the BeamEndLight to the correct
-	 *  location and rotation. Disables the BeamEndLight if not blocking hit is found */
-	UFUNCTION()
-	void LineTrace(const FVector& EndLocation);
-
-	/** Rotates the SpotlightLimb and SpotlightHead and then calls LineTrace */
-	UFUNCTION()
-	void UpdateBeamEndLightPosition(const FVector& Position);
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UStaticMeshComponent* SpotlightBase;
 
@@ -75,7 +44,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UNiagaraComponent* SimpleBeamComponent;
 
-	/** The actual spotlight light that appears at the end of the SimpleBeam */
+	/** The actual spotlight light that appears at the end of the SimpleBeam. Its position is near the base, unlike BeamEndLight */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USpotLightComponent* Spotlight;
 
@@ -86,35 +55,57 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USceneComponent* LightPositionComponent;
 
-	/** Niagara system for the visible beam of light */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Niagara")
-	UNiagaraSystem* SimpleBeam;
-
-	/** The color values over time to apply to the lights */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Curves")
-	UCurveLinearColor* LightColorCurve;
-
 	/** The position over time to move the BeamEndLight */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Curves")
 	UCurveVector* LightMovementCurve;
 
-	/** The base color to apply to all lights */
+	/** The base color to apply to Spotlight, BeamEndLight, and SimpleBeamComponent */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Color")
 	FLinearColor LightColor;
 
 	/** The light inside the SpotlightHead */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
+	UPROPERTY()
 	UMaterialInstanceDynamic* EmissiveLightBulb;
+	
+public:
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Materials")
-	UMaterialInterface* EmissiveLightBulbMaterial;
+	/** Initialize the light components when spawning */
+	void InitSimpleBeamLight(const FLinearColor& Color, const int32 NewIndex, const float InLightDuration, const bool InbIsMovingLight = false);
+
+	/** Activate the light components */
+	void ActivateLightComponents();
+
+	/** Deactivate the light components */
+	void DeactivateLightComponents();
+
+	/** Returns the duration of this beam light */
+	float GetLightDuration() const { return LightDuration; }
+
+	/** Returns the color of this beam light */
+	FLinearColor GetLightColor() const { return LightColor; }
+
+	/** Broadcast when the niagara component has completed */
+	FOnBeamLightLifetimeCompleted OnBeamLightLifetimeCompleted;
 
 private:
+	/** Calls DeactivateLightComponents */
+	UFUNCTION()
+	void OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent);
+
+	/** Traces a line forward from SpotlightHead and if a blocking hit is found, sets the BeamEndLight to the correct
+	 *  location and rotation. Disables the BeamEndLight if not blocking hit is found */
+	UFUNCTION()
+	void LineTrace(const FVector& EndLocation);
+
+	UFUNCTION(CallInEditor)
+	void UpdateBeamEndLightLocation();
+
+	/** Rotates the SpotlightLimb and SpotlightHead and then calls LineTrace */
+	UFUNCTION()
+	void UpdateBeamEndLightPosition(const FVector& Position);
+	
 	/** The index of this instance inside an array of this type */
 	int32 Index;
-
-	/** The timeline to link to the LightColorCurve */
-	FTimeline ColorTimeline;
 
 	/** The timeline to link to the LightMovementCurve */
 	FTimeline LightPositionTimeline;
@@ -122,14 +113,14 @@ private:
 	/** Delegate that binds the LightPositionTimeline to UpdateBeamEndLightPosition() */
 	FOnTimelineVector TimelineVectorDelegate;
 
-	/** Delegate that binds the ColorTimeline to SetLightIntensities() */
-	FOnTimelineLinearColor ColorTimelineDelegate;
-
 	/** Inner cone angle for the Spotlight */
 	float InnerConeAngle = 0.5;
 
 	/** Outer cone angle for the Spotlight */
 	float OuterConeAngle = 1.5;
+
+	/** The length of time this light will be on for */
+	float LightDuration = 0.f;
 
 	/** Rotation (Yaw) of the SpotlightLimb from the SpotlightBase */
 	UPROPERTY(VisibleAnywhere)
@@ -139,5 +130,6 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	float SpotlightHeadRotation;
 
-	bool bTrackOnUpdate = false;
+	/** Whether or not this light will need to use the LightPositionTimeline and LineTracing at runtime */
+	bool bIsMovingLight = false;
 };
