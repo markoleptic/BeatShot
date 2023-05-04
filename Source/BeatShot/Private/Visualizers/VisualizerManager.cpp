@@ -27,12 +27,12 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 	CurrentCubeSpectrumValues.Init(0, AASettings.NumBandChannels);
 	
 	/* Default Visualizers */
-	CubeVisualizers.Emplace(Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &LeftStaticCubeVisualizerLocation, &StaticCubeVisualizerRotation, SpawnParameters)));
-	CubeVisualizers.Emplace(Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &RightStaticCubeVisualizerLocation, &StaticCubeVisualizerRotation, SpawnParameters)));
-	ABeamVisualizer* MiddleRoomBeam = Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &BeamVisualizerLocation, &BeamRotation, SpawnParameters));
-	MiddleRoomBeam->SetInitialLocation(InitialBeamLightLocation);
-	MiddleRoomBeam->SetInitialRotation(BeamRotation);
-	MiddleRoomBeam->SetVisualizerOffset(BeamLightOffset);
+	CubeVisualizers.Emplace(Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &LeftStaticCubeVisualizerLocation, &DefaultStaticCubeVisualizerRotation, SpawnParameters)));
+	CubeVisualizers.Emplace(Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &RightStaticCubeVisualizerLocation, &DefaultStaticCubeVisualizerRotation, SpawnParameters)));
+	ABeamVisualizer* MiddleRoomBeam = Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &DefaultMiddleRoomBeamVisualizerLocation, &DefaultMiddleRoomBeamRotation, SpawnParameters));
+	MiddleRoomBeam->SetInitialLocation(DefaultMiddleRoomInitialBeamLightLocation);
+	MiddleRoomBeam->SetInitialRotation(DefaultMiddleRoomBeamRotation);
+	MiddleRoomBeam->SetVisualizerOffset(DefaultMiddleRoomBeamLightOffset);
 	MiddleRoomBeam->SetMovingLights(true);
 	BeamVisualizers.Add(MiddleRoomBeam);
 	
@@ -63,13 +63,13 @@ void AVisualizerManager::InitializeVisualizersFromWorld(const TArray<TSoftObject
 	{
 		if (Cast<ABeamVisualizer>(Visualizer.Get()))
 		{
-			Visualizer->InitializeVisualizerFromWorld();
 			BeamVisualizers.Add(Cast<ABeamVisualizer>(Visualizer.Get()));
+			Visualizer->InitializeVisualizerFromWorld(AASettings);
 		}
 		else if (Cast<AStaticCubeVisualizer>(Visualizer.Get()))
 		{
-			Visualizer->InitializeVisualizerFromWorld();
 			CubeVisualizers.Add(Cast<AStaticCubeVisualizer>(Visualizer.Get()));
+			Visualizer->InitializeVisualizerFromWorld(AASettings);
 		}
 	}
 }

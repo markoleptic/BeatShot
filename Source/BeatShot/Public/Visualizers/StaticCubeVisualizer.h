@@ -10,6 +10,39 @@
 class UStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 
+USTRUCT(BlueprintType)
+struct FCubeVisualizerConfig
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MeshScale = 0.5f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float CubeHeight = 100.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FRotator CubeRotation = DefaultStaticCubeVisualizerRotation;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FVector CubeVisualizerOffset = DefaultCubeVisualizerOffset;
+	
+	FCubeVisualizerConfig()
+	{
+		MeshScale = 0.5f;
+		CubeHeight = 100.f;
+		MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
+		MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;
+		CubeVisualizerOffset = DefaultCubeVisualizerOffset;
+	}
+};
+
 UCLASS()
 class BEATSHOT_API AStaticCubeVisualizer : public AVisualizerBase
 {
@@ -43,30 +76,29 @@ protected:
 	UInstancedStaticMeshComponent* InstancedTopMesh;
 
 	/* The base mesh */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Meshes")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualizer Config | Meshes")
 	UStaticMesh* BaseMesh;
 
 	/* The mesh used as the vertical outline */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Meshes")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualizer Config | Meshes")
 	UStaticMesh* VerticalOutlineMesh;
 
 	/* The mesh used as the outline for the top of the cube */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Meshes")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Visualizer Config | Meshes")
 	UStaticMesh* TopMesh;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
+	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config | Materials")
 	UMaterialInterface* BaseCubeMaterial;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Materials")
+	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config | Materials")
 	UMaterialInterface* OutlineMaterial;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config")
+	FCubeVisualizerConfig CubeVisualizerConfig;
 
 private:
 	/** Returns the SpectrumValue scaled between MinCubeHeightScale and MaxCubeHeightScale */
 	float GetScaledHeight(const float SpectrumValue) const;
 
 	void AddInstancedCubeMesh(const FVector& RelativePosition);
-
-	const float MeshScale = 0.5f;
-
-	const float CubeHeight = 100.f;
 };

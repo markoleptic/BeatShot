@@ -23,7 +23,7 @@ AStaticCubeVisualizer::AStaticCubeVisualizer()
 void AStaticCubeVisualizer::BeginPlay()
 {
 	Super::BeginPlay();
-	SetVisualizerOffset(CubeOffset);
+	SetVisualizerOffset(DefaultCubeVisualizerOffset);
 }
 
 void AStaticCubeVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
@@ -34,26 +34,32 @@ void AStaticCubeVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnal
 	InstancedVerticalOutlineMesh->ClearInstances();
 	InstancedTopMesh->ClearInstances();
 	
-	for (int i = 0; i < AASettings.NumBandChannels; i++)
+	for (int i = 0; i < BaseConfig.NumVisualizerLightsToSpawn; i++)
 	{
-		AddInstancedCubeMesh(i * VisualizerOffset);
+		AddInstancedCubeMesh(i * CubeVisualizerConfig.CubeVisualizerOffset);
 	}
 }
 
 void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
-	const float NewHeightScale = GetScaledHeight(SpectrumAlpha);
-	const FTransform BaseAndSideTransform(FRotator(), Index * VisualizerOffset, FVector(MeshScale, MeshScale, MeshScale * NewHeightScale));
+	for (const int32 LightIndex : GetLightIndices(Index))
+	{
+		const float NewHeightScale = GetScaledHeight(SpectrumAlpha);
+		const FTransform BaseAndSideTransform(FRotator(), LightIndex * CubeVisualizerConfig.CubeVisualizerOffset,
+			FVector(CubeVisualizerConfig.MeshScale, CubeVisualizerConfig.MeshScale, CubeVisualizerConfig.MeshScale * NewHeightScale));
 
-	const float CustomDataValue = (NewHeightScale - MinCubeHeightScale) / (MaxCubeHeightScale - MinCubeHeightScale);
+		const float CustomDataValue = (NewHeightScale - CubeVisualizerConfig.MinCubeVisualizerHeightScale) /
+			(CubeVisualizerConfig.MaxCubeVisualizerHeightScale - CubeVisualizerConfig.MinCubeVisualizerHeightScale);
 	
-	InstancedBaseMesh->UpdateInstanceTransform(Index, BaseAndSideTransform);
-	InstancedVerticalOutlineMesh->UpdateInstanceTransform(Index, BaseAndSideTransform);
-	InstancedTopMesh->UpdateInstanceTransform(Index, FTransform(FRotator(), Index * VisualizerOffset + FVector(0, 0, CubeHeight * (NewHeightScale - 1)), FVector(MeshScale)));
+		InstancedBaseMesh->UpdateInstanceTransform(LightIndex, BaseAndSideTransform);
+		InstancedVerticalOutlineMesh->UpdateInstanceTransform(LightIndex, BaseAndSideTransform);
+		InstancedTopMesh->UpdateInstanceTransform(LightIndex, FTransform(FRotator(), LightIndex * CubeVisualizerConfig.CubeVisualizerOffset
+			+ FVector(0, 0, CubeVisualizerConfig.CubeHeight * (NewHeightScale - 1)), FVector(CubeVisualizerConfig.MeshScale)));
 
-	InstancedBaseMesh->SetCustomDataValue(Index, 0, CustomDataValue, false);
-	InstancedVerticalOutlineMesh->SetCustomDataValue(Index, 0, CustomDataValue, false);
-	InstancedTopMesh->SetCustomDataValue(Index, 0, CustomDataValue, false);
+		InstancedBaseMesh->SetCustomDataValue(LightIndex, 0, CustomDataValue, false);
+		InstancedVerticalOutlineMesh->SetCustomDataValue(LightIndex, 0, CustomDataValue, false);
+		InstancedTopMesh->SetCustomDataValue(LightIndex, 0, CustomDataValue, false);
+	}
 }
 
 void AStaticCubeVisualizer::MarkRenderStateDirty()
@@ -65,15 +71,15 @@ void AStaticCubeVisualizer::MarkRenderStateDirty()
 
 float AStaticCubeVisualizer::GetScaledHeight(const float SpectrumValue) const
 {
-	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, Constants::MinCubeHeightScale, Constants::MaxCubeHeightScale);
+	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, DefaultMinCubeVisualizerHeightScale, DefaultMaxCubeVisualizerHeightScale);
 }
 
 void AStaticCubeVisualizer::AddInstancedCubeMesh(const FVector& RelativePosition)
 {
-	const int32 BaseMeshIndex = InstancedBaseMesh->AddInstance(FTransform(FRotator(), RelativePosition, FVector(MeshScale)), false);
+	const int32 BaseMeshIndex = InstancedBaseMesh->AddInstance(FTransform(FRotator(), RelativePosition, FVector(CubeVisualizerConfig.MeshScale)), false);
 	InstancedBaseMesh->SetMaterial(BaseMeshIndex, BaseCubeMaterial);
-	const int32 OutlineMeshIndex = InstancedVerticalOutlineMesh->AddInstance(FTransform(FRotator(), RelativePosition, FVector(MeshScale)), false);
+	const int32 OutlineMeshIndex = InstancedVerticalOutlineMesh->AddInstance(FTransform(FRotator(), RelativePosition, FVector(CubeVisualizerConfig.MeshScale)), false);
 	InstancedVerticalOutlineMesh->SetMaterial(OutlineMeshIndex, OutlineMaterial);
-	const int32 TopMeshIndex = InstancedTopMesh->AddInstance(FTransform(FRotator(), RelativePosition, FVector(MeshScale)), false);
+	const int32 TopMeshIndex = InstancedTopMesh->AddInstance(FTransform(FRotator(), RelativePosition, FVector(CubeVisualizerConfig.MeshScale)), false);
 	InstancedTopMesh->SetMaterial(TopMeshIndex, OutlineMaterial);
 }

@@ -334,45 +334,56 @@ namespace Constants
 	inline const FVector RightStaticCubeVisualizerLocation(4000, 1935, 210);
 
 	/** Rotation for both StaticCubeVisualizers */
-	inline const FRotator StaticCubeVisualizerRotation(0, 90, 90);
+	inline const FRotator DefaultStaticCubeVisualizerRotation(0, 90, 90);
 
 	/** How far to space the cubes for the StaticCubeVisualizer */
-	inline const FVector CubeOffset(0, -120, 0);
+	inline const FVector DefaultCubeVisualizerOffset(0, -120, 0);
 
 	/** Min scale to apply to the height of a single Cube in a StaticCubeVisualizer */
-	inline constexpr float MinCubeHeightScale = 1;
+	inline constexpr float DefaultMinCubeVisualizerHeightScale = 1;
 
 	/** Max scale to apply to the height of a single Cube in a StaticCubeVisualizer */
-	inline constexpr float MaxCubeHeightScale = 4;
+	inline constexpr float DefaultMaxCubeVisualizerHeightScale = 4;
 
 	// Beam Visualizers
 	
 	/** Location of the BeamVisualizer in middle of room */
-	inline const FVector BeamVisualizerLocation(0, 1920, 1320);
+	inline const FVector DefaultMiddleRoomBeamVisualizerLocation(0, 1920, 1320);
 
 	/** Rotation of the BeamVisualizer in middle of room */
-	inline const FRotator BeamRotation(0, 0, 0);
+	inline const FRotator DefaultMiddleRoomBeamRotation(0, 0, 0);
 
 	/** Location of the first spawned Light Beam Visualizer in middle of room */
-	inline const FVector InitialBeamLightLocation(0, 0, 1340);
+	inline const FVector DefaultMiddleRoomInitialBeamLightLocation(0, 0, 1340);
 
 	/** Default spacing between BeamVisualizers in middle of room */
-	inline const FVector BeamLightOffset(0, 100, 0);
+	inline const FVector DefaultMiddleRoomBeamLightOffset(0, 100, 0);
+
+	inline constexpr int32 DefaultNumVisualizerLightsToSpawn = 10; 
 
 	/** Relative offset of the Spotlight light component from the Spotlight head */
-	inline const FRotator BeamLightRotation(0, 0, 0);
-	
-	/** The maximum width of the beam, used to scale the alpha value */
-	inline constexpr float MaxBeamWidth = 50;
+	inline const FRotator DefaultBeamLightRotation(0, 0, 0);
 
 	/** Normal offset to apply to the location of the BeamEndLight */
-	inline constexpr float BeamEndLightOffset = 5;
+	inline constexpr float DefaultBeamEndLightOffset = 5;
 
 	/** The max value of the Spotlight intensity */
-	inline constexpr float MaxSpotlightIntensity = 16000000;
+	inline constexpr float DefaultMaxSpotlightIntensity = 16000000;
 
 	/** The max value of the BeamEndLight intensity */
-	inline constexpr float MaxBeamEndLightIntensity = 80000;
+	inline constexpr float DefaultMaxBeamEndLightIntensity = 80000;
+
+	/** The default value for the inner cone angle of the Spotlight */
+	inline constexpr float DefaultSimpleBeamLightInnerConeAngle = 0.5f;
+
+	/** The default value for the inner cone angle of the Spotlight */
+	inline constexpr float DefaultSimpleBeamLightOuterConeAngle = 1.5f;
+
+	/** The default value for the inner cone angle of the Spotlight */
+	inline constexpr float DefaultSimpleBeamLightBeamWidth = 0.17f;
+
+	/** The default value for the inner cone angle of the Spotlight */
+	inline constexpr float DefaultSimpleBeamLightBeamLength = 10.f;
 
 	/** Relative offset of the Spotlight limb from the SpotlightBase */
 	inline const FVector DefaultSpotlightLimbOffset(0, 0, -18);
