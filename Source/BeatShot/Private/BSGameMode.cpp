@@ -90,14 +90,6 @@ ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
 	return SpawnedCharacter;
 }
 
-void ABSGameMode::RegisterVisualizers(const TArray<TSoftObjectPtr<AVisualizerBase>>& InVisualizers)
-{
-	if (VisualizerManager)
-	{
-		VisualizerManager->InitializeVisualizersFromWorld(InVisualizers);
-	}
-}
-
 void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;

@@ -10,28 +10,27 @@
 class UStaticMeshComponent;
 class UInstancedStaticMeshComponent;
 
-USTRUCT(BlueprintType)
+/** Configuration unique to a CubeVisualizer */
+USTRUCT(BlueprintType, Category = "Visualizer Config")
 struct FCubeVisualizerConfig
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	/** Uniform scale applied to the instanced static mesh */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=0))
 	float MeshScale = 0.5f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	/** Base height of the cube */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=1))
 	float CubeHeight = 100.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	/** Min height of the cube when receiving no input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=2))
 	float MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	/** Max height of the cube when receiving max input */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=3))
 	float MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FRotator CubeRotation = DefaultStaticCubeVisualizerRotation;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FVector CubeVisualizerOffset = DefaultCubeVisualizerOffset;
 	
 	FCubeVisualizerConfig()
 	{
@@ -39,10 +38,11 @@ struct FCubeVisualizerConfig
 		CubeHeight = 100.f;
 		MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
 		MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;
-		CubeVisualizerOffset = DefaultCubeVisualizerOffset;
 	}
 };
 
+
+/** Visualizer that uses instanced static meshes and updates them using CustomDataValues in the materials and adjusting their transforms using UpdateInstanceTransform */
 UCLASS()
 class BEATSHOT_API AStaticCubeVisualizer : public AVisualizerBase
 {
@@ -60,8 +60,9 @@ public:
 	/** Marks all instanced static meshes render states as dirty. Should be called by a VisualizerManager to limit the frequency of calls */
 	virtual void MarkRenderStateDirty() override;
 
+	FCubeVisualizerConfig& GetCubeVisualizerConfig() { return CubeVisualizerConfig; }
+
 protected:
-	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* RootSceneComponent;
@@ -93,12 +94,22 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config | Materials")
 	UMaterialInterface* OutlineMaterial;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config")
+	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config", meta=(DisplayPriority=0))
 	FCubeVisualizerConfig CubeVisualizerConfig;
 
 private:
 	/** Returns the SpectrumValue scaled between MinCubeHeightScale and MaxCubeHeightScale */
 	float GetScaledHeight(const float SpectrumValue) const;
 
-	void AddInstancedCubeMesh(const FVector& RelativePosition);
+	/** Returns the scale to be supplied to an instanced static mesh, combining OffsetTransform and MeshScale */
+	FVector GetScale3D(const float ScaledHeight);
+
+	/** Returns the transform to be supplied to the InstancedTopMesh */
+	FTransform GetTopMeshTransform(const int32 Index, const float SpectrumValue);
+
+	/** Returns the transform to be supplied to the InstancedBaseMesh and InstancedVerticalOutlineMesh */
+	FTransform GetSideAndBaseTransform(const int32 Index, const float SpectrumValue);
+
+	/** Adds an instance for each mesh that is updated, i.e. InstancedBaseMesh, InstancedVerticalOutlineMesh, and InstancedTopMesh with the given RelativeTransform*/
+	void AddInstancedCubeMesh(const FTransform& RelativeTransform);
 };

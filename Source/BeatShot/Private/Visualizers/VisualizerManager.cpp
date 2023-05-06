@@ -13,64 +13,47 @@ AVisualizerManager::AVisualizerManager()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AVisualizerManager::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings, const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	AASettings = InAASettings;
-	AvgSpectrumValues.Init(0, AASettings.NumBandChannels);
-	CurrentSpectrumValues.Init(0, AASettings.NumBandChannels);
-	MaxSpectrumValues.Init(1, AASettings.NumBandChannels);
-	CurrentCubeSpectrumValues.Init(0, AASettings.NumBandChannels);
+	AvgSpectrumValues.Init(0, InAASettings.NumBandChannels);
+	CurrentSpectrumValues.Init(0, InAASettings.NumBandChannels);
+	MaxSpectrumValues.Init(1.f, InAASettings.NumBandChannels);
+	CurrentCubeSpectrumValues.Init(0, InAASettings.NumBandChannels);
 	
-	/* Default Visualizers */
-	CubeVisualizers.Emplace(Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &LeftStaticCubeVisualizerLocation, &DefaultStaticCubeVisualizerRotation, SpawnParameters)));
-	CubeVisualizers.Emplace(Cast<AStaticCubeVisualizer>(GetWorld()->SpawnActor(StaticCubeVisualizerClass, &RightStaticCubeVisualizerLocation, &DefaultStaticCubeVisualizerRotation, SpawnParameters)));
-	ABeamVisualizer* MiddleRoomBeam = Cast<ABeamVisualizer>(GetWorld()->SpawnActor(BeamVisualizerClass, &DefaultMiddleRoomBeamVisualizerLocation, &DefaultMiddleRoomBeamRotation, SpawnParameters));
-	MiddleRoomBeam->SetInitialLocation(DefaultMiddleRoomInitialBeamLightLocation);
-	MiddleRoomBeam->SetInitialRotation(DefaultMiddleRoomBeamRotation);
-	MiddleRoomBeam->SetVisualizerOffset(DefaultMiddleRoomBeamLightOffset);
-	MiddleRoomBeam->SetMovingLights(true);
-	BeamVisualizers.Add(MiddleRoomBeam);
+	/* Initialize visualizers already placed in level */
+	for (const TSoftObjectPtr<AVisualizerBase>& Visualizer : LevelVisualizers)
+	{
+		if (Visualizer)
+		{
+			Visualizer->InitializeVisualizerFromWorld(InAASettings, INDEX_NONE);
+			Visualizers.AddUnique(Visualizer.Get());
+		}
+	}
+
+	/* Spawn visualizers that have been configured but not yet in level */
+	for (TSubclassOf<AVisualizerBase>& Visualizer : DefaultSpawnThroughCode_Visualizers)
+	{
+		if (Visualizer)
+		{
+			AVisualizerBase* CDO = Visualizer.GetDefaultObject();
+			FTransform Transform(CDO->GetConfig().StartRotation, CDO->GetConfig().StartLocation, CDO->GetConfig().StartScale);
+			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
+			SpawnedVisualizer->InitializeVisualizer(InAASettings);
+			SpawnedVisualizer->FinishSpawning(Transform, true);
+			Visualizers.AddUnique(SpawnedVisualizer);
+		}
+	}
+
+	/* Empty visualizers container to prevent duplicate spawning */
+	DefaultSpawnThroughCode_Visualizers.Empty();
+	LevelVisualizers.Empty();
+
+	/* Split visualizer types into their own containers so that UpdateVisualizers can be as efficient as possible */
+	SplitVisualizers();
 	
 	if (PlayerSettings.bShowLightVisualizers)
 	{
 		bUpdateVisualizers = true;
-	}
-
-	for (const TObjectPtr<ABeamVisualizer> Visualizer : GetBeamVisualizers())
-	{
-		if (Visualizer)
-		{
-			Visualizer->InitializeVisualizer(InAASettings);
-		}
-	}
-	for (const TObjectPtr<AStaticCubeVisualizer> Visualizer : GetCubeVisualizers())
-	{
-		if (Visualizer)
-		{
-			Visualizer->InitializeVisualizer(InAASettings);
-		}
-	}
-}
-
-void AVisualizerManager::InitializeVisualizersFromWorld(const TArray<TSoftObjectPtr<AVisualizerBase>>& InVisualizers)
-{
-	for (const TSoftObjectPtr<AVisualizerBase>& Visualizer : InVisualizers)
-	{
-		if (Cast<ABeamVisualizer>(Visualizer.Get()))
-		{
-			BeamVisualizers.Add(Cast<ABeamVisualizer>(Visualizer.Get()));
-			Visualizer->InitializeVisualizerFromWorld(AASettings);
-		}
-		else if (Cast<AStaticCubeVisualizer>(Visualizer.Get()))
-		{
-			CubeVisualizers.Add(Cast<AStaticCubeVisualizer>(Visualizer.Get()));
-			Visualizer->InitializeVisualizerFromWorld(AASettings);
-		}
 	}
 }
 
@@ -112,15 +95,15 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
 
 		if (CurrentSpectrumValues[i] >= 0)
 		{
-			CurrentSpectrumValues[i] -= (AvgSpectrumValues[i] / 120);
+			CurrentSpectrumValues[i] -= AvgSpectrumValues[i] / CurrentSpectrumValueDecrementDivide;
 		}
 		if (CurrentCubeSpectrumValues[i] >= 0)
 		{
-			CurrentCubeSpectrumValues[i] -= 0.005;
+			CurrentCubeSpectrumValues[i] -= CurrentCubeSpectrumValueDecrement;
 		}
 		if (MaxSpectrumValues[i] >= 0)
 		{
-			MaxSpectrumValues[i] -= (AvgSpectrumValues[i] / 500);
+			MaxSpectrumValues[i] -= AvgSpectrumValues[i] / MaxSpectrumValueDecrementDivide;
 		}
 	}
 	MarkVisualizerRenderStateDirty();
@@ -144,15 +127,7 @@ void AVisualizerManager::UpdateCubeVisualizers(const int32 Index, const float Sp
 
 void AVisualizerManager::DeactivateVisualizers()
 {
-	for (const TObjectPtr<ABeamVisualizer> Visualizer : GetBeamVisualizers())
-	{
-		if (Visualizer)
-		{
-			Visualizer->DeactivateVisualizers();
-		}
-	}
-	
-	for (const TObjectPtr<AStaticCubeVisualizer> Visualizer : GetCubeVisualizers())
+	for (const TObjectPtr<AVisualizerBase> Visualizer : GetVisualizers())
 	{
 		if (Visualizer)
 		{
@@ -172,17 +147,7 @@ void AVisualizerManager::UpdateVisualizerSettings(const FPlayerSettings_Game& Pl
 
 void AVisualizerManager::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings)
 {
-	AASettings = NewAASettings;
-
-	for (const TObjectPtr<ABeamVisualizer> Visualizer : GetBeamVisualizers())
-	{
-		if (Visualizer)
-		{
-			Visualizer->UpdateAASettings(NewAASettings);
-		}
-	}
-	
-	for (const TObjectPtr<AStaticCubeVisualizer> Visualizer : GetCubeVisualizers())
+	for (const TObjectPtr<AVisualizerBase> Visualizer : GetVisualizers())
 	{
 		if (Visualizer)
 		{
@@ -196,5 +161,20 @@ void AVisualizerManager::MarkVisualizerRenderStateDirty()
 	for (const TObjectPtr<AStaticCubeVisualizer>& CubeVisualizer : GetCubeVisualizers())
 	{
 		CubeVisualizer->MarkRenderStateDirty();
+	}
+}
+
+void AVisualizerManager::SplitVisualizers()
+{
+	for (const TObjectPtr<AVisualizerBase>& Visualizer : GetVisualizers())
+	{
+		if (Cast<ABeamVisualizer>(Visualizer.Get()))
+		{
+			BeamVisualizers.AddUnique(Cast<ABeamVisualizer>(Visualizer.Get()));
+		}
+		else if (Cast<AStaticCubeVisualizer>(Visualizer.Get()))
+		{
+			CubeVisualizers.AddUnique(Cast<AStaticCubeVisualizer>(Visualizer.Get()));
+		}
 	}
 }

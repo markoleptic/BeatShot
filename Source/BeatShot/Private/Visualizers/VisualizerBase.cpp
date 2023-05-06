@@ -5,12 +5,7 @@
 AVisualizerBase::AVisualizerBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-}
-
-void AVisualizerBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AVisualizerBase::Destroyed()
@@ -21,14 +16,15 @@ void AVisualizerBase::Destroyed()
 
 void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	AASettings = InAASettings;
-	MapVisualizerToAudioAnalyzerChannels(InAASettings.NumBandChannels, BaseConfig.NumVisualizerLightsToSpawn);
+	SetActorLocation(GetConfig().StartLocation);
+	SetActorRotation(GetConfig().StartRotation);
+	SetActorScale3D(GetConfig().StartScale);
+	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, GetConfig().NumVisualizerLightsToSpawn);
 }
 
-void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings)
+void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
 {
-	AASettings = InAASettings;
-	MapVisualizerToAudioAnalyzerChannels(InAASettings.NumBandChannels, BaseConfig.NumVisualizerLightsToSpawn);
+	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, NumSpawnedVisualizers);
 }
 
 void AVisualizerBase::ActivateVisualizer(const int32 Index)
@@ -52,21 +48,22 @@ void AVisualizerBase::MarkRenderStateDirty()
 {
 }
 
-void AVisualizerBase::MapVisualizerToAudioAnalyzerChannels(const int32 NumBandChannels, const int32 NumVisualizerLightsToSpawn)
+void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels, const int32 NumVisualizers)
 {
 	BaseConfig.MappedIndices.Init(FChannelToVisualizerMap(), NumBandChannels);
 
-	if (NumVisualizerLightsToSpawn == NumBandChannels)
+	if (NumVisualizers == NumBandChannels)
 	{
-		for (int i = 0; i < NumVisualizerLightsToSpawn; i++)
+		for (int i = 0; i < NumVisualizers; i++)
 		{
 			BaseConfig.MappedIndices[i].AddIndex(i);
 		}
 		return;
 	}
 
-	if (NumVisualizerLightsToSpawn > NumBandChannels &&
-		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly && BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+	if ((NumVisualizers > NumBandChannels) &&
+		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) &&
+		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumBandChannels; i++)
 		{
@@ -75,10 +72,11 @@ void AVisualizerBase::MapVisualizerToAudioAnalyzerChannels(const int32 NumBandCh
 		return;
 	}
 
-	if (NumBandChannels > NumVisualizerLightsToSpawn &&
-		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly && BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+	if ((NumBandChannels > NumVisualizers) &&
+		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly)&&
+		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
 	{
-		for (int i = 0; i < NumVisualizerLightsToSpawn; i++)
+		for (int i = 0; i < NumVisualizers; i++)
 		{
 			BaseConfig.MappedIndices[i].AddIndex(i);
 		}
@@ -88,32 +86,9 @@ void AVisualizerBase::MapVisualizerToAudioAnalyzerChannels(const int32 NumBandCh
 	switch (BaseConfig.GroupingMethod)
 	{
 	case ELightVisualizerGroupingMethod::CombineByProximity:
-		// Assigning multiple lights to channels
-		if (NumVisualizerLightsToSpawn > NumBandChannels)
 		{
-			const int32 GroupingSize = NumVisualizerLightsToSpawn / NumBandChannels;
-			const int32 LeftToDistribute = NumVisualizerLightsToSpawn % NumBandChannels;
-			int32 CurrentVizIndex = 0;
-			for (int i = 0; i < NumBandChannels; i++)
-			{
-				const int StartIndex = CurrentVizIndex;
-				for (int j = StartIndex; j < StartIndex + GroupingSize; j++)
-				{
-					BaseConfig.MappedIndices[i].AddIndex(j);
-					CurrentVizIndex++;
-				}
-				if (i < LeftToDistribute)
-				{
-					BaseConfig.MappedIndices[i].AddIndex(CurrentVizIndex);
-					CurrentVizIndex++;
-				}
-			}
-		}
-		// Assigning multiple channels to lights
-		else if (NumBandChannels > NumVisualizerLightsToSpawn)
-		{
-			const int32 GroupingSize = NumBandChannels / NumVisualizerLightsToSpawn;
-			const int32 LeftToDistribute = NumBandChannels % NumVisualizerLightsToSpawn;
+			const int32 GroupingSize = NumVisualizers / NumBandChannels;
+			const int32 LeftToDistribute = NumVisualizers % NumBandChannels;
 			int32 CurrentVizIndex = 0;
 			for (int i = 0; i < NumBandChannels; i++)
 			{
@@ -132,28 +107,30 @@ void AVisualizerBase::MapVisualizerToAudioAnalyzerChannels(const int32 NumBandCh
 		}
 		break;
 	case ELightVisualizerGroupingMethod::Repeat:
-		// Assigning multiple lights to channels
-		if (NumVisualizerLightsToSpawn > NumBandChannels)
 		{
-			for (int i = 0; i < NumVisualizerLightsToSpawn; i++)
+			// Assigning multiple lights to channels
+			if (NumVisualizers > NumBandChannels)
 			{
-				const int32 ChannelIndex = i % NumBandChannels;
-				BaseConfig.MappedIndices[ChannelIndex].AddIndex(i);
+				for (int i = 0; i < NumVisualizers; i++)
+				{
+					const int32 ChannelIndex = i % NumBandChannels;
+					BaseConfig.MappedIndices[ChannelIndex].AddIndex(i);
+				}
 			}
-		}
-		// Assigning multiple channels to lights
-		else if (NumBandChannels > NumVisualizerLightsToSpawn)
-		{
-			for (int i = 0; i < NumBandChannels; i++)
+			// Assigning multiple channels to lights
+			else if (NumBandChannels > NumVisualizers)
 			{
-				const int32 VizIndex = i % NumVisualizerLightsToSpawn;
-				BaseConfig.MappedIndices[i].AddIndex(VizIndex);
+				for (int i = 0; i < NumBandChannels; i++)
+				{
+					const int32 VizIndex = i % NumVisualizers;
+					BaseConfig.MappedIndices[i].AddIndex(VizIndex);
+				}
 			}
 		}
 		break;
 	}
-
-	UE_LOG(LogTemp, Display, TEXT("NumVisualizerLightsToSpawn: %d, NumBandChannels: %d"), NumVisualizerLightsToSpawn, NumBandChannels);
+	
+	UE_LOG(LogTemp, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
 	int Total = 0;
 	for (int i = 0; i<  BaseConfig.MappedIndices.Num(); i++)
 	{
@@ -171,5 +148,5 @@ void AVisualizerBase::MapVisualizerToAudioAnalyzerChannels(const int32 NumBandCh
 
 TArray<int32>& AVisualizerBase::GetLightIndices(const int32 ChannelIndex)
 {
-	return BaseConfig.MappedIndices[ChannelIndex].VisualizerIndices;
+	return GetConfig().MappedIndices[ChannelIndex].VisualizerIndices;
 }

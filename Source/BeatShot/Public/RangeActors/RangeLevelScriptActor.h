@@ -56,10 +56,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSoftObjectPtr<ASkyLight> Skylight_Soft;
 
-	/** Soft Reference to any visualizers created in level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSoftObjectPtr<AVisualizerBase>> Visualizers_Soft;
-
 	/** Hard Reference to SkySphere in Range level */
 	UPROPERTY()
 	AActor* SkySphere;

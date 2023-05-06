@@ -46,11 +46,6 @@ class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, pu
 	UPROPERTY()
 	TArray<ABSPlayerController*> Controllers;
 
-public:
-
-	/** Register any visualizers that were in the level to start with. Called from LevelActors */
-	void RegisterVisualizers(const TArray<TSoftObjectPtr<AVisualizerBase>>& InVisualizers);
-
 #pragma region Classes
 
 protected:

@@ -7,13 +7,21 @@
 #include "VisualizerBase.h"
 #include "BeamVisualizer.generated.h"
 
-USTRUCT(BlueprintType)
-struct FBeamVisualizerConfig
+USTRUCT(BlueprintType, Category = "Visualizer Config")
+struct BEATSHOT_API FBeamVisualizerConfig
 {
 	GENERATED_BODY()
 	
+	/** The SimpleBeamLight Class */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visualizer Config | Simple Beam Light Config", meta=(DisplayPriority=-5000))
+	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
+
+	/** Array of lights that have already been placed in a level */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Simple Beam Light Config", meta=(DisplayName="Add lights from a level", DisplayPriority=-1150, EditCondition="bSpawnVisualizerLights==false"))
+	TArray<TObjectPtr<ASimpleBeamLight>> SimpleBeamLights;
+
 	/** The configuration to apply to all SimpleBeamLights this visualizer controls if overriding */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Simple Beam Light Config", meta=(DisplayPriority=-99, EditCondition="bOverrideChildLightConfig", EditConditionHides))
 	FSimpleBeamLightConfig SimpleBeamLightConfig;
 	
 	FBeamVisualizerConfig()
@@ -31,11 +39,13 @@ class BEATSHOT_API ABeamVisualizer : public AVisualizerBase
 public:
 	ABeamVisualizer();
 
+	FBeamVisualizerConfig& GetBeamVisualizerConfig() { return BeamVisualizerConfig; }
+
 	/** Calls the parent implementation and spawns a new array of visualizers given the current AASettings */
 	virtual void InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings) override;
 
 	/** Initializes a visualizer already in the level */
-	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings) override;
+	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers = INDEX_NONE) override;
 
 	/** Activates the matching visualizer from the given index if it isn't already */
 	virtual void ActivateVisualizer(const int32 Index) override;
@@ -50,31 +60,14 @@ public:
 	/** Does nothing for beam visualizer */
 	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
 
-	/** Sets whether or not lights will be moving */
-	void SetMovingLights(const bool bMoveLights) { BeamVisualizerConfig.SimpleBeamLightConfig.bIsMovingLight = bMoveLights; }
-
 protected:
-	virtual void BeginPlay() override;
 
-	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return SimpleBeamLights; }
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visualizer Config")
-	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
-
+	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamVisualizerConfig.SimpleBeamLights; }
+	
 	/** The configuration for this BeamVisualizer */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config", meta=(DisplayPriority=-10000))
 	FBeamVisualizerConfig BeamVisualizerConfig;
 	
-	/** Array of spawned beam lights */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config")
-	TArray<TObjectPtr<ASimpleBeamLight>> SimpleBeamLights;
-
 	/** Array of beam light indices that are currently active (Niagara particles are active) */
 	TArray<int32> ActiveLightIndices;
-
-	UFUNCTION(CallInEditor)
-	void SpawnBeamLight(const FLinearColor& Color, const float InLightDuration);
-
-	UFUNCTION(CallInEditor)
-	void AddBeamLightFromWorld(const TSoftObjectPtr<ASimpleBeamLight>& InBeamLight);
 };

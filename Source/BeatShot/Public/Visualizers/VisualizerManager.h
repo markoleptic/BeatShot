@@ -12,6 +12,7 @@ class AStaticCubeVisualizer;
 class ABeamVisualizer;
 class UAudioAnalyzerManager;
 
+/** The class responsible for managing visualizers in a level. There is only one per level, and the GameMode spawns it */
 UCLASS()
 class BEATSHOT_API AVisualizerManager : public AActor
 {
@@ -20,27 +21,13 @@ class BEATSHOT_API AVisualizerManager : public AActor
 public:
 	AVisualizerManager();
 
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	/** Spawns all default visualizers, adds them to their respective arrays, calls InitializeVisualizer on each one */
+	/** Checks for any visualizers already in the level that have been placed in Visualizers and calls InitializeVisualizer on each.
+	 *  Spawns all default visualizers in Default Spawn Through Code Visualizers array, calls InitializeVisualizer on each, and adds them to Visualizers array.
+	 *  Calls SplitVisualizers at the end */
 	void InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings, const FPlayerSettings_AudioAnalyzer& InAASettings);
-
-	/** Calls InitializeVisualizer on any visualizers already in a level and adds them to their respective arrays */
-	void InitializeVisualizersFromWorld(const TArray<TSoftObjectPtr<AVisualizerBase>>& InVisualizers);
-
-	/** Returns a normalized spectrum value based on recent spectrum values */
-	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
-
+	
 	/** Main function to update all visualizers, called on tick in GameMode */
 	void UpdateVisualizers(const TArray<float>& SpectrumValues);
-
-	/** Updates any Beam Visualizers in BeamVisualizers */
-	void UpdateBeamVisualizers(const int32 Index, const float SpectrumValue);
-
-	/** Updates any Cube Visualizers in CubeVisualizers */
-	void UpdateCubeVisualizers(const int32 Index, const float SpectrumValue);
 
 	/** Deactivates all visualizers */
 	void DeactivateVisualizers();
@@ -50,48 +37,64 @@ public:
 
 	/** Updates visualizers based on player AudioAnalyzer settings */
 	void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings);
-
-	/** Marks the render state dirty on any visualizers using instanced static meshes */
-	void MarkVisualizerRenderStateDirty();
-
-	UPROPERTY(VisibleAnywhere)
+	
+	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | Update")
 	TArray<float> AvgSpectrumValues;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | Update")
 	TArray<float> CurrentSpectrumValues;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | Update")
 	TArray<float> CurrentCubeSpectrumValues;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | Update")
 	TArray<float> MaxSpectrumValues;
 
 protected:
+	/* The base StaticCubeVisualizer class to spawn through code */
+	UPROPERTY(EditDefaultsOnly, Category = "VisualizerManager | Classes")
+	TSubclassOf<AStaticCubeVisualizer> BaseClass_CubeVisualizer;
+
+	/** The base BeamVisualizer class to spawn through code */
+	UPROPERTY(EditDefaultsOnly, Category = "VisualizerManager | Classes")
+	TSubclassOf<ABeamVisualizer> BaseClass_BeamVisualizer;
+
+	/** An array of visualizers that will be spawned when this actor is initialized */
+	UPROPERTY(EditDefaultsOnly, Category = "VisualizerManager | Classes")
+	TArray<TSubclassOf<AVisualizerBase>> DefaultSpawnThroughCode_Visualizers;
+
+	/** An array of visualizers that have already been placed in the level editor */
+	UPROPERTY(EditDefaultsOnly, Category = "VisualizerManager | References")
+	TArray<TSoftObjectPtr<AVisualizerBase>> LevelVisualizers;
+	
+	/** All visualizers being managed */
+	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | References")
+	TArray<TObjectPtr<AVisualizerBase>> Visualizers;
+	
+	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | References")
+	bool bUpdateVisualizers;
+
+private:
+	
 	TArray<TObjectPtr<ABeamVisualizer>>& GetBeamVisualizers() { return BeamVisualizers; }
 	TArray<TObjectPtr<AStaticCubeVisualizer>>& GetCubeVisualizers() { return CubeVisualizers; }
+	TArray<TObjectPtr<AVisualizerBase>>& GetVisualizers() { return Visualizers; }
 
-	/* The base Visualizer class to spawn */
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AStaticCubeVisualizer> StaticCubeVisualizerClass;
-
-	/** The BeamVisualizer class to spawn */
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ABeamVisualizer> BeamVisualizerClass;
-
-	/** The spawned BeamVisualizers */
-	UPROPERTY(VisibleAnywhere)
 	TArray<TObjectPtr<ABeamVisualizer>> BeamVisualizers;
-
-	/** The spawned StaticCubeVisualizers */
-	UPROPERTY(VisibleAnywhere)
 	TArray<TObjectPtr<AStaticCubeVisualizer>> CubeVisualizers;
 
-	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
-	UPROPERTY()
-	FPlayerSettings_AudioAnalyzer AASettings;
+	/** Splits Visualizers into smaller subclass groups */
+	void SplitVisualizers();
 
-	const FActorSpawnParameters SpawnParameters;
+	/** Updates any Beam Visualizers in BeamVisualizers */
+	void UpdateBeamVisualizers(const int32 Index, const float SpectrumValue);
 
-	UPROPERTY(VisibleAnywhere)
-	bool bUpdateVisualizers;
+	/** Updates any Cube Visualizers in CubeVisualizers */
+	void UpdateCubeVisualizers(const int32 Index, const float SpectrumValue);
+
+	/** Returns a normalized spectrum value based on recent spectrum values */
+	float GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam);
+
+	/** Marks the render state dirty on any visualizers using instanced static meshes */
+	void MarkVisualizerRenderStateDirty();
 };

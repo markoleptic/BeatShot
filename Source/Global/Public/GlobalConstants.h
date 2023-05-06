@@ -348,13 +348,10 @@ namespace Constants
 	// Beam Visualizers
 	
 	/** Location of the BeamVisualizer in middle of room */
-	inline const FVector DefaultMiddleRoomBeamVisualizerLocation(0, 1920, 1320);
+	inline const FVector DefaultMiddleRoomBeamVisualizerLocation(0, 1920, 1340);
 
 	/** Rotation of the BeamVisualizer in middle of room */
 	inline const FRotator DefaultMiddleRoomBeamRotation(0, 0, 0);
-
-	/** Location of the first spawned Light Beam Visualizer in middle of room */
-	inline const FVector DefaultMiddleRoomInitialBeamLightLocation(0, 0, 1340);
 
 	/** Default spacing between BeamVisualizers in middle of room */
 	inline const FVector DefaultMiddleRoomBeamLightOffset(0, 100, 0);
@@ -386,13 +383,10 @@ namespace Constants
 	inline constexpr float DefaultSimpleBeamLightBeamLength = 10.f;
 
 	/** Relative offset of the Spotlight limb from the SpotlightBase */
-	inline const FVector DefaultSpotlightLimbOffset(0, 0, -18);
-
+	inline const FVector DefaultSpotlightLimbOffset(18, 0, 0);
+	
 	/** Relative offset of the Spotlight head from the Spotlight limb */
-	inline const FVector DefaultSpotlightHeadOffset(0, 0, -41);
-
-	/** Relative rotation of the Spotlight head from the Spotlight limb */
-	inline const FRotator DefaultSpotlightHeadRotation(-90, 0, 0);
+	inline const FVector DefaultSpotlightHeadOffset(40, 0, 0);
 
 	/** Relative offset of the Spotlight light component from the Spotlight head */
 	inline const FVector DefaultSpotlightOffset(22, 0, 0);
@@ -424,6 +418,15 @@ namespace Constants
 		2.f,
 		2.f,
 	};
+
+	/** Value to divide the Average spectrum value by, and then subtract from the current spectrum value */
+	inline constexpr float CurrentSpectrumValueDecrementDivide = 120.f;
+
+	/** Value to subtract from the current cube spectrum value */
+	inline constexpr float CurrentCubeSpectrumValueDecrement = 0.005f;
+
+	/** Value to divide the Average spectrum value by, and then subtract from the max spectrum value */
+	inline constexpr float MaxSpectrumValueDecrementDivide = 500.f;
 	
 #pragma endregion
 	

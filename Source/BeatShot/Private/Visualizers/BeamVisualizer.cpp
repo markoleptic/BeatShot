@@ -10,52 +10,68 @@ ABeamVisualizer::ABeamVisualizer()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ABeamVisualizer::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
 void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
 	Super::InitializeVisualizer(InAASettings);
+	FBaseVisualizerConfig VisualizerConfig = GetConfig();
 	
-	FVector CurrentSpawnLoc = InitialVisualizerLocation - VisualizerOffset * (static_cast<float>(BaseConfig.NumVisualizerLightsToSpawn - 1) / 2);
-	for (int i = 0; i < BaseConfig.NumVisualizerLightsToSpawn; i++)
+	if (GetSimpleBeamLights().Num() >= VisualizerConfig.NumVisualizerLightsToSpawn)
 	{
-		ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(SimpleBeamLightClass, FTransform(VisualizerRotation, CurrentSpawnLoc), this);
+		return;
+	}
+	
+	FVector LocationOffset = VisualizerConfig.StartLocation;
+	FRotator RotationOffset = VisualizerConfig.StartRotation;
+	FVector ScaleOffset = VisualizerConfig.StartScale;
+	
+	/* Spawn "from left to right" in whatever context that is */
+	if (VisualizerConfig.bGrowFromCenter)
+	{
+		LocationOffset = LocationOffset - VisualizerConfig.OffsetLocation * (static_cast<float>(VisualizerConfig.NumVisualizerLightsToSpawn - 1) / 2);
+		RotationOffset = RotationOffset - VisualizerConfig.OffsetRotation * (static_cast<float>(VisualizerConfig.NumVisualizerLightsToSpawn - 1) / 2);
+		float Exponent = static_cast<float>(VisualizerConfig.NumVisualizerLightsToSpawn - 1) / 2;
+		ScaleOffset = FVector(FMath::Pow(VisualizerConfig.OffsetScale.X, Exponent), FMath::Pow(VisualizerConfig.OffsetScale.Y, Exponent), FMath::Pow(VisualizerConfig.OffsetScale.Z, Exponent));
+	}
+
+	FTransform CurrentOffsetTransform(RotationOffset, LocationOffset, ScaleOffset);
+	for (int i = 0; i < VisualizerConfig.NumVisualizerLightsToSpawn; i++)
+	{
+		ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(BeamVisualizerConfig.SimpleBeamLightClass, CurrentOffsetTransform, this);
 		FSimpleBeamLightConfig Config;
 		Config = BeamVisualizerConfig.SimpleBeamLightConfig;
 		Config.Index = i;
-		
-		if (BaseConfig.bOverrideChildLightColors)
+		if (VisualizerConfig.bOverrideChildLightColors)
 		{
-			Config.LightColor = BaseConfig.BeamLightColors[Config.Index % BaseConfig.BeamLightColors.Num()];
+			Config.LightColor = VisualizerConfig.BeamLightColors[Config.Index % VisualizerConfig.BeamLightColors.Num()];
 		}
-		
 		Light->InitSimpleBeamLight(Config);
-		SimpleBeamLights.AddUnique(Light);
+		BeamVisualizerConfig.SimpleBeamLights.AddUnique(Light);
 		Light->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
-		Light->FinishSpawning(FTransform(), true);
-		CurrentSpawnLoc += VisualizerOffset;
+		Light->FinishSpawning(CurrentOffsetTransform, true);
+		
+		CurrentOffsetTransform = FTransform(CurrentOffsetTransform.Rotator() + VisualizerConfig.OffsetRotation,
+			CurrentOffsetTransform.GetLocation() + VisualizerConfig.OffsetLocation, 
+			CurrentOffsetTransform.GetScale3D() * VisualizerConfig.OffsetScale);
 	}
 }
 
-void ABeamVisualizer::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings)
+void ABeamVisualizer::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
 {
-	Super::InitializeVisualizerFromWorld(InAASettings);
+	Super::InitializeVisualizerFromWorld(InAASettings, GetBeamVisualizerConfig().SimpleBeamLights.Num());
+	FBaseVisualizerConfig VisualizerConfig = GetConfig();
 	int i = 0;
 	for (const TObjectPtr<ASimpleBeamLight> Light : GetSimpleBeamLights())
 	{
 		FSimpleBeamLightConfig Config = Light->GetSimpleBeamLightConfig();
-		if (BaseConfig.bOverrideChildLightConfig)
+		if (VisualizerConfig.bOverrideChildLightConfig)
 		{
 			Config = BeamVisualizerConfig.SimpleBeamLightConfig;
 		}
 		
 		Config.Index = i;
-		if (BaseConfig.bOverrideChildLightColors)
+		if (VisualizerConfig.bOverrideChildLightColors)
 		{
-			Config.LightColor = BaseConfig.BeamLightColors[Config.Index % BaseConfig.BeamLightColors.Num()];
+			Config.LightColor = VisualizerConfig.BeamLightColors[Config.Index % VisualizerConfig.BeamLightColors.Num()];
 		}
 		
 		Light->InitSimpleBeamLight(Config);
@@ -68,7 +84,6 @@ void ABeamVisualizer::ActivateVisualizer(const int32 Index)
 {
 	for (const int32 LightIndex : GetLightIndices(Index))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Index To Activate: %d"), LightIndex);
 		if (ActiveLightIndices.Contains(LightIndex))
 		{
 			return;
@@ -97,28 +112,4 @@ void ABeamVisualizer::OnBeamLightLifetimeCompleted(const int32 IndexToRemove)
 
 void ABeamVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
-}
-
-void ABeamVisualizer::SpawnBeamLight(const FLinearColor& Color, const float InLightDuration)
-{
-	ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(SimpleBeamLightClass, FTransform(VisualizerRotation, GetActorLocation() + VisualizerOffset), this);
-	FSimpleBeamLightConfig Config = BeamVisualizerConfig.SimpleBeamLightConfig;
-	Config.Index = GetSimpleBeamLights().Num();
-	
-	if (BaseConfig.bOverrideChildLightColors)
-	{
-		Config.LightColor = BaseConfig.BeamLightColors[Config.Index % BaseConfig.BeamLightColors.Num()];
-	}
-	
-	Light->InitSimpleBeamLight(Config);
-	Light->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
-	SimpleBeamLights.AddUnique(Light);
-	Light->FinishSpawning(FTransform(), true);
-}
-
-void ABeamVisualizer::AddBeamLightFromWorld(const TSoftObjectPtr<ASimpleBeamLight>& InBeamLight)
-{
-	InBeamLight->InitSimpleBeamLight(InBeamLight->GetSimpleBeamLightConfig());
-	InBeamLight->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
-	SimpleBeamLights.AddUnique(InBeamLight.Get());
 }
