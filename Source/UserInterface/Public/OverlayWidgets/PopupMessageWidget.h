@@ -10,6 +10,7 @@ class UButton;
 class UTextBlock;
 class UWidgetAnimation;
 
+/** Provides a simple pop up dialog for other widgets */
 UCLASS()
 class USERINTERFACE_API UPopupMessageWidget : public UUserWidget
 {
@@ -27,9 +28,9 @@ public:
 	UFUNCTION()
 	void FadeOut();
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button1;
+	UButton* Button_1;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button2;
+	UButton* Button_2;
 	void ChangeMessageText(const FText& MessageInput);
 
 protected:
@@ -37,13 +38,13 @@ protected:
 	UFUNCTION()
 	void OnFadeOutPopupMessageFinish();
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* Button1Text;
+	UTextBlock* TextBlock_Button1;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* Button2Text;
+	UTextBlock* TextBlock_Button2;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TitleText;
+	UTextBlock* TextBlock_Title;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* MessageText;
+	UTextBlock* TextBlock_Message;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutMessage;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))

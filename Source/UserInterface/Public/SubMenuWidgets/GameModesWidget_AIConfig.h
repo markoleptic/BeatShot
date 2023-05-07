@@ -14,6 +14,7 @@ class USlider;
 class UCheckBox;
 class UHorizontalBox;
 
+/** SettingCategoryWidget for the GameModesWidget that holds AI configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_AIConfig : public UBSSettingCategoryWidget
 {

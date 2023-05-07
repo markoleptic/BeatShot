@@ -12,6 +12,7 @@ class UBoxComponent;
 class UWallMenuComponent;
 class UChildActorComponent;
 
+/** A movable portion of ground that allows the player to rise vertically */
 UCLASS()
 class BEATSHOT_API AMovablePlatform : public AActor
 {

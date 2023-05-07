@@ -10,6 +10,7 @@ class UBorder;
 class UWidgetSwitcher;
 class USlideRightButton;
 
+/** FAQ widget */
 UCLASS()
 class USERINTERFACE_API UFAQWidget : public UUserWidget
 {
@@ -23,20 +24,20 @@ protected:
 	TMap<USlideRightButton*, UBorder*> MenuWidgets;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* GameModesButton;
+	USlideRightButton* Button_GameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* ScoringButton;
+	USlideRightButton* Button_Scoring;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* AudioAnalyzerButton;
+	USlideRightButton* Button_AudioAnalyzer;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* FAQSwitcher;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* GameModesBox;
+	UBorder* Border_GameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* ScoringBox;
+	UBorder* Border_Scoring;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* AudioAnalyzerBox;
+	UBorder* Border_AudioAnalyzer;
 
 private:
 	/** Function to Play the Slide Animation for Navigation Buttons */
@@ -44,9 +45,9 @@ private:
 	void SlideButtons(const USlideRightButton* ActiveButton);
 
 	UFUNCTION()
-	void OnGameModesButtonClicked();
+	void OnButtonClicked_GameModes();
 	UFUNCTION()
-	void OnScoringButtonClicked();
+	void OnButtonClicked_Scoring();
 	UFUNCTION()
-	void OnAudioAnalyzerButtonClicked();
+	void OnButtonClicked_AudioAnalyzer();
 };

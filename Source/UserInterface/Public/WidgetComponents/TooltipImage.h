@@ -7,8 +7,10 @@
 #include "TooltipImage.generated.h"
 
 class UButton;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTooltipHovered, UTooltipImage*, TooltipImage);
 
+/** The image to draw on a TooltipWidget */
 UCLASS()
 class USERINTERFACE_API UTooltipImage : public UUserWidget
 {

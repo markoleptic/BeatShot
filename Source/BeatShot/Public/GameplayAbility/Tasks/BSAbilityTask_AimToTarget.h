@@ -14,6 +14,7 @@ class UCurveFloat;
 /** Delegate type used in the AimToTarget ability task */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAimToTargetDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
 
+/** AimBot task */
 UCLASS()
 class BEATSHOT_API UBSAbilityTask_AimToTarget : public UAbilityTask
 {

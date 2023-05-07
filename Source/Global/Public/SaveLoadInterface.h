@@ -23,12 +23,14 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_VideoAndSou
 /** Broadcast from GameModesWidget, SettingsMenuWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should start, restart, or stop */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);
 
+/** Interface to allow all other classes in this game to query, load, and save all settings */
 UINTERFACE()
 class USaveLoadInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
+/** Interface to allow all other classes in this game to query, load, and save all settings */
 class GLOBAL_API ISaveLoadInterface
 {
 	GENERATED_BODY()

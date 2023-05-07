@@ -11,6 +11,7 @@
 
 class UBSAbilitySystemComponent;
 
+/** Base player state class for this game */
 UCLASS()
 class BEATSHOT_API ABSPlayerState : public APlayerState, public IAbilitySystemInterface
 {

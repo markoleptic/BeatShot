@@ -14,17 +14,17 @@
 
 void USettingsMenuWidget_AudioAnalyzer::InitMainMenuChild()
 {
-	SaveAndRestartButton->SetVisibility(ESlateVisibility::Collapsed);
+	Button_SaveAndRestart->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	ResetButton_AASettings->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::ResetAASettings);
-	SaveButton_AASettings->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::SortAndCheckOverlap);
-	SaveAndRestartButton->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::SortAndCheckOverlap);
-	NumBandChannels->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnNumBandChannelsSelectionChanged);
+	Button_Reset->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Reset);
+	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Save);
+	Button_SaveAndRestart->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_SaveAndRestart);
+	ComboBox_NumBandChannels->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels);
 
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
 
@@ -34,7 +34,7 @@ void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 
 	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
-		NumBandChannels->AddOption(FString::FromInt(i + 1));
+		ComboBox_NumBandChannels->AddOption(FString::FromInt(i + 1));
 	}
 
 	UBandChannelWidget* PreviousBandChannel = nullptr;
@@ -45,10 +45,10 @@ void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 		UBandChannelWidget* CurrentBandChannel = CreateWidget<UBandChannelWidget>(this, BandChannelWidgetClass);
 		UBandThresholdWidget* CurrentBandThreshold = CreateWidget<UBandThresholdWidget>(this, BandThresholdWidgetClass);
 		CurrentBandChannel->OnChannelValueCommitted.BindUFunction(this, "OnChannelValueCommitted");
-		BandChannelBounds->AddChild(Cast<UBandChannelWidget>(CurrentBandChannel));
+		Box_BandChannelBounds->AddChild(Cast<UBandChannelWidget>(CurrentBandChannel));
 		CurrentBandThreshold->OnThresholdValueCommitted.BindUFunction(this, "OnBandThresholdChanged");
-		BandThresholdBounds->AddChild(Cast<UBandThresholdWidget>(CurrentBandThreshold));
-
+		Box_BandThresholdBounds->AddChild(Cast<UBandThresholdWidget>(CurrentBandThreshold));
+		
 		if (i == 0)
 		{
 			BandChannelWidget = CurrentBandChannel;
@@ -84,9 +84,9 @@ void USettingsMenuWidget_AudioAnalyzer::OnBandThresholdChanged(const UBandThresh
 	NewAASettings.BandLimitsThreshold[Index] = NewValue;
 }
 
-void USettingsMenuWidget_AudioAnalyzer::OnNumBandChannelsSelectionChanged(FString NewNum, ESelectInfo::Type SelectType)
+void USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels(FString NewNum, ESelectInfo::Type SelectType)
 {
-	NewAASettings.NumBandChannels = NumBandChannels->GetSelectedIndex() + 1;
+	NewAASettings.NumBandChannels = ComboBox_NumBandChannels->GetSelectedIndex() + 1;
 	FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 	if (const int ElementsToAdd = NewAASettings.NumBandChannels - NewAASettings.BandLimits.Num(); ElementsToAdd > 0)
 	{
@@ -104,9 +104,28 @@ void USettingsMenuWidget_AudioAnalyzer::OnNumBandChannelsSelectionChanged(FStrin
 	PopulateAASettings();
 }
 
+void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Reset()
+{
+	ResetAASettings();
+}
+
+void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Save()
+{
+	SortAndCheckOverlap();
+}
+
+void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_SaveAndRestart()
+{
+	SortAndCheckOverlap();
+	if (!OnRestartButtonClicked.ExecuteIfBound())
+	{
+		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+	}
+}
+
 void USettingsMenuWidget_AudioAnalyzer::PopulateAASettings()
 {
-	NumBandChannels->SetSelectedIndex(NewAASettings.NumBandChannels - 1);
+	ComboBox_NumBandChannels->SetSelectedIndex(NewAASettings.NumBandChannels - 1);
 	BandChannelWidget->SetDefaultValues(NewAASettings.BandLimits[0], 0);
 	BandThresholdWidget->SetDefaultValue(NewAASettings.BandLimitsThreshold[0], 0);
 
@@ -146,14 +165,8 @@ void USettingsMenuWidget_AudioAnalyzer::PopulateAASettings()
 		PreviousBandThreshold = PreviousBandThreshold->Next;
 	}
 
-	TimeWindowSlider->SetValue(NewAASettings.TimeWindow);
-	TimeWindowValue->SetText(FText::AsNumber(NewAASettings.TimeWindow, &FNumberFormattingOptions::DefaultNoGrouping()));
-}
-
-void USettingsMenuWidget_AudioAnalyzer::SaveAASettingsToSlot()
-{
-	SavePlayerSettings(NewAASettings);
-	SavedTextWidget->PlayFadeInFadeOut();
+	Slider_TimeWindow->SetValue(NewAASettings.TimeWindow);
+	Value_TimeWindow->SetText(FText::AsNumber(NewAASettings.TimeWindow, &FNumberFormattingOptions::DefaultNoGrouping()));
 }
 
 void USettingsMenuWidget_AudioAnalyzer::ResetAASettings()
@@ -204,9 +217,11 @@ void USettingsMenuWidget_AudioAnalyzer::SortAndCheckOverlap()
 		}
 		return false;
 	});
+	
 	NewAASettings.NumBandChannels = NewAASettings.BandLimits.Num();
 	NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.BandLimits.Num());
 	PopulateAASettings();
+	
 	double LastEndThreshold = NewAASettings.BandLimits[0].Y;
 	for (int i = 0; i < NewAASettings.BandLimits.Num(); i++)
 	{
@@ -226,11 +241,9 @@ void USettingsMenuWidget_AudioAnalyzer::SortAndCheckOverlap()
 		}
 		LastEndThreshold = NewAASettings.BandLimits[i].Y;
 	}
-	SaveAASettingsToSlot();
-	if (!OnRestartButtonClicked.ExecuteIfBound())
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
-	}
+	
+	SavePlayerSettings(NewAASettings);
+	SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void USettingsMenuWidget_AudioAnalyzer::ShowBandLimitErrorMessage()
@@ -239,7 +252,7 @@ void USettingsMenuWidget_AudioAnalyzer::ShowBandLimitErrorMessage()
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorTitle"),
 	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandLimitThresholdError"),
 	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
-	PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::HideSongPathErrorMessage);
+	PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::HideSongPathErrorMessage);
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();
 }

@@ -26,6 +26,7 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EVideoSettingType, EVideoSettingType::AntiAliasing,
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnButtonClicked, const UVideoSettingButton*, VideoSettingButton);
 
+/** Button representing a video setting designed to be stored in a linked list. Contains a pointer to the next one */
 UCLASS()
 class USERINTERFACE_API UVideoSettingButton : public UUserWidget
 {

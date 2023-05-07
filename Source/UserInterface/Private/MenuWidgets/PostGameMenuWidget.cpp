@@ -13,17 +13,17 @@
 void UPostGameMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	MenuWidgets.Add(ScoresButton, Scores);
-	MenuWidgets.Add(GameModesButton, GameModes);
-	MenuWidgets.Add(SettingsButton, Settings);
-	MenuWidgets.Add(FAQButton, FAQ);
+	MenuWidgets.Add(SlideRightButton_Scores, Box_Scores);
+	MenuWidgets.Add(SlideRightButton_GameModes, Box_GameModes);
+	MenuWidgets.Add(SlideRightButton_Settings, Box_Settings);
+	MenuWidgets.Add(SlideRightButton_FAQ, Box_FAQ);
 
-	ScoresButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnScoresButtonClicked);
-	PlayAgainButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::Restart);
-	GameModesButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnGameModesButtonClicked);
-	SettingsButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnSettingsButtonClicked);
-	FAQButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnFAQButtonClicked);
-	QuitButton->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnQuitButtonClicked);
+	SlideRightButton_Scores->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnButtonClicked_Scores);
+	SlideRightButton_PlayAgain->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::Restart);
+	SlideRightButton_GameModes->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnButtonClicked_GameModes);
+	SlideRightButton_Settings->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnButtonClicked_Settings);
+	SlideRightButton_FAQ->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnButtonClicked_FAQ);
+	SlideRightButton_Quit->Button->OnClicked.AddDynamic(this, &UPostGameMenuWidget::OnButtonClicked_Quit);
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
 	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "Restart");
@@ -44,7 +44,7 @@ void UPostGameMenuWidget::Restart()
 void UPostGameMenuWidget::SetScoresWidgetVisibility()
 {
 	ScoresWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	SlideButtons(ScoresButton);
+	SlideButtons(SlideRightButton_Scores);
 }
 
 void UPostGameMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
@@ -61,24 +61,24 @@ void UPostGameMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
 	}
 }
 
-void UPostGameMenuWidget::OnGameModesButtonClicked()
+void UPostGameMenuWidget::OnButtonClicked_GameModes()
 {
-	SlideButtons(GameModesButton);
+	SlideButtons(SlideRightButton_GameModes);
 }
 
-void UPostGameMenuWidget::OnSettingsButtonClicked()
+void UPostGameMenuWidget::OnButtonClicked_Settings()
 {
-	SlideButtons(SettingsButton);
+	SlideButtons(SlideRightButton_Settings);
 }
 
-void UPostGameMenuWidget::OnFAQButtonClicked()
+void UPostGameMenuWidget::OnButtonClicked_FAQ()
 {
-	SlideButtons(FAQButton);
+	SlideButtons(SlideRightButton_FAQ);
 }
 
-void UPostGameMenuWidget::OnQuitButtonClicked()
+void UPostGameMenuWidget::OnButtonClicked_Quit()
 {
-	SlideButtons(QuitButton);
+	SlideButtons(SlideRightButton_Quit);
 	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
 	QuitMenuWidget->PlayInitialFadeInMenu();
 }
@@ -93,11 +93,11 @@ void UPostGameMenuWidget::OnLoginStateChange(const ELoginState& LoginState, bool
 
 void UPostGameMenuWidget::SlideQuitMenuButtonsLeft()
 {
-	PlayAgainButton->SlideButton(false);
-	QuitButton->SlideButton(false);
+	SlideRightButton_PlayAgain->SlideButton(false);
+	SlideRightButton_Quit->SlideButton(false);
 }
 
-void UPostGameMenuWidget::OnScoresButtonClicked()
+void UPostGameMenuWidget::OnButtonClicked_Scores()
 {
-	SlideButtons(ScoresButton);
+	SlideButtons(SlideRightButton_Scores);
 }

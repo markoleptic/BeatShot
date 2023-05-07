@@ -110,6 +110,7 @@ struct FQTableIndex
 	}
 };
 
+/** Reinforcement learning agent using QLearning to assist TargetSpawner in AI-generated spawn locations */
 UCLASS()
 class BEATSHOT_API URLBase : public UObject, public ISaveLoadInterface
 {

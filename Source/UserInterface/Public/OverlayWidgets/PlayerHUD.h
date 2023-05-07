@@ -13,6 +13,7 @@ class ABSCharacter;
 class UProgressBar;
 class UTextBlock;
 
+/** The widget displayed during a game mode that shows current stats */
 UCLASS()
 class USERINTERFACE_API UPlayerHUD : public UUserWidget
 {
@@ -22,37 +23,39 @@ public:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UProgressBar* TargetBar;
+	UProgressBar* ProgressBar_Accuracy;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* Accuracy;
+	UTextBlock* TextBlock_Accuracy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TargetsHitText;
+	UTextBlock* TextBlock_TargetsHit;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ShotsFiredText;
+	UTextBlock* TextBlock_ShotsFired;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TargetsSpawnedText;
+	UTextBlock* TextBlock_TargetsSpawned;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* CurrentScoreText;
+	UTextBlock* TextBlock_CurrentScore;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* HighScoreText;
+	UTextBlock* TextBlock_HighScore;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* GameModeNameText;
+	UTextBlock* TextBlock_GameModeName;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* SongTitle;
+	UTextBlock* TextBlock_SongTitle;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* SongTimeElapsed;
+	UTextBlock* TextBlock_SongTimeElapsed;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TotalSongLength;
+	UTextBlock* TextBlock_TotalSongLength;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* CurrentStreakBestText;
+	UTextBlock* TextBlock_CurrentStreakBest;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* TargetsSpawnedBox;
+	UHorizontalBox* Box_TargetsSpawned;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* StreakBox;
+	UHorizontalBox* Box_Streak;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* TargetsHitBox;
+	UHorizontalBox* Box_TargetsHit;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* ShotsFiredBox;
+	UHorizontalBox* Box_ShotsFired;
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
 	UFUNCTION()

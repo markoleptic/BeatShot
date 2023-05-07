@@ -10,6 +10,7 @@ class UHorizontalBox;
 class UButton;
 class UTextBlock;
 
+/** Instanced button widget that provides a simple animation after clicking */
 UCLASS()
 class USERINTERFACE_API USlideRightButton : public UUserWidget
 {
@@ -21,12 +22,15 @@ public:
 	/** The font information for the Button */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	FSlateFontInfo DefaultFontInfo;
+	
 	/** The text to display on the Button */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	FText ButtonText;
+	
 	/** Plays the correct Button animation depending on if the button is the active selection or not */
 	UFUNCTION(BlueprintCallable)
 	void SlideButton(const bool bIsActiveSelection);
+	
 	/** The Button that provides us with OnClicked event */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UButton* Button;
@@ -34,6 +38,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* SlideButtonAnim;
+	
 	UFUNCTION()
 	void SlideButtonRight() { PlayAnimationForward(SlideButtonAnim); }
 

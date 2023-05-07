@@ -12,24 +12,24 @@ void UPopupMessageWidget::NativeConstruct()
 
 void UPopupMessageWidget::NativeDestruct()
 {
-	Button1->OnClicked.Clear();
-	Button2->OnClicked.Clear();
+	Button_1->OnClicked.Clear();
+	Button_2->OnClicked.Clear();
 	Super::NativeDestruct();
 }
 
 void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, FText Button2TextInput) const
 {
-	TitleText->SetText(TitleInput);
-	MessageText->SetText(MessageInput);
-	Button1Text->SetText(Button1TextInput);
+	TextBlock_Title->SetText(TitleInput);
+	TextBlock_Message->SetText(MessageInput);
+	TextBlock_Button1->SetText(Button1TextInput);
 	if (!Button2TextInput.IsEmpty())
 	{
-		Button2->SetVisibility(ESlateVisibility::Visible);
-		Button2Text->SetText(Button2TextInput);
+		Button_2->SetVisibility(ESlateVisibility::Visible);
+		TextBlock_Button2->SetText(Button2TextInput);
 	}
 	else
 	{
-		Button2->SetVisibility(ESlateVisibility::Collapsed);
+		Button_2->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -47,7 +47,7 @@ void UPopupMessageWidget::FadeOut()
 
 void UPopupMessageWidget::ChangeMessageText(const FText& MessageInput)
 {
-	MessageText->SetText(MessageInput);
+	TextBlock_Message->SetText(MessageInput);
 }
 
 void UPopupMessageWidget::OnFadeOutPopupMessageFinish()

@@ -17,6 +17,7 @@ class UHorizontalBox;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool, bIsPopup);
 
+/** Widget used to prompt a user to login and handle login through HTTP requests */
 UCLASS()
 class USERINTERFACE_API ULoginWidget : public UUserWidget, public ISaveLoadInterface
 {
@@ -38,7 +39,7 @@ public:
 	UFUNCTION()
 	void ShowLoginScreen(const FString& Key);
 
-	/** Sets the Text in the ErrorBox given a key for the ST_Login string table */
+	/** Sets the Text in the Box_Error given a key for the ST_Login string table */
 	void SetErrorText(const FString& Key);
 
 	/** Broadcasts the user's login info to WebBrowserOverlay in order to log them into the web browser */
@@ -57,53 +58,53 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBackgroundBlur* BackgroundBlur;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UHorizontalBox* ErrorBox;
+	UHorizontalBox* Box_Error;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* LoginRegisterSwitcher;
+	UOverlay* Overlay_LoginRegisterSwitcher;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* RegisterOverlay;
+	UOverlay* Overlay_Register;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* ContinueWithoutOverlay;
+	UOverlay* Overlay_ContinueWithout;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* LoginOverlay;
+	UOverlay* Overlay_Login;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* LoggedInOverlay;
+	UOverlay* Overlay_LoggedIn;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* UsernameTextBox;
+	UEditableTextBox* Value_Username;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* EmailTextBox;
+	UEditableTextBox* Value_Email;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* PasswordTextBox;
+	UEditableTextBox* Value_Password;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ErrorText;
+	UTextBlock* TextBlock_Error;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* NoLoginButtonText;
+	UTextBlock* TextBlock_NoLoginButton;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ContinueWithoutTitleText;
+	UTextBlock* TextBlock_ContinueWithoutTitle;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ContinueWithoutBodyText;
+	UTextBlock* TextBlock_ContinueWithoutBody;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* ContinueWithoutCancelButtonText;
+	UTextBlock* TextBlock_ContinueWithoutCancelButton;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Register;
+	UButton* Button_Register;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* GotoLogin;
+	UButton* Button_GotoLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* NoRegister;
+	UButton* Button_NoRegister;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Login;
+	UButton* Button_Login;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* GotoRegister;
+	UButton* Button_GotoRegister;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* NoLogin;
+	UButton* Button_NoLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* NoRegisterConfirm;
+	UButton* Button_NoRegisterConfirm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* NoRegisterCancel;
+	UButton* Button_NoRegisterCancel;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLogin;
@@ -122,33 +123,24 @@ protected:
 	UFUNCTION()
 	void ClearErrorText(const FText& Text);
 	UFUNCTION()
+	void InitializeExit();
+	UFUNCTION()
+	void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
+	
+	UFUNCTION()
 	void PlayFadeInLogin() { PlayAnimationReverse(FadeOutLogin); }
-
 	UFUNCTION()
 	void PlayFadeOutLogin() { PlayAnimationForward(FadeOutLogin); }
-
 	UFUNCTION()
 	void PlayFadeInRegister() { PlayAnimationReverse(FadeOutRegister); }
-
 	UFUNCTION()
 	void PlayFadeOutRegister() { PlayAnimationForward(FadeOutRegister); }
-
 	UFUNCTION()
 	void PlayFadeInContinueWithout() { PlayAnimationReverse(FadeOutContinueWithout); }
-
 	UFUNCTION()
 	void PlayFadeOutContinueWithout() { PlayAnimationForward(FadeOutContinueWithout); }
-
 	UFUNCTION()
 	void PlayFadeInLoggedIn() { PlayAnimationReverse(FadeOutLoggedIn); }
-
 	UFUNCTION()
 	void PlayFadeOutLoggedIn() { PlayAnimationForward(FadeOutLoggedIn); }
-
-	UFUNCTION()
-	// ReSharper disable once CppMemberFunctionMayBeStatic
-	void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
-
-	UFUNCTION()
-	void InitializeExit();
 };

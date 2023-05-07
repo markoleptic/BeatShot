@@ -10,6 +10,7 @@
 class UImage;
 class UScaleBox;
 
+/** Widget used to show the CrossHair */
 UCLASS()
 class USERINTERFACE_API UCrossHairWidget : public UUserWidget, public ISaveLoadInterface
 {
@@ -22,51 +23,51 @@ protected:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* LeftContainer;
+	UScaleBox* Container_Left;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* TopContainer;
+	UScaleBox* Container_Top;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* RightContainer;
+	UScaleBox* Container_Right;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* BottomContainer;
+	UScaleBox* Container_Bottom;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* LeftScaleBox;
+	UScaleBox* ScaleBox_Left;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* TopScaleBox;
+	UScaleBox* ScaleBox_Top;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* RightScaleBox;
+	UScaleBox* ScaleBox_Right;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* BottomScaleBox;
+	UScaleBox* ScaleBox_Bottom;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* LeftOutlineImage;
+	UImage* Image_LeftOutline;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* TopOutlineImage;
+	UImage* Image_TopOutline;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* RightOutlineImage;
+	UImage* Image_RightOutline;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* BottomOutlineImage;
+	UImage* Image_BottomOutline;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* LeftImage;
+	UImage* Image_Left;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* TopImage;
+	UImage* Image_Top;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* RightImage;
+	UImage* Image_Right;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* BottomImage;
+	UImage* Image_Bottom;
 
 public:
 	/** Changes the width of the containers */
 	void SetLineWidth(const int32 NewWidthValue);
 	/** Changes the length of the containers */
 	void SetLineLength(const float NewLengthValue);
-	/** Changes the size of the colored portion of the CrossHair (LeftScaleBox, etc.) while leaving the outline unchanged */
+	/** Changes the size of the colored portion of the CrossHair (ScaleBox_Left, etc.) while leaving the outline unchanged */
 	void SetOutlineWidth(const int32 NewWidthValue);
 	/** Changes the opacity of the Outline Images */
 	void SetOutlineOpacity(float NewOpacityValue);
-	/** Changes the color of the images (LeftImage, etc.) while leaving the OutlineImages unchanged */
+	/** Changes the color of the images (Image_Left, etc.) while leaving the OutlineImages unchanged */
 	void SetImageColor(const FLinearColor NewColor);
 	/** Changes the offset between the middle of the screen and the start of a container */
 	void SetInnerOffset(const int32 NewOffsetValue);

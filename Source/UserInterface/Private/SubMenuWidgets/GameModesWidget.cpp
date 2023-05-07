@@ -31,59 +31,59 @@ void UGameModesWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	MenuWidgets.Add(DefaultGameModesButton, DefaultGameModes);
-	MenuWidgets.Add(CustomGameModesButton, CustomGameModes);
-	PlayFromStandardButton->SetIsEnabled(false);
-	CustomizeFromStandardButton->SetIsEnabled(false);
-	SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
-	SaveCustomButton->SetIsEnabled(false);
-	SaveCustomAndStartButton->SetIsEnabled(false);
-	StartCustomButton->SetIsEnabled(false);
-	RemoveSelectedCustomButton->SetIsEnabled(false);
+	MenuWidgets.Add(SlideRightButton_DefaultGameModes, Box_DefaultGameModes);
+	MenuWidgets.Add(SlideRightButton_CustomGameModes, Box_CustomGameModes);
+	Button_PlayFromStandard->SetIsEnabled(false);
+	Button_CustomizeFromStandard->SetIsEnabled(false);
+	Border_SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
+	Button_SaveCustom->SetIsEnabled(false);
+	Button_SaveCustomAndStart->SetIsEnabled(false);
+	Button_StartCustom->SetIsEnabled(false);
+	Button_RemoveSelectedCustom->SetIsEnabled(false);
 
 	if (!LoadCustomGameModes().IsEmpty())
 	{
-		RemoveAllCustomButton->SetIsEnabled(true);
+		Button_RemoveAllCustom->SetIsEnabled(true);
 	}
 	else
 	{
-		RemoveAllCustomButton->SetIsEnabled(false);
+		Button_RemoveAllCustom->SetIsEnabled(false);
 	}
 	
 	/* Default Game Mode widgets */
-	SingleBeatNormalButton->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::SingleBeat, SingleBeatHardButton);
-	SingleBeatHardButton->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::SingleBeat, SingleBeatDeathButton);
-	SingleBeatDeathButton->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::SingleBeat, MultiBeatNormalButton);
+	Button_SingleBeatNormal->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::SingleBeat, Button_SingleBeatHard);
+	Button_SingleBeatHard->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::SingleBeat, Button_SingleBeatDeath);
+	Button_SingleBeatDeath->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::SingleBeat, Button_MultiBeatNormal);
 
-	MultiBeatNormalButton->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::MultiBeat, MultiBeatHardButton);
-	MultiBeatHardButton->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::MultiBeat, MultiBeatDeathButton);
-	MultiBeatDeathButton->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::MultiBeat, BeatGridNormalButton);
+	Button_MultiBeatNormal->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::MultiBeat, Button_MultiBeatHard);
+	Button_MultiBeatHard->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::MultiBeat, Button_MultiBeatDeath);
+	Button_MultiBeatDeath->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::MultiBeat, Button_BeatGridNormal);
 
-	BeatGridNormalButton->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::BeatGrid, BeatGridHardButton);
-	BeatGridHardButton->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::BeatGrid, BeatGridDeathButton);
-	BeatGridDeathButton->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::BeatGrid, BeatTrackNormalButton);
+	Button_BeatGridNormal->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::BeatGrid, Button_BeatGridHard);
+	Button_BeatGridHard->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::BeatGrid, Button_BeatGridDeath);
+	Button_BeatGridDeath->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::BeatGrid, Button_BeatTrackNormal);
 
-	BeatTrackNormalButton->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::BeatTrack, BeatTrackHardButton);
-	BeatTrackHardButton->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::BeatTrack, BeatTrackDeathButton);
-	BeatTrackDeathButton->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::BeatTrack, SingleBeatNormalButton);
+	Button_BeatTrackNormal->SetDefaults(EGameModeDifficulty::Normal, EDefaultMode::BeatTrack, Button_BeatTrackHard);
+	Button_BeatTrackHard->SetDefaults(EGameModeDifficulty::Hard, EDefaultMode::BeatTrack, Button_BeatTrackDeath);
+	Button_BeatTrackDeath->SetDefaults(EGameModeDifficulty::Death, EDefaultMode::BeatTrack, Button_SingleBeatNormal);
 	
 	SpatialConfig = CreateWidget<UGameModesWidget_SpatialConfig>(this, SpatialConfigClass);
-	SpatialConfigBox->AddChildToVerticalBox(SpatialConfig);
+	Box_SpatialConfig->AddChildToVerticalBox(SpatialConfig);
 
 	BeatGridConfig = CreateWidget<UGameModesWidget_BeatGridConfig>(this, BeatGridConfigClass);
-	BeatGridBox->AddChildToVerticalBox(BeatGridConfig);
+	Box_BeatGridConfig->AddChildToVerticalBox(BeatGridConfig);
 
 	AIConfig = CreateWidget<UGameModesWidget_AIConfig>(this, AIConfigClass);
-	AIConfigBox->AddChildToVerticalBox(AIConfig);
+	Box_AIConfig->AddChildToVerticalBox(AIConfig);
 
 	BeatTrackConfig = CreateWidget<UGameModesWidget_BeatTrackConfig>(this, BeatTrackConfigClass);
-	BeatTrackConfigBox->AddChildToVerticalBox(BeatTrackConfig);
+	Box_BeatTrackConfig->AddChildToVerticalBox(BeatTrackConfig);
 
 	TargetConfig = CreateWidget<UGameModesWidget_TargetConfig>(this, TargetConfigClass);
-	TargetConfigBox->AddChildToVerticalBox(TargetConfig);
+	Box_TargetConfig->AddChildToVerticalBox(TargetConfig);
 
 	DefiningConfig = CreateWidget<UGameModesWidget_DefiningConfig>(this, DefiningConfigClass);
-	DefiningConfigBox->AddChildToVerticalBox(DefiningConfig);
+	Box_DefiningConfig->AddChildToVerticalBox(DefiningConfig);
 	
 	BindAllDelegates();
 	OnButtonClicked_DefaultGameModes();
@@ -119,33 +119,33 @@ void UGameModesWidget::NativeConstruct()
 
 void UGameModesWidget::BindAllDelegates()
 {
-	DefaultGameModesButton->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameModes);
-	CustomGameModesButton->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomGameModes);
-	CustomizeFromStandardButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomizeFromStandard);
-	PlayFromStandardButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_PlayFromStandard);
-	SaveCustomButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustom);
-	SaveCustomAndStartButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustomAndStart);
-	StartCustomButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_StartCustom);
-	StartWithoutSavingButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_StartWithoutSaving);
-	RemoveAllCustomButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveAllCustom);
-	RemoveSelectedCustomButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveSelectedCustom);
+	SlideRightButton_DefaultGameModes->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameModes);
+	SlideRightButton_CustomGameModes->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomGameModes);
+	Button_CustomizeFromStandard->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomizeFromStandard);
+	Button_PlayFromStandard->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_PlayFromStandard);
+	Button_SaveCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustom);
+	Button_SaveCustomAndStart->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustomAndStart);
+	Button_StartCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_StartCustom);
+	Button_StartWithoutSaving->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_StartWithoutSaving);
+	Button_RemoveAllCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveAllCustom);
+	Button_RemoveSelectedCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveSelectedCustom);
 	
 	// Default Game Modes
-	SingleBeatNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	SingleBeatHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	SingleBeatDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	MultiBeatNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	MultiBeatHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	MultiBeatDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	BeatGridNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	BeatGridHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	BeatGridDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	BeatTrackNormalButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	BeatTrackHardButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	BeatTrackDeathButton->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	DynamicSpreadButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DynamicSpread);
-	NarrowSpreadButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_NarrowSpread);
-	WideSpreadButton->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_WideSpread);
+	Button_SingleBeatNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_SingleBeatHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_SingleBeatDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_MultiBeatNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_MultiBeatHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_MultiBeatDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatGridNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatGridHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatGridDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatTrackNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatTrackHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatTrackDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_DynamicSpread->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DynamicSpread);
+	Button_NarrowSpread->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_NarrowSpread);
+	Button_WideSpread->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_WideSpread);
 
 	DefiningConfig->OnRepopulateGameModeOptions.AddUObject(this, &UGameModesWidget::PopulateGameModeOptions);
 	DefiningConfig->OnDefiningConfigUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
@@ -191,29 +191,29 @@ void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UGameModeButton* Ga
 	PopulateGameModeOptions(SelectedGameMode);
 	SetGameModeButtonBackgroundColor(GameModeButton);
 
-	DynamicSpreadButton->SetBackgroundColor(FLinearColor::White);
-	WideSpreadButton->SetBackgroundColor(FLinearColor::White);
-	NarrowSpreadButton->SetBackgroundColor(FLinearColor::White);
+	Button_DynamicSpread->SetBackgroundColor(FLinearColor::White);
+	Button_WideSpread->SetBackgroundColor(FLinearColor::White);
+	Button_NarrowSpread->SetBackgroundColor(FLinearColor::White);
 
 	/** Don't show SpreadSelect if BeatGrid or BeatTrack */
 	if (SelectedGameMode.DefiningConfig.DefaultMode == EDefaultMode::BeatGrid || SelectedGameMode.DefiningConfig.DefaultMode == EDefaultMode::BeatTrack)
 	{
-		SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
-		PlayFromStandardButton->SetIsEnabled(true);
-		CustomizeFromStandardButton->SetIsEnabled(true);
+		Border_SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
+		Button_PlayFromStandard->SetIsEnabled(true);
+		Button_CustomizeFromStandard->SetIsEnabled(true);
 		return;
 	}
-	SpreadSelect->SetVisibility(ESlateVisibility::Visible);
-	PlayFromStandardButton->SetIsEnabled(false);
-	CustomizeFromStandardButton->SetIsEnabled(true);
+	Border_SpreadSelect->SetVisibility(ESlateVisibility::Visible);
+	Button_PlayFromStandard->SetIsEnabled(false);
+	Button_CustomizeFromStandard->SetIsEnabled(true);
 }
 
 void UGameModesWidget::OnButtonClicked_DynamicSpread()
 {
 	/** Change the background colors of the spread select buttons */
-	DynamicSpreadButton->SetBackgroundColor(BeatShotBlue);
-	NarrowSpreadButton->SetBackgroundColor(FLinearColor::White);
-	WideSpreadButton->SetBackgroundColor(FLinearColor::White);
+	Button_DynamicSpread->SetBackgroundColor(BeatShotBlue);
+	Button_NarrowSpread->SetBackgroundColor(FLinearColor::White);
+	Button_WideSpread->SetBackgroundColor(FLinearColor::White);
 	if (DefaultMode == EDefaultMode::MultiBeat)
 	{
 		DefaultSpreadType = ESpreadType::DynamicRandom;
@@ -223,29 +223,29 @@ void UGameModesWidget::OnButtonClicked_DynamicSpread()
 		DefaultSpreadType = ESpreadType::DynamicEdgeOnly;
 	}
 	PopulateGameModeOptions(FBSConfig(DefaultMode, DefaultDifficulty, DefaultSpreadType));
-	PlayFromStandardButton->SetIsEnabled(true);
+	Button_PlayFromStandard->SetIsEnabled(true);
 }
 
 void UGameModesWidget::OnButtonClicked_NarrowSpread()
 {
 	/** Change the background colors of the spread select buttons */
-	DynamicSpreadButton->SetBackgroundColor(FLinearColor::White);
-	NarrowSpreadButton->SetBackgroundColor(BeatShotBlue);
-	WideSpreadButton->SetBackgroundColor(FLinearColor::White);
+	Button_DynamicSpread->SetBackgroundColor(FLinearColor::White);
+	Button_NarrowSpread->SetBackgroundColor(BeatShotBlue);
+	Button_WideSpread->SetBackgroundColor(FLinearColor::White);
 	DefaultSpreadType = ESpreadType::StaticNarrow;
 	PopulateGameModeOptions(FBSConfig(DefaultMode, DefaultDifficulty, ESpreadType::StaticNarrow));
-	PlayFromStandardButton->SetIsEnabled(true);
+	Button_PlayFromStandard->SetIsEnabled(true);
 }
 
 void UGameModesWidget::OnButtonClicked_WideSpread()
 {
 	/** Change the background colors of the spread select buttons */
-	DynamicSpreadButton->SetBackgroundColor(FLinearColor::White);
-	NarrowSpreadButton->SetBackgroundColor(FLinearColor::White);
-	WideSpreadButton->SetBackgroundColor(BeatShotBlue);
+	Button_DynamicSpread->SetBackgroundColor(FLinearColor::White);
+	Button_NarrowSpread->SetBackgroundColor(FLinearColor::White);
+	Button_WideSpread->SetBackgroundColor(BeatShotBlue);
 	DefaultSpreadType = ESpreadType::StaticWide;
 	PopulateGameModeOptions(FBSConfig(DefaultMode, DefaultDifficulty, ESpreadType::StaticWide));
-	PlayFromStandardButton->SetIsEnabled(true);
+	Button_PlayFromStandard->SetIsEnabled(true);
 }
 
 void UGameModesWidget::OnButtonClicked_CustomizeFromStandard()
@@ -352,28 +352,28 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	case EDefaultMode::Custom:
 		break;
 	case EDefaultMode::SingleBeat:
-		AIConfigBox->SetVisibility(ESlateVisibility::Visible);
-		BeatGridBox->SetVisibility(ESlateVisibility::Collapsed);
-		BeatTrackConfigBox->SetVisibility(ESlateVisibility::Collapsed);
+		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
+		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Collapsed);
 		AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	case EDefaultMode::MultiBeat:
-		AIConfigBox->SetVisibility(ESlateVisibility::Visible);
-		BeatGridBox->SetVisibility(ESlateVisibility::Collapsed);
-		BeatTrackConfigBox->SetVisibility(ESlateVisibility::Collapsed);
+		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
+		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Collapsed);
 		AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	case EDefaultMode::BeatGrid:
-		AIConfigBox->SetVisibility(ESlateVisibility::Collapsed);
-		BeatGridBox->SetVisibility(ESlateVisibility::Visible);
-		BeatTrackConfigBox->SetVisibility(ESlateVisibility::Collapsed);
+		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Visible);
+		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Collapsed);
 		BeatGridConfig->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		break;
 	case EDefaultMode::BeatTrack:
-		AIConfigBox->SetVisibility(ESlateVisibility::Collapsed);
-		BeatGridBox->SetVisibility(ESlateVisibility::Collapsed);
-		BeatTrackConfigBox->SetVisibility(ESlateVisibility::Visible);
+		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Visible);
 		BeatTrackConfig->InitializeBeatTrackConfig(InBSConfig.BeatTrackConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	default:
@@ -420,39 +420,39 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	/* RemoveAll Button */
 	if (bNoSavedCustomGameModes)
 	{
-		RemoveAllCustomButton->SetIsEnabled(false);
+		Button_RemoveAllCustom->SetIsEnabled(false);
 	}
 	else
 	{
-		RemoveAllCustomButton->SetIsEnabled(true);
+		Button_RemoveAllCustom->SetIsEnabled(true);
 	}
 
 	/* BeatGrid */
 	if (bIsBeatGridMode && bBeatGridIsConstrained)
 	{
-		SaveCustomButton->SetIsEnabled(false);
-		SaveCustomAndStartButton->SetIsEnabled(false);
-		StartCustomButton->SetIsEnabled(false);
-		StartWithoutSavingButton->SetIsEnabled(false);
+		Button_SaveCustom->SetIsEnabled(false);
+		Button_SaveCustomAndStart->SetIsEnabled(false);
+		Button_StartCustom->SetIsEnabled(false);
+		Button_StartWithoutSaving->SetIsEnabled(false);
 		return;
 	}
-	StartWithoutSavingButton->SetIsEnabled(true);
+	Button_StartWithoutSaving->SetIsEnabled(true);
 	
 	if (bGameModeNameComboBoxEmpty || (bIsDefaultMode && bCustomTextEmpty) || bInvalidCustomGameModeName)
 	{
-		SaveCustomButton->SetIsEnabled(false);
-		SaveCustomAndStartButton->SetIsEnabled(false);
-		StartCustomButton->SetIsEnabled(false);
-		RemoveSelectedCustomButton->SetIsEnabled(false);
+		Button_SaveCustom->SetIsEnabled(false);
+		Button_SaveCustomAndStart->SetIsEnabled(false);
+		Button_StartCustom->SetIsEnabled(false);
+		Button_RemoveSelectedCustom->SetIsEnabled(false);
 		return;
 	}
 
 	if (bIsCustomMode || (bIsDefaultMode && !bCustomTextEmpty))
 	{
-		SaveCustomButton->SetIsEnabled(true);
-		SaveCustomAndStartButton->SetIsEnabled(true);
-		StartCustomButton->SetIsEnabled(true);
-		RemoveSelectedCustomButton->SetIsEnabled(true);
+		Button_SaveCustom->SetIsEnabled(true);
+		Button_SaveCustomAndStart->SetIsEnabled(true);
+		Button_StartCustom->SetIsEnabled(true);
+		Button_RemoveSelectedCustom->SetIsEnabled(true);
 	}
 }
 
@@ -470,13 +470,13 @@ void UGameModesWidget::ShowConfirmOverwriteMessage(const bool bStartGameAfter)
 
 	if (bStartGameAfter)
 	{
-		PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwriteAndStartGame);
+		PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwriteAndStartGame);
 	}
 	else
 	{
-		PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwrite);
+		PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwrite);
 	}
-	PopupMessageWidget->Button2->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CancelOverwrite);
+	PopupMessageWidget->Button_2->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CancelOverwrite);
 }
 
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)

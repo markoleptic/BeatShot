@@ -12,25 +12,25 @@
 void UPauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	ResumeButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnResumeButtonClicked);
-	SettingsButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnSettingsButtonClicked);
-	FAQButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnFAQButtonClicked);
+	SlideRightButton_Resume->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnButtonClicked_Resume);
+	SlideRightButton_Settings->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnSettingsButtonClicked);
+	SlideRightButton_FAQ->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnFAQButtonClicked);
 
-	RestartCurrentModeButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnRestartCurrentModeClicked);
-	QuitButton->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnQuitButtonClicked);
+	SlideRightButton_RestartCurrentMode->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnButtonClicked_RestartCurrentMode);
+	SlideRightButton_Quit->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnButtonClicked_Quit);
 
-	PauseMenuWidgets.Add(ResumeButton, PauseScreen);
-	PauseMenuWidgets.Add(RestartCurrentModeButton, PauseScreen);
-	PauseMenuWidgets.Add(SettingsButton, SettingsMenu);
-	PauseMenuWidgets.Add(FAQButton, FAQ);
-	PauseMenuWidgets.Add(QuitButton, PauseScreen);
+	PauseMenuWidgets.Add(SlideRightButton_Resume, Box_PauseScreen);
+	PauseMenuWidgets.Add(SlideRightButton_RestartCurrentMode, Box_PauseScreen);
+	PauseMenuWidgets.Add(SlideRightButton_Settings, Box_SettingsMenu);
+	PauseMenuWidgets.Add(SlideRightButton_FAQ, Box_FAQ);
+	PauseMenuWidgets.Add(SlideRightButton_Quit, Box_PauseScreen);
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
-	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "OnRestartCurrentModeClicked");
+	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "OnButtonClicked_RestartCurrentMode");
 	FadeInWidget();
 }
 
-void UPauseMenuWidget::OnResumeButtonClicked()
+void UPauseMenuWidget::OnButtonClicked_Resume()
 {
 	if (!ResumeGame.ExecuteIfBound())
 	{
@@ -38,24 +38,24 @@ void UPauseMenuWidget::OnResumeButtonClicked()
 	}
 }
 
-void UPauseMenuWidget::OnRestartCurrentModeClicked()
+void UPauseMenuWidget::OnButtonClicked_RestartCurrentMode()
 {
-	SlideButtons(RestartCurrentModeButton);
+	SlideButtons(SlideRightButton_RestartCurrentMode);
 	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
 	QuitMenuWidget->PlayFadeInRestartMenu();
 }
 
-void UPauseMenuWidget::OnQuitButtonClicked()
+void UPauseMenuWidget::OnButtonClicked_Quit()
 {
-	SlideButtons(QuitButton);
+	SlideButtons(SlideRightButton_Quit);
 	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
 	QuitMenuWidget->PlayInitialFadeInMenu();
 }
 
 void UPauseMenuWidget::SlideQuitMenuButtonsLeft()
 {
-	RestartCurrentModeButton->SlideButton(false);
-	QuitButton->SlideButton(false);
+	SlideRightButton_RestartCurrentMode->SlideButton(false);
+	SlideRightButton_Quit->SlideButton(false);
 }
 
 void UPauseMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)

@@ -91,7 +91,7 @@ protected:
 	
 	/** The Tooltip image for the Checkbox_SyncSlidersAndValues. The parent widget will bind to this widget's OnTooltipImageHoveredLocal delegate to display tooltip information */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* CheckboxQMark;
+	UTooltipImage* QMark_Checkbox;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_Min;
@@ -148,7 +148,7 @@ public:
 	/** Executed when the Checkbox_SyncSlidersAndValues check state is changed */
 	FOnCheckStateChanged_Synced OnCheckStateChanged_Sync;
 
-	UTooltipImage* GetCheckBoxQMark() const { return CheckboxQMark; }
+	UTooltipImage* GetCheckBoxQMark() const { return QMark_Checkbox; }
 	UBSVerticalBox* GetMainContainer() const { return MainContainer; }
 	UHorizontalBox* GetTextTooltipBox_Min() const { return TextTooltipBox_Min; }
 	UHorizontalBox* GetTextTooltipBox_Max() const { return TextTooltipBox_Max; }

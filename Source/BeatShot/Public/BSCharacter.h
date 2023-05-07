@@ -34,6 +34,7 @@ DECLARE_DELEGATE_OneParam(FOnInteractDelegate, const int32);
 DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTargetAddedToQueue);
 
+/** Base Character for this game */
 UCLASS()
 class BEATSHOT_API ABSCharacter : public APBPlayerCharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
 {

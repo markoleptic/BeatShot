@@ -13,6 +13,7 @@ class ABSCharacter;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTickTraceDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTickTraceHit, const FHitResult&, HitResult);
 
+/** Task used to trace a line from the gun to where the owner is facing on tick */
 UCLASS()
 class BEATSHOT_API UBSAbilityTask_TickTrace : public UAbilityTask
 {

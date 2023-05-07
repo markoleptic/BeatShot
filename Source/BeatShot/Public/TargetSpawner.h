@@ -21,6 +21,7 @@ DECLARE_MULTICAST_DELEGATE(FOnTargetSpawned);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetSpawned_AimBot, ASphereTarget* Target);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FVector& Position);
 
+/** Class responsible for spawning and managing targets for all game modes */
 UCLASS()
 class BEATSHOT_API ATargetSpawner : public AActor, public ISaveLoadInterface
 {

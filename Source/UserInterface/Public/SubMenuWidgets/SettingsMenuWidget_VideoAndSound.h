@@ -19,6 +19,8 @@ class USavedTextWidget;
 class UVerticalBox;
 class UButton;
 
+
+/** Settings category widget holding Video and Sound settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
@@ -43,9 +45,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* SaveButton_VideoAndSound;
+	UButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* ResetButton_VideoAndSound;
+	UButton* Button_Reset;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* BSBox_Video;

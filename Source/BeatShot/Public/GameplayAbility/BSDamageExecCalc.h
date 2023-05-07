@@ -6,6 +6,7 @@
 #include "GameplayEffectExecutionCalculation.h"
 #include "BSDamageExecCalc.generated.h"
 
+/** The calculation used for damage in this game */
 UCLASS()
 class BEATSHOT_API UBSDamageExecCalc : public UGameplayEffectExecutionCalculation
 {

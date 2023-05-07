@@ -13,6 +13,7 @@ class UDoubleSyncedSliderAndTextBox;
 class UCheckBox;
 class UComboBoxString;
 
+/** SettingCategoryWidget for the GameModesWidget that holds target configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_TargetConfig : public UBSSettingCategoryWidget
 {

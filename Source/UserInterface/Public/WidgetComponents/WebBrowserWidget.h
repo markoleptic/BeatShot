@@ -8,11 +8,11 @@
 #include "WebBrowserWidget.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnURLLoaded, bool, bLoadedSuccessfully);
-
 DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTimerElapsed, const FString&, LastURL);
 
 class UWebBrowser;
 
+/** Wrapper around UWebBrowser providing specific functionality */
 UCLASS()
 class USERINTERFACE_API UWebBrowserWidget : public UUserWidget
 {
@@ -22,39 +22,39 @@ protected:
 	virtual void NativeConstruct() override;
 
 public:
-	/* The WebBrowser widget */
+	/** The WebBrowser widget */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UWebBrowser* Browser;
 
-	/* Load Custom GameModes for the user */
+	/** Load Custom GameModes for the user */
 	UFUNCTION(BlueprintCallable)
 	void LoadCustomGameModesURL(const FString& Username);
 
-	/* Load Default GameModes for the user */
+	/** Load Default GameModes for the user */
 	UFUNCTION(BlueprintCallable)
 	void LoadDefaultGameModesURL(const FString& Username);
 
-	/* Load Patch Notes for any user */
+	/** Load Patch Notes for any user */
 	UFUNCTION(BlueprintCallable)
 	void LoadPatchNotesURL() const;
 
-	/* Profile for a user */
+	/** Profile for a user */
 	UFUNCTION(BlueprintCallable)
 	void LoadProfileURL(const FString& Username);
 
-	/* Executes Javascript to login a user */
+	/** Executes Javascript to login a user */
 	UFUNCTION(BlueprintCallable)
 	void HandleUserLogin(const FLoginPayload LoginPayload);
 
-	/* Allows other widgets to bind to loading of URLs */
+	/** Allows other widgets to bind to loading of URLs */
 	UPROPERTY(BlueprintCallable, BlueprintAssignable)
 	FOnURLLoaded OnURLLoaded;
 
 private:
-	/* Fills the login form on the login screen of the website using Javascript */
+	/** Fills the login form on the login screen of the website using Javascript */
 	bool FillLoginForm(const FLoginPayload LoginPayload) const;
 
-	/* Compares the browser's current URL address against the UserProfileURL */
+	/** Compares the browser's current URL address against the UserProfileURL */
 	UFUNCTION()
 	void OnURLChanged();
 
@@ -64,19 +64,19 @@ private:
 
 	FTimerDelegate CheckURLDelegate;
 
-	/* Timer to delay clicking the Checkbox_SyncSlidersAndValues on the login page */
+	/** Timer to delay clicking the Checkbox_SyncSlidersAndValues on the login page */
 	FTimerHandle CheckCheckboxDelay;
 
-	/* Timer to delay clicking the login button on the login page */
+	/** Timer to delay clicking the login button on the login page */
 	FTimerHandle ClickLoginDelay;
 
-	/* Timer to delay URL address comparisons */
+	/** Timer to delay URL address comparisons */
 	FTimerHandle CheckURLTimer;
 
-	/* The user's profile URL to check the current browser URL against */
+	/** The user's profile URL to check the current browser URL against */
 	FString UserProfileURL;
 
-	/* The number of OnURLChanged function calls, or number of profile URL checks */
+	/** The number of OnURLChanged function calls, or number of profile URL checks */
 	int32 URLCheckAttempts = 0;
 
 #pragma region URLs

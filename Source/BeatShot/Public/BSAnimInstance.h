@@ -9,7 +9,6 @@
 
 class UAbilitySystemComponent;
 
-
 /**	The base game animation instance class used by this project. */
 UCLASS(Config = Game)
 class UBSAnimInstance : public UAnimInstance

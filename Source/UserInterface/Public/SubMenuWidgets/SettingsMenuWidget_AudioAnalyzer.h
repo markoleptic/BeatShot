@@ -23,6 +23,7 @@ class USavedTextWidget;
 class UProgressBar;
 class UPopupMessageWidget;
 
+/** Settings category widget holding AudioAnalyzer settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UUserWidget, public ISaveLoadInterface
 {
@@ -41,37 +42,42 @@ public:
 	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_AudioAnalyzer; }
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UVerticalBox* BandChannelBounds;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UVerticalBox* BandThresholdBounds;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(EditDefaultsOnly, Category = "AudioAnalyzer | Classes")
 	TSubclassOf<UBandChannelWidget> BandChannelWidgetClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
+	UPROPERTY(EditDefaultsOnly, Category = "AudioAnalyzer | Classes")
 	TSubclassOf<UBandThresholdWidget> BandThresholdWidgetClass;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
-	UBandChannelWidget* BandChannelWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AA Settings")
-	UBandThresholdWidget* BandThresholdWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UComboBoxString* NumBandChannels;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	USlider* TimeWindowSlider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UEditableTextBox* TimeWindowValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USavedTextWidget* SavedTextWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UButton* ResetButton_AASettings;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UButton* SaveButton_AASettings;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget), Category = "AA Settings")
-	UButton* SaveAndRestartButton;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "AudioAnalyzer | Classes")
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
+
+	UPROPERTY()
+	UBandChannelWidget* BandChannelWidget;
+	UPROPERTY()
+	UBandThresholdWidget* BandThresholdWidget;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
+	
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget;
+	
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UVerticalBox* Box_BandChannelBounds;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UVerticalBox* Box_BandThresholdBounds;
+	
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UComboBoxString* ComboBox_NumBandChannels;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	USlider* Slider_TimeWindow;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UEditableTextBox* Value_TimeWindow;
 
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UButton* Button_Reset;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UButton* Button_Save;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UButton* Button_SaveAndRestart;
+	
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer AASettings;
 	UPROPERTY()
@@ -82,23 +88,23 @@ protected:
 	UFUNCTION()
 	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
 	UFUNCTION()
-	void OnNumBandChannelsSelectionChanged(FString NewNum, ESelectInfo::Type SelectType);
-
+	void OnSelectionChanged_NumBandChannels(FString NewNum, ESelectInfo::Type SelectType);
+	UFUNCTION()
+	void OnButtonClicked_Reset();
+	UFUNCTION()
+	void OnButtonClicked_Save();
+	UFUNCTION()
+	void OnButtonClicked_SaveAndRestart();
+	
 	/** Update values in Settings Menu to match AASettings */
 	UFUNCTION()
 	void PopulateAASettings();
 
-	/** Save AASettings to Save slot */
-	UFUNCTION()
-	void SaveAASettingsToSlot();
-
-	/** Reset AASettings to default value and repopulate in Settings Menu. Doesn't automatically save */
+	/** Reset AASettings to default value and repopulate in Settings Menu. Does not automatically save */
 	UFUNCTION()
 	void ResetAASettings();
 
-	/** Sorts NewAASettings and checks for overlapping Band Channels. Calls ShowBandLimitErrorMessage() if it finds
-	 *  an overlap */
-	UFUNCTION()
+	/** Sorts NewAASettings and checks for overlapping Band Channels. Calls ShowBandLimitErrorMessage() if it finds an overlap, otherwise saves */
 	void SortAndCheckOverlap();
 
 	/** Adds a popup message to the viewport displaying the error */
@@ -107,6 +113,4 @@ protected:
 	/** Hides the error message */
 	UFUNCTION()
 	void HideSongPathErrorMessage();
-
-	const float Hundredths = 0.01f;
 };

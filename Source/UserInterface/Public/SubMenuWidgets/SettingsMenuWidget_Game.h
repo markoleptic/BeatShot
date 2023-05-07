@@ -13,6 +13,7 @@ class UButton;
 class UColorSelectWidget;
 class USavedTextWidget;
 
+/** Settings category widget holding game settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_Game : public UUserWidget, public ISaveLoadInterface
 {
@@ -29,53 +30,52 @@ protected:
 	void PopulateSettings();
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* StartTargetColor;
+	UColorSelectWidget* ColorSelect_StartTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* PeakTargetColor;
+	UColorSelectWidget* ColorSelect_PeakTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* EndTargetColor;
+	UColorSelectWidget* ColorSelect_EndTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UCheckBox* UseSeparateOutlineColorCheckbox;
+	UCheckBox* Checkbox_UseSeparateOutlineColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* TargetOutlineColor;
+	UColorSelectWidget* ColorSelect_TargetOutlineColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* BeatGridInactiveColor;
+	UColorSelectWidget* ColorSelect_BeatGridInactiveColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
-	UEditableTextBox* CombatTextFrequency;
+	UEditableTextBox* Value_CombatTextFrequency;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
-	UCheckBox* ShowStreakCombatTextCheckBox;
+	UCheckBox* CheckBox_ShowStreakCombatText;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* SaveButton_Game;
+	UButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* ResetButton_Game;
+	UButton* Button_Reset;
 
 	UFUNCTION()
-	void OnStartTargetColorChanged(const FLinearColor& NewColor);
+	void OnColorChanged_StartTarget(const FLinearColor& NewColor);
 	UFUNCTION()
-	void OnPeakTargetColorChanged(const FLinearColor& NewColor);
+	void OnOnColorChanged_PeakTarget(const FLinearColor& NewColor);
 	UFUNCTION()
-	void OnEndTargetColorChanged(const FLinearColor& NewColor);
+	void OnOnColorChanged_EndTarget(const FLinearColor& NewColor);
 	UFUNCTION()
-	void UseSeparateOutlineColorCheckStateChanged(const bool bIsChecked);
+	void OnColorChanged_TargetOutline(const FLinearColor& NewColor);
 	UFUNCTION()
-	void OnTargetOutlineColorChanged(const FLinearColor& NewColor);
-	UFUNCTION()
-	void OnBeatGridInactiveColorChanged(const FLinearColor& NewColor);
-	UFUNCTION()
-	void OnCombatTextFrequencyValueChanged(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnShowCombatTextCheckStateChanged(const bool bIsChecked);
+	void OnColorChanged_BeatGridInactive(const FLinearColor& NewColor);
 	
-	/** Saves the Game Settings */
 	UFUNCTION()
-	void OnSaveButtonClicked_Game();
-
-	/** Reset Game Settings to defaults and repopulates in Settings Menu. Does not automatically save */
+	void CheckStateChanged_UseSeparateOutlineColor(const bool bIsChecked);
 	UFUNCTION()
-	void OnResetButtonClicked_Game();
+	void OnCheckStateChanged_ShowCombatText(const bool bIsChecked);
+	
+	UFUNCTION()
+	void OnValueChanged_CombatTextFrequency(const FText& NewValue, ETextCommit::Type CommitType);
+	
+	UFUNCTION()
+	void OnButtonClicked_Save();
+	UFUNCTION()
+	void OnButtonClicked_Reset();
 
 	/** The Player Settings that are changed during setting menu interaction */
 	UPROPERTY()

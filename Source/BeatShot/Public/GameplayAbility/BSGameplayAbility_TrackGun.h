@@ -7,6 +7,8 @@
 #include "BSGameplayAbility_TrackGun.generated.h"
 
 class ABSCharacter;
+
+/** GameplayAbility that provides the user with constant tracking from their gun barrel, used in BeatTrack game modes */
 UCLASS()
 class BEATSHOT_API UBSGameplayAbility_TrackGun : public UBSGameplayAbility
 {

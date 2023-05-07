@@ -13,6 +13,7 @@ class USlider;
 class UButton;
 class USavedTextWidget;
 
+/** Settings category widget holding Sensitivity settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_Sensitivity : public UUserWidget, public ISaveLoadInterface
 {
@@ -26,27 +27,27 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	UTextBlock* CurrentSensitivityValue;
+	UTextBlock* Value_CurrentSensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	UEditableTextBox* NewSensitivityValue;
+	UEditableTextBox* Value_NewSensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	UEditableTextBox* NewSensitivityCsgoValue;
+	UEditableTextBox* Value_NewSensitivityCsgo;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	USlider* SensSlider;
+	USlider* Slider_Sensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* SaveButton_Sensitivity;
+	UButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 
 	float Sensitivity;
 
 	UFUNCTION()
-	void OnNewSensitivityValue(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_NewSensitivity(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnNewSensitivityCsgoValue(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_NewSensitivityCsgo(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnSensitivitySliderChanged(const float NewValue);
+	void OnSliderChanged_Sensitivity(const float NewValue);
 	/** Saves the Sensitivity Settings */
 	UFUNCTION()
-	void OnSaveButtonClicked_Sensitivity();
+	void OnButtonClicked_Save();
 };

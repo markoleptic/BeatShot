@@ -46,12 +46,14 @@ struct FTooltipData
 	}
 };
 
+/** Interface to easily add tooltips to any other widgets */
 UINTERFACE()
 class UTooltipInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
+/** Interface to easily add tooltips to any other widgets */
 class USERINTERFACE_API ITooltipInterface
 {
 	GENERATED_BODY()

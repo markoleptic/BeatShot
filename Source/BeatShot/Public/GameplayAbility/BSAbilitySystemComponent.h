@@ -10,6 +10,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FReceivedDamageDelegate, UBSAbilitySystemComponent*, SourceASC, float, UnmitigatedDamage, float, MitigatedDamage);
 
+/** Base AbilitySystemComponent in this game */
 UCLASS()
 class BEATSHOT_API UBSAbilitySystemComponent : public UAbilitySystemComponent
 {

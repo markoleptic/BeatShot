@@ -16,6 +16,7 @@ class UOverlay;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginStateChange, const ELoginState&, LoginState, bool, bIsPopup);
 
+/** Container that wraps around WebBrowserWidget providing additional functionality */
 UCLASS()
 class USERINTERFACE_API UScoreBrowserWidget : public UUserWidget, public ISaveLoadInterface, public IHttpRequestInterface
 {

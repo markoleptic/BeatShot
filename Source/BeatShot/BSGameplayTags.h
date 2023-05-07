@@ -6,9 +6,7 @@
 
 class UGameplayTagsManager;
 
-/**
- *	Singleton containing native gameplay tags.
- */
+/** Singleton containing native gameplay tags */
 struct FBSGameplayTags
 {
 	static const FBSGameplayTags& Get() { return GameplayTags; }

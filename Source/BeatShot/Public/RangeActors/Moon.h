@@ -9,6 +9,7 @@
 class USphereComponent;
 class UDirectionalLightComponent;
 
+/** Represents the moon */
 UCLASS()
 class BEATSHOT_API AMoon : public AActor
 {

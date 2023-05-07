@@ -23,19 +23,24 @@ public:
 	UFUNCTION()
 	void OnButtonClicked();
 
+	/** Sets the default button information about the game mode it represents */
 	void SetDefaults(EGameModeDifficulty GameModeDifficulty, EDefaultMode InDefaultMode, UGameModeButton* NextButton);
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UButton* Button;
 
+	/** The difficulty associated with this button */
 	UPROPERTY()
 	EGameModeDifficulty Difficulty;
 
+	/** The game mode associated with this button */
 	UPROPERTY()
 	EDefaultMode DefaultMode;
 
+	/** Pointer to the next GameModeButton in a collection of them */
 	UPROPERTY()
 	UGameModeButton* Next;
 
+	/** Broadcast when this GameModeButton is clicked */
 	FOnGameModeButtonClicked OnGameModeButtonClicked;
 };

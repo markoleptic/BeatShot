@@ -14,12 +14,14 @@ DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FPlayerSettings& PlayerSett
 /** Broadcast when a response is received from posting player scores to database */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostScoresResponse, const ELoginState& LoginState);
 
+/** Interface to allow all other classes in this game to use HTTP request functions */
 UINTERFACE()
 class UHttpRequestInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
+/** Interface to allow all other classes in this game to use HTTP request functions */
 class GLOBAL_API IHttpRequestInterface
 {
 	GENERATED_BODY()

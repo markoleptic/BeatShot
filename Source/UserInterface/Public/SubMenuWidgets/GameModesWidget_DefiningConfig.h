@@ -16,6 +16,7 @@ class UComboBoxString;
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnRepopulateGameModeOptions, const FBSConfig& BSConfig);
 DECLARE_MULTICAST_DELEGATE(FOnDefiningConfigUpdate_SaveStartButtonStates);
 
+/** SettingCategoryWidget for the GameModesWidget that holds Defining configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_DefiningConfig : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {

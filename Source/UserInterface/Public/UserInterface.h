@@ -9,6 +9,7 @@
 class USlider;
 class UEditableTextBox;
 
+/** Simple class used for common functions that this module uses */
 UCLASS()
 class USERINTERFACE_API UUserInterface : public UObject
 {

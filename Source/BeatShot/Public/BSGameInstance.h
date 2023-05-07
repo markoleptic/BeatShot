@@ -13,6 +13,7 @@ class USteamManager;
 class ASphereTarget;
 class ABSPlayerController;
 
+/** Base GameInstance for this game */
 UCLASS()
 class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInterface
 {

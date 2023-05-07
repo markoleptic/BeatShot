@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "FloatingTextActor.generated.h"
 
+/** Provides a way to display floating text on player's screen showing their current target streak */
 UCLASS(Abstract)
 class BEATSHOT_API AFloatingTextActor : public AActor
 {

@@ -8,6 +8,7 @@
 
 class UTextBlock;
 
+/** Widget used to show FPS counter */
 UCLASS()
 class USERINTERFACE_API UFPSCounterWidget : public UUserWidget
 {
@@ -27,5 +28,5 @@ class USERINTERFACE_API UFPSCounterWidget : public UUserWidget
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Player Stats")
-	UTextBlock* FPSCounter;
+	UTextBlock* TextBlock_FPSCounter;
 };

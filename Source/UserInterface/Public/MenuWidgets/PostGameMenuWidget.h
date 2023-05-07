@@ -17,6 +17,7 @@ class UScoreBrowserWidget;
 class UFAQWidget;
 class UQuitMenuWidget;
 
+/** Widget displayed after a game mode has been completed */
 UCLASS()
 class USERINTERFACE_API UPostGameMenuWidget : public UUserWidget
 {
@@ -34,13 +35,13 @@ protected:
 	UWidgetSwitcher* MenuSwitcher;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Scores;
+	UVerticalBox* Box_Scores;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* GameModes;
+	UVerticalBox* Box_GameModes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Settings;
+	UVerticalBox* Box_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* FAQ;
+	UVerticalBox* Box_FAQ;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -57,17 +58,17 @@ protected:
 	UFAQWidget* FAQWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* ScoresButton;
+	USlideRightButton* SlideRightButton_Scores;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* PlayAgainButton;
+	USlideRightButton* SlideRightButton_PlayAgain;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* GameModesButton;
+	USlideRightButton* SlideRightButton_GameModes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SettingsButton;
+	USlideRightButton* SlideRightButton_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* FAQButton;
+	USlideRightButton* SlideRightButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* QuitButton;
+	USlideRightButton* SlideRightButton_Quit;
 
 #pragma	endregion
 
@@ -89,15 +90,15 @@ protected:
 	UFUNCTION()
 	void SlideQuitMenuButtonsLeft();
 	UFUNCTION()
-	void OnScoresButtonClicked();
+	void OnButtonClicked_Scores();
 	UFUNCTION()
-	void OnGameModesButtonClicked();
+	void OnButtonClicked_GameModes();
 	UFUNCTION()
-	void OnSettingsButtonClicked();
+	void OnButtonClicked_Settings();
 	UFUNCTION()
-	void OnFAQButtonClicked();
+	void OnButtonClicked_FAQ();
 	UFUNCTION()
-	void OnQuitButtonClicked();
+	void OnButtonClicked_Quit();
 	UFUNCTION()
 	void OnLoginStateChange(const ELoginState& LoginState, bool bIsPopup);
 };

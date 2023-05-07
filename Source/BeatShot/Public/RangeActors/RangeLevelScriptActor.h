@@ -20,6 +20,7 @@ class UCurveVector;
 class AMoon;
 class UMaterialInstanceDynamic;
 
+/** The base level used for this game */
 UCLASS()
 class BEATSHOT_API ARangeLevelScriptActor : public ALevelScriptActor, public ISaveLoadInterface
 {

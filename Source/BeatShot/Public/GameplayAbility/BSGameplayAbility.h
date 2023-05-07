@@ -34,6 +34,7 @@ enum class EBSAbilityActivationGroup : uint8
 	Exclusive_Blocking,
 	MAX UMETA(Hidden)};
 
+/** Base GameplayAbility used for this game */
 UCLASS()
 class BEATSHOT_API UBSGameplayAbility : public UGameplayAbility
 {

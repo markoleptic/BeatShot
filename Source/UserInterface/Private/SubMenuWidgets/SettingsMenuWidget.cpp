@@ -20,15 +20,15 @@ void USettingsMenuWidget::NativeConstruct()
 	MenuWidgets.Add(AudioAnalyzer_Button, AudioAnalyzer);
 	MenuWidgets.Add(Sensitivity_Button, Sensitivity);
 	MenuWidgets.Add(CrossHair_Button, CrossHair);
-	Game_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_Game_ButtonClicked);
-	VideoAndSound_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_VideoAndSound_ButtonClicked);
-	AudioAnalyzer_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_AudioAnalyzer_ButtonClicked);
-	Sensitivity_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_Sensitivity_ButtonClicked);
-	CrossHair_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::On_CrossHair_ButtonClicked);
+	Game_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_Game);
+	VideoAndSound_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_VideoAndSound);
+	AudioAnalyzer_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_AudioAnalyzer);
+	Sensitivity_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_Sensitivity);
+	CrossHair_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_CrossHair);
 	
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
 
-	On_Game_ButtonClicked();
+	OnButtonClicked_Game();
 
 	if (bIsMainMenuChild)
 	{

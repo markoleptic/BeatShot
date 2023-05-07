@@ -6,6 +6,7 @@
 
 class UGameplayAbility;
 
+/** Base CheatManager for this game */
 UCLASS(Blueprintable)
 class BEATSHOT_API UBSCheatManager : public UCheatManager
 {

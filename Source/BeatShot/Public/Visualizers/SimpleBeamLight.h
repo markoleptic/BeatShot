@@ -114,6 +114,7 @@ struct FSimpleBeamLightConfig
 	}
 };
 
+/** Visualizer light that takes the form of a spotlight and has a Niagara System that represents a light beam */
 UCLASS()
 class BEATSHOT_API ASimpleBeamLight : public AActor
 {

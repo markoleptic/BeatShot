@@ -22,37 +22,11 @@ class UEditableTextBox;
 class UTextBlock;
 class UButton;
 
+/** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets */
 UCLASS()
 class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-
-protected:
-	virtual void NativeConstruct() override;
-
-#pragma region MenuWidgets
-
-	/** A map to store buttons and the widgets they associate with */
-	UPROPERTY()
-	TMap<USlideRightButton*, UVerticalBox*> MainMenuWidgets;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UWidgetSwitcher* MainMenuSwitcher;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* PatchNotes;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* GameModes;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Scores;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SettingsMenu;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* FAQ;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScoreBrowserWidget* ScoresWidget;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -61,54 +35,74 @@ public:
 	USettingsMenuWidget* SettingsMenuWidget;
 
 protected:
+	virtual void NativeConstruct() override;
+
+	/** A map to store buttons and the widgets they associate with */
+	UPROPERTY()
+	TMap<USlideRightButton*, UVerticalBox*> MainMenuWidgets;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UWidgetSwitcher* MainMenuSwitcher;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_PatchNotes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_GameModes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_Scores;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_Settings;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Box_FAQ;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreBrowserWidget* ScoresWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* PatchNotesButton;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* GameModesButton;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SettingsButton;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* ScoresButton;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* FAQButton;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* QuitButton;
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	ULoginWidget* LoginWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* SignInStateText;
+	USlideRightButton* SlideRightButton_PatchNotes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* UsernameText;
+	USlideRightButton* SlideRightButton_GameModes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* GitHubIssueButton;
-
-#pragma	endregion
+	USlideRightButton* SlideRightButton_Settings;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	USlideRightButton* SlideRightButton_Scores;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	USlideRightButton* SlideRightButton_FAQ;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	USlideRightButton* SlideRightButton_Quit;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_SignInState;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_Username;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UButton* Button_GitHubIssue;
 
 private:
 	/** Calls SlideButton() from SlideRightButton and sets the associated widget to active in the MainMenuSwitcher */
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	UFUNCTION()
-	void OnPatchNotesButtonClicked();
+	void OnButtonClicked_PatchNotes();
 	UFUNCTION()
-	void OnGameModesButtonClicked();
+	void OnButtonClicked_GameModes();
 	UFUNCTION()
-	void OnScoringButtonClicked();
+	void OnButtonClicked_Scoring();
 	UFUNCTION()
-	void OnSettingsButtonClicked();
+	void OnButtonClicked_Settings();
 	UFUNCTION()
-	void OnFAQButtonClicked();
+	void OnButtonClicked_FAQButton();
 	UFUNCTION()
-	void OnQuitButtonClicked();
+	void OnButtonClicked_Quit();
 	UFUNCTION()
-	void OnLoginButtonClicked(const FLoginPayload LoginPayload, const bool bIsPopup);
+	void OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup);
 	UFUNCTION()
-	void OnGitHubButtonClicked();
+	void OnButtonClicked_GitHub();
 	UFUNCTION()
 	void OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup);
 	/** Override with desired */

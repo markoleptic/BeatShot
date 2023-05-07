@@ -9,6 +9,8 @@
 
 
 class ABSCharacter;
+
+/** GameplayAbility that provides the user with the ability to fire their gun */
 UCLASS()
 class BEATSHOT_API UBSGameplayAbility_FireGun : public UBSGameplayAbility
 {

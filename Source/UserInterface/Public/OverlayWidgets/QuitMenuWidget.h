@@ -17,6 +17,7 @@ class UButton;
 class UWidgetAnimation;
 class UScreenFadeWidget;
 
+/** Provides a quit menu to other widgets */
 UCLASS()
 class USERINTERFACE_API UQuitMenuWidget : public UUserWidget
 {
@@ -44,6 +45,7 @@ public:
 	/** Whether or not this instance of QuitMenu belongs to The PostGameMenuWidget or not */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsPostGameMenuChild;
+	
 	/** Broadcasts to parent so it can slide menu button back to starting position */
 	UPROPERTY()
 	FOnExitQuitMenu OnExitQuitMenu;
@@ -52,44 +54,39 @@ public:
 	FOnGameModeStateChanged OnGameModeStateChanged;
 
 protected:
-#pragma region MenuWidgets
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* QuitMenuSwitcher;
+	UOverlay* Overlay_QuitMenuSwitcher;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* MenuOverlay;
+	UOverlay* Overlay_Menu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* SaveMenuOverlay;
+	UOverlay* Overlay_SaveMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* RestartOverlay;
+	UOverlay* Overlay_Restart;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* QuitMainMenuButton;
+	UButton* Button_QuitMainMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* QuitDesktopButton;
+	UButton* Button_QuitDesktop;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* QuitBackButton;
+	UButton* Button_QuitBack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* QuitAndSaveButton;
+	UButton* Button_QuitAndSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* QuitWithoutSaveButton;
+	UButton* Button_QuitWithoutSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* SaveBackButton;
+	UButton* Button_SaveBack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* RestartAndSaveButton;
+	UButton* Button_RestartAndSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* RestartWithoutSaveButton;
+	UButton* Button_RestartWithoutSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* RestartBackButton;
+	UButton* Button_RestartBack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* SaveMenuTitle;
-
-#pragma endregion
-
-#pragma region Animations
+	UTextBlock* TextBlock_SaveMenuTitle;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutMenu;
@@ -99,7 +96,11 @@ protected:
 	UWidgetAnimation* FadeOutRestartMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBackgroundBlur;
+	
+	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur */
+	FWidgetAnimationDynamicEvent FadeOutWidgetDelegate;
 
+private:
 	/** Fades in the MenuOverlay */
 	UFUNCTION()
 	void PlayFadeInMenu() { PlayAnimationReverse(FadeOutMenu); }
@@ -119,51 +120,46 @@ protected:
 	/** Fades out the RestartOverlay */
 	UFUNCTION()
 	void PlayFadeOutRestartMenu() { PlayAnimationForward(FadeOutRestartMenu); }
-
-	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur */
-	FWidgetAnimationDynamicEvent FadeOutWidgetDelegate;
-
-#pragma endregion
-
-private:
-	/** Called when either QuitAndSaveButton or QuitWithoutSaveButton is clicked */
+	
+	/** Called when either QuitAndSaveButton or Button_QuitWithoutSave is clicked */
 	UFUNCTION()
 	void Quit();
+	
 	/** Called from Quit() if bGotoMainMenu is true */
 	UFUNCTION()
 	void OnQuitToMainMenu();
+	
 	/** Called from Quit() if bGotoMainMenu is false */
 	UFUNCTION()
 	void OnQuitToDesktop();
-	/** Called when either RestartAndSaveButton or RestartWithoutSaveButton is clicked */
+	
+	/** Called when either Button_RestartAndSave or Button_RestartWithoutSave is clicked */
 	UFUNCTION()
 	void OnRestart();
+	
 	/** Plays FadeOutBackgroundBlur, binds FadeOutWidgetDelegate to ShowAudioFormatSelect and executes OnExitQuitMenu */
 	UFUNCTION()
 	void InitializeExit();
+	
 	/** Function that is bound to FadeOutBackgroundBlur to set the visibility of the widget to collapsed */
 	UFUNCTION()
 	void CollapseWidget();
 	UFUNCTION()
 	void SetGotoMainMenuTrue() { bGotoMainMenu = true; }
-
 	UFUNCTION()
 	void SetGotoMainMenuFalse() { bGotoMainMenu = false; }
-
 	UFUNCTION()
 	void SetShouldSaveScoresTrue() { bShouldSaveScores = true; }
-
 	UFUNCTION()
 	void SetShouldSaveScoresFalse() { bShouldSaveScores = false; }
-
 	UFUNCTION()
-	void SetSaveMenuTitleMainMenu() { SaveMenuTitle->SetText(FText::FromString("Quit to Main Menu")); }
-
+	void SetSaveMenuTitleMainMenu() { TextBlock_SaveMenuTitle->SetText(FText::FromString("Quit to Main Menu")); }
 	UFUNCTION()
-	void SetSaveMenuTitleDesktop() { SaveMenuTitle->SetText(FText::FromString("Quit to Desktop")); }
+	void SetSaveMenuTitleDesktop() { TextBlock_SaveMenuTitle->SetText(FText::FromString("Quit to Desktop")); }
 
 	/** Whether or not to save scores, used as argument when calling EndGameMode() from DefaultGameMode */
 	bool bShouldSaveScores;
+	
 	/** Whether or not to go to the MainMenu vs exiting to desktop. Used in Quit() */
 	bool bGotoMainMenu;
 };

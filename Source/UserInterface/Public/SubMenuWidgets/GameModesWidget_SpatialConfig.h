@@ -16,6 +16,7 @@ class USlider;
 class UCheckBox;
 class UTooltipImage;
 
+/** SettingCategoryWidget for the GameModesWidget that holds Spatial configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_SpatialConfig : public UBSSettingCategoryWidget
 {

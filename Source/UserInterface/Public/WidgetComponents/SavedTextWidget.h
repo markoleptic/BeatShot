@@ -9,6 +9,7 @@
 
 class UTextBlock;
 
+/** Widget that displays text with an animation */
 UCLASS()
 class USERINTERFACE_API USavedTextWidget : public UUserWidget
 {
@@ -25,5 +26,6 @@ public:
 	UFUNCTION()
 	void PlayFadeInFadeOut() { PlayAnimationForward(FadeInFadeOut); }
 
+	/** Sets the text that should appear when PlayFadeInFadeOut is called */
 	void SetSavedText(const FText& Text) { SavedText->SetText(Text); }
 };

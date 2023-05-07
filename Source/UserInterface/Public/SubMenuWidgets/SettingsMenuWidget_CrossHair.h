@@ -16,6 +16,7 @@ class UImage;
 class UEditableTextBox;
 class UButton;
 
+/** Settings category widget holding CrossHair settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UUserWidget, public ISaveLoadInterface
 {
@@ -32,69 +33,69 @@ protected:
 	UCrossHairWidget* CrossHairWidget;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UColorSelectWidget* ColorSelectWidget;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* InnerOffsetValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* LineLengthValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* LineWidthValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* OutlineOpacityValue;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* OutlineWidthValue;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* InnerOffsetSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* LineLengthSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* LineWidthSlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* OutlineOpacitySlider;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* OutlineWidthSlider;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* ResetToDefaultButton;
+	UEditableTextBox* Value_InnerOffset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* RevertCrossHairButton;
+	UEditableTextBox* Value_LineLength;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* SaveCrossHairButton;
+	UEditableTextBox* Value_LineWidth;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_OutlineOpacity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_OutlineWidth;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_InnerOffset;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_LineLength;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_LineWidth;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_OutlineOpacity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_OutlineWidth;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UButton* Button_Reset;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UButton* Button_Revert;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UButton* Button_Save;
 
 private:
 	UFUNCTION()
 	void OnColorChanged(const FLinearColor& NewColor);
 	UFUNCTION()
-	void OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_InnerOffset(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnLineLengthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_LineLength(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnLineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_LineWidth(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnOutlineOpacityValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_OutlineOpacity(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnOutlineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnValueChanged_OutlineWidth(const FText& NewValue, ETextCommit::Type CommitType);
 
 	UFUNCTION()
-	void OnInnerOffsetSliderChange(const float NewValue);
+	void OnSliderChanged_InnerOffset(const float NewValue);
 	UFUNCTION()
-	void OnLineLengthSliderChange(const float NewValue);
+	void OnSliderChanged_LineLength(const float NewValue);
 	UFUNCTION()
-	void OnLineWidthSliderChange(const float NewValue);
+	void OnSliderChanged_LineWidth(const float NewValue);
 	UFUNCTION()
-	void OnOutlineOpacitySliderChange(const float NewValue);
+	void OnSliderChanged_OutlineOpacity(const float NewValue);
 	UFUNCTION()
-	void OnOutlineWidthSliderChange(const float NewValue);
+	void OnSliderChanged_OutlineWidth(const float NewValue);
 
 	UFUNCTION()
-	void OnResetToDefaultButtonClicked();
+	void OnButtonClicked_Reset();
 	UFUNCTION()
-	void OnRevertCrossHairButtonClicked();
+	void OnButtonClicked_Revert();
 	UFUNCTION()
-	void OnSaveCrossHairButtonClicked();
+	void OnOnButtonClicked_Save();
 
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);

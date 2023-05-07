@@ -32,6 +32,8 @@ struct FAgentPoint
 };
 
 class UUniformGridPanel;
+
+/** Reinforcement learning agent widget used to debug RLAgent */
 UCLASS()
 class USERINTERFACE_API URLAgentWidget : public UUserWidget
 {

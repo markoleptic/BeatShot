@@ -24,6 +24,7 @@ class UBSAbilitySystemComponent;
 
 DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
+/** Base PlayerController class for this game */
 UCLASS()
 class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface, public IHttpRequestInterface
 {

@@ -24,6 +24,7 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, con
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
 DECLARE_MULTICAST_DELEGATE(FOnGameModeStarted);
 
+/** Base GameMode for this game */
 UCLASS()
 class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, public IHttpRequestInterface
 {

@@ -25,58 +25,58 @@ void UCrossHairWidget::NativeConstruct()
 
 void UCrossHairWidget::SetLineWidth(const int32 NewWidthValue)
 {
-	const float SizeHorizontalX = Cast<UCanvasPanelSlot>(LeftContainer->Slot)->GetSize().X;
-	const float SizeVerticalY = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().Y;
+	const float SizeHorizontalX = Cast<UCanvasPanelSlot>(Container_Left->Slot)->GetSize().X;
+	const float SizeVerticalY = Cast<UCanvasPanelSlot>(Container_Top->Slot)->GetSize().Y;
 
-	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetSize(FVector2d(NewWidthValue, SizeVerticalY));
-	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetSize(FVector2d(NewWidthValue, SizeVerticalY));
+	Cast<UCanvasPanelSlot>(Container_Top->Slot)->SetSize(FVector2d(NewWidthValue, SizeVerticalY));
+	Cast<UCanvasPanelSlot>(Container_Bottom->Slot)->SetSize(FVector2d(NewWidthValue, SizeVerticalY));
 
-	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetSize(FVector2d(SizeHorizontalX, NewWidthValue));
-	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetSize(FVector2d(SizeHorizontalX, NewWidthValue));
+	Cast<UCanvasPanelSlot>(Container_Left->Slot)->SetSize(FVector2d(SizeHorizontalX, NewWidthValue));
+	Cast<UCanvasPanelSlot>(Container_Right->Slot)->SetSize(FVector2d(SizeHorizontalX, NewWidthValue));
 }
 
 void UCrossHairWidget::SetLineLength(const float NewLengthValue)
 {
-	const float SizeVerticalX = Cast<UCanvasPanelSlot>(TopContainer->Slot)->GetSize().X;
-	const float SizeHorizontalY = Cast<UCanvasPanelSlot>(LeftContainer->Slot)->GetSize().Y;
+	const float SizeVerticalX = Cast<UCanvasPanelSlot>(Container_Top->Slot)->GetSize().X;
+	const float SizeHorizontalY = Cast<UCanvasPanelSlot>(Container_Left->Slot)->GetSize().Y;
 
-	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetSize(FVector2d(SizeVerticalX, NewLengthValue));
-	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetSize(FVector2d(SizeVerticalX, NewLengthValue));
+	Cast<UCanvasPanelSlot>(Container_Top->Slot)->SetSize(FVector2d(SizeVerticalX, NewLengthValue));
+	Cast<UCanvasPanelSlot>(Container_Bottom->Slot)->SetSize(FVector2d(SizeVerticalX, NewLengthValue));
 
-	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetSize(FVector2d(NewLengthValue, SizeHorizontalY));
-	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetSize(FVector2d(NewLengthValue, SizeHorizontalY));
+	Cast<UCanvasPanelSlot>(Container_Left->Slot)->SetSize(FVector2d(NewLengthValue, SizeHorizontalY));
+	Cast<UCanvasPanelSlot>(Container_Right->Slot)->SetSize(FVector2d(NewLengthValue, SizeHorizontalY));
 }
 
 void UCrossHairWidget::SetOutlineWidth(const int32 NewWidthValue)
 {
-	Cast<UOverlaySlot>(TopScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
-	Cast<UOverlaySlot>(BottomScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
-	Cast<UOverlaySlot>(LeftScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
-	Cast<UOverlaySlot>(RightScaleBox->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(ScaleBox_Top->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(ScaleBox_Bottom->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(ScaleBox_Left->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
+	Cast<UOverlaySlot>(ScaleBox_Right->Slot)->SetPadding(FMargin(NewWidthValue, NewWidthValue, NewWidthValue, NewWidthValue));
 }
 
 void UCrossHairWidget::SetOutlineOpacity(const float NewOpacityValue)
 {
-	TopOutlineImage->SetOpacity(NewOpacityValue);
-	BottomOutlineImage->SetOpacity(NewOpacityValue);
-	LeftOutlineImage->SetOpacity(NewOpacityValue);
-	RightOutlineImage->SetOpacity(NewOpacityValue);
+	Image_TopOutline->SetOpacity(NewOpacityValue);
+	Image_BottomOutline->SetOpacity(NewOpacityValue);
+	Image_LeftOutline->SetOpacity(NewOpacityValue);
+	Image_RightOutline->SetOpacity(NewOpacityValue);
 }
 
 void UCrossHairWidget::SetImageColor(const FLinearColor NewColor)
 {
-	TopImage->SetColorAndOpacity(NewColor);
-	BottomImage->SetColorAndOpacity(NewColor);
-	LeftImage->SetColorAndOpacity(NewColor);
-	RightImage->SetColorAndOpacity(NewColor);
+	Image_Top->SetColorAndOpacity(NewColor);
+	Image_Bottom->SetColorAndOpacity(NewColor);
+	Image_Left->SetColorAndOpacity(NewColor);
+	Image_Right->SetColorAndOpacity(NewColor);
 }
 
 void UCrossHairWidget::SetInnerOffset(const int32 NewOffsetValue)
 {
-	Cast<UCanvasPanelSlot>(TopContainer->Slot)->SetPosition(FVector2d(0, -NewOffsetValue));
-	Cast<UCanvasPanelSlot>(BottomContainer->Slot)->SetPosition(FVector2d(0, NewOffsetValue));
-	Cast<UCanvasPanelSlot>(LeftContainer->Slot)->SetPosition(FVector2d(-NewOffsetValue, 0));
-	Cast<UCanvasPanelSlot>(RightContainer->Slot)->SetPosition(FVector2d(NewOffsetValue, 0));
+	Cast<UCanvasPanelSlot>(Container_Top->Slot)->SetPosition(FVector2d(0, -NewOffsetValue));
+	Cast<UCanvasPanelSlot>(Container_Bottom->Slot)->SetPosition(FVector2d(0, NewOffsetValue));
+	Cast<UCanvasPanelSlot>(Container_Left->Slot)->SetPosition(FVector2d(-NewOffsetValue, 0));
+	Cast<UCanvasPanelSlot>(Container_Right->Slot)->SetPosition(FVector2d(NewOffsetValue, 0));
 }
 
 void UCrossHairWidget::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)

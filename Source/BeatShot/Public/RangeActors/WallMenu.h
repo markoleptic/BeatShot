@@ -7,6 +7,7 @@
 #include "SaveLoadInterface.h"
 #include "WallMenu.generated.h"
 
+/** Displays some settings on a wall that can be changed by shooting them */
 UCLASS()
 class BEATSHOT_API AWallMenu : public AActor, public ISaveLoadInterface
 {

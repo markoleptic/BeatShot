@@ -197,10 +197,10 @@ void ABSPlayerController::ShowPlayerHUD()
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
 	if (Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid )
 	{
-		PlayerHUD->TargetsSpawnedBox->SetVisibility(ESlateVisibility::Collapsed);
-		PlayerHUD->StreakBox->SetVisibility(ESlateVisibility::Collapsed);
-		PlayerHUD->TargetsHitBox->SetVisibility(ESlateVisibility::Collapsed);
-		PlayerHUD->ShotsFiredBox->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerHUD->Box_TargetsSpawned->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerHUD->Box_Streak->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerHUD->Box_TargetsHit->SetVisibility(ESlateVisibility::Collapsed);
+		PlayerHUD->Box_ShotsFired->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	PlayerHUD->AddToViewport();
 	PlayerHUDActive = true;

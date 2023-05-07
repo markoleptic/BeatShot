@@ -11,6 +11,7 @@
 class UDoubleSyncedSliderAndTextBox;
 class UBorder;
 
+/** SettingCategoryWidget for the GameModesWidget that holds BeatTrack configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_BeatTrackConfig : public UBSSettingCategoryWidget
 {

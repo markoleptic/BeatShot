@@ -15,26 +15,26 @@
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	MainMenuWidgets.Add(PatchNotesButton, PatchNotes);
-	MainMenuWidgets.Add(GameModesButton, GameModes);
-	MainMenuWidgets.Add(ScoresButton, Scores);
-	MainMenuWidgets.Add(SettingsButton, SettingsMenu);
-	MainMenuWidgets.Add(FAQButton, FAQ);
+	MainMenuWidgets.Add(SlideRightButton_PatchNotes, Box_PatchNotes);
+	MainMenuWidgets.Add(SlideRightButton_GameModes, Box_GameModes);
+	MainMenuWidgets.Add(SlideRightButton_Scores, Box_Scores);
+	MainMenuWidgets.Add(SlideRightButton_Settings, Box_Settings);
+	MainMenuWidgets.Add(SlideRightButton_FAQ, Box_FAQ);
 
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UMainMenuWidget::OnLoginStateChange);
-	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnLoginButtonClicked);
-	LoginWidget->OkayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnScoringButtonClicked);
-	PatchNotesButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnPatchNotesButtonClicked);
-	GameModesButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnGameModesButtonClicked);
-	ScoresButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnScoringButtonClicked);
-	SettingsButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnSettingsButtonClicked);
-	FAQButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnFAQButtonClicked);
-	QuitButton->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnQuitButtonClicked);
-	GitHubIssueButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnGitHubButtonClicked);
+	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
+	LoginWidget->OkayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Scoring);
+	SlideRightButton_PatchNotes->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_PatchNotes);
+	SlideRightButton_GameModes->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_GameModes);
+	SlideRightButton_Scores->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Scoring);
+	SlideRightButton_Settings->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Settings);
+	SlideRightButton_FAQ->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_FAQButton);
+	SlideRightButton_Quit->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Quit);
+	Button_GitHubIssue->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_GitHub);
 	ScoresWidget->InitializeScoringOverlay();
 	WebBrowserOverlayPatchNotes->BrowserWidget->LoadPatchNotesURL();
 	WebBrowserOverlayPatchNotes->FadeOutLoadingOverlay();
-	OnPatchNotesButtonClicked();
+	OnButtonClicked_PatchNotes();
 }
 
 void UMainMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
@@ -51,38 +51,38 @@ void UMainMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
 	}
 }
 
-void UMainMenuWidget::OnPatchNotesButtonClicked()
+void UMainMenuWidget::OnButtonClicked_PatchNotes()
 {
-	SlideButtons(PatchNotesButton);
+	SlideButtons(SlideRightButton_PatchNotes);
 }
 
-void UMainMenuWidget::OnGameModesButtonClicked()
+void UMainMenuWidget::OnButtonClicked_GameModes()
 {
-	SlideButtons(GameModesButton);
+	SlideButtons(SlideRightButton_GameModes);
 }
 
-void UMainMenuWidget::OnScoringButtonClicked()
+void UMainMenuWidget::OnButtonClicked_Scoring()
 {
-	SlideButtons(ScoresButton);
+	SlideButtons(SlideRightButton_Scores);
 	if (bShowWebBrowserScoring) ScoresWidget->FadeOutLoadingOverlay();
 }
 
-void UMainMenuWidget::OnSettingsButtonClicked()
+void UMainMenuWidget::OnButtonClicked_Settings()
 {
-	SlideButtons(SettingsButton);
+	SlideButtons(SlideRightButton_Settings);
 }
 
-void UMainMenuWidget::OnFAQButtonClicked()
+void UMainMenuWidget::OnButtonClicked_FAQButton()
 {
-	SlideButtons(FAQButton);
+	SlideButtons(SlideRightButton_FAQ);
 }
 
-void UMainMenuWidget::OnLoginButtonClicked(const FLoginPayload LoginPayload, const bool bIsPopup)
+void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup)
 {
 	ScoresWidget->LoginUserHttp(LoginPayload, bIsPopup);
 }
 
-void UMainMenuWidget::OnGitHubButtonClicked()
+void UMainMenuWidget::OnButtonClicked_GitHub()
 {
 	UKismetSystemLibrary::LaunchURL(GitHubURL);
 }
@@ -142,15 +142,15 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)
 {
 	if (!bSuccessfulLogin)
 	{
-		SignInStateText->SetText(FText::FromString("Not Signed In"));
-		UsernameText->SetText(FText());
+		TextBlock_SignInState->SetText(FText::FromString("Not Signed In"));
+		TextBlock_Username->SetText(FText());
 		return;
 	}
-	SignInStateText->SetText(FText::FromString("Signed in as"));
-	UsernameText->SetText(FText::FromString(LoadPlayerSettings().User.Username));
+	TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
+	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.Username));
 }
 
-void UMainMenuWidget::OnQuitButtonClicked()
+void UMainMenuWidget::OnButtonClicked_Quit()
 {
 	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
 }

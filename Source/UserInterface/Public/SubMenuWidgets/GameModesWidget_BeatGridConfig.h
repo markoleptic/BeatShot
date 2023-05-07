@@ -62,6 +62,7 @@ class UEditableTextBox;
 class USlider;
 class UHorizontalBox;
 
+/** SettingCategoryWidget for the GameModesWidget that holds BeatGrid configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_BeatGridConfig : public UBSSettingCategoryWidget
 {

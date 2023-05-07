@@ -130,8 +130,8 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	CheckBox_VSyncEnabled->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_VSyncEnabled);
 	CheckBox_FPSCounter->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_FPSCounter);
 	
-	ResetButton_VideoAndSound->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_Reset);
-	SaveButton_VideoAndSound->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_Save);
+	Button_Reset->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_Reset);
+	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_Save);
 	ComboBox_Reflex->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex);
 	ComboBox_DLSS->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS);
 	ComboBox_NIS->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS);
@@ -707,8 +707,8 @@ void USettingsMenuWidget_VideoAndSound::ShowConfirmVideoSettingsMessage()
 		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage"),
 		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton1"),
 		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton2"));
-		PopupMessageWidget->Button1->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_ConfirmVideoSettings);
-		PopupMessageWidget->Button2->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_CancelVideoSettings);
+		PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_ConfirmVideoSettings);
+		PopupMessageWidget->Button_2->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_CancelVideoSettings);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond, this, &USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback, 1.f, true);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, Constants::VideoSettingsTimeoutLength, false);
 	}

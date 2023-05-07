@@ -18,6 +18,7 @@ class UAnimMontage;
 
 DECLARE_DELEGATE(FOnShotFired);
 
+/** The base gun used in this game */
 UCLASS()
 class BEATSHOT_API AGun_AK47 : public AActor, public IGameplayTagAssetInterface 
 {

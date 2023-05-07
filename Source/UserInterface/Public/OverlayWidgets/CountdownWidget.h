@@ -14,6 +14,7 @@ class UImage;
 class UMaterialInstanceDynamic;
 class UTextBlock;
 
+/** Widget used to display a countdown before the game mode begins */
 UCLASS()
 class USERINTERFACE_API UCountdownWidget : public UUserWidget
 {
@@ -47,9 +48,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	UMaterialInstanceDynamic* MID_Countdown;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* CountdownImage;
+	UImage* Image_Countdown;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* Counter;
+	UTextBlock* TextBlock_Counter;
 
 private:
 	UPROPERTY()

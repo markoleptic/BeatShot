@@ -12,21 +12,21 @@
 void UBandChannelWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	BandChannelMin->OnTextCommitted.AddDynamic(this, &UBandChannelWidget::OnMinValueCommitted);
-	BandChannelMax->OnTextCommitted.AddDynamic(this, &UBandChannelWidget::OnMaxValueCommitted);
+	Value_BandChannelMin->OnTextCommitted.AddDynamic(this, &UBandChannelWidget::OnValueCommitted_Min);
+	Value_BandChannelMax->OnTextCommitted.AddDynamic(this, &UBandChannelWidget::OnValueCommitted_Max);
 }
 
 void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 ChannelIndex)
 {
 	// FNumberFormattingOptions NumberFormattingOptions;
 	// NumberFormattingOptions.SetRoundingMode(ER)
-	BandChannelMin->SetText(FText::AsNumber(Values.X));
-	BandChannelMax->SetText(FText::AsNumber(Values.Y));
+	Value_BandChannelMin->SetText(FText::AsNumber(Values.X));
+	Value_BandChannelMax->SetText(FText::AsNumber(Values.Y));
 	const TArray ChannelNumber = {
 		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"), FText::FromString(FString::FromInt(ChannelIndex + 1)),
 		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelUnit")
 	};
-	ChannelText->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
+	TextBlock_Channel->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
 
 	FSlateBrush LightBrush = FSlateBrush();
@@ -36,29 +36,29 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 
 	if (ChannelIndex == 0 || ChannelIndex % 2 == 0)
 	{
-		ChannelTextBorder->SetBrush(DarkBrush);
-		LowerBorder->SetBrush(LightBrush);
-		UpperBorder->SetBrush(LightBrush);
+		Border_ChannelText->SetBrush(DarkBrush);
+		Border_Lower->SetBrush(LightBrush);
+		Border_Upper->SetBrush(LightBrush);
 	}
 	else
 	{
-		ChannelTextBorder->SetBrush(LightBrush);
-		LowerBorder->SetBrush(DarkBrush);
-		UpperBorder->SetBrush(DarkBrush);
+		Border_ChannelText->SetBrush(LightBrush);
+		Border_Lower->SetBrush(DarkBrush);
+		Border_Upper->SetBrush(DarkBrush);
 	}
 }
 
-void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
+void UBandChannelWidget::OnValueCommitted_Min(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
 	if (NewFloatValue < Constants::MinValue_BandFrequency)
 	{
-		BandChannelMin->SetText(FText::AsNumber(Constants::MinValue_BandFrequency));
+		Value_BandChannelMin->SetText(FText::AsNumber(Constants::MinValue_BandFrequency));
 		return;
 	}
 	if (NewFloatValue > Constants::MaxValue_BandFrequency)
 	{
-		BandChannelMin->SetText(FText::AsNumber(Constants::MaxValue_BandFrequency));
+		Value_BandChannelMin->SetText(FText::AsNumber(Constants::MaxValue_BandFrequency));
 		return;
 	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, true))
@@ -67,17 +67,17 @@ void UBandChannelWidget::OnMinValueCommitted(const FText& NewValue, ETextCommit:
 	}
 }
 
-void UBandChannelWidget::OnMaxValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
+void UBandChannelWidget::OnValueCommitted_Max(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float NewFloatValue = FCString::Atof(*UKismetStringLibrary::Replace(NewValue.ToString(), ",", ""));
 	if (NewFloatValue < Constants::MinValue_BandFrequency)
 	{
-		BandChannelMax->SetText(FText::AsNumber(0));
+		Value_BandChannelMax->SetText(FText::AsNumber(0));
 		return;
 	}
 	if (NewFloatValue > Constants::MaxValue_BandFrequency)
 	{
-		BandChannelMax->SetText(FText::AsNumber(Constants::MaxValue_BandFrequency));
+		Value_BandChannelMax->SetText(FText::AsNumber(Constants::MaxValue_BandFrequency));
 		return;
 	}
 	if (!OnChannelValueCommitted.ExecuteIfBound(this, Index, NewFloatValue, false))

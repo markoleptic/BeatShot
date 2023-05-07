@@ -12,7 +12,7 @@ void UCountdownWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	/* Use Color Changing Material, this is required in order to change color using C++ */
-	MID_Countdown = CountdownImage->GetDynamicMaterial();
+	MID_Countdown = Image_Countdown->GetDynamicMaterial();
 }
 
 void UCountdownWidget::NativeDestruct()
@@ -31,7 +31,7 @@ void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 		return;
 	}
 	const float CurrentTime = GetWorld()->GetTimerManager().GetTimerRemaining(CountDownTimer);
-	Counter->SetText(FText::AsNumber(ceil(CurrentTime)));
+	TextBlock_Counter->SetText(FText::AsNumber(ceil(CurrentTime)));
 	MID_Countdown->SetScalarParameterValue(FName("Progress"), UKismetMathLibrary::Fraction(CurrentTime));
 
 	if (PlayerDelay <= 0.01 || CurrentTime - PlayerDelay > 0 || CurrentTime == -1)

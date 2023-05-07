@@ -7,7 +7,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "MainMenuGameMode.generated.h"
 
-
+/** The game mode for the main menu */
 UCLASS()
 class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public ISaveLoadInterface
 {

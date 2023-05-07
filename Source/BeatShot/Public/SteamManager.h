@@ -7,6 +7,7 @@
 
 class UBSGameInstance;
 
+/** Class responsible for linking to Steam */
 UCLASS()
 class BEATSHOT_API USteamManager : public UObject
 {

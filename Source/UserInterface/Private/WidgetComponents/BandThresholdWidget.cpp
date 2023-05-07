@@ -11,16 +11,16 @@
 void UBandThresholdWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	ThresholdValue->OnTextCommitted.AddDynamic(this, &UBandThresholdWidget::OnValueCommitted);
-	ThresholdSlider->OnValueChanged.AddDynamic(this, &UBandThresholdWidget::OnSliderChanged);
+	Value_Threshold->OnTextCommitted.AddDynamic(this, &UBandThresholdWidget::OnValueChanged_Threshold);
+	Slider_Threshold->OnValueChanged.AddDynamic(this, &UBandThresholdWidget::OnSliderChanged_Threshold);
 }
 
 void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 ChannelIndex)
 {
-	ThresholdValue->SetText(FText::AsNumber(Value));
-	ThresholdSlider->SetValue(Value);
+	Value_Threshold->SetText(FText::AsNumber(Value));
+	Slider_Threshold->SetValue(Value);
 	const TArray ChannelNumber = {FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"), FText::FromString(FString::FromInt(ChannelIndex + 1))};
-	ChannelText->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
+	TextBlock_Channel->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
 	FSlateBrush LightBrush = FSlateBrush();
 	LightBrush.TintColor = FLinearColor(0, 0, 0, 0.1);
@@ -29,31 +29,31 @@ void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 Channe
 
 	if (ChannelIndex == 0 || ChannelIndex % 2 == 0)
 	{
-		LeftBorder->SetBrush(LightBrush);
-		RightBorder->SetBrush(DarkBrush);
+		Border_Left->SetBrush(LightBrush);
+		Border_Right->SetBrush(DarkBrush);
 	}
 	else
 	{
-		LeftBorder->SetBrush(DarkBrush);
-		RightBorder->SetBrush(LightBrush);
+		Border_Left->SetBrush(DarkBrush);
+		Border_Right->SetBrush(LightBrush);
 	}
 }
 
-void UBandThresholdWidget::OnValueCommitted(const FText& NewValue, ETextCommit::Type CommitType)
+void UBandThresholdWidget::OnValueChanged_Threshold(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float Value = FMath::GridSnap(FMath::Clamp(FCString::Atof(*NewValue.ToString()), ThresholdSlider->GetMinValue(), ThresholdSlider->GetMaxValue()), 0.1);
-	ThresholdValue->SetText(FText::AsNumber(Value));
-	ThresholdSlider->SetValue(Value);
+	const float Value = FMath::GridSnap(FMath::Clamp(FCString::Atof(*NewValue.ToString()), Slider_Threshold->GetMinValue(), Slider_Threshold->GetMaxValue()), 0.1);
+	Value_Threshold->SetText(FText::AsNumber(Value));
+	Slider_Threshold->SetValue(Value);
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnThresholdValueCommitted not bound."));
 	}
 }
 
-void UBandThresholdWidget::OnSliderChanged(const float NewValue)
+void UBandThresholdWidget::OnSliderChanged_Threshold(const float NewValue)
 {
 	const float Value = FMath::GridSnap(NewValue, 0.1);
-	ThresholdValue->SetText(FText::AsNumber(Value));
+	Value_Threshold->SetText(FText::AsNumber(Value));
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))
 	{
 		UE_LOG(LogTemp, Display, TEXT("OnThresholdValueCommitted not bound."));

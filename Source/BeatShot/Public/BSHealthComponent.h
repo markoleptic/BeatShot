@@ -14,6 +14,7 @@ DECLARE_DELEGATE(FOnOutOfHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FBSHealth_AttributeChanged, UBSHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
 
+/** Base HealthComponent for this game */
 UCLASS(ClassGroup=(Custom), meta= (BlueprintSpawnableComponent))
 class BEATSHOT_API UBSHealthComponent : public UActorComponent
 {

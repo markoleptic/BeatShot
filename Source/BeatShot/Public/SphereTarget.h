@@ -21,6 +21,7 @@ class UBSAttributeSetBase;
 /** Broadcasts info about the destroyed target state */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
+/** Base target class for this game that is mostly self-managed. TargetSpawner is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
 {

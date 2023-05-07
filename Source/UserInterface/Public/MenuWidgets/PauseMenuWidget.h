@@ -17,6 +17,7 @@ class USettingsMenuWidget;
 class UFAQWidget;
 class UTextBlock;
 
+/** Widget displayed if the Escape key is pressed, or the SteamOverlay is activated */
 UCLASS()
 class USERINTERFACE_API UPauseMenuWidget : public UUserWidget
 {
@@ -38,11 +39,11 @@ protected:
 	TMap<USlideRightButton*, UVerticalBox*> PauseMenuWidgets;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* PauseScreen;
+	UVerticalBox* Box_PauseScreen;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* SettingsMenu;
+	UVerticalBox* Box_SettingsMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* FAQ;
+	UVerticalBox* Box_FAQ;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -53,15 +54,15 @@ protected:
 	UFAQWidget* FAQWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* ResumeButton;
+	USlideRightButton* SlideRightButton_Resume;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* RestartCurrentModeButton;
+	USlideRightButton* SlideRightButton_RestartCurrentMode;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SettingsButton;
+	USlideRightButton* SlideRightButton_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* FAQButton;
+	USlideRightButton* SlideRightButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* QuitButton;
+	USlideRightButton* SlideRightButton_Quit;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* PauseMenuSwitcher;
@@ -75,20 +76,18 @@ private:
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	UFUNCTION()
+	void OnSettingsButtonClicked() { SlideButtons(SlideRightButton_Settings); }
+	UFUNCTION()
+	void OnFAQButtonClicked() { SlideButtons(SlideRightButton_FAQ); }
+	UFUNCTION()
 	void FadeInWidget() { PlayAnimationForward(FadeInPauseMenu); }
-
-	UFUNCTION()
-	virtual void OnResumeButtonClicked();
-	UFUNCTION()
-	void OnRestartCurrentModeClicked();
-	UFUNCTION()
-	void OnSettingsButtonClicked() { SlideButtons(SettingsButton); }
-
-	UFUNCTION()
-	void OnFAQButtonClicked() { SlideButtons(FAQButton); }
-
-	UFUNCTION()
-	void OnQuitButtonClicked();
 	UFUNCTION()
 	void SlideQuitMenuButtonsLeft();
+	
+	UFUNCTION()
+	void OnButtonClicked_Resume();
+	UFUNCTION()
+	void OnButtonClicked_RestartCurrentMode();
+	UFUNCTION()
+	void OnButtonClicked_Quit();
 };

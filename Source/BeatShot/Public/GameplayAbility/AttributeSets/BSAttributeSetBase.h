@@ -17,6 +17,7 @@ GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 // Delegate used to broadcast attribute events.
 DECLARE_MULTICAST_DELEGATE_FourParams(FBSAttributeEvent, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/, const FGameplayEffectSpec& /*EffectSpec*/, float /*EffectMagnitude*/);
 
+/** The base AttributeSet used for this game */
 UCLASS()
 class BEATSHOT_API UBSAttributeSetBase : public UAttributeSet
 {

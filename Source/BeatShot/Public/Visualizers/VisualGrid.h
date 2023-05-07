@@ -8,6 +8,7 @@
 
 class UInstancedStaticMeshComponent;
 
+/** Once used for debugging target spawning but have since found better methods */
 UCLASS()
 class BEATSHOT_API AVisualGrid : public AActor
 {

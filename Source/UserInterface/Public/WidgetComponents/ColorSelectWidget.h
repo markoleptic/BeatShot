@@ -16,6 +16,7 @@ class UImage;
 class UEditableTextBox;
 class UButton;
 
+/** Widget that allows a user to select a color using multiple options, with a delegate that broadcasts when a color has been selected */
 UCLASS()
 class USERINTERFACE_API UColorSelectWidget : public UUserWidget
 {

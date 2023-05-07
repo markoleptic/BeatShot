@@ -28,7 +28,7 @@ struct FCharacterGroundInfo
 	float GroundDistance;
 };
 
-
+/** Base CharacterMovementComponent for this game */
 UCLASS()
 class BEATSHOT_API UBSCharacterMovementComponent : public UPBPlayerMovement
 {

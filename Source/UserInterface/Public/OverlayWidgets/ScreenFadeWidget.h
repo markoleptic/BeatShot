@@ -11,6 +11,7 @@ DECLARE_MULTICAST_DELEGATE(FOnFadeFromBlackFinish);
 
 DECLARE_MULTICAST_DELEGATE(FOnFadeToBlackFinish);
 
+/** Widget used any time a screen transition needs to take place, used by PlayerController */
 UCLASS()
 class USERINTERFACE_API UScreenFadeWidget : public UUserWidget
 {

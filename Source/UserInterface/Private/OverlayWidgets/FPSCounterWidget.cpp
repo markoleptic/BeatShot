@@ -17,7 +17,7 @@ void UFPSCounterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	else
 	{
 		// update frame rate
-		FPSCounter->SetText(FText::AsNumber(round(CounterUpdateInterval / SumOfTicks)));
+		TextBlock_FPSCounter->SetText(FText::AsNumber(round(CounterUpdateInterval / SumOfTicks)));
 		SumOfTicks = 0;
 		CounterUpdateInterval = 0;
 	}

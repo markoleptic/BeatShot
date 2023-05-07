@@ -16,6 +16,7 @@ class USlideRightButton;
 class UVerticalBox;
 class UWidgetSwitcher;
 
+/** Widget that holds all settings category widgets */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget : public UUserWidget
 {
@@ -101,18 +102,15 @@ protected:
 	/** Function to Play the Slide Animation for Navigation Buttons */
 	UFUNCTION()
 	void SlideButtons(const USlideRightButton* ActiveButton);
+	
 	UFUNCTION()
-	void On_Game_ButtonClicked() { SlideButtons(Game_Button); }
-
+	void OnButtonClicked_Game() { SlideButtons(Game_Button); }
 	UFUNCTION()
-	void On_VideoAndSound_ButtonClicked() { SlideButtons(VideoAndSound_Button); }
-
+	void OnButtonClicked_VideoAndSound() { SlideButtons(VideoAndSound_Button); }
 	UFUNCTION()
-	void On_AudioAnalyzer_ButtonClicked() { SlideButtons(AudioAnalyzer_Button); }
-
+	void OnButtonClicked_AudioAnalyzer() { SlideButtons(AudioAnalyzer_Button); }
 	UFUNCTION()
-	void On_Sensitivity_ButtonClicked() { SlideButtons(Sensitivity_Button); }
-
+	void OnButtonClicked_Sensitivity() { SlideButtons(Sensitivity_Button); }
 	UFUNCTION()
-	void On_CrossHair_ButtonClicked() { SlideButtons(CrossHair_Button); }
+	void OnButtonClicked_CrossHair() { SlideButtons(CrossHair_Button); }
 };

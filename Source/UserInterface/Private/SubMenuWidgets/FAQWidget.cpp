@@ -11,15 +11,15 @@ void UFAQWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	MenuWidgets.Add(GameModesButton, GameModesBox);
-	MenuWidgets.Add(ScoringButton, ScoringBox);
-	MenuWidgets.Add(AudioAnalyzerButton, AudioAnalyzerBox);
+	MenuWidgets.Add(Button_GameModes, Border_GameModes);
+	MenuWidgets.Add(Button_Scoring, Border_Scoring);
+	MenuWidgets.Add(Button_AudioAnalyzer, Border_AudioAnalyzer);
 
-	GameModesButton->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnGameModesButtonClicked);
-	ScoringButton->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnScoringButtonClicked);
-	AudioAnalyzerButton->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnAudioAnalyzerButtonClicked);
+	Button_GameModes->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnButtonClicked_GameModes);
+	Button_Scoring->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnButtonClicked_Scoring);
+	Button_AudioAnalyzer->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnButtonClicked_AudioAnalyzer);
 
-	SlideButtons(GameModesButton);
+	SlideButtons(Button_GameModes);
 }
 
 void UFAQWidget::SlideButtons(const USlideRightButton* ActiveButton)
@@ -36,17 +36,17 @@ void UFAQWidget::SlideButtons(const USlideRightButton* ActiveButton)
 	}
 }
 
-void UFAQWidget::OnGameModesButtonClicked()
+void UFAQWidget::OnButtonClicked_GameModes()
 {
-	SlideButtons(GameModesButton);
+	SlideButtons(Button_GameModes);
 }
 
-void UFAQWidget::OnScoringButtonClicked()
+void UFAQWidget::OnButtonClicked_Scoring()
 {
-	SlideButtons(ScoringButton);
+	SlideButtons(Button_Scoring);
 }
 
-void UFAQWidget::OnAudioAnalyzerButtonClicked()
+void UFAQWidget::OnButtonClicked_AudioAnalyzer()
 {
-	SlideButtons(AudioAnalyzerButton);
+	SlideButtons(Button_AudioAnalyzer);
 }

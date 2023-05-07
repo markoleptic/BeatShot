@@ -15,21 +15,21 @@ void USettingsMenuWidget_CrossHair::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	InnerOffsetValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnInnerOffsetValueChange);
-	LineLengthValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnLineLengthValueChange);
-	LineWidthValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnLineWidthValueChange);
-	OutlineOpacityValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnOutlineOpacityValueChange);
-	OutlineWidthValue->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnOutlineWidthValueChange);
+	Value_InnerOffset->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_InnerOffset);
+	Value_LineLength->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_LineLength);
+	Value_LineWidth->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_LineWidth);
+	Value_OutlineOpacity->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_OutlineOpacity);
+	Value_OutlineWidth->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_OutlineWidth);
 
-	InnerOffsetSlider->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnInnerOffsetSliderChange);
-	LineLengthSlider->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnLineLengthSliderChange);
-	LineWidthSlider->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnLineWidthSliderChange);
-	OutlineOpacitySlider->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnOutlineOpacitySliderChange);
-	OutlineWidthSlider->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnOutlineWidthSliderChange);
+	Slider_InnerOffset->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_InnerOffset);
+	Slider_LineLength->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_LineLength);
+	Slider_LineWidth->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_LineWidth);
+	Slider_OutlineOpacity->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineOpacity);
+	Slider_OutlineWidth->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineWidth);
 
-	ResetToDefaultButton->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnResetToDefaultButtonClicked);
-	RevertCrossHairButton->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnRevertCrossHairButtonClicked);
-	SaveCrossHairButton->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSaveCrossHairButtonClicked);
+	Button_Reset->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnButtonClicked_Reset);
+	Button_Revert->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnButtonClicked_Revert);
+	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnOnButtonClicked_Save);
 
 	ColorSelectWidget->OnColorChanged.BindUFunction(this, "OnColorChanged");
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Save_CrossHair"));
@@ -42,17 +42,17 @@ void USettingsMenuWidget_CrossHair::SetCrossHairOptions(const FPlayerSettings_Cr
 {
 	ColorSelectWidget->InitializeColor(CrossHairSettings.CrossHairColor);
 	ColorSelectWidget->SetBorderColors(true, true);
-	InnerOffsetValue->SetText(FText::AsNumber(CrossHairSettings.InnerOffset));
-	LineLengthValue->SetText(FText::AsNumber(CrossHairSettings.LineLength));
-	LineWidthValue->SetText(FText::AsNumber(CrossHairSettings.LineWidth));
-	OutlineOpacityValue->SetText(FText::AsNumber(roundf(CrossHairSettings.OutlineOpacity * 100)));
-	OutlineWidthValue->SetText(FText::AsNumber(CrossHairSettings.OutlineWidth));
+	Value_InnerOffset->SetText(FText::AsNumber(CrossHairSettings.InnerOffset));
+	Value_LineLength->SetText(FText::AsNumber(CrossHairSettings.LineLength));
+	Value_LineWidth->SetText(FText::AsNumber(CrossHairSettings.LineWidth));
+	Value_OutlineOpacity->SetText(FText::AsNumber(roundf(CrossHairSettings.OutlineOpacity * 100)));
+	Value_OutlineWidth->SetText(FText::AsNumber(CrossHairSettings.OutlineWidth));
 
-	InnerOffsetSlider->SetValue(CrossHairSettings.InnerOffset);
-	LineLengthSlider->SetValue(CrossHairSettings.LineLength);
-	LineWidthSlider->SetValue(CrossHairSettings.LineWidth);
-	OutlineOpacitySlider->SetValue(roundf(CrossHairSettings.OutlineOpacity * 100));
-	OutlineWidthSlider->SetValue(CrossHairSettings.OutlineWidth);
+	Slider_InnerOffset->SetValue(CrossHairSettings.InnerOffset);
+	Slider_LineLength->SetValue(CrossHairSettings.LineLength);
+	Slider_LineWidth->SetValue(CrossHairSettings.LineWidth);
+	Slider_OutlineOpacity->SetValue(roundf(CrossHairSettings.OutlineOpacity * 100));
+	Slider_OutlineWidth->SetValue(CrossHairSettings.OutlineWidth);
 
 	CrossHairWidget->InitializeCrossHair(CrossHairSettings);
 }
@@ -63,89 +63,89 @@ void USettingsMenuWidget_CrossHair::OnColorChanged(const FLinearColor& NewColor)
 	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
 }
 
-void USettingsMenuWidget_CrossHair::OnInnerOffsetValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_CrossHair::OnValueChanged_InnerOffset(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, InnerOffsetValue, InnerOffsetSlider, 1, 0, 30);
+	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_InnerOffset, Slider_InnerOffset, 1, 0, 30);
 	NewCrossHairSettings.InnerOffset = SnappedValue;
 	CrossHairWidget->SetInnerOffset(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnLineLengthValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_CrossHair::OnValueChanged_LineLength(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, LineLengthValue, LineLengthSlider, 1, 0, 100);
+	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_LineLength, Slider_LineLength, 1, 0, 100);
 	NewCrossHairSettings.LineLength = SnappedValue;
 	CrossHairWidget->SetLineLength(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnLineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_CrossHair::OnValueChanged_LineWidth(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, LineWidthValue, LineWidthSlider, 1, 0, 100);
+	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_LineWidth, Slider_LineWidth, 1, 0, 100);
 	NewCrossHairSettings.LineWidth = SnappedValue;
 	CrossHairWidget->SetLineWidth(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnOutlineWidthValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_CrossHair::OnValueChanged_OutlineWidth(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, OutlineWidthValue, OutlineWidthSlider, 1, 0, 50);
+	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_OutlineWidth, Slider_OutlineWidth, 1, 0, 50);
 	NewCrossHairSettings.OutlineWidth = SnappedValue;
 	CrossHairWidget->SetOutlineWidth(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnOutlineOpacityValueChange(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_CrossHair::OnValueChanged_OutlineOpacity(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, OutlineOpacityValue, OutlineOpacitySlider, 1, 0, 100);
+	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_OutlineOpacity, Slider_OutlineOpacity, 1, 0, 100);
 	NewCrossHairSettings.OutlineOpacity = SnappedValue / 100;
 	CrossHairWidget->SetOutlineOpacity(SnappedValue / 100);
 }
 
-void USettingsMenuWidget_CrossHair::OnInnerOffsetSliderChange(const float NewValue)
+void USettingsMenuWidget_CrossHair::OnSliderChanged_InnerOffset(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, InnerOffsetValue, 1);
+	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_InnerOffset, 1);
 	NewCrossHairSettings.InnerOffset = SnappedValue;
 	CrossHairWidget->SetInnerOffset(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnLineLengthSliderChange(const float NewValue)
+void USettingsMenuWidget_CrossHair::OnSliderChanged_LineLength(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, LineLengthValue, 1);
+	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_LineLength, 1);
 	NewCrossHairSettings.LineLength = SnappedValue;
 	CrossHairWidget->SetLineLength(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnLineWidthSliderChange(const float NewValue)
+void USettingsMenuWidget_CrossHair::OnSliderChanged_LineWidth(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, LineWidthValue, 1);
+	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_LineWidth, 1);
 	NewCrossHairSettings.LineWidth = SnappedValue;
 	CrossHairWidget->SetLineWidth(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnOutlineOpacitySliderChange(const float NewValue)
+void USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineOpacity(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, OutlineOpacityValue, 1);
+	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_OutlineOpacity, 1);
 	NewCrossHairSettings.OutlineOpacity = SnappedValue / 100;
 	CrossHairWidget->SetOutlineOpacity(SnappedValue / 100);
 }
 
-void USettingsMenuWidget_CrossHair::OnOutlineWidthSliderChange(const float NewValue)
+void USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineWidth(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, OutlineWidthValue, 1);
+	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_OutlineWidth, 1);
 	NewCrossHairSettings.OutlineWidth = SnappedValue;
 	CrossHairWidget->SetOutlineWidth(SnappedValue);
 }
 
-void USettingsMenuWidget_CrossHair::OnResetToDefaultButtonClicked()
+void USettingsMenuWidget_CrossHair::OnButtonClicked_Reset()
 {
 	NewCrossHairSettings = FPlayerSettings_CrossHair();
 	SetCrossHairOptions(NewCrossHairSettings);
 }
 
-void USettingsMenuWidget_CrossHair::OnRevertCrossHairButtonClicked()
+void USettingsMenuWidget_CrossHair::OnButtonClicked_Revert()
 {
 	NewCrossHairSettings = InitialCrossHairSettings;
 	SetCrossHairOptions(NewCrossHairSettings);
 }
 
-void USettingsMenuWidget_CrossHair::OnSaveCrossHairButtonClicked()
+void USettingsMenuWidget_CrossHair::OnOnButtonClicked_Save()
 {
 	/** Load settings again in case the user changed other settings before navigating to crosshair settings */
 	FPlayerSettings_CrossHair Settings;

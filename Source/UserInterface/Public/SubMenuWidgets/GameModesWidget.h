@@ -6,7 +6,6 @@
 #include "GlobalDelegates.h"
 #include "SaveLoadInterface.h"
 #include "WidgetComponents/GameModeButton.h"
-#include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
@@ -30,6 +29,7 @@ class UComboBoxString;
 class USlider;
 class UCheckBox;
 
+/** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface
 {
@@ -67,6 +67,9 @@ protected:
 	TSubclassOf<UGameModesWidget_BeatTrackConfig> BeatTrackConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Config")
 	TSubclassOf<UGameModesWidget_TargetConfig> TargetConfigClass;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	USavedTextWidget* SavedTextWidget;
 	
 	TObjectPtr<UGameModesWidget_DefiningConfig> DefiningConfig;
 	TObjectPtr<UGameModesWidget_SpatialConfig> SpatialConfig;
@@ -76,17 +79,21 @@ protected:
 	TObjectPtr<UGameModesWidget_BeatTrackConfig> BeatTrackConfig;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Defining Config")
-	UVerticalBox* DefiningConfigBox;
+	UVerticalBox* Box_DefiningConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Spatial Config")
-	UVerticalBox* SpatialConfigBox;
+	UVerticalBox* Box_SpatialConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Config")
-	UVerticalBox* TargetConfigBox;
+	UVerticalBox* Box_TargetConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI Config")
-	UVerticalBox* AIConfigBox;
+	UVerticalBox* Box_AIConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid Config")
-	UVerticalBox* BeatGridBox;
+	UVerticalBox* Box_BeatGridConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack Config")
-	UVerticalBox* BeatTrackConfigBox;
+	UVerticalBox* Box_BeatTrackConfig;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UVerticalBox* Box_DefaultGameModes;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UVerticalBox* Box_CustomGameModes;
 	
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
@@ -94,65 +101,59 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
 	UWidgetSwitcher* MenuSwitcher;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
-	USlideRightButton* DefaultGameModesButton;
+	USlideRightButton* SlideRightButton_DefaultGameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
-	USlideRightButton* CustomGameModesButton;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
-	UVerticalBox* DefaultGameModes;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
-	UVerticalBox* CustomGameModes;
+	USlideRightButton* SlideRightButton_CustomGameModes;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	USavedTextWidget* SavedTextWidget;
+	UButton* Button_SaveCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* SaveCustomButton;
+	UButton* Button_StartWithoutSaving;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* StartWithoutSavingButton;
+	UButton* Button_SaveCustomAndStart;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* SaveCustomAndStartButton;
+	UButton* Button_StartCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* StartCustomButton;
+	UButton* Button_RemoveSelectedCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* RemoveSelectedCustomButton;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* RemoveAllCustomButton;
+	UButton* Button_RemoveAllCustom;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* BeatGridNormalButton;
+	UGameModeButton* Button_BeatGridNormal;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* BeatGridHardButton;
+	UGameModeButton* Button_BeatGridHard;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* BeatGridDeathButton;
+	UGameModeButton* Button_BeatGridDeath;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* BeatTrackNormalButton;
+	UGameModeButton* Button_BeatTrackNormal;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* BeatTrackHardButton;
+	UGameModeButton* Button_BeatTrackHard;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* BeatTrackDeathButton;
+	UGameModeButton* Button_BeatTrackDeath;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* MultiBeatNormalButton;
+	UGameModeButton* Button_MultiBeatNormal;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* MultiBeatHardButton;
+	UGameModeButton* Button_MultiBeatHard;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* MultiBeatDeathButton;
+	UGameModeButton* Button_MultiBeatDeath;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* SingleBeatNormalButton;
+	UGameModeButton* Button_SingleBeatNormal;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* SingleBeatHardButton;
+	UGameModeButton* Button_SingleBeatHard;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
-	UGameModeButton* SingleBeatDeathButton;
+	UGameModeButton* Button_SingleBeatDeath;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Spread")
-	UBorder* SpreadSelect;
+	UBorder* Border_SpreadSelect;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Spread")
-	UButton* DynamicSpreadButton;
+	UButton* Button_DynamicSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Spread")
-	UButton* NarrowSpreadButton;
+	UButton* Button_NarrowSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Spread")
-	UButton* WideSpreadButton;
+	UButton* Button_WideSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Navigation")
-	UButton* CustomizeFromStandardButton;
+	UButton* Button_CustomizeFromStandard;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Navigation")
-	UButton* PlayFromStandardButton;
+	UButton* Button_PlayFromStandard;
 
 	private:
 	/** Binds all widget delegates to functions */
@@ -188,10 +189,10 @@ protected:
 	void SlideButtons(const USlideRightButton* ActiveButton);
 	
 	UFUNCTION(Category = "Navigation")
-	void OnButtonClicked_DefaultGameModes() { SlideButtons(DefaultGameModesButton); }
+	void OnButtonClicked_DefaultGameModes() { SlideButtons(SlideRightButton_DefaultGameModes); }
 
 	UFUNCTION(Category = "Navigation")
-	void OnButtonClicked_CustomGameModes() { SlideButtons(CustomGameModesButton); }
+	void OnButtonClicked_CustomGameModes() { SlideButtons(SlideRightButton_CustomGameModes); }
 
 	/** Switches to CustomGameModes and populates the CustomGameModeOptions with what's selected in DefaultGameModes */
 	UFUNCTION(Category = "Navigation")
