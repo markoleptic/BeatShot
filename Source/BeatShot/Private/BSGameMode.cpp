@@ -56,14 +56,9 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 	ABSPlayerController* NewBSPlayer = Cast<ABSPlayerController>(NewPlayer);
 	Controllers.Add(NewBSPlayer);
 
-	if (const ABSCharacter* Character = SpawnPlayer(NewBSPlayer))
+	if (SpawnPlayer(NewBSPlayer))
 	{
 		NewBSPlayer->ShowCountdown();
-
-		if (!Character->GetGun()->OnShotFired.IsBoundToObject(this))
-		{
-			Character->GetGun()->OnShotFired.BindUObject(this, &ABSGameMode::UpdateShotsFired);
-		}
 	}
 }
 
@@ -272,6 +267,11 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		}
 	}
 	HandleScoreSaving(ShouldSavePlayerScores);
+}
+
+void ABSGameMode::RegisterWeapon(FOnShotFired& OnShotFiredDelegate)
+{
+	OnShotFiredDelegate.BindUObject(this, &ABSGameMode::UpdateShotsFired);
 }
 
 void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)

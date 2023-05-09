@@ -130,19 +130,18 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		break;
 	}
 	
-	UE_LOG(LogTemp, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
 	int Total = 0;
 	for (int i = 0; i<  BaseConfig.MappedIndices.Num(); i++)
 	{
 		int Current = 0;
 		for (int j = 0; j < BaseConfig.MappedIndices[i].VisualizerIndices.Num(); j++)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Assigned VizNum %d to channel: %d"), BaseConfig.MappedIndices[i].VisualizerIndices[j], i);
 			Current++;
 			Total++;
 		}
-		UE_LOG(LogTemp, Display, TEXT("TotalVizualizers in channel: %d"), Current);
+		UE_LOG(LogTemp, Display, TEXT("TotalVizualizers in channel %d: %d"), i, Current);
 	}
+	UE_LOG(LogTemp, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
 	UE_LOG(LogTemp, Display, TEXT("TotalVizualizers in all channels: %d"), Total);
 }
 

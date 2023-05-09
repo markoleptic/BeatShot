@@ -147,6 +147,10 @@ void AVisualizerManager::UpdateVisualizerSettings(const FPlayerSettings_Game& Pl
 
 void AVisualizerManager::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings)
 {
+	AvgSpectrumValues.Init(0, NewAASettings.NumBandChannels);
+	CurrentSpectrumValues.Init(0, NewAASettings.NumBandChannels);
+	MaxSpectrumValues.Init(1.f, NewAASettings.NumBandChannels);
+	CurrentCubeSpectrumValues.Init(0, NewAASettings.NumBandChannels);
 	for (const TObjectPtr<AVisualizerBase> Visualizer : GetVisualizers())
 	{
 		if (Visualizer)

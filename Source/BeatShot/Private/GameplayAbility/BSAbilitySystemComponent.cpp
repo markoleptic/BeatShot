@@ -119,7 +119,8 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 		break;
 
 	case EBSAbilityActivationGroup::Exclusive_Replaceable:
-	case EBSAbilityActivationGroup::Exclusive_Blocking: CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable, Ability, bReplicateCancelAbility);
+	case EBSAbilityActivationGroup::Exclusive_Blocking:
+		CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable, Ability, bReplicateCancelAbility);
 		break;
 
 	default: checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"), (uint8)Group);
@@ -227,6 +228,7 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 
 				if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::WhileInputActive)
 				{
+					UE_LOG(LogTemp, Display, TEXT("WhileInputActive ability found this frame %s"), *BSAbilityCDO->GetName());
 					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 				}
 			}
@@ -244,20 +246,22 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 			{
 				AbilitySpec->InputPressed = true;
 
-				if (AbilitySpec->IsActive())
-				{
-					// Ability is active so pass along the input event.
-					AbilitySpecInputPressed(*AbilitySpec);
-				}
-				else
-				{
+				// if (AbilitySpec->IsActive())
+				// {
+				// 	// Ability is active so pass along the input event.
+				// 	AbilitySpecInputPressed(*AbilitySpec);
+				// }
+				// else
+				// {
+				// TODO: Make new enumerator for spammable abilities
 					const UBSGameplayAbility* BSAbilityCDO = CastChecked<UBSGameplayAbility>(AbilitySpec->Ability);
 
 					if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::OnInputTriggered)
 					{
+						UE_LOG(LogTemp, Display, TEXT("OnInputTriggered ability found this frame %s"), *BSAbilityCDO->GetName());
 						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 					}
-				}
+				//}
 			}
 		}
 	}
@@ -269,6 +273,7 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 	//
 	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Trying to activate ability %s"), *AbilitySpecHandle.ToString());
 		TryActivateAbility(AbilitySpecHandle);
 	}
 
@@ -308,12 +313,15 @@ void UBSAbilitySystemComponent::ClearAbilityInput()
 
 void UBSAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
 {
+	UE_LOG(LogTemp, Display, TEXT("InputTagPressed: %s"), *InputTag.ToString());
 	if (InputTag.IsValid())
 	{
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
+			UE_LOG(LogTemp, Display, TEXT("ActivatableAbility: %s"), *AbilitySpec.Handle.ToString());
 			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
 			{
+				UE_LOG(LogTemp, Display, TEXT("added to inputspecpressedhandles"));
 				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
 			}

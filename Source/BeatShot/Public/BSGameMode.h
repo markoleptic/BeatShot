@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
+#include "BeatShot/Beatshot.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/GameMode.h"
 #include "BSGameMode.generated.h"
@@ -104,6 +105,9 @@ public:
 
 	/** Destroys all actors involved in a game mode and optionally save scores */
 	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
+
+	/** Called in BeginPlay from a weapon to bind to UpdateShotsFired */
+	void RegisterWeapon(FOnShotFired& OnShotFiredDelegate);
 
 private:
 	/** Starts all DefaultGameMode timers */

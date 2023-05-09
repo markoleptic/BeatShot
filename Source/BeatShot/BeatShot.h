@@ -9,6 +9,7 @@
 #define GET_ACTOR_ROLE_FSTRING(Actor) *(FindObject<UEnum>(nullptr, TEXT("/Script/Engine.ENetRole"), true)->GetNameStringByValue(Actor->GetLocalRole()))
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnQTableUpdate, const TArray<float>& UpdatedQTable);
+DECLARE_DELEGATE(FOnShotFired);
 
 /** Enum representing the different times of the day */
 UENUM(BlueprintType)

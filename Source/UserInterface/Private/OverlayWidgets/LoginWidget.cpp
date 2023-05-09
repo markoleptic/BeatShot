@@ -108,6 +108,7 @@ void ULoginWidget::ClearErrorText(const FText& Text)
 	TextBlock_Error->SetText(FText());
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ULoginWidget::SetErrorText(const FString& Key)
 {
 	TextBlock_Error->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));

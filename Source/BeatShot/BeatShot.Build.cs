@@ -13,7 +13,7 @@ public class BeatShot : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "Global", "NumCpp", "OnlineSubsystem", "OnlineSubsystemUtils", 
-			"Steamworks", "GameplayAbilities", "ParallelcubeAudioAnalyzer","ParallelcubeTaglib", "PBCharacterMovement"
+			"Steamworks", "GameplayAbilities", "ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "ModularGameplay", "GameFeatures", "NetCore", "PhysicsCore"
 		});
 		PrivateDependencyModuleNames.AddRange(new[]
 			{ "EnhancedInput", "InputCore", "GameplayAbilities", "GameplayTags", "GameplayTasks"});
