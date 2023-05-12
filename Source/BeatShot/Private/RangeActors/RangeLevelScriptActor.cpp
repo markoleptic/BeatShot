@@ -17,6 +17,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
+using namespace Constants;
+
 ARangeLevelScriptActor::ARangeLevelScriptActor()
 {
 	LastLerpRotation = 0;
@@ -95,7 +97,7 @@ void ARangeLevelScriptActor::BeginTransitionToNight()
 {
 	LastLerpRotation = 0;
 	TimeOfDay = ETimeOfDay::DayToNight;
-	TransitionTimeline.SetPlayRate(1.f / Constants::DayNightCycleSpeed);
+	TransitionTimeline.SetPlayRate(1.f / DayNightCycleSpeed);
 	TransitionTimeline.PlayFromStart();
 }
 
@@ -103,7 +105,7 @@ void ARangeLevelScriptActor::BeginTransitionToDay()
 {
 	LastLerpRotation = 0;
 	TimeOfDay = ETimeOfDay::NightToDay;
-	TransitionTimeline.SetPlayRate(1.f / Constants::DayNightCycleSpeed);
+	TransitionTimeline.SetPlayRate(1.f / DayNightCycleSpeed);
 	TransitionTimeline.PlayFromStart();
 }
 

@@ -203,6 +203,10 @@ void UBSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& S
 
 void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
+	if (bGamePaused)
+	{
+		return;
+	}
 	
 	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Disabled))
 	{
@@ -214,10 +218,8 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 	AbilitiesToActivate.Reset();
 
 	//@TODO: See if we can use FScopedServerAbilityRPCBatcher ScopedRPCBatcher in some of these loops
-
-	//
+	
 	// Process all abilities that activate when the input is held.
-	//
 	for (const FGameplayAbilitySpecHandle& SpecHandle : InputHeldSpecHandles)
 	{
 		if (const FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
@@ -234,10 +236,8 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 			}
 		}
 	}
-
-	//
+	
 	// Process all abilities that had their input pressed this frame.
-	//
 	for (const FGameplayAbilitySpecHandle& SpecHandle : InputPressedSpecHandles)
 	{
 		if (FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
@@ -245,41 +245,40 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 			if (AbilitySpec->Ability)
 			{
 				AbilitySpec->InputPressed = true;
-
-				// if (AbilitySpec->IsActive())
-				// {
-				// 	// Ability is active so pass along the input event.
-				// 	AbilitySpecInputPressed(*AbilitySpec);
-				// }
-				// else
-				// {
-				// TODO: Make new enumerator for spammable abilities
-					const UBSGameplayAbility* BSAbilityCDO = CastChecked<UBSGameplayAbility>(AbilitySpec->Ability);
-
-					if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::OnInputTriggered)
+				const UBSGameplayAbility* BSAbilityCDO = CastChecked<UBSGameplayAbility>(AbilitySpec->Ability);
+				if (AbilitySpec->IsActive())
+				{
+					if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::SpammableTriggered)
 					{
-						UE_LOG(LogTemp, Display, TEXT("OnInputTriggered ability found this frame %s"), *BSAbilityCDO->GetName());
 						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 					}
-				//}
+					else
+					{
+						// Ability is active and not spammable so pass along the input event.
+						AbilitySpecInputPressed(*AbilitySpec);
+					}
+					return;
+				}
+				
+				if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::OnInputTriggered)
+				{
+					// Ability is not active and but should be since input has been triggered
+					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
+				}
 			}
 		}
 	}
-
-	//
+	
 	// Try to activate all the abilities that are from presses and holds.
 	// We do it all at once so that held inputs don't activate the ability
 	// and then also send a input event to the ability because of the press.
-	//
 	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Trying to activate ability %s"), *AbilitySpecHandle.ToString());
 		TryActivateAbility(AbilitySpecHandle);
 	}
-
-	//
+	
 	// Process all abilities that had their input released this frame.
-	//
 	for (const FGameplayAbilitySpecHandle& SpecHandle : InputReleasedSpecHandles)
 	{
 		if (FGameplayAbilitySpec* AbilitySpec = FindAbilitySpecFromHandle(SpecHandle))
@@ -296,10 +295,8 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 			}
 		}
 	}
-
-	//
+	
 	// Clear the cached ability handles.
-	//
 	InputPressedSpecHandles.Reset();
 	InputReleasedSpecHandles.Reset();
 }
@@ -313,15 +310,12 @@ void UBSAbilitySystemComponent::ClearAbilityInput()
 
 void UBSAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
 {
-	UE_LOG(LogTemp, Display, TEXT("InputTagPressed: %s"), *InputTag.ToString());
 	if (InputTag.IsValid())
 	{
 		for (const FGameplayAbilitySpec& AbilitySpec : ActivatableAbilities.Items)
 		{
-			UE_LOG(LogTemp, Display, TEXT("ActivatableAbility: %s"), *AbilitySpec.Handle.ToString());
 			if (AbilitySpec.Ability && (AbilitySpec.DynamicAbilityTags.HasTagExact(InputTag)))
 			{
-				UE_LOG(LogTemp, Display, TEXT("added to inputspecpressedhandles"));
 				InputPressedSpecHandles.AddUnique(AbilitySpec.Handle);
 				InputHeldSpecHandles.AddUnique(AbilitySpec.Handle);
 			}

@@ -3,7 +3,7 @@
 
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h"
-#include "UserInterface.h"
+#include "BSWidgetInterface.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
@@ -300,36 +300,36 @@ FPlayerSettings_VideoAndSound USettingsMenuWidget_VideoAndSound::GetVideoAndSoun
 
 void USettingsMenuWidget_VideoAndSound::OnSliderChanged_GlobalSound(const float NewGlobalSound)
 {
-	const float Value = UUserInterface::OnSliderChanged(NewGlobalSound, Value_GlobalSound, 1);
+	const float Value = OnSliderChanged(NewGlobalSound, Value_GlobalSound, 1);
 	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound, Value / 100.f, 1, 0.1f);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSliderChanged_MenuSound(const float NewMenuSound)
 {
-	const float Value = UUserInterface::OnSliderChanged(NewMenuSound, Value_MenuSound, 1);
+	const float Value = OnSliderChanged(NewMenuSound, Value_MenuSound, 1);
 	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound, Value / 100.f, 1, 0.1f);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSliderChanged_MusicSound(const float NewMusicSound)
 {
-	UUserInterface::OnSliderChanged(NewMusicSound, Value_MusicSound, 1);
+	OnSliderChanged(NewMusicSound, Value_MusicSound, 1);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_GlobalSound(const FText& NewGlobalSound, ETextCommit::Type CommitType)
 {
-	const float Value = UUserInterface::OnEditableTextBoxChanged(NewGlobalSound, Value_GlobalSound, Slider_GlobalSound, 1, 0, 100);
+	const float Value = OnEditableTextBoxChanged(NewGlobalSound, Value_GlobalSound, Slider_GlobalSound, 1, 0, 100);
 	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound, Value / 100.f, 1, 0.1f);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_MenuSound(const FText& NewMenuSound, ETextCommit::Type CommitType)
 {
-	const float Value = UUserInterface::OnEditableTextBoxChanged(NewMenuSound, Value_MenuSound, Slider_MenuSound, 1, 0, 100);
+	const float Value = OnEditableTextBoxChanged(NewMenuSound, Value_MenuSound, Slider_MenuSound, 1, 0, 100);
 	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound, Value / 100.f, 1, 0.0f);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_MusicSound(const FText& NewMusicSound, ETextCommit::Type CommitType)
 {
-	UUserInterface::OnEditableTextBoxChanged(NewMusicSound, Value_MusicSound, Slider_MusicSound, 1, 0, 100);
+	OnEditableTextBoxChanged(NewMusicSound, Value_MusicSound, Slider_MusicSound, 1, 0, 100);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnButtonClicked_VideoQuality(const UVideoSettingButton* ClickedButton)

@@ -3,7 +3,6 @@
 
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "AudioAnalyzerManager.h"
-#include "WidgetComponents/TooltipImage.h"
 #include "WidgetComponents/TooltipWidget.h"
 #include "Components/Button.h"
 #include "Components/CheckBox.h"
@@ -90,7 +89,7 @@ void UAudioSelectWidget::OnButtonClicked_AudioFromFile()
 	Button_LoadFile->SetIsEnabled(true);
 	ComboBox_InAudioDevices->ClearSelection();
 	ComboBox_OutAudioDevices->ClearSelection();
-	Button_AudioFromFile->SetBackgroundColor(Constants::BeatShotBlue);
+	Button_AudioFromFile->SetBackgroundColor(BeatShotBlue);
 	Button_CaptureAudio->SetBackgroundColor(FLinearColor::White);
 	Box_AudioDevice->SetVisibility(ESlateVisibility::Collapsed);
 	Box_SongTitleLength->SetVisibility(ESlateVisibility::Collapsed);
@@ -214,7 +213,6 @@ void UAudioSelectWidget::OnValueChanged_Seconds(const FText& NewSeconds, ETextCo
 
 void UAudioSelectWidget::OnSelectionChanged_InAudioDevice(const FString SelectedInAudioDevice, const ESelectInfo::Type SelectionType)
 {
-	UE_LOG(LogTemp, Display, TEXT("Selection changed"));
 	AudioConfig.InAudioDevice = SelectedInAudioDevice;
 	if (ComboBox_OutAudioDevices->GetSelectedIndex() != -1 && ComboBox_InAudioDevices->GetSelectedIndex() != -1)
 	{

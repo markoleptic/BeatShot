@@ -9,7 +9,7 @@
 
 UCLASS()
 class GLOBAL_API USaveGamePlayerSettings : public USaveGame
-{
+{     
 	GENERATED_BODY()
 
 public:

@@ -12,162 +12,67 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSMoveStepSound.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentDefinition.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentInstance.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentManagerComponent.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSKnife.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayTagStack.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Inventory/BSInventoryItemDefinition.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Inventory/BSInventoryItemInstance.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Inventory/BSInventoryManagerComponent.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Inventory/InventoryFragment_Equippable.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSMoveStepSound.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/BSEquipmentDefinition.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/BSEquipmentInstance.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/BSEquipmentManagerComponent.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/BSKnife.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayTagStack.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Inventory/BSInventoryItemDefinition.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Inventory/BSInventoryItemInstance.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Inventory/BSInventoryManagerComponent.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Inventory/InventoryFragment_Equippable.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Private/BSWidgetInterface.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Private/LoadingScreenWidget.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Public/LoadingScreenWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/statistic.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/statistic.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/BeatShot.uproject" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.uproject" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Config/DefaultGame.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultGame.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/AimBot/GA_AimBot.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/FireGun/GA_FireGun.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/FireGun/GE_FireGunDamageCalc.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/FireGun/GE_FireGun_Cooldown.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/GE_TargetImmunity.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/MoveSpeed/GA_MoveSpeed.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/MoveSpeed/GE_Buff_MoveSpeed.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/Sprint/GA_Sprint.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/Sprint/GE_Sprint.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Abilities/TrackGun/GA_TrackGun.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_ADS.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Crouch.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Fire.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Interact.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Jump.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Look.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_MoveBackward.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_MoveForward.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_MoveLeft.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_MoveRight.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Pause.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_PrimaryWeaponSelect.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Reload.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Scroll.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_SecondaryWeaponSelect.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_ShiftInteract.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_ShiftModifier.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Actions/IA_Walk.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_CheatManager.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_CheatManager.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultGameMode.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultGameMode.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/AbilitiySystem/MoveSpeed/GA_MoveSpeed.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/AbilitiySystem/MoveSpeed/GA_MoveSpeed.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/AbilitiySystem/Sprint/GA_Sprint.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/AbilitiySystem/Sprint/GA_Sprint.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultPlayerController.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultPlayerController.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_Test.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_FloatingText.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_FloatingText.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Characters/DA_AbilitySet.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Characters/DA_AbilitySet.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Characters/DA_InputConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Characters/DA_InputConfig.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GCNA_Sprint.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GCNA_Sprint.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GCN_WeaponFire.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GCN_WeaponFire.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GC_MuzzleFlash.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Lighting/BP_Moon.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Lighting/BP_SkySphere.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Mappings/MC_Base.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Range/BP_PlatformControl.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Range/BP_PlatformControl.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/ED_AK47.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/ED_AK47.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/Range/BP_WallMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Range/BP_WallMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_SphereTarget.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_SphereTarget.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_BeamVisualizer.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_BeamVisualizer_CenterRoom.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_BeamVisualizer_Left.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_BeamVisualizer_Right.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_SimpleBeamLight.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_StaticCubeVisualizer.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_StaticCubeVisualizer_Left.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_StaticCubeVisualizer_Right.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_VisualizerManager.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_VisualizerManager.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Weapon/BP_Gun_AK47.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Weapon/BP_Projectile.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Weapon/BP_WeaponFire.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Curves/FX_Pyro.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Curves/FX_Pyro_Fire.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Curves/FX_Pyro_Fire_2.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Curves/FX_Pyro_Fire_3.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Curves/FX_Pyro_Sparks.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_AngleFade.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_ChannelRemap.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_DepthFade.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_NearDistanceFade.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_SpriteEmissive.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_SpriteOpacity.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_TextureChannelSelect.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_TextureOpacity.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/MaterialFunctions/MF_TracerSmokeOpacity.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Materials/Tracers/Instances/MI_TracerSmoke_Default.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Materials/Tracers/Instances/MI_Tracers_Default.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Materials/Tracers/M_TracerCore_Base.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Materials/Tracers/M_TracerSmoke_Base.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/NiagaraModules/NM_ParticleLight.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/NiagaraModules/NM_WeaponTrigger.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Particles/Weapons/NS_WeaponFire_Tracer.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Effects/Textures/General/T_Inky_Smoke_Tile.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Lighting.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Lighting.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/_GENERATED/marka/CubeGridToolOutput_C65EB5DE.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/_GENERATED/marka/Merge_908EF723.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/_GENERATED/marka/MergedTrussAfterMergeOp_2E0DB53A.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/PhysicsMaterials/PM_Character.uasset" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PauseMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PauseMenu.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Countdown.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Countdown.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_CrossHair.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_CrossHair.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_FPSCounter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_FPSCounter.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Login.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Login.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_CombatText.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_CombatText.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Interact.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Interact.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_LowQualityBuff.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_LowQualityBuff.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PlayerHUD.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PlayerHUD.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PopupMessage.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PopupMessage.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_QuitMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_QuitMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AASettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AASettings.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AIConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AIConfig.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_BeatGridConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_BeatGridConfig.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_CrossHairSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_CrossHairSettings.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_FAQ.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_FAQ.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameSettings.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_ScoreBrowser.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_ScoreBrowser.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SensitivitySettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SensitivitySettings.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SpatialConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SpatialConfig.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_TargetConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_TargetConfig.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_VideoAndSoundSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_VideoAndSoundSettings.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandChannel.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandChannel.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandThreshold.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandThreshold.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_DoubleSyncedSliderAndTextBox.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_DoubleSyncedSliderAndTextBox.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Tooltip.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Tooltip.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TooltipImage.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TooltipImage.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TooltipImage_Warning.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TooltipImage_Warning.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/__ExternalActors__/FirstPerson/Maps/FirstPersonMap/E/V3/ICWLYCF62EJ63XTK5ZSZWV.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_ScreenFade.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_ScreenFade.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_MenuLayout.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_MenuLayout.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_RLAgentImage.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_RLAgentImage.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_RLAgentTextBlock.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_RLAgentTextBlock.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot.Target.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacterMovementComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacterMovementComponent.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSAbilitySystemComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSAbilitySystemComponent.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Gun_AK47.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/Gun_AK47.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerBase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerBase.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSCharacter.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSCharacterMovementComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSCharacterMovementComponent.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Gun_AK47.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/Gun_AK47.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/Moon.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/Moon.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/MovablePlatform.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/MovablePlatform.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/RangeLevelScriptActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/RangeLevelScriptActor.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/SimpleBeamLight.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/SimpleBeamLight.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSAbilitySystemComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSAbilitySystemComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/SimpleBeamLight.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/SimpleBeamLight.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotEditor.Target.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Global.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Global.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Private/GlobalModule.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/Global/Public/SaveGamePlayerSettings.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/NumCpp/NumCpp.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/NumCpp/NumCpp.Build.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_AIConfig.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_AIConfig.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_BeatGridConfig.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_BeatGridConfig.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_SpatialConfig.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_SpatialConfig.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_TargetConfig.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget_TargetConfig.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_CrossHair.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_CrossHair.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/TooltipInterface.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/UserInterface.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ColorSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/ColorSelectWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/TooltipInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/UserInterface.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSSettingCategoryWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSSettingCategoryWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -202,14 +107,6 @@
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/smart_ptr/shared_ptr.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/type_index.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/type_traits/detail/config.hpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/kissfft.hh" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools/kiss_fftnd.c" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools/kiss_fftr.c" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/mpeg/id3v2/frames/textidentificationframe.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/tagunion.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/toolkit/tfile.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/Taglib/toolkit/tfile.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzerTaglib/Thirdparty/utf8-cpp/core.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot.Target.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSAssetManager.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSAssetManager.h" root0="FORCE_HIGHLIGHTING" />
@@ -228,7 +125,8 @@
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/RangeLevelScriptActor.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/WallMenu.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/UserInterface/Private/UserInterfaceModule.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -238,7 +136,7 @@
     <scope name="BeatShotBase" pattern="file:Source/BeatShot/Private/BS*" />
   </component>
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="Toolset" />
   </component>
   <component name="ProjectId" id="2KRC04cNVjlpl4YTRGVI2u7QKyx" />
   <component name="ProjectViewState">
@@ -262,7 +160,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.statistic.project.settings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CSharpParameterNameHintsOptions&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -567,6 +465,22 @@
       <workItem from="1683495435904" duration="21063000" />
       <workItem from="1683590108110" duration="8780000" />
       <workItem from="1683600233662" duration="5993000" />
+      <workItem from="1683691933035" duration="5268000" />
+      <workItem from="1683733703566" duration="8422000" />
+      <workItem from="1683742544436" duration="180000" />
+      <workItem from="1683742766148" duration="1474000" />
+      <workItem from="1683744359061" duration="8587000" />
+      <workItem from="1683753182841" duration="52000" />
+      <workItem from="1683753306965" duration="1330000" />
+      <workItem from="1683754795807" duration="2857000" />
+      <workItem from="1683758373464" duration="790000" />
+      <workItem from="1683759243365" duration="1070000" />
+      <workItem from="1683761068529" duration="487000" />
+      <workItem from="1683761725797" duration="4550000" />
+      <workItem from="1683770553592" duration="1556000" />
+      <workItem from="1683777670925" duration="627000" />
+      <workItem from="1683778439717" duration="510000" />
+      <workItem from="1683867915183" duration="910000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

@@ -7,20 +7,13 @@
 		{
 			"Name": "BeatShot",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"Engine",
-				"UMG",
-				"WebBrowserWidget"
-			]
+			"LoadingPhase": "Default"
 		},
 		{
 			"Name": "UserInterface",
 			"Type": "Runtime",
-			"LoadingPhase": "Default",
-			"AdditionalDependencies": [
-				"UMG"
-			]
+			"LoadingPhase": "PreDefault",
+			"AdditionalDependencies": ["UMG"]
 		},
 		{
 			"Name": "Global",
@@ -126,6 +119,10 @@
 		},
 		{
 			"Name": "ModularGameplay",
+			"Enabled": true
+		},
+		{
+			"Name": "CommonLoadingScreen",
 			"Enabled": true
 		}
 	],

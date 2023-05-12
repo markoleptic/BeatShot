@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TooltipInterface.h"
+#include "BSWidgetInterface.h"
 #include "BSVerticalBox.h"
 #include "Blueprint/UserWidget.h"
 #include "BSSettingCategoryWidget.generated.h"
@@ -11,7 +11,7 @@
 /** Base Setting Category widget, with a BSVerticalBox acting as the main container. The background colors of BSHorizontalBoxes inside the MainContainer are synced.
  *  Additional containers can be added, but will not be synced with MainContainer or each other */
 UCLASS()
-class USERINTERFACE_API UBSSettingCategoryWidget : public UUserWidget, public ITooltipInterface
+class USERINTERFACE_API UBSSettingCategoryWidget : public UUserWidget, public IBSWidgetInterface
 {
 	GENERATED_BODY()
 

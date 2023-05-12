@@ -3,7 +3,7 @@
 
 #include "SubMenuWidgets/SettingsMenuWidget_CrossHair.h"
 #include "Components/Button.h"
-#include "UserInterface.h"
+#include "BSWidgetInterface.h"
 #include "Components/EditableTextBox.h"
 #include "Math/Color.h"
 #include "Components/Slider.h"
@@ -65,70 +65,70 @@ void USettingsMenuWidget_CrossHair::OnColorChanged(const FLinearColor& NewColor)
 
 void USettingsMenuWidget_CrossHair::OnValueChanged_InnerOffset(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_InnerOffset, Slider_InnerOffset, 1, 0, 30);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, Value_InnerOffset, Slider_InnerOffset, 1, 0, 30);
 	NewCrossHairSettings.InnerOffset = SnappedValue;
 	CrossHairWidget->SetInnerOffset(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnValueChanged_LineLength(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_LineLength, Slider_LineLength, 1, 0, 100);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, Value_LineLength, Slider_LineLength, 1, 0, 100);
 	NewCrossHairSettings.LineLength = SnappedValue;
 	CrossHairWidget->SetLineLength(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnValueChanged_LineWidth(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_LineWidth, Slider_LineWidth, 1, 0, 100);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, Value_LineWidth, Slider_LineWidth, 1, 0, 100);
 	NewCrossHairSettings.LineWidth = SnappedValue;
 	CrossHairWidget->SetLineWidth(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnValueChanged_OutlineWidth(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_OutlineWidth, Slider_OutlineWidth, 1, 0, 50);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, Value_OutlineWidth, Slider_OutlineWidth, 1, 0, 50);
 	NewCrossHairSettings.OutlineWidth = SnappedValue;
 	CrossHairWidget->SetOutlineWidth(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnValueChanged_OutlineOpacity(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, Value_OutlineOpacity, Slider_OutlineOpacity, 1, 0, 100);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, Value_OutlineOpacity, Slider_OutlineOpacity, 1, 0, 100);
 	NewCrossHairSettings.OutlineOpacity = SnappedValue / 100;
 	CrossHairWidget->SetOutlineOpacity(SnappedValue / 100);
 }
 
 void USettingsMenuWidget_CrossHair::OnSliderChanged_InnerOffset(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_InnerOffset, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, Value_InnerOffset, 1);
 	NewCrossHairSettings.InnerOffset = SnappedValue;
 	CrossHairWidget->SetInnerOffset(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnSliderChanged_LineLength(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_LineLength, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, Value_LineLength, 1);
 	NewCrossHairSettings.LineLength = SnappedValue;
 	CrossHairWidget->SetLineLength(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnSliderChanged_LineWidth(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_LineWidth, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, Value_LineWidth, 1);
 	NewCrossHairSettings.LineWidth = SnappedValue;
 	CrossHairWidget->SetLineWidth(SnappedValue);
 }
 
 void USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineOpacity(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_OutlineOpacity, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, Value_OutlineOpacity, 1);
 	NewCrossHairSettings.OutlineOpacity = SnappedValue / 100;
 	CrossHairWidget->SetOutlineOpacity(SnappedValue / 100);
 }
 
 void USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineWidth(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, Value_OutlineWidth, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, Value_OutlineWidth, 1);
 	NewCrossHairSettings.OutlineWidth = SnappedValue;
 	CrossHairWidget->SetOutlineWidth(SnappedValue);
 }

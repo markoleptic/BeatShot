@@ -3,7 +3,7 @@
 
 #include "WidgetComponents/ColorSelectWidget.h"
 
-#include "UserInterface.h"
+#include "BSWidgetInterface.h"
 #include "Components/Border.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Image.h"
@@ -96,7 +96,7 @@ void UColorSelectWidget::SetColorText(const FText& Key)
 
 void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, ColorAValue, ColorASlider, 1, 0, 100);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorAValue, ColorASlider, 1, 0, 100);
 	Color.A = FMath::GridSnap(SnappedValue / 100, 0.01);
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -108,7 +108,7 @@ void UColorSelectWidget::OnColorAValueChange(const FText& NewValue, ETextCommit:
 
 void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, ColorRValue, ColorRSlider, 1, 0, 255);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorRValue, ColorRSlider, 1, 0, 255);
 	Color.R = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -120,7 +120,7 @@ void UColorSelectWidget::OnColorRValueChange(const FText& NewValue, ETextCommit:
 
 void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, ColorGValue, ColorGSlider, 1, 0, 255);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorGValue, ColorGSlider, 1, 0, 255);
 	Color.G = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -132,7 +132,7 @@ void UColorSelectWidget::OnColorGValueChange(const FText& NewValue, ETextCommit:
 
 void UColorSelectWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = UUserInterface::OnEditableTextBoxChanged(NewValue, ColorBValue, ColorBSlider, 1, 0, 255);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorBValue, ColorBSlider, 1, 0, 255);
 	Color.B = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -167,7 +167,7 @@ void UColorSelectWidget::OnHexValueChange(const FText& NewValue, ETextCommit::Ty
 
 void UColorSelectWidget::OnColorASliderChange(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, ColorAValue, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, ColorAValue, 1);
 	Color.A = SnappedValue / 100;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -179,7 +179,7 @@ void UColorSelectWidget::OnColorASliderChange(const float NewValue)
 
 void UColorSelectWidget::OnColorRSliderChange(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, ColorRValue, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, ColorRValue, 1);
 	Color.R = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -191,7 +191,7 @@ void UColorSelectWidget::OnColorRSliderChange(const float NewValue)
 
 void UColorSelectWidget::OnColorGSliderChange(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, ColorGValue, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, ColorGValue, 1);
 	Color.G = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -203,7 +203,7 @@ void UColorSelectWidget::OnColorGSliderChange(const float NewValue)
 
 void UColorSelectWidget::OnColorBSliderChange(const float NewValue)
 {
-	const float SnappedValue = UUserInterface::OnSliderChanged(NewValue, ColorBValue, 1);
+	const float SnappedValue = IBSWidgetInterface::OnSliderChanged(NewValue, ColorBValue, 1);
 	Color.B = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));

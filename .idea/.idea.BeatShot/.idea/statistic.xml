@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine" />
         <option value="$PROJECT_DIR$/Intermediate" />
         <option value="$PROJECT_DIR$/Plugins" />
+        <option value="$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Plugins" />
+        <option value="$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Plugins/Experimental/PhysicsControl/Source/PhysicsControlVisualizer" />
       </list>
     </option>
   </component>

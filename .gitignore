@@ -58,8 +58,6 @@ Plugins/*/Binaries/*
 Build/*
 .renom/*
 
-Plugins/
-
 Content/**/Assets/
 Content/DynamicVolumetricSky
 

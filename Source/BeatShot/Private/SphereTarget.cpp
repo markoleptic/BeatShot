@@ -124,8 +124,8 @@ void ASphereTarget::BeginPlay()
 	/* Set Outline Color */
 	SetUseSeparateOutlineColor(PlayerSettings.bUseSeparateOutlineColor);
 	
-	const float StartToPeakMultiplier = 1 / BSConfig.AudioConfig.PlayerDelay;
-	const float PeakToFadeMultiplier = 1 / (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay);
+	StartToPeakTimelinePlayRate = 1 / BSConfig.AudioConfig.PlayerDelay;
+	PeakToEndTimelinePlayRate = 1 / (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay);
 
 	/* Start to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
@@ -146,14 +146,10 @@ void ASphereTarget::BeginPlay()
 	FOnTimelineFloat OnShrinkQuickAndGrowSlow;
 	OnShrinkQuickAndGrowSlow.BindDynamic(this, &ASphereTarget::InterpShrinkQuickAndGrowSlow);
 	ShrinkQuickAndGrowSlowTimeline.AddInterpFloat(ShrinkQuickAndGrowSlowCurve, OnShrinkQuickAndGrowSlow);
-	
-	// FOnTimelineEvent OnFadeAndReappearFinished;
-	// OnFadeAndReappearFinished.BindDynamic(this, &ASphereTarget::ASphereTarget::SetUseSeparateOutlineColor);
-	// ShrinkQuickAndGrowSlowTimeline.SetTimelineFinishedFunc(OnFadeAndReappearFinished);
 
-	StartToPeakTimeline.SetPlayRate(StartToPeakMultiplier);
-	PeakToEndTimeline.SetPlayRate(PeakToFadeMultiplier);
-	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakMultiplier);
+	StartToPeakTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
+	PeakToEndTimeline.SetPlayRate(PeakToEndTimelinePlayRate);
+	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
 
 	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
 	{
@@ -242,19 +238,45 @@ void ASphereTarget::SetColorToBeatGridColor()
 
 void ASphereTarget::InterpStartToPeakColor(const float Alpha)
 {
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor, Alpha);
-	SetSphereColor(Color);
+	SetSphereColor(UKismetMathLibrary::LinearColorLerp(PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor, Alpha));
+	if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Grow)
+	{
+		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
+			BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale,
+			StartToPeakTimeline.GetPlaybackPosition() * BSConfig.AudioConfig.PlayerDelay / BSConfig.TargetConfig.TargetMaxLifeSpan)));
+	}
+	else if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Shrink)
+	{
+		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
+			BSConfig.TargetConfig.MaxTargetScale, BSConfig.TargetConfig.MinTargetScale,
+			StartToPeakTimeline.GetPlaybackPosition() * BSConfig.AudioConfig.PlayerDelay / BSConfig.TargetConfig.TargetMaxLifeSpan)));
+	}
 }
 
 void ASphereTarget::InterpPeakToEndColor(const float Alpha)
 {
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor, Alpha);
-	SetSphereColor(Color);
+	SetSphereColor(UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor, Alpha));
+	if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Grow)
+	{
+		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
+			BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale,
+			PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay) /
+			(BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay)
+			)));
+	}
+	else if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Shrink)
+	{
+		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
+			BSConfig.TargetConfig.MaxTargetScale, BSConfig.TargetConfig.MinTargetScale,
+			((PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay)) + BSConfig.AudioConfig.PlayerDelay) /
+			BSConfig.TargetConfig.TargetMaxLifeSpan
+			)));
+	}
 }
 
 void ASphereTarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	CapsuleComponent->SetRelativeScale3D(FVector(UKismetMathLibrary::Lerp(Constants::MinShrinkTargetScale, TargetScale, Alpha)));
+	SetSphereScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, TargetScale, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, PlayerSettings.BeatGridInactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetSphereColor(Color);
 }
@@ -302,7 +324,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereTargetRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
+	PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
 	Destroy();
 }
 
@@ -323,7 +345,7 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		ApplyImmunityEffect();
 		ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor"));
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), Constants::SphereTargetRadius * TargetScale, ColorWhenDestroyed);
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * TargetScale, ColorWhenDestroyed);
 		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}

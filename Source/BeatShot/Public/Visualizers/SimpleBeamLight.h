@@ -18,6 +18,8 @@ class UMaterialInstanceDynamic;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnBeamLightLifetimeCompleted, const int32 OutIndex);
 
+using namespace Constants;
+
 USTRUCT(BlueprintType, Category = "Simple Beam Light Config")
 struct FSimpleBeamLightConfig
 {
@@ -49,15 +51,15 @@ struct FSimpleBeamLightConfig
 
 	/** Max intensity of the Spotlight */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight", meta=(DisplayPriority=600, EditCondition="bUseSpotlight", EditConditionHides))
-	float MaxSpotlightIntensity = Constants::DefaultMaxSpotlightIntensity;
+	float MaxSpotlightIntensity = DefaultMaxSpotlightIntensity;
 	
 	/** Inner cone angle for the Spotlight */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight", meta=(DisplayName="Spotlight Inner Cone Angle", DisplayPriority=700, EditCondition="bUseSpotlight", EditConditionHides))
-	float InnerConeAngle = Constants::DefaultSimpleBeamLightInnerConeAngle;
+	float InnerConeAngle = DefaultSimpleBeamLightInnerConeAngle;
 
 	/** Outer cone angle for the Spotlight */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Spotlight", meta=(DisplayName="Spotlight Outer Cone Angle", DisplayPriority=800, EditCondition="bUseSpotlight", EditConditionHides))
-	float OuterConeAngle = Constants::DefaultSimpleBeamLightOuterConeAngle;
+	float OuterConeAngle = DefaultSimpleBeamLightOuterConeAngle;
 
 	/** Whether or not to activate the BeamEndLight */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | BeamEndLight", meta=(DisplayPriority=900))
@@ -65,7 +67,7 @@ struct FSimpleBeamLightConfig
 
 	/** Max intensity of the MaxBeamEndLight */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | BeamEndLight", meta=(DisplayPriority=1000, EditCondition="bUseBeamEndLight", EditConditionHides))
-	float MaxBeamEndLightIntensity = Constants::DefaultMaxBeamEndLightIntensity;
+	float MaxBeamEndLightIntensity = DefaultMaxBeamEndLightIntensity;
 	
 	/** The Niagara System used for this light */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Beam Light Config | Niagara Beam", meta=(DisplayPriority=1100))
@@ -94,17 +96,17 @@ struct FSimpleBeamLightConfig
 		LightMovementCurve = nullptr;
 		LightColor = FLinearColor::White;
 		bUseSpotlight = false;
-		MaxSpotlightIntensity = Constants::DefaultMaxSpotlightIntensity;
-		InnerConeAngle = Constants::DefaultSimpleBeamLightInnerConeAngle;
-		OuterConeAngle = Constants::DefaultSimpleBeamLightOuterConeAngle;
+		MaxSpotlightIntensity = DefaultMaxSpotlightIntensity;
+		InnerConeAngle = DefaultSimpleBeamLightInnerConeAngle;
+		OuterConeAngle = DefaultSimpleBeamLightOuterConeAngle;
 		bUseBeamEndLight = false;
-		MaxBeamEndLightIntensity = Constants::DefaultMaxBeamEndLightIntensity;
+		MaxBeamEndLightIntensity = DefaultMaxBeamEndLightIntensity;
 		MaxEmissiveLightBulbLightIntensity = 1.f;
 		NiagaraSystem = nullptr;
 		
 		NiagaraFloatParameters = TMap<FString, float>();
-		NiagaraFloatParameters.Emplace("User.BeamWidth", Constants::DefaultSimpleBeamLightBeamWidth);
-		NiagaraFloatParameters.Emplace("User.BeamLength", Constants::DefaultSimpleBeamLightBeamLength);
+		NiagaraFloatParameters.Emplace("User.BeamWidth", DefaultSimpleBeamLightBeamWidth);
+		NiagaraFloatParameters.Emplace("User.BeamLength", DefaultSimpleBeamLightBeamLength);
 		NiagaraFloatParameters.Emplace("User.Lifetime", LightDuration);
 		
 		NiagaraColorParameters = TMap<FString, FLinearColor>();

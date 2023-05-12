@@ -63,5 +63,5 @@ protected:
 	TArray<FGameplayAbilitySpecHandle> InputHeldSpecHandles;
 
 	// Number of abilities running in each activation group.
-	int32 ActivationGroupCounts[(uint8)EBSAbilityActivationGroup::MAX];
+	int32 ActivationGroupCounts[(uint8)EBSAbilityActivationGroup::Max];
 };

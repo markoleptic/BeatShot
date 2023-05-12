@@ -8,6 +8,8 @@ public class NumCpp : ModuleRules
 		bEnableExceptions = true;
 		Type = ModuleType.External;
 		PublicDependencyModuleNames.AddRange(new[]
-			{ "Core", "CoreUObject", "Engine", "LocalBoost" });
+		{
+			"Core", "CoreUObject", "Engine", "LocalBoost"
+		});
 	}
 }

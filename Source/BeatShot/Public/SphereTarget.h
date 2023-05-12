@@ -192,4 +192,7 @@ private:
 	float TargetScale = 1.f;
 
 	FLinearColor ColorWhenDestroyed;
+
+	float StartToPeakTimelinePlayRate;
+	float PeakToEndTimelinePlayRate;
 };

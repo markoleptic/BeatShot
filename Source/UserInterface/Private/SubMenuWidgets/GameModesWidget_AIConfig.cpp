@@ -3,7 +3,7 @@
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
 #include "GlobalConstants.h"
-#include "UserInterface.h"
+#include "BSWidgetInterface.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
@@ -120,30 +120,30 @@ void UGameModesWidget_AIConfig::OnCheckStateChanged_EnableAI(const bool bEnableA
 
 void UGameModesWidget_AIConfig::OnSliderChanged_AIAlpha(const float NewAlpha)
 {
-	UUserInterface::OnSliderChanged(NewAlpha, Value_AIAlpha, SnapSize_Alpha);
+	OnSliderChanged(NewAlpha, Value_AIAlpha, SnapSize_Alpha);
 }
 
 void UGameModesWidget_AIConfig::OnTextCommitted_AIAlpha(const FText& NewAlpha, ETextCommit::Type CommitType)
 {
-	UUserInterface::OnEditableTextBoxChanged(NewAlpha, Value_AIAlpha, Slider_AIAlpha, SnapSize_Alpha,MinValue_Alpha, MaxValue_Alpha);
+	OnEditableTextBoxChanged(NewAlpha, Value_AIAlpha, Slider_AIAlpha, SnapSize_Alpha,MinValue_Alpha, MaxValue_Alpha);
 }
 
 void UGameModesWidget_AIConfig::OnSliderChanged_AIEpsilon(const float NewEpsilon)
 {
-	UUserInterface::OnSliderChanged(NewEpsilon, Value_AIEpsilon, SnapSize_Epsilon);
+	OnSliderChanged(NewEpsilon, Value_AIEpsilon, SnapSize_Epsilon);
 }
 
 void UGameModesWidget_AIConfig::OnTextCommitted_AIEpsilon(const FText& NewEpsilon, ETextCommit::Type CommitType)
 {
-	UUserInterface::OnEditableTextBoxChanged(NewEpsilon, Value_AIEpsilon, Slider_AIEpsilon, SnapSize_Epsilon,MinValue_Epsilon, MaxValue_Epsilon);
+	OnEditableTextBoxChanged(NewEpsilon, Value_AIEpsilon, Slider_AIEpsilon, SnapSize_Epsilon,MinValue_Epsilon, MaxValue_Epsilon);
 }
 
 void UGameModesWidget_AIConfig::OnSliderChanged_AIGamma(const float NewGamma)
 {
-	UUserInterface::OnSliderChanged(NewGamma, Value_AIGamma, SnapSize_Gamma);
+	OnSliderChanged(NewGamma, Value_AIGamma, SnapSize_Gamma);
 }
 
 void UGameModesWidget_AIConfig::OnTextCommitted_AIGamma(const FText& NewGamma, ETextCommit::Type CommitType)
 {
-	UUserInterface::OnEditableTextBoxChanged(NewGamma, Value_AIGamma, Slider_AIGamma, SnapSize_Gamma,MinValue_Gamma, MaxValue_Gamma);
+	OnEditableTextBoxChanged(NewGamma, Value_AIGamma, Slider_AIGamma, SnapSize_Gamma,MinValue_Gamma, MaxValue_Gamma);
 }

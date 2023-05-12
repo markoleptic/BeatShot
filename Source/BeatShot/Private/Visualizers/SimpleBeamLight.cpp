@@ -14,6 +14,8 @@
 #include "Components/TimelineComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
+using namespace Constants;
+
 ASimpleBeamLight::ASimpleBeamLight()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -24,15 +26,15 @@ ASimpleBeamLight::ASimpleBeamLight()
 
 	SpotlightLimb = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightLimb"));
 	SpotlightLimb->SetupAttachment(SpotlightBase);
-	SpotlightLimb->SetRelativeLocation(Constants::DefaultSpotlightLimbOffset);
+	SpotlightLimb->SetRelativeLocation(DefaultSpotlightLimbOffset);
 
 	SpotlightHead = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SpotlightHead"));
 	SpotlightHead->SetupAttachment(SpotlightLimb);
-	SpotlightHead->SetRelativeLocation(Constants::DefaultSpotlightHeadOffset);
+	SpotlightHead->SetRelativeLocation(DefaultSpotlightHeadOffset);
 
 	Spotlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Spotlight"));
 	Spotlight->SetupAttachment(SpotlightHead);
-	Spotlight->SetRelativeLocation(Constants::DefaultSpotlightOffset);
+	Spotlight->SetRelativeLocation(DefaultSpotlightOffset);
 	Spotlight->SetAutoActivate(false);
 	Spotlight->SetInnerConeAngle(SimpleBeamLightConfig.InnerConeAngle);
 	Spotlight->SetOuterConeAngle(SimpleBeamLightConfig.OuterConeAngle);

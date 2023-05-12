@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "WidgetComponents/TooltipImage.h"
-#include "TooltipInterface.generated.h"
+#include "BSWidgetInterface.generated.h"
 
 class UButton;
 class UTooltipImage;
@@ -13,6 +13,7 @@ class UTooltipWidget;
 class UEditableTextBox;
 class USlider;
 
+/** Contains data for the tooltip of a widget */
 USTRUCT(BlueprintType)
 struct FTooltipData
 {
@@ -46,19 +47,25 @@ struct FTooltipData
 	}
 };
 
-/** Interface to easily add tooltips to any other widgets */
+/** Interface for commonly used objects and functions such as adding tooltips and syncing Sliders & TextBoxes */
 UINTERFACE()
-class UTooltipInterface : public UInterface
+class UBSWidgetInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-/** Interface to easily add tooltips to any other widgets */
-class USERINTERFACE_API ITooltipInterface
+/** Interface for commonly used objects and functions such as adding tooltips and syncing Sliders & TextBoxes */
+class USERINTERFACE_API IBSWidgetInterface
 {
 	GENERATED_BODY()
 	
 public:
+
+	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
+	static float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
+
+	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
+	static float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize);
 
 	/** Override this function and then call SetTooltipWidget */
 	virtual UTooltipWidget* ConstructTooltipWidget() = 0;
