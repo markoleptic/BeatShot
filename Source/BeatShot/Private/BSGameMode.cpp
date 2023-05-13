@@ -256,7 +256,7 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		{
 			Controller->ShowPostGameMenu();
 			const ABSCharacter* Character = Controller->GetBSCharacter();
-			if (Character->GetGun()->IsFiring())
+			if (const ABSGun* Gun = Character->GetGun(); Gun->IsFiring())
 			{
 				if (const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Fire); !AbilitySpecs.IsEmpty())
 				{

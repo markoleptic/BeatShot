@@ -42,7 +42,8 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_Interact, "Input.Interact","");
 	AddTag(Input_ShiftInteract, "Input.ShiftInteract","");
 	AddTag(Input_Inspect, "Input.Inspect","");
-	AddTag(Input_KnifeAttack, "Input.Melee","");
+	AddTag(Input_KnifeAttack, "Input.KnifeAttack","");
+	AddTag(Input_BackStab, "Input.BackStab","");
 	AddTag(Input_Disabled, "Input.Disabled","");
 
 	AddTag(Input_EquipmentSlot, "Input.EquipmentSlot","");
@@ -55,6 +56,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Ability_Fire, "Ability.Fire","");
 	AddTag(Ability_Inspect, "Ability.Inspect","");
 	AddTag(Ability_KnifeAttack, "Ability.KnifeAttack","");
+	AddTag(Ability_BackStab, "Ability.BackStab","");
 	AddTag(Ability_Track, "Ability.Track","");
 	AddTag(Ability_Jump, "Ability.Jump","");
 	AddTag(Ability_Sprint, "Ability.Sprint","");
@@ -67,6 +69,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(State_Firing, "State.Firing","");
 	AddTag(State_Inspecting, "State.Inspecting","");
 	AddTag(State_KnifeAttacking, "State.KnifeAttacking","");
+	AddTag(State_BackStabbing, "State.BackStabbing","");
 	AddTag(State_Jumping, "State.Jumping","");
 	AddTag(State_Moving, "State.Moving","");
 	AddTag(State_Sprinting, "State.Sprinting","");

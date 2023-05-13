@@ -13,7 +13,9 @@
 			"Name": "UserInterface",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
-			"AdditionalDependencies": ["UMG"]
+			"AdditionalDependencies": [
+				"UMG"
+			]
 		},
 		{
 			"Name": "Global",
@@ -111,10 +113,6 @@
 		},
 		{
 			"Name": "StructUtils",
-			"Enabled": true
-		},
-		{
-			"Name": "GameFeatures",
 			"Enabled": true
 		},
 		{

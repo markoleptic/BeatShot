@@ -40,6 +40,7 @@ struct FBSGameplayTags
 	FGameplayTag Input_ShiftInteract;
 	FGameplayTag Input_Inspect;
 	FGameplayTag Input_KnifeAttack;
+	FGameplayTag Input_BackStab;
 	FGameplayTag Input_Disabled;
 	FGameplayTag Input_EquipmentSlot;
 	FGameplayTag Input_EquipmentSlot_1;
@@ -50,6 +51,7 @@ struct FBSGameplayTags
 	FGameplayTag Ability;
 	FGameplayTag Ability_Fire;
 	FGameplayTag Ability_KnifeAttack;
+	FGameplayTag Ability_BackStab;
 	FGameplayTag Ability_Inspect;
 	FGameplayTag Ability_Track;
 	FGameplayTag Ability_Jump;
@@ -62,6 +64,7 @@ struct FBSGameplayTags
 	FGameplayTag State_Crouching;
 	FGameplayTag State_Inspecting;
 	FGameplayTag State_KnifeAttacking;
+	FGameplayTag State_BackStabbing;
 	FGameplayTag State_Firing;
 	FGameplayTag State_Jumping;
 	FGameplayTag State_Moving;

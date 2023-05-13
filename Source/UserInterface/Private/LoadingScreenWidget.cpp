@@ -7,7 +7,8 @@
 bool ULoadingScreenWidget::ShouldShowLoadingScreen(FString& OutReason) const
 {
 	OutReason.Append(Reason);
-	return bShowLoadingScreen;
+	return false;
+	//return bShowLoadingScreen;
 }
 
 void ULoadingScreenWidget::NativeConstruct()
@@ -23,15 +24,11 @@ void ULoadingScreenWidget::OnFadeOutFinished()
 
 void ULoadingScreenWidget::CreateLoadingScreenTask(FOnLoadingScreenShown& OnLoadingScreenShown, FOnReadyToHideLoadingScreen& OnReadyToHideLoadingScreen)
 {
-	bShowLoadingScreen = true;
-	OnLoadingScreenShown.AddUniqueDynamic(this, &ULoadingScreenWidget::FadeIn);
-	OnReadyToHideLoadingScreen.AddUniqueDynamic(this, &ULoadingScreenWidget::FadeOut);
-	
-	ULoadingProcessTask::CreateLoadingScreenProcessTask(this, Reason);
-	
-	FWidgetAnimationDynamicEvent FadeOutDelegate;
-	FadeOutDelegate.BindDynamic(this, &ULoadingScreenWidget::OnFadeOutFinished);
-	BindToAnimationFinished(FadeOutAnim, FadeOutDelegate);
+	//OnLoadingScreenShown.AddUniqueDynamic(this, &ULoadingScreenWidget::FadeIn);
+	//OnReadyToHideLoadingScreen.AddUniqueDynamic(this, &ULoadingScreenWidget::FadeOut);
+	//ULoadingProcessTask::CreateLoadingScreenProcessTask(this, Reason);
+	//FadeOutDelegate.BindDynamic(this, &ULoadingScreenWidget::OnFadeOutFinished);
+	//BindToAnimationFinished(FadeOutAnim, FadeOutDelegate);
 }
 
 void ULoadingScreenWidget::FadeIn()
@@ -42,10 +39,19 @@ void ULoadingScreenWidget::FadeIn()
 
 void ULoadingScreenWidget::FadeOut()
 {
-	UE_LOG(LogTemp, Display, TEXT("Fading OUT LoadingScreenWidget"));
-	if (IsAnimationPlaying(FadeInAnim))
+	if (!bHasReceivedOnReadyToHideLoadingScreenBroadcast)
 	{
-		StopAnimation(FadeInAnim);
+		bShowLoadingScreen = true;
+		
+		UE_LOG(LogTemp, Display, TEXT("Fading OUT LoadingScreenWidget"));
+
+		if (IsAnimationPlaying(FadeInAnim))
+		{
+			StopAnimation(FadeInAnim);
+		}
+
+		PlayAnimationForward(FadeOutAnim);
 	}
-	PlayAnimationForward(FadeOutAnim);
+	
+	bHasReceivedOnReadyToHideLoadingScreenBroadcast = true;
 }

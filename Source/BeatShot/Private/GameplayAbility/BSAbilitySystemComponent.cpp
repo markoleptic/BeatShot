@@ -230,7 +230,6 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 
 				if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::WhileInputActive)
 				{
-					UE_LOG(LogTemp, Display, TEXT("WhileInputActive ability found this frame %s"), *BSAbilityCDO->GetName());
 					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 				}
 			}
@@ -245,11 +244,12 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 			if (AbilitySpec->Ability)
 			{
 				AbilitySpec->InputPressed = true;
-				const UBSGameplayAbility* BSAbilityCDO = CastChecked<UBSGameplayAbility>(AbilitySpec->Ability);
 				if (AbilitySpec->IsActive())
 				{
-					if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::SpammableTriggered)
+					UE_LOG(LogTemp, Display, TEXT("Active"));
+					if (CastChecked<UBSGameplayAbility>(AbilitySpec->Ability)->GetActivationPolicy() == EBSAbilityActivationPolicy::SpammableTriggered)
 					{
+						// Even though ability is active, activating it will cancel and reactivate
 						AbilitiesToActivate.AddUnique(AbilitySpec->Handle);
 					}
 					else
@@ -257,10 +257,10 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 						// Ability is active and not spammable so pass along the input event.
 						AbilitySpecInputPressed(*AbilitySpec);
 					}
-					return;
 				}
-				
-				if (BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::OnInputTriggered)
+				else if (const UBSGameplayAbility* BSAbilityCDO = CastChecked<UBSGameplayAbility>(AbilitySpec->Ability);
+					BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::OnInputTriggered ||
+					BSAbilityCDO->GetActivationPolicy() == EBSAbilityActivationPolicy::SpammableTriggered)
 				{
 					// Ability is not active and but should be since input has been triggered
 					AbilitiesToActivate.AddUnique(AbilitySpec->Handle);

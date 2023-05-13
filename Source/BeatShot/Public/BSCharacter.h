@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Equipment/Gun_AK47.h"
+#include "Equipment/BSGun.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
@@ -22,7 +22,7 @@ class UBSInventoryItemInstance;
 class UBSEquipmentManagerComponent;
 struct FInputActionValue;
 struct FInputActionInstance;
-class AGun_AK47;
+class ABSGun;
 class UNiagaraSystem;
 class ABSPlayerController;
 class USceneComponent;
@@ -124,7 +124,7 @@ public:
 	USkeletalMeshComponent* GetHandsMesh() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	AGun_AK47* GetGun() const;
+	ABSGun* GetGun() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	UCameraComponent* GetCamera() const;

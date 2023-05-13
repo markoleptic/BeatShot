@@ -319,17 +319,6 @@ bool ULoadingScreenManager::CheckForAnyNeedToShowLoadingScreen()
 		}
 	}
 
-	// Ask any of the external loading processors that may have been registered.  These might be actors or components
-	// that were registered by game code to tell us to keep the loading screen up while perhaps something finishes
-	// streaming in.
-	for (const TWeakInterfacePtr<ILoadingProcessInterface>& Processor : ExternalLoadingProcessors)
-	{
-		if (ILoadingProcessInterface::ShouldShowLoadingScreen(Processor.GetObject(), /*out*/ DebugReasonForShowingOrHidingLoadingScreen))
-		{
-			return true;
-		}
-	}
-
 	// Check each local player
 	bool bFoundAnyLocalPC = false;
 	bool bMissingAnyLocalPC = false;
@@ -381,6 +370,18 @@ bool ULoadingScreenManager::CheckForAnyNeedToShowLoadingScreen()
 		return true;
 	}
 
+	// Ask any of the external loading processors that may have been registered.  These might be actors or components
+	// that were registered by game code to tell us to keep the loading screen up while perhaps something finishes
+	// streaming in.
+	for (const TWeakInterfacePtr<ILoadingProcessInterface>& Processor : ExternalLoadingProcessors)
+	{
+		if (ILoadingProcessInterface::ShouldShowLoadingScreen(Processor.GetObject(), /*out*/ DebugReasonForShowingOrHidingLoadingScreen))
+		{
+			OnReadyToHideLoadingScreenDelegate.Broadcast();
+			return true;
+		}
+	}
+
 	// Victory! The loading screen can go away now
 	DebugReasonForShowingOrHidingLoadingScreen = TEXT("(nothing wants to show it anymore)");
 	return false;
@@ -412,10 +413,6 @@ bool ULoadingScreenManager::ShouldShowLoadingScreen()
 	}
 	else
 	{
-		if (OnReadyToHideLoadingScreenDelegate.IsBound())
-		{
-			OnReadyToHideLoadingScreenDelegate.Broadcast();
-		}
 
 		// Don't *need* to show the screen anymore, but might still want to for a bit
 		const double CurrentTime = FPlatformTime::Seconds();

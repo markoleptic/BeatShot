@@ -96,8 +96,8 @@ public:
 	/** Called in TargetSpawner to activate a BeatGrid target */
 	void StartBeatGridTimer(float Lifespan);
 
-	/** Sets the scale for the SphereMesh */
-	void SetSphereScale(const FVector& NewScale);
+	/** Sets the scale for the SphereMesh, should only be called by TargetSpawner */
+	void SetInitialSphereScale(const FVector& NewScale);
 
 	/** Sets the color of the Base Target */
 	UFUNCTION(BlueprintCallable)
@@ -156,11 +156,11 @@ private:
 
 	/** Interpolates between StartTargetColor and PeakTargetColor. This occurs between initial spawning of target, up to SpawnBeatDelay seconds */
 	UFUNCTION()
-	void InterpStartToPeakColor(const float Alpha);
+	void InterpStartToPeak(const float Alpha);
 
 	/** Interpolates between PeakTargetColor and EndTargetColor. This occurs between SpawnBeatDelay seconds, up to TargetMaxLifeSpan seconds */
 	UFUNCTION()
-	void InterpPeakToEndColor(const float Alpha);
+	void InterpPeakToEnd(const float Alpha);
 
 	UFUNCTION()
 	void InterpShrinkQuickAndGrowSlow(const float Alpha);
@@ -178,6 +178,10 @@ private:
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
 	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const;
+
+	void SetSphereScale(const FVector& NewScale) const;
+
+	FVector GetCurrentTargetScale() const;
 	
 	FGameplayTagContainer GameplayTags;
 
@@ -189,7 +193,7 @@ private:
 	FTimeline ShrinkQuickAndGrowSlowTimeline;
 
 	/** The scale that was applied when spawned */
-	float TargetScale = 1.f;
+	float InitialTargetScale = 1.f;
 
 	FLinearColor ColorWhenDestroyed;
 

@@ -109,6 +109,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_SpawnBeatDelay->SetText(FText::AsNumber(InTargetConfig.SpawnBeatDelay));
 	CheckBox_DynamicTargetScale->SetIsChecked(InTargetConfig.UseDynamicSizing);
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
+	ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScaleMethod).ToString());
 	
 	UpdateBrushColors();
 }
@@ -167,7 +168,13 @@ void UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay(const FText& 
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
 {
-	
+	if (!SelectedMethod.Equals(UEnum::GetDisplayValueAsText(ELifetimeTargetScaleMethod::None).ToString()))
+	{
+		if (TargetScaleConstrained->GetIsSynced())
+		{
+			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
+		}
+	}
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_DynamicTargetScale(const bool bIsChecked)
@@ -180,8 +187,15 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_DynamicTargetScale(const
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_ConstantTargetScale(const bool bIsChecked)
 {
-	if (bIsChecked && CheckBox_DynamicTargetScale->IsChecked())
+	if (bIsChecked)
 	{
-		CheckBox_DynamicTargetScale->SetIsChecked(false);
+		if (CheckBox_DynamicTargetScale->IsChecked())
+		{
+			CheckBox_DynamicTargetScale->SetIsChecked(false);
+		}
+		if (!ComboBox_LifetimeTargetScale->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(ELifetimeTargetScaleMethod::None).ToString()))
+		{
+			ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(ELifetimeTargetScaleMethod::None).ToString());
+		}
 	}
 }

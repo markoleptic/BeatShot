@@ -34,7 +34,11 @@ protected:
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
+
+	FWidgetAnimationDynamicEvent FadeInDelegate;
+	FWidgetAnimationDynamicEvent FadeOutDelegate;
 	
 	const FString Reason = "LoadScreenAnimation";
-	bool bShowLoadingScreen = true;
+	bool bShowLoadingScreen = false;
+	bool bHasReceivedOnReadyToHideLoadingScreenBroadcast = false;
 };

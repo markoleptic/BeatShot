@@ -20,7 +20,6 @@ UBSAssetManager& UBSAssetManager::Get()
 void UBSAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
-	Super::StartInitialLoading();
 
 	//Load Native Tags
 	FBSGameplayTags::InitializeTags();

@@ -8,7 +8,7 @@
 #include "SaveLoadInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
-#include "Gun_AK47.generated.h"
+#include "BSGun.generated.h"
 
 class ASphereTarget;
 class ABSPlayerController;
@@ -20,12 +20,12 @@ class UAnimMontage;
 
 /** The base gun used in this game */
 UCLASS()
-class BEATSHOT_API AGun_AK47 : public AActor, public IGameplayTagAssetInterface, public ISaveLoadInterface
+class BEATSHOT_API ABSGun : public AActor, public IGameplayTagAssetInterface, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
 	/** Sets default values for this actor's properties */
-	AGun_AK47();
+	ABSGun();
 
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
@@ -33,62 +33,87 @@ class BEATSHOT_API AGun_AK47 : public AActor, public IGameplayTagAssetInterface,
 	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
-	/** Implement IGameplayTagAssetInterface */
+	/** ~IGameplayTagAssetInterface begin */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
 	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
+	/** ~IGameplayTagAssetInterface end */
 
+	/** ~ISaveLoadInterface begin */
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	/** ~ISaveLoadInterface end */
 
 public:
 
 	/** Increments ShotsFired, executes OnShotFired */
 	UFUNCTION(BlueprintCallable)
-	void Fire();
+	virtual void Fire();
 
 	/** Stops the timer that allows for automatic fire */
 	UFUNCTION(BlueprintCallable)
-	void StopFire();
+	virtual void StopFire();
 
 	/** Returns the current spread rotation (Pitch and Yaw at the current time). Used by FireGun ability */
 	UFUNCTION(BlueprintCallable)
-	FRotator GetCurrentRecoilRotation() const;
+	virtual FRotator GetCurrentRecoilRotation() const;
 
 	/** Returns the location of the muzzle */
 	UFUNCTION(BlueprintCallable)
-	FVector GetMuzzleLocation() const;
+	virtual FVector GetMuzzleLocation() const;
 
+	/** Returns whether or not the gun should recoil, based on GameplayTags */
 	UFUNCTION(BlueprintCallable)
-	void SetCanFire(const bool bNewFire) { bCanFire = bNewFire; }
+	bool ShouldRecoil() const;
 
+	/** Returns whether or not to show bullet decals, based on GameplayTags */
 	UFUNCTION(BlueprintCallable)
-	void SetFireRate(const bool bAutomatic);
+	bool ShouldShowDecals() const;
 
+	/** Returns whether or not to show bullet tracers, based on GameplayTags */
 	UFUNCTION(BlueprintCallable)
-	void SetShouldRecoil(const bool bRecoil);
+	bool ShouldShowTracers() const;
 
+	/** Returns whether or not the gun is auto fire rate, based on GameplayTags */
 	UFUNCTION(BlueprintCallable)
-	void SetShowDecals(const bool bShowDecals);
-
-	UFUNCTION(BlueprintCallable)
-	void SetShowTracers(const bool bShowTracers);
-
-	UFUNCTION(BlueprintCallable)
-	void Recoil();
+	bool IsAutoFireRate() const;
 
 	/** Returns whether the weapon can fire or not */
 	UFUNCTION(BlueprintCallable)
 	bool CanFire() const { return bCanFire; }
 
+	/** Returns whether or not the gun is currently firing (input is being held down) */
 	UFUNCTION(BlueprintCallable)
 	bool IsFiring() const { return bIsFiring; }
+
+	/** Sets whether or not this gun can be fired */
+	UFUNCTION(BlueprintCallable)
+	void SetCanFire(const bool bNewFire) { bCanFire = bNewFire; }
+
+	/** Sets the fire rate of this gun, updating its GameplayTags */
+	UFUNCTION(BlueprintCallable)
+	void SetFireRate(const bool bAutomatic);
+
+	/** Sets whether or not the gun should recoil, updating its GameplayTags */
+	UFUNCTION(BlueprintCallable)
+	void SetShouldRecoil(const bool bRecoil);
+
+	/** Sets whether or not the gun should show bullet decals, updating its GameplayTags */
+	UFUNCTION(BlueprintCallable)
+	void SetShowDecals(const bool bShowDecals);
+
+	/** Sets whether or not the gun should show bullet tracers, updating its GameplayTags */
+	UFUNCTION(BlueprintCallable)
+	void SetShowTracers(const bool bShowTracers);
+
+	/** Begins or resumes the recoil timeline, allowing UpdateRecoil to receive input from the timeline on tick */
+	UFUNCTION(BlueprintCallable)
+	void Recoil();
 	
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;
 
 protected:
-
 	/** The skeletal mesh of the gun */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USkeletalMeshComponent* MeshComp;
@@ -108,11 +133,12 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	ABSCharacter* GetBSCharacter() const;
 	
-	/** Controls gun recoil, camera recoil, and kickback inside of OnTick */
-	void UpdateKickbackAndRecoil(float DeltaTime);
+	/** Interpolates the current gun recoil, camera recoil, and kickback inside of OnTick
+	 *  based on CurrentShotRecoilRotation, CurrentShotCameraRecoilRotation, and KickbackAngle */
+	virtual void UpdateKickbackAndRecoil(float DeltaTime);
 
 	/** Update the screen-shake-like camera recoil */
-	void UpdateKickback(float DeltaTime);
+	virtual void UpdateKickback(float DeltaTime);
 
 	/** Updates CurrentShotRecoilRotation and CurrentShotCameraRecoilRotation. Bound to RecoilTimeline, which corresponds to the RecoilCurve */
 	UFUNCTION()

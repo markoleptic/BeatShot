@@ -7,7 +7,7 @@
 #include "BSPlayerController.h"
 #include "BSPlayerState.h"
 #include "SphereTarget.h"
-#include "Equipment/Gun_AK47.h"
+#include "Equipment/BSGun.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/DamageType.h"
 #include "Camera/CameraComponent.h"
@@ -133,9 +133,9 @@ UCameraComponent* ABSCharacter::GetCamera() const
 	return Cast<UCameraComponent>(CameraComponent);
 }
 
-AGun_AK47* ABSCharacter::GetGun() const
+ABSGun* ABSCharacter::GetGun() const
 {
-	if (AGun_AK47* Gun = Cast<AGun_AK47>(GetInventoryManager()->GetEquippedItem()->GetFirstSpawnedActor()))
+	if (ABSGun* Gun = Cast<ABSGun>(GetInventoryManager()->GetEquippedItem()->GetFirstSpawnedActor()))
 	{
 		return Gun;
 	}

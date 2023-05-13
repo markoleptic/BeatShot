@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "Equipment/Gun_AK47.h"
+#include "Equipment/BSGun.h"
 #include "BSCharacter.h"
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
@@ -11,7 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
-AGun_AK47::AGun_AK47()
+ABSGun::ABSGun()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -28,14 +28,14 @@ AGun_AK47::AGun_AK47()
 	bShouldKickback = false;
 }
 
-void AGun_AK47::BeginPlay()
+void ABSGun::BeginPlay()
 {
 	Super::BeginPlay();
 
 	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &AGun_AK47::OnPlayerSettingsChanged_Game);
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGun::OnPlayerSettingsChanged_Game);
 
 	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())); !OnShotFired.IsBoundToObject(GameMode))
 	{
@@ -48,37 +48,37 @@ void AGun_AK47::BeginPlay()
 	RecoilTimeline.AddInterpVector(RecoilCurve, RecoilProgressFunction);
 }
 
-void AGun_AK47::Tick(float DeltaTime)
+void ABSGun::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	RecoilTimeline.TickTimeline(DeltaTime);
-	if (HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_Recoil))
+	if (ShouldRecoil())
 	{
 		UpdateKickbackAndRecoil(DeltaTime);
 	}
 }
 
-void AGun_AK47::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+void ABSGun::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
 	TagContainer.AppendTags(GameplayTags);
 }
 
-bool AGun_AK47::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
+bool ABSGun::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
 {
 	return IGameplayTagAssetInterface::HasMatchingGameplayTag(TagToCheck);
 }
 
-bool AGun_AK47::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+bool ABSGun::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
 {
 	return IGameplayTagAssetInterface::HasAllMatchingGameplayTags(TagContainer);
 }
 
-bool AGun_AK47::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+bool ABSGun::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
 {
 	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
 }
 
-void AGun_AK47::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+void ABSGun::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
 	SetShouldRecoil(GameSettings.bShouldRecoil);
 	SetFireRate(GameSettings.bAutomaticFire);
@@ -86,7 +86,7 @@ void AGun_AK47::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSet
 	SetShowTracers(GameSettings.bShowBulletTracers);
 }
 
-void AGun_AK47::Fire()
+void ABSGun::Fire()
 {
 	if (!bCanFire)
 	{
@@ -100,7 +100,7 @@ void AGun_AK47::Fire()
 	ShotsFired++;
 }
 
-void AGun_AK47::StopFire()
+void ABSGun::StopFire()
 {
 	bIsFiring = false;
 	CurrentShotRecoilRotation = FRotator(0, 0, 0);
@@ -112,22 +112,42 @@ void AGun_AK47::StopFire()
 	RecoilTimeline.Reverse();
 }
 
-ABSCharacter* AGun_AK47::GetBSCharacter() const
+ABSCharacter* ABSGun::GetBSCharacter() const
 {
 	return Cast<ABSCharacter>(GetOwner());
 }
 
-FRotator AGun_AK47::GetCurrentRecoilRotation() const
+FRotator ABSGun::GetCurrentRecoilRotation() const
 {
 	return FRotator(-CurrentShotRecoilRotation.Pitch, CurrentShotRecoilRotation.Yaw, CurrentShotRecoilRotation.Roll);
 }
 
-FVector AGun_AK47::GetMuzzleLocation() const
+FVector ABSGun::GetMuzzleLocation() const
 {
 	return MuzzleLocationComp->GetComponentLocation();
 }
 
-void AGun_AK47::SetFireRate(const bool bAutomatic)
+bool ABSGun::ShouldRecoil() const
+{
+	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_Recoil);
+}
+
+bool ABSGun::ShouldShowDecals() const
+{
+	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_ShowDecals);
+}
+
+bool ABSGun::ShouldShowTracers() const
+{
+	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_ShowTracers);
+}
+
+bool ABSGun::IsAutoFireRate() const
+{
+	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_AutomaticFire);
+}
+
+void ABSGun::SetFireRate(const bool bAutomatic)
 {
 	StopFire();
 	
@@ -149,7 +169,7 @@ void AGun_AK47::SetFireRate(const bool bAutomatic)
 	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
 }
 
-void AGun_AK47::SetShouldRecoil(const bool bRecoil)
+void ABSGun::SetShouldRecoil(const bool bRecoil)
 {
 	StopFire();
 	if (UCameraComponent* Camera = GetBSCharacter()->GetCamera())
@@ -169,7 +189,7 @@ void AGun_AK47::SetShouldRecoil(const bool bRecoil)
 	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_Recoil);
 }
 
-void AGun_AK47::SetShowDecals(const bool bShowDecals)
+void ABSGun::SetShowDecals(const bool bShowDecals)
 {
 	if (bShowDecals)
 	{
@@ -179,7 +199,7 @@ void AGun_AK47::SetShowDecals(const bool bShowDecals)
 	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
 }
 
-void AGun_AK47::SetShowTracers(const bool bShowTracers)
+void ABSGun::SetShowTracers(const bool bShowTracers)
 {
 	if (bShowTracers)
 	{
@@ -189,7 +209,7 @@ void AGun_AK47::SetShowTracers(const bool bShowTracers)
 	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
 }
 
-void AGun_AK47::Recoil()
+void ABSGun::Recoil()
 {
 	RecoilTimeline.SetPlayRate(1.f);
 	/* Resume timeline if it hasn't fully recovered */
@@ -205,7 +225,7 @@ void AGun_AK47::Recoil()
 	KickbackAlpha = 0.f;
 }
 
-void AGun_AK47::UpdateKickbackAndRecoil(const float DeltaTime)
+void ABSGun::UpdateKickbackAndRecoil(const float DeltaTime)
 {
 	UpdateKickback(DeltaTime);
 	const FRotator Current = GetBSCharacter()->GetCamera()->GetRelativeRotation();
@@ -214,7 +234,7 @@ void AGun_AK47::UpdateKickbackAndRecoil(const float DeltaTime)
 	GetBSCharacter()->GetCameraRecoilComponent()->SetRelativeRotation(FRotator(KickbackAngle, 0, 0));
 }
 
-void AGun_AK47::UpdateKickback(const float DeltaTime)
+void ABSGun::UpdateKickback(const float DeltaTime)
 {
 	if (bShouldKickback)
 	{
@@ -235,7 +255,7 @@ void AGun_AK47::UpdateKickback(const float DeltaTime)
 	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration);
 }
 
-void AGun_AK47::UpdateRecoil(const FVector Output)
+void ABSGun::UpdateRecoil(const FVector Output)
 {
 	if (!bIsFiring)
 	{
@@ -252,5 +272,4 @@ void AGun_AK47::UpdateRecoil(const FVector Output)
 	}
 	CurrentShotCameraRecoilRotation = FRotator(0, 0, 0);
 	CurrentShotRecoilRotation = FRotator(0, 0, 0);
-
 }

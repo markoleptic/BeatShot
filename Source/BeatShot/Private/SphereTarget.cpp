@@ -96,9 +96,9 @@ void ASphereTarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSet
 	SetUseSeparateOutlineColor(PlayerSettings.bUseSeparateOutlineColor);
 }
 
-void ASphereTarget::SetSphereScale(const FVector& NewScale)
+void ASphereTarget::SetInitialSphereScale(const FVector& NewScale)
 {
-	TargetScale = NewScale.X;
+	InitialTargetScale = NewScale.X;
 	CapsuleComponent->SetRelativeScale3D(NewScale);
 }
 
@@ -129,17 +129,17 @@ void ASphereTarget::BeginPlay()
 
 	/* Start to Peak Target Color */
 	FOnTimelineFloat OnStartToPeak;
-	OnStartToPeak.BindDynamic(this, &ASphereTarget::InterpStartToPeakColor);
+	OnStartToPeak.BindDynamic(this, &ASphereTarget::InterpStartToPeak);
 	StartToPeakTimeline.AddInterpFloat(StartToPeakCurve, OnStartToPeak);
 
-	/* Play InterpPeakToEndColor when InterpStartToPeakColor is finished */
+	/* Play InterpPeakToEnd when InterpStartToPeak is finished */
 	FOnTimelineEvent OnStartToPeakFinished;
 	OnStartToPeakFinished.BindDynamic(this, &ASphereTarget::PlayPeakToEndTimeline);
 	StartToPeakTimeline.SetTimelineFinishedFunc(OnStartToPeakFinished);
 
 	/* Peak Color to Fade Color */
 	FOnTimelineFloat OnPeakToFade;
-	OnPeakToFade.BindDynamic(this, &ASphereTarget::InterpPeakToEndColor);
+	OnPeakToFade.BindDynamic(this, &ASphereTarget::InterpPeakToEnd);
 	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
 	/* Fade the target from ColorWhenDestroyed to BeatGridInactiveColor */
@@ -236,39 +236,39 @@ void ASphereTarget::SetColorToBeatGridColor()
 	}
 }
 
-void ASphereTarget::InterpStartToPeakColor(const float Alpha)
+void ASphereTarget::InterpStartToPeak(const float Alpha)
 {
 	SetSphereColor(UKismetMathLibrary::LinearColorLerp(PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor, Alpha));
 	if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Grow)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
-			BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale,
+			InitialTargetScale, BSConfig.TargetConfig.MaxTargetScale,
 			StartToPeakTimeline.GetPlaybackPosition() * BSConfig.AudioConfig.PlayerDelay / BSConfig.TargetConfig.TargetMaxLifeSpan)));
 	}
 	else if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Shrink)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
-			BSConfig.TargetConfig.MaxTargetScale, BSConfig.TargetConfig.MinTargetScale,
+			InitialTargetScale, BSConfig.TargetConfig.MinTargetScale,
 			StartToPeakTimeline.GetPlaybackPosition() * BSConfig.AudioConfig.PlayerDelay / BSConfig.TargetConfig.TargetMaxLifeSpan)));
 	}
 }
 
-void ASphereTarget::InterpPeakToEndColor(const float Alpha)
+void ASphereTarget::InterpPeakToEnd(const float Alpha)
 {
 	SetSphereColor(UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor, Alpha));
 	if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Grow)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
-			BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale,
-			PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay) /
-			(BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay)
+			InitialTargetScale, BSConfig.TargetConfig.MaxTargetScale,
+			(PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay) + BSConfig.AudioConfig.PlayerDelay) /
+			BSConfig.TargetConfig.TargetMaxLifeSpan
 			)));
 	}
 	else if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Shrink)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(
-			BSConfig.TargetConfig.MaxTargetScale, BSConfig.TargetConfig.MinTargetScale,
-			((PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay)) + BSConfig.AudioConfig.PlayerDelay) /
+			InitialTargetScale, BSConfig.TargetConfig.MinTargetScale,
+			(PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay) + BSConfig.AudioConfig.PlayerDelay) /
 			BSConfig.TargetConfig.TargetMaxLifeSpan
 			)));
 	}
@@ -276,7 +276,7 @@ void ASphereTarget::InterpPeakToEndColor(const float Alpha)
 
 void ASphereTarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	SetSphereScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, TargetScale, Alpha)));
+	SetSphereScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, InitialTargetScale, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, PlayerSettings.BeatGridInactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetSphereColor(Color);
 }
@@ -324,7 +324,7 @@ void ASphereTarget::HandleDestruction()
 	/* Broadcast that the target has been destroyed by player */
 	OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * TargetScale, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
+	PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor")));
 	Destroy();
 }
 
@@ -345,7 +345,7 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		ApplyImmunityEffect();
 		ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor"));
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * TargetScale, ColorWhenDestroyed);
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
 		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}
@@ -387,4 +387,14 @@ void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const 
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
 	}
+}
+
+void ASphereTarget::SetSphereScale(const FVector& NewScale) const
+{
+	CapsuleComponent->SetRelativeScale3D(NewScale);
+}
+
+FVector ASphereTarget::GetCurrentTargetScale() const
+{
+	return CapsuleComponent->GetRelativeScale3D();
 }

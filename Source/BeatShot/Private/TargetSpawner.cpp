@@ -358,7 +358,7 @@ void ATargetSpawner::InitBeatGrid()
 			ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, BeatGridSpawnLocation, FVector(1)),
 				this, nullptr, TargetSpawnParams.SpawnCollisionHandlingOverride);
 			SpawnTarget->InitTarget(BSConfig, PlayerSettings);
-			SpawnTarget->SetSphereScale(FVector(GetNextTargetScale()));
+			SpawnTarget->SetInitialSphereScale(FVector(GetNextTargetScale()));
 			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 			SpawnTarget->FinishSpawning(FTransform(), true);
 			BeatGridIndices.Emplace(FBeatGridIndex(Index, BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets, BSConfig.BeatGridConfig.NumVerticalBeatGridTargets * BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets));
@@ -375,7 +375,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnLocation, FVector(1)),
 			this, nullptr, TargetSpawnParams.SpawnCollisionHandlingOverride);
 		SpawnTarget->InitTarget(BSConfig, PlayerSettings);
-		SpawnTarget->SetSphereScale(FVector(TargetScale));
+		SpawnTarget->SetInitialSphereScale(FVector(TargetScale));
 		SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 		SpawnTarget->FinishSpawning(FTransform(), true);
 		AddToActiveTargets(SpawnTarget);
@@ -399,7 +399,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 		ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnLocation, FVector(1)),
 			this, nullptr, TargetSpawnParams.SpawnCollisionHandlingOverride);
 		SpawnTarget->InitTarget(BSConfig, PlayerSettings);
-		SpawnTarget->SetSphereScale(FVector(TargetScale));
+		SpawnTarget->SetInitialSphereScale(FVector(TargetScale));
 		SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
 		SpawnTarget->FinishSpawning(FTransform(), true);
 		AddToActiveTargets(SpawnTarget);
@@ -516,7 +516,7 @@ void ATargetSpawner::SetNewTrackingDirection()
 	
 	LocationBeforeDirectionChange = BeatTrackTarget->GetActorLocation();
 	const float NewTargetScale = GetNextTargetScale();
-	BeatTrackTarget->SetSphereScale(FVector(NewTargetScale));
+	BeatTrackTarget->SetInitialSphereScale(FVector(NewTargetScale));
 	BeatTrackTargetSpeed = FMath::FRandRange(BSConfig.BeatTrackConfig.MinTrackingSpeed, BSConfig.BeatTrackConfig.MaxTrackingSpeed);
 	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
 	BeatTrackTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
