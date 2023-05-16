@@ -1,11 +1,15 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "Visualizers/VisualizerBase.h"
+#include "Components/SplineComponent.h"
+#include "Visualizers/BSVisualizerDefinition.h"
 
 AVisualizerBase::AVisualizerBase()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
+
+	VisualizerPositioning = CreateDefaultSubobject<USplineComponent>("Visualizer Positioning");
 }
 
 void AVisualizerBase::Destroyed()
@@ -16,10 +20,10 @@ void AVisualizerBase::Destroyed()
 
 void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	SetActorLocation(GetConfig().StartLocation);
-	SetActorRotation(GetConfig().StartRotation);
-	SetActorScale3D(GetConfig().StartScale);
-	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, GetConfig().NumVisualizerLightsToSpawn);
+	SetActorLocation(GetVisualizerDefinition().Location);
+	SetActorRotation(GetVisualizerDefinition().Rotation);
+	SetActorScale3D(GetVisualizerDefinition().Scale);
+	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, GetVisualizerDefinition().NumVisualizerLightsToSpawn);
 }
 
 void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
@@ -48,42 +52,77 @@ void AVisualizerBase::MarkRenderStateDirty()
 {
 }
 
+void AVisualizerBase::AddVisualizerPointsToSpline()
+{
+	FVector Start;
+	if (bDistributeFromCenter)
+	{
+		const float TotalLength = static_cast<float>(NumberOfPointsToAdd - 1) * Offset;
+		Start = - PointAddDirection * TotalLength / 2.f;
+	}
+	
+	VisualizerPositioning->ClearSplinePoints(true);
+	TArray<FSplinePoint> Points;
+	for (int i = 0; i < NumberOfPointsToAdd; i++)
+	{
+		Points.Emplace(FSplinePoint(i, Start + PointAddDirection * Offset * i, ESplinePointType::Constant));
+	}
+	VisualizerPositioning->AddPoints(Points);
+	VisualizerDefinition.GetDefaultObject()->SetNumberOfVisualizers(VisualizerPositioning->GetNumberOfSplinePoints());
+}
+
+void AVisualizerBase::AddTestVisualizer()
+{
+	if (VisualizerPositioning->GetNumberOfSplinePoints() == 0 || !TestVisualizerToSpawn)
+	{
+		return;
+	}
+	if (SpawnedTestVisualizer)
+	{
+		SpawnedTestVisualizer->Destroy();
+	}
+	const FVector Position = VisualizerPositioning->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::World);
+	SpawnedTestVisualizer = GetWorld()->SpawnActor(TestVisualizerToSpawn, &Position, &TestVisualizerRotation);
+}
+
 void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels, const int32 NumVisualizers)
 {
-	BaseConfig.MappedIndices.Init(FChannelToVisualizerMap(), NumBandChannels);
+	UBSVisualizerDefinition* BaseConfig = &GetVisualizerDefinition();
+	
+	BaseConfig->MappedIndices.Init(FChannelToVisualizerMap(), NumBandChannels);
 
 	if (NumVisualizers == NumBandChannels)
 	{
 		for (int i = 0; i < NumVisualizers; i++)
 		{
-			BaseConfig.MappedIndices[i].AddIndex(i);
+			BaseConfig->MappedIndices[i].AddIndex(i);
 		}
 		return;
 	}
 
 	if ((NumVisualizers > NumBandChannels) &&
-		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) &&
-		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) &&
+		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumBandChannels; i++)
 		{
-			BaseConfig.MappedIndices[i].AddIndex(i);
+			BaseConfig->MappedIndices[i].AddIndex(i);
 		}
 		return;
 	}
 
 	if ((NumBandChannels > NumVisualizers) &&
-		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly)&&
-		(BaseConfig.AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly)&&
+		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumVisualizers; i++)
 		{
-			BaseConfig.MappedIndices[i].AddIndex(i);
+			BaseConfig->MappedIndices[i].AddIndex(i);
 		}
 		return;
 	}
 	
-	switch (BaseConfig.GroupingMethod)
+	switch (BaseConfig->GroupingMethod)
 	{
 	case ELightVisualizerGroupingMethod::CombineByProximity:
 		{
@@ -95,12 +134,12 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 				const int StartIndex = CurrentVizIndex;
 				for (int j = StartIndex; j < StartIndex + GroupingSize; j++)
 				{
-					BaseConfig.MappedIndices[i].AddIndex(j);
+					BaseConfig->MappedIndices[i].AddIndex(j);
 					CurrentVizIndex++;
 				}
 				if (i < LeftToDistribute)
 				{
-					BaseConfig.MappedIndices[i].AddIndex(CurrentVizIndex);
+					BaseConfig->MappedIndices[i].AddIndex(CurrentVizIndex);
 					CurrentVizIndex++;
 				}
 			}
@@ -114,7 +153,7 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 				for (int i = 0; i < NumVisualizers; i++)
 				{
 					const int32 ChannelIndex = i % NumBandChannels;
-					BaseConfig.MappedIndices[ChannelIndex].AddIndex(i);
+					BaseConfig->MappedIndices[ChannelIndex].AddIndex(i);
 				}
 			}
 			// Assigning multiple channels to lights
@@ -123,7 +162,7 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 				for (int i = 0; i < NumBandChannels; i++)
 				{
 					const int32 VizIndex = i % NumVisualizers;
-					BaseConfig.MappedIndices[i].AddIndex(VizIndex);
+					BaseConfig->MappedIndices[i].AddIndex(VizIndex);
 				}
 			}
 		}
@@ -131,10 +170,10 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 	}
 	
 	int Total = 0;
-	for (int i = 0; i<  BaseConfig.MappedIndices.Num(); i++)
+	for (int i = 0; i<  BaseConfig->MappedIndices.Num(); i++)
 	{
 		int Current = 0;
-		for (int j = 0; j < BaseConfig.MappedIndices[i].VisualizerIndices.Num(); j++)
+		for (int j = 0; j < BaseConfig->MappedIndices[i].VisualizerIndices.Num(); j++)
 		{
 			Current++;
 			Total++;
@@ -147,5 +186,15 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 
 TArray<int32>& AVisualizerBase::GetLightIndices(const int32 ChannelIndex)
 {
-	return GetConfig().MappedIndices[ChannelIndex].VisualizerIndices;
+	return GetVisualizerDefinition().MappedIndices[ChannelIndex].VisualizerIndices;
+}
+
+TArray<FVector> AVisualizerBase::GetSplinePointLocations() const
+{
+	TArray<FVector> OutPoints;
+	for (int i = 0; i < VisualizerPositioning->GetNumberOfSplinePoints(); i++)
+	{
+		OutPoints.Add(VisualizerPositioning->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World));
+	}
+	return OutPoints;
 }

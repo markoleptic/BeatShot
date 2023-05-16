@@ -3,131 +3,79 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSVisualizerDefinition.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
 #include "VisualizerBase.generated.h"
 
+class UBSVisualizerDefinition;
+class USplineComponent;
 class USceneComponent;
 class UAudioAnalyzerManager;
 
-/** Each instance of this struct represents an AudioAnalyzer channel index, containing 0-multiple visualizer indices */
-USTRUCT(BlueprintType)
-struct BEATSHOT_API FChannelToVisualizerMap
-{
-	GENERATED_BODY()
-
-	/** An array of visualizer indices that are assigned to this AudioAnalyzer channel index */
-	TArray<int32> VisualizerIndices;
-	
-	FChannelToVisualizerMap()
-	{
-		VisualizerIndices = TArray<int32>();
-	}
-
-	/** Adds a visualizer index to this AudioAnalyzer channel index */
-	void AddIndex(const int32 InIndex)
-	{
-		VisualizerIndices.Add(InIndex);
-	}
-};
-
-/** How to assign AudioAnalyzer channels to lights if there is an uneven number between the two */
-UENUM(BlueprintType)
-enum class ELightVisualizerAssignmentMethod : uint8
-{
-	/** Don't assign channels to any lights (not implemented) */
-	None UMETA(DisplayName="None"),
-	
-	/** Assign a channel to every light, or assign a light to every channel, depending on which has more */
-	Auto UMETA(DisplayName="Auto"),
-
-	/** Assign a channel to every light, but don't assign more than one light to any channel */
-	MultiChannelPerLightOnly UMETA(DisplayName="MultiChannelPerLightOnly"),
-	
-	/** Assign a light to every channel, but don't assign more than one channel to any light */
-	MultiLightPerChannelOnly UMETA(DisplayName="MultiLightPerChannelOnly"),
-
-	/** Only assign one channel to any light, and vice versa */
-	SinglePairsOnly UMETA(DisplayName="SinglePairsOnly")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerAssignmentMethod, ELightVisualizerAssignmentMethod::None, ELightVisualizerAssignmentMethod::SinglePairsOnly);
-
-/** How to group AudioAnalyzer channels and lights together if there is an uneven number between the two */
-UENUM(BlueprintType)
-enum class ELightVisualizerGroupingMethod : uint8
-{
-	/** Assigns nearby lights to the same channel if lights > channels,
-	 *  or assigns consecutive channels to the same light if channels > lights */
-	CombineByProximity UMETA(DisplayName="CombineByProximity"),
-
-	/** Assign in order. If there is an unequal amount of lights and channels, repeat from the start */
-	Repeat UMETA(DisplayName="Repeat")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerGroupingMethod, ELightVisualizerGroupingMethod::CombineByProximity, ELightVisualizerGroupingMethod::Repeat);
-
-/** The base configuration common to all visualizers */
+/*/** The base configuration common to all visualizers #1#
 USTRUCT(BlueprintType, Category = "Visualizer Config")
 struct BEATSHOT_API FBaseVisualizerConfig
 {
 	GENERATED_BODY()
 
-	/** Whether or not to spawn visualizer lights, or add already placed lights */
+	/** Whether or not to spawn visualizer lights, or add already placed lights #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Light Defaults", meta=(InlineEditConditionToggle))
 	bool bSpawnVisualizerLights;
 
-	/** Number of visualizer lights to spawn */
+	/** Number of visualizer lights to spawn #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Light Defaults", meta=(DisplayName="Spawn lights through code", DisplayPriority=-1200, EditCondition="bSpawnVisualizerLights"))
 	int32 NumVisualizerLightsToSpawn;
 	
-	/** World location to apply to this actor */
+	/** World location to apply to this actor #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(DisplayPriority=-1100))
 	FVector StartLocation;
 
-	/** Rotation to apply to this actor */
+	/** Rotation to apply to this actor #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(Units="Degrees"), meta=(DisplayPriority=-1000))
 	FRotator StartRotation;
 
-	/** Scale to apply to this actor */
+	/** Scale to apply to this actor #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(DisplayPriority=-900))
 	FVector StartScale;
 	
-	/** Whether or not to make the StartTransform the center of the spawned lights or not */
+	/** Whether or not to make the StartTransform the center of the spawned lights or not #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(DisplayPriority=-800))
 	bool bGrowFromCenter;
 	
-	/** Relative offset location to apply between lights */
+	/** Relative offset location to apply between lights #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(DisplayPriority=-700))
 	FVector OffsetLocation;
 
-	/** Relative offset rotation to apply between lights */
+	/** Relative offset rotation to apply between lights #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(Units="Degrees"), meta=(DisplayPriority=-600))
 	FRotator OffsetRotation;
 
-	/** Relative offset scale to apply between lights */
+	/** Relative offset scale to apply between lights #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Position", meta=(DisplayPriority=-500))
 	FVector OffsetScale;
 	
-	/** How to assign AudioAnalyzer channels to lights */
+	/** How to assign AudioAnalyzer channels to lights #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Audio Analyzer Linking", meta=(DisplayPriority=-400))
 	ELightVisualizerAssignmentMethod AssignmentMethod;
 
-	/** How to group AudioAnalyzer channels and lights together */
+	/** How to group AudioAnalyzer channels and lights together #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Audio Analyzer Linking", meta=(DisplayPriority=-300))
 	ELightVisualizerGroupingMethod GroupingMethod;
 
-	/** Whether or not override each child light's light colors with BeamLightColors, vs use the light color from each child light*/
+	/** Whether or not override each child light's light colors with BeamLightColors, vs use the light color from each child light#1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Light Defaults", meta=(InlineEditConditionToggle))
 	bool bOverrideChildLightColors;
 	
-	/** Optionally override the color for each light, while keeping all other settings the same */
+	/** Optionally override the color for each light, while keeping all other settings the same #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Light Defaults", meta=(DisplayName="Override light colors", DisplayPriority=-200, EditCondition="bOverrideChildLightColors"))
 	TArray<FLinearColor> BeamLightColors;
 	
-	/** Whether or not to override the child visualizer settings. This will be false if using settings from individually placed lights in a level */
+	/** Whether or not to override the child visualizer settings. This will be false if using settings from individually placed lights in a level #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Light Defaults", meta=(DisplayPriority=-100))
 	bool bOverrideChildLightConfig;
 	
-	/** Each index in this array represents an AudioAnalyzerChannel, where the element is an array of visualizer indices that should sync to this AudioAnalyzerChannel */
+	/** Each index in this array represents an AudioAnalyzerChannel, where the element is an array of visualizer indices that should sync to this AudioAnalyzerChannel #1#
 	TArray<FChannelToVisualizerMap> MappedIndices;
 
 	FBaseVisualizerConfig()
@@ -148,7 +96,7 @@ struct BEATSHOT_API FBaseVisualizerConfig
 		GroupingMethod = ELightVisualizerGroupingMethod::CombineByProximity;
 		MappedIndices = TArray<FChannelToVisualizerMap>();
 	}
-};
+};*/
 
 /** Base class for Light Visualizers. BeamVisualizer and StaticCubeVisualizer are examples of classes that subclass this one */
 UCLASS(Abstract)
@@ -164,6 +112,9 @@ public:
 protected:
 
 	virtual void Destroyed() override;
+
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	USplineComponent* VisualizerPositioning;
 
 public:
 	/** Copies the new AudioAnalyzer Settings. Overrides should spawn their specific visualizer implementations. */
@@ -188,8 +139,42 @@ public:
 	/** If the visualizer is using an instanced static mesh, use this function to rerender the meshes. Should be called by VisualizerManager */
 	virtual void MarkRenderStateDirty();
 
-	/** Returns the BaseConfig */
-	FBaseVisualizerConfig& GetConfig() { return BaseConfig; }
+	/** Returns the definition for this visualizer */
+	UBSVisualizerDefinition& GetVisualizerDefinition() const { return *VisualizerDefinition.GetDefaultObject(); }
+
+	/** The number of points to add to the spline (how many visualizers will be spawned) */
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	int32 NumberOfPointsToAdd;
+
+	/** The direction to distribute the splint points towards */
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	FVector PointAddDirection;
+
+	/** The spacing in between spline points */
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	float Offset;
+
+	/** Whether or not to distribute the points centered from the spline component location */
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	bool bDistributeFromCenter;
+
+	/** Clears all exiting spline points, and adds points according to NumberOfPointsToAdd, PointAddDirection, Offset, and DistributeFromCenter */
+	UFUNCTION(CallInEditor, Category="Spline")
+	void AddVisualizerPointsToSpline();
+
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	TSubclassOf<AActor> TestVisualizerToSpawn;
+
+	UPROPERTY(Transient)
+	AActor* SpawnedTestVisualizer;
+
+	/** The direction to distribute the splint points towards */
+	UPROPERTY(EditInstanceOnly, Category="Spline")
+	FRotator TestVisualizerRotation;
+
+	/** Spawns a visualizer specified in TestVisualizerToSpawn to determine what location and rotation is needed for alignment */
+	UFUNCTION(CallInEditor, Category="Spline")
+	void AddTestVisualizer();
 	
 protected:
 
@@ -199,7 +184,10 @@ protected:
 	/** Returns the visualizer light indices that correspond to AudioAnalyzer ChannelIndex */
 	virtual TArray<int32>& GetLightIndices(const int32 ChannelIndex);
 
-	/** The base configuration common to all visualizers */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config", meta=(DisplayPriority=-20000))
-	FBaseVisualizerConfig BaseConfig;
+	/** Returns the locations to spawn visualizer lights based on the spline component's points */
+	TArray<FVector> GetSplinePointLocations() const;
+
+	/** The data asset that specifies the configuration for this visualizer */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Definition", meta=(DisplayPriority=-20000))
+	TSubclassOf<UBSVisualizerDefinition> VisualizerDefinition;
 };

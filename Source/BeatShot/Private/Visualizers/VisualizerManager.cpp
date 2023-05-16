@@ -20,23 +20,40 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 	MaxSpectrumValues.Init(1.f, InAASettings.NumBandChannels);
 	CurrentCubeSpectrumValues.Init(0, InAASettings.NumBandChannels);
 	
-	/* Initialize visualizers already placed in level */
+	/* Initialize visualizers already placed in level that may or not have spawned lights already */
 	for (const TSoftObjectPtr<AVisualizerBase>& Visualizer : LevelVisualizers)
 	{
 		if (Visualizer)
 		{
-			Visualizer->InitializeVisualizerFromWorld(InAASettings, INDEX_NONE);
+			switch (Visualizer->GetVisualizerDefinition().VisualizerLightSpawningMethod)
+			{
+				case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Invalid Spawning Method for a Visualizer in LevelVisualizers"));
+					continue;
+				}
+				case EVisualizerLightSpawningMethod::SpawnUsingSpline:
+				{
+					Visualizer->InitializeVisualizer(InAASettings);
+					break;
+				}
+				case EVisualizerLightSpawningMethod::AddExistingLightsFromLevel:
+				{
+					Visualizer->InitializeVisualizerFromWorld(InAASettings, INDEX_NONE);
+					break;
+				}
+			}
 			Visualizers.AddUnique(Visualizer.Get());
 		}
 	}
 
-	/* Spawn visualizers that have been configured but not yet in level */
+	/* Spawn visualizers that have been configured but have not been spawned in the level */
 	for (TSubclassOf<AVisualizerBase>& Visualizer : DefaultSpawnThroughCode_Visualizers)
 	{
 		if (Visualizer)
 		{
-			AVisualizerBase* CDO = Visualizer.GetDefaultObject();
-			FTransform Transform(CDO->GetConfig().StartRotation, CDO->GetConfig().StartLocation, CDO->GetConfig().StartScale);
+			const AVisualizerBase* CDO = Visualizer.GetDefaultObject();
+			FTransform Transform(CDO->GetVisualizerDefinition().Rotation, CDO->GetVisualizerDefinition().Location, CDO->GetVisualizerDefinition().Scale);
 			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
 			SpawnedVisualizer->FinishSpawning(Transform, true);

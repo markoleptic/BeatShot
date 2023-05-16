@@ -3,44 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CubeVisualizerDefinition.h"
 #include "VisualizerBase.h"
 #include "GameFramework/Actor.h"
 #include "StaticCubeVisualizer.generated.h"
 
+class UCubeVisualizerDefinition;
 class UStaticMeshComponent;
 class UInstancedStaticMeshComponent;
-
-/** Configuration unique to a CubeVisualizer */
-USTRUCT(BlueprintType, Category = "Visualizer Config")
-struct FCubeVisualizerConfig
-{
-	GENERATED_BODY()
-
-	/** Uniform scale applied to the instanced static mesh */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=0))
-	float MeshScale = 0.5f;
-
-	/** Base height of the cube */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=1))
-	float CubeHeight = 100.f;
-
-	/** Min height of the cube when receiving no input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=2))
-	float MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
-
-	/** Max height of the cube when receiving max input */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Scale", meta=(DisplayPriority=3))
-	float MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;
-	
-	FCubeVisualizerConfig()
-	{
-		MeshScale = 0.5f;
-		CubeHeight = 100.f;
-		MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
-		MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;
-	}
-};
-
 
 /** Visualizer that uses instanced static meshes and updates them using CustomDataValues in the materials and adjusting their transforms using UpdateInstanceTransform */
 UCLASS()
@@ -59,8 +29,6 @@ public:
 
 	/** Marks all instanced static meshes render states as dirty. Should be called by a VisualizerManager to limit the frequency of calls */
 	virtual void MarkRenderStateDirty() override;
-
-	FCubeVisualizerConfig& GetCubeVisualizerConfig() { return CubeVisualizerConfig; }
 
 protected:
 
@@ -94,10 +62,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config | Materials")
 	UMaterialInterface* OutlineMaterial;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Visualizer Config", meta=(DisplayPriority=0))
-	FCubeVisualizerConfig CubeVisualizerConfig;
-
 private:
+	UPROPERTY()
+	UCubeVisualizerDefinition* CubeVisualizerDefinition;
+	
+	UCubeVisualizerDefinition& GetFastDef() const { return *CubeVisualizerDefinition; }
+	
 	/** Returns the SpectrumValue scaled between MinCubeHeightScale and MaxCubeHeightScale */
 	float GetScaledHeight(const float SpectrumValue) const;
 

@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/Image.h"
 #include "ScreenFadeWidget.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnFadeFromBlackFinish);
 
 DECLARE_MULTICAST_DELEGATE(FOnFadeToBlackFinish);
+
+class UImage;
 
 /** Widget used any time a screen transition needs to take place, used by PlayerController */
 UCLASS()
@@ -24,6 +25,8 @@ public:
 	FOnFadeFromBlackFinish OnFadeFromBlackFinish;
 	FOnFadeToBlackFinish OnFadeToBlackFinish;
 
+	void SetStartOpacity(const float Value);
+
 	UFUNCTION(BlueprintCallable)
 	void FadeFromBlack();
 	UFUNCTION(BlueprintCallable)
@@ -32,12 +35,15 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UImage* BlackScreen;
+	
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBlackScreen;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInBlackScreen;
+	
 	FWidgetAnimationDynamicEvent FadeFromBlackFinishDelegate;
 	FWidgetAnimationDynamicEvent FadeToBlackFinishDelegate;
+	
 	UFUNCTION()
 	void FadeFromBlackAnimFinished();
 	UFUNCTION()

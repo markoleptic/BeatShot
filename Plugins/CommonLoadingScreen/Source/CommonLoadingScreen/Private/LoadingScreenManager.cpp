@@ -29,7 +29,6 @@ DEFINE_LOG_CATEGORY(LogLoadingScreen);
 
 //@TODO: Why can GetLocalPlayers() have nullptr entries?  Can it really?
 //@TODO: Test with PIE mode set to simulate and decide how much (if any) loading screen action should occur
-//@TODO: Allow other things implementing ILoadingProcessInterface besides GameState/PlayerController (and owned components) to register as interested parties
 
 // Profiling category for loading screens
 CSV_DEFINE_CATEGORY(LoadingScreen, true);
@@ -205,11 +204,10 @@ void ULoadingScreenManager::HandlePostLoadMap(UWorld* World)
 void ULoadingScreenManager::UpdateLoadingScreen()
 {
 	bool bLogLoadingScreenStatus = LoadingScreenCVars::LogLoadingScreenReasonEveryFrame;
-
+	const UCommonLoadingScreenSettings* Settings = GetDefault<UCommonLoadingScreenSettings>();
+	
 	if (ShouldShowLoadingScreen())
 	{
-		const UCommonLoadingScreenSettings* Settings = GetDefault<UCommonLoadingScreenSettings>();
-		
 		// If we don't make it to the specified checkpoint in the given time will trigger the hang detector so we can better determine where progress stalled.
  		FThreadHeartBeat::Get().MonitorCheckpointStart(GetFName(), Settings->LoadingScreenHeartbeatHangDuration);
 
@@ -223,9 +221,18 @@ void ULoadingScreenManager::UpdateLoadingScreen()
 	}
 	else
 	{
-		HideLoadingScreen();
+		if (TimeLoadingScreenReadyToHide == 0.0)
+		{
+			TimeLoadingScreenReadyToHide = FPlatformTime::Seconds();
+			LoadingScreenReadyToHide.Broadcast(Settings->LoadingScreenWidgetFadeOutTime);
+			UE_LOG(LogLoadingScreen, Log, TEXT("Starting fade out timer, Broadcasting LoadingScreenReadyToHide"));
+		}
+		else if (FPlatformTime::Seconds() - TimeLoadingScreenReadyToHide >= Settings->LoadingScreenWidgetFadeOutTime)
+		{
+			HideLoadingScreen();
  
- 		FThreadHeartBeat::Get().MonitorCheckpointEnd(GetFName());
+			FThreadHeartBeat::Get().MonitorCheckpointEnd(GetFName());
+		}
 	}
 
 	if (bLogLoadingScreenStatus)
@@ -337,6 +344,17 @@ bool ULoadingScreenManager::CheckForAnyNeedToShowLoadingScreen()
 					return true;
 				}
 
+				// Make sure PC has had a chance to bind to any loading screen delegates
+				if (ILoadingProcessInterface* Interface = Cast<ILoadingProcessInterface>(PC))
+				{
+					if (!Interface->HasBoundToLoadingScreenDelegates())
+					{
+						UE_LOG(LogLoadingScreen, Log, TEXT("Allowing PC to bind to loading screen delegates."));
+						Interface->BindToLoadingScreenDelegates(LoadingScreenVisibilityChanged, LoadingScreenReadyToHide);
+						Interface->SetHasBoundToLoadingScreenDelegates(true);
+					}
+				}
+
 				// Ask any PC components if they need a loading screen
 				for (UActorComponent* TestComponent : PC->GetComponents())
 				{
@@ -377,7 +395,6 @@ bool ULoadingScreenManager::CheckForAnyNeedToShowLoadingScreen()
 	{
 		if (ILoadingProcessInterface::ShouldShowLoadingScreen(Processor.GetObject(), /*out*/ DebugReasonForShowingOrHidingLoadingScreen))
 		{
-			OnReadyToHideLoadingScreenDelegate.Broadcast();
 			return true;
 		}
 	}
@@ -482,26 +499,20 @@ void ULoadingScreenManager::ShowLoadingScreen()
 
 		// Eat input while the loading screen is displayed
 		StartBlockingInput();
-
+		
+		// Broadcast that the loading screen is now showing
 		LoadingScreenVisibilityChanged.Broadcast(/*bIsVisible=*/ true);
-
+		
 		// Create the loading screen widget
 		TSubclassOf<UUserWidget> LoadingScreenWidgetClass = Settings->LoadingScreenWidget.TryLoadClass<UUserWidget>();
 		if (UUserWidget* UserWidget = UUserWidget::CreateWidgetInstance(*LocalGameInstance, LoadingScreenWidgetClass, NAME_None))
 		{
+			Widget = UserWidget;
 			LoadingScreenWidget = UserWidget->TakeWidget();
 			if (ILoadingProcessInterface* ImplementedInterface = Cast<ILoadingProcessInterface>(UserWidget))
 			{
-				UE_LOG(LogTemp, Display, TEXT("CreateLoadingScreenTask"));
-				ImplementedInterface->CreateLoadingScreenTask(OnLoadingScreenShownDelegate, OnReadyToHideLoadingScreenDelegate);
-				if (OnLoadingScreenShownDelegate.IsBound())
-				{
-					UE_LOG(LogTemp, Display, TEXT("OnLoadingScreenShownDelegate"));
-				}
-				if (OnReadyToHideLoadingScreenDelegate.IsBound())
-				{
-					UE_LOG(LogTemp, Display, TEXT("OnReadyToHideLoadingScreenDelegate"));
-				}
+				UE_LOG(LogTemp, Display, TEXT("Creating Loading Screen Task for Loading Screen Widget"));
+				ImplementedInterface->BindToLoadingScreenDelegates(LoadingScreenVisibilityChanged, LoadingScreenReadyToHide);
 			}
 		}
 		else
@@ -520,11 +531,6 @@ void ULoadingScreenManager::ShowLoadingScreen()
 		{
 			// Tick Slate to make sure the loading screen is displayed immediately
 			FSlateApplication::Get().Tick();
-		}
-
-		if (OnLoadingScreenShownDelegate.IsBound())
-		{
-			OnLoadingScreenShownDelegate.Broadcast();
 		}
 	}
 }
@@ -577,6 +583,7 @@ void ULoadingScreenManager::RemoveWidgetFromViewport()
 			GameViewportClient->RemoveViewportWidgetContent(LoadingScreenWidget.ToSharedRef());
 		}
 		LoadingScreenWidget.Reset();
+		Widget = nullptr;
 	}
 }
 

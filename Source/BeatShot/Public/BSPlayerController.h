@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
+#include "LoadingProcessInterface.h"
 #include "BeatShot/BeatShot.h"
 #include "SaveLoadInterface.h"
 #include "BSPlayerController.generated.h"
@@ -26,7 +27,7 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
 /** Base PlayerController class for this game */
 UCLASS()
-class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface, public IHttpRequestInterface
+class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface, public IHttpRequestInterface, public ILoadingProcessInterface
 {
 	GENERATED_BODY()
 
@@ -58,7 +59,7 @@ public:
 	void ShowPlayerHUD();
 	void HidePlayerHUD();
 
-	void ShowCountdown();
+	void ShowCountdown(const bool bIsRestart);
 	void HideCountdown();
 
 	void ShowPostGameMenu();
@@ -66,9 +67,14 @@ public:
 	
 	void ShowFPSCounter();
 	void HideFPSCounter();
-	
+
+	void CreateScreenFadeWidget(const float StartOpacity);
 	void FadeScreenToBlack();
+
+	/** Called when entering a new level and the loading screen is finished, or when a game mode has been restarted inside a level */
 	void FadeScreenFromBlack();
+
+	
 	void ShowInteractInfo();
 	void HideInteractInfo();
 	
@@ -97,10 +103,17 @@ public:
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
 	ABSCharacter* GetBSCharacter() const;
+	
+	/** ~ILoadingProcessInterface begin */
+	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
+	/** ~ILoadingProcessInterface end */
 
 protected:
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
+
+	UFUNCTION()
+	void OnLoadingScreenVisibilityChanged(bool bIsVisible);
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UMainMenuWidget> MainMenuClass;

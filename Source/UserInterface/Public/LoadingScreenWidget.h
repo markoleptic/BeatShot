@@ -7,6 +7,8 @@
 #include "Blueprint/UserWidget.h"
 #include "LoadingScreenWidget.generated.h"
 
+class ULoadingProcessTask;
+
 UCLASS(BlueprintType)
 class USERINTERFACE_API ULoadingScreenWidget : public UUserWidget, public ILoadingProcessInterface
 {
@@ -15,30 +17,21 @@ class USERINTERFACE_API ULoadingScreenWidget : public UUserWidget, public ILoadi
 public:
 	/** ~ILoadingProcessInterface begin */
 	virtual bool ShouldShowLoadingScreen(FString& OutReason) const override;
-	virtual void CreateLoadingScreenTask(FOnLoadingScreenShown& OnLoadingScreenShown, FOnReadyToHideLoadingScreen& OnReadyToHideLoadingScreen) override;
+	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
 	/** ~ILoadingProcessInterface end */
 	
 protected:
 	virtual void NativeConstruct() override;
-
-	UFUNCTION()
-	void OnFadeOutFinished();
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 	
 	UFUNCTION()
-	void FadeIn();
-	
-	UFUNCTION()
-	void FadeOut();
+	void FadeOut(float AnimPlaybackLength);
 	
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
-
-	FWidgetAnimationDynamicEvent FadeInDelegate;
-	FWidgetAnimationDynamicEvent FadeOutDelegate;
 	
 	const FString Reason = "LoadScreenAnimation";
 	bool bShowLoadingScreen = false;
-	bool bHasReceivedOnReadyToHideLoadingScreenBroadcast = false;
 };

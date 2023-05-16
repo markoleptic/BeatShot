@@ -58,7 +58,7 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 
 	if (SpawnPlayer(NewBSPlayer))
 	{
-		NewBSPlayer->ShowCountdown();
+		NewBSPlayer->ShowCountdown(false);
 	}
 }
 

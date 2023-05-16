@@ -23,17 +23,17 @@ void AStaticCubeVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnal
 {
 	Super::InitializeVisualizer(InAASettings);
 
+	CubeVisualizerDefinition = Cast<UCubeVisualizerDefinition>(VisualizerDefinition.GetDefaultObject());
+
 	InstancedBaseMesh->ClearInstances();
 	InstancedVerticalOutlineMesh->ClearInstances();
 	InstancedTopMesh->ClearInstances();
-
-	const FBaseVisualizerConfig VisualizerConfig = GetConfig();
 	
-	for (int i = 0; i < VisualizerConfig.NumVisualizerLightsToSpawn; i++)
+	for (int i = 0; i < GetFastDef().NumVisualizerLightsToSpawn; i++)
 	{
-		AddInstancedCubeMesh(FTransform(i * VisualizerConfig.OffsetRotation,
-			i * VisualizerConfig.OffsetLocation,
-			VisualizerConfig.OffsetScale * CubeVisualizerConfig.MeshScale));
+		AddInstancedCubeMesh(FTransform(i * GetFastDef().OffsetRotation,
+			i * GetFastDef().OffsetLocation,
+			GetFastDef().OffsetScale * GetFastDef().MeshScale));
 	}
 }
 
@@ -41,8 +41,8 @@ void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float Spec
 {
 	for (const int32 LightIndex : GetLightIndices(Index))
 	{
-		const float CustomDataValue = (GetScaledHeight(SpectrumAlpha) - CubeVisualizerConfig.MinCubeVisualizerHeightScale) /
-			(CubeVisualizerConfig.MaxCubeVisualizerHeightScale - CubeVisualizerConfig.MinCubeVisualizerHeightScale);
+		const float CustomDataValue = (GetScaledHeight(SpectrumAlpha) - GetFastDef().MinCubeVisualizerHeightScale) /
+			(GetFastDef().MaxCubeVisualizerHeightScale - GetFastDef().MinCubeVisualizerHeightScale);
 	
 		InstancedBaseMesh->UpdateInstanceTransform(LightIndex, GetSideAndBaseTransform(LightIndex, SpectrumAlpha));
 		InstancedVerticalOutlineMesh->UpdateInstanceTransform(LightIndex, GetSideAndBaseTransform(LightIndex, SpectrumAlpha));
@@ -63,27 +63,27 @@ void AStaticCubeVisualizer::MarkRenderStateDirty()
 
 float AStaticCubeVisualizer::GetScaledHeight(const float SpectrumValue) const
 {
-	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, CubeVisualizerConfig.MinCubeVisualizerHeightScale, CubeVisualizerConfig.MaxCubeVisualizerHeightScale);
+	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, GetFastDef().MinCubeVisualizerHeightScale, GetFastDef().MaxCubeVisualizerHeightScale);
 }
 
 FVector AStaticCubeVisualizer::GetScale3D(const float ScaledHeight)
 {
-	return FVector(CubeVisualizerConfig.MeshScale * GetConfig().OffsetScale.X,
-		CubeVisualizerConfig.MeshScale * GetConfig().OffsetScale.Y,
-		CubeVisualizerConfig.MeshScale * GetConfig().OffsetScale.Z * ScaledHeight);
+	return FVector(GetFastDef().MeshScale * GetFastDef().OffsetScale.X,
+		GetFastDef().MeshScale * GetFastDef().OffsetScale.Y,
+		GetFastDef().MeshScale * GetFastDef().OffsetScale.Z * ScaledHeight);
 }
 
 FTransform AStaticCubeVisualizer::GetTopMeshTransform(const int32 Index, const float SpectrumValue)
 {
 	return FTransform(FRotator(),
-		Index * GetConfig().OffsetLocation + FVector(0, 0, CubeVisualizerConfig.CubeHeight * (GetScaledHeight(SpectrumValue) - 1)),
+		Index * GetFastDef().OffsetLocation + FVector(0, 0, GetFastDef().CubeHeight * (GetScaledHeight(SpectrumValue) - 1)),
 		GetScale3D(1.f));
 }
 
 FTransform AStaticCubeVisualizer::GetSideAndBaseTransform(const int32 Index, const float SpectrumValue)
 {
 	return FTransform(FRotator(),
-		Index * GetConfig().OffsetLocation,
+		Index * GetFastDef().OffsetLocation,
 		GetScale3D(GetScaledHeight(SpectrumValue)));
 }
 

@@ -3,32 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BeamVisualizerDefinition.h"
 #include "SimpleBeamLight.h"
 #include "VisualizerBase.h"
 #include "BeamVisualizer.generated.h"
-
-USTRUCT(BlueprintType, Category = "Visualizer Config")
-struct BEATSHOT_API FBeamVisualizerConfig
-{
-	GENERATED_BODY()
-	
-	/** The SimpleBeamLight Class */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Visualizer Config | Simple Beam Light Config", meta=(DisplayPriority=-5000))
-	TSubclassOf<ASimpleBeamLight> SimpleBeamLightClass;
-
-	/** Array of lights that have already been placed in a level */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Simple Beam Light Config", meta=(DisplayName="Add lights from a level", DisplayPriority=-1150, EditCondition="bSpawnVisualizerLights==false"))
-	TArray<TObjectPtr<ASimpleBeamLight>> SimpleBeamLights;
-
-	/** The configuration to apply to all SimpleBeamLights this visualizer controls if overriding */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config | Simple Beam Light Config", meta=(DisplayPriority=-99, EditCondition="bOverrideChildLightConfig", EditConditionHides))
-	FSimpleBeamLightConfig SimpleBeamLightConfig;
-	
-	FBeamVisualizerConfig()
-	{
-		SimpleBeamLightConfig = FSimpleBeamLightConfig();
-	}
-};
 
 /** Light Visualizer that displays beams of light. Controls instances of ASimpleBeamLights */
 UCLASS()
@@ -38,8 +16,6 @@ class BEATSHOT_API ABeamVisualizer : public AVisualizerBase
 
 public:
 	ABeamVisualizer();
-
-	FBeamVisualizerConfig& GetBeamVisualizerConfig() { return BeamVisualizerConfig; }
 
 	/** Calls the parent implementation and spawns a new array of visualizers given the current AASettings */
 	virtual void InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings) override;
@@ -62,11 +38,14 @@ public:
 
 protected:
 
-	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamVisualizerConfig.SimpleBeamLights; }
+	UPROPERTY()
+	UBeamVisualizerDefinition* BeamVisualizerDefinition;
+
+	TArray<TObjectPtr<ASimpleBeamLight>> BeamLights;
 	
-	/** The configuration for this BeamVisualizer */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Config", meta=(DisplayPriority=-10000))
-	FBeamVisualizerConfig BeamVisualizerConfig;
+	UBeamVisualizerDefinition& GetFastDef() const { return *BeamVisualizerDefinition; }
+
+	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamLights; }
 	
 	/** Array of beam light indices that are currently active (Niagara particles are active) */
 	TArray<int32> ActiveLightIndices;

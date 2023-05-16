@@ -7,8 +7,7 @@
 bool ULoadingScreenWidget::ShouldShowLoadingScreen(FString& OutReason) const
 {
 	OutReason.Append(Reason);
-	return false;
-	//return bShowLoadingScreen;
+	return bShowLoadingScreen;
 }
 
 void ULoadingScreenWidget::NativeConstruct()
@@ -16,42 +15,25 @@ void ULoadingScreenWidget::NativeConstruct()
 	Super::NativeConstruct();
 }
 
-void ULoadingScreenWidget::OnFadeOutFinished()
+void ULoadingScreenWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	UE_LOG(LogTemp, Display, TEXT("FadeOutFinished LoadingScreenWidget"));
-	bShowLoadingScreen = false;
+	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void ULoadingScreenWidget::CreateLoadingScreenTask(FOnLoadingScreenShown& OnLoadingScreenShown, FOnReadyToHideLoadingScreen& OnReadyToHideLoadingScreen)
+void ULoadingScreenWidget::BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenShown, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
 {
-	//OnLoadingScreenShown.AddUniqueDynamic(this, &ULoadingScreenWidget::FadeIn);
-	//OnReadyToHideLoadingScreen.AddUniqueDynamic(this, &ULoadingScreenWidget::FadeOut);
-	//ULoadingProcessTask::CreateLoadingScreenProcessTask(this, Reason);
-	//FadeOutDelegate.BindDynamic(this, &ULoadingScreenWidget::OnFadeOutFinished);
-	//BindToAnimationFinished(FadeOutAnim, FadeOutDelegate);
+	OnReadyToHideLoadingScreen.AddUObject(this, &ULoadingScreenWidget::FadeOut);
 }
 
-void ULoadingScreenWidget::FadeIn()
+void ULoadingScreenWidget::FadeOut(float AnimPlaybackLength)
 {
-	UE_LOG(LogTemp, Display, TEXT("Fading IN LoadingScreenWidget"));
-	PlayAnimationForward(FadeInAnim);
-}
-
-void ULoadingScreenWidget::FadeOut()
-{
-	if (!bHasReceivedOnReadyToHideLoadingScreenBroadcast)
-	{
-		bShowLoadingScreen = true;
-		
-		UE_LOG(LogTemp, Display, TEXT("Fading OUT LoadingScreenWidget"));
-
-		if (IsAnimationPlaying(FadeInAnim))
-		{
-			StopAnimation(FadeInAnim);
-		}
-
-		PlayAnimationForward(FadeOutAnim);
-	}
+	bShowLoadingScreen = true;
 	
-	bHasReceivedOnReadyToHideLoadingScreenBroadcast = true;
+	UE_LOG(LogTemp, Display, TEXT("Fading OUT LoadingScreenWidget"));
+
+	if (IsAnimationPlaying(FadeInAnim))
+	{
+		StopAnimation(FadeInAnim);
+	}
+	PlayAnimationForward(FadeOutAnim, 1.f / AnimPlaybackLength);
 }

@@ -6,7 +6,6 @@
 #include "LoadingProcessInterface.h"
 #include "UObject/Object.h"
 #include "UObject/UObjectGlobals.h"
-
 #include "LoadingProcessTask.generated.h"
 
 struct FFrame;
@@ -31,7 +30,4 @@ public:
 	virtual bool ShouldShowLoadingScreen(FString& OutReason) const override;
 	
 	FString Reason;
-
-	FOnLoadingScreenShown OnLoadingScreenShownDelegate;
-	FOnReadyToHideLoadingScreen OnReadyToHideLoadingScreenDelegate;
 };

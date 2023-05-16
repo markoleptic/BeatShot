@@ -30,10 +30,6 @@ UCLASS()
 class COMMONLOADINGSCREEN_API ULoadingScreenManager : public UGameInstanceSubsystem, public FTickableGameObject
 {
 	GENERATED_BODY()
-
-protected:
-	void OnLoadingScreenShown();
-	void OnReadyToHideLoadingScreen();
 	
 public:
 	//~USubsystem interface
@@ -62,15 +58,12 @@ public:
 		return bCurrentlyShowingLoadingScreen;
 	}
 
-	/** Called when the loading screen visibility changes  */
-	DECLARE_MULTICAST_DELEGATE_OneParam(FOnLoadingScreenVisibilityChangedDelegate, bool);
+
 	FORCEINLINE FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChangedDelegate() { return LoadingScreenVisibilityChanged; }
+	FORCEINLINE FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreenDelegate() { return LoadingScreenReadyToHide; }
 
 	void RegisterLoadingProcessor(TScriptInterface<ILoadingProcessInterface> Interface);
 	void UnregisterLoadingProcessor(TScriptInterface<ILoadingProcessInterface> Interface);
-
-	FOnLoadingScreenShown& GetOnLoadingScreenShownDelegate() { return OnLoadingScreenShownDelegate; }
-	FOnReadyToHideLoadingScreen& GetFOnReadyToHideLoadingScreenDelegate() { return OnReadyToHideLoadingScreenDelegate; }
 	
 private:
 	void HandlePreLoadMap(const FWorldContext& WorldContext, const FString& MapName);
@@ -104,19 +97,17 @@ private:
 	void StopBlockingInput();
 
 	void ChangePerformanceSettings(bool bEnabingLoadingScreen);
-
-private:
+	
 	/** Delegate broadcast when the loading screen visibility changes */
 	FOnLoadingScreenVisibilityChangedDelegate LoadingScreenVisibilityChanged;
 
-	/** Delegate broadcast when the loading screen is first shown */
-	FOnLoadingScreenShown OnLoadingScreenShownDelegate;
-
-	/** Delegate broadcast when the loading screen is ready to be hidden */
-	FOnReadyToHideLoadingScreen OnReadyToHideLoadingScreenDelegate;
+	FOnReadyToHideLoadingScreenDelegate LoadingScreenReadyToHide;
 
 	/** A reference to the loading screen widget we are displaying (if any) */
 	TSharedPtr<SWidget> LoadingScreenWidget;
+
+	UPROPERTY()
+	UUserWidget* Widget;
 
 	/** Input processor to eat all input while the loading screen is shown */
 	TSharedPtr<IInputProcessor> InputPreProcessor;
@@ -136,12 +127,12 @@ private:
 	/** The time until the next log for why the loading screen is still up */
 	double TimeUntilNextLogHeartbeatSeconds = 0.0;
 
+	/** The time that the loading screen first passed all checks to hide the loadings screen */
+	double TimeLoadingScreenReadyToHide = 0.0;
+
 	/** True when we are between PreLoadMap and PostLoadMap */
 	bool bCurrentlyInLoadMap = false;
 
 	/** True when the loading screen is currently being shown */
 	bool bCurrentlyShowingLoadingScreen = false;
-
-	bool bHasCalledOnLoadingScreenShown = false;
-	bool BHasCalledOnReadyToHideLoadingScreen = false;
 };

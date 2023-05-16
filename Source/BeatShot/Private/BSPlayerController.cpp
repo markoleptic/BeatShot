@@ -105,7 +105,7 @@ void ABSPlayerController::ShowMainMenu()
 	{
 		return;
 	}
-	FadeScreenFromBlack();
+	//FadeScreenFromBlack();
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
@@ -217,7 +217,7 @@ void ABSPlayerController::HidePlayerHUD()
 	HideRLAgentWidget();
 }
 
-void ABSPlayerController::ShowCountdown()
+void ABSPlayerController::ShowCountdown(const bool bIsRestart)
 {
 	if (!IsLocalController())
 	{
@@ -228,7 +228,10 @@ void ABSPlayerController::ShowCountdown()
 	{
 		Cast<ABSCharacter>(GetPawn())->SetActorLocationAndRotation(FVector(1580, 0, 102), FRotator(0, 0, 0));
 	}
-	FadeScreenFromBlack();
+	if (bIsRestart)
+	{
+		FadeScreenFromBlack();
+	}
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
 	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.AudioConfig.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
@@ -341,6 +344,22 @@ void ABSPlayerController::PostProcessInput(const float DeltaTime, const bool bGa
 	GetBSAbilitySystemComponent()->ProcessAbilityInput(DeltaTime, IsPaused());
 }
 
+void ABSPlayerController::BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
+{
+	if (!OnLoadingScreenVisibilityChanged.IsBoundToObject(this))
+	{
+		OnLoadingScreenVisibilityChanged.AddUObject(this, &ABSPlayerController::OnLoadingScreenVisibilityChanged);
+	}
+}
+
+void ABSPlayerController::OnLoadingScreenVisibilityChanged(bool bIsVisible)
+{
+	if (!bIsVisible)
+	{
+		FadeScreenFromBlack();
+	}
+}
+
 void ABSPlayerController::HidePostGameMenu()
 {
 	if (PostGameMenuWidget)
@@ -372,20 +391,35 @@ void ABSPlayerController::HideFPSCounter()
 	}
 }
 
-void ABSPlayerController::FadeScreenToBlack()
+void ABSPlayerController::CreateScreenFadeWidget(const float StartOpacity)
 {
 	if (!ScreenFadeWidget)
 	{
 		ScreenFadeWidget = CreateWidget<UScreenFadeWidget>(this, ScreenFadeClass);
-	}
-	ScreenFadeWidget->AddToViewport(ZOrderFadeScreen);
-	ScreenFadeWidget->OnFadeToBlackFinish.AddLambda([&]
-	{
-		if (!OnScreenFadeToBlackFinish.ExecuteIfBound())
+		ScreenFadeWidget->OnFadeToBlackFinish.AddLambda([&]
 		{
-			UE_LOG(LogTemp, Display, TEXT("OnScreenFadeToBlackFinish not bound."));
-		}
-	});
+			if (!OnScreenFadeToBlackFinish.ExecuteIfBound())
+			{
+				UE_LOG(LogTemp, Display, TEXT("OnScreenFadeToBlackFinish not bound."));
+			}
+		});
+		ScreenFadeWidget->OnFadeFromBlackFinish.AddUObject(this, &ABSPlayerController::OnFadeScreenFromBlackFinish);
+		ScreenFadeWidget->SetStartOpacity(StartOpacity);
+		ScreenFadeWidget->AddToViewport(ZOrderFadeScreen);
+	}
+}
+
+void ABSPlayerController::FadeScreenToBlack()
+{
+	if (!IsLocalController())
+	{
+		return;
+	}
+	if (!ScreenFadeWidget)
+	{
+		CreateScreenFadeWidget(0.f);
+	}
+	UE_LOG(LogTemp, Display, TEXT("Fading screen to black"));
 	ScreenFadeWidget->FadeToBlack();
 }
 
@@ -397,11 +431,20 @@ void ABSPlayerController::FadeScreenFromBlack()
 	}
 	if (!ScreenFadeWidget)
 	{
-		ScreenFadeWidget = CreateWidget<UScreenFadeWidget>(this, ScreenFadeClass);
-		ScreenFadeWidget->AddToViewport(ZOrderFadeScreen);
+		CreateScreenFadeWidget(1.f);
 	}
-	ScreenFadeWidget->OnFadeFromBlackFinish.AddUObject(this, &ABSPlayerController::OnFadeScreenFromBlackFinish);
+	UE_LOG(LogTemp, Display, TEXT("Fading screen from black"));
 	ScreenFadeWidget->FadeFromBlack();
+}
+
+void ABSPlayerController::OnFadeScreenFromBlackFinish()
+{
+	if (ScreenFadeWidget)
+	{
+		ScreenFadeWidget->OnFadeFromBlackFinish.RemoveAll(this);
+		ScreenFadeWidget->RemoveFromParent();
+		ScreenFadeWidget = nullptr;
+	}
 }
 
 void ABSPlayerController::ShowInteractInfo()
@@ -447,16 +490,6 @@ void ABSPlayerController::HideRLAgentWidget()
 	{
 		RLAgentWidget->RemoveFromParent();
 		RLAgentWidget = nullptr;
-	}
-}
-
-void ABSPlayerController::OnFadeScreenFromBlackFinish()
-{
-	if (ScreenFadeWidget)
-	{
-		ScreenFadeWidget->OnFadeFromBlackFinish.RemoveAll(this);
-		ScreenFadeWidget->RemoveFromParent();
-		ScreenFadeWidget = nullptr;
 	}
 }
 

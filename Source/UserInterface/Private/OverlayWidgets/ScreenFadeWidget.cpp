@@ -2,6 +2,7 @@
 
 
 #include "OverlayWidgets/ScreenFadeWidget.h"
+#include "Components/Image.h"
 
 void UScreenFadeWidget::NativeConstruct()
 {
@@ -27,6 +28,11 @@ void UScreenFadeWidget::FadeFromBlackAnimFinished()
 void UScreenFadeWidget::FadeToBlackAnimFinished()
 {
 	OnFadeToBlackFinish.Broadcast();
+}
+
+void UScreenFadeWidget::SetStartOpacity(const float Value)
+{
+	BlackScreen->SetRenderOpacity(Value);
 }
 
 void UScreenFadeWidget::FadeFromBlack()

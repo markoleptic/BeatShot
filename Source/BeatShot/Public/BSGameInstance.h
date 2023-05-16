@@ -42,7 +42,7 @@ public:
 	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
 
 	UFUNCTION()
-	void StartGameMode() const;
+	void StartGameMode(const bool bIsRestart) const;
 
 	UFUNCTION()
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);

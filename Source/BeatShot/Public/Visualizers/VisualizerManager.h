@@ -68,10 +68,10 @@ protected:
 	TArray<TSoftObjectPtr<AVisualizerBase>> LevelVisualizers;
 	
 	/** All visualizers being managed */
-	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | References")
+	UPROPERTY()
 	TArray<TObjectPtr<AVisualizerBase>> Visualizers;
 	
-	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | References")
+	UPROPERTY()
 	bool bUpdateVisualizers;
 
 private:
@@ -79,7 +79,6 @@ private:
 	TArray<TObjectPtr<ABeamVisualizer>>& GetBeamVisualizers() { return BeamVisualizers; }
 	TArray<TObjectPtr<AStaticCubeVisualizer>>& GetCubeVisualizers() { return CubeVisualizers; }
 	TArray<TObjectPtr<AVisualizerBase>>& GetVisualizers() { return Visualizers; }
-
 	TArray<TObjectPtr<ABeamVisualizer>> BeamVisualizers;
 	TArray<TObjectPtr<AStaticCubeVisualizer>> CubeVisualizers;
 

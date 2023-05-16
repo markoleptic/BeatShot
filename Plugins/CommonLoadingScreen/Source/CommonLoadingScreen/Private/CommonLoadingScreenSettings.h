@@ -65,5 +65,9 @@ public:
 	// (useful when iterating on loading screens)
 	UPROPERTY(config, EditAnywhere, Category=Configuration)
 	bool ForceTickLoadingScreenEvenInEditor = true;
+
+	// How long should we let the widget play the fade out animation
+	UPROPERTY(config, EditAnywhere, Category=Configuration)
+	float LoadingScreenWidgetFadeOutTime = 0.5f;
 };
 

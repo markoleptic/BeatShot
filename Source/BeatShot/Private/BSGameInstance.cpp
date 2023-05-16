@@ -52,14 +52,17 @@ void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
 	}
 }
 
-void UBSGameInstance::StartGameMode() const
+void UBSGameInstance::StartGameMode(const bool bIsRestart) const
 {
 	ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	
 	if (PlayerController->IsPaused())
 	{
 		PlayerController->HandlePause();
 	}
-	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this]
+
+	/** Hide all widgets and show the countdown after the screen fades to black */
+	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this, bIsRestart]
 	{
 		ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		Controller->HideMainMenu();
@@ -67,7 +70,7 @@ void UBSGameInstance::StartGameMode() const
 		Controller->HidePauseMenu();
 		if (GetWorld()->GetMapName().Contains("Range"))
 		{
-			Controller->ShowCountdown();
+			Controller->ShowCountdown(bIsRestart);
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->InitializeGameMode();
 		}
 		else
@@ -85,27 +88,28 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 	case ETransitionState::StartFromMainMenu:
 		{
 			BSConfig = NewGameModeTransitionState.BSConfig;
-			StartGameMode();
+			StartGameMode(false);
 			break;
 		}
 	case ETransitionState::StartFromPostGameMenu:
 		{
 			BSConfig = NewGameModeTransitionState.BSConfig;
-			StartGameMode();
+			StartGameMode(true);
 			break;
 		}
 	case ETransitionState::Restart:
 		{
 			UE_LOG(LogTemp, Display, TEXT("Restarting"));
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
-			StartGameMode();
+			StartGameMode(true);
 			break;
 		}
 	case ETransitionState::QuitToMainMenu:
 		{
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
 			ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-			PlayerController->FadeScreenToBlack();
+
+			/** Hide all widgets and open MainMenu after the screen fades to black */
 			PlayerController->OnScreenFadeToBlackFinish.BindLambda([this]
 			{
 				ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
@@ -113,6 +117,7 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 				Controller->HidePauseMenu();
 				UGameplayStatics::OpenLevel(GetWorld(), "MainMenuLevel");
 			});
+			PlayerController->FadeScreenToBlack();
 			break;
 		}
 	case ETransitionState::QuitToDesktop:
