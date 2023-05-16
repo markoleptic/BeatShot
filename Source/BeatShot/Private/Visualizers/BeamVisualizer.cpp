@@ -66,7 +66,6 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 	
 	for (int i = 0; i < SpawnTransforms.Num(); i++)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Transfrom: %s"), *SpawnTransforms[i].ToString());
 		ASimpleBeamLight* Light = GetWorld()->SpawnActorDeferred<ASimpleBeamLight>(GetFastDef().VisualizerLightClass, SpawnTransforms[i], this);
 		FSimpleBeamLightConfig Config;
 		Config.bUseSpotlight = GetFastDef().bUseSpotlight;
@@ -141,7 +140,6 @@ void ABeamVisualizer::InitializeVisualizerFromWorld(const FPlayerSettings_AudioA
 			i++;
 		}
 	}
-	GetFastDef().VisualizerLightsFromLevel.Empty();
 }
 
 void ABeamVisualizer::ActivateVisualizer(const int32 Index)

@@ -246,7 +246,6 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 				AbilitySpec->InputPressed = true;
 				if (AbilitySpec->IsActive())
 				{
-					UE_LOG(LogTemp, Display, TEXT("Active"));
 					if (CastChecked<UBSGameplayAbility>(AbilitySpec->Ability)->GetActivationPolicy() == EBSAbilityActivationPolicy::SpammableTriggered)
 					{
 						// Even though ability is active, activating it will cancel and reactivate
@@ -274,7 +273,6 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 	// and then also send a input event to the ability because of the press.
 	for (const FGameplayAbilitySpecHandle& AbilitySpecHandle : AbilitiesToActivate)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Trying to activate ability %s"), *AbilitySpecHandle.ToString());
 		TryActivateAbility(AbilitySpecHandle);
 	}
 	

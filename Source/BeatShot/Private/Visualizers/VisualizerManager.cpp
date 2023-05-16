@@ -53,6 +53,10 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 		if (Visualizer)
 		{
 			const AVisualizerBase* CDO = Visualizer.GetDefaultObject();
+			if (Visualizers.Contains(CDO))
+			{
+				continue;
+			}
 			FTransform Transform(CDO->GetVisualizerDefinition().Rotation, CDO->GetVisualizerDefinition().Location, CDO->GetVisualizerDefinition().Scale);
 			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
@@ -60,10 +64,6 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			Visualizers.AddUnique(SpawnedVisualizer);
 		}
 	}
-
-	/* Empty visualizers container to prevent duplicate spawning */
-	DefaultSpawnThroughCode_Visualizers.Empty();
-	LevelVisualizers.Empty();
 
 	/* Split visualizer types into their own containers so that UpdateVisualizers can be as efficient as possible */
 	SplitVisualizers();

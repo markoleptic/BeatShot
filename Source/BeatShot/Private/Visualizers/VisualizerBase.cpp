@@ -178,7 +178,6 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 			Current++;
 			Total++;
 		}
-		UE_LOG(LogTemp, Display, TEXT("TotalVizualizers in channel %d: %d"), i, Current);
 	}
 	UE_LOG(LogTemp, Display, TEXT("NumVisualizers: %d, NumBandChannels: %d"), NumVisualizers, NumBandChannels);
 	UE_LOG(LogTemp, Display, TEXT("TotalVizualizers in all channels: %d"), Total);

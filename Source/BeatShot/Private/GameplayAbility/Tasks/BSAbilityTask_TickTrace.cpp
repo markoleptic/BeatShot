@@ -3,7 +3,7 @@
 #include "GameplayAbility/Tasks/BSAbilityTask_TickTrace.h"
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
-#include "Camera/CameraComponent.h"
+#include "BSRecoilComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Physics/BSCollisionChannels.h"
 
@@ -67,14 +67,15 @@ void UBSAbilityTask_TickTrace::PerformSingleWeaponTrace()
 	{
 		return;
 	}
+
 	FHitResult HitResult;
-	const UCameraComponent* Camera = Character->GetCamera();
-	const FRotator CurrentRecoilRotation = Character->GetGun()->GetCurrentRecoilRotation();
-	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(Camera->GetForwardVector(), CurrentRecoilRotation.Pitch, Camera->GetRightVector());
-	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, Camera->GetUpVector());
-	const FVector EndTrace = Camera->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
+	UBSRecoilComponent* RecoilComponent = Cast<UBSRecoilComponent>(Character->GetComponentByClass(UBSRecoilComponent::StaticClass()));
+	const FRotator CurrentRecoilRotation = RecoilComponent->GetCurrentRecoilRotation();
+	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(), CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
+	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, RecoilComponent->GetUpVector());
+	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
 	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true, /*IgnoreActor=*/ Character);
-	GetWorld()->LineTraceSingleByChannel(HitResult, Camera->GetComponentLocation(), EndTrace, BS_TraceChannel_Weapon, TraceParams);
+	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace, BS_TraceChannel_Weapon, TraceParams);
 	OnTickTraceHit.Broadcast(HitResult);
 }
 

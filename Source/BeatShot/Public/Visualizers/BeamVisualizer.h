@@ -41,10 +41,13 @@ protected:
 	UPROPERTY()
 	UBeamVisualizerDefinition* BeamVisualizerDefinition;
 
+	/** An array of spawned Simple Beam Lights */
 	TArray<TObjectPtr<ASimpleBeamLight>> BeamLights;
-	
+
+	/** Returns the Beam Visualizer Definition */
 	UBeamVisualizerDefinition& GetFastDef() const { return *BeamVisualizerDefinition; }
 
+	/** Returns the array of simple beam lights */
 	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamLights; }
 	
 	/** Array of beam light indices that are currently active (Niagara particles are active) */

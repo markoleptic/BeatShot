@@ -65,7 +65,8 @@ protected:
 private:
 	UPROPERTY()
 	UCubeVisualizerDefinition* CubeVisualizerDefinition;
-	
+
+	/** Returns the Cube Visualizer Definition */
 	UCubeVisualizerDefinition& GetFastDef() const { return *CubeVisualizerDefinition; }
 	
 	/** Returns the SpectrumValue scaled between MinCubeHeightScale and MaxCubeHeightScale */

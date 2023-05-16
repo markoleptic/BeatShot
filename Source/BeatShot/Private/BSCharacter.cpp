@@ -6,6 +6,7 @@
 #include "BSInputComponent.h"
 #include "BSPlayerController.h"
 #include "BSPlayerState.h"
+#include "BSRecoilComponent.h"
 #include "SphereTarget.h"
 #include "Equipment/BSGun.h"
 #include "Engine/DamageEvents.h"
@@ -31,9 +32,7 @@
 #include "Inventory/BSInventoryManagerComponent.h"
 
 static TAutoConsoleVariable CVarAutoBHop(TEXT("move.Pogo"), 0, TEXT("If holding spacebar should make the player jump whenever possible.\n"), ECVF_Default);
-
 static TAutoConsoleVariable CVarJumpBoost(TEXT("move.JumpBoost"), 1, TEXT("If the player should boost in a movement direction while jumping.\n0 - disables jump boosting entirely\n1 - boosts in the direction of input, even when moving in another direction\n2 - boosts in the direction of input when moving in the same direction\n"), ECVF_Default);
-
 static TAutoConsoleVariable CVarBunnyHop(TEXT("move.BunnyHopping"), 0, TEXT("Enable normal bunnyhopping.\n"), ECVF_Default);
 
 ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) :
@@ -50,11 +49,11 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	SpringArmComponent->SetRelativeLocation(FVector(0.f, 0.f, 64.f));
 	SpringArmComponent->SetupAttachment(RootComponent);
 
-	CameraRecoilComponent = CreateDefaultSubobject<USceneComponent>("Camera Recoil Component");
-	CameraRecoilComponent->SetupAttachment(SpringArmComponent);
+	RecoilComponent = CreateDefaultSubobject<UBSRecoilComponent>("Recoil Component");
+	RecoilComponent->SetupAttachment(SpringArmComponent);
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera Component");
-	CameraComponent->SetupAttachment(CameraRecoilComponent);
+	CameraComponent->SetupAttachment(RecoilComponent);
 	CameraComponent->SetFieldOfView(103);
 	CameraComponent->PostProcessSettings.MotionBlurAmount = 0;
 	CameraComponent->PostProcessSettings.bOverride_MotionBlurMax = 0;
@@ -78,29 +77,10 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	BaseEyeHeight = DefaultBaseEyeHeight;
 	constexpr float CrouchedHalfHeight = 68.58f / 2.0f;
 	CrouchedEyeHeight = 53.34f - CrouchedHalfHeight;
-
-	// Fall Damage Initializations
-	// PLAYER_MAX_SAFE_FALL_SPEED
 	MinSpeedForFallDamage = 1002.9825f;
-	// PLAYER_MIN_BOUNCE_SPEED
 	MinLandBounceSpeed = 329.565f;
 	CapDamageMomentumZ = 476.25f;
 	bEnabled_AimBot = false;
-
-	/*UBSCharacterMovementComponent* BSMoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
-	BSMoveComp->GravityScale = 1.0f;
-	BSMoveComp->MaxAcceleration = 2400.0f;
-	BSMoveComp->BrakingFrictionFactor = 1.0f;
-	BSMoveComp->BrakingFriction = 6.0f;
-	BSMoveComp->GroundFriction = 8.0f;
-	BSMoveComp->BrakingDecelerationWalking = 1400.0f;
-	BSMoveComp->bUseControllerDesiredRotation = false;
-	BSMoveComp->bOrientRotationToMovement = false;
-	BSMoveComp->RotationRate = FRotator(0.0f, 720.0f, 0.0f);
-	BSMoveComp->bAllowPhysicsRotationDuringAnimRootMotion = false;
-	BSMoveComp->GetNavAgentPropertiesRef().bCanCrouch = true;
-	BSMoveComp->bCanWalkOffLedgesWhenCrouching = true;
-	BSMoveComp->SetCrouchedHalfHeight(65.0f);*/
 }
 
 USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
@@ -142,11 +122,6 @@ ABSGun* ABSCharacter::GetGun() const
 	return nullptr;
 }
 
-USceneComponent* ABSCharacter::GetCameraRecoilComponent() const
-{
-	return Cast<USceneComponent>(CameraRecoilComponent);
-}
-
 UBSEquipmentManagerComponent* ABSCharacter::GetEquipmentManager() const
 {
 	return EquipmentManagerComponent.Get();
@@ -180,6 +155,11 @@ ABSPlayerState* ABSCharacter::GetBSPlayerState() const
 UBSAbilitySystemComponent* ABSCharacter::GetBSAbilitySystemComponent() const
 {
 	return Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent());
+}
+
+UBSRecoilComponent* ABSCharacter::GetRecoilComponent() const
+{
+	return RecoilComponent.Get();
 }
 
 void ABSCharacter::BeginPlay()

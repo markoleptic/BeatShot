@@ -6,17 +6,10 @@
 #include "GameplayTagAssetInterface.h"
 #include "BeatShot/Beatshot.h"
 #include "SaveLoadInterface.h"
-#include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "BSGun.generated.h"
 
-class ASphereTarget;
-class ABSPlayerController;
-class UNiagaraSystem;
-class UBSGameInstance;
-class ABSCharacter;
 class USkeletalMeshComponent;
-class UAnimMontage;
 
 /** The base gun used in this game */
 UCLASS()
@@ -29,9 +22,6 @@ class BEATSHOT_API ABSGun : public AActor, public IGameplayTagAssetInterface, pu
 
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
-
-	/** Called every frame */
-	virtual void Tick(float DeltaTime) override;
 
 	/** ~IGameplayTagAssetInterface begin */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
@@ -50,13 +40,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Fire();
 
-	/** Stops the timer that allows for automatic fire */
+	/** Sets bIsFiring to false */
 	UFUNCTION(BlueprintCallable)
 	virtual void StopFire();
-
-	/** Returns the current spread rotation (Pitch and Yaw at the current time). Used by FireGun ability */
-	UFUNCTION(BlueprintCallable)
-	virtual FRotator GetCurrentRecoilRotation() const;
 
 	/** Returns the location of the muzzle */
 	UFUNCTION(BlueprintCallable)
@@ -105,10 +91,6 @@ public:
 	/** Sets whether or not the gun should show bullet tracers, updating its GameplayTags */
 	UFUNCTION(BlueprintCallable)
 	void SetShowTracers(const bool bShowTracers);
-
-	/** Begins or resumes the recoil timeline, allowing UpdateRecoil to receive input from the timeline on tick */
-	UFUNCTION(BlueprintCallable)
-	void Recoil();
 	
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;
@@ -122,37 +104,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
 	USceneComponent* MuzzleLocationComp;
 
-	/** Vector curve that implements vertical and horizontal recoil */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Recoil")
-	UCurveVector* RecoilCurve;
-
-	/** Float curve that implements a screen kickback (camera shake) effect */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Recoil")
-	UCurveFloat* KickbackCurve;
-
-	UFUNCTION(BlueprintCallable)
-	ABSCharacter* GetBSCharacter() const;
-	
-	/** Interpolates the current gun recoil, camera recoil, and kickback inside of OnTick
-	 *  based on CurrentShotRecoilRotation, CurrentShotCameraRecoilRotation, and KickbackAngle */
-	virtual void UpdateKickbackAndRecoil(float DeltaTime);
-
-	/** Update the screen-shake-like camera recoil */
-	virtual void UpdateKickback(float DeltaTime);
-
-	/** Updates CurrentShotRecoilRotation and CurrentShotCameraRecoilRotation. Bound to RecoilTimeline, which corresponds to the RecoilCurve */
-	UFUNCTION()
-	void UpdateRecoil(FVector Output);
-
-	/** The timeline corresponding to RecoilCurve */
-	FTimeline RecoilTimeline;
-	
-	/** The current rotation representing the spread for the bullet, used when the gun is fired */
-	FRotator CurrentShotRecoilRotation;
-
-	/** Same as CurrentShotRecoilRotation but applied at half the scale */
-	FRotator CurrentShotCameraRecoilRotation;
-
 	/** Whether or not the player is holding down left click */
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsFiring;
@@ -160,28 +111,6 @@ protected:
 	/** Determines if the player can fire */
 	UPROPERTY(BlueprintReadWrite)
 	bool bCanFire;
-
-	/** Whether or not to increment KickbackAngle, which is applied to the owning character's CameraRecoilComponent */
-	bool bShouldKickback;
-
-	/** Whether or not to fire the gun continuously */
-	UPROPERTY(BlueprintReadWrite)
-	bool bAutomaticFire;
-
-	UPROPERTY(EditDefaultsOnly)
-	float CameraRecoilInterpSpeed = 4.f;
-	
-	/** The accumulated delta seconds since the last camera kickback duration */
-	float KickbackAlpha;
-
-	/** The value pulled from the KickbackCurve at time KickbackAlpha divided by KickbackDuration */
-	float KickbackAngle;
-
-	/** The duration of each kickback animation */
-	float KickbackDuration = 0.2f;
-
-	/** Used in recoil to make sure the first shot has properly applied recoil */
-	int32 ShotsFired;
 
 private:
 	FGameplayTagContainer GameplayTags;
