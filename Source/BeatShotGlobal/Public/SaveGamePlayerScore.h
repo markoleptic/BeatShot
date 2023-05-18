@@ -8,7 +8,7 @@
 #include "SaveGamePlayerScore.generated.h"
 
 UCLASS()
-class GLOBAL_API USaveGamePlayerScore : public USaveGame
+class BEATSHOTGLOBAL_API USaveGamePlayerScore : public USaveGame
 {
 	GENERATED_BODY()
 

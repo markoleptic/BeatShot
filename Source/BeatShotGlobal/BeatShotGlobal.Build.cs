@@ -3,9 +3,9 @@
 using System.IO;
 using UnrealBuildTool;
 
-public class Global : ModuleRules
+public class BeatShotGlobal : ModuleRules
 {
-	public Global(ReadOnlyTargetRules Target) : base(Target)
+	public BeatShotGlobal(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PublicDependencyModuleNames.AddRange(new[]
 		{ 

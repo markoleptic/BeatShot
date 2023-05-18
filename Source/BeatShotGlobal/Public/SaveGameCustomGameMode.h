@@ -8,7 +8,7 @@
 #include "SaveGameCustomGameMode.generated.h"
 
 UCLASS()
-class GLOBAL_API USaveGameCustomGameMode : public USaveGame
+class BEATSHOTGLOBAL_API USaveGameCustomGameMode : public USaveGame
 {
 	GENERATED_BODY()
 

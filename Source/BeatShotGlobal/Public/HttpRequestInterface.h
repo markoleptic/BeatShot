@@ -32,7 +32,7 @@ class UHttpRequestInterface : public UInterface
 };
 
 /** Interface to allow all other classes in this game to use HTTP request functions */
-class GLOBAL_API IHttpRequestInterface
+class BEATSHOTGLOBAL_API IHttpRequestInterface
 {
 	GENERATED_BODY()
 

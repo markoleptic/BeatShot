@@ -31,7 +31,7 @@ class USaveLoadInterface : public UInterface
 };
 
 /** Interface to allow all other classes in this game to query, load, and save all settings */
-class GLOBAL_API ISaveLoadInterface
+class BEATSHOTGLOBAL_API ISaveLoadInterface
 {
 	GENERATED_BODY()
 

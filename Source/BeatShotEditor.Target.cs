@@ -9,6 +9,6 @@ public class BeatShotEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.AddRange(new[] { "BeatShot", "UserInterface", "Global"});
+		ExtraModuleNames.AddRange(new[] { "BeatShot", "UserInterface", "BeatShotGlobal"});
 	}
 }

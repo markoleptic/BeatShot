@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class GLOBAL_API UBSGameModeDataAsset : public UDataAsset
+class BEATSHOTGLOBAL_API UBSGameModeDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
 };
