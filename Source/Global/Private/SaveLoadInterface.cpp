@@ -143,16 +143,16 @@ void ISaveLoadInterface::RemoveAllCustomGameModes()
 	}
 }
 
-FBSConfig ISaveLoadInterface::FindDefaultGameMode(const FString& GameModeName) const
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName) const
 {
 	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
 	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.DefaultMode).ToString()))
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.BaseGameMode).ToString()))
 		{
 			return Mode;
 		}
 	}
-	return FBSConfig(EDefaultMode::Custom, EGameModeDifficulty::Normal);
+	return FBSConfig();
 }
 
 FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeName) const
@@ -164,14 +164,14 @@ FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeNa
 			return Mode;
 		}
 	}
-	return FBSConfig(EDefaultMode::Custom, EGameModeDifficulty::Normal);
+	return FBSConfig();
 }
 
-bool ISaveLoadInterface::IsDefaultGameMode(const FString& GameModeName) const
+bool ISaveLoadInterface::IsPresetGameMode(const FString& GameModeName) const
 {
 	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
 	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.DefaultMode).ToString(), ESearchCase::IgnoreCase))
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.BaseGameMode).ToString(), ESearchCase::IgnoreCase))
 		{
 			return true;
 		}

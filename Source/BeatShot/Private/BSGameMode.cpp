@@ -115,7 +115,7 @@ void ABSGameMode::InitializeGameMode()
 	{
 		const ABSCharacter* Character = Controller->GetBSCharacter();
 		const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Track);
-		if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+		if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 		{
 			if (AbilitySpecs.IsEmpty())
 			{
@@ -123,7 +123,7 @@ void ABSGameMode::InitializeGameMode()
 				Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
 			}
 		}
-		else if (BSConfig.DefiningConfig.BaseGameMode != EDefaultMode::BeatTrack && !AbilitySpecs.IsEmpty())
+		else if (BSConfig.DefiningConfig.BaseGameMode != EBaseGameMode::BeatTrack && !AbilitySpecs.IsEmpty())
 		{
 			Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbility->GetDefaultObject<UBSGameplayAbility>());
 		}
@@ -144,7 +144,7 @@ void ABSGameMode::StartGameMode()
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 	StartGameModeTimers();
 	TargetSpawner->SetShouldSpawn(true);
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
 		TargetSpawner->CallSpawnFunction();
 	}
@@ -294,7 +294,7 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 void ABSGameMode::OnGameModeLengthTimerComplete()
 {
 	/** don't save scores if score is zero */
-	if (CurrentPlayerScore.Score <= 0 || (CurrentPlayerScore.DefaultMode == EDefaultMode::Custom && CurrentPlayerScore.CustomGameModeName == ""))
+	if (CurrentPlayerScore.Score <= 0 || (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.CustomGameModeName == ""))
 	{
 		EndGameMode(false, true);
 		return;
@@ -474,11 +474,9 @@ void ABSGameMode::OnSecondPassedCallback() const
 void ABSGameMode::LoadMatchingPlayerScores()
 {
 	CurrentPlayerScore.ResetStruct();
-	CurrentPlayerScore.DefaultMode = BSConfig.DefiningConfig.DefaultMode;
+	CurrentPlayerScore.DefiningConfig = BSConfig.DefiningConfig;
 	CurrentPlayerScore.SongTitle = BSConfig.AudioConfig.SongTitle;
 	CurrentPlayerScore.SongLength = BSConfig.AudioConfig.SongLength;
-	CurrentPlayerScore.CustomGameModeName = BSConfig.DefiningConfig.CustomGameModeName;
-	CurrentPlayerScore.Difficulty = BSConfig.DefiningConfig.Difficulty;
 	CurrentPlayerScore.TotalPossibleDamage = 0.f;
 	
 	if (BSConfig.AudioConfig.SongLength == 0.f)
@@ -511,7 +509,9 @@ void ABSGameMode::LoadMatchingPlayerScores()
 void ABSGameMode::HandleScoreSaving(const bool bShouldSavePlayerScores)
 {
 	/** don't save scores if score is zero */
-	if (!bShouldSavePlayerScores || CurrentPlayerScore.Score <= 0 || (CurrentPlayerScore.DefaultMode == EDefaultMode::Custom && CurrentPlayerScore.CustomGameModeName == ""))
+	if (!bShouldSavePlayerScores ||
+		CurrentPlayerScore.Score <= 0 ||
+		(CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.CustomGameModeName == ""))
 	{
 		OnPostScoresResponse.Broadcast(ELoginState::None);
 		return;
@@ -529,7 +529,7 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
 		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
 		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
@@ -617,7 +617,7 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 
 void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position)
 {
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack || TimeElapsed == -1)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack || TimeElapsed == -1)
 	{
 		return;
 	}

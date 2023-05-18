@@ -73,27 +73,23 @@ void UGameModesWidget_TargetConfig::InitSettingCategoryWidget()
 	Super::InitSettingCategoryWidget();
 }
 
-void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfig& InTargetConfig, const EDefaultMode& BaseGameMode)
+void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfig& InTargetConfig, const EBaseGameMode& BaseGameMode)
 {
 	switch(BaseGameMode)
 	{
-	case EDefaultMode::Custom:
+	case EBaseGameMode::SingleBeat:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		break;
-	case EDefaultMode::SingleBeat:
+	case EBaseGameMode::MultiBeat:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		break;
-	case EDefaultMode::MultiBeat:
+	case EBaseGameMode::BeatGrid:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		break;
-	case EDefaultMode::BeatGrid:
-		Slider_Lifespan->SetLocked(false);
-		Value_Lifespan->SetIsReadOnly(false);
-		break;
-	case EDefaultMode::BeatTrack:
+	case EBaseGameMode::BeatTrack:
 		Slider_Lifespan->SetLocked(true);
 		Value_Lifespan->SetIsReadOnly(true);
 		break;
@@ -107,7 +103,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_TargetSpawnCD->SetText(FText::AsNumber(InTargetConfig.TargetSpawnCD));
 	Slider_SpawnBeatDelay->SetValue(InTargetConfig.SpawnBeatDelay);
 	Value_SpawnBeatDelay->SetText(FText::AsNumber(InTargetConfig.SpawnBeatDelay));
-	CheckBox_DynamicTargetScale->SetIsChecked(InTargetConfig.UseDynamicSizing);
+	CheckBox_DynamicTargetScale->SetIsChecked(InTargetConfig.ConsecutiveTargetScaleMethod == EConsecutiveTargetScaleMethod::SkillBased);
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScaleMethod).ToString());
 	
@@ -119,7 +115,14 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	FBS_TargetConfig ReturnConfig;
 	ReturnConfig.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(Slider_Lifespan->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
 	ReturnConfig.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(Slider_TargetSpawnCD->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
-	ReturnConfig.UseDynamicSizing = CheckBox_DynamicTargetScale->IsChecked();
+	if (CheckBox_DynamicTargetScale->IsChecked())
+	{
+		ReturnConfig.ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::SkillBased;
+	}
+	else
+	{
+		ReturnConfig.ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::Random;
+	}
 	ReturnConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);

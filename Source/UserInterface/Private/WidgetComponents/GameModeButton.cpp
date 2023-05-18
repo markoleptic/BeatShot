@@ -15,7 +15,7 @@ void UGameModeButton::OnButtonClicked()
 	OnGameModeButtonClicked.Broadcast(this);
 }
 
-void UGameModeButton::SetDefaults(EGameModeDifficulty GameModeDifficulty, EDefaultMode InDefaultMode, UGameModeButton* NextButton)
+void UGameModeButton::SetDefaults(EGameModeDifficulty GameModeDifficulty, EBaseGameMode InDefaultMode, UGameModeButton* NextButton)
 {
 	Difficulty = GameModeDifficulty;
 	DefaultMode = InDefaultMode;

@@ -35,21 +35,19 @@ void UGameModesWidget_AIConfig::InitSettingCategoryWidget()
 	Super::InitSettingCategoryWidget();
 }
 
-void UGameModesWidget_AIConfig::InitializeAIConfig(const FBS_AIConfig& InAIConfig, const EDefaultMode& BaseGameMode)
+void UGameModesWidget_AIConfig::InitializeAIConfig(const FBS_AIConfig& InAIConfig, const EBaseGameMode& BaseGameMode)
 {
 	switch(BaseGameMode)
 	{
-	case EDefaultMode::Custom:
-		break;
-	case EDefaultMode::SingleBeat:
-		CheckBox_EnableAI->SetIsChecked(InAIConfig.bEnableRLAgent);
+	case EBaseGameMode::SingleBeat:
+		CheckBox_EnableAI->SetIsChecked(InAIConfig.bEnableReinforcementLearning);
 		Slider_AIAlpha->SetValue(InAIConfig.Alpha);
 		Value_AIAlpha->SetText(FText::AsNumber(InAIConfig.Alpha));
 		Slider_AIGamma->SetValue(InAIConfig.Gamma);
 		Value_AIGamma->SetText(FText::AsNumber(InAIConfig.Gamma));
 		Slider_AIEpsilon->SetValue(InAIConfig.Epsilon);
 		Value_AIEpsilon->SetText(FText::AsNumber(InAIConfig.Epsilon));
-		if (InAIConfig.bEnableRLAgent)
+		if (InAIConfig.bEnableReinforcementLearning)
 		{
 			BSBox_AIAlpha->SetVisibility(ESlateVisibility::Visible);
 			BSBox_AIGamma->SetVisibility(ESlateVisibility::Visible);
@@ -62,15 +60,15 @@ void UGameModesWidget_AIConfig::InitializeAIConfig(const FBS_AIConfig& InAIConfi
 			BSBox_AIEpsilon->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		break;
-	case EDefaultMode::MultiBeat:
-		CheckBox_EnableAI->SetIsChecked(InAIConfig.bEnableRLAgent);
+	case EBaseGameMode::MultiBeat:
+		CheckBox_EnableAI->SetIsChecked(InAIConfig.bEnableReinforcementLearning);
 		Slider_AIAlpha->SetValue(InAIConfig.Alpha);
 		Value_AIAlpha->SetText(FText::AsNumber(InAIConfig.Alpha));
 		Slider_AIGamma->SetValue(InAIConfig.Gamma);
 		Value_AIGamma->SetText(FText::AsNumber(InAIConfig.Gamma));
 		Slider_AIEpsilon->SetValue(InAIConfig.Epsilon);
 		Value_AIEpsilon->SetText(FText::AsNumber(InAIConfig.Epsilon));
-		if (InAIConfig.bEnableRLAgent)
+		if (InAIConfig.bEnableReinforcementLearning)
 		{
 			BSBox_AIAlpha->SetVisibility(ESlateVisibility::Visible);
 			BSBox_AIGamma->SetVisibility(ESlateVisibility::Visible);
@@ -83,9 +81,9 @@ void UGameModesWidget_AIConfig::InitializeAIConfig(const FBS_AIConfig& InAIConfi
 			BSBox_AIEpsilon->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		break;
-	case EDefaultMode::BeatGrid:
+	case EBaseGameMode::BeatGrid:
 		break;
-	case EDefaultMode::BeatTrack:
+	case EBaseGameMode::BeatTrack:
 		break;
 	default:
 		break;
@@ -97,7 +95,7 @@ void UGameModesWidget_AIConfig::InitializeAIConfig(const FBS_AIConfig& InAIConfi
 FBS_AIConfig UGameModesWidget_AIConfig::GetAIConfig() const
 {
 	FBS_AIConfig ReturnConfig;
-	ReturnConfig.bEnableRLAgent = CheckBox_EnableAI->IsChecked();
+	ReturnConfig.bEnableReinforcementLearning = CheckBox_EnableAI->IsChecked();
 	ReturnConfig.Alpha = FMath::GridSnap(FMath::Clamp(Slider_AIAlpha->GetValue(), MinValue_Alpha, MaxValue_Alpha), SnapSize_Alpha);
 	ReturnConfig.Epsilon = FMath::GridSnap(FMath::Clamp(Slider_AIEpsilon->GetValue(), MinValue_Epsilon, MaxValue_Epsilon), SnapSize_Epsilon);
 	ReturnConfig.Gamma = FMath::GridSnap(FMath::Clamp(Slider_AIGamma->GetValue(), MinValue_Gamma, MaxValue_Gamma), SnapSize_Gamma);

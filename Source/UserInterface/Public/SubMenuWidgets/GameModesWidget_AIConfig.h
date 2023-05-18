@@ -27,7 +27,7 @@ protected:
 	virtual void InitSettingCategoryWidget() override;
 
 public:
-	void InitializeAIConfig(const FBS_AIConfig& InAIConfig, const EDefaultMode& BaseGameMode);
+	void InitializeAIConfig(const FBS_AIConfig& InAIConfig, const EBaseGameMode& BaseGameMode);
 	FBS_AIConfig GetAIConfig() const;
 	
 protected:	

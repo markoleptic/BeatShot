@@ -27,7 +27,7 @@ class USERINTERFACE_API UGameModesWidget_SpatialConfig : public UBSSettingCatego
 	virtual void InitSettingCategoryWidget() override;
 
 public:
-	void InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode);
+	void InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EBaseGameMode& BaseGameMode);
 	FBS_SpatialConfig GetSpatialConfig() const;
 
 protected:
@@ -114,6 +114,6 @@ protected:
 	UFUNCTION()
 	void OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType);
 
-	/** Returns the ESpreadType corresponding to the SpreadType string */
-	ESpreadType GetSpreadType() const;
+	/** Returns the EBoundsScalingMethod corresponding to the BoundsScalingMethod string */
+	EBoundsScalingMethod GetSpreadType() const;
 };

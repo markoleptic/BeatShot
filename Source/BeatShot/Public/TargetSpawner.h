@@ -129,7 +129,7 @@ private:
 	float GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	FVector GetNextTargetSpawnLocation(ESpreadType SpreadType, const float NewTargetScale);
+	FVector GetNextTargetSpawnLocation(EBoundsScalingMethod SpreadType, const float NewTargetScale);
 
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;

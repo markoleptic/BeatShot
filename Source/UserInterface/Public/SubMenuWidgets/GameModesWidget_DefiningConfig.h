@@ -27,7 +27,7 @@ class USERINTERFACE_API UGameModesWidget_DefiningConfig : public UBSSettingCateg
 	virtual void InitSettingCategoryWidget() override;
 	
 public:
-	void InitializeDefiningConfig(const FBS_DefiningConfig& InDefiningConfig, const EDefaultMode& BaseGameMode);
+	void InitializeDefiningConfig(const FBS_DefiningConfig& InDefiningConfig, const EBaseGameMode& BaseGameMode);
 	FBS_DefiningConfig GetDefiningConfig() const;
 
 	/* Broadcast when a game mode selection change has occurred */

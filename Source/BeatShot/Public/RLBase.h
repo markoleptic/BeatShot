@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CoreUObject.h"
 #include "SaveLoadInterface.h"
 #include "BeatShot/BeatShot.h"
 THIRD_PARTY_INCLUDES_START
@@ -55,7 +54,7 @@ struct FRLAgentParams
 {
 	GENERATED_BODY()
 
-	EDefaultMode DefaultMode;
+	EBaseGameMode DefaultMode;
 	FString CustomGameModeName;
 	int32 Size;
 	TArray<float> InQTable;
@@ -67,7 +66,7 @@ struct FRLAgentParams
 
 	FRLAgentParams()
 	{
-		DefaultMode = EDefaultMode::Custom;
+		DefaultMode = EBaseGameMode::None;
 		CustomGameModeName = "";
 		Size = 0;
 		InQTable = TArray<float>();

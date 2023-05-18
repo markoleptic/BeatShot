@@ -26,22 +26,20 @@ void UGameModesWidget_DefiningConfig::InitSettingCategoryWidget()
 	Super::InitSettingCategoryWidget();
 }
 
-void UGameModesWidget_DefiningConfig::InitializeDefiningConfig(const FBS_DefiningConfig& InDefiningConfig, const EDefaultMode& BaseGameMode)
+void UGameModesWidget_DefiningConfig::InitializeDefiningConfig(const FBS_DefiningConfig& InDefiningConfig, const EBaseGameMode& BaseGameMode)
 {
 	switch(BaseGameMode)
 	{
-	case EDefaultMode::Custom:
-		break;
-	case EDefaultMode::SingleBeat:
+	case EBaseGameMode::SingleBeat:
 		ComboBox_BaseGameMode->SetSelectedOption(UEnum::GetDisplayValueAsText(BaseGameMode).ToString());
 		break;
-	case EDefaultMode::MultiBeat:
+	case EBaseGameMode::MultiBeat:
 		ComboBox_BaseGameMode->SetSelectedOption(UEnum::GetDisplayValueAsText(BaseGameMode).ToString());
 		break;
-	case EDefaultMode::BeatGrid:
+	case EBaseGameMode::BeatGrid:
 		ComboBox_BaseGameMode->SetSelectedOption(UEnum::GetDisplayValueAsText(BaseGameMode).ToString());
 		break;
-	case EDefaultMode::BeatTrack:
+	case EBaseGameMode::BeatTrack:
 		ComboBox_BaseGameMode->SetSelectedOption(UEnum::GetDisplayValueAsText(BaseGameMode).ToString());
 		break;
 	default:
@@ -53,9 +51,9 @@ void UGameModesWidget_DefiningConfig::InitializeDefiningConfig(const FBS_Definin
 FBS_DefiningConfig UGameModesWidget_DefiningConfig::GetDefiningConfig() const
 {
 	FBS_DefiningConfig ReturnConfig;
-	ReturnConfig.DefaultMode = EDefaultMode::Custom;
+	ReturnConfig.GameModeType = EGameModeType::Custom;
 	ReturnConfig.Difficulty = EGameModeDifficulty::None;
-	if (IsDefaultGameMode(ComboBox_GameModeName->GetSelectedOption()) && TextBox_CustomGameModeName->GetText().IsEmptyOrWhitespace())
+	if (IsPresetGameMode(ComboBox_GameModeName->GetSelectedOption()) && TextBox_CustomGameModeName->GetText().IsEmptyOrWhitespace())
 	{
 		ReturnConfig.CustomGameModeName = "";
 	}
@@ -68,7 +66,7 @@ FBS_DefiningConfig UGameModesWidget_DefiningConfig::GetDefiningConfig() const
 		ReturnConfig.CustomGameModeName = ComboBox_GameModeName->GetSelectedOption();
 	}
 
-	for (const EDefaultMode& Mode : TEnumRange<EDefaultMode>())
+	for (const EBaseGameMode& Mode : TEnumRange<EBaseGameMode>())
 	{
 		if (ComboBox_BaseGameMode->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
 		{
@@ -85,7 +83,7 @@ void UGameModesWidget_DefiningConfig::PopulateGameModeNameComboBox(const FString
 
 	for (const FBSConfig& GameMode : FBSConfig::GetDefaultGameModes())
 	{
-		ComboBox_GameModeName->AddOption(UEnum::GetDisplayValueAsText(GameMode.DefiningConfig.DefaultMode).ToString());
+		ComboBox_GameModeName->AddOption(UEnum::GetDisplayValueAsText(GameMode.DefiningConfig.BaseGameMode).ToString());
 	}
 	
 	for (const FBSConfig& CustomGameMode : LoadCustomGameModes())
@@ -124,10 +122,10 @@ void UGameModesWidget_DefiningConfig::OnTextChanged_CustomGameMode(const FText& 
 
 void UGameModesWidget_DefiningConfig::OnSelectionChanged_GameModeName(const FString SelectedGameModeName, const ESelectInfo::Type SelectionType)
 {
-	if (IsDefaultGameMode(SelectedGameModeName))
+	if (IsPresetGameMode(SelectedGameModeName))
 	{
 		BSBox_BaseGameMode->SetVisibility(ESlateVisibility::Collapsed);
-		OnRepopulateGameModeOptions.Broadcast(FindDefaultGameMode(SelectedGameModeName));
+		OnRepopulateGameModeOptions.Broadcast(FindPresetGameMode(SelectedGameModeName));
 	}
 	if (IsCustomGameMode(SelectedGameModeName))
 	{
@@ -141,7 +139,7 @@ void UGameModesWidget_DefiningConfig::OnSelectionChanged_BaseGameMode(const FStr
 {
 	if (SelectionType != ESelectInfo::Type::Direct)
 	{
-		OnRepopulateGameModeOptions.Broadcast(FindDefaultGameMode(SelectedBaseGameMode));
+		OnRepopulateGameModeOptions.Broadcast(FindPresetGameMode(SelectedBaseGameMode));
 	}
 }
 
@@ -162,7 +160,7 @@ void UGameModesWidget_DefiningConfig::OnSelectionChanged_GameModeDifficulty(cons
 	}
 	if (EnumDifficulty != EGameModeDifficulty::None)
 	{
-		const FBSConfig BSConfig = FBSConfig(FindDefaultGameMode(ComboBox_BaseGameMode->GetSelectedOption()).DefiningConfig.DefaultMode, EnumDifficulty);
+		const FBSConfig BSConfig = FBSConfig::MakePresetConfig(FindPresetGameMode(ComboBox_BaseGameMode->GetSelectedOption()).DefiningConfig.BaseGameMode, EnumDifficulty);
 		OnRepopulateGameModeOptions.Broadcast(BSConfig);
 	}
 }

@@ -93,6 +93,8 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 		BeamLights.AddUnique(Light);
 		Light->OnBeamLightLifetimeCompleted.AddUObject(this, &ABeamVisualizer::OnBeamLightLifetimeCompleted);
 		Light->FinishSpawning(SpawnTransforms[i], true);
+		FAttachmentTransformRules Rules(EAttachmentRule::KeepWorld, false);
+		Light->AttachToActor(this, Rules);
 	}
 }
 

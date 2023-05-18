@@ -94,7 +94,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	/* Initial target size */
 	TargetScale = GetNextTargetScale();
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
 		BeatTrackSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
 		BeatTrackSpawnBox->SetBoxExtent(FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
@@ -103,7 +103,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 		return;
 	}
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
 	{
 		InitBeatGrid();
 		return;
@@ -155,7 +155,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	SpawnMemoryIncZ = roundf(1.f / SpawnMemoryScaleZ);
 	MinOverlapRadius = (SpawnMemoryIncY + SpawnMemoryIncZ) / 2.f;
 
-	if (IsDynamicSpreadType(BSConfig.SpatialConfig.SpreadType))
+	if (IsDynamicSpreadType(BSConfig.SpatialConfig.BoundsScalingMethod))
 	{
 		SetBoxExtents_Dynamic();
 	}
@@ -170,7 +170,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	SpawnCounterWidth =  HeightWidth.Y;
 	SpawnCounterSize = GetSpawnCounter().Num();
 
-	if (!BSConfig.AIConfig.bEnableRLAgent)
+	if (!BSConfig.AIConfig.bEnableReinforcementLearning)
 	{
 		return;
 	}
@@ -178,7 +178,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	RLBase = NewObject<URLBase>();
 	FRLAgentParams Params;
 	Params.InQTable = GetScoreInfoFromDefiningConfig(InBSConfig.DefiningConfig).QTable;
-	Params.DefaultMode = BSConfig.DefiningConfig.DefaultMode;
+	Params.DefaultMode = BSConfig.DefiningConfig.BaseGameMode;
 	Params.CustomGameModeName = BSConfig.DefiningConfig.CustomGameModeName;
 	Params.Size = GetSpawnCounter().Num();
 	Params.SpawnCounterHeight = HeightWidth.X;
@@ -212,16 +212,16 @@ void ATargetSpawner::CallSpawnFunction()
 	}
 	switch (BSConfig.DefiningConfig.BaseGameMode)
 	{
-	case EDefaultMode::MultiBeat:
+	case EBaseGameMode::MultiBeat:
 		SpawnMultiBeatTarget();
 		break;
-	case EDefaultMode::SingleBeat:
+	case EBaseGameMode::SingleBeat:
 		SpawnSingleBeatTarget();
 		break;
-	case EDefaultMode::BeatTrack:
+	case EBaseGameMode::BeatTrack:
 		SetNewTrackingDirection();
 		break;
-	case EDefaultMode::BeatGrid:
+	case EBaseGameMode::BeatGrid:
 		ActivateBeatGridTarget();
 		break;
 	default: break;
@@ -383,7 +383,7 @@ void ATargetSpawner::SpawnMultiBeatTarget()
 		OnTargetSpawned.Broadcast();
 		OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
 
-		if (!PreviousSpawnLocation.Equals(SpawnLocation) && BSConfig.AIConfig.bEnableRLAgent)
+		if (!PreviousSpawnLocation.Equals(SpawnLocation) && BSConfig.AIConfig.bEnableReinforcementLearning)
 		{
 			AddToActiveTargetPairs(PreviousSpawnLocation, SpawnLocation);
 		}
@@ -407,7 +407,7 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 		OnTargetSpawned.Broadcast();
 		OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
 
-		if (!PreviousSpawnLocation.Equals(SpawnLocation) && BSConfig.AIConfig.bEnableRLAgent)
+		if (!PreviousSpawnLocation.Equals(SpawnLocation) && BSConfig.AIConfig.bEnableReinforcementLearning)
 		{
 			AddToActiveTargetPairs(PreviousSpawnLocation, SpawnLocation);
 		}
@@ -535,7 +535,7 @@ void ATargetSpawner::OnTick_UpdateBeatTrackTargetLocation(const float DeltaTime)
 
 void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive, ASphereTarget* DestroyedTarget)
 {
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::SingleBeat) SetShouldSpawn(true);
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat) SetShouldSpawn(true);
 	if (DidExpire)
 	{
 		ConsecutiveTargetsHit = 0;
@@ -556,12 +556,12 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatTrack)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
 		return;
 	}
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
 	{
 		DestroyedTarget->SetActorLocation(FVector(GetBoxOrigin().X, Location.Y, Location.Z));
 		return;
@@ -582,7 +582,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 			SpawnCounter[Index].TotalHits++;
 		}
 		const bool bTargetWasHit = !DidExpire;
-		if (BSConfig.AIConfig.bEnableRLAgent)
+		if (BSConfig.AIConfig.bEnableReinforcementLearning)
 		{
 			UpdateRLAgentReward(Location, bTargetWasHit);
 		}
@@ -615,12 +615,12 @@ void ATargetSpawner::OnBeatTrackOverlapEnd(UPrimitiveComponent* OverlappedCompon
 void ATargetSpawner::FindNextTargetProperties()
 {
 	TargetScale = GetNextTargetScale();
-	SpawnLocation = GetNextTargetSpawnLocation(BSConfig.SpatialConfig.SpreadType, TargetScale);
+	SpawnLocation = GetNextTargetSpawnLocation(BSConfig.SpatialConfig.BoundsScalingMethod, TargetScale);
 }
 
 float ATargetSpawner::GetNextTargetScale() const
 {
-	if (BSConfig.TargetConfig.UseDynamicSizing)
+	if (BSConfig.TargetConfig.ConsecutiveTargetScaleMethod == EConsecutiveTargetScaleMethod::SkillBased)
 	{
 		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
 		return UKismetMathLibrary::Lerp(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale, NewFactor);
@@ -628,9 +628,9 @@ float ATargetSpawner::GetNextTargetScale() const
 	return FMath::FRandRange(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale);
 }
 
-FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType, const float NewTargetScale)
+FVector ATargetSpawner::GetNextTargetSpawnLocation(const EBoundsScalingMethod SpreadType, const float NewTargetScale)
 {
-	if (BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::SingleBeat && !LastTargetSpawnedCenter)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat && !LastTargetSpawnedCenter)
 	{
 		bSkipNextSpawn = false;
 		return GetBoxOrigin();
@@ -666,7 +666,7 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const ESpreadType SpreadType,
 		return GetBoxOrigin();
 	}
 
-	if (BSConfig.AIConfig.bEnableRLAgent)
+	if (BSConfig.AIConfig.bEnableReinforcementLearning)
 	{
 		const int32 ChosenPoint = TryGetSpawnLocationFromRLAgent(OpenLocations);
 		if (ChosenPoint != INDEX_NONE)
@@ -731,16 +731,26 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
 {
 	TArray<FVector> AllPoints;
 
-	/* Populate AllPoints according to SpreadType */
-	switch (BSConfig.SpatialConfig.SpreadType)
+	/* Populate AllPoints according to TargetDistributionMethod */
+	if (IsDynamicSpreadType(BSConfig.SpatialConfig.BoundsScalingMethod))
 	{
-	case ESpreadType::DynamicEdgeOnly: AllPoints = GetAllEdgeOnlySpawnLocations();
-		break;
-	case ESpreadType::DynamicRandom: AllPoints = GetAllDynamicRandomSpawnLocations();
-		break;
-	default: AllPoints = GetAllSpawnLocations();
-		break;
+		switch (BSConfig.SpatialConfig.TargetDistributionMethod)
+		{
+		case ETargetDistributionMethod::EdgeOnly:
+			AllPoints = GetAllEdgeOnlySpawnLocations();
+			break;
+		case ETargetDistributionMethod::FullRange:
+			AllPoints = GetAllDynamicRandomSpawnLocations();
+			break;
+		default:
+			break;
+		}
 	}
+	else
+	{
+		AllPoints = GetAllSpawnLocations();
+	}
+
 
 	/* Remove points occupied by recent targets (overlapping points) */
 	for (FVector Location : GetAllOverlappingPoints(Scale))
@@ -966,7 +976,7 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 	const FVector MaxExtrema = GetBoxExtrema(1, true);
 	TArray<FVector> Remove;
 	// ReSharper disable once CppTooWideScope
-	const uint8 SingleBeatOrEdgeOnly = BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::SingleBeat || BSConfig.SpatialConfig.SpreadType == ESpreadType::DynamicEdgeOnly;
+	const uint8 SingleBeatOrEdgeOnly = BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat || BSConfig.SpatialConfig.TargetDistributionMethod == ETargetDistributionMethod::EdgeOnly;
 	switch (SingleBeatOrEdgeOnly)
 	{
 	case 1: for (FVector Vector : In)

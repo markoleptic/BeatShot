@@ -4,30 +4,52 @@
 
 #include "GlobalEnums.generated.h"
 
-/** Enum representing the default game mode names */
+/** Enum representing the type of game mode */
 UENUM(BlueprintType)
-enum class EDefaultMode : uint8
+enum class EGameModeType : uint8
 {
-	Custom UMETA(DisplayName="Custom"),
+	None UMETA(DisplayName="None"),
+	Preset UMETA(DisplayName="Preset"),
+	Custom UMETA(DisplayName="Custom")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeType, EGameModeType::Preset, EGameModeType::Custom);
+
+/** Enum representing the preset game modes */
+UENUM(BlueprintType)
+enum class EBaseGameMode : uint8
+{
+	None UMETA(DisplayName="None"),
 	SingleBeat UMETA(DisplayName="SingleBeat"),
 	MultiBeat UMETA(DisplayName="MultiBeat"),
 	BeatGrid UMETA(DisplayName="BeatGrid"),
-	BeatTrack UMETA(DisplayName="BeatTrack")
+	BeatTrack UMETA(DisplayName="BeatTrack"),
+	FifthMode UMETA(DisplayName="FifthMode"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EDefaultMode, EDefaultMode::Custom, EDefaultMode::BeatTrack);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::FifthMode);
 
-/** Enum representing the spread type of the targets */
+/** The scaling method to apply to the bounding box bounds at runtime */
 UENUM(BlueprintType)
-enum class ESpreadType : uint8
+enum class EBoundsScalingMethod : uint8
 {
 	None UMETA(DisplayName="None"),
-	DynamicEdgeOnly UMETA(DisplayName="Dynamic Edge Only"),
-	DynamicRandom UMETA(DisplayName="Dynamic Random"),
-	StaticNarrow UMETA(DisplayName="Static Narrow"),
-	StaticWide UMETA(DisplayName="Static Wide")
+	Static UMETA(DisplayName="Static"),
+	Dynamic UMETA(DisplayName="Dynamic"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ESpreadType, ESpreadType::None, ESpreadType::StaticWide);
-inline bool IsDynamicSpreadType(const ESpreadType SpreadType) { return (SpreadType == ESpreadType::DynamicEdgeOnly || SpreadType == ESpreadType::DynamicRandom); }
+ENUM_RANGE_BY_FIRST_AND_LAST(EBoundsScalingMethod, EBoundsScalingMethod::Static, EBoundsScalingMethod::Dynamic);
+inline bool IsDynamicSpreadType(const EBoundsScalingMethod SpreadType) { return SpreadType == EBoundsScalingMethod::Dynamic; }
+
+/** How to distribute targets in the bounding box bounds */
+UENUM(BlueprintType)
+enum class ETargetDistributionMethod : uint8
+{
+	/* Used if not applicable to a game mode */
+	None UMETA(DisplayName="None"),
+	/* Only spawns targets on the edges of the bounding box */
+	EdgeOnly UMETA(DisplayName="Edge Only"),
+	/* Spawns targets anywhere in the bounding box */
+	FullRange UMETA(DisplayName="Full Range"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionMethod, ETargetDistributionMethod::None, ETargetDistributionMethod::FullRange);
 
 /** Enum representing the default game mode difficulties */
 UENUM(BlueprintType)
@@ -54,11 +76,27 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Cap
 UENUM()
 enum class ELifetimeTargetScaleMethod : uint8
 {
+	/* Target does not change scale over its lifetime, used if not applicable to a game mode */
 	None UMETA(DisplayName="None"),
+	/* Target grows from the spawn size to max target scale over its lifetime */
 	Grow UMETA(DisplayName="Grow"),
+	/* Target shrinks from the spawn size to min target scale over its lifetime */
 	Shrink UMETA(DisplayName="Shrink")
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ELifetimeTargetScaleMethod, ELifetimeTargetScaleMethod::None, ELifetimeTargetScaleMethod::Shrink);
+
+/** The method to handle changing target scale over it's lifetime */
+UENUM()
+enum class EConsecutiveTargetScaleMethod : uint8
+{
+	/* Used if not applicable to a game mode */
+	None UMETA(DisplayName="None"),
+	/* Randomly choose a Target scale between min and max target scale */
+	Random UMETA(DisplayName="Random"),
+	/* Dynamically change the size of targets as consecutive targets are hit */
+	SkillBased UMETA(DisplayName="Skill-Based")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScaleMethod, EConsecutiveTargetScaleMethod::None, EConsecutiveTargetScaleMethod::SkillBased);
 
 /** Current player login state */
 UENUM()

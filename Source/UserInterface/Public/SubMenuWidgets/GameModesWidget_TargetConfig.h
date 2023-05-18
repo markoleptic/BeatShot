@@ -24,7 +24,7 @@ class USERINTERFACE_API UGameModesWidget_TargetConfig : public UBSSettingCategor
 	virtual void InitSettingCategoryWidget() override;
 
 public:
-	void InitializeTargetConfig(const FBS_TargetConfig& InTargetConfig, const EDefaultMode& BaseGameMode);
+	void InitializeTargetConfig(const FBS_TargetConfig& InTargetConfig, const EBaseGameMode& BaseGameMode);
 	FBS_TargetConfig GetTargetConfig() const;
 
 protected:

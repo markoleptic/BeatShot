@@ -195,7 +195,7 @@ void ABSPlayerController::ShowPlayerHUD()
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
-	if (Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.DefiningConfig.BaseGameMode == EDefaultMode::BeatGrid )
+	if (Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid )
 	{
 		PlayerHUD->Box_TargetsSpawned->SetVisibility(ESlateVisibility::Collapsed);
 		PlayerHUD->Box_Streak->SetVisibility(ESlateVisibility::Collapsed);

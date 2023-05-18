@@ -17,7 +17,6 @@ struct FAccuracyRow
 
 	UPROPERTY()
 	TArray<float> Accuracy;
-	
 	TArray<int32> TotalSpawns;
 	TArray<int32> TotalHits;
 
@@ -63,7 +62,7 @@ struct FCommonScoreInfo
 
 	UPROPERTY()
 	TArray<int32> TotalSpawns;
-	
+
 	UPROPERTY()
 	TArray<int32> TotalHits;
 
@@ -137,34 +136,34 @@ USTRUCT(BlueprintType)
 struct FBS_DefiningConfig
 {
 	GENERATED_BODY()
-	
-	/* The default game mode name. Custom game modes are ALWAYS Custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
-	EDefaultMode DefaultMode;
 
-	/* The base game mode this game mode is based off of */
+	/** The type of game mode: either preset or custom */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
-	EDefaultMode BaseGameMode;
+	EGameModeType GameModeType;
 
-	/* Custom game mode name if custom, otherwise empty string */
+	/** The base game mode this game mode is based off of */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	EBaseGameMode BaseGameMode;
+
+	/** Custom game mode name if custom, otherwise empty string */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
 	FString CustomGameModeName;
 
-	/* Default game mode difficulties, or none if custom */
+	/** Default game mode difficulties, or none if custom */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
 	EGameModeDifficulty Difficulty;
 
 	FBS_DefiningConfig()
 	{
-		DefaultMode = EDefaultMode::Custom;
-		BaseGameMode = EDefaultMode::MultiBeat;
+		GameModeType = EGameModeType::None;
+		BaseGameMode = EBaseGameMode::None;
 		CustomGameModeName = "";
 		Difficulty = EGameModeDifficulty::None;
 	}
 
-	FBS_DefiningConfig(const EDefaultMode& InDefaultMode, const EDefaultMode& InBaseGameMode, const FString& InCustomGameModeName, const EGameModeDifficulty& InGameModeDifficulty)
+	FBS_DefiningConfig(const EGameModeType& InGameModeType, const EBaseGameMode& InBaseGameMode, const FString& InCustomGameModeName, const EGameModeDifficulty& InGameModeDifficulty)
 	{
-		DefaultMode = InDefaultMode;
+		GameModeType = InGameModeType;
 		BaseGameMode = InBaseGameMode;
 		CustomGameModeName = InCustomGameModeName;
 		Difficulty = InGameModeDifficulty;
@@ -172,19 +171,19 @@ struct FBS_DefiningConfig
 
 	FORCEINLINE bool operator==(const FBS_DefiningConfig& Other) const
 	{
-		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName, ESearchCase::IgnoreCase))
+		/* Preset vs Custom */
+		if (GameModeType == Other.GameModeType)
 		{
-			/* Custom game modes don't have a difficulty preset */
-			if (!CustomGameModeName.IsEmpty())
+			/* Custom game modes don't depend on difficulty */
+			if (GameModeType == EGameModeType::Custom && CustomGameModeName.Equals(Other.CustomGameModeName, ESearchCase::IgnoreCase))
 			{
 				return true;
 			}
 			/* Default game modes must match the difficulty to be considered equal */
-			if (CustomGameModeName.IsEmpty() && Difficulty == Other.Difficulty)
+			if (GameModeType == EGameModeType::Preset && Difficulty == Other.Difficulty)
 			{
 				return true;
 			}
-			return false;
 		}
 		return false;
 	}
@@ -200,9 +199,9 @@ struct FBS_AIConfig
 {
 	GENERATED_BODY()
 
-	/* Whether or not to enable the reinforcement learning agent to handle target spawning */
+	/** Whether or not to enable the reinforcement learning agent to handle target spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
-	bool bEnableRLAgent;
+	bool bEnableReinforcementLearning;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
@@ -219,7 +218,7 @@ struct FBS_AIConfig
 
 	FBS_AIConfig()
 	{
-		bEnableRLAgent = false;
+		bEnableReinforcementLearning = false;
 		Alpha = DefaultAlpha;
 		Epsilon = DefaultEpsilon;
 		Gamma = DefaultGamma;
@@ -230,24 +229,24 @@ USTRUCT(BlueprintType)
 struct FBS_BeatGridConfig
 {
 	GENERATED_BODY()
-	
-	/* The number of horizontal BeatGrid targets*/
+
+	/** The number of horizontal BeatGrid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumHorizontalBeatGridTargets;
 
-	/* The number of vertical BeatGrid targets*/
+	/** The number of vertical BeatGrid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumVerticalBeatGridTargets;
 
-	/* Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
+	/** Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	bool RandomizeBeatGrid;
 
-	/* The space between BeatGrid targets */
+	/** The space between BeatGrid targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	FVector2D BeatGridSpacing;
 
-	/* not implemented yet */
+	/** not implemented yet */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumTargetsAtOnceBeatGrid;
 
@@ -304,31 +303,31 @@ struct FBS_AudioConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FString SongTitle;
 
-	/* Whether or not to playback streamed audio */
+	/** Whether or not to playback streamed audio */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	bool bPlaybackAudio;
 
-	/* The audio format type used for the AudioAnalyzer */
+	/** The audio format type used for the AudioAnalyzer */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	EAudioFormat AudioFormat;
 
-	/* The input audio device */
+	/** The input audio device */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FString InAudioDevice;
 
-	/* The output audio device */
+	/** The output audio device */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FString OutAudioDevice;
 
-	/* The path to the song file */
+	/** The path to the song file */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FString SongPath;
 
-	/* Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
+	/** Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	float PlayerDelay;
 
-	/* Length of song */
+	/** Length of song */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	float SongLength;
 
@@ -350,37 +349,37 @@ struct FBS_TargetConfig
 {
 	GENERATED_BODY()
 
-	/* Whether or not to dynamically change the size of targets as consecutive targets are hit */
+	/** Whether or not to dynamically change the size of targets as consecutive targets are hit */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
-	bool UseDynamicSizing;
-	
-	/* Min multiplier to target size */
+	EConsecutiveTargetScaleMethod ConsecutiveTargetScaleMethod;
+
+	/** The method for handling changing target scale over it's lifetime */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
+	ELifetimeTargetScaleMethod LifetimeTargetScaleMethod;
+
+	/** Min multiplier to target size */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float MinTargetScale;
 
-	/* Max multiplier to target size */
+	/** Max multiplier to target size */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float MaxTargetScale;
 
-	/* The method for handling changing target scale over it's lifetime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
-	ELifetimeTargetScaleMethod LifetimeTargetScaleMethod;
-	
-	/* Sets the minimum time between target spawns */
+	/** Sets the minimum time between target spawns */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float TargetSpawnCD;
-	
-	/* Maximum time in which target will stay on screen */
+
+	/** Maximum time in which target will stay on screen */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float TargetMaxLifeSpan;
 
-	/* Delay between time between target spawn and peak green target color. Same as PlayerDelay in FBS_AudioConfig */
+	/** Delay between time between target spawn and peak green target color. Same as PlayerDelay in FBS_AudioConfig */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	float SpawnBeatDelay;
 
 	FBS_TargetConfig()
 	{
-		UseDynamicSizing = false;
+		ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::None;
 		MinTargetScale = DefaultMinTargetScale;
 		MaxTargetScale = DefaultMaxTargetScale;
 		LifetimeTargetScaleMethod = ELifetimeTargetScaleMethod::None;
@@ -395,32 +394,35 @@ struct FBS_SpatialConfig
 {
 	GENERATED_BODY()
 
-	/** Changes how targets are spawned relative to the spawn area. If static, it simply sets the spawn area size.
-     *  If dynamic, the spawn area will gradually shrink as consecutive targets are hit */
+	/** How to scale the bounding box bounds during at runtime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	ESpreadType SpreadType;
+	EBoundsScalingMethod BoundsScalingMethod;
 
-	/* Whether or not to spawn targets only at headshot height */
+	/** How to distribute targets inside the box bounds at runtime */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
+	ETargetDistributionMethod TargetDistributionMethod;
+
+	/** Whether or not to spawn targets only at headshot height */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	bool bUseHeadshotHeight;
 
-	/* Whether or not to move the targets forward towards the player after spawning */
+	/** Whether or not to move the targets forward towards the player after spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	bool bMoveTargetsForward;
 
-	/* Sets the minimum distance between recent target spawns */
+	/** Sets the minimum distance between recent target spawns */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	float MinDistanceBetweenTargets;
 
-	/* Distance from bottom of TargetSpawner BoxBounds to the floor */
+	/** Distance from bottom of TargetSpawner BoxBounds to the floor */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	float FloorDistance;
 
-	/* How far to move the target forward over its lifetime */
+	/** How far to move the target forward over its lifetime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	float MoveForwardDistance;
 
-	/* The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
+	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	FVector BoxBounds;
 
@@ -451,7 +453,8 @@ struct FBS_SpatialConfig
 
 	FBS_SpatialConfig()
 	{
-		SpreadType = ESpreadType::None;
+		BoundsScalingMethod = EBoundsScalingMethod::None;
+		TargetDistributionMethod = ETargetDistributionMethod::None;
 		bUseHeadshotHeight = false;
 		bMoveTargetsForward = false;
 		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
@@ -465,12 +468,12 @@ USTRUCT(BlueprintType)
 struct FBS_BeatTrackConfig
 {
 	GENERATED_BODY()
-	
-	/* The minimum speed multiplier for Tracking Game Mode */
+
+	/** The minimum speed multiplier for Tracking Game Mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	float MinTrackingSpeed;
 
-	/* The maximum speed multiplier for Tracking Game Mode */
+	/** The maximum speed multiplier for Tracking Game Mode */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
 	float MaxTrackingSpeed;
 
@@ -537,7 +540,7 @@ struct FBSConfig
 	/** Contains info for the target spawner about how to spawn the targets, as well as info to give the targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Target")
 	FBS_TargetConfig TargetConfig;
-	
+
 	FORCEINLINE bool operator==(const FBSConfig& Other) const
 	{
 		if (DefiningConfig == Other.DefiningConfig)
@@ -547,7 +550,7 @@ struct FBSConfig
 		return false;
 	}
 
-	/* Generic initialization */
+	/** Generic constructor */
 	FBSConfig()
 	{
 		DefiningConfig = FBS_DefiningConfig();
@@ -559,192 +562,182 @@ struct FBSConfig
 		TargetConfig = FBS_TargetConfig();
 	}
 
-	FBSConfig(const EDefaultMode InDefaultMode, const EGameModeDifficulty NewGameModeDifficulty = EGameModeDifficulty::Normal, const ESpreadType NewSpreadType = ESpreadType::None)
+	/** Returns a preset FBSConfig based on the BaseGameMode and Difficulty*/
+	static FBSConfig MakePresetConfig(const EBaseGameMode& InBaseGameMode, const EGameModeDifficulty& InDifficulty)
 	{
-		DefiningConfig = FBS_DefiningConfig();
-		AIConfig = FBS_AIConfig();
-		AudioConfig = FBS_AudioConfig();
-		BeatGridConfig = FBS_BeatGridConfig();
-		BeatTrackConfig = FBS_BeatTrackConfig();
-		SpatialConfig = FBS_SpatialConfig();
-		TargetConfig = FBS_TargetConfig();
-
-		DefiningConfig.DefaultMode = InDefaultMode;
-		DefiningConfig.BaseGameMode = EDefaultMode::MultiBeat;
-		DefiningConfig.CustomGameModeName = "";
-		DefiningConfig.Difficulty = NewGameModeDifficulty;
-
-		SpatialConfig.SpreadType = NewSpreadType;
-
-		switch (DefiningConfig.DefaultMode)
+		FBSConfig Config;
+		Config.DefiningConfig = GetConfigForPreset(InBaseGameMode, InDifficulty);
+		switch (Config.DefiningConfig.BaseGameMode)
 		{
-		case EDefaultMode::SingleBeat:
-			DefiningConfig.BaseGameMode = EDefaultMode::SingleBeat;
-			TargetConfig.UseDynamicSizing = true;
-			switch (DefiningConfig.Difficulty)
+		case EBaseGameMode::SingleBeat:
+			switch (Config.DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				AudioConfig.PlayerDelay = PlayerDelay_SingleBeat_Normal;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Normal;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Normal;
-				TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Normal;
-				TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Normal;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_SingleBeat_Normal;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Normal;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Normal;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Normal;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				AudioConfig.PlayerDelay = PlayerDelay_SingleBeat_Hard;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Hard;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Hard;
-				TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Hard;
-				TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Hard;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_SingleBeat_Hard;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Hard;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Hard;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Hard;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				AudioConfig.PlayerDelay = PlayerDelay_SingleBeat_Death;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Death;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Death;
-				TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Death;
-				TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Death;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_SingleBeat_Death;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Death;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Death;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Death;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_SingleBeat_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
 			}
-			switch (SpatialConfig.SpreadType)
-			{
-			case ESpreadType::StaticNarrow:
-				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = BoxBounds_Narrow_SingleBeat;
-				break;
-			case ESpreadType::StaticWide:
-				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = BoxBounds_Wide_SingleBeat;
-				break;
-			default:
-				SpatialConfig.SpreadType = ESpreadType::DynamicEdgeOnly;
-				TargetConfig.UseDynamicSizing = true;
-				SpatialConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
-				break;
-			}
+			Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Dynamic;
+			Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::EdgeOnly;
+			Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
 			break;
-		case EDefaultMode::MultiBeat:
-			DefiningConfig.BaseGameMode = EDefaultMode::MultiBeat;
-			TargetConfig.UseDynamicSizing = true;
-			switch (DefiningConfig.Difficulty)
+		case EBaseGameMode::MultiBeat:
+			switch (Config.DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				AudioConfig.PlayerDelay = PlayerDelay_MultiBeat_Normal;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Normal;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Normal;
-				TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Normal;
-				TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Normal;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_MultiBeat_Normal;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Normal;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Normal;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Normal;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				AudioConfig.PlayerDelay = PlayerDelay_MultiBeat_Hard;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Hard;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Hard;
-				TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Hard;
-				TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Hard;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_MultiBeat_Hard;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Hard;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Hard;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Hard;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				AudioConfig.PlayerDelay = PlayerDelay_MultiBeat_Death;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Death;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Death;
-				TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Death;
-				TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Death;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_MultiBeat_Death;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Death;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Death;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Death;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_MultiBeat_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
 			}
-			switch (SpatialConfig.SpreadType)
-			{
-			case ESpreadType::StaticNarrow:
-				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = BoxBounds_Narrow_MultiBeat;
-				break;
-			case ESpreadType::StaticWide:
-				TargetConfig.UseDynamicSizing = false;
-				SpatialConfig.BoxBounds = BoxBounds_Wide_MultiBeat;
-				break;
-			default:
-				SpatialConfig.SpreadType = ESpreadType::DynamicRandom;
-				TargetConfig.UseDynamicSizing = true;
-				SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
-				break;
-			}
-			break;
-		case EDefaultMode::BeatGrid:
-			DefiningConfig.BaseGameMode = EDefaultMode::BeatGrid;
-			BeatGridConfig.SetConfigByDifficulty(DefiningConfig.Difficulty);
-			SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
-			SpatialConfig.SpreadType = ESpreadType::None;
-			switch (DefiningConfig.Difficulty)
+			Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Dynamic;
+			Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
+			Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
+		case EBaseGameMode::BeatGrid:
+			switch (Config.DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				AudioConfig.PlayerDelay = PlayerDelay_BeatGrid_Normal;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Normal;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Normal;
-				TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Normal;
-				TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Normal;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatGrid_Normal;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Normal;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Normal;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Normal;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				AudioConfig.PlayerDelay = PlayerDelay_BeatGrid_Hard;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Hard;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Hard;
-				TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Hard;
-				TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Hard;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatGrid_Hard;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Hard;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Hard;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Hard;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				AudioConfig.PlayerDelay = PlayerDelay_BeatGrid_Death;
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Death;
-				TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Death;
-				TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Death;
-				TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Death;
+				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatGrid_Death;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Death;
+				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Death;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Death;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
 			}
+			Config.BeatGridConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
+			Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
+			Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::None;
+			Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::None;
 			break;
-		case EDefaultMode::BeatTrack:
-			DefiningConfig.BaseGameMode = EDefaultMode::BeatTrack;
-			AudioConfig.PlayerDelay = PlayerDelay_BeatTrack;
-			BeatTrackConfig.SetConfigByDifficulty(DefiningConfig.Difficulty);
-			SpatialConfig.SpreadType = ESpreadType::None;
-			TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatTrack;
-			switch (DefiningConfig.Difficulty)
+		case EBaseGameMode::BeatTrack:
+			switch (Config.DefiningConfig.Difficulty)
 			{
 			case EGameModeDifficulty::Normal:
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Normal;
-				TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Normal;
-				TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Normal;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Normal;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Normal;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Normal;
 				break;
 			case EGameModeDifficulty::Hard:
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Hard;
-				TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Hard;
-				TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Hard;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Hard;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Hard;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Hard;
 				break;
 			case EGameModeDifficulty::Death:
-				TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Death;
-				TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Death;
-				TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Death;
+				Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Death;
+				Config.TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Death;
+				Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Death;
 				break;
 			case EGameModeDifficulty::None:
 				break;
 			}
+			Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatTrack;
+			Config.BeatTrackConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
+			Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::None;
+			Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::None;
+			Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatTrack;
 			break;
-		case EDefaultMode::Custom:
+		case EBaseGameMode::FifthMode:
+			break;
+		default:
 			break;
 		}
 		/* SpawnBeatDelay is the same as PlayerDelay */
-		TargetConfig.SpawnBeatDelay = AudioConfig.PlayerDelay;
+		Config.AudioConfig.PlayerDelay = Config.TargetConfig.SpawnBeatDelay;
+		return Config;
 	}
 
-	/** Returns an array of all default game modes */
+	/** Returns an array of all default game modes, all set to normal difficulty */
 	static TArray<FBSConfig> GetDefaultGameModes()
 	{
 		TArray<FBSConfig> DefaultModes;
-		DefaultModes.Add(FBSConfig(EDefaultMode::BeatGrid, EGameModeDifficulty::Normal));
-		DefaultModes.Add(FBSConfig(EDefaultMode::BeatTrack, EGameModeDifficulty::Normal));
-		DefaultModes.Add(FBSConfig(EDefaultMode::SingleBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicEdgeOnly));
-		DefaultModes.Add(FBSConfig(EDefaultMode::MultiBeat, EGameModeDifficulty::Normal, ESpreadType::DynamicRandom));
+		DefaultModes.Add(MakePresetConfig(EBaseGameMode::BeatGrid, EGameModeDifficulty::Normal));
+		DefaultModes.Add(MakePresetConfig(EBaseGameMode::BeatTrack, EGameModeDifficulty::Normal));
+		DefaultModes.Add(MakePresetConfig(EBaseGameMode::SingleBeat, EGameModeDifficulty::Normal));
+		DefaultModes.Add(MakePresetConfig(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal));
+		DefaultModes.Add(MakePresetConfig(EBaseGameMode::FifthMode, EGameModeDifficulty::Normal));
 		return DefaultModes;
+	}
+
+	/** Returns the defining config for a preset base game mode and difficulty */
+	static FBS_DefiningConfig GetConfigForPreset(const EBaseGameMode& InBaseGameMode, const EGameModeDifficulty& InDifficulty)
+	{
+		FBS_DefiningConfig Config;
+		Config.BaseGameMode = InBaseGameMode;
+		Config.Difficulty = InDifficulty;
+		Config.GameModeType = EGameModeType::Preset;
+		Config.CustomGameModeName = "";
+		return Config;
+	}
+
+	static void GetConstraints(FBSConfig& InConfig)
+	{
+		switch (InConfig.DefiningConfig.BaseGameMode)
+		{
+		case EBaseGameMode::SingleBeat:
+			break;
+		case EBaseGameMode::MultiBeat:
+			break;
+		case EBaseGameMode::BeatGrid:
+			break;
+		case EBaseGameMode::BeatTrack:
+			break;
+		case EBaseGameMode::FifthMode:
+			break;
+		default: ;
+		}
 	}
 };
 
@@ -754,87 +747,76 @@ struct FPlayerScore
 {
 	GENERATED_BODY()
 
-	/* The default game mode name, or custom if custom */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
-	EDefaultMode DefaultMode;
+	FBS_DefiningConfig DefiningConfig;
 
-	/* Custom game mode name if custom, otherwise empty string */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
-	FString CustomGameModeName;
-
-	/* Default game mode difficulties, or none if custom */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
-	EGameModeDifficulty Difficulty;
-
-	/* The song title */
+	/** The song title */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defining Properties")
 	FString SongTitle;
 
-	/* Length of song */
+	/** Length of song */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game Properties")
 	float SongLength;
 
-	/* The current score at any given time during play */
+	/** The current score at any given time during play */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float Score;
 
-	/* Only represents highest score based on previous entries, and may become outdated */
+	/** Only represents highest score based on previous entries, and may become outdated */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float HighScore;
 
-	/* Total Targets hit divided by Total shots fired */
+	/** Total Targets hit divided by Total shots fired */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float Accuracy;
 
-	/* Total Targets hit divided by Total targets spawned */
+	/** Total Targets hit divided by Total targets spawned */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float Completion;
 
-	/* Incremented after receiving calls from FOnShotsFired delegate in DefaultCharacter */
+	/** Incremented after receiving calls from FOnShotsFired delegate in DefaultCharacter */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 ShotsFired;
 
-	/* Total number of targets destroyed by player */
+	/** Total number of targets destroyed by player */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 TargetsHit;
 
-	/* Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetSpawner */
+	/** Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetSpawner */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 TargetsSpawned;
 
-	/* Total possible damage that could have been done to tracking target, also used to determine if the score object is for Tracking game mode */
+	/** Total possible damage that could have been done to tracking target, also used to determine if the score object is for Tracking game mode */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float TotalPossibleDamage;
 
-	/* Total time offset from Spawn Beat Delay for all destroyed targets */
+	/** Total time offset from Spawn Beat Delay for all destroyed targets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float TotalTimeOffset;
 
-	/* Avg Time offset from Spawn Beat Delay for destroyed targets */
+	/** Avg Time offset from Spawn Beat Delay for destroyed targets */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	float AvgTimeOffset;
 
-	/* time that player completed the session, in Iso8601 UTC format */
+	/** time that player completed the session, in Iso8601 UTC format */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	FString Time;
 
-	/* The maximum consecutive targets hit in a row */
+	/** The maximum consecutive targets hit in a row */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 Streak;
 
-	/* The accuracy at each point in the grid */
+	/** The accuracy at each point in the grid */
 	UPROPERTY()
 	TArray<FAccuracyRow> LocationAccuracy;
 
-	/* Whether or not this instance has been saved to the database yet */
+	/** Whether or not this instance has been saved to the database yet */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	bool bSavedToDatabase;
 
 	FPlayerScore()
 	{
-		DefaultMode = EDefaultMode::Custom;
-		Difficulty = EGameModeDifficulty::None;
-		CustomGameModeName = "";
+		DefiningConfig = FBS_DefiningConfig();
 		SongTitle = "";
 		SongLength = 0.f;
 		Score = 0;
@@ -853,9 +835,7 @@ struct FPlayerScore
 
 	void ResetStruct()
 	{
-		DefaultMode = EDefaultMode::Custom;
-		CustomGameModeName = "";
-		Difficulty = EGameModeDifficulty::None;
+		DefiningConfig = FBS_DefiningConfig();
 		SongTitle = "";
 		SongLength = 0.f;
 		Score = 0;
@@ -873,30 +853,12 @@ struct FPlayerScore
 
 	FORCEINLINE bool operator==(const FPlayerScore& Other) const
 	{
-		if (DefaultMode == Other.DefaultMode && CustomGameModeName.Equals(Other.CustomGameModeName) && SongTitle.Equals(Other.SongTitle))
+		if (DefiningConfig == Other.DefiningConfig && SongTitle.Equals(Other.SongTitle))
 		{
-			if (!CustomGameModeName.IsEmpty())
-			{
-				return true;
-			}
-			if (CustomGameModeName.IsEmpty() && Difficulty == Other.Difficulty)
-			{
-				return true;
-			}
-			return false;
+			return true;
 		}
 		return false;
 	}
-};
-
-/** Used to convert PlayerScoreArray to database scores */
-USTRUCT(BlueprintType)
-struct FJsonScore
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TArray<FPlayerScore> Scores;
 };
 
 /** Simple login payload */
@@ -960,7 +922,7 @@ struct FPlayerSettings_Game
 	int32 CombatTextFrequency;
 
 	/* Wall Menu settings */
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bShouldRecoil;
 
@@ -969,7 +931,7 @@ struct FPlayerSettings_Game
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowBulletDecals;
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowBulletTracers;
 
@@ -1067,7 +1029,7 @@ struct FPlayerSettings_User
 {
 	GENERATED_USTRUCT_BODY()
 
-	/* Sensitivity of DefaultCharacter */
+	/** Sensitivity of DefaultCharacter */
 	UPROPERTY(BlueprintReadOnly)
 	float Sensitivity;
 
@@ -1134,27 +1096,27 @@ struct FPlayerSettings_AudioAnalyzer
 {
 	GENERATED_BODY()
 
-	/* Number of channels to break Tracker Sound frequencies into */
+	/** Number of channels to break Tracker Sound frequencies into */
 	UPROPERTY(BlueprintReadOnly)
 	int NumBandChannels;
 
-	/* Array to store Threshold values for each active band channel */
+	/** Array to store Threshold values for each active band channel */
 	UPROPERTY(BlueprintReadOnly)
 	TArray<float> BandLimitsThreshold;
 
-	/* Array to store band frequency channels */
+	/** Array to store band frequency channels */
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FVector2D> BandLimits;
 
-	/* Time window to take frequency sample */
+	/** Time window to take frequency sample */
 	UPROPERTY(BlueprintReadOnly)
 	float TimeWindow;
 
-	/* History size of frequency sample */
+	/** History size of frequency sample */
 	UPROPERTY(BlueprintReadOnly)
 	int HistorySize;
 
-	/* Max number of band channels allowed */
+	/** Max number of band channels allowed */
 	int32 MaxNumBandChannels;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -1246,12 +1208,12 @@ struct FGameModeTransitionState
 {
 	GENERATED_BODY()
 
-	/* The game mode transition to perform */
+	/** The game mode transition to perform */
 	ETransitionState TransitionState;
 
-	/* Whether or not to save current scores if the transition is Restart or Quit */
+	/** Whether or not to save current scores if the transition is Restart or Quit */
 	bool bSaveCurrentScores;
 
-	/* The game mode properties, only used if Start or Restart */
+	/** The game mode properties, only used if Start or Restart */
 	FBSConfig BSConfig;
 };

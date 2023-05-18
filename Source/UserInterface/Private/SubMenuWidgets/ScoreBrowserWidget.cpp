@@ -97,7 +97,7 @@ void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& Lo
 			MinDateScore = Score;
 		}
 	}
-	if (MinDateScore.CustomGameModeName.IsEmpty())
+	if (MinDateScore.DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
 		BrowserWidget->LoadDefaultGameModesURL(LoadPlayerSettings().User.Username);
 	}

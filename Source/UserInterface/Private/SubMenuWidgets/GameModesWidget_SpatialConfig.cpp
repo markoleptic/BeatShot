@@ -20,7 +20,7 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 	AddToTooltipData(QMark_FloorDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "FloorDistance"));
 	AddToTooltipData(QMark_ForwardSpread, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread"));
 	AddToTooltipData(QMark_MinDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
-	AddToTooltipData(QMark_SpreadType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpreadType"));
+	AddToTooltipData(QMark_SpreadType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod"));
 	
 	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly);
 	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward);
@@ -41,7 +41,7 @@ void UGameModesWidget_SpatialConfig::InitSettingCategoryWidget()
 	Super::InitSettingCategoryWidget();
 }
 
-void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EDefaultMode& BaseGameMode)
+void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EBaseGameMode& BaseGameMode)
 {
 	// Lock vertical and horizontal spread if HeadShot height only, otherwise unlock them
 	if (SpatialConfig.bUseHeadshotHeight)
@@ -71,7 +71,7 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 
 	switch(BaseGameMode)
 	{
-	case EDefaultMode::BeatGrid:
+	case EBaseGameMode::BeatGrid:
 		Slider_HorizontalSpread->SetLocked(true);
 		Value_HorizontalSpread->SetIsReadOnly(true);
 		Slider_VerticalSpread->SetLocked(true);
@@ -79,13 +79,12 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Collapsed);
 		BSBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
 		break;
-	case EDefaultMode::BeatTrack:
+	case EBaseGameMode::BeatTrack:
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Collapsed);
 		BSBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
 		break;
-	case EDefaultMode::Custom:
-	case EDefaultMode::SingleBeat:
-	case EDefaultMode::MultiBeat:
+	case EBaseGameMode::SingleBeat:
+	case EBaseGameMode::MultiBeat:
 	default:
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Visible);
 		BSBox_SpreadType->SetVisibility(ESlateVisibility::Visible);
@@ -101,7 +100,7 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 	Value_FloorDistance->SetText(FText::AsNumber(SpatialConfig.FloorDistance));
 	Slider_MinTargetDistance->SetValue(SpatialConfig.MinDistanceBetweenTargets);
 	Value_MinTargetDistance->SetText(FText::AsNumber(SpatialConfig.MinDistanceBetweenTargets));
-	ComboBox_SpreadType->SetSelectedOption(UEnum::GetDisplayValueAsText(SpatialConfig.SpreadType).ToString());
+	ComboBox_SpreadType->SetSelectedOption(UEnum::GetDisplayValueAsText(SpatialConfig.BoundsScalingMethod).ToString());
 	Slider_HorizontalSpread->SetValue(SpatialConfig.BoxBounds.Y);
 	Value_HorizontalSpread->SetText(FText::AsNumber(SpatialConfig.BoxBounds.Y));
 	Slider_VerticalSpread->SetValue(SpatialConfig.BoxBounds.Z);
@@ -119,7 +118,7 @@ FBS_SpatialConfig UGameModesWidget_SpatialConfig::GetSpatialConfig() const
 	SpatialConfig.bUseHeadshotHeight = CheckBox_HeadShotOnly->IsChecked();
 	SpatialConfig.FloorDistance = FMath::GridSnap(FMath::Clamp(Slider_FloorDistance->GetValue(), MinValue_FloorDistance, MaxValue_FloorDistance), SnapSize_FloorDistance);
 	SpatialConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(Slider_MinTargetDistance->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
-	SpatialConfig.SpreadType = GetSpreadType();
+	SpatialConfig.BoundsScalingMethod = GetSpreadType();
 	SpatialConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(Slider_HorizontalSpread->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
 									 FMath::GridSnap(FMath::Clamp(Slider_VerticalSpread->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
 	SpatialConfig.bMoveTargetsForward = CheckBox_ForwardSpread->IsChecked();
@@ -177,22 +176,22 @@ void UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance(const float N
 	OnSliderChanged(NewFloorDistance, Value_FloorDistance, SnapSize_FloorDistance);
 }
 
-ESpreadType UGameModesWidget_SpatialConfig::GetSpreadType() const
+EBoundsScalingMethod UGameModesWidget_SpatialConfig::GetSpreadType() const
 {
 	const FString SelectedSpread = ComboBox_SpreadType->GetSelectedOption();
 	if (SelectedSpread.IsEmpty())
 	{
-		return ESpreadType::None;
+		return EBoundsScalingMethod::None;
 	}
-	for (const ESpreadType Spread : TEnumRange<ESpreadType>())
+	for (const EBoundsScalingMethod Spread : TEnumRange<EBoundsScalingMethod>())
 	{
 		if (UEnum::GetDisplayValueAsText(Spread).ToString().Equals(SelectedSpread))
 		{
 			return Spread;
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("Didn't get ESpreadType match"));
-	return ESpreadType::None;
+	UE_LOG(LogTemp, Display, TEXT("Didn't get EBoundsScalingMethod match"));
+	return EBoundsScalingMethod::None;
 }
 
 void UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly)

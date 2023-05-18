@@ -70,16 +70,16 @@ public:
 	/** Removes all custom game modes and saves to slot */
 	virtual void RemoveAllCustomGameModes();
 
-	/** Returns the FBSConfig corresponding to the input DefaultMode string */
-	FBSConfig FindDefaultGameMode(const FString& GameModeName) const;
+	/** Returns the FBSConfig corresponding to the input GameModeName string */
+	FBSConfig FindPresetGameMode(const FString& GameModeName) const;
 
-	/** Returns the FBSConfig corresponding to the input CustomGameModeName string */
+	/** Returns the FBSConfig corresponding to the input GameModeName string */
 	FBSConfig FindCustomGameMode(const FString& CustomGameModeName) const;
 
-	/** Returns whether or not the DefaultMode is part of the game's default game modes */
-	bool IsDefaultGameMode(const FString& GameModeName) const;
+	/** Returns whether or not the GameModeName is part of the game's default game modes */
+	bool IsPresetGameMode(const FString& GameModeName) const;
 
-	/** Returns whether or not the DefaultMode is already a custom game mode name */
+	/** Returns whether or not the GameModeName is already a custom game mode name */
 	bool IsCustomGameMode(const FString& GameModeName) const;
 
 	/** Loads all player scores from slot */

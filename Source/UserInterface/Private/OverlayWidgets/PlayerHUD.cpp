@@ -22,20 +22,20 @@ void UPlayerHUD::NativeConstruct()
 void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
 {
 	/** Display default game mode names if not custom */
-	if (NewPlayerScoreStruct.CustomGameModeName.Equals(""))
+	if (NewPlayerScoreStruct.DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
-		TextBlock_GameModeName->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.DefaultMode));
+		TextBlock_GameModeName->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.DefiningConfig.BaseGameMode));
 	}
 	/** display custom game mode if not a default game mode */
 	else
 	{
-		TextBlock_GameModeName->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.CustomGameModeName));
+		TextBlock_GameModeName->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.DefiningConfig.CustomGameModeName));
 	}
 	/** show song title and total song length */
 	TextBlock_SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
 	TextBlock_TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength), 3)));
 	/** Beat Track changes how stats are displayed */
-	if (NewPlayerScoreStruct.DefaultMode == EDefaultMode::BeatTrack)
+	if (NewPlayerScoreStruct.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
 		const float Score = roundf(NewPlayerScoreStruct.Score);
 		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;

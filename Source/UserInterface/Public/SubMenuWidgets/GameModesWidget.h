@@ -250,12 +250,12 @@ protected:
 	UFUNCTION(Category = "Default Game Modes | Spread")
 	void OnButtonClicked_WideSpread();
 	
-	/** The Spread type for a selected Default Game Mode */
-	ESpreadType DefaultSpreadType;
+	/** The BoundsScalingMethod for a selected Preset Game Mode */
+	EBoundsScalingMethod PresetSelection_BoundsScalingMethod;
 	
-	/** The Default Mode type for a selected Default Game Mode */
-	EDefaultMode DefaultMode;
+	/** The BaseGameMode for a selected Preset Game Mode */
+	EBaseGameMode PresetSelection_PresetGameMode;
 	
-	/** The difficulty for a selected Default Game Mode */
-	EGameModeDifficulty DefaultDifficulty;
+	/** The difficulty for a selected Preset Game Mode */
+	EGameModeDifficulty PresetSelection_Difficulty;
 };
