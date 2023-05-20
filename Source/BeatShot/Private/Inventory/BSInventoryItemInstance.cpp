@@ -15,6 +15,21 @@ UBSInventoryItemInstance::UBSInventoryItemInstance(const FObjectInitializer& Obj
 {
 }
 
+void UBSInventoryItemInstance::AddIdentifierTags(const FGameplayTagContainer& Tags)
+{
+	IdentifierTags.AppendTags(Tags);
+}
+
+void UBSInventoryItemInstance::RemoveIdentifierTag(const FGameplayTag& Tag)
+{
+	IdentifierTags.RemoveTag(Tag);
+}
+
+bool UBSInventoryItemInstance::HasIdentifierTag(const FGameplayTag& Tag)
+{
+	return IdentifierTags.HasTag(Tag);
+}
+
 void UBSInventoryItemInstance::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

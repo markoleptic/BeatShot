@@ -10,6 +10,7 @@ public class BeatShot : ModuleRules
 		bEnableUndefinedIdentifierWarnings = false;
 		bEnableExceptions = true;
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+		PrecompileForTargets = PrecompileTargetsType.Any;
 
 		PublicDependencyModuleNames.AddRange(new[]
 		{
@@ -21,8 +22,16 @@ public class BeatShot : ModuleRules
 		{ 
 			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib"
 		});
-		
-		PrivateIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/AudioAnalyzer/Source/AudioAnalyzer/Private"));
+
+		PublicIncludePaths.AddRange(new[]
+		{
+			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Private",
+			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130",
+			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools",
+			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio/include",
+			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio",
+			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb"
+		});
 
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 

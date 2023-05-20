@@ -14,7 +14,7 @@ enum class EGameModeType : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeType, EGameModeType::Preset, EGameModeType::Custom);
 
-/** Enum representing the preset game modes */
+/** Enum representing the base game modes. Preset game modes aren't necessarily a BaseGameMode */
 UENUM(BlueprintType)
 enum class EBaseGameMode : uint8
 {
@@ -22,17 +22,19 @@ enum class EBaseGameMode : uint8
 	SingleBeat UMETA(DisplayName="SingleBeat"),
 	MultiBeat UMETA(DisplayName="MultiBeat"),
 	BeatGrid UMETA(DisplayName="BeatGrid"),
-	BeatTrack UMETA(DisplayName="BeatTrack"),
-	FifthMode UMETA(DisplayName="FifthMode"),
+	BeatTrack UMETA(DisplayName="BeatTrack")
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::FifthMode);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::BeatTrack);
 
 /** The scaling method to apply to the bounding box bounds at runtime */
 UENUM(BlueprintType)
 enum class EBoundsScalingMethod : uint8
 {
+	/** Used if not applicable to a game mode */
 	None UMETA(DisplayName="None"),
+	/** The bounding box bounds size will not change throughout the game mode */
 	Static UMETA(DisplayName="Static"),
+	/** The bounding box bounds size will gradually increase from half the Box Bounds up to the full size of BoxBounds, based on consecutive targets hit */
 	Dynamic UMETA(DisplayName="Dynamic"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EBoundsScalingMethod, EBoundsScalingMethod::Static, EBoundsScalingMethod::Dynamic);
@@ -42,14 +44,42 @@ inline bool IsDynamicSpreadType(const EBoundsScalingMethod SpreadType) { return 
 UENUM(BlueprintType)
 enum class ETargetDistributionMethod : uint8
 {
-	/* Used if not applicable to a game mode */
+	/** Used if not applicable to a game mode */
 	None UMETA(DisplayName="None"),
-	/* Only spawns targets on the edges of the bounding box */
+	/** Only spawns targets on the edges of the bounding box */
 	EdgeOnly UMETA(DisplayName="Edge Only"),
-	/* Spawns targets anywhere in the bounding box */
+	/** Spawns targets anywhere in the bounding box */
 	FullRange UMETA(DisplayName="Full Range"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionMethod, ETargetDistributionMethod::None, ETargetDistributionMethod::FullRange);
+
+/** The method to handle changing target scale over it's lifetime */
+UENUM()
+enum class ELifetimeTargetScaleMethod : uint8
+{
+	/** Target does not change scale over its lifetime, used if not applicable to a game mode */
+	None UMETA(DisplayName="None"),
+	/** Target grows from the spawn size to max target scale over its lifetime */
+	Grow UMETA(DisplayName="Grow"),
+	/** Target shrinks from the spawn size to min target scale over its lifetime */
+	Shrink UMETA(DisplayName="Shrink")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ELifetimeTargetScaleMethod, ELifetimeTargetScaleMethod::None, ELifetimeTargetScaleMethod::Shrink);
+
+/** The method to handle changing target scale over it's lifetime */
+UENUM()
+enum class EConsecutiveTargetScaleMethod : uint8
+{
+	/** Used if not applicable to a game mode */
+	None UMETA(DisplayName="None"),
+	/** The starting scale/size of the target will remain constant throughout the game mode */
+	Static UMETA(DisplayName="Static"),
+	/** The starting scale/size of the target will be chosen randomly between min and max target scale */
+	Random UMETA(DisplayName="Random"),
+	/** The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit */
+	SkillBased UMETA(DisplayName="Skill-Based")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScaleMethod, EConsecutiveTargetScaleMethod::Static, EConsecutiveTargetScaleMethod::SkillBased);
 
 /** Enum representing the default game mode difficulties */
 UENUM(BlueprintType)
@@ -68,35 +98,10 @@ enum class EAudioFormat : uint8
 {
 	None UMETA(DisplayName="None"),
 	File UMETA(DisplayName="File"),
-	Capture UMETA(DisplayName="Capture")
+	Capture UMETA(DisplayName="Capture"),
+	Loopback UMETA(DisplayName="Loopback")
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Capture);
-
-/** The method to handle changing target scale over it's lifetime */
-UENUM()
-enum class ELifetimeTargetScaleMethod : uint8
-{
-	/* Target does not change scale over its lifetime, used if not applicable to a game mode */
-	None UMETA(DisplayName="None"),
-	/* Target grows from the spawn size to max target scale over its lifetime */
-	Grow UMETA(DisplayName="Grow"),
-	/* Target shrinks from the spawn size to min target scale over its lifetime */
-	Shrink UMETA(DisplayName="Shrink")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ELifetimeTargetScaleMethod, ELifetimeTargetScaleMethod::None, ELifetimeTargetScaleMethod::Shrink);
-
-/** The method to handle changing target scale over it's lifetime */
-UENUM()
-enum class EConsecutiveTargetScaleMethod : uint8
-{
-	/* Used if not applicable to a game mode */
-	None UMETA(DisplayName="None"),
-	/* Randomly choose a Target scale between min and max target scale */
-	Random UMETA(DisplayName="Random"),
-	/* Dynamically change the size of targets as consecutive targets are hit */
-	SkillBased UMETA(DisplayName="Skill-Based")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScaleMethod, EConsecutiveTargetScaleMethod::None, EConsecutiveTargetScaleMethod::SkillBased);
+ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
 /** Current player login state */
 UENUM()

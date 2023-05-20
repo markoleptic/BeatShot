@@ -5,16 +5,16 @@
 namespace Constants
 {
 	/** Min Value allowed for a BandFrequency channel */
-	inline constexpr float MinValue_BandFrequency = 0;
+	inline constexpr float MinValue_BandFrequency = 0.f;
 
 	/** Max Value allowed for a BandFrequency channel */
-	inline constexpr float MaxValue_BandFrequency = 22720;
+	inline constexpr float MaxValue_BandFrequency = 22720.f;
 
 	/** The length of the countdown timer */
 	inline constexpr int32 CountdownTimerLength = 3;
 
 	/** The value to divide the game sensitivity by to convert to Csgo sensitivity */
-	inline constexpr float CsgoMultiplier = 3.18;
+	inline constexpr float CsgoMultiplier = 3.18f;
 
 	/** The distance to trace the line */
 	inline constexpr float TraceDistance = 999999;
@@ -26,7 +26,7 @@ namespace Constants
 	inline const FVector MinFloorHeight(-4000, 0, 0);
 
 	/** Default Speed of the day to night transition */
-	inline constexpr float DayNightCycleSpeed = 20;
+	inline constexpr float DayNightCycleSpeed = 20.f;
 
 	/** Length of time until video settings are reset */
 	inline constexpr float VideoSettingsTimeoutLength = 10.f;

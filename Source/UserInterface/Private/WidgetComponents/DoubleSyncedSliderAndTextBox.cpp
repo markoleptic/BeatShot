@@ -9,6 +9,7 @@
 #include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
 #include "Kismet/KismetStringLibrary.h"
+#include "WidgetComponents/BSHorizontalBox.h"
 
 float UDoubleSyncedSliderAndTextBox::GetMinValue() const
 {
@@ -45,6 +46,15 @@ void UDoubleSyncedSliderAndTextBox::InitConstrainedSlider(const FSyncedSlidersPa
 	SliderStruct.MinConstraintUpper = RoundValue(SliderStruct.MinConstraintUpper);
 	SliderStruct.MaxConstraintLower = RoundValue(SliderStruct.MaxConstraintLower);
 	SliderStruct.MaxConstraintUpper = RoundValue(SliderStruct.MaxConstraintUpper);
+
+	if (!SliderStruct.bShowCheckBox)
+	{
+		BSBox_CheckBox->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		BSBox_CheckBox->SetVisibility(ESlateVisibility::Visible);
+	}
 
 	if (!InParams.bShowMinLock)
 	{

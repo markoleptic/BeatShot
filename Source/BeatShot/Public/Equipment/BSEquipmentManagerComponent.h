@@ -99,8 +99,7 @@ private:
 	UBSAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 	friend UBSEquipmentManagerComponent;
-
-private:
+	
 	// Replicated list of equipment entries
 	UPROPERTY()
 	TArray<FBSAppliedEquipmentEntry> Entries;
@@ -108,11 +107,6 @@ private:
 	UPROPERTY(NotReplicated)
 	TObjectPtr<UActorComponent> OwnerComponent;
 };
-
-
-
-
-
 template<>
 struct TStructOpsTypeTraits<FBSEquipmentList> : public TStructOpsTypeTraitsBase2<FBSEquipmentList>
 {

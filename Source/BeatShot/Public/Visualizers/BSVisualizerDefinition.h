@@ -80,7 +80,7 @@ struct BEATSHOT_API FChannelToVisualizerMap
 };
 
 /** Describes a visualizer to be spawned in the world */
-UCLASS(Blueprintable, Abstract, BlueprintType, AutoExpandCategories=("Spawning", "Audio Analyzer"))
+UCLASS(Blueprintable, Abstract, BlueprintType, /**DefaultToInstanced, EditInlineNew,*/ AutoExpandCategories=("Spawning", "Audio Analyzer"))
 class BEATSHOT_API UBSVisualizerDefinition : public UDataAsset
 {
 	GENERATED_BODY()

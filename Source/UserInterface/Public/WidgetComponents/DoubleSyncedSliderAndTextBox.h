@@ -40,6 +40,8 @@ struct FSyncedSlidersParams
 	bool bSyncSlidersAndValues;
 	/* Snap size for all values */
 	float GridSnapSize;
+	/* Whether or not to show the Checkbox */
+	bool bShowCheckBox;
 	/* Whether or not to show the MinLock beside Slider_Min and Value_Min */
 	bool bShowMinLock;
 	/* Whether or not to show the MinLock beside Slider_Max and Value_Max */
@@ -62,6 +64,7 @@ struct FSyncedSlidersParams
 		DefaultMaxValue = 0.f;
 		bSyncSlidersAndValues = false;
 		GridSnapSize = 0.f;
+		bShowCheckBox = true;
 		bShowMinLock = false;
 		bShowMaxLock = false;
 		bStartMinLocked = false;
@@ -154,6 +157,8 @@ public:
 	UHorizontalBox* GetTextTooltipBox_Max() const { return TextTooltipBox_Max; }
 	float GetMinValue() const;
 	float GetMaxValue() const;
+
+	/** Returns whether or not the min and max values are being synced */
 	bool GetIsSynced() const;
 
 private:

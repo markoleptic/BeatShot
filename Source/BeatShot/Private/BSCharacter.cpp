@@ -21,7 +21,6 @@
 #include "EnhancedInputComponent.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "Components/CapsuleComponent.h"
-#include "Equipment/BSEquipmentInstance.h"
 #include "Equipment/BSEquipmentManagerComponent.h"
 #include "GameplayAbility/BSAbilitySystemComponent.h"
 #include "GameplayAbility/BSAbilitySet.h"
@@ -106,20 +105,6 @@ ASphereTarget* ABSCharacter::PeekActiveTargets()
 float ABSCharacter::GetAimBotPlaybackSpeed() const
 {
 	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.TargetConfig.TargetSpawnCD;
-}
-
-UCameraComponent* ABSCharacter::GetCamera() const
-{
-	return Cast<UCameraComponent>(CameraComponent);
-}
-
-ABSGun* ABSCharacter::GetGun() const
-{
-	if (ABSGun* Gun = Cast<ABSGun>(GetInventoryManager()->GetEquippedItem()->GetFirstSpawnedActor()))
-	{
-		return Gun;
-	}
-	return nullptr;
 }
 
 UBSEquipmentManagerComponent* ABSCharacter::GetEquipmentManager() const

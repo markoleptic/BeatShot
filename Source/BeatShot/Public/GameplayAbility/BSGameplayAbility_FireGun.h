@@ -56,10 +56,6 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void StartTargeting();
 
-	/** Spawns a projectile starting at the Character's Weapon's MuzzleLocation socket and travels towards EndLocation */
-	UFUNCTION(BlueprintCallable)
-	void SpawnProjectile(ABSCharacter* ActorCharacter, const FVector& EndLocation);
-
 	/** Performs single bullet trace */
 	FHitResult SingleWeaponTrace() const;
 

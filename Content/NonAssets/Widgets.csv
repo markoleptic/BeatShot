@@ -133,7 +133,7 @@ GM_Difficulty_Death,Death
 GM_Difficulty_Hard,Hard
 GM_Difficulty_Normal,Normal
 GM_DynamicSpread,Dynamic
-GM_DynamicTargetSize,Dynamic Target Size (Performance-based)
+GM_ConsecutiveTargetScale,Consecutive Target Scale Method
 GM_EvenSpacing,Even Vertical/Horizontal Spacing
 GM_ForwardSpread,Forward Spread
 GM_GameModeDifficulty,Game Mode Difficulty

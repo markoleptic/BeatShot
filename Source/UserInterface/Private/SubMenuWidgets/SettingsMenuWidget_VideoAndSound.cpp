@@ -503,13 +503,7 @@ void USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_FPSCounter(const boo
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const FString SelectedOption, ESelectInfo::Type SelectionType)
 {
-	for (const EBudgetReflexMode Mode : TEnumRange<EBudgetReflexMode>())
-	{
-		if (SelectedOption.Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
-		{
-			SetReflexMode(Mode);
-		}
-	}
+	SetReflexMode(GetEnumFromString<EBudgetReflexMode>(SelectedOption, EBudgetReflexMode::Disabled));
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS(const FString SelectedOption, ESelectInfo::Type SelectionType)
@@ -518,20 +512,18 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS(const FString Se
 	{
 		return;
 	}
-	for (const UDLSSMode Mode : TEnumRange<UDLSSMode>())
+	
+	const UDLSSMode Mode = GetEnumFromString<UDLSSMode>(SelectedOption, UDLSSMode::Off);
+	
+	if (Mode == UDLSSMode::Auto)
 	{
-		if (SelectedOption.Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
-		{
-			if (Mode == UDLSSMode::Auto)
-			{
-				UDLSSLibrary::SetDLSSMode(GetWorld(), UDLSSLibrary::GetDefaultDLSSMode());
-			}
-			else
-			{
-				UDLSSLibrary::SetDLSSMode(GetWorld(), Mode);
-			}
-		}
+		UDLSSLibrary::SetDLSSMode(GetWorld(), UDLSSLibrary::GetDefaultDLSSMode());
 	}
+	else
+	{
+		UDLSSLibrary::SetDLSSMode(GetWorld(), Mode);
+	}
+
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS(const FString SelectedOption, ESelectInfo::Type SelectionType)
@@ -540,19 +532,13 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS(const FString Sel
 	{
 		return;
 	}
-	for (const UNISMode Mode : TEnumRange<UNISMode>())
-	{
-		if (SelectedOption.Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
-		{
-			UNISLibrary::SetNISMode(Mode);
-		}
-	}
+	UNISLibrary::SetNISMode(GetEnumFromString<UNISMode>(SelectedOption, UNISMode::Off));
 }
 
 void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
 {
 	const float Elapsed = GetWorld()->GetTimerManager().GetTimerElapsed(RevertVideoSettingsTimer);
-	if (Elapsed >= Constants::VideoSettingsTimeoutLength || Elapsed == -1.f)
+	if (Elapsed >= VideoSettingsTimeoutLength || Elapsed == -1.f)
 	{
 		OnButtonClicked_CancelVideoSettings();
 		return;
@@ -570,7 +556,7 @@ void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
 	}
 	if (Index != INDEX_NONE && PopupMessageWidget)
 	{
-		Out[Index] = FString::FromInt(roundf(Constants::VideoSettingsTimeoutLength - Elapsed));
+		Out[Index] = FString::FromInt(roundf(VideoSettingsTimeoutLength - Elapsed));
 		PopupMessageWidget->ChangeMessageText(FText::FromString(UKismetStringLibrary::JoinStringArray(Out)));
 	}
 }
@@ -639,18 +625,12 @@ UDLSSMode USettingsMenuWidget_VideoAndSound::GetDLSSMode() const
 		return UDLSSMode::Off;
 	}
 	const FString SelectedOption = ComboBox_DLSS->GetSelectedOption();
-	for (const UDLSSMode Mode : TEnumRange<UDLSSMode>())
+	const UDLSSMode Mode = GetEnumFromString<UDLSSMode>(SelectedOption, UDLSSMode::Off);
+	if (Mode == UDLSSMode::Auto)
 	{
-		if (SelectedOption.Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
-		{
-			if (Mode == UDLSSMode::Auto)
-			{
-				return UDLSSLibrary::GetDefaultDLSSMode();
-			}
-			return Mode;
-		}
+		return UDLSSLibrary::GetDefaultDLSSMode();
 	}
-	return UDLSSMode::Off;
+	return Mode;
 }
 
 UNISMode USettingsMenuWidget_VideoAndSound::GetNISMode() const

@@ -3,14 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GlobalStructs.h"
 #include "Engine/DataAsset.h"
 #include "BSGameModeDataAsset.generated.h"
 
-/**
- * 
- */
-UCLASS()
+UCLASS(Const, Abstract, Blueprintable, BlueprintType)
 class BEATSHOTGLOBAL_API UBSGameModeDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	FBSConfig GameModeConfig;
 };

@@ -20,7 +20,7 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 	AddToTooltipData(QMark_FloorDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "FloorDistance"));
 	AddToTooltipData(QMark_ForwardSpread, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread"));
 	AddToTooltipData(QMark_MinDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
-	AddToTooltipData(QMark_SpreadType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod"));
+	AddToTooltipData(QMark_BoundsScalingMethod, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod"));
 	
 	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly);
 	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward);
@@ -34,6 +34,11 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 	Value_ForwardSpread->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_ForwardSpread);
 	Slider_FloorDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance);
 	Value_FloorDistance->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_FloorDistance);
+
+	for (const EBoundsScalingMethod& Method : TEnumRange<EBoundsScalingMethod>())
+	{
+		ComboBox_BoundsScalingMethod->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
 }
 
 void UGameModesWidget_SpatialConfig::InitSettingCategoryWidget()
@@ -100,7 +105,7 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 	Value_FloorDistance->SetText(FText::AsNumber(SpatialConfig.FloorDistance));
 	Slider_MinTargetDistance->SetValue(SpatialConfig.MinDistanceBetweenTargets);
 	Value_MinTargetDistance->SetText(FText::AsNumber(SpatialConfig.MinDistanceBetweenTargets));
-	ComboBox_SpreadType->SetSelectedOption(UEnum::GetDisplayValueAsText(SpatialConfig.BoundsScalingMethod).ToString());
+	ComboBox_BoundsScalingMethod->SetSelectedOption(UEnum::GetDisplayValueAsText(SpatialConfig.BoundsScalingMethod).ToString());
 	Slider_HorizontalSpread->SetValue(SpatialConfig.BoxBounds.Y);
 	Value_HorizontalSpread->SetText(FText::AsNumber(SpatialConfig.BoxBounds.Y));
 	Slider_VerticalSpread->SetValue(SpatialConfig.BoxBounds.Z);
@@ -118,7 +123,7 @@ FBS_SpatialConfig UGameModesWidget_SpatialConfig::GetSpatialConfig() const
 	SpatialConfig.bUseHeadshotHeight = CheckBox_HeadShotOnly->IsChecked();
 	SpatialConfig.FloorDistance = FMath::GridSnap(FMath::Clamp(Slider_FloorDistance->GetValue(), MinValue_FloorDistance, MaxValue_FloorDistance), SnapSize_FloorDistance);
 	SpatialConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(Slider_MinTargetDistance->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
-	SpatialConfig.BoundsScalingMethod = GetSpreadType();
+	SpatialConfig.BoundsScalingMethod = GetBoundsScalingMethod();
 	SpatialConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(Slider_HorizontalSpread->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
 									 FMath::GridSnap(FMath::Clamp(Slider_VerticalSpread->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
 	SpatialConfig.bMoveTargetsForward = CheckBox_ForwardSpread->IsChecked();
@@ -176,22 +181,14 @@ void UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance(const float N
 	OnSliderChanged(NewFloorDistance, Value_FloorDistance, SnapSize_FloorDistance);
 }
 
-EBoundsScalingMethod UGameModesWidget_SpatialConfig::GetSpreadType() const
+EBoundsScalingMethod UGameModesWidget_SpatialConfig::GetBoundsScalingMethod() const
 {
-	const FString SelectedSpread = ComboBox_SpreadType->GetSelectedOption();
+	const FString SelectedSpread = ComboBox_BoundsScalingMethod->GetSelectedOption();
 	if (SelectedSpread.IsEmpty())
 	{
 		return EBoundsScalingMethod::None;
 	}
-	for (const EBoundsScalingMethod Spread : TEnumRange<EBoundsScalingMethod>())
-	{
-		if (UEnum::GetDisplayValueAsText(Spread).ToString().Equals(SelectedSpread))
-		{
-			return Spread;
-		}
-	}
-	UE_LOG(LogTemp, Display, TEXT("Didn't get EBoundsScalingMethod match"));
-	return EBoundsScalingMethod::None;
+	return GetEnumFromString<EBoundsScalingMethod>(SelectedSpread, EBoundsScalingMethod::None);
 }
 
 void UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly)

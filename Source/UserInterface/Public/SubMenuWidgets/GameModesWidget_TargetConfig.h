@@ -40,7 +40,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSHorizontalBox* BSBox_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
-	UBSHorizontalBox* BSBox_DynamicTargetScale;
+	UBSHorizontalBox* BSBox_ConsecutiveTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSHorizontalBox* BSBox_LifetimeTargetScale;
 
@@ -60,20 +60,19 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UComboBoxString* ComboBox_LifetimeTargetScale;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
-	UCheckBox* CheckBox_DynamicTargetScale;
+	UComboBoxString* ComboBox_ConsecutiveTargetScale;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_Lifespan;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_TargetSpawnCD;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* QMark_DynamicTargetScale;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_LifetimeTargetScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* QMark_ConsecutiveTargetScale;
 
 	UFUNCTION()
 	void OnSliderChanged_Lifespan(const float NewLifespan);
@@ -90,9 +89,7 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnCheckStateChanged_DynamicTargetScale(const bool bIsChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantTargetScale(const bool bIsChecked);
+	void OnSelectionChanged_ConsecutiveTargetScale(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 
 	const FText NewLineDelimit = FText::FromString("\n");
 };

@@ -37,7 +37,7 @@ protected:
 	UCheckBox* CheckBox_ForwardSpread;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UComboBoxString* ComboBox_SpreadType;
+	UComboBoxString* ComboBox_BoundsScalingMethod;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_MinTargetDistance;
@@ -87,7 +87,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_MinDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* QMark_SpreadType;
+	UTooltipImage* QMark_BoundsScalingMethod;
 
 	UFUNCTION()
 	void OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly);
@@ -115,5 +115,5 @@ protected:
 	void OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType);
 
 	/** Returns the EBoundsScalingMethod corresponding to the BoundsScalingMethod string */
-	EBoundsScalingMethod GetSpreadType() const;
+	EBoundsScalingMethod GetBoundsScalingMethod() const;
 };

@@ -10,8 +10,6 @@ HeadshotHeight,"If checked, the targests will only spawn at headshot height."
 FloorDistance,Distance from floor to bottom of the spawn area.
 MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
 SpreadType,"There are two types of spread that control how far the targets can spawn from the center of the spawn area. Dynamic spread lowers the spawn area based on consecutive targets hit, while static spread does not change the spawn area."
-ConstantTargetScale,"If checked, the scale/size of the target will remain constant throughout the game mode."
-DynamicTargetScale,"Similar to dynamic spread, the targets gradually shrink from Max Target scale to Min Target scale based on consecutive targets hit."
 BeatGridEvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
 BeatGridAdjacentOnly,"By default, adjacent-only will only activate a target that was adjacent/beside a previously activated target. Completely random will choose a target in the grid at random."
 BeatGridNumTargets,The number of targets that are spawned at the beginning.
@@ -28,6 +26,12 @@ BeatGrid_NumVerticalSuggest,Number of Vertical Targets to <=
 BeatGrid_ScaleSuggest,Maximum Target Scale to <=
 BeatGrid_HorizontalSpacingSuggest,Horizontal Spacing to <=
 BeatGrid_VerticalSpacingSuggest,Vertical Spacing to <=
-LifetimeTargetScale,"Whether to change the target size over its lifetime, or not at all."
+LifetimeTargetScale,"How to change the target size over its lifetime, or not at all."
 LifetimeTargetScale_Grow,Grow: Change the target scale from its current to its maximum scale over its lifetime.
 LifetimeTargetScale_Shrink,Shrink: Change the target scale from its current to its minimum scale over its lifetime.
+ConsecutiveTargetScale,"How to change the target scale between consecutive targets, or not at all."
+ConsecutiveTargetScale_SkillBased,"The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit."
+ConsecutiveTargetScale_Random,The starting scale/size of the target will be chosen randomly between min and max target scale.
+ConsecutiveTargetScale_Static,The starting scale/size of the target will remain constant throughout the game mode.
+BoundsScalingMethod,"How to change the vertical and horizontal spread of the spawn area, or not at all."
+BoundsScalingMethod_Static,The vertical and horizontal spread of the spawn area will not change.

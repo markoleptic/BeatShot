@@ -35,26 +35,6 @@ void ABSGun::BeginPlay()
 	}
 }
 
-void ABSGun::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
-{
-	TagContainer.AppendTags(GameplayTags);
-}
-
-bool ABSGun::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
-{
-	return IGameplayTagAssetInterface::HasMatchingGameplayTag(TagToCheck);
-}
-
-bool ABSGun::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return IGameplayTagAssetInterface::HasAllMatchingGameplayTags(TagContainer);
-}
-
-bool ABSGun::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return IGameplayTagAssetInterface::HasAnyMatchingGameplayTags(TagContainer);
-}
-
 void ABSGun::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
 	SetShouldRecoil(GameSettings.bShouldRecoil);
@@ -112,10 +92,10 @@ void ABSGun::SetFireRate(const bool bAutomatic)
 	
 	if (bAutomatic)
 	{
-		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
+		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
 		return;
 	}
-	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
+	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
 }
 
 void ABSGun::SetShouldRecoil(const bool bRecoil)
@@ -124,28 +104,28 @@ void ABSGun::SetShouldRecoil(const bool bRecoil)
 	
 	if (bRecoil)
 	{
-		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_Recoil);
+		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_Recoil);
 		return;
 	}
-	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_Recoil);
+	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_Recoil);
 }
 
 void ABSGun::SetShowDecals(const bool bShowDecals)
 {
 	if (bShowDecals)
 	{
-		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
 		return;
 	}
-	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
+	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowDecals);
 }
 
 void ABSGun::SetShowTracers(const bool bShowTracers)
 {
 	if (bShowTracers)
 	{
-		GameplayTags.AddTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
 		return;
 	}
-	GameplayTags.RemoveTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
 }

@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Equipment/BSGun.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
@@ -19,23 +18,17 @@ class ABSPlayerState;
 class UBSMoveStepSound;
 class UBSInventoryManagerComponent;
 class UBSInventoryItemDefinition;
-class UBSInventoryItemInstance;
 class UBSEquipmentManagerComponent;
-struct FInputActionValue;
-struct FInputActionInstance;
-class ABSGun;
-class UNiagaraSystem;
 class ABSPlayerController;
 class USceneComponent;
 class USkeletalMeshComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UAnimInstance;
-class UCurveFloat;
-class UInputAction;
 class UInputMappingContext;
 class UBSAttributeSetBase;
 class UBSAbilitySystemComponent;
+struct FInputActionValue;
 
 DECLARE_DELEGATE_OneParam(FOnInteractDelegate, const int32);
 DECLARE_DELEGATE_OneParam(FOnShiftInteractDelegate, const int32);
@@ -125,9 +118,6 @@ public:
 	
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	USkeletalMeshComponent* GetHandsMesh() const;
-	
-	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	UCameraComponent* GetCamera() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	UBSEquipmentManagerComponent* GetEquipmentManager() const;
@@ -137,9 +127,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	UBSCharacterMovementComponent* GetBSCharacterMovement() const;
-
-	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	ABSGun* GetGun() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	float GetMinSpeedForFallDamage() const { return MinSpeedForFallDamage; };

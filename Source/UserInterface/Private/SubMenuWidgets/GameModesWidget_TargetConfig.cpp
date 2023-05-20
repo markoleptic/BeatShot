@@ -5,7 +5,6 @@
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "GlobalConstants.h"
 #include "BSWidgetInterface.h"
-#include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
@@ -29,25 +28,25 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	TargetScaleSliderStruct.MaxConstraintUpper = MaxValue_TargetScale;
 	TargetScaleSliderStruct.DefaultMinValue = MinValue_TargetScale;
 	TargetScaleSliderStruct.DefaultMaxValue = MaxValue_TargetScale;
+	TargetScaleSliderStruct.bShowCheckBox = false;
 	TargetScaleSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTargetScale");
 	TargetScaleSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTargetScale");
-	TargetScaleSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTargetSize");
 	TargetScaleSliderStruct.GridSnapSize = SnapSize_TargetScale;
 	TargetScaleSliderStruct.bSyncSlidersAndValues = false;
 	TargetScaleConstrained->InitConstrainedSlider(TargetScaleSliderStruct);
-
-	for (const ELifetimeTargetScaleMethod& Method : TEnumRange<ELifetimeTargetScaleMethod>())
-	{
-		ComboBox_LifetimeTargetScale->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
-	}
 
 	SetTooltipWidget(ConstructTooltipWidget());
 	
 	AddToTooltipData(QMark_Lifespan, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Lifespan"));
 	AddToTooltipData(QMark_TargetSpawnCD, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
-	AddToTooltipData(QMark_DynamicTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "DynamicTargetScale"));
-	AddToTooltipData(TargetScaleConstrained->GetCheckBoxQMark(), FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConstantTargetScale"));
 	AddToTooltipData(QMark_SpawnBeatDelay, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay"));
+	
+	const TArray ConsecutiveTargetScaleJoin = { FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale"),
+		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Static"),
+		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_SkillBased"),
+		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Random") };
+	AddToTooltipData(QMark_ConsecutiveTargetScale, FText::Join(NewLineDelimit, ConsecutiveTargetScaleJoin));
+	
 	const TArray LifetimeTargetScaleJoin = { FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale"),
 		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Grow"),
 		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Shrink") };
@@ -59,9 +58,18 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_TargetSpawnCD);
 	Slider_SpawnBeatDelay->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_SpawnBeatDelay);
 	Value_SpawnBeatDelay->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay);
-	CheckBox_DynamicTargetScale->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnCheckStateChanged_DynamicTargetScale);
-	TargetScaleConstrained->OnCheckStateChanged_Sync.AddUObject(this, &UGameModesWidget_TargetConfig::OnCheckStateChanged_ConstantTargetScale);
 	ComboBox_LifetimeTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod);
+	ComboBox_ConsecutiveTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale);
+
+	for (const EConsecutiveTargetScaleMethod& Method : TEnumRange<EConsecutiveTargetScaleMethod>())
+	{
+		ComboBox_ConsecutiveTargetScale->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+
+	for (const ELifetimeTargetScaleMethod& Method : TEnumRange<ELifetimeTargetScaleMethod>())
+	{
+		ComboBox_LifetimeTargetScale->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
 }
 
 void UGameModesWidget_TargetConfig::InitSettingCategoryWidget()
@@ -103,9 +111,9 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_TargetSpawnCD->SetText(FText::AsNumber(InTargetConfig.TargetSpawnCD));
 	Slider_SpawnBeatDelay->SetValue(InTargetConfig.SpawnBeatDelay);
 	Value_SpawnBeatDelay->SetText(FText::AsNumber(InTargetConfig.SpawnBeatDelay));
-	CheckBox_DynamicTargetScale->SetIsChecked(InTargetConfig.ConsecutiveTargetScaleMethod == EConsecutiveTargetScaleMethod::SkillBased);
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScaleMethod).ToString());
+	ComboBox_ConsecutiveTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScaleMethod).ToString());
 	
 	UpdateBrushColors();
 }
@@ -115,27 +123,11 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	FBS_TargetConfig ReturnConfig;
 	ReturnConfig.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(Slider_Lifespan->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
 	ReturnConfig.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(Slider_TargetSpawnCD->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
-	if (CheckBox_DynamicTargetScale->IsChecked())
-	{
-		ReturnConfig.ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::SkillBased;
-	}
-	else
-	{
-		ReturnConfig.ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::Random;
-	}
 	ReturnConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
-
-	for (const ELifetimeTargetScaleMethod& Method : TEnumRange<ELifetimeTargetScaleMethod>())
-	{
-		if (ComboBox_LifetimeTargetScale->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(Method).ToString()))
-		{
-			ReturnConfig.LifetimeTargetScaleMethod = Method;
-			break;
-		}
-	}
-
+	ReturnConfig.LifetimeTargetScaleMethod = GetEnumFromString<ELifetimeTargetScaleMethod>(ComboBox_LifetimeTargetScale->GetSelectedOption(), ELifetimeTargetScaleMethod::None);
+	ReturnConfig.ConsecutiveTargetScaleMethod = GetEnumFromString<EConsecutiveTargetScaleMethod>(ComboBox_ConsecutiveTargetScale->GetSelectedOption(), EConsecutiveTargetScaleMethod::None);
 	return ReturnConfig;
 }
 
@@ -180,25 +172,24 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod
 	}
 }
 
-void UGameModesWidget_TargetConfig::OnCheckStateChanged_DynamicTargetScale(const bool bIsChecked)
+void UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
 {
-	if (bIsChecked && TargetScaleConstrained->GetIsSynced())
+	switch (GetEnumFromString<EConsecutiveTargetScaleMethod>(SelectedMethod, EConsecutiveTargetScaleMethod::None))
 	{
-		TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
-	}
-}
-
-void UGameModesWidget_TargetConfig::OnCheckStateChanged_ConstantTargetScale(const bool bIsChecked)
-{
-	if (bIsChecked)
-	{
-		if (CheckBox_DynamicTargetScale->IsChecked())
+	case EConsecutiveTargetScaleMethod::Static:
+		if (!TargetScaleConstrained->GetIsSynced())
 		{
-			CheckBox_DynamicTargetScale->SetIsChecked(false);
+			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), true);
 		}
-		if (!ComboBox_LifetimeTargetScale->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(ELifetimeTargetScaleMethod::None).ToString()))
+		break;
+	case EConsecutiveTargetScaleMethod::Random:
+	case EConsecutiveTargetScaleMethod::SkillBased:
+		if (TargetScaleConstrained->GetIsSynced())
 		{
-			ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(ELifetimeTargetScaleMethod::None).ToString());
+			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
 		}
+		break;
+	default:
+		break;
 	}
 }

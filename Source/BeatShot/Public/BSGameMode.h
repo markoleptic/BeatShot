@@ -77,11 +77,11 @@ protected:
 
 	/* The spawned AATracker object */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
-	TObjectPtr<UAudioAnalyzerManager> AATracker;
+	UAudioAnalyzerManager* AATracker;
 
 	/* The spawned AAPlayer object */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
-	TObjectPtr<UAudioAnalyzerManager> AAPlayer;
+	UAudioAnalyzerManager* AAPlayer;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<class UGameplayAbility> TrackGunAbility;

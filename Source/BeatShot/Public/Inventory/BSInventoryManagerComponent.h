@@ -18,6 +18,7 @@
 #include "UObject/UObjectGlobals.h"
 #include "BSInventoryManagerComponent.generated.h"
 
+struct FGameplayTag;
 class UBSEquipmentManagerComponent;
 class UBSEquipmentInstance;
 class UBSInventoryItemDefinition;
@@ -29,31 +30,9 @@ struct FBSInventoryList;
 struct FNetDeltaSerializeInfo;
 struct FReplicationFlags;
 
-/** A message when an item is added to the inventory */
-USTRUCT(BlueprintType)
-struct FBSInventoryChangeMessage
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(BlueprintReadOnly, Category=Inventory)
-	TObjectPtr<UActorComponent> InventoryOwner = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, Category = Inventory)
-	TObjectPtr<UBSInventoryItemInstance> Instance = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, Category=Inventory)
-	int32 NewCount = 0;
-
-	UPROPERTY(BlueprintReadOnly, Category=Inventory)
-	int32 Delta = 0;
-};
-
-
-
-
-
-
-/** A single entry in an inventory, which contains a pointer to the InventoryItemInstance and the stack count */
+/**
+ *  A single entry in an inventory, which contains a pointer to the InventoryItemInstance and the stack count
+ */
 USTRUCT(BlueprintType)
 struct FBSInventoryEntry : public FFastArraySerializerItem
 {
@@ -79,10 +58,9 @@ private:
 };
 
 
-
-
-
-/** An array of FBSInventoryEntries, which each contain a pointer to the InventoryItemInstance and the stack count */
+/**
+ *  An array of FBSInventoryEntries, which each contain a pointer to the InventoryItemInstance and the stack count
+ */
 USTRUCT(BlueprintType)
 struct FBSInventoryList : public FFastArraySerializer
 {
@@ -108,14 +86,13 @@ struct FBSInventoryList : public FFastArraySerializer
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize<FBSInventoryEntry, FBSInventoryList>(Entries, DeltaParms, *this);
+		return FastArrayDeltaSerialize<FBSInventoryEntry, FBSInventoryList>(Entries, DeltaParms, *this);
 	}
 
 	UBSInventoryItemInstance* AddEntry(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount);
 	void RemoveEntry(UBSInventoryItemInstance* Instance);
 
 private:
-	void BroadcastChangeMessage(FBSInventoryEntry& Entry, int32 OldCount, int32 NewCount);
 	
 	friend UBSInventoryManagerComponent;
 	
@@ -127,10 +104,6 @@ private:
 	TObjectPtr<UActorComponent> OwnerComponent;
 };
 
-
-
-
-
 template<>
 struct TStructOpsTypeTraits<FBSInventoryList> : public TStructOpsTypeTraitsBase2<FBSInventoryList>
 {
@@ -138,12 +111,11 @@ struct TStructOpsTypeTraits<FBSInventoryList> : public TStructOpsTypeTraitsBase2
 };
 
 
-
-
-
-/** The component responsible for inventory management. Contains an FBSInventoryList, which holds an array of FBSInventoryEntries.
+/**
+ *  The component responsible for inventory management. Contains an FBSInventoryList, which holds an array of FBSInventoryEntries.
  *  Each FBSInventoryEntry contains a pointer to InventoryItemInstance and the stack count. Each InventoryItemInstance contains the
- *  item definition and the stack count */
+ *  item definition and the stack count
+ */
 UCLASS(BlueprintType)
 class BEATSHOT_API UBSInventoryManagerComponent : public UActorComponent
 {
@@ -193,10 +165,7 @@ public:
 	void SetActiveSlotIndex(int32 NewIndex);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category= "Inventory | Slots")
-	TArray<UBSInventoryItemInstance*> GetSlots() const
-	{
-		return Slots;
-	}
+	TArray<UBSInventoryItemInstance*> GetSlots() const{ return Slots; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category= "Inventory | Slots")
 	int32 GetActiveSlotIndex() const { return ActiveSlotIndex; }
@@ -206,7 +175,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category= "Inventory | Slots")
 	UBSInventoryItemInstance* GetActiveSlotItem() const;
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Slots")
 	UBSInventoryItemInstance* GetLastSlotItem() const;
 
@@ -218,9 +187,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Slots")
 	UBSInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Equipment")
+	UBSEquipmentInstance* GetEquippedItem() const;
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Equipment")
+	AActor* GetEquippedItemFirstSpawnedActor() const;
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Tags")
+	bool EquippedContainsTag(const FGameplayTag& Tag) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Slots")
-	UBSEquipmentInstance* GetEquippedItem() const { return EquippedItem; };
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Tags")
+	bool SlotIndexContainsTag(const int32 SlotIndex, const FGameplayTag& Tag) const;
 	
 	virtual void BeginPlay() override;
 

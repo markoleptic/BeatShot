@@ -4,7 +4,6 @@
 #include "AbilitySystemComponent.h"
 #include "BSCharacter.h"
 #include "BSRecoilComponent.h"
-#include "GameFramework/ProjectileMovementComponent.h"
 #include "Physics/BSCollisionChannels.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -87,22 +86,6 @@ void UBSGameplayAbility_FireGun::StartTargeting()
 	TargetData.Add(SingleTargetData);
 	SingleTargetData->HitResult = HitResult;
 	OnTargetDataReadyCallback(TargetData, FGameplayTag());
-}
-
-void UBSGameplayAbility_FireGun::SpawnProjectile(ABSCharacter* ActorCharacter, const FVector& EndLocation)
-{
-	// Only spawn projectiles on the Server.
-	if (GetOwningActorFromActorInfo()->GetLocalRole() == ROLE_Authority)
-	{
-		const FVector MuzzleLocation = ActorCharacter->GetGun()->GetMuzzleLocation();
-		FActorSpawnParameters SpawnParameters;
-		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		const FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(MuzzleLocation, EndLocation);
-		AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, LookAt, SpawnParameters);
-		Projectile->SetInstigator(ActorCharacter);
-		Projectile->ProjectileMovement->InitialSpeed = ProjectileSpeed;
-		Projectile->ProjectileMovement->MaxSpeed = ProjectileSpeed;
-	}
 }
 
 FHitResult UBSGameplayAbility_FireGun::SingleWeaponTrace() const

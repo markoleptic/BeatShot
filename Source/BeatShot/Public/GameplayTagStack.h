@@ -17,9 +17,7 @@
 struct FGameplayTagStackContainer;
 struct FNetDeltaSerializeInfo;
 
-/**
- * Represents one stack of a gameplay tag (tag + count)
- */
+/** Represents one stack of a gameplay tag (tag + count) */
 USTRUCT(BlueprintType)
 struct FGameplayTagStack : public FFastArraySerializerItem
 {
@@ -56,8 +54,7 @@ struct FGameplayTagStackContainer : public FFastArraySerializer
 	//	: Owner(nullptr)
 	{
 	}
-
-public:
+	
 	// Adds a specified number of stacks to the tag (does nothing if StackCount is below 1)
 	void AddStack(FGameplayTag Tag, int32 StackCount);
 

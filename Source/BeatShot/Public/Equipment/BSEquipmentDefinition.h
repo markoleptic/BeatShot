@@ -9,6 +9,15 @@
 class UBSAbilitySet;
 class UBSEquipmentInstance;
 
+UENUM()
+enum class EEquipmentType : uint8
+{
+	None UMETA(DisplayName="None"),
+	Gun UMETA(DisplayName="Gun"),
+	Knife UMETA(DisplayName="Knife")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EEquipmentType, EEquipmentType::None, EEquipmentType::Knife);
+
 USTRUCT()
 struct FBSEquipmentActorToSpawn
 {
@@ -39,6 +48,10 @@ public:
 	// Class to spawn
 	UPROPERTY(EditDefaultsOnly, Category="Equipment")
 	TSubclassOf<UBSEquipmentInstance> InstanceType;
+
+	// Type of equipment
+	UPROPERTY(EditDefaultsOnly, Category="Equipment")
+	EEquipmentType EquipmentType;
 
 	// Gameplay ability sets to grant when this is equipped
 	UPROPERTY(EditDefaultsOnly, Category="Equipment")

@@ -90,6 +90,7 @@ void UGameModesWidget::NativeConstruct()
 	
 	/* Setup default custom game mode options to MultiBeat */
 	const FBSConfig DefaultMultiBeatMode = FBSConfig::GetDefaultGameModes()[3];
+	
 	DefiningConfig->ComboBox_GameModeName->ClearOptions();
 	DefiningConfig->ComboBox_BaseGameMode->ClearOptions();
 
@@ -354,6 +355,10 @@ void UGameModesWidget::OnButtonClicked_CancelOverwrite()
 
 void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
+	DefiningConfig->InitializeDefiningConfig(InBSConfig.DefiningConfig, InBSConfig.DefiningConfig.BaseGameMode);
+	SpatialConfig->InitializeTargetSpread(InBSConfig.SpatialConfig, InBSConfig.DefiningConfig.BaseGameMode);
+	TargetConfig->InitializeTargetConfig(InBSConfig.TargetConfig, InBSConfig.DefiningConfig.BaseGameMode);
+	
 	switch(InBSConfig.DefiningConfig.BaseGameMode)
 	{
 	case EBaseGameMode::SingleBeat:
@@ -384,10 +389,6 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	default:
 		break;
 	}
-
-	DefiningConfig->InitializeDefiningConfig(InBSConfig.DefiningConfig, InBSConfig.DefiningConfig.BaseGameMode);
-	SpatialConfig->InitializeTargetSpread(InBSConfig.SpatialConfig, InBSConfig.DefiningConfig.BaseGameMode);
-	TargetConfig->InitializeTargetConfig(InBSConfig.TargetConfig, InBSConfig.DefiningConfig.BaseGameMode);
 }
 
 FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
@@ -515,13 +516,16 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 		BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
 		BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
 		BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
-		GameModeTransitionState.BSConfig = BSConfig;
+
 		/* Override the player delay to zero if using Capture */
-		if (BSConfig.AudioConfig.AudioFormat == EAudioFormat::Capture)
+		if (BSConfig.AudioConfig.AudioFormat == EAudioFormat::Capture || BSConfig.AudioConfig.AudioFormat == EAudioFormat::Loopback)
 		{
 			BSConfig.AudioConfig.PlayerDelay = 0.f;
 			BSConfig.TargetConfig.SpawnBeatDelay = 0.f;
 		}
+
+		
+		GameModeTransitionState.BSConfig = BSConfig;
 		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 		AudioSelectWidget->FadeOut();
 	});

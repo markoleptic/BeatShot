@@ -54,8 +54,6 @@ void FBSEquipmentList::PostReplicatedChange(const TArrayView<int32> ChangedIndic
 
 UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition)
 {
-	UBSEquipmentInstance* Result = nullptr;
-	
 	check(EquipmentDefinition != nullptr);
 	check(OwnerComponent);
 	check(OwnerComponent->GetOwner()->HasAuthority());
@@ -71,7 +69,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 	FBSAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.EquipmentDefinition = EquipmentDefinition;
 	NewEntry.Instance = NewObject<UBSEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
-	Result = NewEntry.Instance;
+	UBSEquipmentInstance* Result = NewEntry.Instance;
 
 	if (UBSAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{

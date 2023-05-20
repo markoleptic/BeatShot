@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BSInventoryItemDefinition.h"
+#include "Inventory/BSInventoryItemDefinition.h"
 #include "InventoryFragment_Equippable.generated.h"
 
 class UBSEquipmentDefinition;

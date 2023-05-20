@@ -92,6 +92,20 @@ public:
 	UFUNCTION()
 	virtual void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage);
 
+	/** Returns the enum value corresponding to the string, or the specified DefaultNotFound if no matches were found */
+	template<typename T, typename Enum_Value>
+	static T GetEnumFromString(const FString& InString, const Enum_Value& DefaultNotFound)
+	{
+		for (const T& Method : TEnumRange<T>())
+		{
+			if (InString.Equals(UEnum::GetDisplayValueAsText(Method).ToString()))
+			{
+				return Method;
+			}
+		}
+		return DefaultNotFound;
+	}
+
 private:
 	TArray<FTooltipData> TooltipData;
 	

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagAssetInterface.h"
+#include "BSEquipmentActor.h"
 #include "BeatShot/Beatshot.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
@@ -13,7 +13,7 @@ class USkeletalMeshComponent;
 
 /** The base gun used in this game */
 UCLASS()
-class BEATSHOT_API ABSGun : public AActor, public IGameplayTagAssetInterface, public ISaveLoadInterface
+class BEATSHOT_API ABSGun : public ABSEquipmentActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -22,13 +22,6 @@ class BEATSHOT_API ABSGun : public AActor, public IGameplayTagAssetInterface, pu
 
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
-
-	/** ~IGameplayTagAssetInterface begin */
-	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
-	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
-	/** ~IGameplayTagAssetInterface end */
 
 	/** ~ISaveLoadInterface begin */
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
@@ -111,7 +104,4 @@ protected:
 	/** Determines if the player can fire */
 	UPROPERTY(BlueprintReadWrite)
 	bool bCanFire;
-
-private:
-	FGameplayTagContainer GameplayTags;
 };

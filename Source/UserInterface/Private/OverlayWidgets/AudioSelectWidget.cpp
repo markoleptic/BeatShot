@@ -46,6 +46,7 @@ void UAudioSelectWidget::NativeConstruct()
 	TArray<FString> InAudioDeviceList;
 	Manager->GetOutputAudioDevices(OutAudioDeviceList);
 	Manager->GetInputAudioDevices(InAudioDeviceList);
+
 	for (const FString& AudioDevice : OutAudioDeviceList)
 	{
 		ComboBox_OutAudioDevices->AddOption(AudioDevice);
@@ -103,7 +104,7 @@ void UAudioSelectWidget::OnButtonClicked_CaptureAudio()
 	ComboBox_InAudioDevices->ClearSelection();
 	ComboBox_OutAudioDevices->ClearSelection();
 	Button_AudioFromFile->SetBackgroundColor(FLinearColor::White);
-	Button_CaptureAudio->SetBackgroundColor(Constants::BeatShotBlue);
+	Button_CaptureAudio->SetBackgroundColor(BeatShotBlue);
 	Box_AudioDevice->SetVisibility(ESlateVisibility::Visible);
 	Box_SongTitleLength->SetVisibility(ESlateVisibility::Collapsed);
 

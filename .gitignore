@@ -101,6 +101,7 @@ Plugins/**/Intermediate/*
 # End of https://www.toptal.com/developers/gitignore/api/unrealengine
 Content/Levels/Range.umap
 Windows/
+Plugins/BeatShotAudioAnalyzer
 AssetPacks/
 Content/ControlRig
 Content/CombatKnife2/
