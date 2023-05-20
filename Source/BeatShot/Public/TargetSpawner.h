@@ -217,7 +217,7 @@ private:
 
 	/** The spawn area for BeatTrack, used to reverse the direction if the BeatTrack target stops overlapping it */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UBoxComponent* BeatTrackSpawnBox;
+	UBoxComponent* OverlapSpawnBox;
 
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")

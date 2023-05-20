@@ -34,7 +34,7 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 {
 	Super::PostGameplayEffectExecute(Data);
 	
-	if (GetHealth() <=0.0f)
+	if (GetHealth() <= 0.0f)
 	{
 		if (OnHealthReachZero.IsBound())
 		{

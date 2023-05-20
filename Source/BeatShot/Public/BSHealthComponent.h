@@ -10,7 +10,7 @@
 class UBSAbilitySystemComponent;
 class UBSAttributeSetBase;
 
-DECLARE_DELEGATE(FOnOutOfHealth);
+DECLARE_MULTICAST_DELEGATE(FOnOutOfHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FBSHealth_AttributeChanged, UBSHealthComponent*, HealthComponent, float, OldValue, float, NewValue, AActor*, Instigator);
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
 

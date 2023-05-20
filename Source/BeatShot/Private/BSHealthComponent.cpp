@@ -41,10 +41,7 @@ void UBSHealthComponent::HandleMaxHealthChanged(const FOnAttributeChangeData& Ch
 
 void UBSHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
 {
-	if (!OnOutOfHealth.ExecuteIfBound())
-	{
-		UE_LOG(LogTemp, Display, TEXT("OnOutOfHealth not bound."));
-	}
+	OnOutOfHealth.Broadcast();
 }
 
 void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

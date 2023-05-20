@@ -18,7 +18,7 @@ ATargetSpawner::ATargetSpawner()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	SpawnBox = CreateDefaultSubobject<UBoxComponent>("SpawnBox");
-	BeatTrackSpawnBox = CreateDefaultSubobject<UBoxComponent>("BeatTrack SpawnBox");
+	OverlapSpawnBox = CreateDefaultSubobject<UBoxComponent>("BeatTrack SpawnBox");
 	RootComponent = SpawnBox;
 	SetShouldSpawn(false);
 	LastTargetSpawnedCenter = false;
@@ -96,6 +96,10 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	StaticMinExtrema = SpawnBox->Bounds.GetBoxExtrema(0);
 	StaticMaxExtrema = SpawnBox->Bounds.GetBoxExtrema(1);
 
+	/* Set the overlap spawn box size */
+	OverlapSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
+	OverlapSpawnBox->SetBoxExtent(FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
+
 	/* Initial target spawn location */
 	SpawnLocation = SpawnBox->Bounds.Origin;
 	PreviousSpawnLocation = SpawnLocation;
@@ -103,11 +107,10 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	/* Initial target size */
 	TargetScale = GetNextTargetScale();
 
+	
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
-		BeatTrackSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
-		BeatTrackSpawnBox->SetBoxExtent(FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
-		BeatTrackSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
+		OverlapSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 		SpawnBeatTrackTarget();
 		return;
 	}
@@ -115,9 +118,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	// TEMP
 	if (BSConfig.TargetConfig.NumCharges > 0)
 	{
-		BeatTrackSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
-		BeatTrackSpawnBox->SetBoxExtent(FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
-		BeatTrackSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
+		OverlapSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnBeatTrackOverlapEnd);
 	}
 	// END TEMP
 
@@ -508,7 +509,7 @@ void ATargetSpawner::ActivateBeatGridTarget()
 
 	ASphereTarget* ChosenTarget = SpawnedBeatGridTargets[ChosenTargetIndex];
 	LastBeatGridIndex = ChosenTargetIndex;
-	ChosenTarget->StartBeatGridTimer(BSConfig.TargetConfig.TargetMaxLifeSpan);
+	ChosenTarget->ActivateBeatGridTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
 	AddToActiveTargets(ChosenTarget);
 	OnTargetSpawned.Broadcast();
 	OnTargetSpawned_AimBot.Broadcast(ChosenTarget);
@@ -748,10 +749,10 @@ FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBefore
 {
 	const FVector NewExtent = FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
 	
-	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
-	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
-	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
-	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(BeatTrackSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
+	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
 	
 	TArray<FVector> PossibleLocations;
 	PossibleLocations.Add(BotLeft);
