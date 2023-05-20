@@ -99,6 +99,9 @@ private:
 	/** Active a BeatGrid target on beat */
 	void ActivateBeatGridTarget();
 
+	/** Active a target with multiple charges */
+	void ActivateChargedTarget();
+
 	/** Initial BeatTrack target spawn */
 	void SpawnBeatTrackTarget();
 
@@ -315,18 +318,14 @@ private:
 
 #pragma region BeatTrack Variables
 
-	/** Only one tracking target spawns, so we store a ref to it to manipulate its behavior */
-	UPROPERTY()
-	ASphereTarget* BeatTrackTarget;
-
 	/** Current location of tracking target */
-	FVector BeatTrackTargetLocation;
+	FVector CurrentMovingTargetLocation;
 
 	/** Current direction of tracking target */
-	FVector BeatTrackTargetDirection;
+	FVector CurrentMovingTargetDirection;
 
 	/** Current speed of tracking target */
-	float BeatTrackTargetSpeed;
+	float MovingTargetSpeed;
 
 	/** The end of the path that the tracking target will move to */
 	FVector EndLocation;

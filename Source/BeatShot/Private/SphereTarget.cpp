@@ -58,6 +58,18 @@ void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSetting
 		HardRefAttributeSetBase->InitMaxHealth(1000000);
 		HardRefAttributeSetBase->InitHealth(1000000);
 	}
+	// TEMP
+	else if (InBSConfig.TargetConfig.NumCharges > 0)
+	{
+		HardRefAttributeSetBase->InitMaxHealth(InBSConfig.TargetConfig.NumCharges * 100.f);
+		HardRefAttributeSetBase->InitHealth(InBSConfig.TargetConfig.NumCharges * 100.f);
+	}
+	// END TEMP
+	else
+	{
+		HardRefAttributeSetBase->InitMaxHealth(100.f);
+		HardRefAttributeSetBase->InitHealth(100.f);
+	}
 }
 
 UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
@@ -115,6 +127,12 @@ void ASphereTarget::BeginPlay()
 		{
 			HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::HandleTemporaryDestruction);
 		}
+		// TEMP
+		if (BSConfig.TargetConfig.NumCharges > 0)
+		{
+			HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::HandleTemporaryDestruction);
+		}
+		// END TEMP
 	}
 	
 	/* Use Color Changing Material, this is required in order to change color using C++ */
@@ -165,6 +183,14 @@ void ASphereTarget::BeginPlay()
 		SetLifeSpan(0);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 	}
+	// TEMP
+	else if (BSConfig.TargetConfig.NumCharges > 0)
+	{
+		ApplyImmunityEffect();
+		SetLifeSpan(0);
+		SetSphereColor(PlayerSettings.EndTargetColor);
+	}
+	// END TEMP
 	else
 	{
 		SetLifeSpan(BSConfig.TargetConfig.TargetMaxLifeSpan);
@@ -186,6 +212,20 @@ void ASphereTarget::StartBeatGridTimer(const float Lifespan)
 	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnBeatGridTimerCompleted, Lifespan, false);
 	GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Damageable);
 	PlayStartToPeakTimeline();
+}
+
+void ASphereTarget::ActivateChargedTarget(const float Lifespan)
+{
+	GetWorldTimerManager().SetTimer(TimeSinceSpawn, this, &ASphereTarget::OnChargedTargetTimerCompleted, Lifespan, false);
+	GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Damageable);
+	PlayStartToPeakTimeline();
+}
+
+void ASphereTarget::OnChargedTargetTimerCompleted()
+{
+	ApplyImmunityEffect();
+	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+	OnLifeSpanExpired.Broadcast(true, -1, this);
 }
 
 void ASphereTarget::PlayStartToPeakTimeline()
@@ -349,6 +389,31 @@ void ASphereTarget::HandleTemporaryDestruction(AActor* ActorInstigator, const fl
 		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}
+
+	// TEMP
+	if (BSConfig.TargetConfig.NumCharges > 0)
+	{
+		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
+		ColorWhenDestroyed = MID_TargetColorChanger->K2_GetVectorParameterValue(TEXT("BaseColor"));
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
+
+
+		BSConfig.TargetConfig.NumCharges -= 1;
+
+		if (BSConfig.TargetConfig.NumCharges == 0)
+		{
+			OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
+			Destroy();
+			return;
+		}
+		
+		ApplyImmunityEffect();
+		SetSphereScale(GetCurrentTargetScale() * 0.5f);
+		SetSphereColor(PlayerSettings.EndTargetColor);
+		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
+	}
+	// END TEMP
 }
 
 FLinearColor ASphereTarget::GetPeakTargetColor() const

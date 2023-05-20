@@ -94,7 +94,10 @@ public:
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 	
 	/** Called in TargetSpawner to activate a BeatGrid target */
-	void StartBeatGridTimer(float Lifespan);
+	void StartBeatGridTimer(const float Lifespan);
+
+	void ActivateChargedTarget(const float Lifespan);
+	void OnChargedTargetTimerCompleted();
 
 	/** Sets the scale for the SphereMesh, should only be called by TargetSpawner */
 	void SetInitialSphereScale(const FVector& NewScale);

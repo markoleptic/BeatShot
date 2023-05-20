@@ -390,7 +390,7 @@ struct FBS_TargetConfig
 		TargetSpawnCD = DefaultTargetSpawnCD;
 		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
 		SpawnBeatDelay = DefaultSpawnBeatDelay;
-		NumCharges = 1;
+		NumCharges = -1;
 	}
 };
 
@@ -652,6 +652,9 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Dynamic;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
 				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
+				// TEMP
+				Config.TargetConfig.NumCharges = 3;
+				// END TEMP
 				break;
 			}
 		case EBaseGameMode::BeatGrid:
