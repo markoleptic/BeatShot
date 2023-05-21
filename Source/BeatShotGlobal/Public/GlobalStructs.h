@@ -653,7 +653,7 @@ struct FBSConfig
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
 				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
 				// TEMP
-				// Config.TargetConfig.NumCharges = 3;
+				Config.TargetConfig.NumCharges = 0;
 				// END TEMP
 				break;
 			}

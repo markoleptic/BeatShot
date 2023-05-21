@@ -336,6 +336,7 @@ void ASphereTarget::LifeSpanExpired()
 
 void ASphereTarget::OnOutOfHealth()
 {
+	UE_LOG(LogTemp, Display, TEXT("Out of health"));
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack || BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
 	{
 		return;
@@ -358,11 +359,13 @@ void ASphereTarget::OnOutOfHealth()
 
 void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
+	UE_LOG(LogTemp, Display, TEXT("Health changed"));
 	/* If BeatGrid mode, don't destroy target, make it not damageable, and play RemoveAndReappear */
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
 	{
 		/* Get the time that the sphere was alive for */
 		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
+		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		if (TimeAlive < 0 || TimeAlive >= BSConfig.TargetConfig.TargetMaxLifeSpan)
 		{
 			return;
@@ -370,7 +373,6 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 
 		/* Broadcast that the target has been destroyed by player */
 		PeakToEndTimeline.Stop();
-		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		ApplyImmunityEffect();
 		ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue(TEXT("BaseColor"));
 		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
@@ -426,6 +428,7 @@ void ASphereTarget::OnChargedTargetTimeout()
 	ApplyImmunityEffect();
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 	OnLifeSpanExpired.Broadcast(true, -1, this);
+	SetSphereColor(PlayerSettings.EndTargetColor);
 }
 
 void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
