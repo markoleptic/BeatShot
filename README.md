@@ -1,6 +1,7 @@
 # BeatShot
 
 This project is a standalone FPS aim trainer that controls target behavior by analyzing user selected music in real time.
+If you want to access a beta version on steam, just send me a message on Discord @Markoleptic#6174
 
 **[WISHLIST ON STEAM](https://store.steampowered.com/app/2126580/BeatShot/)**
 
