@@ -190,7 +190,7 @@ int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int3
 
 int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const
 {
-		FString Row;
+	FString Row;
 	FString Row2;
 	FString Row3;
 	FString Row4;

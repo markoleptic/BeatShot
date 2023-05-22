@@ -16,19 +16,19 @@ protected:
 	virtual void InitCheatManager() override;
 
 	UFUNCTION(exec)
-	void ToggleAimBot();
+	void ToggleAimBot(const bool bEnable);
 
 	UFUNCTION(exec)
-	void ToggleRLAgentWidget() const;
+	void ToggleRLAgentWidget(const bool bShow) const;
 
 	UFUNCTION(exec)
-	void ToggleSpawnMemory() const;
+	void ToggleSpawnMemory(const bool bShow) const;
 
 	UFUNCTION(exec)
-	void ToggleSpawnBox() const;
+	void ToggleSpawnBox(const bool bShow) const;
 
 	UFUNCTION(exec)
-	void ToggleAllTargetSpawnerDebug() const;
+	void ToggleAllTargetSpawnerDebug(const bool bShow) const;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;

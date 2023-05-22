@@ -13,16 +13,16 @@ void UBSCheatManager::InitCheatManager()
 	ReceiveInitCheatManager();
 }
 
-void UBSCheatManager::ToggleAimBot()
+void UBSCheatManager::ToggleAimBot(const bool bEnable)
 {
-	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
 	
 	if (!GameMode || !Character)
 	{
 		return;
 	}
-	if (!bAimBotEnabled)
+	if (bEnable)
 	{
 		if (!GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
 		{
@@ -31,7 +31,7 @@ void UBSCheatManager::ToggleAimBot()
 		UBSGameplayAbility* AbilityCDO = AimBotAbility->GetDefaultObject<UBSGameplayAbility>();
 		if (const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1); Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec).IsValid())
 		{
-			bAimBotEnabled = true;
+			UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
 		}
 	}
 	else
@@ -49,28 +49,28 @@ void UBSCheatManager::ToggleAimBot()
 			for (const FGameplayAbilitySpec* Spec : Activatable)
 			{
 				Character->GetBSAbilitySystemComponent()->ClearAbility(Spec->Handle);
+				UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
 			}
 		}
-		bAimBotEnabled = false;
 	}
 }
 
-void UBSCheatManager::ToggleRLAgentWidget() const
+void UBSCheatManager::ToggleRLAgentWidget(const bool bShow) const
 {
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleRLAgentWidget();
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleRLAgentWidget(bShow);
 }
 
-void UBSCheatManager::ToggleSpawnMemory() const
+void UBSCheatManager::ToggleSpawnMemory(const bool bShow) const
 {
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleDebug_SpawnMemory();
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleDebug_SpawnMemory(bShow);
 }
 
-void UBSCheatManager::ToggleSpawnBox() const
+void UBSCheatManager::ToggleSpawnBox(const bool bShow) const
 {
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleDebug_SpawnBox();
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ToggleDebug_SpawnBox(bShow);
 }
 
-void UBSCheatManager::ToggleAllTargetSpawnerDebug() const
+void UBSCheatManager::ToggleAllTargetSpawnerDebug(const bool bShow) const
 {
 	const ATargetSpawner* TargetSpawner = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner();
 	const bool bBoxActive = TargetSpawner->IsDebug_SpawnBoxActive();
@@ -80,30 +80,30 @@ void UBSCheatManager::ToggleAllTargetSpawnerDebug() const
 	{
 		if (!bBoxActive)
 		{
-			ToggleSpawnBox();
+			ToggleSpawnBox(bShow);
 		}
 		if (!bWidgetActive)
 		{
-			ToggleRLAgentWidget();
+			ToggleRLAgentWidget(bShow);
 		}
 		if (!bSpawnMemoryActive)
 		{
-			ToggleSpawnMemory();
+			ToggleSpawnMemory(bShow);
 		}
 	}
 	else
 	{
 		if (bBoxActive)
 		{
-			ToggleSpawnBox();
+			ToggleSpawnBox(bShow);
 		}
 		if (bWidgetActive)
 		{
-			ToggleRLAgentWidget();
+			ToggleRLAgentWidget(bShow);
 		}
 		if (bSpawnMemoryActive)
 		{
-			ToggleSpawnMemory();
+			ToggleSpawnMemory(bShow);
 		}
 	}
 }

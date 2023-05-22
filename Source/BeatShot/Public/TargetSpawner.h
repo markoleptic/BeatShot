@@ -3,17 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "RLBase.h"
 #include "SphereTarget.h"
 #include "SaveLoadInterface.h"
-#include "SaveGamePlayerScore.h"
 #include "GameFramework/Actor.h"
 #include "BeatShot/BeatShot.h"
 #include "TargetSpawner.generated.h"
 
 class ASphereTarget;
 class UBoxComponent;
-class URLBase;
+class UReinforcementLearningComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnBeatTrackTargetDamaged, const float OldValue, const float NewValue, const float TotalPossibleDamage);
@@ -39,15 +37,35 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
+	/** The spawn area */
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UBoxComponent* SpawnBox;
+
+	/** The spawn area for BeatTrack, used to reverse the direction if the BeatTrack target stops overlapping it */
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UBoxComponent* OverlapSpawnBox;
+
+	/** Reinforcement learning agent component */
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UReinforcementLearningComponent* ReinforcementLearningComponent;
+
+	/** The target actor to spawn */
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	TSubclassOf<ASphereTarget> ActorToSpawn;
+
+	/** Curve to look up values for DynamicSpawnScale */
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	UCurveFloat* DynamicSpawnCurve;
+
 public:
 	UFUNCTION(CallInEditor)
-	void ToggleDebug_SpawnBox();
+	void ToggleDebug_SpawnBox(const bool bShow);
 	
 	UFUNCTION(CallInEditor)
-	void ToggleDebug_SpawnMemory();
+	void ToggleDebug_SpawnMemory(const bool bShow);
 
 	UFUNCTION(CallInEditor)
-	void ToggleRLAgentWidget();
+	void ToggleRLAgentWidget(const bool bShow);
 
 	bool IsDebug_SpawnBoxActive() const { return bShowDebug_SpawnBox; }
 	bool IsDebug_SpawnMemoryActive() const { return bShowDebug_SpawnMemory; }
@@ -132,22 +150,16 @@ private:
 	float GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	FVector GetNextTargetSpawnLocation(EBoundsScalingMethod SpreadType, const float NewTargetScale);
+	FVector GetNextTargetSpawnLocation(EBoundsScalingMethod BoundsScalingMethod, const float NewTargetScale);
 
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;
 
 	/** Returns an array of valid spawn points */
-	TArray<FVector> GetValidSpawnLocations(const float Scale) const;
+	TArray<FVector> GetValidSpawnLocations(const float Scale, const ETargetDistributionMethod& TargetDistributionMethod, const EBoundsScalingMethod& BoundsScalingMethod) const;
 	
-	/** Returns an array constructed on initialization containing all spawn locations */
+	/** Returns a copy of all spawn locations that were created on initialization */
 	TArray<FVector> GetAllSpawnLocations() const;
-	
-	/** Returns an array that contains the contains all spawn locations without the locations outside of the current box extent */
-	TArray<FVector> GetAllDynamicRandomSpawnLocations() const;
-	
-	/** Returns an array containing only the edge points of the spawn box, used for Dynamic Edge Only (Single Beat exclusive mode) */
-	TArray<FVector> GetAllEdgeOnlySpawnLocations() const;
 	
 	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
 	TArray<FVector> GetOverlappingPoints(const FVector& Center, const float Scale) const;
@@ -209,24 +221,6 @@ private:
 
 	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
 
-#pragma region General Spawning Variables
-
-	/** The spawn area */
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UBoxComponent* SpawnBox;
-
-	/** The spawn area for BeatTrack, used to reverse the direction if the BeatTrack target stops overlapping it */
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UBoxComponent* OverlapSpawnBox;
-
-	/** The target actor to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	TSubclassOf<ASphereTarget> ActorToSpawn;
-
-	/** The spawn area */
-	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UCurveFloat* DynamicSpawnCurve;
-
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfig;
 
@@ -287,36 +281,25 @@ private:
 
 	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
 	float SpawnMemoryScaleY;
-
 	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
 	float SpawnMemoryScaleZ;
 
 	/** Incremental step value used to iterate through SpawnCounter locations */
 	int32 SpawnMemoryIncY;
-
 	/** Incremental step value used to iterate through SpawnCounter locations */
 	int32 SpawnMemoryIncZ;
 
 	int32 SpawnCounterHeight;
-
 	int32 SpawnCounterWidth;
-
 	int32 SpawnCounterSize;
 
 	/** Delegate used to bind a timer handle to RemoveFromRecentTargets() inside of OnTargetTimeout() */
 	FTimerDelegate RemoveFromRecentDelegate;
 
-	/** Spawn parameters for ASphereTarget */
-	FActorSpawnParameters TargetSpawnParams;
-
 	/** Minimum overlap radius so that small targets do not overlap due to the spawn memory scale being much higher */
 	float MinOverlapRadius;
 
 	FPlayerSettings_Game PlayerSettings;
-
-#pragma endregion
-
-#pragma region BeatTrack Variables
 
 	/** Current location of tracking target */
 	FVector CurrentMovingTargetLocation;
@@ -333,10 +316,6 @@ private:
 	/** Location just before randomizing a new tracking direction */
 	FVector LocationBeforeDirectionChange;
 
-#pragma endregion
-
-#pragma region BeatGrid Variables
-
 	/** Array to keep track of the grid of targets that do not de-spawn */
 	UPROPERTY(VisibleDefaultsOnly, Category = "BeatGrid")
 	TArray<ASphereTarget*> SpawnedBeatGridTargets;
@@ -349,10 +328,6 @@ private:
 
 	/** Index of the most recently activated beat grid target */
 	int32 LastBeatGridIndex;
-
-#pragma endregion
-
-#pragma region RLAgent
 
 	/** Updates a TargetPair's reward based on if hit or not. Removes from ActiveTargetPairs and adds to TargetPairs queue */
 	void UpdateRLAgentReward(const FVector& WorldLocation, const bool bHit);
@@ -375,10 +350,4 @@ private:
 	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired.
 	 *  Added directly after being spawned, removed and added to TargetPairs queue upon being destroyed */
 	TArray<FTargetPair> ActiveTargetPairs;
-
-	/** Reinforcement Learning Agent */
-	UPROPERTY()
-	URLBase* RLBase;
-
-#pragma endregion
 };
