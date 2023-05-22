@@ -1,15 +1,28 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "RLBase.h"
+
+#include "ReinforcementLearningComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-URLBase::URLBase()
+
+UReinforcementLearningComponent::UReinforcementLearningComponent()
 {
+	PrimaryComponentTick.bCanEverTick = false;
 	EpisodeRewards = nc::NdArray<float>(1);
 	QTable = nc::NdArray<float>();
 }
 
-void URLBase::Init(const FRLAgentParams& AgentParams)
+void UReinforcementLearningComponent::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void UReinforcementLearningComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+}
+
+void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 {
 	Alpha = AgentParams.InAlpha;
 	Gamma = AgentParams.InGamma;
@@ -55,7 +68,7 @@ void URLBase::Init(const FRLAgentParams& AgentParams)
 	UE_LOG(LogTemp, Display, TEXT("QTable Size: %d"), QTable.size());
 }
 
-void URLBase::UpdateQTable(const FAlgoInput& In)
+void UReinforcementLearningComponent::UpdateQTable(const FAlgoInput& In)
 {
 	FAlgoInput InCopy = In;
 	InCopy.StateIndex = GetQTableIndexFromSpawnCounterIndex(In.StateIndex);
@@ -73,14 +86,14 @@ void URLBase::UpdateQTable(const FAlgoInput& In)
 	UpdateQTableWidget();
 }
 
-void URLBase::UpdateEpisodeRewards(const float RewardReceived)
+void UReinforcementLearningComponent::UpdateEpisodeRewards(const float RewardReceived)
 {
 	nc::NdArray<float> Array = nc::NdArray<float>(1);
 	Array(0,0) = RewardReceived;
 	EpisodeRewards = append(EpisodeRewards, Array);
 }
 
-int32 URLBase::GetMaxActionIndex(const int32 SpawnCounterIndex) const
+int32 UReinforcementLearningComponent::GetMaxActionIndex(const int32 SpawnCounterIndex) const
 {
 	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetQTableIndexFromSpawnCounterIndex(SpawnCounterIndex));
 	//UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for SpawnCounterIndex %d: %d"), SpawnCounterIndex, Index);
@@ -91,7 +104,7 @@ int32 URLBase::GetMaxActionIndex(const int32 SpawnCounterIndex) const
 	return Index;
 }
 
-int32 URLBase::ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) const
+int32 UReinforcementLearningComponent::ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) const
 {
 	if (SpawnCounterIndices.IsEmpty())
 	{
@@ -110,7 +123,7 @@ int32 URLBase::ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) c
 	return ChooseRandomActionIndex(SpawnCounterIndices);
 }
 
-void URLBase::PrintRewards() const
+void UReinforcementLearningComponent::PrintRewards() const
 {
 	FString Row;
 	nc::NdArray<float> QTableCopy = GetQTable();
@@ -155,29 +168,29 @@ void URLBase::PrintRewards() const
 	}
 }
 
-TArray<float> URLBase::GetAveragedTArrayFromQTable() const
+TArray<float> UReinforcementLearningComponent::GetAveragedTArrayFromQTable() const
 {
 	return GetTArrayFromQTable(flipud(mean(GetQTable(), nc::Axis::ROW).reshape(ScaledHeight,ScaledWidth)));
 }
 
-TArray<float> URLBase::GetSaveReadyQTable() const
+TArray<float> UReinforcementLearningComponent::GetSaveReadyQTable() const
 {
 	return GetTArrayFromQTable(GetQTable());
 }
 
-nc::NdArray<float> URLBase::GetQTable() const
+nc::NdArray<float> UReinforcementLearningComponent::GetQTable() const
 {
 	return QTable;
 }
 
-int32 URLBase::ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices) const
+int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices) const
 {
 	return SpawnCounterIndices[FMath::RandRange(0, SpawnCounterIndices.Num() - 1)];
 }
 
-int32 URLBase::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const
+int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const
 {
-	FString Row;
+		FString Row;
 	FString Row2;
 	FString Row3;
 	FString Row4;
@@ -238,7 +251,7 @@ int32 URLBase::ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) c
 	return INDEX_NONE;
 }
 
-int32 URLBase::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
+int32 UReinforcementLearningComponent::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
 {
 	/* First find the Row and Column number that corresponds to the SpawnCounter index */
 	const int32 SpawnCounterRowNum = SpawnCounterIndex / SpawnCounterWidth;
@@ -254,12 +267,12 @@ int32 URLBase::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex
 	return QTableIndex;
 }
 
-TArray<int32> URLBase::GetSpawnCounterIndexRange(const int32 QTableIndex) const
+TArray<int32> UReinforcementLearningComponent::GetSpawnCounterIndexRange(const int32 QTableIndex) const
 {
 	return QTableIndices[QTableIndex].SpawnCounterIndices;
 }
 
-nc::NdArray<float> URLBase::GetQTableFromTArray(const TArray<float>& InTArray) const
+nc::NdArray<float> UReinforcementLearningComponent::GetQTableFromTArray(const TArray<float>& InTArray) const
 {
 	const int32 RowSize = UKismetMathLibrary::Sqrt(InTArray.Num());
 	const int32 ColSize = RowSize;
@@ -276,7 +289,7 @@ nc::NdArray<float> URLBase::GetQTableFromTArray(const TArray<float>& InTArray) c
 	return Out;
 }
 
-TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
+TArray<float> UReinforcementLearningComponent::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
 {
 	const int32 RowSize = InQTable.numRows();
 	const int32 ColSize = InQTable.numCols();
@@ -294,7 +307,7 @@ TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
 	return Out;
 }
 
-TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
+TArray<float> UReinforcementLearningComponent::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
 {
 	TArray<float> Out;
 	Out.Init(0.f, InQTable.size());
@@ -308,7 +321,8 @@ TArray<float> URLBase::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
 	return Out;
 }
 
-void URLBase::UpdateQTableWidget() const
+void UReinforcementLearningComponent::UpdateQTableWidget() const
 {
 	OnQTableUpdate.Broadcast(GetAveragedTArrayFromQTable());
 }
+

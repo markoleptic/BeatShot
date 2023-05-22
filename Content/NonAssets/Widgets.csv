@@ -142,7 +142,7 @@ GM_GameModeSavedText,saved
 GM_GameModeTemplate,Game Mode Template
 GM_General,General
 GM_General_Info,"Select a template to see default values for different game modes. You can save custom game modes based on any game mode templates, and everything can be customized."
-GM_HeadshotOnly,Headshot Height Targets Only
+GM_TargetDistributionMethod,Target Distribution Method
 GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
 GM_MaximumTargetLifespan,Maximum Target Lifespan
 GM_MaxTargetScale,Max Target Scale
@@ -169,7 +169,7 @@ GM_Sizing,Target Sizing
 GM_SpawnBeatDelay,Spawn Beat Delay
 GM_Spread,Target Spread
 GM_SpreadSelectTitle,Select A Spread
-GM_SpreadType,Spread Type
+GM_BoundsScalingMethod,Bounds Scaling Method
 GM_Standard_Info,Hop right into a session by selecting a game mode with default configured difficulty
 GM_StartCustom,Start Custom
 GM_StartWithoutSaving,Start Without Saving

@@ -8,6 +8,8 @@
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
+#include "WidgetComponents/BSComboBoxEntry.h"
+#include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/BSVerticalBox.h"
 
 using namespace Constants;
@@ -40,17 +42,8 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	AddToTooltipData(QMark_Lifespan, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Lifespan"));
 	AddToTooltipData(QMark_TargetSpawnCD, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
 	AddToTooltipData(QMark_SpawnBeatDelay, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay"));
-	
-	const TArray ConsecutiveTargetScaleJoin = { FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale"),
-		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Static"),
-		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_SkillBased"),
-		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Random") };
-	AddToTooltipData(QMark_ConsecutiveTargetScale, FText::Join(NewLineDelimit, ConsecutiveTargetScaleJoin));
-	
-	const TArray LifetimeTargetScaleJoin = { FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale"),
-		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Grow"),
-		FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Shrink") };
-	AddToTooltipData(QMark_LifetimeTargetScale, FText::Join(NewLineDelimit, LifetimeTargetScaleJoin));
+	AddToTooltipData(QMark_ConsecutiveTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale"));
+	AddToTooltipData(QMark_LifetimeTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale"));
 
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_Lifespan);
 	Value_Lifespan->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_Lifespan);
@@ -60,6 +53,10 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Value_SpawnBeatDelay->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay);
 	ComboBox_LifetimeTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod);
 	ComboBox_ConsecutiveTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale);
+	ComboBox_LifetimeTargetScale->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_LifetimeTargetScale);
+	ComboBox_LifetimeTargetScale->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this,  &UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale);
+	ComboBox_ConsecutiveTargetScale->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_ConsecutiveTargetScale);
+	ComboBox_ConsecutiveTargetScale->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale);
 
 	for (const EConsecutiveTargetScaleMethod& Method : TEnumRange<EConsecutiveTargetScaleMethod>())
 	{
@@ -192,4 +189,86 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale(co
 	default:
 		break;
 	}
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_ConsecutiveTargetScale(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScale, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_ConsecutiveTargetScale)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_ConsecutiveTargetScale = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	FText TooltipText;
+	switch(GetEnumFromString<EConsecutiveTargetScaleMethod>(Method, EConsecutiveTargetScaleMethod::None))
+	{
+	case EConsecutiveTargetScaleMethod::Static:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Static");
+		break;
+	case EConsecutiveTargetScaleMethod::Random:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Random");
+		break;
+	case EConsecutiveTargetScaleMethod::SkillBased:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_SkillBased");
+		break;
+	default: ;
+	}
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale(FString Method)
+{
+	bHideTooltipImage_ConsecutiveTargetScale = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScale, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_LifetimeTargetScale(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScale, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_LifetimeTargetScale)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_LifetimeTargetScale = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	FText TooltipText;
+	switch(GetEnumFromString<ELifetimeTargetScaleMethod>(Method, ELifetimeTargetScaleMethod::None))
+	{
+	case ELifetimeTargetScaleMethod::None:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_None");
+		break;
+	case ELifetimeTargetScaleMethod::Grow:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Grow");
+		break;
+	case ELifetimeTargetScaleMethod::Shrink:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Shrink");
+		break;
+	default: ;
+	}
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale(FString Method)
+{
+	bHideTooltipImage_LifetimeTargetScale = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScale, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
 }

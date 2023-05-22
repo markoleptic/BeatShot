@@ -8,6 +8,8 @@
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
+#include "WidgetComponents/BSComboBoxEntry.h"
+#include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/BSHorizontalBox.h"
 
 using namespace Constants;
@@ -16,13 +18,12 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	AddToTooltipData(QMark_HeadshotHeight, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "HeadshotHeight"));
 	AddToTooltipData(QMark_FloorDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "FloorDistance"));
 	AddToTooltipData(QMark_ForwardSpread, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ForwardSpread"));
 	AddToTooltipData(QMark_MinDistance, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
 	AddToTooltipData(QMark_BoundsScalingMethod, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod"));
+	AddToTooltipData(QMark_TargetDistributionMethod, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod"));
 	
-	CheckBox_HeadShotOnly->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly);
 	CheckBox_ForwardSpread->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward);
 	Slider_MinTargetDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_MinTargetDistance);
 	Value_MinTargetDistance->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_MinTargetDistance);
@@ -34,10 +35,21 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 	Value_ForwardSpread->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_ForwardSpread);
 	Slider_FloorDistance->OnValueChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance);
 	Value_FloorDistance->OnTextCommitted.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnTextCommitted_FloorDistance);
+	ComboBox_BoundsScalingMethod->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSelectionChanged_BoundsScalingMethod);
+	ComboBox_TargetDistributionMethod->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_SpatialConfig::OnSelectionChanged_TargetDistributionMethod);
+	ComboBox_BoundsScalingMethod->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_BoundsScalingMethod);
+	ComboBox_BoundsScalingMethod->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this,  &UGameModesWidget_SpatialConfig::OnSelectionChangedGenerateWidgetEvent_BoundsScalingMethod);
+	ComboBox_TargetDistributionMethod->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_TargetDistributionMethod);
+	ComboBox_TargetDistributionMethod->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_SpatialConfig::OnSelectionChangedGenerateWidgetEvent_TargetDistributionMethod);
 
 	for (const EBoundsScalingMethod& Method : TEnumRange<EBoundsScalingMethod>())
 	{
 		ComboBox_BoundsScalingMethod->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+
+	for (const ETargetDistributionMethod& Method : TEnumRange<ETargetDistributionMethod>())
+	{
+		ComboBox_TargetDistributionMethod->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
 }
 
@@ -49,7 +61,7 @@ void UGameModesWidget_SpatialConfig::InitSettingCategoryWidget()
 void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EBaseGameMode& BaseGameMode)
 {
 	// Lock vertical and horizontal spread if HeadShot height only, otherwise unlock them
-	if (SpatialConfig.bUseHeadshotHeight)
+	if (SpatialConfig.TargetDistributionMethod == ETargetDistributionMethod::HeadshotHeightOnly)
 	{
 		Slider_VerticalSpread->SetLocked(true);
 		Value_VerticalSpread->SetIsReadOnly(true);
@@ -82,30 +94,30 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 		Slider_VerticalSpread->SetLocked(true);
 		Value_VerticalSpread->SetIsReadOnly(true);
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_BoundsScalingMethod->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::BeatTrack:
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_SpreadType->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_BoundsScalingMethod->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::SingleBeat:
 	case EBaseGameMode::MultiBeat:
 	default:
 		BSBox_MinTargetDistance->SetVisibility(ESlateVisibility::Visible);
-		BSBox_SpreadType->SetVisibility(ESlateVisibility::Visible);
+		BSBox_BoundsScalingMethod->SetVisibility(ESlateVisibility::Visible);
 		Slider_HorizontalSpread->SetLocked(false);
 		Value_HorizontalSpread->SetIsReadOnly(false);
 		Slider_VerticalSpread->SetLocked(false);
 		Value_VerticalSpread->SetIsReadOnly(false);
 		break;
 	}
-
-	CheckBox_HeadShotOnly->SetIsChecked(SpatialConfig.bUseHeadshotHeight);
+	
 	Slider_FloorDistance->SetValue(SpatialConfig.FloorDistance);
 	Value_FloorDistance->SetText(FText::AsNumber(SpatialConfig.FloorDistance));
 	Slider_MinTargetDistance->SetValue(SpatialConfig.MinDistanceBetweenTargets);
 	Value_MinTargetDistance->SetText(FText::AsNumber(SpatialConfig.MinDistanceBetweenTargets));
 	ComboBox_BoundsScalingMethod->SetSelectedOption(UEnum::GetDisplayValueAsText(SpatialConfig.BoundsScalingMethod).ToString());
+	ComboBox_TargetDistributionMethod->SetSelectedOption(UEnum::GetDisplayValueAsText(SpatialConfig.TargetDistributionMethod).ToString());
 	Slider_HorizontalSpread->SetValue(SpatialConfig.BoxBounds.Y);
 	Value_HorizontalSpread->SetText(FText::AsNumber(SpatialConfig.BoxBounds.Y));
 	Slider_VerticalSpread->SetValue(SpatialConfig.BoxBounds.Z);
@@ -120,14 +132,14 @@ void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialCon
 FBS_SpatialConfig UGameModesWidget_SpatialConfig::GetSpatialConfig() const
 {
 	FBS_SpatialConfig SpatialConfig;
-	SpatialConfig.bUseHeadshotHeight = CheckBox_HeadShotOnly->IsChecked();
 	SpatialConfig.FloorDistance = FMath::GridSnap(FMath::Clamp(Slider_FloorDistance->GetValue(), MinValue_FloorDistance, MaxValue_FloorDistance), SnapSize_FloorDistance);
 	SpatialConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(Slider_MinTargetDistance->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
-	SpatialConfig.BoundsScalingMethod = GetBoundsScalingMethod();
 	SpatialConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(Slider_HorizontalSpread->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
 									 FMath::GridSnap(FMath::Clamp(Slider_VerticalSpread->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
 	SpatialConfig.bMoveTargetsForward = CheckBox_ForwardSpread->IsChecked();
 	SpatialConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(Slider_ForwardSpread->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
+	SpatialConfig.BoundsScalingMethod = GetEnumFromString<EBoundsScalingMethod>(ComboBox_BoundsScalingMethod->GetSelectedOption(), EBoundsScalingMethod::None);
+	SpatialConfig.TargetDistributionMethod = GetEnumFromString<ETargetDistributionMethod>(ComboBox_TargetDistributionMethod->GetSelectedOption(), ETargetDistributionMethod::None);
 	return SpatialConfig;
 }
 
@@ -149,6 +161,115 @@ void UGameModesWidget_SpatialConfig::OnTextCommitted_VerticalSpread(const FText&
 void UGameModesWidget_SpatialConfig::OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType)
 {
 	OnEditableTextBoxChanged(NewForwardSpread, Value_ForwardSpread, Slider_ForwardSpread, SnapSize_HorizontalSpread, MinValue_ForwardSpread, MaxValue_ForwardSpread);
+}
+
+void UGameModesWidget_SpatialConfig::OnSelectionChanged_BoundsScalingMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
+{
+	
+}
+
+void UGameModesWidget_SpatialConfig::OnSelectionChanged_TargetDistributionMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
+{
+	if (GetEnumFromString<ETargetDistributionMethod>(SelectedMethod, ETargetDistributionMethod::None) == ETargetDistributionMethod::HeadshotHeightOnly)
+	{
+		Slider_VerticalSpread->SetValue(0);
+		Value_VerticalSpread->SetText(FText::AsNumber(0));
+		Slider_VerticalSpread->SetLocked(true);
+		Value_VerticalSpread->SetIsReadOnly(true);
+	
+		Slider_FloorDistance->SetValue(DistanceFromFloor);
+		Value_FloorDistance->SetText(FText::AsNumber(DistanceFromFloor));
+		Slider_FloorDistance->SetLocked(true);
+		Value_FloorDistance->SetIsReadOnly(true);
+		return;
+	}
+	
+	Slider_FloorDistance->SetLocked(false);
+	Value_FloorDistance->SetIsReadOnly(false);
+	Slider_VerticalSpread->SetLocked(false);
+	Value_VerticalSpread->SetIsReadOnly(false);
+	OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+	OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+}
+
+UWidget* UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_BoundsScalingMethod(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_BoundsScalingMethod, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_BoundsScalingMethod)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_BoundsScalingMethod = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	FText TooltipText;
+	switch(GetEnumFromString<EBoundsScalingMethod>(Method, EBoundsScalingMethod::None))
+	{
+	case EBoundsScalingMethod::Static:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod_Static");
+		break;
+	case EBoundsScalingMethod::Dynamic:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod_Dynamic");
+		break;
+	default: ;
+	}
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_SpatialConfig::OnSelectionChangedGenerateWidgetEvent_BoundsScalingMethod(FString Method)
+{
+	bHideTooltipImage_BoundsScalingMethod = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_BoundsScalingMethod, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_TargetDistributionMethod(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDistributionMethod, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_TargetDistributionMethod)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_TargetDistributionMethod = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	FText TooltipText;
+	switch(GetEnumFromString<ETargetDistributionMethod>(Method, ETargetDistributionMethod::None))
+	{
+	case ETargetDistributionMethod::HeadshotHeightOnly:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod_HeadshotHeightOnly");
+		break;
+	case ETargetDistributionMethod::EdgeOnly:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod_EdgeOnly");
+		break;
+	case ETargetDistributionMethod::FullRange:
+		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod_FullRange");
+		break;
+	default: ;
+	}
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_SpatialConfig::OnSelectionChangedGenerateWidgetEvent_TargetDistributionMethod(FString Method)
+{
+	bHideTooltipImage_TargetDistributionMethod = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDistributionMethod, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
 }
 
 void UGameModesWidget_SpatialConfig::OnTextCommitted_FloorDistance(const FText& NewFloorDistance, ETextCommit::Type CommitType)
@@ -179,40 +300,6 @@ void UGameModesWidget_SpatialConfig::OnSliderChanged_ForwardSpread(const float N
 void UGameModesWidget_SpatialConfig::OnSliderChanged_FloorDistance(const float NewFloorDistance)
 {
 	OnSliderChanged(NewFloorDistance, Value_FloorDistance, SnapSize_FloorDistance);
-}
-
-EBoundsScalingMethod UGameModesWidget_SpatialConfig::GetBoundsScalingMethod() const
-{
-	const FString SelectedSpread = ComboBox_BoundsScalingMethod->GetSelectedOption();
-	if (SelectedSpread.IsEmpty())
-	{
-		return EBoundsScalingMethod::None;
-	}
-	return GetEnumFromString<EBoundsScalingMethod>(SelectedSpread, EBoundsScalingMethod::None);
-}
-
-void UGameModesWidget_SpatialConfig::OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly)
-{
-	if (bHeadshotOnly)
-	{
-		Slider_VerticalSpread->SetValue(0);
-		Value_VerticalSpread->SetText(FText::AsNumber(0));
-		Slider_VerticalSpread->SetLocked(true);
-		Value_VerticalSpread->SetIsReadOnly(true);
-		
-		Slider_FloorDistance->SetValue(DistanceFromFloor);
-		Value_FloorDistance->SetText(FText::AsNumber(DistanceFromFloor));
-		Slider_FloorDistance->SetLocked(true);
-		Value_FloorDistance->SetIsReadOnly(true);
-		return;
-	}
-	
-	Slider_FloorDistance->SetLocked(false);
-	Value_FloorDistance->SetIsReadOnly(false);
-	Slider_VerticalSpread->SetLocked(false);
-	Value_VerticalSpread->SetIsReadOnly(false);
-	OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
-	OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
 }
 
 void UGameModesWidget_SpatialConfig::OnCheckStateChanged_MoveTargetsForward(const bool bUseForwardSpread)

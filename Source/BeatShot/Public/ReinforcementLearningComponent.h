@@ -3,9 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveLoadInterface.h"
-#include "ReinforcementLearningComponent.h"
+#include "GlobalEnums.h"
 #include "BeatShot/BeatShot.h"
+#include "Components/ActorComponent.h"
+
 THIRD_PARTY_INCLUDES_START
 #pragma push_macro("check")
 #undef check
@@ -16,18 +17,119 @@ THIRD_PARTY_INCLUDES_START
 #pragma warning (pop)
 #pragma pop_macro("check")
 THIRD_PARTY_INCLUDES_END
-#include "RLBase.generated.h"
+
+#include "ReinforcementLearningComponent.generated.h"
+
+/** A struct representing the inputs for a Reinforcement Learning Algorithm */
+USTRUCT()
+struct FAlgoInput
+{
+	GENERATED_BODY()
+
+	int32 StateIndex;
+	int32 ActionIndex;
+	int32 StateIndex_2;
+	int32 ActionIndex_2;
+	float Reward;
+
+	FAlgoInput()
+	{
+		StateIndex = -1;
+		ActionIndex = -1;
+		StateIndex_2 = -1;
+		ActionIndex_2 = -1;
+		Reward = 1;
+	}
+
+	FAlgoInput(const int32 InStateIndex, const int32 InActionIndex, const int32 InStateIndex_2, const int32 InActionIndex_2, float InReward)
+	{
+		StateIndex = InStateIndex;
+		ActionIndex = InActionIndex;
+		StateIndex_2 = InStateIndex_2;
+		ActionIndex_2 = InActionIndex_2;
+		Reward = InReward;
+	}
+};
+
+/** A struct to pass the Agent upon Initialization */
+USTRUCT()
+struct FRLAgentParams
+{
+	GENERATED_BODY()
+
+	EBaseGameMode DefaultMode;
+	FString CustomGameModeName;
+	int32 Size;
+	TArray<float> InQTable;
+	float SpawnCounterHeight;
+	float SpawnCounterWidth;
+	float InAlpha;
+	float InGamma;
+	float InEpsilon;
+
+	FRLAgentParams()
+	{
+		DefaultMode = EBaseGameMode::None;
+		CustomGameModeName = "";
+		Size = 0;
+		InQTable = TArray<float>();
+		SpawnCounterHeight = 0.f;
+		SpawnCounterWidth = 0.f;
+		InAlpha = 0.f;
+		InGamma = 0.f;
+		InEpsilon = 0.f;
+	}
+	
+};
+
+/** A struct each each element represents one QTable index mapping to multiple SpawnCounter indices */
+USTRUCT()
+struct FQTableIndex
+{
+	GENERATED_BODY()
+
+	int32 QTableIndex;
+	TArray<int32> SpawnCounterIndices;
+
+	FQTableIndex()
+	{
+		QTableIndex = INDEX_NONE;
+		SpawnCounterIndices = TArray<int32>();
+	}
+	FQTableIndex(const int32 InQTableIndex)
+	{
+		QTableIndex = InQTableIndex;
+		SpawnCounterIndices = TArray<int32>();
+	}
+
+	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
+	{
+		if (Other.QTableIndex == QTableIndex)
+		{
+			return true;
+		}
+		return false;
+	}
+};
 
 
-/** Reinforcement learning agent using QLearning to assist TargetSpawner in AI-generated spawn locations */
-UCLASS()
-class BEATSHOT_API URLBase : public UObject, public ISaveLoadInterface
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class BEATSHOT_API UReinforcementLearningComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	URLBase();
-	
+	// Sets default values for this component's properties
+	UReinforcementLearningComponent();
+
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	/** Initializes the QTable, called by TargetSpawner */
 	void Init(const FRLAgentParams& AgentParams);
 

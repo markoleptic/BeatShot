@@ -803,6 +803,7 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale) const
 			AllPoints = GetAllDynamicRandomSpawnLocations();
 			break;
 		default:
+			AllPoints = GetAllSpawnLocations();
 			break;
 		}
 	}

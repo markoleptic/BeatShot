@@ -407,10 +407,6 @@ struct FBS_SpatialConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	ETargetDistributionMethod TargetDistributionMethod;
 
-	/** Whether or not to spawn targets only at headshot height */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	bool bUseHeadshotHeight;
-
 	/** Whether or not to move the targets forward towards the player after spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	bool bMoveTargetsForward;
@@ -435,7 +431,7 @@ struct FBS_SpatialConfig
 	FVector GenerateSpawnBoxLocation() const
 	{
 		FVector SpawnBoxCenter = DefaultTargetSpawnerLocation;
-		if (bUseHeadshotHeight)
+		if (TargetDistributionMethod == ETargetDistributionMethod::HeadshotHeightOnly)
 		{
 			SpawnBoxCenter.Z = HeadshotHeight;
 		}
@@ -449,7 +445,7 @@ struct FBS_SpatialConfig
 	/** Returns the actual BoxBounds that the TargetSpawner sets its BoxBounds to */
 	FVector GenerateTargetSpawnerBoxBounds() const
 	{
-		if (bUseHeadshotHeight)
+		if (TargetDistributionMethod == ETargetDistributionMethod::HeadshotHeightOnly)
 		{
 			return FVector(0.f, BoxBounds.Y / 2.f, 1.f);
 		}
@@ -460,7 +456,6 @@ struct FBS_SpatialConfig
 	{
 		BoundsScalingMethod = EBoundsScalingMethod::None;
 		TargetDistributionMethod = ETargetDistributionMethod::None;
-		bUseHeadshotHeight = false;
 		bMoveTargetsForward = false;
 		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
 		FloorDistance = DistanceFromFloor;

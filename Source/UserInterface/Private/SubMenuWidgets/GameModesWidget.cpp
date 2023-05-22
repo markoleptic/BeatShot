@@ -115,7 +115,6 @@ void UGameModesWidget::NativeConstruct()
 	}
 	
 	PopulateGameModeOptions(DefaultMultiBeatMode);
-	DefiningConfig->ComboBox_GameModeName->SetSelectedOption(UEnum::GetDisplayValueAsText(DefaultMultiBeatMode.DefiningConfig.BaseGameMode).ToString());
 }
 
 void UGameModesWidget::BindAllDelegates()

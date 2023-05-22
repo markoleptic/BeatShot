@@ -8,6 +8,8 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "GameModesWidget_SpatialConfig.generated.h"
 
+class UBSComboBoxString;
+class UBSComboBoxEntry;
 class UBSHorizontalBox;
 class UTooltipImage;
 class UEditableTextBox;
@@ -32,12 +34,12 @@ public:
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UCheckBox* CheckBox_HeadShotOnly;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UCheckBox* CheckBox_ForwardSpread;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UComboBoxString* ComboBox_BoundsScalingMethod;
+	UBSComboBoxString* ComboBox_BoundsScalingMethod;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
+	UBSComboBoxString* ComboBox_TargetDistributionMethod;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_MinTargetDistance;
@@ -46,9 +48,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_ForwardSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UBSHorizontalBox* BSBox_SpreadType;
+	UBSHorizontalBox* BSBox_BoundsScalingMethod;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
-	UBSHorizontalBox* BSBox_HeadShotOnly;
+	UBSHorizontalBox* BSBox_TargetDistributionMethod;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UBSHorizontalBox* BSBox_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
@@ -77,9 +79,9 @@ protected:
 	UEditableTextBox* Value_ForwardSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Spread")
 	UEditableTextBox* Value_FloorDistance;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* QMark_HeadshotHeight;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tooltip")
+	TSubclassOf<UBSComboBoxEntry> ComboboxEntryWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
@@ -88,9 +90,9 @@ protected:
 	UTooltipImage* QMark_MinDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_BoundsScalingMethod;
-
-	UFUNCTION()
-	void OnCheckStateChanged_HeadShotOnly(const bool bHeadshotOnly);
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* QMark_TargetDistributionMethod;
+	
 	UFUNCTION()
 	void OnSliderChanged_FloorDistance(const float NewFloorDistance);
 	UFUNCTION()
@@ -113,7 +115,22 @@ protected:
 	void OnSliderChanged_ForwardSpread(const float NewForwardSpread);
 	UFUNCTION()
 	void OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnSelectionChanged_BoundsScalingMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetDistributionMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 
-	/** Returns the EBoundsScalingMethod corresponding to the BoundsScalingMethod string */
-	EBoundsScalingMethod GetBoundsScalingMethod() const;
+	UFUNCTION()
+	UWidget* OnGenerateWidgetEvent_BoundsScalingMethod(FString Method);
+	UFUNCTION()
+	UWidget* OnSelectionChangedGenerateWidgetEvent_BoundsScalingMethod(FString Method);
+
+	UFUNCTION()
+	UWidget* OnGenerateWidgetEvent_TargetDistributionMethod(FString Method);
+	UFUNCTION()
+	UWidget* OnSelectionChangedGenerateWidgetEvent_TargetDistributionMethod(FString Method);
+
+	/** A very gross way to not show the tooltip image for the selected item widget */
+	bool bHideTooltipImage_BoundsScalingMethod = false;
+	bool bHideTooltipImage_TargetDistributionMethod  = false;
 };

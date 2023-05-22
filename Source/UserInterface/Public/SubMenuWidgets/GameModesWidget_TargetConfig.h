@@ -8,6 +8,8 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "GameModesWidget_TargetConfig.generated.h"
 
+class UBSComboBoxEntry;
+class UBSComboBoxString;
 class UBSHorizontalBox;
 class UDoubleSyncedSliderAndTextBox;
 class UCheckBox;
@@ -59,10 +61,12 @@ protected:
 	UEditableTextBox* Value_SpawnBeatDelay;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
-	UComboBoxString* ComboBox_LifetimeTargetScale;
+	UBSComboBoxString* ComboBox_LifetimeTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
-	UComboBoxString* ComboBox_ConsecutiveTargetScale;
+	UBSComboBoxString* ComboBox_ConsecutiveTargetScale;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Tooltip")
+	TSubclassOf<UBSComboBoxEntry> ComboboxEntryWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_Lifespan;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
@@ -92,4 +96,18 @@ protected:
 	void OnSelectionChanged_ConsecutiveTargetScale(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 
 	const FText NewLineDelimit = FText::FromString("\n");
+
+	UFUNCTION()
+	UWidget* OnGenerateWidgetEvent_ConsecutiveTargetScale(FString Method);
+	UFUNCTION()
+	UWidget* OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale(FString Method);
+
+	UFUNCTION()
+	UWidget* OnGenerateWidgetEvent_LifetimeTargetScale(FString Method);
+	UFUNCTION()
+	UWidget* OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale(FString Method);
+
+	/** A very gross way to not show the tooltip image for the selected item widget */
+	bool bHideTooltipImage_ConsecutiveTargetScale = false;
+	bool bHideTooltipImage_LifetimeTargetScale = false;
 };

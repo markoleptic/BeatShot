@@ -47,11 +47,13 @@ enum class ETargetDistributionMethod : uint8
 	/** Used if not applicable to a game mode */
 	None UMETA(DisplayName="None"),
 	/** Only spawns targets on the edges of the bounding box */
+	HeadshotHeightOnly UMETA(DisplayName="Headshot Height Only"),
+	/** Only spawns targets on the edges of the bounding box */
 	EdgeOnly UMETA(DisplayName="Edge Only"),
 	/** Spawns targets anywhere in the bounding box */
 	FullRange UMETA(DisplayName="Full Range"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionMethod, ETargetDistributionMethod::None, ETargetDistributionMethod::FullRange);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionMethod, ETargetDistributionMethod::HeadshotHeightOnly, ETargetDistributionMethod::FullRange);
 
 /** The method to handle changing target scale over it's lifetime */
 UENUM()
