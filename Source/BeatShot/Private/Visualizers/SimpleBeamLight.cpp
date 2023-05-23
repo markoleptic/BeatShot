@@ -12,7 +12,6 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/TimelineComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 
 using namespace Constants;
 

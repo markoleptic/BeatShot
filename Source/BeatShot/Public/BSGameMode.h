@@ -55,10 +55,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
 	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
 
-	/** The FloatingTextActor class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
-	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
-
 	/** The VisualizerManager class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
 	TSubclassOf<AVisualizerManager> VisualizerManagerClass;

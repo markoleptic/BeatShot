@@ -3,16 +3,14 @@
 #include "BSGameMode.h"
 #include "AudioAnalyzerManager.h"
 #include "Visualizers/VisualizerManager.h"
-#include "BSCharacter.h"
+#include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
-#include "BSPlayerController.h"
-#include "FloatingTextActor.h"
-#include "TargetSpawner.h"
+#include "Player/BSPlayerController.h"
+#include "Target/TargetSpawner.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
-#include "GameplayAbility/BSGameplayAbility_TrackGun.h"
+#include "AbilitySystem/BSGameplayAbility_TrackGun.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetTextLibrary.h"
 
 DEFINE_LOG_CATEGORY(LogAudioData);
 
@@ -719,9 +717,9 @@ void ABSGameMode::UpdateStreak(const int32 Streak, const FVector& Location)
 	{
 		if (CombatTextFrequency != 0 && Streak % CombatTextFrequency == 0)
 		{
-			if (AFloatingTextActor* FloatingTextActor = GetWorld()->SpawnActor<AFloatingTextActor>(FloatingTextActorClass, Location, FRotator()))
+			for (ABSPlayerController* Controller : Controllers)
 			{
-				FloatingTextActor->Initialize(UKismetTextLibrary::Conv_IntToText(Streak));
+				Controller->ShowCombatText(Streak, Location);
 			}
 		}
 	}

@@ -13,13 +13,76 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCheatManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSCheatManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RLBase.cpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/ReinforcementLearningComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/ReinforcementLearningComponent.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSCheatManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSCheatManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RLBase.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultPlayerController.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_DefaultPlayerController.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_FloatingText.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_FloatingText.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSAssetManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/System/BSAssetManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSAssetManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/System/BSAssetManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSAnimInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Character/BSAnimInstance.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Character/BSCharacter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCharacterMovementComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Character/BSCharacterMovementComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSCheatManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSCheatManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSHealthComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Character/BSHealthComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSInputComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Input/BSInputComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSInputConfig.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Input/BSInputConfig.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSMoveStepSound.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Character/BSMoveStepSound.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSPlayerController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSPlayerState.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerState.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSRecoilComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Character/BSRecoilComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentInstance.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentManagerComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Equipment/BSEquipmentManagerComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/AttributeSets/BSAttributeSetBase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/AttributeSets/BSAttributeSetBase.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSAbilitySet.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/BSAbilitySet.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSAbilitySystemComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/BSAbilitySystemComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSDamageExecCalc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/BSDamageExecCalc.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSGameplayAbility.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/BSGameplayAbility.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSGameplayAbility_FireGun.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/BSGameplayAbility_FireGun.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/BSGameplayAbility_TrackGun.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/BSGameplayAbility_TrackGun.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/Tasks/BSAbilityTask_AimToTarget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/Tasks/BSAbilityTask_AimToTarget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/Tasks/BSAbilityTask_MontageEventWait.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/Tasks/BSAbilityTask_MontageEventWait.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayAbility/Tasks/BSAbilityTask_TickTrace.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/AbilitySystem/Tasks/BSAbilityTask_TickTrace.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/GameplayTagStack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/System/GameplayTagStack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Projectile.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/MovablePlatform.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/MovablePlatform.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/WallMenu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/WallMenu.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/ReinforcementLearningComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/ReinforcementLearningComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SphereTarget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/SphereTarget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/SteamManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/System/SteamManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/TargetSpawner.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetSpawner.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/SimpleBeamLight.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/SimpleBeamLight.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualGrid.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSAnimInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Character/BSAnimInstance.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Character/BSCharacter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSCharacterMovementComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Character/BSCharacterMovementComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSCheatManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Player/BSCheatManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSHealthComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Character/BSHealthComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSInputComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Input/BSInputComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSInputConfig.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Input/BSInputConfig.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSMoveStepSound.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Character/BSMoveStepSound.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSPlayerController.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Player/BSPlayerController.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSPlayerState.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Player/BSPlayerState.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSRecoilComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Character/BSRecoilComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/BSEquipmentManagerComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Equipment/BSEquipmentManagerComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/AttributeSets/BSAttributeSetBase.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/AttributeSets/BSAttributeSetBase.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSAbilitySet.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSAbilitySet.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSAbilitySystemComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSAbilitySystemComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSDamageExecCalc.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSDamageExecCalc.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSGameplayAbility.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility_FireGun.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSGameplayAbility_FireGun.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility_TrackGun.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSGameplayAbility_TrackGun.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/Tasks/BSAbilityTask_AimToTarget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/Tasks/BSAbilityTask_AimToTarget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/Tasks/BSAbilityTask_MontageEventWait.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/Tasks/BSAbilityTask_MontageEventWait.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/Tasks/BSAbilityTask_TickTrace.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/Tasks/BSAbilityTask_TickTrace.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/GameplayTagStack.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/System/GameplayTagStack.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Inventory/BSInventoryItemInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Inventory/BSInventoryItemInstance.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Projectile.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/ReinforcementLearningComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/ReinforcementLearningComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SphereTarget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/SphereTarget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/SteamManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/System/SteamManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/TargetSpawner.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/TargetSpawner.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualGrid.h" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,6 +110,7 @@
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Developer/RigVMDeveloper/Private/RigVMModel/RigVMController.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Runtime/Engine/Private/Character.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Runtime/Engine/Private/Components/CharacterMovementComponent.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/Runtime/Engine/Private/UnrealEngine.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/Boost.Build.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/crc.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/date_time/date_facet.hpp" root0="SKIP_HIGHLIGHTING" />
@@ -62,23 +126,23 @@
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.1/Engine/Source/ThirdParty/Boost/boost-1_70_0/include/boost/type_traits/detail/config.hpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio/include/miniaudio.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot.Target.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSAssetManager.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSAssetManager.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/BSCharacter.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/BSPlayerController.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/Character/BSCharacter.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerController.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/WallMenu.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/BSCharacter.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/BSCharacterMovementComponent.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Private/System/BSAssetManager.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSAbilitySet.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSAbilitySystemComponent.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/AbilitySystem/BSGameplayAbility.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/BSPlayerState.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSAbilitySet.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSAbilitySystemComponent.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/GameplayAbility/BSGameplayAbility.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/Character/BSCharacter.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/Character/BSCharacterMovementComponent.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/Player/BSPlayerState.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/RangeLevelScriptActor.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/WallMenu.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/System/BSAssetManager.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/UserInterface/Private/UserInterfaceModule.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -115,7 +179,7 @@
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.general&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.editor&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
   &quot;keyToStringList&quot;: {
@@ -457,7 +521,9 @@
       <workItem from="1684554940468" duration="280000" />
       <workItem from="1684612281422" duration="3796000" />
       <workItem from="1684708647574" duration="16976000" />
-      <workItem from="1684731581873" duration="4271000" />
+      <workItem from="1684731581873" duration="4324000" />
+      <workItem from="1684780285275" duration="15217000" />
+      <workItem from="1684805076684" duration="8797000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

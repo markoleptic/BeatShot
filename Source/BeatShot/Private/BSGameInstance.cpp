@@ -3,8 +3,8 @@
 
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
-#include "BSPlayerController.h"
-#include "SteamManager.h"
+#include "Player/BSPlayerController.h"
+#include "System/SteamManager.h"
 #include "Kismet/GameplayStatics.h"
 
 void UBSGameInstance::Init()

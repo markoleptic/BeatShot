@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "GameplayTagStack.h"
+#include "System/GameplayTagStack.h"
 #include "UObject/Object.h"
 #include "BSInventoryItemInstance.generated.h"
 

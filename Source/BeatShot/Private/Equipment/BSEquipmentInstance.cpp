@@ -3,7 +3,7 @@
 
 #include "Equipment/BSEquipmentInstance.h"
 
-#include "BSCharacter.h"
+#include "Character/BSCharacter.h"
 #include "Equipment/BSEquipmentDefinition.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/EngineTypes.h"

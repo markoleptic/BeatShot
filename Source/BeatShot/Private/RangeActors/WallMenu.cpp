@@ -2,7 +2,7 @@
 
 
 #include "RangeActors/WallMenu.h"
-#include "BSCharacter.h"
+#include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
