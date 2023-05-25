@@ -10,7 +10,7 @@
 class UEditableTextBox;
 class UTextBlock;
 class USlider;
-class UButton;
+class UBSButton;
 class USavedTextWidget;
 
 /** Settings category widget holding Sensitivity settings */
@@ -35,7 +35,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
 	USlider* Slider_Sensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* Button_Save;
+	UBSButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 
@@ -50,4 +50,6 @@ protected:
 	/** Saves the Sensitivity Settings */
 	UFUNCTION()
 	void OnButtonClicked_Save();
+	UFUNCTION()
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 };

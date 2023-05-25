@@ -10,27 +10,40 @@ void UBSButton::NativePreConstruct()
 {
 	Super::NativePreConstruct();
 
-	TextBlock->SetText(ButtonText);
-	TextBlock->SetFont(DefaultFontInfo);
-	DynamicImageMaterial = ImageMaterial->GetDynamicMaterial();
-	DynamicImageMaterial->SetScalarParameterValue(HoveredScalarParameterName, 0.f);
-	DynamicImageMaterial->SetScalarParameterValue(PressedScalarParameterName, 0.f);
+	if (TextBlock)
+	{
+		TextBlock->SetText(ButtonText);
+		TextBlock->SetFont(DefaultFontInfo);
+	}
+	if (ImageMaterial)
+	{
+		DynamicImageMaterial = ImageMaterial->GetDynamicMaterial();
+		DynamicImageMaterial->SetScalarParameterValue(HoveredScalarParameterName, 0.f);
+		DynamicImageMaterial->SetScalarParameterValue(PressedScalarParameterName, 0.f);
+	}
 }
 
 void UBSButton::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	TextBlock->SetText(ButtonText);
-	TextBlock->SetFont(DefaultFontInfo);
-	DynamicImageMaterial = ImageMaterial->GetDynamicMaterial();
-	DynamicImageMaterial->SetScalarParameterValue(HoveredScalarParameterName, 0.f);
-	DynamicImageMaterial->SetScalarParameterValue(PressedScalarParameterName, 0.f);
-	
-	Button->OnPressed.AddDynamic(this, &UBSButton::OnPressed_Button);
-	Button->OnHovered.AddDynamic(this, &UBSButton::OnHovered_Button);
-	Button->OnUnhovered.AddDynamic(this, &UBSButton::OnUnhovered_Button);
 
+	if (TextBlock)
+	{
+		TextBlock->SetText(ButtonText);
+		TextBlock->SetFont(DefaultFontInfo);
+	}
+	if (ImageMaterial)
+	{
+		DynamicImageMaterial = ImageMaterial->GetDynamicMaterial();
+		DynamicImageMaterial->SetScalarParameterValue(HoveredScalarParameterName, 0.f);
+		DynamicImageMaterial->SetScalarParameterValue(PressedScalarParameterName, 0.f);
+	}
+	if (Button)
+	{
+		Button->OnPressed.AddDynamic(this, &UBSButton::OnPressed_Button);
+		Button->OnHovered.AddDynamic(this, &UBSButton::OnHovered_Button);
+		Button->OnUnhovered.AddDynamic(this, &UBSButton::OnUnhovered_Button);
+	}
 	if (bRestoreClickedButtonState)
 	{
 		OnAnimFinished_OnPressedEvent.BindDynamic(this, &ThisClass::OnAnimFinished_OnPressed);
@@ -60,7 +73,7 @@ void UBSButton::SetActive()
 	OnPressed_Button();
 }
 
-void UBSButton::SetDefaults(UBSButton* NextButton, const uint8 InEnum)
+void UBSButton::SetDefaults(const uint8 InEnum, UBSButton* NextButton)
 {
 	Next = NextButton;
 	EnumValue = InEnum;

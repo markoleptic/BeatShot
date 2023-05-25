@@ -2,12 +2,13 @@
 
 
 #include "SubMenuWidgets/SettingsMenuWidget_Sensitivity.h"
-#include "Components/Button.h"
+#include "BSWidgetInterface.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "SaveGamePlayerSettings.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
 void USettingsMenuWidget_Sensitivity::NativeConstruct()
@@ -17,7 +18,9 @@ void USettingsMenuWidget_Sensitivity::NativeConstruct()
 	Value_NewSensitivity->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnValueChanged_NewSensitivity);
 	Value_NewSensitivityCsgo->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnValueChanged_NewSensitivityCsgo);
 	Slider_Sensitivity->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnSliderChanged_Sensitivity);
-	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_Sensitivity::OnButtonClicked_Save);
+
+	Button_Save->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Save->SetDefaults(static_cast<uint8>(ESettingButtonType::Save));
 
 	Sensitivity = LoadPlayerSettings().User.Sensitivity;
 	Slider_Sensitivity->SetValue(Sensitivity);
@@ -32,6 +35,18 @@ void USettingsMenuWidget_Sensitivity::OnButtonClicked_Save()
 	SavePlayerSettings(Settings);
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_Sensitivity"));
 	SavedTextWidget->PlayFadeInFadeOut();
+}
+
+void USettingsMenuWidget_Sensitivity::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	switch (static_cast<ESettingButtonType>(Button->GetEnumValue()))
+	{
+	case ESettingButtonType::Save:
+		OnButtonClicked_Save();
+		break;
+	default:
+		break;
+	}
 }
 
 void USettingsMenuWidget_Sensitivity::OnValueChanged_NewSensitivity(const FText& NewValue, ETextCommit::Type CommitType)

@@ -14,7 +14,7 @@ class UCrossHairWidget;
 class USlider;
 class UImage;
 class UEditableTextBox;
-class UButton;
+class UBSButton;
 
 /** Settings category widget holding CrossHair settings */
 UCLASS()
@@ -59,11 +59,11 @@ protected:
 	USlider* Slider_OutlineWidth;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_Reset;
+	UBSButton* Button_Reset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_Revert;
+	UBSButton* Button_Revert;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_Save;
+	UBSButton* Button_Save;
 
 private:
 	UFUNCTION()
@@ -95,7 +95,9 @@ private:
 	UFUNCTION()
 	void OnButtonClicked_Revert();
 	UFUNCTION()
-	void OnOnButtonClicked_Save();
+	void OnButtonClicked_Save();
+	UFUNCTION()
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);

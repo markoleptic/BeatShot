@@ -6,7 +6,6 @@
 #include "GlobalConstants.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/WidgetSwitcher.h"
-#include "Components/Button.h"
 #include "Components/VerticalBox.h"
 #include "Components/Border.h"
 #include "Components/ComboBoxString.h"
@@ -48,14 +47,14 @@ void UGameModesWidget::NativeConstruct()
 	}
 	
 	/* Default Game Mode widgets */
-	Button_NormalDifficulty->SetDefaults( Button_HardDifficulty, static_cast<uint8>(EGameModeDifficulty::Normal));
-	Button_HardDifficulty->SetDefaults(Button_DeathDifficulty, static_cast<uint8>(EGameModeDifficulty::Hard));
-	Button_DeathDifficulty->SetDefaults(Button_NormalDifficulty, static_cast<uint8>(EGameModeDifficulty::Death));
+	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
+	Button_HardDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Hard), Button_DeathDifficulty);
+	Button_DeathDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Death), Button_NormalDifficulty);
 
-	Button_BeatGrid->SetDefaults(Button_BeatTrack, static_cast<uint8>(EBaseGameMode::BeatGrid));
-	Button_BeatTrack->SetDefaults(Button_MultiBeat, static_cast<uint8>(EBaseGameMode::BeatTrack));
-	Button_MultiBeat->SetDefaults(Button_SingleBeat, static_cast<uint8>(EBaseGameMode::MultiBeat));
-	Button_SingleBeat->SetDefaults(Button_BeatGrid, static_cast<uint8>(EBaseGameMode::SingleBeat));
+	Button_BeatGrid->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatGrid), Button_BeatTrack);
+	Button_BeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatTrack), Button_MultiBeat);
+	Button_MultiBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::MultiBeat), Button_SingleBeat);
+	Button_SingleBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::SingleBeat), Button_BeatGrid);
 
 	MenuButton_DefaultGameModes->SetDefaults(Box_DefaultGameModes, MenuButton_CustomGameModes);
 	MenuButton_CustomGameModes->SetDefaults(Box_CustomGameModes, MenuButton_DefaultGameModes);
@@ -112,17 +111,17 @@ void UGameModesWidget::NativeConstruct()
 
 void UGameModesWidget::BindAllDelegates()
 {
-	MenuButton_DefaultGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	MenuButton_CustomGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_DefaultGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_MenuButton);
+	MenuButton_CustomGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_MenuButton);
 	
-	Button_CustomizeFromStandard->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomizeFromStandard);
-	Button_PlayFromStandard->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_PlayFromStandard);
-	Button_SaveCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustom);
-	Button_SaveCustomAndStart->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustomAndStart);
-	Button_StartCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_StartCustom);
-	Button_StartWithoutSaving->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_StartWithoutSaving);
-	Button_RemoveAllCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveAllCustom);
-	Button_RemoveSelectedCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveSelectedCustom);
+	Button_CustomizeFromStandard->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_PlayFromStandard->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_SaveCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_SaveCustomAndStart->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_StartCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_StartWithoutSaving->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_RemoveAllCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_RemoveSelectedCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	
 	Button_NormalDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
 	Button_HardDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
@@ -164,14 +163,45 @@ void UGameModesWidget::OnButtonClicked_Difficulty(const UBSButton* GameModeButto
 	Button_PlayFromStandard->SetIsEnabled(true);
 }
 
-void UGameModesWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* Button)
 {
-	MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
+	if (Button == Button_CustomizeFromStandard)
+	{
+		MenuButton_CustomGameModes->SetActive();
+	}
+	else if (Button == Button_PlayFromStandard)
+	{
+		ShowAudioFormatSelect(true);
+	}
+	else if (Button == Button_SaveCustom)
+	{
+		OnButtonClicked_SaveCustom();
+	}
+	else if (Button == Button_SaveCustomAndStart)
+	{
+		OnButtonClicked_SaveCustomAndStart();
+	}
+	else if (Button == Button_StartCustom)
+	{
+		OnButtonClicked_StartCustom();
+	}
+	else if (Button == Button_StartWithoutSaving)
+	{
+		ShowAudioFormatSelect(false);
+	}
+	else if (Button == Button_RemoveAllCustom)
+	{
+		OnButtonClicked_RemoveAllCustom();
+	}
+	else if (Button == Button_RemoveSelectedCustom)
+	{
+		OnButtonClicked_RemoveSelectedCustom();
+	}
 }
 
-void UGameModesWidget::OnButtonClicked_CustomizeFromStandard()
+void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 {
-	MenuButton_CustomGameModes->SetActive();
+	MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
 
 void UGameModesWidget::OnButtonClicked_SaveCustom()
@@ -191,11 +221,6 @@ void UGameModesWidget::OnButtonClicked_SaveCustom()
 	DefiningConfig->PopulateGameModeNameComboBoxAfterSave();
 }
 
-void UGameModesWidget::OnButtonClicked_StartWithoutSaving()
-{
-	ShowAudioFormatSelect(false);
-}
-
 void UGameModesWidget::OnButtonClicked_SaveCustomAndStart()
 {
 	if (IsPresetGameMode(DefiningConfig->TextBox_CustomGameModeName->GetText().ToString()))
@@ -212,11 +237,6 @@ void UGameModesWidget::OnButtonClicked_SaveCustomAndStart()
 	SaveCustomGameModeAndShowSavedText(GetCustomGameModeOptions());
 	DefiningConfig->PopulateGameModeNameComboBoxAfterSave();
 	ShowAudioFormatSelect(false);
-}
-
-void UGameModesWidget::OnButtonClicked_PlayFromStandard()
-{
-	ShowAudioFormatSelect(true);
 }
 
 void UGameModesWidget::OnButtonClicked_StartCustom()

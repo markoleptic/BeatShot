@@ -17,7 +17,7 @@ class UBSVerticalBox;
 class UPopupMessageWidget;
 class USavedTextWidget;
 class UVerticalBox;
-class UButton;
+class UBSButton;
 
 
 /** Settings category widget holding Video and Sound settings */
@@ -27,10 +27,14 @@ class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCat
 	GENERATED_BODY()
 
 	friend class USettingsMenuWidget;
+	
 	virtual void NativeConstruct() override;
 	virtual void InitSettingCategoryWidget() override;
-	
+
+	/** Populates the settings menu with InVideoAndSoundSettings */
 	void InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
+
+	/** Returns the video and sound settings that are currently populated in the menu */
 	FPlayerSettings_VideoAndSound GetVideoAndSoundSettings() const;
 	
 	/** Returns OnPlayerSettingsChangedDelegate_VideoAndSound, the delegate that is broadcast when this class saves Video and Sound settings */
@@ -44,10 +48,11 @@ protected:
 	UPopupMessageWidget* PopupMessageWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* Button_Save;
+	UBSButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* Button_Reset;
+	UBSButton* Button_Reset;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* BSBox_Video;
@@ -116,6 +121,27 @@ protected:
 	USlider* Slider_MenuSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
 	USlider* Slider_MusicSound;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+	UEditableTextBox* Value_FrameLimitMenu;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+	UEditableTextBox* Value_FrameLimitGame;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+	UComboBoxString* ComboBox_Resolution;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+	UComboBoxString* ComboBox_WindowMode;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video | NVIDIA")
+	UComboBoxString* ComboBox_Reflex;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UComboBoxString* ComboBox_DLSS;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UComboBoxString* ComboBox_NIS;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+	UCheckBox* CheckBox_VSyncEnabled;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+	UCheckBox* CheckBox_FPSCounter;
 
 	#pragma region Quality
 	
@@ -220,47 +246,33 @@ protected:
 
 #pragma endregion
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UEditableTextBox* Value_FrameLimitMenu;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UEditableTextBox* Value_FrameLimitGame;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UComboBoxString* ComboBox_Resolution;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UComboBoxString* ComboBox_WindowMode;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UCheckBox* CheckBox_VSyncEnabled;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UCheckBox* CheckBox_FPSCounter;
-	
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ComboBox_Reflex;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ComboBox_DLSS;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ComboBox_NIS;
-
 private:
-	
 	/** Adds the ConfirmVideoSettingsMessage to viewport, and starts the RevertVideoSettingsTimer */
 	UFUNCTION()
 	void ShowConfirmVideoSettingsMessage();
 
 	/** Stops the RevertVideoSettingsTimer and applies the video settings and closes the ConfirmVideoSettingsMessage */
 	UFUNCTION()
-	void OnButtonClicked_ConfirmVideoSettings();
+	void OnButtonPressed_ConfirmVideoSettings();
 
 	/** Reverts the video settings and closes the ConfirmVideoSettingsMessage */
 	UFUNCTION()
-	void OnButtonClicked_CancelVideoSettings();
+	void OnButtonPressed_CancelVideoSettings();
 
 	/** Saves the Video and Sound Settings */
 	UFUNCTION()
-	void OnButtonClicked_Save();
+	void OnButtonPressed_Save();
 
 	/** Reset Video and Sound Settings to defaults and repopulate in Settings Menu. Does not automatically save */
 	UFUNCTION()
-	void OnButtonClicked_Reset();
+	void OnButtonPressed_Reset();
+
+	UFUNCTION()
+	void OnBSButtonPressed_SaveReset(const UBSButton* Button);
+	
+	/** Changes video settings quality depending on input button */
+	UFUNCTION()
+	void OnBSButtonPressed_VideoQuality(const UBSButton* Button);
 
 	UFUNCTION()
 	void OnSliderChanged_GlobalSound(const float NewGlobalSound);
@@ -268,42 +280,52 @@ private:
 	void OnSliderChanged_MenuSound(const float NewMenuSound);
 	UFUNCTION()
 	void OnSliderChanged_MusicSound(const float NewMusicSound);
+	
 	UFUNCTION()
 	void OnValueChanged_GlobalSound(const FText& NewGlobalSound, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnValueChanged_MenuSound(const FText& NewMenuSound, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnValueChanged_MusicSound(const FText& NewMusicSound, ETextCommit::Type CommitType);
-
-	/** Changes video settings quality depending on input button */
-	UFUNCTION()
-	void OnButtonClicked_VideoQuality(const UVideoSettingButton* ClickedButton);
-	
-	/** Returns the associated button given the quality and SettingType */
-	UFUNCTION()
-	UVideoSettingButton* FindVideoSettingButton(const int32 Quality, const EVideoSettingType& SettingType) const;
-	UFUNCTION()
-	void OnSelectionChanged_WindowMode(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_Resolution(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnValueChanged_FrameLimitMenu(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnValueChanged_FrameLimitGame(const FText& NewValue, ETextCommit::Type CommitType);
+
 	UFUNCTION()
-	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
+	void OnSelectionChanged_WindowMode(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnCheckStateChanged_FPSCounter(const bool bIsChecked);
+	void OnSelectionChanged_Resolution(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_Reflex(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_DLSS(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_NIS(const FString SelectedOption, ESelectInfo::Type SelectionType);
-
+	
+	UFUNCTION()
+	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_FPSCounter(const bool bIsChecked);
+	
 	/** Function bound to RevertVideoSettingsTimer_UpdateSecond */
 	UFUNCTION()
 	void RevertVideoSettingsTimerCallback();
+	
+	/** Clears and repopulates the ComboBox_Resolution based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
+	void PopulateResolutionComboBox();
+
+	/** Returns the current DLSS mode */
+	UDLSSMode GetDLSSMode() const;
+
+	/** Returns the current NIS mode */
+	UNISMode GetNISMode() const;
+
+	/** Returns the current reflex mode */
+	EBudgetReflexMode GetReflexMode() const;
+	
+	/** Returns the associated button given the quality and SettingType */
+	UVideoSettingButton* FindVideoSettingButton(const int32 Quality, const EVideoSettingType& SettingType) const;
 
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
@@ -315,13 +337,6 @@ protected:
 	void SetReflexMode(const EBudgetReflexMode Mode);
 
 private:
-	/** Clears and repopulates the ComboBox_Resolution based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
-	void PopulateResolutionComboBox();
-	
-	UDLSSMode GetDLSSMode() const;
-	UNISMode GetNISMode() const;
-	EBudgetReflexMode GetReflexMode() const;
-
 	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
 	FIntPoint LastConfirmedResolution;
 

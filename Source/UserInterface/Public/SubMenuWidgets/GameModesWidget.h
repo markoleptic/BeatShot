@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GlobalDelegates.h"
 #include "SaveLoadInterface.h"
-#include "WidgetComponents/GameModeButton.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
@@ -19,15 +18,14 @@ class UAudioSelectWidget;
 class UHorizontalBox;
 class USavedTextWidget;
 class UPopupMessageWidget;
-class UMenuButton;
 class UVerticalBox;
-class UButton;
 class UBorder;
 class UEditableTextBox;
 class UWidgetSwitcher;
 class UComboBoxString;
 class USlider;
 class UCheckBox;
+class UMenuButton;
 class UBSButton;
 
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
@@ -104,21 +102,21 @@ protected:
 	UMenuButton* MenuButton_CustomGameModes;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* Button_SaveCustom;
+	UBSButton* Button_SaveCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* Button_StartWithoutSaving;
+	UBSButton* Button_StartWithoutSaving;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* Button_SaveCustomAndStart;
+	UBSButton* Button_SaveCustomAndStart;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* Button_StartCustom;
+	UBSButton* Button_StartCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* Button_RemoveSelectedCustom;
+	UBSButton* Button_RemoveSelectedCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
-	UButton* Button_RemoveAllCustom;
+	UBSButton* Button_RemoveAllCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Navigation")
-	UButton* Button_CustomizeFromStandard;
+	UBSButton* Button_CustomizeFromStandard;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Navigation")
-	UButton* Button_PlayFromStandard;
+	UBSButton* Button_PlayFromStandard;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Spread")
 	UBorder* Border_DifficultySelect;
@@ -166,27 +164,18 @@ protected:
 	bool CheckForExistingAndDisplayOverwriteMessage(const bool bStartGameAfter);
 
 	UFUNCTION()
-	void OnButtonClicked_BSButton(const UBSButton* Button);
-	
-	/** Switches to CustomGameModes and populates the CustomGameModeOptions with what's selected in DefaultGameModes */
-	UFUNCTION(Category = "Navigation")
-	void OnButtonClicked_CustomizeFromStandard();
+	void OnButtonClicked_CustomGameModeButton(const UBSButton* Button);
+
+	UFUNCTION()
+	void OnButtonClicked_MenuButton(const UBSButton* Button);
 
 	/** Saves the custom game mode to slot, repopulates ComboBox_GameModeName, and selects the new custom game mode */
 	UFUNCTION(Category = "SaveStart")
 	void OnButtonClicked_SaveCustom();
 
-	/** Calls ShowAudioFormatSelect */
-	UFUNCTION(Category = "SaveStart")
-	void OnButtonClicked_StartWithoutSaving();
-
 	/** Calls CheckForExistingAndDisplayOverwriteMessage, and calls ShowAudioFormatSelect if no existing found */
 	UFUNCTION(Category = "SaveStart")
 	void OnButtonClicked_SaveCustomAndStart();
-
-	/** Calls ShowAudioFormatSelect */
-	UFUNCTION(Category = "SaveStart")
-	void OnButtonClicked_PlayFromStandard();
 
 	/** Calls ShowAudioFormatSelect */
 	UFUNCTION(Category = "SaveStart")

@@ -2,10 +2,8 @@
 
 
 #include "SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.h"
-#include "Components/Button.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
-#include "Components/HorizontalBox.h"
 #include "Components/Slider.h"
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
@@ -22,9 +20,14 @@ void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Button_Reset->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Reset);
-	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Save);
-	Button_SaveAndRestart->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_SaveAndRestart);
+	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Save->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_SaveAndRestart->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+
+	Button_Reset->SetDefaults(static_cast<uint8>(ESettingButtonType::Reset));
+	Button_Save->SetDefaults(static_cast<uint8>(ESettingButtonType::Save));
+	Button_SaveAndRestart->SetDefaults(static_cast<uint8>(ESettingButtonType::SaveAndRestart));
+	
 	ComboBox_NumBandChannels->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels);
 
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
@@ -105,22 +108,25 @@ void USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels(FStri
 	PopulateAASettings();
 }
 
-void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Reset()
+void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	ResetAASettings();
-}
-
-void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_Save()
-{
-	SortAndCheckOverlap();
-}
-
-void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_SaveAndRestart()
-{
-	SortAndCheckOverlap();
-	if (!OnRestartButtonClicked.ExecuteIfBound())
+	switch (static_cast<ESettingButtonType>(Button->GetEnumValue()))
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+	case ESettingButtonType::Save:
+		SortAndCheckOverlap();
+		break;
+	case ESettingButtonType::Reset:
+		ResetAASettings();
+		break;
+	case ESettingButtonType::SaveAndRestart:
+		SortAndCheckOverlap();
+		if (!OnRestartButtonClicked.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("OnRestartButtonClicked not bound."));
+		}
+		break;
+	default:
+		break;
 	}
 }
 

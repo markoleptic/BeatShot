@@ -4,7 +4,6 @@
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "AudioAnalyzerManager.h"
 #include "WidgetComponents/TooltipWidget.h"
-#include "Components/Button.h"
 #include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
@@ -30,8 +29,8 @@ void UAudioSelectWidget::NativeConstruct()
 
 	Button_Start->SetIsEnabled(false);
 	Button_LoadFile->SetIsEnabled(false);
-	Button_CaptureAudio->SetDefaults(Button_AudioFromFile, static_cast<uint8>(EAudioFormat::Capture));
-	Button_AudioFromFile->SetDefaults(Button_CaptureAudio, static_cast<uint8>(EAudioFormat::File));
+	Button_CaptureAudio->SetDefaults(static_cast<uint8>(EAudioFormat::Capture), Button_AudioFromFile);
+	Button_AudioFromFile->SetDefaults(static_cast<uint8>(EAudioFormat::File), Button_CaptureAudio);
 	Button_LoadFile->OnPressedAnimFinished.AddDynamic(this, &ThisClass::OnButtonClicked_LoadFile);
 
 	Button_Start->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonPressed_BSButton);

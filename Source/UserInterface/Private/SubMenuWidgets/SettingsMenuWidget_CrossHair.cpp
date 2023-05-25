@@ -2,12 +2,12 @@
 
 
 #include "SubMenuWidgets/SettingsMenuWidget_CrossHair.h"
-#include "Components/Button.h"
 #include "BSWidgetInterface.h"
 #include "Components/EditableTextBox.h"
 #include "Math/Color.h"
 #include "Components/Slider.h"
 #include "OverlayWidgets/CrossHairWidget.h"
+#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/ColorSelectWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
@@ -15,21 +15,25 @@ void USettingsMenuWidget_CrossHair::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	Value_InnerOffset->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_InnerOffset);
-	Value_LineLength->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_LineLength);
-	Value_LineWidth->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_LineWidth);
-	Value_OutlineOpacity->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_OutlineOpacity);
-	Value_OutlineWidth->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnValueChanged_OutlineWidth);
+	Value_InnerOffset->OnTextCommitted.AddDynamic(this, &ThisClass::OnValueChanged_InnerOffset);
+	Value_LineLength->OnTextCommitted.AddDynamic(this, &ThisClass::OnValueChanged_LineLength);
+	Value_LineWidth->OnTextCommitted.AddDynamic(this, &ThisClass::OnValueChanged_LineWidth);
+	Value_OutlineOpacity->OnTextCommitted.AddDynamic(this, &ThisClass::OnValueChanged_OutlineOpacity);
+	Value_OutlineWidth->OnTextCommitted.AddDynamic(this, &ThisClass::OnValueChanged_OutlineWidth);
 
-	Slider_InnerOffset->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_InnerOffset);
-	Slider_LineLength->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_LineLength);
-	Slider_LineWidth->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_LineWidth);
-	Slider_OutlineOpacity->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineOpacity);
-	Slider_OutlineWidth->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnSliderChanged_OutlineWidth);
+	Slider_InnerOffset->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_InnerOffset);
+	Slider_LineLength->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_LineLength);
+	Slider_LineWidth->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_LineWidth);
+	Slider_OutlineOpacity->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_OutlineOpacity);
+	Slider_OutlineWidth->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_OutlineWidth);
 
-	Button_Reset->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnButtonClicked_Reset);
-	Button_Revert->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnButtonClicked_Revert);
-	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnOnButtonClicked_Save);
+	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Revert->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Save->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
+	Button_Reset->SetDefaults(static_cast<uint8>(ESettingButtonType::Reset));
+	Button_Revert->SetDefaults(static_cast<uint8>(ESettingButtonType::Revert));
+	Button_Save->SetDefaults(static_cast<uint8>(ESettingButtonType::Save));
 
 	ColorSelectWidget->OnColorChanged.BindUFunction(this, "OnColorChanged");
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Save_CrossHair"));
@@ -145,7 +149,7 @@ void USettingsMenuWidget_CrossHair::OnButtonClicked_Revert()
 	SetCrossHairOptions(NewCrossHairSettings);
 }
 
-void USettingsMenuWidget_CrossHair::OnOnButtonClicked_Save()
+void USettingsMenuWidget_CrossHair::OnButtonClicked_Save()
 {
 	/** Load settings again in case the user changed other settings before navigating to crosshair settings */
 	FPlayerSettings_CrossHair Settings;
@@ -158,4 +162,21 @@ void USettingsMenuWidget_CrossHair::OnOnButtonClicked_Save()
 	SavePlayerSettings(Settings);
 	SavedTextWidget->PlayFadeInFadeOut();
 	InitialCrossHairSettings = NewCrossHairSettings;
+}
+
+void USettingsMenuWidget_CrossHair::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	switch (static_cast<ESettingButtonType>(Button->GetEnumValue())) {
+	case ESettingButtonType::Save:
+		OnButtonClicked_Save();
+		break;
+	case ESettingButtonType::Reset:
+		OnButtonClicked_Reset();
+		break;
+	case ESettingButtonType::Revert:
+		OnButtonClicked_Revert();
+		break;
+	default:
+		break;
+	}
 }

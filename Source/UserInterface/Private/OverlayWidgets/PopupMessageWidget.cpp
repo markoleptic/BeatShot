@@ -26,7 +26,7 @@ void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& Messag
 	Button_1->ChangeButtonText(Button1TextInput);
 	if (!Button2TextInput.IsEmpty())
 	{
-		TextBlock_Button2->SetText(Button2TextInput);
+		Button_2->ChangeButtonText(Button2TextInput);
 		Button_2->SetVisibility(ESlateVisibility::Visible);
 	}
 	else

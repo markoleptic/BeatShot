@@ -2,11 +2,11 @@
 
 
 #include "SubMenuWidgets/SettingsMenuWidget_Game.h"
-
-#include "Components/Button.h"
+#include "BSWidgetInterface.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/ColorSelectWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
@@ -18,13 +18,16 @@ void USettingsMenuWidget_Game::NativeConstruct()
 	ColorSelect_PeakTargetColor->OnColorChanged.BindUFunction(this, "OnOnColorChanged_PeakTarget");
 	ColorSelect_EndTargetColor->OnColorChanged.BindUFunction(this, "OnOnColorChanged_EndTarget");
 	ColorSelect_BeatGridInactiveColor->OnColorChanged.BindUFunction(this, "OnColorChanged_BeatGridInactive");
-	Checkbox_UseSeparateOutlineColor->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_Game::CheckStateChanged_UseSeparateOutlineColor);
+	Checkbox_UseSeparateOutlineColor->OnCheckStateChanged.AddDynamic(this, &ThisClass::CheckStateChanged_UseSeparateOutlineColor);
 	ColorSelect_TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnColorChanged_TargetOutline");
-	Value_CombatTextFrequency->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Game::OnValueChanged_CombatTextFrequency);
-	CheckBox_ShowStreakCombatText->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_Game::OnCheckStateChanged_ShowCombatText);
+	Value_CombatTextFrequency->OnTextCommitted.AddDynamic(this, &ThisClass::OnValueChanged_CombatTextFrequency);
+	CheckBox_ShowStreakCombatText->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowCombatText);
 
-	Button_Reset->OnClicked.AddDynamic(this, &USettingsMenuWidget_Game::OnButtonClicked_Reset);
-	Button_Save->OnClicked.AddDynamic(this, &USettingsMenuWidget_Game::OnButtonClicked_Save);
+	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Save->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+
+	Button_Reset->SetDefaults(static_cast<uint8>(ESettingButtonType::Reset));
+	Button_Save->SetDefaults(static_cast<uint8>(ESettingButtonType::Save));
 
 	NewSettings = LoadPlayerSettings().Game;
 
@@ -125,4 +128,19 @@ void USettingsMenuWidget_Game::OnButtonClicked_Reset()
 {
 	NewSettings.ResetToDefault();
 	PopulateSettings();
+}
+
+void USettingsMenuWidget_Game::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	switch (static_cast<ESettingButtonType>(Button->GetEnumValue()))
+	{
+	case ESettingButtonType::Save:
+		OnButtonClicked_Save();
+		break;
+	case ESettingButtonType::Reset:
+		OnButtonClicked_Reset();
+		break;
+	default:
+		break;
+	}
 }

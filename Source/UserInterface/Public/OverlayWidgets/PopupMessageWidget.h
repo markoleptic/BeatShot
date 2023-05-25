@@ -41,10 +41,6 @@ protected:
 	UBSButton* Button_2;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_Button1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_Button2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Title;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Message;

@@ -37,7 +37,7 @@ public:
 	virtual void SetActive();
 
 	/** Create functions like this with additional parameters to store info about the button being pressed. Remember to call SetHasSetDefaults in any child implementations */
-	void SetDefaults(UBSButton* NextButton, const uint8 InEnum);
+	void SetDefaults(const uint8 InEnum, UBSButton* NextButton = nullptr);
 
 	/** Returns the uint8 enum value associated with this button */
 	uint8 GetEnumValue() const { return EnumValue; }

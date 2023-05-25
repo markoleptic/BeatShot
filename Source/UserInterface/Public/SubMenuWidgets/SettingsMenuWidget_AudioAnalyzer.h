@@ -12,7 +12,7 @@
 DECLARE_DELEGATE(FOnRestartButtonClicked);
 
 class USlider;
-class UButton;
+class UBSButton;
 class UEditableTextBox;
 class UVerticalBox;
 class UHorizontalBox;
@@ -72,11 +72,11 @@ protected:
 	UEditableTextBox* Value_TimeWindow;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_Reset;
+	UBSButton* Button_Reset;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_Save;
+	UBSButton* Button_Save;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_SaveAndRestart;
+	UBSButton* Button_SaveAndRestart;
 	
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer AASettings;
@@ -90,11 +90,7 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_NumBandChannels(FString NewNum, ESelectInfo::Type SelectType);
 	UFUNCTION()
-	void OnButtonClicked_Reset();
-	UFUNCTION()
-	void OnButtonClicked_Save();
-	UFUNCTION()
-	void OnButtonClicked_SaveAndRestart();
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 	
 	/** Update values in Settings Menu to match AASettings */
 	UFUNCTION()

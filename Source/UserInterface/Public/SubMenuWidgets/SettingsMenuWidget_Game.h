@@ -9,7 +9,7 @@
 
 class UCheckBox;
 class UEditableTextBox;
-class UButton;
+class UBSButton;
 class UColorSelectWidget;
 class USavedTextWidget;
 
@@ -49,9 +49,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* Button_Save;
+	UBSButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
-	UButton* Button_Reset;
+	UBSButton* Button_Reset;
 
 	UFUNCTION()
 	void OnColorChanged_StartTarget(const FLinearColor& NewColor);
@@ -76,6 +76,8 @@ protected:
 	void OnButtonClicked_Save();
 	UFUNCTION()
 	void OnButtonClicked_Reset();
+	UFUNCTION()
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 	/** The Player Settings that are changed during setting menu interaction */
 	UPROPERTY()

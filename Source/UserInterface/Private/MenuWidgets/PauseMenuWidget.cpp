@@ -14,9 +14,9 @@ void UPauseMenuWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	MenuButton_Resume->SetDefaults(Box_PauseScreen, MenuButton_Settings);
-	MenuButton_Settings->SetDefaults(Box_PauseScreen, MenuButton_FAQ);
-	MenuButton_FAQ->SetDefaults(Box_SettingsMenu, MenuButton_RestartCurrentMode);
-	MenuButton_RestartCurrentMode->SetDefaults(Box_FAQ, MenuButton_Quit);
+	MenuButton_Settings->SetDefaults(Box_SettingsMenu, MenuButton_FAQ);
+	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_RestartCurrentMode);
+	MenuButton_RestartCurrentMode->SetDefaults(Box_PauseScreen, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(Box_PauseScreen, MenuButton_Resume);
 	
 	MenuButton_Resume->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);

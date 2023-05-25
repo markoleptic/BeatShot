@@ -12,56 +12,59 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSButton.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuButton.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSButton.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuButton.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PauseMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PauseMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_AudioFormatSelect.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Login.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Login.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PopupMessage.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PopupMessage.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_QuitMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_QuitMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AASettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AASettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AIConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AIConfig.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_BeatGridConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_BeatGridConfig.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_CrossHairSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_CrossHairSettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_DefiningConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_DefiningConfig.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_FAQ.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_FAQ.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameSettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SensitivitySettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SensitivitySettings.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SettingsMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SettingsMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/NewWidgetBlueprint.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_GameModeButton.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_GameModeButton.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_SlideRightButton.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_SlideRightButton.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualizerBase.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualizerBase.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SpatialConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_SpatialConfig.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_TargetConfig.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_TargetConfig.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_VideoAndSoundSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_VideoAndSoundSettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandChannel.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandChannel.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandThreshold.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BandThreshold.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ColorSelect.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ColorSelect.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_DoubleSyncedSliderAndTextBox.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_DoubleSyncedSliderAndTextBox.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_GameModeButton.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_MenuButton.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_MenuButton.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_SimpleButton.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_SimpleButton.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_VideoSettingButton.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_VideoSettingButton.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PauseMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PauseMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PostGameMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/PostGameMenuWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PopupMessageWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PopupMessageWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/QuitMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/QuitMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/FAQWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/FAQWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_CrossHair.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_CrossHair.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Game.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Game.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Sensitivity.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Sensitivity.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeButton.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeButton.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/MainMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/MainMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PauseMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PauseMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PostGameMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/PostGameMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/LoginWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/LoginWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSButton.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSButton.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeButton.cpp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/VideoSettingButton.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/VideoSettingButton.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/PopupMessageWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/PopupMessageWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/QuitMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/QuitMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/FAQWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/FAQWidget.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/ScoreBrowserWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/ScoreBrowserWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_CrossHair.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_CrossHair.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_Game.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_Game.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_Sensitivity.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_Sensitivity.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSButton.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeButton.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/VideoSettingButton.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/VideoSettingButton.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -504,7 +507,7 @@
       <workItem from="1684780285275" duration="15217000" />
       <workItem from="1684805076684" duration="8797000" />
       <workItem from="1684857785887" duration="21105000" />
-      <workItem from="1684963515637" duration="20115000" />
+      <workItem from="1684963515637" duration="28577000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>
