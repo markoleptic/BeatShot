@@ -16,7 +16,7 @@ class UComboBoxString;
 class UVerticalBox;
 class UHorizontalBox;
 class UPopupMessageWidget;
-class UButton;
+class UBSButton;
 class UBorder;
 class UTextBlock;
 class UTooltipImage;
@@ -34,7 +34,6 @@ class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public ISaveLoa
 protected:
 	virtual UTooltipWidget* ConstructTooltipWidget() override;
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
 
 public:
 	UFUNCTION()
@@ -57,15 +56,15 @@ protected:
 	UTooltipImage* QMark_PlaybackAudio;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_AudioFromFile;
+	UBSButton* Button_AudioFromFile;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_CaptureAudio;
+	UBSButton* Button_CaptureAudio;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_Back;
+	UBSButton* Button_Back;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_Start;
+	UBSButton* Button_Start;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button_LoadFile;
+	UBSButton* Button_LoadFile;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UVerticalBox* Box_AudioDevice;
@@ -98,14 +97,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
 	
-	/** Opens file dialog for song selection. The Implementation version only checks the fullscreen mode,
-	 *  and changes it to Windowed Fullscreen if necessary */
+	/** Opens file dialog for song selection */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void OpenSongFileDialog(TArray<FString>& OutFileNames);
 
 private:
 	UFUNCTION()
 	void OnFadeOutFinish();
+
+	UFUNCTION()
+	void OnButtonPressed_BSButton(const UBSButton* Button);
+	
 	UFUNCTION()
 	void OnButtonClicked_AudioFromFile();
 	UFUNCTION()

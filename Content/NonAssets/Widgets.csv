@@ -168,7 +168,7 @@ GM_SingleBeat_Info,One target at a time.
 GM_Sizing,Target Sizing
 GM_SpawnBeatDelay,Spawn Beat Delay
 GM_Spread,Target Spread
-GM_SpreadSelectTitle,Select A Spread
+GM_DifficultySelectTitle,Select a Difficulty
 GM_BoundsScalingMethod,Bounds Scaling Method
 GM_Standard_Info,Hop right into a session by selecting a game mode with default configured difficulty
 GM_StartCustom,Start Custom

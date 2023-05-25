@@ -2,11 +2,11 @@
 
 
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
-#include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"
 #include "OverlayWidgets/LoginWidget.h"
+#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/WebBrowserWidget.h"
 
 void UScoreBrowserWidget::NativeConstruct()
@@ -209,7 +209,7 @@ void UScoreBrowserWidget::OnURLLoaded(const bool bLoadedSuccessfully)
 	/** Don't not show a success message if they were logging in from the Popup in MainMenu so the user does not receive two success messages */
 	if (!bSignedInThroughPopup)
 	{
-		LoginWidget->OkayButton->OnClicked.AddDynamic(this, &UScoreBrowserWidget::FadeOutLoadingOverlay);
+		LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &UScoreBrowserWidget::OnButtonClicked_BSButton);
 		LoginWidget->OnLoginSuccess();
 	}
 	else
@@ -233,5 +233,13 @@ void UScoreBrowserWidget::OnAccessTokenResponse(const FString& AccessToken)
 	if (OnAccessTokenResponseDelegate.IsBound())
 	{
 		OnAccessTokenResponseDelegate.Unbind();
+	}
+}
+
+void UScoreBrowserWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	if (LoginWidget && Button == LoginWidget->OkayButton)
+	{
+		FadeOutLoadingOverlay();
 	}
 }

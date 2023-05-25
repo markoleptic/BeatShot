@@ -7,15 +7,16 @@
 #include "Blueprint/UserWidget.h"
 #include "PauseMenuWidget.generated.h"
 
-DECLARE_DELEGATE(FResumeGame);
-
 class UQuitMenuWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
-class USlideRightButton;
 class USettingsMenuWidget;
 class UFAQWidget;
 class UTextBlock;
+class UBSButton;
+class UMenuButton;
+
+DECLARE_DELEGATE(FResumeGame);
 
 /** Widget displayed if the Escape key is pressed, or the SteamOverlay is activated */
 UCLASS()
@@ -26,6 +27,7 @@ class USERINTERFACE_API UPauseMenuWidget : public UUserWidget
 public:
 	/** Delegate that gets bound to lambda function in DefaultPlayerController */
 	FResumeGame ResumeGame;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UQuitMenuWidget* QuitMenuWidget;
 
@@ -33,10 +35,6 @@ protected:
 	virtual void NativeConstruct() override;
 
 #pragma region MenuWidgets
-
-	/** A map to store buttons and the widgets they associate with */
-	UPROPERTY()
-	TMap<USlideRightButton*, UVerticalBox*> PauseMenuWidgets;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_PauseScreen;
@@ -54,15 +52,15 @@ protected:
 	UFAQWidget* FAQWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_Resume;
+	UMenuButton* MenuButton_Resume;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_RestartCurrentMode;
+	UMenuButton* MenuButton_RestartCurrentMode;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_Settings;
+	UMenuButton* MenuButton_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_FAQ;
+	UMenuButton* MenuButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_Quit;
+	UMenuButton* MenuButton_Quit;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* PauseMenuSwitcher;
@@ -74,20 +72,11 @@ protected:
 
 private:
 	UFUNCTION()
-	void SlideButtons(const USlideRightButton* ActiveButton);
-	UFUNCTION()
-	void OnSettingsButtonClicked() { SlideButtons(SlideRightButton_Settings); }
-	UFUNCTION()
-	void OnFAQButtonClicked() { SlideButtons(SlideRightButton_FAQ); }
-	UFUNCTION()
 	void FadeInWidget() { PlayAnimationForward(FadeInPauseMenu); }
 	UFUNCTION()
-	void SlideQuitMenuButtonsLeft();
-	
+	void SetQuitMenuButtonsInActive();
 	UFUNCTION()
-	void OnButtonClicked_Resume();
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
 	void OnButtonClicked_RestartCurrentMode();
-	UFUNCTION()
-	void OnButtonClicked_Quit();
 };

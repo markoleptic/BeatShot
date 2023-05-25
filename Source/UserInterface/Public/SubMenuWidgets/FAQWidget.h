@@ -6,9 +6,11 @@
 #include "Blueprint/UserWidget.h"
 #include "FAQWidget.generated.h"
 
+class UVerticalBox;
+class UBSButton;
 class UBorder;
 class UWidgetSwitcher;
-class USlideRightButton;
+class UMenuButton;
 
 /** FAQ widget */
 UCLASS()
@@ -19,35 +21,24 @@ class USERINTERFACE_API UFAQWidget : public UUserWidget
 	virtual void NativeConstruct() override;
 
 protected:
-	/** A map to store buttons and the widgets they associate with */
-	UPROPERTY()
-	TMap<USlideRightButton*, UBorder*> MenuWidgets;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* Button_GameModes;
+	UMenuButton* MenuButton_GameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* Button_Scoring;
+	UMenuButton* MenuButton_Scoring;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* Button_AudioAnalyzer;
+	UMenuButton* MenuButton_AudioAnalyzer;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* FAQSwitcher;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* Border_GameModes;
+	UVerticalBox* Box_GameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* Border_Scoring;
+	UVerticalBox* Box_Scoring;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBorder* Border_AudioAnalyzer;
+	UVerticalBox* Box_AudioAnalyzer;
 
 private:
-	/** Function to Play the Slide Animation for Navigation Buttons */
 	UFUNCTION()
-	void SlideButtons(const USlideRightButton* ActiveButton);
-
-	UFUNCTION()
-	void OnButtonClicked_GameModes();
-	UFUNCTION()
-	void OnButtonClicked_Scoring();
-	UFUNCTION()
-	void OnButtonClicked_AudioAnalyzer();
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 };

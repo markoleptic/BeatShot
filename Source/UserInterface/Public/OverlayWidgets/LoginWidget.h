@@ -12,7 +12,7 @@ class UBackgroundBlur;
 class UOverlay;
 class UEditableTextBox;
 class UTextBlock;
-class UButton;
+class UBSButton;
 class UHorizontalBox;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool, bIsPopup);
@@ -48,7 +48,7 @@ public:
 
 	/** WebBrowserOverlay binds to this button's OnClick event */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* OkayButton;
+	UBSButton* OkayButton;
 
 	/** Whether or not this widget is a popup (MainMenu direct child) or a WebBrowserOverlay child */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
@@ -81,30 +81,26 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Error;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_NoLoginButton;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_ContinueWithoutTitle;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_ContinueWithoutBody;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock_ContinueWithoutCancelButton;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_Register;
+	UBSButton* Button_Register;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_GotoLogin;
+	UBSButton* Button_GotoLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_NoRegister;
+	UBSButton* Button_NoRegister;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_Login;
+	UBSButton* Button_Login;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_GotoRegister;
+	UBSButton* Button_GotoRegister;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_NoLogin;
+	UBSButton* Button_NoLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_NoRegisterConfirm;
+	UBSButton* Button_NoRegisterConfirm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_NoRegisterCancel;
+	UBSButton* Button_NoRegisterCancel;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLogin;
@@ -126,6 +122,9 @@ protected:
 	void InitializeExit();
 	UFUNCTION()
 	void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
+
+	UFUNCTION()
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 	
 	UFUNCTION()
 	void PlayFadeInLogin() { PlayAnimationReverse(FadeOutLogin); }

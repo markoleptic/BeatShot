@@ -8,6 +8,7 @@
 #include "SaveLoadInterface.h"
 #include "ScoreBrowserWidget.generated.h"
 
+class UBSButton;
 class UImage;
 class UWebBrowserWidget;
 class ULoginWidget;
@@ -108,6 +109,9 @@ private:
 	/** Handles the response from OnRefreshTokenResponse */
 	UFUNCTION()
 	void OnAccessTokenResponse(const FString& AccessToken);
+
+	UFUNCTION()
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 
 	/** Delegate used to remove the overlay from WebBrowserOverlay after FadeOut */
 	UPROPERTY()

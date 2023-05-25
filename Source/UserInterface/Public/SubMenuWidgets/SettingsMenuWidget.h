@@ -12,7 +12,8 @@
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
-class USlideRightButton;
+class UBSButton;
+class UMenuButton;
 class UVerticalBox;
 class UWidgetSwitcher;
 
@@ -53,7 +54,7 @@ protected:
 
 	/** A map to store buttons and the widgets they associate with */
 	UPROPERTY()
-	TMap<USlideRightButton*, UVerticalBox*> MenuWidgets;
+	TMap<UMenuButton*, UVerticalBox*> MenuWidgets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
 
@@ -89,28 +90,16 @@ protected:
 	/* ------------------ */
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* Game_Button;
+	UMenuButton* MenuButton_Game;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* VideoAndSound_Button;
+	UMenuButton* MenuButton_VideoAndSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* AudioAnalyzer_Button;
+	UMenuButton* MenuButton_AudioAnalyzer;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* Sensitivity_Button;
+	UMenuButton* MenuButton_Sensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* CrossHair_Button;
+	UMenuButton* MenuButton_CrossHair;
 
-	/** Function to Play the Slide Animation for Navigation Buttons */
 	UFUNCTION()
-	void SlideButtons(const USlideRightButton* ActiveButton);
-	
-	UFUNCTION()
-	void OnButtonClicked_Game() { SlideButtons(Game_Button); }
-	UFUNCTION()
-	void OnButtonClicked_VideoAndSound() { SlideButtons(VideoAndSound_Button); }
-	UFUNCTION()
-	void OnButtonClicked_AudioAnalyzer() { SlideButtons(AudioAnalyzer_Button); }
-	UFUNCTION()
-	void OnButtonClicked_Sensitivity() { SlideButtons(Sensitivity_Button); }
-	UFUNCTION()
-	void OnButtonClicked_CrossHair() { SlideButtons(CrossHair_Button); }
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 };

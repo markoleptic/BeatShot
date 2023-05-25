@@ -2,79 +2,53 @@
 
 
 #include "MenuWidgets/MainMenuWidget.h"
-#include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "OverlayWidgets/LoginWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
-#include "WidgetComponents/SlideRightButton.h"
+#include "WidgetComponents/MenuButton.h"
 #include "WidgetComponents/WebBrowserWidget.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	MainMenuWidgets.Add(SlideRightButton_PatchNotes, Box_PatchNotes);
-	MainMenuWidgets.Add(SlideRightButton_GameModes, Box_GameModes);
-	MainMenuWidgets.Add(SlideRightButton_Scores, Box_Scores);
-	MainMenuWidgets.Add(SlideRightButton_Settings, Box_Settings);
-	MainMenuWidgets.Add(SlideRightButton_FAQ, Box_FAQ);
-
+	
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UMainMenuWidget::OnLoginStateChange);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
-	LoginWidget->OkayButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Scoring);
-	SlideRightButton_PatchNotes->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_PatchNotes);
-	SlideRightButton_GameModes->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_GameModes);
-	SlideRightButton_Scores->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Scoring);
-	SlideRightButton_Settings->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Settings);
-	SlideRightButton_FAQ->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_FAQButton);
-	SlideRightButton_Quit->Button->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Quit);
-	Button_GitHubIssue->OnClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_GitHub);
+	LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+
+	MenuButton_PatchNotes->SetDefaults(Box_PatchNotes, MenuButton_GameModes);
+	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scores);
+	MenuButton_Scores->SetDefaults(Box_Scores, MenuButton_Settings);
+	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_FAQ);
+	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_PatchNotes);
+	
+	MenuButton_PatchNotes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_GameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Scores->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Settings->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_FAQ->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Quit->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
 	ScoresWidget->InitializeScoringOverlay();
 	WebBrowserOverlayPatchNotes->BrowserWidget->LoadPatchNotesURL();
 	WebBrowserOverlayPatchNotes->FadeOutLoadingOverlay();
-	OnButtonClicked_PatchNotes();
+
+	MenuButton_PatchNotes->SetActive();
+	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetBox());
 }
 
-void UMainMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
-{
-	for (TTuple<USlideRightButton*, UVerticalBox*>& Elem : MainMenuWidgets)
-	{
-		if (Elem.Key != ActiveButton)
-		{
-			Elem.Key->SlideButton(false);
-			continue;
-		}
-		Elem.Key->SlideButton(true);
-		MainMenuSwitcher->SetActiveWidget(Elem.Value);
-	}
-}
-
-void UMainMenuWidget::OnButtonClicked_PatchNotes()
-{
-	SlideButtons(SlideRightButton_PatchNotes);
-}
-
-void UMainMenuWidget::OnButtonClicked_GameModes()
-{
-	SlideButtons(SlideRightButton_GameModes);
-}
 
 void UMainMenuWidget::OnButtonClicked_Scoring()
 {
-	SlideButtons(SlideRightButton_Scores);
-	if (bShowWebBrowserScoring) ScoresWidget->FadeOutLoadingOverlay();
-}
-
-void UMainMenuWidget::OnButtonClicked_Settings()
-{
-	SlideButtons(SlideRightButton_Settings);
-}
-
-void UMainMenuWidget::OnButtonClicked_FAQButton()
-{
-	SlideButtons(SlideRightButton_FAQ);
+	MenuButton_Scores->SetActive();
+	MainMenuSwitcher->SetActiveWidget(MenuButton_Scores->GetBox());
+	if (bShowWebBrowserScoring)
+	{
+		ScoresWidget->FadeOutLoadingOverlay();
+	}
 }
 
 void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup)
@@ -82,9 +56,24 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload, co
 	ScoresWidget->LoginUserHttp(LoginPayload, bIsPopup);
 }
 
-void UMainMenuWidget::OnButtonClicked_GitHub()
+void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	UKismetSystemLibrary::LaunchURL(GitHubURL);
+	if (Button == MenuButton_Quit)
+	{
+		UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
+	}
+	else if (Button == MenuButton_Scores)
+	{
+		if (bShowWebBrowserScoring)
+		{
+			ScoresWidget->FadeOutLoadingOverlay();
+		}
+	}
+	else if (LoginWidget && Button == LoginWidget->OkayButton)
+	{
+		OnButtonClicked_Scoring();
+	}
+	MainMenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
 
 void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup)
@@ -111,6 +100,7 @@ void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bo
 		}
 	case ELoginState::LoggedInHttpAndBrowser:
 		{
+			UE_LOG(LogTemp, Display, TEXT("Login success"));
 			bShowWebBrowserScoring = true;
 			if (bIsPopup)
 			{
@@ -148,9 +138,4 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)
 	}
 	TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
 	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.Username));
-}
-
-void UMainMenuWidget::OnButtonClicked_Quit()
-{
-	UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
 }

@@ -10,6 +10,7 @@
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
+#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
 void USettingsMenuWidget_AudioAnalyzer::InitMainMenuChild()
@@ -252,7 +253,7 @@ void USettingsMenuWidget_AudioAnalyzer::ShowBandLimitErrorMessage()
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorTitle"),
 	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandLimitThresholdError"),
 	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
-	PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::HideSongPathErrorMessage);
+	PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::HideSongPathErrorMessage);
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();
 }

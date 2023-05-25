@@ -3,7 +3,7 @@
 
 #include "OverlayWidgets/QuitMenuWidget.h"
 #include "OverlayWidgets/ScreenFadeWidget.h"
-#include "Components/Button.h"
+#include "WidgetComponents/BSButton.h"
 
 void UQuitMenuWidget::NativeConstruct()
 {
@@ -12,50 +12,98 @@ void UQuitMenuWidget::NativeConstruct()
 	if (bIsPostGameMenuChild)
 	{
 		bShouldSaveScores = false;
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuTrue);
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
-
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuFalse);
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
-
-		Button_QuitBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-		Button_QuitBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
+		Button_QuitMainMenu->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_QuitDesktop->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_QuitBack->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	}
 	else
 	{
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuTrue);
-		Button_QuitMainMenu->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleMainMenu);
+		Button_QuitMainMenu->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_QuitDesktop->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_QuitBack->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_QuitAndSave->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_QuitWithoutSave->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_SaveBack->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_RestartAndSave->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_RestartWithoutSave->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+		Button_RestartBack->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	}
+}
 
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInSaveMenu);
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetGotoMainMenuFalse);
-		Button_QuitDesktop->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetSaveMenuTitleDesktop);
-
-		Button_QuitBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutMenu);
-		Button_QuitBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
-
-		Button_QuitAndSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
-		Button_QuitAndSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresTrue);
-		Button_QuitAndSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
-
-		Button_QuitWithoutSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
-		Button_QuitWithoutSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
-		Button_QuitWithoutSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::Quit);
-
-		Button_SaveBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutSaveMenu);
-		Button_SaveBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeInMenu);
-
-		Button_RestartAndSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresTrue);
-		Button_RestartAndSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::OnRestart);
-		Button_RestartWithoutSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::SetShouldSaveScoresFalse);
-		Button_RestartWithoutSave->OnClicked.AddDynamic(this, &UQuitMenuWidget::OnRestart);
-
-		Button_RestartBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::PlayFadeOutRestartMenu);
-		Button_RestartBack->OnClicked.AddDynamic(this, &UQuitMenuWidget::InitializeExit);
+void UQuitMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	if (bIsPostGameMenuChild)
+	{
+		if (Button == Button_QuitMainMenu)
+		{
+			PlayFadeOutMenu();
+			SetGotoMainMenuTrue();
+			Quit();
+		}
+		else if (Button == Button_QuitDesktop)
+		{
+			PlayFadeOutMenu();
+			SetGotoMainMenuFalse();
+			Quit();
+		}
+		else if (Button == Button_QuitBack)
+		{
+			PlayFadeOutMenu();
+			InitializeExit();
+		}
+		return;
+	}
+	
+	if (Button == Button_QuitMainMenu)
+	{
+		PlayFadeOutMenu();
+		PlayFadeInSaveMenu();
+		SetGotoMainMenuTrue();
+		SetSaveMenuTitleMainMenu();
+	}
+	else if (Button == Button_QuitDesktop)
+	{
+		PlayFadeOutMenu();
+		PlayFadeInSaveMenu();
+		SetGotoMainMenuFalse();
+		SetSaveMenuTitleDesktop();
+	}
+	else if (Button == Button_QuitBack)
+	{
+		PlayFadeOutMenu();
+		InitializeExit();
+	}
+	else if (Button == Button_QuitAndSave)
+	{
+		PlayFadeOutSaveMenu();
+		SetShouldSaveScoresTrue();
+		Quit();
+	}
+	else if (Button == Button_QuitWithoutSave)
+	{
+		PlayFadeOutSaveMenu();
+		SetShouldSaveScoresFalse();
+		Quit();
+	}
+	else if (Button == Button_SaveBack)
+	{
+		PlayFadeOutSaveMenu();
+		PlayFadeInMenu();
+	}
+	else if (Button == Button_RestartAndSave)
+	{
+		SetShouldSaveScoresTrue();
+		OnRestart();
+	}
+	else if (Button == Button_RestartWithoutSave)
+	{
+		SetShouldSaveScoresFalse();
+		OnRestart();
+	}
+	else if (Button == Button_RestartBack)
+	{
+		PlayFadeOutRestartMenu();
+		InitializeExit();
 	}
 }
 

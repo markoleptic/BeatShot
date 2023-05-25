@@ -4,31 +4,29 @@
 #include "SubMenuWidgets/SettingsMenuWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
-#include "Components/Button.h"
 #include "Components/Slider.h"
 #include "SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.h"
-#include "WidgetComponents/SlideRightButton.h"
+#include "WidgetComponents/MenuButton.h"
 
 void USettingsMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	/* Menu Widgets */
-
-	MenuWidgets.Add(Game_Button, Game);
-	MenuWidgets.Add(VideoAndSound_Button, VideoAndSound);
-	MenuWidgets.Add(AudioAnalyzer_Button, AudioAnalyzer);
-	MenuWidgets.Add(Sensitivity_Button, Sensitivity);
-	MenuWidgets.Add(CrossHair_Button, CrossHair);
-	Game_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_Game);
-	VideoAndSound_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_VideoAndSound);
-	AudioAnalyzer_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_AudioAnalyzer);
-	Sensitivity_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_Sensitivity);
-	CrossHair_Button->Button->OnClicked.AddDynamic(this, &USettingsMenuWidget::OnButtonClicked_CrossHair);
+	MenuButton_Game->SetDefaults(Game, MenuButton_VideoAndSound);
+	MenuButton_VideoAndSound->SetDefaults(VideoAndSound, MenuButton_AudioAnalyzer);
+	MenuButton_AudioAnalyzer->SetDefaults(AudioAnalyzer, MenuButton_Sensitivity);
+	MenuButton_Sensitivity->SetDefaults(Sensitivity, MenuButton_CrossHair);
+	MenuButton_CrossHair->SetDefaults(CrossHair, MenuButton_Game);
+	
+	MenuButton_Game->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_VideoAndSound->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_AudioAnalyzer->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Sensitivity->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_CrossHair->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
 
-	OnButtonClicked_Game();
+	MenuButton_Game->SetActive();
 
 	if (bIsMainMenuChild)
 	{
@@ -44,16 +42,7 @@ void USettingsMenuWidget::OnRestartButtonClicked_AudioAnalyzer() const
 	}
 }
 
-void USettingsMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
+void USettingsMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	for (TTuple<USlideRightButton*, UVerticalBox*>& Elem : MenuWidgets)
-	{
-		if (Elem.Key != ActiveButton)
-		{
-			Elem.Key->SlideButton(false);
-			continue;
-		}
-		Elem.Key->SlideButton(true);
-		MenuSwitcher->SetActiveWidget(Elem.Value);
-	}
+	MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }

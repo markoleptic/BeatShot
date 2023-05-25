@@ -13,7 +13,7 @@ DECLARE_DYNAMIC_DELEGATE(FOnExitQuitMenu);
 class UTextBlock;
 class UVerticalBox;
 class UOverlay;
-class UButton;
+class UBSButton;
 class UWidgetAnimation;
 class UScreenFadeWidget;
 
@@ -65,25 +65,25 @@ protected:
 	UOverlay* Overlay_Restart;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_QuitMainMenu;
+	UBSButton* Button_QuitMainMenu;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_QuitDesktop;
+	UBSButton* Button_QuitDesktop;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_QuitBack;
+	UBSButton* Button_QuitBack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_QuitAndSave;
+	UBSButton* Button_QuitAndSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_QuitWithoutSave;
+	UBSButton* Button_QuitWithoutSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_SaveBack;
+	UBSButton* Button_SaveBack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_RestartAndSave;
+	UBSButton* Button_RestartAndSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_RestartWithoutSave;
+	UBSButton* Button_RestartWithoutSave;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_RestartBack;
+	UBSButton* Button_RestartBack;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_SaveMenuTitle;
@@ -101,6 +101,9 @@ protected:
 	FWidgetAnimationDynamicEvent FadeOutWidgetDelegate;
 
 private:
+	UFUNCTION()
+	void OnButtonClicked_BSButton(const UBSButton* Button);
+	
 	/** Fades in the MenuOverlay */
 	UFUNCTION()
 	void PlayFadeInMenu() { PlayAnimationReverse(FadeOutMenu); }

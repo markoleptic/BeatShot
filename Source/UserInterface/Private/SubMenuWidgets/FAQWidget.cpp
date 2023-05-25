@@ -2,51 +2,27 @@
 
 
 #include "SubMenuWidgets/FAQWidget.h"
-#include "Components/Button.h"
-#include "Components/Border.h"
+#include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
+#include "WidgetComponents/MenuButton.h"
 #include "WidgetComponents/SlideRightButton.h"
 
 void UFAQWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	MenuWidgets.Add(Button_GameModes, Border_GameModes);
-	MenuWidgets.Add(Button_Scoring, Border_Scoring);
-	MenuWidgets.Add(Button_AudioAnalyzer, Border_AudioAnalyzer);
+	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scoring);
+	MenuButton_Scoring->SetDefaults(Box_Scoring, MenuButton_AudioAnalyzer);
+	MenuButton_AudioAnalyzer->SetDefaults(Box_AudioAnalyzer, MenuButton_GameModes);
 
-	Button_GameModes->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnButtonClicked_GameModes);
-	Button_Scoring->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnButtonClicked_Scoring);
-	Button_AudioAnalyzer->Button->OnClicked.AddDynamic(this, &UFAQWidget::OnButtonClicked_AudioAnalyzer);
+	MenuButton_GameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Scoring->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_AudioAnalyzer->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 
-	SlideButtons(Button_GameModes);
+	MenuButton_GameModes->SetActive();
 }
 
-void UFAQWidget::SlideButtons(const USlideRightButton* ActiveButton)
+void UFAQWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	for (TTuple<USlideRightButton*, UBorder*>& Elem : MenuWidgets)
-	{
-		if (Elem.Key != ActiveButton)
-		{
-			Elem.Key->SlideButton(false);
-			continue;
-		}
-		Elem.Key->SlideButton(true);
-		FAQSwitcher->SetActiveWidget(Elem.Value);
-	}
-}
-
-void UFAQWidget::OnButtonClicked_GameModes()
-{
-	SlideButtons(Button_GameModes);
-}
-
-void UFAQWidget::OnButtonClicked_Scoring()
-{
-	SlideButtons(Button_Scoring);
-}
-
-void UFAQWidget::OnButtonClicked_AudioAnalyzer()
-{
-	SlideButtons(Button_AudioAnalyzer);
+	FAQSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }

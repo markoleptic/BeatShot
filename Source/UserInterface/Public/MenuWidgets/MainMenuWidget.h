@@ -11,7 +11,6 @@
 class UScoreBrowserWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
-class USlideRightButton;
 class UGameModesWidget;
 class USettingsMenuWidget;
 class UFAQWidget;
@@ -21,6 +20,7 @@ class UOverlay;
 class UEditableTextBox;
 class UTextBlock;
 class UButton;
+class UMenuButton;
 
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets */
 UCLASS()
@@ -36,10 +36,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-
-	/** A map to store buttons and the widgets they associate with */
-	UPROPERTY()
-	TMap<USlideRightButton*, UVerticalBox*> MainMenuWidgets;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MainMenuSwitcher;
 
@@ -64,53 +61,35 @@ protected:
 	ULoginWidget* LoginWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_PatchNotes;
+	UMenuButton* MenuButton_PatchNotes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_GameModes;
+	UMenuButton* MenuButton_GameModes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_Settings;
+	UMenuButton* MenuButton_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_Scores;
+	UMenuButton* MenuButton_Scores;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_FAQ;
+	UMenuButton* MenuButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USlideRightButton* SlideRightButton_Quit;
+	UMenuButton* MenuButton_Quit;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_SignInState;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Username;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UButton* Button_GitHubIssue;
 
 private:
-	/** Calls SlideButton() from SlideRightButton and sets the associated widget to active in the MainMenuSwitcher */
 	UFUNCTION()
-	void SlideButtons(const USlideRightButton* ActiveButton);
-	UFUNCTION()
-	void OnButtonClicked_PatchNotes();
-	UFUNCTION()
-	void OnButtonClicked_GameModes();
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
 	void OnButtonClicked_Scoring();
 	UFUNCTION()
-	void OnButtonClicked_Settings();
-	UFUNCTION()
-	void OnButtonClicked_FAQButton();
-	UFUNCTION()
-	void OnButtonClicked_Quit();
-	UFUNCTION()
 	void OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup);
 	UFUNCTION()
-	void OnButtonClicked_GitHub();
-	UFUNCTION()
 	void OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup);
-	/** Override with desired */
 	UFUNCTION()
 	virtual void UpdateLoginState(const bool bSuccessfulLogin);
 
 	/** Whether or not to fade out the browser overlay to reveal the web browser for the ScoresWidget */
 	bool bShowWebBrowserScoring;
-
-	const FString GitHubURL = "https://github.com/markoleptic/BeatShot/issues/new/choose";
 };

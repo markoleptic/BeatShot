@@ -3,44 +3,35 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "BSButton.h"
 #include "GlobalEnums.h"
 #include "GameModeButton.generated.h"
 
-class UButton;
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGameModeButtonClicked, const UGameModeButton*, GameModeButton);
-
-/** Simple UButton wrapper that stores info about a GameMode, and a pointer to the next game mode button */
+/** Button used for difficulty selection in GameModesWidget */
 UCLASS()
-class USERINTERFACE_API UGameModeButton : public UUserWidget
+class USERINTERFACE_API UGameModeButton : public UBSButton
 {
 	GENERATED_BODY()
 
-	virtual void NativeConstruct() override;
-
 public:
-	UFUNCTION()
-	void OnButtonClicked();
+	virtual UGameModeButton* GetNext() const override { return Cast<UGameModeButton>(Next); }
+	
+	/** Sets the GameModeDifficulty this button represents */
+	void SetDefaults(EGameModeDifficulty GameModeDifficulty, UGameModeButton* NextButton);
 
-	/** Sets the default button information about the game mode it represents */
-	void SetDefaults(EGameModeDifficulty GameModeDifficulty, EBaseGameMode InDefaultMode, UGameModeButton* NextButton);
+	/** Sets the BaseGameMode this button represents */
+	void SetDefaults(EBaseGameMode InDefaultMode, UGameModeButton* NextButton);
 
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UButton* Button;
+	/** Returns the GameModeDifficulty this button represents */
+	EGameModeDifficulty GetDifficulty() const { return Difficulty; }
+	
+	/** Returns the BaseGameMode this button represents */
+	EBaseGameMode GetDefaultMode() const { return DefaultMode; }
 
-	/** The difficulty associated with this button */
-	UPROPERTY()
-	EGameModeDifficulty Difficulty;
+protected:
+	/** The GameModeDifficulty associated with this button */
+	EGameModeDifficulty Difficulty = EGameModeDifficulty::None;
 
-	/** The game mode associated with this button */
-	UPROPERTY()
-	EBaseGameMode DefaultMode;
-
-	/** Pointer to the next GameModeButton in a collection of them */
-	UPROPERTY()
-	UGameModeButton* Next;
-
-	/** Broadcast when this GameModeButton is clicked */
-	FOnGameModeButtonClicked OnGameModeButtonClicked;
+	/** The BaseGameMode associated with this button */
+	EBaseGameMode DefaultMode = EBaseGameMode::None;
 };

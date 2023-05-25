@@ -2,22 +2,17 @@
 
 
 #include "WidgetComponents/GameModeButton.h"
-#include "Components/Button.h"
 
-void UGameModeButton::NativeConstruct()
-{
-	Super::NativeConstruct();
-	Button->OnClicked.AddUniqueDynamic(this, &UGameModeButton::OnButtonClicked);
-}
-
-void UGameModeButton::OnButtonClicked()
-{
-	OnGameModeButtonClicked.Broadcast(this);
-}
-
-void UGameModeButton::SetDefaults(EGameModeDifficulty GameModeDifficulty, EBaseGameMode InDefaultMode, UGameModeButton* NextButton)
+void UGameModeButton::SetDefaults(const EGameModeDifficulty GameModeDifficulty, UGameModeButton* NextButton)
 {
 	Difficulty = GameModeDifficulty;
+	Next = NextButton;
+	SetHasSetDefaults(true);
+}
+
+void UGameModeButton::SetDefaults(const EBaseGameMode InDefaultMode, UGameModeButton* NextButton)
+{
 	DefaultMode = InDefaultMode;
 	Next = NextButton;
+	SetHasSetDefaults(true);
 }

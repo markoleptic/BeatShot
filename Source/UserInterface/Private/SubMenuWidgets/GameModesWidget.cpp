@@ -15,15 +15,14 @@
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
-#include "WidgetComponents/GameModeButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
-#include "WidgetComponents/SlideRightButton.h"
 #include "SubMenuWidgets/GameModesWidget_DefiningConfig.h"
 #include "SubMenuWidgets/GameModesWidget_SpatialConfig.h"
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
 #include "SubMenuWidgets/GameModesWidget_BeatGridConfig.h"
 #include "SubMenuWidgets/GameModesWidget_BeatTrackConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
+#include "WidgetComponents/MenuButton.h"
 
 using namespace Constants;
 
@@ -31,11 +30,9 @@ void UGameModesWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	MenuWidgets.Add(SlideRightButton_DefaultGameModes, Box_DefaultGameModes);
-	MenuWidgets.Add(SlideRightButton_CustomGameModes, Box_CustomGameModes);
 	Button_PlayFromStandard->SetIsEnabled(false);
 	Button_CustomizeFromStandard->SetIsEnabled(false);
-	Border_SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
+	Border_DifficultySelect->SetVisibility(ESlateVisibility::Collapsed);
 	Button_SaveCustom->SetIsEnabled(false);
 	Button_SaveCustomAndStart->SetIsEnabled(false);
 	Button_StartCustom->SetIsEnabled(false);
@@ -51,21 +48,17 @@ void UGameModesWidget::NativeConstruct()
 	}
 	
 	/* Default Game Mode widgets */
-	Button_SingleBeatNormal->SetDefaults(EGameModeDifficulty::Normal, EBaseGameMode::SingleBeat, Button_SingleBeatHard);
-	Button_SingleBeatHard->SetDefaults(EGameModeDifficulty::Hard, EBaseGameMode::SingleBeat, Button_SingleBeatDeath);
-	Button_SingleBeatDeath->SetDefaults(EGameModeDifficulty::Death, EBaseGameMode::SingleBeat, Button_MultiBeatNormal);
+	Button_NormalDifficulty->SetDefaults( Button_HardDifficulty, static_cast<uint8>(EGameModeDifficulty::Normal));
+	Button_HardDifficulty->SetDefaults(Button_DeathDifficulty, static_cast<uint8>(EGameModeDifficulty::Hard));
+	Button_DeathDifficulty->SetDefaults(Button_NormalDifficulty, static_cast<uint8>(EGameModeDifficulty::Death));
 
-	Button_MultiBeatNormal->SetDefaults(EGameModeDifficulty::Normal, EBaseGameMode::MultiBeat, Button_MultiBeatHard);
-	Button_MultiBeatHard->SetDefaults(EGameModeDifficulty::Hard, EBaseGameMode::MultiBeat, Button_MultiBeatDeath);
-	Button_MultiBeatDeath->SetDefaults(EGameModeDifficulty::Death, EBaseGameMode::MultiBeat, Button_BeatGridNormal);
+	Button_BeatGrid->SetDefaults(Button_BeatTrack, static_cast<uint8>(EBaseGameMode::BeatGrid));
+	Button_BeatTrack->SetDefaults(Button_MultiBeat, static_cast<uint8>(EBaseGameMode::BeatTrack));
+	Button_MultiBeat->SetDefaults(Button_SingleBeat, static_cast<uint8>(EBaseGameMode::MultiBeat));
+	Button_SingleBeat->SetDefaults(Button_BeatGrid, static_cast<uint8>(EBaseGameMode::SingleBeat));
 
-	Button_BeatGridNormal->SetDefaults(EGameModeDifficulty::Normal, EBaseGameMode::BeatGrid, Button_BeatGridHard);
-	Button_BeatGridHard->SetDefaults(EGameModeDifficulty::Hard, EBaseGameMode::BeatGrid, Button_BeatGridDeath);
-	Button_BeatGridDeath->SetDefaults(EGameModeDifficulty::Death, EBaseGameMode::BeatGrid, Button_BeatTrackNormal);
-
-	Button_BeatTrackNormal->SetDefaults(EGameModeDifficulty::Normal, EBaseGameMode::BeatTrack, Button_BeatTrackHard);
-	Button_BeatTrackHard->SetDefaults(EGameModeDifficulty::Hard, EBaseGameMode::BeatTrack, Button_BeatTrackDeath);
-	Button_BeatTrackDeath->SetDefaults(EGameModeDifficulty::Death, EBaseGameMode::BeatTrack, Button_SingleBeatNormal);
+	MenuButton_DefaultGameModes->SetDefaults(Box_DefaultGameModes, MenuButton_CustomGameModes);
+	MenuButton_CustomGameModes->SetDefaults(Box_CustomGameModes, MenuButton_DefaultGameModes);
 	
 	SpatialConfig = CreateWidget<UGameModesWidget_SpatialConfig>(this, SpatialConfigClass);
 	Box_SpatialConfig->AddChildToVerticalBox(SpatialConfig);
@@ -86,7 +79,7 @@ void UGameModesWidget::NativeConstruct()
 	Box_DefiningConfig->AddChildToVerticalBox(DefiningConfig);
 	
 	BindAllDelegates();
-	OnButtonClicked_DefaultGameModes();
+	MenuButton_DefaultGameModes->SetActive();
 	
 	/* Setup default custom game mode options to MultiBeat */
 	const FBSConfig DefaultMultiBeatMode = FBSConfig::GetDefaultGameModes()[3];
@@ -119,8 +112,9 @@ void UGameModesWidget::NativeConstruct()
 
 void UGameModesWidget::BindAllDelegates()
 {
-	SlideRightButton_DefaultGameModes->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameModes);
-	SlideRightButton_CustomGameModes->Button->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomGameModes);
+	MenuButton_DefaultGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_CustomGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
 	Button_CustomizeFromStandard->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CustomizeFromStandard);
 	Button_PlayFromStandard->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_PlayFromStandard);
 	Button_SaveCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SaveCustom);
@@ -130,22 +124,15 @@ void UGameModesWidget::BindAllDelegates()
 	Button_RemoveAllCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveAllCustom);
 	Button_RemoveSelectedCustom->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_RemoveSelectedCustom);
 	
+	Button_NormalDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
+	Button_HardDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
+	Button_DeathDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
+	
 	// Default Game Modes
-	Button_SingleBeatNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_SingleBeatHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_SingleBeatDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_MultiBeatNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_MultiBeatHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_MultiBeatDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_BeatGridNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_BeatGridHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_BeatGridDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_BeatTrackNormal->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_BeatTrackHard->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_BeatTrackDeath->OnGameModeButtonClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-	Button_DynamicSpread->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DynamicSpread);
-	Button_NarrowSpread->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_NarrowSpread);
-	Button_WideSpread->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_WideSpread);
+	Button_BeatGrid->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_BeatTrack->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_MultiBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
+	Button_SingleBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
 
 	DefiningConfig->OnRepopulateGameModeOptions.AddUObject(this, &UGameModesWidget::PopulateGameModeOptions);
 	DefiningConfig->OnDefiningConfigUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
@@ -153,111 +140,38 @@ void UGameModesWidget::BindAllDelegates()
 	BeatGridConfig->OnBeatGridUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
 }
 
-void UGameModesWidget::SlideButtons(const USlideRightButton* ActiveButton)
+void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* GameModeButton)
 {
-	for (const TTuple<USlideRightButton*, UVerticalBox*>& Elem : MenuWidgets)
-	{
-		if (Elem.Key != ActiveButton)
-		{
-			Elem.Key->SlideButton(false);
-			continue;
-		}
-		Elem.Key->SlideButton(true);
-		MenuSwitcher->SetActiveWidget(Elem.Value);
-	}
-}
+	PresetSelection_PresetGameMode = static_cast<EBaseGameMode>(GameModeButton->GetEnumValue());
+	DefiningConfig->ComboBox_GameModeName->SetSelectedOption(UEnum::GetDisplayValueAsText(PresetSelection_PresetGameMode).ToString());
+	PopulateGameModeOptions(FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, EGameModeDifficulty::Normal));
 
-void UGameModesWidget::SetGameModeButtonBackgroundColor(const UGameModeButton* ClickedButton) const
-{
-	ClickedButton->Button->SetBackgroundColor(BeatShotBlue);
-	const EGameModeDifficulty ClickedButtonDifficulty = ClickedButton->Difficulty;
-	const EBaseGameMode ClickedButtonGameModeName = ClickedButton->DefaultMode;
-	const UGameModeButton* Head = ClickedButton->Next;
-
-	/** Change all other button backgrounds to white */
-	while (!(Head->Difficulty == ClickedButtonDifficulty && Head->DefaultMode == ClickedButtonGameModeName))
-	{
-		Head->Button->SetBackgroundColor(FLinearColor::White);
-		Head = Head->Next;
-	}
-}
-
-void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UGameModeButton* GameModeButton)
-{
-	PresetSelection_PresetGameMode = GameModeButton->DefaultMode;
-	PresetSelection_Difficulty = GameModeButton->Difficulty;
-	const FBSConfig SelectedGameMode = FBSConfig::MakePresetConfig(GameModeButton->DefaultMode, GameModeButton->Difficulty);
-	DefiningConfig->ComboBox_GameModeName->SetSelectedOption(UEnum::GetDisplayValueAsText(GameModeButton->DefaultMode).ToString());
-	PopulateGameModeOptions(SelectedGameMode);
-	SetGameModeButtonBackgroundColor(GameModeButton);
-
-	Button_DynamicSpread->SetBackgroundColor(FLinearColor::White);
-	Button_WideSpread->SetBackgroundColor(FLinearColor::White);
-	Button_NarrowSpread->SetBackgroundColor(FLinearColor::White);
-
-	/** Don't show SpreadSelect if BeatGrid or BeatTrack */
-	if (SelectedGameMode.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid
-		|| SelectedGameMode.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
-	{
-		Border_SpreadSelect->SetVisibility(ESlateVisibility::Collapsed);
-		Button_PlayFromStandard->SetIsEnabled(true);
-		Button_CustomizeFromStandard->SetIsEnabled(true);
-		return;
-	}
-	Border_SpreadSelect->SetVisibility(ESlateVisibility::Visible);
+	Button_NormalDifficulty->SetInActive();
+	Button_HardDifficulty->SetInActive();
+	Button_DeathDifficulty->SetInActive();
+	PresetSelection_Difficulty = EGameModeDifficulty::Normal;
+	
+	Border_DifficultySelect->SetVisibility(ESlateVisibility::Visible);
 	Button_PlayFromStandard->SetIsEnabled(false);
 	Button_CustomizeFromStandard->SetIsEnabled(true);
 }
 
-void UGameModesWidget::OnButtonClicked_DynamicSpread()
+void UGameModesWidget::OnButtonClicked_Difficulty(const UBSButton* GameModeButton)
 {
-	/** Change the background colors of the spread select buttons */
-	Button_DynamicSpread->SetBackgroundColor(BeatShotBlue);
-	Button_NarrowSpread->SetBackgroundColor(FLinearColor::White);
-	Button_WideSpread->SetBackgroundColor(FLinearColor::White);
-	
-	/*if (PresetSelection_PresetGameMode == EBaseGameMode::MultiBeat)
-	{
-		PresetSelection_BoundsScalingMethod = EBoundsScalingMethod::DynamicRandom;
-	}
-	else
-	{
-		PresetSelection_BoundsScalingMethod = EBoundsScalingMethod::DynamicEdgeOnly;
-	}*/
-	
-	PopulateGameModeOptions(FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty));
+	PresetSelection_Difficulty = static_cast<EGameModeDifficulty>(GameModeButton->GetEnumValue());
+	const FBSConfig SelectedGameMode = FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty);
+	PopulateGameModeOptions(SelectedGameMode);
 	Button_PlayFromStandard->SetIsEnabled(true);
 }
 
-void UGameModesWidget::OnButtonClicked_NarrowSpread()
+void UGameModesWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	/** Change the background colors of the spread select buttons */
-	Button_DynamicSpread->SetBackgroundColor(FLinearColor::White);
-	Button_NarrowSpread->SetBackgroundColor(BeatShotBlue);
-	Button_WideSpread->SetBackgroundColor(FLinearColor::White);
-	
-	/*PresetSelection_BoundsScalingMethod = EBoundsScalingMethod::StaticNarrow;*/
-	
-	PopulateGameModeOptions(FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty));
-	Button_PlayFromStandard->SetIsEnabled(true);
-}
-
-void UGameModesWidget::OnButtonClicked_WideSpread()
-{
-	/** Change the background colors of the spread select buttons */
-	Button_DynamicSpread->SetBackgroundColor(FLinearColor::White);
-	Button_NarrowSpread->SetBackgroundColor(FLinearColor::White);
-	Button_WideSpread->SetBackgroundColor(BeatShotBlue);
-	
-	/*PresetSelection_BoundsScalingMethod = EBoundsScalingMethod::StaticWide;*/
-	
-	PopulateGameModeOptions(FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty));
-	Button_PlayFromStandard->SetIsEnabled(true);
+	MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
 
 void UGameModesWidget::OnButtonClicked_CustomizeFromStandard()
 {
-	OnButtonClicked_CustomGameModes();
+	MenuButton_CustomGameModes->SetActive();
 }
 
 void UGameModesWidget::OnButtonClicked_SaveCustom()
@@ -475,13 +389,13 @@ void UGameModesWidget::ShowConfirmOverwriteMessage(const bool bStartGameAfter)
 
 	if (bStartGameAfter)
 	{
-		PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwriteAndStartGame);
+		PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwriteAndStartGame);
 	}
 	else
 	{
-		PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwrite);
+		PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_ConfirmOverwrite);
 	}
-	PopupMessageWidget->Button_2->OnClicked.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CancelOverwrite);
+	PopupMessageWidget->OnButton2Pressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_CancelOverwrite);
 }
 
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)

@@ -2,30 +2,32 @@
 
 
 #include "OverlayWidgets/PopupMessageWidget.h"
-#include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "WidgetComponents/BSButton.h"
 
 void UPopupMessageWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	Button_1->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_2->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 }
 
 void UPopupMessageWidget::NativeDestruct()
 {
-	Button_1->OnClicked.Clear();
-	Button_2->OnClicked.Clear();
+	Button_1->OnBSButtonPressed.Clear();
+	Button_2->OnBSButtonPressed.Clear();
 	Super::NativeDestruct();
 }
 
-void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, FText Button2TextInput) const
+void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, const FText& Button2TextInput) const
 {
 	TextBlock_Title->SetText(TitleInput);
 	TextBlock_Message->SetText(MessageInput);
-	TextBlock_Button1->SetText(Button1TextInput);
+	Button_1->ChangeButtonText(Button1TextInput);
 	if (!Button2TextInput.IsEmpty())
 	{
-		Button_2->SetVisibility(ESlateVisibility::Visible);
 		TextBlock_Button2->SetText(Button2TextInput);
+		Button_2->SetVisibility(ESlateVisibility::Visible);
 	}
 	else
 	{
@@ -48,6 +50,19 @@ void UPopupMessageWidget::FadeOut()
 void UPopupMessageWidget::ChangeMessageText(const FText& MessageInput)
 {
 	TextBlock_Message->SetText(MessageInput);
+}
+
+void UPopupMessageWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	if (Button == Button_1)
+	{
+		OnButton1Pressed.Broadcast();
+		return;
+	}
+	if (Button == Button_2)
+	{
+		OnButton2Pressed.Broadcast();
+	}
 }
 
 void UPopupMessageWidget::OnFadeOutPopupMessageFinish()

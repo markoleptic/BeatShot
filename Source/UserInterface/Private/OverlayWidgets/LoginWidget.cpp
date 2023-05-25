@@ -5,40 +5,23 @@
 #include "Components/HorizontalBox.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
-#include "Components/Button.h"
 #include "Components/BackgroundBlur.h"
+#include "WidgetComponents/BSButton.h"
 
 void ULoginWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	Button_Login->OnClicked.AddDynamic(this, &ULoginWidget::LoginButtonClicked);
-
-	Button_Register->OnClicked.AddDynamic(this, &ULoginWidget::LaunchRegisterURL);
-	Button_Register->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutRegister);
-	Button_Register->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
-
-	Button_GotoLogin->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutRegister);
-	Button_GotoLogin->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
-
-	Button_GotoRegister->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutLogin);
-	Button_GotoRegister->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInRegister);
-
-	Button_NoLogin->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutLogin);
-	Button_NoLogin->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInContinueWithout);
-
-	Button_NoRegister->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutRegister);
-	Button_NoRegister->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInContinueWithout);
-
-	Button_NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutContinueWithout);
-	Button_NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInRegister);
-
-	Button_NoRegisterConfirm->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutContinueWithout);
-	Button_NoRegisterConfirm->OnClicked.AddDynamic(this, &ULoginWidget::InitializeExit);
-
-	OkayButton->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeOutLoggedIn);
-	OkayButton->OnClicked.AddDynamic(this, &ULoginWidget::InitializeExit);
-
+	
+	Button_Login->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_GotoLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_GotoRegister->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoRegister->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoRegisterCancel->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoRegisterConfirm->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
 	Value_Username->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 	Value_Email->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 	Value_Password->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
@@ -79,11 +62,9 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
 	if (LoadPlayerSettings().User.HasLoggedInHttp)
 	{
-		Button_NoRegisterCancel->OnClicked.RemoveDynamic(this, &ULoginWidget::PlayFadeInRegister);
-		Button_NoRegisterCancel->OnClicked.AddDynamic(this, &ULoginWidget::PlayFadeInLogin);
 		TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
 		TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
-		TextBlock_ContinueWithoutCancelButton->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
+		Button_NoRegisterCancel->ChangeButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
 	}
 	if (!Key.IsEmpty())
 	{
@@ -94,8 +75,6 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 	{
 		BackgroundBlur->SetVisibility(ESlateVisibility::Collapsed);
 		Button_NoLogin->SetVisibility(ESlateVisibility::Collapsed);
-		Button_GotoRegister->OnClicked.RemoveAll(this);
-		Button_GotoRegister->OnClicked.AddDynamic(this, &ULoginWidget::LaunchRegisterURL);
 	}
 	SetVisibility(ESlateVisibility::Visible);
 	PlayFadeInLogin();
@@ -129,5 +108,66 @@ void ULoginWidget::InitializeExit()
 	else
 	{
 		RemoveFromParent();
+	}
+}
+
+void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	if (Button == Button_Login)
+	{
+		LoginButtonClicked();
+	}
+	else if (Button == Button_Register)
+	{
+		LaunchRegisterURL();
+		PlayFadeOutRegister();
+		PlayFadeInLogin();
+	}
+	else if (Button == Button_GotoLogin)
+	{
+		PlayFadeOutRegister();
+		PlayFadeInLogin();
+	}
+	else if (Button == Button_GotoRegister)
+	{
+		if (!bIsPopup)
+		{
+			LaunchRegisterURL();
+			return;
+		}
+		PlayFadeOutLogin();
+		PlayFadeInRegister();
+	}
+	else if (Button == Button_NoLogin)
+	{
+		PlayFadeOutLogin();
+		PlayFadeInContinueWithout();
+	}
+	else if (Button == Button_NoRegister)
+	{
+		PlayFadeOutRegister();
+		PlayFadeInContinueWithout();
+	}
+	else if (Button == Button_NoRegisterCancel)
+	{
+		PlayFadeOutContinueWithout();
+		if (LoadPlayerSettings().User.HasLoggedInHttp)
+		{
+			PlayFadeInLogin();
+		}
+		else
+		{
+			PlayFadeInRegister();
+		}
+	}
+	else if (Button == Button_NoRegisterConfirm)
+	{
+		PlayFadeOutContinueWithout();
+		InitializeExit();
+	}
+	else if (Button == OkayButton)
+	{
+		PlayFadeOutLoggedIn();
+		InitializeExit();
 	}
 }

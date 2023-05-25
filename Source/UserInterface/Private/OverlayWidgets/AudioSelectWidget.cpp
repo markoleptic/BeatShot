@@ -12,6 +12,7 @@
 #include "Components/HorizontalBox.h"
 #include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
+#include "WidgetComponents/BSButton.h"
 
 UTooltipWidget* UAudioSelectWidget::ConstructTooltipWidget()
 {
@@ -24,13 +25,20 @@ void UAudioSelectWidget::NativeConstruct()
 	SetTooltipWidget(ConstructTooltipWidget());
 	NumberFormattingOptions.MinimumIntegralDigits = 2;
 	NumberFormattingOptions.MaximumIntegralDigits = 2;
-	Button_Back->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::FadeOut);
+
+	Button_Back->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonPressed_BSButton);
+
 	Button_Start->SetIsEnabled(false);
 	Button_LoadFile->SetIsEnabled(false);
-	Button_Start->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnButtonClicked_Start);
-	Button_AudioFromFile->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnButtonClicked_AudioFromFile);
-	Button_LoadFile->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnButtonClicked_LoadFile);
-	Button_CaptureAudio->OnClicked.AddUniqueDynamic(this, &UAudioSelectWidget::OnButtonClicked_CaptureAudio);
+	Button_CaptureAudio->SetDefaults(Button_AudioFromFile, static_cast<uint8>(EAudioFormat::Capture));
+	Button_AudioFromFile->SetDefaults(Button_CaptureAudio, static_cast<uint8>(EAudioFormat::File));
+	Button_LoadFile->OnPressedAnimFinished.AddDynamic(this, &ThisClass::OnButtonClicked_LoadFile);
+
+	Button_Start->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonPressed_BSButton);
+	Button_LoadFile->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonPressed_BSButton);
+	Button_AudioFromFile->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonPressed_BSButton);
+	Button_CaptureAudio->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonPressed_BSButton);
+
 	Value_SongTitle->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_SongTitle);
 	Value_Seconds->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_Seconds);
 	Value_Minutes->OnTextCommitted.AddUniqueDynamic(this, &UAudioSelectWidget::OnValueChanged_Minutes);
@@ -62,11 +70,6 @@ void UAudioSelectWidget::NativeConstruct()
 	OnValueChanged_Minutes(FText::AsNumber(0), ETextCommit::Type::Default);
 }
 
-void UAudioSelectWidget::NativeDestruct()
-{
-	Super::NativeDestruct();
-}
-
 void UAudioSelectWidget::FadeIn()
 {
 	PlayAnimationForward(FadeInAnim);
@@ -83,15 +86,46 @@ void UAudioSelectWidget::OnFadeOutFinish()
 	RemoveFromParent();
 }
 
+void UAudioSelectWidget::OnButtonPressed_BSButton(const UBSButton* Button)
+{
+	if (Button == Button_Back)
+	{
+		FadeOut();
+		return;
+	}
+	if (Button == Button_Start)
+	{
+		OnButtonClicked_Start();
+		return;
+	}
+	
+	if (!Button->HasSetDefaults())
+	{
+		return;
+	}
+	switch (static_cast<EAudioFormat>(Button->GetEnumValue()))
+	{
+	case EAudioFormat::File:
+		OnButtonClicked_AudioFromFile();
+		break;
+	case EAudioFormat::Capture:
+		OnButtonClicked_CaptureAudio();
+		break;
+	default:
+		break;
+	}
+}
+
 void UAudioSelectWidget::OnButtonClicked_AudioFromFile()
 {
 	AudioConfig.AudioFormat = EAudioFormat::File;
+
 	Button_Start->SetIsEnabled(false);
 	Button_LoadFile->SetIsEnabled(true);
+
 	ComboBox_InAudioDevices->ClearSelection();
 	ComboBox_OutAudioDevices->ClearSelection();
-	Button_AudioFromFile->SetBackgroundColor(BeatShotBlue);
-	Button_CaptureAudio->SetBackgroundColor(FLinearColor::White);
+
 	Box_AudioDevice->SetVisibility(ESlateVisibility::Collapsed);
 	Box_SongTitleLength->SetVisibility(ESlateVisibility::Collapsed);
 }
@@ -99,12 +133,13 @@ void UAudioSelectWidget::OnButtonClicked_AudioFromFile()
 void UAudioSelectWidget::OnButtonClicked_CaptureAudio()
 {
 	AudioConfig.AudioFormat = EAudioFormat::Capture;
+
 	Button_Start->SetIsEnabled(false);
 	Button_LoadFile->SetIsEnabled(false);
+
 	ComboBox_InAudioDevices->ClearSelection();
 	ComboBox_OutAudioDevices->ClearSelection();
-	Button_AudioFromFile->SetBackgroundColor(FLinearColor::White);
-	Button_CaptureAudio->SetBackgroundColor(BeatShotBlue);
+
 	Box_AudioDevice->SetVisibility(ESlateVisibility::Visible);
 	Box_SongTitleLength->SetVisibility(ESlateVisibility::Collapsed);
 
@@ -135,6 +170,7 @@ void UAudioSelectWidget::OnButtonClicked_LoadFile()
 {
 	TArray<FString> FileNames = {""};
 	OpenSongFileDialog(FileNames);
+	UE_LOG(LogTemp, Display, TEXT("PastOpenSongFileDialog"));
 	if (bWasInFullScreenMode)
 	{
 		UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
@@ -274,7 +310,7 @@ void UAudioSelectWidget::ShowSongPathErrorMessage()
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorTitle"),
 	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorMessage"),
 	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ASW_SongPathErrorButton"));
-	PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &UAudioSelectWidget::HideSongPathErrorMessage);
+	PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &UAudioSelectWidget::HideSongPathErrorMessage);
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();
 }

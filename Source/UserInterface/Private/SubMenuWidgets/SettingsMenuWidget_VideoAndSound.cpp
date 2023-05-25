@@ -13,6 +13,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
+#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/BSHorizontalBox.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
@@ -687,8 +688,8 @@ void USettingsMenuWidget_VideoAndSound::ShowConfirmVideoSettingsMessage()
 		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage"),
 		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton1"),
 		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton2"));
-		PopupMessageWidget->Button_1->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_ConfirmVideoSettings);
-		PopupMessageWidget->Button_2->OnClicked.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_CancelVideoSettings);
+		PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_ConfirmVideoSettings);
+		PopupMessageWidget->OnButton2Pressed.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonClicked_CancelVideoSettings);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond, this, &USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback, 1.f, true);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, Constants::VideoSettingsTimeoutLength, false);
 	}

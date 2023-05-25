@@ -2,72 +2,66 @@
 
 
 #include "MenuWidgets/PauseMenuWidget.h"
-#include "Components/Button.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/QuitMenuWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
-#include "WidgetComponents/SlideRightButton.h"
+#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/MenuButton.h"
 
 void UPauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	SlideRightButton_Resume->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnButtonClicked_Resume);
-	SlideRightButton_Settings->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnSettingsButtonClicked);
-	SlideRightButton_FAQ->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnFAQButtonClicked);
 
-	SlideRightButton_RestartCurrentMode->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnButtonClicked_RestartCurrentMode);
-	SlideRightButton_Quit->Button->OnClicked.AddDynamic(this, &UPauseMenuWidget::OnButtonClicked_Quit);
-
-	PauseMenuWidgets.Add(SlideRightButton_Resume, Box_PauseScreen);
-	PauseMenuWidgets.Add(SlideRightButton_RestartCurrentMode, Box_PauseScreen);
-	PauseMenuWidgets.Add(SlideRightButton_Settings, Box_SettingsMenu);
-	PauseMenuWidgets.Add(SlideRightButton_FAQ, Box_FAQ);
-	PauseMenuWidgets.Add(SlideRightButton_Quit, Box_PauseScreen);
-
-	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SlideQuitMenuButtonsLeft");
+	MenuButton_Resume->SetDefaults(Box_PauseScreen, MenuButton_Settings);
+	MenuButton_Settings->SetDefaults(Box_PauseScreen, MenuButton_FAQ);
+	MenuButton_FAQ->SetDefaults(Box_SettingsMenu, MenuButton_RestartCurrentMode);
+	MenuButton_RestartCurrentMode->SetDefaults(Box_FAQ, MenuButton_Quit);
+	MenuButton_Quit->SetDefaults(Box_PauseScreen, MenuButton_Resume);
+	
+	MenuButton_Resume->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Settings->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_FAQ->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_RestartCurrentMode->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	MenuButton_Quit->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
+	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SetQuitMenuButtonsInActive");
 	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "OnButtonClicked_RestartCurrentMode");
 	FadeInWidget();
 }
 
-void UPauseMenuWidget::OnButtonClicked_Resume()
+void UPauseMenuWidget::SetQuitMenuButtonsInActive()
 {
-	if (!ResumeGame.ExecuteIfBound())
+	MenuButton_RestartCurrentMode->SetInActive();
+	MenuButton_Quit->SetInActive();
+}
+
+void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+{
+	if (Button == MenuButton_Resume)
 	{
-		UE_LOG(LogTemp, Display, TEXT("ResumeGame not bound."));
+		if (!ResumeGame.ExecuteIfBound())
+		{
+			UE_LOG(LogTemp, Display, TEXT("ResumeGame not bound."));
+		}
 	}
+	else if (Button == MenuButton_Quit)
+	{
+		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
+		QuitMenuWidget->PlayInitialFadeInMenu();
+	}
+	else if (Button == MenuButton_RestartCurrentMode)
+	{
+		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
+		QuitMenuWidget->PlayFadeInRestartMenu();
+	}
+	PauseMenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
 
 void UPauseMenuWidget::OnButtonClicked_RestartCurrentMode()
 {
-	SlideButtons(SlideRightButton_RestartCurrentMode);
 	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
 	QuitMenuWidget->PlayFadeInRestartMenu();
-}
-
-void UPauseMenuWidget::OnButtonClicked_Quit()
-{
-	SlideButtons(SlideRightButton_Quit);
-	QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
-	QuitMenuWidget->PlayInitialFadeInMenu();
-}
-
-void UPauseMenuWidget::SlideQuitMenuButtonsLeft()
-{
-	SlideRightButton_RestartCurrentMode->SlideButton(false);
-	SlideRightButton_Quit->SlideButton(false);
-}
-
-void UPauseMenuWidget::SlideButtons(const USlideRightButton* ActiveButton)
-{
-	for (TTuple<USlideRightButton*, UVerticalBox*>& Elem : PauseMenuWidgets)
-	{
-		if (Elem.Key != ActiveButton)
-		{
-			Elem.Key->SlideButton(false);
-			continue;
-		}
-		Elem.Key->SlideButton(true);
-		PauseMenuSwitcher->SetActiveWidget(Elem.Value);
-	}
+	MenuButton_RestartCurrentMode->SetActive();
+	PauseMenuSwitcher->SetActiveWidget(MenuButton_RestartCurrentMode);
 }
