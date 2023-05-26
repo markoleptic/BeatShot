@@ -378,8 +378,13 @@ struct FBS_TargetConfig
 	float SpawnBeatDelay;
 
 	/** How many times the target shrinks before completely dissipating */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | FifthMode")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | ChargedBeatTrack")
 	int32 NumCharges;
+
+	/** How much to shrink the target each time a charge is consumed, if the target is charged. This is multiplied
+	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | ChargedBeatTrack")
+	float ConsecutiveChargeScaleMultiplier;
 
 	FBS_TargetConfig()
 	{
@@ -390,7 +395,8 @@ struct FBS_TargetConfig
 		TargetSpawnCD = DefaultTargetSpawnCD;
 		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
 		SpawnBeatDelay = DefaultSpawnBeatDelay;
-		NumCharges = -1;
+		NumCharges = DefaultNumCharges;
+		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
 	}
 };
 
@@ -465,19 +471,19 @@ struct FBS_SpatialConfig
 };
 
 USTRUCT(BlueprintType)
-struct FBS_BeatTrackConfig
+struct FBS_TrackingConfig
 {
 	GENERATED_BODY()
 
-	/** The minimum speed multiplier for Tracking Game Mode */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
+	/** The minimum speed multiplier for a moving target */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Tracking")
 	float MinTrackingSpeed;
 
-	/** The maximum speed multiplier for Tracking Game Mode */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
+	/** The maximum speed multiplier for a moving target */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Tracking")
 	float MaxTrackingSpeed;
 
-	FBS_BeatTrackConfig()
+	FBS_TrackingConfig()
 	{
 		MinTrackingSpeed = 500.f;
 		MaxTrackingSpeed = 500.f;
@@ -488,20 +494,20 @@ struct FBS_BeatTrackConfig
 		switch (Difficulty)
 		{
 		case EGameModeDifficulty::None:
-			MinTrackingSpeed = MinTrackingSpeed_Normal;
-			MaxTrackingSpeed = MaxTrackingSpeed_Normal;
+			MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Normal;
+			MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Normal;
 			break;
 		case EGameModeDifficulty::Normal:
-			MinTrackingSpeed = MinTrackingSpeed_Normal;
-			MaxTrackingSpeed = MaxTrackingSpeed_Normal;
+			MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Normal;
+			MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Normal;
 			break;
 		case EGameModeDifficulty::Hard:
-			MinTrackingSpeed = MinTrackingSpeed_Hard;
-			MaxTrackingSpeed = MaxTrackingSpeed_Hard;
+			MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Hard;
+			MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Hard;
 			break;
 		case EGameModeDifficulty::Death:
-			MinTrackingSpeed = MinTrackingSpeed_Death;
-			MaxTrackingSpeed = MaxTrackingSpeed_Death;
+			MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Death;
+			MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Death;
 			break;
 		}
 	}
@@ -531,7 +537,7 @@ struct FBSConfig
 
 	/** Contains info for the target spawner for BeatTrack specific game modes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatTrack")
-	FBS_BeatTrackConfig BeatTrackConfig;
+	FBS_TrackingConfig TrackingConfig;
 
 	/** Contains info for the target spawner about how to lay out the targets in space */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spacing")
@@ -557,16 +563,16 @@ struct FBSConfig
 		AIConfig = FBS_AIConfig();
 		AudioConfig = FBS_AudioConfig();
 		BeatGridConfig = FBS_BeatGridConfig();
-		BeatTrackConfig = FBS_BeatTrackConfig();
+		TrackingConfig = FBS_TrackingConfig();
 		SpatialConfig = FBS_SpatialConfig();
 		TargetConfig = FBS_TargetConfig();
 	}
 
-	/** Returns a preset FBSConfig based on the BaseGameMode and Difficulty*/
-	static FBSConfig MakePresetConfig(const EBaseGameMode& InBaseGameMode, const EGameModeDifficulty& InDifficulty)
+	/** Returns a preset FBSConfig based on the preset base game mode and difficulty */
+	static FBSConfig MakePresetConfig(const EBaseGameMode& InPresetGameMode, const EGameModeDifficulty& InDifficulty)
 	{
 		FBSConfig Config;
-		Config.DefiningConfig = GetConfigForPreset(InBaseGameMode, InDifficulty);
+		Config.DefiningConfig = GetConfigForPreset(InPresetGameMode, InDifficulty);
 		switch (Config.DefiningConfig.BaseGameMode)
 		{
 		case EBaseGameMode::SingleBeat:
@@ -575,7 +581,7 @@ struct FBSConfig
 				{
 				case EGameModeDifficulty::Normal:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_SingleBeat_Normal;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_SingleBeat_Normal;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Normal;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Normal;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Normal;
@@ -584,7 +590,7 @@ struct FBSConfig
 					}
 				case EGameModeDifficulty::Hard:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_SingleBeat_Hard;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_SingleBeat_Hard;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Hard;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Hard;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Hard;
@@ -593,7 +599,7 @@ struct FBSConfig
 					}
 				case EGameModeDifficulty::Death:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_SingleBeat_Death;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_SingleBeat_Death;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_SingleBeat_Death;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_SingleBeat_Death;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_SingleBeat_Death;
@@ -607,15 +613,15 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Dynamic;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::EdgeOnly;
 				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
-				break;
 			}
+			break;
 		case EBaseGameMode::MultiBeat:
 			{
 				switch (Config.DefiningConfig.Difficulty)
 				{
 				case EGameModeDifficulty::Normal:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_MultiBeat_Normal;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_MultiBeat_Normal;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Normal;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Normal;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Normal;
@@ -624,7 +630,7 @@ struct FBSConfig
 					}
 				case EGameModeDifficulty::Hard:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_MultiBeat_Hard;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_MultiBeat_Hard;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Hard;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Hard;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Hard;
@@ -633,7 +639,7 @@ struct FBSConfig
 					}
 				case EGameModeDifficulty::Death:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_MultiBeat_Death;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_MultiBeat_Death;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_MultiBeat_Death;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_MultiBeat_Death;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_MultiBeat_Death;
@@ -647,18 +653,15 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Dynamic;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
 				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
-				// TEMP
-				Config.TargetConfig.NumCharges = 0;
-				// END TEMP
-				break;
 			}
+			break;
 		case EBaseGameMode::BeatGrid:
 			{
 				switch (Config.DefiningConfig.Difficulty)
 				{
 				case EGameModeDifficulty::Normal:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatGrid_Normal;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_BeatGrid_Normal;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Normal;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Normal;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Normal;
@@ -667,7 +670,7 @@ struct FBSConfig
 					}
 				case EGameModeDifficulty::Hard:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatGrid_Hard;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_BeatGrid_Hard;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Hard;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Hard;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Hard;
@@ -676,7 +679,7 @@ struct FBSConfig
 					}
 				case EGameModeDifficulty::Death:
 					{
-						Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatGrid_Death;
+						Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_BeatGrid_Death;
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatGrid_Death;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Death;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Death;
@@ -691,8 +694,8 @@ struct FBSConfig
 				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Static;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
-				break;
 			}
+			break;
 		case EBaseGameMode::BeatTrack:
 			{
 				switch (Config.DefiningConfig.Difficulty)
@@ -722,15 +725,58 @@ struct FBSConfig
 					break;
 				}
 				Config.TargetConfig.ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::Static;
-				Config.TargetConfig.SpawnBeatDelay = PlayerDelay_BeatTrack;
-				Config.TargetConfig.NumCharges = 0;
-				Config.BeatTrackConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
+				Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_BeatTrack;
+				Config.TrackingConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Static;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
 				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatTrack;
-				break;
 			}
-		default:
+			break;
+		case EBaseGameMode::ChargedBeatTrack:
+			{
+				switch (Config.DefiningConfig.Difficulty)
+				{
+				case EGameModeDifficulty::Normal:
+					{
+						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_ChargedBeatTrack_Normal;
+						Config.TargetConfig.MinTargetScale = MinTargetScale_ChargedBeatTrack_Normal;
+						Config.TargetConfig.MaxTargetScale = MaxTargetScale_ChargedBeatTrack_Normal;
+						Config.TargetConfig.NumCharges = NumCharges_ChargedBeatTrack_Normal;
+						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = ChargeScaleMultiplier_ChargedBeatTrack_Normal;
+						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_ChargedBeatTrack_Normal;
+						break;
+					}
+				case EGameModeDifficulty::Hard:
+					{
+						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_ChargedBeatTrack_Hard;
+						Config.TargetConfig.MinTargetScale = MinTargetScale_ChargedBeatTrack_Hard;
+						Config.TargetConfig.MaxTargetScale = MaxTargetScale_ChargedBeatTrack_Hard;
+						Config.TargetConfig.NumCharges = NumCharges_ChargedBeatTrack_Hard;
+						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = TargetMaxLifeSpan_ChargedBeatTrack_Hard;
+						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_ChargedBeatTrack_Hard;
+						break;
+					}
+				case EGameModeDifficulty::Death:
+					{
+						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_ChargedBeatTrack_Death;
+						Config.TargetConfig.MinTargetScale = MinTargetScale_ChargedBeatTrack_Death;
+						Config.TargetConfig.MaxTargetScale = MaxTargetScale_ChargedBeatTrack_Death;
+						Config.TargetConfig.NumCharges = NumCharges_ChargedBeatTrack_Death;
+						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = ChargeScaleMultiplier_ChargedBeatTrack_Death;
+						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_ChargedBeatTrack_Death;
+						break;
+					}
+				case EGameModeDifficulty::None:
+					break;
+				}
+				Config.TargetConfig.ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::Static;
+				Config.TargetConfig.SpawnBeatDelay = 0.25;
+				Config.TrackingConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
+				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingMethod::Static;
+				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionMethod::FullRange;
+			}
+			break;
+		case EBaseGameMode::None:
 			break;
 		}
 		/* SpawnBeatDelay is the same as PlayerDelay */
@@ -738,14 +784,15 @@ struct FBSConfig
 		return Config;
 	}
 
-	/** Returns an array of all default game modes, all set to normal difficulty */
-	static TArray<FBSConfig> GetDefaultGameModes()
+	/** Returns an array of all preset game modes, all set to normal difficulty */
+	static TArray<FBSConfig> GetPresetGameModes()
 	{
 		TArray<FBSConfig> DefaultModes;
 		DefaultModes.Add(MakePresetConfig(EBaseGameMode::BeatGrid, EGameModeDifficulty::Normal));
 		DefaultModes.Add(MakePresetConfig(EBaseGameMode::BeatTrack, EGameModeDifficulty::Normal));
 		DefaultModes.Add(MakePresetConfig(EBaseGameMode::SingleBeat, EGameModeDifficulty::Normal));
 		DefaultModes.Add(MakePresetConfig(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal));
+		DefaultModes.Add(MakePresetConfig(EBaseGameMode::ChargedBeatTrack, EGameModeDifficulty::Normal));
 		return DefaultModes;
 	}
 

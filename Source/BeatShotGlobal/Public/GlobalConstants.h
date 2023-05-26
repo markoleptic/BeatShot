@@ -92,12 +92,14 @@ namespace Constants
 #pragma region DefaultGameModes
 
 	inline constexpr float DefaultPlayerDelay = 0.3f;
+	inline constexpr float DefaultSpawnBeatDelay = 0.3f;
 	inline constexpr float DefaultMinTargetScale = 0.8f;
 	inline constexpr float DefaultMaxTargetScale = 2.f;
 	inline constexpr float DefaultTargetSpawnCD = 0.35f;
 	inline constexpr float DefaultTargetMaxLifeSpan = 1.5f;
-	inline constexpr float DefaultSpawnBeatDelay = 0.3f;
 	inline constexpr float DefaultMinDistanceBetweenTargets = 10.f;
+	inline constexpr int32 DefaultNumCharges = INDEX_NONE;
+	inline constexpr float DefaultChargeScaleMultiplier = 1.f;
 
 	inline const FVector BoxBounds_Wide_SingleBeat(0.f, 3200.f, 1000.f);
 	inline const FVector BoxBounds_Narrow_SingleBeat(0.f, 1600.f, 500.f);
@@ -108,7 +110,7 @@ namespace Constants
 	inline const FVector BoxBounds_Dynamic_MultiBeat(0.f, 2000.f, 800.f);
 
 	/* BeatTrack is the only case where PlayerDelay is different from TargetSpawnCD */
-	inline constexpr float PlayerDelay_BeatTrack = 0.f;
+	inline constexpr float SpawnBeatDelay_BeatTrack = 0.f;
 	inline constexpr float TargetMaxLifeSpan_BeatTrack = 0.f;
 	
 	// Normal Difficulty
@@ -117,23 +119,21 @@ namespace Constants
 	inline constexpr int32 NumVerticalBeatGridTargets_Normal = 5;
 	inline constexpr int32 NumTargetsAtOnceBeatGrid_Normal = -1;
 	inline const FVector2D BeatGridSpacing_Normal(75, 50);
-	inline constexpr float MinTrackingSpeed_Normal = 400.f;
-	inline constexpr float MaxTrackingSpeed_Normal = 500.f;
 	
-	inline constexpr float PlayerDelay_SingleBeat_Normal = 0.3f;
-	inline constexpr float TargetSpawnCD_SingleBeat_Normal = PlayerDelay_SingleBeat_Normal;
+	inline constexpr float SpawnBeatDelay_SingleBeat_Normal = 0.3f;
+	inline constexpr float TargetSpawnCD_SingleBeat_Normal = SpawnBeatDelay_SingleBeat_Normal;
 	inline constexpr float TargetMaxLifeSpan_SingleBeat_Normal = 0.8f;
 	inline constexpr float MinTargetScale_SingleBeat_Normal = 0.75f;
 	inline constexpr float MaxTargetScale_SingleBeat_Normal = 2.f;
 
-	inline constexpr float PlayerDelay_MultiBeat_Normal = 0.35f;
-	inline constexpr float TargetSpawnCD_MultiBeat_Normal = PlayerDelay_MultiBeat_Normal;
+	inline constexpr float SpawnBeatDelay_MultiBeat_Normal = 0.35f;
+	inline constexpr float TargetSpawnCD_MultiBeat_Normal = SpawnBeatDelay_MultiBeat_Normal;
 	inline constexpr float TargetMaxLifeSpan_MultiBeat_Normal = 1.f;
 	inline constexpr float MinTargetScale_MultiBeat_Normal = 0.75f;
 	inline constexpr float MaxTargetScale_MultiBeat_Normal = 2.f;
 
-	inline constexpr float PlayerDelay_BeatGrid_Normal = 0.30f;
-	inline constexpr float TargetSpawnCD_BeatGrid_Normal = PlayerDelay_BeatGrid_Normal;
+	inline constexpr float SpawnBeatDelay_BeatGrid_Normal = 0.30f;
+	inline constexpr float TargetSpawnCD_BeatGrid_Normal = SpawnBeatDelay_BeatGrid_Normal;
 	inline constexpr float TargetMaxLifeSpan_BeatGrid_Normal = 1.f;
 	inline constexpr float MinTargetScale_BeatGrid_Normal = 0.80f;
 	inline constexpr float MaxTargetScale_BeatGrid_Normal = 0.80f;
@@ -141,6 +141,17 @@ namespace Constants
 	inline constexpr float TargetSpawnCD_BeatTrack_Normal = 0.75f;
 	inline constexpr float MinTargetScale_BeatTrack_Normal = 1.3f;
 	inline constexpr float MaxTargetScale_BeatTrack_Normal = 1.3f;
+	inline constexpr float MinTrackingSpeed_BeatTrack_Normal = 400.f;
+	inline constexpr float MaxTrackingSpeed_BeatTrack_Normal = 500.f;
+
+	inline constexpr float TargetSpawnCD_ChargedBeatTrack_Normal = 0.4f;
+	inline constexpr float MinTargetScale_ChargedBeatTrack_Normal = 1.3f;
+	inline constexpr float MaxTargetScale_ChargedBeatTrack_Normal = 1.3f;
+	inline constexpr float TargetMaxLifeSpan_ChargedBeatTrack_Normal = 0.8f;
+	inline constexpr int32 NumCharges_ChargedBeatTrack_Normal = 2;
+	inline constexpr float ChargeScaleMultiplier_ChargedBeatTrack_Normal = 0.50f;
+	inline constexpr float MinTrackingSpeed_ChargedBeatTrack_Normal = 400.f;
+	inline constexpr float MaxTrackingSpeed_ChargedBeatTrack_Normal = 500.f;
 	
 	// Hard Difficulty
 	
@@ -148,23 +159,21 @@ namespace Constants
 	inline constexpr int32 NumVerticalBeatGridTargets_Hard = 8;
 	inline constexpr int32 NumTargetsAtOnceBeatGrid_Hard = -1;
 	inline const FVector2D BeatGridSpacing_Hard(75, 50);
-	inline constexpr float MinTrackingSpeed_Hard = 500.f;
-	inline constexpr float MaxTrackingSpeed_Hard = 600.f;
 	
-	inline constexpr float PlayerDelay_SingleBeat_Hard = 0.25f;
-	inline constexpr float TargetSpawnCD_SingleBeat_Hard = PlayerDelay_SingleBeat_Hard;
+	inline constexpr float SpawnBeatDelay_SingleBeat_Hard = 0.25f;
+	inline constexpr float TargetSpawnCD_SingleBeat_Hard = SpawnBeatDelay_SingleBeat_Hard;
 	inline constexpr float TargetMaxLifeSpan_SingleBeat_Hard = 0.65f;
 	inline constexpr float MinTargetScale_SingleBeat_Hard = 0.6f;
 	inline constexpr float MaxTargetScale_SingleBeat_Hard = 1.5f;
 
-	inline constexpr float PlayerDelay_MultiBeat_Hard = 0.3f;
-	inline constexpr float TargetSpawnCD_MultiBeat_Hard = PlayerDelay_MultiBeat_Hard;
+	inline constexpr float SpawnBeatDelay_MultiBeat_Hard = 0.3f;
+	inline constexpr float TargetSpawnCD_MultiBeat_Hard = SpawnBeatDelay_MultiBeat_Hard;
 	inline constexpr float TargetMaxLifeSpan_MultiBeat_Hard = 0.75f;
 	inline constexpr float MinTargetScale_MultiBeat_Hard = 0.6f;
 	inline constexpr float MaxTargetScale_MultiBeat_Hard = 1.5f;
 
-	inline constexpr float PlayerDelay_BeatGrid_Hard = 0.25f;
-	inline constexpr float TargetSpawnCD_BeatGrid_Hard = PlayerDelay_BeatGrid_Hard;
+	inline constexpr float SpawnBeatDelay_BeatGrid_Hard = 0.25f;
+	inline constexpr float TargetSpawnCD_BeatGrid_Hard = SpawnBeatDelay_BeatGrid_Hard;
 	inline constexpr float TargetMaxLifeSpan_BeatGrid_Hard = 0.8f;
 	inline constexpr float MinTargetScale_BeatGrid_Hard = 0.65f;
 	inline constexpr float MaxTargetScale_BeatGrid_Hard = 0.65f;
@@ -172,6 +181,17 @@ namespace Constants
 	inline constexpr float TargetSpawnCD_BeatTrack_Hard = 0.6f;
 	inline constexpr float MinTargetScale_BeatTrack_Hard = 1.f;
 	inline constexpr float MaxTargetScale_BeatTrack_Hard = 1.f;
+	inline constexpr float MinTrackingSpeed_BeatTrack_Hard = 500.f;
+	inline constexpr float MaxTrackingSpeed_BeatTrack_Hard = 600.f;
+
+	inline constexpr float TargetSpawnCD_ChargedBeatTrack_Hard = 0.35f;
+	inline constexpr float MinTargetScale_ChargedBeatTrack_Hard = 1.f;
+	inline constexpr float MaxTargetScale_ChargedBeatTrack_Hard = 1.f;
+	inline constexpr float TargetMaxLifeSpan_ChargedBeatTrack_Hard = 0.7f;
+	inline constexpr int32 NumCharges_ChargedBeatTrack_Hard = 3;
+	inline constexpr float ChargeScaleMultiplier_ChargedBeatTrack_Hard = 0.70f;
+	inline constexpr float MinTrackingSpeed_ChargedBeatTrack_Hard = 500.f;
+	inline constexpr float MaxTrackingSpeed_ChargedBeatTrack_Hard = 600.f;
 	
 	// Death Difficulty
 	
@@ -179,23 +199,21 @@ namespace Constants
 	inline constexpr int32 NumVerticalBeatGridTargets_Death = 10;
 	inline constexpr int32 NumTargetsAtOnceBeatGrid_Death = -1;
 	inline const FVector2D BeatGridSpacing_Death(75, 50);
-	inline constexpr float MinTrackingSpeed_Death = 600.f;
-	inline constexpr float MaxTrackingSpeed_Death = 700.f;
 	
-	inline constexpr float PlayerDelay_SingleBeat_Death = 0.2f;
-	inline constexpr float TargetSpawnCD_SingleBeat_Death = PlayerDelay_SingleBeat_Death;
+	inline constexpr float SpawnBeatDelay_SingleBeat_Death = 0.2f;
+	inline constexpr float TargetSpawnCD_SingleBeat_Death = SpawnBeatDelay_SingleBeat_Death;
 	inline constexpr float TargetMaxLifeSpan_SingleBeat_Death = 0.45f;
 	inline constexpr float MinTargetScale_SingleBeat_Death = 0.4f;
 	inline constexpr float MaxTargetScale_SingleBeat_Death= 1.5f;
 
-	inline constexpr float PlayerDelay_MultiBeat_Death = 0.25f;
-	inline constexpr float TargetSpawnCD_MultiBeat_Death = PlayerDelay_MultiBeat_Death;
+	inline constexpr float SpawnBeatDelay_MultiBeat_Death = 0.25f;
+	inline constexpr float TargetSpawnCD_MultiBeat_Death = SpawnBeatDelay_MultiBeat_Death;
 	inline constexpr float TargetMaxLifeSpan_MultiBeat_Death = 0.5f;
 	inline constexpr float MinTargetScale_MultiBeat_Death = 0.4f;
 	inline constexpr float MaxTargetScale_MultiBeat_Death = 1.25f;
 
-	inline constexpr float PlayerDelay_BeatGrid_Death = 0.25f;
-	inline constexpr float TargetSpawnCD_BeatGrid_Death = PlayerDelay_BeatGrid_Death;
+	inline constexpr float SpawnBeatDelay_BeatGrid_Death = 0.25f;
+	inline constexpr float TargetSpawnCD_BeatGrid_Death = SpawnBeatDelay_BeatGrid_Death;
 	inline constexpr float TargetMaxLifeSpan_BeatGrid_Death = 0.65f;
 	inline constexpr float MinTargetScale_BeatGrid_Death = 0.5f;
 	inline constexpr float MaxTargetScale_BeatGrid_Death = 0.5f;
@@ -203,6 +221,18 @@ namespace Constants
 	inline constexpr float TargetSpawnCD_BeatTrack_Death = 0.45f;
 	inline constexpr float MinTargetScale_BeatTrack_Death = 0.75;
 	inline constexpr float MaxTargetScale_BeatTrack_Death = 0.75;
+	inline constexpr float MinTrackingSpeed_BeatTrack_Death = 600.f;
+	inline constexpr float MaxTrackingSpeed_BeatTrack_Death = 700.f;
+
+	inline constexpr float TargetSpawnCD_ChargedBeatTrack_Death = 0.25f;
+	inline constexpr float MinTargetScale_ChargedBeatTrack_Death = 0.75;
+	inline constexpr float MaxTargetScale_ChargedBeatTrack_Death = 0.75;
+	inline constexpr float TargetMaxLifeSpan_ChargedBeatTrack_Death = 0.5f;
+	inline constexpr int32 NumCharges_ChargedBeatTrack_Death= 4;
+	inline constexpr float ChargeScaleMultiplier_ChargedBeatTrack_Death = 0.70f;
+	inline constexpr float MinTrackingSpeed_ChargedBeatTrack_Death = 600.f;
+	inline constexpr float MaxTrackingSpeed_ChargedBeatTrack_Death = 700.f;
+
 
 #pragma endregion
 
@@ -290,6 +320,14 @@ namespace Constants
 	inline constexpr float MinValue_FloorDistance = 110;
 	inline constexpr float MaxValue_FloorDistance = 1000;
 	inline constexpr float SnapSize_FloorDistance = 10;
+
+	inline constexpr float MinValue_ConsecutiveChargeScaleMultiplier = 0.25f;
+	inline constexpr float MaxValue_ConsecutiveChargeScaleMultiplier = 1.f;
+	inline constexpr float SnapSize_ConsecutiveChargeScaleMultiplier = 0.01f;
+
+	inline constexpr int32 MinValue_NumCharges = -1;
+	inline constexpr int32 MaxValue_NumCharges = 5;
+	inline constexpr int32 SnapSize_NumCharges = 1;
 	
 	// AI
 	

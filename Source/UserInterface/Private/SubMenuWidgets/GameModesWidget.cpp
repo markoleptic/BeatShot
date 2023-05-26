@@ -81,13 +81,13 @@ void UGameModesWidget::NativeConstruct()
 	MenuButton_DefaultGameModes->SetActive();
 	
 	/* Setup default custom game mode options to MultiBeat */
-	const FBSConfig DefaultMultiBeatMode = FBSConfig::GetDefaultGameModes()[3];
+	const FBSConfig DefaultMultiBeatMode = FBSConfig::GetPresetGameModes()[3];
 	
 	DefiningConfig->ComboBox_GameModeName->ClearOptions();
 	DefiningConfig->ComboBox_BaseGameMode->ClearOptions();
 
 	/* Add DefaultModes to GameModeName ComboBox and BaseGameMode ComboBox */
-	for (const FBSConfig& GameMode : FBSConfig::GetDefaultGameModes())
+	for (const FBSConfig& GameMode : FBSConfig::GetPresetGameModes())
 	{
 		const FString GameModeName = UEnum::GetDisplayValueAsText(GameMode.DefiningConfig.BaseGameMode).ToString();
 		DefiningConfig->ComboBox_GameModeName->AddOption(GameModeName);
@@ -317,9 +317,15 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Visible);
-		BeatTrackConfig->InitializeBeatTrackConfig(InBSConfig.BeatTrackConfig, InBSConfig.DefiningConfig.BaseGameMode);
+		BeatTrackConfig->InitializeBeatTrackConfig(InBSConfig.TrackingConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
-	default:
+	case EBaseGameMode::ChargedBeatTrack:
+		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
+		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Visible);
+		BeatTrackConfig->InitializeBeatTrackConfig(InBSConfig.TrackingConfig, InBSConfig.DefiningConfig.BaseGameMode);
+		break;
+	case EBaseGameMode::None:
 		break;
 	}
 }
@@ -333,7 +339,7 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	ReturnStruct.AIConfig = AIConfig->GetAIConfig();
 	ReturnStruct.SpatialConfig = SpatialConfig->GetSpatialConfig();
 	ReturnStruct.BeatGridConfig = BeatGridConfig->GetBeatGridConfig();
-	ReturnStruct.BeatTrackConfig = BeatTrackConfig->GetBeatTrackConfig();
+	ReturnStruct.TrackingConfig = BeatTrackConfig->GetBeatTrackConfig();
 	return ReturnStruct;
 }
 

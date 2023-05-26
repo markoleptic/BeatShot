@@ -142,10 +142,6 @@ void ABSGameMode::StartGameMode()
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 	StartGameModeTimers();
 	TargetSpawner->SetShouldSpawn(true);
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
-	{
-		TargetSpawner->CallSpawnFunction();
-	}
 }
 
 void ABSGameMode::StartGameModeTimers()

@@ -23,7 +23,7 @@ void AStaticCubeVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnal
 {
 	Super::InitializeVisualizer(InAASettings);
 
-	CubeVisualizerDefinition = Cast<UCubeVisualizerDefinition>(VisualizerDefinition.GetDefaultObject());
+	CubeVisualizerDefinition = GetVisualizerDefinition();
 
 	InstancedBaseMesh->ClearInstances();
 	InstancedVerticalOutlineMesh->ClearInstances();

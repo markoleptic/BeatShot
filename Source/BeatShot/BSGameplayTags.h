@@ -85,6 +85,7 @@ struct FBSGameplayTags
 	FGameplayTag Target_State_Single;
 	FGameplayTag Target_State_Multi;
 	FGameplayTag Target_State_Tracking;
+	FGameplayTag Target_State_Charged;
 
 	FGameplayTag Cheat;
 	FGameplayTag Cheat_AimBot;

@@ -39,3 +39,5 @@ TargetDistributionMethod_EdgeOnly,Only spawn targets on the edges of the current
 TargetDistributionMethod_FullRange,Spawn targets anywhere in the current spawn area.
 TargetDistributionMethod_HeadshotHeightOnly,The targests will only spawn at headshot height.
 TargetSpawnCD,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
+NumCharges,How many charges or lives each target has before fully dissipating.
+ChargeScaleMultiplier,How much to shrink the target after a charge is consumed. This number is multiplied by the target's scale prior to the charge being consumed.

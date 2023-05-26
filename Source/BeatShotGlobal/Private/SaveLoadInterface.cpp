@@ -145,7 +145,7 @@ void ISaveLoadInterface::RemoveAllCustomGameModes()
 
 FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName) const
 {
-	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
+	for (const FBSConfig& Mode : FBSConfig::GetPresetGameModes())
 	{
 		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.BaseGameMode).ToString()))
 		{
@@ -169,7 +169,7 @@ FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeNa
 
 bool ISaveLoadInterface::IsPresetGameMode(const FString& GameModeName) const
 {
-	for (const FBSConfig& Mode : FBSConfig::GetDefaultGameModes())
+	for (const FBSConfig& Mode : FBSConfig::GetPresetGameModes())
 	{
 		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.BaseGameMode).ToString(), ESearchCase::IgnoreCase))
 		{

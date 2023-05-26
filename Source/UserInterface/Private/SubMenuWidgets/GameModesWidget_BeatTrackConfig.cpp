@@ -43,15 +43,15 @@ void UGameModesWidget_BeatTrackConfig::InitSettingCategoryWidget()
 	Super::InitSettingCategoryWidget();
 }
 
-void UGameModesWidget_BeatTrackConfig::InitializeBeatTrackConfig(const FBS_BeatTrackConfig& InBeatTrackConfig, const EBaseGameMode& BaseGameMode)
+void UGameModesWidget_BeatTrackConfig::InitializeBeatTrackConfig(const FBS_TrackingConfig& InBeatTrackConfig, const EBaseGameMode& BaseGameMode)
 {
 	TargetSpeedConstrained->UpdateDefaultValues(InBeatTrackConfig.MinTrackingSpeed, InBeatTrackConfig.MaxTrackingSpeed, InBeatTrackConfig.MinTrackingSpeed == InBeatTrackConfig.MaxTrackingSpeed);
 	UpdateBrushColors();
 }
 
-FBS_BeatTrackConfig UGameModesWidget_BeatTrackConfig::GetBeatTrackConfig() const
+FBS_TrackingConfig UGameModesWidget_BeatTrackConfig::GetBeatTrackConfig() const
 {
-	FBS_BeatTrackConfig ReturnConfig;
+	FBS_TrackingConfig ReturnConfig;
 	ReturnConfig.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMinValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	ReturnConfig.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMaxValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	return ReturnConfig;

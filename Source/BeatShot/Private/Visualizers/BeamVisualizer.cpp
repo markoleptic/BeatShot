@@ -14,7 +14,7 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 {
 	Super::InitializeVisualizer(InAASettings);
 	
-	BeamVisualizerDefinition = Cast<UBeamVisualizerDefinition>(VisualizerDefinition.GetDefaultObject());
+	BeamVisualizerDefinition = GetVisualizerDefinition();
 	
 	if (GetSimpleBeamLights().Num() >= GetFastDef().NumVisualizerLightsToSpawn)
 	{
@@ -63,6 +63,12 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 	case EVisualizerLightSpawningMethod::AddExistingLightsFromLevel:
 		return;
 	}
+
+	if (!GetFastDef().VisualizerLightClass)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("A class was not provided in the Visualizer Light Class property of a Beam Visualizer's definition"));
+		return;
+	}
 	
 	for (int i = 0; i < SpawnTransforms.Num(); i++)
 	{
@@ -100,7 +106,7 @@ void ABeamVisualizer::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 
 void ABeamVisualizer::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
 {
-	BeamVisualizerDefinition = Cast<UBeamVisualizerDefinition>(VisualizerDefinition.GetDefaultObject());
+	BeamVisualizerDefinition = GetVisualizerDefinition();
 	
 	Super::InitializeVisualizerFromWorld(InAASettings, BeamVisualizerDefinition->VisualizerLightsFromLevel.Num());
 	
@@ -172,8 +178,4 @@ void ABeamVisualizer::OnBeamLightLifetimeCompleted(const int32 IndexToRemove)
 	{
 		ActiveLightIndices.Remove(IndexToRemove);
 	}
-}
-
-void ABeamVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
-{
 }

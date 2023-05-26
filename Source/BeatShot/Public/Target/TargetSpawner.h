@@ -99,6 +99,9 @@ public:
 	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
 
 private:
+	UFUNCTION()
+	void OnGameModeStarted();
+	
 	/** Initializes the SpawnCounter array */
 	FIntPoint InitializeSpawnCounter();
 	
@@ -120,11 +123,19 @@ private:
 	/** Initial BeatTrack target spawn */
 	void SpawnBeatTrackTarget();
 
+	/** Initial BeatTrack target spawn */
+	void SpawnChargedTarget();
+
 	/** Change the tracking target direction on beat */
-	void SetNewTrackingDirection();
+	void UpdateBeatTrackTarget();
+	
+	void UpdateChargedTarget();
 
 	/** Updates the position of the BeatTrack target on tick */
-	void OnTick_UpdateBeatTrackTargetLocation(const float DeltaTime);
+	void OnTick_UpdateTargetLocation(const float DeltaTime);
+
+	/** An array of spawned targets that is used to move targets forward towards the player on tick */
+	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
 	/** The expiration or destruction of any non-BeatTrack target is bound to this function
 	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
@@ -136,9 +147,9 @@ private:
 	UFUNCTION()
 	void OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
 
-	/** Function to reverse direction of target if no longer overlapping the SpawnBox */
+	/** Called when any actor stops overlapping the OverlapSpawnBox. Used to reverse direction of target when it goes out of bounds */
 	UFUNCTION()
-	void OnBeatTrackOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	void OnOverlapEnd_OverlapSpawnBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	/** Calls functions to get the next target's location and scale */
 	void FindNextTargetProperties();
@@ -187,9 +198,6 @@ private:
 
 	/** Returns the VectorCounter corresponding to the point */
 	FVectorCounter GetVectorCounterFromPoint(const FVector& Point) const;
-	
-	/** An array of spawned targets that is used to move targets forward towards the player on tick */
-	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
 	/** Adds a FRecentTarget to the RecentTargets array */
 	int32 AddToRecentTargets(const ASphereTarget* SpawnTarget, const float Scale);

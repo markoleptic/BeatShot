@@ -7,7 +7,7 @@
 #include "CubeVisualizerDefinition.generated.h"
 
 /** Configuration unique to a CubeVisualizer */
-UCLASS(Blueprintable, Const, Abstract, BlueprintType)
+UCLASS(Blueprintable, Const, Abstract, EditInlineNew, BlueprintType)
 class BEATSHOT_API UCubeVisualizerDefinition : public UBSVisualizerDefinition
 {
 	GENERATED_BODY()

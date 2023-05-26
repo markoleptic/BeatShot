@@ -20,10 +20,10 @@ void AVisualizerBase::Destroyed()
 
 void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
-	SetActorLocation(GetVisualizerDefinition().Location);
-	SetActorRotation(GetVisualizerDefinition().Rotation);
-	SetActorScale3D(GetVisualizerDefinition().Scale);
-	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, GetVisualizerDefinition().NumVisualizerLightsToSpawn);
+	SetActorLocation(GetVisualizerDefinition()->Location);
+	SetActorRotation(GetVisualizerDefinition()->Rotation);
+	SetActorScale3D(GetVisualizerDefinition()->Scale);
+	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, GetVisualizerDefinition()->NumVisualizerLightsToSpawn);
 }
 
 void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
@@ -31,25 +31,9 @@ void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioA
 	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, NumSpawnedVisualizers);
 }
 
-void AVisualizerBase::ActivateVisualizer(const int32 Index)
-{
-}
-
-void AVisualizerBase::DeactivateVisualizers()
-{
-}
-
-void AVisualizerBase::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
-{
-}
-
 void AVisualizerBase::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
 	InitializeVisualizer(InAASettings);
-}
-
-void AVisualizerBase::MarkRenderStateDirty()
-{
 }
 
 void AVisualizerBase::AddVisualizerPointsToSpline()
@@ -68,7 +52,7 @@ void AVisualizerBase::AddVisualizerPointsToSpline()
 		Points.Emplace(FSplinePoint(i, Start + PointAddDirection * Offset * i, ESplinePointType::Constant));
 	}
 	VisualizerPositioning->AddPoints(Points);
-	VisualizerDefinition.GetDefaultObject()->SetNumberOfVisualizers(VisualizerPositioning->GetNumberOfSplinePoints());
+	VisualizerDefinition->SetNumberOfVisualizers(VisualizerPositioning->GetNumberOfSplinePoints());
 }
 
 void AVisualizerBase::AddTestVisualizer()
@@ -87,7 +71,7 @@ void AVisualizerBase::AddTestVisualizer()
 
 void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels, const int32 NumVisualizers)
 {
-	UBSVisualizerDefinition* BaseConfig = &GetVisualizerDefinition();
+	UBSVisualizerDefinition* BaseConfig = GetVisualizerDefinition();
 	
 	BaseConfig->MappedIndices.Init(FChannelToVisualizerMap(), NumBandChannels);
 
@@ -185,7 +169,7 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 
 TArray<int32>& AVisualizerBase::GetLightIndices(const int32 ChannelIndex)
 {
-	return GetVisualizerDefinition().MappedIndices[ChannelIndex].VisualizerIndices;
+	return GetVisualizerDefinition()->MappedIndices[ChannelIndex].VisualizerIndices;
 }
 
 TArray<FVector> AVisualizerBase::GetSplinePointLocations() const

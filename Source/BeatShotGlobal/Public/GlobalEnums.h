@@ -22,9 +22,23 @@ enum class EBaseGameMode : uint8
 	SingleBeat UMETA(DisplayName="SingleBeat"),
 	MultiBeat UMETA(DisplayName="MultiBeat"),
 	BeatGrid UMETA(DisplayName="BeatGrid"),
-	BeatTrack UMETA(DisplayName="BeatTrack")
+	BeatTrack UMETA(DisplayName="BeatTrack"),
+	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::BeatTrack);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::ChargedBeatTrack);
+
+/** Enum representing the base game modes. Preset game modes aren't necessarily a BaseGameMode */
+UENUM(BlueprintType)
+enum class EPresetGameMode : uint8
+{
+	None UMETA(DisplayName="None"),
+	SingleBeat UMETA(DisplayName="SingleBeat"),
+	MultiBeat UMETA(DisplayName="MultiBeat"),
+	BeatGrid UMETA(DisplayName="BeatGrid"),
+	BeatTrack UMETA(DisplayName="BeatTrack"),
+	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EPresetGameMode, EPresetGameMode::SingleBeat, EPresetGameMode::ChargedBeatTrack);
 
 /** The scaling method to apply to the bounding box bounds at runtime */
 UENUM(BlueprintType)

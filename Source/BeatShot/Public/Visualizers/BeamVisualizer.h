@@ -33,9 +33,6 @@ public:
 	UFUNCTION()
 	void OnBeamLightLifetimeCompleted(const int32 IndexToRemove);
 
-	/** Does nothing for beam visualizer */
-	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
-
 protected:
 
 	UPROPERTY()
@@ -46,6 +43,8 @@ protected:
 
 	/** Returns the Beam Visualizer Definition */
 	UBeamVisualizerDefinition& GetFastDef() const { return *BeamVisualizerDefinition; }
+
+	virtual UBeamVisualizerDefinition* GetVisualizerDefinition() const override { return Cast<UBeamVisualizerDefinition>(VisualizerDefinition); } 
 
 	/** Returns the array of simple beam lights */
 	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamLights; }

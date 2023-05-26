@@ -11,14 +11,14 @@ class UCurveVector;
 class ASimpleBeamLight;
 
 /** Describes a visualizer to be spawned in the world */
-UCLASS(Blueprintable, Const, Abstract, BlueprintType)
+UCLASS(Blueprintable, Const, Abstract, EditInlineNew, BlueprintType)
 class BEATSHOT_API UBeamVisualizerDefinition : public UBSVisualizerDefinition
 {
 	GENERATED_BODY()
 	
 public:
 	/** The class of the Visualizer Light to spawn, if any */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning", meta=(DisplayPriority=-1298, EditCondition="VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(DisplayPriority=-1298, EditCondition="VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
 	TSubclassOf<AActor> VisualizerLightClass;
 	
 	/** Array of Visualizer Lights that have already been placed in a level */

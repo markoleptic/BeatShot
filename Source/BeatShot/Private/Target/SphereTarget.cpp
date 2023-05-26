@@ -58,13 +58,13 @@ void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSetting
 		HardRefAttributeSetBase->InitMaxHealth(1000000);
 		HardRefAttributeSetBase->InitHealth(1000000);
 	}
-	// TEMP
-	else if (InBSConfig.TargetConfig.NumCharges > 0)
+	else if (InBSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
 	{
+		GameplayTags.AddTag(FBSGameplayTags::Get().Target_State_Charged);
 		HardRefAttributeSetBase->InitMaxHealth(InBSConfig.TargetConfig.NumCharges * 100.f);
 		HardRefAttributeSetBase->InitHealth(InBSConfig.TargetConfig.NumCharges * 100.f);
+		NumCharges = InBSConfig.TargetConfig.NumCharges;
 	}
-	// END TEMP
 	else
 	{
 		HardRefAttributeSetBase->InitMaxHealth(100.f);
@@ -174,14 +174,12 @@ void ASphereTarget::BeginPlay()
 		SetLifeSpan(0);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 	}
-	// TEMP
-	else if (BSConfig.TargetConfig.NumCharges > 0)
+	else if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
 	{
 		ApplyImmunityEffect();
 		SetLifeSpan(0);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 	}
-	// END TEMP
 	else
 	{
 		SetLifeSpan(BSConfig.TargetConfig.TargetMaxLifeSpan);
@@ -218,19 +216,24 @@ void ASphereTarget::ActivateChargedTarget(const float Lifespan)
 
 void ASphereTarget::PlayStartToPeakTimeline()
 {
-	if (ShrinkQuickAndGrowSlowTimeline.IsPlaying())
-	{
-		ShrinkQuickAndGrowSlowTimeline.Stop();
-	}
-	if (PeakToEndTimeline.IsPlaying())
-	{
-		PeakToEndTimeline.Stop();
-	}
+	StopAllTimelines();
 	StartToPeakTimeline.PlayFromStart();
 }
 
 void ASphereTarget::PlayPeakToEndTimeline()
 {
+	StopAllTimelines();
+	PeakToEndTimeline.PlayFromStart();
+}
+
+void ASphereTarget::PlayShrinkQuickAndGrowSlowTimeline()
+{
+	StopAllTimelines();
+	ShrinkQuickAndGrowSlowTimeline.PlayFromStart();
+}
+
+void ASphereTarget::StopAllTimelines()
+{
 	if (StartToPeakTimeline.IsPlaying())
 	{
 		StartToPeakTimeline.Stop();
@@ -239,20 +242,10 @@ void ASphereTarget::PlayPeakToEndTimeline()
 	{
 		ShrinkQuickAndGrowSlowTimeline.Stop();
 	}
-	PeakToEndTimeline.PlayFromStart();
-}
-
-void ASphereTarget::PlayShrinkQuickAndGrowSlowTimeline()
-{
-	if (StartToPeakTimeline.IsPlaying())
-	{
-		StartToPeakTimeline.Stop();
-	}
 	if (PeakToEndTimeline.IsPlaying())
 	{
 		PeakToEndTimeline.Stop();
 	}
-	ShrinkQuickAndGrowSlowTimeline.PlayFromStart();
 }
 
 void ASphereTarget::SetColorToBeatGridColor()
@@ -370,40 +363,33 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 		{
 			return;
 		}
-
-		/* Broadcast that the target has been destroyed by player */
-		PeakToEndTimeline.Stop();
 		ApplyImmunityEffect();
 		ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue(TEXT("BaseColor"));
 		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
 		PlayShrinkQuickAndGrowSlowTimeline();
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
 	}
-
-	// TEMP
-	if (BSConfig.TargetConfig.NumCharges > 0)
+	else if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
 	{
 		const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(TimeSinceSpawn);
 		GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
 		ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue(TEXT("BaseColor"));
 		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
-
-
-		BSConfig.TargetConfig.NumCharges -= 1;
-
-		if (BSConfig.TargetConfig.NumCharges == 0)
+		NumCharges -= 1;
+		if (NumCharges <= 0)
 		{
 			OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
+			UE_LOG(LogTemp, Display, TEXT("Charged Target out of charges"));
 			Destroy();
 			return;
 		}
-		
 		ApplyImmunityEffect();
-		SetSphereScale(GetCurrentTargetScale() * 0.5f);
+		StopAllTimelines();
+		SetSphereScale(GetCurrentTargetScale() * BSConfig.TargetConfig.ConsecutiveChargeScaleMultiplier);
 		SetSphereColor(PlayerSettings.EndTargetColor);
 		OnLifeSpanExpired.Broadcast(false, TimeAlive, this);
+		UE_LOG(LogTemp, Display, TEXT("Charged target destroyed"));
 	}
-	// END TEMP
 }
 
 FLinearColor ASphereTarget::GetPeakTargetColor() const
@@ -425,10 +411,21 @@ void ASphereTarget::OnBeatGridTargetTimeout()
 
 void ASphereTarget::OnChargedTargetTimeout()
 {
-	ApplyImmunityEffect();
 	GetWorldTimerManager().ClearTimer(TimeSinceSpawn);
-	OnLifeSpanExpired.Broadcast(true, -1, this);
+	NumCharges -= 1;
+	if (NumCharges <= 0)
+	{
+		OnLifeSpanExpired.Broadcast(true, -1, this);
+		UE_LOG(LogTemp, Display, TEXT("Charged Target out of charges"));
+		Destroy();
+		return;
+	}
+	ApplyImmunityEffect();
+	StopAllTimelines();
+	SetSphereScale(GetCurrentTargetScale() * BSConfig.TargetConfig.ConsecutiveChargeScaleMultiplier);
 	SetSphereColor(PlayerSettings.EndTargetColor);
+	OnLifeSpanExpired.Broadcast(true, -1, this);
+	UE_LOG(LogTemp, Display, TEXT("Charged target expired"));
 }
 
 void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)

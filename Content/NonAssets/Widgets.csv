@@ -329,3 +329,5 @@ GM_BeatGrid_VerticalSpacing,Vertical Spacing
 GM_BeatGrid_NumVerticalTargets,Number of Vertical Targets
 GM_BeatGrid_NumHorizontalTargets,Number of Horizontal Targets
 GM_LifetimeTargetScale,Lifetime Target Scaling Method
+GM_NumCharges,Number of Charges per Target
+GM_ChargeScaleMultiplier,Charge Scale Multiplier

@@ -42,7 +42,10 @@ void UGameModesWidget_DefiningConfig::InitializeDefiningConfig(const FBS_Definin
 	case EBaseGameMode::BeatTrack:
 		ComboBox_BaseGameMode->SetSelectedOption(UEnum::GetDisplayValueAsText(BaseGameMode).ToString());
 		break;
-	default:
+	case EBaseGameMode::ChargedBeatTrack:
+		ComboBox_BaseGameMode->SetSelectedOption(UEnum::GetDisplayValueAsText(BaseGameMode).ToString());
+		break;
+	case EBaseGameMode::None:
 		break;
 	}
 	ComboBox_GameModeDifficulty->SetSelectedOption(UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString());
@@ -81,7 +84,7 @@ void UGameModesWidget_DefiningConfig::PopulateGameModeNameComboBox(const FString
 {
 	ComboBox_GameModeName->ClearOptions();
 
-	for (const FBSConfig& GameMode : FBSConfig::GetDefaultGameModes())
+	for (const FBSConfig& GameMode : FBSConfig::GetPresetGameModes())
 	{
 		ComboBox_GameModeName->AddOption(UEnum::GetDisplayValueAsText(GameMode.DefiningConfig.BaseGameMode).ToString());
 	}

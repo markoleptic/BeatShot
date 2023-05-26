@@ -132,6 +132,8 @@ public:
 	/** Returns the color that the target should change to at the end of it's life */
 	UFUNCTION(BlueprintCallable)
 	FLinearColor GetEndTargetColor() const;
+
+	int32 GetNumCharges() const { return NumCharges; }
 	
 	/** Target Spawner binds to this function to receive info about how target was destroyed. Broadcast from OnOutOfHealth functions */
 	FOnLifeSpanExpired OnLifeSpanExpired;
@@ -159,6 +161,8 @@ private:
 	/** Quickly shrinks the target, then slowly takes it back to original size */
 	UFUNCTION()
 	void PlayShrinkQuickAndGrowSlowTimeline();
+
+	void StopAllTimelines();
 
 	/** Set the color to BeatGrid color */
 	UFUNCTION()
@@ -216,4 +220,6 @@ private:
 
 	float StartToPeakTimelinePlayRate;
 	float PeakToEndTimelinePlayRate;
+
+	int32 NumCharges = INDEX_NONE;
 };

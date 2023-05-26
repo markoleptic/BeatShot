@@ -25,7 +25,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 	{
 		if (Visualizer)
 		{
-			switch (Visualizer->GetVisualizerDefinition().VisualizerLightSpawningMethod)
+			switch (Visualizer->GetVisualizerDefinition()->VisualizerLightSpawningMethod)
 			{
 				case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
 				{
@@ -57,7 +57,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			{
 				continue;
 			}
-			FTransform Transform(CDO->GetVisualizerDefinition().Rotation, CDO->GetVisualizerDefinition().Location, CDO->GetVisualizerDefinition().Scale);
+			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation, CDO->GetVisualizerDefinition()->Location, CDO->GetVisualizerDefinition()->Scale);
 			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
 			SpawnedVisualizer->FinishSpawning(Transform, true);

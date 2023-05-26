@@ -10,6 +10,7 @@
 #include "Components/Slider.h"
 #include "WidgetComponents/BSComboBoxEntry.h"
 #include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/BSHorizontalBox.h"
 #include "WidgetComponents/BSVerticalBox.h"
 
 using namespace Constants;
@@ -44,13 +45,24 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	AddToTooltipData(QMark_SpawnBeatDelay, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay"));
 	AddToTooltipData(QMark_ConsecutiveTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale"));
 	AddToTooltipData(QMark_LifetimeTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale"));
+	AddToTooltipData(QMark_NumCharges, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "NumCharges"));
+	AddToTooltipData(QMark_ChargeScaleMultiplier, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ChargeScaleMultiplier"));
 
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_Lifespan);
 	Value_Lifespan->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_Lifespan);
+	
 	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_TargetSpawnCD);
 	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_TargetSpawnCD);
+	
 	Slider_SpawnBeatDelay->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_SpawnBeatDelay);
 	Value_SpawnBeatDelay->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay);
+
+	Slider_NumCharges->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_NumCharges);
+	Value_NumCharges->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_NumCharges);
+
+	Slider_ChargeScaleMultiplier->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_ChargeScaleMultiplier);
+	Value_ChargeScaleMultiplier->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier);
+	
 	ComboBox_LifetimeTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod);
 	ComboBox_ConsecutiveTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale);
 	ComboBox_LifetimeTargetScale->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_LifetimeTargetScale);
@@ -85,29 +97,56 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	case EBaseGameMode::SingleBeat:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
+		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::MultiBeat:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
+		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::BeatGrid:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
+		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::BeatTrack:
 		Slider_Lifespan->SetLocked(true);
 		Value_Lifespan->SetIsReadOnly(true);
+		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
-	default:
+	case EBaseGameMode::ChargedBeatTrack:
+		Slider_Lifespan->SetLocked(false);
+		Value_Lifespan->SetIsReadOnly(false);
+		BSBox_NumCharges->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		break;
+	case EBaseGameMode::None:
 		break;
 	}
 	
 	Slider_Lifespan->SetValue(InTargetConfig.TargetMaxLifeSpan);
 	Value_Lifespan->SetText(FText::AsNumber(InTargetConfig.TargetMaxLifeSpan));
+	
 	Slider_TargetSpawnCD->SetValue(InTargetConfig.TargetSpawnCD);
 	Value_TargetSpawnCD->SetText(FText::AsNumber(InTargetConfig.TargetSpawnCD));
+	
 	Slider_SpawnBeatDelay->SetValue(InTargetConfig.SpawnBeatDelay);
 	Value_SpawnBeatDelay->SetText(FText::AsNumber(InTargetConfig.SpawnBeatDelay));
+
+	Slider_NumCharges->SetValue(InTargetConfig.NumCharges);
+	Slider_NumCharges->SetMaxValue(MaxValue_NumCharges);
+	Slider_NumCharges->SetMinValue(MinValue_NumCharges);
+	Value_NumCharges->SetText(FText::AsNumber(InTargetConfig.NumCharges));
+
+	Slider_ChargeScaleMultiplier->SetValue(InTargetConfig.ConsecutiveChargeScaleMultiplier);
+	Slider_ChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
+	Slider_ChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
+	Value_ChargeScaleMultiplier->SetText(FText::AsNumber(InTargetConfig.ConsecutiveChargeScaleMultiplier));
+	
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScaleMethod).ToString());
 	ComboBox_ConsecutiveTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScaleMethod).ToString());
@@ -125,6 +164,9 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
 	ReturnConfig.LifetimeTargetScaleMethod = GetEnumFromString<ELifetimeTargetScaleMethod>(ComboBox_LifetimeTargetScale->GetSelectedOption(), ELifetimeTargetScaleMethod::None);
 	ReturnConfig.ConsecutiveTargetScaleMethod = GetEnumFromString<EConsecutiveTargetScaleMethod>(ComboBox_ConsecutiveTargetScale->GetSelectedOption(), EConsecutiveTargetScaleMethod::None);
+	ReturnConfig.NumCharges = FMath::GridSnap(FMath::Clamp(Slider_NumCharges->GetValue(), MinValue_NumCharges, MaxValue_NumCharges), SnapSize_NumCharges);
+	ReturnConfig.ConsecutiveChargeScaleMultiplier = FMath::GridSnap(FMath::Clamp(Slider_ChargeScaleMultiplier->GetValue(), MinValue_ConsecutiveChargeScaleMultiplier,
+		MaxValue_ConsecutiveChargeScaleMultiplier), SnapSize_ConsecutiveChargeScaleMultiplier);
 	return ReturnConfig;
 }
 
@@ -141,6 +183,27 @@ void UGameModesWidget_TargetConfig::OnSliderChanged_TargetSpawnCD(const float Ne
 void UGameModesWidget_TargetConfig::OnSliderChanged_SpawnBeatDelay(const float NewPlayerDelay)
 {
 	OnSliderChanged(NewPlayerDelay, Value_SpawnBeatDelay, SnapSize_PlayerDelay);
+}
+
+void UGameModesWidget_TargetConfig::OnSliderChanged_NumCharges(const float NewCharges)
+{
+	OnSliderChanged(NewCharges, Value_NumCharges, SnapSize_NumCharges);
+}
+
+void UGameModesWidget_TargetConfig::OnSliderChanged_ChargeScaleMultiplier(const float NewChargeScaleMultiplier)
+{
+	OnSliderChanged(NewChargeScaleMultiplier, Value_ChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
+}
+
+void UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewChargeScaleMultiplier, Value_ChargeScaleMultiplier, Slider_ChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier,
+		MinValue_ConsecutiveChargeScaleMultiplier, MaxValue_ConsecutiveChargeScaleMultiplier);
+}
+
+void UGameModesWidget_TargetConfig::OnTextCommitted_NumCharges(const FText& NewCharges, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewCharges, Value_NumCharges, Slider_NumCharges, SnapSize_NumCharges, MinValue_NumCharges, MaxValue_NumCharges);
 }
 
 void UGameModesWidget_TargetConfig::OnTextCommitted_Lifespan(const FText& NewLifespan, ETextCommit::Type CommitType)

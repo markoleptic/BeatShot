@@ -39,23 +39,23 @@ public:
 	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers);
 
 	/** Activates the matching visualizer from the given AudioAnalyzer channel index */
-	virtual void ActivateVisualizer(const int32 Index);
+	virtual void ActivateVisualizer(const int32 Index) {}
 	
 	/** Deactivates all visualizers */
-	virtual void DeactivateVisualizers();
+	virtual void DeactivateVisualizers() {}
 
 	/** Updates a visualizer state at Index inside Visualizers array. SpectrumAlpha should be a value between
 	 *  0 and 1, with 1 being the maximum visualizer state and 0 being the minimum */
-	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha);
+	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) {}
 
 	/** Called by the VisualizerManager when AudioAnalyzer settings are changed. Calls InitializeVisualizer */
 	virtual void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& InAASettings);
 
 	/** If the visualizer is using an instanced static mesh, use this function to rerender the meshes. Should be called by VisualizerManager */
-	virtual void MarkRenderStateDirty();
+	virtual void MarkRenderStateDirty() {}
 
 	/** Returns the definition for this visualizer */
-	UBSVisualizerDefinition& GetVisualizerDefinition() const { return *VisualizerDefinition.GetDefaultObject(); }
+	virtual UBSVisualizerDefinition* GetVisualizerDefinition() const { return VisualizerDefinition; }
 
 	/** The number of points to add to the spline (how many visualizers will be spawned) */
 	UPROPERTY(EditInstanceOnly, Category="Spline")
@@ -103,6 +103,6 @@ protected:
 	TArray<FVector> GetSplinePointLocations() const;
 
 	/** The data asset that specifies the configuration for this visualizer */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Visualizer Definition", meta=(DisplayPriority=-20000))
-	TSubclassOf<UBSVisualizerDefinition> VisualizerDefinition;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Visualizer Definition", meta=(DisplayPriority=-20000))
+	UBSVisualizerDefinition* VisualizerDefinition;
 };

@@ -22,8 +22,8 @@ class USERINTERFACE_API UGameModesWidget_BeatTrackConfig : public UBSSettingCate
 	virtual void InitSettingCategoryWidget() override;
 	
 public:
-	void InitializeBeatTrackConfig(const FBS_BeatTrackConfig& InBeatTrackConfig, const EBaseGameMode& BaseGameMode);
-	FBS_BeatTrackConfig GetBeatTrackConfig() const;
+	void InitializeBeatTrackConfig(const FBS_TrackingConfig& InBeatTrackConfig, const EBaseGameMode& BaseGameMode);
+	FBS_TrackingConfig GetBeatTrackConfig() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Spread")

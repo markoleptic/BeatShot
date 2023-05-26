@@ -45,6 +45,10 @@ protected:
 	UBSHorizontalBox* BSBox_ConsecutiveTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSHorizontalBox* BSBox_LifetimeTargetScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UBSHorizontalBox* BSBox_NumCharges;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UBSHorizontalBox* BSBox_ChargeScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	USlider* Slider_Lifespan;
@@ -52,6 +56,10 @@ protected:
 	USlider* Slider_TargetSpawnCD;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	USlider* Slider_SpawnBeatDelay;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	USlider* Slider_NumCharges;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	USlider* Slider_ChargeScaleMultiplier;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UEditableTextBox* Value_Lifespan;
@@ -59,6 +67,10 @@ protected:
 	UEditableTextBox* Value_TargetSpawnCD;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UEditableTextBox* Value_SpawnBeatDelay;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UEditableTextBox* Value_NumCharges;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
+	UEditableTextBox* Value_ChargeScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target")
 	UBSComboBoxString* ComboBox_LifetimeTargetScale;
@@ -77,6 +89,10 @@ protected:
 	UTooltipImage* QMark_LifetimeTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
 	UTooltipImage* QMark_ConsecutiveTargetScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* QMark_NumCharges;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
+	UTooltipImage* QMark_ChargeScaleMultiplier;
 
 	UFUNCTION()
 	void OnSliderChanged_Lifespan(const float NewLifespan);
@@ -85,11 +101,21 @@ protected:
 	UFUNCTION()
 	void OnSliderChanged_SpawnBeatDelay(const float NewPlayerDelay);
 	UFUNCTION()
+	void OnSliderChanged_NumCharges(const float NewCharges);
+	UFUNCTION()
+	void OnSliderChanged_ChargeScaleMultiplier(const float NewChargeScaleMultiplier);
+	
+	UFUNCTION()
 	void OnTextCommitted_Lifespan(const FText& NewLifespan, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_TargetSpawnCD(const FText& NewTargetSpawnCD, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_SpawnBeatDelay(const FText& NewPlayerDelay, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_NumCharges(const FText& NewCharges, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType);
+	
 	UFUNCTION()
 	void OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
