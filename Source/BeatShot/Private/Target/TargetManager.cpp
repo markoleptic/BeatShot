@@ -1,9 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "Target/TargetSpawner.h"
-
+#include "Target/TargetManager.h"
 #include "BSGameMode.h"
-#include "Character/BSHealthComponent.h"
 #include "Player/BSPlayerController.h"
 #include "GlobalConstants.h"
 #include "Target/SphereTarget.h"
@@ -13,10 +11,10 @@
 #include "Target/ReinforcementLearningComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
-DEFINE_LOG_CATEGORY(LogTargetSpawner);
+DEFINE_LOG_CATEGORY(LogTargetManager);
 using namespace Constants;
 
-ATargetSpawner::ATargetSpawner()
+ATargetManager::ATargetManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -30,47 +28,41 @@ ATargetSpawner::ATargetSpawner()
 	ConsecutiveTargetsHit = 0;
 }
 
-void ATargetSpawner::BeginPlay()
+void ATargetManager::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	GameMode->OnGameModeStarted.AddUObject(this, &ATargetSpawner::OnGameModeStarted);
+	GameMode->OnGameModeStarted.AddUObject(this, &ATargetManager::OnGameModeStarted);
 }
 
-void ATargetSpawner::Destroyed()
+void ATargetManager::Destroyed()
 {
-	if (!ActiveTargets.IsEmpty())
+	if (!GetActiveTargets().IsEmpty())
 	{
-		for (ASphereTarget* Target : ActiveTargets)
+		for (ASphereTarget* Target : GetActiveTargets())
 		{
 			Target->Destroy();
 		}
 	}
-	if (SpawnedBeatGridTargets.Num() > 0)
-	{
-		for (ASphereTarget* Target : SpawnedBeatGridTargets)
-		{
-			Target->Destroy();
-		}
-	}
+	
 	Super::Destroyed();
 }
 
-void ATargetSpawner::Tick(float DeltaTime)
+void ATargetManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	OnTick_UpdateTargetLocation(DeltaTime);
 }
 
-void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
 	/* Initialize local copy of FBSConfig */
 	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings;
 
 	/* GameMode menu uses the full width, while box bounds are only half width / half height */
-	StaticExtents = BSConfig.SpatialConfig.GenerateTargetSpawnerBoxBounds();
+	StaticExtents = BSConfig.SpatialConfig.GenerateTargetManagerBoxBounds();
 
 	/* Set new location & box extent */
 	SpawnBox->SetRelativeLocation(BSConfig.SpatialConfig.GenerateSpawnBoxLocation());
@@ -94,25 +86,27 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	{
 		ReinforcementLearningComponent->Deactivate();
 	}
-	
+
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
-		OverlapSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnOverlapEnd_OverlapSpawnBox);
+		OverlapSpawnBox->OnComponentEndOverlap.AddDynamic(this, &ATargetManager::OnOverlapEnd_OverlapSpawnBox);
 		SpawnBeatTrackTarget();
-		return;
 	}
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
+	else if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
 	{
-		OverlapSpawnBox->OnComponentEndOverlap.AddUniqueDynamic(this, &ATargetSpawner::OnOverlapEnd_OverlapSpawnBox);
-		SpawnChargedTarget();
-		return;
+		OverlapSpawnBox->OnComponentEndOverlap.AddDynamic(this, &ATargetManager::OnOverlapEnd_OverlapSpawnBox);
 	}
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
+	else if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
 	{
 		InitBeatGrid();
+	}
+	
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid ||
+		BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
+	{
 		return;
 	}
-
+	
 	const int32 HalfWidth = StaticExtents.Y;
 	const int32 HalfHeight = StaticExtents.Z;
 	TArray PreferredScales = {100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 30, 25, 20, 15, 10, 5};
@@ -149,7 +143,7 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	}
 	if (!bWidthScaleSelected || !bHeightScaleSelected)
 	{
-		UE_LOG(LogTargetSpawner, Warning, TEXT("Couldn't Find Height/Width"));
+		UE_LOG(LogTargetManager, Warning, TEXT("Couldn't Find Height/Width"));
 		SpawnMemoryScaleY = 1.f / 50.f;
 		SpawnMemoryScaleZ = 1.f / 50.f;
 	}
@@ -163,9 +157,9 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 		SetBoxExtents_Dynamic();
 	}
 
-	UE_LOG(LogTargetSpawner, Display, TEXT("SpawnBoxWidth %f SpawnBoxHeight %f"), StaticExtents.Y * 2, StaticExtents.Z * 2);
-	UE_LOG(LogTargetSpawner, Display, TEXT("SpawnMemoryScaleY %f SpawnMemoryScaleZ %f"), SpawnMemoryScaleY, SpawnMemoryScaleZ);
-	UE_LOG(LogTargetSpawner, Display, TEXT("SpawnMemoryIncY %d SpawnMemoryIncZ %d"), SpawnMemoryIncY, SpawnMemoryIncZ);
+	UE_LOG(LogTargetManager, Display, TEXT("SpawnBoxWidth %f SpawnBoxHeight %f"), StaticExtents.Y * 2, StaticExtents.Z * 2);
+	UE_LOG(LogTargetManager, Display, TEXT("SpawnMemoryScaleY %f SpawnMemoryScaleZ %f"), SpawnMemoryScaleY, SpawnMemoryScaleZ);
+	UE_LOG(LogTargetManager, Display, TEXT("SpawnMemoryIncY %d SpawnMemoryIncZ %d"), SpawnMemoryIncY, SpawnMemoryIncZ);
 
 	const FIntPoint HeightWidth = InitializeSpawnCounter();
 
@@ -190,12 +184,12 @@ void ATargetSpawner::InitTargetSpawner(const FBSConfig& InBSConfig, const FPlaye
 	ReinforcementLearningComponent->Init(Params);
 }
 
-void ATargetSpawner::SetShouldSpawn(const bool bShouldSpawn)
+void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 {
 	ShouldSpawn = bShouldSpawn;
 }
 
-void ATargetSpawner::CallSpawnFunction()
+void ATargetManager::OnAudioAnalyzerBeat()
 {
 	if (!ShouldSpawn)
 	{
@@ -223,90 +217,17 @@ void ATargetSpawner::CallSpawnFunction()
 	}
 }
 
-TArray<FAccuracyRow> ATargetSpawner::GetLocationAccuracy() const
+void ATargetManager::OnGameModeStarted()
 {
-	/* Each row in QTable has size equal to ScaledSize, and so does each column */
-	TArray<FAccuracyRow> OutArray;
-	OutArray.Init(FAccuracyRow(5), 5);
-	TArray<FQTableIndex> QTableIndices;
-
-	for (int i = 0; i < 25; i++)
-	{
-		QTableIndices.Add(FQTableIndex(i));
-	}
-
-	TArray<FVectorCounter> Counter = GetSpawnCounter();
-
-	for (int i = 0; i < GetSpawnCounter().Num(); i++)
-	{
-		if (const int32 Found = QTableIndices.Find(GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
-		{
-			const int32 RowNum = Found / 5;
-			const int32 ColNum = Found % 5;
-
-			if (Counter[i].TotalSpawns != INDEX_NONE)
-			{
-				if (OutArray[RowNum].TotalSpawns[ColNum] == INDEX_NONE)
-				{
-					OutArray[RowNum].TotalSpawns[ColNum] = 0;
-				}
-				OutArray[RowNum].TotalSpawns[ColNum] += Counter[i].TotalSpawns;
-				OutArray[RowNum].TotalHits[ColNum] += Counter[i].TotalHits;
-			}
-		}
-	}
-
-	for (FAccuracyRow& AccuracyRow : OutArray)
-	{
-		AccuracyRow.UpdateAccuracy();
-	}
-	return OutArray;
-}
-
-FCommonScoreInfo ATargetSpawner::GetCommonScoreInfo() const
-{
-	TArray<FQTableIndex> Indices;
-	for (int i = 0; i < 25; i++)
-	{
-		Indices.Add(FQTableIndex(i));
-	}
-
-	FCommonScoreInfo CommonScoreInfo = FCommonScoreInfo(25);
-	TArray<FVectorCounter> Counter = GetSpawnCounter();
-	for (int i = 0; i < GetSpawnCounter().Num(); i++)
-	{
-		if (const int32 Found = Indices.Find(GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
-		{
-			if (Counter[i].TotalSpawns != INDEX_NONE)
-			{
-				if (CommonScoreInfo.TotalSpawns[Found] == INDEX_NONE)
-				{
-					CommonScoreInfo.TotalSpawns[Found] = 0;
-				}
-				CommonScoreInfo.TotalSpawns[Found] += Counter[i].TotalSpawns;
-				CommonScoreInfo.TotalHits[Found] += Counter[i].TotalHits;
-			}
-		}
-	}
-	if (ReinforcementLearningComponent->IsActive())
-	{
-		CommonScoreInfo.QTable = ReinforcementLearningComponent->GetSaveReadyQTable();
-		ReinforcementLearningComponent->PrintRewards();
-	}
-	return CommonScoreInfo;
-}
-
-void ATargetSpawner::OnGameModeStarted()
-{
-	for (ASphereTarget* Target : GetActiveTargets())
-	{
-		if (Target->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
-		{
-			Target->RemoveGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart);
-		}
-	}
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
+		for (const ASphereTarget* Target : GetActiveTargets())
+		{
+			if (Target->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune))
+			{
+				Target->RemoveImmunityEffect();
+			}
+		}
 		UpdateBeatTrackTarget();
 	}
 	else if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
@@ -315,7 +236,7 @@ void ATargetSpawner::OnGameModeStarted()
 	}
 }
 
-FIntPoint ATargetSpawner::InitializeSpawnCounter()
+FIntPoint ATargetManager::InitializeSpawnCounter()
 {
 	const FVector NegativeExtents = GetBoxExtrema(0, false);
 	const FVector PositiveExtents = GetBoxExtrema(1, false);
@@ -335,19 +256,19 @@ FIntPoint ATargetSpawner::InitializeSpawnCounter()
 		}
 		Height++;
 	}
-	UE_LOG(LogTargetSpawner, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
+	UE_LOG(LogTargetManager, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnCounter.Num(), SpawnCounter.GetAllocatedSize());
 	return FIntPoint(Height, Width);
 }
 
-void ATargetSpawner::InitBeatGrid()
+void ATargetManager::InitBeatGrid()
 {
 	if (!RecentBeatGridIndices.IsEmpty())
 	{
 		RecentBeatGridIndices.Empty();
 	}
-	if (!SpawnedBeatGridTargets.IsEmpty())
+	if (!ActiveTargets.IsEmpty())
 	{
-		SpawnedBeatGridTargets.Empty();
+		ActiveTargets.Empty();
 	}
 
 	LastBeatGridIndex = INDEX_NONE;
@@ -369,74 +290,37 @@ void ATargetSpawner::InitBeatGrid()
 		for (float i = HStart; i <= HEnd; i += HSpacing)
 		{
 			FVector BeatGridSpawnLocation = FVector(GetBoxOrigin().X, i, GetBoxOrigin().Z + j);
-			ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, BeatGridSpawnLocation, FVector(1)), this, nullptr,
-			                                                                           ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-			SpawnTarget->InitTarget(BSConfig, PlayerSettings);
-			SpawnTarget->SetInitialSphereScale(FVector(GetNextTargetScale()));
-			SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
-			SpawnTarget->FinishSpawning(FTransform(), true);
+			SpawnTarget(BeatGridSpawnLocation, GetNextTargetScale(), false);
 			BeatGridIndices.Emplace(FBeatGridIndex(Index, BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets,
 			                                       BSConfig.BeatGridConfig.NumVerticalBeatGridTargets * BSConfig.BeatGridConfig.NumHorizontalBeatGridTargets));
-			SpawnedBeatGridTargets.Add(SpawnTarget);
 			Index++;
 		}
 	}
 }
 
-void ATargetSpawner::SpawnMultiBeatTarget()
+ASphereTarget* ATargetManager::SpawnTarget(const FVector& Location, const FVector& Scale, const bool bBroadcastSpawnEvent)
 {
-	if (bSkipNextSpawn)
-	{
-		FindNextTargetProperties();
-		return;
-	}
-	ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnLocation, FVector(1)), this, nullptr,
-	                                                                           ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	SpawnTarget->InitTarget(BSConfig, PlayerSettings);
-	SpawnTarget->SetInitialSphereScale(FVector(TargetScale));
-	SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
-	SpawnTarget->FinishSpawning(FTransform(), true);
-	AddToActiveTargets(SpawnTarget);
-	AddToRecentTargets(SpawnTarget, TargetScale);
-	OnTargetSpawned.Broadcast();
-	OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
+	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, Location, Scale), this, nullptr,
+	                                                                      ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	Target->InitTarget(BSConfig, PlayerSettings);
+	Target->SetInitialSphereScale(Scale);
+	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnOnTargetHealthChangedOrExpired);
+	Target->FinishSpawning(FTransform(), true);
 
-	if (!PreviousSpawnLocation.Equals(SpawnLocation) && BSConfig.AIConfig.bEnableReinforcementLearning)
-	{
-		ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnLocation, SpawnLocation);
-	}
-	PreviousSpawnLocation = SpawnLocation;
+	AddToActiveTargets(Target);
 	
-	FindNextTargetProperties();
-}
-
-void ATargetSpawner::SpawnSingleBeatTarget()
-{
-	if (bSkipNextSpawn)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat ||
+		BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::MultiBeat)
 	{
-		/* Don't continue spawning for SingleBeat */
-		SetShouldSpawn(false);
-		FindNextTargetProperties();
-		return;
+		AddToRecentTargets(Target, Scale);
 	}
-	
-	ASphereTarget* SpawnTarget = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnLocation, FVector(1)), this, nullptr,
-	                                                                           ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	SpawnTarget->InitTarget(BSConfig, PlayerSettings);
-	SpawnTarget->SetInitialSphereScale(FVector(TargetScale));
-	SpawnTarget->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
-	SpawnTarget->FinishSpawning(FTransform(), true);
-	AddToActiveTargets(SpawnTarget);
-	AddToRecentTargets(SpawnTarget, TargetScale);
-	OnTargetSpawned.Broadcast();
-	OnTargetSpawned_AimBot.Broadcast(SpawnTarget);
 
-	if (!PreviousSpawnLocation.Equals(SpawnLocation) && BSConfig.AIConfig.bEnableReinforcementLearning)
+	if (ReinforcementLearningComponent->IsActive())
 	{
-		ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnLocation, SpawnLocation);
+		ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnLocation, Location);
 	}
-	PreviousSpawnLocation = SpawnLocation;
-	if (SpawnLocation.Equals(GetBoxOrigin()))
+
+	if (Location.Equals(GetBoxOrigin()))
 	{
 		LastTargetSpawnedCenter = true;
 	}
@@ -444,24 +328,53 @@ void ATargetSpawner::SpawnSingleBeatTarget()
 	{
 		LastTargetSpawnedCenter = false;
 	}
+
+	PreviousSpawnLocation = Location;
+	LocationBeforeDirectionChange = Location;
+
+	if (bBroadcastSpawnEvent)
+	{
+		OnTargetActivatedOrSpawned.Broadcast();
+		OnTargetActivated_AimBot.Broadcast(Target);
+	}
+
+	return Target;
+}
+
+void ATargetManager::SpawnMultiBeatTarget()
+{
+	if (!bSkipNextSpawn)
+	{
+		SpawnTarget(SpawnLocation, TargetScale, true);
+	}
+	FindNextTargetProperties();
+}
+
+void ATargetManager::SpawnSingleBeatTarget()
+{
+	if (!bSkipNextSpawn)
+	{
+		SpawnTarget(SpawnLocation, TargetScale, true);
+	}
 	
 	/* Don't continue spawning for SingleBeat */
 	SetShouldSpawn(false);
 	FindNextTargetProperties();
 }
 
-void ATargetSpawner::ActivateBeatGridTarget()
+/* TODO: Use SpawnCounter for BeatGrid */
+
+void ATargetManager::ActivateBeatGridTarget()
 {
 	int32 ChosenTargetIndex;
 	if (LastBeatGridIndex == INDEX_NONE || BSConfig.BeatGridConfig.RandomizeBeatGrid == true)
 	{
-		ChosenTargetIndex = FMath::RandRange(0, SpawnedBeatGridTargets.Num() - 1);
+		ChosenTargetIndex = FMath::RandRange(0, ActiveTargets.Num() - 1);
 	}
 	else
 	{
 		int32 NumRemoved = 0;
-		TArray<int32> SpawnCandidates = BeatGridIndices[LastBeatGridIndex].GetBorderingIndices();
-		SpawnCandidates = SpawnCandidates.FilterByPredicate([&](const int32& Index)
+		TArray<int32> SpawnCandidates = BeatGridIndices[LastBeatGridIndex].GetBorderingIndices().FilterByPredicate([&] (const int32& Index)
 		{
 			/* Only remove up to 2 indices for a corner */
 			if (BeatGridIndices[LastBeatGridIndex].IsCornerIndex() && NumRemoved >= 2)
@@ -485,22 +398,25 @@ void ATargetSpawner::ActivateBeatGridTarget()
 			}
 			return true;
 		});
-		const int32 RandomIndex = FMath::RandRange(0, SpawnCandidates.Num() - 1);
-		ChosenTargetIndex = SpawnCandidates[RandomIndex];
+		ChosenTargetIndex = SpawnCandidates[FMath::RandRange(0, SpawnCandidates.Num() - 1)];
 		RecentBeatGridIndices.Insert(ChosenTargetIndex, 0);
 		RecentBeatGridIndices.SetNum(7);
 	}
 
-	ASphereTarget* ChosenTarget = SpawnedBeatGridTargets[ChosenTargetIndex];
+	if (!GetActiveTargets()[ChosenTargetIndex])
+	{
+		return;
+	}
+	
+	GetActiveTargets()[ChosenTargetIndex]->ActivateBeatGridTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+	AddToActiveBeatGridGuids(GetActiveTargets()[ChosenTargetIndex]->GetGuid());
 	LastBeatGridIndex = ChosenTargetIndex;
-	ChosenTarget->ActivateBeatGridTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-	AddToActiveTargets(ChosenTarget);
-	OnTargetSpawned.Broadcast();
-	OnTargetSpawned_AimBot.Broadcast(ChosenTarget);
+	OnTargetActivatedOrSpawned.Broadcast();
+	OnTargetActivated_AimBot.Broadcast(GetActiveTargets()[ChosenTargetIndex]);
 
 	if (bShowDebug_SpawnMemory)
 	{
-		for (int i = 0; i < SpawnedBeatGridTargets.Num(); i++)
+		for (int i = 0; i < GetActiveTargets().Num(); i++)
 		{
 			if (i == LastBeatGridIndex)
 			{
@@ -508,18 +424,19 @@ void ATargetSpawner::ActivateBeatGridTarget()
 			}
 			if (RecentBeatGridIndices.Contains(i))
 			{
-				SpawnedBeatGridTargets[i]->SetSphereColor(FLinearColor(FColor::Red));
+				ActiveTargets[i]->SetSphereColor(FLinearColor(FColor::Red));
 				continue;
 			}
-			SpawnedBeatGridTargets[i]->SetColorToBeatGridColor();
+			ActiveTargets[i]->SetColorToBeatGridColor();
 		}
 	}
 }
 
-void ATargetSpawner::ActivateChargedTarget()
+void ATargetManager::ActivateChargedTarget()
 {
-	if (!GetActiveTargets().IsEmpty())
+	if (!GetActiveTargets().IsEmpty() && !GetActiveTargets()[0]->IsTargetActiveAndDamageable())
 	{
+		OnTargetActivatedOrSpawned.Broadcast();
 		GetActiveTargets()[0]->ActivateChargedTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
 	}
 	else
@@ -528,78 +445,44 @@ void ATargetSpawner::ActivateChargedTarget()
 	}
 }
 
-void ATargetSpawner::SpawnBeatTrackTarget()
+void ATargetManager::SpawnBeatTrackTarget()
 {
 	if (!GetActiveTargets().IsEmpty())
 	{
 		return;
 	}
-	
-	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnBox->Bounds.Origin,
-		FVector(1)), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	Target->InitTarget(BSConfig, PlayerSettings);
-	Target->SetInitialSphereScale(FVector(TargetScale));
-	Target->HealthComponent->OnHealthChanged.AddUObject(this, &ATargetSpawner::OnBeatTrackTargetHealthChanged);
-	AddToActiveTargets(Target);
-	Target->FinishSpawning(FTransform(), true);
-	LocationBeforeDirectionChange = SpawnBox->Bounds.Origin;
-	OnTargetSpawned.Broadcast();
+	SpawnTarget(SpawnLocation, TargetScale);
 }
 
-void ATargetSpawner::SpawnChargedTarget()
+void ATargetManager::SpawnChargedTarget()
 {
 	if (!GetActiveTargets().IsEmpty())
 	{
 		return;
 	}
-	
-	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, SpawnLocation,
-		FVector(1)), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	Target->InitTarget(BSConfig, PlayerSettings);
-	Target->SetInitialSphereScale(FVector(TargetScale));
-	Target->OnLifeSpanExpired.AddDynamic(this, &ATargetSpawner::OnTargetTimeout);
-	AddToActiveTargets(Target);
-	Target->FinishSpawning(FTransform(), true);
-	LocationBeforeDirectionChange = SpawnLocation;
-	OnTargetSpawned.Broadcast();
-	TargetScale = GetNextTargetScale();
-	UpdateChargedTarget();
-}
 
-void ATargetSpawner::UpdateBeatTrackTarget()
-{
-	if (GetActiveTargets().IsEmpty())
-	{
-		return;
-	}
-	
-	LocationBeforeDirectionChange = GetActiveTargets()[0]->GetActorLocation();
-	const float NewTargetScale = GetNextTargetScale();
-	GetActiveTargets()[0]->SetSphereScale(FVector(NewTargetScale));
-	MovingTargetSpeed = FMath::FRandRange(BSConfig.TrackingConfig.MinTrackingSpeed, BSConfig.TrackingConfig.MaxTrackingSpeed);
-	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
-	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
-
-	if (!OnBeatTrackDirectionChanged.ExecuteIfBound(EndLocation))
-	{
-		UE_LOG(LogTargetSpawner, Display, TEXT("OnBeatTrackDirectionChanged not bound."));
-	}
-}
-
-void ATargetSpawner::UpdateChargedTarget()
-{
-	if (GetActiveTargets().IsEmpty())
-	{
-		return;
-	}
-	
-	LocationBeforeDirectionChange = GetActiveTargets()[0]->GetActorLocation();
+	SpawnTarget(SpawnLocation, TargetScale, false);
+	FindNextTargetProperties();
 	MovingTargetSpeed = FMath::FRandRange(BSConfig.TrackingConfig.MinTrackingSpeed, BSConfig.TrackingConfig.MaxTrackingSpeed);
 	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
 	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
 }
 
-void ATargetSpawner::OnTick_UpdateTargetLocation(const float DeltaTime)
+void ATargetManager::UpdateBeatTrackTarget()
+{
+	if (GetActiveTargets().IsEmpty())
+	{
+		return;
+	}
+
+	LocationBeforeDirectionChange = GetActiveTargets()[0]->GetActorLocation();
+	GetActiveTargets()[0]->SetSphereScale(GetNextTargetScale());
+	MovingTargetSpeed = FMath::FRandRange(BSConfig.TrackingConfig.MinTrackingSpeed, BSConfig.TrackingConfig.MaxTrackingSpeed);
+	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
+	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
+}
+
+void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime)
 {
 	if (GetActiveTargets().IsEmpty())
 	{
@@ -609,7 +492,6 @@ void ATargetSpawner::OnTick_UpdateTargetLocation(const float DeltaTime)
 	{
 	case EBaseGameMode::SingleBeat:
 	case EBaseGameMode::MultiBeat:
-	case EBaseGameMode::BeatGrid:
 		if (!BSConfig.SpatialConfig.bMoveTargetsForward)
 		{
 			return;
@@ -617,6 +499,23 @@ void ATargetSpawner::OnTick_UpdateTargetLocation(const float DeltaTime)
 		for (ASphereTarget* Target : GetActiveTargets())
 		{
 			if (Target != nullptr)
+			{
+				MoveTargetForward(Target, DeltaTime);
+			}
+		}
+		return;
+	case EBaseGameMode::BeatGrid:
+		{
+			TArray<FGuid> Guids = GetActiveBeatGridGuids();
+			TArray<ASphereTarget*> Filtered = GetActiveTargets().FilterByPredicate([&Guids] (const ASphereTarget* Target)
+			{
+				if (Guids.Contains(Target->GetGuid()))
+				{
+					return true;
+				}
+				return false;
+			});
+			for (ASphereTarget* Target : Filtered)
 			{
 				MoveTargetForward(Target, DeltaTime);
 			}
@@ -648,7 +547,7 @@ void ATargetSpawner::OnTick_UpdateTargetLocation(const float DeltaTime)
 	}
 }
 
-void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive, ASphereTarget* DestroyedTarget)
+void ATargetManager::OnOnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent)
 {
 	/* Allow targets to spawn again if SingleBeat */
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat)
@@ -656,8 +555,13 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		SetShouldSpawn(true);
 	}
 
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
+	{
+		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TargetDamageEvent.TotalPossibleDamage);
+	}
+
 	/* Update ConsecutiveTargetsHit, Adjust DynamicSpawnScale */
-	if (DidExpire)
+	if (TargetDamageEvent.TimeAlive == -1)
 	{
 		ConsecutiveTargetsHit = 0;
 		DynamicSpawnScale = FMath::Clamp(DynamicSpawnScale - 5, 0, 100);
@@ -669,37 +573,37 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 	}
 
 	/* Broadcast that a target has been destroyed or timed out, and give the location for combat text */
-	const FVector Location = DestroyedTarget->GetActorLocation();
-	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * DestroyedTarget->GetActorScale3D().Z};
-	OnTargetDestroyed.Broadcast(TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
+	const FVector Location = TargetDamageEvent.Location;
+	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * TargetDamageEvent.Scale.Z};
+	OnTargetDestroyed.Broadcast(TargetDamageEvent.TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
 
-	/* BeatTrack only has one target, so it doesn't need to do anything further */
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
+		return;
+	}
+	
+	/* BeatTrack only has one target, so it doesn't need to do anything further */
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
+	{
+		RemoveFromActiveBeatGridGuids(TargetDamageEvent.Guid);
 		return;
 	}
 
 	/* Remove from active targets if out of charges, and don't do anything further if ChargedBeatTrack */
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
 	{
-		if (DestroyedTarget->GetNumCharges() <= 0)
+		if (TargetDamageEvent.NumCharges <= 1)
 		{
-			RemoveFromActiveTargets(DestroyedTarget);
+			RemoveFromActiveTargets(TargetDamageEvent.Guid);
 		}
 		return;
 	}
-	
-	/* Remove from active targets, and remove from recent targets after a delay */
-	RemoveFromActiveTargets(DestroyedTarget);
-	FTimerHandle TimerHandle;
-	RemoveFromRecentDelegate.BindUObject(this, &ATargetSpawner::RemoveFromRecentTargets, DestroyedTarget->Guid);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatGrid)
-	{
-		DestroyedTarget->SetActorLocation(FVector(GetBoxOrigin().X, Location.Y, Location.Z));
-		return;
-	}
+	/* Remove from active targets, and remove from recent targets after a delay */
+	RemoveFromActiveTargets(TargetDamageEvent.Guid);
+	FTimerHandle TimerHandle;
+	RemoveFromRecentDelegate.BindUObject(this, &ATargetManager::RemoveFromRecentTargets, TargetDamageEvent.Guid);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
 
 	/* Find the index that corresponds to the destroyed target's location */
 	if (const int32 Index = SpawnCounter.Find(Location); Index != INDEX_NONE)
@@ -715,7 +619,7 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		}
 
 		/* Update the total target hits in SpawnCounter */
-		if (!DidExpire)
+		if (TargetDamageEvent.TimeAlive != INDEX_NONE)
 		{
 			SpawnCounter[Index].TotalHits++;
 		}
@@ -723,22 +627,17 @@ void ATargetSpawner::OnTargetTimeout(const bool DidExpire, const float TimeAlive
 		/* Update the Reinforcement Learning Component */
 		if (ReinforcementLearningComponent->IsActive())
 		{
-			ReinforcementLearningComponent->UpdateReinforcementLearningReward(Location, !DidExpire);
+			ReinforcementLearningComponent->UpdateReinforcementLearningReward(Location, TargetDamageEvent.TimeAlive != INDEX_NONE);
 			ReinforcementLearningComponent->UpdateReinforcementLearningComponent(GetSpawnCounter());
 		}
 	}
 	else
 	{
-		UE_LOG(LogTargetSpawner, Warning, TEXT("Target not found in SpawnCounter %s"), *Location.ToString());
+		UE_LOG(LogTargetManager, Warning, TEXT("Target not found in SpawnCounter %s"), *Location.ToString());
 	}
 }
 
-void ATargetSpawner::OnBeatTrackTargetHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
-{
-	OnBeatTrackTargetDamaged.Broadcast(OldValue, NewValue, TotalPossibleDamage);
-}
-
-void ATargetSpawner::OnOverlapEnd_OverlapSpawnBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+void ATargetManager::OnOverlapEnd_OverlapSpawnBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	/* Reverse direction if not longer overlapping spawn box */
 	if (Cast<ASphereTarget>(OtherActor))
@@ -747,23 +646,23 @@ void ATargetSpawner::OnOverlapEnd_OverlapSpawnBox(UPrimitiveComponent* Overlappe
 	}
 }
 
-void ATargetSpawner::FindNextTargetProperties()
+void ATargetManager::FindNextTargetProperties()
 {
 	TargetScale = GetNextTargetScale();
 	SpawnLocation = GetNextTargetSpawnLocation(BSConfig.SpatialConfig.BoundsScalingMethod, TargetScale);
 }
 
-float ATargetSpawner::GetNextTargetScale() const
+FVector ATargetManager::GetNextTargetScale() const
 {
 	if (BSConfig.TargetConfig.ConsecutiveTargetScaleMethod == EConsecutiveTargetScaleMethod::SkillBased)
 	{
 		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-		return UKismetMathLibrary::Lerp(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale, NewFactor);
+		return FVector(UKismetMathLibrary::Lerp(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale, NewFactor));
 	}
-	return FMath::FRandRange(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale);
+	return FVector(FMath::FRandRange(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale));
 }
 
-FVector ATargetSpawner::GetNextTargetSpawnLocation(const EBoundsScalingMethod BoundsScalingMethod, const float NewTargetScale)
+FVector ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingMethod BoundsScalingMethod, const FVector& NewTargetScale)
 {
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat && !LastTargetSpawnedCenter)
 	{
@@ -780,7 +679,7 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const EBoundsScalingMethod Bo
 	TArray<FVector> OpenLocations = GetValidSpawnLocations(NewTargetScale, BSConfig.SpatialConfig.TargetDistributionMethod, BoundsScalingMethod);
 	if (OpenLocations.IsEmpty())
 	{
-		UE_LOG(LogTargetSpawner, Warning, TEXT("OpenLocations is empty."));
+		UE_LOG(LogTargetManager, Warning, TEXT("OpenLocations is empty."));
 		bSkipNextSpawn = true;
 		return GetBoxOrigin();
 	}
@@ -796,12 +695,12 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const EBoundsScalingMethod Bo
 	}
 
 	/* Spawn at origin whenever possible */
-	if (OpenLocations.Contains(GetBoxOrigin()))
+	if (OpenLocations.Contains(GetBoxOrigin()) && BSConfig.DefiningConfig.BaseGameMode != EBaseGameMode::ChargedBeatTrack)
 	{
 		return GetBoxOrigin();
 	}
 
-	if (BSConfig.AIConfig.bEnableReinforcementLearning)
+	if (ReinforcementLearningComponent->IsActive())
 	{
 		const int32 ChosenPoint = TryGetSpawnLocationFromReinforcementLearningComponent(OpenLocations);
 		if (ChosenPoint != INDEX_NONE)
@@ -810,20 +709,19 @@ FVector ATargetSpawner::GetNextTargetSpawnLocation(const EBoundsScalingMethod Bo
 			Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
 			return Found.ActualChosenPoint;
 		}
-		UE_LOG(LogTargetSpawner, Warning, TEXT("Unable to Spawn Location suggested by RLAgent."));
+		UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn Location suggested by RLAgent."));
 	}
 
 	const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0, OpenLocations.Num() - 1);
 	FVectorCounter Found = GetVectorCounterFromPoint(OpenLocations[RandomPoint]);
 	Found.ActualChosenPoint = Found.GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found.Point));
-	//UE_LOG(LogTargetSpawner, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found.Point.ToString(), *Found.Center.ToString(), *Found.ActualChosenPoint.ToString());
+	//UE_LOG(LogTargetManager, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found.Point.ToString(), *Found.Center.ToString(), *Found.ActualChosenPoint.ToString());
 	return Found.ActualChosenPoint;
 }
 
-FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
+FVector ATargetManager::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
 {
 	const FVector NewExtent = FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
-
 	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
 	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
 	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
@@ -858,7 +756,7 @@ FVector ATargetSpawner::GetRandomBeatTrackLocation(const FVector& LocationBefore
 	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * MovingTargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
 }
 
-TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale, const ETargetDistributionMethod& TargetDistributionMethod, const EBoundsScalingMethod& BoundsScalingMethod) const
+TArray<FVector> ATargetManager::GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionMethod& TargetDistributionMethod, const EBoundsScalingMethod& BoundsScalingMethod) const
 {
 	TArray<FVector> ValidSpawnLocations;
 
@@ -919,14 +817,14 @@ TArray<FVector> ATargetSpawner::GetValidSpawnLocations(const float Scale, const 
 	return ValidSpawnLocations;
 }
 
-TArray<FVector> ATargetSpawner::GetAllSpawnLocations() const
+TArray<FVector> ATargetManager::GetAllSpawnLocations() const
 {
 	return AllSpawnLocations;
 }
 
-TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector& Center, const float Scale) const
+TArray<FVector> ATargetManager::GetOverlappingPoints(const FVector& Center, const FVector& Scale) const
 {
-	float Radius = Scale * SphereTargetRadius * 2.f + BSConfig.SpatialConfig.MinDistanceBetweenTargets / 2.f;
+	float Radius = Scale.X * SphereTargetRadius * 2.f + BSConfig.SpatialConfig.MinDistanceBetweenTargets / 2.f;
 	Radius = FMath::Max(Radius, MinOverlapRadius);
 	const FSphere Sphere = FSphere(Center, Radius);
 	const FVector NegativeExtents = GetBoxExtrema(0, false);
@@ -944,21 +842,20 @@ TArray<FVector> ATargetSpawner::GetOverlappingPoints(const FVector& Center, cons
 			}
 		}
 	}
-	//UE_LOG(LogTargetSpawner, Display, TEXT("GetOverlappingPoints Count %d"), Count);
+	//UE_LOG(LogTargetManager, Display, TEXT("GetOverlappingPoints Count %d"), Count);
 	//DrawDebugSphere(GetWorld(), Center, Scale * SphereTargetRadius * 2 + (BSConfig.MinDistanceBetweenTargets / 2.f), 32, FColor::Magenta, false, 0.5f);
-	//UE_LOG(LogTargetSpawner, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
+	//UE_LOG(LogTargetManager, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
 	return BlockedPoints;
 }
 
-TArray<FVector> ATargetSpawner::GetAllOverlappingPoints(const float Scale) const
+TArray<FVector> ATargetManager::GetAllOverlappingPoints(const FVector& Scale) const
 {
 	TArray<FVector> OverlappingPoints;
-
 	/* Resizing Overlapping Points if necessary */
 	for (FRecentTarget Struct : GetRecentTargets())
 	{
 		TArray<FVector> CurrentBlockedLocations;
-		if (Scale > Struct.TargetScale)
+		if (Scale.Length() > Struct.TargetScale.Length())
 		{
 			CurrentBlockedLocations = GetOverlappingPoints(Struct.CenterVector, Scale);
 		}
@@ -978,12 +875,12 @@ TArray<FVector> ATargetSpawner::GetAllOverlappingPoints(const float Scale) const
 	return OverlappingPoints;
 }
 
-FVector ATargetSpawner::GetBoxOrigin() const
+FVector ATargetManager::GetBoxOrigin() const
 {
 	return SpawnBox->Bounds.Origin;
 }
 
-FVector ATargetSpawner::GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const
+FVector ATargetManager::GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const
 {
 	if (bDynamic)
 	{
@@ -996,12 +893,12 @@ FVector ATargetSpawner::GetBoxExtrema(const int32 PositiveExtrema, const bool bD
 	return StaticMinExtrema;
 }
 
-FVector ATargetSpawner::GetBoxExtents_Static() const
+FVector ATargetManager::GetBoxExtents_Static() const
 {
 	return StaticExtents;
 }
 
-TArray<EBorderingDirection> ATargetSpawner::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const
+TArray<EBorderingDirection> ATargetManager::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const
 {
 	TArray<EBorderingDirection> Directions;
 	const FVector MinExtrema = GetBoxExtrema(0, true);
@@ -1030,33 +927,33 @@ TArray<EBorderingDirection> ATargetSpawner::GetBorderingDirections(const TArray<
 	return Directions;
 }
 
-FVectorCounter ATargetSpawner::GetVectorCounterFromPoint(const FVector& Point) const
+FVectorCounter ATargetManager::GetVectorCounterFromPoint(const FVector& Point) const
 {
 	const int32 Index = GetSpawnCounter().Find(Point);
 	if (Index == INDEX_NONE)
 	{
-		UE_LOG(LogTargetSpawner, Warning, TEXT("Point Not Found in SpawnCounter"));
+		UE_LOG(LogTargetManager, Warning, TEXT("Point Not Found in SpawnCounter"));
 		return FVectorCounter();
 	}
 	return GetSpawnCounter()[Index];
 }
 
-void ATargetSpawner::MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const
+void ATargetManager::MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const
 {
 	const FVector Loc = SpawnTarget->GetActorLocation();
 	const FVector NewLoc = FVector(Loc.X - BSConfig.SpatialConfig.MoveForwardDistance, Loc.Y, Loc.Z);
 	SpawnTarget->SetActorLocation(UKismetMathLibrary::VInterpTo(Loc, NewLoc, DeltaTime, 1 / BSConfig.TargetConfig.TargetMaxLifeSpan));
 }
 
-int32 ATargetSpawner::AddToRecentTargets(const ASphereTarget* SpawnTarget, const float Scale)
+int32 ATargetManager::AddToRecentTargets(const ASphereTarget* SpawnTarget, const FVector& Scale)
 {
 	TArray<FRecentTarget> Targets = GetRecentTargets();
-	const int32 NewIndex = Targets.Emplace(FRecentTarget(SpawnTarget->Guid, GetOverlappingPoints(SpawnTarget->GetActorLocation(), Scale), Scale, SpawnTarget->GetActorLocation()));
+	const int32 NewIndex = Targets.Emplace(FRecentTarget(SpawnTarget->GetGuid(), GetOverlappingPoints(SpawnTarget->GetActorLocation(), Scale), Scale, SpawnTarget->GetActorLocation()));
 	RecentTargets = Targets;
 	return NewIndex;
 }
 
-int32 ATargetSpawner::AddToActiveTargets(ASphereTarget* SpawnTarget)
+int32 ATargetManager::AddToActiveTargets(ASphereTarget* SpawnTarget)
 {
 	TArray<ASphereTarget*> Targets = GetActiveTargets();
 	const int32 NewIndex = Targets.Emplace(SpawnTarget);
@@ -1064,21 +961,45 @@ int32 ATargetSpawner::AddToActiveTargets(ASphereTarget* SpawnTarget)
 	return NewIndex;
 }
 
-void ATargetSpawner::RemoveFromRecentTargets(const FGuid GuidToRemove)
+void ATargetManager::AddToActiveBeatGridGuids(const FGuid GuidToAdd)
+{
+	TArray<FGuid> ActiveBeatGridGuidsCopy = GetActiveBeatGridGuids();
+	ActiveBeatGridGuidsCopy.Add(GuidToAdd);
+	ActiveBeatGridGuids = ActiveBeatGridGuidsCopy;
+}
+
+void ATargetManager::RemoveFromRecentTargets(const FGuid GuidToRemove)
 {
 	TArray<FRecentTarget> Targets = GetRecentTargets();
 	Targets.Remove(FRecentTarget(GuidToRemove));
 	RecentTargets = Targets;
 }
 
-void ATargetSpawner::RemoveFromActiveTargets(ASphereTarget* SpawnTarget)
+void ATargetManager::RemoveFromActiveTargets(const FGuid GuidToRemove)
 {
-	TArray<ASphereTarget*> Targets = GetActiveTargets();
-	Targets.Remove(SpawnTarget);
+	const TArray<ASphereTarget*> Targets = GetActiveTargets().FilterByPredicate([&] (const ASphereTarget* OtherTarget)
+	{
+		if (!OtherTarget)
+		{
+			return false;
+		}
+		if (OtherTarget->GetGuid() == GuidToRemove)
+		{
+			return false;
+		}
+		return true;
+	});
 	ActiveTargets = Targets;
 }
 
-void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
+void ATargetManager::RemoveFromActiveBeatGridGuids(const FGuid GuidToRemove)
+{
+	TArray<FGuid> ActiveBeatGridGuidsCopy = GetActiveBeatGridGuids();
+	ActiveBeatGridGuidsCopy.Remove(GuidToRemove);
+	ActiveBeatGridGuids = ActiveBeatGridGuidsCopy;
+}
+
+void ATargetManager::RemoveEdgePoints(TArray<FVector>& In) const
 {
 	const FVector MinExtrema = GetBoxExtrema(0, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
 	const FVector MaxExtrema = GetBoxExtrema(1, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
@@ -1142,10 +1063,10 @@ void ATargetSpawner::RemoveEdgePoints(TArray<FVector>& In) const
 			Count++;
 		}
 	}
-	//UE_LOG(LogTargetSpawner, Display, TEXT("Removed Edge Points: %d"), Count);
+	//UE_LOG(LogTargetManager, Display, TEXT("Removed Edge Points: %d"), Count);
 }
 
-void ATargetSpawner::SetBoxExtents_Dynamic() const
+void ATargetManager::SetBoxExtents_Dynamic() const
 {
 	const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
 	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Y, GetBoxExtents_Static().Y * 0.5f, NewFactor);
@@ -1155,7 +1076,7 @@ void ATargetSpawner::SetBoxExtents_Dynamic() const
 	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
 }
 
-void ATargetSpawner::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 {
 	PlayerSettings = InPlayerSettings;
 	if (!ActiveTargets.IsEmpty())
@@ -1167,7 +1088,7 @@ void ATargetSpawner::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSe
 	}
 }
 
-int32 ATargetSpawner::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
+int32 ATargetManager::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
 {
 	/* First find the Row and Column number that corresponds to the SpawnCounter index */
 	const int32 SpawnCounterRowNum = SpawnCounterIndex / SpawnCounterWidth;
@@ -1184,7 +1105,7 @@ int32 ATargetSpawner::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCou
 	return Index;
 }
 
-int32 ATargetSpawner::TryGetSpawnLocationFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const
+int32 ATargetManager::TryGetSpawnLocationFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const
 {
 	/* Converting all OpenLocations to indices */
 	TArray<int32> Indices;
@@ -1198,18 +1119,19 @@ int32 ATargetSpawner::TryGetSpawnLocationFromReinforcementLearningComponent(cons
 	}
 	if (Indices.IsEmpty())
 	{
-		UE_LOG(LogTargetSpawner, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
+		UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 		return INDEX_NONE;
 	}
 	return ReinforcementLearningComponent->ChooseNextActionIndex(Indices);
 }
 
-void ATargetSpawner::ShowDebug_SpawnBox(const bool bShow)
+void ATargetManager::ShowDebug_SpawnBox(const bool bShow)
 {
 	bShowDebug_SpawnBox = bShow;
 	if (bShowDebug_SpawnBox)
 	{
 		DrawDebugBox(GetWorld(), GetBoxOrigin(), GetBoxExtents_Static(), FColor::Orange, true, -1, 3, 5);
+		DrawDebugBox(GetWorld(), OverlapSpawnBox->Bounds.Origin, OverlapSpawnBox->GetScaledBoxExtent(), FColor::Blue, true, -1, 3, 5);
 	}
 	else
 	{
@@ -1217,12 +1139,12 @@ void ATargetSpawner::ShowDebug_SpawnBox(const bool bShow)
 	}
 }
 
-void ATargetSpawner::ShowDebug_SpawnMemory(const bool bShow)
+void ATargetManager::ShowDebug_SpawnMemory(const bool bShow)
 {
 	bShowDebug_SpawnMemory = bShow;
 }
 
-void ATargetSpawner::ShowDebug_ReinforcementLearningWidget(const bool bShow)
+void ATargetManager::ShowDebug_ReinforcementLearningWidget(const bool bShow)
 {
 	if (!ReinforcementLearningComponent->IsActive())
 	{
@@ -1239,4 +1161,77 @@ void ATargetSpawner::ShowDebug_ReinforcementLearningWidget(const bool bShow)
 		return;
 	}
 	Controller->HideRLAgentWidget();
+}
+
+TArray<FAccuracyRow> ATargetManager::GetLocationAccuracy() const
+{
+	/* Each row in QTable has size equal to ScaledSize, and so does each column */
+	TArray<FAccuracyRow> OutArray;
+	OutArray.Init(FAccuracyRow(5), 5);
+	TArray<FQTableIndex> QTableIndices;
+
+	for (int i = 0; i < 25; i++)
+	{
+		QTableIndices.Add(FQTableIndex(i));
+	}
+
+	TArray<FVectorCounter> Counter = GetSpawnCounter();
+
+	for (int i = 0; i < GetSpawnCounter().Num(); i++)
+	{
+		if (const int32 Found = QTableIndices.Find(GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
+		{
+			const int32 RowNum = Found / 5;
+			const int32 ColNum = Found % 5;
+
+			if (Counter[i].TotalSpawns != INDEX_NONE)
+			{
+				if (OutArray[RowNum].TotalSpawns[ColNum] == INDEX_NONE)
+				{
+					OutArray[RowNum].TotalSpawns[ColNum] = 0;
+				}
+				OutArray[RowNum].TotalSpawns[ColNum] += Counter[i].TotalSpawns;
+				OutArray[RowNum].TotalHits[ColNum] += Counter[i].TotalHits;
+			}
+		}
+	}
+
+	for (FAccuracyRow& AccuracyRow : OutArray)
+	{
+		AccuracyRow.UpdateAccuracy();
+	}
+	return OutArray;
+}
+
+FCommonScoreInfo ATargetManager::GetCommonScoreInfo() const
+{
+	TArray<FQTableIndex> Indices;
+	for (int i = 0; i < 25; i++)
+	{
+		Indices.Add(FQTableIndex(i));
+	}
+
+	FCommonScoreInfo CommonScoreInfo = FCommonScoreInfo(25);
+	TArray<FVectorCounter> Counter = GetSpawnCounter();
+	for (int i = 0; i < GetSpawnCounter().Num(); i++)
+	{
+		if (const int32 Found = Indices.Find(GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
+		{
+			if (Counter[i].TotalSpawns != INDEX_NONE)
+			{
+				if (CommonScoreInfo.TotalSpawns[Found] == INDEX_NONE)
+				{
+					CommonScoreInfo.TotalSpawns[Found] = 0;
+				}
+				CommonScoreInfo.TotalSpawns[Found] += Counter[i].TotalSpawns;
+				CommonScoreInfo.TotalHits[Found] += Counter[i].TotalHits;
+			}
+		}
+	}
+	if (ReinforcementLearningComponent->IsActive())
+	{
+		CommonScoreInfo.QTable = ReinforcementLearningComponent->GetSaveReadyQTable();
+		ReinforcementLearningComponent->PrintRewards();
+	}
+	return CommonScoreInfo;
 }

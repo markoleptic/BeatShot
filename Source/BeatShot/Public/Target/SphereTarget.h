@@ -17,17 +17,82 @@ class UTimelineComponent;
 class UNiagaraSystem;
 class UCurveFloat;
 class UBSAttributeSetBase;
+class ASphereTarget;
 
-/** Broadcasts info about the destroyed target state */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnLifeSpanExpired, bool, DidExpire, float, TimeAlive, ASphereTarget*, DestroyedTarget);
 
-/** Base target class for this game that is mostly self-managed. TargetSpawner is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
+USTRUCT()
+struct FTargetDamageEvent
+{
+	GENERATED_BODY()
+
+	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
+	float TimeAlive;
+
+	/** The absolute value between the health attribute's NewValue and OldValue */
+	float DamageDelta;
+
+	/** The total possible damage if tracking */
+	float TotalPossibleDamage;
+
+	/** The location of the center of the target */
+	FVector Location;
+
+	/** The scale of the target relative to the world */
+	FVector Scale;
+
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
+	FGuid Guid;
+
+	/** Number of charges this target had before it was destroyed */
+	int32 NumCharges;
+	
+	FTargetDamageEvent()
+	{
+		TimeAlive = INDEX_NONE;
+		DamageDelta = 0.f;
+		TotalPossibleDamage = 0.f;
+		Location = FVector();
+		Scale = FVector(1.f);
+		NumCharges = INDEX_NONE;
+	}
+
+	FTargetDamageEvent(const float InTimeAlive, const float InDamageDelta, const float InTotalPossibleDamage, const FVector& InLocation,
+		const FVector& InScale, const FGuid& InGuid, const int32 InNumCharges)
+	{
+		TimeAlive = InTimeAlive;
+		DamageDelta = InDamageDelta;
+		TotalPossibleDamage = InTotalPossibleDamage;
+		Location = InLocation;
+		Scale = InScale;
+		Guid = InGuid;
+		NumCharges = InNumCharges;
+	}
+
+	float GetDamageDelta(const float OldValue, const float NewValue) const
+	{
+		return abs(OldValue - NewValue);
+	}
+
+	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
+	{
+		if (Guid == Other.Guid)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
+/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
+
+/** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
 class BEATSHOT_API ASphereTarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
 {
 	GENERATED_BODY()
 
-	friend class ATargetSpawner;
+	friend class ATargetManager;
 
 	/** Sets default values for this actor's properties */
 	ASphereTarget();
@@ -38,9 +103,6 @@ protected:
 
 	/** Ticks the timelines */
 	virtual void Tick(float DeltaSeconds) override;
-
-	/** Called when a non BeatGrid target lifespan has expired */
-	virtual void LifeSpanExpired() override;
 
 	// Actual hard pointer to AbilitySystemComponent
 	UPROPERTY()
@@ -81,7 +143,7 @@ protected:
 
 public:
 
-	/** Called in TargetSpawner to initialize the target */
+	/** Called in TargetManager to initialize the target */
 	void InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 	
 	/* ~Begin IAbilitySystemInterface */
@@ -94,19 +156,23 @@ public:
 	virtual bool HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	/* ~End IGameplayTagAssetInterface */
-	
-	void RemoveGameplayTag(FGameplayTag TagToRemove);
 
-	/** Called by TargetSpawner if settings were changed that could affect the target */
+	/** Removes a gameplay tag from AbilitySystemComponent */
+	void RemoveGameplayTag(FGameplayTag TagToRemove) const;
+
+	/** Called when a gameplay effect is blocked because of immunity */
+	void OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect);
+
+	/** Called by TargetManager if settings were changed that could affect the target */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 	
-	/** Called in TargetSpawner to activate a BeatGrid target */
+	/** Called in TargetManager to activate a BeatGrid target */
 	void ActivateBeatGridTarget(const float Lifespan);
 
-	/** Called in TargetSpawner to activate a Charged target, instead of spawning a new one */
+	/** Called in TargetManager to activate a Charged target, instead of spawning a new one */
 	void ActivateChargedTarget(const float Lifespan);
 
-	/** Sets the scale for the SphereMesh, should only be called by TargetSpawner */
+	/** Sets the scale for the SphereMesh, should only be called by TargetManager */
 	void SetInitialSphereScale(const FVector& NewScale);
 
 	/** Sets the color of the Base Target */
@@ -117,13 +183,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetOutlineColor(const FLinearColor& Color);
 
-	/** Called from HealthComponent when a SphereTarget receives lethal damage */
-	UFUNCTION()
-	void OnOutOfHealth();
-
 	/** Called from HealthComponent when a SphereTarget receives damage if the game mode is BeatGrid */
 	UFUNCTION()
 	void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
+
+	void OnHealthChanged_BeatGrid();
+
+	void OnHealthChanged_ChargedBeatTrack();
 
 	/** Returns the color the target be after SpawnBeatDelay seconds have passed */
 	UFUNCTION(BlueprintCallable)
@@ -133,21 +199,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FLinearColor GetEndTargetColor() const;
 
-	int32 GetNumCharges() const { return NumCharges; }
+	/** Returns the generated Guid for this target */
+	FGuid GetGuid() const { return Guid; }
 	
-	/** Target Spawner binds to this function to receive info about how target was destroyed. Broadcast from OnOutOfHealth functions */
-	FOnLifeSpanExpired OnLifeSpanExpired;
+	/** Returns the number of charges this target has */
+	int32 GetNumCharges() const { return NumCharges; }
 
-	/** Timer to track the length of time the target was alive for */
+	/** Whether or not the DamageableWindow timer is active and the target is not immune */
+	bool IsTargetActiveAndDamageable() const;
+	
+	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
+	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
+
+	/** Timer to track the length of time the target has been damageable for */
 	UPROPERTY()
-	FTimerHandle TimeSinceSpawn;
+	FTimerHandle DamageableWindow;
 
 	/** Locally stored BSConfig to access GameMode properties without storing ref to game instance */
 	UPROPERTY()
 	FBSConfig BSConfig;
-	
-	UPROPERTY()
-	FGuid Guid;
 
 private:
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
@@ -162,11 +232,24 @@ private:
 	UFUNCTION()
 	void PlayShrinkQuickAndGrowSlowTimeline();
 
+	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
+	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const;
+
+	/** Stops playing all timelines if any are playing */
 	void StopAllTimelines();
 
 	/** Set the color to BeatGrid color */
 	UFUNCTION()
 	void SetColorToBeatGridColor();
+
+	/** Change the sphere scale*/
+	void SetSphereScale(const FVector& NewScale) const;
+
+	/** Toggles between using the BaseColor or a separate OutlineColor in the Sphere Material */
+	void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
+
+	/** Returns the current scale of the target */
+	FVector GetCurrentTargetScale() const;
 
 	/** Interpolates between StartTargetColor and PeakTargetColor. This occurs between initial spawning of target, up to SpawnBeatDelay seconds */
 	UFUNCTION()
@@ -176,50 +259,54 @@ private:
 	UFUNCTION()
 	void InterpPeakToEnd(const float Alpha);
 
-	/* Used to shrink the target quickly, and more slowly return it to it's BeatGrid size and color. Interpolates both sphere scale and sphere color */
+	/** Used to shrink the target quickly, and more slowly return it to it's BeatGrid size and color. Interpolates both sphere scale and sphere color */
 	UFUNCTION()
 	void InterpShrinkQuickAndGrowSlow(const float Alpha);
 
 	/** Applies the TargetImmunity gameplay effect to the target */
-	void ApplyImmunityEffect();
+	void ApplyImmunityEffect() const;
 
-	/** Unlike other modes which use LifeSpanExpired to notify TargetSpawner of their expiration, BeatGrid modes use
+	/** Applies the TargetImmunity gameplay effect to the target */
+	void RemoveImmunityEffect() const;
+
+	/** Unlike other modes which use LifeSpanExpired to notify TargetManager of their expiration, BeatGrid modes use
 	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
 	UFUNCTION()
-	void OnBeatGridTargetTimeout();
-
-	/** Called if an activated charged target times out */
-	void OnChargedTargetTimeout();
-
-	/** Toggles between using the BaseColor or a separate OutlineColor in the Sphere Material */
-	void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
-
-	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
-	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const;
-
-	/** Change the sphere scale*/
-	void SetSphereScale(const FVector& NewScale) const;
-
-	/** Returns the current scale of the target */
-	FVector GetCurrentTargetScale() const;
-
-	/** Gameplay tags associated with this target */
-	FGameplayTagContainer GameplayTags;
-
+	void OnTargetMaxLifeSpanExpired();
+	
 	UPROPERTY()
 	FPlayerSettings_Game PlayerSettings;
+
+	/** Guid to keep track of a target's properties after it has been destroyed */
+	UPROPERTY()
+	FGuid Guid;
 
 	FTimeline StartToPeakTimeline;
 	FTimeline PeakToEndTimeline;
 	FTimeline ShrinkQuickAndGrowSlowTimeline;
 
+	FOnTimelineFloat OnStartToPeak;
+	FOnTimelineFloat OnPeakToFade;
+	FOnTimelineFloat OnShrinkQuickAndGrowSlow;
+
+	FOnTimelineEvent OnStartToPeakFinished;
+	FOnTimelineEvent OnPeakToFadeFinished;
+
 	/** The scale that was applied when spawned */
 	float InitialTargetScale = 1.f;
-	
+
+	/** The scale that was applied when spawned */
+	FVector InitialTargetLocation;
+
+	/** The color of the target when it was destroyed */
 	FLinearColor ColorWhenDestroyed;
 
+	/** Playback rate for StartToPeak timeline */
 	float StartToPeakTimelinePlayRate;
+
+	/** Playback rate for PeakToEnd timeline */
 	float PeakToEndTimelinePlayRate;
 
+	/** Number of charges for this target */
 	int32 NumCharges = INDEX_NONE;
 };

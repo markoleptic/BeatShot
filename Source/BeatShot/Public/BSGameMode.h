@@ -13,7 +13,7 @@ class AVisualizerManager;
 class ABSCharacter;
 class AVisualizerBase;
 class AFloatingTextActor;
-class ATargetSpawner;
+class ATargetManager;
 class ASphereTarget;
 class ABSPlayerController;
 class UAudioAnalyzerManager;
@@ -51,9 +51,9 @@ class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, pu
 #pragma region Classes
 
 protected:
-	/* The TargetSpawner class to spawn */
+	/* The TargetManager class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
-	TSubclassOf<ATargetSpawner> TargetSpawnerClass;
+	TSubclassOf<ATargetManager> TargetManagerClass;
 
 	/** The VisualizerManager class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
@@ -63,9 +63,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawnable Classes")
 	TSubclassOf<ACharacter> CharacterClass;
 
-	/* The spawned TargetSpawner */
+	/* The spawned TargetManager */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Actors")
-	TObjectPtr<ATargetSpawner> TargetSpawner;
+	TObjectPtr<ATargetManager> TargetManager;
 
 	/** The Visualizer Manager */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Actors")
@@ -83,18 +83,18 @@ protected:
 	TSubclassOf<class UGameplayAbility> TrackGunAbility;
 
 public:
-	ATargetSpawner* GetTargetSpawner() const { return TargetSpawner.Get(); }
+	ATargetManager* GetTargetManager() const { return TargetManager.Get(); }
 
 #pragma endregion
 
 #pragma region StartStopGameMode
 
 public:
-	/** Entry point into starting game. Spawn TargetSpawner, Visualizers 
+	/** Entry point into starting game. Spawn TargetManager, Visualizers 
 	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
 	void InitializeGameMode();
 
-	/** Allows TargetSpawner to start spawning targets, starts timers, shows PlayerHUD, CrossHair, and hides the
+	/** Allows TargetManager to start spawning targets, starts timers, shows PlayerHUD, CrossHair, and hides the
 	 *  countdown widget. Called from Countdown widget when the countdown has completed */
 	UFUNCTION()
 	void StartGameMode();
@@ -112,7 +112,7 @@ private:
 	/** Binds all delegates associated with DefaultGameMode */
 	void BindGameModeDelegates();
 
-	/** Function to tell TargetSpawner to spawn a new target */
+	/** Function to tell TargetManager to spawn a new target */
 	void SpawnNewTarget(bool bNewTargetState);
 
 	/** Timer that spans the length of the song */
@@ -192,7 +192,7 @@ public:
 	FOnAAManagerSecondPassed OnSecondPassed;
 
 	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
-	 *  DefaultGameMode (this) binds to it, while TargetSpawner executes it */
+	 *  DefaultGameMode (this) binds to it, while TargetManager executes it */
 	FUpdateScoresToHUD UpdateScoresToHUD;
 
 	/** Broadcasts when the countdown has completed and the actual game has began. */
@@ -273,15 +273,13 @@ private:
 	/** Whether or not night mode has been unlocked */
 	bool bNightModeUnlocked;
 
-	const FVector TargetSpawnerLocation = {3730, 0, 750};
-
 	const FActorSpawnParameters SpawnParameters;
 
 #pragma endregion
 
 #pragma region HUDUpdate
 
-	/** Function bound to TargetSpawner's OnTargetDestroyed delegate, passes the time that the target was alive for */
+	/** Function bound to TargetManager's OnTargetDestroyed delegate, passes the time that the target was alive for */
 	UFUNCTION()
 	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position);
 
@@ -289,10 +287,10 @@ private:
 	 *  which passes the current damage taken, and the total possible damage. Executed on tick
 	 *  by SphereTarget */
 	UFUNCTION()
-	void UpdateTrackingScore(const float OldValue, const float NewValue, const float TotalPossibleDamage);
+	void UpdateTrackingScore(const float DamageDelta, const float TotalPossibleDamage);
 
-	/** Function bound to DefaultGameMode's OnTargetSpawned delegate to keep track of number of targets spawned.
-	 *  Executed by TargetSpawner */
+	/** Function bound to DefaultGameMode's OnTargetActivatedOrSpawned delegate to keep track of number of targets spawned.
+	 *  Executed by TargetManager */
 	UFUNCTION()
 	void UpdateTargetsSpawned();
 

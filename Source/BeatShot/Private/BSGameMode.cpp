@@ -6,7 +6,7 @@
 #include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
 #include "Player/BSPlayerController.h"
-#include "Target/TargetSpawner.h"
+#include "Target/TargetManager.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
 #include "AbilitySystem/BSGameplayAbility_TrackGun.h"
@@ -98,9 +98,9 @@ void ABSGameMode::InitializeGameMode()
 	/* Get config from Game Instance */
 	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->BSConfig;
 
-	/* Spawn TargetSpawner and VisualizerManager */
-	TargetSpawner = GetWorld()->SpawnActor<ATargetSpawner>(TargetSpawnerClass, TargetSpawnerLocation, FRotator::ZeroRotator, SpawnParameters);
-	TargetSpawner->InitTargetSpawner(BSConfig, PlayerSettings.Game);
+	/* Spawn TargetManager and VisualizerManager */
+	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator, SpawnParameters);
+	TargetManager->InitTargetManager(BSConfig, PlayerSettings.Game);
 
 	if (!VisualizerManager)
 	{
@@ -141,7 +141,7 @@ void ABSGameMode::StartGameMode()
 	LoadMatchingPlayerScores();
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 	StartGameModeTimers();
-	TargetSpawner->SetShouldSpawn(true);
+	TargetManager->SetShouldSpawn(true);
 }
 
 void ABSGameMode::StartGameModeTimers()
@@ -159,17 +159,17 @@ void ABSGameMode::StartGameModeTimers()
 
 void ABSGameMode::BindGameModeDelegates()
 {
-	if (!GetTargetSpawner()->OnTargetSpawned.IsBoundToObject(this))
+	if (!GetTargetManager()->OnTargetActivatedOrSpawned.IsBoundToObject(this))
 	{
-		GetTargetSpawner()->OnTargetSpawned.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
+		GetTargetManager()->OnTargetActivatedOrSpawned.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 	}
-	if (!GetTargetSpawner()->OnTargetDestroyed.IsBoundToObject(this))
+	if (!GetTargetManager()->OnTargetDestroyed.IsBoundToObject(this))
 	{
-		GetTargetSpawner()->OnTargetDestroyed.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
+		GetTargetManager()->OnTargetDestroyed.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
 	}
-	if (!GetTargetSpawner()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
+	if (!GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
 	{
-		GetTargetSpawner()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
+		GetTargetManager()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
 	}
 	for (const ABSPlayerController* Controller : Controllers)
 	{
@@ -177,9 +177,9 @@ void ABSGameMode::BindGameModeDelegates()
 		{
 			if (Character->HasMatchingGameplayTag(FBSGameplayTags::Get().Cheat_AimBot))
 			{
-				if (!GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
+				if (!GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
 				{
-					GetTargetSpawner()->OnTargetSpawned_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
+					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 				}
 			}
 		}
@@ -192,29 +192,29 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
 
-	if (TargetSpawner)
+	if (TargetManager)
 	{
-		TargetSpawner->SetShouldSpawn(false);
+		TargetManager->SetShouldSpawn(false);
 
 		/* Saves CommonScoreInfo like total spawns, hits, and QTable */
-		const FCommonScoreInfo ScoreInfo = TargetSpawner->GetCommonScoreInfo();
+		const FCommonScoreInfo ScoreInfo = TargetManager->GetCommonScoreInfo();
 		SaveCommonScoreInfo(BSConfig.DefiningConfig, ScoreInfo);
-		CurrentPlayerScore.LocationAccuracy = TargetSpawner->GetLocationAccuracy();
+		CurrentPlayerScore.LocationAccuracy = TargetManager->GetLocationAccuracy();
 
-		if (GetTargetSpawner()->OnTargetSpawned.IsBoundToObject(this))
+		if (GetTargetManager()->OnTargetActivatedOrSpawned.IsBoundToObject(this))
 		{
-			GetTargetSpawner()->OnTargetSpawned.RemoveAll(this);
+			GetTargetManager()->OnTargetActivatedOrSpawned.RemoveAll(this);
 		}
-		if (GetTargetSpawner()->OnTargetDestroyed.IsBoundToObject(this))
+		if (GetTargetManager()->OnTargetDestroyed.IsBoundToObject(this))
 		{
-			GetTargetSpawner()->OnTargetDestroyed.RemoveAll(this);
+			GetTargetManager()->OnTargetDestroyed.RemoveAll(this);
 		}
-		if (GetTargetSpawner()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
+		if (GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
 		{
-			GetTargetSpawner()->OnBeatTrackTargetDamaged.RemoveAll(this);
+			GetTargetManager()->OnBeatTrackTargetDamaged.RemoveAll(this);
 		}
-		TargetSpawner->Destroy();
-		TargetSpawner = nullptr;
+		TargetManager->Destroy();
+		TargetManager = nullptr;
 	}
 	
 	if (VisualizerManager)
@@ -275,7 +275,7 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 		if (Elapsed > BSConfig.TargetConfig.TargetSpawnCD)
 		{
 			Elapsed = 0.f;
-			TargetSpawner->CallSpawnFunction();
+			TargetManager->OnAudioAnalyzerBeat();
 		}
 	}
 	else if (!bNewTargetState && LastTargetOnSet)
@@ -596,9 +596,9 @@ void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameS
 	{
 		VisualizerManager->UpdateVisualizerSettings(GameSettings);
 	}
-	if (TargetSpawner)
+	if (TargetManager)
 	{
-		TargetSpawner->UpdatePlayerSettings(GameSettings);
+		TargetManager->UpdatePlayerSettings(GameSettings);
 	}
 }
 
@@ -682,11 +682,11 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
-void ABSGameMode::UpdateTrackingScore(const float OldValue, const float NewValue, const float TotalPossibleDamage)
+void ABSGameMode::UpdateTrackingScore(const float DamageDelta, const float TotalPossibleDamage)
 {
 	//UE_LOG(LogTemp, Display, TEXT("OldValue %f NewValue %f TotalPossibleDamage %f"), OldValue, NewValue, TotalPossibleDamage);
 	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
-	CurrentPlayerScore.Score += abs(OldValue - NewValue);
+	CurrentPlayerScore.Score += DamageDelta;
 	UpdateHighScore();
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }

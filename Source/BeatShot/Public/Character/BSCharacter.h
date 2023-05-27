@@ -12,6 +12,7 @@
 #include "AbilitySystem/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 
+class ASphereTarget;
 class UBSRecoilComponent;
 class UBSCharacterMovementComponent;
 class ABSPlayerState;
@@ -169,7 +170,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
 	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
 
-	/** Bound to DefaultGameMode's OnTargetSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
+	/** Bound to DefaultGameMode's OnTargetActivatedOrSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()
 	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
 

@@ -130,7 +130,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	/** Initializes the QTable, called by TargetSpawner */
+	/** Initializes the QTable, called by TargetManager */
 	void Init(const FRLAgentParams& AgentParams);
 
 	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */

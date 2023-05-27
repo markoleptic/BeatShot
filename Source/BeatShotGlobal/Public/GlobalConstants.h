@@ -258,7 +258,7 @@ namespace Constants
 #pragma region Target
 
 	/** The default location to spawn the SpawnBox */
-	inline const FVector DefaultTargetSpawnerLocation(3700.f, 0.f, 160.f);
+	inline const FVector DefaultTargetManagerLocation(3700.f, 0.f, 160.f);
 	
 	/** The default BoxBounds multiplied by two for the user interface. The real box bounds are 1600 x 500, which creates a box with size 3200 x 1000 */
 	inline const FVector DefaultSpawnBoxBounds(0.f, 3200.f, 1000.f);
@@ -365,10 +365,10 @@ namespace Constants
 
 #pragma region LightVisualizers
 	
-	/** Location of the StaticCubeVisualizer to the left of the TargetSpawner */
+	/** Location of the StaticCubeVisualizer to the left of the TargetManager */
 	inline const FVector LeftStaticCubeVisualizerLocation(4000, -1935, 210);
 
-	/** Location of the StaticCubeVisualizer to the right of the TargetSpawner */
+	/** Location of the StaticCubeVisualizer to the right of the TargetManager */
 	inline const FVector RightStaticCubeVisualizerLocation(4000, 1935, 210);
 
 	/** Rotation for both StaticCubeVisualizers */

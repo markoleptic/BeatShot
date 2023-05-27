@@ -24,7 +24,7 @@ public:
 	
 	void CVarOnChanged_ShowDebugSpawnBox(IConsoleVariable* Variable);
 	
-	void CVarOnChanged_ShowDebugAllTargetSpawner(IConsoleVariable* Variable);
+	void CVarOnChanged_ShowDebugAllTargetManager(IConsoleVariable* Variable);
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;

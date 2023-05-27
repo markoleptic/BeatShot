@@ -3,7 +3,7 @@
 
 #include "Target/ReinforcementLearningComponent.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Target/TargetSpawner.h"
+#include "Target/TargetManager.h"
 
 
 UReinforcementLearningComponent::UReinforcementLearningComponent()
@@ -189,7 +189,7 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningReward(const FV
 	const int32 ActiveTargetPairIndex = ActiveTargetPairs.Find(WorldLocation);
 	if (ActiveTargetPairIndex == INDEX_NONE)
 	{
-		UE_LOG(LogTargetSpawner, Warning, TEXT("Location not found in ActiveTargetPairs %s"), *WorldLocation.ToString());
+		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %s"), *WorldLocation.ToString());
 		return;
 	}
 	FTargetPair FoundTargetPair = ActiveTargetPairs[ActiveTargetPairIndex];
@@ -209,6 +209,10 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningReward(const FV
 
 void UReinforcementLearningComponent::AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation)
 {
+	if (PreviousWorldLocation.Equals(NextWorldLocation))
+	{
+		return;
+	}
 	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
 }
 
@@ -219,7 +223,7 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 		FTargetPair TargetPair;
 		if (!TargetPairs.Peek(TargetPair))
 		{
-			UE_LOG(LogTargetSpawner, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
+			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 			break;
 		}
 		const int32 StateIndex = SpawnCounter.Find(TargetPair.Previous);
@@ -235,7 +239,7 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 		}
 		else
 		{
-			UE_LOG(LogTargetSpawner, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
+			UE_LOG(LogTargetManager, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
 		}
 		TargetPairs.Pop();
 	}

@@ -82,14 +82,14 @@ struct FTargetPair
 		Reward = 0.f;
 	}
 
-	FTargetPair(const FVector CurrentPoint)
+	FTargetPair(const FVector& CurrentPoint)
 	{
 		Previous = FVector::ZeroVector;
 		Current = CurrentPoint;
 		Reward = 0.f;
 	}
 
-	FTargetPair(const FVector PreviousPoint, const FVector CurrentPoint)
+	FTargetPair(const FVector& PreviousPoint, const FVector& CurrentPoint)
 	{
 		Previous = PreviousPoint;
 		Current = CurrentPoint;
@@ -122,22 +122,22 @@ struct FRecentTarget
 	FGuid TargetGuid;
 
 	/** The scale of the target relative to the world */
-	float TargetScale;
+	FVector TargetScale;
 
 	FRecentTarget()
 	{
 		CenterVector = FVector::ZeroVector;
-		TargetScale = 0.f;
+		TargetScale = FVector::ZeroVector;
 	}
 
 	explicit FRecentTarget(const FGuid Guid)
 	{
 		CenterVector = FVector::ZeroVector;
 		TargetGuid = Guid;
-		TargetScale = 0.f;
+		TargetScale = FVector::ZeroVector;
 	}
 
-	FRecentTarget(const FGuid NewTargetGuid, const TArray<FVector> Points, const float NewTargetScale, const FVector NewCenter)
+	FRecentTarget(const FGuid& NewTargetGuid, const TArray<FVector>& Points, const FVector& NewTargetScale, const FVector& NewCenter)
 	{
 		TargetGuid = NewTargetGuid;
 		OverlappingPoints = Points;

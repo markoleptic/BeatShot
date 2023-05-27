@@ -10,7 +10,7 @@ public class BeatShotGlobal : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{ 
 			"Core", "CoreUObject", "Engine", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities", "OnlineSubsystem", 
-			"OnlineSubsystemUtils", "Steamworks", "NumCpp", "DLSSBlueprint", "NISBlueprint"
+			"OnlineSubsystemUtils", "Steamworks", "NumCpp", "DLSSBlueprint", "NISBlueprint", "GameplayTags"
 		});
 
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));

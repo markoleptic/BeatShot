@@ -144,7 +144,7 @@ enum class EBudgetReflexMode : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EBudgetReflexMode, EBudgetReflexMode::Disabled, EBudgetReflexMode::EnabledPlusBoost);
 
-/* The transition state describing the start state and end state of a transition */
+/** The transition state describing the start state and end state of a transition */
 UENUM()
 enum class ETransitionState : uint8
 {
@@ -155,3 +155,34 @@ enum class ETransitionState : uint8
 	QuitToDesktop UMETA(DisplayName="QuitToDesktop")
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::QuitToDesktop);
+
+UENUM()
+enum class ETargetActivationType : uint8
+{
+	None UMETA(DisplayName="None"),
+	OnSpawn UMETA(DisplayName="On Spawn"),
+	OnActivation UMETA(DisplayName="On Activation"),
+	Combined UMETA(DisplayName="Combined"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationType, ETargetActivationType::OnSpawn, ETargetActivationType::Combined);
+
+UENUM()
+enum class ETargetDamageType : uint8
+{
+	None UMETA(DisplayName="None"),
+	Tracking UMETA(DisplayName="Tracking"),
+	Hit UMETA(DisplayName="Hit"),
+	Combined UMETA(DisplayName="Combined"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDamageType, ETargetDamageType::Tracking, ETargetDamageType::Combined);
+
+UENUM()
+enum class EActiveTargetRemovalPolicy : uint8
+{
+	None UMETA(DisplayName="None"),
+	Never UMETA(DisplayName="Never"),
+	ChargeBased UMETA(DisplayName="Charge Based"),
+	/* Removed after every TargetDamageEvent or timer expiration */
+	Always UMETA(DisplayName="Always")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EActiveTargetRemovalPolicy, EActiveTargetRemovalPolicy::Never, EActiveTargetRemovalPolicy::Always);

@@ -32,7 +32,6 @@ void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& Chang
 		Instigator =  EffectContext.GetOriginalInstigator();
 	}
 	OnHealthChanged.Broadcast(Instigator, ChangeData.OldValue, ChangeData.NewValue, TotalPossibleDamage);
-	//BSHealth_AttributeChanged.Broadcast(this, AttributeSetBase->GetHealth(), AttributeSetBase->GetHealth(), Instigator);
 }
 
 void UBSHealthComponent::HandleMaxHealthChanged(const FOnAttributeChangeData& ChangeData)

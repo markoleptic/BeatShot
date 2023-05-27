@@ -11,7 +11,7 @@ public class UserInterface : ModuleRules
 		{
 			"Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "BeatShotGlobal",
 			"EasyFileDialog", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks", "DLSSBlueprint", "NISBlueprint", 
-			"CommonLoadingScreen"
+			"CommonLoadingScreen", "GameplayTags"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]

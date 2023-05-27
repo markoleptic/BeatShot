@@ -3,10 +3,12 @@
 #pragma once
 #include "GlobalEnums.h"
 #include "DLSSLibrary.h"
+#include "GameplayTagContainer.h"
 #include "GlobalConstants.h"
 #include "NISLibrary.h"
 #include "GlobalStructs.generated.h"
 
+struct FGameplayTagContainer;
 using namespace Constants;
 
 /** Struct only used to save accuracy to database */
@@ -385,7 +387,53 @@ struct FBS_TargetConfig
 	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | ChargedBeatTrack")
 	float ConsecutiveChargeScaleMultiplier;
+	
+	// TODO: Decouple BaseGameMode from SphereTarget using the following:
+	
+	/** Is the target ever destroyed during the game mode */
+	bool bIsPersistant;
 
+	/** The value to set the MaxHealth attribute value to */
+	float Attribute_MaxHealth;
+
+	/** Should the target start the DamageableWindow timer and play the StartToPeak timeline on BeginPlay? */
+	bool bOnSpawn_StartDamageableWindowTimer;
+
+	/** Should the target be immune to damage when spawned? */
+	bool bOnSpawn_ApplyImmunity;
+
+	/** Color to applied to the actor on spawn */
+	FLinearColor OnSpawn_TargetColor;
+	FLinearColor OnSpawn_TargetOutlineColor;
+
+	/** Color applied after a DamageEvent or the DamageableWindow timer expires */
+	FLinearColor OnDamageEvent_TargetColor;
+	FLinearColor OnDamageEvent_TargetOutlineColor;
+
+	/** Color to applied to the actor if inactive, often the same as OnDamageEvent_TargetColor */
+	FLinearColor InActiveTargetColor;
+	FLinearColor InActiveTargetOutlineColor;
+
+	/** Colors interpolated between during the DamageableWindow timer */
+	FLinearColor StartToPeak_StartColor;
+	FLinearColor StartToPeak_EndColor;
+	FLinearColor PeakToEnd_StartColor;
+	FLinearColor PeakToEnd_EndColor;
+	
+	/** Should the target shrink down and slowly grow back to InitialTargetScale after a DamageEvent or the DamageableWindow timer expires */
+	bool bOnDamageEvent_ShrinkQuickAndGrowSlow;
+
+	/** Gameplay tags applied to the target ASC when spawned */
+	FGameplayTagContainer OnSpawn_ApplyTags;
+
+	/** Should Destroy function be called when the DamageableWindow timer expires? */
+	bool bDestroyTargetOnDamageableWindowExpiration;
+
+	/** Should Destroy function be called when the target has been damaged to zero health? */
+	bool bDestroyTargetOnHealthReachZero;
+
+	// END TODO
+	
 	FBS_TargetConfig()
 	{
 		ConsecutiveTargetScaleMethod = EConsecutiveTargetScaleMethod::None;
@@ -397,6 +445,14 @@ struct FBS_TargetConfig
 		SpawnBeatDelay = DefaultSpawnBeatDelay;
 		NumCharges = DefaultNumCharges;
 		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
+		
+		bIsPersistant = false;
+		Attribute_MaxHealth = 100.f;
+		bOnSpawn_StartDamageableWindowTimer = false;
+		bOnSpawn_ApplyImmunity = false;
+		bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
+		bDestroyTargetOnDamageableWindowExpiration = false;
+		bDestroyTargetOnHealthReachZero = false;
 	}
 };
 
@@ -421,7 +477,7 @@ struct FBS_SpatialConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	float MinDistanceBetweenTargets;
 
-	/** Distance from bottom of TargetSpawner BoxBounds to the floor */
+	/** Distance from bottom of TargetManager BoxBounds to the floor */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	float FloorDistance;
 
@@ -433,10 +489,50 @@ struct FBS_SpatialConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	FVector BoxBounds;
 
+	// TODO: Decouple BaseGameMode from TargetManager as much as possible using the following:
+	// TODO: Probably collapse the bool variables into enums
+
+	/** Whether or not to reverse the direction of a moving target after it stops overlapping the OverlapSpawnBox */
+	bool bUseOverlapSpawnBox;
+
+	/** Tags to apply / remove from targets once the countdown has completed and the game mode has begun */
+	FGameplayTagContainer OnGameModeStart_ApplyTags;
+	FGameplayTagContainer OnGameModeStart_RemoveTags;
+	
+	ETargetActivationType TargetActivationType;
+
+	/** The type of damage */
+	ETargetDamageType TargetDamageType;
+
+	/** Should we broadcast the damage delta and total possible damage from the FTargetDamageEvent */
+	bool bBroadcastDamageDeltaAndTotalPossibleDamage;
+	
+	/** Whether or not to spawn a target on every AudioAnalyzerBeat vs activating on AudioAnalyzerBeat */
+	bool bSpawnTargetOnAudioAnalyzerBeat;
+	/** Whether or not to activate a target on every AudioAnalyzerBeat vs spawning on AudioAnalyzerBeat */
+	bool bActivateTargetOnAudioAnalyzerBeat;
+
+	/** Whether or not to add target spawns to SpawnManager's RecentTargets array */
+	bool bTrackRecentTargets;
+
+	/** Whether or not to broadcast target spawns when a target is spawned. This will usually be false if the target is activated/deactivated or is persistant */
+	bool bBroadcastTargetOnSpawn;
+	/** Whether or not to add broadcast target activations when a target is spawned. This will usually be true if the target is activated/deactivated or is persistant */
+	bool bBroadcastTargetOnActivation;
+
+	/** Continuously spawn targets or wait until a TargetDamageEvent/expiration to continue spawning */
+	bool bContinuouslySpawn;
+
+	bool bSpawnAtOriginWheneverPossible;
+
+	bool bFindNextTargetPropertiesAfterSpawn;
+
+	// END TODO
+	
 	/** Returns the location to spawn the SpawnBox at */
 	FVector GenerateSpawnBoxLocation() const
 	{
-		FVector SpawnBoxCenter = DefaultTargetSpawnerLocation;
+		FVector SpawnBoxCenter = DefaultTargetManagerLocation;
 		if (TargetDistributionMethod == ETargetDistributionMethod::HeadshotHeightOnly)
 		{
 			SpawnBoxCenter.Z = HeadshotHeight;
@@ -448,8 +544,8 @@ struct FBS_SpatialConfig
 		return SpawnBoxCenter;
 	}
 
-	/** Returns the actual BoxBounds that the TargetSpawner sets its BoxBounds to */
-	FVector GenerateTargetSpawnerBoxBounds() const
+	/** Returns the actual BoxBounds that the TargetManager sets its BoxBounds to */
+	FVector GenerateTargetManagerBoxBounds() const
 	{
 		if (TargetDistributionMethod == ETargetDistributionMethod::HeadshotHeightOnly)
 		{
@@ -467,6 +563,19 @@ struct FBS_SpatialConfig
 		FloorDistance = DistanceFromFloor;
 		MoveForwardDistance = 0.f;
 		BoxBounds = DefaultSpawnBoxBounds;
+		
+		bUseOverlapSpawnBox = false;
+		TargetActivationType = ETargetActivationType::None;
+		TargetDamageType = ETargetDamageType::None;
+		bBroadcastDamageDeltaAndTotalPossibleDamage = false;
+		bSpawnTargetOnAudioAnalyzerBeat = false;
+		bActivateTargetOnAudioAnalyzerBeat = false;
+		bBroadcastTargetOnSpawn = false;
+		bBroadcastTargetOnActivation = false;
+		bTrackRecentTargets = false;
+		bContinuouslySpawn = false;
+		bSpawnAtOriginWheneverPossible = false;
+		bFindNextTargetPropertiesAfterSpawn = false;
 	}
 };
 
@@ -849,7 +958,7 @@ struct FPlayerScore
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 TargetsHit;
 
-	/** Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetSpawner */
+	/** Total number of targets spawned, incremented after receiving calls from FOnTargetSpawnSignature in TargetManager */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player Score")
 	int32 TargetsSpawned;
 

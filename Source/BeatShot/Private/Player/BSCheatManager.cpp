@@ -6,18 +6,18 @@
 #include "Character/BSCharacter.h"
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
-#include "Target/TargetSpawner.h"
+#include "Target/TargetManager.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 namespace BeatShotConsoleVariables
 {
-	static TAutoConsoleVariable CVarShowDebugSpawnBox(TEXT("bs.showdebug.targetspawner.spawnbox"), 0, TEXT("Draw debug boxes for the spawn box areas. orange: full size, green: open, red: blocked"));
+	static TAutoConsoleVariable CVarShowDebugSpawnBox(TEXT("bs.showdebug.targetmanager.spawnbox"), 0, TEXT("Draw debug boxes for the spawn box areas. orange: full size, green: open, red: blocked"));
 	static TAutoConsoleVariable CVarEnableAimBot(TEXT("bs.cheat.aimbot"), 0, TEXT("Enable Aim Bot"));
-	static TAutoConsoleVariable CVarShowDebugReinforcementLearningWidget(TEXT("bs.showdebug.targetspawner.rl"), 0, TEXT("Show the reinforcement learning widget"));
-	static TAutoConsoleVariable CVarShowDebugSpawnMemory(TEXT("bs.showdebug.targetspawner.spawnmemory"), 0, TEXT("Show the recent target locations that are being tracked"));
-	static TAutoConsoleVariable CVarShowDebugAllTargetSpawner(TEXT("bs.showdebug.targetspawner"), 0, TEXT("Show all target spawner debug"));
+	static TAutoConsoleVariable CVarShowDebugReinforcementLearningWidget(TEXT("bs.showdebug.targetmanager.rl"), 0, TEXT("Show the reinforcement learning widget"));
+	static TAutoConsoleVariable CVarShowDebugSpawnMemory(TEXT("bs.showdebug.targetmanager.spawnmemory"), 0, TEXT("Show the recent target locations that are being tracked"));
+	static TAutoConsoleVariable CVarShowDebugAllTargetManager(TEXT("bs.showdebug.targetmanager"), 0, TEXT("Show all target manager debug"));
 }
 
 void UBSCheatManager::InitCheatManager()
@@ -40,9 +40,9 @@ void UBSCheatManager::InitCheatManager()
 	CVarShowDebugSpawnMemoryDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugSpawnMemory);
 	BeatShotConsoleVariables::CVarShowDebugSpawnMemory.AsVariable()->SetOnChangedCallback(CVarShowDebugSpawnMemoryDelegate);
 
-	FConsoleVariableDelegate CVarShowDebugAllTargetSpawnerDelegate;
-	CVarShowDebugAllTargetSpawnerDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugAllTargetSpawner);
-	BeatShotConsoleVariables::CVarShowDebugAllTargetSpawner.AsVariable()->SetOnChangedCallback(CVarShowDebugAllTargetSpawnerDelegate);
+	FConsoleVariableDelegate CVarShowDebugAllTargetManagerDelegate;
+	CVarShowDebugAllTargetManagerDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugAllTargetManager);
+	BeatShotConsoleVariables::CVarShowDebugAllTargetManager.AsVariable()->SetOnChangedCallback(CVarShowDebugAllTargetManagerDelegate);
 }
 
 void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
@@ -57,9 +57,9 @@ void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
 
 	if (Variable->GetBool())
 	{
-		if (!GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
+		if (!GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
 		{
-			GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
+			GameMode->GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 		}
 		UBSGameplayAbility* AbilityCDO = AimBotAbility->GetDefaultObject<UBSGameplayAbility>();
 		if (const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1); Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec).IsValid())
@@ -69,9 +69,9 @@ void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
 	}
 	else
 	{
-		if (GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.IsBoundToObject(Character))
+		if (GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
 		{
-			GameMode->GetTargetSpawner()->OnTargetSpawned_AimBot.RemoveAll(Character);
+			GameMode->GetTargetManager()->OnTargetActivated_AimBot.RemoveAll(Character);
 		}
 		FGameplayTagContainer Container;
 		TArray<FGameplayAbilitySpec*> Activatable;
@@ -90,20 +90,20 @@ void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
 
 void UBSCheatManager::CVarOnChanged_ShowDebugReinforcementLearningWidget(IConsoleVariable* Variable)
 {
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ShowDebug_ReinforcementLearningWidget(Variable->GetBool());
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_ReinforcementLearningWidget(Variable->GetBool());
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebugSpawnMemory(IConsoleVariable* Variable)
 {
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ShowDebug_SpawnMemory(Variable->GetBool());
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_SpawnMemory(Variable->GetBool());
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebugSpawnBox(IConsoleVariable* Variable)
 {
-	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetSpawner()->ShowDebug_SpawnBox(Variable->GetBool());
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_SpawnBox(Variable->GetBool());
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebugAllTargetSpawner(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_ShowDebugAllTargetManager(IConsoleVariable* Variable)
 {
 	CVarOnChanged_ShowDebugSpawnBox(Variable);
 	CVarOnChanged_ShowDebugReinforcementLearningWidget(Variable);
