@@ -133,7 +133,7 @@ GM_Difficulty_Death,Death
 GM_Difficulty_Hard,Hard
 GM_Difficulty_Normal,Normal
 GM_DynamicSpread,Dynamic
-GM_ConsecutiveTargetScale,Consecutive Target Scale Method
+GM_ConsecutiveTargetScalePolicy,Consecutive Target Scale Policy
 GM_EvenSpacing,Even Vertical/Horizontal Spacing
 GM_ForwardSpread,Forward Spread
 GM_GameModeDifficulty,Game Mode Difficulty
@@ -328,6 +328,13 @@ GM_BeatGrid_HorizontalSpacing,Horizontal Spacing
 GM_BeatGrid_VerticalSpacing,Vertical Spacing
 GM_BeatGrid_NumVerticalTargets,Number of Vertical Targets
 GM_BeatGrid_NumHorizontalTargets,Number of Horizontal Targets
-GM_LifetimeTargetScale,Lifetime Target Scaling Method
+GM_LifetimeTargetScalePolicy,Lifetime Target Scaling Policy
 GM_NumCharges,Number of Charges per Target
-GM_ChargeScaleMultiplier,Charge Scale Multiplier
+GM_ConsecutiveChargeScaleMultiplier,Consecutive Charge Scale Multiplier
+GM_TargetSpawningPolicy,Target Spawning Policy
+GM_TargetDestructionPolicy,Target Destruction Policy
+GM_TargetActivationPolicy,Target Activation Policy
+GM_TargetDeactivationPolicy,Target Deactivation Policy
+GM_TargetDamageType,Damage Type
+GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
+GM_ResetPositionOnDeactivation,Reset Position On Deactivation

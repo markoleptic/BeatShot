@@ -118,6 +118,21 @@ public:
 		return DefaultNotFound;
 	}
 
+	/** Returns the String table key for an enum provided that the string table key format is EnumName_EnumValue */
+	template<typename T>
+	static FString GetStringTableKeyNameFromEnum(const T& InEnum)
+	{
+		FString EnumName;
+		FString EnumValue;
+		const FString EnumString = UEnum::GetValueAsString(InEnum);
+		if (EnumString.Contains("::"))
+		{
+			EnumString.Split("::", &EnumName, &EnumValue);
+			return EnumName.RightChop(1) + "_" + EnumValue;
+		}
+		return FString();
+	}
+
 private:
 	TArray<FTooltipData> TooltipData;
 	

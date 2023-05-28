@@ -3,6 +3,7 @@
 
 #include "Character/BSHealthComponent.h"
 #include "GameplayEffectExtension.h"
+#include "AbilitySystem/BSAbilitySystemGlobals.h"
 #include "Target/SphereTarget.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/AttributeSets/BSAttributeSetBase.h"
@@ -26,10 +27,10 @@ void UBSHealthComponent::BeginPlay()
 void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
 {
 	AActor* Instigator = nullptr;
-	if (ChangeData.GEModData != nullptr)
+	if (const FGameplayEffectSpec* Spec = ChangeData.GEModData ? &ChangeData.GEModData->EffectSpec : UBSAbilitySystemGlobals::GetTestGlobals().GetCurrentAppliedGE())
 	{
-		const FGameplayEffectContextHandle& EffectContext = ChangeData.GEModData->EffectSpec.GetEffectContext();
-		Instigator =  EffectContext.GetOriginalInstigator();
+		const FGameplayEffectContextHandle& EffectContext = Spec->GetEffectContext();
+		Instigator = EffectContext.GetOriginalInstigator();
 	}
 	OnHealthChanged.Broadcast(Instigator, ChangeData.OldValue, ChangeData.NewValue, TotalPossibleDamage);
 }
@@ -89,6 +90,7 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	
 	if (GameplayTagContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Tracking))
 	{
+		UE_LOG(LogTemp, Display, TEXT("Should update totalpossibledamage"));
 		ShouldUpdateTotalPossibleDamage = true;
 	}
 }

@@ -42,12 +42,12 @@ void UGameModesWidget_SpatialConfig::NativeConstruct()
 	ComboBox_TargetDistributionMethod->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_TargetDistributionMethod);
 	ComboBox_TargetDistributionMethod->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_SpatialConfig::OnSelectionChangedGenerateWidgetEvent_TargetDistributionMethod);
 
-	for (const EBoundsScalingMethod& Method : TEnumRange<EBoundsScalingMethod>())
+	for (const EBoundsScalingPolicy& Method : TEnumRange<EBoundsScalingPolicy>())
 	{
 		ComboBox_BoundsScalingMethod->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
 
-	for (const ETargetDistributionMethod& Method : TEnumRange<ETargetDistributionMethod>())
+	for (const ETargetDistributionPolicy& Method : TEnumRange<ETargetDistributionPolicy>())
 	{
 		ComboBox_TargetDistributionMethod->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
@@ -61,7 +61,7 @@ void UGameModesWidget_SpatialConfig::InitSettingCategoryWidget()
 void UGameModesWidget_SpatialConfig::InitializeTargetSpread(const FBS_SpatialConfig& SpatialConfig, const EBaseGameMode& BaseGameMode)
 {
 	// Lock vertical and horizontal spread if HeadShot height only, otherwise unlock them
-	if (SpatialConfig.TargetDistributionMethod == ETargetDistributionMethod::HeadshotHeightOnly)
+	if (SpatialConfig.TargetDistributionMethod == ETargetDistributionPolicy::HeadshotHeightOnly)
 	{
 		Slider_VerticalSpread->SetLocked(true);
 		Value_VerticalSpread->SetIsReadOnly(true);
@@ -138,8 +138,8 @@ FBS_SpatialConfig UGameModesWidget_SpatialConfig::GetSpatialConfig() const
 									 FMath::GridSnap(FMath::Clamp(Slider_VerticalSpread->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
 	SpatialConfig.bMoveTargetsForward = CheckBox_ForwardSpread->IsChecked();
 	SpatialConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(Slider_ForwardSpread->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
-	SpatialConfig.BoundsScalingMethod = GetEnumFromString<EBoundsScalingMethod>(ComboBox_BoundsScalingMethod->GetSelectedOption(), EBoundsScalingMethod::None);
-	SpatialConfig.TargetDistributionMethod = GetEnumFromString<ETargetDistributionMethod>(ComboBox_TargetDistributionMethod->GetSelectedOption(), ETargetDistributionMethod::None);
+	SpatialConfig.BoundsScalingMethod = GetEnumFromString<EBoundsScalingPolicy>(ComboBox_BoundsScalingMethod->GetSelectedOption(), EBoundsScalingPolicy::None);
+	SpatialConfig.TargetDistributionMethod = GetEnumFromString<ETargetDistributionPolicy>(ComboBox_TargetDistributionMethod->GetSelectedOption(), ETargetDistributionPolicy::None);
 	return SpatialConfig;
 }
 
@@ -170,7 +170,7 @@ void UGameModesWidget_SpatialConfig::OnSelectionChanged_BoundsScalingMethod(cons
 
 void UGameModesWidget_SpatialConfig::OnSelectionChanged_TargetDistributionMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
 {
-	if (GetEnumFromString<ETargetDistributionMethod>(SelectedMethod, ETargetDistributionMethod::None) == ETargetDistributionMethod::HeadshotHeightOnly)
+	if (GetEnumFromString<ETargetDistributionPolicy>(SelectedMethod, ETargetDistributionPolicy::None) == ETargetDistributionPolicy::HeadshotHeightOnly)
 	{
 		Slider_VerticalSpread->SetValue(0);
 		Value_VerticalSpread->SetText(FText::AsNumber(0));
@@ -206,12 +206,12 @@ UWidget* UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_BoundsScalingMeth
 	}
 	
 	FText TooltipText;
-	switch(GetEnumFromString<EBoundsScalingMethod>(Method, EBoundsScalingMethod::None))
+	switch(GetEnumFromString<EBoundsScalingPolicy>(Method, EBoundsScalingPolicy::None))
 	{
-	case EBoundsScalingMethod::Static:
+	case EBoundsScalingPolicy::Static:
 		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod_Static");
 		break;
-	case EBoundsScalingMethod::Dynamic:
+	case EBoundsScalingPolicy::Dynamic:
 		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BoundsScalingMethod_Dynamic");
 		break;
 	default: ;
@@ -245,15 +245,15 @@ UWidget* UGameModesWidget_SpatialConfig::OnGenerateWidgetEvent_TargetDistributio
 	}
 	
 	FText TooltipText;
-	switch(GetEnumFromString<ETargetDistributionMethod>(Method, ETargetDistributionMethod::None))
+	switch(GetEnumFromString<ETargetDistributionPolicy>(Method, ETargetDistributionPolicy::None))
 	{
-	case ETargetDistributionMethod::HeadshotHeightOnly:
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
 		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod_HeadshotHeightOnly");
 		break;
-	case ETargetDistributionMethod::EdgeOnly:
+	case ETargetDistributionPolicy::EdgeOnly:
 		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod_EdgeOnly");
 		break;
-	case ETargetDistributionMethod::FullRange:
+	case ETargetDistributionPolicy::FullRange:
 		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDistributionMethod_FullRange");
 		break;
 	default: ;

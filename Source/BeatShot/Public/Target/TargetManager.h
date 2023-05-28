@@ -154,13 +154,13 @@ private:
 	FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	FVector GetNextTargetSpawnLocation(EBoundsScalingMethod BoundsScalingMethod, const FVector& NewTargetScale);
+	FVector GetNextTargetSpawnLocation(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale);
 
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;
 
 	/** Returns an array of valid spawn points */
-	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionMethod& TargetDistributionMethod, const EBoundsScalingMethod& BoundsScalingMethod) const;
+	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& TargetDistributionMethod, const EBoundsScalingPolicy& BoundsScalingMethod) const;
 	
 	/** Returns a copy of all spawn locations that were created on initialization */
 	TArray<FVector> GetAllSpawnLocations() const;
@@ -174,8 +174,8 @@ private:
 	/** Returns a copy of the RecentTargets, used to determine future target spawn locations */
 	TArray<FRecentTarget> GetRecentTargets() const { return RecentTargets; }
 
-	/** Returns a copy of ActiveTargets, used to move targets forward if game mode permits */
-	TArray<ASphereTarget*> GetActiveTargets() const { return ActiveTargets; }
+	/** Returns a copy of ManagedTargets, used to move targets forward if game mode permits */
+	TArray<ASphereTarget*> GetManagedTargets() const { return ManagedTargets; }
 
 	/** Returns a copy of the SpawnCounter */
 	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
@@ -201,8 +201,8 @@ private:
 	/** Adds a FRecentTarget to the RecentTargets array */
 	int32 AddToRecentTargets(const ASphereTarget* SpawnTarget, const FVector& Scale);
 
-	/** Adds a SphereTarget to the ActiveTargets array */
-	int32 AddToActiveTargets(ASphereTarget* SpawnTarget);
+	/** Adds a SphereTarget to the ManagedTargets array */
+	int32 AddToManagedTargets(ASphereTarget* SpawnTarget);
 
 	/** Adds a Guid to the ActiveBeatGridGuids array */
 	void AddToActiveBeatGridGuids(const FGuid GuidToAdd);
@@ -211,8 +211,8 @@ private:
 	UFUNCTION()
 	void RemoveFromRecentTargets(const FGuid GuidToRemove);
 
-	/** Removes the DestroyedTarget from ActiveTargets */
-	void RemoveFromActiveTargets(const FGuid GuidToRemove);
+	/** Removes the DestroyedTarget from ManagedTargets */
+	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 
 	/** Removes a Guid from the ActiveBeatGridGuids array */
 	void RemoveFromActiveBeatGridGuids(const FGuid GuidToRemove);
@@ -308,9 +308,9 @@ private:
 	int32 LastBeatGridIndex;
 
 	// TODO: Needs to be a distinction between "Active" and spawned/managed & not activated
-	/** An array of active SphereTargets that have not been destroyed */
+	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()
-	TArray<ASphereTarget*> ActiveTargets;
+	TArray<ASphereTarget*> ManagedTargets;
 
 	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
 	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside

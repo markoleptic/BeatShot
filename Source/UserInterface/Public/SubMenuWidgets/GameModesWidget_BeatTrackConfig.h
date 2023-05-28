@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlobalEnums.h"
-#include "GlobalStructs.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "GameModesWidget_BeatTrackConfig.generated.h"
 
@@ -16,18 +14,4 @@ UCLASS()
 class USERINTERFACE_API UGameModesWidget_BeatTrackConfig : public UBSSettingCategoryWidget
 {
 	GENERATED_BODY()
-
-	friend class UGameModesWidget;
-	virtual void NativeConstruct() override;
-	virtual void InitSettingCategoryWidget() override;
-	
-public:
-	void InitializeBeatTrackConfig(const FBS_TrackingConfig& InBeatTrackConfig, const EBaseGameMode& BaseGameMode);
-	FBS_TrackingConfig GetBeatTrackConfig() const;
-
-protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Spread")
-	TSubclassOf<UDoubleSyncedSliderAndTextBox> TargetSpeedConstrainedClass;
-	
-	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetSpeedConstrained;
 };

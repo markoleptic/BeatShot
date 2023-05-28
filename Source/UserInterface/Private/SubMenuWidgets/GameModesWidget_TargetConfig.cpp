@@ -5,6 +5,7 @@
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "GlobalConstants.h"
 #include "BSWidgetInterface.h"
+#include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
@@ -19,9 +20,14 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 {
 	/* Create MainContainer before calling Super NativeConstruct since the parent calls InitSettingCategoryWidget in NativeConstruct */
 	TargetScaleConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetScaleConstrainedClass);
+	TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetSpeedConstrainedClass);
+	
+	MainContainer->AddChildToVerticalBox(TargetSpeedConstrained.Get());
 	MainContainer->AddChildToVerticalBox(TargetScaleConstrained.Get());
 	
 	Super::NativeConstruct();
+
+	SetTooltipWidget(ConstructTooltipWidget());
 
 	/* Target Scale TextBox and Slider */
 	FSyncedSlidersParams TargetScaleSliderStruct;
@@ -38,46 +44,108 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	TargetScaleSliderStruct.bSyncSlidersAndValues = false;
 	TargetScaleConstrained->InitConstrainedSlider(TargetScaleSliderStruct);
 
-	SetTooltipWidget(ConstructTooltipWidget());
-	
+	/* BeatTrack target speed TextBox and Slider */
+	FSyncedSlidersParams TrackingSpeedSliderStruct;
+	TrackingSpeedSliderStruct.MinConstraintLower = MinValue_TargetSpeed;
+	TrackingSpeedSliderStruct.MinConstraintUpper = MaxValue_TargetSpeed;
+	TrackingSpeedSliderStruct.MaxConstraintLower = MinValue_TargetSpeed;
+	TrackingSpeedSliderStruct.MaxConstraintUpper = MaxValue_TargetSpeed;
+	TrackingSpeedSliderStruct.DefaultMinValue = MinValue_TargetSpeed;
+	TrackingSpeedSliderStruct.DefaultMaxValue = MaxValue_TargetSpeed;
+	TrackingSpeedSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTrackingSpeed");
+	TrackingSpeedSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
+	TrackingSpeedSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
+	TrackingSpeedSliderStruct.GridSnapSize = SnapSize_TargetSpeed;
+	TrackingSpeedSliderStruct.bSyncSlidersAndValues = false;
+	TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
+
+	AddToTooltipData(TargetSpeedConstrained->GetCheckBoxQMark(), FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatTrackConstantSpeed"));
 	AddToTooltipData(QMark_Lifespan, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "Lifespan"));
 	AddToTooltipData(QMark_TargetSpawnCD, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "MinDistance"));
 	AddToTooltipData(QMark_SpawnBeatDelay, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "SpawnBeatDelay"));
-	AddToTooltipData(QMark_ConsecutiveTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale"));
-	AddToTooltipData(QMark_LifetimeTargetScale, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale"));
+	AddToTooltipData(QMark_ConsecutiveTargetScalePolicy, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScalePolicy"));
+	AddToTooltipData(QMark_LifetimeTargetScalePolicy, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScalePolicy"));
 	AddToTooltipData(QMark_NumCharges, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "NumCharges"));
-	AddToTooltipData(QMark_ChargeScaleMultiplier, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ChargeScaleMultiplier"));
+	AddToTooltipData(QMark_ConsecutiveChargeScaleMultiplier, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveChargeScaleMultiplier"));
+	AddToTooltipData(QMark_TargetSpawningPolicy, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetSpawningPolicy"));
+	AddToTooltipData(QMark_TargetDestructionPolicy, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDestructionPolicy"));
+	AddToTooltipData(QMark_TargetActivationPolicy, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetActivationPolicy"));
+	AddToTooltipData(QMark_TargetDeactivationPolicy, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDeactivationPolicy"));
+	AddToTooltipData(QMark_TargetDamageType, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "TargetDamageType"));
+	AddToTooltipData(QMark_ApplyImmunityOnSpawn, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ApplyImmunityOnSpawn"));
+	AddToTooltipData(QMark_ResetPositionOnDeactivation, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ResetPositionOnDeactivation"));
 
-	Slider_Lifespan->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_Lifespan);
-	Value_Lifespan->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_Lifespan);
+	Slider_Lifespan->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_Lifespan);
+	Value_Lifespan->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Lifespan);
 	
-	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_TargetSpawnCD);
-	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_TargetSpawnCD);
+	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_TargetSpawnCD);
+	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_TargetSpawnCD);
 	
-	Slider_SpawnBeatDelay->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_SpawnBeatDelay);
-	Value_SpawnBeatDelay->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay);
+	Slider_SpawnBeatDelay->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_SpawnBeatDelay);
+	Value_SpawnBeatDelay->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_SpawnBeatDelay);
 
-	Slider_NumCharges->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_NumCharges);
-	Value_NumCharges->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_NumCharges);
+	Slider_NumCharges->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_NumCharges);
+	Value_NumCharges->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_NumCharges);
 
-	Slider_ChargeScaleMultiplier->OnValueChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSliderChanged_ChargeScaleMultiplier);
-	Value_ChargeScaleMultiplier->OnTextCommitted.AddDynamic(this, &UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier);
+	Slider_ConsecutiveChargeScaleMultiplier->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_ChargeScaleMultiplier);
+	Value_ConsecutiveChargeScaleMultiplier->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_ChargeScaleMultiplier);
+
+	CheckBox_ApplyImmunityOnSpawn->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ApplyImmunityOnSpawn);
+	CheckBox_ResetPositionOnDeactivation->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ResetPositionOnDeactivation);
 	
-	ComboBox_LifetimeTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod);
-	ComboBox_ConsecutiveTargetScale->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale);
-	ComboBox_LifetimeTargetScale->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_LifetimeTargetScale);
-	ComboBox_LifetimeTargetScale->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this,  &UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale);
-	ComboBox_ConsecutiveTargetScale->OnGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_ConsecutiveTargetScale);
-	ComboBox_ConsecutiveTargetScale->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale);
+	ComboBox_LifetimeTargetScalePolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_LifetimeTargetScaleMethod);
+	ComboBox_ConsecutiveTargetScalePolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_ConsecutiveTargetScale);
+	ComboBox_TargetSpawningPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetSpawningPolicy);
+	ComboBox_TargetDestructionPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetDestructionPolicy);
+	ComboBox_TargetActivationPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetActivationPolicy);
+	ComboBox_TargetDeactivationPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetDeactivationPolicy);
+	ComboBox_TargetDamageType->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetDamageType);
+	
+	ComboBox_LifetimeTargetScalePolicy->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this,  &ThisClass::OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale);
+	ComboBox_ConsecutiveTargetScalePolicy->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale);
+	ComboBox_TargetSpawningPolicy->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnSelectionChangedGenerateWidgetEvent_TargetSpawningPolicy);
+	ComboBox_TargetDestructionPolicy->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnSelectionChangedGenerateWidgetEvent_TargetDestructionPolicy);
+	ComboBox_TargetActivationPolicy->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnSelectionChangedGenerateWidgetEvent_TargetActivationPolicy);
+	ComboBox_TargetDeactivationPolicy->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnSelectionChangedGenerateWidgetEvent_TargetDeactivationPolicy);
+	ComboBox_TargetDamageType->OnSelectionChangedGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnSelectionChangedGenerateWidgetEvent_TargetDamageType);
 
-	for (const EConsecutiveTargetScaleMethod& Method : TEnumRange<EConsecutiveTargetScaleMethod>())
+	ComboBox_LifetimeTargetScalePolicy->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_LifetimeTargetScale);
+	ComboBox_ConsecutiveTargetScalePolicy->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_ConsecutiveTargetScale);
+	ComboBox_TargetSpawningPolicy->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_TargetSpawningPolicy);
+	ComboBox_TargetDestructionPolicy->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_TargetDestructionPolicy);
+	ComboBox_TargetActivationPolicy->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_TargetActivationPolicy);
+	ComboBox_TargetDeactivationPolicy->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_TargetDeactivationPolicy);
+	ComboBox_TargetDamageType->OnGenerateWidgetEvent.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent_TargetDamageType);
+
+
+
+	for (const ETargetSpawningPolicy& Method : TEnumRange<ETargetSpawningPolicy>())
 	{
-		ComboBox_ConsecutiveTargetScale->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+		ComboBox_TargetSpawningPolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
-
-	for (const ELifetimeTargetScaleMethod& Method : TEnumRange<ELifetimeTargetScaleMethod>())
+	for (const ETargetDestructionPolicy& Method : TEnumRange<ETargetDestructionPolicy>())
 	{
-		ComboBox_LifetimeTargetScale->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+		ComboBox_TargetDestructionPolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+	for (const ETargetActivationPolicy& Method : TEnumRange<ETargetActivationPolicy>())
+    {
+    	ComboBox_TargetActivationPolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+    }
+	for (const ETargetDeactivationPolicy& Method : TEnumRange<ETargetDeactivationPolicy>())
+	{
+		ComboBox_TargetDeactivationPolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+	for (const ETargetDamageType& Method : TEnumRange<ETargetDamageType>())
+	{
+		ComboBox_TargetDamageType->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+	for (const EConsecutiveTargetScalePolicy& Method : TEnumRange<EConsecutiveTargetScalePolicy>())
+	{
+		ComboBox_ConsecutiveTargetScalePolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+	for (const ELifetimeTargetScalePolicy& Method : TEnumRange<ELifetimeTargetScalePolicy>())
+	{
+		ComboBox_LifetimeTargetScalePolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
 }
 
@@ -86,6 +154,10 @@ void UGameModesWidget_TargetConfig::InitSettingCategoryWidget()
 	if (TargetScaleConstrained)
 	{
 		AddWidgetBoxPair(TargetScaleConstrained.Get(), TargetScaleConstrained->GetMainContainer());
+	}
+	if (TargetSpeedConstrained)
+	{
+		AddWidgetBoxPair(TargetSpeedConstrained.Get(), TargetSpeedConstrained->GetMainContainer());
 	}
 	Super::InitSettingCategoryWidget();
 }
@@ -98,31 +170,31 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ConsecutiveChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::MultiBeat:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ConsecutiveChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::BeatGrid:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ConsecutiveChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::BeatTrack:
 		Slider_Lifespan->SetLocked(true);
 		Value_Lifespan->SetIsReadOnly(true);
 		BSBox_NumCharges->SetVisibility(ESlateVisibility::Collapsed);
-		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_ConsecutiveChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case EBaseGameMode::ChargedBeatTrack:
 		Slider_Lifespan->SetLocked(false);
 		Value_Lifespan->SetIsReadOnly(false);
 		BSBox_NumCharges->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		BSBox_ChargeScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSBox_ConsecutiveChargeScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		break;
 	case EBaseGameMode::None:
 		break;
@@ -142,14 +214,24 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Slider_NumCharges->SetMinValue(MinValue_NumCharges);
 	Value_NumCharges->SetText(FText::AsNumber(InTargetConfig.NumCharges));
 
-	Slider_ChargeScaleMultiplier->SetValue(InTargetConfig.ConsecutiveChargeScaleMultiplier);
-	Slider_ChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
-	Slider_ChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
-	Value_ChargeScaleMultiplier->SetText(FText::AsNumber(InTargetConfig.ConsecutiveChargeScaleMultiplier));
+	Slider_ConsecutiveChargeScaleMultiplier->SetValue(InTargetConfig.ConsecutiveChargeScaleMultiplier);
+	Slider_ConsecutiveChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
+	Slider_ConsecutiveChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
+	Value_ConsecutiveChargeScaleMultiplier->SetText(FText::AsNumber(InTargetConfig.ConsecutiveChargeScaleMultiplier));
 	
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
-	ComboBox_LifetimeTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScaleMethod).ToString());
-	ComboBox_ConsecutiveTargetScale->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScaleMethod).ToString());
+	TargetSpeedConstrained->UpdateDefaultValues(InTargetConfig.MinTrackingSpeed, InTargetConfig.MaxTrackingSpeed, InTargetConfig.MinTrackingSpeed == InTargetConfig.MaxTrackingSpeed);
+
+	ComboBox_LifetimeTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScalePolicy).ToString());
+	ComboBox_ConsecutiveTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
+	ComboBox_TargetSpawningPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetSpawningPolicy).ToString());
+	ComboBox_TargetDestructionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDestructionPolicy).ToString());
+	ComboBox_TargetActivationPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetActivationPolicy).ToString());
+	ComboBox_TargetDeactivationPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDeactivationPolicy).ToString());
+	ComboBox_TargetDamageType->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDamageType).ToString());
+
+	CheckBox_ApplyImmunityOnSpawn->SetIsChecked(InTargetConfig.bApplyImmunityOnSpawn);
+	CheckBox_ResetPositionOnDeactivation->SetIsChecked(InTargetConfig.bResetPositionOnDeactivation);
 	
 	UpdateBrushColors();
 }
@@ -162,11 +244,20 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
-	ReturnConfig.LifetimeTargetScaleMethod = GetEnumFromString<ELifetimeTargetScaleMethod>(ComboBox_LifetimeTargetScale->GetSelectedOption(), ELifetimeTargetScaleMethod::None);
-	ReturnConfig.ConsecutiveTargetScaleMethod = GetEnumFromString<EConsecutiveTargetScaleMethod>(ComboBox_ConsecutiveTargetScale->GetSelectedOption(), EConsecutiveTargetScaleMethod::None);
+	ReturnConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(ComboBox_LifetimeTargetScalePolicy->GetSelectedOption(), ELifetimeTargetScalePolicy::None);
+	ReturnConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), EConsecutiveTargetScalePolicy::None);
+	ReturnConfig.TargetSpawningPolicy = GetEnumFromString<ETargetSpawningPolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), ETargetSpawningPolicy::None);
+	ReturnConfig.TargetDestructionPolicy = GetEnumFromString<ETargetDestructionPolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), ETargetDestructionPolicy::None);
+	ReturnConfig.TargetActivationPolicy = GetEnumFromString<ETargetActivationPolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), ETargetActivationPolicy::None);
+	ReturnConfig.TargetDeactivationPolicy = GetEnumFromString<ETargetDeactivationPolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), ETargetDeactivationPolicy::None);
+	ReturnConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), ETargetDamageType::None);
 	ReturnConfig.NumCharges = FMath::GridSnap(FMath::Clamp(Slider_NumCharges->GetValue(), MinValue_NumCharges, MaxValue_NumCharges), SnapSize_NumCharges);
-	ReturnConfig.ConsecutiveChargeScaleMultiplier = FMath::GridSnap(FMath::Clamp(Slider_ChargeScaleMultiplier->GetValue(), MinValue_ConsecutiveChargeScaleMultiplier,
+	ReturnConfig.ConsecutiveChargeScaleMultiplier = FMath::GridSnap(FMath::Clamp(Slider_ConsecutiveChargeScaleMultiplier->GetValue(), MinValue_ConsecutiveChargeScaleMultiplier,
 		MaxValue_ConsecutiveChargeScaleMultiplier), SnapSize_ConsecutiveChargeScaleMultiplier);
+	ReturnConfig.MinTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMinValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.MaxTrackingSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMaxValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.bApplyImmunityOnSpawn = CheckBox_ApplyImmunityOnSpawn->IsChecked();
+	ReturnConfig.bResetPositionOnDeactivation = CheckBox_ResetPositionOnDeactivation->IsChecked();
 	return ReturnConfig;
 }
 
@@ -192,12 +283,12 @@ void UGameModesWidget_TargetConfig::OnSliderChanged_NumCharges(const float NewCh
 
 void UGameModesWidget_TargetConfig::OnSliderChanged_ChargeScaleMultiplier(const float NewChargeScaleMultiplier)
 {
-	OnSliderChanged(NewChargeScaleMultiplier, Value_ChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
+	OnSliderChanged(NewChargeScaleMultiplier, Value_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
 }
 
 void UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewChargeScaleMultiplier, Value_ChargeScaleMultiplier, Slider_ChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier,
+	OnEditableTextBoxChanged(NewChargeScaleMultiplier, Value_ConsecutiveChargeScaleMultiplier, Slider_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier,
 		MinValue_ConsecutiveChargeScaleMultiplier, MaxValue_ConsecutiveChargeScaleMultiplier);
 }
 
@@ -223,7 +314,7 @@ void UGameModesWidget_TargetConfig::OnTextCommitted_SpawnBeatDelay(const FText& 
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
 {
-	if (!SelectedMethod.Equals(UEnum::GetDisplayValueAsText(ELifetimeTargetScaleMethod::None).ToString()))
+	if (!SelectedMethod.Equals(UEnum::GetDisplayValueAsText(ELifetimeTargetScalePolicy::None).ToString()))
 	{
 		if (TargetScaleConstrained->GetIsSynced())
 		{
@@ -234,16 +325,16 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScaleMethod
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale(const FString SelectedMethod, const ESelectInfo::Type SelectionType)
 {
-	switch (GetEnumFromString<EConsecutiveTargetScaleMethod>(SelectedMethod, EConsecutiveTargetScaleMethod::None))
+	switch (GetEnumFromString<EConsecutiveTargetScalePolicy>(SelectedMethod, EConsecutiveTargetScalePolicy::None))
 	{
-	case EConsecutiveTargetScaleMethod::Static:
+	case EConsecutiveTargetScalePolicy::Static:
 		if (!TargetScaleConstrained->GetIsSynced())
 		{
 			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), true);
 		}
 		break;
-	case EConsecutiveTargetScaleMethod::Random:
-	case EConsecutiveTargetScaleMethod::SkillBased:
+	case EConsecutiveTargetScalePolicy::Random:
+	case EConsecutiveTargetScalePolicy::SkillBased:
 		if (TargetScaleConstrained->GetIsSynced())
 		{
 			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
@@ -254,9 +345,37 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScale(co
 	}
 }
 
+void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetSpawningPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDestructionPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetActivationPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDeactivationPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDamageType(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bApplyImmunityOnSpawn)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnCheckStateChanged_ResetPositionOnDeactivation(const bool bApplyImmunityOnSpawn)
+{
+}
+
 UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_ConsecutiveTargetScale(FString Method)
 {
-	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScale, ComboboxEntryWidget);
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScalePolicy, ComboboxEntryWidget);
 	Entry->SetText(FText::FromString(Method));
 	/* For whatever reason, setting the selected option through code will trigger this function immediately
 	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
@@ -266,38 +385,16 @@ UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_ConsecutiveTargetS
 		bHideTooltipImage_ConsecutiveTargetScale = false;
 		return Cast<UWidget>(Entry);
 	}
-	
-	FText TooltipText;
-	switch(GetEnumFromString<EConsecutiveTargetScaleMethod>(Method, EConsecutiveTargetScaleMethod::None))
-	{
-	case EConsecutiveTargetScaleMethod::Static:
-		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Static");
-		break;
-	case EConsecutiveTargetScaleMethod::Random:
-		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_Random");
-		break;
-	case EConsecutiveTargetScaleMethod::SkillBased:
-		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "ConsecutiveTargetScale_SkillBased");
-		break;
-	default: ;
-	}
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+		GetStringTableKeyNameFromEnum(GetEnumFromString<EConsecutiveTargetScalePolicy>(Method, EConsecutiveTargetScalePolicy::None)));
 
 	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
 	return Cast<UWidget>(Entry);
 }
 
-UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale(FString Method)
-{
-	bHideTooltipImage_ConsecutiveTargetScale = true;
-	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScale, ComboboxEntryWidget);
-	Entry->SetText(FText::FromString(Method));
-	Entry->ToggleTooltipImageVisibility(false);
-	return Cast<UWidget>(Entry);
-}
-
 UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_LifetimeTargetScale(FString Method)
 {
-	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScale, ComboboxEntryWidget);
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScalePolicy, ComboboxEntryWidget);
 	Entry->SetText(FText::FromString(Method));
 	/* For whatever reason, setting the selected option through code will trigger this function immediately
 	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
@@ -307,30 +404,172 @@ UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_LifetimeTargetScal
 		bHideTooltipImage_LifetimeTargetScale = false;
 		return Cast<UWidget>(Entry);
 	}
-	
-	FText TooltipText;
-	switch(GetEnumFromString<ELifetimeTargetScaleMethod>(Method, ELifetimeTargetScaleMethod::None))
-	{
-	case ELifetimeTargetScaleMethod::None:
-		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_None");
-		break;
-	case ELifetimeTargetScaleMethod::Grow:
-		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Grow");
-		break;
-	case ELifetimeTargetScaleMethod::Shrink:
-		TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "LifetimeTargetScale_Shrink");
-		break;
-	default: ;
-	}
+
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+	GetStringTableKeyNameFromEnum(GetEnumFromString<ELifetimeTargetScalePolicy>(Method, ELifetimeTargetScalePolicy::None)));
 
 	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_TargetSpawningPolicy(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetSpawningPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_TargetSpawningPolicy)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_TargetSpawningPolicy = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+	GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetSpawningPolicy>(Method, ETargetSpawningPolicy::None)));
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_TargetDestructionPolicy(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDestructionPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_TargetDestructionPolicy)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_TargetDestructionPolicy = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+	GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDestructionPolicy>(Method, ETargetDestructionPolicy::None)));
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_TargetActivationPolicy(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetActivationPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_TargetActivationPolicy)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_TargetActivationPolicy = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+	GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetActivationPolicy>(Method, ETargetActivationPolicy::None)));
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_TargetDeactivationPolicy(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDeactivationPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_TargetDeactivationPolicy)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_TargetDeactivationPolicy = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+	GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDeactivationPolicy>(Method, ETargetDeactivationPolicy::None)));
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent_TargetDamageType(FString Method)
+{
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDamageType, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	/* For whatever reason, setting the selected option through code will trigger this function immediately
+	 * after calling OnSelectionChangedGenerateWidgetEvent, so this is a sketchy way to deal with it for now */
+	if (bHideTooltipImage_TargetDamageType)
+	{
+		Entry->ToggleTooltipImageVisibility(false);
+		bHideTooltipImage_TargetDamageType = false;
+		return Cast<UWidget>(Entry);
+	}
+	
+	const FText TooltipText = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips",
+	GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDamageType>(Method, ETargetDamageType::None)));
+
+	AddToTooltipData(Entry->TooltipImage, TooltipText, false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale(FString Method)
+{
+	bHideTooltipImage_ConsecutiveTargetScale = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScalePolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
 	return Cast<UWidget>(Entry);
 }
 
 UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale(FString Method)
 {
 	bHideTooltipImage_LifetimeTargetScale = true;
-	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScale, ComboboxEntryWidget);
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScalePolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_TargetSpawningPolicy(FString Method)
+{
+	bHideTooltipImage_TargetSpawningPolicy = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetSpawningPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_TargetDestructionPolicy(FString Method)
+{
+	bHideTooltipImage_TargetDestructionPolicy = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDestructionPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_TargetActivationPolicy(FString Method)
+{
+	bHideTooltipImage_TargetActivationPolicy = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetActivationPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_TargetDeactivationPolicy(FString Method)
+{
+	bHideTooltipImage_TargetDeactivationPolicy = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDeactivationPolicy, ComboboxEntryWidget);
+	Entry->SetText(FText::FromString(Method));
+	Entry->ToggleTooltipImageVisibility(false);
+	return Cast<UWidget>(Entry);
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent_TargetDamageType(FString Method)
+{
+	bHideTooltipImage_TargetDamageType = true;
+	UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDamageType, ComboboxEntryWidget);
 	Entry->SetText(FText::FromString(Method));
 	Entry->ToggleTooltipImageVisibility(false);
 	return Cast<UWidget>(Entry);

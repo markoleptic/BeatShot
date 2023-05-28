@@ -19,7 +19,6 @@
 #include "SubMenuWidgets/GameModesWidget_SpatialConfig.h"
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
 #include "SubMenuWidgets/GameModesWidget_BeatGridConfig.h"
-#include "SubMenuWidgets/GameModesWidget_BeatTrackConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
 #include "WidgetComponents/MenuButton.h"
 
@@ -67,9 +66,6 @@ void UGameModesWidget::NativeConstruct()
 
 	AIConfig = CreateWidget<UGameModesWidget_AIConfig>(this, AIConfigClass);
 	Box_AIConfig->AddChildToVerticalBox(AIConfig);
-
-	BeatTrackConfig = CreateWidget<UGameModesWidget_BeatTrackConfig>(this, BeatTrackConfigClass);
-	Box_BeatTrackConfig->AddChildToVerticalBox(BeatTrackConfig);
 
 	TargetConfig = CreateWidget<UGameModesWidget_TargetConfig>(this, TargetConfigClass);
 	Box_TargetConfig->AddChildToVerticalBox(TargetConfig);
@@ -297,33 +293,26 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	case EBaseGameMode::SingleBeat:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Collapsed);
 		AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	case EBaseGameMode::MultiBeat:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Collapsed);
 		AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	case EBaseGameMode::BeatGrid:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Visible);
-		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Collapsed);
 		BeatGridConfig->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		break;
 	case EBaseGameMode::BeatTrack:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Visible);
-		BeatTrackConfig->InitializeBeatTrackConfig(InBSConfig.TrackingConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	case EBaseGameMode::ChargedBeatTrack:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatTrackConfig->SetVisibility(ESlateVisibility::Visible);
-		BeatTrackConfig->InitializeBeatTrackConfig(InBSConfig.TrackingConfig, InBSConfig.DefiningConfig.BaseGameMode);
 		break;
 	case EBaseGameMode::None:
 		break;
@@ -339,7 +328,6 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	ReturnStruct.AIConfig = AIConfig->GetAIConfig();
 	ReturnStruct.SpatialConfig = SpatialConfig->GetSpatialConfig();
 	ReturnStruct.BeatGridConfig = BeatGridConfig->GetBeatGridConfig();
-	ReturnStruct.TrackingConfig = BeatTrackConfig->GetBeatTrackConfig();
 	return ReturnStruct;
 }
 

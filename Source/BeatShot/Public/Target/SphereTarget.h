@@ -19,7 +19,7 @@ class UCurveFloat;
 class UBSAttributeSetBase;
 class ASphereTarget;
 
-
+/** Struct containing info about a target that is broadcast when a target takes damage or the the DamageableWindow timer expires */
 USTRUCT()
 struct FTargetDamageEvent
 {
@@ -27,6 +27,9 @@ struct FTargetDamageEvent
 
 	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
 	float TimeAlive;
+
+	/** The health attribute's NewValue */
+	float CurrentHealth;
 
 	/** The absolute value between the health attribute's NewValue and OldValue */
 	float DamageDelta;
@@ -42,30 +45,27 @@ struct FTargetDamageEvent
 
 	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid Guid;
-
-	/** Number of charges this target had before it was destroyed */
-	int32 NumCharges;
 	
 	FTargetDamageEvent()
 	{
 		TimeAlive = INDEX_NONE;
 		DamageDelta = 0.f;
+		CurrentHealth = 0.f;
 		TotalPossibleDamage = 0.f;
 		Location = FVector();
 		Scale = FVector(1.f);
-		NumCharges = INDEX_NONE;
 	}
 
-	FTargetDamageEvent(const float InTimeAlive, const float InDamageDelta, const float InTotalPossibleDamage, const FVector& InLocation,
-		const FVector& InScale, const FGuid& InGuid, const int32 InNumCharges)
+	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FVector& InLocation, const FVector& InScale, const FGuid& InGuid,
+		const float InDamageDelta = 0.f, const float InTotalPossibleDamage = 0.f)
 	{
 		TimeAlive = InTimeAlive;
 		DamageDelta = InDamageDelta;
+		CurrentHealth = InCurrentHealth;
 		TotalPossibleDamage = InTotalPossibleDamage;
 		Location = InLocation;
 		Scale = InScale;
 		Guid = InGuid;
-		NumCharges = InNumCharges;
 	}
 
 	float GetDamageDelta(const float OldValue, const float NewValue) const
@@ -104,11 +104,11 @@ protected:
 	/** Ticks the timelines */
 	virtual void Tick(float DeltaSeconds) override;
 
-	// Actual hard pointer to AbilitySystemComponent
+	/** Actual hard pointer to AbilitySystemComponent */
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
 
-	// Actual hard pointer to AttributeSetBase
+	/** Actual hard pointer to AttributeSetBase */
 	UPROPERTY()
 	UBSAttributeSetBase* HardRefAttributeSetBase;
 
@@ -118,16 +118,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UStaticMeshComponent* SphereMesh;
 	
-public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UBSHealthComponent* HealthComponent;
-	
-protected:
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UNiagaraSystem* TargetExplosion;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	TSubclassOf<UGameplayEffect> TargetImmunity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	TSubclassOf<UGameplayEffect> ExpirationHealthPenalty;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Target Properties")
 	UCurveFloat* StartToPeakCurve;
@@ -165,12 +166,12 @@ public:
 
 	/** Called by TargetManager if settings were changed that could affect the target */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
-	
-	/** Called in TargetManager to activate a BeatGrid target */
-	void ActivateBeatGridTarget(const float Lifespan);
 
-	/** Called in TargetManager to activate a Charged target, instead of spawning a new one */
-	void ActivateChargedTarget(const float Lifespan);
+	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */
+	void ActivateTarget(const float Lifespan);
+
+	/** Deactivates a target, applies immunity, stops the DamageableWindow timer and all timelines, sets to inactive target color, and applies scaling */
+	void DeactivateTarget(const bool bExpired);
 
 	/** Sets the scale for the SphereMesh, should only be called by TargetManager */
 	void SetInitialSphereScale(const FVector& NewScale);
@@ -186,10 +187,6 @@ public:
 	/** Called from HealthComponent when a SphereTarget receives damage if the game mode is BeatGrid */
 	UFUNCTION()
 	void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
-
-	void OnHealthChanged_BeatGrid();
-
-	void OnHealthChanged_ChargedBeatTrack();
 
 	/** Returns the color the target be after SpawnBeatDelay seconds have passed */
 	UFUNCTION(BlueprintCallable)
@@ -220,6 +217,9 @@ public:
 	FBSConfig BSConfig;
 
 private:
+	/** Apply damage to self, for example when the DamageableWindow timer expires */
+	void DamageSelf(const float Damage);
+	
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
 	void PlayStartToPeakTimeline();
@@ -240,7 +240,7 @@ private:
 
 	/** Set the color to BeatGrid color */
 	UFUNCTION()
-	void SetColorToBeatGridColor();
+	void SetColorToInactiveColor();
 
 	/** Change the sphere scale*/
 	void SetSphereScale(const FVector& NewScale) const;
@@ -290,7 +290,6 @@ private:
 	FOnTimelineFloat OnShrinkQuickAndGrowSlow;
 
 	FOnTimelineEvent OnStartToPeakFinished;
-	FOnTimelineEvent OnPeakToFadeFinished;
 
 	/** The scale that was applied when spawned */
 	float InitialTargetScale = 1.f;

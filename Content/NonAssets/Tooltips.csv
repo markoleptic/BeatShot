@@ -14,10 +14,10 @@ BeatTrackConstantSpeed,"If checked, the speed of the target will remain constant
 BoundsScalingMethod,"How to change the vertical and horizontal spread of the spawn area, or not at all."
 BoundsScalingMethod_Dynamic,The vertical and horizontal spread of the spawn area grow larget based on consecutive targets hit.
 BoundsScalingMethod_Static,The vertical and horizontal spread of the spawn area will not change.
-ConsecutiveTargetScale,"How to change the target scale between consecutive targets, or not at all."
-ConsecutiveTargetScale_Random,The starting scale/size of the target will be chosen randomly between min and max target scale.
-ConsecutiveTargetScale_SkillBased,"The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit."
-ConsecutiveTargetScale_Static,The starting scale/size of the target will remain constant throughout the game mode.
+ConsecutiveTargetScalePolicy,"How to change the target scale between consecutive targets, or not at all."
+ConsecutiveTargetScalePolicy_Random,The starting scale/size of the target will be chosen randomly between min and max target scale.
+ConsecutiveTargetScalePolicy_SkillBased,"The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit."
+ConsecutiveTargetScalePolicy_Static,The starting scale/size of the target will remain constant throughout the game mode.
 CustomGameModeName,The name to save your custom game mode as.
 EnableAI,"If checked, the game will spawn targets according to reinforcment learning algorithms. This should expose you to your weaknesses more often."
 Epsilon,"The epsilon value. A value of 1 will result in only choosing random values (explore), while a value of zero will result in only choosing locations where your accuracy is lowest."
@@ -27,10 +27,10 @@ GameModeDifficulty,"Useful for seeing what settings the default game modes use, 
 GameModeTemplate,See what settings the default game modes use to fine tune your custom game mode.
 Gamma,The gamma value. How much to value future rewards vs immediate rewards
 Lifespan,"How long the target will live, even if not shot. This doesn't apply to BeatTrack."
-LifetimeTargetScale,"How to change the scale of the target over its lifetime, or not at all."
-LifetimeTargetScale_None,The scale of the target will not change over its lifetime.
-LifetimeTargetScale_Grow,Change the target scale from its current to its maximum scale over its lifetime.
-LifetimeTargetScale_Shrink,Change the target scale from its current to its minimum scale over its lifetime.
+LifetimeTargetScalePolicy,"How to change the scale of the target over its lifetime, or not at all."
+LifetimeTargetScalePolicy_None,The scale of the target will not change over its lifetime.
+LifetimeTargetScalePolicy_Grow,Change the target scale from its current to its maximum scale over its lifetime.
+LifetimeTargetScalePolicy_Shrink,Change the target scale from its current to its minimum scale over its lifetime.
 MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
 PlaybackAudio,"If checked, the audio from the Input Audio Device will playback to the Output Audio Device. Check  this box if you aren't routing your Input Audio Device to your desktop sound."
 SpawnBeatDelay,Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time.
@@ -40,4 +40,25 @@ TargetDistributionMethod_FullRange,Spawn targets anywhere in the current spawn a
 TargetDistributionMethod_HeadshotHeightOnly,The targests will only spawn at headshot height.
 TargetSpawnCD,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
 NumCharges,How many charges or lives each target has before fully dissipating.
-ChargeScaleMultiplier,How much to shrink the target after a charge is consumed. This number is multiplied by the target's scale prior to the charge being consumed.
+ConsecutiveChargeScaleMultiplier,How much to shrink the target after a charge is consumed. This number is multiplied by the target's scale prior to the charge being consumed.
+TargetSpawningPolicy,When to spawn the targets.
+TargetDestructionPolicy,How to handle destroying targets.
+TargetActivationPolicy,When to activate the target (make it damageable).
+TargetDeactivationPolicy,How to handle deactivating targets.
+TargetDamageType,How the player damages the target and receives score.
+TargetSpawningPolicy_Upfront,Spawn all the targets before the game mode starts.
+TargetSpawningPolicy_Runtime,Spawn targets when the TargetManager receives the signal from AudioAnalyzer.
+TargetActivationPolicy_OnSpawn,Activate the target immediately on spawn.
+TargetActivationPolicy_OnCooldown,Activate the target when the TargetManager receives the signal from AudioAnalyzer.
+TargetDeactivationPolicy_Persistant,"Targets are never deactivated, even if their health reaches zero."
+TargetDeactivationPolicy_OnHealthReachedZero,Targets are deactivated ONLY after their health reaches zero.
+TargetDeactivationPolicy_OnExpiration,Targets are deactivated ONLY after their damageable window closes.
+TargetDeactivationPolicy_OnHealthReachedZeroOrExpiration,Targets are deactivated after their health reaches zero OR their damageable window closes.
+TargetDeactivationPolicy_OnAnyDamageEventOrExpiration,Targets are deactivated after ANY damage event OR their damageable window closes.
+TargetDestructionPolicy_OnHealthReachedZero,Targets are destroyed ONLY after their health reaches zero.
+TargetDestructionPolicy_OnExpiration,Targets are destroyed ONLY after their damageable window closes.
+TargetDestructionPolicy_OnHealthReachedZeroOrExpiration,Targets are destroyed after their health reaches zero or their damageable window closes.
+TargetDestructionPolicy_OnAnyDamageEventOrExpiration,Targets are destroyed after any damage event or their damageable window closes.
+TargetDestructionPolicy_Persistant,"Targets are never destroyed, even if their health reaches zero. Can be reactivated/deactivated."
+TargetDamageType_Tracking,Having the CrossHair over the target damages the target and awards score.
+TargetDamageType_Hit,Firing the gun and hitting the target damages the target and awards score.

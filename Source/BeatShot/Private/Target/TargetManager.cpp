@@ -38,9 +38,9 @@ void ATargetManager::BeginPlay()
 
 void ATargetManager::Destroyed()
 {
-	if (!GetActiveTargets().IsEmpty())
+	if (!GetManagedTargets().IsEmpty())
 	{
-		for (ASphereTarget* Target : GetActiveTargets())
+		for (ASphereTarget* Target : GetManagedTargets())
 		{
 			Target->Destroy();
 		}
@@ -60,6 +60,18 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 	/* Initialize local copy of FBSConfig */
 	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings;
+	
+	BSConfig.TargetConfig.OnSpawn_TargetColor = InPlayerSettings.StartTargetColor;
+	BSConfig.TargetConfig.OnSpawn_TargetOutlineColor = InPlayerSettings.StartTargetColor;
+	
+	BSConfig.TargetConfig.StartToPeak_StartColor = InPlayerSettings.StartTargetColor;
+	BSConfig.TargetConfig.StartToPeak_EndColor = InPlayerSettings.PeakTargetColor;
+	
+	BSConfig.TargetConfig.PeakToEnd_StartColor = InPlayerSettings.PeakTargetColor;
+	BSConfig.TargetConfig.PeakToEnd_EndColor = InPlayerSettings.EndTargetColor;
+	
+	BSConfig.TargetConfig.InActiveTargetOutlineColor = InPlayerSettings.BeatGridInactiveTargetColor;
+	BSConfig.TargetConfig.InActiveTargetColor = InPlayerSettings.BeatGridInactiveTargetColor;
 
 	/* GameMode menu uses the full width, while box bounds are only half width / half height */
 	StaticExtents = BSConfig.SpatialConfig.GenerateTargetManagerBoxBounds();
@@ -152,7 +164,7 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 	SpawnMemoryIncZ = roundf(1.f / SpawnMemoryScaleZ);
 	MinOverlapRadius = (SpawnMemoryIncY + SpawnMemoryIncZ) / 2.f;
 
-	if (IsDynamicSpreadType(BSConfig.SpatialConfig.BoundsScalingMethod))
+	if (IsDynamicBoundsScalingPolicy(BSConfig.SpatialConfig.BoundsScalingMethod))
 	{
 		SetBoxExtents_Dynamic();
 	}
@@ -221,7 +233,7 @@ void ATargetManager::OnGameModeStarted()
 {
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
 	{
-		for (const ASphereTarget* Target : GetActiveTargets())
+		for (const ASphereTarget* Target : GetManagedTargets())
 		{
 			if (Target->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune))
 			{
@@ -266,9 +278,9 @@ void ATargetManager::InitBeatGrid()
 	{
 		RecentBeatGridIndices.Empty();
 	}
-	if (!ActiveTargets.IsEmpty())
+	if (!ManagedTargets.IsEmpty())
 	{
-		ActiveTargets.Empty();
+		ManagedTargets.Empty();
 	}
 
 	LastBeatGridIndex = INDEX_NONE;
@@ -307,7 +319,7 @@ ASphereTarget* ATargetManager::SpawnTarget(const FVector& Location, const FVecto
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnOnTargetHealthChangedOrExpired);
 	Target->FinishSpawning(FTransform(), true);
 
-	AddToActiveTargets(Target);
+	AddToManagedTargets(Target);
 	
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat ||
 		BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::MultiBeat)
@@ -369,7 +381,7 @@ void ATargetManager::ActivateBeatGridTarget()
 	int32 ChosenTargetIndex;
 	if (LastBeatGridIndex == INDEX_NONE || BSConfig.BeatGridConfig.RandomizeBeatGrid == true)
 	{
-		ChosenTargetIndex = FMath::RandRange(0, ActiveTargets.Num() - 1);
+		ChosenTargetIndex = FMath::RandRange(0, ManagedTargets.Num() - 1);
 	}
 	else
 	{
@@ -403,20 +415,20 @@ void ATargetManager::ActivateBeatGridTarget()
 		RecentBeatGridIndices.SetNum(7);
 	}
 
-	if (!GetActiveTargets()[ChosenTargetIndex])
+	if (!GetManagedTargets()[ChosenTargetIndex])
 	{
 		return;
 	}
 	
-	GetActiveTargets()[ChosenTargetIndex]->ActivateBeatGridTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-	AddToActiveBeatGridGuids(GetActiveTargets()[ChosenTargetIndex]->GetGuid());
+	GetManagedTargets()[ChosenTargetIndex]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+	AddToActiveBeatGridGuids(GetManagedTargets()[ChosenTargetIndex]->GetGuid());
 	LastBeatGridIndex = ChosenTargetIndex;
 	OnTargetActivatedOrSpawned.Broadcast();
-	OnTargetActivated_AimBot.Broadcast(GetActiveTargets()[ChosenTargetIndex]);
+	OnTargetActivated_AimBot.Broadcast(GetManagedTargets()[ChosenTargetIndex]);
 
 	if (bShowDebug_SpawnMemory)
 	{
-		for (int i = 0; i < GetActiveTargets().Num(); i++)
+		for (int i = 0; i < GetManagedTargets().Num(); i++)
 		{
 			if (i == LastBeatGridIndex)
 			{
@@ -424,20 +436,20 @@ void ATargetManager::ActivateBeatGridTarget()
 			}
 			if (RecentBeatGridIndices.Contains(i))
 			{
-				ActiveTargets[i]->SetSphereColor(FLinearColor(FColor::Red));
+				ManagedTargets[i]->SetSphereColor(FLinearColor(FColor::Red));
 				continue;
 			}
-			ActiveTargets[i]->SetColorToBeatGridColor();
+			ManagedTargets[i]->SetColorToInactiveColor();
 		}
 	}
 }
 
 void ATargetManager::ActivateChargedTarget()
 {
-	if (!GetActiveTargets().IsEmpty() && !GetActiveTargets()[0]->IsTargetActiveAndDamageable())
+	if (!GetManagedTargets().IsEmpty() && !GetManagedTargets()[0]->IsTargetActiveAndDamageable())
 	{
 		OnTargetActivatedOrSpawned.Broadcast();
-		GetActiveTargets()[0]->ActivateChargedTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+		GetManagedTargets()[0]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
 	}
 	else
 	{
@@ -447,7 +459,7 @@ void ATargetManager::ActivateChargedTarget()
 
 void ATargetManager::SpawnBeatTrackTarget()
 {
-	if (!GetActiveTargets().IsEmpty())
+	if (!GetManagedTargets().IsEmpty())
 	{
 		return;
 	}
@@ -456,35 +468,35 @@ void ATargetManager::SpawnBeatTrackTarget()
 
 void ATargetManager::SpawnChargedTarget()
 {
-	if (!GetActiveTargets().IsEmpty())
+	if (!GetManagedTargets().IsEmpty())
 	{
 		return;
 	}
 
 	SpawnTarget(SpawnLocation, TargetScale, false);
 	FindNextTargetProperties();
-	MovingTargetSpeed = FMath::FRandRange(BSConfig.TrackingConfig.MinTrackingSpeed, BSConfig.TrackingConfig.MaxTrackingSpeed);
+	MovingTargetSpeed = FMath::FRandRange(BSConfig.TargetConfig.MinTrackingSpeed, BSConfig.TargetConfig.MaxTrackingSpeed);
 	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
 	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
 }
 
 void ATargetManager::UpdateBeatTrackTarget()
 {
-	if (GetActiveTargets().IsEmpty())
+	if (GetManagedTargets().IsEmpty())
 	{
 		return;
 	}
 
-	LocationBeforeDirectionChange = GetActiveTargets()[0]->GetActorLocation();
-	GetActiveTargets()[0]->SetSphereScale(GetNextTargetScale());
-	MovingTargetSpeed = FMath::FRandRange(BSConfig.TrackingConfig.MinTrackingSpeed, BSConfig.TrackingConfig.MaxTrackingSpeed);
+	LocationBeforeDirectionChange = GetManagedTargets()[0]->GetActorLocation();
+	GetManagedTargets()[0]->SetSphereScale(GetNextTargetScale());
+	MovingTargetSpeed = FMath::FRandRange(BSConfig.TargetConfig.MinTrackingSpeed, BSConfig.TargetConfig.MaxTrackingSpeed);
 	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
 	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
 }
 
 void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime)
 {
-	if (GetActiveTargets().IsEmpty())
+	if (GetManagedTargets().IsEmpty())
 	{
 		return;
 	}
@@ -496,7 +508,7 @@ void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime)
 		{
 			return;
 		}
-		for (ASphereTarget* Target : GetActiveTargets())
+		for (ASphereTarget* Target : GetManagedTargets())
 		{
 			if (Target != nullptr)
 			{
@@ -507,7 +519,7 @@ void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime)
 	case EBaseGameMode::BeatGrid:
 		{
 			TArray<FGuid> Guids = GetActiveBeatGridGuids();
-			TArray<ASphereTarget*> Filtered = GetActiveTargets().FilterByPredicate([&Guids] (const ASphereTarget* Target)
+			TArray<ASphereTarget*> Filtered = GetManagedTargets().FilterByPredicate([&Guids] (const ASphereTarget* Target)
 			{
 				if (Guids.Contains(Target->GetGuid()))
 				{
@@ -523,24 +535,24 @@ void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime)
 		return;
 	case EBaseGameMode::BeatTrack:
 		{
-			if (GetActiveTargets()[0]->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
+			if (GetManagedTargets()[0]->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
 			{
 				return;
 			}
-			CurrentMovingTargetLocation = GetActiveTargets()[0]->GetActorLocation();
+			CurrentMovingTargetLocation = GetManagedTargets()[0]->GetActorLocation();
 			CurrentMovingTargetLocation += CurrentMovingTargetDirection * MovingTargetSpeed * DeltaTime;
-			GetActiveTargets()[0]->SetActorLocation(CurrentMovingTargetLocation);
+			GetManagedTargets()[0]->SetActorLocation(CurrentMovingTargetLocation);
 		}
 		return;
 	case EBaseGameMode::ChargedBeatTrack:
 		{
-			if (GetActiveTargets()[0]->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
+			if (GetManagedTargets()[0]->HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_PreGameModeStart))
 			{
 				return;
 			}
-			CurrentMovingTargetLocation = GetActiveTargets()[0]->GetActorLocation();
+			CurrentMovingTargetLocation = GetManagedTargets()[0]->GetActorLocation();
 			CurrentMovingTargetLocation += CurrentMovingTargetDirection * MovingTargetSpeed * DeltaTime;
-			GetActiveTargets()[0]->SetActorLocation(CurrentMovingTargetLocation);
+			GetManagedTargets()[0]->SetActorLocation(CurrentMovingTargetLocation);
 		}
 	case EBaseGameMode::None:
 		break;
@@ -592,15 +604,15 @@ void ATargetManager::OnOnTargetHealthChangedOrExpired(const FTargetDamageEvent& 
 	/* Remove from active targets if out of charges, and don't do anything further if ChargedBeatTrack */
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
 	{
-		if (TargetDamageEvent.NumCharges <= 1)
+		if (TargetDamageEvent.CurrentHealth <= 0.f)
 		{
-			RemoveFromActiveTargets(TargetDamageEvent.Guid);
+			RemoveFromManagedTargets(TargetDamageEvent.Guid);
 		}
 		return;
 	}
 
 	/* Remove from active targets, and remove from recent targets after a delay */
-	RemoveFromActiveTargets(TargetDamageEvent.Guid);
+	RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	FTimerHandle TimerHandle;
 	RemoveFromRecentDelegate.BindUObject(this, &ATargetManager::RemoveFromRecentTargets, TargetDamageEvent.Guid);
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
@@ -654,7 +666,7 @@ void ATargetManager::FindNextTargetProperties()
 
 FVector ATargetManager::GetNextTargetScale() const
 {
-	if (BSConfig.TargetConfig.ConsecutiveTargetScaleMethod == EConsecutiveTargetScaleMethod::SkillBased)
+	if (BSConfig.TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
 	{
 		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
 		return FVector(UKismetMathLibrary::Lerp(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale, NewFactor));
@@ -662,7 +674,7 @@ FVector ATargetManager::GetNextTargetScale() const
 	return FVector(FMath::FRandRange(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale));
 }
 
-FVector ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingMethod BoundsScalingMethod, const FVector& NewTargetScale)
+FVector ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale)
 {
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat && !LastTargetSpawnedCenter)
 	{
@@ -670,7 +682,7 @@ FVector ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingMethod Bo
 		return GetBoxOrigin();
 	}
 	/* Change the BoxExtent of the SpawnBox if dynamic */
-	if (IsDynamicSpreadType(BoundsScalingMethod))
+	if (IsDynamicBoundsScalingPolicy(BoundsScalingMethod))
 	{
 		SetBoxExtents_Dynamic();
 	}
@@ -756,17 +768,17 @@ FVector ATargetManager::GetRandomBeatTrackLocation(const FVector& LocationBefore
 	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * MovingTargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
 }
 
-TArray<FVector> ATargetManager::GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionMethod& TargetDistributionMethod, const EBoundsScalingMethod& BoundsScalingMethod) const
+TArray<FVector> ATargetManager::GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& TargetDistributionMethod, const EBoundsScalingPolicy& BoundsScalingMethod) const
 {
 	TArray<FVector> ValidSpawnLocations;
 
 	/* Populate AllPoints according to TargetDistributionMethod */
 	switch (TargetDistributionMethod)
 	{
-	case ETargetDistributionMethod::EdgeOnly:
+	case ETargetDistributionPolicy::EdgeOnly:
 		{
-			const FVector MinExtrema = GetBoxExtrema(0, BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
-			const FVector MaxExtrema = GetBoxExtrema(1, BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
+			const FVector MinExtrema = GetBoxExtrema(0, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
+			const FVector MaxExtrema = GetBoxExtrema(1, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
 			const float MaxY = MaxExtrema.Y - SpawnMemoryIncY;
 			const float MaxZ = MaxExtrema.Z - SpawnMemoryIncZ;
 			const float OriginX = GetBoxOrigin().X;
@@ -784,10 +796,10 @@ TArray<FVector> ATargetManager::GetValidSpawnLocations(const FVector& Scale, con
 			ValidSpawnLocations.Add(GetBoxOrigin());
 		}
 		break;
-	case ETargetDistributionMethod::FullRange:
+	case ETargetDistributionPolicy::FullRange:
 		{
-			const FVector NegativeExtrema = GetBoxExtrema(0, BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
-			const FVector PositiveExtrema = GetBoxExtrema(1, BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
+			const FVector NegativeExtrema = GetBoxExtrema(0, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
+			const FVector PositiveExtrema = GetBoxExtrema(1, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
 			ValidSpawnLocations = GetAllSpawnLocations().FilterByPredicate([&](const FVector& Vector)
 			{
 				if (Vector.Y < NegativeExtrema.Y || Vector.Y >= PositiveExtrema.Y || Vector.Z < NegativeExtrema.Z || Vector.Z >= PositiveExtrema.Z)
@@ -953,11 +965,11 @@ int32 ATargetManager::AddToRecentTargets(const ASphereTarget* SpawnTarget, const
 	return NewIndex;
 }
 
-int32 ATargetManager::AddToActiveTargets(ASphereTarget* SpawnTarget)
+int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget)
 {
-	TArray<ASphereTarget*> Targets = GetActiveTargets();
+	TArray<ASphereTarget*> Targets = GetManagedTargets();
 	const int32 NewIndex = Targets.Emplace(SpawnTarget);
-	ActiveTargets = Targets;
+	ManagedTargets = Targets;
 	return NewIndex;
 }
 
@@ -975,9 +987,9 @@ void ATargetManager::RemoveFromRecentTargets(const FGuid GuidToRemove)
 	RecentTargets = Targets;
 }
 
-void ATargetManager::RemoveFromActiveTargets(const FGuid GuidToRemove)
+void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
-	const TArray<ASphereTarget*> Targets = GetActiveTargets().FilterByPredicate([&] (const ASphereTarget* OtherTarget)
+	const TArray<ASphereTarget*> Targets = GetManagedTargets().FilterByPredicate([&] (const ASphereTarget* OtherTarget)
 	{
 		if (!OtherTarget)
 		{
@@ -989,7 +1001,7 @@ void ATargetManager::RemoveFromActiveTargets(const FGuid GuidToRemove)
 		}
 		return true;
 	});
-	ActiveTargets = Targets;
+	ManagedTargets = Targets;
 }
 
 void ATargetManager::RemoveFromActiveBeatGridGuids(const FGuid GuidToRemove)
@@ -1001,15 +1013,15 @@ void ATargetManager::RemoveFromActiveBeatGridGuids(const FGuid GuidToRemove)
 
 void ATargetManager::RemoveEdgePoints(TArray<FVector>& In) const
 {
-	const FVector MinExtrema = GetBoxExtrema(0, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
-	const FVector MaxExtrema = GetBoxExtrema(1, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingMethod::Dynamic);
+	const FVector MinExtrema = GetBoxExtrema(0, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
+	const FVector MaxExtrema = GetBoxExtrema(1, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
 	TArray<FVector> InCopy;
 	if (bShowDebug_SpawnBox)
 	{
 		InCopy = In;
 	}
 
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat || BSConfig.SpatialConfig.TargetDistributionMethod == ETargetDistributionMethod::EdgeOnly)
+	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat || BSConfig.SpatialConfig.TargetDistributionMethod == ETargetDistributionPolicy::EdgeOnly)
 	{
 		In = In.FilterByPredicate([&](const FVector& Vector)
 		{
@@ -1079,9 +1091,9 @@ void ATargetManager::SetBoxExtents_Dynamic() const
 void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 {
 	PlayerSettings = InPlayerSettings;
-	if (!ActiveTargets.IsEmpty())
+	if (!ManagedTargets.IsEmpty())
 	{
-		for (ASphereTarget* Target : GetActiveTargets())
+		for (ASphereTarget* Target : GetManagedTargets())
 		{
 			Target->UpdatePlayerSettings(PlayerSettings);
 		}

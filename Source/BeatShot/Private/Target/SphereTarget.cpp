@@ -48,26 +48,8 @@ void ASphereTarget::InitTarget(const FBSConfig& InBSConfig, const FPlayerSetting
 	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings;
 	NumCharges = InBSConfig.TargetConfig.NumCharges;
-
-	switch (InBSConfig.DefiningConfig.BaseGameMode)
-	{
-	case EBaseGameMode::None:
-		break;
-	case EBaseGameMode::SingleBeat:
-	case EBaseGameMode::MultiBeat:
-	case EBaseGameMode::BeatGrid:
-		HardRefAttributeSetBase->InitMaxHealth(100.f);
-		HardRefAttributeSetBase->InitHealth(100.f);
-		break;
-	case EBaseGameMode::BeatTrack:
-		HardRefAttributeSetBase->InitMaxHealth(1000000);
-		HardRefAttributeSetBase->InitHealth(1000000);
-		break;
-	case EBaseGameMode::ChargedBeatTrack:
-		HardRefAttributeSetBase->InitMaxHealth(InBSConfig.TargetConfig.NumCharges * 100.f);
-		HardRefAttributeSetBase->InitHealth(InBSConfig.TargetConfig.NumCharges * 100.f);
-		break;
-	}
+	HardRefAttributeSetBase->InitMaxHealth(InBSConfig.TargetConfig.Attribute_MaxHealth);
+	HardRefAttributeSetBase->InitHealth(InBSConfig.TargetConfig.Attribute_MaxHealth);
 }
 
 UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
@@ -99,7 +81,7 @@ void ASphereTarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
 {
 	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToRemove))
 	{
-		GetAbilitySystemComponent()->RemoveReplicatedLooseGameplayTag(TagToRemove);
+		GetAbilitySystemComponent()->RemoveLooseGameplayTag(TagToRemove);
 	}
 }
 
@@ -118,13 +100,28 @@ void ASphereTarget::SetInitialSphereScale(const FVector& NewScale)
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	InitialTargetLocation = GetActorLocation();
 	SetLifeSpan(0);
 
 	if (GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
+		
+		/* Apply gameplay tags */
+		AbilitySystemComponent->AddLooseGameplayTags(BSConfig.TargetConfig.OnSpawn_ApplyTags);
+
+		switch (BSConfig.TargetConfig.TargetDamageType)
+		{
+		case ETargetDamageType::None:
+		case ETargetDamageType::Hit:
+			break;
+		case ETargetDamageType::Tracking:
+		case ETargetDamageType::Combined:
+			AbilitySystemComponent->AddLooseGameplayTag(FBSGameplayTags::Get().Target_State_Tracking);
+			break;
+		}
+		
 		FGameplayTagContainer Container;
 		GetOwnedGameplayTags(Container);
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent, Container);
@@ -157,47 +154,29 @@ void ASphereTarget::BeginPlay()
 	StartToPeakTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
 	PeakToEndTimeline.SetPlayRate(PeakToEndTimelinePlayRate);
 	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
-	
-	switch (BSConfig.DefiningConfig.BaseGameMode)
+
+	switch (BSConfig.TargetConfig.TargetActivationPolicy)
 	{
-	case EBaseGameMode::None:
+	case ETargetActivationPolicy::None:
 		break;
-	case EBaseGameMode::SingleBeat:
-	case EBaseGameMode::MultiBeat:
-		{
-			PlayStartToPeakTimeline();
-			GetWorldTimerManager().SetTimer(DamageableWindow, this, &ASphereTarget::OnTargetMaxLifeSpanExpired, BSConfig.TargetConfig.TargetMaxLifeSpan, false);
-		}
+	case ETargetActivationPolicy::OnSpawn:
+		ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
 		break;
-	case EBaseGameMode::BeatGrid:
-		{
-			ApplyImmunityEffect();
-			SetColorToBeatGridColor();
-			
-			/* Set color to BeatGridInactiveColor after PeakToFade has finished playing */
-			OnPeakToFadeFinished.BindDynamic(this, &ASphereTarget::SetColorToBeatGridColor);
-			PeakToEndTimeline.SetTimelineFinishedFunc(OnPeakToFadeFinished);
-			
-			/* Fade the target from ColorWhenDestroyed to BeatGridInactiveColor */
-			OnShrinkQuickAndGrowSlow.BindDynamic(this, &ASphereTarget::InterpShrinkQuickAndGrowSlow);
-			ShrinkQuickAndGrowSlowTimeline.AddInterpFloat(ShrinkQuickAndGrowSlowCurve, OnShrinkQuickAndGrowSlow);
-			AbilitySystemComponent->AddReplicatedLooseGameplayTag(FBSGameplayTags::Get().Target_State_Grid);
-		}
+	case ETargetActivationPolicy::OnCooldown:
+		SetColorToInactiveColor();
 		break;
-	case EBaseGameMode::BeatTrack:
-		{
-			ApplyImmunityEffect();
-			SetSphereColor(PlayerSettings.EndTargetColor);
-			AbilitySystemComponent->AddReplicatedLooseGameplayTag(FBSGameplayTags::Get().Target_State_Tracking);
-		}
-		break;
-	case EBaseGameMode::ChargedBeatTrack:
-		{
-			ApplyImmunityEffect();
-			SetSphereColor(PlayerSettings.EndTargetColor);
-			AbilitySystemComponent->AddReplicatedLooseGameplayTag(FBSGameplayTags::Get().Target_State_Charged);
-		}
-		break;
+	}
+
+	if (BSConfig.TargetConfig.bApplyImmunityOnSpawn)
+	{
+		ApplyImmunityEffect();
+	}
+	
+	if (BSConfig.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow)
+	{
+		/* Fade the target from ColorWhenDestroyed to BeatGridInactiveColor */
+		OnShrinkQuickAndGrowSlow.BindDynamic(this, &ASphereTarget::InterpShrinkQuickAndGrowSlow);
+		ShrinkQuickAndGrowSlowTimeline.AddInterpFloat(ShrinkQuickAndGrowSlowCurve, OnShrinkQuickAndGrowSlow);
 	}
 }
 
@@ -209,22 +188,51 @@ void ASphereTarget::Tick(float DeltaSeconds)
 	ShrinkQuickAndGrowSlowTimeline.TickTimeline(DeltaSeconds);
 }
 
-void ASphereTarget::ActivateBeatGridTarget(const float Lifespan)
-{
-	GetWorldTimerManager().SetTimer(DamageableWindow, this, &ASphereTarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
-	RemoveImmunityEffect();
-	PlayStartToPeakTimeline();
-}
-
-void ASphereTarget::ActivateChargedTarget(const float Lifespan)
+void ASphereTarget::ActivateTarget(const float Lifespan)
 {
 	if (IsTargetActiveAndDamageable())
 	{
 		return;
 	}
+
+	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune))
+	{
+		RemoveImmunityEffect();
+	}
+
 	GetWorldTimerManager().SetTimer(DamageableWindow, this, &ASphereTarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
-	RemoveImmunityEffect();
 	PlayStartToPeakTimeline();
+}
+
+void ASphereTarget::DeactivateTarget(const bool bExpired)
+{
+	ApplyImmunityEffect();
+	SetSphereColor(BSConfig.TargetConfig.InActiveTargetColor);
+	SetSphereScale(GetCurrentTargetScale() * BSConfig.TargetConfig.ConsecutiveChargeScaleMultiplier);
+	StopAllTimelines();
+	
+	if (BSConfig.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow && !bExpired)
+	{
+		PlayShrinkQuickAndGrowSlowTimeline();
+	}
+
+	if (BSConfig.TargetConfig.bResetPositionOnDeactivation)
+	{
+		SetActorLocation(InitialTargetLocation);
+	}
+}
+
+void ASphereTarget::DamageSelf(const float Damage)
+{
+	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	{
+		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
+		EffectContextHandle.Get()->AddInstigator(this, this);
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(ExpirationHealthPenalty, 1.f, EffectContextHandle);
+		FGameplayEffectSpec* Spec = Handle.Data.Get();
+		Spec->SetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, Damage);
+		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
+	}
 }
 
 void ASphereTarget::PlayStartToPeakTimeline()
@@ -261,24 +269,21 @@ void ASphereTarget::StopAllTimelines()
 	}
 }
 
-void ASphereTarget::SetColorToBeatGridColor()
+void ASphereTarget::SetColorToInactiveColor()
 {
-	SetSphereColor(PlayerSettings.BeatGridInactiveTargetColor);
-	if (PlayerSettings.bUseSeparateOutlineColor)
-	{
-		SetOutlineColor(PlayerSettings.TargetOutlineColor);
-	}
+	SetSphereColor(BSConfig.TargetConfig.InActiveTargetColor);
+	SetOutlineColor(BSConfig.TargetConfig.InActiveTargetOutlineColor);
 }
 
 void ASphereTarget::InterpStartToPeak(const float Alpha)
 {
-	SetSphereColor(UKismetMathLibrary::LinearColorLerp(PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor, Alpha));
-	if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Grow)
+	SetSphereColor(UKismetMathLibrary::LinearColorLerp(BSConfig.TargetConfig.StartToPeak_StartColor, BSConfig.TargetConfig.StartToPeak_EndColor, Alpha));
+	if (BSConfig.TargetConfig.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale, BSConfig.TargetConfig.MaxTargetScale,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * BSConfig.AudioConfig.PlayerDelay / BSConfig.TargetConfig.TargetMaxLifeSpan)));
 	}
-	else if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Shrink)
+	else if (BSConfig.TargetConfig.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale, BSConfig.TargetConfig.MinTargetScale,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * BSConfig.AudioConfig.PlayerDelay / BSConfig.TargetConfig.TargetMaxLifeSpan)));
@@ -287,14 +292,14 @@ void ASphereTarget::InterpStartToPeak(const float Alpha)
 
 void ASphereTarget::InterpPeakToEnd(const float Alpha)
 {
-	SetSphereColor(UKismetMathLibrary::LinearColorLerp(PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor, Alpha));
-	if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Grow)
+	SetSphereColor(UKismetMathLibrary::LinearColorLerp(BSConfig.TargetConfig.PeakToEnd_StartColor, BSConfig.TargetConfig.PeakToEnd_EndColor, Alpha));
+	if (BSConfig.TargetConfig.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale, BSConfig.TargetConfig.MaxTargetScale,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay) + BSConfig.AudioConfig.
 			                                                PlayerDelay) / BSConfig.TargetConfig.TargetMaxLifeSpan)));
 	}
-	else if (BSConfig.TargetConfig.LifetimeTargetScaleMethod == ELifetimeTargetScaleMethod::Shrink)
+	else if (BSConfig.TargetConfig.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
 	{
 		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale, BSConfig.TargetConfig.MinTargetScale,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.AudioConfig.PlayerDelay) + BSConfig.AudioConfig.
@@ -305,7 +310,7 @@ void ASphereTarget::InterpPeakToEnd(const float Alpha)
 void ASphereTarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
 	SetSphereScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, InitialTargetScale, Alpha)));
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, PlayerSettings.BeatGridInactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, BSConfig.TargetConfig.InActiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetSphereColor(Color);
 }
 
@@ -313,7 +318,7 @@ void ASphereTarget::ApplyImmunityEffect() const
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
-		Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+		Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
 	}
 }
 
@@ -338,89 +343,98 @@ void ASphereTarget::SetOutlineColor(const FLinearColor& Color)
 void ASphereTarget::OnTargetMaxLifeSpanExpired()
 {
 	ApplyImmunityEffect();
-	GetWorldTimerManager().ClearTimer(DamageableWindow);
-	
-	OnTargetDamageEventOrTimeout.Broadcast(FTargetDamageEvent(-1, -1, -1,
-		GetActorLocation(), GetCurrentTargetScale(), GetGuid(), GetNumCharges()));
-
-	switch (BSConfig.DefiningConfig.BaseGameMode)
-	{
-	case EBaseGameMode::None:
-	case EBaseGameMode::SingleBeat:
-	case EBaseGameMode::MultiBeat:
-	case EBaseGameMode::BeatTrack:
-		Destroy();
-		break;
-	case EBaseGameMode::BeatGrid:
-		OnHealthChanged_BeatGrid();
-		break;
-	case EBaseGameMode::ChargedBeatTrack:
-		OnHealthChanged_ChargedBeatTrack();
-		break;
-	}
+	DamageSelf(BSConfig.TargetConfig.ExpirationHealthPenalty);
 }
 
 void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
-	const FTargetDamageEvent Event(GetWorldTimerManager().GetTimerElapsed(DamageableWindow),abs(OldValue - NewValue),
-		TotalPossibleDamage, GetActorLocation(), GetCurrentTargetScale(), GetGuid(), GetNumCharges());
-
-	ApplyImmunityEffect();
+	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
-	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
 	
-	OnTargetDamageEventOrTimeout.Broadcast(Event);
+	const bool Expired = ActorInstigator == this;
 
-	switch (BSConfig.DefiningConfig.BaseGameMode)
+	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
+	if (Expired)
 	{
-	case EBaseGameMode::None:
+		OnTargetDamageEventOrTimeout.Broadcast(FTargetDamageEvent(-1, NewValue, GetActorLocation(), GetCurrentTargetScale(), GetGuid()));
+	}
+	else
+	{
+		OnTargetDamageEventOrTimeout.Broadcast(FTargetDamageEvent(TimeAlive, NewValue, GetActorLocation(), GetCurrentTargetScale(), GetGuid(),
+			abs(OldValue - NewValue), TotalPossibleDamage));
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
+	}
+	
+	/* Target Destruction Policy */
+	switch (BSConfig.TargetConfig.TargetDestructionPolicy)
+	{
+	case ETargetDestructionPolicy::None:
+	case ETargetDestructionPolicy::Persistant:
 		break;
-	case EBaseGameMode::SingleBeat:
-	case EBaseGameMode::MultiBeat:
+	case ETargetDestructionPolicy::OnExpiration:
+		if (Expired)
+		{
+			Destroy();
+			return;
+		}
+		break;
+	case ETargetDestructionPolicy::OnHealthReachedZero:
 		if (NewValue <= 0.f)
 		{
 			Destroy();
+			return;
 		}
 		break;
-	case EBaseGameMode::BeatTrack:
+	case ETargetDestructionPolicy::OnHealthReachedZeroOrExpiration:
+		if (NewValue <= 0.f || Expired)
+		{
+			Destroy();
+			return;
+		}
 		break;
-	case EBaseGameMode::BeatGrid:
-		OnHealthChanged_BeatGrid();
-		break;
-	case EBaseGameMode::ChargedBeatTrack:
-		OnHealthChanged_ChargedBeatTrack();
-		break;
-	}
-}
-
-void ASphereTarget::OnHealthChanged_BeatGrid()
-{
-	SetActorLocation(InitialTargetLocation);
-	PlayShrinkQuickAndGrowSlowTimeline();
-}
-
-void ASphereTarget::OnHealthChanged_ChargedBeatTrack()
-{
-	NumCharges -= 1;
-	if (NumCharges <= 0)
-	{
+	case ETargetDestructionPolicy::OnAnyDamageEventOrExpiration:
 		Destroy();
 		return;
 	}
-	StopAllTimelines();
-	SetSphereScale(GetCurrentTargetScale() * BSConfig.TargetConfig.ConsecutiveChargeScaleMultiplier);
-	SetSphereColor(PlayerSettings.EndTargetColor);
+	/* Target Deactivation Policy */
+	switch (BSConfig.TargetConfig.TargetDeactivationPolicy)
+	{
+	case ETargetDeactivationPolicy::None:
+	case ETargetDeactivationPolicy::Persistant:
+		break;
+	case ETargetDeactivationPolicy::OnExpiration:
+		if (Expired)
+		{
+			DeactivateTarget(Expired);
+		}
+		break;
+	case ETargetDeactivationPolicy::OnHealthReachedZero:
+		if (NewValue <= 0.f)
+		{
+			DeactivateTarget(Expired);
+		}
+		break;
+	case ETargetDeactivationPolicy::OnHealthReachedZeroOrExpiration:
+		if (Expired || NewValue <= 0.f)
+		{
+			DeactivateTarget(Expired);
+		}
+		break;
+	case ETargetDeactivationPolicy::OnAnyDamageEventOrExpiration:
+		DeactivateTarget(Expired);
+		break;
+	}
+
 }
 
 FLinearColor ASphereTarget::GetPeakTargetColor() const
 {
-	return PlayerSettings.PeakTargetColor;
+	return BSConfig.TargetConfig.StartToPeak_EndColor;
 }
 
 FLinearColor ASphereTarget::GetEndTargetColor() const
 {
-	return PlayerSettings.EndTargetColor;
+	return BSConfig.TargetConfig.PeakToEnd_EndColor;
 }
 
 bool ASphereTarget::IsTargetActiveAndDamageable() const
@@ -441,7 +455,7 @@ void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineCol
 
 void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
 {
-	if (TargetExplosion)
+	if (TargetExplosion && BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Hit)
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion, ExplosionLocation);
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);

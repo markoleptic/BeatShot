@@ -10,7 +10,6 @@
 
 class UGameModesWidget_DefiningConfig;
 class UGameModesWidget_TargetConfig;
-class UGameModesWidget_BeatTrackConfig;
 class UGameModesWidget_AIConfig;
 class UGameModesWidget_BeatGridConfig;
 class UGameModesWidget_SpatialConfig;
@@ -62,8 +61,6 @@ protected:
 	TSubclassOf<UGameModesWidget_BeatGridConfig> BeatGridConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | AI Config")
 	TSubclassOf<UGameModesWidget_AIConfig> AIConfigClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | BeatTrack Config")
-	TSubclassOf<UGameModesWidget_BeatTrackConfig> BeatTrackConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Config")
 	TSubclassOf<UGameModesWidget_TargetConfig> TargetConfigClass;
 
@@ -75,7 +72,6 @@ protected:
 	TObjectPtr<UGameModesWidget_TargetConfig> TargetConfig;
 	TObjectPtr<UGameModesWidget_BeatGridConfig> BeatGridConfig;
 	TObjectPtr<UGameModesWidget_AIConfig> AIConfig;
-	TObjectPtr<UGameModesWidget_BeatTrackConfig> BeatTrackConfig;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Defining Config")
 	UVerticalBox* Box_DefiningConfig;
@@ -87,8 +83,6 @@ protected:
 	UVerticalBox* Box_AIConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid Config")
 	UVerticalBox* Box_BeatGridConfig;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatTrack Config")
-	UVerticalBox* Box_BeatTrackConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
 	UVerticalBox* Box_DefaultGameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
@@ -209,7 +203,7 @@ protected:
 	void OnButtonClicked_Difficulty(const UBSButton* GameModeButton);
 	
 	/** The BoundsScalingMethod for a selected Preset Game Mode */
-	EBoundsScalingMethod PresetSelection_BoundsScalingMethod;
+	EBoundsScalingPolicy PresetSelection_BoundsScalingMethod;
 	
 	/** The BaseGameMode for a selected Preset Game Mode */
 	EBaseGameMode PresetSelection_PresetGameMode;

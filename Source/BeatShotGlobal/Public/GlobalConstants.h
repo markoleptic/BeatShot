@@ -277,6 +277,10 @@ namespace Constants
 
 	/** Distance between floor and HeadshotHeight */
 	inline constexpr float HeadshotHeight = 160.f;
+
+	inline constexpr float BaseTargetHealth = 100.f;
+
+	inline constexpr float BaseTrackingTargetHealth = 1000000.f;
 	
 #pragma endregion
 
