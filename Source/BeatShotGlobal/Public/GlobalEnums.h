@@ -134,8 +134,10 @@ enum class ETargetDistributionPolicy : uint8
 	EdgeOnly UMETA(DisplayName="Edge Only"),
 	/** Spawns targets anywhere in the bounding box */
 	FullRange UMETA(DisplayName="Full Range"),
+	/** Spawns targets in a grid */
+	Grid UMETA(DisplayName="Full Range"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly, ETargetDistributionPolicy::FullRange);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly, ETargetDistributionPolicy::Grid);
 
 
 /** How to handle changing target scale over its damageable lifetime */

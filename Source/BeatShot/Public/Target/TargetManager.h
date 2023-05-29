@@ -99,31 +99,14 @@ public:
 	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
 
 private:
-	UFUNCTION()
-	void OnGameModeStarted();
-	
 	/** Initializes the SpawnCounter array */
-	FIntPoint InitializeSpawnCounter();
+	FIntPoint InitializeSpawnCounter(const FVector& NegativeExtents, const FVector& PositiveExtents);
+
+	void SetAppropriateSpawnMemoryScales();
+
+	ASphereTarget* SpawnTarget(FSpawnPoint& InSpawnPoint, const bool bBroadcastSpawnEvent = true);
 	
-	/** Create BeatGrid Targets */
-	void InitBeatGrid();
-
-	ASphereTarget* SpawnTarget(const FVector& Location, const FVector& Scale, const bool bBroadcastSpawnEvent = true);
-
-	/** Spawn a MultiBeat on beat */
-	void SpawnMultiBeatTarget();
-
-	/** Spawn a SingleBeat on beat */
-	void SpawnSingleBeatTarget();
-
-	/** Active a BeatGrid target on beat */
-	void ActivateBeatGridTarget();
-
-	/** Active a target with multiple charges */
-	void ActivateChargedTarget();
-
-	/** Initial BeatTrack target spawn */
-	void SpawnBeatTrackTarget();
+	void ActivateTarget();
 
 	/** Initial BeatTrack target spawn */
 	void SpawnChargedTarget();
@@ -133,9 +116,6 @@ private:
 
 	/** Updates the position of the BeatTrack target on tick */
 	void OnTick_UpdateTargetLocation(const float DeltaTime);
-
-	/** An array of spawned targets that is used to move targets forward towards the player on tick */
-	void MoveTargetForward(ASphereTarget* SpawnTarget, float DeltaTime) const;
 
 	/** The expiration or destruction of any non-BeatTrack target is bound to this function
 	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
@@ -154,7 +134,7 @@ private:
 	FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	FVector GetNextTargetSpawnLocation(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale);
+	FSpawnPoint* GetNextTargetSpawnLocation(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale);
 
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;
@@ -171,17 +151,11 @@ private:
 	/** Returns an array of all points that are occupied by recent targets, readjusted by scale if needed */
 	TArray<FVector> GetAllOverlappingPoints(const FVector& Scale) const;
 
-	/** Returns a copy of the RecentTargets, used to determine future target spawn locations */
-	TArray<FRecentTarget> GetRecentTargets() const { return RecentTargets; }
-
-	/** Returns a copy of ManagedTargets, used to move targets forward if game mode permits */
+	/** Returns a copy of ManagedTargets */
 	TArray<ASphereTarget*> GetManagedTargets() const { return ManagedTargets; }
 
 	/** Returns a copy of the SpawnCounter */
-	TArray<FVectorCounter> GetSpawnCounter() const { return SpawnCounter; }
-
-	/** Returns a copy of ActiveBeatGridGuids */
-	TArray<FGuid> GetActiveBeatGridGuids() const { return ActiveBeatGridGuids; }
+	TArray<FSpawnPoint> GetSpawnCounter() const { return SpawnCounter; }
 
 	/** Returns SpawnBox's origin, as it is in the game */
 	FVector GetBoxOrigin() const;
@@ -195,27 +169,15 @@ private:
 	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
 	TArray<EBorderingDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const;
 
-	/** Returns the VectorCounter corresponding to the point */
-	FVectorCounter GetVectorCounterFromPoint(const FVector& Point) const;
-
-	/** Adds a FRecentTarget to the RecentTargets array */
-	int32 AddToRecentTargets(const ASphereTarget* SpawnTarget, const FVector& Scale);
-
 	/** Adds a SphereTarget to the ManagedTargets array */
 	int32 AddToManagedTargets(ASphereTarget* SpawnTarget);
 
-	/** Adds a Guid to the ActiveBeatGridGuids array */
-	void AddToActiveBeatGridGuids(const FGuid GuidToAdd);
-
-	/** Removes the RecentTargetStruct associated with the GuidToRemove from RecentTargets */
+	/** Sets the corresponding SpawnPoint as not recent */
 	UFUNCTION()
-	void RemoveFromRecentTargets(const FGuid GuidToRemove);
+	void RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid);
 
 	/** Removes the DestroyedTarget from ManagedTargets */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
-
-	/** Removes a Guid from the ActiveBeatGridGuids array */
-	void RemoveFromActiveBeatGridGuids(const FGuid GuidToRemove);
 
 	/** Removes points from the InArray that don't have an adjacent point to the top and to the left. Used so that it's safe to spawn a target within a square area */
 	void RemoveEdgePoints(TArray<FVector>& In) const;
@@ -256,15 +218,15 @@ private:
 	/** Whether or not to show the RLAgentWidget */
 	bool bShowDebug_ReinforcementLearningWidget = false;
 
-	/** Location to spawn the next/current target */
-	FVector SpawnLocation;
+	/** SpawnPoint for the next/current target */
+	FSpawnPoint* SpawnPoint;
+
+	/** SpawnPoint for the previous target */
+	FSpawnPoint* PreviousSpawnPoint;
 
 	/** The scale to apply to the next/current target */
 	FVector TargetScale;
-
-	/** Location of the previously spawned target, in world space */
-	FVector PreviousSpawnLocation;
-
+	
 	/** The smallest possible extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
 	FVector StaticMinExtrema;
 
@@ -307,30 +269,15 @@ private:
 	/** Index of the most recently activated beat grid target */
 	int32 LastBeatGridIndex;
 
-	// TODO: Needs to be a distinction between "Active" and spawned/managed & not activated
 	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()
 	TArray<ASphereTarget*> ManagedTargets;
 
-	/** An array of structs where each element holds a reference to the target, the scale, the center point, and an array of points
-	 *  Targets get added to this array when they are spawned inside of spawn functions, and removed inside
-	 *  OnOnTargetHealthChangedOrExpired */
-	TArray<FRecentTarget> RecentTargets;
-
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
-	TArray<FVectorCounter> SpawnCounter;
+	TArray<FSpawnPoint> SpawnCounter;
 
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;
-	
-	/** Array containing all spawned BeatGrid targets and their indices. Also holds an array of all bordering indices for each index */
-	TArray<FBeatGridIndex> BeatGridIndices;
-
-	/** Array to keep track of the recently activated beat grid targets */
-	TArray<int32> RecentBeatGridIndices;
-
-	/** Array to keep track of active beat grid targets */
-	TArray<FGuid> ActiveBeatGridGuids;
 
 	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
 	float SpawnMemoryScaleY;
@@ -344,6 +291,6 @@ private:
 	/** Current speed of tracking target */
 	float MovingTargetSpeed;
 
-	/** Delegate used to bind a timer handle to RemoveFromRecentTargets() inside of OnOnTargetHealthChangedOrExpired() */
+	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnOnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;
 };

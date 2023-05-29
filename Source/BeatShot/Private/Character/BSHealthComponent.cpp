@@ -88,9 +88,13 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UBSAttributeSetBase::GetHealthAttribute()).AddUObject(this, &ThisClass::HandleHealthChanged);
 	AttributeSetBase->OnHealthReachZero.AddUObject(this, &ThisClass::HandleOutOfHealth);
 	
-	if (GameplayTagContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Tracking))
+
+}
+
+void UBSHealthComponent::SetShouldUpdateTotalPossibleDamage(const bool bShouldUpdate, const FGameplayTagContainer& TagContainer)
+{
+	if (TagContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Tracking))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Should update totalpossibledamage"));
-		ShouldUpdateTotalPossibleDamage = true;
+		ShouldUpdateTotalPossibleDamage = bShouldUpdate;
 	}
 }

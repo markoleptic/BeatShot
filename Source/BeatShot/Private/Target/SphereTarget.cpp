@@ -119,6 +119,7 @@ void ASphereTarget::BeginPlay()
 		case ETargetDamageType::Tracking:
 		case ETargetDamageType::Combined:
 			AbilitySystemComponent->AddLooseGameplayTag(FBSGameplayTags::Get().Target_State_Tracking);
+			OnTargetActivationStateChanged.AddUObject(HealthComponent, &UBSHealthComponent::SetShouldUpdateTotalPossibleDamage);
 			break;
 		}
 		
@@ -199,9 +200,13 @@ void ASphereTarget::ActivateTarget(const float Lifespan)
 	{
 		RemoveImmunityEffect();
 	}
-
+	
 	GetWorldTimerManager().SetTimer(DamageableWindow, this, &ASphereTarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
 	PlayStartToPeakTimeline();
+	
+	FGameplayTagContainer TagContainer;
+	GetOwnedGameplayTags(TagContainer);
+	OnTargetActivationStateChanged.Broadcast(true, TagContainer);
 }
 
 void ASphereTarget::DeactivateTarget(const bool bExpired)
@@ -210,6 +215,10 @@ void ASphereTarget::DeactivateTarget(const bool bExpired)
 	SetSphereColor(BSConfig.TargetConfig.InActiveTargetColor);
 	SetSphereScale(GetCurrentTargetScale() * BSConfig.TargetConfig.ConsecutiveChargeScaleMultiplier);
 	StopAllTimelines();
+	
+	FGameplayTagContainer TagContainer;
+	GetOwnedGameplayTags(TagContainer);
+	OnTargetActivationStateChanged.Broadcast(false, TagContainer);
 	
 	if (BSConfig.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow && !bExpired)
 	{
@@ -348,6 +357,7 @@ void ASphereTarget::OnTargetMaxLifeSpanExpired()
 
 void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
 {
+	UE_LOG(LogTemp, Display, TEXT("OnHealthChanged"));
 	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
 	
@@ -424,7 +434,6 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 		DeactivateTarget(Expired);
 		break;
 	}
-
 }
 
 FLinearColor ASphereTarget::GetPeakTargetColor() const

@@ -170,7 +170,7 @@ public:
 	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
 
 	/** Updates RLAgent's QTable until TargetPairs queue is empty */
-	void UpdateReinforcementLearningComponent(const TArray<FVectorCounter>& SpawnCounter);
+	void UpdateReinforcementLearningComponent(const TArray<FSpawnPoint>& SpawnCounter);
 
 private:
 	/** Returns a random SpawnCounter index from the provided SpawnCounterIndices */

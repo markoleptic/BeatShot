@@ -47,6 +47,9 @@ public:
 	/** Initialize the component using an ability system component */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Health")
 	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer);
+	
+	UFUNCTION()
+	void SetShouldUpdateTotalPossibleDamage(const bool bShouldUpdate, const FGameplayTagContainer& TagContainer);
 
 	/** The maximum amount of damage that can be dealt to a target */
 	float TotalPossibleDamage;

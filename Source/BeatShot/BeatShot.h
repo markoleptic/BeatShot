@@ -20,6 +20,7 @@ enum class ETimeOfDay : uint8
 	DayToNight UMETA(DisplayName="DayToNight"),
 	NightToDay UMETA(DisplayName="NightToDay"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETimeOfDay, ETimeOfDay::Day, ETimeOfDay::NightToDay);
 
 /** Enum representing the ways in which the MovablePlatform can move */
@@ -29,8 +30,8 @@ enum class EPlatformTransitionType : uint8
 	None UMETA(DisplayName="MoveUpByInteract"),
 	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
 	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
-	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")
-};
+	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None, EPlatformTransitionType::MoveDownByStepOff);
 
 /** Enum representing the bordering directions for a target */
@@ -42,11 +43,12 @@ enum class EBorderingDirection : uint8
 	Up UMETA(DisplayName="Up"),
 	Down UMETA(DisplayName="Down"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::Down);
 
 /** Enum representing the types of BeatGrid Indices */
 UENUM(BlueprintType)
-enum class EBeatGridIndexType : uint8
+enum class EGridIndexType : uint8
 {
 	None UMETA(DisplayName="None"),
 	Corner_TopLeft UMETA(DisplayName="Corner_TopLeft"),
@@ -54,14 +56,15 @@ enum class EBeatGridIndexType : uint8
 	Corner_BottomRight UMETA(DisplayName="Corner_BottomRight"),
 	Corner_BottomLeft UMETA(DisplayName="Corner_BottomLeft"),
 	Border_Top UMETA(DisplayName="Border_Top"),
-	Border_Right UMETA(DisplayName="Border_Top"),
-	Border_Bottom UMETA(DisplayName="Border_Top"),
-	Border_Left UMETA(DisplayName="Border_Top"),
+	Border_Right UMETA(DisplayName="Border_Right"),
+	Border_Bottom UMETA(DisplayName="Border_Bottom"),
+	Border_Left UMETA(DisplayName="Border_Left"),
 	Middle UMETA(DisplayName="Middle"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EBeatGridIndexType, EBeatGridIndexType::Corner_TopLeft, EBeatGridIndexType::Middle);
 
-/** A struct representing two consecutively spawned targets */
+ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::Corner_TopLeft, EGridIndexType::Middle);
+
+/** A struct representing two consecutively spawned targets, used to keep track of the reward associated between two points */
 USTRUCT()
 struct FTargetPair
 {
@@ -73,6 +76,7 @@ struct FTargetPair
 	/** The location spawned after Previous */
 	FVector Current;
 
+	/** The reward for spawning a target at Previous and then spawning a target at Current */
 	float Reward;
 
 	FTargetPair()
@@ -106,58 +110,9 @@ struct FTargetPair
 	}
 };
 
-/** A struct representing the space in the grid that a recently spawned target occupies */
+/** A struct representing a spawn point in a 2D grid with information about that point */
 USTRUCT()
-struct FRecentTarget
-{
-	GENERATED_BODY()
-
-	/** An array of points that were inside the SpawnBox and inside the target */
-	TArray<FVector> OverlappingPoints;
-
-	/** The location of the center of the target */
-	FVector CenterVector;
-
-	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
-	FGuid TargetGuid;
-
-	/** The scale of the target relative to the world */
-	FVector TargetScale;
-
-	FRecentTarget()
-	{
-		CenterVector = FVector::ZeroVector;
-		TargetScale = FVector::ZeroVector;
-	}
-
-	explicit FRecentTarget(const FGuid Guid)
-	{
-		CenterVector = FVector::ZeroVector;
-		TargetGuid = Guid;
-		TargetScale = FVector::ZeroVector;
-	}
-
-	FRecentTarget(const FGuid& NewTargetGuid, const TArray<FVector>& Points, const FVector& NewTargetScale, const FVector& NewCenter)
-	{
-		TargetGuid = NewTargetGuid;
-		OverlappingPoints = Points;
-		TargetScale = NewTargetScale;
-		CenterVector = NewCenter;
-	}
-
-	FORCEINLINE bool operator ==(const FRecentTarget& Other) const
-	{
-		if (TargetGuid == Other.TargetGuid)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
-/** A struct representing a point in a 2D grid with information about that point */
-USTRUCT()
-struct FVectorCounter
+struct FSpawnPoint
 {
 	GENERATED_BODY()
 
@@ -166,6 +121,9 @@ struct FVectorCounter
 
 	/** The center of the square sub-area */
 	FVector Center;
+
+	/** The center of the square sub-area */
+	FVector Scale;
 
 	/** The chosen point for this vector counter, it might be different than Point, but will be within the sub-area bounded by incrementY and incrementZ */
 	FVector ActualChosenPoint;
@@ -176,60 +134,134 @@ struct FVectorCounter
 	/** The total number of target hits by player at this point */
 	int32 TotalHits;
 
-	/** The index inside SpawnCounter for this VectorCounter */
+	/** The index for this SpawnPoint inside an array of SpawnPoints  */
 	int32 Index;
 
-	/** The horizontal spacing between the next VectorCounter point */
+	/** The horizontal spacing between the next SpawnPoint */
 	float IncrementY;
 
-	/** The vertical spacing between the next VectorCounter point */
+	/** The vertical spacing between the next SpawnPoint */
 	float IncrementZ;
 
-	FVectorCounter()
+	/** The type of point (corner, border, etc.) */
+	EGridIndexType IndexType;
+
+	/** The bordering SpawnPoints adjacent to this SpawnPoint */
+	TArray<int32> BorderingIndices;
+
+	/** The points that this target overlapped with */
+	TArray<FVector> OverlappingPoints;
+
+	/** The total amount of horizontal SpawnPoints in an array of SpawnPoints. Used for grid */
+	int32 Width;
+
+	/** The total number of SpawnPoints in the array this SpawnPoint belongs to */
+	int32 Size;
+
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
+	FGuid TargetGuid;
+
+	bool bIsActivated;
+
+	bool bIsRecent;
+	
+	FSpawnPoint()
 	{
-		Point = FVector();
-		ActualChosenPoint = FVector();
-		TotalSpawns = -1;
+		Point = FVector(-1);
+		ActualChosenPoint = FVector(-1);
+		Scale = FVector(1);
+		TotalSpawns = INDEX_NONE;
 		TotalHits = 0;
 		IncrementY = 0.f;
 		IncrementZ = 0.f;
-		Index = -1;
+		Index = INDEX_NONE;
+		IndexType = EGridIndexType::None;
+		BorderingIndices = TArray<int32>();
+		OverlappingPoints = TArray<FVector>();
+		Width = INDEX_NONE;
+		Size = INDEX_NONE;
+		TargetGuid = FGuid();
+		bIsActivated = false;
+		bIsRecent = false;
 	}
 
-	FVectorCounter(const FVector NewPoint)
-	{
-		Point = NewPoint;
-		ActualChosenPoint = FVector();
-		TotalSpawns = -1;
-		TotalHits = 0;
-		IncrementY = 0.f;
-		IncrementZ = 0.f;
-		Index = -1;
-	}
-
-	FVectorCounter(const int32 NewIndex, const FVector NewPoint, const float IncY, const float IncZ)
+	FSpawnPoint(const int32 NewIndex, const FVector& NewPoint, const float IncY, const float IncZ, const int32 NewWidth = INDEX_NONE, const int32 NewSize = INDEX_NONE)
 	{
 		Index = NewIndex;
 		Point = NewPoint;
-		ActualChosenPoint = FVector();
-		TotalSpawns = -1;
-		TotalHits = 0;
 		IncrementY = IncY;
 		IncrementZ = IncZ;
+		Width = NewWidth;
+		Size = NewSize;
+		IndexType = GetIndexType();
+		BorderingIndices = InitBorderingIndices();
+		ActualChosenPoint = FVector(-1);
+		Scale = FVector(1);
+		TotalSpawns = INDEX_NONE;
+		TotalHits = 0;
 		Center = FVector(Point.X, roundf(Point.Y + IncrementY / 2.f), roundf(Point.Z + IncrementZ / 2.f));
+		OverlappingPoints = TArray<FVector>();
+		TargetGuid = FGuid();
+		bIsActivated = false;
+		bIsRecent = false;
 	}
 
-	FORCEINLINE bool operator ==(const FVectorCounter& Other) const
+	FSpawnPoint(const int32 NewIndex)
 	{
-		if (Other.Point.Y >= Point.Y && Other.Point.Y < Point.Y + IncrementY
-			&& (Other.Point.Z >= Point.Z && Other.Point.Z < Point.Z + IncrementZ))
+		Point = FVector(-1);
+		ActualChosenPoint = FVector(-1);
+		Scale = FVector(1);
+		TotalSpawns = INDEX_NONE;
+		TotalHits = 0;
+		IncrementY = 0.f;
+		IncrementZ = 0.f;
+		Index = NewIndex;
+		IndexType = EGridIndexType::None;
+		BorderingIndices = TArray<int32>();
+		OverlappingPoints = TArray<FVector>();
+		Width = INDEX_NONE;
+		Size = INDEX_NONE;
+		TargetGuid = FGuid();
+		bIsActivated = false;
+		bIsRecent = false;
+	}
+
+	FSpawnPoint(const FVector& NewPoint)
+	{
+		Point = NewPoint;
+		ActualChosenPoint = FVector(-1);
+		Scale = FVector(1);
+		TotalSpawns = INDEX_NONE;
+		TotalHits = 0;
+		IncrementY = 0.f;
+		IncrementZ = 0.f;
+		Index = INDEX_NONE;
+		IndexType = EGridIndexType::None;
+		BorderingIndices = TArray<int32>();
+		OverlappingPoints = TArray<FVector>();
+		Width = INDEX_NONE;
+		Size = INDEX_NONE;
+		TargetGuid = FGuid();
+		bIsActivated = false;
+		bIsRecent = false;
+	}
+	
+	FORCEINLINE bool operator ==(const FSpawnPoint& Other) const
+	{
+		if (Index != INDEX_NONE && Index == Other.Index)
+		{
+			return true;
+		}
+		if (Other.Point.Y >= Point.Y &&
+			Other.Point.Y < Point.Y + IncrementY &&
+			(Other.Point.Z >= Point.Z && Other.Point.Z < Point.Z + IncrementZ))
 		{
 			return true;
 		}
 		return false;
 	}
 
-	FORCEINLINE bool operator <(const FVectorCounter& Other) const
+	FORCEINLINE bool operator <(const FSpawnPoint& Other) const
 	{
 		if (Point.Z < Other.Point.Z)
 		{
@@ -242,7 +274,7 @@ struct FVectorCounter
 		return false;
 	}
 
-	FVector GetRandomSubPoint(const TArray<EBorderingDirection> BlockedDirections) const
+	FVector GetRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections) const
 	{
 		float MinY = Point.Y;
 		float MaxY = Point.Y + IncrementY;
@@ -264,68 +296,17 @@ struct FVectorCounter
 		{
 			MaxZ = Center.Z;
 		}
-		
+
 		const float Y = roundf(FMath::FRandRange(MinY, MaxY - 1.f));
 		const float Z = roundf(FMath::FRandRange(MinZ, MaxZ - 1.f));
 		return FVector(Point.X, Y, Z);
-	}
-};
-
-/** A struct representing a BeatGrid target index. Stores info about bordering indices */
-USTRUCT()
-struct FBeatGridIndex
-{
-	GENERATED_BODY()
-	
-	EBeatGridIndexType IndexType;
-	TArray<int32> BorderingIndices;
-	int32 Index;
-	int32 Width;
-	int32 Size;
-
-	FBeatGridIndex()
-	{
-		Index = -1;
-		Width = -1;
-		Size = -1;
-		IndexType = EBeatGridIndexType::None;
-		BorderingIndices = TArray<int32>();
-	}
-
-	explicit FBeatGridIndex(const int32 CheckIndex)
-	{
-		Index = CheckIndex;
-		Width = -1;
-		Size = -1;
-		IndexType = EBeatGridIndexType::None;
-		BorderingIndices = TArray<int32>();
-	}
-
-	FBeatGridIndex(const int32 NewIndex, const int32 NewWidth, const int32 NewSize)
-	{
-		Index = NewIndex;
-		Width = NewWidth;
-		Size = NewSize;
-		IndexType = GetIndexType();
-		BorderingIndices = InitBorderingIndices();
-	}
-
-	FORCEINLINE bool operator ==(const FBeatGridIndex& Other) const
-	{
-		if (Index == Other.Index)
-		{
-			return true;
-		}
-		return false;
 	}
 
 	/** Returns whether or not the index is a corner */
 	bool IsCornerIndex() const
 	{
-		if (IndexType == EBeatGridIndexType::Corner_TopLeft ||
-			IndexType == EBeatGridIndexType::Corner_TopRight ||
-			IndexType == EBeatGridIndexType::Corner_BottomRight ||
-			IndexType == EBeatGridIndexType::Corner_BottomLeft)
+		if (IndexType == EGridIndexType::Corner_TopLeft || IndexType == EGridIndexType::Corner_TopRight || IndexType == EGridIndexType::Corner_BottomRight || IndexType ==
+			EGridIndexType::Corner_BottomLeft)
 		{
 			return true;
 		}
@@ -335,83 +316,80 @@ struct FBeatGridIndex
 	/** Returns whether or not the index is a border */
 	bool IsBorderIndex() const
 	{
-		if (IndexType == EBeatGridIndexType::Border_Top ||
-			IndexType == EBeatGridIndexType::Border_Right ||
-			IndexType == EBeatGridIndexType::Border_Bottom ||
-			IndexType == EBeatGridIndexType::Border_Left)
+		if (IndexType == EGridIndexType::Border_Top || IndexType == EGridIndexType::Border_Right || IndexType == EGridIndexType::Border_Bottom || IndexType == EGridIndexType::Border_Left)
 		{
 			return true;
 		}
 		return false;
 	}
-	
+
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
 	TArray<int32> InitBorderingIndices() const
 	{
 		TArray<int32> ReturnArray = TArray<int32>();
 
-		const int32 TopLeft = Index - Width - 1;
-		const int32 Top = Index - Width;
-		const int32 TopRight = Index - Width + 1;
+		const int32 TopLeft = Index + Width - 1;
+		const int32 Top = Index + Width;
+		const int32 TopRight = Index + Width + 1;
 		const int32 Right = Index + 1;
-		const int32 BottomRight = Index + Width + 1;
-		const int32 Bottom = Index + Width;
-		const int32 BottomLeft = Index + Width - 1;
+		const int32 BottomRight = Index - Width + 1;
+		const int32 Bottom = Index - Width;
+		const int32 BottomLeft = Index - Width - 1;
 		const int32 Left = Index - 1;
-		
+
 		switch (IndexType)
 		{
-		case EBeatGridIndexType::None:
+		case EGridIndexType::None:
 			break;
-		case EBeatGridIndexType::Corner_TopLeft:
+		case EGridIndexType::Corner_TopLeft:
 			ReturnArray.Add(Right);
 			ReturnArray.Add(Bottom);
 			ReturnArray.Add(BottomRight);
 			break;
-		case EBeatGridIndexType::Corner_TopRight:
+		case EGridIndexType::Corner_TopRight:
 			ReturnArray.Add(Left);
 			ReturnArray.Add(Bottom);
 			ReturnArray.Add(BottomLeft);
 			break;
-		case EBeatGridIndexType::Corner_BottomRight:
+		case EGridIndexType::Corner_BottomRight:
 			ReturnArray.Add(Left);
 			ReturnArray.Add(Top);
 			ReturnArray.Add(TopLeft);
 			break;
-		case EBeatGridIndexType::Corner_BottomLeft:
+		case EGridIndexType::Corner_BottomLeft:
 			ReturnArray.Add(Right);
 			ReturnArray.Add(Top);
 			ReturnArray.Add(TopRight);
 			break;
-		case EBeatGridIndexType::Border_Top:
+		case EGridIndexType::Border_Top:
 			ReturnArray.Add(Left);
 			ReturnArray.Add(Right);
 			ReturnArray.Add(BottomRight);
 			ReturnArray.Add(Bottom);
 			ReturnArray.Add(BottomLeft);
 			break;
-		case EBeatGridIndexType::Border_Right:
+		case EGridIndexType::Border_Right:
 			ReturnArray.Add(TopLeft);
 			ReturnArray.Add(Top);
 			ReturnArray.Add(Left);
 			ReturnArray.Add(BottomLeft);
 			ReturnArray.Add(Bottom);
 			break;
-		case EBeatGridIndexType::Border_Bottom:
+		case EGridIndexType::Border_Bottom:
 			ReturnArray.Add(TopLeft);
 			ReturnArray.Add(Top);
 			ReturnArray.Add(TopRight);
 			ReturnArray.Add(Right);
 			ReturnArray.Add(Left);
 			break;
-		case EBeatGridIndexType::Border_Left:
+		case EGridIndexType::Border_Left:
 			ReturnArray.Add(Top);
 			ReturnArray.Add(TopRight);
 			ReturnArray.Add(Right);
 			ReturnArray.Add(BottomRight);
 			ReturnArray.Add(Bottom);
 			break;
-		case EBeatGridIndexType::Middle:
+		case EGridIndexType::Middle:
 			ReturnArray.Add(TopLeft);
 			ReturnArray.Add(Top);
 			ReturnArray.Add(TopRight);
@@ -432,49 +410,86 @@ struct FBeatGridIndex
 	}
 
 	/** Returns the corresponding index type depending on the index, size, and width */
-	EBeatGridIndexType GetIndexType() const
+	EGridIndexType GetIndexType() const
 	{
 		const int32 MaxIndex = Size - 1;
-		const int32 FirstRowLastIndex = Width - 1;
-		const int32 LastRowFirstIndex = Size - Width;
-		if (Index == 0) {
-			return EBeatGridIndexType::Corner_TopLeft;
-		}
-		if (Index == FirstRowLastIndex)
+		const int32 BottomRowFirstIndex = Width - 1;
+		const int32 TopRowFirstIndex = Size - Width;
+		if (Index == 0)
 		{
-			return EBeatGridIndexType::Corner_TopRight;
+			return EGridIndexType::Corner_BottomLeft;
+		}
+		if (Index == BottomRowFirstIndex)
+		{
+			return EGridIndexType::Corner_BottomRight;
 		}
 		if (Index == MaxIndex)
 		{
-			return EBeatGridIndexType::Corner_BottomRight;
+			return EGridIndexType::Corner_TopRight;
 		}
-		if (Index == LastRowFirstIndex)
+		if (Index == TopRowFirstIndex)
 		{
-			return EBeatGridIndexType::Corner_BottomLeft;
+			return EGridIndexType::Corner_TopLeft;
 		}
+		
 		// top
-		if (Index > 0 && Index < FirstRowLastIndex)
+		if (Index > 0 && Index < BottomRowFirstIndex)
 		{
-			return EBeatGridIndexType::Border_Top;
+			return EGridIndexType::Border_Bottom;
 		}
 		// right
 		if ((Index + 1) % Width == 0 && Index < MaxIndex)
 		{
-			return EBeatGridIndexType::Border_Right;
+			return EGridIndexType::Border_Right;
 		}
 		// bottom
-		if (Index > LastRowFirstIndex && Index < MaxIndex)
+		if (Index > TopRowFirstIndex && Index < MaxIndex)
 		{
-			return EBeatGridIndexType::Border_Bottom;
+			return EGridIndexType::Border_Top;
 		}
 		// left	
-		if (Index % Width == 0 && Index < LastRowFirstIndex)
+		if (Index % Width == 0 && Index < TopRowFirstIndex)
 		{
-			return EBeatGridIndexType::Border_Left;
+			return EGridIndexType::Border_Left;
 		}
-		return EBeatGridIndexType::Middle;
+		return EGridIndexType::Middle;
+	}
+
+	void SetIsActivated(const bool bSetIsActivated)
+	{
+		bIsActivated = bSetIsActivated;
+	}
+
+	bool IsActivated() const { return bIsActivated; }
+
+	void SetIsRecent(const bool bSetIsRecent)
+	{
+		bIsRecent = bSetIsRecent;
+	}
+
+	bool IsRecent() const { return bIsRecent; }
+
+	void SetScale(const FVector& InScale)
+	{
+		Scale = InScale;
+	}
+	
+	void SetGuid(const FGuid InGuid)
+	{
+		TargetGuid = InGuid;
 	}
 };
+
+/** Finds a SpawnPoint with the matching InIndex */
+FSpawnPoint* FindSpawnPointFromIndex(TArray<FSpawnPoint>& InSpawnPointArray, const int32 InIndex);
+
+/** Finds a SpawnPoint with the matching InLocation */
+FSpawnPoint* FindSpawnPointFromLocation(TArray<FSpawnPoint>& InSpawnPointArray, const FVector& InLocation);
+
+/** Finds a SpawnPoint with the matching InGuid */
+FSpawnPoint* FindSpawnPointFromGuid(TArray<FSpawnPoint>& InSpawnPointArray, const FGuid& InGuid);
+
+TArray<FSpawnPoint> GetRecentSpawnPoints(const TArray<FSpawnPoint>& InSpawnPointArray);
 
 class FBeatShot : public FDefaultGameModuleImpl
 {

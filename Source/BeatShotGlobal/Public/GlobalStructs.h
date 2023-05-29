@@ -528,25 +528,17 @@ struct FBS_SpatialConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
 	FVector BoxBounds;
 
-	// TODO: Decouple BaseGameMode from TargetManager as much as possible using the following:
-	// TODO: Probably collapse the bool variables into enums
-
 	/** Whether or not to reverse the direction of a moving target after it stops overlapping the OverlapSpawnBox */
 	bool bUseOverlapSpawnBox;
 
 	/** Tags to apply / remove from targets once the countdown has completed and the game mode has begun */
 	FGameplayTagContainer OnGameModeStart_ApplyTags;
 	FGameplayTagContainer OnGameModeStart_RemoveTags;
-	
-	ETargetActivationPolicy TargetActivationType;
-
-	/** The type of damage */
-	ETargetDamageType TargetDamageType;
 
 	/** Should we broadcast the damage delta and total possible damage from the FTargetDamageEvent */
 	bool bBroadcastDamageDeltaAndTotalPossibleDamage;
-	
-	
+
+	/** Whether or not to spawn a target on every AudioAnalyzerBeat vs just activating an existing target */
 	bool bSpawnTargetOnAudioAnalyzerBeat;
 	/** Whether or not to activate a target on every AudioAnalyzerBeat vs spawning on AudioAnalyzerBeat */
 	bool bActivateTargetOnAudioAnalyzerBeat;
@@ -556,17 +548,17 @@ struct FBS_SpatialConfig
 
 	/** Whether or not to broadcast target spawns when a target is spawned. This will usually be false if the target is activated/deactivated or is persistant */
 	bool bBroadcastTargetOnSpawn;
-	/** Whether or not to add broadcast target activations when a target is spawned. This will usually be true if the target is activated/deactivated or is persistant */
+	/** Whether or not to broadcast target activations when a target is spawned. This will usually be true if the target is activated/deactivated or is persistant */
 	bool bBroadcastTargetOnActivation;
 
 	/** Continuously spawn targets or wait until a TargetDamageEvent/expiration to continue spawning */
 	bool bContinuouslySpawn;
 
+	/** Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible */
 	bool bSpawnAtOriginWheneverPossible;
 
+	/** Whether or not to find the next target properties after spawning a target */
 	bool bFindNextTargetPropertiesAfterSpawn;
-
-	// END TODO
 	
 	/** Returns the location to spawn the SpawnBox at */
 	FVector GenerateSpawnBoxLocation() const
@@ -604,8 +596,6 @@ struct FBS_SpatialConfig
 		BoxBounds = DefaultSpawnBoxBounds;
 		
 		bUseOverlapSpawnBox = false;
-		TargetActivationType = ETargetActivationPolicy::None;
-		TargetDamageType = ETargetDamageType::None;
 		bBroadcastDamageDeltaAndTotalPossibleDamage = false;
 		bSpawnTargetOnAudioAnalyzerBeat = false;
 		bActivateTargetOnAudioAnalyzerBeat = false;
@@ -828,7 +818,7 @@ struct FBSConfig
 				Config.BeatGridConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
 				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
-				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
+				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::Grid;
 				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = true;
@@ -1002,6 +992,21 @@ struct FBSConfig
 		Config.GameModeType = EGameModeType::Preset;
 		Config.CustomGameModeName = "";
 		return Config;
+	}
+
+	FVector GetBoxExtremaGrid(const int32 PositiveExtrema, const FVector& BoxOrigin) const
+	{
+		const float MaxTargetSize = TargetConfig.MaxTargetScale * SphereTargetDiameter;
+		const float HSpacing = BeatGridConfig.BeatGridSpacing.X + MaxTargetSize;
+		const float VSpacing = BeatGridConfig.BeatGridSpacing.Y + MaxTargetSize;
+		const float HalfWidth = (HSpacing * (BeatGridConfig.NumHorizontalBeatGridTargets - 1)) / 2.f;
+		const float HalfHeight = (VSpacing * (BeatGridConfig.NumVerticalBeatGridTargets - 1)) / 2.f;
+
+		if (PositiveExtrema == 1)
+		{
+			return FVector(BoxOrigin.X, HalfWidth + 1.f + BoxOrigin.Y, HalfHeight + 1.f + BoxOrigin.Z);
+		}
+		return FVector(BoxOrigin.X, -HalfWidth + BoxOrigin.Y, -HalfHeight + BoxOrigin.Z);
 	}
 };
 

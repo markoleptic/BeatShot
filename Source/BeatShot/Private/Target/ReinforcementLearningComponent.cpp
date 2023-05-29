@@ -216,7 +216,7 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const FVector& Prev
 	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
 }
 
-void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const TArray<FVectorCounter>& SpawnCounter)
+void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const TArray<FSpawnPoint>& SpawnCounter)
 {
 	while (!TargetPairs.IsEmpty())
 	{

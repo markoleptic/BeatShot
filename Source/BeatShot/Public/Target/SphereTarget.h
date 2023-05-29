@@ -85,6 +85,7 @@ struct FTargetDamageEvent
 
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTargetActivationStateChanged, const bool bIsActivated, const FGameplayTagContainer& TagContainer);
 
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
@@ -207,6 +208,9 @@ public:
 	
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
+
+	/** Broadcast when the target is activated or deactivated */
+	FOnTargetActivationStateChanged OnTargetActivationStateChanged;
 
 	/** Timer to track the length of time the target has been damageable for */
 	UPROPERTY()
