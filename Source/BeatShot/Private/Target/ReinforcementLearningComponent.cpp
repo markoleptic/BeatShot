@@ -226,8 +226,8 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 			break;
 		}
-		const int32 StateIndex = SpawnCounter.Find(TargetPair.Previous);
-		const int32 State2Index = SpawnCounter.Find(TargetPair.Current);
+		const int32 StateIndex = SpawnCounter.Find(FSpawnPoint(TargetPair.Previous));
+		const int32 State2Index = SpawnCounter.Find(FSpawnPoint(TargetPair.Current));
 		const int32 ActionIndex = State2Index;
 		const int32 Action2Index = GetMaxActionIndex(State2Index);
 

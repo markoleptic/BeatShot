@@ -73,8 +73,8 @@ class USERINTERFACE_API UGameModesWidget_BeatGridConfig : public UBSSettingCateg
 	virtual void InitSettingCategoryWidget() override;
 
 public:
-	void InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
-	FBS_BeatGridConfig GetBeatGridConfig() const;
+	void InitializeBeatGrid(const FBS_GridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox);
+	FBS_GridConfig GetBeatGridConfig() const;
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
@@ -185,7 +185,7 @@ private:
 	float GetMinRequiredVerticalSpread() const;
 
 	/** Stores the current slider values along with the HorizontalSpread & HorizontalSpread */
-	FBS_BeatGridConfig CurrentValues;
+	FBS_GridConfig CurrentValues;
 
 	/** Stores any actively constraining BeatGrid parameters */
 	TArray<EBeatGridConstraintType> ActiveConstraints;

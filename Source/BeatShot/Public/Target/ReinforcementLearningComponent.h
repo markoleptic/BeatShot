@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GlobalEnums.h"
+#include "SpawnPointManager.h"
 #include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
 

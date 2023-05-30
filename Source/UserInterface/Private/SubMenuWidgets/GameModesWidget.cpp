@@ -303,7 +303,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	case EBaseGameMode::BeatGrid:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Visible);
-		BeatGridConfig->InitializeBeatGrid(InBSConfig.BeatGridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
+		BeatGridConfig->InitializeBeatGrid(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		break;
 	case EBaseGameMode::BeatTrack:
@@ -327,7 +327,7 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	ReturnStruct.AudioConfig.PlayerDelay = ReturnStruct.TargetConfig.SpawnBeatDelay;
 	ReturnStruct.AIConfig = AIConfig->GetAIConfig();
 	ReturnStruct.SpatialConfig = SpatialConfig->GetSpatialConfig();
-	ReturnStruct.BeatGridConfig = BeatGridConfig->GetBeatGridConfig();
+	ReturnStruct.GridConfig = BeatGridConfig->GetBeatGridConfig();
 	return ReturnStruct;
 }
 

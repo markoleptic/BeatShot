@@ -78,70 +78,70 @@ void UGameModesWidget_BeatGridConfig::NativeConstruct()
 	CheckBox_NumVerticalTargetsLock->SetIsChecked(true);
 }
 
-void UGameModesWidget_BeatGridConfig::InitializeBeatGrid(const FBS_BeatGridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox)
+void UGameModesWidget_BeatGridConfig::InitializeBeatGrid(const FBS_GridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox)
 {
 	CurrentValues = InBeatGridConfig;
 	TargetScaleBox = InTargetScaleBox;
-	CheckBox_RandomizeNextTarget->SetIsChecked(InBeatGridConfig.RandomizeBeatGrid);
-	Slider_NumHorizontalTargets->SetValue(InBeatGridConfig.NumHorizontalBeatGridTargets);
+	CheckBox_RandomizeNextTarget->SetIsChecked(InBeatGridConfig.bRandomizeGridTargetActivation);
+	Slider_NumHorizontalTargets->SetValue(InBeatGridConfig.NumHorizontalGridTargets);
 	Slider_NumHorizontalTargets->SetMinValue(MinValue_NumBeatGridHorizontalTargets);
 	Slider_NumHorizontalTargets->SetMaxValue(MaxValue_NumBeatGridHorizontalTargets);
-	Value_NumHorizontalTargets->SetText(FText::AsNumber(InBeatGridConfig.NumHorizontalBeatGridTargets));
-	Slider_NumVerticalTargets->SetValue(InBeatGridConfig.NumVerticalBeatGridTargets);
+	Value_NumHorizontalTargets->SetText(FText::AsNumber(InBeatGridConfig.NumHorizontalGridTargets));
+	Slider_NumVerticalTargets->SetValue(InBeatGridConfig.NumVerticalGridTargets);
 	Slider_NumVerticalTargets->SetMinValue(MinValue_NumBeatGridVerticalTargets);
 	Slider_NumVerticalTargets->SetMaxValue(MaxValue_NumBeatGridVerticalTargets);
-	Value_NumVerticalTargets->SetText(FText::AsNumber(InBeatGridConfig.NumVerticalBeatGridTargets));
-	BeatGridSpreadConstrained->UpdateDefaultValues(InBeatGridConfig.BeatGridSpacing.X, InBeatGridConfig.BeatGridSpacing.Y, InBeatGridConfig.BeatGridSpacing.X == InBeatGridConfig.BeatGridSpacing.Y);
+	Value_NumVerticalTargets->SetText(FText::AsNumber(InBeatGridConfig.NumVerticalGridTargets));
+	BeatGridSpreadConstrained->UpdateDefaultValues(InBeatGridConfig.GridSpacing.X, InBeatGridConfig.GridSpacing.Y, InBeatGridConfig.GridSpacing.X == InBeatGridConfig.GridSpacing.Y);
 	UpdateBrushColors();
 }
 
-FBS_BeatGridConfig UGameModesWidget_BeatGridConfig::GetBeatGridConfig() const
+FBS_GridConfig UGameModesWidget_BeatGridConfig::GetBeatGridConfig() const
 {
-	FBS_BeatGridConfig ReturnConfig;
-	ReturnConfig.BeatGridSpacing = FVector2D(
+	FBS_GridConfig ReturnConfig;
+	ReturnConfig.GridSpacing = FVector2D(
 	FMath::GridSnap(FMath::Clamp(BeatGridSpreadConstrained->GetMinValue(), MinValue_BeatGridHorizontalSpacing, MaxValue_BeatGridHorizontalSpacing), SnapSize_BeatGridHorizontalSpacing),
 	FMath::GridSnap(FMath::Clamp(BeatGridSpreadConstrained->GetMaxValue(), MinValue_BeatGridVerticalSpacing, MaxValue_BeatGridVerticalSpacing), SnapSize_BeatGridVerticalSpacing));
-	ReturnConfig.NumHorizontalBeatGridTargets = FMath::GridSnap(FMath::Clamp(Slider_NumHorizontalTargets->GetValue(), MinValue_NumBeatGridHorizontalTargets, MaxValue_NumBeatGridHorizontalTargets), SnapSize_NumBeatGridHorizontalTargets);
-	ReturnConfig.NumVerticalBeatGridTargets = FMath::GridSnap(FMath::Clamp(Slider_NumVerticalTargets->GetValue(), MinValue_NumBeatGridVerticalTargets, MaxValue_NumBeatGridVerticalTargets), SnapSize_NumBeatGridVerticalTargets);
-	ReturnConfig.RandomizeBeatGrid = CheckBox_RandomizeNextTarget->IsChecked();
-	ReturnConfig.NumTargetsAtOnceBeatGrid = -1;
+	ReturnConfig.NumHorizontalGridTargets = FMath::GridSnap(FMath::Clamp(Slider_NumHorizontalTargets->GetValue(), MinValue_NumBeatGridHorizontalTargets, MaxValue_NumBeatGridHorizontalTargets), SnapSize_NumBeatGridHorizontalTargets);
+	ReturnConfig.NumVerticalGridTargets = FMath::GridSnap(FMath::Clamp(Slider_NumVerticalTargets->GetValue(), MinValue_NumBeatGridVerticalTargets, MaxValue_NumBeatGridVerticalTargets), SnapSize_NumBeatGridVerticalTargets);
+	ReturnConfig.bRandomizeGridTargetActivation = CheckBox_RandomizeNextTarget->IsChecked();
+	ReturnConfig.NumGridTargetsVisibleAtOnce = -1;
 	return ReturnConfig;
 }
 
 void UGameModesWidget_BeatGridConfig::OnConstrainedChanged_HorizontalSpacing(const float NewHorizontalSpacing)
 {
-	CurrentValues.BeatGridSpacing.X = NewHorizontalSpacing;
+	CurrentValues.GridSpacing.X = NewHorizontalSpacing;
 	CheckBeatGridConstraints(EBeatGridConstraintType::HorizontalSpacing);
 }
 
 void UGameModesWidget_BeatGridConfig::OnConstrainedChanged_VerticalSpacing(const float NewVerticalSpacing)
 {
-	CurrentValues.BeatGridSpacing.Y = NewVerticalSpacing;
+	CurrentValues.GridSpacing.Y = NewVerticalSpacing;
 	CheckBeatGridConstraints(EBeatGridConstraintType::VerticalSpacing);
 }
 
 void UGameModesWidget_BeatGridConfig::OnSliderChanged_BeatGridNumHorizontalTargets(const float NewNumHorizontalTargets)
 {
-	CurrentValues.NumHorizontalBeatGridTargets = OnSliderChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, SnapSize_NumBeatGridHorizontalTargets);
+	CurrentValues.NumHorizontalGridTargets = OnSliderChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, SnapSize_NumBeatGridHorizontalTargets);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumHorizontalTargets);
 }
 
 void UGameModesWidget_BeatGridConfig::OnSliderChanged_BeatGridNumVerticalTargets(const float NewNumVerticalTargets)
 {
-	CurrentValues.NumVerticalBeatGridTargets = OnSliderChanged(NewNumVerticalTargets, Value_NumVerticalTargets, SnapSize_NumBeatGridVerticalTargets);
+	CurrentValues.NumVerticalGridTargets = OnSliderChanged(NewNumVerticalTargets, Value_NumVerticalTargets, SnapSize_NumBeatGridVerticalTargets);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumVerticalTargets);
 }
 
 void UGameModesWidget_BeatGridConfig::OnTextCommitted_BeatGridNumHorizontalTargets(const FText& NewNumHorizontalTargets, ETextCommit::Type CommitType)
 {
-	CurrentValues.NumHorizontalBeatGridTargets = OnEditableTextBoxChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, Slider_NumHorizontalTargets,
+	CurrentValues.NumHorizontalGridTargets = OnEditableTextBoxChanged(NewNumHorizontalTargets, Value_NumHorizontalTargets, Slider_NumHorizontalTargets,
 		SnapSize_NumBeatGridHorizontalTargets, MinValue_BeatGridHorizontalSpacing, MaxValue_BeatGridHorizontalSpacing);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumHorizontalTargets);
 }
 
 void UGameModesWidget_BeatGridConfig::OnTextCommitted_BeatGridNumVerticalTargets(const FText& NewNumVerticalTargets, ETextCommit::Type CommitType)
 {
-	CurrentValues.NumVerticalBeatGridTargets = OnEditableTextBoxChanged(NewNumVerticalTargets, Value_NumVerticalTargets, Slider_NumVerticalTargets,
+	CurrentValues.NumVerticalGridTargets = OnEditableTextBoxChanged(NewNumVerticalTargets, Value_NumVerticalTargets, Slider_NumVerticalTargets,
 		SnapSize_NumBeatGridVerticalTargets, MinValue_BeatGridVerticalSpacing, MaxValue_BeatGridVerticalSpacing);
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumVerticalTargets);
 }
@@ -149,20 +149,20 @@ void UGameModesWidget_BeatGridConfig::OnTextCommitted_BeatGridNumVerticalTargets
 void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_BeatGridNumHorizontalTargetsLock(const bool bIsLocked)
 {
 	bNumHorizontalTargetsLocked = bIsLocked;
-	CurrentValues.NumHorizontalBeatGridTargets = Slider_NumHorizontalTargets->GetValue();
+	CurrentValues.NumHorizontalGridTargets = Slider_NumHorizontalTargets->GetValue();
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumHorizontalTargets);
 }
 
 void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_BeatGridNumVerticalTargetsLock(const bool bIsLocked)
 {
 	bNumVerticalTargetsLocked = bIsLocked;
-	CurrentValues.NumVerticalBeatGridTargets = Slider_NumVerticalTargets->GetValue();
+	CurrentValues.NumVerticalGridTargets = Slider_NumVerticalTargets->GetValue();
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumVerticalTargets);
 }
 
 void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_RandomizeNextTarget(const bool bIsChecked)
 {
-	CurrentValues.RandomizeBeatGrid = bIsChecked;
+	CurrentValues.bRandomizeGridTargetActivation = bIsChecked;
 }
 
 void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_MinLock(const bool bIsLocked)
@@ -172,7 +172,7 @@ void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_MinLock(const bool bIs
 	{
 		BeatGridSpreadConstrained->OverrideMaxValue(true, MaxValue_BeatGridHorizontalSpacing);
 	}
-	CurrentValues.BeatGridSpacing.X = BeatGridSpreadConstrained->GetMinValue();
+	CurrentValues.GridSpacing.X = BeatGridSpreadConstrained->GetMinValue();
 	CheckBeatGridConstraints(EBeatGridConstraintType::HorizontalSpacing);
 }
 
@@ -183,7 +183,7 @@ void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_MaxLock(const bool bIs
 	{
 		BeatGridSpreadConstrained->OverrideMaxValue(false, MaxValue_BeatGridVerticalSpacing);
 	}
-	CurrentValues.BeatGridSpacing.Y = BeatGridSpreadConstrained->GetMaxValue();
+	CurrentValues.GridSpacing.Y = BeatGridSpreadConstrained->GetMaxValue();
 	CheckBeatGridConstraints(EBeatGridConstraintType::VerticalSpacing);
 }
 
@@ -221,7 +221,7 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 		{
 			Slider_NumHorizontalTargets->SetValue(Value);
 			Value_NumHorizontalTargets->SetText(FText::AsNumber(Value));
-			CurrentValues.NumHorizontalBeatGridTargets = Value;
+			CurrentValues.NumHorizontalGridTargets = Value;
 		}
 	}
 	if (bNumVerticalTargetsLocked && LastChangedConstraint != EBeatGridConstraintType::NumVerticalTargets)
@@ -230,11 +230,11 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 		{
 			Slider_NumVerticalTargets->SetValue(Value);
 			Value_NumVerticalTargets->SetText(FText::AsNumber(Value));
-			CurrentValues.NumVerticalBeatGridTargets = Value;
+			CurrentValues.NumVerticalGridTargets = Value;
 		}
 	}
 	
-	if (CurrentValues.NumHorizontalBeatGridTargets > GetMaxAllowedNumHorizontalTargets())
+	if (CurrentValues.NumHorizontalGridTargets > GetMaxAllowedNumHorizontalTargets())
 	{
 		BeatGridConstraints.ConstraintTypes.Add(EBeatGridConstraintType::NumHorizontalTargets);
 		if (const int32 Value = GetMaxAllowedNumHorizontalTargets(); Value >= MinValue_NumBeatGridHorizontalTargets && Value <= MaxValue_NumBeatGridHorizontalTargets)
@@ -242,7 +242,7 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 			SuggestionValueArray[0] = FText::Join(SpaceDelimit, HorizontalSuggest, FText::AsNumber(Value));
 		}
 	}
-	if (CurrentValues.NumVerticalBeatGridTargets > GetMaxAllowedNumVerticalTargets())
+	if (CurrentValues.NumVerticalGridTargets > GetMaxAllowedNumVerticalTargets())
 	{
 		BeatGridConstraints.ConstraintTypes.Add(EBeatGridConstraintType::NumVerticalTargets);
 		if (const int32 Value = GetMaxAllowedNumVerticalTargets(); Value >= MinValue_NumBeatGridVerticalTargets && Value <= MaxValue_NumBeatGridVerticalTargets)
@@ -258,7 +258,7 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 			SuggestionValueArray[2] = FText::Join(SpaceDelimit, ScaleSuggest, FText::AsNumber(Value));
 		}
 	}
-	if (CurrentValues.BeatGridSpacing.X > GetMaxAllowedHorizontalSpacing())
+	if (CurrentValues.GridSpacing.X > GetMaxAllowedHorizontalSpacing())
 	{
 		BeatGridConstraints.ConstraintTypes.Add(EBeatGridConstraintType::HorizontalSpacing);
 		if (const float Value = floorf(GetMaxAllowedHorizontalSpacing() / 10.f) * 10.f; Value >= MinValue_BeatGridHorizontalSpacing && Value <= MaxValue_BeatGridHorizontalSpacing)
@@ -266,7 +266,7 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 			SuggestionValueArray[3] = FText::Join(SpaceDelimit, HorizontalSpacingSuggest, FText::AsNumber(Value));
 		}
 	}
-	if (CurrentValues.BeatGridSpacing.Y > GetMaxAllowedVerticalSpacing())
+	if (CurrentValues.GridSpacing.Y > GetMaxAllowedVerticalSpacing())
 	{
 		BeatGridConstraints.ConstraintTypes.Add(EBeatGridConstraintType::VerticalSpacing);
 		if (const float Value = floorf(GetMaxAllowedVerticalSpacing() / 10.f) * 10.f; Value >= MinValue_BeatGridVerticalSpacing && Value <= MaxValue_BeatGridVerticalSpacing)
@@ -446,18 +446,18 @@ TArray<FText> UGameModesWidget_BeatGridConfig::FilterTooltipText(const TArray<FT
 int32 UGameModesWidget_BeatGridConfig::GetMaxAllowedNumHorizontalTargets() const
 {
 	// HorizontalSpread = MaxTargetSize * NumHorizontalTargets + HorizontalSpacing * (NumHorizontalTargets - 1)
-	return (HorizontalSpread + CurrentValues.BeatGridSpacing.X) / (MaxTargetSize + CurrentValues.BeatGridSpacing.X);
+	return (HorizontalSpread + CurrentValues.GridSpacing.X) / (MaxTargetSize + CurrentValues.GridSpacing.X);
 }
 
 int32 UGameModesWidget_BeatGridConfig::GetMaxAllowedNumVerticalTargets() const
 {
-	return (VerticalSpread + CurrentValues.BeatGridSpacing.Y) / (MaxTargetSize + CurrentValues.BeatGridSpacing.Y);
+	return (VerticalSpread + CurrentValues.GridSpacing.Y) / (MaxTargetSize + CurrentValues.GridSpacing.Y);
 }
 
 float UGameModesWidget_BeatGridConfig::GetMaxAllowedTargetScale() const
 {
-	const float MaxAllowedHorizontal = (HorizontalSpread - CurrentValues.BeatGridSpacing.X * CurrentValues.NumHorizontalBeatGridTargets + CurrentValues.BeatGridSpacing.X) / (SphereTargetDiameter * CurrentValues.NumHorizontalBeatGridTargets);
-	const float MaxAllowedVertical = (VerticalSpread - CurrentValues.BeatGridSpacing.Y * CurrentValues.NumVerticalBeatGridTargets + CurrentValues.BeatGridSpacing.Y) / (SphereTargetDiameter * CurrentValues.NumVerticalBeatGridTargets);
+	const float MaxAllowedHorizontal = (HorizontalSpread - CurrentValues.GridSpacing.X * CurrentValues.NumHorizontalGridTargets + CurrentValues.GridSpacing.X) / (SphereTargetDiameter * CurrentValues.NumHorizontalGridTargets);
+	const float MaxAllowedVertical = (VerticalSpread - CurrentValues.GridSpacing.Y * CurrentValues.NumVerticalGridTargets + CurrentValues.GridSpacing.Y) / (SphereTargetDiameter * CurrentValues.NumVerticalGridTargets);
 	if (MaxAllowedVertical < MaxAllowedHorizontal)
 	{
 		return MaxAllowedVertical;
@@ -467,24 +467,24 @@ float UGameModesWidget_BeatGridConfig::GetMaxAllowedTargetScale() const
 
 float UGameModesWidget_BeatGridConfig::GetMaxAllowedHorizontalSpacing() const
 {
-	const float TotalTargetWidth = MaxTargetSize * CurrentValues.NumHorizontalBeatGridTargets;
-	return (HorizontalSpread - TotalTargetWidth) / (CurrentValues.NumHorizontalBeatGridTargets - 1);
+	const float TotalTargetWidth = MaxTargetSize * CurrentValues.NumHorizontalGridTargets;
+	return (HorizontalSpread - TotalTargetWidth) / (CurrentValues.NumHorizontalGridTargets - 1);
 }
 
 float UGameModesWidget_BeatGridConfig::GetMaxAllowedVerticalSpacing() const
 {
-	const float TotalTargetHeight = MaxTargetSize * CurrentValues.NumVerticalBeatGridTargets;
-	return (VerticalSpread - TotalTargetHeight) / (CurrentValues.NumVerticalBeatGridTargets - 1);
+	const float TotalTargetHeight = MaxTargetSize * CurrentValues.NumVerticalGridTargets;
+	return (VerticalSpread - TotalTargetHeight) / (CurrentValues.NumVerticalGridTargets - 1);
 }
 
 float UGameModesWidget_BeatGridConfig::GetMinRequiredHorizontalSpread() const
 {
-	const float TotalTargetWidth = MaxTargetSize * CurrentValues.NumHorizontalBeatGridTargets;
-	return CurrentValues.BeatGridSpacing.X * (CurrentValues.NumHorizontalBeatGridTargets - 1) + TotalTargetWidth;
+	const float TotalTargetWidth = MaxTargetSize * CurrentValues.NumHorizontalGridTargets;
+	return CurrentValues.GridSpacing.X * (CurrentValues.NumHorizontalGridTargets - 1) + TotalTargetWidth;
 }
 
 float UGameModesWidget_BeatGridConfig::GetMinRequiredVerticalSpread() const
 {
-	const float TotalTargetHeight = MaxTargetSize * CurrentValues.NumVerticalBeatGridTargets;
-	return CurrentValues.BeatGridSpacing.Y * (CurrentValues.NumVerticalBeatGridTargets - 1) + TotalTargetHeight;
+	const float TotalTargetHeight = MaxTargetSize * CurrentValues.NumVerticalGridTargets;
+	return CurrentValues.GridSpacing.Y * (CurrentValues.NumVerticalGridTargets - 1) + TotalTargetHeight;
 }

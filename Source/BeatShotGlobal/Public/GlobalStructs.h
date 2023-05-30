@@ -228,72 +228,37 @@ struct FBS_AIConfig
 };
 
 USTRUCT(BlueprintType)
-struct FBS_BeatGridConfig
+struct FBS_GridConfig
 {
 	GENERATED_BODY()
 
-	/** The number of horizontal BeatGrid targets*/
+	/** The number of horizontal grid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 NumHorizontalBeatGridTargets;
+	int32 NumHorizontalGridTargets;
 
-	/** The number of vertical BeatGrid targets*/
+	/** The number of vertical grid targets*/
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 NumVerticalBeatGridTargets;
+	int32 NumVerticalGridTargets;
 
-	/** Whether or not to randomize the activation of BeatGrid targets vs only choosing adjacent targets */
+	/** Whether or not to randomize the activation of grid targets vs only choosing adjacent targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	bool RandomizeBeatGrid;
+	bool bRandomizeGridTargetActivation;
 
-	/** The space between BeatGrid targets */
+	/** The space between grid targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	FVector2D BeatGridSpacing;
+	FVector2D GridSpacing;
 
-	/** not implemented yet */
+	/** Number of grid target visible at any one time */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	int32 NumTargetsAtOnceBeatGrid;
+	int32 NumGridTargetsVisibleAtOnce;
 
-	FBS_BeatGridConfig()
+	FBS_GridConfig()
 	{
-		NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Normal;
-		NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Normal;
-		RandomizeBeatGrid = false;
-		NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Normal;
-		BeatGridSpacing = BeatGridSpacing_Normal;
-	}
-
-	void SetConfigByDifficulty(const EGameModeDifficulty Difficulty)
-	{
-		switch (Difficulty)
-		{
-		case EGameModeDifficulty::None:
-			NumHorizontalBeatGridTargets = 0;
-			NumVerticalBeatGridTargets = 0;
-			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = -1;
-			BeatGridSpacing = FVector2D::ZeroVector;
-			break;
-		case EGameModeDifficulty::Normal:
-			NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Normal;
-			NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Normal;
-			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Normal;
-			BeatGridSpacing = BeatGridSpacing_Normal;
-			break;
-		case EGameModeDifficulty::Hard:
-			NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Hard;
-			NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Hard;
-			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Hard;
-			BeatGridSpacing = BeatGridSpacing_Hard;
-			break;
-		case EGameModeDifficulty::Death:
-			NumHorizontalBeatGridTargets = NumHorizontalBeatGridTargets_Death;
-			NumVerticalBeatGridTargets = NumVerticalBeatGridTargets_Death;
-			RandomizeBeatGrid = false;
-			NumTargetsAtOnceBeatGrid = NumTargetsAtOnceBeatGrid_Death;
-			BeatGridSpacing = BeatGridSpacing_Death;
-			break;
-		}
+		NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Normal;
+		NumVerticalGridTargets = NumVerticalBeatGridTargets_Normal;
+		bRandomizeGridTargetActivation = false;
+		NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Normal;
+		GridSpacing = BeatGridSpacing_Normal;
 	}
 };
 
@@ -439,6 +404,10 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumCharges;
 
+	/** How many targets to spawn before the game mode begins */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 NumUpfrontTargetsToSpawn;
+
 	/** Color to applied to the actor on spawn */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor OnSpawn_TargetColor;
@@ -492,6 +461,7 @@ struct FBS_TargetConfig
 		Attribute_MaxHealth = BaseTargetHealth;
 		ExpirationHealthPenalty = BaseTargetHealth;
 		NumCharges = DefaultNumCharges;
+		NumUpfrontTargetsToSpawn = 0;
 	}
 };
 
@@ -556,9 +526,6 @@ struct FBS_SpatialConfig
 
 	/** Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible */
 	bool bSpawnAtOriginWheneverPossible;
-
-	/** Whether or not to find the next target properties after spawning a target */
-	bool bFindNextTargetPropertiesAfterSpawn;
 	
 	/** Returns the location to spawn the SpawnBox at */
 	FVector GenerateSpawnBoxLocation() const
@@ -604,7 +571,6 @@ struct FBS_SpatialConfig
 		bTrackRecentTargets = false;
 		bContinuouslySpawn = false;
 		bSpawnAtOriginWheneverPossible = false;
-		bFindNextTargetPropertiesAfterSpawn = false;
 	}
 };
 
@@ -628,7 +594,7 @@ struct FBSConfig
 
 	/** Contains info for the target spawner for BeatGrid specific game modes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	FBS_BeatGridConfig BeatGridConfig;
+	FBS_GridConfig GridConfig;
 
 	/** Contains info for the target spawner about how to lay out the targets in space */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spacing")
@@ -653,7 +619,7 @@ struct FBSConfig
 		DefiningConfig = FBS_DefiningConfig();
 		AIConfig = FBS_AIConfig();
 		AudioConfig = FBS_AudioConfig();
-		BeatGridConfig = FBS_BeatGridConfig();
+		GridConfig = FBS_GridConfig();
 		SpatialConfig = FBS_SpatialConfig();
 		TargetConfig = FBS_TargetConfig();
 	}
@@ -702,6 +668,7 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Dynamic;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::EdgeOnly;
 				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
+				Config.SpatialConfig.bContinuouslySpawn = false;
 				
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
 				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
@@ -721,6 +688,7 @@ struct FBSConfig
 				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
 				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
 			break;
 		case EBaseGameMode::MultiBeat:
@@ -760,6 +728,7 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Dynamic;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
 				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
+				Config.SpatialConfig.bContinuouslySpawn = true;
 				
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
 				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
@@ -779,6 +748,7 @@ struct FBSConfig
 				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
 				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
 			break;
 		case EBaseGameMode::BeatGrid:
@@ -792,6 +762,11 @@ struct FBSConfig
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Normal;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Normal;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Normal;
+						Config.GridConfig.NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Normal;
+						Config.GridConfig.NumVerticalGridTargets = NumVerticalBeatGridTargets_Normal;
+						Config.GridConfig.bRandomizeGridTargetActivation = false;
+						Config.GridConfig.NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Normal;
+						Config.GridConfig.GridSpacing = BeatGridSpacing_Normal;
 						break;
 					}
 				case EGameModeDifficulty::Hard:
@@ -801,6 +776,11 @@ struct FBSConfig
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Hard;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Hard;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Hard;
+						Config.GridConfig.NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Hard;
+						Config.GridConfig.NumVerticalGridTargets = NumVerticalBeatGridTargets_Hard;
+						Config.GridConfig.bRandomizeGridTargetActivation = false;
+						Config.GridConfig.NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Hard;
+						Config.GridConfig.GridSpacing = BeatGridSpacing_Hard;
 						break;
 					}
 				case EGameModeDifficulty::Death:
@@ -810,15 +790,20 @@ struct FBSConfig
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatGrid_Death;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatGrid_Death;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Death;
+						Config.GridConfig.NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Death;
+						Config.GridConfig.NumVerticalGridTargets = NumVerticalBeatGridTargets_Death;
+						Config.GridConfig.bRandomizeGridTargetActivation = false;
+						Config.GridConfig.NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Death;
+						Config.GridConfig.GridSpacing = BeatGridSpacing_Death;
 						break;
 					}
 				case EGameModeDifficulty::None:
 					break;
 				}
-				Config.BeatGridConfig.SetConfigByDifficulty(Config.DefiningConfig.Difficulty);
 				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::Grid;
+				Config.SpatialConfig.bContinuouslySpawn = true;
 				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = true;
@@ -838,6 +823,7 @@ struct FBSConfig
 				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
 				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				Config.TargetConfig.NumUpfrontTargetsToSpawn = Config.GridConfig.NumHorizontalGridTargets * Config.GridConfig.NumVerticalGridTargets;
 			}
 			break;
 		case EBaseGameMode::BeatTrack:
@@ -877,6 +863,7 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
 				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
+				Config.SpatialConfig.bContinuouslySpawn = false;
 				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
@@ -896,7 +883,7 @@ struct FBSConfig
 				Config.TargetConfig.Attribute_MaxHealth = BaseTrackingTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
 				Config.TargetConfig.NumCharges = DefaultNumCharges;
-				
+				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
 			}
 			break;
 		case EBaseGameMode::ChargedBeatTrack:
@@ -945,6 +932,7 @@ struct FBSConfig
 				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
 				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
 				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
+				Config.SpatialConfig.bContinuouslySpawn = false;
 				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
@@ -961,6 +949,7 @@ struct FBSConfig
 				Config.TargetConfig.SpawnBeatDelay = 0.25f;
 				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth * Config.TargetConfig.NumCharges;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
+				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
 			}
 			break;
 		case EBaseGameMode::None:
@@ -997,10 +986,10 @@ struct FBSConfig
 	FVector GetBoxExtremaGrid(const int32 PositiveExtrema, const FVector& BoxOrigin) const
 	{
 		const float MaxTargetSize = TargetConfig.MaxTargetScale * SphereTargetDiameter;
-		const float HSpacing = BeatGridConfig.BeatGridSpacing.X + MaxTargetSize;
-		const float VSpacing = BeatGridConfig.BeatGridSpacing.Y + MaxTargetSize;
-		const float HalfWidth = (HSpacing * (BeatGridConfig.NumHorizontalBeatGridTargets - 1)) / 2.f;
-		const float HalfHeight = (VSpacing * (BeatGridConfig.NumVerticalBeatGridTargets - 1)) / 2.f;
+		const float HSpacing = GridConfig.GridSpacing.X + MaxTargetSize;
+		const float VSpacing = GridConfig.GridSpacing.Y + MaxTargetSize;
+		const float HalfWidth = (HSpacing * (GridConfig.NumHorizontalGridTargets - 1)) / 2.f;
+		const float HalfHeight = (VSpacing * (GridConfig.NumVerticalGridTargets - 1)) / 2.f;
 
 		if (PositiveExtrema == 1)
 		{

@@ -6,7 +6,7 @@
 #include "Target/SphereTarget.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
-#include "BeatShot/BeatShot.h"
+#include "SpawnPointManager.h"
 #include "TargetManager.generated.h"
 
 class ASphereTarget;
@@ -99,10 +99,6 @@ public:
 	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
 
 private:
-	/** Initializes the SpawnCounter array */
-	FIntPoint InitializeSpawnCounter(const FVector& NegativeExtents, const FVector& PositiveExtents);
-
-	void SetAppropriateSpawnMemoryScales();
 
 	ASphereTarget* SpawnTarget(FSpawnPoint& InSpawnPoint, const bool bBroadcastSpawnEvent = true);
 	
@@ -144,18 +140,9 @@ private:
 	
 	/** Returns a copy of all spawn locations that were created on initialization */
 	TArray<FVector> GetAllSpawnLocations() const;
-	
-	/** Returns an array of scaled down points where the target overlaps the SpawnBox */
-	TArray<FVector> GetOverlappingPoints(const FVector& Center, const FVector& Scale) const;
-
-	/** Returns an array of all points that are occupied by recent targets, readjusted by scale if needed */
-	TArray<FVector> GetAllOverlappingPoints(const FVector& Scale) const;
 
 	/** Returns a copy of ManagedTargets */
 	TArray<ASphereTarget*> GetManagedTargets() const { return ManagedTargets; }
-
-	/** Returns a copy of the SpawnCounter */
-	TArray<FSpawnPoint> GetSpawnCounter() const { return SpawnCounter; }
 
 	/** Returns SpawnBox's origin, as it is in the game */
 	FVector GetBoxOrigin() const;
@@ -172,10 +159,6 @@ private:
 	/** Adds a SphereTarget to the ManagedTargets array */
 	int32 AddToManagedTargets(ASphereTarget* SpawnTarget);
 
-	/** Sets the corresponding SpawnPoint as not recent */
-	UFUNCTION()
-	void RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid);
-
 	/** Removes the DestroyedTarget from ManagedTargets */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 
@@ -188,8 +171,8 @@ private:
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 
-	/** Converts a SpawnCounter index to a 5x5 index that can be passed to CommonScoreInfo or LocationAccuracy */
-	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
+	UPROPERTY()
+	USpawnPointManager* SpawnPointManager;
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
 	int32 TryGetSpawnLocationFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
@@ -254,39 +237,12 @@ private:
 	/** The time to use when looking up values from DynamicSpawnCurve */
 	int32 DynamicSpawnScale;
 
-	/** Incremental step value used to iterate through SpawnCounter locations */
-	int32 SpawnMemoryIncY;
-	
-	/** Incremental step value used to iterate through SpawnCounter locations */
-	int32 SpawnMemoryIncZ;
-
-	/** The number of columns in the SpawnCounter */
-	int32 SpawnCounterHeight;
-
-	/** The number of rows in the SpawnCounter */
-	int32 SpawnCounterWidth;
-
-	/** Index of the most recently activated beat grid target */
-	int32 LastBeatGridIndex;
-
 	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()
 	TArray<ASphereTarget*> ManagedTargets;
 
-	/** Stores all possible spawn locations and the total spawns & player hits at each location */
-	TArray<FSpawnPoint> SpawnCounter;
-
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;
-
-	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
-	float SpawnMemoryScaleY;
-	
-	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
-	float SpawnMemoryScaleZ;
-
-	/** Minimum overlap radius so that small targets do not overlap due to the spawn memory scale being much higher */
-	float MinOverlapRadius;
 	
 	/** Current speed of tracking target */
 	float MovingTargetSpeed;

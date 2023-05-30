@@ -259,3 +259,5 @@ enum class ETargetDestructionPolicy : uint8
 	OnAnyDamageEventOrExpiration UMETA(DisplayName="On Any Damage Event Or Expiration")
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionPolicy, ETargetDestructionPolicy::Persistant, ETargetDestructionPolicy::OnAnyDamageEventOrExpiration);
+
+// TODO: RecentTargetHandlingPolicy
