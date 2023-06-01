@@ -3,15 +3,16 @@
 
 #include "WidgetComponents/BSComboBoxEntry.h"
 
+#include "Components/Border.h"
 #include "Components/TextBlock.h"
 #include "WidgetComponents/TooltipImage.h"
 
-void UBSComboBoxEntry::SetText(const FText& InText)
+void UBSComboBoxEntry::SetText(const FText& InText) const
 {
 	TextBlock->SetText(InText);
 }
 
-void UBSComboBoxEntry::ToggleTooltipImageVisibility(const bool bIsVisible)
+void UBSComboBoxEntry::ToggleTooltipImageVisibility(const bool bIsVisible) const
 {
 	if (bIsVisible)
 	{
@@ -21,4 +22,9 @@ void UBSComboBoxEntry::ToggleTooltipImageVisibility(const bool bIsVisible)
 	{
 		TooltipImage->SetVisibility(ESlateVisibility::Collapsed);
 	}
+}
+
+void UBSComboBoxEntry::SetBackgroundBrushTint(const FLinearColor& Color) const
+{
+	Background->SetBrushColor(Color);
 }

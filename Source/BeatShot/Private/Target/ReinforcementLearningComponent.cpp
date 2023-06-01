@@ -28,17 +28,17 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	Alpha = AgentParams.InAlpha;
 	Gamma = AgentParams.InGamma;
 	Epsilon = AgentParams.InEpsilon;
-	SpawnCounterHeight = AgentParams.SpawnCounterHeight;
-	SpawnCounterWidth =  AgentParams.SpawnCounterWidth;
-	SpawnCounterSize = SpawnCounterHeight * SpawnCounterWidth;
+	SpawnPointsHeight = AgentParams.SpawnPointsHeight;
+	SpawnPointsWidth =  AgentParams.SpawnPointsWidth;
+	SpawnPointsSize = SpawnPointsHeight * SpawnPointsWidth;
 	
-	if (SpawnCounterHeight % 5 != 0 || SpawnCounterWidth % 5 != 0 )
+	if (SpawnPointsHeight % 5 != 0 || SpawnPointsWidth % 5 != 0 )
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SpawnCounter is not compatible with QTable size"));
 	}
 
-	WidthScaleFactor = SpawnCounterWidth / ScaledWidth;
-	HeightScaleFactor = SpawnCounterHeight / ScaledHeight;
+	WidthScaleFactor = SpawnPointsWidth / ScaledWidth;
+	HeightScaleFactor = SpawnPointsHeight / ScaledHeight;
 	ScaledSize = ScaledWidth * ScaledHeight;
 
 	/* Each row in QTable has size equal to ScaledSize, and so does each column */
@@ -50,11 +50,11 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 		QTableIndices.Add(FQTableIndex(i));
 	}
 	
-	for (int i  = 0; i < SpawnCounterSize; i++)
+	for (int i  = 0; i < SpawnPointsSize; i++)
 	{
-		if (const int32 Found = QTableIndices.Find(GetQTableIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
+		if (const int32 Found = QTableIndices.Find(GetQTableIndexFromSpawnPointIndex(i)); Found != INDEX_NONE)
 		{
-			QTableIndices[Found].SpawnCounterIndices.AddUnique(i);
+			QTableIndices[Found].SpawnPointIndices.AddUnique(i);
 		}
 	}
 
@@ -64,7 +64,7 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	}
 	UE_LOG(LogTemp, Display, TEXT("InQTable.Num() %d"), AgentParams.InQTable.Num());
 	UE_LOG(LogTemp, Display, TEXT("QTable.size() %u"), QTable.size());
-	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), SpawnCounterHeight, SpawnCounterWidth);
+	UE_LOG(LogTemp, Display, TEXT("SpawnCounterRows: %d SpawnCounterColumns: %d"), SpawnPointsHeight, SpawnPointsWidth);
 	UE_LOG(LogTemp, Display, TEXT("QTableRows: %d QTableColumns: %d"), ScaledHeight, ScaledWidth);
 	UE_LOG(LogTemp, Display, TEXT("QTable Size: %d"), QTable.size());
 }
@@ -72,10 +72,10 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 void UReinforcementLearningComponent::UpdateQTable(const FAlgoInput& In)
 {
 	FAlgoInput InCopy = In;
-	InCopy.StateIndex = GetQTableIndexFromSpawnCounterIndex(In.StateIndex);
-	InCopy.ActionIndex = GetQTableIndexFromSpawnCounterIndex(In.ActionIndex);
-	InCopy.StateIndex_2 = GetQTableIndexFromSpawnCounterIndex(In.StateIndex_2);
-	InCopy.ActionIndex_2 = GetQTableIndexFromSpawnCounterIndex(In.ActionIndex_2);
+	InCopy.StateIndex = GetQTableIndexFromSpawnPointIndex(In.StateIndex);
+	InCopy.ActionIndex = GetQTableIndexFromSpawnPointIndex(In.ActionIndex);
+	InCopy.StateIndex_2 = GetQTableIndexFromSpawnPointIndex(In.StateIndex_2);
+	InCopy.ActionIndex_2 = GetQTableIndexFromSpawnPointIndex(In.ActionIndex_2);
 	
 	const float Predict = QTable(InCopy.StateIndex, InCopy.ActionIndex);
 	const float Target = InCopy.Reward + Gamma * QTable(InCopy.StateIndex_2, InCopy.ActionIndex_2);
@@ -96,11 +96,11 @@ void UReinforcementLearningComponent::UpdateEpisodeRewards(const float RewardRec
 
 int32 UReinforcementLearningComponent::GetMaxActionIndex(const int32 SpawnCounterIndex) const
 {
-	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetQTableIndexFromSpawnCounterIndex(SpawnCounterIndex));
+	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetQTableIndexFromSpawnPointIndex(SpawnCounterIndex));
 	//UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for SpawnCounterIndex %d: %d"), SpawnCounterIndex, Index);
 	if (Index == INDEX_NONE)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GetMaxActionIndex return INDEX_NONE for QTableIndex of %d"), GetQTableIndexFromSpawnCounterIndex(SpawnCounterIndex));
+		UE_LOG(LogTemp, Warning, TEXT("GetMaxActionIndex return INDEX_NONE for QTableIndex of %d"), GetQTableIndexFromSpawnPointIndex(SpawnCounterIndex));
 	}
 	return Index;
 }
@@ -216,7 +216,7 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const FVector& Prev
 	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
 }
 
-void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const TArray<FSpawnPoint>& SpawnCounter)
+void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const USpawnPointManager* SpawnPointManager)
 {
 	while (!TargetPairs.IsEmpty())
 	{
@@ -226,13 +226,13 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 			break;
 		}
-		const int32 StateIndex = SpawnCounter.Find(FSpawnPoint(TargetPair.Previous));
-		const int32 State2Index = SpawnCounter.Find(FSpawnPoint(TargetPair.Current));
+		const int32 StateIndex = SpawnPointManager->FindIndexFromLocation(TargetPair.Previous);
+		const int32 State2Index = SpawnPointManager->FindIndexFromLocation(TargetPair.Current);
 		const int32 ActionIndex = State2Index;
 		const int32 Action2Index = GetMaxActionIndex(State2Index);
 
 		/* Don't update RLAgent if something went wrong */
-		if (Action2Index < SpawnCounter.Num() && Action2Index != INDEX_NONE)
+		if (Action2Index < SpawnPointManager->GetSpawnPoints().Num() && Action2Index != INDEX_NONE)
 		{
 			UpdateEpisodeRewards(TargetPair.Reward);
 			UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
@@ -288,9 +288,9 @@ int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>
 		const int32 ChosenIndex = MaxIndicesReverseSorted(0, j);
 
 		/* Get the SpawnCounter indices that the chosen index represents */
-		TArray<int32> UnfilteredSpawnCounterIndices = GetSpawnCounterIndexRange(ChosenIndex);
+		TArray<int32> UnfilteredSpawnCounterIndices = GetSpawnPointIndexRange(ChosenIndex);
 
-		/* Remove any indices that aren't inside the current SpawnCounterIndices */
+		/* Remove any indices that aren't inside the current SpawnPointIndices */
 		const TArray<int32> FilteredSpawnCounterIndices = UnfilteredSpawnCounterIndices.FilterByPredicate([&SpawnCounterIndices] (const int32& Value)
 		{
 			if (SpawnCounterIndices.Contains(Value))
@@ -313,11 +313,11 @@ int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>
 	return INDEX_NONE;
 }
 
-int32 UReinforcementLearningComponent::GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
+int32 UReinforcementLearningComponent::GetQTableIndexFromSpawnPointIndex(const int32 SpawnCounterIndex) const
 {
 	/* First find the Row and Column number that corresponds to the SpawnCounter index */
-	const int32 SpawnCounterRowNum = SpawnCounterIndex / SpawnCounterWidth;
-	const int32 SpawnCounterColNum = SpawnCounterIndex % SpawnCounterWidth;
+	const int32 SpawnCounterRowNum = SpawnCounterIndex / SpawnPointsWidth;
+	const int32 SpawnCounterColNum = SpawnCounterIndex % SpawnPointsWidth;
 
 	/* Scale down the SpawnCounter row and column numbers */
 	const int32 QTableRow = SpawnCounterRowNum / HeightScaleFactor;
@@ -329,9 +329,9 @@ int32 UReinforcementLearningComponent::GetQTableIndexFromSpawnCounterIndex(const
 	return QTableIndex;
 }
 
-TArray<int32> UReinforcementLearningComponent::GetSpawnCounterIndexRange(const int32 QTableIndex) const
+TArray<int32> UReinforcementLearningComponent::GetSpawnPointIndexRange(const int32 QTableIndex) const
 {
-	return QTableIndices[QTableIndex].SpawnCounterIndices;
+	return QTableIndices[QTableIndex].SpawnPointIndices;
 }
 
 nc::NdArray<float> UReinforcementLearningComponent::GetQTableFromTArray(const TArray<float>& InTArray) const

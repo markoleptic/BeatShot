@@ -134,13 +134,14 @@ enum class ETargetDistributionPolicy : uint8
 	EdgeOnly UMETA(DisplayName="Edge Only"),
 	/** Spawns targets anywhere in the bounding box */
 	FullRange UMETA(DisplayName="Full Range"),
-	/** Spawns targets in a grid */
-	Grid UMETA(DisplayName="Full Range"),
+	/** Spawns targets in an evenly-spaced grid. Able to fit more targets */
+	Grid UMETA(DisplayName="Grid"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly, ETargetDistributionPolicy::Grid);
 
 
-/** How to handle changing target scale over its damageable lifetime */
+/** How to handle changing target scale over its damageable lifetime. This can override ConsecutiveTargetScalePolicy only if
+ *  the scale is changed while the target is already active */
 UENUM()
 enum class ELifetimeTargetScalePolicy : uint8
 {
@@ -169,64 +170,6 @@ enum class EConsecutiveTargetScalePolicy : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static, EConsecutiveTargetScalePolicy::SkillBased);
 
 
-/** When to spawn the targets */
-UENUM()
-enum class ETargetSpawningPolicy : uint8
-{
-	None UMETA(DisplayName="None"),
-	/** Spawn all the targets before the game mode starts */
-	Upfront UMETA(DisplayName="Upfront"),
-	/** Spawn targets when the TargetManager receives the signal from AudioAnalyzer */
-	Runtime UMETA(DisplayName="Runtime"),
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::Upfront, ETargetSpawningPolicy::Runtime);
-
-
-/** When to activate the target (make it damageable) */
-UENUM()
-enum class ETargetActivationPolicy : uint8
-{
-	None UMETA(DisplayName="None"),
-	/** Activate the target immediately on spawn */
-	OnSpawn UMETA(DisplayName="On Spawn"),
-	/** Activate the target when the TargetManager receives the signal from AudioAnalyzer */
-	OnCooldown UMETA(DisplayName="On Cooldown"),
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationPolicy, ETargetActivationPolicy::OnSpawn, ETargetActivationPolicy::OnCooldown);
-
-
-/** How to handle deactivating targets */
-UENUM()
-enum class ETargetDeactivationPolicy : uint8
-{
-	None UMETA(DisplayName="None"),
-	/** Targets are never deactivated, even if their health reaches zero */
-	Persistant UMETA(DisplayName="Persistant"),
-	/** Targets are deactivated ONLY after their health reaches zero */
-	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
-	/** Targets are deactivated ONLY after their damageable window closes */
-	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** Targets are deactivated after their health reaches zero OR their damageable window closes */
-	OnHealthReachedZeroOrExpiration UMETA(DisplayName="On Health Reached Zero Or Expiration"),
-	/** Targets are deactivated after ANY damage event OR their damageable window closes */
-	OnAnyDamageEventOrExpiration UMETA(DisplayName="On Any Damage Event Or Expiration")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationPolicy, ETargetDeactivationPolicy::Persistant, ETargetDeactivationPolicy::OnAnyDamageEventOrExpiration);
-
-
-/** The current activation state of a target */
-UENUM()
-enum class ETargetActivationState : uint8
-{
-	None UMETA(DisplayName="None"),
-	/** Target NOT damageable, but still being managed by TargetManager */
-	Inactive UMETA(DisplayName="Inactive"),
-	/** Target IS damageable, managed by TargetManager */
-	Active UMETA(DisplayName="Active"),
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationState, ETargetActivationState::Inactive, ETargetActivationState::Active);
-
-
 /** How the player damages the target and receives score */
 UENUM()
 enum class ETargetDamageType : uint8
@@ -242,22 +185,160 @@ enum class ETargetDamageType : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDamageType, ETargetDamageType::Tracking, ETargetDamageType::Hit);
 
 
-/** How to handle destroying targets */
+/** When to spawn the targets. For now, limited to just all upfront or all at runtime */
 UENUM()
-enum class ETargetDestructionPolicy : uint8
+enum class ETargetSpawningPolicy : uint8
 {
 	None UMETA(DisplayName="None"),
-	/** Targets are never destroyed, even if their health reaches zero. Can be reactivated/deactivated */
-	Persistant UMETA(DisplayName="Persistant"),
-	/** Targets are destroyed ONLY after their health reaches zero */
-	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
-	/** Targets are destroyed ONLY after their damageable window closes */
-	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** Targets are destroyed after their health reaches zero or their damageable window closes */
-	OnHealthReachedZeroOrExpiration UMETA(DisplayName="On Health Reached Zero Or Expiration"),
-	/** Targets are destroyed after any damage event or their damageable window closes */
-	OnAnyDamageEventOrExpiration UMETA(DisplayName="On Any Damage Event Or Expiration")
+	/** Spawn all the targets before the game mode starts */
+	UpfrontOnly UMETA(DisplayName="Upfront Only"),
+	/** Spawn targets when the TargetManager receives the signal from AudioAnalyzer */
+	RuntimeOnly UMETA(DisplayName="Runtime Only"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionPolicy, ETargetDestructionPolicy::Persistant, ETargetDestructionPolicy::OnAnyDamageEventOrExpiration);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly, ETargetSpawningPolicy::RuntimeOnly);
 
-// TODO: RecentTargetHandlingPolicy
+
+/** How to choose the target(s) to activate */
+UENUM()
+enum class ETargetActivationSelectionPolicy : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Only choose spawn points that border the previous point (BeatGrid is an example) */
+	Bordering UMETA(DisplayName="Bordering"),
+	/** Randomly chooses a target within the available spawn points */
+	Random UMETA(DisplayName="Random"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering, ETargetActivationSelectionPolicy::Random);
+
+
+/** What does the target do when its activated: change directions, make damageable, etc */
+UENUM()
+enum class ETargetActivationResponse : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Immunity is removed from the target, damageable window begins if not already damageable */
+	RemoveImmunity UMETA(DisplayName="Remove Immunity"),
+	/** Immunity is granted to the target */
+	AddImmunity UMETA(DisplayName="Add Immunity"),
+	/** Immunity is added or removed from the target, depending on its existing state. Same with damageable window */
+	ToggleImmunity UMETA(DisplayName="Toggle Immunity"),
+	/** If a moving target, the direction is changed */
+	ChangeDirection UMETA(DisplayName="Change Direction"),
+	/** The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this */
+	ChangeScale UMETA(DisplayName="Change Scale"),
+	/** If a moving target, the velocity of the target is changed */
+	ChangeVelocity UMETA(DisplayName="Change Velocity"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity, ETargetActivationResponse::ChangeVelocity);
+
+
+/** Each represents one way that a target can be deactivated */
+UENUM()
+enum class ETargetDeactivationCondition : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Targets are never deactivated, even if their health reaches zero */
+	Persistant UMETA(DisplayName="Persistant"),
+	/** Target is deactivated when it receives any damage from the player */
+	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
+	/** Target is deactivated after its damageable window closes */
+	OnExpiration UMETA(DisplayName="On Expiration"),
+	/** Target is deactivated after its health reaches zero */
+	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant, ETargetDeactivationCondition::OnHealthReachedZero);
+
+
+/** What does the target do when its deactivated */
+UENUM()
+enum class ETargetDeactivationResponse : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Immunity is removed from the target, damageable window begins if not already damageable */
+	RemoveImmunity UMETA(DisplayName="Remove Immunity"),
+	/** Immunity is granted to the target */
+	AddImmunity UMETA(DisplayName="Add Immunity"),
+	/** Immunity is added or removed from the target, depending on its existing state. Same with damageable window */
+	ToggleImmunity UMETA(DisplayName="Toggle Immunity"),
+	
+	/** If a moving target, the direction is changed */
+	ChangeDirection UMETA(DisplayName="Change Direction"),
+	/** The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this */
+	ChangeScale UMETA(DisplayName="Change Scale"),
+	/** If a moving target, the velocity of the target is changed */
+	ChangeVelocity UMETA(DisplayName="Change Velocity"),
+	
+	/** Reset the position of the target to the position it was initialized with */
+	ResetPosition UMETA(DisplayName="Reset Position"),
+	/** Reset the scale of the target to the scale it was initialized with */
+	ResetScale UMETA(DisplayName="Reset Scale"),
+	/** Reset the color of the target to the inactive color */
+	ResetColorToInactiveColor UMETA(DisplayName="Reset Color To Inactive Color"),
+	/** Reset the color of the target to the inactive color */
+	ResetColorToStartColor UMETA(DisplayName="Reset Color To Start Color"),
+
+	/** Reset the scale of the target to the scale it was initialized with */
+	ShrinkQuickGrowSlow UMETA(DisplayName="Shrink Quick Grow Slow"),
+	/** Play an explosion effect */
+	PlayExplosionEffect UMETA(DisplayName="Play Explosion Effect"),
+	
+	/** Destroy the target permanently */
+	Destroy UMETA(DisplayName="Destroy"),
+	/** Temporarily hide the target until reactivated */
+	Hide UMETA(DisplayName="Hide"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::Hide);
+
+
+/** Each represents one way that a target can be destroyed */
+UENUM()
+enum class ETargetDestructionCondition : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated */
+	Persistant UMETA(DisplayName="Persistant"),
+	/** Target is deactivated after its damageable window closes */
+	OnExpiration UMETA(DisplayName="On Expiration"),
+	/** Target is destroyed when it receives any damage from the player */
+	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
+	/** Target is destroyed when its health reaches zero */
+	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
+	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
+	OnDeactivation UMETA(DisplayName="On Deactivation"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant, ETargetDestructionCondition::OnDeactivation);
+
+
+/** Specifies the method to remove targets from recent memory, allowing targets to spawn in that location again */
+UENUM()
+enum class ERecentTargetMemoryPolicy : uint8
+{
+	/** Does not remember any recent targets */
+	None UMETA(DisplayName="None"),
+	/** Uses a specified time to remove recent targets, starting after the target has been destroyed or deactivated */
+	CustomTimeBased UMETA(DisplayName="Custom Time Based"),
+	/** Removes a recent target after TargetSpawnCD length of time has passed since the target has been destroyed or deactivated */
+	UseTargetSpawnCD UMETA(DisplayName="Use TargetSpawnCD"),
+	/** Removes recent targets only when the number of recent targets exceeds specified capacity */
+	NumTargetsBased UMETA(DisplayName="Number of Targets Based"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None, ERecentTargetMemoryPolicy::NumTargetsBased);
+
+
+
+
+
+
+/** NOT BEING USED TODO: How to handle activating an a target that is already active */
+UENUM()
+enum class ETargetActivationPolicy : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Activate the target immediately on spawn */
+	Interrupt UMETA(DisplayName="On Spawn"),
+	/** Activate the target when the TargetManager receives the signal from AudioAnalyzer */
+	DoNotInterrupt UMETA(DisplayName="Do Not Interrupt"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationPolicy, ETargetActivationPolicy::Interrupt, ETargetActivationPolicy::DoNotInterrupt);
+
+// TODO: MovingTargetHandlingPolicy? something to specify how to choose a new moving direction

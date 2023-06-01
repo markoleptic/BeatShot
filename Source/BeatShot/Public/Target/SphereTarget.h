@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "BeatShot/BeatShot.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "SaveGamePlayerSettings.h"
@@ -18,70 +19,6 @@ class UNiagaraSystem;
 class UCurveFloat;
 class UBSAttributeSetBase;
 class ASphereTarget;
-
-/** Struct containing info about a target that is broadcast when a target takes damage or the the DamageableWindow timer expires */
-USTRUCT()
-struct FTargetDamageEvent
-{
-	GENERATED_BODY()
-
-	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
-	float TimeAlive;
-
-	/** The health attribute's NewValue */
-	float CurrentHealth;
-
-	/** The absolute value between the health attribute's NewValue and OldValue */
-	float DamageDelta;
-
-	/** The total possible damage if tracking */
-	float TotalPossibleDamage;
-
-	/** The location of the center of the target */
-	FVector Location;
-
-	/** The scale of the target relative to the world */
-	FVector Scale;
-
-	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
-	FGuid Guid;
-	
-	FTargetDamageEvent()
-	{
-		TimeAlive = INDEX_NONE;
-		DamageDelta = 0.f;
-		CurrentHealth = 0.f;
-		TotalPossibleDamage = 0.f;
-		Location = FVector();
-		Scale = FVector(1.f);
-	}
-
-	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FVector& InLocation, const FVector& InScale, const FGuid& InGuid,
-		const float InDamageDelta = 0.f, const float InTotalPossibleDamage = 0.f)
-	{
-		TimeAlive = InTimeAlive;
-		DamageDelta = InDamageDelta;
-		CurrentHealth = InCurrentHealth;
-		TotalPossibleDamage = InTotalPossibleDamage;
-		Location = InLocation;
-		Scale = InScale;
-		Guid = InGuid;
-	}
-
-	float GetDamageDelta(const float OldValue, const float NewValue) const
-	{
-		return abs(OldValue - NewValue);
-	}
-
-	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
-	{
-		if (Guid == Other.Guid)
-		{
-			return true;
-		}
-		return false;
-	}
-};
 
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
@@ -146,7 +83,7 @@ protected:
 public:
 
 	/** Called in TargetManager to initialize the target */
-	void InitTarget(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
+	void InitTarget(const FBS_TargetConfig& InTargetConfig);
 	
 	/* ~Begin IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
@@ -199,12 +136,21 @@ public:
 
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
-	
-	/** Returns the number of charges this target has */
-	int32 GetNumCharges() const { return NumCharges; }
 
 	/** Whether or not the DamageableWindow timer is active and the target is not immune */
 	bool IsTargetActiveAndDamageable() const;
+
+	/** Returns the direction the target is travelling towards */
+	FVector GetMovingTargetDirection() const { return MovingTargetDirection; }
+	
+	/** Sets the direction the target is travelling towards */
+	void SetMovingTargetDirection(const FVector& NewDirection);
+
+	/** Returns the speed the target is travelling at */
+	float GetMovingTargetSpeed() const { return MovingTargetSpeed; }
+
+	/** Sets the speed the target is travelling at */
+	void SetMovingTargetSpeed(const float NewMovingTargetSpeed);
 	
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
@@ -218,7 +164,7 @@ public:
 
 	/** Locally stored BSConfig to access GameMode properties without storing ref to game instance */
 	UPROPERTY()
-	FBSConfig BSConfig;
+	FBS_TargetConfig Config;
 
 private:
 	/** Apply damage to self, for example when the DamageableWindow timer expires */
@@ -277,9 +223,6 @@ private:
 	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
 	UFUNCTION()
 	void OnTargetMaxLifeSpanExpired();
-	
-	UPROPERTY()
-	FPlayerSettings_Game PlayerSettings;
 
 	/** Guid to keep track of a target's properties after it has been destroyed */
 	UPROPERTY()
@@ -295,8 +238,14 @@ private:
 
 	FOnTimelineEvent OnStartToPeakFinished;
 
+	/** Current direction the target is moving */
+	FVector MovingTargetDirection;
+	
+	/** Current speed of the moving target */
+	float MovingTargetSpeed;
+
 	/** The scale that was applied when spawned */
-	float InitialTargetScale = 1.f;
+	FVector InitialTargetScale;
 
 	/** The scale that was applied when spawned */
 	FVector InitialTargetLocation;
@@ -309,7 +258,4 @@ private:
 
 	/** Playback rate for PeakToEnd timeline */
 	float PeakToEndTimelinePlayRate;
-
-	/** Number of charges for this target */
-	int32 NumCharges = INDEX_NONE;
 };

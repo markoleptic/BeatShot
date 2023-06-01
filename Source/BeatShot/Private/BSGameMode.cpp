@@ -163,9 +163,9 @@ void ABSGameMode::BindGameModeDelegates()
 	{
 		GetTargetManager()->OnTargetActivatedOrSpawned.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 	}
-	if (!GetTargetManager()->OnTargetDestroyed.IsBoundToObject(this))
+	if (!GetTargetManager()->OnTargetDeactivated.IsBoundToObject(this))
 	{
-		GetTargetManager()->OnTargetDestroyed.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
+		GetTargetManager()->OnTargetDeactivated.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
 	}
 	if (!GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
 	{
@@ -205,9 +205,9 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		{
 			GetTargetManager()->OnTargetActivatedOrSpawned.RemoveAll(this);
 		}
-		if (GetTargetManager()->OnTargetDestroyed.IsBoundToObject(this))
+		if (GetTargetManager()->OnTargetDeactivated.IsBoundToObject(this))
 		{
-			GetTargetManager()->OnTargetDestroyed.RemoveAll(this);
+			GetTargetManager()->OnTargetDeactivated.RemoveAll(this);
 		}
 		if (GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
 		{

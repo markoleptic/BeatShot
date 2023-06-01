@@ -7,10 +7,10 @@
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
 #include "SpawnPointManager.h"
+#include "Components/BoxComponent.h"
 #include "TargetManager.generated.h"
 
 class ASphereTarget;
-class UBoxComponent;
 class UReinforcementLearningComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
@@ -53,16 +53,21 @@ protected:
 
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	TSubclassOf<ASphereTarget> ActorToSpawn;
+	TSubclassOf<ASphereTarget> TargetToSpawn;
 
 	/** Curve to look up values for DynamicSpawnScale */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	UCurveFloat* DynamicSpawnCurve;
 
+	/** Manages spawn points */
+	UPROPERTY()
+	USpawnPointManager* SpawnPointManager;
+
 public:
 	void ShowDebug_SpawnBox(const bool bShow);
 	void ShowDebug_SpawnMemory(const bool bShow);
 	void ShowDebug_ReinforcementLearningWidget(const bool bShow);
+	void ShowDebug_NumRecentNumActivated() const;
 
 	bool IsDebugActive_SpawnBox() const { return bShowDebug_SpawnBox; }
 	bool IsDebugActive_SpawnMemory() const { return bShowDebug_SpawnMemory; }
@@ -74,7 +79,7 @@ public:
 	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn);
 
-	/** Called from GameMode when it's an appropriate time to spawn or activate a target. Takes TargetSpawnCD into account, as well as AudioAnalyzer settings like threshold */
+	/** Called from GameMode when it's an appropriate time to spawn or activate a target. This is the main loop that drives this class */
 	void OnAudioAnalyzerBeat();
 
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
@@ -93,25 +98,30 @@ public:
 	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
 
 	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data. */
-	FOnTargetDestroyed OnTargetDestroyed;
+	FOnTargetDestroyed OnTargetDeactivated;
 
 	/** Delegate that is executed when a player damages a BeatTrack target. */
 	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
 
 private:
+	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
+	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
+	bool SpawnTarget(FSpawnPoint& InSpawnPoint);
 
-	ASphereTarget* SpawnTarget(FSpawnPoint& InSpawnPoint, const bool bBroadcastSpawnEvent = true);
-	
-	void ActivateTarget();
+	/** Calls ActivateTarget using SpawnPoint's index and ManagedTargets */
+	bool ActivateTarget(const bool bSpawnedTarget) const;
 
-	/** Initial BeatTrack target spawn */
-	void SpawnChargedTarget();
+	/** Changes a target's direction */
+	void ChangeTargetDirection(ASphereTarget* InTarget) const;
 
-	/** Change the tracking target direction on beat */
-	void UpdateBeatTrackTarget();
+	/** Changes a target's scale */
+	void ChangeTargetScale(const ASphereTarget* InTarget) const;
+
+	/** Changes a target's velocity */
+	void ChangeTargetVelocity(ASphereTarget* InTarget) const;
 
 	/** Updates the position of the BeatTrack target on tick */
-	void OnTick_UpdateTargetLocation(const float DeltaTime);
+	void OnTick_UpdateTargetLocation(const float DeltaTime) const;
 
 	/** The expiration or destruction of any non-BeatTrack target is bound to this function
 	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
@@ -130,53 +140,50 @@ private:
 	FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	FSpawnPoint* GetNextTargetSpawnLocation(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale);
+	FSpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale) const;
 
 	/** Randomizes a location to set the BeatTrack target to move towards */
-	FVector GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const;
+	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed) const;
 
 	/** Returns an array of valid spawn points */
-	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& TargetDistributionMethod, const EBoundsScalingPolicy& BoundsScalingMethod) const;
+	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& DistributionPolicy, const EBoundsScalingPolicy& BoundsScalingPolicy) const;
 	
 	/** Returns a copy of all spawn locations that were created on initialization */
-	TArray<FVector> GetAllSpawnLocations() const;
+	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
 
 	/** Returns a copy of ManagedTargets */
 	TArray<ASphereTarget*> GetManagedTargets() const { return ManagedTargets; }
-
-	/** Returns SpawnBox's origin, as it is in the game */
-	FVector GetBoxOrigin() const;
-
-	/** Returns a vector representing the BoxBounds extrema. If PositiveExtrema is equal to 1, the positive extrema is returned. Otherwise the negative extrema is returned */
-	FVector GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const;
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
-	FVector GetBoxExtents_Static() const;
+	FVector GetBoxExtents_Static() const { return StaticExtents; }
 
-	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction */
-	TArray<EBorderingDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const;
+	/** Returns SpawnBox's origin, as it is in the game */
+	FVector GetBoxOrigin() const { return SpawnBox->Bounds.Origin; }
+
+	/** Returns a FExtrema struct containing both the min extrema and max extrema */
+	FExtrema GetBoxExtrema(const bool bDynamic) const;
+
+	/** Creates the box extrema for a grid target distribution */
+	FExtrema GenerateBoxExtremaGrid() const;
 
 	/** Adds a SphereTarget to the ManagedTargets array */
 	int32 AddToManagedTargets(ASphereTarget* SpawnTarget);
 
 	/** Removes the DestroyedTarget from ManagedTargets */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
-
-	/** Removes points from the InArray that don't have an adjacent point to the top and to the left. Used so that it's safe to spawn a target within a square area */
-	void RemoveEdgePoints(TArray<FVector>& In) const;
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
 	void SetBoxExtents_Dynamic() const;
 
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
-
-	UPROPERTY()
-	USpawnPointManager* SpawnPointManager;
-
+	
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
 	int32 TryGetSpawnLocationFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 
+	/** Draws debug boxes for locations */
+	void DrawDebugBox_OpenLocations(const TArray<FVector>& InOpenLocations, const FColor& InColor, const int32 InThickness) const;
+	
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfig;
 
@@ -188,9 +195,6 @@ private:
 
 	/** Whether or not the TargetManager is allowed to spawn a target at a given time */
 	bool ShouldSpawn = false;
-
-	/** Whether or not to skip the spawn of this target if a new Target location was not found */
-	bool bSkipNextSpawn = false;
 
 	/** Whether or not to show Debug SpawnBox outline */
 	bool bShowDebug_SpawnBox = false;
@@ -204,32 +208,17 @@ private:
 	/** SpawnPoint for the next/current target */
 	FSpawnPoint* SpawnPoint;
 
-	/** SpawnPoint for the previous target */
+	/** SpawnPoint for the previous target. Assigned the value of SpawnPoint immediately before the next SpawnPoint is chosen in FindNextTargetProperties */
 	FSpawnPoint* PreviousSpawnPoint;
 
 	/** The scale to apply to the next/current target */
 	FVector TargetScale;
 	
-	/** The smallest possible extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
-	FVector StaticMinExtrema;
-
-	/** The largest possible extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
-	FVector StaticMaxExtrema;
+	/** The min and max extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
+	FExtrema StaticExtrema;
 
 	/** The static extents for the spawn box. This is half the value that was passed in with the FBSConfig */
 	FVector StaticExtents;
-
-	/** Current location of tracking target */
-	FVector CurrentMovingTargetLocation;
-
-	/** Current direction of tracking target */
-	FVector CurrentMovingTargetDirection;
-
-	/** The end of the path that the tracking target will move to */
-	FVector EndLocation;
-
-	/** Location just before randomizing a new tracking direction */
-	FVector LocationBeforeDirectionChange;
 
 	/** Consecutively destroyed targets */
 	int32 ConsecutiveTargetsHit;
@@ -243,9 +232,6 @@ private:
 
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;
-	
-	/** Current speed of tracking target */
-	float MovingTargetSpeed;
 
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnOnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;

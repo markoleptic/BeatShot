@@ -31,7 +31,7 @@ void UBSSettingCategoryWidget::AddAdditionalContainers(const TArray<TObjectPtr<U
 	}
 }
 
-void UBSSettingCategoryWidget::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox)
+void UBSSettingCategoryWidget::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox) const
 {
 	MainContainer->AddWidgetBoxPair(InWidget, InBox);
 }

@@ -279,7 +279,7 @@ private:
 
 #pragma region HUDUpdate
 
-	/** Function bound to TargetManager's OnTargetDestroyed delegate, passes the time that the target was alive for */
+	/** Function bound to TargetManager's OnTargetDeactivated delegate, passes the time that the target was alive for */
 	UFUNCTION()
 	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position);
 

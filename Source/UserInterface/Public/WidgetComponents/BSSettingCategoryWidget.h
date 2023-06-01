@@ -37,10 +37,11 @@ protected:
 
 	/** Adds a widget-box pair to the WidgetBoxMap. Any widget-box pairs will be called when updating
 	 *  the background colors so that other child widgets that contain BSVerticalBoxes will match this one */
-	void AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox);
+	void AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox) const;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* MainContainer;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Setting Category Widget | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
 

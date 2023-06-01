@@ -41,37 +41,73 @@ protected:
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetSpeedConstrained;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Lifespan;
+	UBSHorizontalBox* BSBox_ApplyImmunityOnSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_TargetSpawnCD;
+	UBSHorizontalBox* BSBox_ContinuouslySpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_SpawnBeatDelay;
+	UBSHorizontalBox* BSBox_MoveTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_MoveTargetsForward;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_SpawnAtOriginWheneverPossible;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_SpawnEveryOtherTargetInCenter;
 	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_BoundsScalingPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_ConsecutiveTargetScalePolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_LifetimeTargetScalePolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_TargetSpawningPolicy;
+	UBSHorizontalBox* BSBox_RecentTargetMemoryPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_TargetDestructionPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_TargetActivationPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_TargetDeactivationPolicy;
+	UBSHorizontalBox* BSBox_TargetActivationSelectionPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_TargetDamageType;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetDistributionPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetSpawningPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetActivationResponses;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetDeactivationConditions;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetDeactivationResponses;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetDestructionConditions;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_NumCharges;
+	UBSHorizontalBox* BSBox_Lifespan;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_TargetSpawnCD;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_ConsecutiveChargeScaleMultiplier;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ApplyImmunityOnSpawn;
+	UBSHorizontalBox* BSBox_MinTargetDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ResetPositionOnDeactivation;
+	UBSHorizontalBox* BSBox_ForwardSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_FloorDistance;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_HorizontalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_VerticalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_MaxNumRecentTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_RecentTargetTimeLength;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_NumUpfrontTargetsToSpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_ExpirationHealthPenalty;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_MaxHealth;
 
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_Lifespan;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -79,9 +115,28 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_NumCharges;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_ConsecutiveChargeScaleMultiplier;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_MinTargetDistance;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_HorizontalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_VerticalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_MoveForwardDistance;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_FloorDistance;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_MaxNumRecentTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_RecentTargetTimeLength;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_NumUpfrontTargetsToSpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_ExpirationHealthPenalty;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USlider* Slider_MaxHealth;
+
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_Lifespan;
@@ -90,29 +145,66 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_NumCharges;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_ConsecutiveChargeScaleMultiplier;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSComboBoxString* ComboBox_LifetimeTargetScalePolicy;
+	UEditableTextBox* Value_MinTargetDistance;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_HorizontalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_VerticalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_ForwardSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_FloorDistance;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_MaxNumRecentTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_RecentTargetTimeLength;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_NumUpfrontTargetsToSpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_ExpirationHealthPenalty;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBox* Value_MaxHealth;
+
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_BoundsScalingPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSComboBoxString* ComboBox_ConsecutiveTargetScalePolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSComboBoxString* ComboBox_TargetSpawningPolicy;
+	UBSComboBoxString* ComboBox_LifetimeTargetScalePolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSComboBoxString* ComboBox_TargetDestructionPolicy;
+	UBSComboBoxString* ComboBox_RecentTargetMemoryPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSComboBoxString* ComboBox_TargetActivationPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSComboBoxString* ComboBox_TargetDeactivationPolicy;
+	UBSComboBoxString* ComboBox_TargetActivationSelectionPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSComboBoxString* ComboBox_TargetDamageType;
-
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_TargetDistributionPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_TargetSpawningPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_TargetActivationResponses;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_TargetDeactivationConditions;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_TargetDeactivationResponses;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSComboBoxString* ComboBox_TargetDestructionConditions;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_ApplyImmunityOnSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ResetPositionOnDeactivation;
+	UCheckBox* CheckBox_MoveTargetsForward;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ContinuouslySpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_MoveTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_SpawnAtOriginWheneverPossible;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_SpawnEveryOtherTargetInCenter;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_Lifespan;
@@ -121,29 +213,50 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_LifetimeTargetScalePolicy;
+	UTooltipImage* QMark_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_ConsecutiveTargetScalePolicy;
+	UTooltipImage* QMark_ForwardSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_TargetSpawningPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_TargetDestructionPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_TargetActivationPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_TargetDeactivationPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_TargetDamageType;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_NumCharges;
+	UTooltipImage* QMark_MinDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_ConsecutiveChargeScaleMultiplier;
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_ApplyImmunityOnSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_ResetPositionOnDeactivation;
+	UTooltipImage* QMark_MaxNumRecentTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_RecentTargetTimeLength;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_NumUpfrontTargetsToSpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_ExpirationHealthPenalty;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_MaxHealth;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_BoundsScalingPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_ConsecutiveTargetScalePolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_LifetimeTargetScalePolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_RecentTargetMemoryPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetActivationSelectionPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetDamageType;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetDistributionPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetSpawningPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetActivationResponses;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetDeactivationConditions;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetDeactivationResponses;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_TargetDestructionConditions;
+
 	
 	UFUNCTION()
 	void OnSliderChanged_Lifespan(const float NewLifespan);
@@ -152,9 +265,27 @@ protected:
 	UFUNCTION()
 	void OnSliderChanged_SpawnBeatDelay(const float NewPlayerDelay);
 	UFUNCTION()
-	void OnSliderChanged_NumCharges(const float NewCharges);
-	UFUNCTION()
 	void OnSliderChanged_ChargeScaleMultiplier(const float NewChargeScaleMultiplier);
+	UFUNCTION()
+	void OnSliderChanged_FloorDistance(const float NewFloorDistance);
+	UFUNCTION()
+	void OnSliderChanged_MinTargetDistance(const float NewMinTargetDistance);
+	UFUNCTION()
+	void OnSliderChanged_HorizontalSpread(const float NewHorizontalSpread);
+	UFUNCTION()
+	void OnSliderChanged_VerticalSpread(const float NewVerticalSpread);
+	UFUNCTION()
+	void OnSliderChanged_ForwardSpread(const float NewForwardSpread);
+	UFUNCTION()
+	void OnSliderChanged_MaxNumRecentTargets(const float NewMaxNum);
+	UFUNCTION()
+	void OnSliderChanged_RecentTargetTimeLength(const float NewTimeLength);
+	UFUNCTION()
+	void OnSliderChanged_NumUpfrontTargetsToSpawn(const float NewNum);
+	UFUNCTION()
+	void OnSliderChanged_ExpirationHealthPenalty(const float NewHealthPenalty);
+	UFUNCTION()
+	void OnSliderChanged_MaxHealth(const float NewMaxHealth);
 	
 	UFUNCTION()
 	void OnTextCommitted_Lifespan(const FText& NewLifespan, ETextCommit::Type CommitType);
@@ -163,68 +294,75 @@ protected:
 	UFUNCTION()
 	void OnTextCommitted_SpawnBeatDelay(const FText& NewPlayerDelay, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnTextCommitted_NumCharges(const FText& NewCharges, ETextCommit::Type CommitType);
-	UFUNCTION()
 	void OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_FloorDistance(const FText& NewFloorDistance, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_MinTargetDistance(const FText& NewMinTargetDistance, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_HorizontalSpread(const FText& NewHorizontalSpread, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_VerticalSpread(const FText& NewVerticalSpread, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_MaxNumRecentTargets(const FText& NewMaxNum, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_RecentTargetTimeLength(const FText& NewTimeLength, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_NumUpfrontTargetsToSpawn(const FText& NewNum, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_ExpirationHealthPenalty(const FText& NewHealthPenalty, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_MaxHealth(const FText& NewMaxHealth, ETextCommit::Type CommitType);
 	
 	UFUNCTION()
-	void OnSelectionChanged_LifetimeTargetScaleMethod(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_BoundsScalingPolicy(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_ConsecutiveTargetScale(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_LifetimeTargetScalePolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_RecentTargetMemoryPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetActivationSelectionPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetDamageType(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetDistributionPolicy(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_TargetSpawningPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDestructionPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetActivationResponses(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetActivationPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDeactivationConditions(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDeactivationPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDeactivationResponses(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDamageType(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDestructionConditions(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
 
+	
 	UFUNCTION()
 	void OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bApplyImmunityOnSpawn);
 	UFUNCTION()
-	void OnCheckStateChanged_ResetPositionOnDeactivation(const bool bApplyImmunityOnSpawn);
+	void OnCheckStateChanged_MoveTargetsForward(const bool bMoveTargetsForward);
+	UFUNCTION()
+	void OnCheckStateChanged_ContinuouslySpawn(const bool bContinuouslySpawn);
+	UFUNCTION()
+	void OnCheckStateChanged_MoveTargets(const bool bMoveTargets);
+	UFUNCTION()
+	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bSpawnAtOrigin);
+	UFUNCTION()
+	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bSpawnEveryOther);
 	
-	const FText NewLineDelimit = FText::FromString("\n");
+	UFUNCTION()
+	UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
+	UFUNCTION()
+	UWidget* OnSelectionChangedGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
+	
+	FString GetEnumTypeIndexFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_ConsecutiveTargetScale(FString Method);
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_LifetimeTargetScale(FString Method);
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_TargetSpawningPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_TargetDestructionPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_TargetActivationPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_TargetDeactivationPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent_TargetDamageType(FString Method);
-	
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_ConsecutiveTargetScale(FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_LifetimeTargetScale(FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_TargetSpawningPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_TargetDestructionPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_TargetActivationPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_TargetDeactivationPolicy(FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent_TargetDamageType(FString Method);
-	
-	/** A very gross way to not show the tooltip image for the selected item widget */
-	bool bHideTooltipImage_ConsecutiveTargetScale = false;
-	bool bHideTooltipImage_LifetimeTargetScale = false;
-	bool bHideTooltipImage_TargetSpawningPolicy = false;
-	bool bHideTooltipImage_TargetDestructionPolicy = false;
-	bool bHideTooltipImage_TargetActivationPolicy = false;
-	bool bHideTooltipImage_TargetDeactivationPolicy = false;
-	bool bHideTooltipImage_TargetDamageType = false;
+	UBSComboBoxEntry* CreateComboBoxEntryWidget(const UBSComboBoxString* ComboBoxString);
+
+	const FText NewLineDelimit = FText::FromString("\n");
 };

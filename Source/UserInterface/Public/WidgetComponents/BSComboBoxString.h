@@ -8,6 +8,8 @@
 
 class UBSComboBoxEntry;
 
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForStringWithSelf, const UBSComboBoxString*, BSComboBoxString, FString, Item);
+
 UCLASS()
 class USERINTERFACE_API UBSComboBoxString : public UComboBoxString
 {
@@ -18,6 +20,23 @@ class USERINTERFACE_API UBSComboBoxString : public UComboBoxString
 	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(TSharedPtr<FString> Item) const;
 
 public:
+	TArray<int32> GetSelectedIndices() const;
+	TArray<FString> GetSelectedOptions() const;
+	void SetSelectedIndices(const TArray<int32> InIndices);
+	void SetSelectedOptions(TArray<FString> InOptions);
+	void AddSelectedIndex(const int32 InIndex);
+	void AddSelectedOption(const FString InOption);
+	
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
-	FGenerateWidgetForString OnSelectionChangedGenerateWidgetEvent;
+	FGenerateWidgetForStringWithSelf OnGenerateWidgetEventDelegate;
+	
+	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
+	FGenerateWidgetForStringWithSelf OnSelectionChangedGenerateWidgetEventDelegate;
+
+	/** Used to not show the tooltip image for the selected item widget */
+	mutable bool bHideTooltipImage;
+
+	TArray<FString> SelectedOptions;
+	TArray<TSharedPtr<FString>> CurrentOptionPointers;
+	mutable UBSComboBoxString* NonConstSelfRef;
 };

@@ -319,13 +319,38 @@ struct FBS_TargetConfig
 	/** Should the target be immune to damage when spawned? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bApplyImmunityOnSpawn;
-	
-	/** Should the target shrink down and slowly grow back to InitialTargetScale after a DamageEvent or the DamageableWindow timer expires? */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bOnDamageEvent_ShrinkQuickAndGrowSlow;
 
+	/** Continuously spawn targets or wait until a TargetDamageEvent/expiration to continue spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bResetPositionOnDeactivation;
+	bool bContinuouslySpawn;
+
+	/** Whether or not the targets ever move */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bMoveTargets;
+	
+	/** Whether or not to move the targets forward towards the player after spawning */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bMoveTargetsForward;
+	
+	/** Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bSpawnAtOriginWheneverPossible;
+	
+	/** Whether or not alternate every target spawn in the very center */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bSpawnEveryOtherTargetInCenter;
+
+	/** Whether or not to reverse the direction of a moving target after it stops overlapping the OverlapSpawnBox */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bUseOverlapSpawnBox;
+	
+	/** Whether or not to use separate outline color */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bUseSeparateOutlineColor;
+	
+	/** How to scale the bounding box bounds (spawn area where targets are spawned), at runtime */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	EBoundsScalingPolicy BoundsScalingPolicy;
 
 	/** Whether or not to dynamically change the size of targets as consecutive targets are hit */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -335,37 +360,66 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ELifetimeTargetScalePolicy LifetimeTargetScalePolicy;
 
-	/** When to spawn the targets */
+	/** Specifies the method to remove targets from recent memory, allowing targets to spawn in that location again */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ETargetSpawningPolicy TargetSpawningPolicy;
-	
-	/** How to handle the destruction of targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ETargetDestructionPolicy TargetDestructionPolicy;
-	
-	/** When to activate the target (make it damageable) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ETargetActivationPolicy TargetActivationPolicy;
+	ERecentTargetMemoryPolicy RecentTargetMemoryPolicy;
 
-	/** When to deactivate the target (make it immune to damage) */
+	/** How to choose the target(s) to activate */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ETargetDeactivationPolicy TargetDeactivationPolicy;
+	ETargetActivationSelectionPolicy TargetActivationSelectionPolicy;
 
 	/** How the player damages the target and receives score */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ETargetDamageType TargetDamageType;
 
-	/** Gameplay tags applied to the target ASC when spawned */
+	/** Where to spawn/activate targets in the bounding box bounds (spawn area) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTagContainer OnSpawn_ApplyTags;
+	ETargetDistributionPolicy TargetDistributionPolicy;
+	
+	/** When to spawn targets */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	ETargetSpawningPolicy TargetSpawningPolicy;
 
-	/** The minimum speed multiplier for a moving target */
+	/** The possible outcomes that a target can do when its activated: change directions, make damageable, etc */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MinTrackingSpeed;
+	TArray<ETargetActivationResponse> TargetActivationResponses;
 
-	/** The maximum speed multiplier for a moving target */
+	/** Any condition that should deactivate the target (make it immune to damage) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MaxTrackingSpeed;
+	TArray<ETargetDeactivationCondition> TargetDeactivationConditions;
+
+	/** Anything the target should do when it deactivates */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<ETargetDeactivationResponse> TargetDeactivationResponses;
+	
+	/** Any condition that should permanently destroy a the target */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<ETargetDestructionCondition> TargetDestructionConditions;
+	
+	/** How much to shrink the target each time a charge is consumed, if the target is charged. This is multiplied
+	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ConsecutiveChargeScaleMultiplier;
+
+	/** Amount of health to take away from the target if the DamageableWindow timer expires */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float ExpirationHealthPenalty;
+
+	/** Distance from bottom of TargetManager BoxBounds to the floor */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float FloorDistance;
+	
+	/** Sets the minimum distance between recent target spawns */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MinDistanceBetweenTargets;
+
+	/** Value to set the MaxHealth attribute value to */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MaxHealth;
+
+	/** How far to move the target forward over its lifetime */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MoveForwardDistance;
 
 	/** Min multiplier to target size */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -374,164 +428,139 @@ struct FBS_TargetConfig
 	/** Max multiplier to target size */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MaxTargetScale;
-
-	/** Sets the minimum time between target spawns */
+	
+	/** Minimum speed multiplier for a moving target */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float TargetSpawnCD;
+	float MinTargetSpeed;
 
-	/** Maximum time in which target will stay on screen */
+	/** Maximum speed multiplier for a moving target */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float TargetMaxLifeSpan;
+	float MaxTargetSpeed;
+
+	/** Length of time to keep targets flags as recent, if not using MaxNumRecentTargets */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float RecentTargetTimeLength;
 
 	/** Delay between time between target spawn and peak green target color. Same as PlayerDelay in FBS_AudioConfig */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float SpawnBeatDelay;
 
-	/** How much to shrink the target each time a charge is consumed, if the target is charged. This is multiplied
-	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
+	/** Maximum time in which target will stay on screen */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float ConsecutiveChargeScaleMultiplier;
-
-	/** The value to set the MaxHealth attribute value to */
+	float TargetMaxLifeSpan;
+	
+	/** Sets the minimum time between target spawns */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float Attribute_MaxHealth;
-
-	/** The amount of health to take away from the target if the DamageableWindow timer expires */
+	float TargetSpawnCD;
+	
+	/** Gameplay tags applied to the target ASC when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float ExpirationHealthPenalty;
+	FGameplayTagContainer OnSpawn_ApplyTags;
 
-	/** How many times the target shrinks before completely dissipating */
+	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	int32 NumCharges;
+	FVector BoxBounds;
 
+	/** How many recent targets to keep in memory, if not using RecentTargetTimeLength */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 MaxNumRecentTargets;
+
+	/** TODO: Minimum number of targets to activate at one time */
+	int32 MinNumTargetsToActivateAtOnce;
+	
+	/** TODO: Maximum number of targets to activate at one time */
+	int32 MaxNumTargetsToActivateAtOnce;
+	
 	/** How many targets to spawn before the game mode begins */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumUpfrontTargetsToSpawn;
-
-	/** Color to applied to the actor on spawn */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor OnSpawn_TargetColor;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor OnSpawn_TargetOutlineColor;
-
-	/** Color applied after a DamageEvent or the DamageableWindow timer expires */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor OnDamageEvent_TargetColor;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor OnDamageEvent_TargetOutlineColor;
-
-	/** Color to applied to the actor if inactive, often the same as OnDamageEvent_TargetColor */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor InActiveTargetColor;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor InActiveTargetOutlineColor;
-
-	/** Colors interpolated between during the DamageableWindow timer */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor StartToPeak_StartColor;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor StartToPeak_EndColor;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor PeakToEnd_StartColor;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FLinearColor PeakToEnd_EndColor;
 	
+	/** Color to applied to the actor if inactive */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor InactiveTargetColor;
+
+	/** Color applied to target on spawn */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor OnSpawnColor;
+
+	/** Color interpolated from at start of DamageableWindow timer */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor StartColor;
+	
+	/** Color interpolated to from StartColor */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor PeakColor;
+
+	/** Color interpolated to from PeakColor */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor EndColor;
+
+	/** Separate outline color if specified */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FLinearColor OutlineColor;
+
 	FBS_TargetConfig()
 	{
 		bApplyImmunityOnSpawn = false;
-		bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
-		bResetPositionOnDeactivation = false;
+		bContinuouslySpawn = false;
+		bMoveTargets = false;
+		bMoveTargetsForward = false;
+		bSpawnAtOriginWheneverPossible = false;
+		bSpawnEveryOtherTargetInCenter = false;
+		bUseOverlapSpawnBox = false;
+		bUseSeparateOutlineColor = false;
 		
+		BoundsScalingPolicy = EBoundsScalingPolicy::None;
 		ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::None;
 		LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
-		TargetSpawningPolicy = ETargetSpawningPolicy::None;
-		TargetDestructionPolicy = ETargetDestructionPolicy::None;
-		TargetActivationPolicy = ETargetActivationPolicy::None;
-		TargetDeactivationPolicy = ETargetDeactivationPolicy::None;
+		RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::None;
+		TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::None;
 		TargetDamageType = ETargetDamageType::None;
+		TargetDistributionPolicy = ETargetDistributionPolicy::None;
+		TargetSpawningPolicy = ETargetSpawningPolicy::None;
 
+		TargetActivationResponses = TArray<ETargetActivationResponse>();
+		TargetDeactivationConditions = TArray<ETargetDeactivationCondition>();
+		TargetDeactivationResponses = TArray<ETargetDeactivationResponse>();
+		TargetDestructionConditions = TArray<ETargetDestructionCondition>();
+
+		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
+		ExpirationHealthPenalty = BaseTargetHealth;
+		FloorDistance = DistanceFromFloor;
+		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+		MaxHealth = BaseTargetHealth;
+		MoveForwardDistance = 0.f;
 		MinTargetScale = DefaultMinTargetScale;
 		MaxTargetScale = DefaultMaxTargetScale;
-		MinTrackingSpeed = 0.f;
-		MaxTrackingSpeed = 0.f;
-		TargetSpawnCD = DefaultTargetSpawnCD;
-		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
+		MinTargetSpeed = 0.f;
+		MaxTargetSpeed = 0.f;
 		SpawnBeatDelay = DefaultSpawnBeatDelay;
-		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
-		Attribute_MaxHealth = BaseTargetHealth;
-		ExpirationHealthPenalty = BaseTargetHealth;
-		NumCharges = DefaultNumCharges;
+		RecentTargetTimeLength = 0.f;
+		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
+		TargetSpawnCD = DefaultTargetSpawnCD;
+		
+		OnSpawn_ApplyTags = FGameplayTagContainer();
+		BoxBounds = DefaultSpawnBoxBounds;
+
+		MaxNumRecentTargets = 0;
+		MinNumTargetsToActivateAtOnce = 1;
+		MaxNumTargetsToActivateAtOnce = 1;
 		NumUpfrontTargetsToSpawn = 0;
+		
+		InactiveTargetColor = FLinearColor();
+		OnSpawnColor = FLinearColor();
+		StartColor = FLinearColor();
+		PeakColor = FLinearColor();
+		EndColor = FLinearColor();
+		OutlineColor = FLinearColor();
 	}
-};
 
-USTRUCT(BlueprintType)
-struct FBS_SpatialConfig
-{
-	GENERATED_BODY()
 
-	/** How to scale the bounding box bounds during at runtime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	EBoundsScalingPolicy BoundsScalingMethod;
-
-	/** How to distribute targets inside the box bounds at runtime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	ETargetDistributionPolicy TargetDistributionMethod;
-
-	/** Whether or not to move the targets forward towards the player after spawning */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	bool bMoveTargetsForward;
-
-	/** Sets the minimum distance between recent target spawns */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	float MinDistanceBetweenTargets;
-
-	/** Distance from bottom of TargetManager BoxBounds to the floor */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	float FloorDistance;
-
-	/** How far to move the target forward over its lifetime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	float MoveForwardDistance;
-
-	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spatial")
-	FVector BoxBounds;
-
-	/** Whether or not to reverse the direction of a moving target after it stops overlapping the OverlapSpawnBox */
-	bool bUseOverlapSpawnBox;
-
-	/** Tags to apply / remove from targets once the countdown has completed and the game mode has begun */
-	FGameplayTagContainer OnGameModeStart_ApplyTags;
-	FGameplayTagContainer OnGameModeStart_RemoveTags;
-
-	/** Should we broadcast the damage delta and total possible damage from the FTargetDamageEvent */
-	bool bBroadcastDamageDeltaAndTotalPossibleDamage;
-
-	/** Whether or not to spawn a target on every AudioAnalyzerBeat vs just activating an existing target */
-	bool bSpawnTargetOnAudioAnalyzerBeat;
-	/** Whether or not to activate a target on every AudioAnalyzerBeat vs spawning on AudioAnalyzerBeat */
-	bool bActivateTargetOnAudioAnalyzerBeat;
-
-	/** Whether or not to add target spawns to SpawnManager's RecentTargets array */
-	bool bTrackRecentTargets;
-
-	/** Whether or not to broadcast target spawns when a target is spawned. This will usually be false if the target is activated/deactivated or is persistant */
-	bool bBroadcastTargetOnSpawn;
-	/** Whether or not to broadcast target activations when a target is spawned. This will usually be true if the target is activated/deactivated or is persistant */
-	bool bBroadcastTargetOnActivation;
-
-	/** Continuously spawn targets or wait until a TargetDamageEvent/expiration to continue spawning */
-	bool bContinuouslySpawn;
-
-	/** Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible */
-	bool bSpawnAtOriginWheneverPossible;
-	
 	/** Returns the location to spawn the SpawnBox at */
 	FVector GenerateSpawnBoxLocation() const
 	{
 		FVector SpawnBoxCenter = DefaultTargetManagerLocation;
-		if (TargetDistributionMethod == ETargetDistributionPolicy::HeadshotHeightOnly)
+		if (TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
 		{
 			SpawnBoxCenter.Z = HeadshotHeight;
 		}
@@ -545,32 +574,11 @@ struct FBS_SpatialConfig
 	/** Returns the actual BoxBounds that the TargetManager sets its BoxBounds to */
 	FVector GenerateTargetManagerBoxBounds() const
 	{
-		if (TargetDistributionMethod == ETargetDistributionPolicy::HeadshotHeightOnly)
+		if (TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
 		{
 			return FVector(0.f, BoxBounds.Y / 2.f, 1.f);
 		}
 		return FVector(0.f, BoxBounds.Y / 2.f, BoxBounds.Z / 2.f);
-	}
-
-	FBS_SpatialConfig()
-	{
-		BoundsScalingMethod = EBoundsScalingPolicy::None;
-		TargetDistributionMethod = ETargetDistributionPolicy::None;
-		bMoveTargetsForward = false;
-		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
-		FloorDistance = DistanceFromFloor;
-		MoveForwardDistance = 0.f;
-		BoxBounds = DefaultSpawnBoxBounds;
-		
-		bUseOverlapSpawnBox = false;
-		bBroadcastDamageDeltaAndTotalPossibleDamage = false;
-		bSpawnTargetOnAudioAnalyzerBeat = false;
-		bActivateTargetOnAudioAnalyzerBeat = false;
-		bBroadcastTargetOnSpawn = false;
-		bBroadcastTargetOnActivation = false;
-		bTrackRecentTargets = false;
-		bContinuouslySpawn = false;
-		bSpawnAtOriginWheneverPossible = false;
 	}
 };
 
@@ -596,10 +604,6 @@ struct FBSConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	FBS_GridConfig GridConfig;
 
-	/** Contains info for the target spawner about how to lay out the targets in space */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Spacing")
-	FBS_SpatialConfig SpatialConfig;
-
 	/** Contains info for the target spawner about how to spawn the targets, as well as info to give the targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_TargetConfig TargetConfig;
@@ -620,7 +624,6 @@ struct FBSConfig
 		AIConfig = FBS_AIConfig();
 		AudioConfig = FBS_AudioConfig();
 		GridConfig = FBS_GridConfig();
-		SpatialConfig = FBS_SpatialConfig();
 		TargetConfig = FBS_TargetConfig();
 	}
 
@@ -665,29 +668,45 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
-				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Dynamic;
-				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::EdgeOnly;
-				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
-				Config.SpatialConfig.bContinuouslySpawn = false;
-				
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
-				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
-				Config.TargetConfig.bResetPositionOnDeactivation = false;
-		
+				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bMoveTargetsForward = false;
+				Config.TargetConfig.bSpawnAtOriginWheneverPossible = true;
+				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = true;
+				Config.TargetConfig.bUseOverlapSpawnBox = false;
+
+				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::SkillBased;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
-				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::Runtime;
-				Config.TargetConfig.TargetDestructionPolicy = ETargetDestructionPolicy::OnAnyDamageEventOrExpiration;
-				Config.TargetConfig.TargetActivationPolicy = ETargetActivationPolicy::OnSpawn;
-				Config.TargetConfig.TargetDeactivationPolicy = ETargetDeactivationPolicy::OnAnyDamageEventOrExpiration;
+				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
+				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
+				Config.TargetConfig.TargetDistributionPolicy = ETargetDistributionPolicy::EdgeOnly;
+				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::RuntimeOnly;
+
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::RemoveImmunity);
 				
-				Config.TargetConfig.MinTrackingSpeed = 0.f;
-				Config.TargetConfig.MaxTrackingSpeed = 0.f;
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnAnyExternalDamageTaken);
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::Destroy);
+				
+				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnDeactivation);
+				
 				Config.TargetConfig.ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
-				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
-				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				Config.TargetConfig.FloorDistance = DistanceFromFloor;
+				Config.TargetConfig.MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+				Config.TargetConfig.MaxHealth = BaseTargetHealth;
+				Config.TargetConfig.MoveForwardDistance = 0.f;
+				Config.TargetConfig.MinTargetSpeed = 0.f;
+				Config.TargetConfig.MaxTargetSpeed = 0.f;
+				
+				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
+				Config.TargetConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
 			break;
@@ -725,29 +744,45 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
-				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Dynamic;
-				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
-				Config.SpatialConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
-				Config.SpatialConfig.bContinuouslySpawn = true;
-				
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
-				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
-				Config.TargetConfig.bResetPositionOnDeactivation = false;
-		
+				Config.TargetConfig.bContinuouslySpawn = true;
+				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bMoveTargetsForward = false;
+				Config.TargetConfig.bSpawnAtOriginWheneverPossible = true;
+				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseOverlapSpawnBox = false;
+
+				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::SkillBased;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
-				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::Runtime;
-				Config.TargetConfig.TargetDestructionPolicy = ETargetDestructionPolicy::OnAnyDamageEventOrExpiration;
-				Config.TargetConfig.TargetActivationPolicy = ETargetActivationPolicy::OnSpawn;
-				Config.TargetConfig.TargetDeactivationPolicy = ETargetDeactivationPolicy::OnAnyDamageEventOrExpiration;
+				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
+				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
+				Config.TargetConfig.TargetDistributionPolicy = ETargetDistributionPolicy::FullRange;
+				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::RuntimeOnly;
+
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::RemoveImmunity);
 				
-				Config.TargetConfig.MinTrackingSpeed = 0.f;
-				Config.TargetConfig.MaxTrackingSpeed = 0.f;
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnAnyExternalDamageTaken);
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::Destroy);
+
+				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnDeactivation);
+				
 				Config.TargetConfig.ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
-				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
-				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				Config.TargetConfig.FloorDistance = DistanceFromFloor;
+				Config.TargetConfig.MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+				Config.TargetConfig.MaxHealth = BaseTargetHealth;
+				Config.TargetConfig.MoveForwardDistance = 0.f;
+				Config.TargetConfig.MinTargetSpeed = 0.f;
+				Config.TargetConfig.MaxTargetSpeed = 0.f;
+				
+				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
+				Config.TargetConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
 			break;
@@ -800,29 +835,49 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
-				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
-				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
-				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::Grid;
-				Config.SpatialConfig.bContinuouslySpawn = true;
-				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = true;
-				Config.TargetConfig.bResetPositionOnDeactivation = true;
-		
+				// Might need to change
+				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bMoveTargetsForward = false;
+				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
+				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseOverlapSpawnBox = false;
+
+				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::Static;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
-				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::Upfront;
-				Config.TargetConfig.TargetDestructionPolicy = ETargetDestructionPolicy::Persistant;
-				Config.TargetConfig.TargetActivationPolicy = ETargetActivationPolicy::OnCooldown;
-				Config.TargetConfig.TargetDeactivationPolicy = ETargetDeactivationPolicy::OnAnyDamageEventOrExpiration;
+				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
+				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Bordering;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
+				Config.TargetConfig.TargetDistributionPolicy = ETargetDistributionPolicy::Grid;
+				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::UpfrontOnly;
+
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::RemoveImmunity);
 				
-				Config.TargetConfig.MinTrackingSpeed = 0.f;
-				Config.TargetConfig.MaxTrackingSpeed = 0.f;
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnAnyExternalDamageTaken);
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
+				
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ResetPosition);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ShrinkQuickGrowSlow);
+
+				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::Persistant);
+				
 				Config.TargetConfig.ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
-				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth;
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
-				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				Config.TargetConfig.FloorDistance = DistanceFromFloor;
+				Config.TargetConfig.MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+				Config.TargetConfig.MaxHealth = BaseTargetHealth;
+				Config.TargetConfig.MoveForwardDistance = 0.f;
+				Config.TargetConfig.MinTargetSpeed = 0.f;
+				Config.TargetConfig.MaxTargetSpeed = 0.f;
+				
+				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
+				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = Config.GridConfig.NumHorizontalGridTargets * Config.GridConfig.NumVerticalGridTargets;
 			}
 			break;
@@ -835,8 +890,8 @@ struct FBSConfig
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Normal;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Normal;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Normal;
-						Config.TargetConfig.MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Normal;
-						Config.TargetConfig.MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Normal;
+						Config.TargetConfig.MinTargetSpeed = MinTrackingSpeed_BeatTrack_Normal;
+						Config.TargetConfig.MaxTargetSpeed = MaxTrackingSpeed_BeatTrack_Normal;
 						break;
 					}
 				case EGameModeDifficulty::Hard:
@@ -844,8 +899,8 @@ struct FBSConfig
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Hard;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Hard;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Hard;
-						Config.TargetConfig.MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Hard;
-						Config.TargetConfig.MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Hard;
+						Config.TargetConfig.MinTargetSpeed = MinTrackingSpeed_BeatTrack_Hard;
+						Config.TargetConfig.MaxTargetSpeed = MaxTrackingSpeed_BeatTrack_Hard;
 						break;
 					}
 				case EGameModeDifficulty::Death:
@@ -853,36 +908,51 @@ struct FBSConfig
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_BeatTrack_Death;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_BeatTrack_Death;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatTrack_Death;
-						Config.TargetConfig.MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Death;
-						Config.TargetConfig.MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Death;
+						Config.TargetConfig.MinTargetSpeed = MinTrackingSpeed_BeatTrack_Death;
+						Config.TargetConfig.MaxTargetSpeed = MaxTrackingSpeed_BeatTrack_Death;
 						break;
 					}
 				case EGameModeDifficulty::None:
 					break;
 				}
-				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
-				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
-				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
-				Config.SpatialConfig.bContinuouslySpawn = false;
-				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
-				Config.TargetConfig.bResetPositionOnDeactivation = false;
-		
+				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bMoveTargetsForward = false;
+				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
+				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseOverlapSpawnBox = true;
+
+				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::Static;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
-				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::Upfront;
-				Config.TargetConfig.TargetDestructionPolicy = ETargetDestructionPolicy::Persistant;
-				Config.TargetConfig.TargetActivationPolicy = ETargetActivationPolicy::OnSpawn;
-				Config.TargetConfig.TargetDeactivationPolicy = ETargetDeactivationPolicy::None;
+				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
+				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Tracking;
+				Config.TargetConfig.TargetDistributionPolicy = ETargetDistributionPolicy::FullRange;
+				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::UpfrontOnly;
 
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::RemoveImmunity);
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::ChangeDirection);
+				
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::Persistant);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::None);
+
+				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::Persistant);
+				
+				Config.TargetConfig.ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
+				Config.TargetConfig.ExpirationHealthPenalty = 0.f;
+				Config.TargetConfig.FloorDistance = DistanceFromFloor;
+				Config.TargetConfig.MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+				Config.TargetConfig.MaxHealth = BaseTrackingTargetHealth;
+				Config.TargetConfig.MoveForwardDistance = 0.f;
 				Config.TargetConfig.SpawnBeatDelay = SpawnBeatDelay_BeatTrack;
 				Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_BeatTrack;
-				Config.TargetConfig.ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
-				Config.TargetConfig.Attribute_MaxHealth = BaseTrackingTargetHealth;
-				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
-				Config.TargetConfig.NumCharges = DefaultNumCharges;
+				
+				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
+				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
 			}
 			break;
@@ -895,11 +965,11 @@ struct FBSConfig
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_ChargedBeatTrack_Normal;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_ChargedBeatTrack_Normal;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_ChargedBeatTrack_Normal;
-						Config.TargetConfig.NumCharges = NumCharges_ChargedBeatTrack_Normal;
+						Config.TargetConfig.MaxHealth = BaseTargetHealth * NumCharges_ChargedBeatTrack_Normal;
 						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = ChargeScaleMultiplier_ChargedBeatTrack_Normal;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_ChargedBeatTrack_Normal;
-						Config.TargetConfig.MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Normal;
-						Config.TargetConfig.MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Normal;
+						Config.TargetConfig.MinTargetSpeed = MinTrackingSpeed_BeatTrack_Normal;
+						Config.TargetConfig.MaxTargetSpeed = MaxTrackingSpeed_BeatTrack_Normal;
 						break;
 					}
 				case EGameModeDifficulty::Hard:
@@ -907,11 +977,11 @@ struct FBSConfig
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_ChargedBeatTrack_Hard;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_ChargedBeatTrack_Hard;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_ChargedBeatTrack_Hard;
-						Config.TargetConfig.NumCharges = NumCharges_ChargedBeatTrack_Hard;
-						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = TargetMaxLifeSpan_ChargedBeatTrack_Hard;
+						Config.TargetConfig.MaxHealth = BaseTargetHealth * NumCharges_ChargedBeatTrack_Hard;
+						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = ChargeScaleMultiplier_ChargedBeatTrack_Hard;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_ChargedBeatTrack_Hard;
-						Config.TargetConfig.MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Hard;
-						Config.TargetConfig.MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Hard;
+						Config.TargetConfig.MinTargetSpeed = MinTrackingSpeed_BeatTrack_Hard;
+						Config.TargetConfig.MaxTargetSpeed = MaxTrackingSpeed_BeatTrack_Hard;
 						break;
 					}
 				case EGameModeDifficulty::Death:
@@ -919,36 +989,55 @@ struct FBSConfig
 						Config.TargetConfig.TargetSpawnCD = TargetSpawnCD_ChargedBeatTrack_Death;
 						Config.TargetConfig.MinTargetScale = MinTargetScale_ChargedBeatTrack_Death;
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_ChargedBeatTrack_Death;
-						Config.TargetConfig.NumCharges = NumCharges_ChargedBeatTrack_Death;
+						Config.TargetConfig.MaxHealth = BaseTargetHealth * NumCharges_ChargedBeatTrack_Death;
 						Config.TargetConfig.ConsecutiveChargeScaleMultiplier = ChargeScaleMultiplier_ChargedBeatTrack_Death;
 						Config.TargetConfig.TargetMaxLifeSpan = TargetMaxLifeSpan_ChargedBeatTrack_Death;
-						Config.TargetConfig.MinTrackingSpeed = MinTrackingSpeed_BeatTrack_Death;
-						Config.TargetConfig.MaxTrackingSpeed = MaxTrackingSpeed_BeatTrack_Death;
+						Config.TargetConfig.MinTargetSpeed = MinTrackingSpeed_BeatTrack_Death;
+						Config.TargetConfig.MaxTargetSpeed = MaxTrackingSpeed_BeatTrack_Death;
 						break;
 					}
 				case EGameModeDifficulty::None:
 					break;
 				}
-				Config.SpatialConfig.BoundsScalingMethod = EBoundsScalingPolicy::Static;
-				Config.SpatialConfig.TargetDistributionMethod = ETargetDistributionPolicy::FullRange;
-				Config.SpatialConfig.BoxBounds = DefaultSpawnBoxBounds;
-				Config.SpatialConfig.bContinuouslySpawn = false;
-				
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bOnDamageEvent_ShrinkQuickAndGrowSlow = false;
-				Config.TargetConfig.bResetPositionOnDeactivation = false;
-		
+				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bMoveTargetsForward = false;
+				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
+				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseOverlapSpawnBox = true;
+
+				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::Static;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
-				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::Runtime;
-				Config.TargetConfig.TargetDestructionPolicy = ETargetDestructionPolicy::OnHealthReachedZero;
-				Config.TargetConfig.TargetActivationPolicy = ETargetActivationPolicy::OnCooldown;
-				Config.TargetConfig.TargetDeactivationPolicy = ETargetDeactivationPolicy::OnAnyDamageEventOrExpiration;
+				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
+				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
+				Config.TargetConfig.TargetDistributionPolicy = ETargetDistributionPolicy::FullRange;
+				Config.TargetConfig.TargetSpawningPolicy = ETargetSpawningPolicy::RuntimeOnly;
 
-				Config.TargetConfig.SpawnBeatDelay = 0.25f;
-				Config.TargetConfig.Attribute_MaxHealth = BaseTargetHealth * Config.TargetConfig.NumCharges;
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::RemoveImmunity);
+				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::ChangeDirection);
+				
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnAnyExternalDamageTaken);
+				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ResetPosition);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ShrinkQuickGrowSlow);
+
+				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);
+				
 				Config.TargetConfig.ExpirationHealthPenalty = BaseTargetHealth;
+				Config.TargetConfig.FloorDistance = DistanceFromFloor;
+				Config.TargetConfig.MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
+				Config.TargetConfig.MoveForwardDistance = 0.f;
+				Config.TargetConfig.SpawnBeatDelay = 0.25f;
+				
+				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
+				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
 			}
 			break;
@@ -981,21 +1070,6 @@ struct FBSConfig
 		Config.GameModeType = EGameModeType::Preset;
 		Config.CustomGameModeName = "";
 		return Config;
-	}
-
-	FVector GetBoxExtremaGrid(const int32 PositiveExtrema, const FVector& BoxOrigin) const
-	{
-		const float MaxTargetSize = TargetConfig.MaxTargetScale * SphereTargetDiameter;
-		const float HSpacing = GridConfig.GridSpacing.X + MaxTargetSize;
-		const float VSpacing = GridConfig.GridSpacing.Y + MaxTargetSize;
-		const float HalfWidth = (HSpacing * (GridConfig.NumHorizontalGridTargets - 1)) / 2.f;
-		const float HalfHeight = (VSpacing * (GridConfig.NumVerticalGridTargets - 1)) / 2.f;
-
-		if (PositiveExtrema == 1)
-		{
-			return FVector(BoxOrigin.X, HalfWidth + 1.f + BoxOrigin.Y, HalfHeight + 1.f + BoxOrigin.Z);
-		}
-		return FVector(BoxOrigin.X, -HalfWidth + BoxOrigin.Y, -HalfHeight + BoxOrigin.Z);
 	}
 };
 
@@ -1171,7 +1245,7 @@ struct FPlayerSettings_Game
 	FLinearColor TargetOutlineColor;
 
 	UPROPERTY(BlueprintReadOnly)
-	FLinearColor BeatGridInactiveTargetColor;
+	FLinearColor InactiveTargetColor;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bShowStreakCombatText;
@@ -1208,7 +1282,7 @@ struct FPlayerSettings_Game
 		EndTargetColor = DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = DefaultTargetOutlineColor;
-		BeatGridInactiveTargetColor = DefaultBeatGridInactiveTargetColor;
+		InactiveTargetColor = DefaultBeatGridInactiveTargetColor;
 		bShouldRecoil = true;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
@@ -1227,7 +1301,7 @@ struct FPlayerSettings_Game
 		EndTargetColor = DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = DefaultTargetOutlineColor;
-		BeatGridInactiveTargetColor = DefaultBeatGridInactiveTargetColor;
+		InactiveTargetColor = DefaultBeatGridInactiveTargetColor;
 	}
 };
 

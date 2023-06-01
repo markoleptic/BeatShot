@@ -55,8 +55,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Defining Config")
 	TSubclassOf<UGameModesWidget_DefiningConfig> DefiningConfigClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Spatial Config")
-	TSubclassOf<UGameModesWidget_SpatialConfig> SpatialConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | BeatGrid Config")
 	TSubclassOf<UGameModesWidget_BeatGridConfig> BeatGridConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | AI Config")
@@ -68,15 +66,12 @@ protected:
 	USavedTextWidget* SavedTextWidget;
 	
 	TObjectPtr<UGameModesWidget_DefiningConfig> DefiningConfig;
-	TObjectPtr<UGameModesWidget_SpatialConfig> SpatialConfig;
 	TObjectPtr<UGameModesWidget_TargetConfig> TargetConfig;
 	TObjectPtr<UGameModesWidget_BeatGridConfig> BeatGridConfig;
 	TObjectPtr<UGameModesWidget_AIConfig> AIConfig;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Defining Config")
 	UVerticalBox* Box_DefiningConfig;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Spatial Config")
-	UVerticalBox* Box_SpatialConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Config")
 	UVerticalBox* Box_TargetConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI Config")
@@ -202,7 +197,7 @@ protected:
 	UFUNCTION(Category = "Default Game Modes | ModeButtons")
 	void OnButtonClicked_Difficulty(const UBSButton* GameModeButton);
 	
-	/** The BoundsScalingMethod for a selected Preset Game Mode */
+	/** The BoundsScalingPolicy for a selected Preset Game Mode */
 	EBoundsScalingPolicy PresetSelection_BoundsScalingMethod;
 	
 	/** The BaseGameMode for a selected Preset Game Mode */

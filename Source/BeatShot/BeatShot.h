@@ -34,6 +34,70 @@ enum class EPlatformTransitionType : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None, EPlatformTransitionType::MoveDownByStepOff);
 
+/** Struct containing info about a target that is broadcast when a target takes damage or the the DamageableWindow timer expires */
+USTRUCT()
+struct FTargetDamageEvent
+{
+	GENERATED_BODY()
+
+	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
+	float TimeAlive;
+
+	/** The health attribute's NewValue */
+	float CurrentHealth;
+
+	/** The absolute value between the health attribute's NewValue and OldValue */
+	float DamageDelta;
+
+	/** The total possible damage if tracking */
+	float TotalPossibleDamage;
+
+	/** The location of the center of the target */
+	FVector Location;
+
+	/** The scale of the target relative to the world */
+	FVector Scale;
+
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
+	FGuid Guid;
+	
+	FTargetDamageEvent()
+	{
+		TimeAlive = INDEX_NONE;
+		DamageDelta = 0.f;
+		CurrentHealth = 0.f;
+		TotalPossibleDamage = 0.f;
+		Location = FVector();
+		Scale = FVector(1.f);
+	}
+
+	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FVector& InLocation, const FVector& InScale, const FGuid& InGuid,
+		const float InDamageDelta = 0.f, const float InTotalPossibleDamage = 0.f)
+	{
+		TimeAlive = InTimeAlive;
+		DamageDelta = InDamageDelta;
+		CurrentHealth = InCurrentHealth;
+		TotalPossibleDamage = InTotalPossibleDamage;
+		Location = InLocation;
+		Scale = InScale;
+		Guid = InGuid;
+	}
+
+	float GetDamageDelta(const float OldValue, const float NewValue) const
+	{
+		return abs(OldValue - NewValue);
+	}
+
+	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
+	{
+		if (Guid == Other.Guid)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
 class FBeatShot : public FDefaultGameModuleImpl
 {
 public:

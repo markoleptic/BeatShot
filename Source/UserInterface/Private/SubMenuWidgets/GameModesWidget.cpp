@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
-
-
 // ReSharper disable CppMemberFunctionMayBeConst
+
+
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "GlobalConstants.h"
 #include "Blueprint/WidgetTree.h"
@@ -16,7 +16,6 @@
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "WidgetComponents/SavedTextWidget.h"
 #include "SubMenuWidgets/GameModesWidget_DefiningConfig.h"
-#include "SubMenuWidgets/GameModesWidget_SpatialConfig.h"
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
 #include "SubMenuWidgets/GameModesWidget_BeatGridConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
@@ -57,9 +56,6 @@ void UGameModesWidget::NativeConstruct()
 
 	MenuButton_DefaultGameModes->SetDefaults(Box_DefaultGameModes, MenuButton_CustomGameModes);
 	MenuButton_CustomGameModes->SetDefaults(Box_CustomGameModes, MenuButton_DefaultGameModes);
-	
-	SpatialConfig = CreateWidget<UGameModesWidget_SpatialConfig>(this, SpatialConfigClass);
-	Box_SpatialConfig->AddChildToVerticalBox(SpatialConfig);
 
 	BeatGridConfig = CreateWidget<UGameModesWidget_BeatGridConfig>(this, BeatGridConfigClass);
 	Box_BeatGridConfig->AddChildToVerticalBox(BeatGridConfig);
@@ -285,7 +281,6 @@ void UGameModesWidget::OnButtonClicked_CancelOverwrite()
 void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
 	DefiningConfig->InitializeDefiningConfig(InBSConfig.DefiningConfig, InBSConfig.DefiningConfig.BaseGameMode);
-	SpatialConfig->InitializeTargetSpread(InBSConfig.SpatialConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	TargetConfig->InitializeTargetConfig(InBSConfig.TargetConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	
 	switch(InBSConfig.DefiningConfig.BaseGameMode)
@@ -326,7 +321,6 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	ReturnStruct.TargetConfig = TargetConfig->GetTargetConfig();
 	ReturnStruct.AudioConfig.PlayerDelay = ReturnStruct.TargetConfig.SpawnBeatDelay;
 	ReturnStruct.AIConfig = AIConfig->GetAIConfig();
-	ReturnStruct.SpatialConfig = SpatialConfig->GetSpatialConfig();
 	ReturnStruct.GridConfig = BeatGridConfig->GetBeatGridConfig();
 	return ReturnStruct;
 }

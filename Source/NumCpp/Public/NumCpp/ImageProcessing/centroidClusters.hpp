@@ -23,7 +23,7 @@
 /// DEALINGS IN THE SOFTWARE.
 ///
 /// Description
-/// Center of Mass centroids clusters
+/// CenterPoint of Mass centroids clusters
 ///
 
 #pragma once
@@ -40,7 +40,7 @@ namespace nc::imageProcessing
 {
     //============================================================================
     // Method Description:
-    /// Center of Mass centroids clusters
+    /// CenterPoint of Mass centroids clusters
     ///
     /// @param inClusters
     /// @return std::vector<Centroid>

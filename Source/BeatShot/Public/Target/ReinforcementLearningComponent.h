@@ -42,7 +42,7 @@ struct FAlgoInput
 		Reward = 1;
 	}
 
-	FAlgoInput(const int32 InStateIndex, const int32 InActionIndex, const int32 InStateIndex_2, const int32 InActionIndex_2, float InReward)
+	FAlgoInput(const int32 InStateIndex, const int32 InActionIndex, const int32 InStateIndex_2, const int32 InActionIndex_2, const float InReward)
 	{
 		StateIndex = InStateIndex;
 		ActionIndex = InActionIndex;
@@ -62,8 +62,8 @@ struct FRLAgentParams
 	FString CustomGameModeName;
 	int32 Size;
 	TArray<float> InQTable;
-	float SpawnCounterHeight;
-	float SpawnCounterWidth;
+	float SpawnPointsHeight;
+	float SpawnPointsWidth;
 	float InAlpha;
 	float InGamma;
 	float InEpsilon;
@@ -74,8 +74,8 @@ struct FRLAgentParams
 		CustomGameModeName = "";
 		Size = 0;
 		InQTable = TArray<float>();
-		SpawnCounterHeight = 0.f;
-		SpawnCounterWidth = 0.f;
+		SpawnPointsHeight = 0.f;
+		SpawnPointsWidth = 0.f;
 		InAlpha = 0.f;
 		InGamma = 0.f;
 		InEpsilon = 0.f;
@@ -90,17 +90,17 @@ struct FQTableIndex
 	GENERATED_BODY()
 
 	int32 QTableIndex;
-	TArray<int32> SpawnCounterIndices;
+	TArray<int32> SpawnPointIndices;
 
 	FQTableIndex()
 	{
 		QTableIndex = INDEX_NONE;
-		SpawnCounterIndices = TArray<int32>();
+		SpawnPointIndices = TArray<int32>();
 	}
 	FQTableIndex(const int32 InQTableIndex)
 	{
 		QTableIndex = InQTableIndex;
-		SpawnCounterIndices = TArray<int32>();
+		SpawnPointIndices = TArray<int32>();
 	}
 
 	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
@@ -171,10 +171,10 @@ public:
 	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
 
 	/** Updates RLAgent's QTable until TargetPairs queue is empty */
-	void UpdateReinforcementLearningComponent(const TArray<FSpawnPoint>& SpawnCounter);
+	void UpdateReinforcementLearningComponent(const USpawnPointManager* SpawnPointManager);
 
 private:
-	/** Returns a random SpawnCounter index from the provided SpawnCounterIndices */
+	/** Returns a random SpawnPoint index from the provided SpawnPointIndices */
 	int32 ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices) const;
 
 	/** First computes a reverse-sorted array containing QTable indices where the rewards is highest. Then checks to see if there is a valid SpawnCounter index that corresponds to the QTable index.
@@ -182,10 +182,10 @@ private:
 	int32 ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const;
 
 	/** Converts a SpawnCounterIndex to a QTableIndex */
-	int32 GetQTableIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
+	int32 GetQTableIndexFromSpawnPointIndex(const int32 SpawnCounterIndex) const;
 
 	/** Returns all SpawnCounter indices corresponding to the QTableIndex */
-	TArray<int32> GetSpawnCounterIndexRange(const int32 QTableIndex) const;
+	TArray<int32> GetSpawnPointIndexRange(const int32 QTableIndex) const;
 	
 	/** Converts a TArray of floats to an NdArray */
 	nc::NdArray<float> GetQTableFromTArray(const TArray<float>& InTArray) const;
@@ -217,27 +217,27 @@ private:
 	float Epsilon;
 	
 	/** The number of rows in SpawnCounter array */
-	int32 SpawnCounterHeight;
+	int32 SpawnPointsHeight;
 
 	/** The number of columns in SpawnCounter array */
-	int32 SpawnCounterWidth;
+	int32 SpawnPointsWidth;
 
 	/** The size of the SpawnCounter array */
-	int32 SpawnCounterSize;
+	int32 SpawnPointsSize;
 
-	/** How many rows the SpawnCounterHeight is divided into */
+	/** How many rows the SpawnPointsHeight is divided into */
 	int32 ScaledHeight = 5;
 
-	/** The number of the SpawnCounterWidth is divided into */
+	/** The number of the SpawnPointsWidth is divided into */
 	int32 ScaledWidth = 5;
 
 	/** The size of both dimensions of the QTable (ScaledHeight * ScaledWidth) */
 	int32 ScaledSize;
 
-	/** SpawnCounterHeight divided by ScaledHeight */
+	/** SpawnPointsHeight divided by ScaledHeight */
 	int32 HeightScaleFactor;
 
-	/** SpawnCounterWidth divided by ScaledWidth */
+	/** SpawnPointsWidth divided by ScaledWidth */
 	int32 WidthScaleFactor;
 
 	/** An array of structs where each element represents one QTable index that maps to multiple SpawnCounter indices */
@@ -247,6 +247,6 @@ private:
 	TQueue<FTargetPair> TargetPairs;
 
 	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired.
-	 *  Added directly after being spawned, removed and added to TargetPairs queue upon being destroyed */
+	 *  Added directly after being spawned or activated, removed and added to TargetPairs queue upon being destroyed */
 	TArray<FTargetPair> ActiveTargetPairs;
 };

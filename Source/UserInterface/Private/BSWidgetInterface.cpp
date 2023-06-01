@@ -39,11 +39,6 @@ UTooltipWidget* IBSWidgetInterface::GetTooltipWidget() const
 	return TooltipWidget.Get();
 }
 
-TArray<FTooltipData>& IBSWidgetInterface::GetTooltipData()
-{
-	return TooltipData;
-}
-
 void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage)
 {
 	if (!TooltipWidget.IsValid() || HoveredTooltipImage == nullptr)
@@ -54,35 +49,45 @@ void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImag
 	FTooltipData Data;
 	Data.TooltipImage = HoveredTooltipImage;
 	
-	if (const int32 Index = GetTooltipData().Find(Data); Index != INDEX_NONE)
+	if (const int32 Index = TooltipData.Find(Data); Index != INDEX_NONE)
 	{
-		TooltipWidget->TooltipDescriptor->SetText(GetTooltipData()[Index].TooltipText);
-		TooltipWidget->TooltipDescriptor->SetAutoWrapText(GetTooltipData()[Index].bAllowTextWrap);
+		TooltipWidget->TooltipDescriptor->SetText(TooltipData[Index].TooltipText);
+		TooltipWidget->TooltipDescriptor->SetAutoWrapText(TooltipData[Index].bAllowTextWrap);
 	}
 	HoveredTooltipImage->SetToolTip(TooltipWidget.Get());
 }
 
 void IBSWidgetInterface::AddToTooltipData(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap)
 {
+	if (TooltipData.Contains(FTooltipData(TooltipImage, FText())))
+	{
+		EditTooltipText(TooltipImage, TooltipText);
+		return;
+	}
 	TooltipImage->OnTooltipHovered.AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
-	GetTooltipData().AddUnique(FTooltipData(TooltipImage, TooltipText, bInAllowTextWrap));
+	TooltipData.AddUnique(FTooltipData(TooltipImage, TooltipText, bInAllowTextWrap));
 }
 
 void IBSWidgetInterface::AddToTooltipData(const FTooltipData& InToolTipData)
 {
-	GetTooltipData().Emplace(InToolTipData);
+	TooltipData.Emplace(InToolTipData);
 }
 
 void IBSWidgetInterface::EditTooltipText(const UTooltipImage* TooltipImage, const FText& TooltipText)
 {
-	if (TooltipImage == nullptr)
+	FTooltipData* Found = TooltipData.FindByPredicate([&] (const FTooltipData& Data)
 	{
-		return;
-	}
-	FTooltipData Data;
-	Data.TooltipImage = TooltipImage;
-	if (const int32 Index = GetTooltipData().Find(Data); Index != INDEX_NONE)
+		if (Data.TooltipImage)
+		{
+			if (Data.TooltipImage.Get() == TooltipImage)
+			{
+				return true;
+			}
+		}
+		return false;
+	});
+	if (Found)
 	{
-		GetTooltipData()[Index].TooltipText = TooltipText;
+		Found->TooltipText = TooltipText;
 	}
 }

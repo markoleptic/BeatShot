@@ -264,7 +264,7 @@ namespace Constants
 	inline const FVector DefaultSpawnBoxBounds(0.f, 3200.f, 1000.f);
 
 	/** How much to shrink the target scale to during BeatGrid after successful hit */
-	inline constexpr float MinShrinkTargetScale = 0.1f;
+	inline constexpr float MinShrinkTargetScale = 0.2f;
 
 	/** Base sphere diameter at 1.0 scale */
 	constexpr float SphereTargetDiameter = 100.f;
@@ -329,9 +329,25 @@ namespace Constants
 	inline constexpr float MaxValue_ConsecutiveChargeScaleMultiplier = 1.f;
 	inline constexpr float SnapSize_ConsecutiveChargeScaleMultiplier = 0.01f;
 
-	inline constexpr int32 MinValue_NumCharges = -1;
-	inline constexpr int32 MaxValue_NumCharges = 5;
-	inline constexpr int32 SnapSize_NumCharges = 1;
+	inline constexpr int32 MinValue_MaxNumRecentTargets = 0;
+	inline constexpr int32 MaxValue_MaxNumRecentTargets = 50;
+	inline constexpr int32 SnapSize_MaxNumRecentTargets = 1;
+
+	inline constexpr float MinValue_RecentTargetTimeLength = 0.f;
+	inline constexpr float MaxValue_RecentTargetTimeLength = 30.f;
+	inline constexpr float SnapSize_RecentTargetTimeLength = 0.05f;
+
+	inline constexpr int32 MinValue_NumUpfrontTargetsToSpawn = 0;
+	inline constexpr int32 MaxValue_NumUpfrontTargetsToSpawn = 200;
+	inline constexpr int32 SnapSize_NumUpfrontTargetsToSpawn = 1;
+
+	inline constexpr int32 MinValue_ExpirationHealthPenalty = 0;
+	inline constexpr int32 MaxValue_ExpirationHealthPenalty = 1000;
+	inline constexpr int32 SnapSize_ExpirationHealthPenalty = 10;
+
+	inline constexpr int32 MinValue_MaxHealth = 100;
+	inline constexpr int32 MaxValue_MaxHealth = 1000;
+	inline constexpr int32 SnapSize_MaxHealth = 100;
 	
 	// AI
 	

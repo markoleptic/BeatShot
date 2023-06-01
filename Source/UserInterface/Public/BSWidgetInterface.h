@@ -85,9 +85,6 @@ public:
 	/** Returns TooltipWidget */
 	UTooltipWidget* GetTooltipWidget() const;
 
-	/** Returns TooltipData */
-	TArray<FTooltipData>& GetTooltipData();
-
 	/** Call this to set the tooltip widget constructed from ConstructTooltipWidget */
 	void SetTooltipWidget(const UTooltipWidget* InTooltipWidget);
 
@@ -132,6 +129,7 @@ public:
 		}
 		return FString();
 	}
+
 
 private:
 	TArray<FTooltipData> TooltipData;

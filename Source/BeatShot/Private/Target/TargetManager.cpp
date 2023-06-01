@@ -22,10 +22,25 @@ ATargetManager::ATargetManager()
 	RootComponent = SpawnBox;
 	OverlapSpawnBox = CreateDefaultSubobject<UBoxComponent>("BeatTrack SpawnBox");
 	ReinforcementLearningComponent = CreateDefaultSubobject<UReinforcementLearningComponent>("Reinforcement Learning Component");
-	ShouldSpawn = false;
-	LastTargetSpawnedCenter = false;
-	bSkipNextSpawn = false;
+
 	ConsecutiveTargetsHit = 0;
+	BSConfig = FBSConfig();
+	PlayerSettings = FPlayerSettings_Game();
+	LastTargetSpawnedCenter = false;
+	ShouldSpawn = false;
+	bShowDebug_SpawnBox = false;
+	bShowDebug_SpawnMemory = false;
+	bShowDebug_ReinforcementLearningWidget = false;
+	SpawnPoint = nullptr;
+	PreviousSpawnPoint = nullptr;
+	TargetScale = FVector(1.f);
+	StaticExtrema = FExtrema();
+	StaticExtents = FVector();
+	ConsecutiveTargetsHit = 0;
+	DynamicSpawnScale = 0;
+	ManagedTargets = TArray<ASphereTarget*>();
+	AllSpawnLocations = TArray<FVector>();
+	RemoveFromRecentDelegate = FTimerDelegate();
 }
 
 void ATargetManager::BeginPlay()
@@ -43,6 +58,8 @@ void ATargetManager::Destroyed()
 		}
 	}
 	
+	SpawnPointManager->BeginDestroy();
+	
 	Super::Destroyed();
 }
 
@@ -58,86 +75,86 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 	/* Initialize local copy of FBSConfig */
 	BSConfig = InBSConfig;
 	PlayerSettings = InPlayerSettings;
-	
-	BSConfig.TargetConfig.OnSpawn_TargetColor = InPlayerSettings.StartTargetColor;
-	BSConfig.TargetConfig.OnSpawn_TargetOutlineColor = InPlayerSettings.StartTargetColor;
-	BSConfig.TargetConfig.StartToPeak_StartColor = InPlayerSettings.StartTargetColor;
-	BSConfig.TargetConfig.StartToPeak_EndColor = InPlayerSettings.PeakTargetColor;
-	BSConfig.TargetConfig.PeakToEnd_StartColor = InPlayerSettings.PeakTargetColor;
-	BSConfig.TargetConfig.PeakToEnd_EndColor = InPlayerSettings.EndTargetColor;
-	BSConfig.TargetConfig.InActiveTargetOutlineColor = InPlayerSettings.BeatGridInactiveTargetColor;
-	BSConfig.TargetConfig.InActiveTargetColor = InPlayerSettings.BeatGridInactiveTargetColor;
 
+	BSConfig.TargetConfig.bUseSeparateOutlineColor = InPlayerSettings.bUseSeparateOutlineColor;
+	BSConfig.TargetConfig.InactiveTargetColor = InPlayerSettings.InactiveTargetColor;
+	BSConfig.TargetConfig.StartColor = InPlayerSettings.StartTargetColor;
+	BSConfig.TargetConfig.PeakColor = InPlayerSettings.PeakTargetColor;
+	BSConfig.TargetConfig.EndColor = InPlayerSettings.EndTargetColor;
+	
 	/* GameMode menu uses the full width, while box bounds are only half width / half height */
-	StaticExtents = BSConfig.SpatialConfig.GenerateTargetManagerBoxBounds();
+	StaticExtents = BSConfig.TargetConfig.GenerateTargetManagerBoxBounds();
 
 	/* Set new location & box extent */
-	SpawnBox->SetRelativeLocation(BSConfig.SpatialConfig.GenerateSpawnBoxLocation());
+	SpawnBox->SetRelativeLocation(BSConfig.TargetConfig.GenerateSpawnBoxLocation());
 	SpawnBox->SetBoxExtent(StaticExtents);
-	StaticMinExtrema = SpawnBox->Bounds.GetBoxExtrema(0);
-	StaticMaxExtrema = SpawnBox->Bounds.GetBoxExtrema(1);
-
+	StaticExtrema.Min = SpawnBox->Bounds.GetBoxExtrema(0);
+	StaticExtrema.Max = SpawnBox->Bounds.GetBoxExtrema(1);
+	
 	/* Set the overlap spawn box size */
-	OverlapSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
-	OverlapSpawnBox->SetBoxExtent(FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
-
-	if (BSConfig.SpatialConfig.bUseOverlapSpawnBox)
+	if (BSConfig.TargetConfig.bUseOverlapSpawnBox)
 	{
+		OverlapSpawnBox->SetRelativeLocation(FVector(GetBoxOrigin().X - BSConfig.TargetConfig.MoveForwardDistance * 0.5f, GetBoxOrigin().Y, GetBoxOrigin().Z));
+		OverlapSpawnBox->SetBoxExtent(FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5f, GetBoxExtents_Static().Y, GetBoxExtents_Static().Z));
 		OverlapSpawnBox->OnComponentEndOverlap.AddDynamic(this, &ATargetManager::OnOverlapEnd_OverlapSpawnBox);
 	}
-	
+
+	// Initialize SpawnPointManager and SpawnPoints
 	SpawnPointManager->InitSpawnPointManager(InBSConfig, GetBoxOrigin(), StaticExtents);
 
-	if (BSConfig.SpatialConfig.TargetDistributionMethod == ETargetDistributionPolicy::Grid)
+	if (BSConfig.TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
-		AllSpawnLocations = SpawnPointManager->InitializeSpawnPoints(BSConfig.GetBoxExtremaGrid(0, GetBoxOrigin()), BSConfig.GetBoxExtremaGrid(1, GetBoxOrigin()));
+		AllSpawnLocations = SpawnPointManager->InitializeSpawnPoints(GenerateBoxExtremaGrid());
 	}
 	else
 	{
-		AllSpawnLocations = SpawnPointManager->InitializeSpawnPoints(GetBoxExtrema(0, false), GetBoxExtrema(1, false));
+		AllSpawnLocations = SpawnPointManager->InitializeSpawnPoints(GetBoxExtrema(false));
 	}
-		
-	if (IsDynamicBoundsScalingPolicy(BSConfig.SpatialConfig.BoundsScalingMethod))
+
+	// Initialize Dynamic SpawnBox
+	if (IsDynamicBoundsScalingPolicy(BSConfig.TargetConfig.BoundsScalingPolicy))
 	{
 		SetBoxExtents_Dynamic();
 	}
 
-	/* Enable / Disable Reinforcement Learning */
+	// Enable / Disable Reinforcement Learning
 	if (BSConfig.AIConfig.bEnableReinforcementLearning)
 	{
 		FRLAgentParams Params;
 		Params.InQTable = GetScoreInfoFromDefiningConfig(InBSConfig.DefiningConfig).QTable;
 		Params.DefaultMode = BSConfig.DefiningConfig.BaseGameMode;
 		Params.CustomGameModeName = BSConfig.DefiningConfig.CustomGameModeName;
-		Params.Size = SpawnPointManager->GetSpawnCounter().Num();
-		Params.SpawnCounterHeight = SpawnPointManager->GetSpawnPointsHeight();
-		Params.SpawnCounterWidth = SpawnPointManager->GetSpawnPointsWidth();
+		Params.Size = SpawnPointManager->GetSpawnPoints().Num();
+		Params.SpawnPointsHeight = SpawnPointManager->GetSpawnPointsHeight();
+		Params.SpawnPointsWidth = SpawnPointManager->GetSpawnPointsWidth();
 		Params.InEpsilon = BSConfig.AIConfig.Epsilon;
 		Params.InGamma = BSConfig.AIConfig.Gamma;
 		Params.InAlpha = BSConfig.AIConfig.Alpha;
+		ReinforcementLearningComponent->SetActive(true);
 		ReinforcementLearningComponent->Init(Params);
 	}
 	else
 	{
 		ReinforcementLearningComponent->Deactivate();
 	}
-
-	/* Initial target size */
-	TargetScale = GetNextTargetScale();
-
-	/* Initial SpawnPoint and PreviousSpawnPoint */
+	
+	// Initial SpawnPoint and PreviousSpawnPoint
 	if (FSpawnPoint* Point = SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin())) {
 		SpawnPoint = Point;
 	}
 	else
 	{
-		SpawnPoint = &SpawnPointManager->GetSpawnCounter()[UKismetMathLibrary::RandomIntegerInRange(0, SpawnPointManager->GetSpawnCounter().Num() - 1)];
+		SpawnPoint = &SpawnPointManager->GetSpawnPoints()[UKismetMathLibrary::RandomIntegerInRange(0, SpawnPointManager->GetSpawnPoints().Num() - 1)];
 	}
-	PreviousSpawnPoint = SpawnPoint;
 
+	PreviousSpawnPoint = SpawnPoint;
+	
+	// Initial target scale
+	SpawnPoint->SetScale(GetNextTargetScale());
+	
 	if (BSConfig.TargetConfig.NumUpfrontTargetsToSpawn > 0)
 	{
-		switch(BSConfig.SpatialConfig.TargetDistributionMethod) {
+		switch(BSConfig.TargetConfig.TargetDistributionPolicy) {
 		case ETargetDistributionPolicy::None:
 		case ETargetDistributionPolicy::HeadshotHeightOnly:
 		case ETargetDistributionPolicy::EdgeOnly:
@@ -145,13 +162,13 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 			for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
 			{
 				FindNextTargetProperties();
-				SpawnTarget(*SpawnPoint, false);
+				SpawnTarget(*SpawnPoint);
 			}
 			break;
 		case ETargetDistributionPolicy::Grid:
-			for (int i = 0; i < SpawnPointManager->GetSpawnCounter().Num(); i++)
+			for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
 			{
-				SpawnTarget(SpawnPointManager->GetSpawnCounter()[i], false);
+				SpawnTarget(SpawnPointManager->GetSpawnPointsRef()[i]);
 			}
 			break;
 		default: ;
@@ -168,167 +185,143 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 
 void ATargetManager::OnAudioAnalyzerBeat()
 {
-	if (!ShouldSpawn || !SpawnPointManager)
+	// We're relying on FindNextTargetProperties to have a fresh SpawnPoint lined up,
+	// which is called at the end of this function
+	
+	if (!ShouldSpawn || !SpawnPointManager || !SpawnPoint ||
+		(!BSConfig.TargetConfig.bContinuouslySpawn && SpawnPointManager->GetActivatedSpawnPoints().Num() > 0))
 	{
-		//UE_LOG(LogTemp, Display, TEXT("Shouldn't Spawn"));
-		//goto SetNext;
 		return;
 	}
+	
+	bool bSuccessfulSpawn = false;
+	bool bSuccessfulActivation = false;
 
-	switch (BSConfig.TargetConfig.TargetSpawningPolicy)
+	// Check to see if the game mode spawns targets at runtime
+	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
-	case ETargetSpawningPolicy::None:
-	case ETargetSpawningPolicy::Upfront:
-		break;
-	case ETargetSpawningPolicy::Runtime:
-		if (!bSkipNextSpawn)
+		if (SpawnTarget(*SpawnPoint))
 		{
-			SpawnTarget(*SpawnPoint, true);
-			SpawnPointManager->FlagSpawnPointAsActivated(SpawnPoint->GetGuid());
-		}
-		if (!BSConfig.SpatialConfig.bContinuouslySpawn)
-		{
-			SetShouldSpawn(false);
-		}
-		break;
-	}
-
-	switch (BSConfig.TargetConfig.TargetActivationPolicy)
-	{
-	case ETargetActivationPolicy::None:
-	case ETargetActivationPolicy::OnSpawn:
-		break;
-	case ETargetActivationPolicy::OnCooldown:
-		ActivateTarget();
-		break;
-	}
-
-	int NumRecent=0;
-	int NumAct=0;
-	for (FSpawnPoint& Hey : SpawnPointManager->GetSpawnCounter())
-	{
-		if (Hey.IsRecent())
-		{
-			NumRecent++;
-		}
-		if (Hey.IsActivated())
-		{
-			NumAct++;
+			bSuccessfulSpawn = true;
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("NumRecent: %d NumActivated: %d"), NumRecent, NumAct);
+	if (ActivateTarget(bSuccessfulSpawn))
+	{
+		bSuccessfulActivation = true;
+	}
 
-	PreviousSpawnPoint = SpawnPoint;
+	// SpawnPoint will be valid if we make it past this
+	if (bSuccessfulSpawn | bSuccessfulActivation)
+	{
+		// Broadcast that a target has been spawned or activated, mainly to keep track of total target spawns on PlayerHUD
+		OnTargetActivatedOrSpawned.Broadcast();
+		// Add to ActiveTargetParis if using RL Comp
+		if (ReinforcementLearningComponent->IsActive() && PreviousSpawnPoint != SpawnPoint)
+		{
+			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->ChosenPoint, SpawnPoint->ChosenPoint);
+		}
+		// If we make it this far, flag the point as activated
+		SpawnPointManager->FlagSpawnPointAsActivated(SpawnPoint->GetGuid());
+	}
+	
+	if (bShowDebug_SpawnMemory)
+	{
+		ShowDebug_NumRecentNumActivated();
+	}
+
+	// Immediately find the next target scale and SpawnPoint
 	FindNextTargetProperties();
-	/*SetNext:
-	{
-		
-	}*/
+
+	// Wait for a target damage event if not continuous
+	//if (!BSConfig.TargetConfig.bContinuouslySpawn)
+	//{
+	//	SetShouldSpawn(false);
+	//}
 }
 
-ASphereTarget* ATargetManager::SpawnTarget(FSpawnPoint& InSpawnPoint, const bool bBroadcastSpawnEvent)
+bool ATargetManager::SpawnTarget(FSpawnPoint& InSpawnPoint)
 {
-	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(ActorToSpawn, FTransform(FRotator::ZeroRotator, InSpawnPoint.ActualChosenPoint, InSpawnPoint.Scale), this, nullptr,
+	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(TargetToSpawn, FTransform(FRotator::ZeroRotator, InSpawnPoint.ChosenPoint, InSpawnPoint.GetScale()), this, nullptr,
 	                                                                      ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	Target->InitTarget(BSConfig, PlayerSettings);
-	Target->SetInitialSphereScale(InSpawnPoint.Scale);
+	Target->InitTarget(BSConfig.TargetConfig);
+	Target->SetInitialSphereScale(InSpawnPoint.GetScale());
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnOnTargetHealthChangedOrExpired);
 	Target->FinishSpawning(FTransform(), true);
 	InSpawnPoint.SetGuid(Target->GetGuid());
 	AddToManagedTargets(Target);
-
-	if (ReinforcementLearningComponent->IsActive())
-	{
-		ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->ActualChosenPoint, InSpawnPoint.ActualChosenPoint);
-	}
-
-	if (InSpawnPoint.ActualChosenPoint.Equals(GetBoxOrigin()))
-	{
-		LastTargetSpawnedCenter = true;
-	}
-	else
-	{
-		LastTargetSpawnedCenter = false;
-	}
-
-	PreviousSpawnPoint = &InSpawnPoint;
-	LocationBeforeDirectionChange = InSpawnPoint.ActualChosenPoint;
-
-	if (bBroadcastSpawnEvent)
-	{
-		OnTargetActivatedOrSpawned.Broadcast();
-		OnTargetActivated_AimBot.Broadcast(Target);
-	}
-
-	return Target;
+	return Target != nullptr;
 }
 
-void ATargetManager::ActivateTarget()
+bool ATargetManager::ActivateTarget(const bool bSpawnedTarget) const
 {
-	if (SpawnPoint && GetManagedTargets().IsValidIndex(SpawnPoint->Index) && !GetManagedTargets()[SpawnPoint->Index]->IsTargetActiveAndDamageable())
+	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
 	{
-		GetManagedTargets()[SpawnPoint->Index]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-		OnTargetActivatedOrSpawned.Broadcast();
-		SpawnPointManager->FlagSpawnPointAsActivated(SpawnPoint->GetGuid());
-		PreviousSpawnPoint = SpawnPoint;
+		if (SpawnPoint && GetManagedTargets().IsValidIndex(SpawnPoint->Index) && !GetManagedTargets()[SpawnPoint->Index]->IsTargetActiveAndDamageable())
+		{
+			GetManagedTargets()[SpawnPoint->Index]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+			return true;
+		}
 	}
+
+	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
+	
+	if (bSpawnedTarget)
+	{
+		for (ASphereTarget* Target : GetManagedTargets())
+		{
+			if (!Target->IsTargetActiveAndDamageable())
+			{
+				Target->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+			}
+			if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
+			{
+				ChangeTargetVelocity(Target);
+			}
+			if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
+			{
+				ChangeTargetDirection(Target);
+			}
+			if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
+			{
+				ChangeTargetScale(Target);
+			}
+			return true;
+		}
+	}
+	return false;
 }
 
-void ATargetManager::SpawnChargedTarget()
+void ATargetManager::ChangeTargetDirection(ASphereTarget* InTarget) const
 {
-	if (!GetManagedTargets().IsEmpty())
-	{
-		return;
-	}
-
-	SpawnTarget(*SpawnPoint, false);
-	FindNextTargetProperties();
-	MovingTargetSpeed = FMath::FRandRange(BSConfig.TargetConfig.MinTrackingSpeed, BSConfig.TargetConfig.MaxTrackingSpeed);
-	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
-	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
+	InTarget->SetMovingTargetDirection(UKismetMathLibrary::GetDirectionUnitVector(InTarget->GetActorLocation(), GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetMovingTargetSpeed())));
 }
 
-void ATargetManager::UpdateBeatTrackTarget()
+void ATargetManager::ChangeTargetScale(const ASphereTarget* InTarget) const
 {
-	if (GetManagedTargets().IsEmpty())
-	{
-		return;
-	}
-
-	LocationBeforeDirectionChange = GetManagedTargets()[0]->GetActorLocation();
-	GetManagedTargets()[0]->SetSphereScale(GetNextTargetScale());
-	MovingTargetSpeed = FMath::FRandRange(BSConfig.TargetConfig.MinTrackingSpeed, BSConfig.TargetConfig.MaxTrackingSpeed);
-	EndLocation = GetRandomBeatTrackLocation(LocationBeforeDirectionChange);
-	CurrentMovingTargetDirection = UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeDirectionChange, EndLocation);
+	InTarget->SetSphereScale(GetNextTargetScale());
 }
 
-void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime)
+void ATargetManager::ChangeTargetVelocity(ASphereTarget* InTarget) const
+{
+	InTarget->SetMovingTargetSpeed(FMath::FRandRange(BSConfig.TargetConfig.MinTargetSpeed, BSConfig.TargetConfig.MaxTargetSpeed));
+}
+
+void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime) const
 {
 	for (ASphereTarget* Target : GetManagedTargets())
 	{
-		CurrentMovingTargetLocation = Target->GetActorLocation();
-		if (BSConfig.SpatialConfig.bMoveTargetsForward)
+		FVector StartLoc = Target->GetActorLocation();
+		if (BSConfig.TargetConfig.bMoveTargetsForward)
 		{
-			const FVector NewLoc = FVector(CurrentMovingTargetLocation.X - BSConfig.SpatialConfig.MoveForwardDistance, CurrentMovingTargetLocation.Y, CurrentMovingTargetLocation.Z);
-			Target->SetActorLocation(UKismetMathLibrary::VInterpTo(CurrentMovingTargetLocation, NewLoc, DeltaTime, 1 / BSConfig.TargetConfig.TargetMaxLifeSpan));
+			const FVector NewLoc = FVector(StartLoc.X - BSConfig.TargetConfig.MoveForwardDistance, StartLoc.Y, StartLoc.Z);
+			Target->SetActorLocation(UKismetMathLibrary::VInterpTo(StartLoc, NewLoc, DeltaTime, 1 / BSConfig.TargetConfig.TargetMaxLifeSpan));
 		}
-		Target->SetActorLocation(CurrentMovingTargetLocation += CurrentMovingTargetDirection * MovingTargetSpeed * DeltaTime);
+		Target->SetActorLocation(StartLoc += Target->GetMovingTargetDirection() * Target->GetMovingTargetSpeed() * DeltaTime);
 	}
 }
 
 void ATargetManager::OnOnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent)
 {
-	/* Allow targets to spawn again if SingleBeat */
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat)
-	{
-		SetShouldSpawn(true);
-	}
-
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
-	{
-		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TargetDamageEvent.TotalPossibleDamage);
-	}
-
 	/* Update ConsecutiveTargetsHit, Adjust DynamicSpawnScale */
 	if (TargetDamageEvent.TimeAlive == -1)
 	{
@@ -341,85 +334,99 @@ void ATargetManager::OnOnTargetHealthChangedOrExpired(const FTargetDamageEvent& 
 		DynamicSpawnScale = FMath::Clamp(DynamicSpawnScale + 1, 0, 100);
 	}
 
-	/* Broadcast that a target has been destroyed or timed out, and give the location for combat text */
-	const FVector Location = TargetDamageEvent.Location;
-	const FVector CombatTextLocation = {Location.X, Location.Y, Location.Z + SphereTargetRadius * TargetDamageEvent.Scale.Z};
-	OnTargetDestroyed.Broadcast(TargetDamageEvent.TimeAlive, ConsecutiveTargetsHit, CombatTextLocation);
-
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
+	/* Broadcast damage event to GameMode */
+	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{
-		return;
-	}
-	
-	/* Remove from active targets if out of charges, and don't do anything further if ChargedBeatTrack */
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::ChargedBeatTrack)
-	{
-		if (TargetDamageEvent.CurrentHealth <= 0.f)
-		{
-			RemoveFromManagedTargets(TargetDamageEvent.Guid);
-		}
-		return;
-	}
-
-	/* Remove from active targets, and remove from recent targets after a delay */
-	if (BSConfig.TargetConfig.TargetDestructionPolicy != ETargetDestructionPolicy::Persistant)
-	{
-		RemoveFromManagedTargets(TargetDamageEvent.Guid);
-	}
-
-	FTimerHandle TimerHandle;
-	RemoveFromRecentDelegate.BindUObject(SpawnPointManager, &USpawnPointManager::RemoveRecentFlagFromSpawnPoint, TargetDamageEvent.Guid);
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
-
-	/* Find the index that corresponds to the destroyed target's location */
-	FSpawnPoint* Point = SpawnPointManager->FindSpawnPointFromGuid(TargetDamageEvent.Guid);
-	if (Point)
-	{
-		/* Update the total target spawns in SpawnCounter */
-		if (Point->TotalSpawns == INDEX_NONE)
-		{
-			Point->TotalSpawns = 1;
-		}
-		else
-		{
-			Point->TotalSpawns++;
-		}
-
-		/* Update the total target hits in SpawnCounter */
-		if (TargetDamageEvent.TimeAlive != INDEX_NONE)
-		{
-			Point->TotalHits++;
-		}
-
-		/* Update the Reinforcement Learning Component */
-		if (ReinforcementLearningComponent->IsActive())
-		{
-			ReinforcementLearningComponent->UpdateReinforcementLearningReward(Location, TargetDamageEvent.TimeAlive != INDEX_NONE);
-			ReinforcementLearningComponent->UpdateReinforcementLearningComponent(SpawnPointManager->GetSpawnCounter());
-		}
-		Point->SetIsActivated(false);
-		Point->SetIsRecent(true);
+		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TargetDamageEvent.TotalPossibleDamage);
 	}
 	else
 	{
-		UE_LOG(LogTargetManager, Warning, TEXT("Target not found in SpawnCounter %s"), *Location.ToString());
+		OnTargetDeactivated.Broadcast(TargetDamageEvent.TimeAlive, ConsecutiveTargetsHit, FVector(TargetDamageEvent.Location.X,
+			TargetDamageEvent.Location.Y, TargetDamageEvent.Location.Z + SphereTargetRadius * TargetDamageEvent.Scale.Z));
+	}
+	
+	/* Remove from managed targets */
+	if (!BSConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
+	{
+		if (BSConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
+		{
+			UE_LOG(LogTemp, Display, TEXT("Removed based on OnDeactivation"));
+			RemoveFromManagedTargets(TargetDamageEvent.Guid);
+		}
+		if (BSConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
+		{
+			UE_LOG(LogTemp, Display, TEXT("Removed based on OnExpiration"));
+			RemoveFromManagedTargets(TargetDamageEvent.Guid);
+		}
+		if (BSConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) &&
+			TargetDamageEvent.CurrentHealth <= 0.f)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Removed based on OnHealthReachedZero"));
+			RemoveFromManagedTargets(TargetDamageEvent.Guid);
+		}
+		if (BSConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) &&
+			TargetDamageEvent.TimeAlive != -1)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Removed based on OnAnyExternalDamageTaken"));
+			RemoveFromManagedTargets(TargetDamageEvent.Guid);
+		}
+	}
+	
+	/* Update Reinforcement Learning Component */
+	if (ReinforcementLearningComponent->IsActive())
+	{
+		ReinforcementLearningComponent->UpdateReinforcementLearningReward(TargetDamageEvent.Location, TargetDamageEvent.TimeAlive != INDEX_NONE);
+		ReinforcementLearningComponent->UpdateReinforcementLearningComponent(SpawnPointManager);
+	}
+
+	/* Update flags */
+	SpawnPointManager->RemoveActivatedFlagFromSpawnPoint(TargetDamageEvent);
+	SpawnPointManager->FlagSpawnPointAsRecent(TargetDamageEvent.Guid);
+
+	/* Handle removing recent flag from SpawnPoint */
+	FTimerHandle TimerHandle;
+	RemoveFromRecentDelegate.BindUObject(SpawnPointManager, &USpawnPointManager::RemoveRecentFlagFromSpawnPoint, TargetDamageEvent.Guid);
+	switch (BSConfig.TargetConfig.RecentTargetMemoryPolicy)
+	{
+	case ERecentTargetMemoryPolicy::None:
+		break;
+	case ERecentTargetMemoryPolicy::CustomTimeBased:
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.RecentTargetTimeLength, false);
+		break;
+	case ERecentTargetMemoryPolicy::NumTargetsBased:
+		if (SpawnPointManager->GetRecentSpawnPoints().Num() > BSConfig.TargetConfig.MaxNumRecentTargets)
+		{
+			if (const FSpawnPoint* Found = SpawnPointManager->FindOldestRecentSpawnPoint())
+			{
+				SpawnPointManager->RemoveRecentFlagFromSpawnPoint(Found->GetGuid());
+			}
+		}
+		break;
+	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
+		break;
 	}
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void ATargetManager::OnOverlapEnd_OverlapSpawnBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	/* Reverse direction if not longer overlapping spawn box */
-	if (Cast<ASphereTarget>(OtherActor))
+	if (ASphereTarget* Target = Cast<ASphereTarget>(OtherActor))
 	{
-		CurrentMovingTargetDirection = -CurrentMovingTargetDirection;
+		Target->SetMovingTargetDirection(-Target->GetMovingTargetDirection());
 	}
 }
 
 void ATargetManager::FindNextTargetProperties()
 {
-	TargetScale = GetNextTargetScale();
-	SpawnPoint = GetNextTargetSpawnLocation(BSConfig.SpatialConfig.BoundsScalingMethod, TargetScale);
-	SpawnPoint->SetScale(TargetScale);
+	const FVector NewScale = GetNextTargetScale();
+
+	LastTargetSpawnedCenter = SpawnPoint->ChosenPoint.Equals(GetBoxOrigin());
+	
+	PreviousSpawnPoint = SpawnPoint;
+	SpawnPoint = GetNextSpawnPoint(BSConfig.TargetConfig.BoundsScalingPolicy, NewScale);
+	if (GetManagedTargets().IsValidIndex(SpawnPoint->Index)) SpawnPoint->SetScale(NewScale);
 }
 
 FVector ATargetManager::GetNextTargetScale() const
@@ -432,7 +439,7 @@ FVector ATargetManager::GetNextTargetScale() const
 	return FVector(FMath::FRandRange(BSConfig.TargetConfig.MinTargetScale, BSConfig.TargetConfig.MaxTargetScale));
 }
 
-FSpawnPoint* ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale)
+FSpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale) const
 {
 	/* Change the BoxExtent of the SpawnBox if dynamic */
 	if (IsDynamicBoundsScalingPolicy(BoundsScalingMethod))
@@ -440,56 +447,46 @@ FSpawnPoint* ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingPoli
 		SetBoxExtents_Dynamic();
 	}
 
+	/* Spawn every other target in center if specified */
+	if (BSConfig.TargetConfig.bSpawnEveryOtherTargetInCenter && SpawnPoint != SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin()))
+	{
+		return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
+	}
+
 	/* Get all points that haven't been occupied by a target recently */
-	TArray<FVector> OpenLocations = GetValidSpawnLocations(NewTargetScale, BSConfig.SpatialConfig.TargetDistributionMethod, BoundsScalingMethod);
+	TArray<FVector> OpenLocations = GetValidSpawnLocations(NewTargetScale, BSConfig.TargetConfig.TargetDistributionPolicy, BoundsScalingMethod);
 	if (OpenLocations.IsEmpty())
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("OpenLocations is empty."));
-		bSkipNextSpawn = true;
 		return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
 	}
-	bSkipNextSpawn = false;
 
-	if (bShowDebug_SpawnBox)
-	{
-		for (const FVector Vector : OpenLocations)
-		{
-			FVector Loc = FVector(Vector.X, Vector.Y + SpawnPointManager->GetSpawnMemoryIncY() / 2.f, Vector.Z + SpawnPointManager->GetSpawnMemoryIncZ() / 2.f);
-			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnPointManager->GetSpawnMemoryIncY() / 2.f, SpawnPointManager->GetSpawnMemoryIncZ() / 2.f), FColor::Emerald, false, BSConfig.TargetConfig.TargetSpawnCD, 0, 6);
-		}
-	}
-	
-	if (BSConfig.SpatialConfig.bSpawnAtOriginWheneverPossible && OpenLocations.Contains(GetBoxOrigin()))
+	/* Spawn at origin whenever possible if specified */
+	if (BSConfig.TargetConfig.bSpawnAtOriginWheneverPossible && OpenLocations.Contains(GetBoxOrigin()))
 	{
 		return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
 	}
 
+	/* Get location from RL Comp if specified */
 	if (ReinforcementLearningComponent->IsActive())
 	{
-		const int32 ChosenPoint = TryGetSpawnLocationFromReinforcementLearningComponent(OpenLocations);
-		if (ChosenPoint != INDEX_NONE)
+		if (const int32 ChosenPoint = TryGetSpawnLocationFromReinforcementLearningComponent(OpenLocations); ChosenPoint != INDEX_NONE)
 		{
-			SpawnPointManager->GetSpawnCounter()[ChosenPoint].ActualChosenPoint = SpawnPointManager->GetSpawnCounter()[ChosenPoint].GetRandomSubPoint(GetBorderingDirections(OpenLocations, SpawnPointManager->GetSpawnCounter()[ChosenPoint].Point));
-			return &SpawnPointManager->GetSpawnCounter()[ChosenPoint];
+			TArray<FSpawnPoint>& SpawnPointsRef = SpawnPointManager->GetSpawnPointsRef();
+			const TArray<EBorderingDirection> BorderingDirections = SpawnPointsRef[ChosenPoint].GetBorderingDirections(OpenLocations, GetBoxExtrema(true));
+			SpawnPointsRef[ChosenPoint].SetChosenPointAsRandomSubPoint(BorderingDirections);
+			return &SpawnPointsRef[ChosenPoint];
 		}
 		UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn Location suggested by RLAgent."));
 	}
 	
-	if (!BSConfig.GridConfig.bRandomizeGridTargetActivation && BSConfig.SpatialConfig.TargetDistributionMethod == ETargetDistributionPolicy::Grid)
+	if (!BSConfig.GridConfig.bRandomizeGridTargetActivation && BSConfig.TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
-		const TArray<int32> Indices = PreviousSpawnPoint->GetBorderingIndices();
-		FSpawnPoint* OldestRecentSpawnPoint = PreviousSpawnPoint;
-		OpenLocations = OpenLocations.FilterByPredicate([&] (const FVector& Vector)
+		const TArray<int32> Indices = SpawnPoint->GetBorderingIndices();
+		OpenLocations = GetAllSpawnLocations().FilterByPredicate([&] (const FVector& Vector)
 		{
-			if (FSpawnPoint* FoundPoint = SpawnPointManager->FindSpawnPointFromLocation(Vector))
+			if (const FSpawnPoint* FoundPoint = SpawnPointManager->FindSpawnPointFromLocation(Vector))
 			{
-				if (!FoundPoint->IsActivated() && FoundPoint->IsRecent() && Indices.Contains(FoundPoint->Index))
-				{
-					if (FoundPoint->GetTimeSetRecent() < OldestRecentSpawnPoint->GetTimeSetRecent())
-					{
-						OldestRecentSpawnPoint = FoundPoint;
-					}
-				}
 				if (!FoundPoint->IsActivated() && !FoundPoint->IsRecent() && Indices.Contains(FoundPoint->Index))
 				{
 					return true;
@@ -499,8 +496,8 @@ FSpawnPoint* ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingPoli
 		});
 		if (OpenLocations.IsEmpty())
 		{
-			OldestRecentSpawnPoint->ActualChosenPoint = OldestRecentSpawnPoint->GetRandomSubPoint(GetBorderingDirections(OpenLocations, OldestRecentSpawnPoint->Point));
-			//UE_LOG(LogTargetManager, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found->Point.ToString(), *Found->Center.ToString(), *Found->ActualChosenPoint.ToString());
+			FSpawnPoint* OldestRecentSpawnPoint = SpawnPointManager->FindOldestRecentSpawnPoint();
+			//UE_LOG(LogTargetManager, Display, TEXT("Found CornerPoint %s Found CenterPoint %s Found ChosenPoint %s"), *Found->CornerPoint.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
 			return OldestRecentSpawnPoint;
 		}
 	}
@@ -509,17 +506,85 @@ FSpawnPoint* ATargetManager::GetNextTargetSpawnLocation(const EBoundsScalingPoli
 	
 	if (FSpawnPoint* Found = SpawnPointManager->FindSpawnPointFromLocation(OpenLocations[RandomPoint]))
 	{
-		Found->ActualChosenPoint = Found->GetRandomSubPoint(GetBorderingDirections(OpenLocations, Found->Point));
-		//UE_LOG(LogTargetManager, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found->Point.ToString(), *Found->Center.ToString(), *Found->ActualChosenPoint.ToString());
+		const TArray<EBorderingDirection> BorderingDirections = Found->GetBorderingDirections(OpenLocations, GetBoxExtrema(true));
+		Found->SetChosenPointAsRandomSubPoint(BorderingDirections);
+		//UE_LOG(LogTargetManager, Display, TEXT("Found CornerPoint %s Found CenterPoint %s Found ChosenPoint %s"), *Found->CornerPoint.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
 		return Found;
 	}
-	//UE_LOG(LogTargetManager, Display, TEXT("Found Point %s Found Center %s Found ActualChosenPoint %s"), *Found->Point.ToString(), *Found->Center.ToString(), *Found->ActualChosenPoint.ToString());
+	//UE_LOG(LogTargetManager, Display, TEXT("Found CornerPoint %s Found CenterPoint %s Found ChosenPoint %s"), *Found->CornerPoint.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
 	return nullptr;
 }
 
-FVector ATargetManager::GetRandomBeatTrackLocation(const FVector& LocationBeforeChange) const
+TArray<FVector> ATargetManager::GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& DistributionPolicy, const EBoundsScalingPolicy& BoundsScalingPolicy) const
 {
-	const FVector NewExtent = FVector(BSConfig.SpatialConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
+	TArray<FVector> ValidSpawnLocations;
+	const FExtrema Extrema = GetBoxExtrema(BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic);
+	
+	/* Populate AllPoints according to DistributionPolicy */
+	switch (DistributionPolicy)
+	{
+	case ETargetDistributionPolicy::EdgeOnly:
+		{
+			const float MaxY = Extrema.Max.Y - SpawnPointManager->GetSpawnMemoryIncY();
+			const float MaxZ = Extrema.Max.Z - SpawnPointManager->GetSpawnMemoryIncZ();
+			const float OriginX = GetBoxOrigin().X;
+			for (float Y = Extrema.Min.Y; Y < Extrema.Max.Y; Y += SpawnPointManager->GetSpawnMemoryIncY())
+			{
+				ValidSpawnLocations.AddUnique(FVector(OriginX, Y, Extrema.Min.Z));
+				ValidSpawnLocations.AddUnique(FVector(OriginX, Y, MaxZ));
+			}
+			for (float Z = Extrema.Min.Z; Z < Extrema.Max.Z; Z += SpawnPointManager->GetSpawnMemoryIncZ())
+			{
+				ValidSpawnLocations.AddUnique(FVector(OriginX, Extrema.Min.Y, Z));
+				ValidSpawnLocations.AddUnique(FVector(OriginX, MaxY, Z));
+			}
+			ValidSpawnLocations.Add(GetBoxOrigin());
+		}
+		break;
+	case ETargetDistributionPolicy::FullRange:
+		{
+			ValidSpawnLocations = GetAllSpawnLocations().FilterByPredicate([&](const FVector& Vector)
+			{
+				if (Vector.Y < Extrema.Min.Y || Vector.Y >= Extrema.Max.Y || Vector.Z < Extrema.Min.Z || Vector.Z >= Extrema.Max.Z)
+				{
+					return false;
+				}
+				return true;
+			});
+		}
+		break;
+	default:
+		{
+			ValidSpawnLocations = GetAllSpawnLocations();
+		}
+		break;
+	}
+	
+	/* Remove points occupied by recent targets (overlapping points) */
+	const TArray<FVector> OverlappingPoints = SpawnPointManager->RemoveOverlappingPointsFromSpawnLocations(ValidSpawnLocations, Scale, Extrema);
+	
+	if (BSConfig.TargetConfig.TargetDistributionPolicy != ETargetDistributionPolicy::Grid)
+	{
+		/* Remove points that don't have another point to the top and to the right */
+		SpawnPointManager->RemoveEdgePoints(ValidSpawnLocations, Extrema);
+	}
+
+	if (bShowDebug_SpawnBox)
+	{
+		DrawDebugBox_OpenLocations(ValidSpawnLocations, FColor::Emerald, 6);
+		const TArray<FVector> Blocked = GetAllSpawnLocations().FilterByPredicate([&ValidSpawnLocations] (const FVector& Vector)
+		{
+			return !ValidSpawnLocations.Contains(Vector);
+		});
+		DrawDebugBox_OpenLocations(OverlappingPoints, FColor::Red, 4);
+	}
+	
+	return ValidSpawnLocations;
+}
+
+FVector ATargetManager::GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed) const
+{
+	const FVector NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
 	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
 	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
 	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(OverlapSpawnBox->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
@@ -551,191 +616,53 @@ FVector ATargetManager::GetRandomBeatTrackLocation(const FVector& LocationBefore
 	}
 
 	const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
-	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * MovingTargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
+	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * TargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
 }
 
-TArray<FVector> ATargetManager::GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& TargetDistributionMethod, const EBoundsScalingPolicy& BoundsScalingMethod) const
-{
-	TArray<FVector> ValidSpawnLocations;
-
-	/* Populate AllPoints according to TargetDistributionMethod */
-	switch (TargetDistributionMethod)
-	{
-	case ETargetDistributionPolicy::EdgeOnly:
-		{
-			const FVector MinExtrema = GetBoxExtrema(0, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
-			const FVector MaxExtrema = GetBoxExtrema(1, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
-			const float MaxY = MaxExtrema.Y - SpawnPointManager->GetSpawnMemoryIncY();
-			const float MaxZ = MaxExtrema.Z - SpawnPointManager->GetSpawnMemoryIncZ();
-			const float OriginX = GetBoxOrigin().X;
-
-			for (float Y = MinExtrema.Y; Y < MaxExtrema.Y; Y += SpawnPointManager->GetSpawnMemoryIncY())
-			{
-				ValidSpawnLocations.AddUnique(FVector(OriginX, Y, MinExtrema.Z));
-				ValidSpawnLocations.AddUnique(FVector(OriginX, Y, MaxZ));
-			}
-			for (float Z = MinExtrema.Z; Z < MaxExtrema.Z; Z += SpawnPointManager->GetSpawnMemoryIncZ())
-			{
-				ValidSpawnLocations.AddUnique(FVector(OriginX, MinExtrema.Y, Z));
-				ValidSpawnLocations.AddUnique(FVector(OriginX, MaxY, Z));
-			}
-			ValidSpawnLocations.Add(GetBoxOrigin());
-		}
-		break;
-	case ETargetDistributionPolicy::FullRange:
-		{
-			const FVector NegativeExtrema = GetBoxExtrema(0, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
-			const FVector PositiveExtrema = GetBoxExtrema(1, BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
-			ValidSpawnLocations = GetAllSpawnLocations().FilterByPredicate([&](const FVector& Vector)
-			{
-				if (Vector.Y < NegativeExtrema.Y || Vector.Y >= PositiveExtrema.Y || Vector.Z < NegativeExtrema.Z || Vector.Z >= PositiveExtrema.Z)
-				{
-					return false;
-				}
-				return true;
-			});
-		}
-		break;
-	default:
-		{
-			ValidSpawnLocations = GetAllSpawnLocations();
-		}
-		break;
-	}
-
-	SpawnPointManager->RemoveOverlappingPointsFromSpawnLocations(ValidSpawnLocations, Scale);
-	/* Remove points occupied by recent targets (overlapping points) */
-
-	if (BSConfig.SpatialConfig.TargetDistributionMethod != ETargetDistributionPolicy::Grid)
-	{
-		/* Remove points that don't have another point to the top and to the right */
-		RemoveEdgePoints(ValidSpawnLocations);
-	}
-	return ValidSpawnLocations;
-}
-
-TArray<FVector> ATargetManager::GetAllSpawnLocations() const
-{
-	return AllSpawnLocations;
-}
-
-FVector ATargetManager::GetBoxOrigin() const
-{
-	return SpawnBox->Bounds.Origin;
-}
-
-FVector ATargetManager::GetBoxExtrema(const int32 PositiveExtrema, const bool bDynamic) const
+FExtrema ATargetManager::GetBoxExtrema(const bool bDynamic) const
 {
 	if (bDynamic)
 	{
-		return SpawnBox->Bounds.GetBoxExtrema(PositiveExtrema);
+		return FExtrema(SpawnBox->Bounds.GetBoxExtrema(0), SpawnBox->Bounds.GetBoxExtrema(1));
 	}
-	if (PositiveExtrema == 1)
-	{
-		return StaticMaxExtrema;
-	}
-	return StaticMinExtrema;
+	return StaticExtrema;
 }
 
-FVector ATargetManager::GetBoxExtents_Static() const
+FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 {
-	return StaticExtents;
+	const float MaxTargetSize = BSConfig.TargetConfig.MaxTargetScale * SphereTargetDiameter;
+	const float HSpacing = BSConfig.GridConfig.GridSpacing.X + MaxTargetSize;
+	const float VSpacing = BSConfig.GridConfig.GridSpacing.Y + MaxTargetSize;
+	const float HalfWidth = (HSpacing * (BSConfig.GridConfig.NumHorizontalGridTargets - 1)) / 2.f;
+	const float HalfHeight = (VSpacing * (BSConfig.GridConfig.NumVerticalGridTargets - 1)) / 2.f;
+	
+	return FExtrema(FVector(GetBoxOrigin().X, -HalfWidth + GetBoxOrigin().Y, -HalfHeight + GetBoxOrigin().Z),
+		FVector(GetBoxOrigin().X, HalfWidth + 1.f + GetBoxOrigin().Y, HalfHeight + 1.f + GetBoxOrigin().Z));
 }
 
-TArray<EBorderingDirection> ATargetManager::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FVector& Location) const
+int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget)
 {
-	TArray<EBorderingDirection> Directions;
-	const FVector MinExtrema = GetBoxExtrema(0, true);
-	const FVector MaxExtrema = GetBoxExtrema(1, true);
-	const FVector Left = Location + FVector(0, -SpawnPointManager->GetSpawnMemoryIncY(), 0);
-	const FVector Right = Location + FVector(0, SpawnPointManager->GetSpawnMemoryIncY(), 0);
-	const FVector Up = Location + FVector(0, 0, SpawnPointManager->GetSpawnMemoryIncZ());
-	const FVector Down = Location + FVector(0, 0, -SpawnPointManager->GetSpawnMemoryIncZ());
-
-	if (Left.Y != MinExtrema.Y && !ValidLocations.Contains(Left))
-	{
-		Directions.Add(EBorderingDirection::Left);
-	}
-	if (Right.Y != MaxExtrema.Y && !ValidLocations.Contains(Right))
-	{
-		Directions.Add(EBorderingDirection::Right);
-	}
-	if (Up.Z != MaxExtrema.Z && !ValidLocations.Contains(Up))
-	{
-		Directions.Add(EBorderingDirection::Up);
-	}
-	if (Down.Z != MinExtrema.Z && !ValidLocations.Contains(Down))
-	{
-		Directions.Add(EBorderingDirection::Down);
-	}
-	return Directions;
+	TArray<ASphereTarget*> Targets = GetManagedTargets();
+	const int32 NewIndex = Targets.Emplace(SpawnTarget);
+	ManagedTargets = Targets;
+	return NewIndex;
 }
 
-void ATargetManager::RemoveEdgePoints(TArray<FVector>& In) const
+void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
-	const FVector MinExtrema = GetBoxExtrema(0, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
-	const FVector MaxExtrema = GetBoxExtrema(1, BSConfig.SpatialConfig.BoundsScalingMethod == EBoundsScalingPolicy::Dynamic);
-	TArray<FVector> InCopy;
-	if (bShowDebug_SpawnBox)
+	const TArray<ASphereTarget*> Targets = GetManagedTargets().FilterByPredicate([&] (const ASphereTarget* OtherTarget)
 	{
-		InCopy = In;
-	}
-
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::SingleBeat || BSConfig.SpatialConfig.TargetDistributionMethod == ETargetDistributionPolicy::EdgeOnly)
-	{
-		In = In.FilterByPredicate([&](const FVector& Vector)
+		if (!OtherTarget)
 		{
-			const FVector Right = Vector + FVector(0, SpawnPointManager->GetSpawnMemoryIncY(), 0);
-			const FVector Top = Vector + FVector(0, 0, SpawnPointManager->GetSpawnMemoryIncZ());
-			if (Vector.Y != MinExtrema.Y && Right.Y < MaxExtrema.Y && !In.Contains(Right))
-			{
-				return false;
-			}
-			if (Vector.Z != MinExtrema.Z && Top.Z < MaxExtrema.Z && !In.Contains(Top))
-			{
-				return false;
-			}
-			return true;
-		});
-	}
-	else
-	{
-		In = In.FilterByPredicate([&](const FVector& Vector)
-		{
-			const FVector Right = Vector + FVector(0, SpawnPointManager->GetSpawnMemoryIncY(), 0);
-			const FVector Top = Vector + FVector(0, 0, SpawnPointManager->GetSpawnMemoryIncZ());
-			if (Right.Y < MaxExtrema.Y && !In.Contains(Right))
-			{
-				return false;
-			}
-			if (Top.Z < MaxExtrema.Z && !In.Contains(Top))
-			{
-				return false;
-			}
-			return true;
-		});
-	}
-
-	/* Debug stuff */
-	if (bShowDebug_SpawnBox)
-	{
-		int Count = 0;
-		InCopy = InCopy.FilterByPredicate([&](const FVector& Vector)
-		{
-			if (In.Contains(Vector))
-			{
-				return false;
-			}
-			return true;
-		});
-		for (const FVector& Vector : InCopy)
-		{
-			FVector Loc = FVector(Vector.X, Vector.Y + SpawnPointManager->GetSpawnMemoryIncY() / 2.f, Vector.Z + SpawnPointManager->GetSpawnMemoryIncZ() / 2.f);
-			DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnPointManager->GetSpawnMemoryIncY() / 2.f, SpawnPointManager->GetSpawnMemoryIncZ() / 2.f), FColor::Red, false, BSConfig.TargetConfig.TargetSpawnCD, 1, 5);
-			Count++;
+			return false;
 		}
-	}
-	//UE_LOG(LogTargetManager, Display, TEXT("Removed Edge Points: %d"), Count);
+		if (OtherTarget->GetGuid() == GuidToRemove)
+		{
+			return false;
+		}
+		return true;
+	});
+	ManagedTargets = Targets;
 }
 
 void ATargetManager::SetBoxExtents_Dynamic() const
@@ -764,10 +691,9 @@ int32 ATargetManager::TryGetSpawnLocationFromReinforcementLearningComponent(cons
 {
 	/* Converting all OpenLocations to indices */
 	TArray<int32> Indices;
-	const TArray<FSpawnPoint> SpawnCounterCopy = SpawnPointManager->GetSpawnCounter();
 	for (const FVector Vector : OpenLocations)
 	{
-		if (const int32 FoundIndex = SpawnCounterCopy.Find(FSpawnPoint(Vector)); FoundIndex != INDEX_NONE)
+		if (const int32 FoundIndex = SpawnPointManager->FindIndexFromLocation(Vector); FoundIndex != INDEX_NONE)
 		{
 			Indices.Add(FoundIndex);
 		}
@@ -780,29 +706,14 @@ int32 ATargetManager::TryGetSpawnLocationFromReinforcementLearningComponent(cons
 	return ReinforcementLearningComponent->ChooseNextActionIndex(Indices);
 }
 
-int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget)
+void ATargetManager::DrawDebugBox_OpenLocations(const TArray<FVector>& InOpenLocations, const FColor& InColor, const int32 InThickness) const
 {
-	TArray<ASphereTarget*> Targets = GetManagedTargets();
-	const int32 NewIndex = Targets.Emplace(SpawnTarget);
-	ManagedTargets = Targets;
-	return NewIndex;
-}
-
-void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
-{
-	const TArray<ASphereTarget*> Targets = GetManagedTargets().FilterByPredicate([&] (const ASphereTarget* OtherTarget)
+	for (const FVector& Vector : InOpenLocations)
 	{
-		if (!OtherTarget)
-		{
-			return false;
-		}
-		if (OtherTarget->GetGuid() == GuidToRemove)
-		{
-			return false;
-		}
-		return true;
-	});
-	ManagedTargets = Targets;
+		FVector Loc = FVector(Vector.X, Vector.Y + SpawnPointManager->GetSpawnMemoryIncY() / 2.f, Vector.Z + SpawnPointManager->GetSpawnMemoryIncZ() / 2.f);
+		DrawDebugBox(GetWorld(), Loc, FVector(0, SpawnPointManager->GetSpawnMemoryIncY() / 2.f, SpawnPointManager->GetSpawnMemoryIncZ() / 2.f),
+			InColor, false, BSConfig.TargetConfig.TargetSpawnCD, 0, InThickness);
+	}
 }
 
 void ATargetManager::ShowDebug_SpawnBox(const bool bShow)
@@ -843,6 +754,24 @@ void ATargetManager::ShowDebug_ReinforcementLearningWidget(const bool bShow)
 	Controller->HideRLAgentWidget();
 }
 
+void ATargetManager::ShowDebug_NumRecentNumActivated() const
+{
+	int NumRecent=0;
+	int NumAct=0;
+	for (FSpawnPoint& Hey : SpawnPointManager->GetSpawnPoints())
+	{
+		if (Hey.IsRecent())
+		{
+			NumRecent++;
+		}
+		if (Hey.IsActivated())
+		{
+			NumAct++;
+		}
+	}
+	UE_LOG(LogTemp, Display, TEXT("NumRecent: %d NumActivated: %d"), NumRecent, NumAct);
+}
+
 TArray<FAccuracyRow> ATargetManager::GetLocationAccuracy() const
 {
 	/* Each row in QTable has size equal to ScaledSize, and so does each column */
@@ -855,23 +784,23 @@ TArray<FAccuracyRow> ATargetManager::GetLocationAccuracy() const
 		QTableIndices.Add(FQTableIndex(i));
 	}
 
-	TArray<FSpawnPoint> Counter = SpawnPointManager->GetSpawnCounter();
+	TArray<FSpawnPoint> Counter = SpawnPointManager->GetSpawnPoints();
 
-	for (int i = 0; i < SpawnPointManager->GetSpawnCounter().Num(); i++)
+	for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
 	{
 		if (const int32 Found = QTableIndices.Find(SpawnPointManager->GetOutArrayIndexFromSpawnCounterIndex(i)); Found != INDEX_NONE)
 		{
 			const int32 RowNum = Found / 5;
 			const int32 ColNum = Found % 5;
 
-			if (Counter[i].TotalSpawns != INDEX_NONE)
+			if (Counter[i].GetTotalSpawns() != INDEX_NONE)
 			{
 				if (OutArray[RowNum].TotalSpawns[ColNum] == INDEX_NONE)
 				{
 					OutArray[RowNum].TotalSpawns[ColNum] = 0;
 				}
-				OutArray[RowNum].TotalSpawns[ColNum] += Counter[i].TotalSpawns;
-				OutArray[RowNum].TotalHits[ColNum] += Counter[i].TotalHits;
+				OutArray[RowNum].TotalSpawns[ColNum] += Counter[i].GetTotalSpawns();
+				OutArray[RowNum].TotalHits[ColNum] += Counter[i].GetTotalHits();
 			}
 		}
 	}
@@ -892,19 +821,19 @@ FCommonScoreInfo ATargetManager::GetCommonScoreInfo() const
 	}
 
 	FCommonScoreInfo CommonScoreInfo = FCommonScoreInfo(25);
-	TArray<FSpawnPoint> Counter = SpawnPointManager->GetSpawnCounter();
-	for (int i = 0; i < SpawnPointManager->GetSpawnCounter().Num(); i++)
+	TArray<FSpawnPoint> Counter = SpawnPointManager->GetSpawnPoints();
+	for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
 	{
 		if (const int32 Found = Indices.Find(FQTableIndex(SpawnPointManager->GetOutArrayIndexFromSpawnCounterIndex(i))); Found != INDEX_NONE)
 		{
-			if (Counter[i].TotalSpawns != INDEX_NONE)
+			if (Counter[i].GetTotalSpawns() != INDEX_NONE)
 			{
 				if (CommonScoreInfo.TotalSpawns[Found] == INDEX_NONE)
 				{
 					CommonScoreInfo.TotalSpawns[Found] = 0;
 				}
-				CommonScoreInfo.TotalSpawns[Found] += Counter[i].TotalSpawns;
-				CommonScoreInfo.TotalHits[Found] += Counter[i].TotalHits;
+				CommonScoreInfo.TotalSpawns[Found] += Counter[i].GetTotalSpawns();
+				CommonScoreInfo.TotalHits[Found] += Counter[i].GetTotalHits();
 			}
 		}
 	}

@@ -54,7 +54,7 @@ void USettingsMenuWidget_Game::PopulateSettings()
 	ColorSelect_StartTargetColor->InitializeColor(NewSettings.StartTargetColor);
 	ColorSelect_PeakTargetColor->InitializeColor(NewSettings.PeakTargetColor);
 	ColorSelect_EndTargetColor->InitializeColor(NewSettings.EndTargetColor);
-	ColorSelect_BeatGridInactiveColor->InitializeColor(NewSettings.BeatGridInactiveTargetColor);
+	ColorSelect_BeatGridInactiveColor->InitializeColor(NewSettings.InactiveTargetColor);
 	ColorSelect_TargetOutlineColor->InitializeColor(NewSettings.TargetOutlineColor);
 
 	Checkbox_UseSeparateOutlineColor->SetIsChecked(NewSettings.bUseSeparateOutlineColor);
@@ -97,7 +97,7 @@ void USettingsMenuWidget_Game::OnColorChanged_TargetOutline(const FLinearColor& 
 
 void USettingsMenuWidget_Game::OnColorChanged_BeatGridInactive(const FLinearColor& NewColor)
 {
-	NewSettings.BeatGridInactiveTargetColor = NewColor;
+	NewSettings.InactiveTargetColor = NewColor;
 }
 
 void USettingsMenuWidget_Game::OnValueChanged_CombatTextFrequency(const FText& NewValue, ETextCommit::Type CommitType)
