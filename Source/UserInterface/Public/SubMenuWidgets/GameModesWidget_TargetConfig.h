@@ -123,7 +123,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_VerticalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_MoveForwardDistance;
+	USlider* Slider_ForwardSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

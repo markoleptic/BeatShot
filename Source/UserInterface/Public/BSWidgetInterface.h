@@ -127,12 +127,11 @@ public:
 			EnumString.Split("::", &EnumName, &EnumValue);
 			return EnumName.RightChop(1) + "_" + EnumValue;
 		}
-		return FString();
+		return EnumString;
 	}
 
 
 private:
 	TArray<FTooltipData> TooltipData;
-	
 	TSoftObjectPtr<UTooltipWidget> TooltipWidget;
 };

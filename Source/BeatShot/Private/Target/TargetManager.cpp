@@ -57,8 +57,11 @@ void ATargetManager::Destroyed()
 			Target->Destroy();
 		}
 	}
-	
-	SpawnPointManager->BeginDestroy();
+
+	if (SpawnPointManager)
+	{
+		SpawnPointManager->BeginDestroy();
+	}
 	
 	Super::Destroyed();
 }

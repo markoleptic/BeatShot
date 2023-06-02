@@ -92,7 +92,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Slider_MinTargetDistance->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MinTargetDistance);
 	Slider_HorizontalSpread->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_HorizontalSpread);
 	Slider_VerticalSpread->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_VerticalSpread);
-	Slider_MoveForwardDistance->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_ForwardSpread);
+	Slider_ForwardSpread->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_ForwardSpread);
 	Slider_FloorDistance->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_FloorDistance);
 	Slider_MaxNumRecentTargets->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MaxNumRecentTargets);
 	Slider_RecentTargetTimeLength->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_RecentTargetTimeLength);
@@ -297,7 +297,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Slider_MinTargetDistance->SetValue(InTargetConfig.MinDistanceBetweenTargets);
 	Slider_HorizontalSpread->SetValue(InTargetConfig.BoxBounds.Y);
 	Slider_VerticalSpread->SetValue(InTargetConfig.BoxBounds.Z);
-	Slider_MoveForwardDistance->SetValue(InTargetConfig.MoveForwardDistance);
+	Slider_ForwardSpread->SetValue(InTargetConfig.MoveForwardDistance);
 	Slider_Lifespan->SetValue(InTargetConfig.TargetMaxLifeSpan);
 	Slider_TargetSpawnCD->SetValue(InTargetConfig.TargetSpawnCD);
 	Slider_SpawnBeatDelay->SetValue(InTargetConfig.SpawnBeatDelay);
@@ -336,29 +336,29 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	TargetSpeedConstrained->UpdateDefaultValues(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
 	
-	ComboBox_BoundsScalingPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.BoundsScalingPolicy).ToString());
-	ComboBox_ConsecutiveTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
-	ComboBox_LifetimeTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScalePolicy).ToString());
-	ComboBox_RecentTargetMemoryPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.RecentTargetMemoryPolicy).ToString());
-	ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetActivationSelectionPolicy).ToString());
-	ComboBox_TargetDamageType->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDamageType).ToString());
-	ComboBox_TargetDistributionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString());
-	ComboBox_TargetSpawningPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetSpawningPolicy).ToString());
-	for (const ETargetActivationResponse& Response : InTargetConfig.TargetActivationResponses)
+	ComboBox_BoundsScalingPolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.BoundsScalingPolicy).ToString());
+	ComboBox_ConsecutiveTargetScalePolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
+	ComboBox_LifetimeTargetScalePolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScalePolicy).ToString());
+	ComboBox_RecentTargetMemoryPolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.RecentTargetMemoryPolicy).ToString());
+	ComboBox_TargetActivationSelectionPolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetActivationSelectionPolicy).ToString());
+	ComboBox_TargetDamageType->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDamageType).ToString());
+	ComboBox_TargetDistributionPolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString());
+	ComboBox_TargetSpawningPolicy->ToggleSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetSpawningPolicy).ToString());
+	for (const ETargetActivationResponse Response : InTargetConfig.TargetActivationResponses)
 	{
-		ComboBox_TargetActivationResponses->AddSelectedOption(UEnum::GetDisplayValueAsText(Response).ToString());
+		ComboBox_TargetActivationResponses->ToggleSelectedOption(UEnum::GetDisplayValueAsText(Response).ToString());
 	}
-	for (const ETargetDeactivationCondition& Condition : InTargetConfig.TargetDeactivationConditions)
+	for (const ETargetDeactivationCondition Condition : InTargetConfig.TargetDeactivationConditions)
 	{
-		ComboBox_TargetDeactivationConditions->AddSelectedOption(UEnum::GetDisplayValueAsText(Condition).ToString());
+		ComboBox_TargetDeactivationConditions->ToggleSelectedOption(UEnum::GetDisplayValueAsText(Condition).ToString());
 	}
-	for (const ETargetDeactivationResponse& Response : InTargetConfig.TargetDeactivationResponses)
+	for (const ETargetDeactivationResponse Response : InTargetConfig.TargetDeactivationResponses)
 	{
-		ComboBox_TargetDeactivationResponses->AddSelectedOption(UEnum::GetDisplayValueAsText(Response).ToString());
+		ComboBox_TargetDeactivationResponses->ToggleSelectedOption(UEnum::GetDisplayValueAsText(Response).ToString());
 	}
-	for (const ETargetDestructionCondition& Condition : InTargetConfig.TargetDestructionConditions)
+	for (const ETargetDestructionCondition Condition : InTargetConfig.TargetDestructionConditions)
 	{
-		ComboBox_TargetDestructionConditions->AddSelectedOption(UEnum::GetDisplayValueAsText(Condition).ToString());
+		ComboBox_TargetDestructionConditions->ToggleSelectedOption(UEnum::GetDisplayValueAsText(Condition).ToString());
 	}
 	
 	UpdateBrushColors();
@@ -380,21 +380,21 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(Slider_MinTargetDistance->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
 	ReturnConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(Slider_HorizontalSpread->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
 									 FMath::GridSnap(FMath::Clamp(Slider_VerticalSpread->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
-	ReturnConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(Slider_MoveForwardDistance->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
+	ReturnConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(Slider_ForwardSpread->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
 	ReturnConfig.MaxNumRecentTargets = FMath::GridSnap(FMath::Clamp(Slider_MaxNumRecentTargets->GetValue(), MinValue_MaxNumRecentTargets, MaxValue_MaxNumRecentTargets), SnapSize_MaxNumRecentTargets);
 	ReturnConfig.RecentTargetTimeLength = FMath::GridSnap(FMath::Clamp(Slider_RecentTargetTimeLength->GetValue(), MinValue_RecentTargetTimeLength, MaxValue_RecentTargetTimeLength), SnapSize_RecentTargetTimeLength);
 	ReturnConfig.NumUpfrontTargetsToSpawn = FMath::GridSnap(FMath::Clamp(Slider_NumUpfrontTargetsToSpawn->GetValue(), MinValue_NumUpfrontTargetsToSpawn, MaxValue_NumUpfrontTargetsToSpawn), SnapSize_NumUpfrontTargetsToSpawn);
 	ReturnConfig.ExpirationHealthPenalty = FMath::GridSnap(FMath::Clamp(Slider_ExpirationHealthPenalty->GetValue(), MinValue_ExpirationHealthPenalty, MaxValue_ExpirationHealthPenalty), SnapSize_ExpirationHealthPenalty);
 	ReturnConfig.MaxHealth = FMath::GridSnap(FMath::Clamp(Slider_MaxHealth->GetValue(), MinValue_MaxHealth, MaxValue_MaxHealth), SnapSize_MaxHealth);
 	
-	ReturnConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(ComboBox_BoundsScalingPolicy->GetSelectedOption(), EBoundsScalingPolicy::None);
-	ReturnConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), EConsecutiveTargetScalePolicy::None);
-	ReturnConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(ComboBox_LifetimeTargetScalePolicy->GetSelectedOption(), ELifetimeTargetScalePolicy::None);
-	ReturnConfig.RecentTargetMemoryPolicy = GetEnumFromString<ERecentTargetMemoryPolicy>(ComboBox_RecentTargetMemoryPolicy->GetSelectedOption(), ERecentTargetMemoryPolicy::None);
-	ReturnConfig.TargetActivationSelectionPolicy = GetEnumFromString<ETargetActivationSelectionPolicy>(ComboBox_TargetActivationSelectionPolicy->GetSelectedOption(), ETargetActivationSelectionPolicy::None);
-	ReturnConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(ComboBox_TargetDamageType->GetSelectedOption(), ETargetDamageType::None);
-	ReturnConfig.TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(ComboBox_TargetDistributionPolicy->GetSelectedOption(), ETargetDistributionPolicy::None);
-	ReturnConfig.TargetSpawningPolicy = GetEnumFromString<ETargetSpawningPolicy>(ComboBox_TargetSpawningPolicy->GetSelectedOption(), ETargetSpawningPolicy::None);
+	ReturnConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(ComboBox_BoundsScalingPolicy->GetFirstSelectedOption(), EBoundsScalingPolicy::None);
+	ReturnConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetFirstSelectedOption(), EConsecutiveTargetScalePolicy::None);
+	ReturnConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(ComboBox_LifetimeTargetScalePolicy->GetFirstSelectedOption(), ELifetimeTargetScalePolicy::None);
+	ReturnConfig.RecentTargetMemoryPolicy = GetEnumFromString<ERecentTargetMemoryPolicy>(ComboBox_RecentTargetMemoryPolicy->GetFirstSelectedOption(), ERecentTargetMemoryPolicy::None);
+	ReturnConfig.TargetActivationSelectionPolicy = GetEnumFromString<ETargetActivationSelectionPolicy>(ComboBox_TargetActivationSelectionPolicy->GetFirstSelectedOption(), ETargetActivationSelectionPolicy::None);
+	ReturnConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(ComboBox_TargetDamageType->GetFirstSelectedOption(), ETargetDamageType::None);
+	ReturnConfig.TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(ComboBox_TargetDistributionPolicy->GetFirstSelectedOption(), ETargetDistributionPolicy::None);
+	ReturnConfig.TargetSpawningPolicy = GetEnumFromString<ETargetSpawningPolicy>(ComboBox_TargetSpawningPolicy->GetFirstSelectedOption(), ETargetSpawningPolicy::None);
 	for (const FString& String : ComboBox_TargetActivationResponses->GetSelectedOptions())
 	{
 		ReturnConfig.TargetActivationResponses.AddUnique(GetEnumFromString<ETargetActivationResponse>(String, ETargetActivationResponse::None));
@@ -539,7 +539,7 @@ void UGameModesWidget_TargetConfig::OnTextCommitted_VerticalSpread(const FText& 
 
 void UGameModesWidget_TargetConfig::OnTextCommitted_ForwardSpread(const FText& NewForwardSpread, ETextCommit::Type CommitType)
 {
-	OnEditableTextBoxChanged(NewForwardSpread, Value_ForwardSpread, Slider_MoveForwardDistance, SnapSize_HorizontalSpread, MinValue_ForwardSpread, MaxValue_ForwardSpread);
+	OnEditableTextBoxChanged(NewForwardSpread, Value_ForwardSpread, Slider_ForwardSpread, SnapSize_HorizontalSpread, MinValue_ForwardSpread, MaxValue_ForwardSpread);
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bApplyImmunityOnSpawn)
@@ -578,7 +578,7 @@ UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxS
 	{
 		Entry->SetText(FText::FromString(Method));
 		AddToTooltipData(Entry->TooltipImage, FText::FromString(GetEnumTypeIndexFromComboBox(ComboBoxString, Method)), false);
-		return Cast<UWidget>(Entry);
+		return Entry;
 	}
 	return nullptr;
 }
@@ -588,8 +588,7 @@ UWidget* UGameModesWidget_TargetConfig::OnSelectionChangedGenerateWidgetEvent(co
 	if (UBSComboBoxEntry* Entry = CreateComboBoxEntryWidget(ComboBoxString))
 	{
 		Entry->SetText(FText::FromString(Method));
-		Entry->ToggleTooltipImageVisibility(false);
-		return Cast<UWidget>(Entry);
+		return Entry;
 	}
 	return nullptr;
 }
@@ -654,6 +653,7 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScalePolicy
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_RecentTargetMemoryPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
 {
+	
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetActivationSelectionPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType)
@@ -712,49 +712,59 @@ FString UGameModesWidget_TargetConfig::GetEnumTypeIndexFromComboBox(const UBSCom
 {
 	if (ComboBoxString == ComboBox_BoundsScalingPolicy)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<EBoundsScalingPolicy>(EnumString, EBoundsScalingPolicy::None));
+		const EBoundsScalingPolicy EnumValue = GetEnumFromString<EBoundsScalingPolicy>(EnumString, EBoundsScalingPolicy::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
 	if (ComboBoxString == ComboBox_ConsecutiveTargetScalePolicy)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<EConsecutiveTargetScalePolicy>(EnumString, EConsecutiveTargetScalePolicy::None));
+		const EConsecutiveTargetScalePolicy EnumValue = GetEnumFromString<EConsecutiveTargetScalePolicy>(EnumString, EConsecutiveTargetScalePolicy::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
 	if (ComboBoxString == ComboBox_LifetimeTargetScalePolicy)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ELifetimeTargetScalePolicy>(EnumString, ELifetimeTargetScalePolicy::None));
+		return GetStringTableKeyNameFromEnum<ELifetimeTargetScalePolicy>(GetEnumFromString<ELifetimeTargetScalePolicy>(EnumString, ELifetimeTargetScalePolicy::None));
+	}
+	if (ComboBoxString == ComboBox_RecentTargetMemoryPolicy)
+	{
+		return GetStringTableKeyNameFromEnum<ERecentTargetMemoryPolicy>(GetEnumFromString<ERecentTargetMemoryPolicy>(EnumString, ERecentTargetMemoryPolicy::None));
 	}
 	if (ComboBoxString == ComboBox_TargetActivationSelectionPolicy)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetActivationSelectionPolicy>(EnumString, ETargetActivationSelectionPolicy::None));
+		return GetStringTableKeyNameFromEnum<ETargetActivationSelectionPolicy>(GetEnumFromString<ETargetActivationSelectionPolicy>(EnumString, ETargetActivationSelectionPolicy::None));
 	}
 	if (ComboBoxString == ComboBox_TargetDamageType)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDamageType>(EnumString, ETargetDamageType::None));
+		return GetStringTableKeyNameFromEnum<ETargetDamageType>(GetEnumFromString<ETargetDamageType>(EnumString, ETargetDamageType::None));
 	}
 	if (ComboBoxString == ComboBox_TargetDistributionPolicy)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDistributionPolicy>(EnumString, ETargetDistributionPolicy::None));
+		return GetStringTableKeyNameFromEnum<ETargetDistributionPolicy>(GetEnumFromString<ETargetDistributionPolicy>(EnumString, ETargetDistributionPolicy::None));
 	}
 	if (ComboBoxString == ComboBox_TargetSpawningPolicy)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetSpawningPolicy>(EnumString, ETargetSpawningPolicy::None));
+		return GetStringTableKeyNameFromEnum<ETargetSpawningPolicy>(GetEnumFromString<ETargetSpawningPolicy>(EnumString, ETargetSpawningPolicy::None));
 	}
 	if (ComboBoxString == ComboBox_TargetActivationResponses)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetActivationResponse>(EnumString, ETargetActivationResponse::None));
+		const ETargetActivationResponse EnumValue = GetEnumFromString<ETargetActivationResponse>(EnumString, ETargetActivationResponse::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
 	if (ComboBoxString == ComboBox_TargetDeactivationConditions)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDeactivationCondition>(EnumString, ETargetDeactivationCondition::None));
+		const ETargetDeactivationCondition EnumValue = GetEnumFromString<ETargetDeactivationCondition>(EnumString, ETargetDeactivationCondition::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
 	if (ComboBoxString == ComboBox_TargetDeactivationResponses)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDeactivationResponse>(EnumString, ETargetDeactivationResponse::None));
+		const ETargetDeactivationResponse EnumValue = GetEnumFromString<ETargetDeactivationResponse>(EnumString, ETargetDeactivationResponse::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
 	if (ComboBoxString == ComboBox_TargetDestructionConditions)
 	{
-		return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDestructionCondition>(EnumString, ETargetDestructionCondition::None));
+		const ETargetDestructionCondition EnumValue = GetEnumFromString<ETargetDestructionCondition>(EnumString, ETargetDestructionCondition::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
-	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching value for GetEnumTypeIndexFromComboBox in UGameModesWidget_TargetConfig"));
+	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching value for %s in UGameModesWidget_TargetConfig"), *ComboBoxString->GetName());
 	return "INVALID_STRING";
 }
 
@@ -771,6 +781,10 @@ UBSComboBoxEntry* UGameModesWidget_TargetConfig::CreateComboBoxEntryWidget(const
 	if (ComboBoxString == ComboBox_LifetimeTargetScalePolicy)
 	{
 		return CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScalePolicy, ComboboxEntryWidget);
+	}
+	if (ComboBoxString == ComboBox_RecentTargetMemoryPolicy)
+	{
+		return CreateWidget<UBSComboBoxEntry>(ComboBox_RecentTargetMemoryPolicy, ComboboxEntryWidget);
 	}
 	if (ComboBoxString == ComboBox_TargetActivationSelectionPolicy)
 	{
@@ -804,6 +818,6 @@ UBSComboBoxEntry* UGameModesWidget_TargetConfig::CreateComboBoxEntryWidget(const
 	{
 		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDestructionConditions, ComboboxEntryWidget);
 	}
-	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching ComboBoxString to CreateComboBoxEntryWidget in UGameModesWidget_TargetConfig"));
-	return nullptr;
+	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching %s in UGameModesWidget_TargetConfig"), *ComboBoxString->GetName());
+	return CreateWidget<UBSComboBoxEntry>(this, ComboboxEntryWidget);
 }

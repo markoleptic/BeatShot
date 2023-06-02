@@ -28,3 +28,21 @@ void UBSComboBoxEntry::SetBackgroundBrushTint(const FLinearColor& Color) const
 {
 	Background->SetBrushColor(Color);
 }
+
+void UBSComboBoxEntry::SetIsSelectedOption(const bool bIsSelected) const
+{
+	bIsSelectedOption = bIsSelected;
+	if (bIsSelected)
+	{
+		SetBackgroundBrushTint(SelectedColor);
+	}
+	else
+	{
+		SetBackgroundBrushTint(NotSelectedColor);
+	}
+}
+
+FString UBSComboBoxEntry::GetTextBlockAsString() const
+{
+	return TextBlock->GetText().ToString();
+}

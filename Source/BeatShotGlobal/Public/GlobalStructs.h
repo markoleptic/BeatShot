@@ -765,6 +765,7 @@ struct FBSConfig
 				
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnAnyExternalDamageTaken);
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
+				
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::Destroy);
 
@@ -936,6 +937,7 @@ struct FBSConfig
 				Config.TargetConfig.TargetActivationResponses.Add(ETargetActivationResponse::ChangeDirection);
 				
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::Persistant);
+				
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::None);
 
 				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::Persistant);
@@ -1021,6 +1023,7 @@ struct FBSConfig
 				
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnAnyExternalDamageTaken);
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
+				
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ResetPosition);

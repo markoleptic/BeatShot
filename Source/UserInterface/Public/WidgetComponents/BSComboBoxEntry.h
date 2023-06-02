@@ -16,6 +16,13 @@ class USERINTERFACE_API UBSComboBoxEntry : public UUserWidget
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FLinearColor NotSelectedColor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FLinearColor SelectedColor;
+
 public:
 	void SetText(const FText& InText) const;
 
@@ -28,8 +35,17 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* Background;
 
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	bool GetIsSelectedOption() const { return bIsSelectedOption; }
+
 	void ToggleTooltipImageVisibility(const bool bIsVisible) const;
 
 	/** Sets the Brush tint for the Border */
 	void SetBackgroundBrushTint(const FLinearColor& Color) const;
+
+	void SetIsSelectedOption(const bool bIsSelected) const;
+
+	FString GetTextBlockAsString() const;
+
+	mutable bool bIsSelectedOption;
 };
