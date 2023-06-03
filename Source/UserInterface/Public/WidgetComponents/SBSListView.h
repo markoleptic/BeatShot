@@ -237,7 +237,6 @@ public:
 		this->bHandleDirectionalNavigation = InArgs._HandleDirectionalNavigation;
 		this->bHandleSpacebarSelection = InArgs._HandleSpacebarSelection;
 		this->IsFocusable = InArgs._IsFocusable;
-
 		this->bReturnFocusToSelection = InArgs._ReturnFocusToSelection;
 
 		this->bEnableAnimatedScrolling = InArgs._EnableAnimatedScrolling;
@@ -1971,6 +1970,7 @@ public:
 	{
 		TListTypeTraits<ItemType>::AddReferencedObjects( Collector, WidgetGenerator.ItemsWithGeneratedWidgets, SelectedItems, WidgetGenerator.WidgetMapToItem );
 	}
+	
 	virtual FString GetReferencerName() const
 	{
 		return TEXT("SBSListView");

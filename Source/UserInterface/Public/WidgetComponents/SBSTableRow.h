@@ -414,7 +414,7 @@ public:
 	 */	
 	virtual FReply OnMouseButtonDown( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent ) override
 	{
-		TSharedRef< ITypedTableView<ItemType> > OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
+		/*TSharedRef< ITypedTableView<ItemType> > OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 		bChangedSelectionOnMouseDown = false;
 		bDragWasDetected = false;
 
@@ -487,7 +487,7 @@ public:
 						.CaptureMouse(SharedThis(this));
 				}
 			}
-		}
+		}*/
 
 		return FReply::Unhandled();
 	}

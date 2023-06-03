@@ -30,4 +30,6 @@ public:
 	
 	/** Called when Button is hovered over */
 	FOnTooltipHovered OnTooltipHovered;
+
+	FGuid Guid;
 };

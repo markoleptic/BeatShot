@@ -57,12 +57,6 @@ void ATargetManager::Destroyed()
 			Target->Destroy();
 		}
 	}
-
-	if (SpawnPointManager)
-	{
-		SpawnPointManager->BeginDestroy();
-	}
-	
 	Super::Destroyed();
 }
 
@@ -80,6 +74,7 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 	PlayerSettings = InPlayerSettings;
 
 	BSConfig.TargetConfig.bUseSeparateOutlineColor = InPlayerSettings.bUseSeparateOutlineColor;
+	BSConfig.TargetConfig.OnSpawnColor = InPlayerSettings.StartTargetColor;
 	BSConfig.TargetConfig.InactiveTargetColor = InPlayerSettings.InactiveTargetColor;
 	BSConfig.TargetConfig.StartColor = InPlayerSettings.StartTargetColor;
 	BSConfig.TargetConfig.PeakColor = InPlayerSettings.PeakTargetColor;
@@ -164,6 +159,7 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 		case ETargetDistributionPolicy::FullRange:
 			for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
 			{
+				// TODO: this seems sketch
 				FindNextTargetProperties();
 				SpawnTarget(*SpawnPoint);
 			}
@@ -251,62 +247,38 @@ bool ATargetManager::SpawnTarget(FSpawnPoint& InSpawnPoint)
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnOnTargetHealthChangedOrExpired);
 	Target->FinishSpawning(FTransform(), true);
 	InSpawnPoint.SetGuid(Target->GetGuid());
-	AddToManagedTargets(Target);
+	InSpawnPoint.SetManagedTargetIndex(AddToManagedTargets(Target));
 	return Target != nullptr;
 }
 
 bool ATargetManager::ActivateTarget(const bool bSpawnedTarget) const
 {
-	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
+	if (bSpawnedTarget && GetManagedTargets().IsValidIndex(SpawnPoint->GetManagedTargetIndex()))
 	{
-		if (SpawnPoint && GetManagedTargets().IsValidIndex(SpawnPoint->Index) && !GetManagedTargets()[SpawnPoint->Index]->IsTargetActiveAndDamageable())
+		ASphereTarget* Target = GetManagedTargets()[SpawnPoint->GetManagedTargetIndex()];
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
 		{
-			GetManagedTargets()[SpawnPoint->Index]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-			return true;
+			GetManagedTargets()[SpawnPoint->GetManagedTargetIndex()]->RemoveImmunityEffect();
 		}
-	}
-
-	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
-	
-	if (bSpawnedTarget)
-	{
-		for (ASphereTarget* Target : GetManagedTargets())
+		if (!Target->IsDamageWindowActive())
 		{
-			if (!Target->IsTargetActiveAndDamageable())
-			{
-				Target->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-			}
-			if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
-			{
-				ChangeTargetVelocity(Target);
-			}
-			if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
-			{
-				ChangeTargetDirection(Target);
-			}
-			if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
-			{
-				ChangeTargetScale(Target);
-			}
-			return true;
+			GetManagedTargets()[SpawnPoint->GetManagedTargetIndex()]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
 		}
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
+		{
+			Target->SetMovingTargetSpeed(FMath::FRandRange(BSConfig.TargetConfig.MinTargetSpeed, BSConfig.TargetConfig.MaxTargetSpeed));
+		}
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
+		{
+			Target->SetMovingTargetDirection(UKismetMathLibrary::GetDirectionUnitVector(Target->GetActorLocation(), GetRandomMovingTargetEndLocation(Target->GetActorLocation(), Target->GetMovingTargetSpeed())));
+		}
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
+		{
+			Target->SetSphereScale(GetNextTargetScale());
+		}
+		return true;
 	}
 	return false;
-}
-
-void ATargetManager::ChangeTargetDirection(ASphereTarget* InTarget) const
-{
-	InTarget->SetMovingTargetDirection(UKismetMathLibrary::GetDirectionUnitVector(InTarget->GetActorLocation(), GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetMovingTargetSpeed())));
-}
-
-void ATargetManager::ChangeTargetScale(const ASphereTarget* InTarget) const
-{
-	InTarget->SetSphereScale(GetNextTargetScale());
-}
-
-void ATargetManager::ChangeTargetVelocity(ASphereTarget* InTarget) const
-{
-	InTarget->SetMovingTargetSpeed(FMath::FRandRange(BSConfig.TargetConfig.MinTargetSpeed, BSConfig.TargetConfig.MaxTargetSpeed));
 }
 
 void ATargetManager::OnTick_UpdateTargetLocation(const float DeltaTime) const
@@ -429,7 +401,10 @@ void ATargetManager::FindNextTargetProperties()
 	
 	PreviousSpawnPoint = SpawnPoint;
 	SpawnPoint = GetNextSpawnPoint(BSConfig.TargetConfig.BoundsScalingPolicy, NewScale);
-	if (GetManagedTargets().IsValidIndex(SpawnPoint->Index)) SpawnPoint->SetScale(NewScale);
+	if (SpawnPoint && SpawnPointManager->GetSpawnPoints().IsValidIndex(SpawnPoint->Index))
+	{
+		SpawnPoint->SetScale(NewScale);
+	}
 }
 
 FVector ATargetManager::GetNextTargetScale() const
@@ -461,7 +436,7 @@ FSpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 	if (OpenLocations.IsEmpty())
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("OpenLocations is empty."));
-		return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
+		return nullptr;
 	}
 
 	/* Spawn at origin whenever possible if specified */
@@ -646,7 +621,7 @@ FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget)
 {
 	TArray<ASphereTarget*> Targets = GetManagedTargets();
-	const int32 NewIndex = Targets.Emplace(SpawnTarget);
+	const int32 NewIndex = Targets.Add(SpawnTarget);
 	ManagedTargets = Targets;
 	return NewIndex;
 }

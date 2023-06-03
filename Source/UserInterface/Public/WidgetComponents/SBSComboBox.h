@@ -32,28 +32,31 @@
 #endif
 
 DECLARE_DELEGATE( FOnComboBoxOpening )
-DECLARE_DELEGATE_OneParam( FOnMultiSelectionChanged, const TArray<TSharedPtr<FString>>&);
+/** Delegate that executes on selection changed with all current selections */
+DECLARE_DELEGATE_TwoParams( FOnMultiSelectionChanged, const TArray<TSharedPtr<FString>>&, const ESelectInfo::Type);
 
 template<typename OptionType>
 class SBSComboRow : public SBSTableRow< OptionType >
 {
 public:
 
+	typedef SBSTableRow<OptionType> SBSTableRowOptionType;
+
 	SLATE_BEGIN_ARGS( SBSComboRow )
 		: _Style(&FAppStyle::Get().GetWidgetStyle<FTableRowStyle>("ComboBox.Row"))
 		, _Content()
 		, _Padding(FMargin(0))
+		, _MaxNumSelectedItems( -1 )
+		, _CanSelectNone( false )
 	{}
 	SLATE_STYLE_ARGUMENT(FTableRowStyle, Style)
 	SLATE_DEFAULT_SLOT( FArguments, Content )
 	SLATE_ATTRIBUTE(FMargin, Padding)
-SLATE_END_ARGS()
+	SLATE_ARGUMENT(int32, MaxNumSelectedItems)
+	SLATE_ARGUMENT(bool, CanSelectNone)
+	SLATE_END_ARGS()
 
-public:
-
-	/**
-	 * Constructs this widget.
-	 */
+	/** Constructs this widget. */
 	void Construct( const FArguments& InArgs, const TSharedRef<STableViewBase>& InOwnerTable )
 	{
 		SBSTableRow< OptionType >::Construct(
@@ -66,95 +69,80 @@ public:
 			]
 			, InOwnerTable
 		);
+		MaxNum = InArgs._MaxNumSelectedItems;
+		bCanSelectNone = InArgs._CanSelectNone;
 	}
 
-	// handle case where user clicks on an existing selected item
-	//virtual FReply OnMouseButtonDown( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent ) override
-	//{
-		/*if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton )
-		{
-			TSharedPtr< ITypedTableView<OptionType> > OwnerWidget = this->OwnerTablePtr.Pin();
-
-			const OptionType* MyItem = OwnerWidget->Private_ItemFromWidget( this );
-			const bool bIsSelected = OwnerWidget->Private_IsItemSelected( *MyItem );
-				
-			if (bIsSelected)
-			{
-				// Reselect content to ensure selection is taken
-				OwnerWidget->Private_SignalSelectionChanged(ESelectInfo::Direct);
-				return FReply::Handled();
-			}
-		}*/
-		//return SBSTableRow<OptionType>::OnMouseButtonDown(MyGeometry, MouseEvent);
-	//}
-
+	/** Main "selection-handling" stuff occurs here */
 	virtual FReply OnMouseButtonDown( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent ) override
 	{
-		TSharedRef< ITypedTableView<OptionType> > OwnerTable = SBSTableRow<OptionType>::OwnerTablePtr.Pin().ToSharedRef();
-		SBSTableRow<OptionType>::bChangedSelectionOnMouseDown = false;
-		SBSTableRow<OptionType>::bDragWasDetected = false;
-
+		TSharedRef< ITypedTableView<OptionType> > OwnerTable = SBSTableRowOptionType::OwnerTablePtr.Pin().ToSharedRef();
+		SBSTableRowOptionType::bChangedSelectionOnMouseDown = false;
+		SBSTableRowOptionType::bDragWasDetected = false;
+		
 		if ( MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton )
 		{
-			const ESelectionMode::Type SelectionMode = SBSTableRow<OptionType>::GetSelectionMode();
+			const ESelectionMode::Type SelectionMode = SBSTableRowOptionType::GetSelectionMode();
 			if (SelectionMode != ESelectionMode::None)
 			{
 				if (const OptionType* MyItemPtr = GetItemForThis(OwnerTable))
 				{
 					const OptionType& MyItem = *MyItemPtr;
+					const int32 NumSelectedItems = OwnerTable->GetSelectedItems().Num();
 					const bool bIsSelected = OwnerTable->Private_IsItemSelected(MyItem);
-
+					const bool bCanSelectMoreItems = (GetMaxNumSelectedItems() == -1) || NumSelectedItems <  GetMaxNumSelectedItems();
+					const bool bCanUnselectMoreItems =  CanSelectNone() || NumSelectedItems > 1;
+					bool bSignalSelectionChanged = false;
+					
 					if (SelectionMode == ESelectionMode::Multi)
 					{
 						if (MouseEvent.IsControlDown())
 						{
-							OwnerTable->Private_SetItemSelection(MyItem, !bIsSelected, true);
-							SBSTableRow<OptionType>::bChangedSelectionOnMouseDown = true;
-							if (SBSTableRow<OptionType>::SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
+							if (bIsSelected && bCanUnselectMoreItems)
 							{
-								OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
+								OwnerTable->Private_SetItemSelection(MyItem, false, true);
+								SBSTableRowOptionType::bChangedSelectionOnMouseDown = true;
+								bSignalSelectionChanged = true;
+							}
+							else if (!bIsSelected && bCanSelectMoreItems)
+							{
+								OwnerTable->Private_SetItemSelection(MyItem, true, true);
+								SBSTableRowOptionType::bChangedSelectionOnMouseDown = true;
+								bSignalSelectionChanged = true;
 							}
 						}
 						else if (MouseEvent.IsShiftDown())
 						{
 							OwnerTable->Private_SelectRangeFromCurrentTo(MyItem);
-							SBSTableRow<OptionType>::bChangedSelectionOnMouseDown = true;
-							if (SBSTableRow<OptionType>::SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
-							{
-								OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
-							}
+							SBSTableRowOptionType::bChangedSelectionOnMouseDown = true;
+							bSignalSelectionChanged = true;
 						}
-						// start edit
-						else
-						{
-							if (OwnerTable->GetSelectedItems().Num() < 2 && bIsSelected)
-							{
-								OwnerTable->Private_SetItemSelection(MyItem, !bIsSelected, true);
-								SBSTableRow<OptionType>::bChangedSelectionOnMouseDown = true;
-								if (SBSTableRow<OptionType>::SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
-								{
-									OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
-								}
-							}
-						}
-						// end edit
 					}
 
-					if ((SBSTableRow<OptionType>::bAllowPreselectedItemActivation || !bIsSelected) && !SBSTableRow<OptionType>::bChangedSelectionOnMouseDown)
+					if (!SBSTableRowOptionType::bChangedSelectionOnMouseDown && bCanUnselectMoreItems && bIsSelected && NumSelectedItems == 1)
 					{
-						OwnerTable->Private_ClearSelection();
-						OwnerTable->Private_SetItemSelection(MyItem, true, true);
-						SBSTableRow<OptionType>::bChangedSelectionOnMouseDown = true;
-						if (SBSTableRow<OptionType>::SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
+						OwnerTable->Private_SetItemSelection(MyItem, !bIsSelected, true);
+						SBSTableRowOptionType::bChangedSelectionOnMouseDown = true;
+						bSignalSelectionChanged = true;
+					}
+
+					if (bSignalSelectionChanged)
+					{
+						if (SBSTableRowOptionType::SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
 						{
 							OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
 						}
-						// start edit
-						// if (!bIsSelected)
-						// {
-						//	 OwnerTable->Private_ClearSelection();
-						// }
-						// end edit
+					}
+					
+					if ((SBSTableRowOptionType::bAllowPreselectedItemActivation || !bIsSelected) && !SBSTableRowOptionType::bChangedSelectionOnMouseDown)
+					{
+						OwnerTable->Private_ClearSelection();
+						OwnerTable->Private_SetItemSelection(MyItem, true, true);
+						SBSTableRowOptionType::bChangedSelectionOnMouseDown = true;
+						if (SBSTableRowOptionType::SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
+						{
+							OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
+						}
 					}
 
 					return FReply::Handled()
@@ -164,13 +152,13 @@ public:
 				}
 			}
 		}
-
 		return FReply::Unhandled();
 	}
 
+	/** Same as overriden function */
 	virtual FReply OnMouseButtonUp( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent ) override
 	{
-		TSharedRef< ITypedTableView<OptionType> > OwnerTable = SBSTableRow<OptionType>::OwnerTablePtr.Pin().ToSharedRef();
+		TSharedRef< ITypedTableView<OptionType> > OwnerTable = SBSTableRowOptionType::OwnerTablePtr.Pin().ToSharedRef();
 
 		// Requires #include "Widgets/Views/SListView.h" in your header (not done in SBSTableRow.h to avoid circular reference).
 		TSharedRef< STableViewBase > OwnerTableViewBase = StaticCastSharedRef< SListView<OptionType> >(OwnerTable);
@@ -179,21 +167,21 @@ public:
 		{
 			FReply Reply = FReply::Unhandled().ReleaseMouseCapture();
 
-			if ( SBSTableRow<OptionType>::bChangedSelectionOnMouseDown )
+			if ( SBSTableRowOptionType::bChangedSelectionOnMouseDown )
 			{
 				Reply = FReply::Handled().ReleaseMouseCapture();
 			}
 
 			const bool bIsUnderMouse = MyGeometry.IsUnderLocation(MouseEvent.GetScreenSpacePosition());
-			if ( SBSTableRow<OptionType>::HasMouseCapture() )
+			if ( SBSTableRowOptionType::HasMouseCapture() )
 			{
-				if ( bIsUnderMouse && !SBSTableRow<OptionType>::bDragWasDetected )
+				if ( bIsUnderMouse && !SBSTableRowOptionType::bDragWasDetected )
 				{
-					switch( SBSTableRow<OptionType>::GetSelectionMode() )
+					switch( SBSTableRowOptionType::GetSelectionMode() )
 					{
 					case ESelectionMode::SingleToggle:
 						{
-							if ( !SBSTableRow<OptionType>::bChangedSelectionOnMouseDown )
+							if ( !SBSTableRowOptionType::bChangedSelectionOnMouseDown )
 							{
 								OwnerTable->Private_ClearSelection();
 								OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
@@ -205,7 +193,7 @@ public:
 
 					case ESelectionMode::Multi:
 						{
-							if ( !SBSTableRow<OptionType>::bChangedSelectionOnMouseDown && !MouseEvent.IsControlDown() && !MouseEvent.IsShiftDown() )
+							if ( !SBSTableRowOptionType::bChangedSelectionOnMouseDown && !MouseEvent.IsControlDown() && !MouseEvent.IsShiftDown() )
 							{
 								if (const OptionType* MyItemPtr = GetItemForThis(OwnerTable))
 								{
@@ -225,6 +213,8 @@ public:
 							}
 						}
 						break;
+					default:
+						break;
 					}
 				}
 
@@ -236,7 +226,7 @@ public:
 					}
 				}
 
-				if (SBSTableRow<OptionType>::bChangedSelectionOnMouseDown && !SBSTableRow<OptionType>::bDragWasDetected && (SBSTableRow<OptionType>::SignalSelectionMode == ETableRowSignalSelectionMode::Deferred))
+				if (SBSTableRowOptionType::bChangedSelectionOnMouseDown && !SBSTableRowOptionType::bDragWasDetected && (SBSTableRowOptionType::SignalSelectionMode == ETableRowSignalSelectionMode::Deferred))
 				{
 					OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
 				}
@@ -249,7 +239,7 @@ public:
 			// Handle selection of items when releasing the right mouse button, but only if the user isn't actively
 			// scrolling the view by holding down the right mouse button.
 
-			switch( SBSTableRow<OptionType>::GetSelectionMode() )
+			switch( SBSTableRowOptionType::GetSelectionMode() )
 			{
 			case ESelectionMode::Single:
 			case ESelectionMode::SingleToggle:
@@ -274,29 +264,44 @@ public:
 					}
 				}
 				break;
+			default:
+				break;
 			}
 		}
-
 		return FReply::Unhandled();
 	}
+
+
+	int32 GetMaxNumSelectedItems() const
+	{
+		return MaxNum;
+	}
+
+	bool CanSelectNone() const
+	{
+		return bCanSelectNone;
+	}
+	
+protected:
+	int32 MaxNum = -1;
+	bool bCanSelectNone = false;
 };
 
-
-/**
- * A combo box that shows arbitrary content.
- */
+/** A combo box that shows arbitrary content. */
 template< typename OptionType >
 class SBSComboBox : public SComboButton
 {
 public:
-
 	typedef TListTypeTraits< OptionType > ListTypeTraits;
 	typedef typename TListTypeTraits< OptionType >::NullableType NullableOptionType;
 
 	/** Type of list used for showing menu options. */
 	typedef SBSListView< OptionType > SComboListType;
+	
 	/** Delegate type used to generate widgets that represent Options */
 	typedef typename TSlateDelegates< OptionType >::FOnGenerateWidget FOnGenerateWidget;
+
+	/** Delegate type used for when a selection has been changed */
 	typedef typename TSlateDelegates< NullableOptionType >::FOnSelectionChanged FOnSelectionChanged;
 	
 	SLATE_BEGIN_ARGS( SBSComboBox )
@@ -318,6 +323,7 @@ public:
 		, _IsFocusable( true )
 		, _CloseComboBoxOnSelectionChanged( false )
 		, _MaxNumSelectedItems( -1 )
+		, _CanSelectNone( false )
 		{}
 		
 		/** Slot for this button's content (optional) */
@@ -375,7 +381,11 @@ public:
 		/** When true, allows the combo box to receive keyboard focus */
 		SLATE_ARGUMENT(TAttribute<ESelectionMode::Type>, SelectionMode )
 
+		/** Max number of selections, or -1 if unlimited */
 		SLATE_ARGUMENT(int32, MaxNumSelectedItems)
+
+		/** Should the user be able to select no options */
+		SLATE_ARGUMENT(bool, CanSelectNone)
 				
 	SLATE_END_ARGS()
 
@@ -404,9 +414,11 @@ public:
 		this->EnableGamepadNavigationMode = InArgs._EnableGamepadNavigationMode;
 		this->bControllerInputCaptured = false;
 		this->bCloseComboBoxOnSelectionChanged = InArgs._CloseComboBoxOnSelectionChanged;
+		this->bCanSelectNone = InArgs._CanSelectNone;
 
 		OptionsSource = InArgs._OptionsSource;
 		CustomScrollbar = InArgs._CustomScrollbar;
+		this->MaxNumSelectedItems = InArgs._MaxNumSelectedItems;
 		MaxNumSelectedItems = InArgs._MaxNumSelectedItems;
 
 		TSharedRef<SWidget> ComboBoxMenuContent =
@@ -467,7 +479,15 @@ public:
 		}
 	}
 
-		SBSComboBox(): ItemStyle(nullptr), EnableGamepadNavigationMode(false), bControllerInputCaptured(false), bCloseComboBoxOnSelectionChanged(false), OptionsSource(nullptr), MaxNumSelectedItems(-1)
+	SBSComboBox():
+		ItemStyle(nullptr),
+		EnableGamepadNavigationMode(false),
+		bControllerInputCaptured(false),
+		bCloseComboBoxOnSelectionChanged(false),
+		OptionsSource(nullptr),
+		MaxNumSelectedItems(-1),
+		bCanSelectNone(false)
+	
 	{
 #if WITH_ACCESSIBILITY
 		AccessibleBehavior = EAccessibleBehavior::Auto;
@@ -548,9 +568,9 @@ public:
 		ComboListView->ClearSelection();
 	}
 
+	// Only really called when initializing options in BSComboBoxString
 	void SetItemSelection(NullableOptionType InSelectedItem, bool bSelected, ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
 	{
-		UE_LOG(LogTemp, Display, TEXT("SetItemSelection"));
 		if (TListTypeTraits<OptionType>::IsPtrValid(InSelectedItem))
 		{
 			OptionType InSelected = TListTypeTraits<OptionType>::NullableItemTypeConvertToItemType(InSelectedItem);
@@ -724,21 +744,22 @@ private:
 	{
 		if (OnGenerateWidget.IsBound())
 		{
-			return SNew(SBSComboRow<OptionType>, OwnerTable)
+			TSharedRef<SBSComboRow<OptionType>> BSComboRow = SNew(SBSComboRow<OptionType>, OwnerTable)
 				.Style(ItemStyle)
 				.Padding(MenuRowPadding)
+				.MaxNumSelectedItems( MaxNumSelectedItems )
+				.CanSelectNone ( bCanSelectNone )
 				[
 					OnGenerateWidget.Execute(InItem)
 				];
+			//BSComboRow->SetMaxNumSelectedItems(MaxNumSelectedItems);
+			return BSComboRow;
 		}
-		else
-		{
-			return SNew(SBSComboRow<OptionType>, OwnerTable)
-				[
-					SNew(STextBlock).Text(NSLOCTEXT("SlateCore", "ComboBoxMissingOnGenerateWidgetMethod", "Please provide a .OnGenerateWidget() handler."))
-				];
-
-		}
+		return SNew(SBSComboRow<OptionType>, OwnerTable)
+			[
+				SNew(STextBlock).Text(NSLOCTEXT("SlateCore", "ComboBoxMissingOnGenerateWidgetMethod", "Please provide a .OnGenerateWidget() handler."))
+			];
+		
 	}
 
 	//** Called if the menu is closed
@@ -778,13 +799,12 @@ private:
 		if(SelectInfo != ESelectInfo::OnNavigation)
 		{
 			SelectedItems = ComboListView->GetSelectedItems();
-			OnSelectionChanged.ExecuteIfBound( ProposedSelection, SelectInfo );
-			OnMultiSelectionChanged.ExecuteIfBound (SelectedItems);
+			OnMultiSelectionChanged.ExecuteIfBound(SelectedItems , SelectInfo);
 			PlaySelectionChangeSound();
 
 			if (bCloseComboBoxOnSelectionChanged)
 			{
-				this->SetIsOpen( false );
+				this->SetIsOpen(false);
 			}
 			//UE_LOG(LogTemp, Display, TEXT("SBSComboBox SelectedItems %d"), SelectedItems.Num());
 			//UE_LOG(LogTemp, Display, TEXT("SBSListView SelectedItems %d"), ComboListView->GetNumItemsSelected());
@@ -887,4 +907,5 @@ private:
 	const TArray< OptionType >* OptionsSource;
 
 	int32 MaxNumSelectedItems;
+	bool bCanSelectNone;
 };

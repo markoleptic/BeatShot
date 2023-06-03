@@ -34,7 +34,9 @@ class UBSComboBoxEntry;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent, FString, SelectedItem, ESelectInfo::Type, SelectionType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpeningEvent);
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForStringWithSelf, const UBSComboBoxString*, BSComboBoxString, FString, Item);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForSingleItem, const UBSComboBoxString*, BSComboBoxString, FString, Item);
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelection, const UBSComboBoxString*, BSComboBoxString, const TArray<FString>&, Items);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections, const ESelectInfo::Type, SelectionType);
 
 UCLASS(meta=( DisplayName="BSComboBox (String)"))
 class USERINTERFACE_API UBSComboBoxString : public UWidget
@@ -67,8 +69,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
 	ESelectionModeType SelectionMode = ESelectionModeType::Multi;
 
+	/** Should the user be able to select no options */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
+	bool bCanSelectNone = false;
+	
+	/** Should the combo box automatically close when a selection is made */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
+	bool bCloseComboBoxOnSelectionChanged = false;
+
+	/** The max number of options that a user can select */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
 	int32 MaxNumberOfSelections = -1;
+
+	/** When false, directional keys will change the selection. When true, ComboBox 
+	 *  must be activated and will only capture arrow input while activated. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content, AdvancedDisplay)
+	bool EnableGamepadNavigationMode;
 	
 	/** The max height of the combobox list that opens */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content, AdvancedDisplay)
@@ -78,11 +94,6 @@ public:
 	 *  to make their own visual hint that this is a drop down. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content, AdvancedDisplay)
 	bool HasDownArrow;
-
-	/** When false, directional keys will change the selection. When true, ComboBox 
-	 *  must be activated and will only capture arrow input while activated. */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content, AdvancedDisplay)
-	bool EnableGamepadNavigationMode;
 
 	/** The default font to use in the combobox, only applies if you're not implementing OnGenerateWidgetEvent
 	 *  to factory each new entry. */
@@ -95,43 +106,48 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interaction)
 	bool bIsFocusable;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
-	bool bCloseComboBoxOnSelectionChanged = false;
 	
 	/** Called when the widget is needed for the item. */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
 	FGenerateWidgetForString OnGenerateWidgetEvent;
 
-	/** Called when a new item is selected in the combobox. */
+	/** Called when ayn change in selection occurs in the combobox. */
 	UPROPERTY(BlueprintAssignable, Category=Events)
-	FOnSelectionChangedEvent OnSelectionChanged;
+	FOnMultiSelectionChangedEvent OnSelectionChanged;
 
 	/** Called when the combobox is opening */
 	UPROPERTY(BlueprintAssignable, Category=Events)
 	FOnOpeningEvent OnOpening;
 
+	/** Adds a new option to the combo box */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void AddOption(const FString& Option);
 
+	/** Removes existing option from the combo box */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	bool RemoveOption(const FString& Option);
 
+	/** Returns the index corresponding to the Option, or -1 if not found */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	int32 FindOptionIndex(const FString& Option) const;
 
+	/** Returns string option corresponding to the Index, or empty string if not found */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	FString GetOptionAtIndex(int32 Index) const;
 
+	/** Returns the selected option. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	FString GetFirstSelectedOption() const;
+	FString GetSelectedOption() const;
 
+	/** Returns the selected index. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	int32 GetFirstSelectedIndex() const;
+	int32 GetSelectedIndex() const;
 
+	/** Returns an array of selected indices */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	TArray<int32> GetSelectedIndices() const;
 
+	/** Returns an array of selected string options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	TArray<FString> GetSelectedOptions() const;
 
@@ -139,35 +155,35 @@ public:
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	int32 GetOptionCount() const;
 
-	/** Returns the number of options */
+	/** Returns the number of currently selected options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	int32 GetSelectionCount() const;
+	int32 GetSelectedOptionCount() const;
 
+	/** Selects the specified index if it exists */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	void ToggleSelectedIndex(const int32 InIndex);
+	void SetSelectedIndex(const int32 InIndex);
 
+	/** Selects the specified option if it exists */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	void ToggleSelectedOption(const FString InOption);
-	
+	void SetSelectedOption(const FString InOption);
+
+	/** Selects the specified indices if they exists */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void SetSelectedIndices(const TArray<int32> InIndices);
-	
+
+	/** Selects the specified options if they exists */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void SetSelectedOptions(TArray<FString> InOptions);
 
+	/** Clears all options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void ClearOptions();
 
+	/** Clears all selected options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void ClearSelection();
 
-	void SetSelectionMode(const ESelectionModeType InSelectionMode) { SelectionMode = InSelectionMode; }
-	void SetMaxNumberOfSelections(const int32 InMaxNumberOfSelections) { MaxNumberOfSelections = InMaxNumberOfSelections; }
-
-	/**
-	 * Refreshes the list of options.  If you added new ones, and want to update the list even if it's
-	 * currently being displayed use this.
-	 */
+	/** Refreshes the list of options.  If you added new ones, and want to update the list even if it's currently being displayed use this. */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void RefreshOptions();
 	
@@ -195,9 +211,8 @@ protected:
 	/** Called by slate when it needs to generate a new item for the combobox */
 	virtual TSharedRef<SWidget> HandleGenerateWidget(TSharedPtr<FString> Item) const;
 
-	/** Called by slate when the underlying combobox selection changes */
-	virtual void HandleSelectionChanged(TSharedPtr<FString> Item, ESelectInfo::Type SelectionType);
-	virtual void HandleMultiSelectionChanged(const TArray<TSharedPtr<FString>>& Items);
+	/** Called by slate when the underlying combobox selection changes. Handles both single select and multi-select */
+	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType);
 
 	/** Called by slate when the underlying combobox is opening */
 	virtual void HandleOpening();
@@ -220,20 +235,25 @@ protected:
 
 	/** An array of shared pointers to the current selected strings */
 	TArray<TSharedPtr<FString>> CurrentlySelectedOptionPointers;
-	
-	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(TSharedPtr<FString> Item) const;
 
+	/** Generates a widget for a row inside of the combo box */
+	/*virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(TSharedPtr<FString> Item) const;*/
+
+	/** Generates a widget for the selected item (top) of the combo box */
 	virtual TSharedRef<SWidget> HandleMultiSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const;
 
 public:
-	
+	/** Executed to allow other widgets to create a combo box row */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
-	FGenerateWidgetForStringWithSelf OnGenerateWidgetEventDelegate;
-	
+	FGenerateWidgetForSingleItem OnGenerateWidgetEventDelegate;
+
+	/** Executed to allow other widgets to create selected (top) combo box row */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
-	FGenerateWidgetForStringWithSelf OnSelectionChangedGenerateWidgetEventDelegate;
-	
-	mutable TArray<TObjectPtr<UBSComboBoxEntry>> OptionWidgets;
+	FGenerateWidgetForSingleItem OnSelectionChanged_GenerateWidgetForSingleSelection;
+
+	/** Executed to allow other widgets to create selected (top) combo box row */
+	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
+	FGenerateWidgetForMultiSelection OnSelectionChanged_GenerateWidgetForMultiSelection;
 
 	static TAttribute<ESelectionMode::Type> GetSelectionModeType(const ESelectionModeType& SelectionModeType)
 	{

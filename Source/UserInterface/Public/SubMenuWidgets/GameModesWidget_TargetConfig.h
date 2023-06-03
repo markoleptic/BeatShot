@@ -256,6 +256,16 @@ protected:
 	UTooltipImage* QMark_TargetDeactivationResponses;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_TargetDestructionConditions;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_MoveTargetsForward;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_ContinuouslySpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_MoveTargets;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_SpawnAtOriginWheneverPossible;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_SpawnEveryOtherTargetInCenter;
 
 	
 	UFUNCTION()
@@ -317,29 +327,29 @@ protected:
 	void OnTextCommitted_MaxHealth(const FText& NewMaxHealth, ETextCommit::Type CommitType);
 	
 	UFUNCTION()
-	void OnSelectionChanged_BoundsScalingPolicy(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_LifetimeTargetScalePolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_LifetimeTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_RecentTargetMemoryPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetActivationSelectionPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDamageType(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDistributionPolicy(const FString SelectedMethod, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetSpawningPolicy(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetActivationResponses(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDeactivationConditions(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDeactivationResponses(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetDestructionConditions(const FString SelectedPolicy, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetDestructionConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 
 	
 	UFUNCTION()
@@ -358,9 +368,11 @@ protected:
 	UFUNCTION()
 	UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
 	UFUNCTION()
-	UWidget* OnSelectionChangedGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
+	UWidget* OnSelectionChanged_GenerateSingleSelectionItem(const UBSComboBoxString* ComboBoxString, FString SelectedOption);
+	UFUNCTION()
+	UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
 	
-	FString GetEnumTypeIndexFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
+	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
 	UBSComboBoxEntry* CreateComboBoxEntryWidget(const UBSComboBoxString* ComboBoxString);
 

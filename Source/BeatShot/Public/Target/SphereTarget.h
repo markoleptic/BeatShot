@@ -137,8 +137,11 @@ public:
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
 
-	/** Whether or not the DamageableWindow timer is active and the target is not immune */
-	bool IsTargetActiveAndDamageable() const;
+	/** Whether or not the target is immune to damage */
+	bool IsTargetImmune() const;
+
+	/** Whether or not the DamageableWindow timer is active */
+	bool IsDamageWindowActive() const;
 
 	/** Returns the direction the target is travelling towards */
 	FVector GetMovingTargetDirection() const { return MovingTargetDirection; }
@@ -151,6 +154,12 @@ public:
 
 	/** Sets the speed the target is travelling at */
 	void SetMovingTargetSpeed(const float NewMovingTargetSpeed);
+
+	/** Applies the TargetImmunity gameplay effect to the target */
+	void ApplyImmunityEffect() const;
+
+	/** Applies the TargetImmunity gameplay effect to the target */
+	void RemoveImmunityEffect() const;
 	
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
@@ -212,12 +221,6 @@ private:
 	/** Used to shrink the target quickly, and more slowly return it to it's BeatGrid size and color. Interpolates both sphere scale and sphere color */
 	UFUNCTION()
 	void InterpShrinkQuickAndGrowSlow(const float Alpha);
-
-	/** Applies the TargetImmunity gameplay effect to the target */
-	void ApplyImmunityEffect() const;
-
-	/** Applies the TargetImmunity gameplay effect to the target */
-	void RemoveImmunityEffect() const;
 
 	/** Unlike other modes which use LifeSpanExpired to notify TargetManager of their expiration, BeatGrid modes use
 	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */

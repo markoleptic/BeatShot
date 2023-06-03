@@ -151,6 +151,9 @@ private:
 	/** The center of the square sub-area */
 	FVector Scale;
 
+	/** The index of the managed target this spawn point represents, if it is activated */
+	int32 ManagedTargetIndex;
+
 	/** The total number of target spawns at this point */
 	int32 TotalSpawns;
 
@@ -217,6 +220,7 @@ public:
 	int32 GetTotalSpawns() const { return TotalSpawns; }
 	int32 GetTotalHits() const { return TotalHits; }
 	FVector GetScale() const { return Scale; }
+	int32 GetManagedTargetIndex() const { return ManagedTargetIndex; }
 
 	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction.
 	 *  Used as input to the GenerateRandomSubPoint and SetChosenPointAsRandomSubPoint functions */
@@ -242,6 +246,12 @@ public:
 	void SetGuid(const FGuid InGuid)
 	{
 		TargetGuid = InGuid;
+	}
+
+	/** Sets ManagedTargetIndex */
+	void SetManagedTargetIndex(const int32 InIndex)
+	{
+		ManagedTargetIndex = InIndex;
 	}
 
 	void IncrementTotalSpawns();

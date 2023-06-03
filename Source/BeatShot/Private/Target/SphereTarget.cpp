@@ -247,14 +247,9 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 
 void ASphereTarget::ActivateTarget(const float Lifespan)
 {
-	if (IsTargetActiveAndDamageable())
+	if (IsDamageWindowActive())
 	{
 		return;
-	}
-	
-	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune))
-	{
-		RemoveImmunityEffect();
 	}
 
 	//Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration)
@@ -438,7 +433,10 @@ void ASphereTarget::ApplyImmunityEffect() const
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
-		Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
+		if (!IsTargetImmune())
+		{
+			Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
+		}
 	}
 }
 
@@ -446,7 +444,10 @@ void ASphereTarget::RemoveImmunityEffect() const
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
-		Comp->RemoveActiveEffectsWithTags(FGameplayTagContainer(FBSGameplayTags::Get().Target_State_Immune));
+		if (IsTargetImmune())
+		{
+			Comp->RemoveActiveEffectsWithTags(FGameplayTagContainer(FBSGameplayTags::Get().Target_State_Immune));
+		}
 	}
 }
 
@@ -470,9 +471,14 @@ FLinearColor ASphereTarget::GetEndTargetColor() const
 	return Config.EndColor;
 }
 
-bool ASphereTarget::IsTargetActiveAndDamageable() const
+bool ASphereTarget::IsTargetImmune() const
 {
-	return GetWorldTimerManager().IsTimerActive(DamageableWindow) && !HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune);
+	return HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune);
+}
+
+bool ASphereTarget::IsDamageWindowActive() const
+{
+	return GetWorldTimerManager().IsTimerActive(DamageableWindow);
 }
 
 void ASphereTarget::SetMovingTargetDirection(const FVector& NewDirection)

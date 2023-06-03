@@ -7,6 +7,7 @@
 void UTooltipImage::NativeConstruct()
 {
 	Super::NativeConstruct();
+	Guid = FGuid::NewGuid();
 	Button->OnHovered.AddUniqueDynamic(this, &UTooltipImage::OnTooltipImageHoveredCallback);
 }
 

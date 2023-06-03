@@ -19,27 +19,39 @@ struct FTooltipData
 {
 	GENERATED_BODY()
 
-	TSoftObjectPtr<UTooltipImage> TooltipImage;
+	UPROPERTY()
+	TObjectPtr<UTooltipImage> TooltipImage;
 	FText TooltipText;
 	bool bAllowTextWrap;
-
+	FGuid Guid;
+	
 	FTooltipData()
 	{
 		TooltipImage = nullptr;
 		TooltipText = FText();
 		bAllowTextWrap = false;
+		Guid = FGuid();
 	}
 
-	FTooltipData(const UTooltipImage* InTooltipImage, const FText& InTooltipText, const bool bInbAllowTextWrap = false)
+	FTooltipData(UTooltipImage* InTooltipImage, const FText& InTooltipText, const bool bInbAllowTextWrap = false)
 	{
 		TooltipImage = InTooltipImage;
+		Guid = InTooltipImage->Guid;
 		TooltipText = InTooltipText;
 		bAllowTextWrap = bInbAllowTextWrap;
 	}
 
+	explicit FTooltipData(const FGuid InGuid)
+	{
+		TooltipImage = nullptr;
+		TooltipText = FText();
+		bAllowTextWrap = false;
+		Guid = InGuid;
+	}
+
 	bool operator==(const FTooltipData& Other) const
 	{
-		if (TooltipImage == Other.TooltipImage)
+		if (Guid == Other.Guid)
 		{
 			return true;
 		}
@@ -86,7 +98,7 @@ public:
 	UTooltipWidget* GetTooltipWidget() const;
 
 	/** Call this to set the tooltip widget constructed from ConstructTooltipWidget */
-	void SetTooltipWidget(const UTooltipWidget* InTooltipWidget);
+	void SetTooltipWidget(UTooltipWidget* InTooltipWidget);
 
 	/** Add tooltip text to a given TooltipImage */
 	void AddToTooltipData(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
@@ -130,8 +142,18 @@ public:
 		return EnumString;
 	}
 
+	/** Returns the String Table entry for a tooltip, provided a valid key */
+	static FText GetTooltipTextFromKey(const FString& InKey)
+	{
+		const FText StringTableEntry = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", InKey);
+		if (InKey.IsEmpty() || StringTableEntry.IsEmpty())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Couldn't find String Table entry for key: %s"), *InKey);
+		}
+		return StringTableEntry;
+	}
 
 private:
 	TArray<FTooltipData> TooltipData;
-	TSoftObjectPtr<UTooltipWidget> TooltipWidget;
+	TObjectPtr<UTooltipWidget> TooltipWidget;
 };

@@ -13,6 +13,7 @@ FSpawnPoint::FSpawnPoint()
 	ChosenPoint = FVector(-1);
 	Scale = FVector(1);
 	TotalSpawns = INDEX_NONE;
+	ManagedTargetIndex = INDEX_NONE;
 	TotalHits = 0;
 	Index = INDEX_NONE;
 	bIsActivated = false;
@@ -44,6 +45,7 @@ FSpawnPoint::FSpawnPoint(const int32 InIndex, const FVector& InPoint, const bool
 	
 	TotalSpawns = INDEX_NONE;
 	TotalHits = 0;
+	ManagedTargetIndex = INDEX_NONE;
 	Index = InIndex;
 	
 	bIsActivated = false;
@@ -437,7 +439,7 @@ void USpawnPointManager::SetAppropriateSpawnMemoryValues()
 	MinOverlapRadius = (SpawnMemoryIncY + SpawnMemoryIncZ) / 2.f;
 }
 
-// SpawnPoint getters
+// SpawnPoint finders/getters
 
 FSpawnPoint* USpawnPointManager::FindSpawnPointFromIndex(const int32 InIndex)
 {
@@ -626,7 +628,7 @@ void USpawnPointManager::RemoveEdgePoints(TArray<FVector>& In, const FExtrema& E
 	}
 }
 
-// flags
+// flags (activation and recent)
 
 void USpawnPointManager::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
 {
@@ -662,6 +664,7 @@ void USpawnPointManager::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGu
 		if (Point->IsRecent())
 		{
 			Point->SetIsRecent(false);
+			Point->SetManagedTargetIndex(INDEX_NONE);
 		}
 	}
 }
@@ -681,6 +684,8 @@ void USpawnPointManager::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEv
 		}
 	}
 }
+
+// Util or debug
 
 int32 USpawnPointManager::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
 {

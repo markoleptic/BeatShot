@@ -41,15 +41,15 @@ protected:
 
 	/** The spawn area */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	UBoxComponent* SpawnBox;
+	TObjectPtr<UBoxComponent> SpawnBox;
 
 	/** The spawn area for BeatTrack, used to reverse the direction if the BeatTrack target stops overlapping it */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	UBoxComponent* OverlapSpawnBox;
+	TObjectPtr<UBoxComponent> OverlapSpawnBox;
 
 	/** Reinforcement learning agent component */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	UReinforcementLearningComponent* ReinforcementLearningComponent;
+	TObjectPtr<UReinforcementLearningComponent> ReinforcementLearningComponent;
 
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
@@ -61,7 +61,7 @@ protected:
 
 	/** Manages spawn points */
 	UPROPERTY()
-	USpawnPointManager* SpawnPointManager;
+	TObjectPtr<USpawnPointManager> SpawnPointManager;
 
 public:
 	void ShowDebug_SpawnBox(const bool bShow);
@@ -111,15 +111,6 @@ private:
 	/** Calls ActivateTarget using SpawnPoint's index and ManagedTargets */
 	bool ActivateTarget(const bool bSpawnedTarget) const;
 
-	/** Changes a target's direction */
-	void ChangeTargetDirection(ASphereTarget* InTarget) const;
-
-	/** Changes a target's scale */
-	void ChangeTargetScale(const ASphereTarget* InTarget) const;
-
-	/** Changes a target's velocity */
-	void ChangeTargetVelocity(ASphereTarget* InTarget) const;
-
 	/** Updates the position of the BeatTrack target on tick */
 	void OnTick_UpdateTargetLocation(const float DeltaTime) const;
 
@@ -152,7 +143,7 @@ private:
 	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
 
 	/** Returns a copy of ManagedTargets */
-	TArray<ASphereTarget*> GetManagedTargets() const { return ManagedTargets; }
+	TArray<TObjectPtr<ASphereTarget>> GetManagedTargets() const { return ManagedTargets; }
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
 	FVector GetBoxExtents_Static() const { return StaticExtents; }
@@ -228,7 +219,7 @@ private:
 
 	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()
-	TArray<ASphereTarget*> ManagedTargets;
+	TArray<TObjectPtr<ASphereTarget>> ManagedTargets;
 
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;

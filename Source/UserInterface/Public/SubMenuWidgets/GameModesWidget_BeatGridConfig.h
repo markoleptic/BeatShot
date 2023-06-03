@@ -214,10 +214,10 @@ private:
 	const FText NewLineDelimit = FText::FromString("\n");
 	const FText SpaceDelimit = FText::FromString(" ");
 	
-	const FText SuggestStart = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_SuggestStart");
-	const FText HorizontalSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_NumHorizontalSuggest");
-	const FText VerticalSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_NumVerticalSuggest");
-	const FText ScaleSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_ScaleSuggest");
-	const FText HorizontalSpacingSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_HorizontalSpacingSuggest");
-	const FText VerticalSpacingSuggest = FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGrid_VerticalSpacingSuggest");
+	const FText SuggestStart = GetTooltipTextFromKey("Grid_SuggestStart");
+	const FText HorizontalSuggest = GetTooltipTextFromKey("Grid_NumHorizontalSuggest");
+	const FText VerticalSuggest = GetTooltipTextFromKey("Grid_NumVerticalSuggest");
+	const FText ScaleSuggest = GetTooltipTextFromKey("Grid_ScaleSuggest");
+	const FText HorizontalSpacingSuggest = GetTooltipTextFromKey("Grid_HorizontalSpacingSuggest");
+	const FText VerticalSpacingSuggest = GetTooltipTextFromKey("Grid_VerticalSpacingSuggest");
 };

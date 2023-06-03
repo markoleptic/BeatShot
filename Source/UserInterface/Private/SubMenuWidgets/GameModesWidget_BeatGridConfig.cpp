@@ -31,9 +31,8 @@ void UGameModesWidget_BeatGridConfig::NativeConstruct()
 	
 	Super::NativeConstruct();
 	
-	SetTooltipWidget(ConstructTooltipWidget());
-	AddToTooltipData(BeatGridSpreadConstrained->GetCheckBoxQMark(), FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridEvenSpacing"));
-	AddToTooltipData(QMark_BeatGridAdjacentOnly, FText::FromStringTable("/Game/StringTables/ST_Tooltips.ST_Tooltips", "BeatGridAdjacentOnly"));
+	AddToTooltipData(BeatGridSpreadConstrained->GetCheckBoxQMark(), GetTooltipTextFromKey("BeatGridEvenSpacing"));
+	AddToTooltipData(QMark_BeatGridAdjacentOnly, GetTooltipTextFromKey("BeatGridAdjacentOnly"));
 	
 	/* BeatGrid Spacing TextBox and Slider */
 	FSyncedSlidersParams BeatGridSliderStruct;
