@@ -10,10 +10,10 @@ void UGameModesWidget_DefiningConfig::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AddToTooltipData(QMark_GameModeTemplate, GetTooltipTextFromKey("GameModeTemplate"));
-	AddToTooltipData(QMark_BaseGameMode, GetTooltipTextFromKey("BaseGameMode"));
-	AddToTooltipData(QMark_CustomGameModeName, GetTooltipTextFromKey("CustomGameModeName"));
-	AddToTooltipData(QMark_GameModeDifficulty, GetTooltipTextFromKey("GameModeDifficulty"));
+	SetupTooltip(QMark_GameModeTemplate, GetTooltipTextFromKey("GameModeTemplate"));
+	SetupTooltip(QMark_BaseGameMode, GetTooltipTextFromKey("BaseGameMode"));
+	SetupTooltip(QMark_CustomGameModeName, GetTooltipTextFromKey("CustomGameModeName"));
+	SetupTooltip(QMark_GameModeDifficulty, GetTooltipTextFromKey("GameModeDifficulty"));
 
 	ComboBox_GameModeName->OnSelectionChanged.AddDynamic(this, &UGameModesWidget_DefiningConfig::OnSelectionChanged_GameModeName);
 	TextBox_CustomGameModeName->OnTextChanged.AddDynamic(this, &UGameModesWidget_DefiningConfig::OnTextChanged_CustomGameMode);

@@ -23,29 +23,31 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FLinearColor SelectedColor;
 
-public:
-	void SetText(const FText& InText) const;
-
+	/** The image to the left of the text, that will display a tooltip when hovered */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* TooltipImage;
 
+	/** The main text of the entry */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTextBlock* TextBlock;
+	UTextBlock* TextBlock_Entry;
 
+	/** The background of the entry */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* Background;
+	
+public:
+	/** Sets the main text of the entry */
+	void SetEntryText(const FText& InText) const;
 
-	UFUNCTION(BlueprintPure, BlueprintCallable)
-	bool GetIsSelectedOption() const { return bIsSelectedOption; }
+	/** Returns the TooltipImage */
+	UTooltipImage* GetTooltipImage() const { return TooltipImage; }
 
-	void ToggleTooltipImageVisibility(const bool bIsVisible) const;
+	/** Returns the string form of the main entry text */
+	FString GetEntryTextAsString() const;
+
+	/** Shows or hides the TooltipImage */
+	void SetTooltipImageVisibility(const bool bIsVisible) const;
 
 	/** Sets the Brush tint for the Border */
 	void SetBackgroundBrushTint(const FLinearColor& Color) const;
-
-	void SetIsSelectedOption(const bool bIsSelected) const;
-
-	FString GetTextBlockAsString() const;
-
-	mutable bool bIsSelectedOption;
 };

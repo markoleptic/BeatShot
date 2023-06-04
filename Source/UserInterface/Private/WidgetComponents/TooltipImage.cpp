@@ -7,11 +7,15 @@
 void UTooltipImage::NativeConstruct()
 {
 	Super::NativeConstruct();
-	Guid = FGuid::NewGuid();
-	Button->OnHovered.AddUniqueDynamic(this, &UTooltipImage::OnTooltipImageHoveredCallback);
+	Button->OnHovered.AddDynamic(this, &UTooltipImage::OnTooltipImageHoveredCallback);
 }
 
 void UTooltipImage::OnTooltipImageHoveredCallback()
 {
-	OnTooltipHovered.Broadcast(this);
+	OnTooltipHovered.Broadcast(this, TooltipData);
+}
+
+void UTooltipImage::SetupTooltipImage(const FText& InText, const bool bAllowTextWrap)
+{
+	TooltipData = FTooltipData(InText, bAllowTextWrap);
 }

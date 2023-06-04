@@ -3,6 +3,7 @@
 
 #include "Target/SpawnPointManager.h"
 #include "GlobalConstants.h"
+#include "Kismet/KismetMathLibrary.h"
 
 FSpawnPoint::FSpawnPoint()
 {
@@ -664,7 +665,6 @@ void USpawnPointManager::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGu
 		if (Point->IsRecent())
 		{
 			Point->SetIsRecent(false);
-			Point->SetManagedTargetIndex(INDEX_NONE);
 		}
 	}
 }

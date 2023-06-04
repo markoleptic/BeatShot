@@ -31,6 +31,9 @@ protected:
 	/** Overriden from TooltipInterface, creates the tooltip widget */
 	virtual UTooltipWidget* ConstructTooltipWidget() override;
 
+	/** Overriden from TooltipInterface, returns the tooltip widget */
+	virtual UTooltipWidget* GetTooltipWidget() const override;
+
 	/** Add another container separate from MainContainer that will also be called to update background colors,
 	 *  but will sync with MainContainers, or with each other */
 	void AddAdditionalContainers(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers);
@@ -44,6 +47,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Setting Category Widget | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
+	
+	UPROPERTY()
+	UTooltipWidget* ActiveTooltipWidget;
 
 private:
 	TArray<TObjectPtr<UBSVerticalBox>> Containers;

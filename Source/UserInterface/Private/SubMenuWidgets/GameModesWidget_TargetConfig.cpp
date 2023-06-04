@@ -57,37 +57,37 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	TrackingSpeedSliderStruct.bSyncSlidersAndValues = false;
 	TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
 	
-	AddToTooltipData(TargetSpeedConstrained->GetCheckBoxQMark(), GetTooltipTextFromKey("BeatTrackConstantSpeed"));
-	AddToTooltipData(QMark_Lifespan, GetTooltipTextFromKey("Lifespan"));
-	AddToTooltipData(QMark_TargetSpawnCD, GetTooltipTextFromKey("MinDistance"));
-	AddToTooltipData(QMark_SpawnBeatDelay, GetTooltipTextFromKey("SpawnBeatDelay"));
-	AddToTooltipData(QMark_FloorDistance, GetTooltipTextFromKey("FloorDistance"));
-	AddToTooltipData(QMark_ForwardSpread, GetTooltipTextFromKey("ForwardSpread"));
-	AddToTooltipData(QMark_MoveTargetsForward, GetTooltipTextFromKey("MoveTargetsForward"));
-	AddToTooltipData(QMark_MinDistance, GetTooltipTextFromKey("MinDistance"));
-	AddToTooltipData(QMark_MaxHealth, GetTooltipTextFromKey("MaxHealth"));
-	AddToTooltipData(QMark_ConsecutiveChargeScaleMultiplier, GetTooltipTextFromKey("ConsecutiveChargeScaleMultiplier"));
-	AddToTooltipData(QMark_ApplyImmunityOnSpawn, GetTooltipTextFromKey("ApplyImmunityOnSpawn"));
-	AddToTooltipData(QMark_MaxNumRecentTargets, GetTooltipTextFromKey("MaxNumRecentTargets"));
-	AddToTooltipData(QMark_RecentTargetTimeLength, GetTooltipTextFromKey("RecentTargetTimeLength"));
-	AddToTooltipData(QMark_ExpirationHealthPenalty, GetTooltipTextFromKey("ExpirationHealthPenalty"));
-	AddToTooltipData(QMark_BoundsScalingPolicy, GetTooltipTextFromKey("BoundsScalingPolicy"));
-	AddToTooltipData(QMark_ConsecutiveTargetScalePolicy, GetTooltipTextFromKey("ConsecutiveTargetScalePolicy"));
-	AddToTooltipData(QMark_LifetimeTargetScalePolicy, GetTooltipTextFromKey("LifetimeTargetScalePolicy"));
-	AddToTooltipData(QMark_RecentTargetMemoryPolicy, GetTooltipTextFromKey("RecentTargetMemoryPolicy"));
-	AddToTooltipData(QMark_TargetActivationSelectionPolicy, GetTooltipTextFromKey("TargetActivationSelectionPolicy"));
-	AddToTooltipData(QMark_TargetDamageType, GetTooltipTextFromKey("TargetDamageType"));
-	AddToTooltipData(QMark_TargetDistributionPolicy, GetTooltipTextFromKey("TargetDistributionPolicy"));
-	AddToTooltipData(QMark_TargetSpawningPolicy, GetTooltipTextFromKey("TargetSpawningPolicy"));
-	AddToTooltipData(QMark_TargetActivationResponses, GetTooltipTextFromKey("TargetActivationResponses"));
-	AddToTooltipData(QMark_TargetDeactivationConditions, GetTooltipTextFromKey("TargetDeactivationConditions"));
-	AddToTooltipData(QMark_TargetDeactivationResponses, GetTooltipTextFromKey("TargetDeactivationResponses"));
-	AddToTooltipData(QMark_TargetDestructionConditions, GetTooltipTextFromKey("TargetDestructionConditions"));
-	AddToTooltipData(QMark_ContinuouslySpawn, GetTooltipTextFromKey("ContinuouslySpawn"));
-	AddToTooltipData(QMark_MoveTargets, GetTooltipTextFromKey("MoveTargets"));
-	AddToTooltipData(QMark_SpawnAtOriginWheneverPossible, GetTooltipTextFromKey("SpawnAtOriginWheneverPossible"));
-	AddToTooltipData(QMark_SpawnEveryOtherTargetInCenter, GetTooltipTextFromKey("SpawnEveryOtherTargetInCenter"));
-	AddToTooltipData(QMark_NumUpfrontTargetsToSpawn, GetTooltipTextFromKey("NumUpfrontTargetsToSpawn"));
+	SetupTooltip(TargetSpeedConstrained->GetCheckBoxQMark(), GetTooltipTextFromKey("BeatTrackConstantSpeed"));
+	SetupTooltip(QMark_Lifespan, GetTooltipTextFromKey("Lifespan"));
+	SetupTooltip(QMark_TargetSpawnCD, GetTooltipTextFromKey("MinDistance"));
+	SetupTooltip(QMark_SpawnBeatDelay, GetTooltipTextFromKey("SpawnBeatDelay"));
+	SetupTooltip(QMark_FloorDistance, GetTooltipTextFromKey("FloorDistance"));
+	SetupTooltip(QMark_ForwardSpread, GetTooltipTextFromKey("ForwardSpread"));
+	SetupTooltip(QMark_MoveTargetsForward, GetTooltipTextFromKey("MoveTargetsForward"));
+	SetupTooltip(QMark_MinDistance, GetTooltipTextFromKey("MinDistance"));
+	SetupTooltip(QMark_MaxHealth, GetTooltipTextFromKey("MaxHealth"));
+	SetupTooltip(QMark_ConsecutiveChargeScaleMultiplier, GetTooltipTextFromKey("ConsecutiveChargeScaleMultiplier"));
+	SetupTooltip(QMark_ApplyImmunityOnSpawn, GetTooltipTextFromKey("ApplyImmunityOnSpawn"));
+	SetupTooltip(QMark_MaxNumRecentTargets, GetTooltipTextFromKey("MaxNumRecentTargets"));
+	SetupTooltip(QMark_RecentTargetTimeLength, GetTooltipTextFromKey("RecentTargetTimeLength"));
+	SetupTooltip(QMark_ExpirationHealthPenalty, GetTooltipTextFromKey("ExpirationHealthPenalty"));
+	SetupTooltip(QMark_BoundsScalingPolicy, GetTooltipTextFromKey("BoundsScalingPolicy"));
+	SetupTooltip(QMark_ConsecutiveTargetScalePolicy, GetTooltipTextFromKey("ConsecutiveTargetScalePolicy"));
+	SetupTooltip(QMark_LifetimeTargetScalePolicy, GetTooltipTextFromKey("LifetimeTargetScalePolicy"));
+	SetupTooltip(QMark_RecentTargetMemoryPolicy, GetTooltipTextFromKey("RecentTargetMemoryPolicy"));
+	SetupTooltip(QMark_TargetActivationSelectionPolicy, GetTooltipTextFromKey("TargetActivationSelectionPolicy"));
+	SetupTooltip(QMark_TargetDamageType, GetTooltipTextFromKey("TargetDamageType"));
+	SetupTooltip(QMark_TargetDistributionPolicy, GetTooltipTextFromKey("TargetDistributionPolicy"));
+	SetupTooltip(QMark_TargetSpawningPolicy, GetTooltipTextFromKey("TargetSpawningPolicy"));
+	SetupTooltip(QMark_TargetActivationResponses, GetTooltipTextFromKey("TargetActivationResponses"));
+	SetupTooltip(QMark_TargetDeactivationConditions, GetTooltipTextFromKey("TargetDeactivationConditions"));
+	SetupTooltip(QMark_TargetDeactivationResponses, GetTooltipTextFromKey("TargetDeactivationResponses"));
+	SetupTooltip(QMark_TargetDestructionConditions, GetTooltipTextFromKey("TargetDestructionConditions"));
+	SetupTooltip(QMark_ContinuouslySpawn, GetTooltipTextFromKey("ContinuouslySpawn"));
+	SetupTooltip(QMark_MoveTargets, GetTooltipTextFromKey("MoveTargets"));
+	SetupTooltip(QMark_SpawnAtOriginWheneverPossible, GetTooltipTextFromKey("SpawnAtOriginWheneverPossible"));
+	SetupTooltip(QMark_SpawnEveryOtherTargetInCenter, GetTooltipTextFromKey("SpawnEveryOtherTargetInCenter"));
+	SetupTooltip(QMark_NumUpfrontTargetsToSpawn, GetTooltipTextFromKey("NumUpfrontTargetsToSpawn"));
 	
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_Lifespan);
 	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_TargetSpawnCD);
@@ -586,51 +586,96 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_SpawnEveryOtherTargetInC
 
 UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
 {
-	if (UBSComboBoxEntry* Entry = CreateComboBoxEntryWidget(ComboBoxString))
+	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
+	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, Method));
+
+	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
 	{
-		Entry->SetText(FText::FromString(Method));
-		
-		AddToTooltipData(Entry->TooltipImage, GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, Method)), false);
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
 		return Entry;
 	}
 	return nullptr;
+	
+	/*if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
+	{
+		Entry->SetEntryText(EntryText);
+
+		UTooltipImage* TooltipImage = Entry->GetTooltipImage();
+		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
+		TooltipImage->SetupTooltipImage(TooltipText);
+		
+		return Entry;
+	}*/
 }
 
 UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateSingleSelectionItem(const UBSComboBoxString* ComboBoxString, FString SelectedOption)
 {
 	const FText EntryText = SelectedOption.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(SelectedOption);
-	if (UBSComboBoxEntry* Entry = CreateComboBoxEntryWidget(ComboBoxString))
+	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, SelectedOption));
+
+	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
 	{
-		Entry->SetText(EntryText);
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
 		return Entry;
 	}
 	return nullptr;
+	
+	/*if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
+	{
+		Entry->SetEntryText(EntryText);
+
+		UTooltipImage* TooltipImage = Entry->GetTooltipImage();
+		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
+		TooltipImage->SetupTooltipImage(TooltipText);
+		
+		return Entry;
+	}*/
 }
 
 UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
 {
-	if (UBSComboBoxEntry* Entry = CreateComboBoxEntryWidget(ComboBoxString))
+	FText TooltipText = FText::GetEmpty();
+	FString EntryString = FString();
+
+	if (!SelectedOptions.IsEmpty())
 	{
-		FString EntryString;
-		if (!SelectedOptions.IsEmpty())
+		for (int i = 0; i < SelectedOptions.Num(); i++)
 		{
-			for (int i = 0; i < SelectedOptions.Num(); i++)
+			if (!SelectedOptions[i].IsEmpty())
 			{
-				if (!SelectedOptions[i].IsEmpty())
+				EntryString.Append(SelectedOptions[i]);
+				if (i < SelectedOptions.Num() - 1)
 				{
-					EntryString.Append(SelectedOptions[i]);
-					UE_LOG(LogTemp, Display, TEXT("%d %s"), SelectedOptions.Num(),*EntryString);
-					if (i < SelectedOptions.Num() - 1)
-					{
-						EntryString.Append(", ");
-					}
+					EntryString.Append(", ");
 				}
 			}
 		}
-		Entry->SetText(FText::FromString(EntryString));
+	}
+	if (SelectedOptions.Num() == 1)
+	{
+		TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]));
+	}
+
+	const FText EntryText = FText::FromString(EntryString);
+	
+	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
+	{
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
 		return Entry;
 	}
+	
 	return nullptr;
+	
+	/*if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
+	{
+		Entry->SetEntryText(EntryText);
+
+		UTooltipImage* TooltipImage = Entry->GetTooltipImage();
+		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
+		TooltipImage->SetupTooltipImage(TooltipText);
+		
+		return Entry;
+	}*/
 }
 
 void UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType)
@@ -814,58 +859,4 @@ FString UGameModesWidget_TargetConfig::GetStringTableKeyFromComboBox(const UBSCo
 	}
 	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching value for %s in UGameModesWidget_TargetConfig"), *ComboBoxString->GetName());
 	return "INVALID_STRING";
-}
-
-UBSComboBoxEntry* UGameModesWidget_TargetConfig::CreateComboBoxEntryWidget(const UBSComboBoxString* ComboBoxString)
-{
-	if (ComboBoxString == ComboBox_BoundsScalingPolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_BoundsScalingPolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_ConsecutiveTargetScalePolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_ConsecutiveTargetScalePolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_LifetimeTargetScalePolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_LifetimeTargetScalePolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_RecentTargetMemoryPolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_RecentTargetMemoryPolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetActivationSelectionPolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetActivationSelectionPolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetDamageType)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDamageType, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetDistributionPolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDistributionPolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetSpawningPolicy)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetSpawningPolicy, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetActivationResponses)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetActivationResponses, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetDeactivationConditions)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDeactivationConditions, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetDeactivationResponses)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDeactivationResponses, ComboboxEntryWidget);
-	}
-	if (ComboBoxString == ComboBox_TargetDestructionConditions)
-	{
-		return CreateWidget<UBSComboBoxEntry>(ComboBox_TargetDestructionConditions, ComboboxEntryWidget);
-	}
-	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching %s in UGameModesWidget_TargetConfig"), *ComboBoxString->GetName());
-	return CreateWidget<UBSComboBoxEntry>(this, ComboboxEntryWidget);
 }

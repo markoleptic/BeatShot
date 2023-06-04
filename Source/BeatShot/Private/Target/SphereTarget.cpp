@@ -107,6 +107,7 @@ void ASphereTarget::BeginPlay()
 	Super::BeginPlay();
 
 	InitialTargetLocation = GetActorLocation();
+	MovingTargetSpeed = Config.MinTargetSpeed;
 
 	if (GetAbilitySystemComponent())
 	{
@@ -187,7 +188,7 @@ void ASphereTarget::Tick(float DeltaSeconds)
 
 void ASphereTarget::OnTargetMaxLifeSpanExpired()
 {
-	ApplyImmunityEffect();
+	//ApplyImmunityEffect();
 	DamageSelf(Config.ExpirationHealthPenalty);
 }
 
@@ -212,6 +213,7 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 	// Destroy if conditions are met
 	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
 	{
+		
 	}
 	else if (Expired && Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
 	{
@@ -231,6 +233,7 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 	{
 		return;
 	}
+	
 	if (Expired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration))
 	{
 		DeactivateTarget(Expired);
@@ -284,7 +287,7 @@ void ASphereTarget::DeactivateTarget(const bool bExpired)
 	}
 	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
 	{
-		HasMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune) ? RemoveImmunityEffect() : ApplyImmunityEffect();
+		IsTargetImmune() ? RemoveImmunityEffect() : ApplyImmunityEffect();
 	}
 
 	// Scale

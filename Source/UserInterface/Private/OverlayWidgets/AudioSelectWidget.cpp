@@ -18,10 +18,17 @@ UTooltipWidget* UAudioSelectWidget::ConstructTooltipWidget()
 	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
 }
 
+UTooltipWidget* UAudioSelectWidget::GetTooltipWidget() const
+{
+	return ActiveTooltipWidget;
+}
+
 void UAudioSelectWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	SetTooltipWidget(ConstructTooltipWidget());
+	
+	ActiveTooltipWidget = ConstructTooltipWidget();
+	
 	NumberFormattingOptions.MinimumIntegralDigits = 2;
 	NumberFormattingOptions.MaximumIntegralDigits = 2;
 
@@ -46,7 +53,7 @@ void UAudioSelectWidget::NativeConstruct()
 	ComboBox_SongTitle->OnSelectionChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnSelectionChanged_SongTitle);
 	Checkbox_PlaybackAudio->OnCheckStateChanged.AddUniqueDynamic(this, &UAudioSelectWidget::OnCheckStateChanged_PlaybackAudio);
 
-	AddToTooltipData(QMark_PlaybackAudio, GetTooltipTextFromKey("PlaybackAudio"));
+	SetupTooltip(QMark_PlaybackAudio, GetTooltipTextFromKey("PlaybackAudio"));
 
 	UAudioAnalyzerManager* Manager = NewObject<UAudioAnalyzerManager>(this);
 	TArray<FString> OutAudioDeviceList;

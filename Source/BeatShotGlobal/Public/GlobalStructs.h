@@ -479,6 +479,7 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor InactiveTargetColor;
 
+	// TODO: might need to have a bool variable to set spawn color to inactive color
 	/** Color applied to target on spawn */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor OnSpawnColor;
@@ -837,8 +838,7 @@ struct FBSConfig
 					break;
 				}
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				// Might need to change
-				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bContinuouslySpawn = true;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
@@ -863,6 +863,7 @@ struct FBSConfig
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ResetPosition);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ShrinkQuickGrowSlow);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ResetColorToInactiveColor);
 
 				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::Persistant);
 				

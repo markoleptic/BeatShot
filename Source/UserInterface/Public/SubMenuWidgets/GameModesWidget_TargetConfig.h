@@ -8,7 +8,6 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "GameModesWidget_TargetConfig.generated.h"
 
-class UBSComboBoxEntry;
 class UBSComboBoxString;
 class UBSHorizontalBox;
 class UDoubleSyncedSliderAndTextBox;
@@ -34,8 +33,6 @@ protected:
 	TSubclassOf<UDoubleSyncedSliderAndTextBox> TargetScaleConstrainedClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes")
 	TSubclassOf<UDoubleSyncedSliderAndTextBox> TargetSpeedConstrainedClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes")
-	TSubclassOf<UBSComboBoxEntry> ComboboxEntryWidget;
 	
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetScaleConstrained;
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetSpeedConstrained;
@@ -106,7 +103,6 @@ protected:
 	UBSHorizontalBox* BSBox_ExpirationHealthPenalty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_MaxHealth;
-
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_Lifespan;
@@ -136,7 +132,6 @@ protected:
 	USlider* Slider_ExpirationHealthPenalty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_MaxHealth;
-
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_Lifespan;
@@ -166,7 +161,6 @@ protected:
 	UEditableTextBox* Value_ExpirationHealthPenalty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_MaxHealth;
-
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSComboBoxString* ComboBox_BoundsScalingPolicy;
@@ -266,7 +260,6 @@ protected:
 	UTooltipImage* QMark_SpawnAtOriginWheneverPossible;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_SpawnEveryOtherTargetInCenter;
-
 	
 	UFUNCTION()
 	void OnSliderChanged_Lifespan(const float NewLifespan);
@@ -350,7 +343,6 @@ protected:
 	void OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_TargetDestructionConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-
 	
 	UFUNCTION()
 	void OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bApplyImmunityOnSpawn);
@@ -373,8 +365,6 @@ protected:
 	UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
 	
 	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
-
-	UBSComboBoxEntry* CreateComboBoxEntryWidget(const UBSComboBoxString* ComboBoxString);
 
 	const FText NewLineDelimit = FText::FromString("\n");
 };

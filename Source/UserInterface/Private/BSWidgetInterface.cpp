@@ -9,14 +9,6 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "WidgetComponents/TooltipWidget.h"
 
-void IBSWidgetInterface::SetTooltipWidget(UTooltipWidget* InTooltipWidget)
-{
-	if (InTooltipWidget)
-	{
-		TooltipWidget = InTooltipWidget;
-	}
-}
-
 float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
@@ -34,52 +26,35 @@ float IBSWidgetInterface::OnSliderChanged(const float NewValue, UEditableTextBox
 	return ReturnValue;
 }
 
-UTooltipWidget* IBSWidgetInterface::GetTooltipWidget() const
+void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* TooltipImage, const FTooltipData& InTooltipData)
 {
-	return TooltipWidget.Get();
-}
-
-void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage)
-{
-	if (!TooltipWidget || HoveredTooltipImage == nullptr)
+	if (!GetTooltipWidget())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid tooltip widget"));
 		return;
 	}
-	
-	if (const int32 Index = TooltipData.Find(FTooltipData(HoveredTooltipImage->Guid)); Index != INDEX_NONE)
+	if (!TooltipImage)
 	{
-		TooltipWidget->TooltipDescriptor->SetText(TooltipData[Index].TooltipText);
-		TooltipWidget->TooltipDescriptor->SetAutoWrapText(TooltipData[Index].bAllowTextWrap);
+		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipImage."));
+		return;
 	}
-	HoveredTooltipImage->SetToolTip(TooltipWidget.Get());
+	UTooltipWidget* Tooltip = GetTooltipWidget();
+	Tooltip->TooltipDescriptor->SetText(InTooltipData.TooltipText);
+	Tooltip->TooltipDescriptor->SetAutoWrapText(InTooltipData.bAllowTextWrap);
+	TooltipImage->SetToolTip(Tooltip);
 }
 
-void IBSWidgetInterface::AddToTooltipData(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap)
+void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap)
 {
-	if (TooltipData.Contains(FTooltipData(TooltipImage->Guid)))
+	if (!TooltipImage)
 	{
-		EditTooltipText(TooltipImage, TooltipText);
-		return;
+		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipImage."));
 	}
 	if (TooltipText.IsEmpty())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetOuter()->GetName());
 	}
+	
+	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);
 	TooltipImage->OnTooltipHovered.AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
-	TooltipData.AddUnique(FTooltipData(TooltipImage, TooltipText, bInAllowTextWrap));
-}
-
-void IBSWidgetInterface::AddToTooltipData(const FTooltipData& InToolTipData)
-{
-	TooltipData.Emplace(InToolTipData);
-}
-
-void IBSWidgetInterface::EditTooltipText(const UTooltipImage* TooltipImage, const FText& TooltipText)
-{
-	const int32 Index = TooltipData.Find(FTooltipData(TooltipImage->Guid));
-	if (TooltipData.IsValidIndex(Index))
-	{
-		TooltipData[Index].TooltipText = TooltipText;
-	}
 }

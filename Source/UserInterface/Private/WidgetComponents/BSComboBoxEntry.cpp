@@ -2,17 +2,16 @@
 
 
 #include "WidgetComponents/BSComboBoxEntry.h"
-
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
 #include "WidgetComponents/TooltipImage.h"
 
-void UBSComboBoxEntry::SetText(const FText& InText) const
+void UBSComboBoxEntry::SetEntryText(const FText& InText) const
 {
-	TextBlock->SetText(InText);
+	TextBlock_Entry->SetText(InText);
 }
 
-void UBSComboBoxEntry::ToggleTooltipImageVisibility(const bool bIsVisible) const
+void UBSComboBoxEntry::SetTooltipImageVisibility(const bool bIsVisible) const
 {
 	if (bIsVisible)
 	{
@@ -29,20 +28,7 @@ void UBSComboBoxEntry::SetBackgroundBrushTint(const FLinearColor& Color) const
 	Background->SetBrushColor(Color);
 }
 
-void UBSComboBoxEntry::SetIsSelectedOption(const bool bIsSelected) const
+FString UBSComboBoxEntry::GetEntryTextAsString() const
 {
-	bIsSelectedOption = bIsSelected;
-	if (bIsSelected)
-	{
-		SetBackgroundBrushTint(SelectedColor);
-	}
-	else
-	{
-		SetBackgroundBrushTint(NotSelectedColor);
-	}
-}
-
-FString UBSComboBoxEntry::GetTextBlockAsString() const
-{
-	return TextBlock->GetText().ToString();
+	return TextBlock_Entry->GetText().ToString();
 }

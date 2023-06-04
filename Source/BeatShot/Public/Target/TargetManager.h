@@ -108,8 +108,10 @@ private:
 	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
 	bool SpawnTarget(FSpawnPoint& InSpawnPoint);
 
+	void SpawnUpfrontOnlyTargets();
+
 	/** Calls ActivateTarget using SpawnPoint's index and ManagedTargets */
-	bool ActivateTarget(const bool bSpawnedTarget) const;
+	bool ActivateTarget() const;
 
 	/** Updates the position of the BeatTrack target on tick */
 	void OnTick_UpdateTargetLocation(const float DeltaTime) const;

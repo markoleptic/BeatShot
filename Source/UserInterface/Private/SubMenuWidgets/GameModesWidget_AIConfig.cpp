@@ -16,10 +16,10 @@ void UGameModesWidget_AIConfig::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AddToTooltipData(QMark_EnableAI, GetTooltipTextFromKey("EnableAI"));
-	AddToTooltipData(QMark_Alpha, GetTooltipTextFromKey("Alpha"));
-	AddToTooltipData(QMark_Epsilon, GetTooltipTextFromKey("Epsilon"));
-	AddToTooltipData(QMark_Gamma, GetTooltipTextFromKey("Gamma"));
+	SetupTooltip(QMark_EnableAI, GetTooltipTextFromKey("EnableAI"));
+	SetupTooltip(QMark_Alpha, GetTooltipTextFromKey("Alpha"));
+	SetupTooltip(QMark_Epsilon, GetTooltipTextFromKey("Epsilon"));
+	SetupTooltip(QMark_Gamma, GetTooltipTextFromKey("Gamma"));
 
 	CheckBox_EnableAI->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_AIConfig::OnCheckStateChanged_EnableAI);
 	Slider_AIAlpha->OnValueChanged.AddDynamic(this, &UGameModesWidget_AIConfig::OnSliderChanged_AIAlpha);

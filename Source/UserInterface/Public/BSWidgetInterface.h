@@ -7,57 +7,12 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "BSWidgetInterface.generated.h"
 
+class UBSComboBoxString;
 class UButton;
 class UTooltipImage;
 class UTooltipWidget;
 class UEditableTextBox;
 class USlider;
-
-/** Contains data for the tooltip of a widget */
-USTRUCT(BlueprintType)
-struct FTooltipData
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TObjectPtr<UTooltipImage> TooltipImage;
-	FText TooltipText;
-	bool bAllowTextWrap;
-	FGuid Guid;
-	
-	FTooltipData()
-	{
-		TooltipImage = nullptr;
-		TooltipText = FText();
-		bAllowTextWrap = false;
-		Guid = FGuid();
-	}
-
-	FTooltipData(UTooltipImage* InTooltipImage, const FText& InTooltipText, const bool bInbAllowTextWrap = false)
-	{
-		TooltipImage = InTooltipImage;
-		Guid = InTooltipImage->Guid;
-		TooltipText = InTooltipText;
-		bAllowTextWrap = bInbAllowTextWrap;
-	}
-
-	explicit FTooltipData(const FGuid InGuid)
-	{
-		TooltipImage = nullptr;
-		TooltipText = FText();
-		bAllowTextWrap = false;
-		Guid = InGuid;
-	}
-
-	bool operator==(const FTooltipData& Other) const
-	{
-		if (Guid == Other.Guid)
-		{
-			return true;
-		}
-		return false;
-	}
-};
 
 /** Enum representing a setting button */
 UENUM(BlueprintType)
@@ -84,7 +39,6 @@ class USERINTERFACE_API IBSWidgetInterface
 	GENERATED_BODY()
 	
 public:
-
 	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
 	static float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
 
@@ -95,23 +49,14 @@ public:
 	virtual UTooltipWidget* ConstructTooltipWidget() = 0;
 
 	/** Returns TooltipWidget */
-	UTooltipWidget* GetTooltipWidget() const;
-
-	/** Call this to set the tooltip widget constructed from ConstructTooltipWidget */
-	void SetTooltipWidget(UTooltipWidget* InTooltipWidget);
-
-	/** Add tooltip text to a given TooltipImage */
-	void AddToTooltipData(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
-
-	/** Add tooltip text to a given TooltipImage */
-	void AddToTooltipData(const FTooltipData& InToolTipData);
-
-	/** Edit the tooltip text for a given TooltipImage */
-	void EditTooltipText(const UTooltipImage* TooltipImage, const FText& TooltipText);
+	virtual UTooltipWidget* GetTooltipWidget() const { return nullptr; }
 	
+	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
+	void SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
+
 	/** All Tooltip Images are bound to this function */
 	UFUNCTION()
-	virtual void OnTooltipImageHovered(UTooltipImage* HoveredTooltipImage);
+	virtual void OnTooltipImageHovered(UTooltipImage* TooltipImage, const FTooltipData& InTooltipData);
 
 	/** Returns the enum value corresponding to the string, or the specified DefaultNotFound if no matches were found */
 	template<typename T, typename Enum_Value>
@@ -152,8 +97,4 @@ public:
 		}
 		return StringTableEntry;
 	}
-
-private:
-	TArray<FTooltipData> TooltipData;
-	TObjectPtr<UTooltipWidget> TooltipWidget;
 };

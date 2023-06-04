@@ -4,16 +4,15 @@
 #include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/BSComboBoxEntry.h"
 #include "WidgetComponents/SBSComboBox.h"
+#include "WidgetComponents/TooltipWidget.h"
 #include "Widgets/SNullWidget.h"
 #include "UObject/EditorObjectVersion.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Font.h"
 #include "Styling/UMGCoreStyle.h"
+#include "WidgetComponents/TooltipImage.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
-
-/////////////////////////////////////////////////////
-// UComboBoxString
 
 static FComboBoxStyle* DefaultComboBoxStyle = nullptr;
 static FTableRowStyle* DefaultComboBoxRowStyle = nullptr;
@@ -23,6 +22,66 @@ static FComboBoxStyle* EditorComboBoxStyle = nullptr;
 static FTableRowStyle* EditorComboBoxRowStyle = nullptr;
 #endif 
 
+
+void UBSComboBoxString::ReleaseSlateResources(bool bReleaseChildren)
+{
+	Super::ReleaseSlateResources(bReleaseChildren);
+	for (TSharedPtr<FString> SharedStr : CurrentlySelectedOptionPointers)
+	{
+		SharedStr.Reset();
+	}
+	MyComboBox.Reset();
+	ComboBoxContent.Reset();
+}
+
+void UBSComboBoxString::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	// Initialize the set of options from the default set only once.
+	for (const FString& DefaultOption : DefaultOptions)
+	{
+		AddOption(DefaultOption);
+	}
+}
+
+void UBSComboBoxString::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+
+	Ar.UsingCustomVersion(FEditorObjectVersion::GUID);
+}
+
+void UBSComboBoxString::PostLoad()
+{
+	Super::PostLoad();
+
+	// Initialize the set of options from the default set only once.
+	for (const FString& DefaultOption : DefaultOptions)
+	{
+		AddOption(DefaultOption);
+	}
+
+	if (GetLinkerCustomVersion(FEditorObjectVersion::GUID) < FEditorObjectVersion::ComboBoxControllerSupportUpdate)
+	{
+		EnableGamepadNavigationMode = false;
+	}
+}
+
+void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText, const bool bShowTooltipImage, const FText& TooltipText) const
+{
+	Entry->SetEntryText(EntryText);
+	if (UTooltipImage* TooltipImage = Entry->GetTooltipImage())
+	{
+		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
+		TooltipImage->SetupTooltipImage(TooltipText);
+	}
+}
+
+const FText UBSComboBoxString::GetPaletteCategory()
+{
+	return Super::GetPaletteCategory();
+}
 
 UBSComboBoxString::UBSComboBoxString()
 {
@@ -90,8 +149,122 @@ UBSComboBoxString::UBSComboBoxString()
 	}
 }
 
+UTooltipWidget* UBSComboBoxString::ConstructTooltipWidget()
+{
+	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
+}
+
+UTooltipWidget* UBSComboBoxString::GetTooltipWidget() const
+{
+	return ActiveTooltipWidget;
+}
+
+void UBSComboBoxString::UpdateOrGenerateWidget(TSharedPtr<FString> Item)
+{
+	ComboBoxContent->SetContent(HandleGenerateWidget(Item));
+}
+
+TSharedRef<SWidget> UBSComboBoxString::HandleGenerateWidget(TSharedPtr<FString> Item) const
+{
+	const FString StringItem = Item.IsValid() ? *Item : FString();
+	
+	// Call the user's delegate to see if they want to generate a custom widget bound to the data source.
+	if (!IsDesignTime() && OnGenerateWidgetEventDelegate.IsBound())
+	{
+		if (UWidget* Widget = OnGenerateWidgetEventDelegate.Execute(this, StringItem))
+		{
+			if (const UBSComboBoxEntry* Entry = Cast<UBSComboBoxEntry>(Widget))
+			{
+				// Show the tooltip image if creating a combo box entry widget
+				Entry->SetTooltipImageVisibility(true);
+			}
+			return Widget->TakeWidget();
+		}
+	}
+
+	// If a row wasn't generated just create the default one, a simple text block of the item's name.
+	return SNew(STextBlock)
+		.Text(FText::FromString(StringItem))
+		.Font(Font);
+}
+
+void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType)
+{
+	CurrentlySelectedOptionPointers = Items;
+
+	// When the selection changes we always generate another widget to represent the content area of the combobox.
+	if (ComboBoxContent && MyComboBox)
+	{
+		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
+	}
+	
+	if (!IsDesignTime())
+	{
+		TArray<FString> Temp;
+		for (const TSharedPtr<FString>& Item : Items)
+		{
+			if (Item != nullptr)
+			{
+				Temp.Add(*Item);
+				// UE_LOG(LogTemp, Display, TEXT("Item: %s"), **Item.Get());
+			}
+		}
+		OnSelectionChanged.Broadcast(Temp, SelectionType);
+	}
+	// UE_LOG(LogTemp, Display, TEXT("GetOptionCount %d"), GetOptionCount());
+	// UE_LOG(LogTemp, Display, TEXT("GetSelectedOptionCount %d"), GetSelectedOptionCount());
+}
+
+TSharedRef<SWidget> UBSComboBoxString::HandleSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const
+{
+	// Call the user's delegate to see if they want to generate a custom widget bound to the data source.
+	if (!IsDesignTime() && OnSelectionChanged_GenerateWidgetForMultiSelection.IsBound())
+	{
+		TArray<FString> Copy;
+		for (const TSharedPtr<FString>& Item : Items)
+		{
+			if (Item.Get())
+			{
+				Copy.Add(*Item);
+			}
+		}
+		if (UWidget* Widget = OnSelectionChanged_GenerateWidgetForMultiSelection.Execute(this, Copy))
+		{
+			if (const UBSComboBoxEntry* Entry = Cast<UBSComboBoxEntry>(Widget))
+			{
+				// Hide the tooltip image if creating the top "selection entry" widget
+				Entry->SetTooltipImageVisibility(false);
+			}
+			return Widget->TakeWidget();
+		}
+	}
+	FString DefaultListOfItems;
+	for (int i = 0; i < Items.Num(); i++)
+	{
+		if (Items[i].Get())
+		{
+			DefaultListOfItems.Append(*Items[i]);
+			if (i < Items.Num() - 1)
+			{
+				DefaultListOfItems.Append(", ");
+			}
+		}
+	}
+	// If a row wasn't generated just create the default one, a simple text block of the item's name.
+	return SNew(STextBlock)
+		.Text(FText::FromString(DefaultListOfItems))
+		.Font(Font);
+}
+
+void UBSComboBoxString::HandleOpening()
+{
+	OnOpening.Broadcast();
+}
+
 TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 {
+	ActiveTooltipWidget = ConstructTooltipWidget();
+	
 	int32 InitialIndex = FindOptionIndex(GetSelectedOption());
 	
 	TSharedPtr<FString> CurrentOptionPtr;
@@ -133,33 +306,6 @@ TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 	return MyComboBox.ToSharedRef();
 }
 
-void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType)
-{
-	CurrentlySelectedOptionPointers = Items;
-
-	// When the selection changes we always generate another widget to represent the content area of the combobox.
-	if (ComboBoxContent && MyComboBox)
-	{
-		ComboBoxContent->SetContent(HandleMultiSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
-	}
-	
-	if (!IsDesignTime())
-	{
-		TArray<FString> Temp;
-		for (const TSharedPtr<FString>& Item : Items)
-		{
-			if (Item != nullptr)
-			{
-				Temp.Add(*Item);
-				// UE_LOG(LogTemp, Display, TEXT("Item: %s"), **Item.Get());
-			}
-		}
-		OnSelectionChanged.Broadcast(Temp, SelectionType);
-	}
-	// UE_LOG(LogTemp, Display, TEXT("GetOptionCount %d"), GetOptionCount());
-	// UE_LOG(LogTemp, Display, TEXT("GetSelectedOptionCount %d"), GetSelectedOptionCount());
-}
-
 void UBSComboBoxString::AddOption(const FString& Option)
 {
 	Options.Add(MakeShareable(new FString(Option)));
@@ -184,68 +330,21 @@ bool UBSComboBoxString::RemoveOption(const FString& Option)
 
 int32 UBSComboBoxString::FindOptionIndex(const FString& Option) const
 {
-	for ( int32 OptionIndex = 0; OptionIndex < Options.Num(); OptionIndex++ )
+	for (int32 OptionIndex = 0; OptionIndex < Options.Num(); OptionIndex++)
 	{
-		const TSharedPtr<FString>& OptionAtIndex = Options[OptionIndex];
-
-		if ( ( *OptionAtIndex ) == Option )
+		if (Options.IsValidIndex(OptionIndex) && *Options[OptionIndex] == Option)
 		{
 			return OptionIndex;
 		}
 	}
-	
 	return -1;
 }
 
-FString UBSComboBoxString::GetOptionAtIndex(int32 Index) const
+FString UBSComboBoxString::FindOptionAtIndex(const int32 Index) const
 {
-	if (Index >= 0 && Index < Options.Num())
+	if (Options.IsValidIndex(Index))
 	{
-		return *(Options[Index]);
-	}
-	return FString();
-}
-
-void UBSComboBoxString::ClearOptions()
-{
-	ClearSelection();
-	Options.Empty();
-	if ( MyComboBox.IsValid() )
-	{
-		MyComboBox->RefreshOptions();
-	}
-}
-
-void UBSComboBoxString::ClearSelection()
-{
-	for (TSharedPtr<FString> String : CurrentlySelectedOptionPointers)
-	{
-		String.Reset();
-	}
-	if ( MyComboBox.IsValid() )
-	{
-		MyComboBox->ClearSelection();
-	}
-
-	if ( ComboBoxContent.IsValid() )
-	{
-		ComboBoxContent->SetContent(SNullWidget::NullWidget);
-	}
-}
-
-void UBSComboBoxString::RefreshOptions()
-{
-	if ( MyComboBox.IsValid() )
-	{
-		MyComboBox->RefreshOptions();
-	}
-}
-
-FString UBSComboBoxString::GetSelectedOption() const
-{
-	if (GetSelectedOptionCount() > 0 && CurrentlySelectedOptionPointers[0].IsValid())
-	{
-		return *CurrentlySelectedOptionPointers[0];
+		return *Options[Index];
 	}
 	return FString();
 }
@@ -266,189 +365,9 @@ int32 UBSComboBoxString::GetSelectedIndex() const
 	return -1;
 }
 
-int32 UBSComboBoxString::GetOptionCount() const
+FString UBSComboBoxString::GetSelectedOption() const
 {
-	return Options.Num();
-}
-
-int32 UBSComboBoxString::GetSelectedOptionCount() const
-{
-	return CurrentlySelectedOptionPointers.Num();
-}
-
-bool UBSComboBoxString::IsOpen() const
-{
-	return MyComboBox.IsValid() && MyComboBox->IsOpen();
-}
-
-void UBSComboBoxString::ReleaseSlateResources(bool bReleaseChildren)
-{
-	Super::ReleaseSlateResources(bReleaseChildren);
-
-	MyComboBox.Reset();
-	ComboBoxContent.Reset();
-}
-
-void UBSComboBoxString::PostInitProperties()
-{
-	Super::PostInitProperties();
-
-	// Initialize the set of options from the default set only once.
-	for (const FString& DefaultOption : DefaultOptions)
-	{
-		AddOption(DefaultOption);
-	}
-}
-
-void UBSComboBoxString::Serialize(FArchive& Ar)
-{
-	Super::Serialize(Ar);
-
-	Ar.UsingCustomVersion(FEditorObjectVersion::GUID);
-}
-
-void UBSComboBoxString::PostLoad()
-{
-	Super::PostLoad();
-
-	// Initialize the set of options from the default set only once.
-	for (const FString& DefaultOption : DefaultOptions)
-	{
-		AddOption(DefaultOption);
-	}
-
-	if (GetLinkerCustomVersion(FEditorObjectVersion::GUID) < FEditorObjectVersion::ComboBoxControllerSupportUpdate)
-	{
-		EnableGamepadNavigationMode = false;
-	}
-}
-
-const FText UBSComboBoxString::GetPaletteCategory()
-{
-	return Super::GetPaletteCategory();
-}
-
-void UBSComboBoxString::UpdateOrGenerateWidget(TSharedPtr<FString> Item)
-{
-	ComboBoxContent->SetContent(HandleGenerateWidget(Item));
-}
-
-void UBSComboBoxString::HandleOpening()
-{
-	OnOpening.Broadcast();
-}
-
-TSharedRef<SWidget> UBSComboBoxString::HandleGenerateWidget(TSharedPtr<FString> Item) const
-{
-	const FString StringItem = Item.IsValid() ? *Item : FString();
-
-	// Call the user's delegate to see if they want to generate a custom widget bound to the data source.
-	if (!IsDesignTime() && OnGenerateWidgetEventDelegate.IsBound())
-	{
-		if (UWidget* Widget = OnGenerateWidgetEventDelegate.Execute(this, StringItem))
-		{
-			if (const UBSComboBoxEntry* Entry = Cast<UBSComboBoxEntry>(Widget))
-			{
-				Entry->ToggleTooltipImageVisibility(true);
-			}
-			return Widget->TakeWidget();
-		}
-	}
-
-	// If a row wasn't generated just create the default one, a simple text block of the item's name.
-	return SNew(STextBlock)
-		.Text(FText::FromString(StringItem))
-		.Font(Font);
-}
-
-TSharedRef<SWidget> UBSComboBoxString::HandleMultiSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const
-{
-	// Call the user's delegate to see if they want to generate a custom widget bound to the data source.
-	if (!IsDesignTime() && OnSelectionChanged_GenerateWidgetForMultiSelection.IsBound())
-	{
-		TArray<FString> Copy;
-		for (const TSharedPtr<FString>& Item : Items)
-		{
-			if (Item.Get())
-			{
-				Copy.Add(*Item);
-			}
-		}
-		if (UWidget* Widget = OnSelectionChanged_GenerateWidgetForMultiSelection.Execute(this, Copy))
-		{
-			if (const UBSComboBoxEntry* Entry = Cast<UBSComboBoxEntry>(Widget))
-			{
-				Entry->ToggleTooltipImageVisibility(false);
-			}
-			return Widget->TakeWidget();
-		}
-	}
-	FString DefaultListOfItems;
-	for (int i = 0; i < Items.Num(); i++)
-	{
-		if (Items[i].Get())
-		{
-			DefaultListOfItems.Append(*Items[i]);
-			if (i < Items.Num() - 1)
-			{
-				DefaultListOfItems.Append(", ");
-			}
-		}
-	}
-	// If a row wasn't generated just create the default one, a simple text block of the item's name.
-	return SNew(STextBlock)
-		.Text(FText::FromString(DefaultListOfItems))
-		.Font(Font);
-}
-
-void UBSComboBoxString::SetSelectedOptions(TArray<FString> InOptions)
-{
-	if (ComboBoxContent.IsValid())
-	{
-		CurrentlySelectedOptionPointers.Empty();
-		for (const FString& String : InOptions)
-		{
-			const int32 InIndex = FindOptionIndex(String);
-			if (!Options.IsValidIndex(InIndex))
-			{
-				continue;
-			}
-			if (!CurrentlySelectedOptionPointers.Contains(Options[InIndex]))
-			{
-				CurrentlySelectedOptionPointers.Add(Options[InIndex]);
-			}
-		}
-		ComboBoxContent->SetContent(HandleMultiSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
-		if (MyComboBox)
-		{
-			MyComboBox->SetItemSelection(CurrentlySelectedOptionPointers, true);
-		}
-	}
-	else
-	{
-		HandleSelectionChanged(Options, ESelectInfo::Direct);
-	}
-}
-
-void UBSComboBoxString::SetSelectedIndices(const TArray<int32> InIndices)
-{
-	for (const int32& Index : InIndices)
-	{
-		SetSelectedIndex(Index);
-	}
-}
-
-TArray<FString> UBSComboBoxString::GetSelectedOptions() const
-{
-	TArray<FString> ReturnArray = TArray<FString>();
-	for (const TSharedPtr<FString>& OptionPointer : CurrentlySelectedOptionPointers)
-	{
-		if (OptionPointer.Get())
-		{
-			ReturnArray.AddUnique(*OptionPointer);
-		}
-	}
-	return ReturnArray;
+	return FindOptionAtIndex(GetSelectedIndex());
 }
 
 TArray<int32> UBSComboBoxString::GetSelectedIndices() const
@@ -470,18 +389,42 @@ TArray<int32> UBSComboBoxString::GetSelectedIndices() const
 	return ReturnArray;
 }
 
+TArray<FString> UBSComboBoxString::GetSelectedOptions() const
+{
+	TArray<FString> ReturnArray = TArray<FString>();
+	for (const TSharedPtr<FString>& OptionPointer : CurrentlySelectedOptionPointers)
+	{
+		if (OptionPointer.Get())
+		{
+			ReturnArray.AddUnique(*OptionPointer);
+		}
+	}
+	return ReturnArray;
+}
+
+int32 UBSComboBoxString::GetOptionCount() const
+{
+	return Options.Num();
+}
+
+int32 UBSComboBoxString::GetSelectedOptionCount() const
+{
+	return CurrentlySelectedOptionPointers.Num();
+}
+
 void UBSComboBoxString::SetSelectedIndex(const int32 InIndex)
 {
 	if (Options.IsValidIndex(InIndex))
 	{
-		if (ComboBoxContent.IsValid())
+		if (ComboBoxContent)
 		{
-
 			if (!CurrentlySelectedOptionPointers.Contains(Options[InIndex]))
 			{
 				CurrentlySelectedOptionPointers.Add(Options[InIndex]);
 			}
-			ComboBoxContent->SetContent(HandleMultiSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
+			
+			ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
+			
 			if (MyComboBox)
 			{
 				MyComboBox->SetItemSelection(Options[InIndex], true);
@@ -497,6 +440,88 @@ void UBSComboBoxString::SetSelectedIndex(const int32 InIndex)
 void UBSComboBoxString::SetSelectedOption(const FString InOption)
 {
 	SetSelectedIndex(FindOptionIndex(InOption));
+}
+
+void UBSComboBoxString::SetSelectedIndices(const TArray<int32> InIndices)
+{
+	if (ComboBoxContent.IsValid())
+	{
+		// Refresh currently selected options
+		CurrentlySelectedOptionPointers.Empty();
+		for (const int32 Index : InIndices)
+		{
+			if (!Options.IsValidIndex(Index))
+			{
+				continue;
+			}
+			if (!CurrentlySelectedOptionPointers.Contains(Options[Index]))
+			{
+				CurrentlySelectedOptionPointers.Add(Options[Index]);
+			}
+		}
+		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
+		if (MyComboBox)
+		{
+			MyComboBox->SetItemSelection(CurrentlySelectedOptionPointers, true);
+		}
+	}
+	else
+	{
+		HandleSelectionChanged(Options, ESelectInfo::Direct);
+	}
+}
+
+void UBSComboBoxString::SetSelectedOptions(TArray<FString> InOptions)
+{
+	TArray<int32> OptionIndices;
+	for (const FString& String : InOptions)
+	{
+		if (const int32 Index = FindOptionIndex(String); Options.IsValidIndex(Index))
+		{
+			OptionIndices.AddUnique(Index);
+		}
+	}
+	SetSelectedIndices(OptionIndices);
+}
+
+bool UBSComboBoxString::IsOpen() const
+{
+	return MyComboBox.IsValid() && MyComboBox->IsOpen();
+}
+
+void UBSComboBoxString::RefreshOptions()
+{
+	if (MyComboBox.IsValid())
+	{
+		MyComboBox->RefreshOptions();
+	}
+}
+
+void UBSComboBoxString::ClearOptions()
+{
+	ClearSelection();
+	Options.Empty();
+	if ( MyComboBox.IsValid() )
+	{
+		MyComboBox->RefreshOptions();
+	}
+}
+
+void UBSComboBoxString::ClearSelection()
+{
+	for (TSharedPtr<FString> String : CurrentlySelectedOptionPointers)
+	{
+		String.Reset();
+	}
+	if (MyComboBox.IsValid())
+	{
+		MyComboBox->ClearSelection();
+	}
+
+	if (ComboBoxContent.IsValid())
+	{
+		ComboBoxContent->SetContent(SNullWidget::NullWidget);
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

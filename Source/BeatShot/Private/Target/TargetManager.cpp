@@ -74,7 +74,14 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 	PlayerSettings = InPlayerSettings;
 
 	BSConfig.TargetConfig.bUseSeparateOutlineColor = InPlayerSettings.bUseSeparateOutlineColor;
-	BSConfig.TargetConfig.OnSpawnColor = InPlayerSettings.StartTargetColor;
+	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
+	{
+		BSConfig.TargetConfig.OnSpawnColor = InPlayerSettings.InactiveTargetColor;
+	}
+	else
+	{
+		BSConfig.TargetConfig.OnSpawnColor = InPlayerSettings.StartTargetColor;
+	}
 	BSConfig.TargetConfig.InactiveTargetColor = InPlayerSettings.InactiveTargetColor;
 	BSConfig.TargetConfig.StartColor = InPlayerSettings.StartTargetColor;
 	BSConfig.TargetConfig.PeakColor = InPlayerSettings.PeakTargetColor;
@@ -135,43 +142,16 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 	{
 		ReinforcementLearningComponent->Deactivate();
 	}
-	
-	// Initial SpawnPoint and PreviousSpawnPoint
-	if (FSpawnPoint* Point = SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin())) {
-		SpawnPoint = Point;
-	}
-	else
-	{
-		SpawnPoint = &SpawnPointManager->GetSpawnPoints()[UKismetMathLibrary::RandomIntegerInRange(0, SpawnPointManager->GetSpawnPoints().Num() - 1)];
-	}
 
-	PreviousSpawnPoint = SpawnPoint;
-	
-	// Initial target scale
-	SpawnPoint->SetScale(GetNextTargetScale());
-	
-	if (BSConfig.TargetConfig.NumUpfrontTargetsToSpawn > 0)
+	// Initialize first SpawnPoint, and spawn any targets if needed
+	switch(BSConfig.TargetConfig.TargetSpawningPolicy)
 	{
-		switch(BSConfig.TargetConfig.TargetDistributionPolicy) {
-		case ETargetDistributionPolicy::None:
-		case ETargetDistributionPolicy::HeadshotHeightOnly:
-		case ETargetDistributionPolicy::EdgeOnly:
-		case ETargetDistributionPolicy::FullRange:
-			for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
-			{
-				// TODO: this seems sketch
-				FindNextTargetProperties();
-				SpawnTarget(*SpawnPoint);
-			}
-			break;
-		case ETargetDistributionPolicy::Grid:
-			for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
-			{
-				SpawnTarget(SpawnPointManager->GetSpawnPointsRef()[i]);
-			}
-			break;
-		default: ;
-		}
+	case ETargetSpawningPolicy::None:
+	case ETargetSpawningPolicy::RuntimeOnly:
+		FindNextTargetProperties();
+		break;
+	case ETargetSpawningPolicy::UpfrontOnly:
+		SpawnUpfrontOnlyTargets();
 	}
 	
 	UE_LOG(LogTargetManager, Display, TEXT("SpawnBoxWidth %f SpawnBoxHeight %f"), StaticExtents.Y * 2, StaticExtents.Z * 2);
@@ -187,35 +167,43 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	// We're relying on FindNextTargetProperties to have a fresh SpawnPoint lined up,
 	// which is called at the end of this function
 	
-	if (!ShouldSpawn || !SpawnPointManager || !SpawnPoint ||
-		(!BSConfig.TargetConfig.bContinuouslySpawn && SpawnPointManager->GetActivatedSpawnPoints().Num() > 0))
+	if (!ShouldSpawn || !SpawnPoint)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Invalid SpawnPoint"));
 		return;
 	}
+
+	// TODO: Needs to be more distinct differences when activating a SpawnPoint.
+	// TODO: Currently, still finding a new SpawnPoint every beat for BeatTrack, but
+	// TODO: don't even use the SpawnPoint for the mode.
+
+	// TODO: Maybe a distinction between activating a deactivated SpawnPoint/Target
+	// TODO: and activating an always active SpawnPoint/Target
 	
-	bool bSuccessfulSpawn = false;
+	/*if (!BSConfig.TargetConfig.bContinuouslySpawn && SpawnPointManager->GetActivatedSpawnPoints().Num() > 0)
+	{
+		return;
+	}*/
+	
 	bool bSuccessfulActivation = false;
 
 	// Check to see if the game mode spawns targets at runtime
 	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
-		if (SpawnTarget(*SpawnPoint))
-		{
-			bSuccessfulSpawn = true;
-		}
+		SpawnTarget(*SpawnPoint);
 	}
-	if (ActivateTarget(bSuccessfulSpawn))
+	if (ActivateTarget())
 	{
 		bSuccessfulActivation = true;
 	}
 
 	// SpawnPoint will be valid if we make it past this
-	if (bSuccessfulSpawn | bSuccessfulActivation)
+	if (bSuccessfulActivation)
 	{
 		// Broadcast that a target has been spawned or activated, mainly to keep track of total target spawns on PlayerHUD
 		OnTargetActivatedOrSpawned.Broadcast();
 		// Add to ActiveTargetParis if using RL Comp
-		if (ReinforcementLearningComponent->IsActive() && PreviousSpawnPoint != SpawnPoint)
+		if (ReinforcementLearningComponent->IsActive() && PreviousSpawnPoint && PreviousSpawnPoint != SpawnPoint)
 		{
 			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->ChosenPoint, SpawnPoint->ChosenPoint);
 		}
@@ -230,12 +218,6 @@ void ATargetManager::OnAudioAnalyzerBeat()
 
 	// Immediately find the next target scale and SpawnPoint
 	FindNextTargetProperties();
-
-	// Wait for a target damage event if not continuous
-	//if (!BSConfig.TargetConfig.bContinuouslySpawn)
-	//{
-	//	SetShouldSpawn(false);
-	//}
 }
 
 bool ATargetManager::SpawnTarget(FSpawnPoint& InSpawnPoint)
@@ -251,18 +233,75 @@ bool ATargetManager::SpawnTarget(FSpawnPoint& InSpawnPoint)
 	return Target != nullptr;
 }
 
-bool ATargetManager::ActivateTarget(const bool bSpawnedTarget) const
+void ATargetManager::SpawnUpfrontOnlyTargets()
 {
-	if (bSpawnedTarget && GetManagedTargets().IsValidIndex(SpawnPoint->GetManagedTargetIndex()))
+	switch(BSConfig.TargetConfig.TargetDistributionPolicy) {
+	case ETargetDistributionPolicy::None:
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
+	case ETargetDistributionPolicy::EdgeOnly:
+	case ETargetDistributionPolicy::FullRange:
+		for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
+		{
+			// TODO: this seems sketch
+			FindNextTargetProperties();
+			if (SpawnPoint)
+			{
+				SpawnTarget(*SpawnPoint);
+			}
+		}
+		break;
+	case ETargetDistributionPolicy::Grid:
+		for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
+		{
+			SpawnPointManager->GetSpawnPointsRef()[i].SetScale(GetNextTargetScale());
+			SpawnTarget(SpawnPointManager->GetSpawnPointsRef()[i]);
+		}
+		FindNextTargetProperties();
+		break;
+	default: ;
+	}
+}
+
+bool ATargetManager::ActivateTarget() const
+{
+	if (/*bSpawnedTarget && */GetManagedTargets().IsValidIndex(SpawnPoint->GetManagedTargetIndex()))
 	{
 		ASphereTarget* Target = GetManagedTargets()[SpawnPoint->GetManagedTargetIndex()];
 		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
 		{
-			GetManagedTargets()[SpawnPoint->GetManagedTargetIndex()]->RemoveImmunityEffect();
+			Target->RemoveImmunityEffect();
 		}
 		if (!Target->IsDamageWindowActive())
 		{
-			GetManagedTargets()[SpawnPoint->GetManagedTargetIndex()]->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+			Target->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
+		}
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
+		{
+			Target->SetMovingTargetSpeed(FMath::FRandRange(BSConfig.TargetConfig.MinTargetSpeed, BSConfig.TargetConfig.MaxTargetSpeed));
+		}
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
+		{
+			Target->SetMovingTargetDirection(UKismetMathLibrary::GetDirectionUnitVector(Target->GetActorLocation(), GetRandomMovingTargetEndLocation(Target->GetActorLocation(), Target->GetMovingTargetSpeed())));
+		}
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
+		{
+			Target->SetSphereScale(GetNextTargetScale());
+		}
+		return true;
+	}
+	// TODO: TEMP
+	if (BSConfig.TargetConfig.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) &&
+		BSConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant) &&
+		!GetManagedTargets().IsEmpty())
+	{
+		ASphereTarget* Target = GetManagedTargets()[0];
+		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
+		{
+			Target->RemoveImmunityEffect();
+		}
+		if (!Target->IsDamageWindowActive())
+		{
+			Target->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
 		}
 		if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 		{
@@ -397,9 +436,18 @@ void ATargetManager::FindNextTargetProperties()
 {
 	const FVector NewScale = GetNextTargetScale();
 
-	LastTargetSpawnedCenter = SpawnPoint->ChosenPoint.Equals(GetBoxOrigin());
+	if (SpawnPoint)
+	{
+		LastTargetSpawnedCenter = SpawnPoint->ChosenPoint.Equals(GetBoxOrigin());
+		// Assign SpawnPoint address to PreviousSpawnPoint just before finding a new SpawnPoint
+		PreviousSpawnPoint = SpawnPoint;
+	}
+	else
+	{
+		LastTargetSpawnedCenter = false;
+		PreviousSpawnPoint = nullptr;
+	}
 	
-	PreviousSpawnPoint = SpawnPoint;
 	SpawnPoint = GetNextSpawnPoint(BSConfig.TargetConfig.BoundsScalingPolicy, NewScale);
 	if (SpawnPoint && SpawnPointManager->GetSpawnPoints().IsValidIndex(SpawnPoint->Index))
 	{
@@ -425,6 +473,21 @@ FSpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 		SetBoxExtents_Dynamic();
 	}
 
+	/* First SpawnPoint */
+	if (!SpawnPoint && !ShouldSpawn)
+	{
+		if (FSpawnPoint* Point = SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin()))
+		{
+			return Point;
+		}
+		const int32 RandomPoint = UKismetMathLibrary::RandomIntegerInRange(0,  SpawnPointManager->GetSpawnPoints().Num() - 1);
+		if (SpawnPointManager->GetSpawnPoints().IsValidIndex(RandomPoint))
+		{
+			return &SpawnPointManager->GetSpawnPointsRef()[RandomPoint];
+		}
+		return nullptr;
+	}
+	
 	/* Spawn every other target in center if specified */
 	if (BSConfig.TargetConfig.bSpawnEveryOtherTargetInCenter && SpawnPoint != SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin()))
 	{

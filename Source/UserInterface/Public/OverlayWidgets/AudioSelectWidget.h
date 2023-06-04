@@ -33,6 +33,7 @@ class USERINTERFACE_API UAudioSelectWidget : public UUserWidget, public ISaveLoa
 
 protected:
 	virtual UTooltipWidget* ConstructTooltipWidget() override;
+	virtual UTooltipWidget* GetTooltipWidget() const override;
 	virtual void NativeConstruct() override;
 
 public:
@@ -152,4 +153,7 @@ private:
 
 	/** Whether or not the user was in fullscreen mode before OpenFileDialog */
 	bool bWasInFullScreenMode;
+
+	UPROPERTY()
+	UTooltipWidget* ActiveTooltipWidget;
 };

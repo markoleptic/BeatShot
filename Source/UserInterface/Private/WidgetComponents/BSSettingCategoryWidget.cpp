@@ -8,7 +8,7 @@
 void UBSSettingCategoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	SetTooltipWidget(ConstructTooltipWidget());
+	ActiveTooltipWidget = ConstructTooltipWidget();
 	InitSettingCategoryWidget();
 }
 
@@ -21,6 +21,11 @@ void UBSSettingCategoryWidget::InitSettingCategoryWidget()
 UTooltipWidget* UBSSettingCategoryWidget::ConstructTooltipWidget()
 {
 	return CreateWidget<UTooltipWidget>(this, TooltipWidgetClass);
+}
+
+UTooltipWidget* UBSSettingCategoryWidget::GetTooltipWidget() const
+{
+	return ActiveTooltipWidget;
 }
 
 void UBSSettingCategoryWidget::AddAdditionalContainers(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers)

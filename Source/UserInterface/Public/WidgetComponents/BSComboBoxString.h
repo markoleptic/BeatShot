@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSWidgetInterface.h"
 #include "SBSComboBox.h"
 #include "UObject/ObjectMacros.h"
 #include "Fonts/SlateFontInfo.h"
@@ -31,6 +32,7 @@ enum class ESelectionModeType : uint8
 };
 
 class UBSComboBoxEntry;
+class UTooltipWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent, FString, SelectedItem, ESelectInfo::Type, SelectionType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpeningEvent);
@@ -39,11 +41,9 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelec
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections, const ESelectInfo::Type, SelectionType);
 
 UCLASS(meta=( DisplayName="BSComboBox (String)"))
-class USERINTERFACE_API UBSComboBoxString : public UWidget
+class USERINTERFACE_API UBSComboBoxString : public UWidget, public IBSWidgetInterface
 {
 	GENERATED_BODY()
-
-	UBSComboBoxString();
 
 	/** The default list of items to be displayed on the combobox. */
 	UPROPERTY(EditAnywhere, Category=Content)
@@ -53,8 +53,15 @@ class USERINTERFACE_API UBSComboBoxString : public UWidget
 	UPROPERTY(EditAnywhere, Category=Content)
 	FString SelectedOption;
 
+	UPROPERTY(EditDefaultsOnly, Category = "BSComboBoxString|Classes")
+	TSubclassOf<UBSComboBoxEntry> ComboboxEntryWidget;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "BSComboBoxString|Tooltip")
+	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
+	
 public:
-
+	TSubclassOf<UBSComboBoxEntry> GetComboboxEntryWidget() const { return ComboboxEntryWidget; }
+	
 	/** The style. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Style, meta=( DisplayName="Style" ))
 	FComboBoxStyle WidgetStyle;
@@ -128,35 +135,35 @@ public:
 	bool RemoveOption(const FString& Option);
 
 	/** Returns the index corresponding to the Option, or -1 if not found */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	UFUNCTION(BlueprintPure, Category="ComboBox")
 	int32 FindOptionIndex(const FString& Option) const;
 
 	/** Returns string option corresponding to the Index, or empty string if not found */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	FString GetOptionAtIndex(int32 Index) const;
-
-	/** Returns the selected option. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	FString GetSelectedOption() const;
+	UFUNCTION(BlueprintPure, Category="ComboBox")
+	FString FindOptionAtIndex(int32 Index) const;
 
 	/** Returns the selected index. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	UFUNCTION(BlueprintPure, Category="ComboBox")
 	int32 GetSelectedIndex() const;
 
+	/** Returns the selected option. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
+	UFUNCTION(BlueprintPure, Category="ComboBox")
+	FString GetSelectedOption() const;
+
 	/** Returns an array of selected indices */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	UFUNCTION(BlueprintPure, Category="ComboBox")
 	TArray<int32> GetSelectedIndices() const;
 
 	/** Returns an array of selected string options */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	UFUNCTION(BlueprintPure, Category="ComboBox")
 	TArray<FString> GetSelectedOptions() const;
 
 	/** Returns the number of options */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	UFUNCTION(BlueprintPure, Category="ComboBox")
 	int32 GetOptionCount() const;
 
 	/** Returns the number of currently selected options */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	UFUNCTION(BlueprintPure, Category="ComboBox")
 	int32 GetSelectedOptionCount() const;
 
 	/** Selects the specified index if it exists */
@@ -175,6 +182,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void SetSelectedOptions(TArray<FString> InOptions);
 
+	UFUNCTION(BlueprintPure, Category="ComboBox", Meta = (ReturnDisplayName = "bOpen"))
+	bool IsOpen() const;
+	
+	/** Refreshes the list of options.  If you added new ones, and want to update the list even if it's currently being displayed use this. */
+	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	void RefreshOptions();
+	
 	/** Clears all options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void ClearOptions();
@@ -182,67 +196,7 @@ public:
 	/** Clears all selected options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void ClearSelection();
-
-	/** Refreshes the list of options.  If you added new ones, and want to update the list even if it's currently being displayed use this. */
-	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	void RefreshOptions();
 	
-	UFUNCTION(BlueprintCallable, Category="ComboBox", Meta = (ReturnDisplayName = "bOpen"))
-	bool IsOpen() const;
-
-	//~ Begin UVisual Interface
-	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
-	//~ End UVisual Interface
-
-	//~ Begin UObject Interface
-	virtual void PostInitProperties() override;
-	virtual void Serialize(FArchive& Ar) override;
-	virtual void PostLoad() override;
-	//~ End UObject Interface
-
-#if WITH_EDITOR
-	virtual const FText GetPaletteCategory() override;
-#endif
-
-protected:
-	/** Refresh ComboBoxContent with the correct widget/data when the selected option changes */
-	void UpdateOrGenerateWidget(TSharedPtr<FString> Item);
-
-	/** Called by slate when it needs to generate a new item for the combobox */
-	virtual TSharedRef<SWidget> HandleGenerateWidget(TSharedPtr<FString> Item) const;
-
-	/** Called by slate when the underlying combobox selection changes. Handles both single select and multi-select */
-	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType);
-
-	/** Called by slate when the underlying combobox is opening */
-	virtual void HandleOpening();
-	
-	//~ Begin UWidget Interface
-	virtual TSharedRef<SWidget> RebuildWidget() override;
-	//~ End UWidget Interface
-
-	/** The true objects bound to the Slate combobox. */
-	TArray< TSharedPtr<FString> > Options;
-
-	/** A shared pointer to the underlying slate combobox */
-	TSharedPtr< SBSComboBox< TSharedPtr<FString> > > MyComboBox;
-
-	/** A shared pointer to a container that holds the combobox content that is selected */
-	TSharedPtr< SBox > ComboBoxContent;
-
-	/** If OnGenerateWidgetEvent is not bound, this will store the default STextBlock generated */
-	TWeakPtr<STextBlock> DefaultComboBoxContent;
-
-	/** An array of shared pointers to the current selected strings */
-	TArray<TSharedPtr<FString>> CurrentlySelectedOptionPointers;
-
-	/** Generates a widget for a row inside of the combo box */
-	/*virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(TSharedPtr<FString> Item) const;*/
-
-	/** Generates a widget for the selected item (top) of the combo box */
-	virtual TSharedRef<SWidget> HandleMultiSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const;
-
-public:
 	/** Executed to allow other widgets to create a combo box row */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
 	FGenerateWidgetForSingleItem OnGenerateWidgetEventDelegate;
@@ -254,7 +208,52 @@ public:
 	/** Executed to allow other widgets to create selected (top) combo box row */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
 	FGenerateWidgetForMultiSelection OnSelectionChanged_GenerateWidgetForMultiSelection;
+	
+	//~ Begin UVisual Interface
+	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
+	//~ End UVisual Interface
 
+	//~ Begin UObject Interface
+	virtual void PostInitProperties() override;
+	virtual void Serialize(FArchive& Ar) override;
+	virtual void PostLoad() override;
+	//~ End UObject Interface
+
+	/** Sets the text for the Entry and tooltip text, and binds to the OnHovered event in the TooltipImage. This can be called by
+	 *  classes that bind to OnGenerateWidgetEvent to customize the entry text and tooltip text, and if needed further modify the Entry */
+	void InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText, const bool bShowTooltipImage, const FText& TooltipText = FText()) const;
+
+#if WITH_EDITOR
+	virtual const FText GetPaletteCategory() override;
+#endif
+
+protected:
+	UBSComboBoxString();
+
+	//~ Begin ITooltip Interface
+	virtual UTooltipWidget* ConstructTooltipWidget() override;
+	virtual UTooltipWidget* GetTooltipWidget() const override;
+	//~ End ITooltip Interface
+	
+	/** Refresh ComboBoxContent with the correct widget/data when the selected option changes */
+	void UpdateOrGenerateWidget(TSharedPtr<FString> Item);
+
+	/** Called by slate when it needs to generate a new item for the combobox */
+	virtual TSharedRef<SWidget> HandleGenerateWidget(TSharedPtr<FString> Item) const;
+
+	/** Called by slate when the underlying combobox selection changes. Handles both single select and multi-select */
+	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType);
+
+	/** Generates a widget for the combobox content that is selected */
+	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const;
+
+	/** Called by slate when the underlying combobox is opening */
+	virtual void HandleOpening();
+	
+	//~ Begin UWidget Interface
+	virtual TSharedRef<SWidget> RebuildWidget() override;
+	//~ End UWidget Interface
+	
 	static TAttribute<ESelectionMode::Type> GetSelectionModeType(const ESelectionModeType& SelectionModeType)
 	{
 		switch (SelectionModeType) {
@@ -269,4 +268,22 @@ public:
 		}
 		return ESelectionMode::Type::None;
 	}
+
+	/** The true objects bound to the Slate combobox. */
+	TArray<TSharedPtr<FString>> Options;
+
+	/** A shared pointer to the underlying slate combobox */
+	TSharedPtr<SBSComboBox<TSharedPtr<FString>>> MyComboBox;
+
+	/** A shared pointer to a container that holds the combobox content that is selected */
+	TSharedPtr<SBox> ComboBoxContent;
+
+	/** If OnGenerateWidgetEvent is not bound, this will store the default STextBlock generated */
+	TWeakPtr<STextBlock> DefaultComboBoxContent;
+
+	/** An array of shared pointers to the current selected strings */
+	TArray<TSharedPtr<FString>> CurrentlySelectedOptionPointers;
+
+	UPROPERTY()
+	UTooltipWidget* ActiveTooltipWidget;
 };
