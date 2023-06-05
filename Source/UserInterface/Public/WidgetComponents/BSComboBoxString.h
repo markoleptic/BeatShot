@@ -136,17 +136,17 @@ public:
 
 	/** Returns the index corresponding to the Option, or -1 if not found */
 	UFUNCTION(BlueprintPure, Category="ComboBox")
-	int32 FindOptionIndex(const FString& Option) const;
+	int32 GetIndexOfOption(const FString& Option) const;
 
 	/** Returns string option corresponding to the Index, or empty string if not found */
 	UFUNCTION(BlueprintPure, Category="ComboBox")
-	FString FindOptionAtIndex(int32 Index) const;
+	FString GetOptionAtIndex(int32 Index) const;
 
-	/** Returns the selected index. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
+	/** Returns the selected index. Use GetSelectedIndices if its possible for more than one to be selected */
 	UFUNCTION(BlueprintPure, Category="ComboBox")
 	int32 GetSelectedIndex() const;
 
-	/** Returns the selected option. Should only use if SelectionMode is Single, or MaxNumSelectedItems = 1 */
+	/** Returns the selected option. Use GetSelectedOptions if its possible for more than one to be selected */
 	UFUNCTION(BlueprintPure, Category="ComboBox")
 	FString GetSelectedOption() const;
 
@@ -168,24 +168,25 @@ public:
 
 	/** Selects the specified index if it exists */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	void SetSelectedIndex(const int32 InIndex);
+	void SetSelectedIndex(const int32 InIndex, const bool bClearCurrentSelection = true);
 
-	/** Selects the specified option if it exists */
+	/** Selects the specified option if it exists. DOES NOT clear selected options if multi-selection */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	void SetSelectedOption(const FString InOption);
+	void SetSelectedOption(const FString InOption, const bool bClearCurrentSelection = true);
 
-	/** Selects the specified indices if they exists */
+	/** Selects the specified indices if they exists. Clears all selected options before setting new options */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void SetSelectedIndices(const TArray<int32> InIndices);
 
-	/** Selects the specified options if they exists */
+	/** Selects the specified options if they exists. Clears all selected options before setting new options */
 	UFUNCTION(BlueprintCallable, Category = "ComboBox")
 	void SetSelectedOptions(TArray<FString> InOptions);
 
+	/** Returns whether or not the combo box is open */
 	UFUNCTION(BlueprintPure, Category="ComboBox", Meta = (ReturnDisplayName = "bOpen"))
 	bool IsOpen() const;
 	
-	/** Refreshes the list of options.  If you added new ones, and want to update the list even if it's currently being displayed use this. */
+	/** Refreshes the list of options. If you added new ones, and want to update the list even if it's currently being displayed use this */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void RefreshOptions();
 	
@@ -273,7 +274,7 @@ protected:
 	TArray<TSharedPtr<FString>> Options;
 
 	/** A shared pointer to the underlying slate combobox */
-	TSharedPtr<SBSComboBox<TSharedPtr<FString>>> MyComboBox;
+	TSharedPtr<SBSComboBox<TSharedPtr<FString>>> SlateComboBox;
 
 	/** A shared pointer to a container that holds the combobox content that is selected */
 	TSharedPtr<SBox> ComboBoxContent;

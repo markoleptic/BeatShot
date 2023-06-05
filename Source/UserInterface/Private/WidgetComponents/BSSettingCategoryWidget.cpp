@@ -14,7 +14,7 @@ void UBSSettingCategoryWidget::NativeConstruct()
 
 void UBSSettingCategoryWidget::InitSettingCategoryWidget()
 {
-	Containers.AddUnique(MainContainer);
+	AddContainer(MainContainer);
 	UpdateBrushColors();
 }
 
@@ -28,17 +28,17 @@ UTooltipWidget* UBSSettingCategoryWidget::GetTooltipWidget() const
 	return ActiveTooltipWidget;
 }
 
-void UBSSettingCategoryWidget::AddAdditionalContainers(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers)
+void UBSSettingCategoryWidget::AddContainer(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers)
 {
-	for (const TObjectPtr<UBSVerticalBox>& Container : InContainers)
+	for (const TObjectPtr<UBSVerticalBox>& InContainer : InContainers)
 	{
-		Containers.AddUnique(Container);
+		AddContainer(InContainer);
 	}
 }
 
-void UBSSettingCategoryWidget::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox) const
+void UBSSettingCategoryWidget::AddContainer(const TObjectPtr<UBSVerticalBox>& InContainer)
 {
-	MainContainer->AddWidgetBoxPair(InWidget, InBox);
+	Containers.AddUnique(InContainer);
 }
 
 void UBSSettingCategoryWidget::UpdateBrushColors() const

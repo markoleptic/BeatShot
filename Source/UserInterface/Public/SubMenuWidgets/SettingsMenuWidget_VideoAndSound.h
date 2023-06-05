@@ -29,6 +29,7 @@ class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCat
 	friend class USettingsMenuWidget;
 	
 	virtual void NativeConstruct() override;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void InitSettingCategoryWidget() override;
 
 	/** Populates the settings menu with InVideoAndSoundSettings */

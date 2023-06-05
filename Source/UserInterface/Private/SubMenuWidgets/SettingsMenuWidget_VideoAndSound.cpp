@@ -179,12 +179,15 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	InitializeVideoAndSoundSettings(LoadPlayerSettings().VideoAndSound);
 }
 
+TSharedRef<SWidget> USettingsMenuWidget_VideoAndSound::RebuildWidget()
+{
+	MainContainer->AddChildToVerticalBox(BSBox_Video);
+	MainContainer->AddChildToVerticalBox(BSBox_Sound);
+	return Super::RebuildWidget();
+}
+
 void USettingsMenuWidget_VideoAndSound::InitSettingCategoryWidget()
 {
-	TArray<TObjectPtr<UBSVerticalBox>> InContainers;
-	InContainers.Add(BSBox_Video);
-	InContainers.Add(BSBox_Sound);
-	AddAdditionalContainers(InContainers);
 	Super::InitSettingCategoryWidget();
 }
 

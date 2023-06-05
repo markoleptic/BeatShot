@@ -108,12 +108,13 @@ struct FExtrema
 	}
 };
 
-/** A struct representing a spawn point in a 2D grid with information about that point */
-USTRUCT()
-struct FSpawnPoint
+/** A point in a 2D grid with information about that point */
+UCLASS()
+class BEATSHOT_API USpawnPoint : public UObject
 {
 	GENERATED_BODY()
 
+public:
 	/** The horizontal spacing between the next SpawnPoint */
 	float IncrementY;
 
@@ -167,11 +168,11 @@ private:
 	TArray<FVector> OverlappingPoints;
 
 public:
-	FSpawnPoint();
+	USpawnPoint();
 
-	FSpawnPoint(const int32 InIndex, const FVector& InPoint, const bool bIsCornerPoint, const float IncY, const float IncZ,  const int32 InWidth = INDEX_NONE, const int32 InSize = INDEX_NONE);
+	void Init(const int32 InIndex, const FVector& InPoint, const bool bIsCornerPoint, const float IncY, const float IncZ,  const int32 InWidth = INDEX_NONE, const int32 InSize = INDEX_NONE);
 
-	FORCEINLINE bool operator ==(const FSpawnPoint& Other) const
+	FORCEINLINE bool operator ==(const USpawnPoint& Other) const
 	{
 		if (Index != INDEX_NONE && Index == Other.Index)
 		{
@@ -185,13 +186,40 @@ public:
 		return false;
 	}
 
-	FORCEINLINE bool operator <(const FSpawnPoint& Other) const
+	FORCEINLINE bool operator <(const USpawnPoint& Other) const
 	{
 		if (CornerPoint.Z < Other.CornerPoint.Z)
 		{
 			return true;
 		}
 		if (CornerPoint.Z == Other.CornerPoint.Z && CornerPoint.Y < Other.CornerPoint.Y)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	FORCEINLINE bool operator ==(const USpawnPoint* Other) const
+	{
+		if (Index != INDEX_NONE && Index == Other->Index)
+		{
+			return true;
+		}
+		if (Other->CornerPoint.Y >= CornerPoint.Y && Other->CornerPoint.Y < CornerPoint.Y + IncrementY &&
+			(Other->CornerPoint.Z >= CornerPoint.Z && Other->CornerPoint.Z < CornerPoint.Z + IncrementZ))
+		{
+			return true;
+		}
+		return false;
+	}
+
+	FORCEINLINE bool operator <(const USpawnPoint* Other) const
+	{
+		if (CornerPoint.Z < Other->CornerPoint.Z)
+		{
+			return true;
+		}
+		if (CornerPoint.Z == Other->CornerPoint.Z && CornerPoint.Y < Other->CornerPoint.Y)
 		{
 			return true;
 		}
@@ -288,28 +316,30 @@ public:
 	TArray<FVector> InitializeSpawnPoints(const FExtrema& InStaticExtrema);
 	
 	/** Finds a SpawnPoint with the matching InIndex */
-	FSpawnPoint* FindSpawnPointFromIndex(const int32 InIndex);
+	USpawnPoint* FindSpawnPointFromIndex(const int32 InIndex);
 
 	/** Finds a SpawnPoint with the matching InLocation */
-	FSpawnPoint* FindSpawnPointFromLocation(const FVector& InLocation);
+	USpawnPoint* FindSpawnPointFromLocation(const FVector& InLocation);
 
 	/** Finds a SpawnPoint with the matching InGuid */
-	FSpawnPoint* FindSpawnPointFromGuid(const FGuid& InGuid);
+	USpawnPoint* FindSpawnPointFromGuid(const FGuid& InGuid);
 
 	/** Returns the oldest most recent spawn point */
-	FSpawnPoint* FindOldestRecentSpawnPoint() const;
+	USpawnPoint* FindOldestRecentSpawnPoint() const;
+
+	bool IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const;
 
 	/** Returns the index corresponding to a world location, or INDEX_NONE if not found */
 	int32 FindIndexFromLocation(const FVector& InLocation) const;
 
 	/** Returns a filtered array containing only spawn points flagged as recent */
-	TArray<FSpawnPoint> GetRecentSpawnPoints() const;
+	TArray<USpawnPoint*> GetRecentSpawnPoints() const;
 	
 	/** Returns a filtered array containing only spawn points flagged as activated */
-	TArray<FSpawnPoint> GetActivatedSpawnPoints() const;
+	TArray<USpawnPoint*> GetActivatedSpawnPoints() const;
 
 	/** Returns a filtered array containing only spawn points flagged as activated or recent */
-	TArray<FSpawnPoint> GetActivatedOrRecentSpawnPoints() const;
+	TArray<USpawnPoint*> GetActivatedOrRecentSpawnPoints() const;
 
 	/** Returns an array of all points that are occupied by recent targets, readjusted by scale if needed */
 	TArray<FVector> RemoveOverlappingPointsFromSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const FExtrema& Extrema) const;
@@ -317,15 +347,15 @@ public:
 	/** Removes points from the InArray that don't have an adjacent point to the top and to the left. Used so that it's safe to spawn a target within a square area */
 	void RemoveEdgePoints(TArray<FVector>& In, const FExtrema& Extrema) const;
 
-	TArray<FSpawnPoint>& GetSpawnPointsRef() { return SpawnPoints; }
-	TArray<FSpawnPoint> GetSpawnPoints() const { return SpawnPoints; }
+	TArray<USpawnPoint*>& GetSpawnPointsRef() { return SpawnPoints; }
+	TArray<USpawnPoint*> GetSpawnPoints() const { return SpawnPoints; }
 	int32 GetSpawnPointsWidth() const { return Width; }
 	int32 GetSpawnMemoryIncY() const { return SpawnMemoryIncY; }
 	int32 GetSpawnMemoryIncZ() const { return SpawnMemoryIncZ; }
 	int32 GetSpawnPointsHeight() const { return Height; }
 
 	/** Sets the overlapping points for matching SpawnPoint, based on the parameters and StaticExtrema */
-	void SetOverlappingPoints(FSpawnPoint& Point, const FVector& Scale) const;
+	void SetOverlappingPoints(USpawnPoint* Point, const FVector& Scale) const;
 
 	/** Flags the point as recent */
 	void FlagSpawnPointAsRecent(const FGuid SpawnPointGuid);
@@ -342,7 +372,7 @@ public:
 	
 	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
 	
-	void PrintDebug_SpawnPoint(const FSpawnPoint& SpawnPoint) const;
+	void PrintDebug_SpawnPoint(const USpawnPoint* SpawnPoint) const;
 
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
@@ -358,7 +388,8 @@ private:
 	int32 Height;
 
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
-	TArray<FSpawnPoint> SpawnPoints;
+	UPROPERTY()
+	TArray<USpawnPoint*> SpawnPoints;
 
 	/** Incremental step value used to iterate through SpawnPoints locations */
 	int32 SpawnMemoryIncY;
@@ -385,7 +416,7 @@ private:
 	FExtrema StaticExtrema;
 
 	/** Preferred SpawnMemory increments */
-	const TArray<int32> PreferredScales = {100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 30, 25, 20, 15, 10, 5};
+	const TArray<int32> PreferredScales = {/*100, 95, 90, 85, 80, 75, 70, 65, 60, 55,*/ 50, 45, 40, 30, 25, 20, 15, 10, 5};
 
 	/** Whether or not the locations used to create SpawnPoints are corners */
 	bool bLocationsAreCorners = false;

@@ -109,7 +109,7 @@ public:
 	void ActivateTarget(const float Lifespan);
 
 	/** Deactivates a target, applies immunity, stops the DamageableWindow timer and all timelines, sets to inactive target color, and applies scaling */
-	void DeactivateTarget(const bool bExpired);
+	void DeactivateTarget(const float TimeAlive, const bool bExpired);
 
 	/** Sets the scale for the SphereMesh, should only be called by TargetManager */
 	void SetInitialSphereScale(const FVector& NewScale);

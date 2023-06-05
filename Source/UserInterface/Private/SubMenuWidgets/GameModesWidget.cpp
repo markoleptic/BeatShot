@@ -282,8 +282,11 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
 	DefiningConfig->InitializeDefiningConfig(InBSConfig.DefiningConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	TargetConfig->InitializeTargetConfig(InBSConfig.TargetConfig, InBSConfig.DefiningConfig.BaseGameMode);
+	BeatGridConfig->InitializeBeatGrid(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
+	BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
+	AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	
-	switch(InBSConfig.DefiningConfig.BaseGameMode)
+	/*switch(InBSConfig.DefiningConfig.BaseGameMode)
 	{
 	case EBaseGameMode::SingleBeat:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
@@ -311,7 +314,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		break;
 	case EBaseGameMode::None:
 		break;
-	}
+	}*/
 }
 
 FBSConfig UGameModesWidget::GetCustomGameModeOptions() const

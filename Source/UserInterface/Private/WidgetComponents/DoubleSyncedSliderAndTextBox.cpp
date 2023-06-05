@@ -23,7 +23,17 @@ float UDoubleSyncedSliderAndTextBox::GetMaxValue() const
 
 bool UDoubleSyncedSliderAndTextBox::GetIsSynced() const
 {
+	if (SliderStruct.bLocksOnlySync)
+	{
+		return SliderStruct.bSyncSlidersAndValues;
+	}
 	return Checkbox_SyncSlidersAndValues->IsChecked();
+}
+
+void UDoubleSyncedSliderAndTextBox::SetLocksEnabled(const bool bEnableLocks)
+{
+	Checkbox_MinLock->SetIsEnabled(bEnableLocks);
+	Checkbox_MaxLock->SetIsEnabled(bEnableLocks);
 }
 
 void UDoubleSyncedSliderAndTextBox::NativeConstruct()
@@ -98,29 +108,66 @@ void UDoubleSyncedSliderAndTextBox::UpdateDefaultValues(const float NewMinValue,
 {
 	SliderStruct.DefaultMinValue = RoundValue(NewMinValue);
 	SliderStruct.DefaultMaxValue = RoundValue(NewMaxValue);
-	if (bSync)
+	SliderStruct.bSyncSlidersAndValues = bSync;
+	if (SliderStruct.bLocksOnlySync)
 	{
-		Checkbox_SyncSlidersAndValues->SetIsChecked(true);
-		OnCheckStateChanged_SyncSlidersAndValues(true);
-		return;
+		Checkbox_MinLock->SetIsChecked(bSync);
+		Checkbox_MaxLock->SetIsChecked(bSync);
 	}
-	Checkbox_SyncSlidersAndValues->SetIsChecked(false);
-	OnCheckStateChanged_SyncSlidersAndValues(false);
+	Checkbox_SyncSlidersAndValues->SetIsChecked(bSync);
+	SyncSlidersAndValues(bSync, true);
+	OnCheckStateChanged_Sync.Broadcast(bSync);
+}
+
+void UDoubleSyncedSliderAndTextBox::UpdateDefaultValuesAbsolute(const float NewMinValue, const float NewMaxValue, const bool bSync)
+{
+	SliderStruct.DefaultMinValue = RoundValue(NewMinValue);
+	SliderStruct.DefaultMaxValue = RoundValue(NewMaxValue);
+	if (SliderStruct.bLocksOnlySync)
+	{
+		Checkbox_MinLock->SetIsChecked(bSync);
+		Checkbox_MaxLock->SetIsChecked(bSync);
+	}
+	SyncSlidersAndValues(bSync, false);
+	Checkbox_SyncSlidersAndValues->SetIsChecked(bSync);
+	OnCheckStateChanged_Sync.Broadcast(bSync);
+	Slider_Min->SetValue(NewMinValue);
+	Slider_Max->SetValue(NewMaxValue);
+	OnSliderChanged(true, NewMinValue);
+	OnSliderChanged(false, NewMaxValue);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_SyncSlidersAndValues(const bool bIsChecked)
 {
-	SyncSlidersAndValues(bIsChecked);
+	SyncSlidersAndValues(bIsChecked, true);
 	OnCheckStateChanged_Sync.Broadcast(bIsChecked);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MinLock(const bool bIsLocked)
 {
+	if (SliderStruct.bLocksOnlySync && Checkbox_MaxLock->IsChecked() != bIsLocked)
+	{
+		Checkbox_MaxLock->SetIsChecked(bIsLocked);
+	}
+	
+	if (SliderStruct.bLocksOnlySync && GetIsSynced() != bIsLocked)
+	{
+		SyncSlidersAndValues(bIsLocked, true);
+	}
 	OnCheckStateChanged_Min.Broadcast(bIsLocked);
 }
 
 void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_MaxLock(const bool bIsLocked)
 {
+	if (SliderStruct.bLocksOnlySync && Checkbox_MinLock->IsChecked() != bIsLocked)
+	{
+		Checkbox_MinLock->SetIsChecked(bIsLocked);
+	}
+
+	if (SliderStruct.bLocksOnlySync && GetIsSynced() != bIsLocked)
+	{
+		SyncSlidersAndValues(bIsLocked, true);
+	}
 	OnCheckStateChanged_Max.Broadcast(bIsLocked);
 }
 
@@ -199,7 +246,7 @@ void UDoubleSyncedSliderAndTextBox::OnTextCommitted_Max(const FText& NewMax, ETe
 	OnTextCommitted(false, NewMax);
 }
 
-void UDoubleSyncedSliderAndTextBox::SyncSlidersAndValues(const bool bSync)
+void UDoubleSyncedSliderAndTextBox::SyncSlidersAndValues(const bool bSync, const bool bTryUsePreSyncedValues)
 {
 	SliderStruct.bSyncSlidersAndValues = bSync;
 	
@@ -217,7 +264,7 @@ void UDoubleSyncedSliderAndTextBox::SyncSlidersAndValues(const bool bSync)
 		{
 			Slider_Min->SetMaxValue(Slider_Max->GetMaxValue());
 		}
-
+		
 		/* Clamp slider values */
 		if (PreSyncedMaxValue > CheckConstraints(PreSyncedMaxValue, false))
 		{
@@ -233,7 +280,7 @@ void UDoubleSyncedSliderAndTextBox::SyncSlidersAndValues(const bool bSync)
 		{
 			Slider_Min->SetValue(Slider_Max->GetValue());
 		}
-		
+	
 		/* Doesn't matter which slider we use since they are synced and will be the same */
 		OnSliderChanged(true, Slider_Min->GetValue());
 		return;
@@ -246,7 +293,7 @@ void UDoubleSyncedSliderAndTextBox::SyncSlidersAndValues(const bool bSync)
 	float NewMaxValue;
 	
 	/* Use pre-synced values if possible */
-	if (PreSyncedMaxValue != -1.f && PreSyncedMinValue != -1.f)
+	if (bTryUsePreSyncedValues && PreSyncedMaxValue != -1.f && PreSyncedMinValue != -1.f)
 	{
 		NewMinValue = CheckConstraints(PreSyncedMinValue, true);
 		NewMaxValue = CheckConstraints(PreSyncedMaxValue, false);

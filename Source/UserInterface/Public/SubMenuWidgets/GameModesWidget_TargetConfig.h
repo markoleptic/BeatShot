@@ -21,6 +21,7 @@ class USERINTERFACE_API UGameModesWidget_TargetConfig : public UBSSettingCategor
 	GENERATED_BODY()
 	
 	friend class UGameModesWidget;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void NativeConstruct() override;
 	virtual void InitSettingCategoryWidget() override;
 

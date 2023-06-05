@@ -3,9 +3,8 @@
 
 #include "Target/SpawnPointManager.h"
 #include "GlobalConstants.h"
-#include "Kismet/KismetMathLibrary.h"
 
-FSpawnPoint::FSpawnPoint()
+USpawnPoint::USpawnPoint()
 {
 	IncrementY = 0.f;
 	IncrementZ = 0.f;
@@ -26,7 +25,7 @@ FSpawnPoint::FSpawnPoint()
 	OverlappingPoints = TArray<FVector>();
 }
 
-FSpawnPoint::FSpawnPoint(const int32 InIndex, const FVector& InPoint, const bool bIsCornerPoint, const float IncY, const float IncZ,  const int32 InWidth, const int32 InSize)
+void USpawnPoint::Init(const int32 InIndex, const FVector& InPoint, const bool bIsCornerPoint, const float IncY, const float IncZ,  const int32 InWidth, const int32 InSize)
 {
 	IncrementY = IncY;
 	IncrementZ = IncZ;
@@ -58,7 +57,7 @@ FSpawnPoint::FSpawnPoint(const int32 InIndex, const FVector& InPoint, const bool
 	OverlappingPoints = TArray<FVector>();
 }
 
-bool FSpawnPoint::IsCornerIndex() const
+bool USpawnPoint::IsCornerIndex() const
 {
 	if (IndexType == EGridIndexType::Corner_TopLeft || IndexType == EGridIndexType::Corner_TopRight || IndexType == EGridIndexType::Corner_BottomRight || IndexType ==
 	EGridIndexType::Corner_BottomLeft)
@@ -68,7 +67,7 @@ bool FSpawnPoint::IsCornerIndex() const
 	return false;
 }
 
-bool FSpawnPoint::IsBorderIndex() const
+bool USpawnPoint::IsBorderIndex() const
 {
 	if (IndexType == EGridIndexType::Border_Top || IndexType == EGridIndexType::Border_Right || IndexType == EGridIndexType::Border_Bottom || IndexType == EGridIndexType::Border_Left)
 	{
@@ -77,7 +76,7 @@ bool FSpawnPoint::IsBorderIndex() const
 	return false;
 }
 
-TArray<int32> FSpawnPoint::FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth)
+TArray<int32> USpawnPoint::FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth)
 {
 		TArray<int32> ReturnArray = TArray<int32>();
 
@@ -156,17 +155,17 @@ TArray<int32> FSpawnPoint::FindBorderingIndices(const EGridIndexType InGridIndex
 		return ReturnArray;
 	}
 
-FVector FSpawnPoint::FindCornerPointFromCenterPoint(const FVector& InCenterPoint, const float InIncY, const float InIncZ)
+FVector USpawnPoint::FindCornerPointFromCenterPoint(const FVector& InCenterPoint, const float InIncY, const float InIncZ)
 {
 	return FVector(InCenterPoint.X, roundf(InCenterPoint.Y - InIncY / 2.f), roundf(InCenterPoint.Z - InIncZ / 2.f));
 }
 
-FVector FSpawnPoint::FindCenterPointFromCornerPoint(const FVector& InCornerPoint, const float InIncY, const float InIncZ)
+FVector USpawnPoint::FindCenterPointFromCornerPoint(const FVector& InCornerPoint, const float InIncY, const float InIncZ)
 {
 	return FVector(InCornerPoint.X, roundf(InCornerPoint.Y + InIncY / 2.f), roundf(InCornerPoint.Z + InIncZ / 2.f));
 }
 
-FVector FSpawnPoint::GenerateRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections) const
+FVector USpawnPoint::GenerateRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections) const
 {
 	float MinY = CornerPoint.Y;
 	float MaxY = CornerPoint.Y + IncrementY;
@@ -194,12 +193,12 @@ FVector FSpawnPoint::GenerateRandomSubPoint(const TArray<EBorderingDirection>& B
 	return FVector(CornerPoint.X, Y, Z);
 }
 
-void FSpawnPoint::SetChosenPointAsRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections)
+void USpawnPoint::SetChosenPointAsRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections)
 {
 	ChosenPoint = GenerateRandomSubPoint(BlockedDirections);
 }
 
-void FSpawnPoint::IncrementTotalSpawns()
+void USpawnPoint::IncrementTotalSpawns()
 {
 	if (TotalSpawns == INDEX_NONE)
 	{
@@ -211,12 +210,12 @@ void FSpawnPoint::IncrementTotalSpawns()
 	}
 }
 
-void FSpawnPoint::IncrementTotalHits()
+void USpawnPoint::IncrementTotalHits()
 {
 	TotalHits++;
 }
 
-EGridIndexType FSpawnPoint::FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth)
+EGridIndexType USpawnPoint::FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth)
 {
 	const int32 MaxIndex = InSize - 1;
 	const int32 BottomRowFirstIndex = InWidth - 1;
@@ -261,7 +260,7 @@ EGridIndexType FSpawnPoint::FindIndexType(const int32 InIndex, const int32 InSiz
 	return EGridIndexType::Middle;
 }
 
-void FSpawnPoint::SetIsRecent(const bool bSetIsRecent)
+void USpawnPoint::SetIsRecent(const bool bSetIsRecent)
 {
 	bIsRecent = bSetIsRecent;
 	if (bSetIsRecent)
@@ -275,7 +274,7 @@ void FSpawnPoint::SetIsRecent(const bool bSetIsRecent)
 	}
 }
 
-TArray<FVector>& FSpawnPoint::SetOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
+TArray<FVector>& USpawnPoint::SetOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
 	const FVector& InOrigin, const FExtrema& InExtrema)
 {
 	float Radius = InScale.X * SphereTargetDiameter + InMinTargetDistance / 2.f;
@@ -299,7 +298,7 @@ TArray<FVector>& FSpawnPoint::SetOverlappingPoints(const float InMinTargetDistan
 	return OverlappingPoints;
 }
 
-TArray<EBorderingDirection> FSpawnPoint::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const
+TArray<EBorderingDirection> USpawnPoint::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const
 {
 	TArray<EBorderingDirection> Directions;
 	const FVector Left = CornerPoint + FVector(0, -IncrementY, 0);
@@ -356,15 +355,16 @@ TArray<FVector> USpawnPointManager::InitializeSpawnPoints(const FExtrema& InStat
 		{
 			FVector Loc(Origin.X, Y, Z);
 			AllSpawnLocations.Add(Loc);
-			SpawnPoints.Emplace(
-					Index,
+			USpawnPoint* SpawnPoint = NewObject<USpawnPoint>();
+			SpawnPoint->Init(Index,
 					Loc,
 					bLocationsAreCorners,
 					SpawnMemoryIncY,
 					SpawnMemoryIncZ,
 					BSConfig.GridConfig.NumHorizontalGridTargets,
 					BSConfig.GridConfig.NumVerticalGridTargets * BSConfig.GridConfig.NumHorizontalGridTargets);
-			SpawnPoints[Index].ChosenPoint = Loc;
+			SpawnPoint->ChosenPoint = Loc;
+			SpawnPoints.Add(SpawnPoint);
 			Index++;
 			TempWidth++;
 		}
@@ -442,58 +442,73 @@ void USpawnPointManager::SetAppropriateSpawnMemoryValues()
 
 // SpawnPoint finders/getters
 
-FSpawnPoint* USpawnPointManager::FindSpawnPointFromIndex(const int32 InIndex)
+USpawnPoint* USpawnPointManager::FindSpawnPointFromIndex(const int32 InIndex)
 {
-	return SpawnPoints.FindByPredicate([&InIndex] (const FSpawnPoint& SpawnPoint)
+	USpawnPoint** Point = SpawnPoints.FindByPredicate([&InIndex] (const USpawnPoint* SpawnPoint)
 	{
-		if (SpawnPoint.Index == InIndex)
+		if (SpawnPoint->Index == InIndex)
 		{
 			return true;
 		}
 		return false;
 	});
+	if (Point)
+	{
+		return *Point;
+	}
+	return nullptr;
 }
 
-FSpawnPoint* USpawnPointManager::FindSpawnPointFromLocation(const FVector& InLocation)
+USpawnPoint* USpawnPointManager::FindSpawnPointFromLocation(const FVector& InLocation)
 {
-	return SpawnPoints.FindByPredicate([&InLocation](const FSpawnPoint& SpawnPoint)
+	USpawnPoint** Point = SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
 	{
-		if (InLocation.Y >= SpawnPoint.CornerPoint.Y && InLocation.Y < SpawnPoint.CornerPoint.Y + SpawnPoint.IncrementY &&
-			(InLocation.Z >= SpawnPoint.CornerPoint.Z && InLocation.Z < SpawnPoint.CornerPoint.Z + SpawnPoint.IncrementZ))
+		if (InLocation.Y >= SpawnPoint->CornerPoint.Y && InLocation.Y < SpawnPoint->CornerPoint.Y + SpawnPoint->IncrementY &&
+			(InLocation.Z >= SpawnPoint->CornerPoint.Z && InLocation.Z < SpawnPoint->CornerPoint.Z + SpawnPoint->IncrementZ))
 		{
 			return true;
 		}
 		return false;
 	});
+	if (Point)
+	{
+		return *Point;
+	}
+	return nullptr;
 }
 
-FSpawnPoint* USpawnPointManager::FindSpawnPointFromGuid(const FGuid& InGuid)
+USpawnPoint* USpawnPointManager::FindSpawnPointFromGuid(const FGuid& InGuid)
 {
-	return SpawnPoints.FindByPredicate([&InGuid](const FSpawnPoint& SpawnPoint)
+	USpawnPoint** Point = SpawnPoints.FindByPredicate([&InGuid](const USpawnPoint* SpawnPoint)
 	{
-		if (SpawnPoint.GetGuid() == InGuid)
+		if (SpawnPoint->GetGuid() == InGuid)
 		{
 			return true;
 		}
 		return false;
 	});
+	if (Point)
+	{
+		return *Point;
+	}
+	return nullptr;
 }
 
-FSpawnPoint* USpawnPointManager::FindOldestRecentSpawnPoint() const
+USpawnPoint* USpawnPointManager::FindOldestRecentSpawnPoint() const
 {
-	TArray<FSpawnPoint> RecentSpawnPoints = GetRecentSpawnPoints();
+	TArray<USpawnPoint*> RecentSpawnPoints = GetRecentSpawnPoints();
 	
 	if (RecentSpawnPoints.IsEmpty())
 	{
 		return nullptr;
 	}
 	
-	FSpawnPoint* MostRecent = &RecentSpawnPoints.Top();
-	for (FSpawnPoint& SpawnPoint : RecentSpawnPoints)
+	USpawnPoint* MostRecent = RecentSpawnPoints.Top();
+	for (USpawnPoint* SpawnPoint : RecentSpawnPoints)
 	{
-		if (SpawnPoint.GetTimeSetRecent() < MostRecent->GetTimeSetRecent())
+		if (SpawnPoint->GetTimeSetRecent() < MostRecent->GetTimeSetRecent())
 		{
-			MostRecent = &SpawnPoint;
+			MostRecent = SpawnPoint;
 		}
 	}
 	return MostRecent;
@@ -501,10 +516,10 @@ FSpawnPoint* USpawnPointManager::FindOldestRecentSpawnPoint() const
 
 int32 USpawnPointManager::FindIndexFromLocation(const FVector& InLocation) const
 {
-	if (const FSpawnPoint* Found = SpawnPoints.FindByPredicate([&InLocation](const FSpawnPoint& SpawnPoint)
+	if (const USpawnPoint* Found = *SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
 	{
-		if (InLocation.Y >= SpawnPoint.CornerPoint.Y && InLocation.Y < SpawnPoint.CornerPoint.Y + SpawnPoint.IncrementY &&
-			(InLocation.Z >= SpawnPoint.CornerPoint.Z && InLocation.Z < SpawnPoint.CornerPoint.Z + SpawnPoint.IncrementZ))
+		if (InLocation.Y >= SpawnPoint->CornerPoint.Y && InLocation.Y < SpawnPoint->CornerPoint.Y + SpawnPoint->IncrementY &&
+			(InLocation.Z >= SpawnPoint->CornerPoint.Z && InLocation.Z < SpawnPoint->CornerPoint.Z + SpawnPoint->IncrementZ))
 		{
 			return true;
 		}
@@ -516,13 +531,22 @@ int32 USpawnPointManager::FindIndexFromLocation(const FVector& InLocation) const
 	return INDEX_NONE;
 }
 
+bool USpawnPointManager::IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const
+{
+	if (SpawnPoints.Contains(InSpawnPoint))
+	{
+		return true;
+	}
+	return false;
+}
+
 // SpawnPoint array getters
 
-TArray<FSpawnPoint> USpawnPointManager::GetRecentSpawnPoints() const
+TArray<USpawnPoint*> USpawnPointManager::GetRecentSpawnPoints() const
 {
-	return SpawnPoints.FilterByPredicate([] (const FSpawnPoint& SpawnPoint)
+	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
-		if (SpawnPoint.IsRecent())
+		if (SpawnPoint->IsRecent())
 		{
 			return true;
 		}
@@ -530,11 +554,11 @@ TArray<FSpawnPoint> USpawnPointManager::GetRecentSpawnPoints() const
 	});
 }
 
-TArray<FSpawnPoint> USpawnPointManager::GetActivatedSpawnPoints() const
+TArray<USpawnPoint*> USpawnPointManager::GetActivatedSpawnPoints() const
 {
-	return SpawnPoints.FilterByPredicate([] (const FSpawnPoint& SpawnPoint)
+	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
-		if (SpawnPoint.IsActivated())
+		if (SpawnPoint->IsActivated())
 		{
 			return true;
 		}
@@ -542,11 +566,11 @@ TArray<FSpawnPoint> USpawnPointManager::GetActivatedSpawnPoints() const
 	});
 }
 
-TArray<FSpawnPoint> USpawnPointManager::GetActivatedOrRecentSpawnPoints() const
+TArray<USpawnPoint*> USpawnPointManager::GetActivatedOrRecentSpawnPoints() const
 {
-	return SpawnPoints.FilterByPredicate([] (const FSpawnPoint& SpawnPoint)
+	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
-		if (SpawnPoint.IsActivated() || SpawnPoint.IsRecent())
+		if (SpawnPoint->IsActivated() || SpawnPoint->IsRecent())
 		{
 			return true;
 		}
@@ -556,22 +580,22 @@ TArray<FSpawnPoint> USpawnPointManager::GetActivatedOrRecentSpawnPoints() const
 
 // SpawnPoint overlaps
 
-void USpawnPointManager::SetOverlappingPoints(FSpawnPoint& Point, const FVector& Scale) const
+void USpawnPointManager::SetOverlappingPoints(USpawnPoint* Point, const FVector& Scale) const
 {
-	Point.SetOverlappingPoints(BSConfig.TargetConfig.bMoveTargetsForward, MinOverlapRadius, Scale, Origin, StaticExtrema);
+	Point->SetOverlappingPoints(BSConfig.TargetConfig.bMoveTargetsForward, MinOverlapRadius, Scale, Origin, StaticExtrema);
 }
 
 TArray<FVector> USpawnPointManager::RemoveOverlappingPointsFromSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const FExtrema& Extrema) const
 {
 	TArray<FVector> OverlappingPoints;
 	/* Resizing Overlapping Points if necessary */
-	for (FSpawnPoint& Point : GetActivatedOrRecentSpawnPoints())
+	for (USpawnPoint* Point : GetActivatedOrRecentSpawnPoints())
 	{
-		if (Scale.Length() > Point.GetScale().Length())
+		if (Scale.Length() > Point->GetScale().Length())
 		{
 			SetOverlappingPoints(Point, Scale);
 		}
-		for (const FVector& Vector : Point.GetOverlappingPoints())
+		for (const FVector& Vector : Point->GetOverlappingPoints())
 		{
 			OverlappingPoints.AddUnique(Vector);
 		}
@@ -633,7 +657,7 @@ void USpawnPointManager::RemoveEdgePoints(TArray<FVector>& In, const FExtrema& E
 
 void USpawnPointManager::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
 {
-	if (FSpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
+	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
 		if (!Point->IsRecent())
 		{
@@ -644,7 +668,7 @@ void USpawnPointManager::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
 
 void USpawnPointManager::FlagSpawnPointAsActivated(const FGuid SpawnPointGuid)
 {
-	if (FSpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
+	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
 		if (Point->IsRecent())
 		{
@@ -654,13 +678,13 @@ void USpawnPointManager::FlagSpawnPointAsActivated(const FGuid SpawnPointGuid)
 		{
 			Point->SetIsActivated(true);
 		}
-		SetOverlappingPoints(*Point, Point->GetScale());
+		SetOverlappingPoints(Point, Point->GetScale());
 	}
 }
 
 void USpawnPointManager::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid)
 {
-	if (FSpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
+	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
 		if (Point->IsRecent())
 		{
@@ -671,7 +695,7 @@ void USpawnPointManager::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGu
 
 void USpawnPointManager::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent)
 {
-	if (FSpawnPoint* Point = FindSpawnPointFromGuid(TargetDamageEvent.Guid))
+	if (USpawnPoint* Point = FindSpawnPointFromGuid(TargetDamageEvent.Guid))
 	{
 		if (Point->IsActivated())
 		{
@@ -704,17 +728,17 @@ int32 USpawnPointManager::GetOutArrayIndexFromSpawnCounterIndex(const int32 Spaw
 	return Index;
 }
 
-void USpawnPointManager::PrintDebug_SpawnPoint(const FSpawnPoint& SpawnPoint) const
+void USpawnPointManager::PrintDebug_SpawnPoint(const USpawnPoint* SpawnPoint) const
 {
 	UE_LOG(LogTemp, Display, TEXT("SpawnPoint:"));
-	UE_LOG(LogTemp, Display, TEXT("Index %d IndexType %s"), SpawnPoint.Index, *UEnum::GetDisplayValueAsText(SpawnPoint.GetIndexType()).ToString());
-	UE_LOG(LogTemp, Display, TEXT("CornerPoint: %s CenterPoint: %s ChosenPoint: %s"), *SpawnPoint.CornerPoint.ToString(), *SpawnPoint.CenterPoint.ToString(), *SpawnPoint.ChosenPoint.ToString());
+	UE_LOG(LogTemp, Display, TEXT("Index %d IndexType %s"), SpawnPoint->Index, *UEnum::GetDisplayValueAsText(SpawnPoint->GetIndexType()).ToString());
+	UE_LOG(LogTemp, Display, TEXT("CornerPoint: %s CenterPoint: %s ChosenPoint: %s"), *SpawnPoint->CornerPoint.ToString(), *SpawnPoint->CenterPoint.ToString(), *SpawnPoint->ChosenPoint.ToString());
 	FString String;
-	for (const int32 Border : SpawnPoint.GetBorderingIndices())
+	for (const int32 Border : SpawnPoint->GetBorderingIndices())
 	{
 		String.Append(" " + FString::FromInt(Border));
 	}
 	UE_LOG(LogTemp, Display, TEXT("BorderingIndices %s"), *String);
-	UE_LOG(LogTemp, Display, TEXT("IsActivated %hhd IsRecent %hhd"), SpawnPoint.IsActivated(), SpawnPoint.IsRecent());
-	UE_LOG(LogTemp, Display, TEXT("TotalSpawns %d TotalHits %d"), SpawnPoint.GetTotalSpawns(), SpawnPoint.GetTotalHits());
+	UE_LOG(LogTemp, Display, TEXT("IsActivated %hhd IsRecent %hhd"), SpawnPoint->IsActivated(), SpawnPoint->IsRecent());
+	UE_LOG(LogTemp, Display, TEXT("TotalSpawns %d TotalHits %d"), SpawnPoint->GetTotalSpawns(), SpawnPoint->GetTotalHits());
 }

@@ -106,7 +106,7 @@ public:
 private:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
-	bool SpawnTarget(FSpawnPoint& InSpawnPoint);
+	bool SpawnTarget(USpawnPoint* InSpawnPoint);
 
 	void SpawnUpfrontOnlyTargets();
 
@@ -120,7 +120,7 @@ private:
 	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
 	*   based on consecutive targets hit */
 	UFUNCTION()
-	void OnOnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
+	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Called when any actor stops overlapping the OverlapSpawnBox. Used to reverse direction of target when it goes out of bounds */
 	UFUNCTION()
@@ -133,7 +133,7 @@ private:
 	FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	FSpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale) const;
+	USpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale) const;
 
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed) const;
@@ -199,10 +199,12 @@ private:
 	bool bShowDebug_ReinforcementLearningWidget = false;
 
 	/** SpawnPoint for the next/current target */
-	FSpawnPoint* SpawnPoint;
+	UPROPERTY()
+	TObjectPtr<USpawnPoint> SpawnPoint;
 
 	/** SpawnPoint for the previous target. Assigned the value of SpawnPoint immediately before the next SpawnPoint is chosen in FindNextTargetProperties */
-	FSpawnPoint* PreviousSpawnPoint;
+	UPROPERTY()
+	TObjectPtr<USpawnPoint> PreviousSpawnPoint;
 
 	/** The scale to apply to the next/current target */
 	FVector TargetScale;
@@ -226,6 +228,6 @@ private:
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;
 
-	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnOnTargetHealthChangedOrExpired() */
+	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;
 };

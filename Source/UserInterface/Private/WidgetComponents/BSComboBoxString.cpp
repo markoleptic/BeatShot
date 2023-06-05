@@ -30,7 +30,7 @@ void UBSComboBoxString::ReleaseSlateResources(bool bReleaseChildren)
 	{
 		SharedStr.Reset();
 	}
-	MyComboBox.Reset();
+	SlateComboBox.Reset();
 	ComboBoxContent.Reset();
 }
 
@@ -193,7 +193,7 @@ void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>
 	CurrentlySelectedOptionPointers = Items;
 
 	// When the selection changes we always generate another widget to represent the content area of the combobox.
-	if (ComboBoxContent && MyComboBox)
+	if (ComboBoxContent && SlateComboBox)
 	{
 		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
 	}
@@ -265,7 +265,7 @@ TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 {
 	ActiveTooltipWidget = ConstructTooltipWidget();
 	
-	int32 InitialIndex = FindOptionIndex(GetSelectedOption());
+	int32 InitialIndex = GetIndexOfOption(GetSelectedOption());
 	
 	TSharedPtr<FString> CurrentOptionPtr;
 	
@@ -274,7 +274,7 @@ TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 		CurrentOptionPtr = Options[InitialIndex];
 	}
 	
-	MyComboBox =
+	SlateComboBox =
 		SNew(SBSComboBox<TSharedPtr<FString>>)
 		.ComboBoxStyle(&WidgetStyle)
 		.ItemStyle(&ItemStyle)
@@ -303,7 +303,7 @@ TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 		UpdateOrGenerateWidget(CurrentOptionPtr);
 	}
 
-	return MyComboBox.ToSharedRef();
+	return SlateComboBox.ToSharedRef();
 }
 
 void UBSComboBoxString::AddOption(const FString& Option)
@@ -314,7 +314,7 @@ void UBSComboBoxString::AddOption(const FString& Option)
 
 bool UBSComboBoxString::RemoveOption(const FString& Option)
 {
-	const int32 OptionIndex = FindOptionIndex(Option);
+	const int32 OptionIndex = GetIndexOfOption(Option);
 	if ( OptionIndex != -1 )
 	{
 		if ( CurrentlySelectedOptionPointers.Contains(Options[OptionIndex]))
@@ -328,7 +328,7 @@ bool UBSComboBoxString::RemoveOption(const FString& Option)
 	return false;
 }
 
-int32 UBSComboBoxString::FindOptionIndex(const FString& Option) const
+int32 UBSComboBoxString::GetIndexOfOption(const FString& Option) const
 {
 	for (int32 OptionIndex = 0; OptionIndex < Options.Num(); OptionIndex++)
 	{
@@ -340,7 +340,7 @@ int32 UBSComboBoxString::FindOptionIndex(const FString& Option) const
 	return -1;
 }
 
-FString UBSComboBoxString::FindOptionAtIndex(const int32 Index) const
+FString UBSComboBoxString::GetOptionAtIndex(const int32 Index) const
 {
 	if (Options.IsValidIndex(Index))
 	{
@@ -351,38 +351,36 @@ FString UBSComboBoxString::FindOptionAtIndex(const int32 Index) const
 
 int32 UBSComboBoxString::GetSelectedIndex() const
 {
-	if (GetSelectedOptionCount() > 0)
+	for (int32 SelectedIndex = 0; SelectedIndex < CurrentlySelectedOptionPointers.Num(); ++SelectedIndex)
 	{
 		for (int32 OptionIndex = 0; OptionIndex < Options.Num(); ++OptionIndex)
 		{
-			if (CurrentlySelectedOptionPointers.IsValidIndex(OptionIndex))
+			if (CurrentlySelectedOptionPointers[SelectedIndex] == Options[OptionIndex])
 			{
 				return OptionIndex;
 			}
 		}
 	}
-
+	
 	return -1;
 }
 
 FString UBSComboBoxString::GetSelectedOption() const
 {
-	return FindOptionAtIndex(GetSelectedIndex());
+	return GetOptionAtIndex(GetSelectedIndex());
 }
 
 TArray<int32> UBSComboBoxString::GetSelectedIndices() const
 {
-	TArray<int32> ReturnArray = TArray<int32>();
+	TArray<int32> ReturnArray;
 	for (const TSharedPtr<FString>& OptionPointer : CurrentlySelectedOptionPointers)
 	{
-		if (OptionPointer.Get())
+		if (OptionPointer.IsValid())
 		{
-			for (int32 OptionIndex = 0; OptionIndex < Options.Num(); ++OptionIndex)
+			int32 OptionIndex = GetIndexOfOption(*OptionPointer);
+			if (Options.IsValidIndex(OptionIndex))
 			{
-				if (Options[OptionIndex] == OptionPointer)
-				{
-					ReturnArray.AddUnique(OptionIndex);
-				}
+				ReturnArray.AddUnique(OptionIndex);
 			}
 		}
 	}
@@ -391,12 +389,16 @@ TArray<int32> UBSComboBoxString::GetSelectedIndices() const
 
 TArray<FString> UBSComboBoxString::GetSelectedOptions() const
 {
-	TArray<FString> ReturnArray = TArray<FString>();
+	TArray<FString> ReturnArray;
 	for (const TSharedPtr<FString>& OptionPointer : CurrentlySelectedOptionPointers)
 	{
-		if (OptionPointer.Get())
+		if (OptionPointer.IsValid())
 		{
-			ReturnArray.AddUnique(*OptionPointer);
+			const int32 OptionIndex = GetIndexOfOption(*OptionPointer);
+			if (Options.IsValidIndex(OptionIndex))
+			{
+				ReturnArray.AddUnique(*OptionPointer);
+			}
 		}
 	}
 	return ReturnArray;
@@ -412,57 +414,72 @@ int32 UBSComboBoxString::GetSelectedOptionCount() const
 	return CurrentlySelectedOptionPointers.Num();
 }
 
-void UBSComboBoxString::SetSelectedIndex(const int32 InIndex)
+void UBSComboBoxString::SetSelectedIndex(const int32 InIndex, const bool bClearCurrentSelection)
 {
-	if (Options.IsValidIndex(InIndex))
+	if (ComboBoxContent.IsValid())
 	{
-		if (ComboBoxContent)
+		// Empty selection options and Slate combo box if multi selection not allowed
+		if (bClearCurrentSelection)
 		{
-			if (!CurrentlySelectedOptionPointers.Contains(Options[InIndex]))
-			{
-				CurrentlySelectedOptionPointers.Add(Options[InIndex]);
-			}
-			
-			ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
-			
-			if (MyComboBox)
-			{
-				MyComboBox->SetItemSelection(Options[InIndex], true);
-			}
+			CurrentlySelectedOptionPointers.Empty();
+			SlateComboBox->ClearSelection();
 		}
-		else
+
+		// Add selection to local option pointers if not present
+		if (Options.IsValidIndex(InIndex) && !CurrentlySelectedOptionPointers.Contains(Options[InIndex]))
 		{
-			HandleSelectionChanged(Options, ESelectInfo::Direct);
+			CurrentlySelectedOptionPointers.Add(Options[InIndex]);
 		}
+
+		// Regenerate selection widget
+		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
+
+		// Update slate combo box
+		if (SlateComboBox)
+		{
+			SlateComboBox->SetItemSelection(Options[InIndex], true, ESelectInfo::Direct);
+		}
+	}
+	else
+	{
+		HandleSelectionChanged(Options, ESelectInfo::Direct);
 	}
 }
 
-void UBSComboBoxString::SetSelectedOption(const FString InOption)
+void UBSComboBoxString::SetSelectedOption(const FString InOption, const bool bClearCurrentSelection)
 {
-	SetSelectedIndex(FindOptionIndex(InOption));
+	SetSelectedIndex(GetIndexOfOption(InOption), bClearCurrentSelection);
 }
 
 void UBSComboBoxString::SetSelectedIndices(const TArray<int32> InIndices)
 {
+	// Clear all current selections
+	ClearSelection();
+	
 	if (ComboBoxContent.IsValid())
 	{
-		// Refresh currently selected options
-		CurrentlySelectedOptionPointers.Empty();
+		// Repopulate CurrentlySelectedOptionPointers, so that SetContent and SetItemSelection is only called once
 		for (const int32 Index : InIndices)
 		{
 			if (!Options.IsValidIndex(Index))
 			{
 				continue;
 			}
+			
+			// Add selection to local option pointers if not present
 			if (!CurrentlySelectedOptionPointers.Contains(Options[Index]))
 			{
 				CurrentlySelectedOptionPointers.Add(Options[Index]);
 			}
 		}
+
+		// Regenerate selection widget
 		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
-		if (MyComboBox)
+
+		// Update slate combo box
+		if (SlateComboBox)
 		{
-			MyComboBox->SetItemSelection(CurrentlySelectedOptionPointers, true);
+			SlateComboBox->SetItemSelection(CurrentlySelectedOptionPointers, true);
 		}
 	}
 	else
@@ -476,7 +493,7 @@ void UBSComboBoxString::SetSelectedOptions(TArray<FString> InOptions)
 	TArray<int32> OptionIndices;
 	for (const FString& String : InOptions)
 	{
-		if (const int32 Index = FindOptionIndex(String); Options.IsValidIndex(Index))
+		if (const int32 Index = GetIndexOfOption(String); Options.IsValidIndex(Index))
 		{
 			OptionIndices.AddUnique(Index);
 		}
@@ -486,24 +503,30 @@ void UBSComboBoxString::SetSelectedOptions(TArray<FString> InOptions)
 
 bool UBSComboBoxString::IsOpen() const
 {
-	return MyComboBox.IsValid() && MyComboBox->IsOpen();
+	return SlateComboBox.IsValid() && SlateComboBox->IsOpen();
 }
 
 void UBSComboBoxString::RefreshOptions()
 {
-	if (MyComboBox.IsValid())
+	if (SlateComboBox.IsValid())
 	{
-		MyComboBox->RefreshOptions();
+		SlateComboBox->RefreshOptions();
 	}
 }
 
 void UBSComboBoxString::ClearOptions()
 {
 	ClearSelection();
-	Options.Empty();
-	if ( MyComboBox.IsValid() )
+	
+	for (TSharedPtr<FString> String : Options)
 	{
-		MyComboBox->RefreshOptions();
+		String.Reset();
+	}
+	Options.Empty();
+	
+	if (SlateComboBox.IsValid())
+	{
+		SlateComboBox->RefreshOptions();
 	}
 }
 
@@ -513,9 +536,11 @@ void UBSComboBoxString::ClearSelection()
 	{
 		String.Reset();
 	}
-	if (MyComboBox.IsValid())
+	CurrentlySelectedOptionPointers.Empty();
+	
+	if (SlateComboBox.IsValid())
 	{
-		MyComboBox->ClearSelection();
+		SlateComboBox->ClearSelection();
 	}
 
 	if (ComboBoxContent.IsValid())

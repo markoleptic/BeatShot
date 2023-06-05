@@ -4,30 +4,45 @@
 #include "WidgetComponents/BSHorizontalBox.h"
 
 #include "Components/Border.h"
+#include "Components/HorizontalBoxSlot.h"
 
-void UBSHorizontalBox::PostLoad()
+TSharedRef<SWidget> UBSHorizontalBox::RebuildWidget()
 {
-	Super::PostLoad();
-	SetBorders();
+	MyHorizontalBox = SNew(SHorizontalBox);
+	
+	for (const TObjectPtr<UPanelSlot>& PanelSlot : Slots)
+	{
+		if (UHorizontalBoxSlot* TypedSlot = Cast<UHorizontalBoxSlot>(PanelSlot))
+		{
+			TypedSlot->Parent = this;
+			TypedSlot->BuildSlot(MyHorizontalBox.ToSharedRef());
+		}
+		if (UPanelWidget* PanelWidget = Cast<UPanelWidget>(PanelSlot->Content))
+		{
+			if (UBorder* FoundBorder = DescendPanelWidget(PanelWidget))
+			{
+				Borders.AddUnique(FoundBorder);
+			}
+		}
+	}
+	return MyHorizontalBox.ToSharedRef();
 }
 
 void UBSHorizontalBox::SetLeftBorderBrushTint(const FLinearColor& Color)
 {
-	if (!LeftBorder)
+	if (Borders.IsValidIndex(0))
 	{
-		SetBorders();
-		if (!LeftBorder)
-		{
-			SetBorders();
-			return;
-		}
+		Borders[0]->SetBrushColor(Color);
 	}
-	LeftBorder->SetBrushColor(Color);
 }
 
 void UBSHorizontalBox::SetRightBorderBrushTint(const FLinearColor& Color)
 {
-	if (!RightBorder)
+	if (Borders.IsValidIndex(1))
+	{
+		Borders[1]->SetBrushColor(Color);
+	}
+	/*if (!RightBorder)
 	{
 		SetBorders();
 		if (!RightBorder)
@@ -35,22 +50,47 @@ void UBSHorizontalBox::SetRightBorderBrushTint(const FLinearColor& Color)
 			return;
 		}
 	}
-	RightBorder->SetBrushColor(Color);
+	RightBorder->SetBrushColor(Color);*/
 }
 
-void UBSHorizontalBox::SetBorders()
+void UBSHorizontalBox::RefreshBorders()
 {
-	for (const TObjectPtr<UPanelSlot>& BorderSlot : Slots)
+	for (const TObjectPtr<UPanelSlot>& PanelSlot : Slots)
 	{
-		if (!LeftBorder && Cast<UBorder>(BorderSlot->Content))
+		if (UPanelWidget* PanelWidget = Cast<UPanelWidget>(PanelSlot->Content))
 		{
-			LeftBorder = Cast<UBorder>(BorderSlot->Content);
-			continue;
-		}
-		if (!RightBorder && Cast<UBorder>(BorderSlot->Content))
-		{
-			RightBorder = Cast<UBorder>(BorderSlot->Content);
-			return;
+			if (UBorder* FoundBorder = DescendPanelWidget(PanelWidget))
+			{
+				Borders.AddUnique(FoundBorder);
+			}
 		}
 	}
+}
+
+UBorder* UBSHorizontalBox::DescendPanelWidget(UPanelWidget* PanelWidget)
+{
+	// Check the PanelWidget first
+	if (Cast<UBorder>(PanelWidget))
+	{
+		return Cast<UBorder>(PanelWidget);
+	}
+	
+	// Search through children
+	for (UWidget* Child : PanelWidget->GetAllChildren())
+	{
+		// Check child
+		if (Cast<UBorder>(Child))
+		{
+			return Cast<UBorder>(Child);
+		}
+		if (UPanelWidget* ChildPanelWidget = Cast<UPanelWidget>(Child))
+		{
+			// Recursively call function on any child's children
+			if (UBorder* FoundBorder = DescendPanelWidget(ChildPanelWidget))
+			{
+				return FoundBorder;
+			}
+		}
+	}
+	return nullptr;
 }

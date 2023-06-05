@@ -50,6 +50,8 @@ struct FSyncedSlidersParams
 	bool bStartMinLocked;
 	/* Whether or not to start with MaxLock set to locked */
 	bool bStartMaxLocked;
+	/* Whether or not to use the locks for only syncing the two slider/value pairs */
+	bool bLocksOnlySync;
 	
 	FSyncedSlidersParams()
 	{
@@ -69,6 +71,7 @@ struct FSyncedSlidersParams
 		bShowMaxLock = false;
 		bStartMinLocked = false;
 		bStartMaxLocked = false;
+		bLocksOnlySync = false;
 	}
 };
 
@@ -135,6 +138,9 @@ public:
 	
 	/** Updates the Slider Values by calling OnSliderChanged_Min and OnSliderChanged_Max, and updates the Checkbox_SyncSlidersAndValues checked state if necessary */
 	void UpdateDefaultValues(const float NewMinValue, const float NewMaxValue, const bool bSync);
+
+	/** Updates the Slider Values */
+	void UpdateDefaultValuesAbsolute(const float NewMinValue, const float NewMaxValue, const bool bSync);
 	
 	/** Executed when Slider_Min or Value_Min is changed */
 	FOnValueChanged_Synced OnValueChanged_Min;
@@ -161,11 +167,13 @@ public:
 	/** Returns whether or not the min and max values are being synced */
 	bool GetIsSynced() const;
 
+	void SetLocksEnabled(const bool bEnableLocks);
+
 private:
 	virtual void NativeConstruct() override;
 
 	/** Function to handle changing of Checkbox_SyncSlidersAndValues */
-	void SyncSlidersAndValues(const bool bSync);
+	void SyncSlidersAndValues(const bool bSync, const bool bTryUsePreSyncedValues);
 	
 	/** Calls SyncSlidersAndValues and broadcast OnCheckStateChanged_Sync */
 	UFUNCTION()

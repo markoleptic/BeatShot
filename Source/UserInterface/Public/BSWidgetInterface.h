@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Components/PanelWidget.h"
 #include "WidgetComponents/TooltipImage.h"
 #include "BSWidgetInterface.generated.h"
 
@@ -54,6 +55,9 @@ public:
 	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
 	void SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
 
+	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
+	static void UpdateTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
+
 	/** All Tooltip Images are bound to this function */
 	UFUNCTION()
 	virtual void OnTooltipImageHovered(UTooltipImage* TooltipImage, const FTooltipData& InTooltipData);
@@ -97,4 +101,42 @@ public:
 		}
 		return StringTableEntry;
 	}
+
+	/** Returns an array of strings corresponding to each enum value using GetDisplayValueAsText */
+	template<typename T>
+	static TArray<FString> GetStringArrayFromEnumArray(const TArray<T>& InEnumArray)
+	{
+		TArray<FString> OutArray;
+		for (const T& DisplayValue : InEnumArray)
+		{
+			OutArray.Add(UEnum::GetDisplayValueAsText(DisplayValue).ToString());
+		}
+		return OutArray;
+	}
+	
+	template<typename T>
+	static TArray<T*> DescendWidget(UPanelWidget* PanelWidget)
+		{
+			TArray<T*> Boxes;
+			// Check the PanelWidget first
+			if (Cast<T>(PanelWidget))
+			{
+				Boxes.Add(Cast<T>(PanelWidget));
+			}
+		
+			// Search through children
+			for (UWidget* Child : PanelWidget->GetAllChildren())
+			{
+				// Check child
+				if (Cast<T>(Child))
+				{
+					Boxes.Add(Cast<T>(Child));
+				}
+				if (UPanelWidget* ChildPanelWidget = Cast<UPanelWidget>(Child))
+				{
+					Boxes.Append(DescendWidget<T>(ChildPanelWidget));
+				}
+			}
+			return Boxes;
+		}
 };

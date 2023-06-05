@@ -579,7 +579,7 @@ public:
 		}
 		else
 		{
-			ComboListView->ClearSelection();
+			ClearSelection();
 		}
 	}
 

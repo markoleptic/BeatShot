@@ -13,8 +13,8 @@ UCLASS()
 class USERINTERFACE_API UBSHorizontalBox : public UHorizontalBox
 {
 	GENERATED_BODY()
-	
-	virtual void PostLoad() override;
+
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	
 public:
 	/** Sets the Brush tint for the Left Border */
@@ -23,13 +23,13 @@ public:
 	/** Sets the Brush tint for the Right Border */
 	void SetRightBorderBrushTint(const FLinearColor& Color);
 
+	/** Searches for the first Border it finds for each slot in Slots, adding to Borders if it finds one */
+	void RefreshBorders();
+
 protected:
-	/** Sets the LeftBorder and RightBorder pointers */
-	void SetBorders();
+	/** Descends a PanelWidget, searching for the first Border it can find. Recursively calls itself on any children */
+	UBorder* DescendPanelWidget(UPanelWidget* PanelWidget);
 	
-	/* Pointer to the left border inside the horizontal box */
-	TObjectPtr<UBorder> LeftBorder;
-	
-	/* Pointer to the right border inside the horizontal box */
-	TObjectPtr<UBorder> RightBorder;
+	/* Array of pointers to the first border found in every slot */
+	TArray<TObjectPtr<UBorder>> Borders;
 };

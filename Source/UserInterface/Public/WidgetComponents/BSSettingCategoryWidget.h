@@ -36,11 +36,11 @@ protected:
 
 	/** Add another container separate from MainContainer that will also be called to update background colors,
 	 *  but will sync with MainContainers, or with each other */
-	void AddAdditionalContainers(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers);
+	void AddContainer(const TArray<TObjectPtr<UBSVerticalBox>>& InContainers);
 
-	/** Adds a widget-box pair to the WidgetBoxMap. Any widget-box pairs will be called when updating
-	 *  the background colors so that other child widgets that contain BSVerticalBoxes will match this one */
-	void AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox) const;
+	/** Add another container separate from MainContainer that will also be called to update background colors,
+	 *	but will sync with MainContainers, or with each other */
+	void AddContainer(const TObjectPtr<UBSVerticalBox>& InContainer);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* MainContainer;

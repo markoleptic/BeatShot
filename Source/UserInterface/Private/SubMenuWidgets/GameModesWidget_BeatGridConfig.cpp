@@ -16,19 +16,11 @@ using namespace Constants;
 
 void UGameModesWidget_BeatGridConfig::InitSettingCategoryWidget()
 {
-	if (BeatGridSpreadConstrained)
-	{
-		AddWidgetBoxPair(BeatGridSpreadConstrained.Get(), BeatGridSpreadConstrained->GetMainContainer());
-	}
 	Super::InitSettingCategoryWidget();
 }
 
 void UGameModesWidget_BeatGridConfig::NativeConstruct()
 {
-	/* Create MainContainer before calling Super NativeConstruct since the parent calls InitSettingCategoryWidget in NativeConstruct */
-	BeatGridSpreadConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, BeatGridSpreadConstrainedClass);
-	MainContainer->AddChildToVerticalBox(BeatGridSpreadConstrained.Get());
-	
 	Super::NativeConstruct();
 	
 	SetupTooltip(BeatGridSpreadConstrained->GetCheckBoxQMark(), GetTooltipTextFromKey("BeatGridEvenSpacing"));
@@ -75,6 +67,18 @@ void UGameModesWidget_BeatGridConfig::NativeConstruct()
 	bVerticalSpacingLocked = true;
 	CheckBox_NumHorizontalTargetsLock->SetIsChecked(true);
 	CheckBox_NumVerticalTargetsLock->SetIsChecked(true);
+}
+
+TSharedRef<SWidget> UGameModesWidget_BeatGridConfig::RebuildWidget()
+{
+	/* Create MainContainer before calling Super NativeConstruct since the parent calls InitSettingCategoryWidget in NativeConstruct */
+	if (!IsDesignTime())
+	{
+		BeatGridSpreadConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, BeatGridSpreadConstrainedClass);
+		MainContainer->AddChildToVerticalBox(BeatGridSpreadConstrained.Get());
+	}
+	
+	return Super::RebuildWidget();
 }
 
 void UGameModesWidget_BeatGridConfig::InitializeBeatGrid(const FBS_GridConfig& InBeatGridConfig, const UHorizontalBox* InTargetScaleBox)
@@ -279,23 +283,23 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 		FText JoinedValues;
 		switch (ConstraintType) {
 		case EBeatGridConstraintType::NumHorizontalTargets:
-			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 0, false));
+			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 0, true));
 			BeatGridConstraints.Tooltip_NumHorizontalTargets = FText::Join(NewLineDelimit, SuggestStart, JoinedValues);
 			break;
 		case EBeatGridConstraintType::NumVerticalTargets:
-			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 1, false));
+			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 1, true));
 			BeatGridConstraints.Tooltip_NumVerticalTargets = FText::Join(NewLineDelimit, SuggestStart, JoinedValues);
 			break;
 		case EBeatGridConstraintType::TargetScale:
-			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 2, false));
+			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 2, true));
 			BeatGridConstraints.Tooltip_TargetScale = FText::Join(NewLineDelimit, SuggestStart, JoinedValues);
 			break;
 		case EBeatGridConstraintType::HorizontalSpacing:
-			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 3, false));
+			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 3, true));
 			BeatGridConstraints.Tooltip_HorizontalSpacing = FText::Join(NewLineDelimit, SuggestStart, JoinedValues);
 			break;
 		case EBeatGridConstraintType::VerticalSpacing:
-			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 4, false));
+			JoinedValues = FText::Join(NewLineDelimit, FilterTooltipText(SuggestionValueArray, 4, true));
 			BeatGridConstraints.Tooltip_VerticalSpacing = FText::Join(NewLineDelimit, SuggestStart, JoinedValues);
 			break;
 		case EBeatGridConstraintType::None:
@@ -307,56 +311,59 @@ void UGameModesWidget_BeatGridConfig::CheckBeatGridConstraints(const EBeatGridCo
 	UpdateAllWarningTooltips(BeatGridConstraints);
 }
 
-UTooltipImage* UGameModesWidget_BeatGridConfig::ConstructBeatGridWarningEMarkWidget(const EBeatGridConstraintType ConstraintType)
+UTooltipImage* UGameModesWidget_BeatGridConfig::ConstructOrEditBeatGridWarningEMarkWidget(UTooltipImage* TooltipImage, const EBeatGridConstraintType ConstraintType)
 {
-	UTooltipImage* BeatGridWarningEMarkWidget = WidgetTree->ConstructWidget<UTooltipImage>(BeatGridWarningEMarkClass);
+	if (!TooltipImage)
+	{
+		TooltipImage = WidgetTree->ConstructWidget<UTooltipImage>(BeatGridWarningEMarkClass);
+	}
 
 	UHorizontalBox* BoxToPlaceIn;
 	switch (ConstraintType)
 	{
 	case EBeatGridConstraintType::NumHorizontalTargets:
 		BoxToPlaceIn = Box_NumHorizontalTargetsTextTooltip;
-		WarningEMark_NumHorizontalTargets = BeatGridWarningEMarkWidget;
+		WarningEMark_NumHorizontalTargets = TooltipImage;
 		break;
 	case EBeatGridConstraintType::NumVerticalTargets:
 		BoxToPlaceIn = Box_NumVerticalTargetsTextTooltip;
-		WarningEMark_NumVerticalTargets = BeatGridWarningEMarkWidget;
+		WarningEMark_NumVerticalTargets = TooltipImage;
 		break;
 	case EBeatGridConstraintType::TargetScale:
 		BoxToPlaceIn = TargetScaleBox.Get();
-		WarningEMark_MaxTargetScale = BeatGridWarningEMarkWidget;
+		WarningEMark_MaxTargetScale = TooltipImage;
 		break;
 	case EBeatGridConstraintType::HorizontalSpacing:
 		BoxToPlaceIn = BeatGridSpreadConstrained->GetTextTooltipBox_Min();
-		WarningEMark_HorizontalSpacing = BeatGridWarningEMarkWidget;
+		WarningEMark_HorizontalSpacing = TooltipImage;
 		break;
 	case EBeatGridConstraintType::VerticalSpacing:
 		BoxToPlaceIn = BeatGridSpreadConstrained->GetTextTooltipBox_Max();
-		WarningEMark_VerticalSpacing = BeatGridWarningEMarkWidget;
+		WarningEMark_VerticalSpacing = TooltipImage;
 		break;
 	default:
 		BoxToPlaceIn = nullptr;
 	}
-	UHorizontalBoxSlot* HorizontalBoxSlot = BoxToPlaceIn->AddChildToHorizontalBox(BeatGridWarningEMarkWidget);
+	UHorizontalBoxSlot* HorizontalBoxSlot = BoxToPlaceIn->AddChildToHorizontalBox(TooltipImage);
 	HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
 	HorizontalBoxSlot->SetSize(TooltipWarningSizing);
-	return BeatGridWarningEMarkWidget;
+	return TooltipImage;
 }
 
 void UGameModesWidget_BeatGridConfig::HandleBeatGridWarningDisplay(UTooltipImage* TooltipImage, const EBeatGridConstraintType ConstraintType, const FText& TooltipText, const bool bDisplay)
 {
 	if (bDisplay)
 	{
-		if (TooltipImage != nullptr)
+		if (!TooltipImage)
 		{
-			TooltipImage->SetVisibility(ESlateVisibility::Visible);
-			SetupTooltip(ConstructBeatGridWarningEMarkWidget(ConstraintType), TooltipText, true);
-			//EditTooltipText(TooltipImage, TooltipText);
+			SetupTooltip(ConstructOrEditBeatGridWarningEMarkWidget(TooltipImage, ConstraintType), TooltipText, true);
 		}
 		else
 		{
-			SetupTooltip(ConstructBeatGridWarningEMarkWidget(ConstraintType), TooltipText, true);
+			UpdateTooltip(TooltipImage, TooltipText);
+			TooltipImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
+
 	}
 	else
 	{
@@ -398,7 +405,8 @@ void UGameModesWidget_BeatGridConfig::UpdateAllWarningTooltips(const FBeatGridCo
 		case EBeatGridConstraintType::VerticalSpacing:
 			HandleBeatGridWarningDisplay(WarningEMark_VerticalSpacing, ConstraintType, BeatGridConstraints.Tooltip_VerticalSpacing, ShouldDisplay);
 			break;
-		case EBeatGridConstraintType::None: break;
+		case EBeatGridConstraintType::None:
+			break;
 		}
 	}
 }
@@ -446,6 +454,7 @@ TArray<FText> UGameModesWidget_BeatGridConfig::FilterTooltipText(const TArray<FT
 int32 UGameModesWidget_BeatGridConfig::GetMaxAllowedNumHorizontalTargets() const
 {
 	// HorizontalSpread = MaxTargetSize * NumHorizontalTargets + HorizontalSpacing * (NumHorizontalTargets - 1)
+	int32 Value = (HorizontalSpread + CurrentValues.GridSpacing.X) / (MaxTargetSize + CurrentValues.GridSpacing.X);
 	return (HorizontalSpread + CurrentValues.GridSpacing.X) / (MaxTargetSize + CurrentValues.GridSpacing.X);
 }
 

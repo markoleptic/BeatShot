@@ -70,6 +70,7 @@ class USERINTERFACE_API UGameModesWidget_BeatGridConfig : public UBSSettingCateg
 	
 	friend class UGameModesWidget;
 	virtual void NativeConstruct() override;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual void InitSettingCategoryWidget() override;
 
 public:
@@ -164,7 +165,7 @@ private:
 	void CheckBeatGridConstraints(const EBeatGridConstraintType LastChangedConstraint);
 	
 	/** Constructs and returns BeatGrid warning Tooltip widget, places inside corresponding HorizontalBox, and binds the mouseover event */
-	UTooltipImage* ConstructBeatGridWarningEMarkWidget(const EBeatGridConstraintType ConstraintType);
+	UTooltipImage* ConstructOrEditBeatGridWarningEMarkWidget(UTooltipImage* TooltipImage, const EBeatGridConstraintType ConstraintType);
 
 	/** Shows or hides a BeatGrid warning Tooltip widget and updates the TooltipText. Constructs the widget if it does not exist */
 	void HandleBeatGridWarningDisplay(UTooltipImage* TooltipImage, const EBeatGridConstraintType ConstraintType, const FText& TooltipText, const bool bDisplay);

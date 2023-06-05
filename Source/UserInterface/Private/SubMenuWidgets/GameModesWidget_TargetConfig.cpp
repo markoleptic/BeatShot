@@ -16,17 +16,27 @@
 
 using namespace Constants;
 
+TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
+{
+	if (!IsDesignTime())
+	{
+		/* Create MainContainer before calling Super NativeConstruct since the parent calls InitSettingCategoryWidget in NativeConstruct */
+		TargetScaleConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetScaleConstrainedClass);
+		TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetSpeedConstrainedClass);
+	
+		int32 NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
+		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetScaleConstrained.Get()));
+	
+		NewIndex = MainContainer->GetChildIndex(BSBox_MoveTargets) + 1;
+		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetSpeedConstrained.Get()));
+	}
+	return Super::RebuildWidget();
+}
+
 void UGameModesWidget_TargetConfig::NativeConstruct()
 {
-	/* Create MainContainer before calling Super NativeConstruct since the parent calls InitSettingCategoryWidget in NativeConstruct */
-	TargetScaleConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetScaleConstrainedClass);
-	TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetSpeedConstrainedClass);
-	
-	MainContainer->AddChildToVerticalBox(TargetSpeedConstrained.Get());
-	MainContainer->AddChildToVerticalBox(TargetScaleConstrained.Get());
-	
 	Super::NativeConstruct();
-
+	
 	/* Target Scale TextBox and Slider */
 	FSyncedSlidersParams TargetScaleSliderStruct;
 	TargetScaleSliderStruct.MinConstraintLower = MinValue_TargetScale;
@@ -35,11 +45,14 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	TargetScaleSliderStruct.MaxConstraintUpper = MaxValue_TargetScale;
 	TargetScaleSliderStruct.DefaultMinValue = MinValue_TargetScale;
 	TargetScaleSliderStruct.DefaultMaxValue = MaxValue_TargetScale;
-	TargetScaleSliderStruct.bShowCheckBox = false;
 	TargetScaleSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTargetScale");
 	TargetScaleSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTargetScale");
 	TargetScaleSliderStruct.GridSnapSize = SnapSize_TargetScale;
-	TargetScaleSliderStruct.bSyncSlidersAndValues = false;
+	TargetScaleSliderStruct.bShowCheckBox = false;
+	TargetScaleSliderStruct.bShowMinLock = true;
+	TargetScaleSliderStruct.bShowMaxLock = true;
+	TargetScaleSliderStruct.bSyncSlidersAndValues = true;
+	TargetScaleSliderStruct.bLocksOnlySync = true;
 	TargetScaleConstrained->InitConstrainedSlider(TargetScaleSliderStruct);
 
 	/* BeatTrack target speed TextBox and Slider */
@@ -54,10 +67,13 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	TrackingSpeedSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
 	TrackingSpeedSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
 	TrackingSpeedSliderStruct.GridSnapSize = SnapSize_TargetSpeed;
-	TrackingSpeedSliderStruct.bSyncSlidersAndValues = false;
+	TrackingSpeedSliderStruct.bShowCheckBox = false;
+	TrackingSpeedSliderStruct.bShowMinLock = true;
+	TrackingSpeedSliderStruct.bShowMaxLock = true;
+	TrackingSpeedSliderStruct.bSyncSlidersAndValues = true;
+	TrackingSpeedSliderStruct.bLocksOnlySync = true;
 	TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
 	
-	SetupTooltip(TargetSpeedConstrained->GetCheckBoxQMark(), GetTooltipTextFromKey("BeatTrackConstantSpeed"));
 	SetupTooltip(QMark_Lifespan, GetTooltipTextFromKey("Lifespan"));
 	SetupTooltip(QMark_TargetSpawnCD, GetTooltipTextFromKey("MinDistance"));
 	SetupTooltip(QMark_SpawnBeatDelay, GetTooltipTextFromKey("SpawnBeatDelay"));
@@ -217,20 +233,12 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 
 void UGameModesWidget_TargetConfig::InitSettingCategoryWidget()
 {
-	if (TargetScaleConstrained)
-	{
-		AddWidgetBoxPair(TargetScaleConstrained.Get(), TargetScaleConstrained->GetMainContainer());
-	}
-	if (TargetSpeedConstrained)
-	{
-		AddWidgetBoxPair(TargetSpeedConstrained.Get(), TargetSpeedConstrained->GetMainContainer());
-	}
 	Super::InitSettingCategoryWidget();
 }
 
 void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfig& InTargetConfig, const EBaseGameMode& BaseGameMode)
 {
-	switch(BaseGameMode)
+	/*switch(BaseGameMode)
 	{
 	case EBaseGameMode::SingleBeat:
 		BSBox_ConsecutiveChargeScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
@@ -269,34 +277,8 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 		break;
 	case EBaseGameMode::None:
 		break;
-	}
-	
-	// Lock vertical and horizontal spread if HeadShot height only, otherwise unlock them
-	if (InTargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-	{
-		Slider_VerticalSpread->SetLocked(true);
-		Value_VerticalSpread->SetIsReadOnly(true);
-		Slider_FloorDistance->SetLocked(true);
-		Value_FloorDistance->SetIsReadOnly(true);
-	}
-	else
-	{
-		Slider_FloorDistance->SetLocked(false);
-		Value_FloorDistance->SetIsReadOnly(false);
-		Slider_VerticalSpread->SetLocked(false);
-		Value_VerticalSpread->SetIsReadOnly(false);
-	}
+	}*/
 
-	// Hide forward spread box if move targets forward is not enabled, otherwise show
-	if (InTargetConfig.bMoveTargetsForward)
-	{
-		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Visible);
-	}
-	else
-	{
-		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	
 	Slider_FloorDistance->SetValue(InTargetConfig.FloorDistance);
 	Slider_MinTargetDistance->SetValue(InTargetConfig.MinDistanceBetweenTargets);
 	Slider_HorizontalSpread->SetValue(InTargetConfig.BoxBounds.Y);
@@ -337,8 +319,8 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Slider_ConsecutiveChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
 	Slider_ConsecutiveChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
 	
-	TargetScaleConstrained->UpdateDefaultValues(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
-	TargetSpeedConstrained->UpdateDefaultValues(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
+	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
+	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
 	
 	ComboBox_BoundsScalingPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.BoundsScalingPolicy).ToString());
 	ComboBox_ConsecutiveTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
@@ -348,30 +330,16 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	ComboBox_TargetDamageType->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDamageType).ToString());
 	ComboBox_TargetDistributionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString());
 	ComboBox_TargetSpawningPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetSpawningPolicy).ToString());
-	TArray<FString> Options;
-	for (const ETargetActivationResponse Response : InTargetConfig.TargetActivationResponses)
-	{
-		Options.Add(UEnum::GetDisplayValueAsText(Response).ToString());
-	}
-	ComboBox_TargetActivationResponses->SetSelectedOptions(Options);
-	Options.Empty();
-	for (const ETargetDeactivationCondition Condition : InTargetConfig.TargetDeactivationConditions)
-	{
-		Options.Add(UEnum::GetDisplayValueAsText(Condition).ToString());
-	}
-	ComboBox_TargetDeactivationConditions->SetSelectedOptions(Options);
-	Options.Empty();
-	for (const ETargetDeactivationResponse Response : InTargetConfig.TargetDeactivationResponses)
-	{
-		Options.Add(UEnum::GetDisplayValueAsText(Response).ToString());
-	}
-	ComboBox_TargetDeactivationResponses->SetSelectedOptions(Options);
-	Options.Empty();
-	for (const ETargetDestructionCondition Condition : InTargetConfig.TargetDestructionConditions)
-	{
-		Options.Add(UEnum::GetDisplayValueAsText(Condition).ToString());
-	}
-	ComboBox_TargetDestructionConditions->SetSelectedOptions(Options);
+	
+	ComboBox_TargetActivationResponses->SetSelectedOptions(GetStringArrayFromEnumArray(InTargetConfig.TargetActivationResponses));
+	ComboBox_TargetDeactivationConditions->SetSelectedOptions(GetStringArrayFromEnumArray(InTargetConfig.TargetDeactivationConditions));
+	ComboBox_TargetDeactivationResponses->SetSelectedOptions(GetStringArrayFromEnumArray(InTargetConfig.TargetDeactivationResponses));
+	ComboBox_TargetDestructionConditions->SetSelectedOptions(GetStringArrayFromEnumArray(InTargetConfig.TargetDestructionConditions));
+	
+	OnSelectionChanged_TargetDistributionPolicy(TArray({UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString()}), ESelectInfo::Type::Direct);
+	OnSelectionChanged_RecentTargetMemoryPolicy(TArray({UEnum::GetDisplayValueAsText(InTargetConfig.RecentTargetMemoryPolicy).ToString()}), ESelectInfo::Type::Direct);
+	OnCheckStateChanged_MoveTargetsForward(InTargetConfig.bMoveTargetsForward);
+	OnCheckStateChanged_MoveTargets(InTargetConfig.bMoveTargets);
 	
 	UpdateBrushColors();
 }
@@ -379,6 +347,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 {
 	FBS_TargetConfig ReturnConfig;
+	
 	ReturnConfig.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(Slider_Lifespan->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
 	ReturnConfig.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(Slider_TargetSpawnCD->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
 	ReturnConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
@@ -562,7 +531,7 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargetsForward(const
 {
 	if (bUseForwardSpread)
 	{
-		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Visible);
+		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		return;
 	}
 	BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
@@ -574,6 +543,15 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_ContinuouslySpawn(const 
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargets(const bool bMoveTargets)
 {
+	// Hide target speed boxes if move targets forward is not enabled, otherwise show
+	if (bMoveTargets)
+	{
+		TargetSpeedConstrained->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		TargetSpeedConstrained->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bSpawnAtOrigin)
@@ -595,17 +573,6 @@ UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxS
 		return Entry;
 	}
 	return nullptr;
-	
-	/*if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		Entry->SetEntryText(EntryText);
-
-		UTooltipImage* TooltipImage = Entry->GetTooltipImage();
-		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
-		TooltipImage->SetupTooltipImage(TooltipText);
-		
-		return Entry;
-	}*/
 }
 
 UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateSingleSelectionItem(const UBSComboBoxString* ComboBoxString, FString SelectedOption)
@@ -619,17 +586,6 @@ UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateSingleSelecti
 		return Entry;
 	}
 	return nullptr;
-	
-	/*if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		Entry->SetEntryText(EntryText);
-
-		UTooltipImage* TooltipImage = Entry->GetTooltipImage();
-		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
-		TooltipImage->SetupTooltipImage(TooltipText);
-		
-		return Entry;
-	}*/
 }
 
 UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
@@ -665,17 +621,6 @@ UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectio
 	}
 	
 	return nullptr;
-	
-	/*if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		Entry->SetEntryText(EntryText);
-
-		UTooltipImage* TooltipImage = Entry->GetTooltipImage();
-		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
-		TooltipImage->SetupTooltipImage(TooltipText);
-		
-		return Entry;
-	}*/
 }
 
 void UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType)
@@ -712,17 +657,20 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScalePol
 	switch (GetEnumFromString<EConsecutiveTargetScalePolicy>(Selected[0], EConsecutiveTargetScalePolicy::None))
 	{
 	case EConsecutiveTargetScalePolicy::Static:
-		if (!TargetScaleConstrained->GetIsSynced())
+		TargetScaleConstrained->SetLocksEnabled(false);
+		/*if (!TargetScaleConstrained->GetIsSynced())
 		{
 			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), true);
-		}
+			TargetScaleConstrained->SetLocksEnabled(false);
+		}*/
 		break;
 	case EConsecutiveTargetScalePolicy::Random:
 	case EConsecutiveTargetScalePolicy::SkillBased:
-		if (TargetScaleConstrained->GetIsSynced())
+		TargetScaleConstrained->SetLocksEnabled(true);
+		/*if (TargetScaleConstrained->GetIsSynced())
 		{
-			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
-		}
+			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), TargetScaleConstrained->GetMinValue() == TargetScaleConstrained->GetMaxValue());
+		}*/
 		break;
 	default:
 		break;
@@ -733,16 +681,37 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScalePolicy
 {
 	if (!Selected.Contains(UEnum::GetDisplayValueAsText(ELifetimeTargetScalePolicy::None).ToString()))
 	{
-		if (TargetScaleConstrained->GetIsSynced())
+		/*if (TargetScaleConstrained->GetIsSynced())
 		{
-			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
-		}
+			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), TargetScaleConstrained->GetMinValue() == TargetScaleConstrained->GetMaxValue());
+		}*/
 	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	
+	if (Selected.Num() != 1)
+	{
+		return;
+	}
+	const ERecentTargetMemoryPolicy Policy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0], ERecentTargetMemoryPolicy::None);
+	switch (Policy)
+	{
+	case ERecentTargetMemoryPolicy::CustomTimeBased:
+		BSBox_RecentTargetTimeLength->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSBox_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
+		BSBox_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	case ERecentTargetMemoryPolicy::None:
+	case ERecentTargetMemoryPolicy::NumTargetsBased:
+		BSBox_MaxNumRecentTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSBox_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	}
+	UpdateBrushColors();
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -751,18 +720,38 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetActivationSelection
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	TArray<ETargetActivationResponse> SelectedEnums;
+	for (const FString& String : Selected)
+	{
+		SelectedEnums.Emplace(GetEnumFromString<ETargetActivationResponse>(String, ETargetActivationResponse::None));
+	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	TArray<ETargetDeactivationCondition> SelectedEnums;
+	for (const FString& String : Selected)
+	{
+		SelectedEnums.Emplace(GetEnumFromString<ETargetDeactivationCondition>(String, ETargetDeactivationCondition::None));
+	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	TArray<ETargetDeactivationResponse> SelectedEnums;
+	for (const FString& String : Selected)
+	{
+		SelectedEnums.Emplace(GetEnumFromString<ETargetDeactivationResponse>(String, ETargetDeactivationResponse::None));
+	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDestructionConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	TArray<ETargetDestructionCondition> SelectedEnums;
+	for (const FString& String : Selected)
+	{
+		SelectedEnums.Emplace(GetEnumFromString<ETargetDestructionCondition>(String, ETargetDestructionCondition::None));
+	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -795,6 +784,21 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDistributionPolicy(
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (Selected.Num() != 1)
+	{
+		return;
+	}
+	switch (GetEnumFromString<ETargetSpawningPolicy>(Selected[0], ETargetSpawningPolicy::None))
+	{
+	case ETargetSpawningPolicy::UpfrontOnly:
+		BSBox_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		break;
+	case ETargetSpawningPolicy::None:
+	case ETargetSpawningPolicy::RuntimeOnly:
+		BSBox_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	}
+	UpdateBrushColors();
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)

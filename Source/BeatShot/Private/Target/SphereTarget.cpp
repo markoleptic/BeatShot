@@ -210,24 +210,6 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 			abs(OldValue - NewValue), TotalPossibleDamage));
 	}
 	
-	// Destroy if conditions are met
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
-	{
-		
-	}
-	else if (Expired && Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
-	{
-		BeginDestroy();
-	}
-	else if (NewValue <= 0.f && Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero))
-    {
-		BeginDestroy();
-    }
-	else if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken))
-	{
-		BeginDestroy();
-	}
-
 	// Deactivate if conditions are met
 	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
 	{
@@ -236,15 +218,15 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 	
 	if (Expired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration))
 	{
-		DeactivateTarget(Expired);
+		DeactivateTarget(NewValue, Expired);
 	}
 	else if (!Expired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnAnyExternalDamageTaken))
 	{
-		DeactivateTarget(Expired);
+		DeactivateTarget(NewValue, Expired);
 	}
 	else if (NewValue <= 0.f && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnHealthReachedZero))
 	{
-		DeactivateTarget(Expired);
+		DeactivateTarget(NewValue, Expired);
 	}
 }
 
@@ -267,7 +249,7 @@ void ASphereTarget::ActivateTarget(const float Lifespan)
 	OnTargetActivationStateChanged.Broadcast(true, TagContainer);
 }
 
-void ASphereTarget::DeactivateTarget(const bool bExpired)
+void ASphereTarget::DeactivateTarget(const float Health, const bool bExpired)
 {
 	StopAllTimelines();
 	
@@ -338,6 +320,24 @@ void ASphereTarget::DeactivateTarget(const bool bExpired)
 	
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Destroy) ||
 	Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
+	{
+		Destroy();
+	}
+
+	// Destroy if conditions are met
+	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
+	{
+		return;
+	}
+	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration) && bExpired)
+	{
+		Destroy();
+	}
+	else if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && Health <= 0.f)
+	{
+		Destroy();
+	}
+	else if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) && !bExpired)
 	{
 		Destroy();
 	}

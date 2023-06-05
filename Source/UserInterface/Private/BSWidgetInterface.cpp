@@ -56,5 +56,21 @@ void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& 
 	}
 	
 	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);
-	TooltipImage->OnTooltipHovered.AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
+	if (!TooltipImage->OnTooltipHovered.IsBound())
+	{
+		TooltipImage->OnTooltipHovered.AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
+	}
+}
+
+void IBSWidgetInterface::UpdateTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap)
+{
+	if (!TooltipImage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipImage."));
+	}
+	if (TooltipText.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetOuter()->GetName());
+	}
+	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);
 }

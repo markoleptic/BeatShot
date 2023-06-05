@@ -3,16 +3,13 @@
 
 #include "WidgetComponents/BSVerticalBox.h"
 #include "GlobalConstants.h"
+#include "BSWidgetInterface.h"
+#include "Blueprint/WidgetTree.h"
 #include "WidgetComponents/BSHorizontalBox.h"
-#include "WidgetComponents/BSSettingCategoryWidget.h"
 
-UBSVerticalBox* UBSVerticalBox::GetBSBoxFromChildWidget(const TObjectPtr<UWidget>& InWidgetPtr) const
+TSharedRef<SWidget> UBSVerticalBox::RebuildWidget()
 {
-	if (UBSVerticalBox* Box = WidgetBoxMap.FindRef(InWidgetPtr); Box != nullptr)
-	{
-		return Box;
-	}
-	return nullptr;
+	return Super::RebuildWidget();
 }
 
 void UBSVerticalBox::UpdateBrushColors()
@@ -24,13 +21,35 @@ bool UBSVerticalBox::IterateThroughSlots_UpdateBrushColors(TArray<TObjectPtr<UPa
 {
 	for (const TObjectPtr<UPanelSlot>& BoxSlot : InSlots)
 	{
-		if (IsPanelSlotInWidgetBoxMap(BoxSlot))
+		/*if (Cast<UPanelWidget>(BoxSlot))
+		{
+			for (UPanelSlot* PanelSlot : Cast<UPanelWidget>(BoxSlot)->GetSlots())
+			{
+				if (Cast<UPanelWidget>(BoxSlot)->HasAnyChildren())
+			}
+		}
+		if (UBSVerticalBox* SubVerticalBox = Cast<UBSVerticalBox>(BoxSlot->Content))
+		{
+			bLastLeftBorderDark = IterateThroughSlots_UpdateBrushColors(SubVerticalBox->Slots, bLastLeftBorderDark);
+			continue;
+		}*/
+		/*if (IsPanelSlotInWidgetBoxMap(BoxSlot))
 		{
 			if (UBSVerticalBox* SubVerticalBox = GetBSBoxFromChildWidget(BoxSlot->Content))
 			{
 				bLastLeftBorderDark = SubVerticalBox->IterateThroughSlots_UpdateBrushColors(SubVerticalBox->Slots, bLastLeftBorderDark);
 			}
 			continue;
+		}*/
+		if (UUserWidget* UserWidget = Cast<UUserWidget>(BoxSlot->Content))
+		{
+			UserWidget->WidgetTree->ForEachWidget([&bLastLeftBorderDark] (UWidget* Widget)
+			{
+				if (Cast<UBSVerticalBox>(Widget))
+				{
+					bLastLeftBorderDark = Cast<UBSVerticalBox>(Widget)->IterateThroughSlots_UpdateBrushColors(Cast<UBSVerticalBox>(Widget)->Slots, bLastLeftBorderDark);
+				}
+			});
 		}
 
 		if (!Cast<UBSHorizontalBox>(BoxSlot->Content) || BoxSlot->Content->GetVisibility() == ESlateVisibility::Collapsed)
@@ -55,24 +74,21 @@ bool UBSVerticalBox::IterateThroughSlots_UpdateBrushColors(TArray<TObjectPtr<UPa
 	return bLastLeftBorderDark;
 }
 
-void UBSVerticalBox::AddWidgetBoxPair(UWidget* InWidget, UBSVerticalBox* InBox)
+/*TArray<UBSHorizontalBox*> Boxes;
+for (const TObjectPtr<UPanelSlot>& PanelSlot : InSlots)
 {
-	if (InWidget && InBox)
+	if (UPanelWidget* PanelWidget = Cast<UPanelWidget>(PanelSlot->Content))
 	{
-		WidgetBoxMap.Add(InWidget, InBox);
+		Boxes.Append(IBSWidgetInterface::DescendWidget<UBSHorizontalBox>(PanelWidget));
 	}
-}
-
-bool UBSVerticalBox::IsPanelSlotInWidgetBoxMap(const TObjectPtr<UPanelSlot>& BoxSlot) const
-{
-	if (!BoxSlot || WidgetBoxMap.IsEmpty())
+	else if (UUserWidget* UserWidget = Cast<UUserWidget>(PanelSlot->Content))
 	{
-		return false;
+		UserWidget->WidgetTree->ForEachWidget([&Boxes] (UWidget* Widget)
+		{
+			if (Cast<UBSHorizontalBox>(Widget))
+			{
+				Boxes.Add(Cast<UBSHorizontalBox>(Widget));
+			}
+		});
 	}
-	
-	if (WidgetBoxMap.Contains(BoxSlot->Content))
-	{
-		return true;
-	}
-	return false;
-}
+}*/
