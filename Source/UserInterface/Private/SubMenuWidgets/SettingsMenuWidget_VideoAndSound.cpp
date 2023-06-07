@@ -181,8 +181,6 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 
 TSharedRef<SWidget> USettingsMenuWidget_VideoAndSound::RebuildWidget()
 {
-	MainContainer->AddChildToVerticalBox(BSBox_Video);
-	MainContainer->AddChildToVerticalBox(BSBox_Sound);
 	return Super::RebuildWidget();
 }
 

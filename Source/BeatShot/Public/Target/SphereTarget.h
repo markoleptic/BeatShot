@@ -11,6 +11,7 @@
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "SphereTarget.generated.h"
 
+class UProjectileMovementComponent;
 class UBSHealthComponent;
 class UBSAbilitySystemComponent;
 class UCapsuleComponent;
@@ -59,11 +60,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UBSHealthComponent* HealthComponent;
 
+	UPROPERTY(VisibleAnywhere, Category = "Target Properties")
+	UProjectileMovementComponent* ProjectileMovementComponent;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UNiagaraSystem* TargetExplosion;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	TSubclassOf<UGameplayEffect> TargetImmunity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	TSubclassOf<UGameplayEffect> FireGunImmunity;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	TSubclassOf<UGameplayEffect> TrackingImmunity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	TSubclassOf<UGameplayEffect> ExpirationHealthPenalty;
@@ -111,9 +121,6 @@ public:
 	/** Deactivates a target, applies immunity, stops the DamageableWindow timer and all timelines, sets to inactive target color, and applies scaling */
 	void DeactivateTarget(const float TimeAlive, const bool bExpired);
 
-	/** Sets the scale for the SphereMesh, should only be called by TargetManager */
-	void SetInitialSphereScale(const FVector& NewScale);
-
 	/** Sets the color of the Base Target */
 	UFUNCTION(BlueprintCallable)
 	void SetSphereColor(const FLinearColor& Color);
@@ -143,17 +150,20 @@ public:
 	/** Whether or not the DamageableWindow timer is active */
 	bool IsDamageWindowActive() const;
 
-	/** Returns the direction the target is travelling towards */
-	FVector GetMovingTargetDirection() const { return MovingTargetDirection; }
+	/** Returns the velocity / speed of the ProjectileMovementComponent (unit direction vector) */
+	FVector GetTargetDirection() const;
+
+	/** Returns the InitialSpeed of the ProjectileMovementComponent */
+	float GetTargetSpeed() const;
+
+	/** Returns the velocity of the ProjectileMovementComponent */
+	FVector GetTargetVelocity() const;
 	
-	/** Sets the direction the target is travelling towards */
-	void SetMovingTargetDirection(const FVector& NewDirection);
+	/** Sets the velocity of the ProjectileMovementComponent by multiplying the InitialSpeed and the new direction */
+	void SetTargetDirection(const FVector& NewDirection) const;
 
-	/** Returns the speed the target is travelling at */
-	float GetMovingTargetSpeed() const { return MovingTargetSpeed; }
-
-	/** Sets the speed the target is travelling at */
-	void SetMovingTargetSpeed(const float NewMovingTargetSpeed);
+	/** Sets the InitialSpeed of the ProjectileMovementComponent */
+	void SetTargetSpeed(const float NewMovingTargetSpeed) const;
 
 	/** Applies the TargetImmunity gameplay effect to the target */
 	void ApplyImmunityEffect() const;
@@ -226,6 +236,9 @@ private:
 	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
 	UFUNCTION()
 	void OnTargetMaxLifeSpanExpired();
+	
+	UFUNCTION()
+	void OnSecondPassedTotalPossibleDamage(const float TotalPossibleDamage) const;
 
 	/** Guid to keep track of a target's properties after it has been destroyed */
 	UPROPERTY()
@@ -240,12 +253,6 @@ private:
 	FOnTimelineFloat OnShrinkQuickAndGrowSlow;
 
 	FOnTimelineEvent OnStartToPeakFinished;
-
-	/** Current direction the target is moving */
-	FVector MovingTargetDirection;
-	
-	/** Current speed of the moving target */
-	float MovingTargetSpeed;
 
 	/** The scale that was applied when spawned */
 	FVector InitialTargetScale;

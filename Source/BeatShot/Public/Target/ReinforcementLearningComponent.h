@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GlobalEnums.h"
-#include "SpawnPointManager.h"
+#include "SpawnPointManagerComponent.h"
 #include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
 
@@ -171,7 +171,7 @@ public:
 	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
 
 	/** Updates RLAgent's QTable until TargetPairs queue is empty */
-	void UpdateReinforcementLearningComponent(const USpawnPointManager* SpawnPointManager);
+	void UpdateReinforcementLearningComponent(const USpawnPointManagerComponent* SpawnPointManager);
 
 private:
 	/** Returns a random SpawnPoint index from the provided SpawnPointIndices */

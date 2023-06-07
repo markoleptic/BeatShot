@@ -115,8 +115,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid")
 	UHorizontalBox* Box_NumVerticalTargetsTextTooltip;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Tooltip")
-	UTooltipImage* QMark_BeatGridAdjacentOnly;
 	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
 	UTooltipImage* WarningEMark_NumHorizontalTargets;
 	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
@@ -151,8 +149,6 @@ private:
 	void OnCheckStateChanged_BeatGridNumHorizontalTargetsLock(const bool bIsLocked);
 	UFUNCTION()
 	void OnCheckStateChanged_BeatGridNumVerticalTargetsLock(const bool bIsLocked);
-	UFUNCTION()
-	void OnCheckStateChanged_RandomizeNextTarget(const bool bIsChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_MinLock(const bool bIsLocked);
 	UFUNCTION()

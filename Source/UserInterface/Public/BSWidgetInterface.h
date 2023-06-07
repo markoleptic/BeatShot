@@ -113,30 +113,54 @@ public:
 		}
 		return OutArray;
 	}
-	
+
+	/** Returns an array of pointers of type T, recursively searching for all instances of T inside the PanelWidget */
 	template<typename T>
 	static TArray<T*> DescendWidget(UPanelWidget* PanelWidget)
+	{
+		TArray<T*> Boxes;
+		// Check the PanelWidget first
+		if (Cast<T>(PanelWidget))
 		{
-			TArray<T*> Boxes;
-			// Check the PanelWidget first
-			if (Cast<T>(PanelWidget))
-			{
-				Boxes.Add(Cast<T>(PanelWidget));
-			}
-		
-			// Search through children
-			for (UWidget* Child : PanelWidget->GetAllChildren())
-			{
-				// Check child
-				if (Cast<T>(Child))
-				{
-					Boxes.Add(Cast<T>(Child));
-				}
-				if (UPanelWidget* ChildPanelWidget = Cast<UPanelWidget>(Child))
-				{
-					Boxes.Append(DescendWidget<T>(ChildPanelWidget));
-				}
-			}
-			return Boxes;
+			Boxes.Add(Cast<T>(PanelWidget));
 		}
+	
+		// Search through children
+		for (UWidget* Child : PanelWidget->GetAllChildren())
+		{
+			// Child panel widget will get checked in first line of function
+			if (UPanelWidget* ChildPanelWidget = Cast<UPanelWidget>(Child))
+			{
+				// Call function on any child's children
+				Boxes.Append(DescendWidget<T>(ChildPanelWidget));
+			}
+		}
+		return Boxes;
+	}
+
+	/** Returns a pointer of type T, recursively searching only until it finds the first instances of T inside the PanelWidget */
+	template<typename T>
+	static T* DescendWidgetReturnFirst(UPanelWidget* PanelWidget)
+	{
+		// Check the top level panel widget first
+		if (Cast<T>(PanelWidget))
+		{
+			return Cast<T>(PanelWidget);
+		}
+	
+		// Search through children
+		for (UWidget* Child : PanelWidget->GetAllChildren())
+		{
+			// Child panel widget will get checked in first line of function
+			if (UPanelWidget* ChildPanelWidget = Cast<UPanelWidget>(Child))
+			{
+				// Call function on any child's children
+				if (T* FoundBorder = DescendWidgetReturnFirst<T>(ChildPanelWidget))
+				{
+					return FoundBorder;
+				}
+			}
+		}
+		return nullptr;
+	}
 };

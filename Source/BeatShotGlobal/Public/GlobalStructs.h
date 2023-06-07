@@ -240,10 +240,6 @@ struct FBS_GridConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	int32 NumVerticalGridTargets;
 
-	/** Whether or not to randomize the activation of grid targets vs only choosing adjacent targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
-	bool bRandomizeGridTargetActivation;
-
 	/** The space between grid targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
 	FVector2D GridSpacing;
@@ -256,7 +252,6 @@ struct FBS_GridConfig
 	{
 		NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Normal;
 		NumVerticalGridTargets = NumVerticalBeatGridTargets_Normal;
-		bRandomizeGridTargetActivation = false;
 		NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Normal;
 		GridSpacing = BeatGridSpacing_Normal;
 	}
@@ -320,9 +315,13 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bApplyImmunityOnSpawn;
 
-	/** Continuously spawn targets or wait until a TargetDamageEvent/expiration to continue spawning */
+	/** Should targets always be allowed to spawn or should only one target be spawned at once? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bContinuouslySpawn;
+
+	/** Should targets always be allowed to activate or should only one target be activated at once? */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bContinuouslyActivate;
 
 	/** Whether or not the targets ever move */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -340,7 +339,7 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bSpawnEveryOtherTargetInCenter;
 
-	/** Whether or not to reverse the direction of a moving target after it stops overlapping the OverlapSpawnBox */
+	/** Whether or not to reverse the direction of a moving target after it stops overlapping the SpawnArea */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseOverlapSpawnBox;
 	
@@ -465,10 +464,12 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumRecentTargets;
 
-	/** TODO: Minimum number of targets to activate at one time */
+	/** Minimum number of targets to activate at one time */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MinNumTargetsToActivateAtOnce;
 	
-	/** TODO: Maximum number of targets to activate at one time */
+	/** Maximum number of targets to activate at one time */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumTargetsToActivateAtOnce;
 	
 	/** How many targets to spawn before the game mode begins */
@@ -504,6 +505,7 @@ struct FBS_TargetConfig
 	{
 		bApplyImmunityOnSpawn = false;
 		bContinuouslySpawn = false;
+		bContinuouslyActivate = false;
 		bMoveTargets = false;
 		bMoveTargetsForward = false;
 		bSpawnAtOriginWheneverPossible = false;
@@ -671,6 +673,7 @@ struct FBSConfig
 				}
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
 				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bContinuouslyActivate = false;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = true;
@@ -747,6 +750,7 @@ struct FBSConfig
 				}
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
 				Config.TargetConfig.bContinuouslySpawn = true;
+				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = true;
@@ -801,7 +805,6 @@ struct FBSConfig
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Normal;
 						Config.GridConfig.NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Normal;
 						Config.GridConfig.NumVerticalGridTargets = NumVerticalBeatGridTargets_Normal;
-						Config.GridConfig.bRandomizeGridTargetActivation = false;
 						Config.GridConfig.NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Normal;
 						Config.GridConfig.GridSpacing = BeatGridSpacing_Normal;
 						break;
@@ -815,7 +818,6 @@ struct FBSConfig
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Hard;
 						Config.GridConfig.NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Hard;
 						Config.GridConfig.NumVerticalGridTargets = NumVerticalBeatGridTargets_Hard;
-						Config.GridConfig.bRandomizeGridTargetActivation = false;
 						Config.GridConfig.NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Hard;
 						Config.GridConfig.GridSpacing = BeatGridSpacing_Hard;
 						break;
@@ -829,7 +831,6 @@ struct FBSConfig
 						Config.TargetConfig.MaxTargetScale = MaxTargetScale_BeatGrid_Death;
 						Config.GridConfig.NumHorizontalGridTargets = NumHorizontalBeatGridTargets_Death;
 						Config.GridConfig.NumVerticalGridTargets = NumVerticalBeatGridTargets_Death;
-						Config.GridConfig.bRandomizeGridTargetActivation = false;
 						Config.GridConfig.NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Death;
 						Config.GridConfig.GridSpacing = BeatGridSpacing_Death;
 						break;
@@ -838,7 +839,8 @@ struct FBSConfig
 					break;
 				}
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bContinuouslySpawn = true;
+				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
@@ -919,7 +921,8 @@ struct FBSConfig
 				}
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bContinuouslySpawn = false;
-				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bContinuouslyActivate = true;
+				Config.TargetConfig.bMoveTargets = true;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
@@ -1004,6 +1007,7 @@ struct FBSConfig
 				}
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bContinuouslySpawn = false;
+				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
@@ -1027,8 +1031,6 @@ struct FBSConfig
 				
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
-				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ResetPosition);
-				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ShrinkQuickGrowSlow);
 
 				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);
 				

@@ -12,6 +12,7 @@ class UBSAttributeSetBase;
 
 DECLARE_MULTICAST_DELEGATE(FOnOutOfHealth);
 DECLARE_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnSecondPassedTotalPossibleDamage, const float TotalPossibleDamage);
 
 /** Base HealthComponent for this game */
 UCLASS(ClassGroup=(Custom), meta= (BlueprintSpawnableComponent))
@@ -51,13 +52,20 @@ public:
 	UFUNCTION()
 	void SetShouldUpdateTotalPossibleDamage(const bool bShouldUpdate, const FGameplayTagContainer& TagContainer);
 
+	UFUNCTION()
+	void OnSecondPassedCallback() const;
+
 	/** The maximum amount of damage that can be dealt to a target */
 	float TotalPossibleDamage;
 
 	/** Whether or not to update TotalPossibleDamage */
 	bool ShouldUpdateTotalPossibleDamage = false;
+
+	FOnSecondPassedTotalPossibleDamage OnSecondPassedTotalPossibleDamage;
 	
 	FOnOutOfHealth OnOutOfHealth;
 
 	FOnHealthChanged OnHealthChanged;
+
+	FTimerHandle TotalPossibleDamageUpdate;
 };

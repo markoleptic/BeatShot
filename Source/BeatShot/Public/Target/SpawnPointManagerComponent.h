@@ -6,7 +6,7 @@
 #include "GlobalStructs.h"
 #include "BeatShot/BeatShot.h"
 #include "UObject/Object.h"
-#include "SpawnPointManager.generated.h"
+#include "SpawnPointManagerComponent.generated.h"
 
 /** Enum representing the bordering directions for a target */
 UENUM(BlueprintType)
@@ -114,6 +114,8 @@ class BEATSHOT_API USpawnPoint : public UObject
 {
 	GENERATED_BODY()
 
+	friend class USpawnPointManagerComponent;
+	
 public:
 	/** The horizontal spacing between the next SpawnPoint */
 	float IncrementY;
@@ -137,6 +139,9 @@ private:
 	/** Whether or not this point has a target active */
 	bool bIsActivated;
 
+	/** Whether or not this point still corresponds to a managed target */
+	bool bIsCurrentlyManaged;
+	
 	/** Whether or not this point recently had a target occupy its space */
 	bool bIsRecent;
 
@@ -225,20 +230,11 @@ public:
 		}
 		return false;
 	}
-
-	/** Returns whether or not the index is a corner */
-	bool IsCornerIndex() const;
-
-	/** Returns whether or not the index is a border */
-	bool IsBorderIndex() const;
-
-	/** Returns a random point within the area that this spawn points represents */
-	FVector GenerateRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections) const;
-
-	/** Sets the value of ChosenPoint to the output of GenerateRandomSubPoint */
-	void SetChosenPointAsRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections);
 	
+	bool IsCornerIndex() const;
+	bool IsBorderIndex() const;
 	bool IsActivated() const { return bIsActivated; }
+	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
 	double GetTimeSetRecent() const { return TimeSetRecent; }
 	TArray<int32> GetBorderingIndices() const { return BorderingIndices; }
@@ -249,20 +245,6 @@ public:
 	int32 GetTotalHits() const { return TotalHits; }
 	FVector GetScale() const { return Scale; }
 	int32 GetManagedTargetIndex() const { return ManagedTargetIndex; }
-
-	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction.
-	 *  Used as input to the GenerateRandomSubPoint and SetChosenPointAsRandomSubPoint functions */
-	TArray<EBorderingDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;
-	
-	/** Sets the activated state for this spawn point */
-	void SetIsActivated(const bool bSetIsActivated) { bIsActivated = bSetIsActivated; }
-
-	/** Sets and returns the overlapping points, based on the parameters and IncrementY & IncrementZ */
-	TArray<FVector>& SetOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
-		const FVector& InOrigin, const FExtrema& InExtrema);
-	
-	/** Flags this SpawnPoint as recent, and records the time it was set as recent. If false, removes flag and clears overlapping points */
-	void SetIsRecent(const bool bSetIsRecent);
 
 	/** Sets the TargetScale */
 	void SetScale(const FVector& InScale)
@@ -282,11 +264,43 @@ public:
 		ManagedTargetIndex = InIndex;
 	}
 
+	/** Sets the value of ChosenPoint to the output of GenerateRandomSubPoint */
+	void SetChosenPointAsRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections);
+
+	/** Flags this SpawnPoint as corresponding to a target being managed by TargetManager */
+	void SetIsCurrentlyManaged(const bool bSetIsCurrentlyManaged)
+	{
+		bIsCurrentlyManaged = bSetIsCurrentlyManaged;
+	}
+
+	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction.
+	 *  Used as input to the GenerateRandomSubPoint and SetChosenPointAsRandomSubPoint functions */
+	TArray<EBorderingDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;
+
+private:
+	
+	/** Returns a random point within the area that this spawn points represents */
+	FVector GenerateRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections) const;
+	
+	/** Sets the activated state for this spawn point */
+	void SetIsActivated(const bool bSetIsActivated) { bIsActivated = bSetIsActivated; }
+
+	/** Sets the overlapping points */
+	void SetOverlappingPoints(const TArray<FVector>& InOverlappingPoints);
+
+	/** Returns overlapping points, based on the parameters and IncrementY & IncrementZ */
+	TArray<FVector> GenerateOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
+		const FVector& InOrigin) const;
+	
+	/** Flags this SpawnPoint as recent, and records the time it was set as recent. If false, removes flag and clears overlapping points */
+	void SetIsRecent(const bool bSetIsRecent);
+
+	/** Increments the total amount of spawns at the point, including handling special case where it has not spawned there yet */
 	void IncrementTotalSpawns();
 
+	/** Increments the total amount of hits at the point */
 	void IncrementTotalHits();
 	
-private:
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
 
@@ -303,12 +317,14 @@ private:
 	void EmptyOverlappingPoints() { OverlappingPoints.Empty(); }
 };
 
-UCLASS()
-class BEATSHOT_API USpawnPointManager : public UObject
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+class BEATSHOT_API USpawnPointManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	
 public:
+	USpawnPointManagerComponent();
+	
 	/** Initializes basic variables in SpawnPointManager */
 	void InitSpawnPointManager(const FBSConfig& InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents);
 
@@ -327,10 +343,16 @@ public:
 	/** Returns the oldest most recent spawn point */
 	USpawnPoint* FindOldestRecentSpawnPoint() const;
 
+	/** Returns the SpawnPoint index corresponding to a world location, or INDEX_NONE if not found */
+	int32 FindSpawnPointIndexFromLocation(const FVector& InLocation) const;
+	
 	bool IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const;
 
-	/** Returns the index corresponding to a world location, or INDEX_NONE if not found */
-	int32 FindIndexFromLocation(const FVector& InLocation) const;
+	/** Returns an array of Points that are flagged as currently managed */
+	TArray<USpawnPoint*> GetManagedPoints() const;
+
+	/** Returns an array of Points that are flagged as currently managed and not flagged as activated */
+	TArray<USpawnPoint*> GetDeactivatedManagedPoints() const;
 
 	/** Returns a filtered array containing only spawn points flagged as recent */
 	TArray<USpawnPoint*> GetRecentSpawnPoints() const;
@@ -341,11 +363,17 @@ public:
 	/** Returns a filtered array containing only spawn points flagged as activated or recent */
 	TArray<USpawnPoint*> GetActivatedOrRecentSpawnPoints() const;
 
+	/** Finds the corresponding ManagedTarget index for a SpawnPoint index */
+	int32 GetManagedTargetIndex(const int32 InSpawnPointIndex);
+	
+	/** Removes the oldest points recent flags if the max number of recent targets has been exceeded */
+	void RefreshRecentTargetFlags();
+
 	/** Returns an array of all points that are occupied by recent targets, readjusted by scale if needed */
-	TArray<FVector> RemoveOverlappingPointsFromSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const FExtrema& Extrema) const;
+	void RemoveOverlappingPointsFromSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const bool bShowDebug = false) const;
 
 	/** Removes points from the InArray that don't have an adjacent point to the top and to the left. Used so that it's safe to spawn a target within a square area */
-	void RemoveEdgePoints(TArray<FVector>& In, const FExtrema& Extrema) const;
+	void RemoveEdgePoints(TArray<FVector>& In, const FExtrema& Extrema, const bool bShowDebug = false) const;
 
 	TArray<USpawnPoint*>& GetSpawnPointsRef() { return SpawnPoints; }
 	TArray<USpawnPoint*> GetSpawnPoints() const { return SpawnPoints; }
@@ -354,14 +382,14 @@ public:
 	int32 GetSpawnMemoryIncZ() const { return SpawnMemoryIncZ; }
 	int32 GetSpawnPointsHeight() const { return Height; }
 
-	/** Sets the overlapping points for matching SpawnPoint, based on the parameters and StaticExtrema */
-	void SetOverlappingPoints(USpawnPoint* Point, const FVector& Scale) const;
-
 	/** Flags the point as recent */
 	void FlagSpawnPointAsRecent(const FGuid SpawnPointGuid);
 	
 	/** Flags the point as activated and removes the recent flag if present. Calls SetOverlappingPoints */
 	void FlagSpawnPointAsActivated(const FGuid SpawnPointGuid);
+
+	/** Removes activated flag, flags as recent, and sets a timer for when the recent flag should be removed */
+	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy, const FTargetDamageEvent& TargetDamageEvent);
 	
 	/** Removes the recent flag from the point. Called after a delay once the target has been deactivated */
 	UFUNCTION()
@@ -371,7 +399,11 @@ public:
 	void RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent);
 	
 	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
-	
+
+	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
+	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness) const;
+
+	/** Prints debug info about a spawn point */
 	void PrintDebug_SpawnPoint(const USpawnPoint* SpawnPoint) const;
 
 private:
@@ -420,4 +452,7 @@ private:
 
 	/** Whether or not the locations used to create SpawnPoints are corners */
 	bool bLocationsAreCorners = false;
+	
+	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnTargetHealthChangedOrExpired() */
+	FTimerDelegate RemoveFromRecentDelegate;
 };

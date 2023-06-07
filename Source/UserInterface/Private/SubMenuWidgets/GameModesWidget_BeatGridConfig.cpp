@@ -22,9 +22,8 @@ void UGameModesWidget_BeatGridConfig::InitSettingCategoryWidget()
 void UGameModesWidget_BeatGridConfig::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	SetupTooltip(BeatGridSpreadConstrained->GetCheckBoxQMark(), GetTooltipTextFromKey("BeatGridEvenSpacing"));
-	SetupTooltip(QMark_BeatGridAdjacentOnly, GetTooltipTextFromKey("BeatGridAdjacentOnly"));
 	
 	/* BeatGrid Spacing TextBox and Slider */
 	FSyncedSlidersParams BeatGridSliderStruct;
@@ -38,6 +37,7 @@ void UGameModesWidget_BeatGridConfig::NativeConstruct()
 	BeatGridSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_BeatGrid_VerticalSpacing");
 	BeatGridSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_EvenSpacing");
 	BeatGridSliderStruct.GridSnapSize = SnapSize_BeatGridVerticalSpacing;
+	BeatGridSliderStruct.bShowCheckBox = false;
 	BeatGridSliderStruct.bShowMaxLock = true;
 	BeatGridSliderStruct.bShowMinLock = true;
 	BeatGridSliderStruct.bStartMinLocked = true;
@@ -59,7 +59,6 @@ void UGameModesWidget_BeatGridConfig::NativeConstruct()
 	
 	CheckBox_NumHorizontalTargetsLock->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_BeatGridConfig::OnCheckStateChanged_BeatGridNumHorizontalTargetsLock);
 	CheckBox_NumVerticalTargetsLock->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_BeatGridConfig::OnCheckStateChanged_BeatGridNumVerticalTargetsLock);
-	CheckBox_RandomizeNextTarget->OnCheckStateChanged.AddDynamic(this, &UGameModesWidget_BeatGridConfig::OnCheckStateChanged_RandomizeNextTarget);
 	
 	bNumHorizontalTargetsLocked = true;
 	bNumVerticalTargetsLocked = true;
@@ -85,7 +84,6 @@ void UGameModesWidget_BeatGridConfig::InitializeBeatGrid(const FBS_GridConfig& I
 {
 	CurrentValues = InBeatGridConfig;
 	TargetScaleBox = InTargetScaleBox;
-	CheckBox_RandomizeNextTarget->SetIsChecked(InBeatGridConfig.bRandomizeGridTargetActivation);
 	Slider_NumHorizontalTargets->SetValue(InBeatGridConfig.NumHorizontalGridTargets);
 	Slider_NumHorizontalTargets->SetMinValue(MinValue_NumBeatGridHorizontalTargets);
 	Slider_NumHorizontalTargets->SetMaxValue(MaxValue_NumBeatGridHorizontalTargets);
@@ -106,7 +104,6 @@ FBS_GridConfig UGameModesWidget_BeatGridConfig::GetBeatGridConfig() const
 	FMath::GridSnap(FMath::Clamp(BeatGridSpreadConstrained->GetMaxValue(), MinValue_BeatGridVerticalSpacing, MaxValue_BeatGridVerticalSpacing), SnapSize_BeatGridVerticalSpacing));
 	ReturnConfig.NumHorizontalGridTargets = FMath::GridSnap(FMath::Clamp(Slider_NumHorizontalTargets->GetValue(), MinValue_NumBeatGridHorizontalTargets, MaxValue_NumBeatGridHorizontalTargets), SnapSize_NumBeatGridHorizontalTargets);
 	ReturnConfig.NumVerticalGridTargets = FMath::GridSnap(FMath::Clamp(Slider_NumVerticalTargets->GetValue(), MinValue_NumBeatGridVerticalTargets, MaxValue_NumBeatGridVerticalTargets), SnapSize_NumBeatGridVerticalTargets);
-	ReturnConfig.bRandomizeGridTargetActivation = CheckBox_RandomizeNextTarget->IsChecked();
 	ReturnConfig.NumGridTargetsVisibleAtOnce = -1;
 	return ReturnConfig;
 }
@@ -161,11 +158,6 @@ void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_BeatGridNumVerticalTar
 	bNumVerticalTargetsLocked = bIsLocked;
 	CurrentValues.NumVerticalGridTargets = Slider_NumVerticalTargets->GetValue();
 	CheckBeatGridConstraints(EBeatGridConstraintType::NumVerticalTargets);
-}
-
-void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_RandomizeNextTarget(const bool bIsChecked)
-{
-	CurrentValues.bRandomizeGridTargetActivation = bIsChecked;
 }
 
 void UGameModesWidget_BeatGridConfig::OnCheckStateChanged_MinLock(const bool bIsLocked)

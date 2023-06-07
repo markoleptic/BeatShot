@@ -1,107 +1,108 @@
 Key,SourceString
-Alpha,"The alpha value. How quickly the reinforcement learning agent will learn."
-ApplyImmunityOnSpawn,"Should the target be immune to damage when spawned? It can be removed later when activated."
+Alpha,The alpha value. How quickly the reinforcement learning agent will learn.
+ApplyImmunityOnSpawn,Should the target be immune to damage when spawned? It can be removed later when activated.
 BaseGameMode,"The gamemode to base the custom game mode off of. For example, if you want targets in a grid, this needs to be set to BeatGrid."
 BeatTrackConstantSpeed,"If checked, the speed of the target will remain constant throughout the game mode."
 BoundsScalingPolicy,"How to change the vertical and horizontal spread of the spawn area, or not at all."
-BoundsScalingPolicy_Dynamic,"The vertical and horizontal spread of the spawn area grow larget based on consecutive targets hit."
-BoundsScalingPolicy_Static,"The vertical and horizontal spread of the spawn area will not change."
-ConsecutiveChargeScaleMultiplier,"How much to shrink the target after a charge is consumed. This number is multiplied by the target's scale prior to the charge being consumed."
+BoundsScalingPolicy_Dynamic,The vertical and horizontal spread of the spawn area grow larget based on consecutive targets hit.
+BoundsScalingPolicy_Static,The vertical and horizontal spread of the spawn area will not change.
+ConsecutiveChargeScaleMultiplier,How much to shrink the target after a charge is consumed. This number is multiplied by the target's scale prior to the charge being consumed.
 ConsecutiveTargetScalePolicy,"How to change the target scale between consecutive targets, or not at all."
-ConsecutiveTargetScalePolicy_Random,"The starting scale/size of the target will be chosen randomly between min and max target scale."
+ConsecutiveTargetScalePolicy_Random,The starting scale/size of the target will be chosen randomly between min and max target scale.
 ConsecutiveTargetScalePolicy_SkillBased,"The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit."
-ConsecutiveTargetScalePolicy_Static,"The starting scale/size of the target will remain constant throughout the game mode."
-ContinuouslySpawn,"Continuously spawn targets on beat, or wait until an activation condition."
-CustomGameModeName,"The name to save your custom game mode as."
+ConsecutiveTargetScalePolicy_Static,The starting scale/size of the target will remain constant throughout the game mode.
+ContinuouslyActivate,Should targets always be allowed to activate or should only one target be activated at once?
+ContinuouslySpawn,Should targets always be allowed to spawn or should only one target be spawned at once?
+CustomGameModeName,The name to save your custom game mode as.
 EnableAI,"If checked, the game will spawn targets according to reinforcment learning algorithms. This should expose you to your weaknesses more often."
 Epsilon,"The epsilon value. A value of 1 will result in only choosing random values (explore), while a value of zero will result in only choosing locations where your accuracy is lowest."
-ExpirationHealthPenalty,"Amount of health to take away from the target if the DamageableWindow timer expires. A hit target takes 100 damage by default."
-FloorDistance,"Distance from floor to bottom of the spawn area."
+ExpirationHealthPenalty,Amount of health to take away from the target if the DamageableWindow timer expires. A hit target takes 100 damage by default.
+FloorDistance,Distance from floor to bottom of the spawn area.
 MoveTargetsForward,"If checked, the targets will move forward towards the player by ForwardDistance over the maximum target lifespan."
-ForwardSpread,"How far targets will move forward towards the player over the maximum target lifespan."
+ForwardSpread,How far targets will move forward towards the player over the maximum target lifespan.
 GameModeDifficulty,"Useful for seeing what settings the default game modes use, but custom game modes have no difficulty by default."
-GameModeTemplate,"See what settings the default game modes use to fine tune your custom game mode."
-Gamma,"The gamma value. How much to value future rewards vs immediate rewards"
-Grid_HorizontalSpacingSuggest,"Horizontal Spacing to <="
-Grid_NumHorizontalSuggest,"Number of Horizontal Targets <="
-Grid_NumVerticalSuggest,"Number of Vertical Targets to <="
-Grid_ScaleSuggest,"Maximum Target Scale to <="
-Grid_SuggestStart,"Not enough space! Change one or more of the following:"
-Grid_VerticalSpacingSuggest,"Vertical Spacing to <="
+GameModeTemplate,See what settings the default game modes use to fine tune your custom game mode.
+Gamma,The gamma value. How much to value future rewards vs immediate rewards
+Grid_HorizontalSpacingSuggest,Horizontal Spacing to <=
+Grid_NumHorizontalSuggest,Number of Horizontal Targets <=
+Grid_NumVerticalSuggest,Number of Vertical Targets to <=
+Grid_ScaleSuggest,Maximum Target Scale to <=
+Grid_SuggestStart,Not enough space! Change one or more of the following:
+Grid_VerticalSpacingSuggest,Vertical Spacing to <=
 BeatGridAdjacentOnly,"By default, adjacent-only will only activate a target that was adjacent/beside a previously activated target. Completely random will choose a target in the grid at random."
-BeatGridEvenSpacing,"Evenly distributes the targets so that the horizontal and vertical distance between targets is the same."
-GridNumTargets,"The number of targets that are spawned at the beginning."
+BeatGridEvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
+GridNumTargets,The number of targets that are spawned at the beginning.
 Lifespan,"How long the target will live, even if not shot. This doesn't apply to BeatTrack."
 LifetimeTargetScalePolicy,"How to change the scale of the target over its lifetime, or not at all."
-LifetimeTargetScalePolicy_Grow,"Change the target scale from its current to its maximum scale over its lifetime."
-LifetimeTargetScalePolicy_None,"The scale of the target will not change over its lifetime."
-LifetimeTargetScalePolicy_Shrink,"Change the target scale from its current to its minimum scale over its lifetime."
+LifetimeTargetScalePolicy_Grow,Change the target scale from its current to its maximum scale over its lifetime.
+LifetimeTargetScalePolicy_None,The scale of the target will not change over its lifetime.
+LifetimeTargetScalePolicy_Shrink,Change the target scale from its current to its minimum scale over its lifetime.
 MaxHealth,"Max health of the target. Hit targets take 100 damage, so increase this value if you want targets to survive more than one hit."
 MaxNumRecentTargets,"How many recent targets to keep in memory, if using Num Targets Based RecentMemoryPolicy."
-MinDistance,"The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it."
-MoveTargets,"Whether or not the targets ever move."
-NumCharges,"How many charges or lives each target has before fully dissipating."
-NumUpfrontTargetsToSpawn,"How many targets to spawn before the game mode begins"
+MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
+MoveTargets,Whether or not the targets ever move.
+NumCharges,How many charges or lives each target has before fully dissipating.
+NumUpfrontTargetsToSpawn,How many targets to spawn before the game mode begins
 PlaybackAudio,"If checked, the audio from the Input Audio Device will playback to the Output Audio Device. Check  this box if you aren't routing your Input Audio Device to your desktop sound."
 RecentTargetMemoryPolicy,"The selected method determines when to remove targets from recent memory, allowing targets to spawn in that location again."
 RecentTargetMemoryPolicy_CustomTimeBased,"Uses a specified time to remove recent targets, starting after the target has been destroyed or deactivated."
-RecentTargetMemoryPolicy_None,"Does not remember any recent targets."
-RecentTargetMemoryPolicy_NumTargetsBased,"Removes recent targets only when the number of recent targets exceeds specified capacity."
-RecentTargetMemoryPolicy_UseTargetSpawnCD,"Removes a recent target after TargetSpawnCD length of time has passed since the target has been destroyed or deactivated."
+RecentTargetMemoryPolicy_None,Does not remember any recent targets.
+RecentTargetMemoryPolicy_NumTargetsBased,Removes recent targets only when the number of recent targets exceeds specified capacity.
+RecentTargetMemoryPolicy_UseTargetSpawnCD,Removes a recent target after TargetSpawnCD length of time has passed since the target has been destroyed or deactivated.
 RecentTargetTimeLength,"Length of time to keep targets flags as recent, if using Custom Time Based RecentMemoryPolicy."
-SpawnAtOriginWheneverPossible,"Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible."
-SpawnBeatDelay,"Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time."
-SpawnEveryOtherTargetInCenter,"Whether or not spawn every other target at the origin (center)."
+SpawnAtOriginWheneverPossible,Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible.
+SpawnBeatDelay,Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time.
+SpawnEveryOtherTargetInCenter,Whether or not spawn every other target at the origin (center).
 TargetActivationResponses,"What does the target do when its activated: change directions, make damageable, etc."
-TargetActivationResponse_AddImmunity,"Immunity is granted to the target."
+TargetActivationResponse_AddImmunity,Immunity is granted to the target.
 TargetActivationResponse_ChangeDirection,"If a moving target, the direction is changed."
-TargetActivationResponse_ChangeScale,"The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this."
+TargetActivationResponse_ChangeScale,The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this.
 TargetActivationResponse_ChangeVelocity,"If a moving target, the velocity of the target is changed."
 TargetActivationResponse_None,
 TargetActivationResponse_RemoveImmunity,"Immunity is removed from the target, damageable window begins if not already damageable."
 TargetActivationResponse_ToggleImmunity,"Immunity is added or removed from the target, depending on its existing state. Same with damageable window."
-TargetActivationSelectionPolicy,"How to choose the target(s) to activate."
-TargetActivationSelectionPolicy_Bordering,"Only choose spawn points that border the previous point (BeatGrid is an example)."
+TargetActivationSelectionPolicy,How to choose the target(s) to activate.
+TargetActivationSelectionPolicy_Bordering,Only choose spawn points that border the previous point (BeatGrid is an example).
 TargetActivationSelectionPolicy_None,
-TargetActivationSelectionPolicy_Random,"Randomly chooses a target within the available spawn points."
-TargetDamageType,"How the player damages the target and receives score."
-TargetDamageType_Hit,"Firing the gun and hitting the target damages the target and awards score."
-TargetDamageType_Tracking,"Having the CrossHair over the target damages the target and awards score."
-TargetDeactivationConditions,"Each represents one way that a target can be deactivated"
+TargetActivationSelectionPolicy_Random,Randomly chooses a target within the available spawn points.
+TargetDamageType,How the player damages the target and receives score.
+TargetDamageType_Hit,Firing the gun and hitting the target damages the target and awards score.
+TargetDamageType_Tracking,Having the CrossHair over the target damages the target and awards score.
+TargetDeactivationConditions,Each represents one way that a target can be deactivated
 TargetDeactivationCondition_None,
-TargetDeactivationCondition_OnAnyExternalDamageTaken,"Target is deactivated when it receives any damage from the player."
-TargetDeactivationCondition_OnExpiration,"Target is deactivated after its damageable window closes."
-TargetDeactivationCondition_OnHealthReachedZero,"Target is deactivated after its health reaches zero."
+TargetDeactivationCondition_OnAnyExternalDamageTaken,Target is deactivated when it receives any damage from the player.
+TargetDeactivationCondition_OnExpiration,Target is deactivated after its damageable window closes.
+TargetDeactivationCondition_OnHealthReachedZero,Target is deactivated after its health reaches zero.
 TargetDeactivationCondition_Persistant,"Targets are never deactivated, even if their health reaches zero."
-TargetDeactivationResponses,"What does the target do when its deactivated?"
-TargetDeactivationResponse_AddImmunity,"Immunity is granted to the target."
+TargetDeactivationResponses,What does the target do when its deactivated?
+TargetDeactivationResponse_AddImmunity,Immunity is granted to the target.
 TargetDeactivationResponse_ChangeDirection,"If a moving target, the direction is changed."
-TargetDeactivationResponse_ChangeScale,"The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this."
+TargetDeactivationResponse_ChangeScale,The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this.
 TargetDeactivationResponse_ChangeVelocity,"If a moving target, the velocity of the target is changed."
-TargetDeactivationResponse_Destroy,"Destroy the target permanently."
-TargetDeactivationResponse_Hide,"Temporarily hide the target until reactivated."
+TargetDeactivationResponse_Destroy,Destroy the target permanently.
+TargetDeactivationResponse_Hide,Temporarily hide the target until reactivated.
 TargetDeactivationResponse_None,
-TargetDeactivationResponse_PlayExplosionEffect,"Play an explosion effect."
+TargetDeactivationResponse_PlayExplosionEffect,Play an explosion effect.
 TargetDeactivationResponse_RemoveImmunity,"Immunity is removed from the target, damageable window begins if not already damageable."
-TargetDeactivationResponse_ResetColorToInactiveColor,"Reset the color of the target to the inactive color."
-TargetDeactivationResponse_ResetColorToStartColor,"Reset the color of the target to the inactive color."
-TargetDeactivationResponse_ResetPosition,"Reset the position of the target to the position it was initialized with."
-TargetDeactivationResponse_ResetScale,"Reset the scale of the target to the scale it was initialized with."
-TargetDeactivationResponse_ShrinkQuickGrowSlow,"Reset the scale of the target to the scale it was initialized with."
+TargetDeactivationResponse_ResetColorToInactiveColor,Reset the color of the target to the inactive color.
+TargetDeactivationResponse_ResetColorToStartColor,Reset the color of the target to the inactive color.
+TargetDeactivationResponse_ResetPosition,Reset the position of the target to the position it was initialized with.
+TargetDeactivationResponse_ResetScale,Reset the scale of the target to the scale it was initialized with.
+TargetDeactivationResponse_ShrinkQuickGrowSlow,Reset the scale of the target to the scale it was initialized with.
 TargetDeactivationResponse_ToggleImmunity,"Immunity is added or removed from the target, depending on its existing state. Same with damageable window."
-TargetDestructionConditions,"Each represents one way that a target can be destroyed."
+TargetDestructionConditions,Each represents one way that a target can be destroyed.
 TargetDestructionCondition_None,
-TargetDestructionCondition_OnAnyExternalDamageTaken,"Target is destroyed when it receives any damage from the player."
-TargetDestructionCondition_OnDeactivation,"Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition."
-TargetDestructionCondition_OnExpiration,"Target is deactivated after its damageable window closes."
-TargetDestructionCondition_OnHealthReachedZero,"Target is destroyed when its health reaches zero."
+TargetDestructionCondition_OnAnyExternalDamageTaken,Target is destroyed when it receives any damage from the player.
+TargetDestructionCondition_OnDeactivation,Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition.
+TargetDestructionCondition_OnExpiration,Target is deactivated after its damageable window closes.
+TargetDestructionCondition_OnHealthReachedZero,Target is destroyed when its health reaches zero.
 TargetDestructionCondition_Persistant,"Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated."
-TargetDistributionPolicy,"How Targets are distributed in the spawn box."
-TargetDistributionPolicy_EdgeOnly,"Only spawn targets on the edges of the current spawn area."
-TargetDistributionPolicy_FullRange,"Spawn targets anywhere in the current spawn area."
-TargetDistributionPolicy_Grid,"Spawns targets in an evenly-spaced grid. Able to fit more targets."
-TargetDistributionPolicy_HeadshotHeightOnly,"The targests will only spawn at headshot height."
+TargetDistributionPolicy,How Targets are distributed in the spawn box.
+TargetDistributionPolicy_EdgeOnly,Only spawn targets on the edges of the current spawn area.
+TargetDistributionPolicy_FullRange,Spawn targets anywhere in the current spawn area.
+TargetDistributionPolicy_Grid,Spawns targets in an evenly-spaced grid. Able to fit more targets.
+TargetDistributionPolicy_HeadshotHeightOnly,The targests will only spawn at headshot height.
 TargetSpawnCD,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
-TargetSpawningPolicy,"When to spawn the targets."
-TargetSpawningPolicy_RuntimeOnly,"Spawn targets when the TargetManager receives the signal from AudioAnalyzer."
-TargetSpawningPolicy_UpfrontOnly,"Spawn all the targets before the game mode starts."
+TargetSpawningPolicy,When to spawn the targets.
+TargetSpawningPolicy_RuntimeOnly,Spawn targets when the TargetManager receives the signal from AudioAnalyzer.
+TargetSpawningPolicy_UpfrontOnly,Spawn all the targets before the game mode starts.

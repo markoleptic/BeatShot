@@ -12,38 +12,65 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "AbilitySystem/AttributeSets/BSAttributeSetBase.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
 ASphereTarget::ASphereTarget()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
-	RootComponent = CapsuleComponent;
-	CapsuleComponent->SetCapsuleRadius(SphereTargetRadius);
-	CapsuleComponent->SetCapsuleHalfHeight(SphereTargetRadius);
 
-	SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>("Sphere Mesh");
-	SphereMesh->SetupAttachment(CapsuleComponent);
+	if (!RootComponent)
+	{
+		CapsuleComponent = CreateDefaultSubobject<UCapsuleComponent>("Capsule Component");
+		CapsuleComponent->SetCapsuleRadius(SphereTargetRadius);
+		CapsuleComponent->SetCapsuleHalfHeight(SphereTargetRadius);
+		RootComponent = CapsuleComponent;
+	}
 
-	HealthComponent = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
+	if (!SphereMesh)
+	{
+		SphereMesh = CreateDefaultSubobject<UStaticMeshComponent>("Sphere Mesh");
+		SphereMesh->SetupAttachment(CapsuleComponent);
+	}
+
+	if (!ProjectileMovementComponent)
+	{
+		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
+		ProjectileMovementComponent->SetUpdatedComponent(CapsuleComponent);
+		ProjectileMovementComponent->InitialSpeed = 0.0f;
+		ProjectileMovementComponent->MaxSpeed = 0.0f;
+		ProjectileMovementComponent->bRotationFollowsVelocity = false;
+		ProjectileMovementComponent->bShouldBounce = true;
+		ProjectileMovementComponent->Bounciness = 1.f;
+		ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
+		ProjectileMovementComponent->Velocity = FVector(0.f);
+	}
+
+	if (!HealthComponent)
+	{
+		HealthComponent = CreateDefaultSubobject<UBSHealthComponent>("Health Component");
+	}
 
 	// Create ability system component, and set it to be explicitly replicated
-	AbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>("Ability System Component");
-
+	if (!AbilitySystemComponent)
+	{
+		AbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>("Ability System Component");
+		// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
+		AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+	}
+	
 	// Create the attribute set, this replicates by default
 	// Adding it as a sub object of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
-	HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>("Attribute Set Base");
-	AbilitySystemComponent->SetIsReplicated(true);
-
-	// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+	if (!HardRefAttributeSetBase)
+	{
+		HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>("Attribute Set Base");
+		AbilitySystemComponent->SetIsReplicated(true);
+	}
 
 	InitialLifeSpan = 0.f;
 	Guid = FGuid::NewGuid();
-	MovingTargetDirection = FVector();
-	MovingTargetSpeed = 0.f;
 	InitialTargetScale = FVector();
 	InitialTargetLocation = FVector();
 	ColorWhenDestroyed = FLinearColor();
@@ -56,6 +83,17 @@ void ASphereTarget::InitTarget(const FBS_TargetConfig& InTargetConfig)
 	Config = InTargetConfig;
 	HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
 	HardRefAttributeSetBase->InitHealth(Config.MaxHealth);
+
+	if (!InTargetConfig.bMoveTargets)
+	{
+		if (ProjectileMovementComponent)
+		{
+			ProjectileMovementComponent->Deactivate();
+		}
+	}
+
+	InitialTargetScale = GetActorScale();
+	InitialTargetLocation = GetActorLocation();
 }
 
 UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
@@ -96,42 +134,27 @@ void ASphereTarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSet
 	SetUseSeparateOutlineColor(InPlayerSettings.bUseSeparateOutlineColor);
 }
 
-void ASphereTarget::SetInitialSphereScale(const FVector& NewScale)
-{
-	InitialTargetScale = NewScale;
-	CapsuleComponent->SetRelativeScale3D(NewScale);
-}
-
 void ASphereTarget::BeginPlay()
 {
 	Super::BeginPlay();
-
-	InitialTargetLocation = GetActorLocation();
-	MovingTargetSpeed = Config.MinTargetSpeed;
-
+	
+	if (ProjectileMovementComponent->IsActive())
+	{
+		ProjectileMovementComponent->InitialSpeed = Config.MinTargetSpeed;
+	}
+	
 	if (GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
 		
 		/* Apply gameplay tags */
 		AbilitySystemComponent->AddLooseGameplayTags(Config.OnSpawn_ApplyTags);
-
-		switch (Config.TargetDamageType)
-		{
-		case ETargetDamageType::None:
-		case ETargetDamageType::Hit:
-			break;
-		case ETargetDamageType::Tracking:
-		case ETargetDamageType::Combined:
-			AbilitySystemComponent->AddLooseGameplayTag(FBSGameplayTags::Get().Target_State_Tracking);
-			OnTargetActivationStateChanged.AddUObject(HealthComponent, &UBSHealthComponent::SetShouldUpdateTotalPossibleDamage);
-			break;
-		}
 		
 		FGameplayTagContainer Container;
 		GetOwnedGameplayTags(Container);
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent, Container);
 		HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::OnHealthChanged);
+		HealthComponent->OnSecondPassedTotalPossibleDamage.AddUObject(this, &ASphereTarget::OnSecondPassedTotalPossibleDamage);
 		GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ASphereTarget::OnImmunityBlockGameplayEffect);
 	}
 
@@ -169,6 +192,21 @@ void ASphereTarget::BeginPlay()
 	{
 		ApplyImmunityEffect();
 	}
+
+	switch (Config.TargetDamageType)
+	{
+	case ETargetDamageType::None:
+	case ETargetDamageType::Hit:
+		GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(TrackingImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+		break;
+	case ETargetDamageType::Tracking:
+		GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(FireGunImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+		OnTargetActivationStateChanged.AddUObject(HealthComponent, &UBSHealthComponent::SetShouldUpdateTotalPossibleDamage);
+		break;
+	case ETargetDamageType::Combined:
+		OnTargetActivationStateChanged.AddUObject(HealthComponent, &UBSHealthComponent::SetShouldUpdateTotalPossibleDamage);
+		break;
+	}
 	
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow))
 	{
@@ -188,8 +226,14 @@ void ASphereTarget::Tick(float DeltaSeconds)
 
 void ASphereTarget::OnTargetMaxLifeSpanExpired()
 {
-	//ApplyImmunityEffect();
 	DamageSelf(Config.ExpirationHealthPenalty);
+}
+
+void ASphereTarget::OnSecondPassedTotalPossibleDamage(const float TotalPossibleDamage) const
+{
+	// TODO: Not working
+	OnTargetDamageEventOrTimeout.Broadcast(FTargetDamageEvent(-1, HardRefAttributeSetBase->GetHealth(), GetActorLocation(), GetCurrentTargetScale(), GetGuid(),
+			0.f, TotalPossibleDamage));
 }
 
 void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage)
@@ -197,10 +241,10 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 	const float TimeAlive = GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
 	
-	const bool Expired = ActorInstigator == this;
+	const bool bDamagedSelf = ActorInstigator == this;
 
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	if (Expired)
+	if (bDamagedSelf)
 	{
 		OnTargetDamageEventOrTimeout.Broadcast(FTargetDamageEvent(-1, NewValue, GetActorLocation(), GetCurrentTargetScale(), GetGuid()));
 	}
@@ -216,17 +260,17 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 		return;
 	}
 	
-	if (Expired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration))
+	if (bDamagedSelf && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration))
 	{
-		DeactivateTarget(NewValue, Expired);
+		DeactivateTarget(NewValue, bDamagedSelf);
 	}
-	else if (!Expired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnAnyExternalDamageTaken))
+	else if (!bDamagedSelf && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnAnyExternalDamageTaken))
 	{
-		DeactivateTarget(NewValue, Expired);
+		DeactivateTarget(NewValue, bDamagedSelf);
 	}
 	else if (NewValue <= 0.f && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnHealthReachedZero))
 	{
-		DeactivateTarget(NewValue, Expired);
+		DeactivateTarget(NewValue, bDamagedSelf);
 	}
 }
 
@@ -449,7 +493,7 @@ void ASphereTarget::RemoveImmunityEffect() const
 	{
 		if (IsTargetImmune())
 		{
-			Comp->RemoveActiveEffectsWithTags(FGameplayTagContainer(FBSGameplayTags::Get().Target_State_Immune));
+			Comp->RemoveActiveGameplayEffectBySourceEffect(TargetImmunity, Comp);
 		}
 	}
 }
@@ -484,14 +528,50 @@ bool ASphereTarget::IsDamageWindowActive() const
 	return GetWorldTimerManager().IsTimerActive(DamageableWindow);
 }
 
-void ASphereTarget::SetMovingTargetDirection(const FVector& NewDirection)
+FVector ASphereTarget::GetTargetDirection() const
 {
-	MovingTargetDirection = NewDirection;
+	if (ProjectileMovementComponent->IsActive())
+	{
+		return ProjectileMovementComponent->Velocity / ProjectileMovementComponent->InitialSpeed;
+	}
+	return FVector(0.f);
 }
 
-void ASphereTarget::SetMovingTargetSpeed(const float NewMovingTargetSpeed)
+
+float ASphereTarget::GetTargetSpeed() const
 {
-	MovingTargetSpeed = NewMovingTargetSpeed;
+	if (ProjectileMovementComponent->IsActive())
+	{
+		return ProjectileMovementComponent->InitialSpeed;
+	}
+	return 0.f;
+}
+
+FVector ASphereTarget::GetTargetVelocity() const
+{
+	if (ProjectileMovementComponent->IsActive())
+	{
+		return ProjectileMovementComponent->Velocity;
+	}
+	return FVector(0.f);
+}
+
+
+void ASphereTarget::SetTargetDirection(const FVector& NewDirection) const
+{
+	if (ProjectileMovementComponent->IsActive())
+	{
+		ProjectileMovementComponent->Velocity = NewDirection * ProjectileMovementComponent->InitialSpeed;
+	}
+}
+
+
+void ASphereTarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
+{
+	if (ProjectileMovementComponent->IsActive())
+	{
+		ProjectileMovementComponent->InitialSpeed = NewMovingTargetSpeed;
+	}
 }
 
 void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)

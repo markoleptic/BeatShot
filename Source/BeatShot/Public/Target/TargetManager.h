@@ -6,7 +6,7 @@
 #include "Target/SphereTarget.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
-#include "SpawnPointManager.h"
+#include "SpawnPointManagerComponent.h"
 #include "Components/BoxComponent.h"
 #include "TargetManager.generated.h"
 
@@ -39,18 +39,36 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
-	/** The spawn area */
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	/** The 2D spawn area */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> SpawnBox;
 
-	/** The spawn area for BeatTrack, used to reverse the direction if the BeatTrack target stops overlapping it */
-	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	TObjectPtr<UBoxComponent> OverlapSpawnBox;
+	/** Three-dimensional spawn area that all targets must fit inside. Used to update boundary boxes */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> SpawnArea;
+
+	/** All directional boxes act as a boundary for moving targets */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> TopBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> BottomBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> LeftBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> RightBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> ForwardBox;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UBoxComponent> BackwardBox;
 
 	/** Reinforcement learning agent component */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	TObjectPtr<UReinforcementLearningComponent> ReinforcementLearningComponent;
 
+	/** Manages spawn points */
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	TObjectPtr<USpawnPointManagerComponent> SpawnPointManager;
+	
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	TSubclassOf<ASphereTarget> TargetToSpawn;
@@ -58,10 +76,6 @@ protected:
 	/** Curve to look up values for DynamicSpawnScale */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	UCurveFloat* DynamicSpawnCurve;
-
-	/** Manages spawn points */
-	UPROPERTY()
-	TObjectPtr<USpawnPointManager> SpawnPointManager;
 
 public:
 	void ShowDebug_SpawnBox(const bool bShow);
@@ -106,26 +120,39 @@ public:
 private:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
-	bool SpawnTarget(USpawnPoint* InSpawnPoint);
+	bool SpawnTarget(const TObjectPtr<USpawnPoint> InSpawnPoint);
 
+	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
 	void SpawnUpfrontOnlyTargets();
 
-	/** Calls ActivateTarget using SpawnPoint's index and ManagedTargets */
-	bool ActivateTarget() const;
+	/** Tries to spawn and activate a target/SpawnPoint at runtime */
+	bool HandleRuntimeSpawnAndActivation(TObjectPtr<USpawnPoint> InSpawnPoint);
 
-	/** Updates the position of the BeatTrack target on tick */
-	void OnTick_UpdateTargetLocation(const float DeltaTime) const;
+	/** Tries to activate a deactivated SpawnPoint if it references a target still being managed in ManagedTargets */
+	bool TryActivateExistingTarget();
 
-	/** The expiration or destruction of any non-BeatTrack target is bound to this function
-	*   to keep track of the streak, timing, and location. The DynamicScaleFactor is also changed
-	*   based on consecutive targets hit */
+	/** Executes any Target Activation Responses, calls ActivateTarget, flags SpawnPoint as recent, and fires OnActivation delegate */
+	bool ActivateTarget(const TObjectPtr<USpawnPoint> InSpawnPoint) const;
+
+	/** Executes any Target Activation Responses, calls ActivateTarget, flags SpawnPoint as recent, and fires OnActivation delegate */
+	bool ActivateTarget(TObjectPtr<ASphereTarget> InTarget) const;
+
+	/** The expiration or destruction of any target is bound to this function, which handles firing delegates, target flags, target removal */
 	UFUNCTION()
 	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
 
-	/** Called when any actor stops overlapping the OverlapSpawnBox. Used to reverse direction of target when it goes out of bounds */
-	UFUNCTION()
-	void OnOverlapEnd_OverlapSpawnBox(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	/** Updates ConsecutiveTargetsHit, based on if the target expired or not */
+	void UpdateConsecutiveTargetsHit(const float TimeAlive);
 
+	/** Updates DynamicSpawnScale, based on if the target expired or not */
+	void UpdateDynamicSpawnScale(const float TimeAlive);
+
+	/** Broadcasts the appropriate delegate based on the damage type */
+	void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType, const FTargetDamageEvent& TargetDamageEvent) const;
+
+	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
+	void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions, const FTargetDamageEvent& TargetDamageEvent);
+	
 	/** Calls functions to get the next target's location and scale */
 	void FindNextTargetProperties();
 
@@ -133,19 +160,42 @@ private:
 	FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	USpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingMethod, const FVector& NewTargetScale) const;
-
+	USpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
+	
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed) const;
 
-	/** Returns an array of valid spawn points */
+	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
+	 *  TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
 	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& DistributionPolicy, const EBoundsScalingPolicy& BoundsScalingPolicy) const;
+
+	/** Adds valid spawn locations for an edge-only TargetDistributionPolicy */
+	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema, const bool bShowDebug = false) const;
+
+	/** Adds valid spawn locations for a full range TargetDistributionPolicy */
+	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema, const bool bShowDebug = false) const;
+
+	/** Adds valid spawn locations for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
+	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
+
+	/** Adds/filters valid spawn locations for a Bordering TargetActivationSelectionPolicy */
+	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
+
+	/** Filters out any locations that correspond to recent points flagged as activated */
+	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
+
+	/** Filters out any locations that correspond to recent points flagged as recent */
+	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
+
+	void UpdateSpawnArea() const;
 	
 	/** Returns a copy of all spawn locations that were created on initialization */
 	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
 
 	/** Returns a copy of ManagedTargets */
 	TArray<TObjectPtr<ASphereTarget>> GetManagedTargets() const { return ManagedTargets; }
+
+	ASphereTarget* GetManagedTargetByGuid(const FGuid Guid);
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
 	FVector GetBoxExtents_Static() const { return StaticExtents; }
@@ -159,10 +209,10 @@ private:
 	/** Creates the box extrema for a grid target distribution */
 	FExtrema GenerateBoxExtremaGrid() const;
 
-	/** Adds a SphereTarget to the ManagedTargets array */
-	int32 AddToManagedTargets(ASphereTarget* SpawnTarget);
+	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnPoint IsCurrentlyManaged flag */
+	int32 AddToManagedTargets(TObjectPtr<ASphereTarget> SpawnTarget, const TObjectPtr<USpawnPoint> AssociatedSpawnPoint);
 
-	/** Removes the DestroyedTarget from ManagedTargets */
+	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnPoint IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
@@ -172,10 +222,7 @@ private:
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 	
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
-	int32 TryGetSpawnLocationFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
-
-	/** Draws debug boxes for locations */
-	void DrawDebugBox_OpenLocations(const TArray<FVector>& InOpenLocations, const FColor& InColor, const int32 InThickness) const;
+	USpawnPoint* TryGetSpawnPointFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 	
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfig;
@@ -227,7 +274,4 @@ private:
 
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;
-
-	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnTargetHealthChangedOrExpired() */
-	FTimerDelegate RemoveFromRecentDelegate;
 };

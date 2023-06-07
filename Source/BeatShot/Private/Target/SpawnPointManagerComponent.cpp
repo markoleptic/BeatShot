@@ -1,8 +1,9 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "Target/SpawnPointManager.h"
+#include "Target/SpawnPointManagerComponent.h"
 #include "GlobalConstants.h"
+#include "Target/TargetManager.h"
 
 USpawnPoint::USpawnPoint()
 {
@@ -17,6 +18,7 @@ USpawnPoint::USpawnPoint()
 	TotalHits = 0;
 	Index = INDEX_NONE;
 	bIsActivated = false;
+	bIsCurrentlyManaged = false;
 	bIsRecent = false;
 	TimeSetRecent = DBL_MAX;
 	IndexType = EGridIndexType::None;
@@ -78,82 +80,82 @@ bool USpawnPoint::IsBorderIndex() const
 
 TArray<int32> USpawnPoint::FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth)
 {
-		TArray<int32> ReturnArray = TArray<int32>();
+	TArray<int32> ReturnArray = TArray<int32>();
 
-		const int32 TopLeft = InIndex + InWidth - 1;
-		const int32 Top = InIndex + InWidth;
-		const int32 TopRight = InIndex + InWidth + 1;
-		const int32 Right = InIndex + 1;
-		const int32 BottomRight = InIndex - InWidth + 1;
-		const int32 Bottom = InIndex - InWidth;
-		const int32 BottomLeft = InIndex - InWidth - 1;
-		const int32 Left = InIndex - 1;
+	const int32 TopLeft = InIndex + InWidth - 1;
+	const int32 Top = InIndex + InWidth;
+	const int32 TopRight = InIndex + InWidth + 1;
+	const int32 Right = InIndex + 1;
+	const int32 BottomRight = InIndex - InWidth + 1;
+	const int32 Bottom = InIndex - InWidth;
+	const int32 BottomLeft = InIndex - InWidth - 1;
+	const int32 Left = InIndex - 1;
 
-		switch (InGridIndexType)
-		{
-		case EGridIndexType::None:
-			break;
-		case EGridIndexType::Corner_TopLeft:
-			ReturnArray.Add(Right);
-			ReturnArray.Add(Bottom);
-			ReturnArray.Add(BottomRight);
-			break;
-		case EGridIndexType::Corner_TopRight:
-			ReturnArray.Add(Left);
-			ReturnArray.Add(Bottom);
-			ReturnArray.Add(BottomLeft);
-			break;
-		case EGridIndexType::Corner_BottomRight:
-			ReturnArray.Add(Left);
-			ReturnArray.Add(Top);
-			ReturnArray.Add(TopLeft);
-			break;
-		case EGridIndexType::Corner_BottomLeft:
-			ReturnArray.Add(Right);
-			ReturnArray.Add(Top);
-			ReturnArray.Add(TopRight);
-			break;
-		case EGridIndexType::Border_Top:
-			ReturnArray.Add(Left);
-			ReturnArray.Add(Right);
-			ReturnArray.Add(BottomRight);
-			ReturnArray.Add(Bottom);
-			ReturnArray.Add(BottomLeft);
-			break;
-		case EGridIndexType::Border_Right:
-			ReturnArray.Add(TopLeft);
-			ReturnArray.Add(Top);
-			ReturnArray.Add(Left);
-			ReturnArray.Add(BottomLeft);
-			ReturnArray.Add(Bottom);
-			break;
-		case EGridIndexType::Border_Bottom:
-			ReturnArray.Add(TopLeft);
-			ReturnArray.Add(Top);
-			ReturnArray.Add(TopRight);
-			ReturnArray.Add(Right);
-			ReturnArray.Add(Left);
-			break;
-		case EGridIndexType::Border_Left:
-			ReturnArray.Add(Top);
-			ReturnArray.Add(TopRight);
-			ReturnArray.Add(Right);
-			ReturnArray.Add(BottomRight);
-			ReturnArray.Add(Bottom);
-			break;
-		case EGridIndexType::Middle:
-			ReturnArray.Add(TopLeft);
-			ReturnArray.Add(Top);
-			ReturnArray.Add(TopRight);
-			ReturnArray.Add(Right);
-			ReturnArray.Add(BottomRight);
-			ReturnArray.Add(Bottom);
-			ReturnArray.Add(BottomLeft);
-			ReturnArray.Add(Left);
-			break;
-		}
-		return ReturnArray;
+	switch (InGridIndexType)
+	{
+	case EGridIndexType::None:
+		break;
+	case EGridIndexType::Corner_TopLeft:
+		ReturnArray.Add(Right);
+		ReturnArray.Add(Bottom);
+		ReturnArray.Add(BottomRight);
+		break;
+	case EGridIndexType::Corner_TopRight:
+		ReturnArray.Add(Left);
+		ReturnArray.Add(Bottom);
+		ReturnArray.Add(BottomLeft);
+		break;
+	case EGridIndexType::Corner_BottomRight:
+		ReturnArray.Add(Left);
+		ReturnArray.Add(Top);
+		ReturnArray.Add(TopLeft);
+		break;
+	case EGridIndexType::Corner_BottomLeft:
+		ReturnArray.Add(Right);
+		ReturnArray.Add(Top);
+		ReturnArray.Add(TopRight);
+		break;
+	case EGridIndexType::Border_Top:
+		ReturnArray.Add(Left);
+		ReturnArray.Add(Right);
+		ReturnArray.Add(BottomRight);
+		ReturnArray.Add(Bottom);
+		ReturnArray.Add(BottomLeft);
+		break;
+	case EGridIndexType::Border_Right:
+		ReturnArray.Add(TopLeft);
+		ReturnArray.Add(Top);
+		ReturnArray.Add(Left);
+		ReturnArray.Add(BottomLeft);
+		ReturnArray.Add(Bottom);
+		break;
+	case EGridIndexType::Border_Bottom:
+		ReturnArray.Add(TopLeft);
+		ReturnArray.Add(Top);
+		ReturnArray.Add(TopRight);
+		ReturnArray.Add(Right);
+		ReturnArray.Add(Left);
+		break;
+	case EGridIndexType::Border_Left:
+		ReturnArray.Add(Top);
+		ReturnArray.Add(TopRight);
+		ReturnArray.Add(Right);
+		ReturnArray.Add(BottomRight);
+		ReturnArray.Add(Bottom);
+		break;
+	case EGridIndexType::Middle:
+		ReturnArray.Add(TopLeft);
+		ReturnArray.Add(Top);
+		ReturnArray.Add(TopRight);
+		ReturnArray.Add(Right);
+		ReturnArray.Add(BottomRight);
+		ReturnArray.Add(Bottom);
+		ReturnArray.Add(BottomLeft);
+		ReturnArray.Add(Left);
+		break;
 	}
+	return ReturnArray;
+}
 
 FVector USpawnPoint::FindCornerPointFromCenterPoint(const FVector& InCenterPoint, const float InIncY, const float InIncZ)
 {
@@ -274,28 +276,42 @@ void USpawnPoint::SetIsRecent(const bool bSetIsRecent)
 	}
 }
 
-TArray<FVector>& USpawnPoint::SetOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
-	const FVector& InOrigin, const FExtrema& InExtrema)
+void USpawnPoint::SetOverlappingPoints(const TArray<FVector>& InOverlappingPoints)
 {
-	float Radius = InScale.X * SphereTargetDiameter + InMinTargetDistance / 2.f;
+	OverlappingPoints = InOverlappingPoints;
+}
+
+TArray<FVector> USpawnPoint::GenerateOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
+		const FVector& InOrigin) const
+{
+	TArray<FVector> OutPoints;
+	float Radius = (InScale.X * SphereTargetRadius * 2.f) + InMinTargetDistance / 2.f;
 	Radius = FMath::Max(Radius, InMinOverlapRadius);
 	const FSphere Sphere = FSphere(CenterPoint, Radius);
+
+	const float MaxSnappedRadiusY = FMath::GridSnap(Radius, IncrementY) + IncrementY;
+	const float MaxSnappedRadiusZ = FMath::GridSnap(Radius, IncrementZ) + IncrementZ;
+	const float MinY = CornerPoint.Y - MaxSnappedRadiusY;
+	const float MaxY = CornerPoint.Y + MaxSnappedRadiusY + IncrementY;
+	const float MinZ = CornerPoint.Z - MaxSnappedRadiusZ;
+	const float MaxZ = CornerPoint.Z + MaxSnappedRadiusZ + IncrementZ;
+	
 	int Count = 0;
-	for (float Z = InExtrema.Min.Z; Z < InExtrema.Max.Z; Z += IncrementZ)
+	for (float Z = MinZ; Z < MaxZ; Z += IncrementZ)
 	{
-		for (float Y = InExtrema.Min.Y; Y < InExtrema.Max.Y; Y += IncrementY)
+		for (float Y = MinY; Y < MaxY; Y += IncrementY)
 		{
 			Count++;
 			if (FVector Loc = FVector(InOrigin.X, Y, Z); Sphere.IsInside(Loc))
 			{
-				OverlappingPoints.AddUnique(Loc);
+				OutPoints.AddUnique(Loc);
 			}
 		}
 	}
 	//UE_LOG(LogTargetManager, Display, TEXT("GetOverlappingPoints Count %d"), Count);
 	//DrawDebugSphere(GetWorld(), CenterPoint, Scale * SphereTargetRadius * 2 + (BSConfig.MinDistanceBetweenTargets / 2.f), 32, FColor::Magenta, false, 0.5f);
 	//UE_LOG(LogTargetManager, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
-	return OverlappingPoints;
+	return OutPoints;
 }
 
 TArray<EBorderingDirection> USpawnPoint::GetBorderingDirections(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const
@@ -325,18 +341,23 @@ TArray<EBorderingDirection> USpawnPoint::GetBorderingDirections(const TArray<FVe
 	return Directions;
 }
 
-// ---------------------- //
-// - USpawnPointManager - //
-// ---------------------- //
+// ------------------------------- //
+// - USpawnPointManagerComponent - //
+// ------------------------------- //
 
-void USpawnPointManager::InitSpawnPointManager(const FBSConfig& InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents)
+USpawnPointManagerComponent::USpawnPointManagerComponent()
+{
+	PrimaryComponentTick.bCanEverTick = true;
+}
+
+void USpawnPointManagerComponent::InitSpawnPointManager(const FBSConfig& InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents)
 {
 	BSConfig = InBSConfig;
 	Origin = InOrigin;
 	StaticExtents = InStaticExtents;
 }
 
-TArray<FVector> USpawnPointManager::InitializeSpawnPoints(const FExtrema& InStaticExtrema)
+TArray<FVector> USpawnPointManagerComponent::InitializeSpawnPoints(const FExtrema& InStaticExtrema)
 {
 	StaticExtrema = InStaticExtrema;
 	
@@ -378,7 +399,7 @@ TArray<FVector> USpawnPointManager::InitializeSpawnPoints(const FExtrema& InStat
 	return AllSpawnLocations;
 }
 
-void USpawnPointManager::SetAppropriateSpawnMemoryValues()
+void USpawnPointManagerComponent::SetAppropriateSpawnMemoryValues()
 {
 	switch (BSConfig.TargetConfig.TargetDistributionPolicy)
 	{
@@ -401,6 +422,7 @@ void USpawnPointManager::SetAppropriateSpawnMemoryValues()
 						if (HalfWidth / Scale % 5 == 0)
 						{
 							SpawnMemoryScaleY = 1.f / static_cast<float>(Scale);
+							SpawnMemoryIncY = Scale;
 							bWidthScaleSelected = true;
 						}
 					}
@@ -412,6 +434,7 @@ void USpawnPointManager::SetAppropriateSpawnMemoryValues()
 						if (HalfHeight / Scale % 5 == 0)
 						{
 							SpawnMemoryScaleZ = 1.f / static_cast<float>(Scale);
+							SpawnMemoryIncZ = Scale;
 							bHeightScaleSelected = true;
 						}
 					}
@@ -426,9 +449,9 @@ void USpawnPointManager::SetAppropriateSpawnMemoryValues()
 				UE_LOG(LogTemp, Warning, TEXT("Couldn't Find Height/Width"));
 				SpawnMemoryScaleY = 1.f / 50.f;
 				SpawnMemoryScaleZ = 1.f / 50.f;
+				SpawnMemoryIncY = 50.f;
+				SpawnMemoryIncZ = 50.f;
 			}
-			SpawnMemoryIncY = roundf(1.f / SpawnMemoryScaleY);
-			SpawnMemoryIncZ = roundf(1.f / SpawnMemoryScaleZ);
 		}
 		break;
 	case ETargetDistributionPolicy::Grid:
@@ -437,12 +460,12 @@ void USpawnPointManager::SetAppropriateSpawnMemoryValues()
 		SpawnMemoryIncZ = BSConfig.GridConfig.GridSpacing.Y + BSConfig.TargetConfig.MaxTargetScale * SphereTargetDiameter;
 		break;
 	}
-	MinOverlapRadius = (SpawnMemoryIncY + SpawnMemoryIncZ) / 2.f;
+	MinOverlapRadius = FMath::Max(SpawnMemoryIncY, SpawnMemoryIncZ) / 2.f;
 }
 
 // SpawnPoint finders/getters
 
-USpawnPoint* USpawnPointManager::FindSpawnPointFromIndex(const int32 InIndex)
+USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromIndex(const int32 InIndex)
 {
 	USpawnPoint** Point = SpawnPoints.FindByPredicate([&InIndex] (const USpawnPoint* SpawnPoint)
 	{
@@ -459,7 +482,7 @@ USpawnPoint* USpawnPointManager::FindSpawnPointFromIndex(const int32 InIndex)
 	return nullptr;
 }
 
-USpawnPoint* USpawnPointManager::FindSpawnPointFromLocation(const FVector& InLocation)
+USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromLocation(const FVector& InLocation)
 {
 	USpawnPoint** Point = SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
 	{
@@ -477,7 +500,7 @@ USpawnPoint* USpawnPointManager::FindSpawnPointFromLocation(const FVector& InLoc
 	return nullptr;
 }
 
-USpawnPoint* USpawnPointManager::FindSpawnPointFromGuid(const FGuid& InGuid)
+USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromGuid(const FGuid& InGuid)
 {
 	USpawnPoint** Point = SpawnPoints.FindByPredicate([&InGuid](const USpawnPoint* SpawnPoint)
 	{
@@ -494,7 +517,7 @@ USpawnPoint* USpawnPointManager::FindSpawnPointFromGuid(const FGuid& InGuid)
 	return nullptr;
 }
 
-USpawnPoint* USpawnPointManager::FindOldestRecentSpawnPoint() const
+USpawnPoint* USpawnPointManagerComponent::FindOldestRecentSpawnPoint() const
 {
 	TArray<USpawnPoint*> RecentSpawnPoints = GetRecentSpawnPoints();
 	
@@ -514,7 +537,7 @@ USpawnPoint* USpawnPointManager::FindOldestRecentSpawnPoint() const
 	return MostRecent;
 }
 
-int32 USpawnPointManager::FindIndexFromLocation(const FVector& InLocation) const
+int32 USpawnPointManagerComponent::FindSpawnPointIndexFromLocation(const FVector& InLocation) const
 {
 	if (const USpawnPoint* Found = *SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
 	{
@@ -531,7 +554,7 @@ int32 USpawnPointManager::FindIndexFromLocation(const FVector& InLocation) const
 	return INDEX_NONE;
 }
 
-bool USpawnPointManager::IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const
+bool USpawnPointManagerComponent::IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const
 {
 	if (SpawnPoints.Contains(InSpawnPoint))
 	{
@@ -542,7 +565,31 @@ bool USpawnPointManager::IsSpawnPointValid(const USpawnPoint* InSpawnPoint) cons
 
 // SpawnPoint array getters
 
-TArray<USpawnPoint*> USpawnPointManager::GetRecentSpawnPoints() const
+TArray<USpawnPoint*> USpawnPointManagerComponent::GetManagedPoints() const
+{
+	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
+	{
+		if (SpawnPoint->IsCurrentlyManaged())
+		{
+			return true;
+		}
+		return false;
+	});
+}
+
+TArray<USpawnPoint*> USpawnPointManagerComponent::GetDeactivatedManagedPoints() const
+{
+	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
+	{
+		if (SpawnPoint->IsCurrentlyManaged() && !SpawnPoint->IsActivated())
+		{
+			return true;
+		}
+		return false;
+	});
+}
+
+TArray<USpawnPoint*> USpawnPointManagerComponent::GetRecentSpawnPoints() const
 {
 	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
@@ -554,7 +601,7 @@ TArray<USpawnPoint*> USpawnPointManager::GetRecentSpawnPoints() const
 	});
 }
 
-TArray<USpawnPoint*> USpawnPointManager::GetActivatedSpawnPoints() const
+TArray<USpawnPoint*> USpawnPointManagerComponent::GetActivatedSpawnPoints() const
 {
 	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
@@ -566,7 +613,7 @@ TArray<USpawnPoint*> USpawnPointManager::GetActivatedSpawnPoints() const
 	});
 }
 
-TArray<USpawnPoint*> USpawnPointManager::GetActivatedOrRecentSpawnPoints() const
+TArray<USpawnPoint*> USpawnPointManagerComponent::GetActivatedOrRecentSpawnPoints() const
 {
 	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
@@ -578,26 +625,51 @@ TArray<USpawnPoint*> USpawnPointManager::GetActivatedOrRecentSpawnPoints() const
 	});
 }
 
-// SpawnPoint overlaps
-
-void USpawnPointManager::SetOverlappingPoints(USpawnPoint* Point, const FVector& Scale) const
+int32 USpawnPointManagerComponent::GetManagedTargetIndex(const int32 InSpawnPointIndex)
 {
-	Point->SetOverlappingPoints(BSConfig.TargetConfig.bMoveTargetsForward, MinOverlapRadius, Scale, Origin, StaticExtrema);
+	if (SpawnPoints.IsValidIndex(InSpawnPointIndex))
+	{
+		return SpawnPoints[InSpawnPointIndex]->GetManagedTargetIndex();
+	}
+	return INDEX_NONE;
 }
 
-TArray<FVector> USpawnPointManager::RemoveOverlappingPointsFromSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const FExtrema& Extrema) const
+void USpawnPointManagerComponent::RefreshRecentTargetFlags()
+{
+	if (const int32 NumToRemove = GetRecentSpawnPoints().Num() - BSConfig.TargetConfig.MaxNumRecentTargets; NumToRemove > 0)
+	{
+		for (int32 CurrentRemoveNum = 0; CurrentRemoveNum < NumToRemove; CurrentRemoveNum++)
+		{
+			if (const USpawnPoint* Found = FindOldestRecentSpawnPoint())
+			{
+				RemoveRecentFlagFromSpawnPoint(Found->GetGuid());
+			}
+		}
+	}
+}
+
+// SpawnPoint overlaps
+
+void USpawnPointManagerComponent::RemoveOverlappingPointsFromSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const bool bShowDebug) const
 {
 	TArray<FVector> OverlappingPoints;
 	/* Resizing Overlapping Points if necessary */
-	for (USpawnPoint* Point : GetActivatedOrRecentSpawnPoints())
+	for (const USpawnPoint* Point : GetActivatedOrRecentSpawnPoints())
 	{
 		if (Scale.Length() > Point->GetScale().Length())
 		{
-			SetOverlappingPoints(Point, Scale);
+			TArray<FVector> ScaledOverlappingPoints = Point->GenerateOverlappingPoints(BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, Point->GetScale(), Origin);
+			for (const FVector& Vector : ScaledOverlappingPoints)
+			{
+				OverlappingPoints.AddUnique(Vector);
+			}
 		}
-		for (const FVector& Vector : Point->GetOverlappingPoints())
+		else
 		{
-			OverlappingPoints.AddUnique(Vector);
+			for (const FVector& Vector : Point->GetOverlappingPoints())
+			{
+				OverlappingPoints.AddUnique(Vector);
+			}
 		}
 	}
 	SpawnLocations = SpawnLocations.FilterByPredicate([&] (const FVector& Location)
@@ -608,11 +680,15 @@ TArray<FVector> USpawnPointManager::RemoveOverlappingPointsFromSpawnLocations(TA
 		}
 		return true;
 	});
-	return OverlappingPoints;
+	if (bShowDebug)
+	{
+		DrawDebug_Boxes(OverlappingPoints, FColor::Red, 4);
+	}
 }
 
-void USpawnPointManager::RemoveEdgePoints(TArray<FVector>& In, const FExtrema& Extrema) const
+void USpawnPointManagerComponent::RemoveEdgePoints(TArray<FVector>& In, const FExtrema& Extrema, const bool bShowDebug) const
 {
+	TArray<FVector> Removed;
 	if (BSConfig.TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::EdgeOnly)
 	{
 		In = In.FilterByPredicate([&](const FVector& Vector)
@@ -625,10 +701,18 @@ void USpawnPointManager::RemoveEdgePoints(TArray<FVector>& In, const FExtrema& E
 			const FVector Top = Vector + FVector(0, 0, SpawnMemoryIncZ);
 			if (Vector.Y != Extrema.Min.Y && Right.Y < Extrema.Max.Y && !In.Contains(Right))
 			{
+				if (bShowDebug)
+				{
+					Removed.Add(Vector);
+				}
 				return false;
 			}
 			if (Vector.Z != Extrema.Min.Z && Top.Z < Extrema.Max.Z && !In.Contains(Top))
 			{
+				if (bShowDebug)
+				{
+					Removed.Add(Vector);
+				}
 				return false;
 			}
 			return true;
@@ -642,20 +726,32 @@ void USpawnPointManager::RemoveEdgePoints(TArray<FVector>& In, const FExtrema& E
 			const FVector Top = Vector + FVector(0, 0, SpawnMemoryIncZ);
 			if (Right.Y < Extrema.Max.Y && !In.Contains(Right))
 			{
+				if (bShowDebug)
+				{
+					Removed.Add(Vector);
+				}
 				return false;
 			}
 			if (Top.Z < Extrema.Max.Z && !In.Contains(Top))
 			{
+				if (bShowDebug)
+				{
+					Removed.Add(Vector);
+				}
 				return false;
 			}
 			return true;
 		});
 	}
+	if (bShowDebug)
+	{
+		DrawDebug_Boxes(Removed, FColor::Purple, 4);
+	}
 }
 
 // flags (activation and recent)
 
-void USpawnPointManager::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
+void USpawnPointManagerComponent::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
@@ -666,7 +762,7 @@ void USpawnPointManager::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
 	}
 }
 
-void USpawnPointManager::FlagSpawnPointAsActivated(const FGuid SpawnPointGuid)
+void USpawnPointManagerComponent::FlagSpawnPointAsActivated(const FGuid SpawnPointGuid)
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
@@ -677,12 +773,38 @@ void USpawnPointManager::FlagSpawnPointAsActivated(const FGuid SpawnPointGuid)
 		if (!Point->IsActivated())
 		{
 			Point->SetIsActivated(true);
+			Point->SetOverlappingPoints(Point->GenerateOverlappingPoints(BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, Point->GetScale(), Origin));
 		}
-		SetOverlappingPoints(Point, Point->GetScale());
 	}
 }
 
-void USpawnPointManager::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid)
+void USpawnPointManagerComponent::HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy, const FTargetDamageEvent& TargetDamageEvent)
+{
+	RemoveActivatedFlagFromSpawnPoint(TargetDamageEvent);
+	FlagSpawnPointAsRecent(TargetDamageEvent.Guid);
+	
+	FTimerHandle TimerHandle;
+	
+	/* Handle removing recent flag from SpawnPoint */
+	switch (RecentTargetMemoryPolicy)
+	{
+	case ERecentTargetMemoryPolicy::None:
+		break;
+	case ERecentTargetMemoryPolicy::CustomTimeBased:
+		RemoveFromRecentDelegate.BindUObject(this, &USpawnPointManagerComponent::RemoveRecentFlagFromSpawnPoint, TargetDamageEvent.Guid);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.RecentTargetTimeLength, false);
+		break;
+	case ERecentTargetMemoryPolicy::NumTargetsBased:
+		RefreshRecentTargetFlags();
+		break;
+	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
+		RemoveFromRecentDelegate.BindUObject(this, &USpawnPointManagerComponent::RemoveRecentFlagFromSpawnPoint, TargetDamageEvent.Guid);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
+		break;
+	}
+}
+
+void USpawnPointManagerComponent::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid)
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
@@ -693,7 +815,7 @@ void USpawnPointManager::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGu
 	}
 }
 
-void USpawnPointManager::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent)
+void USpawnPointManagerComponent::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent)
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(TargetDamageEvent.Guid))
 	{
@@ -711,7 +833,7 @@ void USpawnPointManager::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEv
 
 // Util or debug
 
-int32 USpawnPointManager::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
+int32 USpawnPointManagerComponent::GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const
 {
 	/* First find the Row and Column number that corresponds to the SpawnCounter index */
 	const int32 SpawnCounterRowNum = SpawnCounterIndex / GetSpawnPointsWidth();
@@ -728,7 +850,17 @@ int32 USpawnPointManager::GetOutArrayIndexFromSpawnCounterIndex(const int32 Spaw
 	return Index;
 }
 
-void USpawnPointManager::PrintDebug_SpawnPoint(const USpawnPoint* SpawnPoint) const
+void USpawnPointManagerComponent::DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness) const
+{
+	for (const FVector& Vector : InLocations)
+	{
+		FVector Loc = FVector(Vector.X, Vector.Y + GetSpawnMemoryIncY() / 2.f, Vector.Z + GetSpawnMemoryIncZ() / 2.f);
+		DrawDebugBox(GetWorld(), Loc, FVector(0, GetSpawnMemoryIncY() / 2.f, GetSpawnMemoryIncZ() / 2.f),
+			InColor, false, BSConfig.TargetConfig.TargetSpawnCD, 0, InThickness);
+	}
+}
+
+void USpawnPointManagerComponent::PrintDebug_SpawnPoint(const USpawnPoint* SpawnPoint) const
 {
 	UE_LOG(LogTemp, Display, TEXT("SpawnPoint:"));
 	UE_LOG(LogTemp, Display, TEXT("Index %d IndexType %s"), SpawnPoint->Index, *UEnum::GetDisplayValueAsText(SpawnPoint->GetIndexType()).ToString());

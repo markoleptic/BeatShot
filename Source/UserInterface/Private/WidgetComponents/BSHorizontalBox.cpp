@@ -2,7 +2,7 @@
 
 
 #include "WidgetComponents/BSHorizontalBox.h"
-
+#include "BSWidgetInterface.h"
 #include "Components/Border.h"
 #include "Components/HorizontalBoxSlot.h"
 
@@ -19,7 +19,7 @@ TSharedRef<SWidget> UBSHorizontalBox::RebuildWidget()
 		}
 		if (UPanelWidget* PanelWidget = Cast<UPanelWidget>(PanelSlot->Content))
 		{
-			if (UBorder* FoundBorder = DescendPanelWidget(PanelWidget))
+			if (UBorder* FoundBorder = IBSWidgetInterface::DescendWidgetReturnFirst<UBorder>(PanelWidget))
 			{
 				Borders.AddUnique(FoundBorder);
 			}
@@ -59,38 +59,10 @@ void UBSHorizontalBox::RefreshBorders()
 	{
 		if (UPanelWidget* PanelWidget = Cast<UPanelWidget>(PanelSlot->Content))
 		{
-			if (UBorder* FoundBorder = DescendPanelWidget(PanelWidget))
+			if (UBorder* FoundBorder = IBSWidgetInterface::DescendWidgetReturnFirst<UBorder>(PanelWidget))
 			{
 				Borders.AddUnique(FoundBorder);
 			}
 		}
 	}
-}
-
-UBorder* UBSHorizontalBox::DescendPanelWidget(UPanelWidget* PanelWidget)
-{
-	// Check the PanelWidget first
-	if (Cast<UBorder>(PanelWidget))
-	{
-		return Cast<UBorder>(PanelWidget);
-	}
-	
-	// Search through children
-	for (UWidget* Child : PanelWidget->GetAllChildren())
-	{
-		// Check child
-		if (Cast<UBorder>(Child))
-		{
-			return Cast<UBorder>(Child);
-		}
-		if (UPanelWidget* ChildPanelWidget = Cast<UPanelWidget>(Child))
-		{
-			// Recursively call function on any child's children
-			if (UBorder* FoundBorder = DescendPanelWidget(ChildPanelWidget))
-			{
-				return FoundBorder;
-			}
-		}
-	}
-	return nullptr;
 }

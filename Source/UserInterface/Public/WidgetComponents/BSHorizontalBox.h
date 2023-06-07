@@ -27,9 +27,6 @@ public:
 	void RefreshBorders();
 
 protected:
-	/** Descends a PanelWidget, searching for the first Border it can find. Recursively calls itself on any children */
-	UBorder* DescendPanelWidget(UPanelWidget* PanelWidget);
-	
-	/* Array of pointers to the first border found in every slot */
+	/* Array of Borders where each points to the first border found in every slot */
 	TArray<TObjectPtr<UBorder>> Borders;
 };

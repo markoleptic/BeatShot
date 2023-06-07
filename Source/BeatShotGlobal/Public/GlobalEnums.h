@@ -243,6 +243,7 @@ enum class ETargetDeactivationCondition : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant, ETargetDeactivationCondition::OnHealthReachedZero);
 
+
 /** Each represents one way that a target can be destroyed */
 UENUM(BlueprintType)
 enum class ETargetDestructionCondition : uint8
@@ -320,16 +321,16 @@ enum class ETargetDeactivationResponse : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::Hide);
 
 
-/*/** NOT BEING USED TODO: How to handle activating an a target that is already active #1#
-UENUM(BlueprintType)
+/** How to handle activating a target. For example, if a target was spawned, activated, and deactivated but not destroyed, should another target be allowed to spawned/activated? */
+/*UENUM(BlueprintType)
 enum class ETargetActivationPolicy : uint8
 {
 	None UMETA(DisplayName="None"),
 	/** Activate the target immediately on spawn #1#
-	Interrupt UMETA(DisplayName="On Spawn"),
+	ReactivateUntilDestruction UMETA(DisplayName="Reactivate Until Destruction"),
 	/** Activate the target when the TargetManager receives the signal from AudioAnalyzer #1#
 	DoNotInterrupt UMETA(DisplayName="Do Not Interrupt"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationPolicy, ETargetActivationPolicy::Interrupt, ETargetActivationPolicy::DoNotInterrupt);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationPolicy, ETargetActivationPolicy::Interrupt, ETargetActivationPolicy::DoNotInterrupt);*/
 
 // TODO: MovingTargetHandlingPolicy? something to specify how to choose a new moving direction*/

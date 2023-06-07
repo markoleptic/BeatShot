@@ -100,6 +100,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(QMark_TargetDeactivationResponses, GetTooltipTextFromKey("TargetDeactivationResponses"));
 	SetupTooltip(QMark_TargetDestructionConditions, GetTooltipTextFromKey("TargetDestructionConditions"));
 	SetupTooltip(QMark_ContinuouslySpawn, GetTooltipTextFromKey("ContinuouslySpawn"));
+	SetupTooltip(QMark_ContinuouslyActivate, GetTooltipTextFromKey("ContinuouslyActivate"));
 	SetupTooltip(QMark_MoveTargets, GetTooltipTextFromKey("MoveTargets"));
 	SetupTooltip(QMark_SpawnAtOriginWheneverPossible, GetTooltipTextFromKey("SpawnAtOriginWheneverPossible"));
 	SetupTooltip(QMark_SpawnEveryOtherTargetInCenter, GetTooltipTextFromKey("SpawnEveryOtherTargetInCenter"));
@@ -138,6 +139,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	CheckBox_ApplyImmunityOnSpawn->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ApplyImmunityOnSpawn);
 	CheckBox_MoveTargetsForward->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_MoveTargetsForward);
 	CheckBox_ContinuouslySpawn->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ContinuouslySpawn);
+	CheckBox_ContinuouslyActivate->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ContinuouslyActivate);
 	CheckBox_MoveTargets->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_MoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_SpawnAtOriginWheneverPossible);
 	CheckBox_SpawnEveryOtherTargetInCenter->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_SpawnEveryOtherTargetInCenter);
@@ -312,6 +314,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	CheckBox_MoveTargetsForward->SetIsChecked(InTargetConfig.bMoveTargetsForward);
 	CheckBox_ApplyImmunityOnSpawn->SetIsChecked(InTargetConfig.bApplyImmunityOnSpawn);
 	CheckBox_ContinuouslySpawn->SetIsChecked(InTargetConfig.bContinuouslySpawn);
+	CheckBox_ContinuouslyActivate->SetIsChecked(InTargetConfig.bContinuouslyActivate);
 	CheckBox_MoveTargets->SetIsChecked(InTargetConfig.bMoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->SetIsChecked(InTargetConfig.bSpawnAtOriginWheneverPossible);
 	CheckBox_SpawnEveryOtherTargetInCenter->SetIsChecked(InTargetConfig.bSpawnEveryOtherTargetInCenter);
@@ -396,6 +399,7 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.bApplyImmunityOnSpawn = CheckBox_ApplyImmunityOnSpawn->IsChecked();
 	ReturnConfig.bMoveTargetsForward = CheckBox_MoveTargetsForward->IsChecked();
 	ReturnConfig.bContinuouslySpawn = CheckBox_ContinuouslySpawn->IsChecked();
+	ReturnConfig.bContinuouslyActivate = CheckBox_ContinuouslyActivate->IsChecked();
 	ReturnConfig.bMoveTargets = CheckBox_MoveTargets->IsChecked();
 	ReturnConfig.bSpawnAtOriginWheneverPossible = CheckBox_SpawnAtOriginWheneverPossible->IsChecked();
 	ReturnConfig.bSpawnEveryOtherTargetInCenter = CheckBox_SpawnEveryOtherTargetInCenter->IsChecked();
@@ -538,6 +542,10 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargetsForward(const
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_ContinuouslySpawn(const bool bContinuouslySpawn)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnCheckStateChanged_ContinuouslyActivate(const bool bContinuouslyActivate)
 {
 }
 

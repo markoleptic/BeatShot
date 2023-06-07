@@ -216,7 +216,7 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const FVector& Prev
 	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
 }
 
-void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const USpawnPointManager* SpawnPointManager)
+void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const USpawnPointManagerComponent* SpawnPointManager)
 {
 	while (!TargetPairs.IsEmpty())
 	{
@@ -226,8 +226,8 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 			break;
 		}
-		const int32 StateIndex = SpawnPointManager->FindIndexFromLocation(TargetPair.Previous);
-		const int32 State2Index = SpawnPointManager->FindIndexFromLocation(TargetPair.Current);
+		const int32 StateIndex = SpawnPointManager->FindSpawnPointIndexFromLocation(TargetPair.Previous);
+		const int32 State2Index = SpawnPointManager->FindSpawnPointIndexFromLocation(TargetPair.Current);
 		const int32 ActionIndex = State2Index;
 		const int32 Action2Index = GetMaxActionIndex(State2Index);
 

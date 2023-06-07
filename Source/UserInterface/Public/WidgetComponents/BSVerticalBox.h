@@ -18,17 +18,13 @@ class USERINTERFACE_API UBSVerticalBox : public UVerticalBox
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	
 public:
-	/** Iterates through all BSHorizontalBoxes, alternating the Brush Tints based on the last set Brush Tint, skipping collapsed boxes */
+	/** Updates the brush colors of the horizontal boxes contained anywhere inside the box */
 	void UpdateBrushColors();
 
 private:
-	/** Iterates through all slots and changes the Brush Color of the borders. If a slot's content widget is contained in WidgetBoxMap,
-	 *  it calls this function on the widget's associated BSVerticalBox */
-	bool IterateThroughSlots_UpdateBrushColors(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark);
-
-	/** A map containing additional widget-box pairs that may be nested inside the Vertical Box. The widget should be a slot in this BSVerticalBox, and the BSVerticalBox associated with it
-	 *  should contain all the widget's content, namely BSHorizontalBoxes and BSVerticalBoxes */
-	TMap<TObjectPtr<UWidget>, UBSVerticalBox*> WidgetBoxMap;
+	/** Iterates through all slots in the widget, and changes the Brush Color of the borders in each BSHorizontalBox.
+	 *  Returns true if the last left side border was dark, so that the next slot can do the opposite. Skips collapsed boxes */
+	bool UpdateHorizontalBoxBrushColors(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark);
 };
 
 

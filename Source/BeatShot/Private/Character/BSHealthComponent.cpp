@@ -87,8 +87,6 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	// Register to listen for attribute changes.
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UBSAttributeSetBase::GetHealthAttribute()).AddUObject(this, &ThisClass::HandleHealthChanged);
 	AttributeSetBase->OnHealthReachZero.AddUObject(this, &ThisClass::HandleOutOfHealth);
-	
-
 }
 
 void UBSHealthComponent::SetShouldUpdateTotalPossibleDamage(const bool bShouldUpdate, const FGameplayTagContainer& TagContainer)
@@ -96,5 +94,11 @@ void UBSHealthComponent::SetShouldUpdateTotalPossibleDamage(const bool bShouldUp
 	if (TagContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Tracking))
 	{
 		ShouldUpdateTotalPossibleDamage = bShouldUpdate;
+		GetWorld()->GetTimerManager().SetTimer(TotalPossibleDamageUpdate, this, &UBSHealthComponent::OnSecondPassedCallback, 1.f, true);
 	}
+}
+
+void UBSHealthComponent::OnSecondPassedCallback() const
+{
+	OnSecondPassedTotalPossibleDamage.Broadcast(TotalPossibleDamage);
 }

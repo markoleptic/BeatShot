@@ -50,6 +50,8 @@ protected:
 	UBSHorizontalBox* BSBox_SpawnAtOriginWheneverPossible;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_SpawnEveryOtherTargetInCenter;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_ContinuouslyActivate;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_BoundsScalingPolicy;
@@ -195,6 +197,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_ContinuouslySpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ContinuouslyActivate;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_MoveTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_SpawnAtOriginWheneverPossible;
@@ -255,6 +259,8 @@ protected:
 	UTooltipImage* QMark_MoveTargetsForward;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_ContinuouslySpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_ContinuouslyActivate;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_MoveTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -351,6 +357,8 @@ protected:
 	void OnCheckStateChanged_MoveTargetsForward(const bool bMoveTargetsForward);
 	UFUNCTION()
 	void OnCheckStateChanged_ContinuouslySpawn(const bool bContinuouslySpawn);
+	UFUNCTION()
+	void OnCheckStateChanged_ContinuouslyActivate(const bool bContinuouslyActivate);
 	UFUNCTION()
 	void OnCheckStateChanged_MoveTargets(const bool bMoveTargets);
 	UFUNCTION()
