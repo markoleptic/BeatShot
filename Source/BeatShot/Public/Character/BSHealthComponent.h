@@ -11,8 +11,7 @@ class UBSAbilitySystemComponent;
 class UBSAttributeSetBase;
 
 DECLARE_MULTICAST_DELEGATE(FOnOutOfHealth);
-DECLARE_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnSecondPassedTotalPossibleDamage, const float TotalPossibleDamage);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue);
 
 /** Base HealthComponent for this game */
 UCLASS(ClassGroup=(Custom), meta= (BlueprintSpawnableComponent))
@@ -28,9 +27,6 @@ protected:
 	/** Called when the game starts */
 	virtual void BeginPlay() override;
 
-	/** Called every frame */
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	// Ability system used by this component.
 	UPROPERTY()
 	TObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
@@ -44,28 +40,13 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	
 	/** Initialize the component using an ability system component */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Health")
 	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer);
-	
-	UFUNCTION()
-	void SetShouldUpdateTotalPossibleDamage(const bool bShouldUpdate, const FGameplayTagContainer& TagContainer);
 
-	UFUNCTION()
-	void OnSecondPassedCallback() const;
-
-	/** The maximum amount of damage that can be dealt to a target */
-	float TotalPossibleDamage;
-
-	/** Whether or not to update TotalPossibleDamage */
-	bool ShouldUpdateTotalPossibleDamage = false;
-
-	FOnSecondPassedTotalPossibleDamage OnSecondPassedTotalPossibleDamage;
-	
+	/** Broadcasts when out of health */
 	FOnOutOfHealth OnOutOfHealth;
 
+	/** Broadcasts when the health attribute changes */
 	FOnHealthChanged OnHealthChanged;
-
-	FTimerHandle TotalPossibleDamageUpdate;
 };

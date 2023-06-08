@@ -359,6 +359,10 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ELifetimeTargetScalePolicy LifetimeTargetScalePolicy;
 
+	/** Which direction(s) to move targets. Separate from moving a target forward */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	EMovingTargetDirectionMode MovingTargetDirectionMode;
+
 	/** Specifies the method to remove targets from recent memory, allowing targets to spawn in that location again */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ERecentTargetMemoryPolicy RecentTargetMemoryPolicy;
@@ -459,18 +463,30 @@ struct FBS_TargetConfig
 	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector BoxBounds;
-
+	
+	/** Maximum number of activated targets allowed at one time */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 MaxNumActivatedTargetsAtOnce;
+	
 	/** How many recent targets to keep in memory, if not using RecentTargetTimeLength */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumRecentTargets;
 
-	/** Minimum number of targets to activate at one time */
+	/** Maximum number of visible targets allowed at one time, regardless of activation state */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 MaxNumTargetsAtOnce;
+	
+	/** Minimum number of targets to activate at one time, if there's more than one target available to activate */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MinNumTargetsToActivateAtOnce;
 	
-	/** Maximum number of targets to activate at one time */
+	/** Maximum number of targets to activate at one time, if there's more than one target available to activate */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumTargetsToActivateAtOnce;
+	
+	/** How many targets to spawn at runtime */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	int32 NumRuntimeTargetsToSpawn;
 	
 	/** How many targets to spawn before the game mode begins */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -512,10 +528,11 @@ struct FBS_TargetConfig
 		bSpawnEveryOtherTargetInCenter = false;
 		bUseOverlapSpawnBox = false;
 		bUseSeparateOutlineColor = false;
-		
+
 		BoundsScalingPolicy = EBoundsScalingPolicy::None;
 		ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::None;
 		LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
+		MovingTargetDirectionMode = EMovingTargetDirectionMode::None;
 		RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::None;
 		TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::None;
 		TargetDamageType = ETargetDamageType::None;
@@ -541,15 +558,18 @@ struct FBS_TargetConfig
 		RecentTargetTimeLength = 0.f;
 		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
 		TargetSpawnCD = DefaultTargetSpawnCD;
-		
+
 		OnSpawn_ApplyTags = FGameplayTagContainer();
 		BoxBounds = DefaultSpawnBoxBounds;
 
-		MaxNumRecentTargets = 0;
+		MaxNumActivatedTargetsAtOnce = -1;
+		MaxNumRecentTargets = -1;
+		MaxNumTargetsAtOnce = -1;
 		MinNumTargetsToActivateAtOnce = 1;
 		MaxNumTargetsToActivateAtOnce = 1;
+		NumRuntimeTargetsToSpawn = 0;
 		NumUpfrontTargetsToSpawn = 0;
-		
+
 		InactiveTargetColor = FLinearColor();
 		OnSpawnColor = FLinearColor();
 		StartColor = FLinearColor();
@@ -683,6 +703,7 @@ struct FBSConfig
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::SkillBased;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
+				Config.TargetConfig.MovingTargetDirectionMode = EMovingTargetDirectionMode::None;
 				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
 				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
@@ -709,8 +730,13 @@ struct FBSConfig
 				
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = BoxBounds_Dynamic_SingleBeat;
+
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = 1;
+				Config.TargetConfig.MaxNumRecentTargets = -1;
+				Config.TargetConfig.MaxNumTargetsAtOnce = 1;
 				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.NumRuntimeTargetsToSpawn = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
 			break;
@@ -760,6 +786,7 @@ struct FBSConfig
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::SkillBased;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
+				Config.TargetConfig.MovingTargetDirectionMode = EMovingTargetDirectionMode::None;
 				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
 				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
@@ -787,8 +814,13 @@ struct FBSConfig
 				
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
-				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
-				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
+
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = -1;
+				Config.TargetConfig.MaxNumRecentTargets = -1;
+				Config.TargetConfig.MaxNumTargetsAtOnce = -1;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = -1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = -1;
+				Config.TargetConfig.NumRuntimeTargetsToSpawn = -1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
 			break;
@@ -850,6 +882,7 @@ struct FBSConfig
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::Static;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
+				Config.TargetConfig.MovingTargetDirectionMode = EMovingTargetDirectionMode::None;
 				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
 				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Bordering;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
@@ -880,8 +913,12 @@ struct FBSConfig
 				
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
-				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
-				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = -1;
+				Config.TargetConfig.MaxNumRecentTargets = -1;
+				Config.TargetConfig.MaxNumTargetsAtOnce = -1;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = -1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = -1;
+				Config.TargetConfig.NumRuntimeTargetsToSpawn = 0;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = Config.GridConfig.NumHorizontalGridTargets * Config.GridConfig.NumVerticalGridTargets;
 			}
 			break;
@@ -931,6 +968,7 @@ struct FBSConfig
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::Static;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
+				Config.TargetConfig.MovingTargetDirectionMode = EMovingTargetDirectionMode::Any;
 				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
 				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Tracking;
@@ -957,8 +995,13 @@ struct FBSConfig
 				
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
+
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = -1;
+				Config.TargetConfig.MaxNumRecentTargets = -1;
+				Config.TargetConfig.MaxNumTargetsAtOnce = -1;
 				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.NumRuntimeTargetsToSpawn = 0;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
 			}
 			break;
@@ -1008,7 +1051,7 @@ struct FBSConfig
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
 				Config.TargetConfig.bContinuouslySpawn = false;
 				Config.TargetConfig.bContinuouslyActivate = true;
-				Config.TargetConfig.bMoveTargets = false;
+				Config.TargetConfig.bMoveTargets = true;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
@@ -1017,6 +1060,7 @@ struct FBSConfig
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
 				Config.TargetConfig.ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::Static;
 				Config.TargetConfig.LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
+				Config.TargetConfig.MovingTargetDirectionMode = EMovingTargetDirectionMode::AlternateHorizontalVertical;
 				Config.TargetConfig.RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::UseTargetSpawnCD;
 				Config.TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
 				Config.TargetConfig.TargetDamageType = ETargetDamageType::Hit;
@@ -1030,6 +1074,7 @@ struct FBSConfig
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
 				
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ChangeScale);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
 
 				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);
@@ -1045,6 +1090,13 @@ struct FBSConfig
 				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
+
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = 2;
+				Config.TargetConfig.MaxNumRecentTargets = -1;
+				Config.TargetConfig.MaxNumTargetsAtOnce = 3;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 2;
+				Config.TargetConfig.NumRuntimeTargetsToSpawn = 1;
 			}
 			break;
 		case EBaseGameMode::None:

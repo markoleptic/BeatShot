@@ -157,9 +157,6 @@ private:
 	/** The center of the square sub-area */
 	FVector Scale;
 
-	/** The index of the managed target this spawn point represents, if it is activated */
-	int32 ManagedTargetIndex;
-
 	/** The total number of target spawns at this point */
 	int32 TotalSpawns;
 
@@ -244,7 +241,6 @@ public:
 	int32 GetTotalSpawns() const { return TotalSpawns; }
 	int32 GetTotalHits() const { return TotalHits; }
 	FVector GetScale() const { return Scale; }
-	int32 GetManagedTargetIndex() const { return ManagedTargetIndex; }
 
 	/** Sets the TargetScale */
 	void SetScale(const FVector& InScale)
@@ -256,12 +252,6 @@ public:
 	void SetGuid(const FGuid InGuid)
 	{
 		TargetGuid = InGuid;
-	}
-
-	/** Sets ManagedTargetIndex */
-	void SetManagedTargetIndex(const int32 InIndex)
-	{
-		ManagedTargetIndex = InIndex;
 	}
 
 	/** Sets the value of ChosenPoint to the output of GenerateRandomSubPoint */
@@ -362,9 +352,6 @@ public:
 
 	/** Returns a filtered array containing only spawn points flagged as activated or recent */
 	TArray<USpawnPoint*> GetActivatedOrRecentSpawnPoints() const;
-
-	/** Finds the corresponding ManagedTarget index for a SpawnPoint index */
-	int32 GetManagedTargetIndex(const int32 InSpawnPointIndex);
 	
 	/** Removes the oldest points recent flags if the max number of recent targets has been exceeded */
 	void RefreshRecentTargetFlags();

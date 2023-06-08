@@ -58,6 +58,7 @@ ATargetManager::ATargetManager()
 	DynamicSpawnScale = 0;
 	ManagedTargets = TArray<ASphereTarget*>();
 	AllSpawnLocations = TArray<FVector>();
+	TotalPossibleDamage = 0.f;
 }
 
 void ATargetManager::BeginPlay()
@@ -80,6 +81,11 @@ void ATargetManager::Destroyed()
 void ATargetManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (TrackingTargetIsDamageable())
+	{
+		UpdateTotalPossibleDamage();
+	}
 }
 
 void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
@@ -178,12 +184,6 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 
 void ATargetManager::OnAudioAnalyzerBeat()
 {
-	// TODO: Needs to be more distinct differences when activating a SpawnPoint.
-	// TODO: Currently, still finding a new SpawnPoint every beat for BeatTrack, but
-	// TODO: don't even use the SpawnPoint for the mode.
-	// TODO: Maybe a distinction between activating a deactivated SpawnPoint/Target
-	// TODO: and activating an always active SpawnPoint/Target
-	
 	if (!ShouldSpawn) return;
 	
 	// We're relying on FindNextTargetProperties to have a fresh SpawnPoint lined up
@@ -194,49 +194,21 @@ void ATargetManager::OnAudioAnalyzerBeat()
 		return;
 	}
 
-	bool bSuccessfulActivation = false;
-	// Handles spawning and activating the spawned point
+	// Handle activating targets in addition to any spawned above
+	TryActivateExistingTargets(BSConfig.TargetConfig.MinNumTargetsToActivateAtOnce,
+		BSConfig.TargetConfig.MaxNumTargetsToActivateAtOnce,
+		BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce);
+	
+	// Handles spawning and activating a target using SpawnPoint
 	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
-		bSuccessfulActivation = HandleRuntimeSpawnAndActivation(SpawnPoint);
+		HandleRuntimeSpawnAndActivation(SpawnPoint);
 	}
 	
-	// Handle activating an existing target if we didn't spawn one
-	if (!bSuccessfulActivation)
+	// Add to ActiveTargetParis if using RL Comp
+	if (ReinforcementLearningComponent->IsActive() && SpawnPointManager->IsSpawnPointValid(PreviousSpawnPoint) && PreviousSpawnPoint != SpawnPoint)
 	{
-		bSuccessfulActivation = BSConfig.TargetConfig.bContinuouslyActivate ? ActivateTarget(SpawnPoint) : TryActivateExistingTarget();
-	}
-
-	// Handle a permanently activated target
-	// TODO: Clean up
-	if (!bSuccessfulActivation && BSConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
-	{
-		if (GetManagedTargets().Num() > 0)
-		{
-			for (const TObjectPtr<ASphereTarget> Target : GetManagedTargets())
-			{
-				if (!bSuccessfulActivation)
-				{
-					bSuccessfulActivation = ActivateTarget(Target);
-				}
-				else
-				{
-					ActivateTarget(Target);
-				}
-			}
-		}
-	}
-	
-	// TODO: Initialize a moving target
-
-	// RL Component stuff
-	if (bSuccessfulActivation)
-	{
-		// Add to ActiveTargetParis if using RL Comp
-		if (ReinforcementLearningComponent->IsActive() && SpawnPointManager->IsSpawnPointValid(PreviousSpawnPoint) && PreviousSpawnPoint != SpawnPoint)
-		{
-			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->ChosenPoint, SpawnPoint->ChosenPoint);
-		}
+		ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->ChosenPoint, SpawnPoint->ChosenPoint);
 	}
 
 	// Debug stuff
@@ -255,136 +227,19 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	FindNextTargetProperties();
 }
 
-bool ATargetManager::HandleRuntimeSpawnAndActivation(const TObjectPtr<USpawnPoint> InSpawnPoint)
-{
-	if ((BSConfig.TargetConfig.bContinuouslySpawn || GetManagedTargets().IsEmpty()) && InSpawnPoint)
-	{
-		if (SpawnTarget(InSpawnPoint))
-		{
-			return ActivateTarget(InSpawnPoint);
-		}
-	}
-	return false;
-}
-
-bool ATargetManager::TryActivateExistingTarget()
-{
-	// TODO: might need method to manage reactivation
-
-	// Points that are referencing managed targets, but are not activated
-	TArray<USpawnPoint*> Points = SpawnPointManager->GetDeactivatedManagedPoints();
-	if (Points.IsEmpty())
-	{
-		return false;
-	}
-	const int32 RandomPointsIndex = FMath::RandRange(0, Points.Num() - 1);
-	if (Points.IsValidIndex(RandomPointsIndex))
-	{
-		return false;
-	}
-	const USpawnPoint* Point = Points[RandomPointsIndex];
-	if (!GetManagedTargets().IsValidIndex(Point->GetManagedTargetIndex()))
-	{
-		return false;
-	}
-	const int32 ManagedTargetIndex = Point->GetManagedTargetIndex();
-	if (ActivateTarget(ManagedTargets[ManagedTargetIndex]))
-	{
-		return true;
-	}
-	return false;
-}
-
-bool ATargetManager::SpawnTarget(const TObjectPtr<USpawnPoint> InSpawnPoint)
+ASphereTarget* ATargetManager::SpawnTarget(USpawnPoint* InSpawnPoint)
 {
 	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(TargetToSpawn, FTransform(FRotator::ZeroRotator, InSpawnPoint->ChosenPoint, InSpawnPoint->GetScale()), this, nullptr,
 	                                                                      ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Target->InitTarget(BSConfig.TargetConfig);
-	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
 	Target->FinishSpawning(FTransform(), true);
+	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
 	InSpawnPoint->SetGuid(Target->GetGuid());
-	InSpawnPoint->SetManagedTargetIndex(AddToManagedTargets(Target, InSpawnPoint));
-	return Target != nullptr;
+	AddToManagedTargets(Target, InSpawnPoint);
+	return Target;
 }
 
-void ATargetManager::SpawnUpfrontOnlyTargets()
-{
-	switch(BSConfig.TargetConfig.TargetDistributionPolicy) {
-	case ETargetDistributionPolicy::None:
-	case ETargetDistributionPolicy::HeadshotHeightOnly:
-	case ETargetDistributionPolicy::EdgeOnly:
-	case ETargetDistributionPolicy::FullRange:
-		for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
-		{
-			FindNextTargetProperties();
-			if (SpawnPoint)
-			{
-				SpawnTarget(SpawnPoint);
-			}
-		}
-		break;
-	case ETargetDistributionPolicy::Grid:
-		for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
-		{
-			SpawnPointManager->GetSpawnPointsRef()[i]->SetScale(GetNextTargetScale());
-			SpawnTarget(SpawnPointManager->GetSpawnPointsRef()[i]);
-		}
-		FindNextTargetProperties();
-		break;
-	default:
-		break;
-	}
-}
-
-bool ATargetManager::ActivateTarget(const TObjectPtr<USpawnPoint> InSpawnPoint) const
-{
-	// TargetManager handles all TargetActivationResponses
-	// Each target handles their own TargetDeactivationResponses & TargetDestructionConditions
-	
-	if (!GetManagedTargets().IsValidIndex(InSpawnPoint->GetManagedTargetIndex()))
-	{
-		return false;
-	}
-
-	const TObjectPtr<ASphereTarget> Target = GetManagedTargets()[InSpawnPoint->GetManagedTargetIndex()];
-
-	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::AddImmunity))
-	{
-		Target->ApplyImmunityEffect();
-	}
-	else if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
-	{
-		Target->RemoveImmunityEffect();
-	}
-	else if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ToggleImmunity))
-	{
-		Target->IsTargetImmune() ? Target->RemoveImmunityEffect() : Target->ApplyImmunityEffect();
-	}
-	
-	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
-	{
-		Target->SetTargetSpeed(FMath::FRandRange(BSConfig.TargetConfig.MinTargetSpeed, BSConfig.TargetConfig.MaxTargetSpeed));
-	}
-	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
-	{
-		const FVector NewDirection = UKismetMathLibrary::GetDirectionUnitVector(Target->GetActorLocation(),
-			GetRandomMovingTargetEndLocation(Target->GetActorLocation(), Target->GetTargetSpeed()));
-		Target->SetTargetDirection(NewDirection);
-	}
-	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
-	{
-		Target->SetSphereScale(GetNextTargetScale());
-	}
-	
-	Target->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-	SpawnPointManager->FlagSpawnPointAsActivated(InSpawnPoint->GetGuid());
-	// Broadcast that a target has been activated, mainly to keep track of total target spawns on PlayerHUD
-	OnTargetActivatedOrSpawned.Broadcast();
-	
-	return true;
-}
-
-bool ATargetManager::ActivateTarget(const TObjectPtr<ASphereTarget> InTarget) const
+bool ATargetManager::ActivateTarget(ASphereTarget* InTarget) const
 {
 	// TargetManager handles all TargetActivationResponses
 	// Each target handles their own TargetDeactivationResponses & TargetDestructionConditions
@@ -414,20 +269,170 @@ bool ATargetManager::ActivateTarget(const TObjectPtr<ASphereTarget> InTarget) co
 	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
 	{
 		const FVector NewDirection = UKismetMathLibrary::GetDirectionUnitVector(InTarget->GetActorLocation(),
-			GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetTargetSpeed()));
+			GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetTargetSpeed(), InTarget->GetLastDirectionChangeHorizontal()));
 		InTarget->SetTargetDirection(NewDirection);
+		InTarget->SetLastDirectionChangeHorizontal(!InTarget->GetLastDirectionChangeHorizontal());
 	}
 	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
 	{
 		InTarget->SetSphereScale(GetNextTargetScale());
 	}
 	
-	InTarget->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan);
-	SpawnPointManager->FlagSpawnPointAsActivated(InTarget->GetGuid());
-	// Broadcast that a target has been activated, mainly to keep track of total target spawns on PlayerHUD
-	OnTargetActivatedOrSpawned.Broadcast();
+	if (InTarget->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan))
+	{
+		SpawnPointManager->FlagSpawnPointAsActivated(InTarget->GetGuid());
+		// Broadcast that a target has been activated, mainly to keep track of total target spawns on PlayerHUD
+		OnTargetActivatedOrSpawned.Broadcast();
 	
-	return true;
+		return true;
+	}
+	return false;
+}
+
+bool ATargetManager::HandleRuntimeSpawnAndActivation(USpawnPoint* InSpawnPoint)
+{
+	if (!InSpawnPoint)
+	{
+		return false;
+	}
+
+	int32 NumAllowedToSpawn = 1;
+	if (BSConfig.TargetConfig.MaxNumTargetsAtOnce != -1)
+	{
+		NumAllowedToSpawn = BSConfig.TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();
+		if (NumAllowedToSpawn <= 0)
+		{
+			return false;
+		}
+		if (NumAllowedToSpawn > BSConfig.TargetConfig.NumRuntimeTargetsToSpawn &&
+			BSConfig.TargetConfig.NumRuntimeTargetsToSpawn != -1)
+		{
+			NumAllowedToSpawn = BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
+		}
+	}
+	int32 NumSpawned = 0;
+
+	// Spawn targets, only activating them if there's less activated than MaxNumActivatedTargetsAtOnce
+	for (int i = 0; i < NumAllowedToSpawn; i++)
+	{
+		if (SpawnPointManager->GetActivatedSpawnPoints().Num() < BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce ||
+			BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce == -1)
+		{
+			if (ASphereTarget* SpawnedTarget = SpawnTarget(InSpawnPoint))
+			{
+				ActivateTarget(SpawnedTarget);
+				NumSpawned++;
+				FindNextTargetProperties();
+			}
+		}
+	}
+
+	return NumSpawned > 0;
+}
+
+bool ATargetManager::TryActivateExistingTargets(int32 MinToActivate, int32 MaxToActivate, int32 MaxNumAtOnce) const
+{
+	if (GetManagedTargets().IsEmpty())
+	{
+		return false;
+	}
+
+	// Handle permanently activated targets so they can still receive activation responses
+	if (BSConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
+	{
+		bool bActivatedAtLeastOne = false;
+		for (const USpawnPoint* Point : SpawnPointManager->GetActivatedSpawnPoints())
+		{
+			if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
+			{
+				bActivatedAtLeastOne = ActivateTarget(Target) || bActivatedAtLeastOne;
+			}
+		}
+		return bActivatedAtLeastOne;
+	}
+	
+	if (SpawnPointManager->GetDeactivatedManagedPoints().IsEmpty() ||
+		(SpawnPointManager->GetActivatedSpawnPoints().Num() >= MaxNumAtOnce && MaxNumAtOnce != -1))
+	{
+		return false;
+	}
+	
+	const int32 NumCurrent = SpawnPointManager->GetActivatedSpawnPoints().Num();
+	bool bActivateAll = false;
+	if (MaxNumAtOnce == -1)
+	{
+		bActivateAll = true;
+	}
+	else
+	{
+		if (MaxToActivate == -1 || (MaxNumAtOnce - NumCurrent < MaxToActivate))
+		{
+			MaxToActivate = MaxNumAtOnce - NumCurrent;
+		}
+		
+		if (MinToActivate == -1 || MinToActivate > MaxToActivate)
+		{
+			MinToActivate = MaxToActivate;
+		}
+		else if (MaxNumAtOnce - NumCurrent < MinToActivate)
+		{
+			MinToActivate = MaxNumAtOnce - NumCurrent;
+		}
+	}
+
+	const int32 NumToActivate = FMath::RandRange(MinToActivate, MaxToActivate);
+	int32 NumActivated = 0;
+	
+	// Handle non-permanently activated targets using Points that are referencing managed targets, but are not activated
+	for (const USpawnPoint* Point : SpawnPointManager->GetDeactivatedManagedPoints())
+	{
+		if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
+		{
+			if (ActivateTarget(Target))
+			{
+				NumActivated++;
+			}
+			if (bActivateAll)
+			{
+				continue;
+			}
+			if (NumActivated >= NumToActivate)
+			{
+				return NumActivated > 0;
+			}
+		}
+	}
+	
+	return NumActivated > 0;
+}
+
+void ATargetManager::SpawnUpfrontOnlyTargets()
+{
+	switch(BSConfig.TargetConfig.TargetDistributionPolicy) {
+	case ETargetDistributionPolicy::None:
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
+	case ETargetDistributionPolicy::EdgeOnly:
+	case ETargetDistributionPolicy::FullRange:
+		for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
+		{
+			FindNextTargetProperties();
+			if (SpawnPoint)
+			{
+				SpawnTarget(SpawnPoint);
+			}
+		}
+		break;
+	case ETargetDistributionPolicy::Grid:
+		for (int i = 0; i < SpawnPointManager->GetSpawnPoints().Num(); i++)
+		{
+			SpawnPointManager->GetSpawnPointsRef()[i]->SetScale(GetNextTargetScale());
+			SpawnTarget(SpawnPointManager->GetSpawnPointsRef()[i]);
+		}
+		FindNextTargetProperties();
+		break;
+	default:
+		break;
+	}
 }
 
 // Deactivation and Destruction
@@ -476,7 +481,7 @@ void ATargetManager::HandleTargetExpirationDelegate(const ETargetDamageType& Dam
 {
 	if (DamageType == ETargetDamageType::Tracking)
 	{
-		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TargetDamageEvent.TotalPossibleDamage);
+		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TotalPossibleDamage);
 	}
 	else
 	{
@@ -487,31 +492,34 @@ void ATargetManager::HandleTargetExpirationDelegate(const ETargetDamageType& Dam
 
 void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions, const FTargetDamageEvent& TargetDamageEvent)
 {
-	if (!TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
+	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
 	{
-		if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
-		{
-			UE_LOG(LogTemp, Display, TEXT("Removed based on OnDeactivation"));
-			RemoveFromManagedTargets(TargetDamageEvent.Guid);
-		}
-		if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
-		{
-			UE_LOG(LogTemp, Display, TEXT("Removed based on OnExpiration"));
-			RemoveFromManagedTargets(TargetDamageEvent.Guid);
-		}
-		if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) &&
-			TargetDamageEvent.CurrentHealth <= 0.f)
-		{
-			UE_LOG(LogTemp, Display, TEXT("Removed based on OnHealthReachedZero"));
-			RemoveFromManagedTargets(TargetDamageEvent.Guid);
-		}
-		if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) &&
-			TargetDamageEvent.TimeAlive != -1)
-		{
-			UE_LOG(LogTemp, Display, TEXT("Removed based on OnAnyExternalDamageTaken"));
-			RemoveFromManagedTargets(TargetDamageEvent.Guid);
-		}
+		return;
 	}
+	
+	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Removed based on OnDeactivation"));
+		RemoveFromManagedTargets(TargetDamageEvent.Guid);
+	}
+	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Removed based on OnExpiration"));
+		RemoveFromManagedTargets(TargetDamageEvent.Guid);
+	}
+	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) &&
+		TargetDamageEvent.CurrentHealth <= 0.f)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Removed based on OnHealthReachedZero"));
+		RemoveFromManagedTargets(TargetDamageEvent.Guid);
+	}
+	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) &&
+		TargetDamageEvent.TimeAlive != -1)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Removed based on OnAnyExternalDamageTaken"));
+		RemoveFromManagedTargets(TargetDamageEvent.Guid);
+	}
+	
 }
 
 // Finding next Point
@@ -535,7 +543,7 @@ void ATargetManager::FindNextTargetProperties()
 	SpawnPoint = GetNextSpawnPoint(BSConfig.TargetConfig.BoundsScalingPolicy, NewScale);
 	if (SpawnPoint && SpawnPointManager->GetSpawnPoints().IsValidIndex(SpawnPoint->Index))
 	{
-		for (USpawnPoint* Point : SpawnPointManager->GetActivatedOrRecentSpawnPoints())
+		for (const USpawnPoint* Point : SpawnPointManager->GetActivatedOrRecentSpawnPoints())
 		{
 			if (FVector::Distance(SpawnPoint->ChosenPoint, Point->ChosenPoint) < 200.f)
 			{
@@ -811,26 +819,78 @@ void ATargetManager::UpdateSpawnArea() const
 	BackwardBox->SetBoxExtent(FVector(0, DynamicExtent.Y, DynamicExtent.Z));
 }
 
-ASphereTarget* ATargetManager::GetManagedTargetByGuid(const FGuid Guid)
+void ATargetManager::UpdateTotalPossibleDamage()
+{
+	TotalPossibleDamage++;
+}
+
+bool ATargetManager::TrackingTargetIsDamageable() const
+{
+	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Hit || GetManagedTargets().IsEmpty())
+	{
+		return false;
+	}
+	if (GetManagedTargets().FindByPredicate([] (const TObjectPtr<ASphereTarget> SphereTarget)
+	{
+		return !SphereTarget->IsTargetImmuneToTracking();
+	}))
+	{
+		return true;
+	}
+	return false;
+}
+
+ASphereTarget* ATargetManager::FindManagedTargetByGuid(const FGuid Guid) const
 {
 	const TObjectPtr<ASphereTarget>* Found = ManagedTargets.FindByPredicate([&] (const ASphereTarget* SphereTarget)
 	{
 		return SphereTarget->GetGuid() == Guid;
 	});
-	if (Found)
+	if (Found && Found->Get())
 	{
-		return *Found;
+		return Found->Get();
 	}
 	return nullptr;
 }
 
-FVector ATargetManager::GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed) const
+FVector ATargetManager::GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const
 {
-	const FVector NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
-	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
-	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, -GetBoxExtents_Static().Z * 0.5), NewExtent);
-	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, -GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
-	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5), NewExtent);
+	FVector NewExtent;
+	FVector OriginOffset;
+	
+	switch (BSConfig.TargetConfig.MovingTargetDirectionMode)
+	{
+	case EMovingTargetDirectionMode::HorizontalOnly:
+		{
+			NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y, 0.f);
+			return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+		}
+	case EMovingTargetDirectionMode::VerticalOnly:
+		{
+			NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, 0.f, GetBoxExtents_Static().Z);
+			return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+		}
+	case EMovingTargetDirectionMode::AlternateHorizontalVertical:
+		{
+			if (bLastDirectionChangeHorizontal)
+			{
+				NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, 0.f, GetBoxExtents_Static().Z);
+				return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+			}
+			NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y, 0.f);
+			return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+		}
+	case EMovingTargetDirectionMode::None:
+	case EMovingTargetDirectionMode::Any:
+		NewExtent = FVector(BSConfig.TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
+		OriginOffset = FVector(0, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5);
+		break;
+	}
+	
+	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, -OriginOffset.Y, -OriginOffset.Z), NewExtent);
+	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, OriginOffset.Y, -OriginOffset.Z), NewExtent);
+	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, -OriginOffset.Y, OriginOffset.Z), NewExtent);
+	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnArea->Bounds.Origin + FVector(0, OriginOffset.Y, OriginOffset.Z), NewExtent);
 
 	TArray PossibleLocations = {BotLeft, BotRight, TopLeft, TopRight};
 
@@ -882,18 +942,18 @@ FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 		FVector(GetBoxOrigin().X, HalfWidth + 1.f + GetBoxOrigin().Y, HalfHeight + 1.f + GetBoxOrigin().Z));
 }
 
-int32 ATargetManager::AddToManagedTargets(TObjectPtr<ASphereTarget> SpawnTarget, const TObjectPtr<USpawnPoint> AssociatedSpawnPoint)
+int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget, USpawnPoint* AssociatedSpawnPoint)
 {
 	TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets();
-	const int32 NewIndex = Targets.Add(SpawnTarget);
-	ManagedTargets = Targets;
+	const int32 NewIndex = Targets.Add(TObjectPtr<ASphereTarget>(SpawnTarget));
 	AssociatedSpawnPoint->SetIsCurrentlyManaged(true);
+	ManagedTargets = Targets;
 	return NewIndex;
 }
 
 void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
-	const TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets().FilterByPredicate([&] (const ASphereTarget* OtherTarget)
+	const TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets().FilterByPredicate([&] (const TObjectPtr<ASphereTarget>& OtherTarget)
 	{
 		if (!OtherTarget)
 		{

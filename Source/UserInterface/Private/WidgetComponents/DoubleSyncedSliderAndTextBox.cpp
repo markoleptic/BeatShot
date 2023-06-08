@@ -8,6 +8,8 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/EditableTextBox.h"
+#include "Components/HorizontalBoxSlot.h"
+#include "Components/Spacer.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "WidgetComponents/BSHorizontalBox.h"
 
@@ -102,6 +104,13 @@ void UDoubleSyncedSliderAndTextBox::InitConstrainedSlider(const FSyncedSlidersPa
 	Slider_Max->SetValue(SliderStruct.DefaultMaxValue);
 	Value_Min->SetText(FText::AsNumber(SliderStruct.DefaultMinValue));
 	Value_Max->SetText(FText::AsNumber(SliderStruct.DefaultMaxValue));
+
+	if (SliderStruct.bIndentLeftOneLevel)
+	{
+		Spacer_Min->SetSize(FVector2D(50.f,0.f));
+		Spacer_Max->SetSize(FVector2D(50.f,0.f));
+		Spacer_CheckBox->SetSize(FVector2D(50.f,0.f));
+	}
 }
 
 void UDoubleSyncedSliderAndTextBox::UpdateDefaultValues(const float NewMinValue, const float NewMaxValue, const bool bSync)

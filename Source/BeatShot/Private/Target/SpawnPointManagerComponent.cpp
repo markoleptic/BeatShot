@@ -14,7 +14,6 @@ USpawnPoint::USpawnPoint()
 	ChosenPoint = FVector(-1);
 	Scale = FVector(1);
 	TotalSpawns = INDEX_NONE;
-	ManagedTargetIndex = INDEX_NONE;
 	TotalHits = 0;
 	Index = INDEX_NONE;
 	bIsActivated = false;
@@ -47,7 +46,6 @@ void USpawnPoint::Init(const int32 InIndex, const FVector& InPoint, const bool b
 	
 	TotalSpawns = INDEX_NONE;
 	TotalHits = 0;
-	ManagedTargetIndex = INDEX_NONE;
 	Index = InIndex;
 	
 	bIsActivated = false;
@@ -579,7 +577,7 @@ TArray<USpawnPoint*> USpawnPointManagerComponent::GetManagedPoints() const
 
 TArray<USpawnPoint*> USpawnPointManagerComponent::GetDeactivatedManagedPoints() const
 {
-	return SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
+	TArray<USpawnPoint*> Points = SpawnPoints.FilterByPredicate([] (const USpawnPoint* SpawnPoint)
 	{
 		if (SpawnPoint->IsCurrentlyManaged() && !SpawnPoint->IsActivated())
 		{
@@ -587,6 +585,14 @@ TArray<USpawnPoint*> USpawnPointManagerComponent::GetDeactivatedManagedPoints() 
 		}
 		return false;
 	});
+	if (!Points.IsEmpty())
+	{
+		Points.Sort([] (const USpawnPoint& SpawnPoint1, const USpawnPoint& SpawnPoint2)
+		{
+			return SpawnPoint1.GetTimeSetRecent() < SpawnPoint2.GetTimeSetRecent();
+		});
+	}
+	return Points;
 }
 
 TArray<USpawnPoint*> USpawnPointManagerComponent::GetRecentSpawnPoints() const
@@ -623,15 +629,6 @@ TArray<USpawnPoint*> USpawnPointManagerComponent::GetActivatedOrRecentSpawnPoint
 		}
 		return false;
 	});
-}
-
-int32 USpawnPointManagerComponent::GetManagedTargetIndex(const int32 InSpawnPointIndex)
-{
-	if (SpawnPoints.IsValidIndex(InSpawnPointIndex))
-	{
-		return SpawnPoints[InSpawnPointIndex]->GetManagedTargetIndex();
-	}
-	return INDEX_NONE;
 }
 
 void USpawnPointManagerComponent::RefreshRecentTargetFlags()

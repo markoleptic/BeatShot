@@ -120,22 +120,19 @@ public:
 private:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
-	bool SpawnTarget(const TObjectPtr<USpawnPoint> InSpawnPoint);
+	ASphereTarget* SpawnTarget(USpawnPoint* InSpawnPoint);
+
+	/** Executes any Target Activation Responses, calls ActivateTarget on InTarget, flags SpawnPoint as recent, and fires OnActivation delegate */
+	bool ActivateTarget(ASphereTarget* InTarget) const;
+	
+	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce. Also activates the target */
+	bool HandleRuntimeSpawnAndActivation(USpawnPoint* InSpawnPoint);
+
+	/** Tries to activate target(s)/SpawnPoint(s) if there are any ManagedTargets that are not activated */
+	bool TryActivateExistingTargets(const int32 MinToActivate, const int32 MaxToActivate, int32 MaxNumAtOnce) const;
 
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
 	void SpawnUpfrontOnlyTargets();
-
-	/** Tries to spawn and activate a target/SpawnPoint at runtime */
-	bool HandleRuntimeSpawnAndActivation(TObjectPtr<USpawnPoint> InSpawnPoint);
-
-	/** Tries to activate a deactivated SpawnPoint if it references a target still being managed in ManagedTargets */
-	bool TryActivateExistingTarget();
-
-	/** Executes any Target Activation Responses, calls ActivateTarget, flags SpawnPoint as recent, and fires OnActivation delegate */
-	bool ActivateTarget(const TObjectPtr<USpawnPoint> InSpawnPoint) const;
-
-	/** Executes any Target Activation Responses, calls ActivateTarget, flags SpawnPoint as recent, and fires OnActivation delegate */
-	bool ActivateTarget(TObjectPtr<ASphereTarget> InTarget) const;
 
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates, target flags, target removal */
 	UFUNCTION()
@@ -163,7 +160,7 @@ private:
 	USpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
 	
 	/** Randomizes a location to set the BeatTrack target to move towards */
-	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed) const;
+	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
 
 	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
 	 *  TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
@@ -187,7 +184,14 @@ private:
 	/** Filters out any locations that correspond to recent points flagged as recent */
 	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
 
+	/** Updates the SpawnArea and all directional boxes to match the current SpawnBox */
 	void UpdateSpawnArea() const;
+
+	/** Updates the total amount of damage that can be done if a tracking target is damageable */
+	void UpdateTotalPossibleDamage();
+	
+	/** Returns true if a target exists that is vulnerable to tracking damage */
+	bool TrackingTargetIsDamageable() const;
 	
 	/** Returns a copy of all spawn locations that were created on initialization */
 	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
@@ -195,7 +199,8 @@ private:
 	/** Returns a copy of ManagedTargets */
 	TArray<TObjectPtr<ASphereTarget>> GetManagedTargets() const { return ManagedTargets; }
 
-	ASphereTarget* GetManagedTargetByGuid(const FGuid Guid);
+	/** Returns the SphereTarget that has the matching Guid, or nullptr if not found in ManagedTargets */
+	ASphereTarget* FindManagedTargetByGuid(const FGuid Guid) const;
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
 	FVector GetBoxExtents_Static() const { return StaticExtents; }
@@ -210,7 +215,7 @@ private:
 	FExtrema GenerateBoxExtremaGrid() const;
 
 	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnPoint IsCurrentlyManaged flag */
-	int32 AddToManagedTargets(TObjectPtr<ASphereTarget> SpawnTarget, const TObjectPtr<USpawnPoint> AssociatedSpawnPoint);
+	int32 AddToManagedTargets(ASphereTarget* SpawnTarget, USpawnPoint* AssociatedSpawnPoint);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnPoint IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
@@ -247,11 +252,11 @@ private:
 
 	/** SpawnPoint for the next/current target */
 	UPROPERTY()
-	TObjectPtr<USpawnPoint> SpawnPoint;
+	USpawnPoint* SpawnPoint;
 
 	/** SpawnPoint for the previous target. Assigned the value of SpawnPoint immediately before the next SpawnPoint is chosen in FindNextTargetProperties */
 	UPROPERTY()
-	TObjectPtr<USpawnPoint> PreviousSpawnPoint;
+	USpawnPoint* PreviousSpawnPoint;
 
 	/** The scale to apply to the next/current target */
 	FVector TargetScale;
@@ -274,4 +279,7 @@ private:
 
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;
+
+	/** The total amount of ticks while at least one tracking target was damageable */
+	double TotalPossibleDamage;
 };

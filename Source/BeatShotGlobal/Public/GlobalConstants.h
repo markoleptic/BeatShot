@@ -348,6 +348,26 @@ namespace Constants
 	inline constexpr int32 MinValue_MaxHealth = 100;
 	inline constexpr int32 MaxValue_MaxHealth = 1000;
 	inline constexpr int32 SnapSize_MaxHealth = 100;
+
+	inline constexpr int32 MinValue_NumRuntimeTargetsToSpawn = -1;
+	inline constexpr int32 MaxValue_NumRuntimeTargetsToSpawn = 10;
+	inline constexpr int32 SnapSize_NumRuntimeTargetsToSpawn = 1;
+
+	inline constexpr int32 MinValue_MaxNumActivatedTargetsAtOnce = -1;
+	inline constexpr int32 MaxValue_MaxNumActivatedTargetsAtOnce = 10;
+	inline constexpr int32 SnapSize_MaxNumActivatedTargetsAtOnce = 1;
+
+	inline constexpr int32 MinValue_MaxNumTargetsAtOnce = -1;
+	inline constexpr int32 MaxValue_MaxNumTargetsAtOnce = 100;
+	inline constexpr int32 SnapSize_MaxNumTargetsAtOnce = 1;
+
+	inline constexpr int32 MinValue_MinNumTargetsToActivateAtOnce = -1;
+	inline constexpr int32 MaxValue_MinNumTargetsToActivateAtOnce = 10;
+	inline constexpr int32 SnapSize_MinNumTargetsToActivateAtOnce = 1;
+
+	inline constexpr int32 MinValue_MaxNumTargetsToActivateAtOnce = -1;
+	inline constexpr int32 MaxValue_MaxNumTargetsToActivateAtOnce = 10;
+	inline constexpr int32 SnapSize_MaxNumTargetsToActivateAtOnce = 1;
 	
 	// AI
 	

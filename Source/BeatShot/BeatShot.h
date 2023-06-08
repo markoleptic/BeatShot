@@ -72,12 +72,12 @@ struct FTargetDamageEvent
 	}
 
 	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FVector& InLocation, const FVector& InScale, const FGuid& InGuid,
-		const float InDamageDelta = 0.f, const float InTotalPossibleDamage = 0.f)
+		const float InDamageDelta = 0.f)
 	{
 		TimeAlive = InTimeAlive;
 		DamageDelta = InDamageDelta;
 		CurrentHealth = InCurrentHealth;
-		TotalPossibleDamage = InTotalPossibleDamage;
+		TotalPossibleDamage = 0.f;
 		Location = InLocation;
 		Scale = InScale;
 		Guid = InGuid;

@@ -11,17 +11,15 @@
 
 UBSHealthComponent::UBSHealthComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
 	AbilitySystemComponent = nullptr;
 	AttributeSetBase = nullptr;
-	TotalPossibleDamage = 0.f;
 }
 
 void UBSHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	TotalPossibleDamage = 0.f;
 }
 
 void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
@@ -32,7 +30,7 @@ void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& Chang
 		const FGameplayEffectContextHandle& EffectContext = Spec->GetEffectContext();
 		Instigator = EffectContext.GetOriginalInstigator();
 	}
-	OnHealthChanged.Broadcast(Instigator, ChangeData.OldValue, ChangeData.NewValue, TotalPossibleDamage);
+	OnHealthChanged.Broadcast(Instigator, ChangeData.OldValue, ChangeData.NewValue);
 }
 
 void UBSHealthComponent::HandleMaxHealthChanged(const FOnAttributeChangeData& ChangeData)
@@ -47,16 +45,6 @@ void UBSHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor* Dam
 void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-}
-
-void UBSHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (ShouldUpdateTotalPossibleDamage)
-	{
-		TotalPossibleDamage++;
-	}
 }
 
 void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer)
@@ -87,18 +75,4 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 	// Register to listen for attribute changes.
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UBSAttributeSetBase::GetHealthAttribute()).AddUObject(this, &ThisClass::HandleHealthChanged);
 	AttributeSetBase->OnHealthReachZero.AddUObject(this, &ThisClass::HandleOutOfHealth);
-}
-
-void UBSHealthComponent::SetShouldUpdateTotalPossibleDamage(const bool bShouldUpdate, const FGameplayTagContainer& TagContainer)
-{
-	if (TagContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Tracking))
-	{
-		ShouldUpdateTotalPossibleDamage = bShouldUpdate;
-		GetWorld()->GetTimerManager().SetTimer(TotalPossibleDamageUpdate, this, &UBSHealthComponent::OnSecondPassedCallback, 1.f, true);
-	}
-}
-
-void UBSHealthComponent::OnSecondPassedCallback() const
-{
-	OnSecondPassedTotalPossibleDamage.Broadcast(TotalPossibleDamage);
 }

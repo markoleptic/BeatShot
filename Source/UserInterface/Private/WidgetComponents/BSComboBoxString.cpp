@@ -435,7 +435,7 @@ void UBSComboBoxString::SetSelectedIndex(const int32 InIndex, const bool bClearC
 		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
 
 		// Update slate combo box
-		if (SlateComboBox)
+		if (SlateComboBox && Options.IsValidIndex(InIndex))
 		{
 			SlateComboBox->SetItemSelection(Options[InIndex], true, ESelectInfo::Direct);
 		}

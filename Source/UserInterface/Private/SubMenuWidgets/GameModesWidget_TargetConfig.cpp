@@ -21,14 +21,18 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 	if (!IsDesignTime())
 	{
 		/* Create MainContainer before calling Super NativeConstruct since the parent calls InitSettingCategoryWidget in NativeConstruct */
-		TargetScaleConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetScaleConstrainedClass);
-		TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, TargetSpeedConstrainedClass);
+		TargetScaleConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
+		TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
+		TargetsToActivateAtOnce = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
 	
 		int32 NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetScaleConstrained.Get()));
 	
 		NewIndex = MainContainer->GetChildIndex(BSBox_MoveTargets) + 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetSpeedConstrained.Get()));
+
+		NewIndex = MainContainer->GetChildIndex(BSBox_MaxNumActivatedTargetsAtOnce) + 1;
+		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetsToActivateAtOnce.Get()));
 	}
 	return Super::RebuildWidget();
 }
@@ -38,41 +42,57 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Super::NativeConstruct();
 	
 	/* Target Scale TextBox and Slider */
-	FSyncedSlidersParams TargetScaleSliderStruct;
-	TargetScaleSliderStruct.MinConstraintLower = MinValue_TargetScale;
-	TargetScaleSliderStruct.MinConstraintUpper = MaxValue_TargetScale;
-	TargetScaleSliderStruct.MaxConstraintLower = MinValue_TargetScale;
-	TargetScaleSliderStruct.MaxConstraintUpper = MaxValue_TargetScale;
-	TargetScaleSliderStruct.DefaultMinValue = MinValue_TargetScale;
-	TargetScaleSliderStruct.DefaultMaxValue = MaxValue_TargetScale;
-	TargetScaleSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTargetScale");
-	TargetScaleSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTargetScale");
-	TargetScaleSliderStruct.GridSnapSize = SnapSize_TargetScale;
-	TargetScaleSliderStruct.bShowCheckBox = false;
-	TargetScaleSliderStruct.bShowMinLock = true;
-	TargetScaleSliderStruct.bShowMaxLock = true;
-	TargetScaleSliderStruct.bSyncSlidersAndValues = true;
-	TargetScaleSliderStruct.bLocksOnlySync = true;
-	TargetScaleConstrained->InitConstrainedSlider(TargetScaleSliderStruct);
+	FSyncedSlidersParams SyncedSlidersParams;
+	SyncedSlidersParams.MinConstraintLower = MinValue_TargetScale;
+	SyncedSlidersParams.MinConstraintUpper = MaxValue_TargetScale;
+	SyncedSlidersParams.MaxConstraintLower = MinValue_TargetScale;
+	SyncedSlidersParams.MaxConstraintUpper = MaxValue_TargetScale;
+	SyncedSlidersParams.DefaultMinValue = MinValue_TargetScale;
+	SyncedSlidersParams.DefaultMaxValue = MaxValue_TargetScale;
+	SyncedSlidersParams.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTargetScale");
+	SyncedSlidersParams.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTargetScale");
+	SyncedSlidersParams.GridSnapSize = SnapSize_TargetScale;
+	SyncedSlidersParams.bShowCheckBox = false;
+	SyncedSlidersParams.bShowMinLock = true;
+	SyncedSlidersParams.bShowMaxLock = true;
+	SyncedSlidersParams.bSyncSlidersAndValues = true;
+	SyncedSlidersParams.bLocksOnlySync = true;
+	TargetScaleConstrained->InitConstrainedSlider(SyncedSlidersParams);
 
 	/* BeatTrack target speed TextBox and Slider */
-	FSyncedSlidersParams TrackingSpeedSliderStruct;
-	TrackingSpeedSliderStruct.MinConstraintLower = MinValue_TargetSpeed;
-	TrackingSpeedSliderStruct.MinConstraintUpper = MaxValue_TargetSpeed;
-	TrackingSpeedSliderStruct.MaxConstraintLower = MinValue_TargetSpeed;
-	TrackingSpeedSliderStruct.MaxConstraintUpper = MaxValue_TargetSpeed;
-	TrackingSpeedSliderStruct.DefaultMinValue = MinValue_TargetSpeed;
-	TrackingSpeedSliderStruct.DefaultMaxValue = MaxValue_TargetSpeed;
-	TrackingSpeedSliderStruct.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTrackingSpeed");
-	TrackingSpeedSliderStruct.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
-	TrackingSpeedSliderStruct.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
-	TrackingSpeedSliderStruct.GridSnapSize = SnapSize_TargetSpeed;
-	TrackingSpeedSliderStruct.bShowCheckBox = false;
-	TrackingSpeedSliderStruct.bShowMinLock = true;
-	TrackingSpeedSliderStruct.bShowMaxLock = true;
-	TrackingSpeedSliderStruct.bSyncSlidersAndValues = true;
-	TrackingSpeedSliderStruct.bLocksOnlySync = true;
-	TargetSpeedConstrained->InitConstrainedSlider(TrackingSpeedSliderStruct);
+	SyncedSlidersParams.MinConstraintLower = MinValue_TargetSpeed;
+	SyncedSlidersParams.MinConstraintUpper = MaxValue_TargetSpeed;
+	SyncedSlidersParams.MaxConstraintLower = MinValue_TargetSpeed;
+	SyncedSlidersParams.MaxConstraintUpper = MaxValue_TargetSpeed;
+	SyncedSlidersParams.DefaultMinValue = MinValue_TargetSpeed;
+	SyncedSlidersParams.DefaultMaxValue = MaxValue_TargetSpeed;
+	SyncedSlidersParams.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxTrackingSpeed");
+	SyncedSlidersParams.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinTrackingSpeed");
+	SyncedSlidersParams.CheckboxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_ConstantTrackingSpeed");
+	SyncedSlidersParams.GridSnapSize = SnapSize_TargetSpeed;
+	SyncedSlidersParams.bShowCheckBox = false;
+	SyncedSlidersParams.bShowMinLock = true;
+	SyncedSlidersParams.bShowMaxLock = true;
+	SyncedSlidersParams.bSyncSlidersAndValues = true;
+	SyncedSlidersParams.bLocksOnlySync = true;
+	TargetSpeedConstrained->InitConstrainedSlider(SyncedSlidersParams);
+	
+	SyncedSlidersParams.MinConstraintLower = MinValue_MinNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.MinConstraintUpper = MaxValue_MinNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.MaxConstraintLower = MinValue_MaxNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.MaxConstraintUpper = MaxValue_MaxNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.DefaultMinValue = MinValue_MinNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.DefaultMaxValue = MinValue_MinNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.MaxText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MaxNumTargetsToActivateAtOnce");
+	SyncedSlidersParams.MinText = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_MinNumTargetsToActivateAtOnce");
+	SyncedSlidersParams.GridSnapSize = SnapSize_MaxNumTargetsToActivateAtOnce;
+	SyncedSlidersParams.bShowCheckBox = false;
+	SyncedSlidersParams.bShowMinLock = true;
+	SyncedSlidersParams.bShowMaxLock = true;
+	SyncedSlidersParams.bSyncSlidersAndValues = true;
+	SyncedSlidersParams.bLocksOnlySync = true;
+	SyncedSlidersParams.bIndentLeftOneLevel = true;
+	TargetsToActivateAtOnce->InitConstrainedSlider(SyncedSlidersParams);
 	
 	SetupTooltip(QMark_Lifespan, GetTooltipTextFromKey("Lifespan"));
 	SetupTooltip(QMark_TargetSpawnCD, GetTooltipTextFromKey("MinDistance"));
@@ -99,12 +119,15 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(QMark_TargetDeactivationConditions, GetTooltipTextFromKey("TargetDeactivationConditions"));
 	SetupTooltip(QMark_TargetDeactivationResponses, GetTooltipTextFromKey("TargetDeactivationResponses"));
 	SetupTooltip(QMark_TargetDestructionConditions, GetTooltipTextFromKey("TargetDestructionConditions"));
+	SetupTooltip(QMark_MovingTargetDirectionMode, GetTooltipTextFromKey("MovingTargetDirectionMode"));
 	SetupTooltip(QMark_ContinuouslySpawn, GetTooltipTextFromKey("ContinuouslySpawn"));
 	SetupTooltip(QMark_ContinuouslyActivate, GetTooltipTextFromKey("ContinuouslyActivate"));
 	SetupTooltip(QMark_MoveTargets, GetTooltipTextFromKey("MoveTargets"));
 	SetupTooltip(QMark_SpawnAtOriginWheneverPossible, GetTooltipTextFromKey("SpawnAtOriginWheneverPossible"));
 	SetupTooltip(QMark_SpawnEveryOtherTargetInCenter, GetTooltipTextFromKey("SpawnEveryOtherTargetInCenter"));
-	SetupTooltip(QMark_NumUpfrontTargetsToSpawn, GetTooltipTextFromKey("NumUpfrontTargetsToSpawn"));
+	SetupTooltip(QMark_NumRuntimeTargetsToSpawn, GetTooltipTextFromKey("NumRuntimeTargetsToSpawn"));
+	SetupTooltip(QMark_MaxNumActivatedTargetsAtOnce, GetTooltipTextFromKey("MaxNumActivatedTargetsAtOnce"));
+	SetupTooltip(QMark_MaxNumTargetsAtOnce, GetTooltipTextFromKey("MaxNumTargetsAtOnce"));
 	
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_Lifespan);
 	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_TargetSpawnCD);
@@ -120,6 +143,9 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Slider_NumUpfrontTargetsToSpawn->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_NumUpfrontTargetsToSpawn);
 	Slider_ExpirationHealthPenalty->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_ExpirationHealthPenalty);
 	Slider_MaxHealth->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MaxHealth);
+	Slider_NumRuntimeTargetsToSpawn->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_NumRuntimeTargetsToSpawn);
+	Slider_MaxNumActivatedTargetsAtOnce->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MaxNumActivatedTargetsAtOnce);
+	Slider_MaxNumTargetsAtOnce->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MaxNumTargetsAtOnce);
 	
 	Value_Lifespan->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Lifespan);
 	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_TargetSpawnCD);
@@ -135,6 +161,9 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Value_NumUpfrontTargetsToSpawn->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_NumUpfrontTargetsToSpawn);
 	Value_ExpirationHealthPenalty->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_ExpirationHealthPenalty);
 	Value_MaxHealth->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_MaxHealth);
+	Value_NumRuntimeTargetsToSpawn->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_NumRuntimeTargetsToSpawn);
+	Value_MaxNumActivatedTargetsAtOnce->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_MaxNumActivatedTargetsAtOnce);
+	Value_MaxNumTargetsAtOnce->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_MaxNumTargetsAtOnce);
 
 	CheckBox_ApplyImmunityOnSpawn->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ApplyImmunityOnSpawn);
 	CheckBox_MoveTargetsForward->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_MoveTargetsForward);
@@ -151,6 +180,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	ComboBox_TargetActivationSelectionPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetActivationSelectionPolicy);
 	ComboBox_TargetDamageType->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetDamageType);
 	ComboBox_TargetDistributionPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetDistributionPolicy);
+	ComboBox_MovingTargetDirectionMode->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_MovingTargetDirectionMode);
 	ComboBox_TargetSpawningPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetSpawningPolicy);
 	ComboBox_TargetActivationResponses->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetActivationResponses);
 	ComboBox_TargetDeactivationConditions->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_TargetDeactivationConditions);
@@ -169,6 +199,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	ComboBox_TargetDeactivationConditions->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
 	ComboBox_TargetDeactivationResponses->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
 	ComboBox_TargetDestructionConditions->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
+	ComboBox_MovingTargetDirectionMode->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
 
 	ComboBox_BoundsScalingPolicy->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBox_ConsecutiveTargetScalePolicy->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
@@ -182,6 +213,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	ComboBox_TargetDeactivationConditions->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBox_TargetDeactivationResponses->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBox_TargetDestructionConditions->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBox_MovingTargetDirectionMode->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	
 	for (const EBoundsScalingPolicy& Method : TEnumRange<EBoundsScalingPolicy>())
 	{
@@ -230,6 +262,10 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	for (const ETargetDestructionCondition& Method : TEnumRange<ETargetDestructionCondition>())
 	{
 		ComboBox_TargetDestructionConditions->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+	}
+	for (const EMovingTargetDirectionMode& Method : TEnumRange<EMovingTargetDirectionMode>())
+	{
+		ComboBox_MovingTargetDirectionMode->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
 }
 
@@ -295,6 +331,9 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Slider_NumUpfrontTargetsToSpawn->SetValue(InTargetConfig.NumUpfrontTargetsToSpawn);
 	Slider_ExpirationHealthPenalty->SetValue(InTargetConfig.ExpirationHealthPenalty);
 	Slider_MaxHealth->SetValue(InTargetConfig.MaxHealth);
+	Slider_NumRuntimeTargetsToSpawn->SetValue(InTargetConfig.NumRuntimeTargetsToSpawn);
+	Slider_MaxNumActivatedTargetsAtOnce->SetValue(InTargetConfig.MaxNumActivatedTargetsAtOnce);
+	Slider_MaxNumTargetsAtOnce->SetValue(InTargetConfig.MaxNumTargetsAtOnce);
 	
 	Value_FloorDistance->SetText(FText::AsNumber(InTargetConfig.FloorDistance));
 	Value_MinTargetDistance->SetText(FText::AsNumber(InTargetConfig.MinDistanceBetweenTargets));
@@ -309,7 +348,10 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_RecentTargetTimeLength->SetText(FText::AsNumber(InTargetConfig.RecentTargetTimeLength));
 	Value_NumUpfrontTargetsToSpawn->SetText(FText::AsNumber(InTargetConfig.NumUpfrontTargetsToSpawn));
 	Value_ExpirationHealthPenalty->SetText(FText::AsNumber(InTargetConfig.ExpirationHealthPenalty));
+	Value_NumRuntimeTargetsToSpawn->SetText(FText::AsNumber(InTargetConfig.NumRuntimeTargetsToSpawn));
 	Value_MaxHealth->SetText(FText::AsNumber(InTargetConfig.MaxHealth));
+	Value_MaxNumActivatedTargetsAtOnce->SetText(FText::AsNumber(InTargetConfig.MaxNumActivatedTargetsAtOnce));
+	Value_MaxNumTargetsAtOnce->SetText(FText::AsNumber(InTargetConfig.MaxNumTargetsAtOnce));
 	
 	CheckBox_MoveTargetsForward->SetIsChecked(InTargetConfig.bMoveTargetsForward);
 	CheckBox_ApplyImmunityOnSpawn->SetIsChecked(InTargetConfig.bApplyImmunityOnSpawn);
@@ -324,7 +366,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	
 	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
-	
+	TargetsToActivateAtOnce->UpdateDefaultValuesAbsolute(InTargetConfig.MinNumTargetsToActivateAtOnce, InTargetConfig.MaxNumTargetsToActivateAtOnce, InTargetConfig.MinNumTargetsToActivateAtOnce == InTargetConfig.MaxNumTargetsToActivateAtOnce);
 	ComboBox_BoundsScalingPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.BoundsScalingPolicy).ToString());
 	ComboBox_ConsecutiveTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
 	ComboBox_LifetimeTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScalePolicy).ToString());
@@ -333,6 +375,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	ComboBox_TargetDamageType->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDamageType).ToString());
 	ComboBox_TargetDistributionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString());
 	ComboBox_TargetSpawningPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetSpawningPolicy).ToString());
+	ComboBox_MovingTargetDirectionMode->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.MovingTargetDirectionMode).ToString());
 	
 	ComboBox_TargetActivationResponses->SetSelectedOptions(GetStringArrayFromEnumArray(InTargetConfig.TargetActivationResponses));
 	ComboBox_TargetDeactivationConditions->SetSelectedOptions(GetStringArrayFromEnumArray(InTargetConfig.TargetDeactivationConditions));
@@ -360,6 +403,9 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 		MaxValue_ConsecutiveChargeScaleMultiplier), SnapSize_ConsecutiveChargeScaleMultiplier);
 	ReturnConfig.MinTargetSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMinValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	ReturnConfig.MaxTargetSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMaxValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.MinNumTargetsToActivateAtOnce = FMath::GridSnap(FMath::Clamp(TargetsToActivateAtOnce->GetMinValue(), MinValue_MinNumTargetsToActivateAtOnce, MaxValue_MinNumTargetsToActivateAtOnce), SnapSize_MinNumTargetsToActivateAtOnce);
+	ReturnConfig.MaxNumTargetsToActivateAtOnce = FMath::GridSnap(FMath::Clamp(TargetsToActivateAtOnce->GetMaxValue(), MinValue_MaxNumTargetsToActivateAtOnce, MaxValue_MaxNumTargetsToActivateAtOnce), SnapSize_MaxNumTargetsToActivateAtOnce);
+	
 	ReturnConfig.FloorDistance = FMath::GridSnap(FMath::Clamp(Slider_FloorDistance->GetValue(), MinValue_FloorDistance, MaxValue_FloorDistance), SnapSize_FloorDistance);
 	ReturnConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(Slider_MinTargetDistance->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
 	ReturnConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(Slider_HorizontalSpread->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
@@ -370,6 +416,9 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.NumUpfrontTargetsToSpawn = FMath::GridSnap(FMath::Clamp(Slider_NumUpfrontTargetsToSpawn->GetValue(), MinValue_NumUpfrontTargetsToSpawn, MaxValue_NumUpfrontTargetsToSpawn), SnapSize_NumUpfrontTargetsToSpawn);
 	ReturnConfig.ExpirationHealthPenalty = FMath::GridSnap(FMath::Clamp(Slider_ExpirationHealthPenalty->GetValue(), MinValue_ExpirationHealthPenalty, MaxValue_ExpirationHealthPenalty), SnapSize_ExpirationHealthPenalty);
 	ReturnConfig.MaxHealth = FMath::GridSnap(FMath::Clamp(Slider_MaxHealth->GetValue(), MinValue_MaxHealth, MaxValue_MaxHealth), SnapSize_MaxHealth);
+	ReturnConfig.NumRuntimeTargetsToSpawn = FMath::GridSnap(FMath::Clamp(Slider_NumRuntimeTargetsToSpawn->GetValue(), MinValue_NumRuntimeTargetsToSpawn, MaxValue_NumRuntimeTargetsToSpawn), SnapSize_NumRuntimeTargetsToSpawn);
+	ReturnConfig.MaxNumActivatedTargetsAtOnce = FMath::GridSnap(FMath::Clamp(Slider_MaxNumActivatedTargetsAtOnce->GetValue(), MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce), SnapSize_MaxNumActivatedTargetsAtOnce);
+	ReturnConfig.MaxNumTargetsAtOnce = FMath::GridSnap(FMath::Clamp(Slider_MaxNumTargetsAtOnce->GetValue(), MinValue_MaxNumTargetsAtOnce, MaxValue_MaxNumTargetsAtOnce), SnapSize_MaxNumTargetsAtOnce);
 	
 	ReturnConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(ComboBox_BoundsScalingPolicy->GetSelectedOption(), EBoundsScalingPolicy::None);
 	ReturnConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), EConsecutiveTargetScalePolicy::None);
@@ -379,6 +428,7 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(ComboBox_TargetDamageType->GetSelectedOption(), ETargetDamageType::None);
 	ReturnConfig.TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(ComboBox_TargetDistributionPolicy->GetSelectedOption(), ETargetDistributionPolicy::None);
 	ReturnConfig.TargetSpawningPolicy = GetEnumFromString<ETargetSpawningPolicy>(ComboBox_TargetSpawningPolicy->GetSelectedOption(), ETargetSpawningPolicy::None);
+	ReturnConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(ComboBox_MovingTargetDirectionMode->GetSelectedOption(), EMovingTargetDirectionMode::None);
 	for (const FString& String : ComboBox_TargetActivationResponses->GetSelectedOptions())
 	{
 		ReturnConfig.TargetActivationResponses.AddUnique(GetEnumFromString<ETargetActivationResponse>(String, ETargetActivationResponse::None));
@@ -475,6 +525,36 @@ void UGameModesWidget_TargetConfig::OnSliderChanged_ExpirationHealthPenalty(cons
 void UGameModesWidget_TargetConfig::OnSliderChanged_MaxHealth(const float NewMaxHealth)
 {
 	OnSliderChanged(NewMaxHealth, Value_MaxHealth, SnapSize_MaxHealth);
+}
+
+void UGameModesWidget_TargetConfig::OnSliderChanged_NumRuntimeTargetsToSpawn(const float NewNumRuntimeTargetsToSpawn)
+{
+	OnSliderChanged(NewNumRuntimeTargetsToSpawn, Value_NumRuntimeTargetsToSpawn, SnapSize_NumRuntimeTargetsToSpawn);
+}
+
+void UGameModesWidget_TargetConfig::OnSliderChanged_MaxNumActivatedTargetsAtOnce(const float NewMaxNum)
+{
+	OnSliderChanged(NewMaxNum, Value_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
+}
+
+void UGameModesWidget_TargetConfig::OnSliderChanged_MaxNumTargetsAtOnce(const float NewMaxNum)
+{
+	OnSliderChanged(NewMaxNum, Value_MaxNumTargetsAtOnce, SnapSize_MaxNumTargetsAtOnce);
+}
+
+void UGameModesWidget_TargetConfig::OnTextCommitted_NumRuntimeTargetsToSpawn(const FText& NewNumRuntimeTargetsToSpawn, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewNumRuntimeTargetsToSpawn, Value_NumRuntimeTargetsToSpawn, Slider_NumRuntimeTargetsToSpawn, SnapSize_NumRuntimeTargetsToSpawn, MinValue_NumRuntimeTargetsToSpawn, MaxValue_NumRuntimeTargetsToSpawn);
+}
+
+void UGameModesWidget_TargetConfig::OnTextCommitted_MaxNumActivatedTargetsAtOnce(const FText& NewMaxNum, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewMaxNum, Value_MaxNumActivatedTargetsAtOnce, Slider_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce, MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce);
+}
+
+void UGameModesWidget_TargetConfig::OnTextCommitted_MaxNumTargetsAtOnce(const FText& NewMaxNum, ETextCommit::Type CommitType)
+{
+	OnEditableTextBoxChanged(NewMaxNum, Value_MaxNumTargetsAtOnce, Slider_MaxNumTargetsAtOnce, SnapSize_MaxNumTargetsAtOnce, MinValue_MaxNumTargetsAtOnce, MaxValue_MaxNumTargetsAtOnce);
 }
 
 void UGameModesWidget_TargetConfig::OnTextCommitted_MaxNumRecentTargets(const FText& NewMaxNum, ETextCommit::Type CommitType)
@@ -762,6 +842,10 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDestructionConditio
 	}
 }
 
+void UGameModesWidget_TargetConfig::OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+{
+}
+
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() != 1)
@@ -867,6 +951,11 @@ FString UGameModesWidget_TargetConfig::GetStringTableKeyFromComboBox(const UBSCo
 	if (ComboBoxString == ComboBox_TargetDestructionConditions)
 	{
 		const ETargetDestructionCondition EnumValue = GetEnumFromString<ETargetDestructionCondition>(EnumString, ETargetDestructionCondition::None);
+		return GetStringTableKeyNameFromEnum(EnumValue);
+	}
+	if (ComboBoxString == ComboBox_MovingTargetDirectionMode)
+	{
+		const EMovingTargetDirectionMode EnumValue = GetEnumFromString<EMovingTargetDirectionMode>(EnumString, EMovingTargetDirectionMode::None);
 		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
 	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching value for %s in UGameModesWidget_TargetConfig"), *ComboBoxString->GetName());

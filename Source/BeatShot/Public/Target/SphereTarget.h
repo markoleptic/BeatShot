@@ -23,7 +23,6 @@ class ASphereTarget;
 
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnTargetActivationStateChanged, const bool bIsActivated, const FGameplayTagContainer& TagContainer);
 
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
@@ -39,6 +38,8 @@ class BEATSHOT_API ASphereTarget : public AActor, public IAbilitySystemInterface
 protected:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
+
+	virtual void PostInitializeComponents() override;
 
 	/** Ticks the timelines */
 	virtual void Tick(float DeltaSeconds) override;
@@ -106,6 +107,9 @@ public:
 	virtual bool HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const override;
 	/* ~End IGameplayTagAssetInterface */
 
+	UFUNCTION()
+	virtual void OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity);
+
 	/** Removes a gameplay tag from AbilitySystemComponent */
 	void RemoveGameplayTag(FGameplayTag TagToRemove) const;
 
@@ -116,10 +120,7 @@ public:
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 
 	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */
-	void ActivateTarget(const float Lifespan);
-
-	/** Deactivates a target, applies immunity, stops the DamageableWindow timer and all timelines, sets to inactive target color, and applies scaling */
-	void DeactivateTarget(const float TimeAlive, const bool bExpired);
+	bool ActivateTarget(const float Lifespan);
 
 	/** Sets the color of the Base Target */
 	UFUNCTION(BlueprintCallable)
@@ -129,9 +130,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetOutlineColor(const FLinearColor& Color);
 
-	/** Called from HealthComponent when a SphereTarget receives damage if the game mode is BeatGrid */
+	/** Called from HealthComponent when a SphereTarget receives damage. Calls HandleDeactivation, HandleDestruction,
+	 *  and broadcasts OnTargetDamageEventOrTimeout before finally calling HandleDestruction*/
 	UFUNCTION()
-	void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue, const float TotalPossibleDamage);
+	void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue);
 
 	/** Returns the color the target be after SpawnBeatDelay seconds have passed */
 	UFUNCTION(BlueprintCallable)
@@ -146,6 +148,9 @@ public:
 
 	/** Whether or not the target is immune to damage */
 	bool IsTargetImmune() const;
+
+	/** Whether or not the target is immune to damage */
+	bool IsTargetImmuneToTracking() const;
 
 	/** Whether or not the DamageableWindow timer is active */
 	bool IsDamageWindowActive() const;
@@ -165,6 +170,10 @@ public:
 	/** Sets the InitialSpeed of the ProjectileMovementComponent */
 	void SetTargetSpeed(const float NewMovingTargetSpeed) const;
 
+	void SetLastDirectionChangeHorizontal(const bool bLastHorizontal) { bLastDirectionChangeHorizontal = bLastHorizontal; }
+
+	bool GetLastDirectionChangeHorizontal() const { return bLastDirectionChangeHorizontal; }
+	
 	/** Applies the TargetImmunity gameplay effect to the target */
 	void ApplyImmunityEffect() const;
 
@@ -173,10 +182,7 @@ public:
 	
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
-
-	/** Broadcast when the target is activated or deactivated */
-	FOnTargetActivationStateChanged OnTargetActivationStateChanged;
-
+	
 	/** Timer to track the length of time the target has been damageable for */
 	UPROPERTY()
 	FTimerHandle DamageableWindow;
@@ -186,6 +192,21 @@ public:
 	FBS_TargetConfig Config;
 
 private:
+	/** Finds if target should be deactivated, and calls StopAllTimelines and HandleDeactivationResponses if so */
+	void HandleDeactivation(const bool bExpired, const float CurrentHealth);
+
+	/** Finds if target should be destroyed, and calls Destroy if so */
+	void HandleDestruction(const bool bExpired, const float CurrentHealth);
+
+	/** Performs any responses to the target being deactivated */
+	void HandleDeactivationResponses(const bool bExpired);
+	
+	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
+	bool ShouldDeactivate(const bool bExpired, const float CurrentHealth) const;
+
+	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
+	bool ShouldDestroy(const bool bExpired, const float CurrentHealth) const;
+	
 	/** Apply damage to self, for example when the DamageableWindow timer expires */
 	void DamageSelf(const float Damage);
 	
@@ -236,9 +257,6 @@ private:
 	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
 	UFUNCTION()
 	void OnTargetMaxLifeSpanExpired();
-	
-	UFUNCTION()
-	void OnSecondPassedTotalPossibleDamage(const float TotalPossibleDamage) const;
 
 	/** Guid to keep track of a target's properties after it has been destroyed */
 	UPROPERTY()
@@ -268,4 +286,8 @@ private:
 
 	/** Playback rate for PeakToEnd timeline */
 	float PeakToEndTimelinePlayRate;
+
+	bool bLastDirectionChangeHorizontal;
+	
+	bool bCanBeReactivated = true;
 };

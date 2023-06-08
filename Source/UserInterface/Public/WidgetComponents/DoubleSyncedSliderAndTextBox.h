@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "DoubleSyncedSliderAndTextBox.generated.h"
 
+class USpacer;
 class UBSVerticalBox;
 class UBSHorizontalBox;
 class UHorizontalBox;
@@ -52,6 +53,8 @@ struct FSyncedSlidersParams
 	bool bStartMaxLocked;
 	/* Whether or not to use the locks for only syncing the two slider/value pairs */
 	bool bLocksOnlySync;
+
+	bool bIndentLeftOneLevel;
 	
 	FSyncedSlidersParams()
 	{
@@ -72,6 +75,7 @@ struct FSyncedSlidersParams
 		bStartMinLocked = false;
 		bStartMaxLocked = false;
 		bLocksOnlySync = false;
+		bIndentLeftOneLevel = false;
 	}
 };
 
@@ -108,6 +112,13 @@ protected:
 	UHorizontalBox* TextTooltipBox_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TextTooltipBox_Max;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USpacer* Spacer_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USpacer* Spacer_Max;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USpacer* Spacer_CheckBox;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_Min;

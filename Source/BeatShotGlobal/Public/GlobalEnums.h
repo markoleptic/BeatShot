@@ -140,6 +140,23 @@ enum class ETargetDistributionPolicy : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly, ETargetDistributionPolicy::Grid);
 
 
+/** Which direction to move a target in */
+UENUM(BlueprintType)
+enum class EMovingTargetDirectionMode : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Only move targets left and right */
+	HorizontalOnly UMETA(DisplayName="Horizontal Only"),
+	/** Only move targets up and down */
+	VerticalOnly UMETA(DisplayName="Vertical Only"),
+	/** Only move targets up and down */
+	AlternateHorizontalVertical UMETA(DisplayName="Alternate Horizontal Vertical"),
+	/** Move targets in any direction */
+	Any UMETA(DisplayName="Any"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::HorizontalOnly, EMovingTargetDirectionMode::Any);
+
+
 /** How to handle changing target scale over its damageable lifetime. This can override ConsecutiveTargetScalePolicy only if
  *  the scale is changed while the target is already active */
 UENUM(BlueprintType)
