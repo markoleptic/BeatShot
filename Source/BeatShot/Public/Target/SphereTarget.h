@@ -136,12 +136,16 @@ public:
 	void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue);
 
 	/** Returns the color the target be after SpawnBeatDelay seconds have passed */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	FLinearColor GetPeakTargetColor() const;
 
 	/** Returns the color that the target should change to at the end of it's life */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	FLinearColor GetEndTargetColor() const;
+
+	/** Returns the color that the target should change to at the end of it's life */
+	UFUNCTION(BlueprintPure)
+	FLinearColor GetInActiveTargetColor() const;
 
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
@@ -150,6 +154,7 @@ public:
 	bool IsTargetImmune() const;
 
 	/** Whether or not the target is immune to damage */
+	UFUNCTION(BlueprintPure)
 	bool IsTargetImmuneToTracking() const;
 
 	/** Whether or not the DamageableWindow timer is active */

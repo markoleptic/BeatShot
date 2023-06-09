@@ -22,6 +22,11 @@ void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActo
 	}
 }
 
+bool UBSAbilitySystemComponent::HasExactMatchingGameplayTag(const FGameplayTag& TagToCheck) const
+{
+	return GameplayTagCountContainer.GetExplicitGameplayTags().HasTagExact(TagToCheck);
+}
+
 void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility)
 {
 	ABILITYLIST_SCOPE_LOCK();

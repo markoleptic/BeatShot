@@ -8,6 +8,7 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "GameModesWidget_TargetConfig.generated.h"
 
+class UGameModesWidget_GridConfig;
 class UBSComboBoxString;
 class UBSHorizontalBox;
 class UDoubleSyncedSliderAndTextBox;
@@ -32,10 +33,13 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Classes")
 	TSubclassOf<UDoubleSyncedSliderAndTextBox> DoubleSyncedSliderAndTextBoxClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Classes")
+	TSubclassOf<UGameModesWidget_GridConfig> GridConfigClass;
 	
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetScaleConstrained;
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetSpeedConstrained;
 	TSoftObjectPtr<UDoubleSyncedSliderAndTextBox> TargetsToActivateAtOnce;
+	TSoftObjectPtr<UGameModesWidget_GridConfig> GridConfig;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_ApplyImmunityOnSpawn;
@@ -298,6 +302,10 @@ protected:
 	UTooltipImage* QMark_MaxNumActivatedTargetsAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_MaxNumTargetsAtOnce;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_HorizontalSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_VerticalSpread;
 	
 	UFUNCTION()
 	void OnSliderChanged_Lifespan(const float NewLifespan);

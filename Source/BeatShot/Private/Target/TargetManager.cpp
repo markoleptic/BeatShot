@@ -193,24 +193,15 @@ void ATargetManager::OnAudioAnalyzerBeat()
 		FindNextTargetProperties();
 		return;
 	}
-
-	// Handle activating targets in addition to any spawned above
-	TryActivateExistingTargets(BSConfig.TargetConfig.MinNumTargetsToActivateAtOnce,
-		BSConfig.TargetConfig.MaxNumTargetsToActivateAtOnce,
-		BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce);
 	
-	// Handles spawning and activating a target using SpawnPoint
+	TryActivateExistingTargets();
+	
+	// Handles spawning (and activating) RuntimeOnly targets
 	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
-		HandleRuntimeSpawnAndActivation(SpawnPoint);
+		HandleRuntimeSpawnAndActivation();
 	}
 	
-	// Add to ActiveTargetParis if using RL Comp
-	if (ReinforcementLearningComponent->IsActive() && SpawnPointManager->IsSpawnPointValid(PreviousSpawnPoint) && PreviousSpawnPoint != SpawnPoint)
-	{
-		ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->ChosenPoint, SpawnPoint->ChosenPoint);
-	}
-
 	// Debug stuff
 	if (bShowDebug_SpawnMemory)
 	{
@@ -222,13 +213,14 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	{
 		SpawnPointManager->RefreshRecentTargetFlags();
 	}
-	
-	// Immediately find the next target scale and SpawnPoint
-	FindNextTargetProperties();
 }
 
 ASphereTarget* ATargetManager::SpawnTarget(USpawnPoint* InSpawnPoint)
 {
+	if (!InSpawnPoint)
+	{
+		return nullptr;
+	}
 	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(TargetToSpawn, FTransform(FRotator::ZeroRotator, InSpawnPoint->ChosenPoint, InSpawnPoint->GetScale()), this, nullptr,
 	                                                                      ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Target->InitTarget(BSConfig.TargetConfig);
@@ -281,129 +273,167 @@ bool ATargetManager::ActivateTarget(ASphereTarget* InTarget) const
 	if (InTarget->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan))
 	{
 		SpawnPointManager->FlagSpawnPointAsActivated(InTarget->GetGuid());
-		// Broadcast that a target has been activated, mainly to keep track of total target spawns on PlayerHUD
 		OnTargetActivatedOrSpawned.Broadcast();
-	
+		if (ReinforcementLearningComponent->IsActive() && SpawnPointManager->IsSpawnPointValid(PreviousSpawnPoint))
+		{
+			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnPoint->Index, SpawnPoint->Index);
+		}
 		return true;
 	}
 	return false;
 }
 
-bool ATargetManager::HandleRuntimeSpawnAndActivation(USpawnPoint* InSpawnPoint)
+void ATargetManager::HandleRuntimeSpawnAndActivation()
 {
-	if (!InSpawnPoint)
+	// Don't spawn a target if it can't be activated
+	if (BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce != -1)
 	{
-		return false;
-	}
-
-	int32 NumAllowedToSpawn = 1;
-	if (BSConfig.TargetConfig.MaxNumTargetsAtOnce != -1)
-	{
-		NumAllowedToSpawn = BSConfig.TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();
-		if (NumAllowedToSpawn <= 0)
+		if (SpawnPointManager->GetActivatedSpawnPoints().Num() >= BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce)
 		{
-			return false;
-		}
-		if (NumAllowedToSpawn > BSConfig.TargetConfig.NumRuntimeTargetsToSpawn &&
-			BSConfig.TargetConfig.NumRuntimeTargetsToSpawn != -1)
-		{
-			NumAllowedToSpawn = BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
+			return;
 		}
 	}
-	int32 NumSpawned = 0;
-
-	// Spawn targets, only activating them if there's less activated than MaxNumActivatedTargetsAtOnce
+	
+	const int32 NumAllowedToSpawn = GetNumberOfRuntimeTargetsToSpawn();
 	for (int i = 0; i < NumAllowedToSpawn; i++)
 	{
-		if (SpawnPointManager->GetActivatedSpawnPoints().Num() < BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce ||
-			BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce == -1)
+		if (ASphereTarget* SpawnedTarget = SpawnTarget(SpawnPoint))
 		{
-			if (ASphereTarget* SpawnedTarget = SpawnTarget(InSpawnPoint))
+			if (ActivateTarget(SpawnedTarget))
 			{
-				ActivateTarget(SpawnedTarget);
-				NumSpawned++;
+				// Get new SpawnPoint
 				FindNextTargetProperties();
 			}
 		}
 	}
-
-	return NumSpawned > 0;
 }
 
-bool ATargetManager::TryActivateExistingTargets(int32 MinToActivate, int32 MaxToActivate, int32 MaxNumAtOnce) const
+int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
+{
+	// Depends on: MaxNumTargetsAtOnce, NumRuntimeTargetsToSpawn, ManagedTargets
+	int32 NumAllowedToSpawn = 1;
+	if (BSConfig.TargetConfig.MaxNumTargetsAtOnce != -1)
+	{
+		NumAllowedToSpawn = BSConfig.TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();
+		if (BSConfig.TargetConfig.NumRuntimeTargetsToSpawn != -1)
+		{
+			// Don't let NumAllowedToSpawn to exceed NumRuntimeTargetsToSpawn
+			if (NumAllowedToSpawn > BSConfig.TargetConfig.NumRuntimeTargetsToSpawn)
+			{
+				NumAllowedToSpawn = BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
+			}
+		}
+	}
+	return NumAllowedToSpawn;
+}
+
+int32 ATargetManager::GetNumberOfTargetsToActivate() const
+{
+	// Depends on: MaxNumActivatedTargetsAtOnce, MinNumTargetsToActivateAtOnce, MaxNumTargetsToActivateAtOnce,
+	// DeactivatedManagedPoints, ActivatedSpawnPoints
+	
+	// Check to see if theres any targets available to activate
+	if (SpawnPointManager->GetDeactivatedManagedPoints().IsEmpty())
+	{
+		return 0;
+	}
+
+	int32 Min = BSConfig.TargetConfig.MinNumTargetsToActivateAtOnce;
+	int32 Max = BSConfig.TargetConfig.MaxNumTargetsToActivateAtOnce;
+	
+	// Set default max/min values
+	Max = Max == -1 ? 1 : Max;
+	Min = Min == -1 ? 1 : Min;
+	
+	// If no constraint on max number of targets activated at once, defer to Min/Max NumTargetsToActivateAtOnce
+	int32 Limit = BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce;
+	if (Limit == -1)
+	{
+		Limit = Max > Min ? Max : Min;
+	}
+	
+	// Check limit on max number of targets activated at once
+	const int32 NumCurrent = SpawnPointManager->GetActivatedSpawnPoints().Num();
+	if (NumCurrent >= Limit)
+	{
+		return 0;
+	}
+	
+	// Current limit is MaxNumActivatedTargetsAtOnce - Currently activated targets
+	const int32 CurrentLimit = Limit - NumCurrent;
+	
+	// Don't let Max exceed CurrentLimit
+	Max = Max > CurrentLimit ? CurrentLimit : Max;
+	// Don't let min exceed max
+	Min = Min > Max ? Max : Min;
+	
+	return FMath::RandRange(Min, Max);
+}
+
+void ATargetManager::TryActivateExistingTargets() 
 {
 	if (GetManagedTargets().IsEmpty())
 	{
-		return false;
+		return;
 	}
-
-	// Handle permanently activated targets so they can still receive activation responses
+	
 	if (BSConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
 	{
-		bool bActivatedAtLeastOne = false;
-		for (const USpawnPoint* Point : SpawnPointManager->GetActivatedSpawnPoints())
-		{
-			if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
-			{
-				bActivatedAtLeastOne = ActivateTarget(Target) || bActivatedAtLeastOne;
-			}
-		}
-		return bActivatedAtLeastOne;
-	}
-	
-	if (SpawnPointManager->GetDeactivatedManagedPoints().IsEmpty() ||
-		(SpawnPointManager->GetActivatedSpawnPoints().Num() >= MaxNumAtOnce && MaxNumAtOnce != -1))
-	{
-		return false;
-	}
-	
-	const int32 NumCurrent = SpawnPointManager->GetActivatedSpawnPoints().Num();
-	bool bActivateAll = false;
-	if (MaxNumAtOnce == -1)
-	{
-		bActivateAll = true;
+		HandlePermanentlyActiveTargetActivation();
 	}
 	else
 	{
-		if (MaxToActivate == -1 || (MaxNumAtOnce - NumCurrent < MaxToActivate))
-		{
-			MaxToActivate = MaxNumAtOnce - NumCurrent;
-		}
-		
-		if (MinToActivate == -1 || MinToActivate > MaxToActivate)
-		{
-			MinToActivate = MaxToActivate;
-		}
-		else if (MaxNumAtOnce - NumCurrent < MinToActivate)
-		{
-			MinToActivate = MaxNumAtOnce - NumCurrent;
-		}
+		HandleTemporaryTargetActivation();
 	}
+}
 
-	const int32 NumToActivate = FMath::RandRange(MinToActivate, MaxToActivate);
-	int32 NumActivated = 0;
+void ATargetManager::HandlePermanentlyActiveTargetActivation() const
+{
+	// Handle initial activation
+	TArray<USpawnPoint*> SpawnPoints = SpawnPointManager->GetActivatedSpawnPoints();
+	if (SpawnPoints.IsEmpty())
+	{
+		SpawnPoints = SpawnPointManager->GetDeactivatedManagedPoints();
+	}
 	
-	// Handle non-permanently activated targets using Points that are referencing managed targets, but are not activated
-	for (const USpawnPoint* Point : SpawnPointManager->GetDeactivatedManagedPoints())
+	for (const USpawnPoint* Point : SpawnPoints)
 	{
 		if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
 		{
-			if (ActivateTarget(Target))
+			ActivateTarget(Target);
+		}
+	}
+}
+
+void ATargetManager::HandleTemporaryTargetActivation()
+{
+	const int32 NumToActivate = GetNumberOfTargetsToActivate();
+	
+	// Points that are referencing managed targets, but are not activated
+	for (int i = 0; i < NumToActivate; i++)
+	{
+		if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
+		{
+			if (SpawnPoint)
 			{
-				NumActivated++;
+				if (ASphereTarget* Target = FindManagedTargetByGuid(SpawnPoint->GetGuid()))
+				{
+					if (ActivateTarget(Target))
+					{
+						FindNextTargetProperties();
+					}
+				}
 			}
-			if (bActivateAll)
+		}
+		// TODO: Maybe this should just be moved to GetNextSpawnPoint
+		else if (const USpawnPoint* Point = SpawnPointManager->FindOldestDeactivatedManagedPoint())
+		{
+			if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
 			{
-				continue;
-			}
-			if (NumActivated >= NumToActivate)
-			{
-				return NumActivated > 0;
+				ActivateTarget(Target);
 			}
 		}
 	}
-	
-	return NumActivated > 0;
 }
 
 void ATargetManager::SpawnUpfrontOnlyTargets()
@@ -446,8 +476,11 @@ void ATargetManager::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& Ta
 
 	if (ReinforcementLearningComponent->IsActive())
 	{
-		ReinforcementLearningComponent->UpdateReinforcementLearningReward(TargetDamageEvent.Location, TargetDamageEvent.TimeAlive != INDEX_NONE);
-		ReinforcementLearningComponent->UpdateReinforcementLearningComponent(SpawnPointManager);
+		if (const USpawnPoint* Found = SpawnPointManager->FindSpawnPointFromGuid(TargetDamageEvent.Guid))
+		{
+			ReinforcementLearningComponent->UpdateReinforcementLearningReward(Found->Index, TargetDamageEvent.TimeAlive != -1);
+			ReinforcementLearningComponent->UpdateReinforcementLearningComponent(SpawnPointManager.Get());
+		}
 	}
 	
 	SpawnPointManager->HandleRecentTargetRemoval(BSConfig.TargetConfig.RecentTargetMemoryPolicy, TargetDamageEvent);
@@ -543,13 +576,13 @@ void ATargetManager::FindNextTargetProperties()
 	SpawnPoint = GetNextSpawnPoint(BSConfig.TargetConfig.BoundsScalingPolicy, NewScale);
 	if (SpawnPoint && SpawnPointManager->GetSpawnPoints().IsValidIndex(SpawnPoint->Index))
 	{
-		for (const USpawnPoint* Point : SpawnPointManager->GetActivatedOrRecentSpawnPoints())
+		/*for (const USpawnPoint* Point : SpawnPointManager->GetActivatedOrRecentSpawnPoints())
 		{
 			if (FVector::Distance(SpawnPoint->ChosenPoint, Point->ChosenPoint) < 200.f)
 			{
 				UE_LOG(LogTemp, Display, TEXT("Distance less than 200: %f"), FVector::Distance(SpawnPoint->ChosenPoint, Point->ChosenPoint));
 			}
-		}
+		}*/
 		SpawnPoint->SetScale(NewScale);
 	}
 }
@@ -572,6 +605,11 @@ USpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 		SetBoxExtents_Dynamic();
 	}
 
+	if (BSConfig.TargetConfig.bSpawnEveryOtherTargetInCenter && SpawnPoint && SpawnPoint != SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin()))
+	{
+		return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
+	}
+
 	// Get valid spawn locations based on TargetDistributionPolicy, BoundsScalingPolicy
 	TArray<FVector> OpenLocations = GetValidSpawnLocations(NewTargetScale, BSConfig.TargetConfig.TargetDistributionPolicy, BoundsScalingPolicy);
 	
@@ -587,10 +625,6 @@ USpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 		{
 			return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
 		}
-		if (BSConfig.TargetConfig.bSpawnEveryOtherTargetInCenter && SpawnPoint && SpawnPoint != SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin()))
-		{
-			return SpawnPointManager->FindSpawnPointFromLocation(GetBoxOrigin());
-		}
 	}
 
 	/* Get location from RL Comp if specified */
@@ -602,10 +636,12 @@ USpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 		}
 		UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn Location suggested by RLAgent."));
 	}
-	
-	if (USpawnPoint* Found = SpawnPointManager->FindSpawnPointFromLocation(OpenLocations[FMath::RandRange(0, OpenLocations.Num() - 1)]))
+
+	const int32 OpenLocationIndex = FMath::RandRange(0, OpenLocations.Num() - 1);
+	if (USpawnPoint* Found = SpawnPointManager->FindSpawnPointFromLocation(OpenLocations[OpenLocationIndex]))
 	{
-		Found->SetChosenPointAsRandomSubPoint(Found->GetBorderingDirections(OpenLocations, GetBoxExtrema(true)));
+		const TArray<EBorderingDirection> Directions = Found->GetBorderingDirections(OpenLocations, GetBoxExtrema(true));
+		Found->SetChosenPointAsRandomSubPoint(Directions);
 		return Found;
 	}
 	//UE_LOG(LogTargetManager, Display, TEXT("Found CornerPoint %s Found CenterPoint %s Found ChosenPoint %s"), *Found->CornerPoint.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());

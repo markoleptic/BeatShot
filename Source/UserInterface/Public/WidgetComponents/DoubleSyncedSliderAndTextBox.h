@@ -55,6 +55,10 @@ struct FSyncedSlidersParams
 	bool bLocksOnlySync;
 
 	bool bIndentLeftOneLevel;
+
+	bool bShowMinQMark;
+
+	bool bShowMaxQMark;
 	
 	FSyncedSlidersParams()
 	{
@@ -76,6 +80,8 @@ struct FSyncedSlidersParams
 		bStartMaxLocked = false;
 		bLocksOnlySync = false;
 		bIndentLeftOneLevel = false;
+		bShowMinQMark = false;
+		bShowMaxQMark = false;
 	}
 };
 
@@ -102,6 +108,11 @@ protected:
 	/** The Tooltip image for the Checkbox_SyncSlidersAndValues. The parent widget will bind to this widget's OnTooltipImageHoveredLocal delegate to display tooltip information */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_Checkbox;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_Min;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_Max;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* Slider_Min;
@@ -168,10 +179,13 @@ public:
 	/** Executed when the Checkbox_SyncSlidersAndValues check state is changed */
 	FOnCheckStateChanged_Synced OnCheckStateChanged_Sync;
 
-	UTooltipImage* GetCheckBoxQMark() const { return QMark_Checkbox; }
+	UTooltipImage* GetQMark_CheckBox() const { return QMark_Checkbox; }
+	UTooltipImage* GetQMark_Min() const { return QMark_Min; }
+	UTooltipImage* GetQMark_Max() const { return QMark_Max; }
 	UBSVerticalBox* GetMainContainer() const { return MainContainer; }
 	UHorizontalBox* GetTextTooltipBox_Min() const { return TextTooltipBox_Min; }
 	UHorizontalBox* GetTextTooltipBox_Max() const { return TextTooltipBox_Max; }
+	
 	float GetMinValue() const;
 	float GetMaxValue() const;
 

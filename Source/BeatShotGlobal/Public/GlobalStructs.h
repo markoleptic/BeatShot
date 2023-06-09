@@ -467,6 +467,8 @@ struct FBS_TargetConfig
 	/** Maximum number of activated targets allowed at one time */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumActivatedTargetsAtOnce;
+
+	// TODO: Constrain MaxNumActivatedTargetsAtOnce to be less than MaxNumTargetsAtOnce
 	
 	/** How many recent targets to keep in memory, if not using RecentTargetTimeLength */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -815,11 +817,11 @@ struct FBSConfig
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = BoxBounds_Dynamic_MultiBeat;
 
-				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = -1;
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = 3;
 				Config.TargetConfig.MaxNumRecentTargets = -1;
 				Config.TargetConfig.MaxNumTargetsAtOnce = -1;
-				Config.TargetConfig.MinNumTargetsToActivateAtOnce = -1;
-				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = -1;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumRuntimeTargetsToSpawn = -1;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = 0;
 			}
@@ -913,11 +915,12 @@ struct FBSConfig
 				
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
-				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = -1;
+				
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = 3;
 				Config.TargetConfig.MaxNumRecentTargets = -1;
 				Config.TargetConfig.MaxNumTargetsAtOnce = -1;
-				Config.TargetConfig.MinNumTargetsToActivateAtOnce = -1;
-				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = -1;
+				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
+				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
 				Config.TargetConfig.NumRuntimeTargetsToSpawn = 0;
 				Config.TargetConfig.NumUpfrontTargetsToSpawn = Config.GridConfig.NumHorizontalGridTargets * Config.GridConfig.NumVerticalGridTargets;
 			}
@@ -1087,11 +1090,9 @@ struct FBSConfig
 				
 				Config.TargetConfig.OnSpawn_ApplyTags = FGameplayTagContainer();
 				Config.TargetConfig.BoxBounds = DefaultSpawnBoxBounds;
-				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;
-				Config.TargetConfig.MaxNumTargetsToActivateAtOnce = 1;
-				Config.TargetConfig.NumUpfrontTargetsToSpawn = 1;
 
-				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = 2;
+				Config.TargetConfig.NumUpfrontTargetsToSpawn = 3;
+				Config.TargetConfig.MaxNumActivatedTargetsAtOnce = 3;
 				Config.TargetConfig.MaxNumRecentTargets = -1;
 				Config.TargetConfig.MaxNumTargetsAtOnce = 3;
 				Config.TargetConfig.MinNumTargetsToActivateAtOnce = 1;

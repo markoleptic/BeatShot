@@ -11,7 +11,7 @@
 class UGameModesWidget_DefiningConfig;
 class UGameModesWidget_TargetConfig;
 class UGameModesWidget_AIConfig;
-class UGameModesWidget_BeatGridConfig;
+class UGameModesWidget_GridConfig;
 class UGameModesWidget_SpatialConfig;
 class UAudioSelectWidget;
 class UHorizontalBox;
@@ -55,8 +55,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Defining Config")
 	TSubclassOf<UGameModesWidget_DefiningConfig> DefiningConfigClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | BeatGrid Config")
-	TSubclassOf<UGameModesWidget_BeatGridConfig> BeatGridConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | AI Config")
 	TSubclassOf<UGameModesWidget_AIConfig> AIConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Config")
@@ -67,7 +65,6 @@ protected:
 	
 	TObjectPtr<UGameModesWidget_DefiningConfig> DefiningConfig;
 	TObjectPtr<UGameModesWidget_TargetConfig> TargetConfig;
-	TObjectPtr<UGameModesWidget_BeatGridConfig> BeatGridConfig;
 	TObjectPtr<UGameModesWidget_AIConfig> AIConfig;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Defining Config")
@@ -76,8 +73,6 @@ protected:
 	UVerticalBox* Box_TargetConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI Config")
 	UVerticalBox* Box_AIConfig;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | BeatGrid Config")
-	UVerticalBox* Box_BeatGridConfig;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
 	UVerticalBox* Box_DefaultGameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")

@@ -17,7 +17,7 @@
 #include "WidgetComponents/SavedTextWidget.h"
 #include "SubMenuWidgets/GameModesWidget_DefiningConfig.h"
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
-#include "SubMenuWidgets/GameModesWidget_BeatGridConfig.h"
+#include "SubMenuWidgets/GameModesWidget_GridConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
 #include "WidgetComponents/MenuButton.h"
 
@@ -56,9 +56,6 @@ void UGameModesWidget::NativeConstruct()
 
 	MenuButton_DefaultGameModes->SetDefaults(Box_DefaultGameModes, MenuButton_CustomGameModes);
 	MenuButton_CustomGameModes->SetDefaults(Box_CustomGameModes, MenuButton_DefaultGameModes);
-
-	BeatGridConfig = CreateWidget<UGameModesWidget_BeatGridConfig>(this, BeatGridConfigClass);
-	Box_BeatGridConfig->AddChildToVerticalBox(BeatGridConfig);
 
 	AIConfig = CreateWidget<UGameModesWidget_AIConfig>(this, AIConfigClass);
 	Box_AIConfig->AddChildToVerticalBox(AIConfig);
@@ -127,8 +124,7 @@ void UGameModesWidget::BindAllDelegates()
 
 	DefiningConfig->OnRepopulateGameModeOptions.AddUObject(this, &UGameModesWidget::PopulateGameModeOptions);
 	DefiningConfig->OnDefiningConfigUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
-	TargetConfig->TargetScaleConstrained->OnValueChanged_Max.AddUObject(BeatGridConfig, &UGameModesWidget_BeatGridConfig::OnBeatGridUpdate_MaxTargetScale);
-	BeatGridConfig->OnBeatGridUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
+	TargetConfig->GridConfig->OnBeatGridUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
 }
 
 void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* GameModeButton)
@@ -282,8 +278,8 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
 	DefiningConfig->InitializeDefiningConfig(InBSConfig.DefiningConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	TargetConfig->InitializeTargetConfig(InBSConfig.TargetConfig, InBSConfig.DefiningConfig.BaseGameMode);
-	BeatGridConfig->InitializeBeatGrid(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
-	BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
+	TargetConfig->GridConfig->InitGridConfig(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
+	TargetConfig->GridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 	AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	
 	/*switch(InBSConfig.DefiningConfig.BaseGameMode)
@@ -301,7 +297,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	case EBaseGameMode::BeatGrid:
 		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
 		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Visible);
-		BeatGridConfig->InitializeBeatGrid(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
+		BeatGridConfig->InitGridConfig(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 		break;
 	case EBaseGameMode::BeatTrack:
@@ -324,7 +320,7 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	ReturnStruct.TargetConfig = TargetConfig->GetTargetConfig();
 	ReturnStruct.AudioConfig.PlayerDelay = ReturnStruct.TargetConfig.SpawnBeatDelay;
 	ReturnStruct.AIConfig = AIConfig->GetAIConfig();
-	ReturnStruct.GridConfig = BeatGridConfig->GetBeatGridConfig();
+	ReturnStruct.GridConfig = TargetConfig->GridConfig->GetGridConfig();
 	return ReturnStruct;
 }
 
@@ -339,8 +335,7 @@ void UGameModesWidget::SaveCustomGameModeAndShowSavedText(const FBSConfig& GameM
 void UGameModesWidget::UpdateSaveStartButtonStates()
 {
 	const bool bNoSavedCustomGameModes = LoadCustomGameModes().IsEmpty();
-	const bool bIsBeatGridMode = DefiningConfig->ComboBox_BaseGameMode->GetSelectedOption().Equals(UEnum::GetDisplayValueAsText(EBaseGameMode::BeatGrid).ToString());
-	const bool bBeatGridIsConstrained = BeatGridConfig->IsAnyParameterConstrained();
+	const bool bBeatGridIsConstrained = TargetConfig->GridConfig->IsAnyParameterConstrained();
 	const bool bIsDefaultMode = IsPresetGameMode(DefiningConfig->ComboBox_GameModeName->GetSelectedOption());
 	const bool bIsCustomMode = IsCustomGameMode(DefiningConfig->ComboBox_GameModeName->GetSelectedOption());
 	const bool bGameModeNameComboBoxEmpty = DefiningConfig->ComboBox_GameModeName->GetSelectedOption().IsEmpty();
@@ -356,9 +351,8 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	{
 		Button_RemoveAllCustom->SetIsEnabled(true);
 	}
-
-	/* BeatGrid */
-	if (bIsBeatGridMode && bBeatGridIsConstrained)
+	
+	if (bBeatGridIsConstrained)
 	{
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);

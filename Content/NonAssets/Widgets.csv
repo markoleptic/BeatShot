@@ -67,7 +67,7 @@ FAQ_CustomGameModeName,"What your new game mode will be saved as. Can't be the n
 FAQ_DynamicTargetSize,"Variable target sizing. Gradually adjusts the target scale from Max Target Scale to Min Target Scale, based on consecutive targets hit."
 FAQ_EvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
 FAQ_ForwardSpread,How far the targets will move forward by the end of their lifespan.
-FAQ_GameModeDifficulty,###############################################################################################################################################################################################################################################################
+FAQ_GameModeDifficulty,Preset Difficulties
 FAQ_GameModeTemplate,The preset game modes or user-created saved game modes.
 FAQ_HeadshotOnly,Targets will only spawn at headshot height.
 FAQ_HorizontalSpread,"The width (left-right) of the possible spawn area. 3200 is from the left wall to the right wall, with a small gap on each side so the target doesn't clip."
@@ -114,7 +114,6 @@ Game_FPSLimitMenu,FPS Limit Menus
 Game_Target,Target Settings
 GameTitle,BeatShot
 GitHubButtonText,Create Github Issue here
-GitHubIssueMessage,"If you're playing this right now, the game in an early alpha state. Things are likely to break and possibly not be implemented. If you have any suggestions whatsoever, don't hesitate to submit an bug report or feature request on Github. "
 GM_AI,AI
 GM_AI_Alpha,Learning Rate
 GM_AI_EnableAI,Enable AI
@@ -125,18 +124,18 @@ GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_BaseGameMode,Base Game Mode
 GM_BeatGrid,Beat Grid
-GM_BeatGrid_HorizontalSpacing,Horizontal Spacing
+GM_HorizontalGridSpacing,Horizontal Spacing
 GM_BeatGrid_Info,MultiBeat but in a grid.
 GM_BeatGrid_NumHorizontalTargets,Number of Horizontal Targets
 GM_BeatGrid_NumVerticalTargets,Number of Vertical Targets
-GM_BeatGrid_VerticalSpacing,Vertical Spacing
+GM_VerticalGridSpacing,Vertical Spacing
 GM_BeatGridSpecific,BeatGrid specific
 GM_BeatTrack,Beat Track
 GM_BeatTrack_Info,"Only one target is spawned, tracking style."
 GM_BeatTrackSpecific,BeatTrack specific
 GM_BoundsScalingPolicy,Bounds Scaling Policy
 GM_CompletelyRandomTargets,Completely Random Targets (vs Only Adjacent Targets)
-GM_ConsecutiveChargeScaleMultiplier,Consecutive Charge Scale Multiplier
+GM_ConsecutiveChargeScaleMultiplier,Deactivated Target Scale Multiplier
 GM_ConsecutiveTargetScalePolicy,Consecutive Target Scale Policy
 GM_ConstantTargetSize,Constant Target Scale
 GM_ConstantTrackingSpeed,Constant Tracking Speed
@@ -352,3 +351,9 @@ WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen
 WindowMode_FullscreenWindowed,Fullscreen Windowed
 WindowMode_Windowed,Windowed
+GM_MinNumTargetsToActivateAtOnce,Min Number of Targets to Activate at Once
+GM_MaxNumTargetsToActivateAtOnce,Max Number of Targets to Activate at Once
+GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn at Runtime
+GM_MaxNumActivatedTargetsAtOnce,Maximum Allowed Activated Targets at Once
+GM_MaxNumTargetsAtOnce,Maximum Allowed Targets at Once
+GM_MovingTargetDirectionMode,Moving Target Direction Mode

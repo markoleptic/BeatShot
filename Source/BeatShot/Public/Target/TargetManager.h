@@ -122,14 +122,27 @@ private:
 	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
 	ASphereTarget* SpawnTarget(USpawnPoint* InSpawnPoint);
 
-	/** Executes any Target Activation Responses, calls ActivateTarget on InTarget, flags SpawnPoint as recent, and fires OnActivation delegate */
+	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags SpawnPoint as recent, fires OnActivation delegate,
+	 *  and adds to ReinforcementLearningComponent ActiveTargetPairs if active */
 	bool ActivateTarget(ASphereTarget* InTarget) const;
 	
 	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce. Also activates the target */
-	bool HandleRuntimeSpawnAndActivation(USpawnPoint* InSpawnPoint);
+	void HandleRuntimeSpawnAndActivation();
 
-	/** Tries to activate target(s)/SpawnPoint(s) if there are any ManagedTargets that are not activated */
-	bool TryActivateExistingTargets(const int32 MinToActivate, const int32 MaxToActivate, int32 MaxNumAtOnce) const;
+	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
+	int32 GetNumberOfRuntimeTargetsToSpawn() const;
+
+	/** Returns the number of targets that are allowed to be activated at once */
+	int32 GetNumberOfTargetsToActivate() const;
+
+	/** Activate target(s)/SpawnPoint(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
+	void TryActivateExistingTargets();
+
+	/** Handles permanently activated targets so they can still receive activation responses, called in TryActivateExistingTargets */
+	void HandlePermanentlyActiveTargetActivation() const;
+
+	/** Handles temporarily activated targets, called in TryActivateExistingTargets */
+	void HandleTemporaryTargetActivation();
 
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
 	void SpawnUpfrontOnlyTargets();

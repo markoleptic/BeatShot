@@ -6,7 +6,7 @@ BeatTrackConstantSpeed,"If checked, the speed of the target will remain constant
 BoundsScalingPolicy,"How to change the vertical and horizontal spread of the spawn area, or not at all."
 BoundsScalingPolicy_Dynamic,The vertical and horizontal spread of the spawn area grow larget based on consecutive targets hit.
 BoundsScalingPolicy_Static,The vertical and horizontal spread of the spawn area will not change.
-ConsecutiveChargeScaleMultiplier,How much to shrink the target after a charge is consumed. This number is multiplied by the target's scale prior to the charge being consumed.
+ConsecutiveChargeScaleMultiplier,How much to shrink the target after being deactivated. This number is multiplied by the target's scale prior to the target deactivating.
 ConsecutiveTargetScalePolicy,"How to change the target scale between consecutive targets, or not at all."
 ConsecutiveTargetScalePolicy_Random,The starting scale/size of the target will be chosen randomly between min and max target scale.
 ConsecutiveTargetScalePolicy_SkillBased,"The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit."
@@ -42,7 +42,7 @@ MaxNumRecentTargets,"How many recent targets to keep in memory, if using Num Tar
 MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
 MoveTargets,Whether or not the targets ever move.
 NumCharges,How many charges or lives each target has before fully dissipating.
-NumUpfrontTargetsToSpawn,How many targets to spawn before the game mode begins
+NumUpfrontTargetsToSpawn,How many targets to spawn before the game mode begins.
 PlaybackAudio,"If checked, the audio from the Input Audio Device will playback to the Output Audio Device. Check  this box if you aren't routing your Input Audio Device to your desktop sound."
 RecentTargetMemoryPolicy,"The selected method determines when to remove targets from recent memory, allowing targets to spawn in that location again."
 RecentTargetMemoryPolicy_CustomTimeBased,"Uses a specified time to remove recent targets, starting after the target has been destroyed or deactivated."
@@ -106,3 +106,22 @@ TargetSpawnCD,"Sets the minimum time between target spawns. This doesn't guarant
 TargetSpawningPolicy,When to spawn the targets.
 TargetSpawningPolicy_RuntimeOnly,Spawn targets when the TargetManager receives the signal from AudioAnalyzer.
 TargetSpawningPolicy_UpfrontOnly,Spawn all the targets before the game mode starts.
+MinNumTargetsToActivateAtOnce,"Minimum number of targets to activate at one time, if there's more than one target available to activate."
+MaxNumTargetsToActivateAtOnce,"Maximum number of targets to activate at one time, if there's more than one target available to activate."
+NumRuntimeTargetsToSpawn,"Number of targets to spawn at one time, during a game mode."
+MaxNumActivatedTargetsAtOnce,Maximum number of targets allowed to be activated at one time.
+MaxNumTargetsAtOnce,"Maximum number of visible targets allowed at one time, regardless of activation state."
+MovingTargetDirectionMode,Which direction(s) to move targets.
+MovingTargetDirectionMode_None,
+MovingTargetDirectionMode_HorizontalOnly,Restrict target movement to only horizontal.
+MovingTargetDirectionMode_VerticalOnly,Restrict target movement to only vertical.
+MovingTargetDirectionMode_AlternateHorizontalVertical,"Restrict target movement to only horizontal and vertical, alternating between the two."
+MovingTargetDirectionMode_Any,Move targets in any direction.
+HorizontalGridSpacing,The horizontal spacing between targets (from edge to edge)
+VerticalGridSpacing,The vertical spacing between targets (from edge to edge)
+HorizontalSpread,The width of the area where targets can spawn. Maximum width if using Dynamic Bounds Scaling.
+VerticalSpread,The height of the area where targets can spawn. Maximum height if using Dynamic Bounds Scaling.
+MinTargetScale,The minimum size of a target. Affects other settings that depend on target scale.
+MaxTargetScale,The maximum size of a target. Affects other settings that depend on target scale.
+MinTargetSpeed,"The minimum speed of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
+MaxTargetSpeed,"The maximum speed of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."

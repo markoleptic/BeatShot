@@ -184,36 +184,34 @@ nc::NdArray<float> UReinforcementLearningComponent::GetQTable() const
 	return QTable;
 }
 
-void UReinforcementLearningComponent::UpdateReinforcementLearningReward(const FVector& WorldLocation, const bool bHit)
+void UReinforcementLearningComponent::UpdateReinforcementLearningReward(const int32 PointIndex, const bool bHit)
 {
-	const int32 ActiveTargetPairIndex = ActiveTargetPairs.Find(WorldLocation);
+	for (FTargetPair Pair : ActiveTargetPairs)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Prev: %d Next: %d"), Pair.Previous, Pair.Current);
+	}
+	const int32 ActiveTargetPairIndex = ActiveTargetPairs.Find(FTargetPair(PointIndex));
 	if (ActiveTargetPairIndex == INDEX_NONE)
 	{
-		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %s"), *WorldLocation.ToString());
+		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %d"), PointIndex);
 		return;
 	}
 	FTargetPair FoundTargetPair = ActiveTargetPairs[ActiveTargetPairIndex];
 
 	/* Update reward */
-	if (bHit)
-	{
-		FoundTargetPair.Reward = -1.f;
-	}
-	else
-	{
-		FoundTargetPair.Reward = 1.f;
-	}
+	const float Reward = bHit ? -1.f : 1.f;
+	FoundTargetPair.SetReward(Reward);
 	ActiveTargetPairs.Remove(FoundTargetPair);
 	TargetPairs.Enqueue(FoundTargetPair);
 }
 
-void UReinforcementLearningComponent::AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation)
+void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 PreviousPointIndex, const int32 CurrentPointIndex)
 {
-	if (PreviousWorldLocation.Equals(NextWorldLocation))
+	if (PreviousPointIndex == CurrentPointIndex)
 	{
 		return;
 	}
-	ActiveTargetPairs.Emplace(PreviousWorldLocation, NextWorldLocation);
+	ActiveTargetPairs.Emplace(PreviousPointIndex, CurrentPointIndex);
 }
 
 void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const USpawnPointManagerComponent* SpawnPointManager)
@@ -226,20 +224,20 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 			break;
 		}
-		const int32 StateIndex = SpawnPointManager->FindSpawnPointIndexFromLocation(TargetPair.Previous);
-		const int32 State2Index = SpawnPointManager->FindSpawnPointIndexFromLocation(TargetPair.Current);
+		const int32 StateIndex = TargetPair.Previous;
+		const int32 State2Index = TargetPair.Current;
 		const int32 ActionIndex = State2Index;
-		const int32 Action2Index = GetMaxActionIndex(State2Index);
 
 		/* Don't update RLAgent if something went wrong */
-		if (Action2Index < SpawnPointManager->GetSpawnPoints().Num() && Action2Index != INDEX_NONE)
+		if (const int32 Action2Index = GetMaxActionIndex(State2Index); SpawnPointManager->GetSpawnPoints().IsValidIndex(Action2Index))
 		{
-			UpdateEpisodeRewards(TargetPair.Reward);
-			UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.Reward));
+			UpdateEpisodeRewards(TargetPair.GetReward());
+			UpdateQTable(FAlgoInput(StateIndex, State2Index,
+				ActionIndex, Action2Index, TargetPair.GetReward()));
 		}
 		else
 		{
-			UE_LOG(LogTargetManager, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %s TargetPair.Current %s"), *TargetPair.Previous.ToString(), *TargetPair.Current.ToString());
+			UE_LOG(LogTargetManager, Warning, TEXT("Invalid Spawn Point from RLAgent: TargetPair.Previous %d TargetPair.Current %d"), TargetPair.Previous, TargetPair.Current);
 		}
 		TargetPairs.Pop();
 	}

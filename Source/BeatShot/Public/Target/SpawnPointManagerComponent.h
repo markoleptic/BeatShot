@@ -38,52 +38,6 @@ enum class EGridIndexType : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::Corner_TopLeft, EGridIndexType::Middle);
 
-/** A struct representing two consecutively spawned targets, used to keep track of the reward associated between two points */
-USTRUCT()
-struct FTargetPair
-{
-	GENERATED_BODY()
-
-	/** The location of the target spawned before Current */
-	FVector Previous;
-
-	/** The location spawned after Previous */
-	FVector Current;
-
-	/** The reward for spawning a target at Previous and then spawning a target at Current */
-	float Reward;
-
-	FTargetPair()
-	{
-		Previous = FVector::ZeroVector;
-		Current = FVector::ZeroVector;
-		Reward = 0.f;
-	}
-
-	FTargetPair(const FVector& CurrentPoint)
-	{
-		Previous = FVector::ZeroVector;
-		Current = CurrentPoint;
-		Reward = 0.f;
-	}
-
-	FTargetPair(const FVector& PreviousPoint, const FVector& CurrentPoint)
-	{
-		Previous = PreviousPoint;
-		Current = CurrentPoint;
-		Reward = 0.f;
-	}
-
-	FORCEINLINE bool operator ==(const FTargetPair& Other) const
-	{
-		if (Current.Y == Other.Current.Y && Current.Z == Other.Current.Z)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
 USTRUCT()
 struct FExtrema
 {
@@ -333,9 +287,13 @@ public:
 	/** Returns the oldest most recent spawn point */
 	USpawnPoint* FindOldestRecentSpawnPoint() const;
 
+	/** Returns the first index of GetDeactivatedManagedPoints */
+	USpawnPoint* FindOldestDeactivatedManagedPoint() const;
+
 	/** Returns the SpawnPoint index corresponding to a world location, or INDEX_NONE if not found */
 	int32 FindSpawnPointIndexFromLocation(const FVector& InLocation) const;
-	
+
+	/** Returns true if the SpawnPoint is contained in SpawnPoints */
 	bool IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const;
 
 	/** Returns an array of Points that are flagged as currently managed */

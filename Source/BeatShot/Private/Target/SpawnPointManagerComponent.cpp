@@ -535,6 +535,15 @@ USpawnPoint* USpawnPointManagerComponent::FindOldestRecentSpawnPoint() const
 	return MostRecent;
 }
 
+USpawnPoint* USpawnPointManagerComponent::FindOldestDeactivatedManagedPoint() const
+{
+	if (TArray<USpawnPoint*> Points = GetDeactivatedManagedPoints(); !Points.IsEmpty())
+	{
+		return Points.Top();
+	}
+	return nullptr;
+}
+
 int32 USpawnPointManagerComponent::FindSpawnPointIndexFromLocation(const FVector& InLocation) const
 {
 	if (const USpawnPoint* Found = *SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)

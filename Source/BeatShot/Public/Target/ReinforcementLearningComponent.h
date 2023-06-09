@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GlobalEnums.h"
-#include "SpawnPointManagerComponent.h"
 #include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
 
+class USpawnPointManagerComponent;
 THIRD_PARTY_INCLUDES_START
 #pragma push_macro("check")
 #undef check
@@ -20,6 +20,65 @@ THIRD_PARTY_INCLUDES_START
 THIRD_PARTY_INCLUDES_END
 
 #include "ReinforcementLearningComponent.generated.h"
+
+/** A struct representing two consecutively spawned targets, used to keep track of the reward associated between two points */
+USTRUCT()
+struct FTargetPair
+{
+	GENERATED_BODY()
+
+	/** The SpawnPoints index of the target spawned before Current */
+	int32 Previous;
+
+	/** The SpawnPoints index of the target spawned after Previous */
+	int32 Current;
+
+private:
+
+	/** The reward for spawning a target at Previous and then spawning a target at Current */
+	float Reward;
+
+public:
+	
+	FTargetPair()
+	{
+		Previous = INDEX_NONE;
+		Current = INDEX_NONE;
+		Reward = 0.f;
+	}
+
+	explicit FTargetPair(const int32 CurrentPointIndex)
+	{
+		Previous = INDEX_NONE;
+		Current = CurrentPointIndex;
+		Reward = 0.f;
+	}
+
+	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex)
+	{
+		Previous = PreviousPointIndex;
+		Current = CurrentPointIndex;
+		Reward = 0.f;
+	}
+
+	FORCEINLINE bool operator ==(const FTargetPair& Other) const
+	{
+		if (Current == Other.Current)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	/** Sets the reward for this TargetPair */
+	void SetReward(const float InReward)
+	{
+		Reward = InReward;
+	}
+
+	/** Returns the reward for this TargetPair */
+	float GetReward() const { return Reward; }
+};
 
 /** A struct representing the inputs for a Reinforcement Learning Algorithm */
 USTRUCT()
@@ -80,7 +139,6 @@ struct FRLAgentParams
 		InGamma = 0.f;
 		InEpsilon = 0.f;
 	}
-	
 };
 
 /** A struct each each element represents one QTable index mapping to multiple SpawnCounter indices */
@@ -165,10 +223,10 @@ public:
 	FOnQTableUpdate OnQTableUpdate;
 
 	/** Updates a TargetPair's reward based on if hit or not. Removes from ActiveTargetPairs and adds to TargetPairs queue */
-	void UpdateReinforcementLearningReward(const FVector& WorldLocation, const bool bHit);
+	void UpdateReinforcementLearningReward(const int32 PointIndex, const bool bHit);
 
 	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
-	void AddToActiveTargetPairs(const FVector& PreviousWorldLocation, const FVector& NextWorldLocation);
+	void AddToActiveTargetPairs(const int32 PreviousPointIndex, const int32 CurrentPointIndex);
 
 	/** Updates RLAgent's QTable until TargetPairs queue is empty */
 	void UpdateReinforcementLearningComponent(const USpawnPointManagerComponent* SpawnPointManager);

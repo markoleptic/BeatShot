@@ -2,6 +2,7 @@
 
 // ReSharper disable CppMemberFunctionMayBeConst
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
+#include "SubMenuWidgets/GameModesWidget_GridConfig.h"
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "GlobalConstants.h"
 #include "BSWidgetInterface.h"
@@ -24,6 +25,7 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 		TargetScaleConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
 		TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
 		TargetsToActivateAtOnce = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
+		GridConfig = CreateWidget<UGameModesWidget_GridConfig>(this, GridConfigClass);
 	
 		int32 NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetScaleConstrained.Get()));
@@ -33,6 +35,9 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 
 		NewIndex = MainContainer->GetChildIndex(BSBox_MaxNumActivatedTargetsAtOnce) + 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetsToActivateAtOnce.Get()));
+
+		NewIndex = MainContainer->GetChildIndex(BSBox_TargetDistributionPolicy) + 1;
+		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(GridConfig.Get()));
 	}
 	return Super::RebuildWidget();
 }
@@ -55,6 +60,8 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SyncedSlidersParams.bShowCheckBox = false;
 	SyncedSlidersParams.bShowMinLock = true;
 	SyncedSlidersParams.bShowMaxLock = true;
+	SyncedSlidersParams.bShowMinQMark = true;
+	SyncedSlidersParams.bShowMaxQMark = true;
 	SyncedSlidersParams.bSyncSlidersAndValues = true;
 	SyncedSlidersParams.bLocksOnlySync = true;
 	TargetScaleConstrained->InitConstrainedSlider(SyncedSlidersParams);
@@ -73,6 +80,8 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SyncedSlidersParams.bShowCheckBox = false;
 	SyncedSlidersParams.bShowMinLock = true;
 	SyncedSlidersParams.bShowMaxLock = true;
+	SyncedSlidersParams.bShowMinQMark = true;
+	SyncedSlidersParams.bShowMaxQMark = true;
 	SyncedSlidersParams.bSyncSlidersAndValues = true;
 	SyncedSlidersParams.bLocksOnlySync = true;
 	TargetSpeedConstrained->InitConstrainedSlider(SyncedSlidersParams);
@@ -92,8 +101,16 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SyncedSlidersParams.bSyncSlidersAndValues = true;
 	SyncedSlidersParams.bLocksOnlySync = true;
 	SyncedSlidersParams.bIndentLeftOneLevel = true;
+	SyncedSlidersParams.bShowMinQMark = true;
+	SyncedSlidersParams.bShowMaxQMark = true;
 	TargetsToActivateAtOnce->InitConstrainedSlider(SyncedSlidersParams);
 	
+	SetupTooltip(TargetsToActivateAtOnce->GetQMark_Min(), GetTooltipTextFromKey("MinNumTargetsToActivateAtOnce"));
+	SetupTooltip(TargetsToActivateAtOnce->GetQMark_Max(), GetTooltipTextFromKey("MaxNumTargetsToActivateAtOnce"));
+	SetupTooltip(TargetSpeedConstrained->GetQMark_Min(), GetTooltipTextFromKey("MinTargetSpeed"));
+	SetupTooltip(TargetSpeedConstrained->GetQMark_Max(), GetTooltipTextFromKey("MaxTargetSpeed"));
+	SetupTooltip(TargetScaleConstrained->GetQMark_Min(), GetTooltipTextFromKey("MinTargetScale"));
+	SetupTooltip(TargetScaleConstrained->GetQMark_Max(), GetTooltipTextFromKey("MaxTargetScale"));
 	SetupTooltip(QMark_Lifespan, GetTooltipTextFromKey("Lifespan"));
 	SetupTooltip(QMark_TargetSpawnCD, GetTooltipTextFromKey("MinDistance"));
 	SetupTooltip(QMark_SpawnBeatDelay, GetTooltipTextFromKey("SpawnBeatDelay"));
@@ -128,6 +145,8 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(QMark_NumRuntimeTargetsToSpawn, GetTooltipTextFromKey("NumRuntimeTargetsToSpawn"));
 	SetupTooltip(QMark_MaxNumActivatedTargetsAtOnce, GetTooltipTextFromKey("MaxNumActivatedTargetsAtOnce"));
 	SetupTooltip(QMark_MaxNumTargetsAtOnce, GetTooltipTextFromKey("MaxNumTargetsAtOnce"));
+	SetupTooltip(QMark_HorizontalSpread, GetTooltipTextFromKey("HorizontalSpread"));
+	SetupTooltip(QMark_VerticalSpread, GetTooltipTextFromKey("VerticalSpread"));
 	
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_Lifespan);
 	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_TargetSpawnCD);
@@ -146,6 +165,42 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	Slider_NumRuntimeTargetsToSpawn->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_NumRuntimeTargetsToSpawn);
 	Slider_MaxNumActivatedTargetsAtOnce->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MaxNumActivatedTargetsAtOnce);
 	Slider_MaxNumTargetsAtOnce->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_MaxNumTargetsAtOnce);
+	TargetScaleConstrained->OnValueChanged_Max.AddUObject(GridConfig.Get(), &UGameModesWidget_GridConfig::OnBeatGridUpdate_MaxTargetScale);
+	
+	Slider_Lifespan->SetMinValue(MinValue_Lifespan);
+	Slider_Lifespan->SetMaxValue(MaxValue_Lifespan);
+	Slider_TargetSpawnCD->SetMinValue(MinValue_TargetSpawnCD);
+	Slider_TargetSpawnCD->SetMaxValue(MaxValue_TargetSpawnCD);
+	Slider_SpawnBeatDelay->SetMinValue(MinValue_PlayerDelay);
+	Slider_SpawnBeatDelay->SetMaxValue(MaxValue_PlayerDelay);
+	Slider_MinTargetDistance->SetMinValue(MinValue_MinTargetDistance);
+	Slider_MinTargetDistance->SetMaxValue(MaxValue_MinTargetDistance);
+	Slider_HorizontalSpread->SetMinValue(MinValue_HorizontalSpread);
+	Slider_HorizontalSpread->SetMaxValue(MaxValue_HorizontalSpread);
+	Slider_VerticalSpread->SetMinValue(MinValue_VerticalSpread);
+	Slider_VerticalSpread->SetMaxValue(MaxValue_VerticalSpread);
+	Slider_ForwardSpread->SetMinValue(MinValue_ForwardSpread);
+	Slider_ForwardSpread->SetMaxValue(MaxValue_ForwardSpread);
+	Slider_FloorDistance->SetMinValue(MinValue_FloorDistance);
+	Slider_FloorDistance->SetMaxValue(MaxValue_FloorDistance);
+	Slider_MaxNumRecentTargets->SetMinValue(MinValue_MaxNumRecentTargets);
+	Slider_MaxNumRecentTargets->SetMaxValue(MaxValue_MaxNumRecentTargets);
+	Slider_RecentTargetTimeLength->SetMinValue(MinValue_RecentTargetTimeLength);
+	Slider_RecentTargetTimeLength->SetMaxValue(MaxValue_RecentTargetTimeLength);
+	Slider_NumUpfrontTargetsToSpawn->SetMinValue(MinValue_NumUpfrontTargetsToSpawn);
+	Slider_NumUpfrontTargetsToSpawn->SetMaxValue(MaxValue_NumUpfrontTargetsToSpawn);
+	Slider_ExpirationHealthPenalty->SetMinValue(MinValue_ExpirationHealthPenalty);
+	Slider_ExpirationHealthPenalty->SetMaxValue(MaxValue_ExpirationHealthPenalty);
+	Slider_MaxHealth->SetMinValue(MinValue_MaxHealth);
+	Slider_MaxHealth->SetMaxValue(MaxValue_MaxHealth);
+	Slider_NumRuntimeTargetsToSpawn->SetMinValue(MinValue_NumRuntimeTargetsToSpawn);
+	Slider_NumRuntimeTargetsToSpawn->SetMaxValue(MaxValue_NumRuntimeTargetsToSpawn);
+	Slider_MaxNumActivatedTargetsAtOnce->SetMinValue(MinValue_MaxNumActivatedTargetsAtOnce);
+	Slider_MaxNumActivatedTargetsAtOnce->SetMaxValue(MaxValue_MaxNumActivatedTargetsAtOnce);
+	Slider_MaxNumTargetsAtOnce->SetMinValue(MinValue_MaxNumTargetsAtOnce);
+	Slider_MaxNumTargetsAtOnce->SetMaxValue(MaxValue_MaxNumTargetsAtOnce);
+	Slider_ConsecutiveChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
+	Slider_ConsecutiveChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
 	
 	Value_Lifespan->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Lifespan);
 	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_TargetSpawnCD);
@@ -360,9 +415,6 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	CheckBox_MoveTargets->SetIsChecked(InTargetConfig.bMoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->SetIsChecked(InTargetConfig.bSpawnAtOriginWheneverPossible);
 	CheckBox_SpawnEveryOtherTargetInCenter->SetIsChecked(InTargetConfig.bSpawnEveryOtherTargetInCenter);
-	
-	Slider_ConsecutiveChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
-	Slider_ConsecutiveChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
 	
 	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
@@ -616,9 +668,12 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargetsForward(const
 	if (bUseForwardSpread)
 	{
 		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		return;
 	}
-	BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
+	else
+	{
+		BSBox_ForwardSpread->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	UpdateBrushColors();
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_ContinuouslySpawn(const bool bContinuouslySpawn)
@@ -635,11 +690,14 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargets(const bool b
 	if (bMoveTargets)
 	{
 		TargetSpeedConstrained->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSBox_MovingTargetDirectionMode->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	else
 	{
 		TargetSpeedConstrained->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_MovingTargetDirectionMode->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	UpdateBrushColors();
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bSpawnAtOrigin)
@@ -852,26 +910,47 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDistributionPolicy(
 	{
 		return;
 	}
-	if (GetEnumFromString<ETargetDistributionPolicy>(Selected[0], ETargetDistributionPolicy::None) == ETargetDistributionPolicy::HeadshotHeightOnly)
+	switch (GetEnumFromString<ETargetDistributionPolicy>(Selected[0], ETargetDistributionPolicy::None))
 	{
+	case ETargetDistributionPolicy::None:
+		break;
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
 		Slider_VerticalSpread->SetValue(0);
 		Value_VerticalSpread->SetText(FText::AsNumber(0));
 		Slider_VerticalSpread->SetLocked(true);
 		Value_VerticalSpread->SetIsReadOnly(true);
-	
 		Slider_FloorDistance->SetValue(DistanceFromFloor);
 		Value_FloorDistance->SetText(FText::AsNumber(DistanceFromFloor));
 		Slider_FloorDistance->SetLocked(true);
 		Value_FloorDistance->SetIsReadOnly(true);
-		return;
+		GridConfig->SetVisibility(ESlateVisibility::Collapsed);
+		ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(ETargetActivationSelectionPolicy::Random).ToString());
+		break;
+	case ETargetDistributionPolicy::EdgeOnly:
+	case ETargetDistributionPolicy::FullRange:
+		Slider_FloorDistance->SetLocked(false);
+		Value_FloorDistance->SetIsReadOnly(false);
+		Slider_VerticalSpread->SetLocked(false);
+		Value_VerticalSpread->SetIsReadOnly(false);
+		OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+		OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+		GridConfig->SetVisibility(ESlateVisibility::Collapsed);
+		ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(ETargetActivationSelectionPolicy::Random).ToString());
+		break;
+	case ETargetDistributionPolicy::Grid:
+		Slider_FloorDistance->SetLocked(false);
+		Value_FloorDistance->SetIsReadOnly(false);
+		Slider_VerticalSpread->SetLocked(false);
+		Value_VerticalSpread->SetIsReadOnly(false);
+		OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+		OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+		GridConfig->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(ETargetActivationSelectionPolicy::Bordering).ToString());
+		break;
+	default:
+		break;
 	}
-	
-	Slider_FloorDistance->SetLocked(false);
-	Value_FloorDistance->SetIsReadOnly(false);
-	Slider_VerticalSpread->SetLocked(false);
-	Value_VerticalSpread->SetIsReadOnly(false);
-	OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
-	OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+	UpdateBrushColors();
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -884,10 +963,12 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetSpawningPolicy(cons
 	{
 	case ETargetSpawningPolicy::UpfrontOnly:
 		BSBox_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		BSBox_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case ETargetSpawningPolicy::None:
 	case ETargetSpawningPolicy::RuntimeOnly:
 		BSBox_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
+		BSBox_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		break;
 	}
 	UpdateBrushColors();

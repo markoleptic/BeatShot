@@ -221,6 +221,11 @@ void ASphereTarget::PostInitializeComponents()
 	if (ProjectileMovementComponent)
 	{
 		ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ASphereTarget::OnProjectileBounce);
+		if (!Config.bMoveTargetsForward)
+		{
+			ProjectileMovementComponent->bConstrainToPlane = true;
+			ProjectileMovementComponent->SetPlaneConstraintNormal(FVector(1.f, 0.f, 0.f));
+		}
 	}
 	
 	Super::PostInitializeComponents();
@@ -535,23 +540,20 @@ FLinearColor ASphereTarget::GetEndTargetColor() const
 	return Config.EndColor;
 }
 
+FLinearColor ASphereTarget::GetInActiveTargetColor() const
+{
+	return Config.InactiveTargetColor;
+}
+
 bool ASphereTarget::IsTargetImmune() const
 {
-	FGameplayTagContainer OwnedContainer;
-	GetOwnedGameplayTags(OwnedContainer);
-	return OwnedContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Immune);
+	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune);
 }
 
 bool ASphereTarget::IsTargetImmuneToTracking() const
 {
-	FGameplayTagContainer OwnedContainer;
-	GetOwnedGameplayTags(OwnedContainer);
-	if (OwnedContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Immune_Tracking) ||
-		OwnedContainer.HasTagExact(FBSGameplayTags::Get().Target_State_Immune))
-	{
-		return true;
-	}
-	return false;
+	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune) ||
+		AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune_Tracking);
 }
 
 bool ASphereTarget::IsDamageWindowActive() const

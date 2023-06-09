@@ -111,6 +111,23 @@ void UDoubleSyncedSliderAndTextBox::InitConstrainedSlider(const FSyncedSlidersPa
 		Spacer_Max->SetSize(FVector2D(50.f,0.f));
 		Spacer_CheckBox->SetSize(FVector2D(50.f,0.f));
 	}
+
+	if (SliderStruct.bShowMinQMark)
+	{
+		QMark_Min->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		QMark_Min->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	if (SliderStruct.bShowMaxQMark)
+	{
+		QMark_Max->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		QMark_Max->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void UDoubleSyncedSliderAndTextBox::UpdateDefaultValues(const float NewMinValue, const float NewMaxValue, const bool bSync)
