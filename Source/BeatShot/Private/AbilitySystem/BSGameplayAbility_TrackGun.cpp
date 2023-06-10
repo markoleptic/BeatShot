@@ -14,13 +14,17 @@ void UBSGameplayAbility_TrackGun::ActivateAbility(const FGameplayAbilitySpecHand
 	const FGameplayEventData* TriggerEventData)
 {
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
-	
+
+	// Bind AbilityTargetDataSetDelegate to OnTargetDataReadyCallback, and and assign it to OnTargetDataReadyCallbackDelegateHandle;
 	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(
 		this, &ThisClass::OnTargetDataReadyCallback);
 
-	TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
-	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
-	TickTraceTask->ReadyForActivation();
+	if (!bIsDeactivated)
+	{
+		TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
+		TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
+		TickTraceTask->ReadyForActivation();
+	}
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -42,6 +46,28 @@ void UBSGameplayAbility_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInf
 		TickTraceTask->EndTask();
 	}
 	Super::OnRemoveAbility(ActorInfo, Spec);
+}
+
+void UBSGameplayAbility_TrackGun::DeactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	if (TickTraceTask)
+	{
+		TickTraceTask->EndTask();
+		TickTraceTask->OnTickTraceHit.RemoveDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
+		bIsDeactivated = true;
+	}
+}
+
+void UBSGameplayAbility_TrackGun::ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
+{
+	if (TickTraceTask || !bIsActive || !bIsDeactivated)
+	{
+		return;
+	}
+	TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
+	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
+	TickTraceTask->ReadyForActivation();
+	bIsDeactivated = false;
 }
 
 void UBSGameplayAbility_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)

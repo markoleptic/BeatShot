@@ -62,7 +62,7 @@ struct FExtrema
 	}
 };
 
-/** A point in a 2D grid with information about that point */
+/** A box in the spawn area containing info about its state in relation to targets, including points that represents where targets have spawned */
 UCLASS()
 class BEATSHOT_API USpawnPoint : public UObject
 {
@@ -71,25 +71,29 @@ class BEATSHOT_API USpawnPoint : public UObject
 	friend class USpawnPointManagerComponent;
 	
 public:
-	/** The horizontal spacing between the next SpawnPoint */
-	float IncrementY;
+	/** The width of the box */
+	float Width;
 
-	/** The vertical spacing between the next SpawnPoint */
-	float IncrementZ;
+	/** The height of the box */
+	float Height;
 	
-	/** Unscaled, world spawn location point. Bottom left of the square sub-area */
-	FVector CornerPoint;
+	/** Bottom left corner of the box, used for comparison between SpawnPoints. */
+	FVector BottomLeft;
 
-	/** The center of the square sub-area */
+	/** The center point of the box */
 	FVector CenterPoint;
 
-	/** The chosen point for this vector counter, it might be different than CornerPoint, but will be within the sub-area bounded by incrementY and incrementZ */
+	/** The point chosen after a successful spawn or activation. Will be inside the box */
 	FVector ChosenPoint;
 	
-	/** The index for this SpawnPoint inside an array of SpawnPoints  */
+	/** The index for this SpawnPoint inside an array of SpawnPoints */
 	int32 Index;
 
 private:
+	FVector TopRight;
+	FVector BottomRight;
+	FVector TopLeft;
+	
 	/** Whether or not this point has a target active */
 	bool bIsActivated;
 
@@ -126,7 +130,7 @@ private:
 public:
 	USpawnPoint();
 
-	void Init(const int32 InIndex, const FVector& InPoint, const bool bIsCornerPoint, const float IncY, const float IncZ,  const int32 InWidth = INDEX_NONE, const int32 InSize = INDEX_NONE);
+	void Init(const int32 InIndex, const FVector& InPoint, const float IncY, const float IncZ,  const int32 InNumHorizontalTargets = INDEX_NONE, const int32 InNumVerticalTargets = INDEX_NONE);
 
 	FORCEINLINE bool operator ==(const USpawnPoint& Other) const
 	{
@@ -134,8 +138,10 @@ public:
 		{
 			return true;
 		}
-		if (Other.CornerPoint.Y >= CornerPoint.Y && Other.CornerPoint.Y < CornerPoint.Y + IncrementY &&
-			(Other.CornerPoint.Z >= CornerPoint.Z && Other.CornerPoint.Z < CornerPoint.Z + IncrementZ))
+		if ((Other.BottomLeft.Y >= BottomLeft.Y) &&
+			(Other.BottomLeft.Z >= BottomLeft.Z) &&
+			(Other.BottomLeft.Y < TopRight.Y - 0.01) &&
+			(Other.BottomLeft.Z < TopRight.Z - 0.01))
 		{
 			return true;
 		}
@@ -144,11 +150,11 @@ public:
 
 	FORCEINLINE bool operator <(const USpawnPoint& Other) const
 	{
-		if (CornerPoint.Z < Other.CornerPoint.Z)
+		if (BottomLeft.Z < Other.BottomLeft.Z)
 		{
 			return true;
 		}
-		if (CornerPoint.Z == Other.CornerPoint.Z && CornerPoint.Y < Other.CornerPoint.Y)
+		if (BottomLeft.Z == Other.BottomLeft.Z && BottomLeft.Y < Other.BottomLeft.Y)
 		{
 			return true;
 		}
@@ -161,8 +167,10 @@ public:
 		{
 			return true;
 		}
-		if (Other->CornerPoint.Y >= CornerPoint.Y && Other->CornerPoint.Y < CornerPoint.Y + IncrementY &&
-			(Other->CornerPoint.Z >= CornerPoint.Z && Other->CornerPoint.Z < CornerPoint.Z + IncrementZ))
+		if ((Other->BottomLeft.Y >= BottomLeft.Y) &&
+			(Other->BottomLeft.Z >= BottomLeft.Z) &&
+			(Other->BottomLeft.Y < TopRight.Y - 0.01) &&
+			(Other->BottomLeft.Z < TopRight.Z - 0.01))
 		{
 			return true;
 		}
@@ -171,19 +179,17 @@ public:
 
 	FORCEINLINE bool operator <(const USpawnPoint* Other) const
 	{
-		if (CornerPoint.Z < Other->CornerPoint.Z)
+		if (BottomLeft.Z < Other->BottomLeft.Z)
 		{
 			return true;
 		}
-		if (CornerPoint.Z == Other->CornerPoint.Z && CornerPoint.Y < Other->CornerPoint.Y)
+		if (BottomLeft.Z == Other->BottomLeft.Z && BottomLeft.Y < Other->BottomLeft.Y)
 		{
 			return true;
 		}
 		return false;
 	}
 	
-	bool IsCornerIndex() const;
-	bool IsBorderIndex() const;
 	bool IsActivated() const { return bIsActivated; }
 	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
@@ -209,7 +215,7 @@ public:
 	}
 
 	/** Sets the value of ChosenPoint to the output of GenerateRandomSubPoint */
-	void SetChosenPointAsRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections);
+	void SetRandomChosenPoint();
 
 	/** Flags this SpawnPoint as corresponding to a target being managed by TargetManager */
 	void SetIsCurrentlyManaged(const bool bSetIsCurrentlyManaged)
@@ -217,14 +223,13 @@ public:
 		bIsCurrentlyManaged = bSetIsCurrentlyManaged;
 	}
 
-	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction.
-	 *  Used as input to the GenerateRandomSubPoint and SetChosenPointAsRandomSubPoint functions */
-	TArray<EBorderingDirection> GetBorderingDirections(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;
+	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction. */
+	/*TArray<EBorderingDirection> GetBorderingEdges(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;*/
 
 private:
 	
 	/** Returns a random point within the area that this spawn points represents */
-	FVector GenerateRandomSubPoint(const TArray<EBorderingDirection>& BlockedDirections) const;
+	FVector GenerateRandomSubPoint(/*const TArray<EBorderingDirection>& BlockedDirections*/) const;
 	
 	/** Sets the activated state for this spawn point */
 	void SetIsActivated(const bool bSetIsActivated) { bIsActivated = bSetIsActivated; }
@@ -232,9 +237,8 @@ private:
 	/** Sets the overlapping points */
 	void SetOverlappingPoints(const TArray<FVector>& InOverlappingPoints);
 
-	/** Returns overlapping points, based on the parameters and IncrementY & IncrementZ */
-	TArray<FVector> GenerateOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale,
-		const FVector& InOrigin) const;
+	/** Returns overlapping points, based on the parameters and Width & Height */
+	TArray<FVector> GenerateOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale) const;
 	
 	/** Flags this SpawnPoint as recent, and records the time it was set as recent. If false, removes flag and clears overlapping points */
 	void SetIsRecent(const bool bSetIsRecent);
@@ -250,12 +254,6 @@ private:
 
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
 	static TArray<int32> FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
-
-	/** Returns the CornerPoint given a CenterPoint */
-	static FVector FindCornerPointFromCenterPoint(const FVector& InCenterPoint, const float InIncY, const float InIncZ);
-
-	/** Returns the CenterPoint given a CornerPoint */
-	static FVector FindCenterPointFromCornerPoint(const FVector& InCornerPoint, const float InIncY, const float InIncZ);
 	
 	/** Empties the Overlapping Points array */
 	void EmptyOverlappingPoints() { OverlappingPoints.Empty(); }
@@ -276,13 +274,13 @@ public:
 	TArray<FVector> InitializeSpawnPoints(const FExtrema& InStaticExtrema);
 	
 	/** Finds a SpawnPoint with the matching InIndex */
-	USpawnPoint* FindSpawnPointFromIndex(const int32 InIndex);
+	USpawnPoint* FindSpawnPointFromIndex(const int32 InIndex) const;
 
 	/** Finds a SpawnPoint with the matching InLocation */
-	USpawnPoint* FindSpawnPointFromLocation(const FVector& InLocation);
+	USpawnPoint* FindSpawnPointFromLocation(const FVector& InLocation) const;
 
 	/** Finds a SpawnPoint with the matching InGuid */
-	USpawnPoint* FindSpawnPointFromGuid(const FGuid& InGuid);
+	USpawnPoint* FindSpawnPointFromGuid(const FGuid& InGuid) const;
 
 	/** Returns the oldest most recent spawn point */
 	USpawnPoint* FindOldestRecentSpawnPoint() const;
@@ -394,9 +392,6 @@ private:
 
 	/** Preferred SpawnMemory increments */
 	const TArray<int32> PreferredScales = {/*100, 95, 90, 85, 80, 75, 70, 65, 60, 55,*/ 50, 45, 40, 30, 25, 20, 15, 10, 5};
-
-	/** Whether or not the locations used to create SpawnPoints are corners */
-	bool bLocationsAreCorners = false;
 	
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnPoint() inside of OnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;

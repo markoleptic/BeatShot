@@ -8,6 +8,8 @@
 
 class ABSCharacter;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerStopTrackingTarget);
+
 /** GameplayAbility that provides the user with constant tracking from their gun barrel, used in BeatTrack game modes */
 UCLASS()
 class BEATSHOT_API UBSGameplayAbility_TrackGun : public UBSGameplayAbility
@@ -22,6 +24,15 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 							bool bWasCancelled) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
+
+	/** Ends the TickTraceTask */
+	virtual void DeactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	
+	/** Reactivates the TickTraceTask */
+	virtual void ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
+	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
 
 protected:
 	

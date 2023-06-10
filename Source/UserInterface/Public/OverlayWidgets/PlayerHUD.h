@@ -22,6 +22,8 @@ class USERINTERFACE_API UPlayerHUD : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	void InitHUD(const FBSConfig& InConfig);
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* ProgressBar_Accuracy;
 	
@@ -56,6 +58,8 @@ public:
 	UHorizontalBox* Box_TargetsHit;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_ShotsFired;
+
+	FBSConfig Config;
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
 	UFUNCTION()

@@ -54,7 +54,11 @@ class BEATSHOT_API UBSGameplayAbility : public UGameplayAbility
 
 public:
 	UBSGameplayAbility();
+	
+	virtual void DeactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) {}
 
+	virtual void ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) {}
+	
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Ability")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponentFromActorInfo() const;
 
@@ -81,4 +85,7 @@ public:
 
 	EBSAbilityActivationPolicy GetActivationPolicy() const { return ActivationPolicy; }
 	EBSAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
+
+protected:
+	bool bIsDeactivated = false;
 };

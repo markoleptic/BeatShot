@@ -157,6 +157,70 @@ void UBSAbilitySystemComponent::CancelActivationGroupAbilities(EBSAbilityActivat
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
 }
 
+void UBSAbilitySystemComponent::DeactivateAbility(UBSGameplayAbility* Ability)
+{
+	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
+	
+	ABILITYLIST_SCOPE_LOCK();
+	
+	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+	{
+		if (Spec.Ability == Ability)
+		{
+			if (Spec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+			{
+				// We need to deactivate spawned instance, not the CDO
+				TArray<UGameplayAbility*> AbilitiesToCancel = Spec.GetAbilityInstances();
+				for (const UGameplayAbility* InstanceAbility : AbilitiesToCancel)
+				{
+					if (InstanceAbility)
+					{
+						Ability->DeactivateAbility(Spec.Handle, ActorInfo, InstanceAbility->GetCurrentActivationInfo());
+					}
+				}
+			}
+			else
+			{
+				// Try to deactivate the non instanced, this may not necessarily work
+				Cast<UBSGameplayAbility>(Spec.Ability)->DeactivateAbility(Spec.Handle, ActorInfo, FGameplayAbilityActivationInfo());
+			}
+			MarkAbilitySpecDirty(Spec);
+		}
+	}
+}
+
+void UBSAbilitySystemComponent::ReactivateAbility(UBSGameplayAbility* Ability)
+{
+	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
+	
+	ABILITYLIST_SCOPE_LOCK();
+	
+	for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
+	{
+		if (Spec.Ability == Ability)
+		{
+			if (Spec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
+			{
+				// We need to deactivate spawned instance, not the CDO
+				TArray<UGameplayAbility*> AbilitiesToCancel = Spec.GetAbilityInstances();
+				for (const UGameplayAbility* InstanceAbility : AbilitiesToCancel)
+				{
+					if (InstanceAbility)
+					{
+						Ability->ReactivateAbility(Spec.Handle, ActorInfo, InstanceAbility->GetCurrentActivationInfo());
+					}
+				}
+			}
+			else
+			{
+				// Try to deactivate the non instanced, this may not necessarily work
+				Cast<UBSGameplayAbility>(Spec.Ability)->ReactivateAbility(Spec.Handle, ActorInfo, FGameplayAbilityActivationInfo());
+			}
+			MarkAbilitySpecDirty(Spec);
+		}
+	}
+}
+
 void UBSAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo,
                                                      FGameplayAbilityTargetDataHandle& OutTargetDataHandle)
 {

@@ -46,6 +46,12 @@ public:
 	void RemoveAbilityFromActivationGroup(EBSAbilityActivationGroup Group, UBSGameplayAbility* Ability);
 	void CancelActivationGroupAbilities(EBSAbilityActivationGroup Group, UBSGameplayAbility* IgnoreAbility, bool bReplicateCancelAbility);
 
+	/** Just deactivates any tasks that run on tick, mainly used for TrackGun ability */
+	void DeactivateAbility(UBSGameplayAbility* Ability);
+	
+	/** Reactivates any tasks that run on tick, mainly used for TrackGun ability */
+	void ReactivateAbility(UBSGameplayAbility* Ability);
+
 	/** Gets the ability target data associated with the given ability handle and activation info */
 	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 

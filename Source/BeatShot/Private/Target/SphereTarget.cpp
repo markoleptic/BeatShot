@@ -190,12 +190,7 @@ void ASphereTarget::PostInitializeComponents()
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
 		
-		/* Apply gameplay tags */
-		AbilitySystemComponent->AddLooseGameplayTags(Config.OnSpawn_ApplyTags);
-		
-		FGameplayTagContainer Container;
-		GetOwnedGameplayTags(Container);
-		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent, Container);
+		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
 		HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::OnHealthChanged);
 		GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ASphereTarget::OnImmunityBlockGameplayEffect);
 

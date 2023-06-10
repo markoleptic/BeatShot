@@ -96,7 +96,7 @@ void ABSGameMode::InitializeGameMode()
 	OnPlayerSettingsChanged_VideoAndSound(PlayerSettings.VideoAndSound);
 
 	/* Get config from Game Instance */
-	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->BSConfig;
+	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GetBSConfig();
 
 	/* Spawn TargetManager and VisualizerManager */
 	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator, SpawnParameters);
@@ -108,22 +108,37 @@ void ABSGameMode::InitializeGameMode()
 		VisualizerManager->InitializeVisualizers(PlayerSettings.Game, PlayerSettings.AudioAnalyzer);
 	}
 
-	/* Handle abilities for different game modes */
 	for (const ABSPlayerController* Controller : Controllers)
 	{
-		const ABSCharacter* Character = Controller->GetBSCharacter();
-		const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Track);
-		if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
+		if (ABSCharacter* Character = Controller->GetBSCharacter())
 		{
-			if (AbilitySpecs.IsEmpty())
+			if (Character->HasMatchingGameplayTag(FBSGameplayTags::Get().Cheat_AimBot))
 			{
-				const FGameplayAbilitySpec AbilitySpec(TrackGunAbility->GetDefaultObject<UBSGameplayAbility>(), 1);
-				Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+				if (!GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
+				{
+					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
+				}
 			}
-		}
-		else if (BSConfig.DefiningConfig.BaseGameMode != EBaseGameMode::BeatTrack && !AbilitySpecs.IsEmpty())
-		{
-			Character->GetBSAbilitySystemComponent()->CancelAbility(TrackGunAbility->GetDefaultObject<UBSGameplayAbility>());
+			for (FGameplayAbilitySpec& Spec : Character->GetBSAbilitySystemComponent()->GetActivatableAbilities())
+			{
+				if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
+				{
+					if (UBSGameplayAbility_TrackGun* TrackAbility = Cast<UBSGameplayAbility_TrackGun>(Ability))
+					{
+						TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
+						
+						if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+						{
+							Character->GetBSAbilitySystemComponent()->ReactivateAbility(TrackAbility);
+						}
+						else
+						{
+							Character->GetBSAbilitySystemComponent()->DeactivateAbility(TrackAbility);
+						}
+						Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(Spec);
+					}
+				}
+			}
 		}
 	}
 
@@ -170,19 +185,6 @@ void ABSGameMode::BindGameModeDelegates()
 	if (!GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
 	{
 		GetTargetManager()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
-	}
-	for (const ABSPlayerController* Controller : Controllers)
-	{
-		if (ABSCharacter* Character = Controller->GetBSCharacter())
-		{
-			if (Character->HasMatchingGameplayTag(FBSGameplayTags::Get().Cheat_AimBot))
-			{
-				if (!GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
-				{
-					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
-				}
-			}
-		}
 	}
 }
 

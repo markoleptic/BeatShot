@@ -47,7 +47,7 @@ void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer)
+void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC)
 {
 	const AActor* Owner = GetOwner();
 	check(Owner);

@@ -42,7 +42,7 @@ protected:
 public:
 	/** Initialize the component using an ability system component */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Health")
-	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC, const FGameplayTagContainer& GameplayTagContainer);
+	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC);
 
 	/** Broadcasts when out of health */
 	FOnOutOfHealth OnOutOfHealth;

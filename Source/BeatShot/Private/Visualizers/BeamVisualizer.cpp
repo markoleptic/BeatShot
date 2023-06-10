@@ -167,7 +167,10 @@ void ABeamVisualizer::DeactivateVisualizers()
 {
 	for (const TObjectPtr<ASimpleBeamLight> Light : GetSimpleBeamLights())
 	{
-		Light->DeactivateLightComponents();
+		if (Light && Light.Get())
+		{
+			Light->DeactivateLightComponents();
+		}
 	}
 	ActiveLightIndices.Empty();
 }

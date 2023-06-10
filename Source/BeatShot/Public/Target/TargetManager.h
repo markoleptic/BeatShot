@@ -93,6 +93,10 @@ public:
 	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn);
 
+	/** Called when a player moves the CrossHair off a target. Updates target colors if they are vulnerable to tracking damage */
+	UFUNCTION()
+	void OnPlayerStopTrackingTarget();
+
 	/** Called from GameMode when it's an appropriate time to spawn or activate a target. This is the main loop that drives this class */
 	void OnAudioAnalyzerBeat();
 

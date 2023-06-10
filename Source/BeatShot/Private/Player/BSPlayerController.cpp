@@ -9,7 +9,6 @@
 #include "BSGameMode.h"
 #include "Player/BSPlayerState.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/HorizontalBox.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -195,14 +194,7 @@ void ABSPlayerController::ShowPlayerHUD()
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
-	const EBaseGameMode Mode = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.DefiningConfig.BaseGameMode;
-	if (Mode == EBaseGameMode::BeatTrack)
-	{
-		PlayerHUD->Box_TargetsSpawned->SetVisibility(ESlateVisibility::Collapsed);
-		PlayerHUD->Box_Streak->SetVisibility(ESlateVisibility::Collapsed);
-		PlayerHUD->Box_TargetsHit->SetVisibility(ESlateVisibility::Collapsed);
-		PlayerHUD->Box_ShotsFired->SetVisibility(ESlateVisibility::Collapsed);
-	}
+	PlayerHUD->InitHUD(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig());
 	PlayerHUD->AddToViewport();
 	PlayerHUDActive = true;
 }
@@ -234,7 +226,7 @@ void ABSPlayerController::ShowCountdown(const bool bIsRestart)
 		FadeScreenFromBlack();
 	}
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
-	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->BSConfig.AudioConfig.PlayerDelay;
+	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig().AudioConfig.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	Countdown->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
 	Countdown->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);

@@ -197,7 +197,7 @@ T quadratic_interpolate(const T& a, const T& b, T const& d,
    // takes count Newton steps to find the location of the
    // quadratic polynomial.
    //
-   // CornerPoint d must lie outside of the interval [a,b], it is the third
+   // BottomLeft d must lie outside of the interval [a,b], it is the third
    // best approximation to the root, after a and b.
    //
    // Note: this does not guarantee to find a root

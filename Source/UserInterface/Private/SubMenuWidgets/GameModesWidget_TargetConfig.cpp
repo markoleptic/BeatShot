@@ -932,8 +932,8 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDistributionPolicy(
 		Value_FloorDistance->SetIsReadOnly(false);
 		Slider_VerticalSpread->SetLocked(false);
 		Value_VerticalSpread->SetIsReadOnly(false);
-		OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
-		OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+		OnEditableTextBoxChanged(FText::AsNumber(Slider_VerticalSpread->GetValue()), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+		OnSliderChanged(Slider_VerticalSpread->GetValue(), Value_VerticalSpread, SnapSize_VerticalSpread);
 		GridConfig->SetVisibility(ESlateVisibility::Collapsed);
 		ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(ETargetActivationSelectionPolicy::Random).ToString());
 		break;
@@ -942,8 +942,8 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDistributionPolicy(
 		Value_FloorDistance->SetIsReadOnly(false);
 		Slider_VerticalSpread->SetLocked(false);
 		Value_VerticalSpread->SetIsReadOnly(false);
-		OnEditableTextBoxChanged(FText::AsNumber(MaxValue_VerticalSpread), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
-		OnSliderChanged(MaxValue_VerticalSpread, Value_VerticalSpread, SnapSize_VerticalSpread);
+		OnEditableTextBoxChanged(FText::AsNumber(Slider_VerticalSpread->GetValue()), Value_VerticalSpread, Slider_VerticalSpread, SnapSize_VerticalSpread, MinValue_VerticalSpread, MaxValue_VerticalSpread);
+		OnSliderChanged(Slider_VerticalSpread->GetValue(), Value_VerticalSpread, SnapSize_VerticalSpread);
 		GridConfig->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(ETargetActivationSelectionPolicy::Bordering).ToString());
 		break;

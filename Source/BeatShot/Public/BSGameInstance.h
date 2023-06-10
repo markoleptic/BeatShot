@@ -47,9 +47,7 @@ public:
 	UFUNCTION()
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 
-	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
-	UPROPERTY(EditDefaultsOnly)
-	FBSConfig BSConfig;
+	FBSConfig GetBSConfig() const { return BSConfig; }
 
 	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;
@@ -95,6 +93,9 @@ public:
 	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
 	
 private:
+	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
+	UPROPERTY(EditDefaultsOnly)
+	FBSConfig BSConfig;
 	
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;

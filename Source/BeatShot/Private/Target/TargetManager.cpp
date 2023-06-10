@@ -4,7 +4,6 @@
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
 #include "GlobalConstants.h"
-#include "BeatShot/BSGameplayTags.h"
 #include "Target/SphereTarget.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -119,11 +118,6 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 
 	UpdateSpawnArea();
 
-	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
-	{
-		BSConfig.TargetConfig.OnSpawn_ApplyTags.AddTag(FBSGameplayTags::Get().Target_State_Tracking);
-	}
-
 	// Initialize SpawnPointManager and SpawnPoints
 	SpawnPointManager->InitSpawnPointManager(InBSConfig, GetBoxOrigin(), StaticExtents);
 	if (BSConfig.TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
@@ -180,6 +174,17 @@ void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlaye
 void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 {
 	ShouldSpawn = bShouldSpawn;
+}
+
+void ATargetManager::OnPlayerStopTrackingTarget()
+{
+	for (const TObjectPtr<ASphereTarget> Target : GetManagedTargets())
+	{
+		if (Target && !Target->IsTargetImmuneToTracking())
+		{
+			Target->SetSphereColor(BSConfig.TargetConfig.EndColor);
+		}
+	}
 }
 
 void ATargetManager::OnAudioAnalyzerBeat()
@@ -640,11 +645,10 @@ USpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 	const int32 OpenLocationIndex = FMath::RandRange(0, OpenLocations.Num() - 1);
 	if (USpawnPoint* Found = SpawnPointManager->FindSpawnPointFromLocation(OpenLocations[OpenLocationIndex]))
 	{
-		const TArray<EBorderingDirection> Directions = Found->GetBorderingDirections(OpenLocations, GetBoxExtrema(true));
-		Found->SetChosenPointAsRandomSubPoint(Directions);
+		Found->SetRandomChosenPoint();
 		return Found;
 	}
-	//UE_LOG(LogTargetManager, Display, TEXT("Found CornerPoint %s Found CenterPoint %s Found ChosenPoint %s"), *Found->CornerPoint.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
+	//UE_LOG(LogTargetManager, Display, TEXT("Found BottomLeft %s Found CenterPoint %s Found ChosenPoint %s"), *Found->BottomLeft.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
 	return nullptr;
 }
 
@@ -753,13 +757,19 @@ void ATargetManager::HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocatio
 void ATargetManager::HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const
 {
 	// Filter out non-bordering points
+	TArray<int32> BorderingIndices;
+	if (SpawnPoint)
+	{
+		BorderingIndices = SpawnPoint->GetBorderingIndices();
+	}
 	ValidSpawnLocations = ValidSpawnLocations.FilterByPredicate([&] (const FVector& Vector)
 	{
 		if (const USpawnPoint* FoundPoint = SpawnPointManager->FindSpawnPointFromLocation(Vector))
 		{
-			if (SpawnPoint)
+			UE_LOG(LogTemp, Display, TEXT("PointIndex: %d Location: %s"), FoundPoint->Index, *Vector.ToString());
+			if (!BorderingIndices.Contains(FoundPoint->Index))
 			{
-				return SpawnPoint->GetBorderingIndices().Contains(FoundPoint->Index);
+				return false;
 			}
 			return true;
 		}
@@ -968,14 +978,22 @@ FExtrema ATargetManager::GetBoxExtrema(const bool bDynamic) const
 
 FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 {
-	const float MaxTargetSize = BSConfig.TargetConfig.MaxTargetScale * SphereTargetDiameter;
-	const float HSpacing = BSConfig.GridConfig.GridSpacing.X + MaxTargetSize;
-	const float VSpacing = BSConfig.GridConfig.GridSpacing.Y + MaxTargetSize;
-	const float HalfWidth = (HSpacing * (BSConfig.GridConfig.NumHorizontalGridTargets - 1)) / 2.f;
-	const float HalfHeight = (VSpacing * (BSConfig.GridConfig.NumVerticalGridTargets - 1)) / 2.f;
+	const float MaxTargetDiameter = BSConfig.TargetConfig.MaxTargetScale * SphereTargetDiameter;
+	// This will be SpawnMemoryIncY
+	const float HSpacing = BSConfig.GridConfig.GridSpacing.X + MaxTargetDiameter;
+	// This will be SpawnMemoryIncZ
+	const float VSpacing = BSConfig.GridConfig.GridSpacing.Y + MaxTargetDiameter;
 	
-	return FExtrema(FVector(GetBoxOrigin().X, -HalfWidth + GetBoxOrigin().Y, -HalfHeight + GetBoxOrigin().Z),
-		FVector(GetBoxOrigin().X, HalfWidth + 1.f + GetBoxOrigin().Y, HalfHeight + 1.f + GetBoxOrigin().Z));
+	const float HalfWidth = HSpacing * (BSConfig.GridConfig.NumHorizontalGridTargets - 1) * 0.5f;
+	const float HalfHeight = VSpacing * (BSConfig.GridConfig.NumVerticalGridTargets - 1) * 0.5f;
+
+	// Add 1 to max so that for loop includes MaxY and MaxZ
+	const float MinY = GetBoxOrigin().Y - HalfWidth;
+	const float MaxY = GetBoxOrigin().Y + HalfWidth + 1.f;
+	const float MinZ = GetBoxOrigin().Z - HalfHeight;
+	const float MaxZ = GetBoxOrigin().Z + HalfHeight + 1.f;
+	
+	return FExtrema(FVector(GetBoxOrigin().X, MinY, MinZ), FVector(GetBoxOrigin().X, MaxY, MaxZ));
 }
 
 int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget, USpawnPoint* AssociatedSpawnPoint)
@@ -1052,10 +1070,10 @@ USpawnPoint* ATargetManager::TryGetSpawnPointFromReinforcementLearningComponent(
 	{
 		return nullptr;
 	}
-	TArray<USpawnPoint*> SpawnPointsRef = SpawnPointManager->GetSpawnPointsRef();
-	const TArray<EBorderingDirection> BorderingDirections = SpawnPointsRef[ChosenIndex]->GetBorderingDirections(OpenLocations, GetBoxExtrema(true));
-	SpawnPointsRef[ChosenIndex]->SetChosenPointAsRandomSubPoint(BorderingDirections);
-	return SpawnPointsRef[ChosenIndex];
+
+	USpawnPoint* ChosenPoint = SpawnPointManager->GetSpawnPointsRef()[ChosenIndex];
+	ChosenPoint->SetRandomChosenPoint();
+	return ChosenPoint;
 }
 
 void ATargetManager::ShowDebug_SpawnBox(const bool bShow)

@@ -19,77 +19,105 @@ void UPlayerHUD::NativeConstruct()
 	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
 }
 
+void UPlayerHUD::InitHUD(const FBSConfig& InConfig)
+{
+	switch (InConfig.TargetConfig.TargetDamageType)
+	{
+	case ETargetDamageType::Tracking:
+		Box_TargetsSpawned->SetVisibility(ESlateVisibility::Collapsed);
+		Box_Streak->SetVisibility(ESlateVisibility::Collapsed);
+		Box_TargetsHit->SetVisibility(ESlateVisibility::Collapsed);
+		Box_ShotsFired->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	case ETargetDamageType::Hit:
+		break;
+	case ETargetDamageType::Combined:
+	case ETargetDamageType::None:
+		break;
+	}
+
+	// Display default game mode names if not custom
+	if (InConfig.DefiningConfig.GameModeType == EGameModeType::Preset)
+	{
+		TextBlock_GameModeName->SetText(UEnum::GetDisplayValueAsText(InConfig.DefiningConfig.BaseGameMode));
+	}
+	// Display custom game mode if not a default game mode
+	else
+	{
+		TextBlock_GameModeName->SetText(UKismetTextLibrary::Conv_StringToText(InConfig.DefiningConfig.CustomGameModeName));
+	}
+
+	TextBlock_SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(InConfig.AudioConfig.SongTitle));
+	TextBlock_TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(InConfig.AudioConfig.SongLength), 3)));
+
+	Config = InConfig;
+}
+
 void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
 {
-	/** Display default game mode names if not custom */
-	if (NewPlayerScoreStruct.DefiningConfig.GameModeType == EGameModeType::Preset)
+	switch (Config.TargetConfig.TargetDamageType)
 	{
-		TextBlock_GameModeName->SetText(UEnum::GetDisplayValueAsText(NewPlayerScoreStruct.DefiningConfig.BaseGameMode));
-	}
-	/** display custom game mode if not a default game mode */
-	else
-	{
-		TextBlock_GameModeName->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.DefiningConfig.CustomGameModeName));
-	}
-	/** show song title and total song length */
-	TextBlock_SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(NewPlayerScoreStruct.SongTitle));
-	TextBlock_TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(NewPlayerScoreStruct.SongLength), 3)));
-	/** Beat Track changes how stats are displayed */
-	if (NewPlayerScoreStruct.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
-	{
-		const float Score = roundf(NewPlayerScoreStruct.Score);
-		const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
-		const float HighScore = roundf(NewPlayerScoreStruct.HighScore);
-		/** Update Accuracy progress bar and Accuracy percentage text */
-		if (!isnan(Score / TotalPossibleDamage))
+	case ETargetDamageType::Tracking:
 		{
-			ProgressBar_Accuracy->SetPercent(Score / TotalPossibleDamage);
-			TextBlock_Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));
+			const float Score = roundf(NewPlayerScoreStruct.Score);
+			const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
+			const float HighScore = roundf(NewPlayerScoreStruct.HighScore);
+			/** Update Accuracy progress bar and Accuracy percentage text */
+			if (!isnan(Score / TotalPossibleDamage))
+			{
+				ProgressBar_Accuracy->SetPercent(Score / TotalPossibleDamage);
+				TextBlock_Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));
+			}
+			/** Update current score */
+			TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
+			/** Update high score */
+			if (HighScore < Score)
+			{
+				TextBlock_HighScore->SetText(FText::AsNumber(Score));
+			}
+			else
+			{
+				TextBlock_HighScore->SetText(FText::AsNumber(HighScore));
+			}
 		}
-		/** Update current score */
-		TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
-		/** Update high score */
-		if (HighScore < Score)
+		break;
+	case ETargetDamageType::Hit:
 		{
-			TextBlock_HighScore->SetText(FText::AsNumber(Score));
+			const float TargetsHit = NewPlayerScoreStruct.TargetsHit;
+			const float Score = round(NewPlayerScoreStruct.Score);
+			const float ShotsFired = NewPlayerScoreStruct.ShotsFired;
+			const float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
+			const float HighScore = round(NewPlayerScoreStruct.HighScore);
+			/** Update Accuracy progress bar and Accuracy percentage text */
+			if (!isnan(TargetsHit / ShotsFired))
+			{
+				ProgressBar_Accuracy->SetPercent(TargetsHit / ShotsFired);
+				TextBlock_Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+			}
+			/* Update number of targets hit */
+			TextBlock_TargetsHit->SetText(FText::AsNumber(TargetsHit));
+			/* Update number of shots fired */
+			TextBlock_ShotsFired->SetText(FText::AsNumber(ShotsFired));
+			/* Update number of targets spawned */
+			TextBlock_TargetsSpawned->SetText(FText::AsNumber(TargetsSpawned));
+			/* update the current player score */
+			TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
+			/* update the high score */
+			if (HighScore < Score)
+			{
+				TextBlock_HighScore->SetText(FText::AsNumber(Score));
+			}
+			else
+			{
+				TextBlock_HighScore->SetText(FText::AsNumber(HighScore));
+			}
+			/* update streak */
+			TextBlock_CurrentStreakBest->SetText(FText::AsNumber(NewPlayerScoreStruct.Streak));
 		}
-		else
-		{
-			TextBlock_HighScore->SetText(FText::AsNumber(HighScore));
-		}
-	}
-	else
-	{
-		const float TargetsHit = NewPlayerScoreStruct.TargetsHit;
-		const float Score = round(NewPlayerScoreStruct.Score);
-		const float ShotsFired = NewPlayerScoreStruct.ShotsFired;
-		const float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
-		const float HighScore = round(NewPlayerScoreStruct.HighScore);
-		/** Update Accuracy progress bar and Accuracy percentage text */
-		if (!isnan(TargetsHit / ShotsFired))
-		{
-			ProgressBar_Accuracy->SetPercent(TargetsHit / ShotsFired);
-			TextBlock_Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
-		}
-		/** Update number of targets hit */
-		TextBlock_TargetsHit->SetText(FText::AsNumber(TargetsHit));
-		/** Update number of shots fired */
-		TextBlock_ShotsFired->SetText(FText::AsNumber(ShotsFired));
-		/** Update number of targets spawned */
-		TextBlock_TargetsSpawned->SetText(FText::AsNumber(TargetsSpawned));
-		/** update the current player score */
-		TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
-		/** update the high score */
-		if (HighScore < Score)
-		{
-			TextBlock_HighScore->SetText(FText::AsNumber(Score));
-		}
-		else
-		{
-			TextBlock_HighScore->SetText(FText::AsNumber(HighScore));
-		}
-		/* update streak */
-		TextBlock_CurrentStreakBest->SetText(FText::AsNumber(NewPlayerScoreStruct.Streak));
+		break;
+	case ETargetDamageType::Combined:
+	case ETargetDamageType::None:
+		break;
 	}
 }
 
