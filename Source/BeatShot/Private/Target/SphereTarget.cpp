@@ -303,10 +303,6 @@ bool ASphereTarget::ShouldDeactivate(const bool bExpired, const float CurrentHea
 	{
 		return true;
 	}
-	if (CurrentHealth <= 0.f && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnHealthReachedZero))
-	{
-		return true;
-	}
 	return false;
 }
 
@@ -360,23 +356,15 @@ void ASphereTarget::HandleDeactivationResponses(const bool bExpired)
 	{
 		SetSphereScale(InitialTargetScale);
 	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeScale))
+	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
 	{
 		SetSphereScale(GetCurrentTargetScale() * Config.ConsecutiveChargeScaleMultiplier);
 	}
 
 	// Position and Velocity
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
-	{
-		// TODO: Change target direction
-	}
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPosition))
 	{
 		SetActorLocation(InitialTargetLocation);
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
-	{
-		// TODO: Change target Velocity
 	}
 
 	// Effects

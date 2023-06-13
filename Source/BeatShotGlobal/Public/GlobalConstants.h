@@ -80,6 +80,10 @@ namespace Constants
 	inline constexpr int32 DefaultHistorySize = 30;
 	inline constexpr int32 DefaultMaxNumBandChannels = 32;
 
+	inline constexpr float SnapSize_TimeWindow = 0.01f;
+	inline constexpr float MaxValue_TimeWindow = 0.01f;
+	inline constexpr float MinValue_TimeWindow = 1.00f;
+
 	inline constexpr int32 DefaultLineWidth = 4;
 	inline constexpr int32 DefaultLineLength = 10;
 	inline constexpr int32 DefaultInnerOffset = 6;
@@ -338,7 +342,7 @@ namespace Constants
 	inline constexpr float SnapSize_RecentTargetTimeLength = 0.05f;
 
 	inline constexpr int32 MinValue_NumUpfrontTargetsToSpawn = 0;
-	inline constexpr int32 MaxValue_NumUpfrontTargetsToSpawn = 200;
+	inline constexpr int32 MaxValue_NumUpfrontTargetsToSpawn = 100;
 	inline constexpr int32 SnapSize_NumUpfrontTargetsToSpawn = 1;
 
 	inline constexpr int32 MinValue_ExpirationHealthPenalty = 0;
@@ -350,11 +354,11 @@ namespace Constants
 	inline constexpr int32 SnapSize_MaxHealth = 100;
 
 	inline constexpr int32 MinValue_NumRuntimeTargetsToSpawn = -1;
-	inline constexpr int32 MaxValue_NumRuntimeTargetsToSpawn = 10;
+	inline constexpr int32 MaxValue_NumRuntimeTargetsToSpawn = 100;
 	inline constexpr int32 SnapSize_NumRuntimeTargetsToSpawn = 1;
 
 	inline constexpr int32 MinValue_MaxNumActivatedTargetsAtOnce = -1;
-	inline constexpr int32 MaxValue_MaxNumActivatedTargetsAtOnce = 10;
+	inline constexpr int32 MaxValue_MaxNumActivatedTargetsAtOnce = 50;
 	inline constexpr int32 SnapSize_MaxNumActivatedTargetsAtOnce = 1;
 
 	inline constexpr int32 MinValue_MaxNumTargetsAtOnce = -1;
@@ -362,11 +366,11 @@ namespace Constants
 	inline constexpr int32 SnapSize_MaxNumTargetsAtOnce = 1;
 
 	inline constexpr int32 MinValue_MinNumTargetsToActivateAtOnce = -1;
-	inline constexpr int32 MaxValue_MinNumTargetsToActivateAtOnce = 10;
+	inline constexpr int32 MaxValue_MinNumTargetsToActivateAtOnce = 25;
 	inline constexpr int32 SnapSize_MinNumTargetsToActivateAtOnce = 1;
 
 	inline constexpr int32 MinValue_MaxNumTargetsToActivateAtOnce = -1;
-	inline constexpr int32 MaxValue_MaxNumTargetsToActivateAtOnce = 10;
+	inline constexpr int32 MaxValue_MaxNumTargetsToActivateAtOnce = 25;
 	inline constexpr int32 SnapSize_MaxNumTargetsToActivateAtOnce = 1;
 	
 	// AI
@@ -385,21 +389,21 @@ namespace Constants
 	
 	// BeatGrid
 	
-	inline constexpr float MinValue_BeatGridHorizontalSpacing = 10;
-	inline constexpr float MaxValue_BeatGridHorizontalSpacing = 3200;
-	inline constexpr float SnapSize_BeatGridHorizontalSpacing = 10;
+	inline constexpr float MinValue_HorizontalGridSpacing = 10;
+	inline constexpr float MaxValue_HorizontalGridSpacing = 3200;
+	inline constexpr float SnapSize_HorizontalGridSpacing = 10;
 
-	inline constexpr float MinValue_BeatGridVerticalSpacing = 10;
-	inline constexpr float MaxValue_BeatGridVerticalSpacing = 1000;
-	inline constexpr float SnapSize_BeatGridVerticalSpacing = 10;
+	inline constexpr float MinValue_VerticalGridSpacing = 10;
+	inline constexpr float MaxValue_VerticalGridSpacing = 1000;
+	inline constexpr float SnapSize_VerticalGridSpacing = 10;
 	
-	inline constexpr int32 MinValue_NumBeatGridHorizontalTargets = 2;
-	inline constexpr int32 MaxValue_NumBeatGridHorizontalTargets = 35;
-	inline constexpr int32 SnapSize_NumBeatGridHorizontalTargets = 1;
+	inline constexpr int32 MinValue_NumHorizontalGridTargets = 2;
+	inline constexpr int32 MaxValue_NumHorizontalGridTargets = 35;
+	inline constexpr int32 SnapSize_NumHorizontalGridTargets = 1;
 
-	inline constexpr int32 MinValue_NumBeatGridVerticalTargets = 2;
-	inline constexpr int32 MaxValue_NumBeatGridVerticalTargets = 15;
-	inline constexpr int32 SnapSize_NumBeatGridVerticalTargets = 1;
+	inline constexpr int32 MinValue_NumVerticalGridTargets = 2;
+	inline constexpr int32 MaxValue_NumVerticalGridTargets = 15;
+	inline constexpr int32 SnapSize_NumVerticalGridTargets = 1;
 
 #pragma endregion
 

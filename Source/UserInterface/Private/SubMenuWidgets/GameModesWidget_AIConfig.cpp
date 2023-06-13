@@ -109,6 +109,7 @@ void UGameModesWidget_AIConfig::OnCheckStateChanged_EnableAI(const bool bEnableA
 		BSBox_AIAlpha->SetVisibility(ESlateVisibility::Visible);
 		BSBox_AIEpsilon->SetVisibility(ESlateVisibility::Visible);
 		BSBox_AIGamma->SetVisibility(ESlateVisibility::Visible);
+		OnAIEnabled.ExecuteIfBound();
 		return;
 	}
 	BSBox_AIAlpha->SetVisibility(ESlateVisibility::Collapsed);

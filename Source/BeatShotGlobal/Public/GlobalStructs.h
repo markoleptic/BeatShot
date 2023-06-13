@@ -1077,7 +1077,7 @@ struct FBSConfig
 				Config.TargetConfig.TargetDeactivationConditions.Add(ETargetDeactivationCondition::OnExpiration);
 				
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::PlayExplosionEffect);
-				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ChangeScale);
+				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier);
 				Config.TargetConfig.TargetDeactivationResponses.Add(ETargetDeactivationResponse::AddImmunity);
 
 				Config.TargetConfig.TargetDestructionConditions.Add(ETargetDestructionCondition::OnHealthReachedZero);

@@ -80,6 +80,13 @@ public:
 	UFUNCTION()
 	void OnBeatGridUpdate_MaxTargetScale(const float NewMaxTargetScale);
 	
+	bool IsAnyParameterConstrained() const { return !ActiveConstraints.IsEmpty(); }
+	
+	/** Executed in CheckBeatGridConstraints */
+	FOnGridUpdate_SaveStartButtonStates OnBeatGridUpdate_SaveStartButtonStates;
+
+	FIntPoint GetGridSpacing() const;
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipImage> BeatGridWarningEMarkClass;
@@ -124,12 +131,6 @@ protected:
 	UTooltipImage* WarningEMark_HorizontalSpacing;
 	UPROPERTY(BlueprintReadOnly, Category = "Tooltip")
 	UTooltipImage* WarningEMark_VerticalSpacing;
-
-public:
-	bool IsAnyParameterConstrained() const { return !ActiveConstraints.IsEmpty(); }
-	
-	/** Executed in CheckBeatGridConstraints */
-	FOnGridUpdate_SaveStartButtonStates OnBeatGridUpdate_SaveStartButtonStates;
 
 private:
 	UFUNCTION()

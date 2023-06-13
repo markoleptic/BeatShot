@@ -163,6 +163,8 @@ public:
 
 	/** Updates the Slider Values */
 	void UpdateDefaultValuesAbsolute(const float NewMinValue, const float NewMaxValue, const bool bSync);
+
+	void ResetValuesToDefault();
 	
 	/** Executed when Slider_Min or Value_Min is changed */
 	FOnValueChanged_Synced OnValueChanged_Min;

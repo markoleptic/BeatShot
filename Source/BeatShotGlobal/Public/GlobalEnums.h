@@ -254,11 +254,9 @@ enum class ETargetDeactivationCondition : uint8
 	/** Target is deactivated when it receives any damage from the player */
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
 	/** Target is deactivated after its damageable window closes */
-	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** Target is deactivated after its health reaches zero */
-	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
+	OnExpiration UMETA(DisplayName="On Expiration")
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant, ETargetDeactivationCondition::OnHealthReachedZero);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant, ETargetDeactivationCondition::OnExpiration);
 
 
 /** Each represents one way that a target can be destroyed */
@@ -312,30 +310,33 @@ enum class ETargetDeactivationResponse : uint8
 	AddImmunity UMETA(DisplayName="Add Immunity"),
 	/** Immunity is added or removed from the target, depending on its existing state. Same with damageable window */
 	ToggleImmunity UMETA(DisplayName="Toggle Immunity"),
-	/** If a moving target, the direction is changed */
-	ChangeDirection UMETA(DisplayName="Change Direction"),
 	/** The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this */
-	ChangeScale UMETA(DisplayName="Change Scale"),
-	/** If a moving target, the velocity of the target is changed */
-	ChangeVelocity UMETA(DisplayName="Change Velocity"),
-	/** Reset the position of the target to the position it was initialized with */
-	ResetPosition UMETA(DisplayName="Reset Position"),
+	ApplyDeactivatedTargetScaleMultiplier UMETA(DisplayName="Apply Deactivated Target Scale Multiplier"),
 	/** Reset the scale of the target to the scale it was initialized with */
 	ResetScale UMETA(DisplayName="Reset Scale"),
+	/** Reset the position of the target to the position it was initialized with */
+	ResetPosition UMETA(DisplayName="Reset Position"),
 	/** Reset the color of the target to the inactive color */
 	ResetColorToInactiveColor UMETA(DisplayName="Reset Color To Inactive Color"),
-	/** Reset the color of the target to the inactive color */
-	ResetColorToStartColor UMETA(DisplayName="Reset Color To Start Color"),
 	/** Reset the scale of the target to the scale it was initialized with */
 	ShrinkQuickGrowSlow UMETA(DisplayName="Shrink Quick Grow Slow"),
 	/** Play an explosion effect */
 	PlayExplosionEffect UMETA(DisplayName="Play Explosion Effect"),
 	/** Destroy the target permanently */
 	Destroy UMETA(DisplayName="Destroy"),
+
+	// NOT USED CURRENTLY
+
+	/** Reset the color of the target to the inactive color */
+	ResetColorToStartColor UMETA(DisplayName="Reset Color To Start Color"),
 	/** Temporarily hide the target until reactivated */
-	Hide UMETA(DisplayName="Hide")
+	Hide UMETA(DisplayName="Hide"),
+	/** If a moving target, the direction is changed */
+	ChangeDirection UMETA(DisplayName="Change Direction"),
+	/** If a moving target, the velocity of the target is changed */
+	ChangeVelocity UMETA(DisplayName="Change Velocity"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::Hide);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::Destroy);
 
 
 /** How to handle activating a target. For example, if a target was spawned, activated, and deactivated but not destroyed, should another target be allowed to spawned/activated? */

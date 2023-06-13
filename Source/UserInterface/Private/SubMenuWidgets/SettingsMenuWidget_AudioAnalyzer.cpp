@@ -30,6 +30,9 @@ void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 	
 	ComboBox_NumBandChannels->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels);
 
+	Slider_TimeWindow->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnSliderChanged_TimeWindow);
+	Value_TimeWindow->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnTextCommitted_TimeWindow);
+
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
 
 	AASettings = ISaveLoadInterface::LoadPlayerSettings().AudioAnalyzer;
@@ -106,6 +109,16 @@ void USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels(FStri
 		NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.NumBandChannels, true);
 	}
 	PopulateAASettings();
+}
+
+void USettingsMenuWidget_AudioAnalyzer::OnTextCommitted_TimeWindow(const FText& NewTimeWindow, ETextCommit::Type CommitType)
+{
+	NewAASettings.TimeWindow = IBSWidgetInterface::OnEditableTextBoxChanged(NewTimeWindow, Value_TimeWindow, Slider_TimeWindow, SnapSize_TimeWindow, MinValue_TimeWindow, MaxValue_TimeWindow);
+}
+
+void USettingsMenuWidget_AudioAnalyzer::OnSliderChanged_TimeWindow(const float NewTimeWindow)
+{
+	NewAASettings.TimeWindow = IBSWidgetInterface::OnSliderChanged(NewTimeWindow, Value_TimeWindow, SnapSize_TimeWindow);
 }
 
 void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_BSButton(const UBSButton* Button)

@@ -87,8 +87,13 @@ protected:
 	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
 	UFUNCTION()
 	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
+	
 	UFUNCTION()
 	void OnSelectionChanged_NumBandChannels(FString NewNum, ESelectInfo::Type SelectType);
+	UFUNCTION()
+	void OnTextCommitted_TimeWindow(const FText& NewTimeWindow, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnSliderChanged_TimeWindow(const float NewTimeWindow);
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	

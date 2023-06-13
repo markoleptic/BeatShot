@@ -384,7 +384,7 @@ void USpawnPointManagerComponent::SetAppropriateSpawnMemoryValues()
 
 USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromIndex(const int32 InIndex) const
 {
-	USpawnPoint* Point = *SpawnPoints.FindByPredicate([&InIndex] (const USpawnPoint* SpawnPoint)
+	const TArray<USpawnPoint*>::ElementType* Point = SpawnPoints.FindByPredicate([&InIndex] (const USpawnPoint* SpawnPoint)
 	{
 		if (SpawnPoint->Index == InIndex)
 		{
@@ -392,28 +392,26 @@ USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromIndex(const int32 In
 		}
 		return false;
 	});
-	return Point ? Point : nullptr;
+	return Point ? *Point : nullptr;
 }
 
 USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromLocation(const FVector& InLocation) const
 {
-	USpawnPoint* Point = *SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
+	const TArray<USpawnPoint*>::ElementType* Point = SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
 	{
-		if ((InLocation.Y >= SpawnPoint->BottomLeft.Y) &&
-			(InLocation.Z >= SpawnPoint->BottomLeft.Z) &&
-			(InLocation.Y < SpawnPoint->TopRight.Y - 0.01) &&
-			(InLocation.Z < SpawnPoint->TopRight.Z - 0.01))
+		if ((InLocation.Y >= SpawnPoint->BottomLeft.Y) && (InLocation.Z >= SpawnPoint->BottomLeft.Z) && (InLocation.Y < SpawnPoint->TopRight.Y - 0.01) && (InLocation.Z < SpawnPoint->TopRight.Z -
+			0.01))
 		{
 			return true;
 		}
 		return false;
 	});
-	return Point ? Point : nullptr;
+	return Point ? *Point : nullptr;
 }
 
 USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromGuid(const FGuid& InGuid) const
 {
-	USpawnPoint* Point = *SpawnPoints.FindByPredicate([&InGuid](const USpawnPoint* SpawnPoint)
+	const TArray<USpawnPoint*>::ElementType* Point = SpawnPoints.FindByPredicate([&InGuid](const USpawnPoint* SpawnPoint)
 	{
 		if (SpawnPoint->GetGuid() == InGuid)
 		{
@@ -421,7 +419,7 @@ USpawnPoint* USpawnPointManagerComponent::FindSpawnPointFromGuid(const FGuid& In
 		}
 		return false;
 	});
-	return Point ? Point : nullptr;
+	return Point ? *Point : nullptr;
 }
 
 USpawnPoint* USpawnPointManagerComponent::FindOldestRecentSpawnPoint() const
@@ -453,7 +451,7 @@ USpawnPoint* USpawnPointManagerComponent::FindOldestDeactivatedManagedPoint() co
 
 int32 USpawnPointManagerComponent::FindSpawnPointIndexFromLocation(const FVector& InLocation) const
 {
-	const USpawnPoint* Point = *SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
+	const TArray<USpawnPoint*>::ElementType* Point = SpawnPoints.FindByPredicate([&InLocation](const USpawnPoint* SpawnPoint)
 	{
 		if ((InLocation.Y >= SpawnPoint->BottomLeft.Y) &&
 			(InLocation.Z >= SpawnPoint->BottomLeft.Z) &&
@@ -464,7 +462,7 @@ int32 USpawnPointManagerComponent::FindSpawnPointIndexFromLocation(const FVector
 		}
 		return false;
 	});
-	return Point ? Point->Index : INDEX_NONE;
+	return Point ? (*Point)->Index : INDEX_NONE;
 }
 
 bool USpawnPointManagerComponent::IsSpawnPointValid(const USpawnPoint* InSpawnPoint) const

@@ -163,6 +163,27 @@ void UDoubleSyncedSliderAndTextBox::UpdateDefaultValuesAbsolute(const float NewM
 	OnSliderChanged(false, NewMaxValue);
 }
 
+void UDoubleSyncedSliderAndTextBox::ResetValuesToDefault()
+{
+	/* Use pre-synced values if possible */
+	float NewMinValue;
+	float NewMaxValue;
+	if (PreSyncedMaxValue != -1.f && PreSyncedMinValue != -1.f)
+	{
+		NewMinValue = CheckConstraints(PreSyncedMinValue, true);
+		NewMaxValue = CheckConstraints(PreSyncedMaxValue, false);
+	}
+	else
+	{
+		NewMinValue = SliderStruct.DefaultMinValue;
+		NewMaxValue = SliderStruct.DefaultMaxValue;
+	}
+	Slider_Min->SetValue(NewMinValue);
+	Slider_Max->SetValue(NewMaxValue);
+	OnSliderChanged(true, NewMinValue);
+	OnSliderChanged(false, NewMaxValue);
+}
+
 void UDoubleSyncedSliderAndTextBox::OnCheckStateChanged_SyncSlidersAndValues(const bool bIsChecked)
 {
 	SyncSlidersAndValues(bIsChecked, true);

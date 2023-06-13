@@ -32,6 +32,12 @@ public:
 	/** Deactivates all visualizers */
 	void DeactivateVisualizers();
 
+	/** Deactivates all Beam visualizers */
+	void DeactivateBeamVisualizers();
+
+	/** Deactivates all Cube visualizers */
+	void DeactivateCubeVisualizers();
+
 	/** Updates visualizers based on player game settings */
 	void UpdateVisualizerSettings(const FPlayerSettings_Game& PlayerSettings);
 
@@ -72,7 +78,10 @@ protected:
 	TArray<TObjectPtr<AVisualizerBase>> Visualizers;
 	
 	UPROPERTY()
-	bool bUpdateVisualizers;
+	bool bUpdateBeamVisualizers;
+
+	UPROPERTY()
+	bool bUpdateCubeVisualizers;
 
 private:
 	

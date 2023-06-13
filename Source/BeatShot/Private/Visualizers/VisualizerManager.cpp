@@ -70,8 +70,9 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 	
 	if (PlayerSettings.bShowLightVisualizers)
 	{
-		bUpdateVisualizers = true;
+		bUpdateBeamVisualizers = true;
 	}
+	bUpdateCubeVisualizers = true;
 }
 
 float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam)
@@ -85,7 +86,7 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
 {
-	if (!bUpdateVisualizers)
+	if (!bUpdateCubeVisualizers && !bUpdateBeamVisualizers)
 	{
 		return;
 	}
@@ -104,12 +105,15 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
 		if (SpectrumValues[i] > 0 && CurrentSpectrumValues[i] < 0)
 		{
 			CurrentSpectrumValues[i] = SpectrumValues[i];
-			
-			UpdateBeamVisualizers(i, GetNormalizedSpectrumValue(i, true));
+			if (bUpdateBeamVisualizers)
+			{
+				UpdateBeamVisualizers(i, GetNormalizedSpectrumValue(i, true));
+			}
 		}
-
-		UpdateCubeVisualizers(i, GetNormalizedSpectrumValue(i, false));
-
+		if (bUpdateCubeVisualizers)
+		{
+			UpdateCubeVisualizers(i, GetNormalizedSpectrumValue(i, false));
+		}
 		if (CurrentSpectrumValues[i] >= 0)
 		{
 			CurrentSpectrumValues[i] -= AvgSpectrumValues[i] / CurrentSpectrumValueDecrementDivide;
@@ -153,12 +157,28 @@ void AVisualizerManager::DeactivateVisualizers()
 	}
 }
 
+void AVisualizerManager::DeactivateBeamVisualizers()
+{
+	for (const TObjectPtr<ABeamVisualizer>& BeamVisualizer : GetBeamVisualizers())
+	{
+		BeamVisualizer->DeactivateVisualizers();
+	}
+}
+
+void AVisualizerManager::DeactivateCubeVisualizers()
+{
+	for (const TObjectPtr<AStaticCubeVisualizer>& CubeVisualizer : GetCubeVisualizers())
+	{
+		CubeVisualizer->DeactivateVisualizers();
+	}
+}
+
 void AVisualizerManager::UpdateVisualizerSettings(const FPlayerSettings_Game& PlayerSettings)
 {
-	bUpdateVisualizers = PlayerSettings.bShowLightVisualizers;
-	if (!bUpdateVisualizers)
+	bUpdateBeamVisualizers = PlayerSettings.bShowLightVisualizers;
+	if (!bUpdateBeamVisualizers)
 	{
-		DeactivateVisualizers();
+		DeactivateBeamVisualizers();
 	}
 }
 

@@ -645,7 +645,10 @@ USpawnPoint* ATargetManager::GetNextSpawnPoint(const EBoundsScalingPolicy Bounds
 	const int32 OpenLocationIndex = FMath::RandRange(0, OpenLocations.Num() - 1);
 	if (USpawnPoint* Found = SpawnPointManager->FindSpawnPointFromLocation(OpenLocations[OpenLocationIndex]))
 	{
-		Found->SetRandomChosenPoint();
+		if (BSConfig.TargetConfig.TargetDistributionPolicy != ETargetDistributionPolicy::Grid)
+		{
+			Found->SetRandomChosenPoint();
+		}
 		return Found;
 	}
 	//UE_LOG(LogTargetManager, Display, TEXT("Found BottomLeft %s Found CenterPoint %s Found ChosenPoint %s"), *Found->BottomLeft.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
@@ -756,25 +759,25 @@ void ATargetManager::HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocatio
 
 void ATargetManager::HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const
 {
-	// Filter out non-bordering points
-	TArray<int32> BorderingIndices;
 	if (SpawnPoint)
 	{
-		BorderingIndices = SpawnPoint->GetBorderingIndices();
-	}
-	ValidSpawnLocations = ValidSpawnLocations.FilterByPredicate([&] (const FVector& Vector)
-	{
-		if (const USpawnPoint* FoundPoint = SpawnPointManager->FindSpawnPointFromLocation(Vector))
+		// Filter out non-bordering points
+		if (const TArray<int32> BorderingIndices = SpawnPoint->GetBorderingIndices(); !BorderingIndices.IsEmpty())
 		{
-			UE_LOG(LogTemp, Display, TEXT("PointIndex: %d Location: %s"), FoundPoint->Index, *Vector.ToString());
-			if (!BorderingIndices.Contains(FoundPoint->Index))
+			ValidSpawnLocations = ValidSpawnLocations.FilterByPredicate([&] (const FVector& Vector)
 			{
+				if (const USpawnPoint* FoundPoint = SpawnPointManager->FindSpawnPointFromLocation(Vector))
+				{
+					if (!BorderingIndices.Contains(FoundPoint->Index))
+					{
+						return false;
+					}
+					return true;
+				}
 				return false;
-			}
-			return true;
+			});
 		}
-		return false;
-	});
+	}
 	
 	// First try filtering out activated points
 	TArray<FVector> NoActive = ValidSpawnLocations;

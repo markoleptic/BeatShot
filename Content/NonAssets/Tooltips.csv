@@ -50,7 +50,7 @@ RecentTargetMemoryPolicy_None,Does not remember any recent targets.
 RecentTargetMemoryPolicy_NumTargetsBased,Removes recent targets only when the number of recent targets exceeds specified capacity.
 RecentTargetMemoryPolicy_UseTargetSpawnCD,Removes a recent target after TargetSpawnCD length of time has passed since the target has been destroyed or deactivated.
 RecentTargetTimeLength,"Length of time to keep targets flags as recent, if using Custom Time Based RecentMemoryPolicy."
-SpawnAtOriginWheneverPossible,Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible.
+SpawnAtOriginWheneverPossible,Whether or not to spawn at the origin (center) if it isn't blocked by a recent target whenever possible.
 SpawnBeatDelay,Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time.
 SpawnEveryOtherTargetInCenter,Whether or not spawn every other target at the origin (center).
 TargetActivationResponses,"What does the target do when its activated: change directions, make damageable, etc."
@@ -77,7 +77,7 @@ TargetDeactivationCondition_Persistant,"Targets are never deactivated, even if t
 TargetDeactivationResponses,What does the target do when its deactivated?
 TargetDeactivationResponse_AddImmunity,Immunity is granted to the target.
 TargetDeactivationResponse_ChangeDirection,"If a moving target, the direction is changed."
-TargetDeactivationResponse_ChangeScale,The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this.
+TargetDeactivationResponse_ApplyDeactivatedTargetScaleMultiplier,"Sets the target scale to its current scale multiplied by ""Deactivated Target Scale Multiplier""."
 TargetDeactivationResponse_ChangeVelocity,"If a moving target, the velocity of the target is changed."
 TargetDeactivationResponse_Destroy,Destroy the target permanently.
 TargetDeactivationResponse_Hide,Temporarily hide the target until reactivated.
@@ -86,9 +86,9 @@ TargetDeactivationResponse_PlayExplosionEffect,Play an explosion effect.
 TargetDeactivationResponse_RemoveImmunity,"Immunity is removed from the target, damageable window begins if not already damageable."
 TargetDeactivationResponse_ResetColorToInactiveColor,Reset the color of the target to the inactive color.
 TargetDeactivationResponse_ResetColorToStartColor,Reset the color of the target to the inactive color.
-TargetDeactivationResponse_ResetPosition,Reset the position of the target to the position it was initialized with.
-TargetDeactivationResponse_ResetScale,Reset the scale of the target to the scale it was initialized with.
-TargetDeactivationResponse_ShrinkQuickGrowSlow,Reset the scale of the target to the scale it was initialized with.
+TargetDeactivationResponse_ResetPosition,Resets the target position back to the position it was activated at. Useful for moving targets.
+TargetDeactivationResponse_ResetScale,Reset the scale of the target to the scale it was activated with.
+TargetDeactivationResponse_ShrinkQuickGrowSlow,Shrinks the target and slowly returns it to the scale it was activated with. Used in BeatGrid.
 TargetDeactivationResponse_ToggleImmunity,"Immunity is added or removed from the target, depending on its existing state. Same with damageable window."
 TargetDestructionConditions,Each represents one way that a target can be destroyed.
 TargetDestructionCondition_None,
@@ -100,7 +100,7 @@ TargetDestructionCondition_Persistant,"Targets are never destroyed, even if thei
 TargetDistributionPolicy,How Targets are distributed in the spawn box.
 TargetDistributionPolicy_EdgeOnly,Only spawn targets on the edges of the current spawn area.
 TargetDistributionPolicy_FullRange,Spawn targets anywhere in the current spawn area.
-TargetDistributionPolicy_Grid,Spawns targets in an evenly-spaced grid. Able to fit more targets.
+TargetDistributionPolicy_Grid,Spawns targets in an evenly-spaced grid. Targets spawn in the same locations within the grid.
 TargetDistributionPolicy_HeadshotHeightOnly,The targests will only spawn at headshot height.
 TargetSpawnCD,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
 TargetSpawningPolicy,When to spawn the targets.
@@ -125,3 +125,4 @@ MinTargetScale,The minimum size of a target. Affects other settings that depend 
 MaxTargetScale,The maximum size of a target. Affects other settings that depend on target scale.
 MinTargetSpeed,"The minimum speed of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
 MaxTargetSpeed,"The maximum speed of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
+InvalidAI_GridSpacing,The number of horizontal and vertical grid targets must be in increments of 5 for AI to properly function.

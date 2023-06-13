@@ -55,7 +55,7 @@ ConfirmVideoSettingsPopupButton2,Revert
 ConfirmVideoSettingsPopupMessage,Settings will be reverted if not confirmed in 10 seconds
 ConfirmVideoSettingsPopupTitle,Confirm Video Settings?
 CountdownText,Click Anywhere to Begin
-FAQ_BaseGameMode,"There are four base game modes: MultiBeat, SingleBeat, BeatTrack, and BeatGrid. A game mode must derive from one of these."
+FAQ_BaseGameMode,"There are four base game modes: MultiBeat, SingleBeat, BeatTrack, and BeatGrid. A custom game mode should derive from one of these."
 FAQ_BeatGrid_Info_1,"Spawns a static grid that activates individual targets, which allows them to be damaged for a brief period of time before returning to inactive."
 FAQ_BeatGrid_Info_2,"Only activates adjacent targets by default, but this setting can be changed."
 FAQ_BeatTrack_Info_1,Only spawns one target that cannot be destroyed by the player. The player hovers the crosshair over the target to gain score.
@@ -124,11 +124,9 @@ GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_BaseGameMode,Base Game Mode
 GM_BeatGrid,Beat Grid
-GM_HorizontalGridSpacing,Horizontal Spacing
 GM_BeatGrid_Info,MultiBeat but in a grid.
 GM_BeatGrid_NumHorizontalTargets,Number of Horizontal Targets
 GM_BeatGrid_NumVerticalTargets,Number of Vertical Targets
-GM_VerticalGridSpacing,Vertical Spacing
 GM_BeatGridSpecific,BeatGrid specific
 GM_BeatTrack,Beat Track
 GM_BeatTrack_Info,"Only one target is spawned, tracking style."
@@ -158,23 +156,30 @@ GM_GameModeSavedText,saved
 GM_GameModeTemplate,Game Mode Template
 GM_General,General
 GM_General_Info,"Select a template to see default values for different game modes. You can save custom game modes based on any game mode templates, and everything can be customized."
+GM_HorizontalGridSpacing,Horizontal Spacing
 GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
 GM_LifetimeTargetScalePolicy,Lifetime Target Scaling Policy
 GM_MaxHealth,Max Target Health
 GM_MaximumTargetLifespan,Maximum Target Lifespan
+GM_MaxNumActivatedTargetsAtOnce,Maximum Allowed Activated Targets at Once
 GM_MaxNumRecentTargets,Max Number of Recent Targets
+GM_MaxNumTargetsAtOnce,Maximum Allowed Targets at Once
+GM_MaxNumTargetsToActivateAtOnce,Max Number of Targets to Activate at Once
 GM_MaxTargetScale,Max Target Scale
 GM_MaxTrackingSpeed,Max Tracking Speed
 GM_MinDistanceBetweenTargets,Minimum Distance Between Targets
+GM_MinNumTargetsToActivateAtOnce,Min Number of Targets to Activate at Once
 GM_MinTargetScale,Min Target Scale
 GM_MinTrackingSpeed,Min Tracking Speed
 GM_MoveTargets,Move Targets
 GM_MoveTargetsForward,Move Targets Forward
+GM_MovingTargetDirectionMode,Moving Target Direction Mode
 GM_MultiBeat,Multi Beat
 GM_MultiBeat_Info,Spawns targets continuously.
 GM_NarrowSpread,Narrow
 GM_NumberOfTargets,Number of Targets
 GM_NumCharges,Number of Charges per Target
+GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn at Runtime
 GM_NumUpfrontTargetsToSpawn,Number of Targets to Spawn Upfront
 GM_OverwriteCancel,Cancel
 GM_OverwriteConfirm,Confirm
@@ -190,7 +195,7 @@ GM_SaveCustom,Save Custom
 GM_SingleBeat,Single Beat
 GM_SingleBeat_Info,One target at a time.
 GM_Sizing,Target Sizing
-GM_SpawnAtOriginWheneverPossible,Spawn At Origin Whenever Possible
+GM_SpawnAtOriginWheneverPossible,Spawn In Center Whenever Possible
 GM_SpawnBeatDelay,Spawn Beat Delay
 GM_SpawnEveryOtherTargetInCenter,Spawn Every Other Target In Center
 GM_Spread,Target Spread
@@ -207,6 +212,7 @@ GM_TargetDistributionPolicy,Target Distribution Policy
 GM_TargetSpawnCooldown,Target Spawn Cooldown
 GM_TargetSpawningPolicy,Target Spawning Policy
 GM_Time,Time Related
+GM_VerticalGridSpacing,Vertical Spacing
 GM_VerticalSpread,Vertical Spread (Max if Dynamic)
 GM_WideSpread,Wide
 HUD_Accuracy,Accuracy:
@@ -351,9 +357,3 @@ WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen
 WindowMode_FullscreenWindowed,Fullscreen Windowed
 WindowMode_Windowed,Windowed
-GM_MinNumTargetsToActivateAtOnce,Min Number of Targets to Activate at Once
-GM_MaxNumTargetsToActivateAtOnce,Max Number of Targets to Activate at Once
-GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn at Runtime
-GM_MaxNumActivatedTargetsAtOnce,Maximum Allowed Activated Targets at Once
-GM_MaxNumTargetsAtOnce,Maximum Allowed Targets at Once
-GM_MovingTargetDirectionMode,Moving Target Direction Mode

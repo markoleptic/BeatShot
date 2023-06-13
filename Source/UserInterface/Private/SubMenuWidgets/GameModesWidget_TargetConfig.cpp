@@ -142,6 +142,7 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(QMark_MoveTargets, GetTooltipTextFromKey("MoveTargets"));
 	SetupTooltip(QMark_SpawnAtOriginWheneverPossible, GetTooltipTextFromKey("SpawnAtOriginWheneverPossible"));
 	SetupTooltip(QMark_SpawnEveryOtherTargetInCenter, GetTooltipTextFromKey("SpawnEveryOtherTargetInCenter"));
+	SetupTooltip(QMark_NumUpfrontTargetsToSpawn, GetTooltipTextFromKey("NumUpfrontTargetsToSpawn"));
 	SetupTooltip(QMark_NumRuntimeTargetsToSpawn, GetTooltipTextFromKey("NumRuntimeTargetsToSpawn"));
 	SetupTooltip(QMark_MaxNumActivatedTargetsAtOnce, GetTooltipTextFromKey("MaxNumActivatedTargetsAtOnce"));
 	SetupTooltip(QMark_MaxNumTargetsAtOnce, GetTooltipTextFromKey("MaxNumTargetsAtOnce"));
@@ -169,38 +170,71 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	
 	Slider_Lifespan->SetMinValue(MinValue_Lifespan);
 	Slider_Lifespan->SetMaxValue(MaxValue_Lifespan);
+	Slider_Lifespan->SetStepSize(SnapSize_Lifespan);
+	
 	Slider_TargetSpawnCD->SetMinValue(MinValue_TargetSpawnCD);
 	Slider_TargetSpawnCD->SetMaxValue(MaxValue_TargetSpawnCD);
+	Slider_TargetSpawnCD->SetStepSize(SnapSize_TargetSpawnCD);
+	
 	Slider_SpawnBeatDelay->SetMinValue(MinValue_PlayerDelay);
 	Slider_SpawnBeatDelay->SetMaxValue(MaxValue_PlayerDelay);
+	Slider_SpawnBeatDelay->SetStepSize(SnapSize_PlayerDelay);
+	
 	Slider_MinTargetDistance->SetMinValue(MinValue_MinTargetDistance);
 	Slider_MinTargetDistance->SetMaxValue(MaxValue_MinTargetDistance);
+	Slider_MinTargetDistance->SetStepSize(SnapSize_MinTargetDistance);
+	
 	Slider_HorizontalSpread->SetMinValue(MinValue_HorizontalSpread);
 	Slider_HorizontalSpread->SetMaxValue(MaxValue_HorizontalSpread);
+	Slider_HorizontalSpread->SetStepSize(SnapSize_HorizontalSpread);
+	
 	Slider_VerticalSpread->SetMinValue(MinValue_VerticalSpread);
 	Slider_VerticalSpread->SetMaxValue(MaxValue_VerticalSpread);
+	Slider_VerticalSpread->SetStepSize(SnapSize_VerticalSpread);
+	
 	Slider_ForwardSpread->SetMinValue(MinValue_ForwardSpread);
 	Slider_ForwardSpread->SetMaxValue(MaxValue_ForwardSpread);
+	Slider_SpawnBeatDelay->SetStepSize(SnapSize_PlayerDelay);
+	
 	Slider_FloorDistance->SetMinValue(MinValue_FloorDistance);
 	Slider_FloorDistance->SetMaxValue(MaxValue_FloorDistance);
+	Slider_FloorDistance->SetStepSize(SnapSize_FloorDistance);
+	
 	Slider_MaxNumRecentTargets->SetMinValue(MinValue_MaxNumRecentTargets);
 	Slider_MaxNumRecentTargets->SetMaxValue(MaxValue_MaxNumRecentTargets);
+	Slider_MaxNumRecentTargets->SetStepSize(SnapSize_MaxNumRecentTargets);
+	
 	Slider_RecentTargetTimeLength->SetMinValue(MinValue_RecentTargetTimeLength);
 	Slider_RecentTargetTimeLength->SetMaxValue(MaxValue_RecentTargetTimeLength);
+	Slider_RecentTargetTimeLength->SetStepSize(SnapSize_RecentTargetTimeLength);
+	
 	Slider_NumUpfrontTargetsToSpawn->SetMinValue(MinValue_NumUpfrontTargetsToSpawn);
 	Slider_NumUpfrontTargetsToSpawn->SetMaxValue(MaxValue_NumUpfrontTargetsToSpawn);
+	Slider_NumUpfrontTargetsToSpawn->SetStepSize(SnapSize_NumUpfrontTargetsToSpawn);
+	
 	Slider_ExpirationHealthPenalty->SetMinValue(MinValue_ExpirationHealthPenalty);
 	Slider_ExpirationHealthPenalty->SetMaxValue(MaxValue_ExpirationHealthPenalty);
+	Slider_ExpirationHealthPenalty->SetStepSize(SnapSize_ExpirationHealthPenalty);
+	
 	Slider_MaxHealth->SetMinValue(MinValue_MaxHealth);
 	Slider_MaxHealth->SetMaxValue(MaxValue_MaxHealth);
+	Slider_MaxHealth->SetStepSize(SnapSize_MaxHealth);
+	
 	Slider_NumRuntimeTargetsToSpawn->SetMinValue(MinValue_NumRuntimeTargetsToSpawn);
 	Slider_NumRuntimeTargetsToSpawn->SetMaxValue(MaxValue_NumRuntimeTargetsToSpawn);
+	Slider_NumRuntimeTargetsToSpawn->SetStepSize(SnapSize_NumRuntimeTargetsToSpawn);
+	
 	Slider_MaxNumActivatedTargetsAtOnce->SetMinValue(MinValue_MaxNumActivatedTargetsAtOnce);
 	Slider_MaxNumActivatedTargetsAtOnce->SetMaxValue(MaxValue_MaxNumActivatedTargetsAtOnce);
+	Slider_MaxNumActivatedTargetsAtOnce->SetStepSize(SnapSize_MaxNumActivatedTargetsAtOnce);
+	
 	Slider_MaxNumTargetsAtOnce->SetMinValue(MinValue_MaxNumTargetsAtOnce);
 	Slider_MaxNumTargetsAtOnce->SetMaxValue(MaxValue_MaxNumTargetsAtOnce);
+	Slider_MaxNumTargetsAtOnce->SetStepSize(SnapSize_MaxNumTargetsAtOnce);
+	
 	Slider_ConsecutiveChargeScaleMultiplier->SetMinValue(MinValue_ConsecutiveChargeScaleMultiplier);
 	Slider_ConsecutiveChargeScaleMultiplier->SetMaxValue(MaxValue_ConsecutiveChargeScaleMultiplier);
+	Slider_ConsecutiveChargeScaleMultiplier->SetStepSize(SnapSize_ConsecutiveChargeScaleMultiplier);
 	
 	Value_Lifespan->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Lifespan);
 	Value_TargetSpawnCD->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_TargetSpawnCD);
@@ -509,6 +543,16 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	return ReturnConfig;
 }
 
+ETargetDistributionPolicy UGameModesWidget_TargetConfig::GetTargetDistributionPolicy() const
+{
+	return GetEnumFromString<ETargetDistributionPolicy>(ComboBox_TargetDistributionPolicy->GetSelectedOption(), ETargetDistributionPolicy::None);
+}
+
+ETargetDamageType UGameModesWidget_TargetConfig::GetTargetDamageType() const
+{
+	return GetEnumFromString<ETargetDamageType>(ComboBox_TargetDamageType->GetSelectedOption(), ETargetDamageType::None);
+}
+
 void UGameModesWidget_TargetConfig::OnSliderChanged_Lifespan(const float NewLifespan)
 {
 	OnSliderChanged(NewLifespan, Value_Lifespan, SnapSize_Lifespan);
@@ -708,67 +752,6 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_SpawnEveryOtherTargetInC
 {
 }
 
-UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
-{
-	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
-	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, Method));
-
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
-		return Entry;
-	}
-	return nullptr;
-}
-
-UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateSingleSelectionItem(const UBSComboBoxString* ComboBoxString, FString SelectedOption)
-{
-	const FText EntryText = SelectedOption.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(SelectedOption);
-	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, SelectedOption));
-
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
-		return Entry;
-	}
-	return nullptr;
-}
-
-UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
-{
-	FText TooltipText = FText::GetEmpty();
-	FString EntryString = FString();
-
-	if (!SelectedOptions.IsEmpty())
-	{
-		for (int i = 0; i < SelectedOptions.Num(); i++)
-		{
-			if (!SelectedOptions[i].IsEmpty())
-			{
-				EntryString.Append(SelectedOptions[i]);
-				if (i < SelectedOptions.Num() - 1)
-				{
-					EntryString.Append(", ");
-				}
-			}
-		}
-	}
-	if (SelectedOptions.Num() == 1)
-	{
-		TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]));
-	}
-
-	const FText EntryText = FText::FromString(EntryString);
-	
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
-		return Entry;
-	}
-	
-	return nullptr;
-}
-
 void UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType)
 {
 	OnEditableTextBoxChanged(NewChargeScaleMultiplier, Value_ConsecutiveChargeScaleMultiplier, Slider_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier,
@@ -804,34 +787,27 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_ConsecutiveTargetScalePol
 	{
 	case EConsecutiveTargetScalePolicy::Static:
 		TargetScaleConstrained->SetLocksEnabled(false);
-		/*if (!TargetScaleConstrained->GetIsSynced())
+		if (!TargetScaleConstrained->GetIsSynced())
 		{
 			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), true);
-			TargetScaleConstrained->SetLocksEnabled(false);
-		}*/
+		}
 		break;
 	case EConsecutiveTargetScalePolicy::Random:
 	case EConsecutiveTargetScalePolicy::SkillBased:
 		TargetScaleConstrained->SetLocksEnabled(true);
-		/*if (TargetScaleConstrained->GetIsSynced())
+		if (TargetScaleConstrained->GetIsSynced())
 		{
-			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), TargetScaleConstrained->GetMinValue() == TargetScaleConstrained->GetMaxValue());
-		}*/
+			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), false);
+			TargetScaleConstrained->ResetValuesToDefault();
+		}
 		break;
-	default:
+	case EConsecutiveTargetScalePolicy::None:
 		break;
 	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_LifetimeTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (!Selected.Contains(UEnum::GetDisplayValueAsText(ELifetimeTargetScalePolicy::None).ToString()))
-	{
-		/*if (TargetScaleConstrained->GetIsSynced())
-		{
-			TargetScaleConstrained->UpdateDefaultValues(TargetScaleConstrained->GetMinValue(), TargetScaleConstrained->GetMaxValue(), TargetScaleConstrained->GetMinValue() == TargetScaleConstrained->GetMaxValue());
-		}*/
-	}
 }
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -976,6 +952,59 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetSpawningPolicy(cons
 
 void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (Selected.Num() != 1)
+	{
+		return;
+	}
+	OnTargetUpdate_SaveStartButtonStates.Broadcast();
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
+{
+	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
+	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, Method));
+
+	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
+	{
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
+		return Entry;
+	}
+	return nullptr;
+}
+
+UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
+{
+	FText TooltipText = FText::GetEmpty();
+	FString EntryString = FString();
+
+	if (!SelectedOptions.IsEmpty())
+	{
+		for (int i = 0; i < SelectedOptions.Num(); i++)
+		{
+			if (!SelectedOptions[i].IsEmpty())
+			{
+				EntryString.Append(SelectedOptions[i]);
+				if (i < SelectedOptions.Num() - 1)
+				{
+					EntryString.Append(", ");
+				}
+			}
+		}
+	}
+	if (SelectedOptions.Num() == 1)
+	{
+		TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]));
+	}
+
+	const FText EntryText = FText::FromString(EntryString);
+	
+	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
+	{
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
+		return Entry;
+	}
+	
+	return nullptr;
 }
 
 FString UGameModesWidget_TargetConfig::GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString)

@@ -8,8 +8,10 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "Components/Border.h"
+#include "Components/CheckBox.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
+#include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
@@ -19,6 +21,7 @@
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
 #include "SubMenuWidgets/GameModesWidget_GridConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
+#include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/MenuButton.h"
 
 using namespace Constants;
@@ -121,7 +124,9 @@ void UGameModesWidget::BindAllDelegates()
 	Button_BeatTrack->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
 	Button_MultiBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
 	Button_SingleBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_DefaultGameMode);
-
+	
+	AIConfig->OnAIEnabled.BindUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
+	TargetConfig->OnTargetUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::OnTargetDamageTypeChanged);
 	DefiningConfig->OnRepopulateGameModeOptions.AddUObject(this, &UGameModesWidget::PopulateGameModeOptions);
 	DefiningConfig->OnDefiningConfigUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
 	TargetConfig->GridConfig->OnBeatGridUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
@@ -149,6 +154,22 @@ void UGameModesWidget::OnButtonClicked_Difficulty(const UBSButton* GameModeButto
 	const FBSConfig SelectedGameMode = FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty);
 	PopulateGameModeOptions(SelectedGameMode);
 	Button_PlayFromStandard->SetIsEnabled(true);
+}
+
+void UGameModesWidget::OnTargetDamageTypeChanged()
+{
+	switch (TargetConfig->GetTargetDamageType()) {
+	case ETargetDamageType::Tracking:
+		AIConfig->CheckBox_EnableAI->SetIsChecked(false);
+		AIConfig->CheckBox_EnableAI->SetIsEnabled(false);
+		break;
+	case ETargetDamageType::Hit:
+		AIConfig->CheckBox_EnableAI->SetIsEnabled(true);
+		break;
+	case ETargetDamageType::Combined:
+	case ETargetDamageType::None:
+		break;
+	}
 }
 
 void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* Button)
@@ -281,36 +302,8 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	TargetConfig->GridConfig->InitGridConfig(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 	TargetConfig->GridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 	AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
-	
-	/*switch(InBSConfig.DefiningConfig.BaseGameMode)
-	{
-	case EBaseGameMode::SingleBeat:
-		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
-		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
-		break;
-	case EBaseGameMode::MultiBeat:
-		Box_AIConfig->SetVisibility(ESlateVisibility::Visible);
-		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
-		break;
-	case EBaseGameMode::BeatGrid:
-		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Visible);
-		BeatGridConfig->InitGridConfig(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
-		BeatGridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
-		break;
-	case EBaseGameMode::BeatTrack:
-		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	case EBaseGameMode::ChargedBeatTrack:
-		Box_AIConfig->SetVisibility(ESlateVisibility::Collapsed);
-		Box_BeatGridConfig->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	case EBaseGameMode::None:
-		break;
-	}*/
+
+	OnTargetDamageTypeChanged();
 }
 
 FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
@@ -335,12 +328,13 @@ void UGameModesWidget::SaveCustomGameModeAndShowSavedText(const FBSConfig& GameM
 void UGameModesWidget::UpdateSaveStartButtonStates()
 {
 	const bool bNoSavedCustomGameModes = LoadCustomGameModes().IsEmpty();
-	const bool bBeatGridIsConstrained = TargetConfig->GridConfig->IsAnyParameterConstrained();
+	const bool bGridIsConstrained = TargetConfig->GridConfig->IsAnyParameterConstrained();
 	const bool bIsDefaultMode = IsPresetGameMode(DefiningConfig->ComboBox_GameModeName->GetSelectedOption());
 	const bool bIsCustomMode = IsCustomGameMode(DefiningConfig->ComboBox_GameModeName->GetSelectedOption());
 	const bool bGameModeNameComboBoxEmpty = DefiningConfig->ComboBox_GameModeName->GetSelectedOption().IsEmpty();
 	const bool bCustomTextEmpty = DefiningConfig->TextBox_CustomGameModeName->GetText().IsEmptyOrWhitespace();
 	const bool bInvalidCustomGameModeName = IsPresetGameMode(DefiningConfig->TextBox_CustomGameModeName->GetText().ToString());
+	const bool bAIConfigIsInvalid = !IsAIValid();
 
 	/* RemoveAll Button */
 	if (bNoSavedCustomGameModes)
@@ -352,7 +346,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		Button_RemoveAllCustom->SetIsEnabled(true);
 	}
 	
-	if (bBeatGridIsConstrained)
+	if (bGridIsConstrained)
 	{
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
@@ -360,6 +354,17 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		Button_StartWithoutSaving->SetIsEnabled(false);
 		return;
 	}
+
+	if (bAIConfigIsInvalid)
+	{
+		Button_SaveCustom->SetIsEnabled(false);
+		Button_SaveCustomAndStart->SetIsEnabled(false);
+		Button_StartCustom->SetIsEnabled(false);
+		Button_StartWithoutSaving->SetIsEnabled(false);
+		return;
+	}
+
+	// At this point, they can play the game mode but not save it
 	Button_StartWithoutSaving->SetIsEnabled(true);
 	
 	if (bGameModeNameComboBoxEmpty || (bIsDefaultMode && bCustomTextEmpty) || bInvalidCustomGameModeName)
@@ -463,4 +468,40 @@ bool UGameModesWidget::CheckForExistingAndDisplayOverwriteMessage(const bool bSt
 		return true;
 	}
 	return false;
+}
+
+bool UGameModesWidget::IsAIValid()
+{
+	if (AIConfig->CheckBox_EnableAI->IsChecked())
+	{
+		if (TargetConfig->GetTargetDistributionPolicy() == ETargetDistributionPolicy::Grid)
+		{
+			if (const FIntPoint Spacing = TargetConfig->GridConfig->GetGridSpacing(); Spacing.X % 5 != 0 || Spacing.Y % 5 != 0)
+			{
+				if (!TooltipWarningImage_EnableAI)
+				{
+					TooltipWarningImage_EnableAI = ConstructWarningEMarkWidget(AIConfig->HorizontalBox_EnableAI);
+					AIConfig->SetupTooltip(TooltipWarningImage_EnableAI.Get(), IBSWidgetInterface::GetTooltipTextFromKey("InvalidAI_GridSpacing"));
+				}
+				TooltipWarningImage_EnableAI->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+				return false;
+			}
+		}
+	}
+	
+	if (TooltipWarningImage_EnableAI)
+	{
+		TooltipWarningImage_EnableAI->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	return true;
+}
+
+UTooltipImage* UGameModesWidget::ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn)
+{
+	UTooltipImage* TooltipImage = WidgetTree->ConstructWidget<UTooltipImage>(WarningEMarkClass);
+	UHorizontalBoxSlot* HorizontalBoxSlot = BoxToPlaceIn->AddChildToHorizontalBox(TooltipImage);
+	HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
+	HorizontalBoxSlot->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
+	HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
+	return TooltipImage;
 }

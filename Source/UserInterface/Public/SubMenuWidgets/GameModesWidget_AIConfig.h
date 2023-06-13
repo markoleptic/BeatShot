@@ -14,6 +14,8 @@ class USlider;
 class UCheckBox;
 class UHorizontalBox;
 
+DECLARE_DELEGATE(FOnAIEnabled);
+
 /** SettingCategoryWidget for the GameModesWidget that holds AI configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_AIConfig : public UBSSettingCategoryWidget
@@ -29,6 +31,8 @@ protected:
 public:
 	void InitializeAIConfig(const FBS_AIConfig& InAIConfig, const EBaseGameMode& BaseGameMode);
 	FBS_AIConfig GetAIConfig() const;
+
+	FOnAIEnabled OnAIEnabled;
 	
 protected:	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
@@ -39,6 +43,8 @@ protected:
 	UBSHorizontalBox* BSBox_AIEpsilon;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
 	UBSHorizontalBox* BSBox_AIGamma;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
+	UHorizontalBox* HorizontalBox_EnableAI;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI")
 	UCheckBox* CheckBox_EnableAI;

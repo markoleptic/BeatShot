@@ -15,6 +15,8 @@ class UDoubleSyncedSliderAndTextBox;
 class UCheckBox;
 class UComboBoxString;
 
+DECLARE_MULTICAST_DELEGATE(FOnTargetUpdate_SaveStartButtonStates);
+
 /** SettingCategoryWidget for the GameModesWidget that holds target configuration settings */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget_TargetConfig : public UBSSettingCategoryWidget
@@ -29,6 +31,12 @@ class USERINTERFACE_API UGameModesWidget_TargetConfig : public UBSSettingCategor
 public:
 	void InitializeTargetConfig(const FBS_TargetConfig& InTargetConfig, const EBaseGameMode& BaseGameMode);
 	FBS_TargetConfig GetTargetConfig() const;
+
+	ETargetDistributionPolicy GetTargetDistributionPolicy() const;
+
+	FOnTargetUpdate_SaveStartButtonStates OnTargetUpdate_SaveStartButtonStates;
+
+	ETargetDamageType GetTargetDamageType() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Classes")
@@ -419,14 +427,16 @@ protected:
 	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bSpawnAtOrigin);
 	UFUNCTION()
 	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bSpawnEveryOther);
-	
+
+	/** Returns the widget used for a ComboBox entry */
 	UFUNCTION()
 	UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
-	UFUNCTION()
-	UWidget* OnSelectionChanged_GenerateSingleSelectionItem(const UBSComboBoxString* ComboBoxString, FString SelectedOption);
+	
+	/** Returns the widget used for a selected ComboBox entry */
 	UFUNCTION()
 	UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
 	
+	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
 	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
 	const FText NewLineDelimit = FText::FromString("\n");

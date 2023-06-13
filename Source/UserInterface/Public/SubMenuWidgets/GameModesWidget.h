@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
+class UTooltipImage;
 class UGameModesWidget_DefiningConfig;
 class UGameModesWidget_TargetConfig;
 class UGameModesWidget_AIConfig;
@@ -59,6 +60,10 @@ protected:
 	TSubclassOf<UGameModesWidget_AIConfig> AIConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Config")
 	TSubclassOf<UGameModesWidget_TargetConfig> TargetConfigClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
+	TSubclassOf<UTooltipImage> WarningEMarkClass;
+
+	TObjectPtr<UTooltipImage> TooltipWarningImage_EnableAI;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
 	USavedTextWidget* SavedTextWidget;
@@ -191,6 +196,15 @@ protected:
 	/** Changes the SelectedGameMode depending on input button */
 	UFUNCTION(Category = "Default Game Modes | ModeButtons")
 	void OnButtonClicked_Difficulty(const UBSButton* GameModeButton);
+
+	UFUNCTION()
+	void OnTargetDamageTypeChanged();
+
+	/** Returns false only if the TargetDistributionPolicy is set to grid, AI is enabled, and the grid isn't in increments of 5 */
+	bool IsAIValid();
+
+	/** Returns a TooltipImage widget created and placed inside the BoxToPlaceIn */
+	UTooltipImage* ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn);
 	
 	/** The BoundsScalingPolicy for a selected Preset Game Mode */
 	EBoundsScalingPolicy PresetSelection_BoundsScalingMethod;
