@@ -1,30 +1,12 @@
 Key,SourceString
-BaseGameMode,"There are four base game modes: MultiBeat, SingleBeat, BeatTrack, and BeatGrid. A custom game mode should derive from one of these."
 BeatGrid_Info_1,"Spawns a static grid that activates individual targets, which allows them to be damaged for a brief period of time before returning to inactive."
 BeatGrid_Info_2,"Only activates adjacent targets by default, but this setting can be changed."
 BeatTrack_Info_1,Only spawns one target that cannot be destroyed by the player. The player hovers the crosshair over the target to gain score.
 BeatTrack_Info_2,The target will always prefer to change direction away from the edges of the spawn area.
-CompletelyRandomTargets,Adjacent-only will only activate a target that was adjacent to a previously activated target. Completely random will choose a target in the grid at random.
-ConstantTargetSize,The scale/size of the target will remain constant throughout the game mode.
-ConstantTrackingSpeed,The speed of the target will remain constant throughout the game mode.
-CustomGameModeName,"What your new game mode will be saved as. Can't be the name of a preset game mode, but you can override custom game modes you create."
-DynamicTargetSize,"Variable target sizing. Gradually adjusts the target scale from Max Target Scale to Min Target Scale, based on consecutive targets hit."
-EvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
-ForwardSpread,How far the targets will move forward by the end of their lifespan.
-GameModeDifficulty,Preset Difficulties
-GameModeTemplate,The preset game modes or user-created saved game modes.
-HeadshotOnly,Targets will only spawn at headshot height.
-HorizontalSpread,"The width (left-right) of the possible spawn area. 3200 is from the left wall to the right wall, with a small gap on each side so the target doesn't clip."
-VerticalSpread,"The height (up-down) of the possible spawn area. 1000 is most of the height of the spawn wall, with small gaps on the top and bottom so the target doesn't clip."
-MaxTargetScale,"The maximum scale/size of the target. If using Dynamic Target Scaling, this will be the starting scale."
-MaxTrackingSpeed,The maximum speed at which the tracking target will travel before changing directions.
-MinDistanceBetweenTargets,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
-MinTargetScale,"The minimum scale/size of the target. If using Dynamic Target Scaling, this will be the size at which the target gradually shrinks to."
-MinTrackingSpeed,The minimum speed at which the tracking target will travel before changing directions.
-MoveTargetsForward,Targets will move forward from their spawn location. The end location depends on what is input for Forward Spread. The speed at which they reach the Forward Spread depends on the Maximum Target Lifespan
+SingleBeat_Info_1,"Only spawns one target at a time, and only spawns new target if target recieved damage or maximum lifespan expired."
+SingleBeat_Info_2,"Every other target will spawn in the center of the spawn area."
 MultiBeat_Info_1,Spawns targets continuously whether or not you're destroying them.
 MultiBeat_Info_2,The random spawning system will spawn the target in the exact middle more frequently than other locations.
-NumberOfTargets,How many targets are in the grid.
 Scoring_CustomGameModes_1,Scores for custom game modes are specific to each custom game mode name and each song.
 Scoring_General_Content_1,"""Specific to each song"" means that the game considers a song equal to another if it has the same Song Title. If you care about tracking your consistency for a given song, make sure to always use the same song title."
 Scoring_General_Content_2,"When playing a song from a file, the song title is saved from metadata if possible, but otherwise uses the filename."
@@ -37,31 +19,15 @@ Scoring_SingleTarget_Content_1,"BeatTrack game modes grant one point of score pe
 Scoring_SingleTarget_Content_2,"BeatTrack accuracy is total server ticks with crosshair on target divided by total server ticks."
 Scoring_SingleTarget_Header,"BeatTrack game modes:"
 Scoring_StandardGameModes_1,"Scores for standard game modes are specific to each song, each difficulty, and each game mode. They are not specific to each spread type, but that might change in the future."
-SingleBeat_Info_1,"Only spawns one target at a time, and only spawns new target if target recieved damage or maximum lifespan expired."
-SingleBeat_Info_2,"Every other target will spawn in the center of the spawn area."
-SpreadType,"There are two types of spread that control how far the targets can spawn from the center of the spawn area. Dynamic spread lowers the spawn area based on consecutive targets hit, while static spread does not change the spawn area."
-SpreadType_Dynamic,"Variable-sized spawn area. Gradually adjusts the horizontal/vertical spread from their maximums to a minimum of half, based on consecutive targets hit."
-SpreadType_Dynamic_EdgeOnly,"Dynamic spread type where only targets only spawn on the edge/border of the variable-sized spawn area. Default for SingleBeat."
-SpreadType_Dynamic_Random,"Dynamic spread type where targets are spawned anywhere within the variable-sized spawn area. Default for MultiBeat."
-SpreadType_Static,"The spawn area size doesn't change."
-SpreadType_Static_Narrow,"An unchanged spawn area size of 1600 horizontal spread and 500 vertical spread"
-SpreadType_Static_Wide,"An unchanged spawn area size of 3200 horizontal spread and 1000 vertical spread"
 TargetLifeCycle_Header,"Target Life Cycle"
 TLC_Spawn_Header,"Target Spawning"
 TLC_Activation_Header,"Target Activation"
 TLC_Deactivation_Header,"Target Deactivation"
 TLC_Destruction_Header,"Target Destruction"
-SpawnBeatDelay,"Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time."
-MaximumTargetLifespan,"How long the target will remain activated before either being shot by the player, or deactivated on its own."
-TargetSpawnCooldown,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
-DamageType,"The type of damage the player applies to a target to receive score. Hit based damage requires clicking on a target to apply damage, while tracking requires the crosshair to be on the target, applying damage every tick."
-MaxTargetHealth,"The total health pool of one target. If you want targets to survive more than one shot, increase this value. Also make sure that the Target Deactivation Conditions only has On Health Reached Zero, and Target Destruction Conditions only has On Health Reached Zero or OnDeactivation"
-ExpirationHealthPenalty,"The amount of damage the target takes if it expires after Maximum Target Lifespan time. "
 TLC_Spawn_1,"Targets can either be spawned before the game mode starts (for persistant targets that aren't permanantly destroyed), or be spawned during the game mode."
 TLC_Spawn_2,"The number of targets spawned can be controlled using ""Number of Targets to Spawn Upfront"" and ""Number of Targets to Spawn at Runtime""."
 TLC_Activation_1,"A target is considered to be activated when it can be damaged. It will be activated until any Deactivation Conditions are met."
 TLC_Activation_2,"A target is always activated in response to the AudioAnalyzer. It cannot be activated again until it is deactivated."
-TargetActivationSelectionPolicy,"Random chooses a random valid location within the spawn area, while bordering only chooses locations directly beside targets that were most recently activated. Bordering only is really only meant to be used with Grid-based Target Distribution Policy."
 TLC_Activation_Response_Header,"Activation Response"
 TLC_Activation_Response_1,"An activation response describes what a target does when it is activated. Multiple can be selected."
 TLC_Activation_Response_2,"Most of the time, you will want ""Remove Immunity"" selected if immunity is applied on spawn."
