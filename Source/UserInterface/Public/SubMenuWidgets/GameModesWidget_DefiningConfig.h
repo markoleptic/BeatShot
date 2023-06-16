@@ -25,9 +25,11 @@ class USERINTERFACE_API UGameModesWidget_DefiningConfig : public UBSSettingCateg
 	friend class UGameModesWidget;
 	virtual void NativeConstruct() override;
 	virtual void InitSettingCategoryWidget() override;
+	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override { return GameModeDataAsset.Get(); }
 	
 public:
 	void InitializeDefiningConfig(const FBS_DefiningConfig& InDefiningConfig, const EBaseGameMode& BaseGameMode);
+	
 	FBS_DefiningConfig GetDefiningConfig() const;
 
 	/* Broadcast when a game mode selection change has occurred */
@@ -43,7 +45,9 @@ public:
 	void PopulateGameModeNameComboBoxAfterSave();
 
 protected:
-
+	UPROPERTY(EditDefaultsOnly, Category = "Custom Game Modes")
+	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | General")
 	UBSHorizontalBox* BSBox_GameModeName;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | General")

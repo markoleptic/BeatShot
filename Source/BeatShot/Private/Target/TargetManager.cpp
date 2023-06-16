@@ -290,24 +290,19 @@ bool ATargetManager::ActivateTarget(ASphereTarget* InTarget) const
 
 void ATargetManager::HandleRuntimeSpawnAndActivation()
 {
-	// Don't spawn a target if it can't be activated
-	if (BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce != -1)
-	{
-		if (SpawnPointManager->GetActivatedSpawnPoints().Num() >= BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce)
-		{
-			return;
-		}
-	}
-	
 	const int32 NumAllowedToSpawn = GetNumberOfRuntimeTargetsToSpawn();
 	for (int i = 0; i < NumAllowedToSpawn; i++)
 	{
-		if (ASphereTarget* SpawnedTarget = SpawnTarget(SpawnPoint))
+		if (BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce == -1 ||
+			SpawnPointManager->GetActivatedSpawnPoints().Num() < BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce)
 		{
-			if (ActivateTarget(SpawnedTarget))
+			if (ASphereTarget* SpawnedTarget = SpawnTarget(SpawnPoint))
 			{
-				// Get new SpawnPoint
-				FindNextTargetProperties();
+				if (ActivateTarget(SpawnedTarget))
+				{
+					// Get new SpawnPoint
+					FindNextTargetProperties();
+				}
 			}
 		}
 	}
@@ -316,7 +311,15 @@ void ATargetManager::HandleRuntimeSpawnAndActivation()
 int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
 {
 	// Depends on: MaxNumTargetsAtOnce, NumRuntimeTargetsToSpawn, ManagedTargets
+	
 	int32 NumAllowedToSpawn = 1;
+
+	// Set default value to number of runtime targets to spawn
+	if (BSConfig.TargetConfig.NumRuntimeTargetsToSpawn != -1)
+	{
+		NumAllowedToSpawn = BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
+	}
+	
 	if (BSConfig.TargetConfig.MaxNumTargetsAtOnce != -1)
 	{
 		NumAllowedToSpawn = BSConfig.TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();

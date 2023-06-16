@@ -254,7 +254,9 @@ enum class ETargetDeactivationCondition : uint8
 	/** Target is deactivated when it receives any damage from the player */
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
 	/** Target is deactivated after its damageable window closes */
-	OnExpiration UMETA(DisplayName="On Expiration")
+	OnExpiration UMETA(DisplayName="On Expiration"),
+	/** DEPRECATED */
+	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant, ETargetDeactivationCondition::OnExpiration);
 
@@ -324,17 +326,16 @@ enum class ETargetDeactivationResponse : uint8
 	PlayExplosionEffect UMETA(DisplayName="Play Explosion Effect"),
 	/** Destroy the target permanently */
 	Destroy UMETA(DisplayName="Destroy"),
-
-	// NOT USED CURRENTLY
-
-	/** Reset the color of the target to the inactive color */
+	/** DEPRECATED */
 	ResetColorToStartColor UMETA(DisplayName="Reset Color To Start Color"),
-	/** Temporarily hide the target until reactivated */
+	/** DEPRECATED */
 	Hide UMETA(DisplayName="Hide"),
-	/** If a moving target, the direction is changed */
+	/** DEPRECATED */
 	ChangeDirection UMETA(DisplayName="Change Direction"),
-	/** If a moving target, the velocity of the target is changed */
+	/** DEPRECATED */
 	ChangeVelocity UMETA(DisplayName="Change Velocity"),
+	/** DEPRECATED */
+	ChangeScale UMETA(DisplayName="Change Scale"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::Destroy);
 
@@ -350,5 +351,3 @@ enum class ETargetActivationPolicy : uint8
 	DoNotInterrupt UMETA(DisplayName="Do Not Interrupt"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationPolicy, ETargetActivationPolicy::Interrupt, ETargetActivationPolicy::DoNotInterrupt);*/
-
-// TODO: MovingTargetHandlingPolicy? something to specify how to choose a new moving direction*/

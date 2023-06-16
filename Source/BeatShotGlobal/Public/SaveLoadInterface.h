@@ -5,6 +5,7 @@
 #include "GlobalStructs.h"
 #include "SaveLoadInterface.generated.h"
 
+class UBSGameModeDataAsset;
 /** Broadcast when game specific settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayerSettings_Game&, GameSettings);
 
@@ -36,6 +37,9 @@ class BEATSHOTGLOBAL_API ISaveLoadInterface
 	GENERATED_BODY()
 
 public:
+
+	/** Returns the GameModeDataAsset that contains all default/preset game modes. Expected to be overriden */
+	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const { return nullptr; }
 	
 	/** Loads all player settings from slot */
 	virtual FPlayerSettings LoadPlayerSettings() const;
@@ -70,8 +74,11 @@ public:
 	/** Removes all custom game modes and saves to slot */
 	virtual void RemoveAllCustomGameModes();
 
-	/** Returns the FBSConfig corresponding to the input GameModeName string */
-	FBSConfig FindPresetGameMode(const FString& GameModeName) const;
+	/** Returns the FBSConfig corresponding to the input GameModeName string and difficulty */
+	FBSConfig FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const;
+
+	/** Returns the FBSConfig corresponding to the input BaseGameMode and difficulty */
+	FBSConfig FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const;
 
 	/** Returns the FBSConfig corresponding to the input GameModeName string */
 	FBSConfig FindCustomGameMode(const FString& CustomGameModeName) const;

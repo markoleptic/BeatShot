@@ -26,10 +26,48 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 		TargetSpeedConstrained = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
 		TargetsToActivateAtOnce = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
 		GridConfig = CreateWidget<UGameModesWidget_GridConfig>(this, GridConfigClass);
-	
-		int32 NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
+		
+		int32 NewIndex;
+		
+		#if UE_BUILD_SHIPPING
+		TArray<UWidget*> Widgets = MainContainer->GetAllChildren();
+		NewIndex = Widgets.Find(BSBox_LifetimeTargetScalePolicy);
+		if (NewIndex != INDEX_NONE)
+		{
+			Widgets.EmplaceAt(NewIndex - 1, Cast<UWidget>(TargetScaleConstrained.Get()));
+		}
+
+		NewIndex = Widgets.Find(BSBox_MoveTargets);
+		if (NewIndex != INDEX_NONE)
+		{
+			Widgets.EmplaceAt(NewIndex + 1, Cast<UWidget>(TargetSpeedConstrained.Get()));
+		}
+
+		NewIndex = Widgets.Find(BSBox_MaxNumActivatedTargetsAtOnce);
+		if (NewIndex != INDEX_NONE)
+		{
+			Widgets.EmplaceAt(NewIndex + 1, Cast<UWidget>(TargetsToActivateAtOnce.Get()));
+		}
+
+		NewIndex = Widgets.Find(BSBox_TargetDistributionPolicy);
+		if (NewIndex != INDEX_NONE)
+		{
+			Widgets.EmplaceAt(NewIndex + 1, Cast<UWidget>(GridConfig.Get()));
+		}
+
+		MainContainer->ClearChildren();
+		
+		for (UWidget* Widget : Widgets)
+		{
+			MainContainer->AddChild(Widget);
+		}
+		
+		#endif
+		
+		#if WITH_EDITOR
+		NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetScaleConstrained.Get()));
-	
+		
 		NewIndex = MainContainer->GetChildIndex(BSBox_MoveTargets) + 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetSpeedConstrained.Get()));
 
@@ -38,6 +76,7 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 
 		NewIndex = MainContainer->GetChildIndex(BSBox_TargetDistributionPolicy) + 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(GridConfig.Get()));
+		#endif
 	}
 	return Super::RebuildWidget();
 }

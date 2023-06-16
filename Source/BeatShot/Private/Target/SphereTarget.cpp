@@ -382,14 +382,6 @@ void ASphereTarget::HandleDeactivationResponses(const bool bExpired)
 	{
 		SetSphereColor(Config.InactiveTargetColor);
 	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetColorToStartColor))
-	{
-		SetSphereColor(Config.StartColor);
-	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Hide))
-	{
-		// TODO: Hide target
-	}
 }
 
 void ASphereTarget::DamageSelf(const float Damage)

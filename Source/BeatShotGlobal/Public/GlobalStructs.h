@@ -134,25 +134,25 @@ struct FCommonScoreInfo
 
 /** Small Struct containing the information needed to distinguish between unique default game modes and unique custom game modes.
  *  This info persists across different songs, which is why it is separate from FPlayerScore */
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBS_DefiningConfig
 {
 	GENERATED_BODY()
 
 	/** The type of game mode: either preset or custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EGameModeType GameModeType;
 
 	/** The base game mode this game mode is based off of */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EBaseGameMode BaseGameMode;
 
 	/** Custom game mode name if custom, otherwise empty string */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString CustomGameModeName;
 
 	/** Default game mode difficulties, or none if custom */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EGameModeDifficulty Difficulty;
 
 	FBS_DefiningConfig()
@@ -176,46 +176,55 @@ struct FBS_DefiningConfig
 		/* Preset vs Custom */
 		if (GameModeType == Other.GameModeType)
 		{
-			/* Custom game modes don't depend on difficulty */
-			if (GameModeType == EGameModeType::Custom && CustomGameModeName.Equals(Other.CustomGameModeName, ESearchCase::IgnoreCase))
+			if (GameModeType == EGameModeType::Custom)
 			{
-				return true;
+				/* Custom game modes don't depend on difficulty, only CustomGameModeName */
+				if (CustomGameModeName.Equals(Other.CustomGameModeName, ESearchCase::IgnoreCase))
+				{
+					return true;
+				}
+				return false;
 			}
-			/* Default game modes must match the difficulty to be considered equal */
-			if (GameModeType == EGameModeType::Preset && Difficulty == Other.Difficulty)
+			if (GameModeType == EGameModeType::Preset)
 			{
-				return true;
+				/* Preset game modes must match the BaseGameMode and difficulty to be considered equal */
+				if (BaseGameMode == Other.BaseGameMode && Difficulty == Other.Difficulty)
+				{
+					return true;
+				}
+				return false;
 			}
 		}
 		return false;
 	}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& Config)
+	{
+		return HashCombine(GetTypeHash(Config.GameModeType), HashCombine(GetTypeHash(Config.BaseGameMode), HashCombine(GetTypeHash(Config.CustomGameModeName), GetTypeHash(Config.Difficulty))));
+		//return FCrc::MemCrc32(&Config, sizeof(FBS_DefiningConfig));
+	}
 };
 
-FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& Config)
-{
-	return FCrc::MemCrc32(&Config, sizeof(FBS_DefiningConfig));
-}
-
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBS_AIConfig
 {
 	GENERATED_BODY()
 
 	/** Whether or not to enable the reinforcement learning agent to handle target spawning */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bEnableReinforcementLearning;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Alpha;
 
 	/** The exploration/exploitation balance factor. A value = 1 will result in only choosing random values (explore),
 	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Epsilon;
 
 	/** Discount factor, or how much to value future rewards vs immediate rewards */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Gamma;
 
 	FBS_AIConfig()
@@ -227,25 +236,25 @@ struct FBS_AIConfig
 	}
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBS_GridConfig
 {
 	GENERATED_BODY()
 
 	/** The number of horizontal grid targets*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumHorizontalGridTargets;
 
 	/** The number of vertical grid targets*/
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumVerticalGridTargets;
 
 	/** The space between grid targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector2D GridSpacing;
 
 	/** Number of grid target visible at any one time */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumGridTargetsVisibleAtOnce;
 
 	FBS_GridConfig()
@@ -257,40 +266,40 @@ struct FBS_GridConfig
 	}
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBS_AudioConfig
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString SongTitle;
 
 	/** Whether or not to playback streamed audio */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bPlaybackAudio;
 
 	/** The audio format type used for the AudioAnalyzer */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EAudioFormat AudioFormat;
 
 	/** The input audio device */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString InAudioDevice;
 
 	/** The output audio device */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString OutAudioDevice;
 
 	/** The path to the song file */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FString SongPath;
 
 	/** Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float PlayerDelay;
 
 	/** Length of song */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float SongLength;
 
 	FBS_AudioConfig()
@@ -306,7 +315,7 @@ struct FBS_AudioConfig
 	}
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBS_TargetConfig
 {
 	GENERATED_BODY()
@@ -608,29 +617,29 @@ struct FBS_TargetConfig
 };
 
 /** Struct representing a game mode */
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBSConfig
 {
 	GENERATED_BODY()
 
 	/** The defining config for a game mode, containing the names, base, difficulty */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Defining Config")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	FBS_DefiningConfig DefiningConfig;
 
 	/** Contains info for the target spawner about how to handle the RLAgent */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | AI")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	FBS_AIConfig AIConfig;
 
 	/** Contains info for the AudioAnalyzer and PlayerHUD */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | Audio")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	FBS_AudioConfig AudioConfig;
 
 	/** Contains info for the target spawner for BeatGrid specific game modes */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Game Properties | BeatGrid")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	FBS_GridConfig GridConfig;
 
 	/** Contains info for the target spawner about how to spawn the targets, as well as info to give the targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	FBS_TargetConfig TargetConfig;
 
 	FORCEINLINE bool operator==(const FBSConfig& Other) const
@@ -1106,18 +1115,6 @@ struct FBSConfig
 		/* SpawnBeatDelay is the same as PlayerDelay */
 		Config.AudioConfig.PlayerDelay = Config.TargetConfig.SpawnBeatDelay;
 		return Config;
-	}
-
-	/** Returns an array of all preset game modes, all set to normal difficulty */
-	static TArray<FBSConfig> GetPresetGameModes()
-	{
-		TArray<FBSConfig> DefaultModes;
-		DefaultModes.Add(MakePresetConfig(EBaseGameMode::BeatGrid, EGameModeDifficulty::Normal));
-		DefaultModes.Add(MakePresetConfig(EBaseGameMode::BeatTrack, EGameModeDifficulty::Normal));
-		DefaultModes.Add(MakePresetConfig(EBaseGameMode::SingleBeat, EGameModeDifficulty::Normal));
-		DefaultModes.Add(MakePresetConfig(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal));
-		DefaultModes.Add(MakePresetConfig(EBaseGameMode::ChargedBeatTrack, EGameModeDifficulty::Normal));
-		return DefaultModes;
 	}
 
 	/** Returns the defining config for a preset base game mode and difficulty */

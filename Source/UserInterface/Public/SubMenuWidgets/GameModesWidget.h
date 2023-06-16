@@ -35,6 +35,7 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
+	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override { return GameModeDataAsset.Get(); }
 
 public:
 	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
@@ -45,6 +46,8 @@ public:
 	FOnGameModeStateChanged OnGameModeStateChanged;
 
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Custom Game Modes")
+	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | AudioSelect")
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | AudioSelect")

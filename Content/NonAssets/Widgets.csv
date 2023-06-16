@@ -55,56 +55,6 @@ ConfirmVideoSettingsPopupButton2,Revert
 ConfirmVideoSettingsPopupMessage,Settings will be reverted if not confirmed in 10 seconds
 ConfirmVideoSettingsPopupTitle,Confirm Video Settings?
 CountdownText,Click Anywhere to Begin
-FAQ_BaseGameMode,"There are four base game modes: MultiBeat, SingleBeat, BeatTrack, and BeatGrid. A custom game mode should derive from one of these."
-FAQ_BeatGrid_Info_1,"Spawns a static grid that activates individual targets, which allows them to be damaged for a brief period of time before returning to inactive."
-FAQ_BeatGrid_Info_2,"Only activates adjacent targets by default, but this setting can be changed."
-FAQ_BeatTrack_Info_1,Only spawns one target that cannot be destroyed by the player. The player hovers the crosshair over the target to gain score.
-FAQ_BeatTrack_Info_2,The target will always prefer to change direction away from the edges of the spawn area.
-FAQ_CompletelyRandomTargets,Adjacent-only will only activate a target that was adjacent to a previously activated target. Completely random will choose a target in the grid at random.
-FAQ_ConstantTargetSize,The scale/size of the target will remain constant throughout the game mode.
-FAQ_ConstantTrackingSpeed,The speed of the target will remain constant throughout the game mode.
-FAQ_CustomGameModeName,"What your new game mode will be saved as. Can't be the name of a preset game mode, but you can override custom game modes you create."
-FAQ_DynamicTargetSize,"Variable target sizing. Gradually adjusts the target scale from Max Target Scale to Min Target Scale, based on consecutive targets hit."
-FAQ_EvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
-FAQ_ForwardSpread,How far the targets will move forward by the end of their lifespan.
-FAQ_GameModeDifficulty,Preset Difficulties
-FAQ_GameModeTemplate,The preset game modes or user-created saved game modes.
-FAQ_HeadshotOnly,Targets will only spawn at headshot height.
-FAQ_HorizontalSpread,"The width (left-right) of the possible spawn area. 3200 is from the left wall to the right wall, with a small gap on each side so the target doesn't clip."
-FAQ_MaximumTargetLifespan,"How long the target will live, even if not shot. This doesn't apply to BeatTrack."
-FAQ_MaxTargetScale,"The maximum scale/size of the target. If using Dynamic Target Scaling, this will be the starting scale."
-FAQ_MaxTrackingSpeed,The maximum speed at which the tracking target will travel before changing directions.
-FAQ_MinDistanceBetweenTargets,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
-FAQ_MinTargetScale,"The minimum scale/size of the target. If using Dynamic Target Scaling, this will be the size at which the target gradually shrinks to."
-FAQ_MinTrackingSpeed,The minimum speed at which the tracking target will travel before changing directions.
-FAQ_MoveTargetsForward,Targets will move forward from their spawn location. The end location depends on what is input for Forward Spread. The speed at which they reach the Forward Spread depends on the Maximum Target Lifespan
-FAQ_MultiBeat_Info_1,Spawns targets continuously whether or not you're destroying them.
-FAQ_MultiBeat_Info_2,The random spawning system will spawn the target in the exact middle more frequently than other locations.
-FAQ_NumberOfTargets,How many targets are in the grid.
-FAQ_Scoring_CustomGameModes_1,Scores for custom game modes are specific to each custom game mode name and each song.
-FAQ_Scoring_General_Content_1,"""Specific to each song"" means that the game considers a song equal to another if it has the same Song Title. If you care about tracking your consistency for a given song, make sure to always use the same song title."
-FAQ_Scoring_General_Content_2,"When playing a song from a file, the song title is saved from metadata if possible, but otherwise uses the filename."
-FAQ_Scoring_General_Header,General Scoring Information
-FAQ_Scoring_MultiTarget_Content_1,"Players recieve the maximum score for destroying the target +- 0.05s from the Spawn Beat Delay. The score recieved drops off linearly from the peak based on the time away from the peak color, down a minimum of half of the max score."
-FAQ_Scoring_MultiTarget_Content_2,"The theoretical maximum score for any game mode in this category is 100,000."
-FAQ_Scoring_MultiTarget_Content_3,The maximum score for any given target is based on dividing the maximum total score by how many targets could spawn during the length of song (Maximum total score divided by (Song Length divided by Target Spawn Cooldown)).
-FAQ_Scoring_MultiTarget_Header,"Game modes that spawn more than one target (MultiBeat, SingleBeat, BeatGrid):"
-FAQ_Scoring_SingleTarget_Content_1,BeatTrack game modes grant one point of score per game tick that the player's crosshair is on the target.
-FAQ_Scoring_SingleTarget_Content_2,BeatTrack accuracy is total server ticks with crosshair on target divided by total server ticks.
-FAQ_Scoring_SingleTarget_Header,BeatTrack game modes:
-FAQ_Scoring_StandardGameModes_1,"Scores for standard game modes are specific to each song, each difficulty, and each game mode. They are not specific to each spread type, but that might change in the future."
-FAQ_SingleBeat_Info_1,"Only spawns one target at a time, and only spawns new target if target recieved damage or maximum lifespan expired."
-FAQ_SingleBeat_Info_2,Every other target will spawn in the center of the spawn area.
-FAQ_SpawnBeatDelay,Time between initial spawning of the target (white) and the beat (bright green). This is basically anticipated reaction time.
-FAQ_SpreadType,"There are two types of spread that control how far the targets can spawn from the center of the spawn area. Dynamic spread lowers the spawn area based on consecutive targets hit, while static spread does not change the spawn area."
-FAQ_SpreadType_Dynamic,"Variable-sized spawn area. Gradually adjusts the horizontal/vertical spread from their maximums to a minimum of half, based on consecutive targets hit."
-FAQ_SpreadType_Dynamic_EdgeOnly,Dynamic spread type where only targets only spawn on the edge/border of the variable-sized spawn area. Default for SingleBeat.
-FAQ_SpreadType_Dynamic_Random,Dynamic spread type where targets are spawned anywhere within the variable-sized spawn area. Default for MultiBeat.
-FAQ_SpreadType_Static,The spawn area size doesn't change.
-FAQ_SpreadType_Static_Narrow,An unchanged spawn area size of 1600 horizontal spread and 500 vertical spread
-FAQ_SpreadType_Static_Wide,An unchanged spawn area size of 3200 horizontal spread and 1000 vertical spread
-FAQ_TargetSpawnCooldown,"Sets the minimum time between target spawns. This doesn't guarantee a target will spawn at this rate, only that it is possible if there are beats."
-FAQ_VerticalSpread,"The height (up-down) of the possible spawn area. 1000 is most of the height of the spawn wall, with small gaps on the top and bottom so the target doesn't clip."
 Game_CombatText,Combat Text
 Game_CombatTextFrequency,Streak Combat Text Frequency
 Game_CombatTextShow,Show Streak Combat Text

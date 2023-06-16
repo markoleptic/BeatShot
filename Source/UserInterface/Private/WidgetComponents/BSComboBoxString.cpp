@@ -78,10 +78,12 @@ void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, c
 	}
 }
 
+#if WITH_EDITOR
 const FText UBSComboBoxString::GetPaletteCategory()
 {
 	return Super::GetPaletteCategory();
 }
+#endif
 
 UBSComboBoxString::UBSComboBoxString()
 {

@@ -47,11 +47,12 @@ void UGameModesWidget::NativeConstruct()
 		Button_RemoveAllCustom->SetIsEnabled(false);
 	}
 	
-	/* Default Game Mode widgets */
+	// Difficulty buttons
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
 	Button_HardDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Hard), Button_DeathDifficulty);
 	Button_DeathDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Death), Button_NormalDifficulty);
 
+	// Difficulty buttons
 	Button_BeatGrid->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatGrid), Button_BeatTrack);
 	Button_BeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatTrack), Button_MultiBeat);
 	Button_MultiBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::MultiBeat), Button_SingleBeat);
@@ -73,31 +74,7 @@ void UGameModesWidget::NativeConstruct()
 	MenuButton_DefaultGameModes->SetActive();
 	
 	/* Setup default custom game mode options to MultiBeat */
-	const FBSConfig DefaultMultiBeatMode = FBSConfig::GetPresetGameModes()[3];
-	
-	DefiningConfig->ComboBox_GameModeName->ClearOptions();
-	DefiningConfig->ComboBox_BaseGameMode->ClearOptions();
-
-	/* Add DefaultModes to GameModeName ComboBox and BaseGameMode ComboBox */
-	for (const FBSConfig& GameMode : FBSConfig::GetPresetGameModes())
-	{
-		const FString GameModeName = UEnum::GetDisplayValueAsText(GameMode.DefiningConfig.BaseGameMode).ToString();
-		DefiningConfig->ComboBox_GameModeName->AddOption(GameModeName);
-		DefiningConfig->ComboBox_BaseGameMode->AddOption(GameModeName);
-	}
-
-	/* Add Custom Game Modes to GameModeName ComboBox */
-	for (const FBSConfig& GameMode : LoadCustomGameModes())
-	{
-		DefiningConfig->ComboBox_GameModeName->AddOption(GameMode.DefiningConfig.CustomGameModeName);
-	}
-
-	/* Add difficulties to GameModeDifficulty ComboBox */
-	for (const EGameModeDifficulty& Mode : TEnumRange<EGameModeDifficulty>())
-	{
-		DefiningConfig->ComboBox_GameModeDifficulty->AddOption(UEnum::GetDisplayValueAsText(Mode).ToString());
-	}
-	
+	const FBSConfig DefaultMultiBeatMode = FindPresetGameMode("MultiBeat", EGameModeDifficulty::Normal);
 	PopulateGameModeOptions(DefaultMultiBeatMode);
 }
 
@@ -136,7 +113,7 @@ void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* GameMode
 {
 	PresetSelection_PresetGameMode = static_cast<EBaseGameMode>(GameModeButton->GetEnumValue());
 	DefiningConfig->ComboBox_GameModeName->SetSelectedOption(UEnum::GetDisplayValueAsText(PresetSelection_PresetGameMode).ToString());
-	PopulateGameModeOptions(FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, EGameModeDifficulty::Normal));
+	PopulateGameModeOptions(FindPresetGameMode(PresetSelection_PresetGameMode, EGameModeDifficulty::Normal));
 
 	Button_NormalDifficulty->SetInActive();
 	Button_HardDifficulty->SetInActive();
@@ -151,8 +128,7 @@ void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* GameMode
 void UGameModesWidget::OnButtonClicked_Difficulty(const UBSButton* GameModeButton)
 {
 	PresetSelection_Difficulty = static_cast<EGameModeDifficulty>(GameModeButton->GetEnumValue());
-	const FBSConfig SelectedGameMode = FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty);
-	PopulateGameModeOptions(SelectedGameMode);
+	PopulateGameModeOptions(FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty));
 	Button_PlayFromStandard->SetIsEnabled(true);
 }
 
@@ -426,7 +402,7 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 		}
 		if (bStartFromDefaultGameMode)
 		{
-			BSConfig = FBSConfig::MakePresetConfig(PresetSelection_PresetGameMode, PresetSelection_Difficulty);
+			BSConfig = FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty);
 		}
 		else
 		{
@@ -446,7 +422,6 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 			BSConfig.AudioConfig.PlayerDelay = 0.f;
 			BSConfig.TargetConfig.SpawnBeatDelay = 0.f;
 		}
-
 		
 		GameModeTransitionState.BSConfig = BSConfig;
 		OnGameModeStateChanged.Broadcast(GameModeTransitionState);

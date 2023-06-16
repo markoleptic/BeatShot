@@ -1,6 +1,8 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "SaveLoadInterface.h"
+
+#include "BSGameModeDataAsset.h"
 #include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerScore.h"
 #include "SaveGamePlayerSettings.h"
@@ -143,15 +145,46 @@ void ISaveLoadInterface::RemoveAllCustomGameModes()
 	}
 }
 
-FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName) const
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const
 {
-	for (const FBSConfig& Mode : FBSConfig::GetPresetGameModes())
+	EBaseGameMode BaseGameMode = EBaseGameMode::None;
+	
+	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
 	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.BaseGameMode).ToString()))
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
 		{
-			return Mode;
+			BaseGameMode = Preset;
+			break;
 		}
 	}
+
+	if (BaseGameMode != EBaseGameMode::None)
+	{
+		const FBS_DefiningConfig DefiningConfig = FBSConfig::MakePresetConfig(BaseGameMode, Difficulty).DefiningConfig;
+		TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
+		FBSConfig* Found = Map.Find(DefiningConfig);
+		if (Found)
+		{
+			return *Found;
+		}
+	}
+	
+	return FBSConfig();
+}
+
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const
+{
+	if (BaseGameMode != EBaseGameMode::None)
+	{
+		const FBS_DefiningConfig DefiningConfig = FBSConfig::MakePresetConfig(BaseGameMode, Difficulty).DefiningConfig;
+		TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
+		FBSConfig* Found = Map.Find(DefiningConfig);
+		if (Found)
+		{
+			return *Found;
+		}
+	}
+	
 	return FBSConfig();
 }
 
@@ -169,9 +202,9 @@ FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeNa
 
 bool ISaveLoadInterface::IsPresetGameMode(const FString& GameModeName) const
 {
-	for (const FBSConfig& Mode : FBSConfig::GetPresetGameModes())
+	for (const EPresetGameMode& Preset : TEnumRange<EPresetGameMode>())
 	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Mode.DefiningConfig.BaseGameMode).ToString(), ESearchCase::IgnoreCase))
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
 		{
 			return true;
 		}
