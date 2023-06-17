@@ -307,3 +307,9 @@ WelcomeMessage,Welcome to
 WindowMode_Fullscreen,Fullscreen
 WindowMode_FullscreenWindowed,Fullscreen Windowed
 WindowMode_Windowed,Windowed
+GM_UseBatchSpawning,Batch Spawning
+GM_AllowSpawnWithoutActivation,Allow Spawn Without Activation
+GM_ClusterBeat,Cluster Beat
+GM_ClusterBeat_Info,"Multiple targets spawn at once, each activated separately."
+GM_ChargedBeatTrack,Charged Beat Track
+GM_ChargedBeatTrack_Info,Multiple moving targets that require 2+ shots to destroy.

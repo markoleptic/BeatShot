@@ -187,6 +187,8 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 	}
 }
 
+// Runtime target spawning and activation
+
 void ATargetManager::OnAudioAnalyzerBeat()
 {
 	if (!ShouldSpawn) return;
@@ -198,8 +200,9 @@ void ATargetManager::OnAudioAnalyzerBeat()
 		FindNextTargetProperties();
 		return;
 	}
-	
-	TryActivateExistingTargets();
+
+	// Handles activating targets that were previously spawned, but are inactive
+	HandleActivateExistingTargets();
 	
 	// Handles spawning (and activating) RuntimeOnly targets
 	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
@@ -291,18 +294,120 @@ bool ATargetManager::ActivateTarget(ASphereTarget* InTarget) const
 void ATargetManager::HandleRuntimeSpawnAndActivation()
 {
 	const int32 NumAllowedToSpawn = GetNumberOfRuntimeTargetsToSpawn();
+	int32 NumToActivate = GetNumberOfTargetsToActivate();
 	for (int i = 0; i < NumAllowedToSpawn; i++)
 	{
-		if (BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce == -1 ||
-			SpawnPointManager->GetActivatedSpawnPoints().Num() < BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce)
+		if (BSConfig.TargetConfig.bAllowSpawnWithoutActivation)
 		{
-			if (ASphereTarget* SpawnedTarget = SpawnTarget(SpawnPoint))
+			// TODO: Ugly temporary fix
+			if (SpawnPoint->IsCurrentlyManaged())
 			{
-				if (ActivateTarget(SpawnedTarget))
+				FindNextTargetProperties();
+			}
+			// TODO: Ugly temporary fix
+			if (!SpawnPoint->IsCurrentlyManaged())
+			{
+				if (ASphereTarget* SpawnedTarget = SpawnTarget(SpawnPoint))
 				{
+					if (NumToActivate > 0)
+					{
+						ActivateTarget(SpawnedTarget);
+						NumToActivate--;
+					}
 					// Get new SpawnPoint
 					FindNextTargetProperties();
 				}
+			}
+		}
+		else
+		{
+			if (NumToActivate > 0)
+			{
+				if (ASphereTarget* SpawnedTarget = SpawnTarget(SpawnPoint))
+				{
+					if (ActivateTarget(SpawnedTarget))
+					{
+						// Get new SpawnPoint
+						FindNextTargetProperties();
+					}
+				}
+			}
+		}
+	}
+
+	// TODO: Still need to handle activating targets without spawning one? or maybe HandleActivateExistingTargets will take care of it...
+	// TODO: Without being activated, the spawned target won't show up when finding next SpawnPoint.
+	// TODO: Might need to add a parameter to specify including deactivated managed points
+}
+
+void ATargetManager::HandleActivateExistingTargets() 
+{
+	if (GetManagedTargets().IsEmpty())
+	{
+		return;
+	}
+	
+	// Persistant Targets are the only type that can always receive continuous activation
+	if (BSConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
+	{
+		HandlePermanentlyActiveTargetActivation();
+	}
+	else
+	{
+		HandleTemporaryTargetActivation();
+	}
+}
+
+void ATargetManager::HandlePermanentlyActiveTargetActivation() const
+{
+	// Handle initial activation
+	TArray<USpawnPoint*> SpawnPoints = SpawnPointManager->GetActivatedSpawnPoints();
+	if (SpawnPoints.IsEmpty())
+	{
+		SpawnPoints = SpawnPointManager->GetDeactivatedManagedPoints();
+	}
+	
+	for (const USpawnPoint* Point : SpawnPoints)
+	{
+		if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
+		{
+			ActivateTarget(Target);
+		}
+	}
+}
+
+void ATargetManager::HandleTemporaryTargetActivation()
+{
+	// Check to see if theres any targets available to activate
+	if (SpawnPointManager->GetDeactivatedManagedPoints().IsEmpty())
+	{
+		return;
+	}
+	
+	const int32 NumToActivate = GetNumberOfTargetsToActivate();
+	
+	// Points that are referencing managed targets, but are not activated
+	for (int i = 0; i < NumToActivate; i++)
+	{
+		if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
+		{
+			if (SpawnPoint)
+			{
+				if (ASphereTarget* Target = FindManagedTargetByGuid(SpawnPoint->GetGuid()))
+				{
+					if (ActivateTarget(Target))
+					{
+						FindNextTargetProperties();
+					}
+				}
+			}
+		}
+		// TODO: Maybe this should just be moved to GetNextSpawnPoint
+		else if (const USpawnPoint* Point = SpawnPointManager->FindOldestDeactivatedManagedPoint())
+		{
+			if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
+			{
+				ActivateTarget(Target);
 			}
 		}
 	}
@@ -310,28 +415,36 @@ void ATargetManager::HandleRuntimeSpawnAndActivation()
 
 int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
 {
-	// Depends on: MaxNumTargetsAtOnce, NumRuntimeTargetsToSpawn, ManagedTargets
-	
-	int32 NumAllowedToSpawn = 1;
+	// Depends on: MaxNumTargetsAtOnce, NumRuntimeTargetsToSpawn, ManagedTargets, bUseBatchSpawning
 
-	// Set default value to number of runtime targets to spawn
-	if (BSConfig.TargetConfig.NumRuntimeTargetsToSpawn != -1)
+	// Batch spawning waits until there are no more Activated and Deactivated target(s)
+	if (BSConfig.TargetConfig.bUseBatchSpawning)
 	{
-		NumAllowedToSpawn = BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
-	}
-	
-	if (BSConfig.TargetConfig.MaxNumTargetsAtOnce != -1)
-	{
-		NumAllowedToSpawn = BSConfig.TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();
-		if (BSConfig.TargetConfig.NumRuntimeTargetsToSpawn != -1)
+		if (GetManagedTargets().Num() > 0 ||
+			SpawnPointManager->GetActivatedSpawnPoints().Num() > 0 ||
+			SpawnPointManager->GetDeactivatedManagedPoints().Num() > 0)
 		{
-			// Don't let NumAllowedToSpawn to exceed NumRuntimeTargetsToSpawn
-			if (NumAllowedToSpawn > BSConfig.TargetConfig.NumRuntimeTargetsToSpawn)
-			{
-				NumAllowedToSpawn = BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
-			}
+			return 0;
 		}
 	}
+
+	// Set default value to number of runtime targets to spawn to NumRuntimeTargetsToSpawn
+	int32 NumAllowedToSpawn = (BSConfig.TargetConfig.NumRuntimeTargetsToSpawn == -1) ? 1 : BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
+
+	// Return NumRuntimeTargetsToSpawn if no Max
+	if (BSConfig.TargetConfig.MaxNumTargetsAtOnce == -1)
+	{
+		return NumAllowedToSpawn;
+	}
+	
+	NumAllowedToSpawn = BSConfig.TargetConfig.MaxNumTargetsAtOnce - GetManagedTargets().Num();
+
+	// Don't let NumAllowedToSpawn exceed NumRuntimeTargetsToSpawn
+	if (NumAllowedToSpawn > BSConfig.TargetConfig.NumRuntimeTargetsToSpawn)
+	{
+		return BSConfig.TargetConfig.NumRuntimeTargetsToSpawn;
+	}
+	
 	return NumAllowedToSpawn;
 }
 
@@ -339,12 +452,6 @@ int32 ATargetManager::GetNumberOfTargetsToActivate() const
 {
 	// Depends on: MaxNumActivatedTargetsAtOnce, MinNumTargetsToActivateAtOnce, MaxNumTargetsToActivateAtOnce,
 	// DeactivatedManagedPoints, ActivatedSpawnPoints
-	
-	// Check to see if theres any targets available to activate
-	if (SpawnPointManager->GetDeactivatedManagedPoints().IsEmpty())
-	{
-		return 0;
-	}
 
 	int32 Min = BSConfig.TargetConfig.MinNumTargetsToActivateAtOnce;
 	int32 Max = BSConfig.TargetConfig.MaxNumTargetsToActivateAtOnce;
@@ -376,72 +483,6 @@ int32 ATargetManager::GetNumberOfTargetsToActivate() const
 	Min = Min > Max ? Max : Min;
 	
 	return FMath::RandRange(Min, Max);
-}
-
-void ATargetManager::TryActivateExistingTargets() 
-{
-	if (GetManagedTargets().IsEmpty())
-	{
-		return;
-	}
-	
-	if (BSConfig.TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
-	{
-		HandlePermanentlyActiveTargetActivation();
-	}
-	else
-	{
-		HandleTemporaryTargetActivation();
-	}
-}
-
-void ATargetManager::HandlePermanentlyActiveTargetActivation() const
-{
-	// Handle initial activation
-	TArray<USpawnPoint*> SpawnPoints = SpawnPointManager->GetActivatedSpawnPoints();
-	if (SpawnPoints.IsEmpty())
-	{
-		SpawnPoints = SpawnPointManager->GetDeactivatedManagedPoints();
-	}
-	
-	for (const USpawnPoint* Point : SpawnPoints)
-	{
-		if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
-		{
-			ActivateTarget(Target);
-		}
-	}
-}
-
-void ATargetManager::HandleTemporaryTargetActivation()
-{
-	const int32 NumToActivate = GetNumberOfTargetsToActivate();
-	
-	// Points that are referencing managed targets, but are not activated
-	for (int i = 0; i < NumToActivate; i++)
-	{
-		if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
-		{
-			if (SpawnPoint)
-			{
-				if (ASphereTarget* Target = FindManagedTargetByGuid(SpawnPoint->GetGuid()))
-				{
-					if (ActivateTarget(Target))
-					{
-						FindNextTargetProperties();
-					}
-				}
-			}
-		}
-		// TODO: Maybe this should just be moved to GetNextSpawnPoint
-		else if (const USpawnPoint* Point = SpawnPointManager->FindOldestDeactivatedManagedPoint())
-		{
-			if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetGuid()))
-			{
-				ActivateTarget(Target);
-			}
-		}
-	}
 }
 
 void ATargetManager::SpawnUpfrontOnlyTargets()
@@ -1002,17 +1043,18 @@ FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 	return FExtrema(FVector(GetBoxOrigin().X, MinY, MinZ), FVector(GetBoxOrigin().X, MaxY, MaxZ));
 }
 
-int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget, USpawnPoint* AssociatedSpawnPoint)
+int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget, const USpawnPoint* AssociatedSpawnPoint)
 {
+	SpawnPointManager->FlagSpawnPointAsManaged(AssociatedSpawnPoint->GetGuid());
 	TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets();
 	const int32 NewIndex = Targets.Add(TObjectPtr<ASphereTarget>(SpawnTarget));
-	AssociatedSpawnPoint->SetIsCurrentlyManaged(true);
 	ManagedTargets = Targets;
 	return NewIndex;
 }
 
 void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
+	SpawnPointManager->RemoveManagedFlagFromSpawnPoint(GuidToRemove);
 	const TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets().FilterByPredicate([&] (const TObjectPtr<ASphereTarget>& OtherTarget)
 	{
 		if (!OtherTarget)
@@ -1025,10 +1067,6 @@ void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 		}
 		return true;
 	});
-	if (USpawnPoint* AssociatedSpawnPoint = SpawnPointManager->FindSpawnPointFromGuid(GuidToRemove))
-	{
-		AssociatedSpawnPoint->SetIsCurrentlyManaged(false);
-	}
 	ManagedTargets = Targets;
 }
 

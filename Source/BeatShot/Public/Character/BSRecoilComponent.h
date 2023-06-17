@@ -45,6 +45,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	UCurveFloat* KickbackCurve;
 
+	/** Float curve that controls the intensity of the KickbackCurve */
+	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
+	UCurveFloat* KickbackIntensityCurve;
+
 	UPROPERTY(EditDefaultsOnly)
 	float CameraRecoilInterpSpeed = 4.f;
 	

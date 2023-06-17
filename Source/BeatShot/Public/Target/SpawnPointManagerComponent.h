@@ -216,47 +216,50 @@ public:
 
 	/** Sets the value of ChosenPoint to the output of GenerateRandomSubPoint */
 	void SetRandomChosenPoint();
+	
+	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction. */
+	/*TArray<EBorderingDirection> GetBorderingEdges(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;*/
+
+private:
+
+	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
+	static TArray<int32> FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
+
+	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
+	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
+	
+	/** Returns a random point within the area that this spawn points represents */
+	FVector GenerateRandomSubPoint(/*const TArray<EBorderingDirection>& BlockedDirections*/) const;
 
 	/** Flags this SpawnPoint as corresponding to a target being managed by TargetManager */
 	void SetIsCurrentlyManaged(const bool bSetIsCurrentlyManaged)
 	{
 		bIsCurrentlyManaged = bSetIsCurrentlyManaged;
 	}
-
-	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction. */
-	/*TArray<EBorderingDirection> GetBorderingEdges(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;*/
-
-private:
-	
-	/** Returns a random point within the area that this spawn points represents */
-	FVector GenerateRandomSubPoint(/*const TArray<EBorderingDirection>& BlockedDirections*/) const;
 	
 	/** Sets the activated state for this spawn point */
-	void SetIsActivated(const bool bSetIsActivated) { bIsActivated = bSetIsActivated; }
+	void SetIsActivated(const bool bSetIsActivated)
+	{
+		bIsActivated = bSetIsActivated;
+	}
 
+	/** Flags this SpawnPoint as recent, and records the time it was set as recent. If false, removes flag and clears overlapping points */
+	void SetIsRecent(const bool bSetIsRecent);
+	
 	/** Sets the overlapping points */
 	void SetOverlappingPoints(const TArray<FVector>& InOverlappingPoints);
 
 	/** Returns overlapping points, based on the parameters and Width & Height */
 	TArray<FVector> GenerateOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale) const;
-	
-	/** Flags this SpawnPoint as recent, and records the time it was set as recent. If false, removes flag and clears overlapping points */
-	void SetIsRecent(const bool bSetIsRecent);
 
+	/** Empties the Overlapping Points array */
+	void EmptyOverlappingPoints() { OverlappingPoints.Empty(); }
+	
 	/** Increments the total amount of spawns at the point, including handling special case where it has not spawned there yet */
 	void IncrementTotalSpawns();
 
 	/** Increments the total amount of hits at the point */
 	void IncrementTotalHits();
-	
-	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
-	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
-
-	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
-	static TArray<int32> FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
-	
-	/** Empties the Overlapping Points array */
-	void EmptyOverlappingPoints() { OverlappingPoints.Empty(); }
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -325,21 +328,27 @@ public:
 	int32 GetSpawnMemoryIncZ() const { return SpawnMemoryIncZ; }
 	int32 GetSpawnPointsHeight() const { return Height; }
 
-	/** Flags the point as recent */
-	void FlagSpawnPointAsRecent(const FGuid SpawnPointGuid);
+	/** Flags the point as being actively managed by TargetManager. Calls SetOverlappingPoints if needed */
+	void FlagSpawnPointAsManaged(const FGuid SpawnPointGuid) const;
 	
-	/** Flags the point as activated and removes the recent flag if present. Calls SetOverlappingPoints */
+	/** Flags the point as activated and removes the recent flag if present. Calls SetOverlappingPoints if needed */
 	void FlagSpawnPointAsActivated(const FGuid SpawnPointGuid);
-
-	/** Removes activated flag, flags as recent, and sets a timer for when the recent flag should be removed */
-	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy, const FTargetDamageEvent& TargetDamageEvent);
 	
-	/** Removes the recent flag from the point. Called after a delay once the target has been deactivated */
-	UFUNCTION()
-	void RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid);
+	/** Flags the point as recent */
+	void FlagSpawnPointAsRecent(const FGuid SpawnPointGuid) const;
+	
+	/** Calls RemoveActivatedFlagFromSpawnPoint, calls FlagSpawnPointAsRecent, and sets a timer for when the recent flag should be removed */
+	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy, const FTargetDamageEvent& TargetDamageEvent);
 
+	/** Removes the Managed flag, meaning the point is not longer actively managed by TargetManager */
+	void RemoveManagedFlagFromSpawnPoint(const FGuid SpawnPointGuid) const;
+	
 	/** Called after deactivation of a target. Increments TotalsSpawns and TotalHits if necessary, and removes activated flag */
-	void RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent);
+	void RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent) const;
+	
+	/** Removes the Recent flag, meaning the point is not longer being considered as a blocked SpawnPoint.
+	 *  SpawnPoints empty their OverlappingPoints when their Recent Flag is removed */
+	void RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid);
 	
 	int32 GetOutArrayIndexFromSpawnCounterIndex(const int32 SpawnCounterIndex) const;
 

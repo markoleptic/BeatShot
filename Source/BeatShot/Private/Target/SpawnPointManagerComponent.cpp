@@ -132,35 +132,6 @@ TArray<int32> USpawnPoint::FindBorderingIndices(const EGridIndexType InGridIndex
 	return ReturnArray;
 }
 
-FVector USpawnPoint::GenerateRandomSubPoint() const
-{
-	const float Y = roundf(FMath::FRandRange(BottomLeft.Y, BottomRight.Y - 1.f));
-	const float Z = roundf(FMath::FRandRange(BottomLeft.Z, TopLeft.Z - 1.f));
-	return FVector(BottomLeft.X, Y, Z);
-}
-
-void USpawnPoint::SetRandomChosenPoint()
-{
-	ChosenPoint = GenerateRandomSubPoint();
-}
-
-void USpawnPoint::IncrementTotalSpawns()
-{
-	if (TotalSpawns == INDEX_NONE)
-	{
-		TotalSpawns = 1;
-	}
-	else
-	{
-		TotalSpawns++;
-	}
-}
-
-void USpawnPoint::IncrementTotalHits()
-{
-	TotalHits++;
-}
-
 EGridIndexType USpawnPoint::FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth)
 {
 	const int32 MaxIndex = InSize - 1;
@@ -204,6 +175,18 @@ EGridIndexType USpawnPoint::FindIndexType(const int32 InIndex, const int32 InSiz
 		return EGridIndexType::Border_Left;
 	}
 	return EGridIndexType::Middle;
+}
+
+FVector USpawnPoint::GenerateRandomSubPoint() const
+{
+	const float Y = roundf(FMath::FRandRange(BottomLeft.Y, BottomRight.Y - 1.f));
+	const float Z = roundf(FMath::FRandRange(BottomLeft.Z, TopLeft.Z - 1.f));
+	return FVector(BottomLeft.X, Y, Z);
+}
+
+void USpawnPoint::SetRandomChosenPoint()
+{
+	ChosenPoint = GenerateRandomSubPoint();
 }
 
 void USpawnPoint::SetIsRecent(const bool bSetIsRecent)
@@ -269,6 +252,23 @@ TArray<FVector> USpawnPoint::GenerateOverlappingPoints(const float InMinTargetDi
 	//DrawDebugSphere(GetWorld(), CenterPoint, Scale * SphereTargetRadius * 2 + (BSConfig.MinDistanceBetweenTargets / 2.f), 32, FColor::Magenta, false, 0.5f);
 	//UE_LOG(LogTargetManager, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
 	return OutPoints;
+}
+
+void USpawnPoint::IncrementTotalSpawns()
+{
+	if (TotalSpawns == INDEX_NONE)
+	{
+		TotalSpawns = 1;
+	}
+	else
+	{
+		TotalSpawns++;
+	}
+}
+
+void USpawnPoint::IncrementTotalHits()
+{
+	TotalHits++;
 }
 
 // ------------------------------- //
@@ -660,13 +660,17 @@ void USpawnPointManagerComponent::RemoveEdgePoints(TArray<FVector>& In, const FE
 
 // flags (activation and recent)
 
-void USpawnPointManagerComponent::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid)
+void USpawnPointManagerComponent::FlagSpawnPointAsManaged(const FGuid SpawnPointGuid) const
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
-		if (!Point->IsRecent())
+		if (!Point->IsCurrentlyManaged())
 		{
-			Point->SetIsRecent(true);
+			Point->SetIsCurrentlyManaged(true);
+		}
+		if (Point->OverlappingPoints.IsEmpty())
+		{
+			Point->SetOverlappingPoints(Point->GenerateOverlappingPoints(BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, Point->GetScale()));
 		}
 	}
 }
@@ -682,7 +686,21 @@ void USpawnPointManagerComponent::FlagSpawnPointAsActivated(const FGuid SpawnPoi
 		if (!Point->IsActivated())
 		{
 			Point->SetIsActivated(true);
+		}
+		if (Point->OverlappingPoints.IsEmpty())
+		{
 			Point->SetOverlappingPoints(Point->GenerateOverlappingPoints(BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, Point->GetScale()));
+		}
+	}
+}
+
+void USpawnPointManagerComponent::FlagSpawnPointAsRecent(const FGuid SpawnPointGuid) const
+{
+	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
+	{
+		if (!Point->IsRecent())
+		{
+			Point->SetIsRecent(true);
 		}
 	}
 }
@@ -713,18 +731,18 @@ void USpawnPointManagerComponent::HandleRecentTargetRemoval(const ERecentTargetM
 	}
 }
 
-void USpawnPointManagerComponent::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid)
+void USpawnPointManagerComponent::RemoveManagedFlagFromSpawnPoint(const FGuid SpawnPointGuid) const
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
 	{
-		if (Point->IsRecent())
+		if (Point->IsCurrentlyManaged())
 		{
-			Point->SetIsRecent(false);
+			Point->SetIsCurrentlyManaged(false);
 		}
 	}
 }
 
-void USpawnPointManagerComponent::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent)
+void USpawnPointManagerComponent::RemoveActivatedFlagFromSpawnPoint(const FTargetDamageEvent& TargetDamageEvent) const
 {
 	if (USpawnPoint* Point = FindSpawnPointFromGuid(TargetDamageEvent.Guid))
 	{
@@ -739,6 +757,18 @@ void USpawnPointManagerComponent::RemoveActivatedFlagFromSpawnPoint(const FTarge
 		}
 	}
 }
+
+void USpawnPointManagerComponent::RemoveRecentFlagFromSpawnPoint(const FGuid SpawnPointGuid) 
+{
+	if (USpawnPoint* Point = FindSpawnPointFromGuid(SpawnPointGuid))
+	{
+		if (Point->IsRecent())
+		{
+			Point->SetIsRecent(false);
+		}
+	}
+}
+
 
 // Util or debug
 

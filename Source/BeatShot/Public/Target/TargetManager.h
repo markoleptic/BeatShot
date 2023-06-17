@@ -140,12 +140,12 @@ private:
 	int32 GetNumberOfTargetsToActivate() const;
 
 	/** Activate target(s)/SpawnPoint(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
-	void TryActivateExistingTargets();
+	void HandleActivateExistingTargets();
 
-	/** Handles permanently activated targets so they can still receive activation responses, called in TryActivateExistingTargets */
+	/** Handles permanently activated targets so they can still receive activation responses, called in HandleActivateExistingTargets */
 	void HandlePermanentlyActiveTargetActivation() const;
 
-	/** Handles temporarily activated targets, called in TryActivateExistingTargets */
+	/** Handles temporarily activated targets, called in HandleActivateExistingTargets */
 	void HandleTemporaryTargetActivation();
 
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
@@ -232,7 +232,7 @@ private:
 	FExtrema GenerateBoxExtremaGrid() const;
 
 	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnPoint IsCurrentlyManaged flag */
-	int32 AddToManagedTargets(ASphereTarget* SpawnTarget, USpawnPoint* AssociatedSpawnPoint);
+	int32 AddToManagedTargets(ASphereTarget* SpawnTarget, const USpawnPoint* AssociatedSpawnPoint);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnPoint IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);

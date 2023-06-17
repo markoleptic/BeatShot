@@ -79,8 +79,9 @@ enum class EBaseGameMode : uint8
 	BeatGrid UMETA(DisplayName="BeatGrid"),
 	BeatTrack UMETA(DisplayName="BeatTrack"),
 	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
+	ClusterBeat UMETA(DisplayName="ClusterBeat"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::ChargedBeatTrack);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::ClusterBeat);
 
 
 /** Enum representing the preset, non-mutable game modes. Preset game modes aren't necessarily a BaseGameMode */
@@ -93,8 +94,9 @@ enum class EPresetGameMode : uint8
 	BeatGrid UMETA(DisplayName="BeatGrid"),
 	BeatTrack UMETA(DisplayName="BeatTrack"),
 	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
+	ClusterBeat UMETA(DisplayName="ClusterBeat"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EPresetGameMode, EPresetGameMode::SingleBeat, EPresetGameMode::ChargedBeatTrack);
+ENUM_RANGE_BY_FIRST_AND_LAST(EPresetGameMode, EPresetGameMode::SingleBeat, EPresetGameMode::ClusterBeat);
 
 
 /** Enum representing the default game mode difficulties */

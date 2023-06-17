@@ -126,3 +126,5 @@ MaxTargetScale,The maximum size of a target. Affects other settings that depend 
 MinTargetSpeed,"The minimum speed of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
 MaxTargetSpeed,"The maximum speed of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
 InvalidAI_GridSpacing,The number of horizontal and vertical grid targets must be in increments of 5 for AI to properly function.
+UseBatchSpawning,"If checked, targets will not be spawned until the previous batch of targets have all been activated and deactivated."
+AllowSpawnWithoutActivation,"If checked, allows targets to be spawned without immediate activation. If used in combination with Batch Spawning, this can allow multiple targets to spawn at once while each is activated according to Target Activation settings."

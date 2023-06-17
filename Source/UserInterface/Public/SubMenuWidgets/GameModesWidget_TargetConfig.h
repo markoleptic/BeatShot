@@ -52,8 +52,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_ApplyImmunityOnSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ContinuouslySpawn;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_MoveTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_MoveTargetsForward;
@@ -62,7 +60,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_SpawnEveryOtherTargetInCenter;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ContinuouslyActivate;
+	UBSHorizontalBox* BSBox_AllowSpawnWithoutActivation;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSHorizontalBox* BSBox_UseBatchSpawning;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_BoundsScalingPolicy;
@@ -120,7 +120,6 @@ protected:
 	UBSHorizontalBox* BSBox_MaxNumRecentTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_NumUpfrontTargetsToSpawn;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_NumRuntimeTargetsToSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -230,15 +229,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_MoveTargetsForward;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ContinuouslySpawn;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ContinuouslyActivate;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_MoveTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_SpawnAtOriginWheneverPossible;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_SpawnEveryOtherTargetInCenter;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_AllowSpawnWithoutActivation;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_UseBatchSpawning;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_Lifespan;
@@ -295,15 +294,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_MoveTargetsForward;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_ContinuouslySpawn;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_ContinuouslyActivate;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_MoveTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_SpawnAtOriginWheneverPossible;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_SpawnEveryOtherTargetInCenter;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_AllowSpawnWithoutActivation;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_UseBatchSpawning;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* QMark_NumRuntimeTargetsToSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -412,21 +411,20 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	
-	
 	UFUNCTION()
 	void OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bApplyImmunityOnSpawn);
 	UFUNCTION()
 	void OnCheckStateChanged_MoveTargetsForward(const bool bMoveTargetsForward);
-	UFUNCTION()
-	void OnCheckStateChanged_ContinuouslySpawn(const bool bContinuouslySpawn);
-	UFUNCTION()
-	void OnCheckStateChanged_ContinuouslyActivate(const bool bContinuouslyActivate);
 	UFUNCTION()
 	void OnCheckStateChanged_MoveTargets(const bool bMoveTargets);
 	UFUNCTION()
 	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bSpawnAtOrigin);
 	UFUNCTION()
 	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bSpawnEveryOther);
+	UFUNCTION()
+	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bAllow);
+	UFUNCTION()
+	void OnCheckStateChanged_UseBatchSpawning(const bool bUseBatchSpawning);
 
 	/** Returns the widget used for a ComboBox entry */
 	UFUNCTION()

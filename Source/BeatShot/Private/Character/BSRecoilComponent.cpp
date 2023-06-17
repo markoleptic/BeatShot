@@ -83,7 +83,8 @@ void UBSRecoilComponent::UpdateKickback(float DeltaTime)
 	{
 		KickbackAngle = 0.f;
 	}
-	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration);
+	
+	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration) * KickbackIntensityCurve->GetFloatValue(FMath::Min(ShotsFired, 30.f) / 30.f);
 }
 
 void UBSRecoilComponent::UpdateRecoil(FVector Output)
@@ -92,19 +93,19 @@ void UBSRecoilComponent::UpdateRecoil(FVector Output)
 	{
 		return;
 	}
-
+	
 	/* Apply a lighter recoil penalty if its the first bullet */
 	if (ShotsFired < 1)
 	{
-		CurrentShotCameraRecoilRotation.Yaw = Output.X * 0.35;
-		CurrentShotCameraRecoilRotation.Pitch = Output.Y * 0.35;
+		CurrentShotCameraRecoilRotation.Yaw = Output.X * 0.5;
+		CurrentShotCameraRecoilRotation.Pitch = Output.Y * 0.5;
 		CurrentShotRecoilRotation.Yaw = Output.X;
 		CurrentShotRecoilRotation.Pitch = Output.Y;
 		return;
 	}
 	/* Apply a heavier recoil penalty if in the middle of a spray */
-	CurrentShotCameraRecoilRotation.Yaw = Output.X * 0.5;
-	CurrentShotCameraRecoilRotation.Pitch = Output.Y * 0.5;
+	CurrentShotCameraRecoilRotation.Yaw = Output.X;
+	CurrentShotCameraRecoilRotation.Pitch = Output.Y;
 	CurrentShotRecoilRotation.Yaw = Output.X;
 	CurrentShotRecoilRotation.Pitch = Output.Y;
 }

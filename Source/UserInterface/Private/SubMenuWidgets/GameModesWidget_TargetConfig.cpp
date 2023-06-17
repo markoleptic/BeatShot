@@ -176,8 +176,6 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(QMark_TargetDeactivationResponses, GetTooltipTextFromKey("TargetDeactivationResponses"));
 	SetupTooltip(QMark_TargetDestructionConditions, GetTooltipTextFromKey("TargetDestructionConditions"));
 	SetupTooltip(QMark_MovingTargetDirectionMode, GetTooltipTextFromKey("MovingTargetDirectionMode"));
-	SetupTooltip(QMark_ContinuouslySpawn, GetTooltipTextFromKey("ContinuouslySpawn"));
-	SetupTooltip(QMark_ContinuouslyActivate, GetTooltipTextFromKey("ContinuouslyActivate"));
 	SetupTooltip(QMark_MoveTargets, GetTooltipTextFromKey("MoveTargets"));
 	SetupTooltip(QMark_SpawnAtOriginWheneverPossible, GetTooltipTextFromKey("SpawnAtOriginWheneverPossible"));
 	SetupTooltip(QMark_SpawnEveryOtherTargetInCenter, GetTooltipTextFromKey("SpawnEveryOtherTargetInCenter"));
@@ -187,6 +185,8 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(QMark_MaxNumTargetsAtOnce, GetTooltipTextFromKey("MaxNumTargetsAtOnce"));
 	SetupTooltip(QMark_HorizontalSpread, GetTooltipTextFromKey("HorizontalSpread"));
 	SetupTooltip(QMark_VerticalSpread, GetTooltipTextFromKey("VerticalSpread"));
+	SetupTooltip(QMark_UseBatchSpawning, GetTooltipTextFromKey("UseBatchSpawning"));
+	SetupTooltip(QMark_AllowSpawnWithoutActivation, GetTooltipTextFromKey("AllowSpawnWithoutActivation"));
 	
 	Slider_Lifespan->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_Lifespan);
 	Slider_TargetSpawnCD->OnValueChanged.AddDynamic(this, &ThisClass::OnSliderChanged_TargetSpawnCD);
@@ -295,11 +295,11 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 
 	CheckBox_ApplyImmunityOnSpawn->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ApplyImmunityOnSpawn);
 	CheckBox_MoveTargetsForward->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_MoveTargetsForward);
-	CheckBox_ContinuouslySpawn->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ContinuouslySpawn);
-	CheckBox_ContinuouslyActivate->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ContinuouslyActivate);
 	CheckBox_MoveTargets->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_MoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_SpawnAtOriginWheneverPossible);
 	CheckBox_SpawnEveryOtherTargetInCenter->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_SpawnEveryOtherTargetInCenter);
+	CheckBox_AllowSpawnWithoutActivation->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_AllowSpawnWithoutActivation);
+	CheckBox_UseBatchSpawning->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_UseBatchSpawning);
 
 	ComboBox_BoundsScalingPolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_BoundsScalingPolicy);
 	ComboBox_ConsecutiveTargetScalePolicy->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_ConsecutiveTargetScalePolicy);
@@ -483,11 +483,11 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	
 	CheckBox_MoveTargetsForward->SetIsChecked(InTargetConfig.bMoveTargetsForward);
 	CheckBox_ApplyImmunityOnSpawn->SetIsChecked(InTargetConfig.bApplyImmunityOnSpawn);
-	CheckBox_ContinuouslySpawn->SetIsChecked(InTargetConfig.bContinuouslySpawn);
-	CheckBox_ContinuouslyActivate->SetIsChecked(InTargetConfig.bContinuouslyActivate);
 	CheckBox_MoveTargets->SetIsChecked(InTargetConfig.bMoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->SetIsChecked(InTargetConfig.bSpawnAtOriginWheneverPossible);
 	CheckBox_SpawnEveryOtherTargetInCenter->SetIsChecked(InTargetConfig.bSpawnEveryOtherTargetInCenter);
+	CheckBox_AllowSpawnWithoutActivation->SetIsChecked(InTargetConfig.bAllowSpawnWithoutActivation);
+	CheckBox_UseBatchSpawning->SetIsChecked(InTargetConfig.bUseBatchSpawning);
 	
 	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
 	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
@@ -573,12 +573,12 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	
 	ReturnConfig.bApplyImmunityOnSpawn = CheckBox_ApplyImmunityOnSpawn->IsChecked();
 	ReturnConfig.bMoveTargetsForward = CheckBox_MoveTargetsForward->IsChecked();
-	ReturnConfig.bContinuouslySpawn = CheckBox_ContinuouslySpawn->IsChecked();
-	ReturnConfig.bContinuouslyActivate = CheckBox_ContinuouslyActivate->IsChecked();
 	ReturnConfig.bMoveTargets = CheckBox_MoveTargets->IsChecked();
 	ReturnConfig.bSpawnAtOriginWheneverPossible = CheckBox_SpawnAtOriginWheneverPossible->IsChecked();
 	ReturnConfig.bSpawnEveryOtherTargetInCenter = CheckBox_SpawnEveryOtherTargetInCenter->IsChecked();
-
+	ReturnConfig.bAllowSpawnWithoutActivation = CheckBox_AllowSpawnWithoutActivation->IsChecked();
+	ReturnConfig.bUseBatchSpawning = CheckBox_UseBatchSpawning->IsChecked();
+	
 	return ReturnConfig;
 }
 
@@ -759,14 +759,6 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargetsForward(const
 	UpdateBrushColors();
 }
 
-void UGameModesWidget_TargetConfig::OnCheckStateChanged_ContinuouslySpawn(const bool bContinuouslySpawn)
-{
-}
-
-void UGameModesWidget_TargetConfig::OnCheckStateChanged_ContinuouslyActivate(const bool bContinuouslyActivate)
-{
-}
-
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_MoveTargets(const bool bMoveTargets)
 {
 	// Hide target speed boxes if move targets forward is not enabled, otherwise show
@@ -788,6 +780,14 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_SpawnAtOriginWheneverPos
 }
 
 void UGameModesWidget_TargetConfig::OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bSpawnEveryOther)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bAllow)
+{
+}
+
+void UGameModesWidget_TargetConfig::OnCheckStateChanged_UseBatchSpawning(const bool bUseBatchSpawning)
 {
 }
 

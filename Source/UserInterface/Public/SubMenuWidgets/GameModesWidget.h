@@ -127,6 +127,10 @@ protected:
 	UBSButton* Button_MultiBeat;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
 	UBSButton* Button_SingleBeat;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UBSButton* Button_ClusterBeat;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UBSButton* Button_ChargedBeatTrack;
 	
 	private:
 	/** Binds all widget delegates to functions */

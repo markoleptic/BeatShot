@@ -109,6 +109,7 @@ struct FCommonScoreInfo
 		UpdateAccuracy();
 	}
 
+private:
 	/** Do not call directly, called inside UpdateCommonValues */
 	void UpdateAccuracy()
 	{
@@ -320,39 +321,39 @@ struct FBS_TargetConfig
 {
 	GENERATED_BODY()
 
+	/** If true, targets can be spawned without being activated */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bAllowSpawnWithoutActivation;
+
 	/** Should the target be immune to damage when spawned? */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bApplyImmunityOnSpawn;
-
-	/** Should targets always be allowed to spawn or should only one target be spawned at once? */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bContinuouslySpawn;
-
-	/** Should targets always be allowed to activate or should only one target be activated at once? */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bContinuouslyActivate;
 
 	/** Whether or not the targets ever move */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bMoveTargets;
 	
-	/** Whether or not to move the targets forward towards the player after spawning */
+	/** If true, move the targets forward towards the player after spawning */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bMoveTargetsForward;
-	
-	/** Whether or not to spawn at the origin if it isn't blocked by a recent target whenever possible */
+
+	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bSpawnAtOriginWheneverPossible;
 	
-	/** Whether or not alternate every target spawn in the very center */
+	/** If true, alternate every target spawn in the very center */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bSpawnEveryOtherTargetInCenter;
 
-	/** Whether or not to reverse the direction of a moving target after it stops overlapping the SpawnArea */
+	/** If true, postpones spawning target(s) until the previous target(s) have all been activated and deactivated. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bUseBatchSpawning;
+
+	/** If true, reverse the direction of a moving target after it stops overlapping the SpawnArea */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseOverlapSpawnBox;
 	
-	/** Whether or not to use separate outline color */
+	/** If true, use separate outline color */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseSeparateOutlineColor;
 	
@@ -530,13 +531,13 @@ struct FBS_TargetConfig
 
 	FBS_TargetConfig()
 	{
+		bAllowSpawnWithoutActivation = false;
 		bApplyImmunityOnSpawn = false;
-		bContinuouslySpawn = false;
-		bContinuouslyActivate = false;
 		bMoveTargets = false;
 		bMoveTargetsForward = false;
 		bSpawnAtOriginWheneverPossible = false;
 		bSpawnEveryOtherTargetInCenter = false;
+		bUseBatchSpawning = false;
 		bUseOverlapSpawnBox = false;
 		bUseSeparateOutlineColor = false;
 
@@ -702,13 +703,14 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
+				
+				Config.TargetConfig.bAllowSpawnWithoutActivation = false;
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
-				Config.TargetConfig.bContinuouslySpawn = false;
-				Config.TargetConfig.bContinuouslyActivate = false;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = true;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = true;
+				Config.TargetConfig.bUseBatchSpawning = false;
 				Config.TargetConfig.bUseOverlapSpawnBox = false;
 
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
@@ -785,13 +787,13 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
+				Config.TargetConfig.bAllowSpawnWithoutActivation = false;
 				Config.TargetConfig.bApplyImmunityOnSpawn = false;
-				Config.TargetConfig.bContinuouslySpawn = true;
-				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = true;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseBatchSpawning = false;
 				Config.TargetConfig.bUseOverlapSpawnBox = false;
 
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Dynamic;
@@ -881,13 +883,13 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
+				Config.TargetConfig.bAllowSpawnWithoutActivation = false;
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bContinuouslySpawn = false;
-				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = false;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseBatchSpawning = false;
 				Config.TargetConfig.bUseOverlapSpawnBox = false;
 
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
@@ -968,13 +970,13 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
+				Config.TargetConfig.bAllowSpawnWithoutActivation = false;
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bContinuouslySpawn = false;
-				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = true;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseBatchSpawning = false;
 				Config.TargetConfig.bUseOverlapSpawnBox = true;
 
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
@@ -1060,13 +1062,13 @@ struct FBSConfig
 				case EGameModeDifficulty::None:
 					break;
 				}
+				Config.TargetConfig.bAllowSpawnWithoutActivation = false;
 				Config.TargetConfig.bApplyImmunityOnSpawn = true;
-				Config.TargetConfig.bContinuouslySpawn = false;
-				Config.TargetConfig.bContinuouslyActivate = true;
 				Config.TargetConfig.bMoveTargets = true;
 				Config.TargetConfig.bMoveTargetsForward = false;
 				Config.TargetConfig.bSpawnAtOriginWheneverPossible = false;
 				Config.TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+				Config.TargetConfig.bUseBatchSpawning = false;
 				Config.TargetConfig.bUseOverlapSpawnBox = true;
 
 				Config.TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
@@ -1339,7 +1341,7 @@ struct FPlayerSettings_Game
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = DefaultTargetOutlineColor;
 		InactiveTargetColor = DefaultBeatGridInactiveTargetColor;
-		bShouldRecoil = true;
+		bShouldRecoil = false;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
 		bShowBulletTracers = true;
