@@ -59,6 +59,11 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
 		QuitMenuWidget->PlayInitialFadeInMenu();
 	}
+	else if (Button == MenuButton_PlayAgain)
+	{
+		Restart();
+		return;
+	}
 	if (Cast<UMenuButton>(Button)->GetBox())
 	{
 		MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
