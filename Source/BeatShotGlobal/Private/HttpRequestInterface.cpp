@@ -132,7 +132,37 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore>& ScoresT
 	SendScoreRequest->SetURL(Endpoint);
 	SendScoreRequest->SetVerb("POST");
 	SendScoreRequest->SetHeader("Content-Type", "application/json");
-	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
+}
+
+void IHttpRequestInterface::PostFeedback(const FJsonFeedback& InFeedback, FOnPostFeedbackResponse& OnPostFeedbackResponse) const
+{
+	const TSharedRef<FJsonObject> FeedbackObject = MakeShareable(new FJsonObject);
+	FJsonObjectConverter::UStructToJsonObject(FJsonFeedback::StaticStruct(), &InFeedback, FeedbackObject, 0, 0);
+	FString ContentString;
+	const TSharedRef<TJsonWriter<>> LoginWriter = TJsonWriterFactory<>::Create(&ContentString);
+	FJsonSerializer::Serialize(FeedbackObject, LoginWriter);
+
+	UE_LOG(LogTemp, Display, TEXT("FJsonFeedback: %s"), *ContentString);
+	
+	const FHttpRequestRef FeedbackRequest = FHttpModule::Get().CreateRequest();
+
+	FeedbackRequest->OnProcessRequestComplete().BindLambda([this, &OnPostFeedbackResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+	{
+		if (Response->GetResponseCode() != 200)
+		{
+			OnPostFeedbackResponse.Broadcast(false);
+			UE_LOG(LogTemp, Display, TEXT("Failed to send feedback: %s"), *Response->GetContentAsString());
+			return;
+		}
+		OnPostFeedbackResponse.Broadcast(true);
+		UE_LOG(LogTemp, Display, TEXT("Successfully sent feedback."));
+	});
+	
+	FeedbackRequest->SetURL(SendFeedbackEndpoint);
+	FeedbackRequest->SetVerb("POST");
+	FeedbackRequest->SetHeader("Content-Type", "application/json");
+	FeedbackRequest->SetContentAsString(ContentString);
+	FeedbackRequest->ProcessRequest();
 }

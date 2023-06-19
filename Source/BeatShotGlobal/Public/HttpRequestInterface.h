@@ -14,6 +14,9 @@ DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FPlayerSettings& PlayerSett
 /** Broadcast when a response is received from posting player scores to database */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostScoresResponse, const ELoginState& LoginState);
 
+/** Broadcast when a response is received from posting player scores to database */
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostFeedbackResponse, const bool bSuccess);
+
 /** Used to convert PlayerScoreArray to database scores */
 USTRUCT(BlueprintType)
 struct FJsonScore
@@ -22,6 +25,32 @@ struct FJsonScore
 
 	UPROPERTY()
 	TArray<FPlayerScore> Scores;
+};
+
+/** Used to create a feedback Json object */
+USTRUCT(BlueprintType)
+struct FJsonFeedback
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString Title;
+
+	UPROPERTY()
+	FString Content;
+
+	FJsonFeedback()
+	{
+		Title = FString();
+		Content = FString();
+	}
+
+	FJsonFeedback(const FString& InTitle, const FString& InContent)
+	{
+		Title = InTitle;
+		Content = InContent;
+	}
+	
 };
 
 /** Interface to allow all other classes in this game to use HTTP request functions */
@@ -52,8 +81,11 @@ public:
 	 * access token. Executes supplied OnPostResponse with the login state */
 	void PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& Username, const FString& AccessToken, FOnPostScoresResponse& OnPostResponse) const;
 
+	void PostFeedback(const FJsonFeedback& InFeedback, FOnPostFeedbackResponse& OnPostFeedbackResponse) const;
+
 private:
 	FString LoginEndpoint = "https://beatshot.gg/api/login";
 	const FString RefreshEndpoint = "https://beatshot.gg/api/refresh";
 	const FString SaveScoresEndpoint = "https://beatshot.gg/api/profile/";
+	const FString SendFeedbackEndpoint = "https://beatshot.gg/api/sendfeedback";
 };

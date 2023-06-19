@@ -7,6 +7,7 @@
 #include "Components/VerticalBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "OverlayWidgets/LoginWidget.h"
+#include "SubMenuWidgets/FeedbackWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "WidgetComponents/MenuButton.h"
 #include "WidgetComponents/WebBrowserWidget.h"
@@ -18,6 +19,7 @@ void UMainMenuWidget::NativeConstruct()
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UMainMenuWidget::OnLoginStateChange);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
 	LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 
 	MenuButton_PatchNotes->SetDefaults(Box_PatchNotes, MenuButton_GameModes);
 	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scores);
@@ -39,7 +41,6 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetBox());
 }
-
 
 void UMainMenuWidget::OnButtonClicked_Scoring()
 {
@@ -72,6 +73,11 @@ void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	else if (LoginWidget && Button == LoginWidget->OkayButton)
 	{
 		OnButtonClicked_Scoring();
+	}
+	else if (Button == Button_Feedback)
+	{
+		FeedbackWidget->ShowFeedbackWidget();
+		return;
 	}
 	MainMenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }

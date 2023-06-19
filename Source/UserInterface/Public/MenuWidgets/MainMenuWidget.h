@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+class UFeedbackWidget;
 class UScoreBrowserWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
@@ -52,6 +53,9 @@ protected:
 	UVerticalBox* Box_FAQ;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_Feedback;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
@@ -59,6 +63,8 @@ protected:
 	UFAQWidget* FAQWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	ULoginWidget* LoginWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UFeedbackWidget* FeedbackWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_PatchNotes;

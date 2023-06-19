@@ -313,3 +313,17 @@ GM_ClusterBeat,Cluster Beat
 GM_ClusterBeat_Info,"Multiple targets spawn at once, each activated separately."
 GM_ChargedBeatTrack,Charged Beat Track
 GM_ChargedBeatTrack_Info,Multiple moving targets that require 2+ shots to destroy.
+FeedbackResponseSuccessTitle,"Feedback Sent"
+FeedbackResponseSuccessInfo,"Thank you for providing valuable bug reporting or feedback."
+FeedbackResponseFailureTitle,"Feedback Failed to Send"
+FeedbackResponseFailureInfo,"Make sure you're connected to the internet, or visit the ""Bug Reporting and Feedback"" discussion post on Steam."
+FeedbackContinueButtonText,"Continue"
+FeedbackTitleLabel,"Title:"
+FeedbackContentLabel,"Description:"
+FeedbackSubmitButtonText,"Submit"
+FeedbackTitle,"Bug Reporting and Feedback"
+FeedbackInfo1,"Please begin the title with either:"
+FeedbackInfo2,"Bug Report:"
+FeedbackInfo3,"Feedback:"
+FeedbackInfo4,"Feel free to submit any kind of feedback at all."
+MainMenuFeedbackButtonText,"Report Bugs or Submit Feedback"
