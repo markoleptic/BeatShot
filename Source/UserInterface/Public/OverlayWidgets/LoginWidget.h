@@ -72,9 +72,7 @@ protected:
 	UOverlay* Overlay_LoggedIn;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_Username;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_Email;
+	UEditableTextBox* Value_UsernameEmail;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_Password;
 
@@ -113,7 +111,7 @@ protected:
 
 	FWidgetAnimationDynamicEvent FadeOutContinueWithoutDelegate;
 	FWidgetAnimationDynamicEvent FadeOutLoggedInDelegate;
-
+	
 	UFUNCTION()
 	void LoginButtonClicked();
 	UFUNCTION()

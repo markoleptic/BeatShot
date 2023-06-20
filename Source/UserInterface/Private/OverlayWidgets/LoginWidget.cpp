@@ -22,22 +22,30 @@ void ULoginWidget::NativeConstruct()
 	Button_NoRegisterConfirm->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	
-	Value_Username->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
-	Value_Email->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
+	Value_UsernameEmail->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 	Value_Password->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 void ULoginWidget::LoginButtonClicked()
 {
-	if ((Value_Username->GetText().IsEmpty() && Value_Email->GetText().IsEmpty()) || Value_Password->GetText().IsEmpty())
+	if (Value_UsernameEmail->GetText().IsEmpty() || Value_Password->GetText().IsEmpty())
 	{
 		Box_Error->SetVisibility(ESlateVisibility::Visible);
 		SetErrorText("MissingInfoErrorText");
 		return;
 	}
-	const FLoginPayload LoginPayload = FLoginPayload(Value_Username->GetText().ToString(), Value_Email->GetText().ToString(), Value_Password->GetText().ToString());
-	OnLoginButtonClicked.Broadcast(LoginPayload, bIsPopup);
+	
+	const FRegexPattern EmailPattern("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+	if (FRegexMatcher EmailMatch(EmailPattern, Value_UsernameEmail->GetText().ToString()); EmailMatch.FindNext())
+	{
+		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(), Value_Password->GetText().ToString()), bIsPopup);
+	}
+	else
+	{
+		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "", Value_Password->GetText().ToString()), bIsPopup);
+	}
+	
 	PlayFadeOutLogin();
 }
 
