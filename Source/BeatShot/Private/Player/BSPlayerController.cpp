@@ -7,6 +7,7 @@
 #include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
+#include "FloatingTextActor.h"
 #include "Player/BSPlayerState.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/Pawn.h"
@@ -484,6 +485,13 @@ void ABSPlayerController::HideRLAgentWidget()
 		RLAgentWidget->RemoveFromParent();
 		RLAgentWidget = nullptr;
 	}
+}
+
+void ABSPlayerController::ShowCombatText(const int32 Streak, const FTransform& Transform)
+{
+	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass, FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	CombatText->SetText(FText::FromString(FString::FromInt(Streak)));
+	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, true), false);
 }
 
 void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings)

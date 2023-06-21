@@ -7,7 +7,7 @@
 #include "Components/VerticalBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "OverlayWidgets/LoginWidget.h"
-#include "SubMenuWidgets/FeedbackWidget.h"
+#include "OverlayWidgets/FeedbackWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "WidgetComponents/MenuButton.h"
 #include "WidgetComponents/WebBrowserWidget.h"

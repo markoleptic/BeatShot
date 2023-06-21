@@ -9,6 +9,7 @@
 #include "SaveLoadInterface.h"
 #include "BSPlayerController.generated.h"
 
+class AFloatingTextActor;
 class URLAgentWidget;
 class ABSCharacter;
 class ULoginWidget;
@@ -79,9 +80,8 @@ public:
 	
 	void ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns, const TArray<float>& QTable);
 	void HideRLAgentWidget();
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void ShowCombatText(const int32 Streak, const FVector& Location);
+	
+	void ShowCombatText(const int32 Streak, const FTransform& Transform);
 
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const ELoginState& LoginState);
@@ -137,6 +137,8 @@ protected:
 	TSubclassOf<UUserWidget> InteractInfoWidgetClass;
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<URLAgentWidget> RLAgentWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
+	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
 
 private:
 	UFUNCTION()

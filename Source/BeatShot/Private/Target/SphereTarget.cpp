@@ -243,8 +243,7 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 {
 	const float TimeAlive = ActorInstigator == this ? -1.f : GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
-	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorLocation(), GetCurrentTargetScale(),
-	                                           GetGuid(),abs(OldValue - NewValue));
+	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(), abs(OldValue - NewValue));
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
 	HandleDeactivation(ActorInstigator == this, NewValue);
 	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);

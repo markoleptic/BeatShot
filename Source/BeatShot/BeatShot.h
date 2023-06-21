@@ -52,12 +52,9 @@ struct FTargetDamageEvent
 	/** The total possible damage if tracking */
 	float TotalPossibleDamage;
 
-	/** The location of the center of the target */
-	FVector Location;
-
-	/** The scale of the target relative to the world */
-	FVector Scale;
-
+	/** The transform of the target */
+	FTransform Transform;
+	
 	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid Guid;
 	
@@ -67,19 +64,16 @@ struct FTargetDamageEvent
 		DamageDelta = 0.f;
 		CurrentHealth = 0.f;
 		TotalPossibleDamage = 0.f;
-		Location = FVector();
-		Scale = FVector(1.f);
+		Transform = FTransform();
 	}
 
-	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FVector& InLocation, const FVector& InScale, const FGuid& InGuid,
-		const float InDamageDelta = 0.f)
+	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FTransform& InTransform, const FGuid& InGuid, const float InDamageDelta = 0.f)
 	{
 		TimeAlive = InTimeAlive;
 		DamageDelta = InDamageDelta;
 		CurrentHealth = InCurrentHealth;
 		TotalPossibleDamage = 0.f;
-		Location = InLocation;
-		Scale = InScale;
+		Transform = InTransform;
 		Guid = InGuid;
 	}
 

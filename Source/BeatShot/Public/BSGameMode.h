@@ -281,7 +281,7 @@ private:
 
 	/** Function bound to TargetManager's OnTargetDeactivated delegate, passes the time that the target was alive for */
 	UFUNCTION()
-	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position);
+	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FTransform& Transform);
 
 	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
 	 *  which passes the current damage taken, and the total possible damage. Executed on tick
@@ -300,7 +300,7 @@ private:
 	void UpdateShotsFired();
 
 	/** Called by UpdatePlayerScores to update the streak */
-	void UpdateStreak(const int32 Streak, const FVector& Location);
+	void UpdateStreak(const int32 Streak, const FTransform& Transform);
 
 	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
 	void UpdateTargetsHit();

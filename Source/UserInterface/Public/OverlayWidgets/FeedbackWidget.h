@@ -12,6 +12,7 @@ class UTextBlock;
 class UBSButton;
 class UEditableTextBox;
 
+/** Simple pop-up widget that sends feedback using an http request */
 UCLASS()
 class USERINTERFACE_API UFeedbackWidget : public UUserWidget, public IHttpRequestInterface
 {
@@ -50,8 +51,6 @@ private:
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
-	void OnPostFeedbackResponse(const bool bSuccess);
-	UFUNCTION()
 	void OnTextCommitted_Title(const FText& NewTitle, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_Content(const FText& NewContent, ETextCommit::Type CommitType);
@@ -63,11 +62,21 @@ private:
 	void PlayFadeInResponse() { PlayAnimationReverse(FadeOutResponse); }
 	UFUNCTION()
 	void PlayFadeOutResponse() { PlayAnimationForward(FadeOutResponse); }
+
+	/** Sets the response text based on http response */
+	UFUNCTION()
+	void OnPostFeedbackResponse(const bool bSuccess);
+
+	/** Sets the widget's visibility to collapsed and unbinds FadeOutDelegate and FadeOutResponseDelegate */
 	UFUNCTION()
 	void SetCollapsedAndUnbindDelegates();
 
+	/** Delegate passed to PostFeedback function that executes when an http response is received, bound to OnPostFeedbackResponse */
 	FOnPostFeedbackResponse OnPostFeedbackResponseDelegate;
 
+	/** Always bound to FadeOut animation and SetCollapsedAndUnbindDelegates */
 	FWidgetAnimationDynamicEvent FadeOutDelegate;
+
+	/** Always bound to FadeOutResponse animation and SetCollapsedAndUnbindDelegates */
 	FWidgetAnimationDynamicEvent FadeOutResponseDelegate;
 };

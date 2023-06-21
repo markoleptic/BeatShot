@@ -6,31 +6,42 @@
 #include "GameFramework/Actor.h"
 #include "FloatingTextActor.generated.h"
 
+class UCombatTextWidget;
+class UWidgetComponent;
+
 /** Provides a way to display floating text on player's screen showing their current target streak */
 UCLASS(Abstract)
 class BEATSHOT_API AFloatingTextActor : public AActor
 {
 	GENERATED_BODY()
-
-public:
-	/* Sets default values for this actor's properties */
+	
 	AFloatingTextActor();
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "FloatingTextActor")
-	void Initialize(const FText& Text);
-
-	/* Returns the Anchor location */
-	const FVector& GetAnchorLocation() const { return AnchorLocation; }
-
-protected:
 	/* Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
-
-public:
+	
 	/* Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
-private:
-	/* Location to which the text is anchored */
-	FVector AnchorLocation;
+	virtual void PostInitializeComponents() override;
+
+public:
+	/** Sets the CombatTextWidgetComponent's widget's text */
+	void SetText(const FText& InText);
+
+	FTransform GetTextTransform(const FTransform& InTargetTransform, const bool bDisplayAbove) const;
+	
+	UFUNCTION()
+	void OnCombatTextFadeOutCompleted();
+
+protected:
+	UCombatTextWidget* GetCombatTextWidget() const;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
+	UWidgetComponent* CombatTextWidgetComponent;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Classes")
+	TSubclassOf<UUserWidget> CombatTextWidgetClass;
+
+	FText CombatText;
 };

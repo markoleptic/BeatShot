@@ -654,7 +654,7 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 	}
 }
 
-void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FVector& Position)
+void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FTransform& Transform)
 {
 	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack || TimeElapsed == -1)
 	{
@@ -678,7 +678,7 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 		// (BSConfig.TargetMaxLifeSpan - (BSConfig.PlayerDelay + 0.05f))))
 	}
 	UpdateTargetsHit();
-	UpdateStreak(NewStreak, Position);
+	UpdateStreak(NewStreak, Transform);
 	UpdateHighScore();
 	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - BSConfig.AudioConfig.PlayerDelay);
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
@@ -704,7 +704,7 @@ void ABSGameMode::UpdateShotsFired()
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
-void ABSGameMode::UpdateStreak(const int32 Streak, const FVector& Location)
+void ABSGameMode::UpdateStreak(const int32 Streak, const FTransform& Transform)
 {
 	if (Streak > CurrentPlayerScore.Streak)
 	{
@@ -716,7 +716,7 @@ void ABSGameMode::UpdateStreak(const int32 Streak, const FVector& Location)
 		{
 			for (ABSPlayerController* Controller : Controllers)
 			{
-				Controller->ShowCombatText(Streak, Location);
+				Controller->ShowCombatText(Streak, Transform);
 			}
 		}
 	}
