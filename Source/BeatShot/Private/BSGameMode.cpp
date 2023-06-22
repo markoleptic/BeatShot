@@ -107,7 +107,7 @@ void ABSGameMode::InitializeGameMode()
 		VisualizerManager = GetWorld()->SpawnActor<AVisualizerManager>(VisualizerManagerClass);
 		VisualizerManager->InitializeVisualizers(PlayerSettings.Game, PlayerSettings.AudioAnalyzer);
 	}
-
+	
 	for (const ABSPlayerController* Controller : Controllers)
 	{
 		if (ABSCharacter* Character = Controller->GetBSCharacter())
@@ -119,16 +119,16 @@ void ABSGameMode::InitializeGameMode()
 					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 				}
 			}
+			// Deactivate tracking ability for game modes that don't use tracking damage type
 			for (FGameplayAbilitySpec& Spec : Character->GetBSAbilitySystemComponent()->GetActivatableAbilities())
 			{
 				if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
 				{
 					if (UBSGameplayAbility_TrackGun* TrackAbility = Cast<UBSGameplayAbility_TrackGun>(Ability))
 					{
-						TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
-						
 						if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 						{
+							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
 							Character->GetBSAbilitySystemComponent()->ReactivateAbility(TrackAbility);
 						}
 						else
@@ -656,31 +656,19 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 
 void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FTransform& Transform)
 {
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack || TimeElapsed == -1)
+	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking || TimeElapsed == -1.f)
 	{
 		return;
 	}
-
-	if (TimeElapsed <= BSConfig.AudioConfig.PlayerDelay - 0.05f)
-	{
-		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, TimeElapsed / BSConfig.AudioConfig.PlayerDelay);
-	}
-	else if (TimeElapsed <= BSConfig.AudioConfig.PlayerDelay + 0.05f)
-	{
-		CurrentPlayerScore.Score += MaxScorePerTarget;
-	}
-	else if (TimeElapsed <= BSConfig.TargetConfig.TargetMaxLifeSpan)
-	{
-		CurrentPlayerScore.Score += FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2,
-		                                        (TimeElapsed - BSConfig.AudioConfig.PlayerDelay + 0.05f) / (BSConfig.TargetConfig.TargetMaxLifeSpan - (BSConfig.AudioConfig.PlayerDelay + 0.05f)));
-		// UE_LOG(LogTemp, Display, TEXT("Last: %f"), FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2,
-		// (TimeElapsed - BSConfig.PlayerDelay + 0.05f) /
-		// (BSConfig.TargetMaxLifeSpan - (BSConfig.PlayerDelay + 0.05f))))
-	}
+	const float TimeOffset = abs(BSConfig.TargetConfig.SpawnBeatDelay - TimeElapsed);
+	CurrentPlayerScore.Score += GetScoreFromTimeOffset(TimeOffset, TimeElapsed);
+	CurrentPlayerScore.TotalTimeOffset += TimeOffset;
+	
 	UpdateTargetsHit();
 	UpdateStreak(NewStreak, Transform);
+	//UpdateTimeOffset(TimeOffset, Transform);
 	UpdateHighScore();
-	CurrentPlayerScore.TotalTimeOffset += FMath::Abs(TimeElapsed - BSConfig.AudioConfig.PlayerDelay);
+
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
 }
 
@@ -734,6 +722,14 @@ void ABSGameMode::UpdateStreak(const int32 Streak, const FTransform& Transform)
 	}
 }
 
+void ABSGameMode::UpdateTimeOffset(const float TimeOffset, const FTransform& Transform)
+{
+	for (ABSPlayerController* Controller : Controllers)
+	{
+		Controller->ShowAccuracyText(TimeOffset, Transform);
+	}
+}
+
 void ABSGameMode::UpdateTargetsHit()
 {
 	CurrentPlayerScore.TargetsHit++;
@@ -754,4 +750,27 @@ float ABSGameMode::FloatDivide(const float Num, const float Denom)
 		return 0;
 	}
 	return Num / Denom;
+}
+
+float ABSGameMode::GetScoreFromTimeOffset(const float InTimeOffset, const float InTimeElapsed) const
+{
+	// Perfect score
+	if (InTimeOffset < PerfectScoreTimeThreshold)
+	{
+		return MaxScorePerTarget;
+	}
+
+	// Early shot, interp between half of perfect score at time zero to perfect score at time (SpawnBeatDelay - PerfectScoreTimeThreshold)
+	if (InTimeElapsed < BSConfig.TargetConfig.SpawnBeatDelay)
+	{
+		return FMath::Lerp(MaxScorePerTarget / 2, MaxScorePerTarget, InTimeElapsed / (BSConfig.TargetConfig.SpawnBeatDelay - PerfectScoreTimeThreshold));
+	}
+	
+	// Late shot, interp between perfect score at (SpawnBeatDelay + PerfectScoreTimeThreshold) time to half of perfect score at end of target lifespan
+	const float MaxLateShotTimeOffset = abs(BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.TargetConfig.SpawnBeatDelay);
+	
+	const float LateShotTimeLerp = FMath::GetMappedRangeValueClamped(UE::Math::TVector2(PerfectScoreTimeThreshold, MaxLateShotTimeOffset),
+		UE::Math::TVector2(0.f, 1.f), InTimeOffset);
+	
+	return FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, LateShotTimeLerp);
 }

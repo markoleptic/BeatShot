@@ -23,6 +23,8 @@ public:
 	/** Begins the FadeOutAnimation */
 	void ShowCombatText();
 
+	void ShowCombatTextBottom();
+
 	/** Returns the delegate bound to the completion of the FadeOut animation */
 	FWidgetAnimationDynamicEvent& GetFadeOutDelegate() { return FadeOutDelegate; }
 
@@ -36,6 +38,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOut;
+
+	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* FadeOutBottom;
 	
 	FWidgetAnimationDynamicEvent FadeOutDelegate;
 };

@@ -178,6 +178,10 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 
 void ATargetManager::OnPlayerStopTrackingTarget()
 {
+	if (BSConfig.TargetConfig.TargetDamageType != ETargetDamageType::Tracking)
+	{
+		return;
+	}
 	for (const TObjectPtr<ASphereTarget> Target : GetManagedTargets())
 	{
 		if (Target && !Target->IsTargetImmuneToTracking())

@@ -494,6 +494,26 @@ void ABSPlayerController::ShowCombatText(const int32 Streak, const FTransform& T
 	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, true), false);
 }
 
+void ABSPlayerController::ShowAccuracyText(const float TimeOffset, const FTransform& Transform)
+{
+	FString AccuracyString;
+	if (TimeOffset <= 0.1f)
+	{
+		AccuracyString = "Perfect";
+	}
+	else if (TimeOffset > 0.1f && TimeOffset <= 0.2f)
+	{
+		AccuracyString = "Good";
+	}
+	else
+	{
+		AccuracyString = "Oof";
+	}
+	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass, FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	CombatText->SetText(FText::FromString(AccuracyString));
+	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, false), false);
+}
+
 void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings)
 {
 	if (PlayerSettings.bShowFPSCounter)

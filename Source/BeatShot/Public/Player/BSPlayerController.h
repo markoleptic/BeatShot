@@ -82,6 +82,7 @@ public:
 	void HideRLAgentWidget();
 	
 	void ShowCombatText(const int32 Streak, const FTransform& Transform);
+	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const ELoginState& LoginState);

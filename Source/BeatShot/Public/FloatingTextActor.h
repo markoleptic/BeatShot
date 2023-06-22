@@ -29,7 +29,7 @@ public:
 	/** Sets the CombatTextWidgetComponent's widget's text */
 	void SetText(const FText& InText);
 
-	FTransform GetTextTransform(const FTransform& InTargetTransform, const bool bDisplayAbove) const;
+	FTransform GetTextTransform(const FTransform& InTargetTransform, const bool bDisplayAbove);
 	
 	UFUNCTION()
 	void OnCombatTextFadeOutCompleted();
@@ -44,4 +44,6 @@ protected:
 	TSubclassOf<UUserWidget> CombatTextWidgetClass;
 
 	FText CombatText;
+
+	bool bDisplayBelow;
 };

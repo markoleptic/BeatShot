@@ -173,9 +173,12 @@ void ASimpleBeamLight::DeactivateLightComponents()
 	{
 		LightPositionComponent->SetRelativeLocation(FVector(0));
 	}
-	
-	SpotlightLimb->SetRelativeRotation(FRotator(0));
-	SpotlightHead->SetRelativeRotation(FRotator(0));
+
+	if (SpotlightLimb)
+	{
+		SpotlightLimb->SetRelativeRotation(FRotator(0));
+		SpotlightHead->SetRelativeRotation(FRotator(0));
+	}
 	
 	if (SimpleBeamComponent)
 	{

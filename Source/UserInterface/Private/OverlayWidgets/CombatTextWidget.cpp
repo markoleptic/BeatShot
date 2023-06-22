@@ -19,3 +19,9 @@ void UCombatTextWidget::ShowCombatText()
 	BindToAnimationFinished(FadeOut, FadeOutDelegate);
 	PlayAnimationForward(FadeOut);
 }
+
+void UCombatTextWidget::ShowCombatTextBottom()
+{
+	BindToAnimationFinished(FadeOutBottom, FadeOutDelegate);
+	PlayAnimationForward(FadeOutBottom);
+}

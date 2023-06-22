@@ -60,7 +60,7 @@ void UBSGameplayAbility_TrackGun::DeactivateAbility(const FGameplayAbilitySpecHa
 
 void UBSGameplayAbility_TrackGun::ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo)
 {
-	if (TickTraceTask || !bIsActive || !bIsDeactivated)
+	if ((TickTraceTask && TickTraceTask->IsActive()) || !bIsActive || !bIsDeactivated)
 	{
 		return;
 	}

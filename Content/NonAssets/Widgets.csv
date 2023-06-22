@@ -201,7 +201,7 @@ Login_PasswordText,Password:
 Login_RegisterBody1,Signs you in each time you start the game
 Login_RegisterBody2,Saves your scores in the cloud
 Login_RegisterBody3,Grants access to detailed score data online and in game
-Login_RegisterBodyTitle,Registering for an account automatically:
+Login_RegisterBodyTitle,Registering for a free account automatically:
 Login_RegisterButtonText,Register
 Login_RegisterTitleText,It looks like you don't have an account yet
 Login_TimeOutErrorText,Couldn't connect to BeatShot servers.

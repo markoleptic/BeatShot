@@ -24,7 +24,14 @@ void AFloatingTextActor::BeginPlay()
 	
 	if (UCombatTextWidget* CombatTextWidget = GetCombatTextWidget())
 	{
-		CombatTextWidget->ShowCombatText();
+		if (bDisplayBelow)
+		{
+			CombatTextWidget->ShowCombatTextBottom();
+		}
+		else
+		{
+			CombatTextWidget->ShowCombatText();
+		}
 	}
 }
 
@@ -57,8 +64,9 @@ void AFloatingTextActor::SetText(const FText& InText)
 	}
 }
 
-FTransform AFloatingTextActor::GetTextTransform(const FTransform& InTargetTransform, const bool bDisplayAbove) const
+FTransform AFloatingTextActor::GetTextTransform(const FTransform& InTargetTransform, const bool bDisplayAbove)
 {
+	bDisplayBelow = !bDisplayAbove;
 	if (bDisplayAbove)
 	{
 		return FTransform(FVector(

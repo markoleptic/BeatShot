@@ -302,6 +302,8 @@ private:
 	/** Called by UpdatePlayerScores to update the streak */
 	void UpdateStreak(const int32 Streak, const FTransform& Transform);
 
+	void UpdateTimeOffset(const float TimeOffset, const FTransform& Transform);
+
 	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
 	void UpdateTargetsHit();
 
@@ -317,6 +319,8 @@ private:
 #pragma region Utility
 
 	static float FloatDivide(const float Num, const float Denom);
+
+	float GetScoreFromTimeOffset(const float InTimeOffset, const float InTimeElapsed) const;
 
 #pragma endregion
 };

@@ -40,6 +40,9 @@ namespace Constants
 	/** The color used to change the GameModeButton color to when selected */
 	inline constexpr FLinearColor BeatShotBlue(0.049707, 0.571125, 0.83077, 1.0);
 
+	/** The time threshold required to receive full score for hitting a target */
+	inline constexpr float PerfectScoreTimeThreshold = 0.1f;
+
 #pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */
