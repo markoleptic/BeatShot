@@ -18,9 +18,13 @@ class BEATSHOT_API UBSGameplayAbility_TrackGun : public UBSGameplayAbility
 
 public:
 	UBSGameplayAbility_TrackGun();
+	
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
 
+protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-								 const FGameplayEventData* TriggerEventData) override;
+							 const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 							bool bWasCancelled) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
@@ -30,19 +34,6 @@ public:
 	
 	/** Reactivates the TickTraceTask */
 	virtual void ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-	
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
-	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
-
-protected:
-	
-	/** The damage to apply on trace hit */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float Damage = 1.0f;
-
-	/** How far to trace forward from Character camera */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float TraceDistance = 100000.f;
 
 	/** Performs non-gameplay related tasks like muzzle flash, camera recoil, and decal spawning */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -53,6 +44,14 @@ protected:
 	
 	UFUNCTION()
 	void OnTickTraceHitResultHit(const FHitResult& HitResult);
+
+	/** The damage to apply on trace hit */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float Damage = 1.0f;
+
+	/** How far to trace forward from Character camera */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	float TraceDistance = 100000.f;
 
 private:
 

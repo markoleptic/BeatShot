@@ -27,11 +27,11 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 		TargetsToActivateAtOnce = CreateWidget<UDoubleSyncedSliderAndTextBox>(this, DoubleSyncedSliderAndTextBoxClass);
 		GridConfig = CreateWidget<UGameModesWidget_GridConfig>(this, GridConfigClass);
 		
-		int32 NewIndex;
 		
-		#if UE_BUILD_SHIPPING
+		
+#if !WITH_EDITOR
 		TArray<UWidget*> Widgets = MainContainer->GetAllChildren();
-		NewIndex = Widgets.Find(BSBox_LifetimeTargetScalePolicy);
+		int32 NewIndex = Widgets.Find(BSBox_LifetimeTargetScalePolicy);
 		if (NewIndex != INDEX_NONE)
 		{
 			Widgets.EmplaceAt(NewIndex - 1, Cast<UWidget>(TargetScaleConstrained.Get()));
@@ -62,10 +62,8 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 			MainContainer->AddChild(Widget);
 		}
 		
-		#endif
-		
-		#if WITH_EDITOR
-		NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
+#else
+		int32 NewIndex = MainContainer->GetChildIndex(BSBox_LifetimeTargetScalePolicy) - 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(TargetScaleConstrained.Get()));
 		
 		NewIndex = MainContainer->GetChildIndex(BSBox_MoveTargets) + 1;
@@ -76,7 +74,7 @@ TSharedRef<SWidget> UGameModesWidget_TargetConfig::RebuildWidget()
 
 		NewIndex = MainContainer->GetChildIndex(BSBox_TargetDistributionPolicy) + 1;
 		MainContainer->InsertChildAt(NewIndex, Cast<UWidget>(GridConfig.Get()));
-		#endif
+#endif
 	}
 	return Super::RebuildWidget();
 }

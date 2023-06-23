@@ -55,7 +55,14 @@ void UPauseMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
 		QuitMenuWidget->PlayFadeInRestartMenu();
 	}
-	PauseMenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
+
+	if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
+	{
+		if (MenuButton->GetBox())
+		{
+			PauseMenuSwitcher->SetActiveWidget(MenuButton->GetBox());
+		}
+	}
 }
 
 void UPauseMenuWidget::OnButtonClicked_RestartCurrentMode()

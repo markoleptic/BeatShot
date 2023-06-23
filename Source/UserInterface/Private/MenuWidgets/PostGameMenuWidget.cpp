@@ -29,7 +29,7 @@ void UPostGameMenuWidget::NativeConstruct()
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SetQuitMenuButtonsInActive");
 	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "Restart");
-	
+	```````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````
 	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 	
@@ -64,9 +64,12 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		Restart();
 		return;
 	}
-	if (Cast<UMenuButton>(Button)->GetBox())
+	if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
 	{
-		MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
+		if (MenuButton->GetBox())
+		{
+			MenuSwitcher->SetActiveWidget(MenuButton->GetBox());
+		}
 	}
 }
 

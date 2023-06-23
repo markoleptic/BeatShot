@@ -69,10 +69,7 @@ void ATargetManager::Destroyed()
 {
 	if (!GetManagedTargets().IsEmpty())
 	{
-		for (ASphereTarget* Target : GetManagedTargets())
-		{
-			Target->Destroy();
-		}
+		GetManagedTargets().Empty();
 	}
 	Super::Destroyed();
 }

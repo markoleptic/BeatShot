@@ -79,9 +79,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
 	UAudioAnalyzerManager* AAPlayer;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
-	TSubclassOf<class UGameplayAbility> TrackGunAbility;
-
 public:
 	ATargetManager* GetTargetManager() const { return TargetManager.Get(); }
 

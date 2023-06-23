@@ -59,6 +59,20 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload, co
 
 void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
+	// Successful login, show scores menu
+	if (LoginWidget && Button == LoginWidget->OkayButton)
+	{
+		OnButtonClicked_Scoring();
+		return;
+	}
+
+	// Feedback button
+	if (Button == Button_Feedback)
+	{
+		FeedbackWidget->ShowFeedbackWidget();
+		return;
+	}
+	
 	if (Button == MenuButton_Quit)
 	{
 		UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
@@ -70,16 +84,13 @@ void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 			ScoresWidget->FadeOutLoadingOverlay();
 		}
 	}
-	else if (LoginWidget && Button == LoginWidget->OkayButton)
+	if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
 	{
-		OnButtonClicked_Scoring();
+		if (MenuButton->GetBox())
+		{
+			MainMenuSwitcher->SetActiveWidget(MenuButton->GetBox());
+		}
 	}
-	else if (Button == Button_Feedback)
-	{
-		FeedbackWidget->ShowFeedbackWidget();
-		return;
-	}
-	MainMenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
 
 void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup)

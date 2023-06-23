@@ -129,12 +129,12 @@ void ABSGameMode::InitializeGameMode()
 						if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 						{
 							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
-							Character->GetBSAbilitySystemComponent()->ReactivateAbility(TrackAbility);
+							//Character->GetBSAbilitySystemComponent()->ReactivateAbility(TrackAbility);
 						}
-						else
-						{
-							Character->GetBSAbilitySystemComponent()->DeactivateAbility(TrackAbility);
-						}
+						//else
+						//{
+						//	Character->GetBSAbilitySystemComponent()->DeactivateAbility(TrackAbility);
+						//}
 						Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(Spec);
 					}
 				}
@@ -252,8 +252,7 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 			Controller->ShowPostGameMenu();
 			if (const ABSCharacter* Character = Controller->GetBSCharacter(); Character->HasMatchingGameplayTag(FBSGameplayTags::Get().State_Firing))
 			{
-				if (const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Fire); !AbilitySpecs.
-					IsEmpty())
+				if (const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Fire); !AbilitySpecs.IsEmpty())
 				{
 					Character->GetBSAbilitySystemComponent()->CancelAbilityHandle(AbilitySpecs[0]->Handle);
 					Character->GetBSAbilitySystemComponent()->ClearAbilityInput();

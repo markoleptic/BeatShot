@@ -21,9 +21,17 @@ public:
 	void SetDefaults(UVerticalBox* BoxToShow, UMenuButton* NextButton);
 
 	/** Returns the vertical box to associate with this button */
-	UVerticalBox* GetBox() const { return Box; }
+	UVerticalBox* GetBox() const
+	{
+		if (Box && Box.Get())
+		{
+			return Box.Get();
+		}
+		return nullptr;
+	}
 
 protected:
 	/** The vertical box to associate with this button */
+	UPROPERTY()
 	TObjectPtr<UVerticalBox> Box;
 };

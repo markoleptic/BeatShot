@@ -228,6 +228,12 @@ void ABSCharacter::PossessedBy(AController* NewController)
 	}
 }
 
+void ABSCharacter::UnPossessed()
+{
+	Super::UnPossessed();
+	RemoveCharacterAbilities();
+}
+
 void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
 	check(PlayerInputComponent);

@@ -99,6 +99,8 @@ Plugins/**/Binaries/*
 Plugins/**/Intermediate/*
 
 # End of https://www.toptal.com/developers/gitignore/api/unrealengine
+Config/DefaultEngine.ini
+Config/DefaultGame.ini
 Content/Levels/Range.umap
 Windows/
 Plugins/BeatShotAudioAnalyzer

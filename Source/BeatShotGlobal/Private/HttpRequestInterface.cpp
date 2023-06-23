@@ -5,7 +5,6 @@
 #include "HttpModule.h"
 #include "JsonObjectConverter.h"
 #include "SaveGamePlayerScore.h"
-#include "SaveGamePlayerSettings.h"
 #include "Interfaces/IHttpResponse.h"
 
 bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings& PlayerSettings)
@@ -132,6 +131,7 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore>& ScoresT
 	SendScoreRequest->SetURL(Endpoint);
 	SendScoreRequest->SetVerb("POST");
 	SendScoreRequest->SetHeader("Content-Type", "application/json");
+	SendScoreRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	SendScoreRequest->SetContentAsString(OutputString);
 	SendScoreRequest->ProcessRequest();
 }
