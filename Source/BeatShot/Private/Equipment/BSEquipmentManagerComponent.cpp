@@ -4,7 +4,7 @@
 #include "Equipment/BSEquipmentManagerComponent.h"
 #include "Equipment/BSEquipmentDefinition.h"
 #include "Equipment/BSEquipmentInstance.h"
-#include "AbilitySystem/BSAbilitySet.h"
+#include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "Engine/ActorChannel.h"

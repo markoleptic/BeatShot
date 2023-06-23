@@ -4,7 +4,7 @@
 #include "Character/BSAnimInstance.h"
 #include "Character/BSCharacter.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "AbilitySystem/BSGameplayAbility.h"
+#include "AbilitySystem/Abilities/BSGameplayAbility.h"
 
 void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage)
 {
@@ -13,7 +13,7 @@ void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceA
 
 void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
-	FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
+	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
 	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
 
 	if (UBSAnimInstance* AnimInstance = Cast<UBSAnimInstance>(ActorInfo->GetAnimInstance()))
@@ -98,10 +98,10 @@ bool UBSAbilitySystemComponent::IsActivationGroupBlocked(EBSAbilityActivationGro
 	case EBSAbilityActivationGroup::Exclusive_Replaceable:
 	case EBSAbilityActivationGroup::Exclusive_Blocking:
 		// Exclusive abilities can activate if nothing is blocking.
-		bBlocked = (ActivationGroupCounts[(uint8)EBSAbilityActivationGroup::Exclusive_Blocking] > 0);
+		bBlocked = (ActivationGroupCounts[static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)] > 0);
 		break;
 
-	default: checkf(false, TEXT("IsActivationGroupBlocked: Invalid ActivationGroup [%d]\n"), (uint8)Group);
+	default: checkf(false, TEXT("IsActivationGroupBlocked: Invalid ActivationGroup [%d]\n"), static_cast<uint8>(Group));
 		break;
 	}
 
@@ -111,11 +111,11 @@ bool UBSAbilitySystemComponent::IsActivationGroupBlocked(EBSAbilityActivationGro
 void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivationGroup Group, UBSGameplayAbility* Ability)
 {
 	check(Ability);
-	check(ActivationGroupCounts[(uint8)Group] < INT32_MAX);
+	check(ActivationGroupCounts[static_cast<uint8>(Group)] < INT32_MAX);
 
-	ActivationGroupCounts[(uint8)Group]++;
+	ActivationGroupCounts[static_cast<uint8>(Group)]++;
 
-	const bool bReplicateCancelAbility = false;
+	constexpr bool bReplicateCancelAbility = false;
 
 	switch (Group)
 	{
@@ -128,11 +128,11 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 		CancelActivationGroupAbilities(EBSAbilityActivationGroup::Exclusive_Replaceable, Ability, bReplicateCancelAbility);
 		break;
 
-	default: checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"), (uint8)Group);
+	default: checkf(false, TEXT("AddAbilityToActivationGroup: Invalid ActivationGroup [%d]\n"), static_cast<uint8>(Group));
 		break;
 	}
 
-	const int32 ExclusiveCount = ActivationGroupCounts[(uint8)EBSAbilityActivationGroup::Exclusive_Replaceable] + ActivationGroupCounts[(uint8)EBSAbilityActivationGroup::Exclusive_Blocking];
+	const int32 ExclusiveCount = ActivationGroupCounts[static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Replaceable)] + ActivationGroupCounts[static_cast<uint8>(EBSAbilityActivationGroup::Exclusive_Blocking)];
 	if (!ensure(ExclusiveCount <= 1))
 	{
 		UE_LOG(LogTemp, Error, TEXT("AddAbilityToActivationGroup: Multiple exclusive abilities are running."));
@@ -142,9 +142,9 @@ void UBSAbilitySystemComponent::AddAbilityToActivationGroup(EBSAbilityActivation
 void UBSAbilitySystemComponent::RemoveAbilityFromActivationGroup(EBSAbilityActivationGroup Group, UBSGameplayAbility* Ability)
 {
 	check(Ability);
-	check(ActivationGroupCounts[(uint8)Group] > 0);
+	check(ActivationGroupCounts[static_cast<uint8>(Group)] > 0);
 
-	ActivationGroupCounts[(uint8)Group]--;
+	ActivationGroupCounts[static_cast<uint8>(Group)]--;
 }
 
 void UBSAbilitySystemComponent::CancelActivationGroupAbilities(EBSAbilityActivationGroup Group, UBSGameplayAbility* IgnoreAbility, bool bReplicateCancelAbility)
@@ -155,85 +155,6 @@ void UBSAbilitySystemComponent::CancelActivationGroupAbilities(EBSAbilityActivat
 	};
 
 	CancelAbilitiesByFunc(ShouldCancelFunc, bReplicateCancelAbility);
-}
-
-void UBSAbilitySystemComponent::DeactivateAbility(UBSGameplayAbility* Ability)
-{
-	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
-	
-	ABILITYLIST_SCOPE_LOCK();
-
-	if (Ability)
-	{
-		// Try to deactivate the non instanced, this may not necessarily work
-		Ability->DeactivateAbility(Ability->CurrentSpecHandle, ActorInfo, Ability->GetCurrentActivationInfo());
-	}
-	MarkAbilitySpecDirty(*Ability->GetCurrentAbilitySpec());
-	
-	/*for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
-	{
-		UBSGameplayAbility* AbilityCDO = CastChecked<UBSGameplayAbility>(Spec.Ability);
-		if (AbilityCDO == Ability)
-		{
-			if (AbilityCDO->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
-			{
-				// We need to deactivate spawned instance, not the CDO
-				TArray<UGameplayAbility*> AbilitiesToCancel = Spec.GetAbilityInstances();
-				for (const UGameplayAbility* InstanceAbility : AbilitiesToCancel)
-				{
-					if (InstanceAbility)
-					{
-						Ability->DeactivateAbility(Spec.Handle, ActorInfo, InstanceAbility->GetCurrentActivationInfo());
-					}
-				}
-			}
-			else
-			{
-				// Try to deactivate the non instanced, this may not necessarily work
-				AbilityCDO->DeactivateAbility(Spec.Handle, ActorInfo, FGameplayAbilityActivationInfo());
-			}
-			MarkAbilitySpecDirty(Spec);
-		}
-	}*/
-}
-
-void UBSAbilitySystemComponent::ReactivateAbility(UBSGameplayAbility* Ability)
-{
-	const FGameplayAbilityActorInfo* ActorInfo = AbilityActorInfo.Get();
-	
-	ABILITYLIST_SCOPE_LOCK();
-
-	if (Ability)
-	{
-		// Try to deactivate the non instanced, this may not necessarily work
-		Ability->ReactivateAbility(Ability->CurrentSpecHandle, ActorInfo, Ability->GetCurrentActivationInfo());
-	}
-	MarkAbilitySpecDirty(*Ability->GetCurrentAbilitySpec());
-	
-	/*for (FGameplayAbilitySpec& Spec : ActivatableAbilities.Items)
-	{
-		if (Spec.Ability == Ability)
-		{
-			if (Spec.Ability->GetInstancingPolicy() != EGameplayAbilityInstancingPolicy::NonInstanced)
-			{
-				// We need to deactivate spawned instance, not the CDO
-				TArray<UGameplayAbility*> AbilitiesToCancel = Spec.GetAbilityInstances();
-				for (const UGameplayAbility* InstanceAbility : AbilitiesToCancel)
-				{
-					if (InstanceAbility)
-					{
-						Ability->ReactivateAbility(Spec.Handle, ActorInfo, InstanceAbility->GetCurrentActivationInfo());
-					}
-				}
-			}
-			else
-			{
-				// Try to deactivate the non instanced, this may not necessarily work
-				Cast<UBSGameplayAbility>(Spec.Ability)->ReactivateAbility(Spec.Handle, ActorInfo, FGameplayAbilityActivationInfo());
-			}
-			MarkAbilitySpecDirty(Spec);
-		}
-	}*/
 }
 
 void UBSAbilitySystemComponent::GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo,
@@ -300,8 +221,6 @@ void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGameP
 
 	static TArray<FGameplayAbilitySpecHandle> AbilitiesToActivate;
 	AbilitiesToActivate.Reset();
-
-	//@TODO: See if we can use FScopedServerAbilityRPCBatcher ScopedRPCBatcher in some of these loops
 	
 	// Process all abilities that activate when the input is held.
 	for (const FGameplayAbilitySpecHandle& SpecHandle : InputHeldSpecHandles)

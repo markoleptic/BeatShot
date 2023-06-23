@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "AbilitySystem/BSAbilitySystemGlobals.h"
+#include "AbilitySystem/Globals/BSAbilitySystemGlobals.h"
 #include "GameplayEffect.h"
 
 void UBSAbilitySystemGlobals::PushCurrentAppliedGE(const FGameplayEffectSpec* Spec, UAbilitySystemComponent* AbilitySystemComponent)

@@ -1,6 +1,6 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/BSGameplayAbility.h"
+#include "AbilitySystem/Abilities/BSGameplayAbility.h"
 #include "AbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
 #include "Player/BSPlayerController.h"

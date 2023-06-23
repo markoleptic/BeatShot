@@ -3,10 +3,10 @@
 
 #include "Character/BSHealthComponent.h"
 #include "GameplayEffectExtension.h"
-#include "AbilitySystem/BSAbilitySystemGlobals.h"
+#include "AbilitySystem/Globals/BSAbilitySystemGlobals.h"
 #include "Target/SphereTarget.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "AbilitySystem/AttributeSets/BSAttributeSetBase.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "GameFramework/Actor.h"
 
 UBSHealthComponent::UBSHealthComponent()

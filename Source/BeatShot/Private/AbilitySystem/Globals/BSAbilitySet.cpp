@@ -1,10 +1,10 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/BSAbilitySet.h"
+#include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "ActiveGameplayEffectHandle.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
-#include "AbilitySystem/BSGameplayAbility.h"
+#include "AbilitySystem/Abilities/BSGameplayAbility.h"
 
 UBSAbilitySet::UBSAbilitySet(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer)
 {

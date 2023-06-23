@@ -11,7 +11,7 @@
 #include "Materials/MaterialInterface.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "AbilitySystem/AttributeSets/BSAttributeSetBase.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 

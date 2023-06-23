@@ -13,7 +13,7 @@
 #include "HAL/Platform.h"
 #include "Net/Serialization/FastArraySerializer.h"
 #include "Engine/NetSerialization.h"
-#include "AbilitySystem/BSAbilitySet.h"
+#include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "Templates/SubclassOf.h"
 #include "Templates/UnrealTemplate.h"
 #include "UObject/Class.h"

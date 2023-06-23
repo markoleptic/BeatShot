@@ -9,7 +9,7 @@
 #include "Target/TargetManager.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
-#include "AbilitySystem/BSGameplayAbility_TrackGun.h"
+#include "AbilitySystem/Abilities/BSGameplayAbility_TrackGun.h"
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogAudioData);
@@ -119,7 +119,7 @@ void ABSGameMode::InitializeGameMode()
 					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 				}
 			}
-			// Deactivate tracking ability for game modes that don't use tracking damage type
+			
 			for (FGameplayAbilitySpec& Spec : Character->GetBSAbilitySystemComponent()->GetActivatableAbilities())
 			{
 				if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
@@ -129,12 +129,13 @@ void ABSGameMode::InitializeGameMode()
 						if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 						{
 							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
-							//Character->GetBSAbilitySystemComponent()->ReactivateAbility(TrackAbility);
+							TrackAbility->SetTrackingTaskState(true);
 						}
-						//else
-						//{
-						//	Character->GetBSAbilitySystemComponent()->DeactivateAbility(TrackAbility);
-						//}
+						else
+						{
+							// Disable Tracking Task inside tracking ability for game modes that don't use tracking damage type
+							TrackAbility->SetTrackingTaskState(false);
+						}
 						Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(Spec);
 					}
 				}

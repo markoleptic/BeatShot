@@ -2,7 +2,7 @@
 // Credit to Dan Kestranek.
 
 #include "Player/BSPlayerState.h"
-#include "AbilitySystem/AttributeSets/BSAttributeSetBase.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
 #include "Character/BSCharacterMovementComponent.h"

@@ -55,20 +55,16 @@ class BEATSHOT_API UBSGameplayAbility : public UGameplayAbility
 public:
 	UBSGameplayAbility();
 	
-	virtual void DeactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) {}
-
-	virtual void ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) {}
-	
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Ability")
+	UFUNCTION(BlueprintPure, Category = "BeatShot|Ability")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponentFromActorInfo() const;
 
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Ability")
+	UFUNCTION(BlueprintPure, Category = "BeatShot|Ability")
 	ABSPlayerController* GetBSPlayerControllerFromActorInfo() const;
 
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Ability")
+	UFUNCTION(BlueprintPure, Category = "BeatShot|Ability")
 	AController* GetControllerFromActorInfo() const;
 
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Ability")
+	UFUNCTION(BlueprintPure, Category = "BeatShot|Ability")
 	ABSCharacter* GetBSCharacterFromActorInfo() const;
 
 	// Defines how this ability is meant to activate.
@@ -87,8 +83,6 @@ public:
 	EBSAbilityActivationGroup GetActivationGroup() const { return ActivationGroup; }
 
 protected:
-	bool bIsDeactivated = false;
-
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 							 const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,

@@ -7,6 +7,7 @@
 #include "BSGameplayAbility_TrackGun.generated.h"
 
 class ABSCharacter;
+class UBSAbilityTask_TickTrace;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerStopTrackingTarget);
 
@@ -22,18 +23,14 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
 
+	void SetTrackingTaskState(const bool bEnabled);
+
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 							 const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 							bool bWasCancelled) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
-
-	/** Ends the TickTraceTask */
-	virtual void DeactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
-	
-	/** Reactivates the TickTraceTask */
-	virtual void ReactivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override;
 
 	/** Performs non-gameplay related tasks like muzzle flash, camera recoil, and decal spawning */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -54,8 +51,9 @@ protected:
 	float TraceDistance = 100000.f;
 
 private:
-
-	TObjectPtr<class UBSAbilityTask_TickTrace> TickTraceTask;
+	TObjectPtr<UBSAbilityTask_TickTrace> TickTraceTask;
 	
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
+
+	bool bEnableTickTraceTask;
 };

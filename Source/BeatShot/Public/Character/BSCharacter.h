@@ -9,7 +9,7 @@
 #include "Input/BSInputConfig.h"
 #include "GameplayTagAssetInterface.h"
 #include "GameplayTagContainer.h"
-#include "AbilitySystem/BSAbilitySet.h"
+#include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 
 class ASphereTarget;

@@ -1,6 +1,6 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/BSGameplayAbility_FireGun.h"
+#include "AbilitySystem/Abilities/BSGameplayAbility_FireGun.h"
 #include "AbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
 #include "Character/BSRecoilComponent.h"

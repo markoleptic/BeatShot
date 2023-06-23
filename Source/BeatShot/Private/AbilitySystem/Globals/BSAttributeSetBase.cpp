@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 // Credit to Dan Kestranek.
 
-#include "AbilitySystem/AttributeSets/BSAttributeSetBase.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 
