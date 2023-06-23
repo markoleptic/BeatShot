@@ -8,36 +8,6 @@
 UBSGameplayAbility_TrackGun::UBSGameplayAbility_TrackGun()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	bEnableTickTraceTask = true;
-}
-
-void UBSGameplayAbility_TrackGun::SetTrackingTaskState(const bool bEnabled)
-{
-	bEnableTickTraceTask = bEnabled;
-	
-	if (!bIsActive)
-	{
-		return;
-	}
-	
-	if (bEnabled)
-	{
-		if (TickTraceTask && TickTraceTask->IsActive())
-		{
-			return;
-		}
-		TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
-		TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
-		TickTraceTask->ReadyForActivation();
-	}
-	else
-	{
-		if (TickTraceTask)
-		{
-			TickTraceTask->EndTask();
-			TickTraceTask->OnTickTraceHit.RemoveDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
-		}
-	}
 }
 
 void UBSGameplayAbility_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -49,12 +19,11 @@ void UBSGameplayAbility_TrackGun::ActivateAbility(const FGameplayAbilitySpecHand
 	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(
 		this, &ThisClass::OnTargetDataReadyCallback);
 
-	if (!TickTraceTask && bEnableTickTraceTask)
-	{
-		TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
-		TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
-		TickTraceTask->ReadyForActivation();
-	}
+
+	TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
+	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
+	TickTraceTask->ReadyForActivation();
+	
 	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }

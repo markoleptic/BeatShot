@@ -119,25 +119,31 @@ void ABSGameMode::InitializeGameMode()
 					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 				}
 			}
-			
-			for (FGameplayAbilitySpec& Spec : Character->GetBSAbilitySystemComponent()->GetActivatableAbilities())
+
+			if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 			{
-				if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
+				if (TrackGunAbilityGrantedHandles.IsEmpty())
 				{
-					if (UBSGameplayAbility_TrackGun* TrackAbility = Cast<UBSGameplayAbility_TrackGun>(Ability))
+					TrackGunAbilitySet->GiveToAbilitySystem(Character->GetBSAbilitySystemComponent(), &TrackGunAbilityGrantedHandles);
+				}
+				for (FGameplayAbilitySpec& Spec : Character->GetBSAbilitySystemComponent()->GetActivatableAbilities())
+				{
+					if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
 					{
-						if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+						if (UBSGameplayAbility_TrackGun* TrackAbility = Cast<UBSGameplayAbility_TrackGun>(Ability))
 						{
 							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
-							TrackAbility->SetTrackingTaskState(true);
+							Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(Spec);
+							break;
 						}
-						else
-						{
-							// Disable Tracking Task inside tracking ability for game modes that don't use tracking damage type
-							TrackAbility->SetTrackingTaskState(false);
-						}
-						Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(Spec);
 					}
+				}
+			}
+			else
+			{
+				if (!TrackGunAbilityGrantedHandles.IsEmpty())
+				{
+					TrackGunAbilityGrantedHandles.TakeFromAbilitySystem(Character->GetBSAbilitySystemComponent());
 				}
 			}
 		}

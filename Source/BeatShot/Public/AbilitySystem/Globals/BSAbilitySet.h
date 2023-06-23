@@ -68,6 +68,7 @@ struct FBSAbilitySet_GrantedHandles
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
 	void AddAttributeSet(UAttributeSet* Set);
 	void TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC);
+	bool IsEmpty() const;
 
 protected:
 	// Handles to the granted abilities.

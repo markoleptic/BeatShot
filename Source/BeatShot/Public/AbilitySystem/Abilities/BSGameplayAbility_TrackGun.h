@@ -23,8 +23,6 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
 
-	void SetTrackingTaskState(const bool bEnabled);
-
 protected:
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 							 const FGameplayEventData* TriggerEventData) override;
@@ -54,6 +52,4 @@ private:
 	TObjectPtr<UBSAbilityTask_TickTrace> TickTraceTask;
 	
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
-
-	bool bEnableTickTraceTask;
 };

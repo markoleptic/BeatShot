@@ -6,9 +6,12 @@
 #include "HttpRequestInterface.h"
 #include "BeatShot/Beatshot.h"
 #include "SaveLoadInterface.h"
+#include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "GameFramework/GameMode.h"
 #include "BSGameMode.generated.h"
 
+struct FBSAbilitySet_GrantedHandles;
+class UBSAbilitySet;
 class AVisualizerManager;
 class ABSCharacter;
 class AVisualizerBase;
@@ -71,13 +74,20 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Actors")
 	TObjectPtr<AVisualizerManager> VisualizerManager;
 
-	/* The spawned AATracker object */
+	/** The spawned AATracker object */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
 	UAudioAnalyzerManager* AATracker;
 
-	/* The spawned AAPlayer object */
+	/** The spawned AAPlayer object */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Spawned Objects")
 	UAudioAnalyzerManager* AAPlayer;
+
+	/** The ability set that contains the TrackGun ability for tracking damage type game modes */
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|Abilities")
+	UBSAbilitySet* TrackGunAbilitySet;
+
+	/** Granted data about the TrackGun ability */
+	FBSAbilitySet_GrantedHandles TrackGunAbilityGrantedHandles;
 
 public:
 	ATargetManager* GetTargetManager() const { return TargetManager.Get(); }

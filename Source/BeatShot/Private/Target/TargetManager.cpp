@@ -69,7 +69,14 @@ void ATargetManager::Destroyed()
 {
 	if (!GetManagedTargets().IsEmpty())
 	{
-		GetManagedTargets().Empty();
+		for (TObjectPtr<ASphereTarget> Target : GetManagedTargets())
+		{
+			if (Target)
+			{
+				Target->Destroy();
+			}
+		}
+		ManagedTargets.Empty();
 	}
 	Super::Destroyed();
 }
