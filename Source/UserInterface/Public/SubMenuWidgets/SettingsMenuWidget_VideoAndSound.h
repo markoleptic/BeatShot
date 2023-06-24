@@ -20,6 +20,53 @@ class UVerticalBox;
 class UBSButton;
 
 
+/** Video and sound settings */
+USTRUCT(BlueprintType)
+struct FPreviousSettingsDLSS
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(BlueprintReadOnly)
+	EDLSSEnabledMode DLSSEnabledMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	UStreamlineDLSSGMode FrameGenerationEnabledMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	UDLSSMode DLSSMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	float DLSSSharpness;
+
+	UPROPERTY(BlueprintReadOnly)
+	ENISEnabledMode NISEnabledMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	UNISMode NISMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	float NISSharpness;
+
+	UPROPERTY(BlueprintReadOnly)
+	UStreamlineReflexMode StreamlineReflexMode;
+
+	bool bHasBeenInitialized;
+
+	FPreviousSettingsDLSS()
+	{
+		DLSSEnabledMode = EDLSSEnabledMode::On;
+		FrameGenerationEnabledMode = UStreamlineDLSSGMode::On;
+		DLSSMode = UDLSSMode::Auto;
+		DLSSSharpness = 0.f;
+		NISEnabledMode = ENISEnabledMode::Off;
+		NISMode = UNISMode::Off;
+		NISSharpness = 0.f;
+		StreamlineReflexMode = UStreamlineReflexMode::Enabled;
+		bHasBeenInitialized = false;
+	}
+};
+
+
 /** Settings category widget holding Video and Sound settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCategoryWidget, public ISaveLoadInterface
@@ -93,16 +140,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UBSHorizontalBox* BSBox_WindowMode;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UBSHorizontalBox* BSBox_VSync;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UBSHorizontalBox* BSBox_FPSCounter;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UBSHorizontalBox* BSBox_Reflex;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UBSHorizontalBox* BSBox_DLSS;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UBSHorizontalBox* BSBox_NIS;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
 	USoundClass* GlobalSound;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
@@ -116,6 +155,7 @@ protected:
 	UEditableTextBox* Value_MenuSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
 	UEditableTextBox* Value_MusicSound;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound ")
 	USlider* Slider_GlobalSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sound")
@@ -127,22 +167,77 @@ protected:
 	UEditableTextBox* Value_FrameLimitMenu;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UEditableTextBox* Value_FrameLimitGame;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UComboBoxString* ComboBox_Resolution;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UComboBoxString* ComboBox_WindowMode;
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ComboBox_Reflex;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ComboBox_DLSS;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
-	UComboBoxString* ComboBox_NIS;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
-	UCheckBox* CheckBox_VSyncEnabled;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
 	UCheckBox* CheckBox_FPSCounter;
+
+	// NVIDIA
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UBSHorizontalBox* BSBox_DLSS;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSComboBoxString* ComboBox_DLSS;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSHorizontalBox* BSBox_FrameGeneration;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			UBSComboBoxString* ComboBox_FrameGeneration;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSHorizontalBox* BSBox_SuperResolution;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			UBSComboBoxString* ComboBox_SuperResolution;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSHorizontalBox* BSBox_DLSS_Sharpness;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			USlider* Slider_DLSS_Sharpness;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			UEditableTextBox* Value_DLSS_Sharpness;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UBSHorizontalBox* BSBox_NIS;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSComboBoxString* ComboBox_NIS;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSHorizontalBox* BSBox_NIS_Mode;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			UBSComboBoxString* ComboBox_NIS_Mode;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSHorizontalBox* BSBox_NIS_Sharpness;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			USlider* Slider_NIS_Sharpness;
+			UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+			UEditableTextBox* Value_NIS_Sharpness;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UBSHorizontalBox* BSBox_ResolutionScale;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+		USlider* Slider_ResolutionScale;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category =  "Video | NVIDIA")
+		UEditableTextBox* Value_ResolutionScale;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UBSHorizontalBox* BSBox_VSync;
+		UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video")
+		UCheckBox* CheckBox_VSyncEnabled;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | NVIDIA")
+	UBSHorizontalBox* BSBox_Reflex;
+		UPROPERTY(BlueprintReadWrite, meta = (BindWidget), Category = "Video | NVIDIA")
+		UBSComboBoxString* ComboBox_Reflex;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_DLSS;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_FrameGeneration;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_SuperResolution;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_NIS;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTooltipImage* QMark_Reflex;
 
 	#pragma region Quality
 	
@@ -281,6 +376,12 @@ private:
 	void OnSliderChanged_MenuSound(const float NewMenuSound);
 	UFUNCTION()
 	void OnSliderChanged_MusicSound(const float NewMusicSound);
+	UFUNCTION()
+	void OnSliderChanged_DLSS_Sharpness(const float NewValue);
+	UFUNCTION()
+	void OnSliderChanged_NIS_Sharpness(const float NewValue);
+	UFUNCTION()
+	void OnSliderChanged_ResolutionScale(const float NewValue);
 	
 	UFUNCTION()
 	void OnValueChanged_GlobalSound(const FText& NewGlobalSound, ETextCommit::Type CommitType);
@@ -292,18 +393,30 @@ private:
 	void OnValueChanged_FrameLimitMenu(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnValueChanged_FrameLimitGame(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnValueChanged_DLSS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnValueChanged_NIS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnValueChanged_ResolutionScale(const FText& NewValue, ETextCommit::Type CommitType);
 
 	UFUNCTION()
 	void OnSelectionChanged_WindowMode(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_Resolution(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_Reflex(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_DLSS(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_DLSS(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_FrameGeneration(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_NIS(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	
+	void OnSelectionChanged_SuperResolution(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_NIS(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+
 	UFUNCTION()
 	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
 	UFUNCTION()
@@ -315,6 +428,13 @@ private:
 	
 	/** Clears and repopulates the ComboBox_Resolution based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
 	void PopulateResolutionComboBox();
+
+	/** Sets enabled/disabled states for any NVIDIA DLSS related settings */
+	void HandleDLSSEnabledChanged(const bool bIsDLSSEnabled);
+
+	void HandleDLSSDependencies(const bool bIsDLSSEnabled);
+
+	void CacheDLSSSettings(const bool bDLSSWasEnabled);
 
 	/** Returns the current DLSS mode */
 	UDLSSMode GetDLSSMode() const;
@@ -328,6 +448,17 @@ private:
 	/** Returns the associated button given the quality and SettingType */
 	UVideoSettingButton* FindVideoSettingButton(const int32 Quality, const EVideoSettingType& SettingType) const;
 
+	/** Returns the widget used for a ComboBox entry */
+	UFUNCTION()
+	UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
+	
+	/** Returns the widget used for a selected ComboBox entry */
+	UFUNCTION()
+	UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
+	
+	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
+	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
+
 protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	/** Hopefully a temporary solution. Calls the GetReflexAvailable function from ReflexBlueprintLibrary */
@@ -336,6 +467,12 @@ protected:
 	/** Hopefully a temporary solution. Calls the SetReflexMode function from ReflexBlueprintLibrary */
 	UFUNCTION(BlueprintImplementableEvent)
 	void SetReflexMode(const EBudgetReflexMode Mode);
+
+	UPROPERTY()
+	FPreviousSettingsDLSS PreviousDLSSOffSettings;
+
+	UPROPERTY()
+	FPreviousSettingsDLSS PreviousDLSSOnSettings;
 
 private:
 	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */

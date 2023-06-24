@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GlobalStructs.h"
+#include "Engine/DataAsset.h"
 #include "BSGameModeDataAsset.generated.h"
 
 UCLASS(Blueprintable, BlueprintType)

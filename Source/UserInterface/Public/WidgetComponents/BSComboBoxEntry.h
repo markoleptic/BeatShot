@@ -34,6 +34,9 @@ protected:
 	/** The background of the entry */
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* Background;
+
+	/** Whether or not to always hide the tooltip image */
+	mutable bool bAlwaysHideTooltipImage = false;
 	
 public:
 	/** Sets the main text of the entry */
@@ -47,6 +50,9 @@ public:
 
 	/** Shows or hides the TooltipImage */
 	void SetTooltipImageVisibility(const bool bIsVisible) const;
+
+	/** Sets whether or not to always hide the tooltip image */
+	void SetAlwaysHideTooltipImage(const bool bShouldAlwaysHideTooltipImage) const { bAlwaysHideTooltipImage = bShouldAlwaysHideTooltipImage; }
 
 	/** Sets the Brush tint for the Border */
 	void SetBackgroundBrushTint(const FLinearColor& Color) const;

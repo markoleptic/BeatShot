@@ -82,17 +82,36 @@ namespace Constants
 	inline constexpr float DefaultTimeWindow = 0.02f;
 	inline constexpr int32 DefaultHistorySize = 30;
 	inline constexpr int32 DefaultMaxNumBandChannels = 32;
-
-	inline constexpr float SnapSize_TimeWindow = 0.01f;
-	inline constexpr float MaxValue_TimeWindow = 0.01f;
-	inline constexpr float MinValue_TimeWindow = 1.00f;
-
+	
 	inline constexpr int32 DefaultLineWidth = 4;
 	inline constexpr int32 DefaultLineLength = 10;
 	inline constexpr int32 DefaultInnerOffset = 6;
 	inline constexpr FLinearColor DefaultCrossHairColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 	inline constexpr float DefaultOutlineOpacity = 1.f;
 	inline constexpr int32 DefaultOutlineWidth = 20;
+
+	inline constexpr float SnapSize_TimeWindow = 0.01f;
+	inline constexpr float MaxValue_TimeWindow = 0.01f;
+	inline constexpr float MinValue_TimeWindow = 1.00f;
+
+	inline constexpr int32 SnapSize_FrameRateLimit = 1;
+	inline constexpr int32 MaxValue_FrameRateLimit = 1000;
+	inline constexpr int32 MinValue_FrameRateLimit = 0;
+
+	inline constexpr int32 MinValue_Volume = 0;
+	inline constexpr int32 MaxValue_Volume = 100;
+	inline constexpr int32 SnapSize_Volume = 1;
+
+	inline constexpr float MinValue_DLSSSharpness = 0.f;
+	inline constexpr float MaxValue_DLSSSharpness = 1.f;
+	inline constexpr float SnapSize_DLSSSharpness = 0.01f;
+
+	inline constexpr float MinValue_NISSharpness = 0.f;
+	inline constexpr float MaxValue_NISSharpness = 1.f;
+	inline constexpr float SnapSize_NISSharpness = 0.01f;
+
+	inline constexpr float MaxValue_ResolutionScale = 100;
+	inline constexpr float SnapSize_ResolutionScale = 0.001;
 
 #pragma endregion
 

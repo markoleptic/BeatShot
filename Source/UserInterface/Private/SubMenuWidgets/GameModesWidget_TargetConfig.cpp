@@ -1037,7 +1037,7 @@ UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectio
 	
 	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
 	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, true, TooltipText);
 		return Entry;
 	}
 	

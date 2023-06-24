@@ -13,7 +13,7 @@ void UBSComboBoxEntry::SetEntryText(const FText& InText) const
 
 void UBSComboBoxEntry::SetTooltipImageVisibility(const bool bIsVisible) const
 {
-	if (bIsVisible)
+	if (bIsVisible && !bAlwaysHideTooltipImage)
 	{
 		TooltipImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}

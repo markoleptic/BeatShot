@@ -6,6 +6,8 @@
 #include "GameplayTagContainer.h"
 #include "GlobalConstants.h"
 #include "NISLibrary.h"
+#include "StreamlineLibraryDLSSG.h"
+#include "StreamlineLibraryReflex.h"
 #include "GlobalStructs.generated.h"
 
 struct FGameplayTagContainer;
@@ -1391,13 +1393,28 @@ struct FPlayerSettings_VideoAndSound
 	bool bShowFPSCounter;
 
 	UPROPERTY(BlueprintReadOnly)
+	EDLSSEnabledMode DLSSEnabledMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	UStreamlineDLSSGMode FrameGenerationEnabledMode;
+
+	UPROPERTY(BlueprintReadOnly)
 	UDLSSMode DLSSMode;
+
+	UPROPERTY(BlueprintReadOnly)
+	float DLSSSharpness;
+
+	UPROPERTY(BlueprintReadOnly)
+	ENISEnabledMode NISEnabledMode;
 
 	UPROPERTY(BlueprintReadOnly)
 	UNISMode NISMode;
 
-	UPROPERTY(BlueprintReadWrite)
-	EBudgetReflexMode ReflexMode;
+	UPROPERTY(BlueprintReadOnly)
+	float NISSharpness;
+
+	UPROPERTY(BlueprintReadOnly)
+	UStreamlineReflexMode StreamlineReflexMode;
 
 	FPlayerSettings_VideoAndSound()
 	{
@@ -1407,9 +1424,14 @@ struct FPlayerSettings_VideoAndSound
 		FrameRateLimitMenu = DefaultFrameRateLimitMenu;
 		FrameRateLimitGame = DefaultFrameRateLimitGame;
 		bShowFPSCounter = false;
+		DLSSEnabledMode = EDLSSEnabledMode::On;
+		FrameGenerationEnabledMode = UStreamlineDLSSGMode::On;
 		DLSSMode = UDLSSMode::Auto;
-		NISMode = UNISMode::Custom;
-		ReflexMode = EBudgetReflexMode::Enabled;
+		DLSSSharpness = 0.f;
+		NISEnabledMode = ENISEnabledMode::Off;
+		NISMode = UNISMode::Off;
+		NISSharpness = 0.f;
+		StreamlineReflexMode = UStreamlineReflexMode::Enabled;
 	}
 };
 

@@ -280,7 +280,7 @@ SpreadType_Static_Wide,Static Wide
 Video_AntiAliasing,Anti-Aliasing Quality
 Video_DLSS,NVIDIA DLSS
 Video_GlobalIllumination,Global Illumination Quality
-Video_NIS,NVIDIA NIS
+Video_NIS,NIS Mode
 Video_PostProcessing,Post Processing Quality
 Video_Reflection,Reflection Quality
 Video_Reflex,NVIDIA Reflex Low Latency
@@ -327,3 +327,8 @@ FeedbackInfo2,Bug Report:
 FeedbackInfo3,Feedback:
 FeedbackInfo4,"Feel free to submit any kind of feedback at all, but I won't be able to reply to you directly. If you're looking for a reply, visit the ""Bug Reporting and Feedback"" discussion post on Steam."
 MainMenuFeedbackButtonText,Report Bugs or Submit Feedback
+Video_FrameGeneration,DLSS Frame Generation
+Video_SuperResolution,DLSS Super Resolution
+Video_Sharpness,Sharpness
+Video_NISEnabled,NVIDIA Image Scaling
+Video_ResolutionScale,Resolution Scale

@@ -40,6 +40,22 @@ enum class EBudgetReflexMode : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EBudgetReflexMode, EBudgetReflexMode::Disabled, EBudgetReflexMode::EnabledPlusBoost);
 
+UENUM(BlueprintType)
+enum class EDLSSEnabledMode : uint8
+{
+	Off UMETA(DisplayName = "Off"),
+	On UMETA(DisplayName = "On"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EDLSSEnabledMode, EDLSSEnabledMode::Off, EDLSSEnabledMode::On);
+
+UENUM(BlueprintType)
+enum class ENISEnabledMode : uint8
+{
+	Off UMETA(DisplayName = "Off"),
+	On UMETA(DisplayName = "On"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ENISEnabledMode, ENISEnabledMode::Off, ENISEnabledMode::On);
+
 /** The transition state describing the start state and end state of a transition */
 UENUM()
 enum class ETransitionState : uint8
