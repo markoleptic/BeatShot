@@ -11,16 +11,16 @@ public class LocalBoost : ModuleRules
 
 		string BoostVersion = "1_81_1";
 		string[] BoostLibraries = { "atomic", "chrono", "iostreams", "program_options", "python39", "regex", "system", "thread", "date_time" };
-		string BoostVersionDir = "boost-" + BoostVersion;
-		string BoostPath = Path.Combine(Target.UEThirdPartySourceDirectory, "Boost", BoostVersionDir);
-		string BoostIncludePath = Path.Combine(BoostPath, "include");
 		
-		PublicSystemIncludePaths.Add("U:/UnrealProjects/BeatShot 5.1/Source/LocalBoost/boost");
+		string BoostVersionDir = "boost-" + BoostVersion;
+		//string BoostPath = Path.Combine(Target.UEThirdPartySourceDirectory, "Boost", BoostVersionDir);
+		string BoostPath = Path.Combine(ModuleDirectory);
+		//string BoostIncludePath = Path.Combine(BoostPath, "include");
 
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			string BoostToolsetVersion = "vc143";
-			string BoostLibPath = "U:/UnrealProjects/BeatShot 5.1/Source/LocalBoost/lib";
+			string BoostLibPath = Path.Combine(BoostPath, "lib");
 			//Path.Combine(BoostPath, "lib", "Win64");
 			//string BoostVersionShort = BoostVersion.Substring(BoostVersion.Length - 2) == "_0" ? BoostVersion.Substring(0 BoostVersion.Length - 2) : BoostVersion;
 			string BoostVersionShort = "1_81";

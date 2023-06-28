@@ -6,7 +6,7 @@
 #include "Target/SphereTarget.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
-#include "SpawnPointManagerComponent.h"
+#include "SpawnAreaManagerComponent.h"
 #include "Components/BoxComponent.h"
 #include "TargetManager.generated.h"
 
@@ -45,7 +45,7 @@ protected:
 
 	/** Three-dimensional spawn area that all targets must fit inside. Used to update boundary boxes */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	TObjectPtr<UBoxComponent> SpawnArea;
+	TObjectPtr<UBoxComponent> SpawnVolume;
 
 	/** All directional boxes act as a boundary for moving targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
@@ -67,7 +67,7 @@ protected:
 
 	/** Manages spawn points */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	TObjectPtr<USpawnPointManagerComponent> SpawnPointManager;
+	TObjectPtr<USpawnAreaManagerComponent> SpawnAreaManager;
 	
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
@@ -123,10 +123,10 @@ public:
 
 private:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
-	 *  sets the InSpawnPoint's Guid, and adds the target to ManagedTargets */
-	ASphereTarget* SpawnTarget(USpawnPoint* InSpawnPoint);
+	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
+	ASphereTarget* SpawnTarget(USpawnArea* InSpawnArea);
 
-	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags SpawnPoint as recent, fires OnActivation delegate,
+	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags associated SpawnArea as recent, fires OnActivation delegate,
 	 *  and adds to ReinforcementLearningComponent ActiveTargetPairs if active */
 	bool ActivateTarget(ASphereTarget* InTarget) const;
 	
@@ -139,7 +139,7 @@ private:
 	/** Returns the number of targets that are allowed to be activated at once */
 	int32 GetNumberOfTargetsToActivate() const;
 
-	/** Activate target(s)/SpawnPoint(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
+	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
 	void HandleActivateExistingTargets();
 
 	/** Handles permanently activated targets so they can still receive activation responses, called in HandleActivateExistingTargets */
@@ -174,7 +174,7 @@ private:
 	FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	USpawnPoint* GetNextSpawnPoint(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
+	USpawnArea* GetNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
 	
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
@@ -201,8 +201,8 @@ private:
 	/** Filters out any locations that correspond to recent points flagged as recent */
 	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
 
-	/** Updates the SpawnArea and all directional boxes to match the current SpawnBox */
-	void UpdateSpawnArea() const;
+	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
+	void UpdateSpawnVolume() const;
 
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
 	void UpdateTotalPossibleDamage();
@@ -231,10 +231,10 @@ private:
 	/** Creates the box extrema for a grid target distribution */
 	FExtrema GenerateBoxExtremaGrid() const;
 
-	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnPoint IsCurrentlyManaged flag */
-	int32 AddToManagedTargets(ASphereTarget* SpawnTarget, const USpawnPoint* AssociatedSpawnPoint);
+	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnArea IsCurrentlyManaged flag */
+	int32 AddToManagedTargets(ASphereTarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea);
 
-	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnPoint IsCurrentlyManaged flag */
+	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
@@ -243,8 +243,8 @@ private:
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 	
-	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the next target location based on the index that the RLAgent returned */
-	USpawnPoint* TryGetSpawnPointFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
+	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
+	USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 	
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfig;
@@ -267,16 +267,16 @@ private:
 	/** Whether or not to show the RLAgentWidget */
 	bool bShowDebug_ReinforcementLearningWidget = false;
 
-	/** SpawnPoint for the next/current target */
+	/** SpawnArea for the next/current target */
 	UPROPERTY()
-	USpawnPoint* SpawnPoint;
+	USpawnArea* NextSpawnArea;
 
-	/** SpawnPoint for the previous target. Assigned the value of SpawnPoint immediately before the next SpawnPoint is chosen in FindNextTargetProperties */
+	/** SpawnArea for the previous target. Assigned the value of NextSpawnArea immediately before the NextSpawnArea is chosen in FindNextTargetProperties */
 	UPROPERTY()
-	USpawnPoint* PreviousSpawnPoint;
+	USpawnArea* PreviousSpawnArea;
 
 	/** The scale to apply to the next/current target */
-	FVector TargetScale;
+	FVector NextTargetScale;
 	
 	/** The min and max extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
 	FExtrema StaticExtrema;

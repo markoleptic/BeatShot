@@ -999,11 +999,16 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDamageType(const TA
 UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
 {
 	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
-	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, Method));
+	FText TooltipText = FText::GetEmpty();
+	if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, Method); !Key.IsEmpty())
+	{
+		TooltipText = GetTooltipTextFromKey(Key);
+	}
+	const bool bShowTooltipImage = !TooltipText.IsEmpty();
 
 	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
 	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
 		return Entry;
 	}
 	return nullptr;
@@ -1011,7 +1016,6 @@ UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxS
 
 UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
 {
-	FText TooltipText = FText::GetEmpty();
 	FString EntryString = FString();
 
 	if (!SelectedOptions.IsEmpty())
@@ -1028,16 +1032,21 @@ UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectio
 			}
 		}
 	}
+	FText TooltipText = FText::GetEmpty();
 	if (SelectedOptions.Num() == 1)
 	{
-		TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]));
+		if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]); !Key.IsEmpty())
+		{
+			TooltipText = GetTooltipTextFromKey(Key);
+		}
 	}
 
 	const FText EntryText = FText::FromString(EntryString);
+	const bool bShowTooltipImage = !TooltipText.IsEmpty();
 	
 	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
 	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, true, TooltipText);
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
 		return Entry;
 	}
 	

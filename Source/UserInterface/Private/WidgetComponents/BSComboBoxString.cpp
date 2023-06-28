@@ -71,7 +71,7 @@ void UBSComboBoxString::PostLoad()
 void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText, const bool bShowTooltipImage, const FText& TooltipText) const
 {
 	Entry->SetEntryText(EntryText);
-	Entry->SetAlwaysHideTooltipImage(bShowTooltipImage);
+	Entry->SetAlwaysHideTooltipImage(!bShowTooltipImage);
 
 	if (UTooltipImage* TooltipImage = Entry->GetTooltipImage())
 	{

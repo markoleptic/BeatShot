@@ -32,6 +32,9 @@ public class BeatShot : ModuleRules
 			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio",
 			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb"
 		});
+		
+		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
+		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
 
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 

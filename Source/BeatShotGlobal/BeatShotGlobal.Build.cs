@@ -14,6 +14,7 @@ public class BeatShotGlobal : ModuleRules
 		});
 
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
+		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
 		
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 

@@ -323,15 +323,13 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	FindVideoSettingButton(GameUserSettings->GetTextureQuality(), EVideoSettingType::Texture)->SetActive();
 	FindVideoSettingButton(GameUserSettings->GetViewDistanceQuality(), EVideoSettingType::ViewDistance)->SetActive();
 	FindVideoSettingButton(GameUserSettings->GetVisualEffectQuality(), EVideoSettingType::VisualEffect)->SetActive();
-	
-	if (UDLSSLibrary::IsDLSSSupported() && InVideoAndSoundSettings.DLSSEnabledMode == EDLSSEnabledMode::On)
-	{
-		ComboBox_DLSS->SetSelectedOption(UEnum::GetDisplayValueAsText(EDLSSEnabledMode::On).ToString());
-	}
-	else
-	{
-		ComboBox_DLSS->SetSelectedOption(UEnum::GetDisplayValueAsText( EDLSSEnabledMode::Off).ToString());
-	}
+
+	ComboBox_DLSS->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.DLSSEnabledMode).ToString());
+	ComboBox_FrameGeneration->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.FrameGenerationEnabledMode).ToString());
+	ComboBox_SuperResolution->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.DLSSMode).ToString());
+	ComboBox_NIS->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.NISEnabledMode).ToString());
+	ComboBox_NIS_Mode->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.NISMode).ToString());
+	ComboBox_Reflex->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.StreamlineReflexMode).ToString());
 }
 
 FPlayerSettings_VideoAndSound USettingsMenuWidget_VideoAndSound::GetVideoAndSoundSettings() const
@@ -641,8 +639,8 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS(const TArray<FSt
 	{
 		return;
 	}
-	const FString SelectedOption = SelectedOptions.Top();
-	switch (GetEnumFromString<EDLSSEnabledMode>(SelectedOption, EDLSSEnabledMode::Off)) {
+	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_DLSS"));
+	switch (GetEnumFromString<EDLSSEnabledMode>(SelectedOptions.Top(), EDLSSEnabledMode::Off)) {
 	case EDLSSEnabledMode::Off:
 		CacheDLSSSettings(true);
 		HandleDLSSEnabledChanged(false);
@@ -662,10 +660,10 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_FrameGeneration(const
 	{
 		return;
 	}
-	const FString SelectedOption = SelectedOptions.Top();
+	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_FrameGeneration"));
 	if (UStreamlineLibraryDLSSG::IsDLSSGSupported())
 	{
-		UStreamlineLibraryDLSSG::SetDLSSGMode(GetEnumFromString<UStreamlineDLSSGMode>(SelectedOption, UStreamlineDLSSGMode::Off));
+		UStreamlineLibraryDLSSG::SetDLSSGMode(GetEnumFromString<UStreamlineDLSSGMode>(SelectedOptions.Top(), UStreamlineDLSSGMode::Off));
 	}
 }
 
@@ -675,28 +673,10 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_SuperResolution(const
 	{
 		return;
 	}
-	const FString SelectedOption = SelectedOptions.Top();
-	const UDLSSMode Mode = GetEnumFromString<UDLSSMode>(SelectedOption, UDLSSMode::Off);
-	
-	if (!UDLSSLibrary::IsDLSSSupported())
+	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_SuperResolution"));
+	if (UDLSSLibrary::IsDLSSSupported())
 	{
-		return;
-	}
-	
-	const FIntPoint Resolution = UGameUserSettings::GetGameUserSettings()->GetScreenResolution();
-	bool bIsSupported;
-	float OptimalScreenPercentage;
-	bool bIsFixedScreenPercentage;
-	float MinScreenPercentage;
-	float MaxScreenPercentage;
-	float OptimalSharpness;
-	
-	UDLSSLibrary::GetDLSSModeInformation(UDLSSMode::Auto, FVector2d(Resolution.X, Resolution.Y), bIsSupported, OptimalScreenPercentage,
-		bIsFixedScreenPercentage, MinScreenPercentage, MaxScreenPercentage, OptimalSharpness);
-
-	if (bIsSupported)
-	{
-		UDLSSLibrary::SetDLSSMode(GetWorld(), Mode);
+		SetDLSSMode(GetEnumFromString<UDLSSMode>(SelectedOptions.Top(), UDLSSMode::Off));
 	}
 }
 
@@ -706,10 +686,10 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS(const TArray<FStr
 	{
 		return;
 	}
-	const FString SelectedOption = SelectedOptions.Top();
-	const ENISEnabledMode NISEnabledMode = GetEnumFromString<ENISEnabledMode>(SelectedOption, ENISEnabledMode::Off);
-	const EDLSSEnabledMode DLSSEnabledMode = GetEnumFromString<EDLSSEnabledMode>(ComboBox_DLSS->GetSelectedOption(), EDLSSEnabledMode::Off);
 	
+	const ENISEnabledMode NISEnabledMode = GetEnumFromString<ENISEnabledMode>(SelectedOptions.Top(), ENISEnabledMode::Off);
+	const EDLSSEnabledMode DLSSEnabledMode = GetSelectedDLSSEnabledMode();
+	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_NIS"));
 	if (NISEnabledMode == ENISEnabledMode::On || DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
 		Slider_ResolutionScale->SetLocked(true);
@@ -728,11 +708,15 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_Mode(const TArray
 	{
 		return;
 	}
-	const FString SelectedOption = SelectedOptions.Top();
-	if (UNISLibrary::IsNISSupported())
+
+	const UNISMode SelectedNISMode = GetEnumFromString<UNISMode>(SelectedOptions.Top(), UNISMode::Off);
+	const EDLSSEnabledMode DLSSEnabledMode = GetSelectedDLSSEnabledMode();
+	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_NIS_Mode"));
+	if (!UNISLibrary::IsNISSupported() || DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
-		UNISLibrary::SetNISMode(GetEnumFromString<UNISMode>(SelectedOption, UNISMode::Off));
+		return;
 	}
+	UNISLibrary::SetNISMode(SelectedNISMode);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
@@ -741,10 +725,10 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<F
 	{
 		return;
 	}
-	const FString SelectedOption = SelectedOptions.Top();
+	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_Reflex"));
 	if (UStreamlineLibraryReflex::IsReflexSupported())
 	{
-		UStreamlineLibraryReflex::SetReflexMode(GetEnumFromString<UStreamlineReflexMode>(SelectedOption, UStreamlineReflexMode::Disabled));
+		UStreamlineLibraryReflex::SetReflexMode(GetEnumFromString<UStreamlineReflexMode>(SelectedOptions.Top(), UStreamlineReflexMode::Disabled));
 	}
 }
 
@@ -831,6 +815,34 @@ void USettingsMenuWidget_VideoAndSound::PopulateResolutionComboBox()
 	}
 }
 
+void USettingsMenuWidget_VideoAndSound::CacheDLSSSettings(const bool bDLSSWasEnabled)
+{
+	if (bDLSSWasEnabled)
+	{
+		PreviousDLSSOnSettings.DLSSEnabledMode = EDLSSEnabledMode::On;
+		PreviousDLSSOnSettings.FrameGenerationEnabledMode = GetEnumFromString<UStreamlineDLSSGMode>(ComboBox_FrameGeneration->GetSelectedOption(), UStreamlineDLSSGMode::Off);
+		PreviousDLSSOnSettings.DLSSMode = GetEnumFromString<UDLSSMode>(ComboBox_SuperResolution->GetSelectedOption(), UDLSSMode::Off);
+		PreviousDLSSOnSettings.NISEnabledMode = GetEnumFromString<ENISEnabledMode>(ComboBox_NIS->GetSelectedOption(), ENISEnabledMode::Off);
+		PreviousDLSSOnSettings.NISMode = GetEnumFromString<UNISMode>(ComboBox_NIS_Mode->GetSelectedOption(), UNISMode::Off);
+		PreviousDLSSOnSettings.StreamlineReflexMode = GetEnumFromString<UStreamlineReflexMode>(ComboBox_Reflex->GetSelectedOption(), UStreamlineReflexMode::Disabled);
+		PreviousDLSSOnSettings.DLSSSharpness = FMath::GridSnap(FMath::Clamp(Slider_DLSS_Sharpness->GetValue(), MinValue_DLSSSharpness, MaxValue_DLSSSharpness), SnapSize_DLSSSharpness);
+		PreviousDLSSOnSettings.NISSharpness = FMath::GridSnap(FMath::Clamp(Slider_NIS_Sharpness->GetValue(), MinValue_NISSharpness, MaxValue_NISSharpness), SnapSize_NISSharpness);
+		PreviousDLSSOnSettings.bHasBeenInitialized = true;
+	}
+	else
+	{
+		PreviousDLSSOffSettings.DLSSEnabledMode = EDLSSEnabledMode::Off;
+		PreviousDLSSOffSettings.FrameGenerationEnabledMode = GetEnumFromString<UStreamlineDLSSGMode>(ComboBox_FrameGeneration->GetSelectedOption(), UStreamlineDLSSGMode::Off);
+		PreviousDLSSOffSettings.DLSSMode = GetEnumFromString<UDLSSMode>(ComboBox_SuperResolution->GetSelectedOption(), UDLSSMode::Off);
+		PreviousDLSSOffSettings.NISEnabledMode = GetEnumFromString<ENISEnabledMode>(ComboBox_NIS->GetSelectedOption(), ENISEnabledMode::Off);
+		PreviousDLSSOffSettings.NISMode = GetEnumFromString<UNISMode>(ComboBox_NIS_Mode->GetSelectedOption(), UNISMode::Off);
+		PreviousDLSSOffSettings.StreamlineReflexMode = GetEnumFromString<UStreamlineReflexMode>(ComboBox_Reflex->GetSelectedOption(), UStreamlineReflexMode::Disabled);
+		PreviousDLSSOffSettings.DLSSSharpness = FMath::GridSnap(FMath::Clamp(Slider_DLSS_Sharpness->GetValue(), MinValue_DLSSSharpness, MaxValue_DLSSSharpness), SnapSize_DLSSSharpness);
+		PreviousDLSSOffSettings.NISSharpness = FMath::GridSnap(FMath::Clamp(Slider_NIS_Sharpness->GetValue(), MinValue_NISSharpness, MaxValue_NISSharpness), SnapSize_NISSharpness);
+		PreviousDLSSOffSettings.bHasBeenInitialized = true;
+	}
+}
+
 void USettingsMenuWidget_VideoAndSound::HandleDLSSEnabledChanged(const bool bIsDLSSEnabled)
 {
 	// Enabling/disabling
@@ -885,11 +897,11 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const bool bIsDLS
 	const EDLSSEnabledMode DLSSEnabledMode = bIsDLSSEnabled ? EDLSSEnabledMode::On : EDLSSEnabledMode::Off;
 	float DLSSSharpness = FMath::GridSnap(FMath::Clamp(Slider_DLSS_Sharpness->GetValue(), MinValue_DLSSSharpness, MaxValue_DLSSSharpness), SnapSize_DLSSSharpness);
 	float NISSharpness = FMath::GridSnap(FMath::Clamp(Slider_NIS_Sharpness->GetValue(), MinValue_NISSharpness, MaxValue_NISSharpness), SnapSize_NISSharpness);
-	UStreamlineDLSSGMode FrameGenMode = GetEnumFromString<UStreamlineDLSSGMode>(ComboBox_FrameGeneration->GetSelectedOption(), UStreamlineDLSSGMode::Off);
-	UDLSSMode DLSSMode = GetEnumFromString<UDLSSMode>(ComboBox_SuperResolution->GetSelectedOption(), UDLSSMode::Off);
-	ENISEnabledMode NISEnabledMode = GetEnumFromString<ENISEnabledMode>(ComboBox_NIS->GetSelectedOption(), ENISEnabledMode::Off);
-	UNISMode NISMode = GetEnumFromString<UNISMode>(ComboBox_NIS_Mode->GetSelectedOption(), UNISMode::Off);
-	UStreamlineReflexMode ReflexMode = GetEnumFromString<UStreamlineReflexMode>(ComboBox_Reflex->GetSelectedOption(), UStreamlineReflexMode::Disabled);
+	UStreamlineDLSSGMode FrameGenMode = GetSelectedFrameGenerationMode();
+	UDLSSMode DLSSMode = GetSelectedDLSSMode();
+	ENISEnabledMode NISEnabledMode = GetSelectedNISEnabledMode();
+	UNISMode NISMode = GetSelectedNISMode();
+	UStreamlineReflexMode ReflexMode = GetSelectedReflexMode();
 
 	// Use cached settings if they've been populated
 	if (bIsDLSSEnabled)
@@ -921,8 +933,6 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const bool bIsDLS
 	
 	if (bIsDLSSEnabled)
 	{
-		FrameGenMode = UStreamlineLibraryDLSSG::IsDLSSGModeSupported(FrameGenMode) ? FrameGenMode : UStreamlineDLSSGMode::Off;
-		DLSSMode = UDLSSLibrary::IsDLSSModeSupported(DLSSMode) ? DLSSMode : UDLSSMode::Off;
 		// Force disable NIS
 		NISEnabledMode = ENISEnabledMode::Off;
 		// Force disable NIS
@@ -936,9 +946,6 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const bool bIsDLS
 		FrameGenMode = UStreamlineDLSSGMode::Off;
 		// Force disable Super Resolution
 		DLSSMode = UDLSSMode::Off;
-		NISEnabledMode = UNISLibrary::IsNISSupported() ? NISEnabledMode : ENISEnabledMode::Off;
-		NISMode = UNISLibrary::IsNISModeSupported(NISMode) ? NISMode : UNISMode::Off;
-		ReflexMode = UStreamlineLibraryReflex::IsReflexSupported() ? ReflexMode : UStreamlineReflexMode::Disabled;
 
 		// Force disable Resolution Scale if NIS is on
 		if (NISMode != UNISMode::Off)
@@ -970,87 +977,39 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const bool bIsDLS
 	{
 		UGameUserSettings::GetGameUserSettings()->SetResolutionScaleNormalized(1.f);
 	}
-	
-	UDLSSLibrary::EnableDLSS(DLSSEnabledMode == EDLSSEnabledMode::On);
-	UStreamlineLibraryDLSSG::SetDLSSGMode(FrameGenMode);
-	UDLSSLibrary::SetDLSSMode(GetWorld(), DLSSMode);
+
 	UDLSSLibrary::SetDLSSSharpness(DLSSSharpness);
-	UNISLibrary::SetNISMode(NISMode);
 	UNISLibrary::SetNISSharpness(NISSharpness);
-	UStreamlineLibraryReflex::SetReflexMode(ReflexMode);
 }
 
-void USettingsMenuWidget_VideoAndSound::CacheDLSSSettings(const bool bDLSSWasEnabled)
+EDLSSEnabledMode USettingsMenuWidget_VideoAndSound::GetSelectedDLSSEnabledMode() const
 {
-	if (bDLSSWasEnabled)
-	{
-		PreviousDLSSOnSettings.DLSSEnabledMode = EDLSSEnabledMode::On;
-		PreviousDLSSOnSettings.FrameGenerationEnabledMode = GetEnumFromString<UStreamlineDLSSGMode>(ComboBox_FrameGeneration->GetSelectedOption(), UStreamlineDLSSGMode::Off);
-		PreviousDLSSOnSettings.DLSSMode = GetEnumFromString<UDLSSMode>(ComboBox_SuperResolution->GetSelectedOption(), UDLSSMode::Off);
-		PreviousDLSSOnSettings.NISEnabledMode = GetEnumFromString<ENISEnabledMode>(ComboBox_NIS->GetSelectedOption(), ENISEnabledMode::Off);
-		PreviousDLSSOnSettings.NISMode = GetEnumFromString<UNISMode>(ComboBox_NIS_Mode->GetSelectedOption(), UNISMode::Off);
-		PreviousDLSSOnSettings.StreamlineReflexMode = GetEnumFromString<UStreamlineReflexMode>(ComboBox_Reflex->GetSelectedOption(), UStreamlineReflexMode::Disabled);
-		PreviousDLSSOnSettings.DLSSSharpness = FMath::GridSnap(FMath::Clamp(Slider_DLSS_Sharpness->GetValue(), MinValue_DLSSSharpness, MaxValue_DLSSSharpness), SnapSize_DLSSSharpness);
-		PreviousDLSSOnSettings.NISSharpness = FMath::GridSnap(FMath::Clamp(Slider_NIS_Sharpness->GetValue(), MinValue_NISSharpness, MaxValue_NISSharpness), SnapSize_NISSharpness);
-		PreviousDLSSOnSettings.bHasBeenInitialized = true;
-	}
-	else
-	{
-		PreviousDLSSOffSettings.DLSSEnabledMode = EDLSSEnabledMode::Off;
-		PreviousDLSSOffSettings.FrameGenerationEnabledMode = GetEnumFromString<UStreamlineDLSSGMode>(ComboBox_FrameGeneration->GetSelectedOption(), UStreamlineDLSSGMode::Off);
-		PreviousDLSSOffSettings.DLSSMode = GetEnumFromString<UDLSSMode>(ComboBox_SuperResolution->GetSelectedOption(), UDLSSMode::Off);
-		PreviousDLSSOffSettings.NISEnabledMode = GetEnumFromString<ENISEnabledMode>(ComboBox_NIS->GetSelectedOption(), ENISEnabledMode::Off);
-		PreviousDLSSOffSettings.NISMode = GetEnumFromString<UNISMode>(ComboBox_NIS_Mode->GetSelectedOption(), UNISMode::Off);
-		PreviousDLSSOffSettings.StreamlineReflexMode = GetEnumFromString<UStreamlineReflexMode>(ComboBox_Reflex->GetSelectedOption(), UStreamlineReflexMode::Disabled);
-		PreviousDLSSOffSettings.DLSSSharpness = FMath::GridSnap(FMath::Clamp(Slider_DLSS_Sharpness->GetValue(), MinValue_DLSSSharpness, MaxValue_DLSSSharpness), SnapSize_DLSSSharpness);
-		PreviousDLSSOffSettings.NISSharpness = FMath::GridSnap(FMath::Clamp(Slider_NIS_Sharpness->GetValue(), MinValue_NISSharpness, MaxValue_NISSharpness), SnapSize_NISSharpness);
-		PreviousDLSSOffSettings.bHasBeenInitialized = true;
-	}
+	return GetEnumFromString<EDLSSEnabledMode>(ComboBox_DLSS->GetSelectedOption(), EDLSSEnabledMode::Off);
 }
 
-UDLSSMode USettingsMenuWidget_VideoAndSound::GetDLSSMode() const
+UStreamlineDLSSGMode USettingsMenuWidget_VideoAndSound::GetSelectedFrameGenerationMode() const
 {
-	if (UDLSSLibrary::QueryDLSSSupport() != UDLSSSupport::Supported)
-	{
-		return UDLSSMode::Off;
-	}
-	const FString SelectedOption = ComboBox_DLSS->GetSelectedOption();
-	const UDLSSMode Mode = GetEnumFromString<UDLSSMode>(SelectedOption, UDLSSMode::Off);
-	if (Mode == UDLSSMode::Auto)
-	{
-		return UDLSSLibrary::GetDefaultDLSSMode();
-	}
-	return Mode;
+	return GetEnumFromString<UStreamlineDLSSGMode>(ComboBox_FrameGeneration->GetSelectedOption(), UStreamlineDLSSGMode::Off);
 }
 
-UNISMode USettingsMenuWidget_VideoAndSound::GetNISMode() const
+UDLSSMode USettingsMenuWidget_VideoAndSound::GetSelectedDLSSMode() const
 {
-	const FString SelectedOption = ComboBox_DLSS->GetSelectedOption();
-	if (UDLSSLibrary::QueryDLSSSupport() == UDLSSSupport::Supported || !UNISLibrary::IsNISSupported())
-	{
-		return UNISMode::Off;
-	}
-	for (const UNISMode Mode : TEnumRange<UNISMode>())
-	{
-		if (SelectedOption.Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
-		{
-			return Mode;
-		}
-	}
-	return UNISMode::Off;
+	return GetEnumFromString<UDLSSMode>(ComboBox_SuperResolution->GetSelectedOption(), UDLSSMode::Off);
 }
 
-EBudgetReflexMode USettingsMenuWidget_VideoAndSound::GetReflexMode() const
+ENISEnabledMode USettingsMenuWidget_VideoAndSound::GetSelectedNISEnabledMode() const
 {
-	const FString SelectedOption = ComboBox_Reflex->GetSelectedOption();
-	for (const EBudgetReflexMode Mode : TEnumRange<EBudgetReflexMode>())
-	{
-		if (SelectedOption.Equals(UEnum::GetDisplayValueAsText(Mode).ToString()))
-		{
-			return Mode;
-		}
-	}
-	return EBudgetReflexMode::Disabled;
+	return GetEnumFromString<ENISEnabledMode>(ComboBox_NIS->GetSelectedOption(), ENISEnabledMode::Off);
+}
+
+UNISMode USettingsMenuWidget_VideoAndSound::GetSelectedNISMode() const
+{
+	return GetEnumFromString<UNISMode>(ComboBox_NIS_Mode->GetSelectedOption(), UNISMode::Off);
+}
+
+UStreamlineReflexMode USettingsMenuWidget_VideoAndSound::GetSelectedReflexMode() const
+{
+	return GetEnumFromString<UStreamlineReflexMode>(ComboBox_Reflex->GetSelectedOption(), UStreamlineReflexMode::Disabled);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnButtonPressed_Save()
@@ -1155,11 +1114,16 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
 UWidget* USettingsMenuWidget_VideoAndSound::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
 {
 	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
-	const FText TooltipText = GetTooltipTextFromKey(GetStringTableKeyFromComboBox(ComboBoxString, Method));
+	FText TooltipText = FText::GetEmpty();
+	if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, Method); !Key.IsEmpty())
+	{
+		TooltipText = GetTooltipTextFromKey(Key);
+	}
+	const bool bShowTooltipImage = !TooltipText.IsEmpty();
 
 	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
 	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, false, TooltipText);
+		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
 		return Entry;
 	}
 	return nullptr;
@@ -1167,7 +1131,6 @@ UWidget* USettingsMenuWidget_VideoAndSound::OnGenerateWidgetEvent(const UBSCombo
 
 UWidget* USettingsMenuWidget_VideoAndSound::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
 {
-	FText TooltipText = FText::GetEmpty();
 	FString EntryString = FString();
 
 	if (!SelectedOptions.IsEmpty())
@@ -1184,6 +1147,7 @@ UWidget* USettingsMenuWidget_VideoAndSound::OnSelectionChanged_GenerateMultiSele
 			}
 		}
 	}
+	FText TooltipText = FText::GetEmpty();
 	if (SelectedOptions.Num() == 1)
 	{
 		if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]); !Key.IsEmpty())
@@ -1233,4 +1197,52 @@ FString USettingsMenuWidget_VideoAndSound::GetStringTableKeyFromComboBox(const U
 	
 	UE_LOG(LogTemp, Display, TEXT("Couldn't find matching value for %s in UGameModesWidget_TargetConfig"), *ComboBoxString->GetName());
 	return FString();
+}
+
+void USettingsMenuWidget_VideoAndSound::SetDLSSMode(const UDLSSMode InDLSSMode, const bool bRestoreFullResWhenDisabled)
+{
+	FIntPoint ScreenResolution = FIntPoint(0, 0);
+	bool bIsSupported;
+	float OptimalScreenPercentage;
+	bool bIsFixedScreenPercentage;
+	float MinScreenPercentage;
+	float MaxScreenPercentage;
+	float OptimalSharpness;
+	
+	if (InDLSSMode == UDLSSMode::Auto)
+	{
+		ScreenResolution = UGameUserSettings::GetGameUserSettings()->GetScreenResolution();
+	}
+	
+	UDLSSLibrary::GetDLSSModeInformation(InDLSSMode, FVector2d(ScreenResolution.X, ScreenResolution.Y), bIsSupported, OptimalScreenPercentage,
+	bIsFixedScreenPercentage, MinScreenPercentage, MaxScreenPercentage, OptimalSharpness);
+
+	const bool bIsDLAA = InDLSSMode == UDLSSMode::DLAA;
+	const bool bShouldEnable = (InDLSSMode != UDLSSMode::Off || bIsDLAA) && bIsSupported;
+	const bool bValidScreenPercentage = OptimalScreenPercentage > 0.f && bIsSupported;
+
+	// Enable/Disable DLSS
+	UDLSSLibrary::EnableDLSS(bShouldEnable);
+	
+	// Set Screen Percentage
+	float SelectedScreenPercentage;
+	if (!bValidScreenPercentage || bIsDLAA)
+	{
+		// DLAA overrides DLSS mode if both are enabled
+		SelectedScreenPercentage = 100.f;
+	}
+	else
+	{
+		SelectedScreenPercentage = OptimalScreenPercentage;
+	}
+	
+	// Execute Screen Percentage Console Command
+	if (bShouldEnable || bRestoreFullResWhenDisabled)
+	{
+		if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage")))
+		{
+			const EConsoleVariableFlags Priority = static_cast<EConsoleVariableFlags>(CVarScreenPercentage->GetFlags() & ECVF_SetByMask);
+			CVarScreenPercentage->Set(SelectedScreenPercentage, Priority);
+		}
+	}
 }

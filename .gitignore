@@ -102,6 +102,7 @@ Plugins/**/Intermediate/*
 Config/DefaultEngine.ini
 Config/DefaultGame.ini
 Content/Levels/Range.umap
+Content/ModularConcertStage
 Windows/
 Plugins/BeatShotAudioAnalyzer
 Content/MetaHumans

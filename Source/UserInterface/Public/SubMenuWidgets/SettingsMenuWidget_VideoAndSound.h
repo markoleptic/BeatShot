@@ -429,21 +429,32 @@ private:
 	/** Clears and repopulates the ComboBox_Resolution based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
 	void PopulateResolutionComboBox();
 
+	/** Saves the DLSS/NIS settings just before changing the DLSS enabled mode so they can be reverted to if swapped back */
+	void CacheDLSSSettings(const bool bDLSSWasEnabled);
+	
 	/** Sets enabled/disabled states for any NVIDIA DLSS related settings */
 	void HandleDLSSEnabledChanged(const bool bIsDLSSEnabled);
 
+	/** Forces certain DLSS/NIS settings depending on if DLSS is enabled, and changes those selected options */
 	void HandleDLSSDependencies(const bool bIsDLSSEnabled);
+	
+	/** Returns the selected DLSS enabled mode */
+	EDLSSEnabledMode GetSelectedDLSSEnabledMode() const;
+	
+	/** Returns the selected Frame Generation mode */
+	UStreamlineDLSSGMode GetSelectedFrameGenerationMode() const;
 
-	void CacheDLSSSettings(const bool bDLSSWasEnabled);
+	/** Returns the selected DLSS mode (Super Resolution) */
+	UDLSSMode GetSelectedDLSSMode() const;
 
-	/** Returns the current DLSS mode */
-	UDLSSMode GetDLSSMode() const;
+	/** Returns the selected NIS enabled mode */
+	ENISEnabledMode GetSelectedNISEnabledMode() const;
 
-	/** Returns the current NIS mode */
-	UNISMode GetNISMode() const;
+	/** Returns the selected NIS mode */
+	UNISMode GetSelectedNISMode() const;
 
-	/** Returns the current reflex mode */
-	EBudgetReflexMode GetReflexMode() const;
+	/** Returns the selected reflex mode */
+	UStreamlineReflexMode GetSelectedReflexMode() const;
 	
 	/** Returns the associated button given the quality and SettingType */
 	UVideoSettingButton* FindVideoSettingButton(const int32 Quality, const EVideoSettingType& SettingType) const;
@@ -459,22 +470,14 @@ private:
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
 	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
-protected:
-	UFUNCTION(BlueprintImplementableEvent)
-	/** Hopefully a temporary solution. Calls the GetReflexAvailable function from ReflexBlueprintLibrary */
-	bool GetReflexAvailable();
+	static void SetDLSSMode(const UDLSSMode InDLSSMode, const bool bRestoreFullResWhenDisabled = true);
 	
-	/** Hopefully a temporary solution. Calls the SetReflexMode function from ReflexBlueprintLibrary */
-	UFUNCTION(BlueprintImplementableEvent)
-	void SetReflexMode(const EBudgetReflexMode Mode);
-
 	UPROPERTY()
 	FPreviousSettingsDLSS PreviousDLSSOffSettings;
 
 	UPROPERTY()
 	FPreviousSettingsDLSS PreviousDLSSOnSettings;
-
-private:
+	
 	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
 	FIntPoint LastConfirmedResolution;
 
@@ -483,4 +486,6 @@ private:
 	
 	/** Timer that starts when window mode or resolution is changed, and calls RevertVideoSettingsTimerCallback every second */
 	FTimerHandle RevertVideoSettingsTimer_UpdateSecond;
+
+	const FString ScreenPercentageConsoleCommand = "r.ScreenPercentage ";
 };

@@ -7,7 +7,7 @@
 #include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
 
-class USpawnPointManagerComponent;
+class USpawnAreaManagerComponent;
 THIRD_PARTY_INCLUDES_START
 #pragma push_macro("check")
 #undef check
@@ -27,10 +27,10 @@ struct FTargetPair
 {
 	GENERATED_BODY()
 
-	/** The SpawnPoints index of the target spawned before Current */
+	/** The SpawnAreas index of the target spawned before Current */
 	int32 Previous;
 
-	/** The SpawnPoints index of the target spawned after Previous */
+	/** The SpawnAreas index of the target spawned after Previous */
 	int32 Current;
 
 private:
@@ -121,8 +121,8 @@ struct FRLAgentParams
 	FString CustomGameModeName;
 	int32 Size;
 	TArray<float> InQTable;
-	float SpawnPointsHeight;
-	float SpawnPointsWidth;
+	float SpawnAreasHeight;
+	float SpawnAreasWidth;
 	float InAlpha;
 	float InGamma;
 	float InEpsilon;
@@ -133,8 +133,8 @@ struct FRLAgentParams
 		CustomGameModeName = "";
 		Size = 0;
 		InQTable = TArray<float>();
-		SpawnPointsHeight = 0.f;
-		SpawnPointsWidth = 0.f;
+		SpawnAreasHeight = 0.f;
+		SpawnAreasWidth = 0.f;
 		InAlpha = 0.f;
 		InGamma = 0.f;
 		InEpsilon = 0.f;
@@ -148,17 +148,17 @@ struct FQTableIndex
 	GENERATED_BODY()
 
 	int32 QTableIndex;
-	TArray<int32> SpawnPointIndices;
+	TArray<int32> SpawnAreasIndices;
 
 	FQTableIndex()
 	{
 		QTableIndex = INDEX_NONE;
-		SpawnPointIndices = TArray<int32>();
+		SpawnAreasIndices = TArray<int32>();
 	}
 	FQTableIndex(const int32 InQTableIndex)
 	{
 		QTableIndex = InQTableIndex;
-		SpawnPointIndices = TArray<int32>();
+		SpawnAreasIndices = TArray<int32>();
 	}
 
 	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
@@ -199,10 +199,10 @@ public:
 	virtual void UpdateEpisodeRewards(const float RewardReceived);
 	
 	/** Returns the QTable index corresponding to the maximum reward from starting at QTableIndex, using a greedy approach. Used to update Q-Table, but not to get actual spawn locations */
-	int32 GetMaxActionIndex(const int32 SpawnCounterIndex) const;
+	int32 GetMaxActionIndex(const int32 SpawnAreaIndex) const;
 
 	/** Returns the SpawnCounter index of the next target to spawn, based on the Epsilon value */
-	int32 ChooseNextActionIndex(const TArray<int32>& SpawnCounterIndices) const;
+	int32 ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices) const;
 
 	/** Prints the Q-Table to Unreal console */
 	void PrintRewards() const;
@@ -223,27 +223,27 @@ public:
 	FOnQTableUpdate OnQTableUpdate;
 
 	/** Updates a TargetPair's reward based on if hit or not. Removes from ActiveTargetPairs and adds to TargetPairs queue */
-	void UpdateReinforcementLearningReward(const int32 PointIndex, const bool bHit);
+	void UpdateReinforcementLearningReward(const int32 SpawnAreaIndex, const bool bHit);
 
 	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
-	void AddToActiveTargetPairs(const int32 PreviousPointIndex, const int32 CurrentPointIndex);
+	void AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex);
 
 	/** Updates RLAgent's QTable until TargetPairs queue is empty */
-	void UpdateReinforcementLearningComponent(const USpawnPointManagerComponent* SpawnPointManager);
+	void UpdateReinforcementLearningComponent(const USpawnAreaManagerComponent* SpawnAreaManager);
 
 private:
-	/** Returns a random SpawnPoint index from the provided SpawnPointIndices */
-	int32 ChooseRandomActionIndex(const TArray<int32>& SpawnCounterIndices) const;
+	/** Returns a random SpawnArea index from the provided SpawnAreaIndices */
+	int32 ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices) const;
 
 	/** First computes a reverse-sorted array containing QTable indices where the rewards is highest. Then checks to see if there is a valid SpawnCounter index that corresponds to the QTable index.
 	 *  If there isn't, it goes to the next QTable index until there are no options left, in which case it returns INDEX_NONE. Returns a SpawnCounter index */
-	int32 ChooseBestActionIndex(const TArray<int32>& SpawnCounterIndices) const;
+	int32 ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const;
 
-	/** Converts a SpawnCounterIndex to a QTableIndex */
-	int32 GetQTableIndexFromSpawnPointIndex(const int32 SpawnCounterIndex) const;
+	/** Converts a SpawnAreaIndex to a QTableIndex */
+	int32 GetQTableIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
 
 	/** Returns all SpawnCounter indices corresponding to the QTableIndex */
-	TArray<int32> GetSpawnPointIndexRange(const int32 QTableIndex) const;
+	TArray<int32> GetSpawnAreaIndexRange(const int32 QTableIndex) const;
 	
 	/** Converts a TArray of floats to an NdArray */
 	nc::NdArray<float> GetQTableFromTArray(const TArray<float>& InTArray) const;
@@ -274,28 +274,28 @@ private:
 	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
 	float Epsilon;
 	
-	/** The number of rows in SpawnCounter array */
-	int32 SpawnPointsHeight;
+	/** The number of rows in SpawnAreas array */
+	int32 SpawnAreasHeight;
 
-	/** The number of columns in SpawnCounter array */
-	int32 SpawnPointsWidth;
+	/** The number of columns in SpawnAreas array */
+	int32 SpawnAreasWidth;
 
-	/** The size of the SpawnCounter array */
-	int32 SpawnPointsSize;
+	/** The size of the SpawnAreas array */
+	int32 SpawnAreasSize;
 
-	/** How many rows the SpawnPointsHeight is divided into */
+	/** How many rows the SpawnAreasHeight is divided into */
 	int32 ScaledHeight = 5;
 
-	/** The number of the SpawnPointsWidth is divided into */
+	/** The number of the SpawnAreasWidth is divided into */
 	int32 ScaledWidth = 5;
 
 	/** The size of both dimensions of the QTable (ScaledHeight * ScaledWidth) */
 	int32 ScaledSize;
 
-	/** SpawnPointsHeight divided by ScaledHeight */
+	/** SpawnAreasHeight divided by ScaledHeight */
 	int32 HeightScaleFactor;
 
-	/** SpawnPointsWidth divided by ScaledWidth */
+	/** SpawnAreasWidth divided by ScaledWidth */
 	int32 WidthScaleFactor;
 
 	/** An array of structs where each element represents one QTable index that maps to multiple SpawnCounter indices */
