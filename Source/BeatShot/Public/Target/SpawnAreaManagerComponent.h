@@ -189,6 +189,7 @@ public:
 
 	int32 GetIndex() const { return Index; }
 	FVector GetChosenPoint() const { return ChosenPoint; }
+	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
 	bool IsActivated() const { return bIsActivated; }
 	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
@@ -350,15 +351,41 @@ public:
 	
 	int32 GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
 
+	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
+	*   TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
+	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const FExtrema &InCurrentExtrema, const USpawnArea* CurrentSpawnArea) const;
+
+	/** Adds valid spawn locations for an edge-only TargetDistributionPolicy */
+	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema, const bool bShowDebug) const;
+
+	/** Adds valid spawn locations for a full range TargetDistributionPolicy */
+	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema, const bool bShowDebug) const;
+
+	/** Adds valid spawn locations for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
+	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea, const bool bShowDebug) const;
+
+	/** Adds/filters valid spawn locations for a Bordering TargetActivationSelectionPolicy */
+	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea, const bool bShowDebug) const;
+
+	/** Filters out any locations that correspond to recent points flagged as activated */
+	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const;
+
+	/** Filters out any locations that correspond to recent points flagged as recent */
+	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const;
+
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness) const;
 
 	/** Prints debug info about a SpawnArea */
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
 
+	bool bShowDebug_SpawnMemory;
+
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
 	void SetAppropriateSpawnMemoryValues();
+	
+	TArray<FVector> GetAllBottomLeftVertices() const { return AllBottomLeftVertices; }
 	
 	/** Initialized at start */
 	FBSConfig BSConfig;
@@ -372,6 +399,9 @@ private:
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
 	UPROPERTY()
 	TArray<USpawnArea*> SpawnAreas;
+
+	/** An array containing the BottomLeftVertex of all SpawnAreas */
+	TArray<FVector> AllBottomLeftVertices;
 
 	/** Incremental step value used to iterate through SpawnAreas locations */
 	int32 SpawnMemoryIncY;

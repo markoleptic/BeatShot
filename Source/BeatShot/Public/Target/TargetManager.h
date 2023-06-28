@@ -145,9 +145,6 @@ private:
 	/** Handles permanently activated targets so they can still receive activation responses, called in HandleActivateExistingTargets */
 	void HandlePermanentlyActiveTargetActivation() const;
 
-	/** Handles temporarily activated targets, called in HandleActivateExistingTargets */
-	void HandleTemporaryTargetActivation();
-
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
 	void SpawnUpfrontOnlyTargets();
 
@@ -178,28 +175,6 @@ private:
 	
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
-
-	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
-	 *  TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
-	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const ETargetDistributionPolicy& DistributionPolicy, const EBoundsScalingPolicy& BoundsScalingPolicy) const;
-
-	/** Adds valid spawn locations for an edge-only TargetDistributionPolicy */
-	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema, const bool bShowDebug = false) const;
-
-	/** Adds valid spawn locations for a full range TargetDistributionPolicy */
-	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema, const bool bShowDebug = false) const;
-
-	/** Adds valid spawn locations for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
-	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
-
-	/** Adds/filters valid spawn locations for a Bordering TargetActivationSelectionPolicy */
-	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
-
-	/** Filters out any locations that correspond to recent points flagged as activated */
-	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
-
-	/** Filters out any locations that correspond to recent points flagged as recent */
-	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug = false) const;
 
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
 	void UpdateSpawnVolume() const;
@@ -269,14 +244,14 @@ private:
 
 	/** SpawnArea for the next/current target */
 	UPROPERTY()
-	USpawnArea* NextSpawnArea;
+	USpawnArea* CurrentSpawnArea;
 
-	/** SpawnArea for the previous target. Assigned the value of NextSpawnArea immediately before the NextSpawnArea is chosen in FindNextTargetProperties */
+	/** SpawnArea for the previous target. Assigned the value of CurrentSpawnArea immediately before the CurrentSpawnArea is chosen in FindNextTargetProperties */
 	UPROPERTY()
 	USpawnArea* PreviousSpawnArea;
 
 	/** The scale to apply to the next/current target */
-	FVector NextTargetScale;
+	FVector CurrentTargetScale;
 	
 	/** The min and max extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
 	FExtrema StaticExtrema;

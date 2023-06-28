@@ -306,15 +306,16 @@ TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas(const FExtrema&
 		{
 			FVector Loc(Origin.X, Y, Z);
 			AllSpawnLocations.Add(Loc);
-			USpawnArea* SpawnPoint = NewObject<USpawnArea>();
-			SpawnPoint->Init(Index,
+			AllBottomLeftVertices.Add(Loc);
+			USpawnArea* SpawnArea = NewObject<USpawnArea>();
+			SpawnArea->Init(Index,
 					Loc,
 					SpawnMemoryIncY,
 					SpawnMemoryIncZ,
 					BSConfig.GridConfig.NumHorizontalGridTargets,
 					BSConfig.GridConfig.NumVerticalGridTargets * BSConfig.GridConfig.NumHorizontalGridTargets);
-			SpawnPoint->ChosenPoint = Loc;
-			SpawnAreas.Add(SpawnPoint);
+			SpawnArea->ChosenPoint = Loc;
+			SpawnAreas.Add(SpawnArea);
 			Index++;
 			TempWidth++;
 		}
@@ -384,60 +385,60 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 
 USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromIndex(const int32 InIndex) const
 {
-	const TArray<USpawnArea*>::ElementType* Point = SpawnAreas.FindByPredicate([&InIndex] (const USpawnArea* SpawnPoint)
+	const TArray<USpawnArea*>::ElementType* Area = SpawnAreas.FindByPredicate([&InIndex] (const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->Index == InIndex)
+		if (SpawnArea->Index == InIndex)
 		{
 			return true;
 		}
 		return false;
 	});
-	return Point ? *Point : nullptr;
+	return Area ? *Area : nullptr;
 }
 
 USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromLocation(const FVector& InLocation) const
 {
-	const TArray<USpawnArea*>::ElementType* Point = SpawnAreas.FindByPredicate([&InLocation](const USpawnArea* SpawnPoint)
+	const TArray<USpawnArea*>::ElementType* Area = SpawnAreas.FindByPredicate([&InLocation](const USpawnArea* SpawnArea)
 	{
-		if ((InLocation.Y >= SpawnPoint->Vertex_BottomLeft.Y) && (InLocation.Z >= SpawnPoint->Vertex_BottomLeft.Z) && (InLocation.Y < SpawnPoint->Vertex_TopRight.Y - 0.01) && (InLocation.Z < SpawnPoint->Vertex_TopRight.Z -
+		if ((InLocation.Y >= SpawnArea->Vertex_BottomLeft.Y) && (InLocation.Z >= SpawnArea->Vertex_BottomLeft.Z) && (InLocation.Y < SpawnArea->Vertex_TopRight.Y - 0.01) && (InLocation.Z < SpawnArea->Vertex_TopRight.Z -
 			0.01))
 		{
 			return true;
 		}
 		return false;
 	});
-	return Point ? *Point : nullptr;
+	return Area ? *Area : nullptr;
 }
 
 USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromGuid(const FGuid& TargetGuid) const
 {
-	const TArray<USpawnArea*>::ElementType* Point = SpawnAreas.FindByPredicate([&TargetGuid](const USpawnArea* SpawnPoint)
+	const TArray<USpawnArea*>::ElementType* Area = SpawnAreas.FindByPredicate([&TargetGuid](const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->GetTargetGuid() == TargetGuid)
+		if (SpawnArea->GetTargetGuid() == TargetGuid)
 		{
 			return true;
 		}
 		return false;
 	});
-	return Point ? *Point : nullptr;
+	return Area ? *Area : nullptr;
 }
 
 USpawnArea* USpawnAreaManagerComponent::FindOldestRecentSpawnArea() const
 {
-	TArray<USpawnArea*> RecentSpawnPoints = GetRecentSpawnAreas();
+	TArray<USpawnArea*> RecentSpawnAreas = GetRecentSpawnAreas();
 	
-	if (RecentSpawnPoints.IsEmpty())
+	if (RecentSpawnAreas.IsEmpty())
 	{
 		return nullptr;
 	}
 	
-	USpawnArea* MostRecent = RecentSpawnPoints.Top();
+	USpawnArea* MostRecent = RecentSpawnAreas.Top();
 	
-	for (USpawnArea* SpawnPoint : RecentSpawnPoints)
+	for (USpawnArea* SpawnArea : RecentSpawnAreas)
 	{
-		if (SpawnPoint->GetTimeSetRecent() < MostRecent->GetTimeSetRecent())
+		if (SpawnArea->GetTimeSetRecent() < MostRecent->GetTimeSetRecent())
 		{
-			MostRecent = SpawnPoint;
+			MostRecent = SpawnArea;
 		}
 	}
 	return MostRecent;
@@ -445,24 +446,24 @@ USpawnArea* USpawnAreaManagerComponent::FindOldestRecentSpawnArea() const
 
 USpawnArea* USpawnAreaManagerComponent::FindOldestDeactivatedManagedSpawnArea() const
 {
-	TArray<USpawnArea*> Points = GetDeactivatedManagedSpawnAreas();
-	return Points.IsEmpty() ? nullptr : Points.Top();
+	TArray<USpawnArea*> Areas = GetDeactivatedManagedSpawnAreas();
+	return Areas.IsEmpty() ? nullptr : Areas.Top();
 }
 
 int32 USpawnAreaManagerComponent::FindSpawnAreaIndexFromLocation(const FVector& InLocation) const
 {
-	const TArray<USpawnArea*>::ElementType* Point = SpawnAreas.FindByPredicate([&InLocation](const USpawnArea* SpawnPoint)
+	const TArray<USpawnArea*>::ElementType* SpawnArea = SpawnAreas.FindByPredicate([&InLocation](const USpawnArea* SpawnArea)
 	{
-		if ((InLocation.Y >= SpawnPoint->Vertex_BottomLeft.Y) &&
-			(InLocation.Z >= SpawnPoint->Vertex_BottomLeft.Z) &&
-			(InLocation.Y < SpawnPoint->Vertex_TopRight.Y - 0.01) &&
-			(InLocation.Z < SpawnPoint->Vertex_TopRight.Z - 0.01))
+		if ((InLocation.Y >= SpawnArea->Vertex_BottomLeft.Y) &&
+			(InLocation.Z >= SpawnArea->Vertex_BottomLeft.Z) &&
+			(InLocation.Y < SpawnArea->Vertex_TopRight.Y - 0.01) &&
+			(InLocation.Z < SpawnArea->Vertex_TopRight.Z - 0.01))
 		{
 			return true;
 		}
 		return false;
 	});
-	return Point ? (*Point)->Index : INDEX_NONE;
+	return SpawnArea ? (*SpawnArea)->Index : INDEX_NONE;
 }
 
 bool USpawnAreaManagerComponent::IsSpawnAreaValid(const USpawnArea* InSpawnArea) const
@@ -478,9 +479,9 @@ bool USpawnAreaManagerComponent::IsSpawnAreaValid(const USpawnArea* InSpawnArea)
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetManagedSpawnAreas() const
 {
-	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnPoint)
+	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->IsCurrentlyManaged())
+		if (SpawnArea->IsCurrentlyManaged())
 		{
 			return true;
 		}
@@ -490,29 +491,29 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetManagedSpawnAreas() const
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetDeactivatedManagedSpawnAreas() const
 {
-	TArray<USpawnArea*> Points = SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnPoint)
+	TArray<USpawnArea*> Areas = SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->IsCurrentlyManaged() && !SpawnPoint->IsActivated())
+		if (SpawnArea->IsCurrentlyManaged() && !SpawnArea->IsActivated())
 		{
 			return true;
 		}
 		return false;
 	});
-	if (!Points.IsEmpty())
+	if (!Areas.IsEmpty())
 	{
-		Points.Sort([] (const USpawnArea& SpawnPoint1, const USpawnArea& SpawnPoint2)
+		Areas.Sort([] (const USpawnArea& SpawnArea1, const USpawnArea& SpawnArea2)
 		{
-			return SpawnPoint1.GetTimeSetRecent() < SpawnPoint2.GetTimeSetRecent();
+			return SpawnArea1.GetTimeSetRecent() < SpawnArea2.GetTimeSetRecent();
 		});
 	}
-	return Points;
+	return Areas;
 }
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetRecentSpawnAreas() const
 {
-	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnPoint)
+	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->IsRecent())
+		if (SpawnArea->IsRecent())
 		{
 			return true;
 		}
@@ -522,9 +523,9 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetRecentSpawnAreas() const
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatedSpawnAreas() const
 {
-	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnPoint)
+	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->IsActivated())
+		if (SpawnArea->IsActivated())
 		{
 			return true;
 		}
@@ -534,9 +535,9 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatedSpawnAreas() const
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatedOrRecentSpawnAreas() const
 {
-	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnPoint)
+	return SpawnAreas.FilterByPredicate([] (const USpawnArea* SpawnArea)
 	{
-		if (SpawnPoint->IsActivated() || SpawnPoint->IsRecent())
+		if (SpawnArea->IsActivated() || SpawnArea->IsRecent())
 		{
 			return true;
 		}
@@ -712,7 +713,7 @@ void USpawnAreaManagerComponent::HandleRecentTargetRemoval(const ERecentTargetMe
 	
 	FTimerHandle TimerHandle;
 	
-	/* Handle removing recent flag from SpawnPoint */
+	/* Handle removing recent flag from SpawnArea */
 	switch (RecentTargetMemoryPolicy)
 	{
 	case ERecentTargetMemoryPolicy::None:
@@ -769,6 +770,199 @@ void USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea(const FGuid Targe
 	}
 }
 
+// Getting valid spawn locations
+
+TArray<FVector> USpawnAreaManagerComponent::GetValidSpawnLocations(const FVector& Scale, const FExtrema& InCurrentExtrema, const USpawnArea* CurrentSpawnArea) const
+{
+	TArray<FVector> ValidSpawnLocations;
+
+	// TODO instead of starting with full array, might as well just only get valid ones instead of removing.
+	// TODO NVM, have to account for dynamic spawn size
+	// Start by removing all SpawnAreas that don't have a point in the current extrema
+	
+	// TODO Need a setting that instructs whether to allow a managed target to be considered a valid spawn destination
+	
+	switch (BSConfig.TargetConfig.TargetDistributionPolicy)
+	{
+	case ETargetDistributionPolicy::EdgeOnly:
+		HandleEdgeOnlySpawnLocations(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
+		RemoveOverlappingSpawnLocations(ValidSpawnLocations, Scale, bShowDebug_SpawnMemory);
+		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema);
+		break;
+	case ETargetDistributionPolicy::FullRange:
+		HandleFullRangeSpawnLocations(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
+		RemoveOverlappingSpawnLocations(ValidSpawnLocations, Scale, bShowDebug_SpawnMemory);
+		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema);
+		break;
+	case ETargetDistributionPolicy::Grid:
+		HandleGridSpawnLocations(ValidSpawnLocations, CurrentSpawnArea, bShowDebug_SpawnMemory);
+		break;
+	case ETargetDistributionPolicy::None:
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
+	default:
+		ValidSpawnLocations = GetAllBottomLeftVertices();
+		RemoveOverlappingSpawnLocations(ValidSpawnLocations, Scale, bShowDebug_SpawnMemory);
+		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema);
+		break;
+	}
+	
+	if (bShowDebug_SpawnMemory)
+	{
+		DrawDebug_Boxes(ValidSpawnLocations, FColor::Emerald, 6);
+	}
+	
+	return ValidSpawnLocations;
+}
+
+void USpawnAreaManagerComponent::HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema, const bool bShowDebug) const
+{
+	const float MaxY = Extrema.Max.Y - GetSpawnMemoryIncY();
+	const float MaxZ = Extrema.Max.Z - GetSpawnMemoryIncZ();
+	const float OriginX = Origin.X;
+	for (float Y = Extrema.Min.Y; Y < Extrema.Max.Y; Y += GetSpawnMemoryIncY())
+	{
+		ValidSpawnLocations.AddUnique(FVector(OriginX, Y, Extrema.Min.Z));
+		ValidSpawnLocations.AddUnique(FVector(OriginX, Y, MaxZ));
+	}
+	for (float Z = Extrema.Min.Z; Z < Extrema.Max.Z; Z += GetSpawnMemoryIncZ())
+	{
+		ValidSpawnLocations.AddUnique(FVector(OriginX, Extrema.Min.Y, Z));
+		ValidSpawnLocations.AddUnique(FVector(OriginX, MaxY, Z));
+	}
+	ValidSpawnLocations.Add(Origin);
+	if (bShowDebug)
+	{
+		const TArray<FVector> RemovedLocations = GetAllBottomLeftVertices().FilterByPredicate([&] (const FVector& Vector)
+		{
+			return !ValidSpawnLocations.Contains(Vector);
+		});
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+	}
+}
+
+void USpawnAreaManagerComponent::HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema, const bool bShowDebug) const
+{
+	TArray<FVector> RemovedLocations;
+	ValidSpawnLocations = GetAllBottomLeftVertices().FilterByPredicate([&](const FVector& Vector)
+	{
+		if (Vector.Y < Extrema.Min.Y || Vector.Y >= Extrema.Max.Y || Vector.Z < Extrema.Min.Z || Vector.Z >= Extrema.Max.Z)
+		{
+			if (bShowDebug)
+			{
+				RemovedLocations.Add(Vector);
+			}
+			return false;
+		}
+		return true;
+	});
+	if (bShowDebug)
+	{
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+	}
+}
+
+void USpawnAreaManagerComponent::HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea, const bool bShowDebug) const
+{
+	ValidSpawnLocations = GetAllBottomLeftVertices();
+	switch (BSConfig.TargetConfig.TargetActivationSelectionPolicy)
+	{
+	case ETargetActivationSelectionPolicy::None:
+	case ETargetActivationSelectionPolicy::Random:
+		HandleFilterActivated(ValidSpawnLocations, bShowDebug);
+		HandleFilterRecent(ValidSpawnLocations, bShowDebug);
+		break;
+	case ETargetActivationSelectionPolicy::Bordering:
+		HandleBorderingSelectionPolicy(ValidSpawnLocations, CurrentSpawnArea, bShowDebug);
+		break;
+	default:
+		break;
+	}
+}
+
+void USpawnAreaManagerComponent::HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea, const bool bShowDebug) const
+{
+	if (CurrentSpawnArea)
+	{
+		// Filter out non-bordering points
+		if (const TArray<int32> BorderingIndices = CurrentSpawnArea->GetBorderingIndices(); !BorderingIndices.IsEmpty())
+		{
+			ValidSpawnLocations = ValidSpawnLocations.FilterByPredicate([&] (const FVector& Vector)
+			{
+				if (const USpawnArea* FoundPoint = FindSpawnAreaFromLocation(Vector))
+				{
+					if (!BorderingIndices.Contains(FoundPoint->GetIndex()))
+					{
+						return false;
+					}
+					return true;
+				}
+				return false;
+			});
+		}
+	}
+	
+	// First try filtering out activated points
+	TArray<FVector> NoActive = ValidSpawnLocations;
+	HandleFilterActivated(NoActive, bShowDebug);
+	
+	if (!NoActive.IsEmpty())
+	{
+		ValidSpawnLocations = NoActive;
+		
+		// Then try filtering out recent points too
+		TArray<FVector> NoRecent = NoActive;
+		HandleFilterRecent(NoRecent, bShowDebug);
+
+		if (!NoRecent.IsEmpty())
+		{
+			ValidSpawnLocations = NoRecent;
+		}
+	}
+}
+
+void USpawnAreaManagerComponent::HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const
+{
+	TArray<FVector> RemovedLocations;
+	ValidSpawnLocations = ValidSpawnLocations.FilterByPredicate([&] (const FVector& Vector)
+	{
+		if (const USpawnArea* FoundPoint = FindSpawnAreaFromLocation(Vector))
+		{
+			if (FoundPoint->IsRecent())
+			{
+				RemovedLocations.Add(Vector);
+				return false;
+			}
+			return true;
+		}
+		return false;
+	});
+	if (bShowDebug)
+	{
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+	}
+}
+
+void USpawnAreaManagerComponent::HandleFilterActivated(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const
+{
+	TArray<FVector> RemovedLocations;
+	ValidSpawnLocations = ValidSpawnLocations.FilterByPredicate([&] (const FVector& Vector)
+	{
+		if (const USpawnArea* FoundPoint = FindSpawnAreaFromLocation(Vector))
+		{
+			if (FoundPoint->IsActivated())
+			{
+				RemovedLocations.Add(Vector);
+				return false;
+			}
+			return true;
+		}
+		return false;
+	});
+	if (bShowDebug)
+	{
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+	}
+}
 
 // Util or debug
 
