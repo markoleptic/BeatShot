@@ -4,7 +4,7 @@
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
 #include "GlobalConstants.h"
-#include "Target/SphereTarget.h"
+#include "Target/Target.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Target/ReinforcementLearningComponent.h"
@@ -55,7 +55,7 @@ ATargetManager::ATargetManager()
 	StaticExtents = FVector();
 	ConsecutiveTargetsHit = 0;
 	DynamicSpawnScale = 0;
-	ManagedTargets = TArray<ASphereTarget*>();
+	ManagedTargets = TArray<ATarget*>();
 	AllSpawnLocations = TArray<FVector>();
 	TotalPossibleDamage = 0.f;
 }
@@ -69,7 +69,7 @@ void ATargetManager::Destroyed()
 {
 	if (!GetManagedTargets().IsEmpty())
 	{
-		for (TObjectPtr<ASphereTarget> Target : GetManagedTargets())
+		for (TObjectPtr<ATarget> Target : GetManagedTargets())
 		{
 			if (Target)
 			{
@@ -186,7 +186,7 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 	{
 		return;
 	}
-	for (const TObjectPtr<ASphereTarget> Target : GetManagedTargets())
+	for (const TObjectPtr<ATarget> Target : GetManagedTargets())
 	{
 		if (Target && !Target->IsTargetImmuneToTracking())
 		{
@@ -231,13 +231,13 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	}
 }
 
-ASphereTarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
+ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 {
 	if (!InSpawnArea)
 	{
 		return nullptr;
 	}
-	ASphereTarget* Target = GetWorld()->SpawnActorDeferred<ASphereTarget>(TargetToSpawn, FTransform(FRotator::ZeroRotator, InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale()), this, nullptr,
+	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(TargetToSpawn, FTransform(FRotator::ZeroRotator, InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale()), this, nullptr,
 	                                                                      ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Target->InitTarget(BSConfig.TargetConfig);
 	Target->FinishSpawning(FTransform(), true);
@@ -247,7 +247,7 @@ ASphereTarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	return Target;
 }
 
-bool ATargetManager::ActivateTarget(ASphereTarget* InTarget) const
+bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 {
 	// TargetManager handles all TargetActivationResponses
 	// Each target handles their own TargetDeactivationResponses & TargetDestructionConditions
@@ -289,7 +289,7 @@ bool ATargetManager::ActivateTarget(ASphereTarget* InTarget) const
 	if (InTarget->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan))
 	{
 		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid());
-		OnTargetActivatedOrSpawned.Broadcast();
+		OnTargetActivated.Broadcast();
 		if (ReinforcementLearningComponent->IsActive() && SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
 		{
 			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnArea->GetIndex(), CurrentSpawnArea->GetIndex());
@@ -315,7 +315,7 @@ void ATargetManager::HandleRuntimeSpawnAndActivation()
 			// TODO: Ugly temporary fix
 			if (!CurrentSpawnArea->IsCurrentlyManaged())
 			{
-				if (ASphereTarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
+				if (ATarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
 				{
 					if (NumToActivate > 0)
 					{
@@ -331,7 +331,7 @@ void ATargetManager::HandleRuntimeSpawnAndActivation()
 		{
 			if (NumToActivate > 0)
 			{
-				if (ASphereTarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
+				if (ATarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
 				{
 					if (ActivateTarget(SpawnedTarget))
 					{
@@ -377,7 +377,7 @@ void ATargetManager::HandleActivateExistingTargets()
 		{
 			if (CurrentSpawnArea)
 			{
-				if (ASphereTarget* Target = FindManagedTargetByGuid(CurrentSpawnArea->GetTargetGuid()))
+				if (ATarget* Target = FindManagedTargetByGuid(CurrentSpawnArea->GetTargetGuid()))
 				{
 					if (ActivateTarget(Target))
 					{
@@ -389,7 +389,7 @@ void ATargetManager::HandleActivateExistingTargets()
 		// TODO: Maybe this should just be moved to GetNextSpawnArea
 		else if (const USpawnArea* Point = SpawnAreaManager->FindOldestDeactivatedManagedSpawnArea())
 		{
-			if (ASphereTarget* Target = FindManagedTargetByGuid(Point->GetTargetGuid()))
+			if (ATarget* Target = FindManagedTargetByGuid(Point->GetTargetGuid()))
 			{
 				ActivateTarget(Target);
 			}
@@ -408,7 +408,7 @@ void ATargetManager::HandlePermanentlyActiveTargetActivation() const
 	
 	for (const USpawnArea* SpawnArea : SpawnAreas)
 	{
-		if (ASphereTarget* Target = FindManagedTargetByGuid(SpawnArea->GetTargetGuid()))
+		if (ATarget* Target = FindManagedTargetByGuid(SpawnArea->GetTargetGuid()))
 		{
 			ActivateTarget(Target);
 		}
@@ -736,9 +736,9 @@ bool ATargetManager::TrackingTargetIsDamageable() const
 	{
 		return false;
 	}
-	if (GetManagedTargets().FindByPredicate([] (const TObjectPtr<ASphereTarget> SphereTarget)
+	if (GetManagedTargets().FindByPredicate([] (const TObjectPtr<ATarget> target)
 	{
-		return !SphereTarget->IsTargetImmuneToTracking();
+		return !target->IsTargetImmuneToTracking();
 	}))
 	{
 		return true;
@@ -746,11 +746,11 @@ bool ATargetManager::TrackingTargetIsDamageable() const
 	return false;
 }
 
-ASphereTarget* ATargetManager::FindManagedTargetByGuid(const FGuid Guid) const
+ATarget* ATargetManager::FindManagedTargetByGuid(const FGuid Guid) const
 {
-	const TObjectPtr<ASphereTarget>* Found = ManagedTargets.FindByPredicate([&] (const ASphereTarget* SphereTarget)
+	const TObjectPtr<ATarget>* Found = ManagedTargets.FindByPredicate([&] (const ATarget* target)
 	{
-		return SphereTarget->GetGuid() == Guid;
+		return target->GetGuid() == Guid;
 	});
 	if (Found && Found->Get())
 	{
@@ -856,11 +856,11 @@ FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 	return FExtrema(FVector(GetBoxOrigin().X, MinY, MinZ), FVector(GetBoxOrigin().X, MaxY, MaxZ));
 }
 
-int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea)
+int32 ATargetManager::AddToManagedTargets(ATarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea)
 {
 	SpawnAreaManager->FlagSpawnAreaAsManaged(AssociatedSpawnArea->GetTargetGuid());
-	TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets();
-	const int32 NewIndex = Targets.Add(TObjectPtr<ASphereTarget>(SpawnTarget));
+	TArray<TObjectPtr<ATarget>> Targets = GetManagedTargets();
+	const int32 NewIndex = Targets.Add(TObjectPtr<ATarget>(SpawnTarget));
 	ManagedTargets = Targets;
 	return NewIndex;
 }
@@ -868,7 +868,7 @@ int32 ATargetManager::AddToManagedTargets(ASphereTarget* SpawnTarget, const USpa
 void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
 	SpawnAreaManager->RemoveManagedFlagFromSpawnArea(GuidToRemove);
-	const TArray<TObjectPtr<ASphereTarget>> Targets = GetManagedTargets().FilterByPredicate([&] (const TObjectPtr<ASphereTarget>& OtherTarget)
+	const TArray<TObjectPtr<ATarget>> Targets = GetManagedTargets().FilterByPredicate([&] (const TObjectPtr<ATarget>& OtherTarget)
 	{
 		if (!OtherTarget)
 		{
@@ -899,7 +899,7 @@ void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSe
 	PlayerSettings = InPlayerSettings;
 	if (!ManagedTargets.IsEmpty())
 	{
-		for (ASphereTarget* Target : GetManagedTargets())
+		for (ATarget* Target : GetManagedTargets())
 		{
 			Target->UpdatePlayerSettings(PlayerSettings);
 		}

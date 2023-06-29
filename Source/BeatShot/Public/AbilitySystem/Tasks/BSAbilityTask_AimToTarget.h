@@ -8,7 +8,7 @@
 #include "BSAbilityTask_AimToTarget.generated.h"
 
 class UBSAbilitySystemComponent;
-class ASphereTarget;
+class ATarget;
 class UCurveFloat;
 
 /** Delegate type used in the AimToTarget ability task */
@@ -68,7 +68,7 @@ public:
 			FName TaskInstanceName,
 			AController* Controller,
 			UCurveFloat* RotationCurve,
-			ASphereTarget* TargetToDestroy,
+			ATarget* TargetToDestroy,
 			FGameplayTagContainer EventTags,
 			float TimelinePlaybackRate,
 			bool bStopWhenAbilityEnds = true);
@@ -85,7 +85,7 @@ private:
 	UCurveFloat* RotationCurve;
 	
 	UPROPERTY()
-	ASphereTarget* Target;
+	ATarget* Target;
 
 	UPROPERTY()
 	float TimelinePlaybackRate;

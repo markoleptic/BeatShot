@@ -12,7 +12,7 @@
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "BSCharacter.generated.h"
 
-class ASphereTarget;
+class ATarget;
 class UBSRecoilComponent;
 class UBSCharacterMovementComponent;
 class ABSPlayerState;
@@ -158,7 +158,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
-	ASphereTarget* PeekActiveTargets();
+	ATarget* PeekActiveTargets();
 
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
 	void PopActiveTargets();
@@ -170,9 +170,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
 	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
 
-	/** Bound to DefaultGameMode's OnTargetActivatedOrSpawned delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
+	/** Bound to DefaultGameMode's OnTargetActivated delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()
-	void OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget);
+	void OnTargetSpawned_AimBot(ATarget* SpawnedTarget);
 
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
 	float GetAimBotPlaybackSpeed() const;
@@ -182,7 +182,7 @@ public:
 
 private:
 	/** A queue of target locations that have not yet been destroyed */
-	TQueue<ASphereTarget*> ActiveTargets_AimBot;
+	TQueue<ATarget*> ActiveTargets_AimBot;
 
 	/** Whether the AimBot is active */
 	bool bEnabled_AimBot;

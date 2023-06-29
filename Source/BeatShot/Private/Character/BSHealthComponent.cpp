@@ -4,7 +4,7 @@
 #include "Character/BSHealthComponent.h"
 #include "GameplayEffectExtension.h"
 #include "AbilitySystem/Globals/BSAbilitySystemGlobals.h"
-#include "Target/SphereTarget.h"
+#include "Target/Target.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "GameFramework/Actor.h"

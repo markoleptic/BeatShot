@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "Target/SphereTarget.h"
+#include "Target/Target.h"
 #include "Character/BSHealthComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraFunctionLibrary.h"
@@ -16,7 +16,7 @@
 #include "Kismet/KismetMathLibrary.h"
 
 
-ASphereTarget::ASphereTarget()
+ATarget::ATarget()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -78,7 +78,7 @@ ASphereTarget::ASphereTarget()
 	PeakToEndTimelinePlayRate = 1.f;
 }
 
-void ASphereTarget::InitTarget(const FBS_TargetConfig& InTargetConfig)
+void ATarget::InitTarget(const FBS_TargetConfig& InTargetConfig)
 {
 	Config = InTargetConfig;
 	HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
@@ -88,38 +88,38 @@ void ASphereTarget::InitTarget(const FBS_TargetConfig& InTargetConfig)
 	InitialTargetLocation = GetActorLocation();
 }
 
-UAbilitySystemComponent* ASphereTarget::GetAbilitySystemComponent() const
+UAbilitySystemComponent* ATarget::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }
 
-void ASphereTarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
 	GetAbilitySystemComponent()->GetOwnedGameplayTags(TagContainer);
 }
 
-bool ASphereTarget::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
+bool ATarget::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
 {
 	return GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToCheck);
 }
 
-bool ASphereTarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+bool ATarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
 {
 	return GetAbilitySystemComponent()->HasAllMatchingGameplayTags(TagContainer);
 }
 
-bool ASphereTarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+bool ATarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
 {
 	return GetAbilitySystemComponent()->HasAnyMatchingGameplayTags(TagContainer);
 }
 
-void ASphereTarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
+void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
 	const FVector NewVelocity = ProjectileMovementComponent->Velocity.GetSafeNormal() * ProjectileMovementComponent->InitialSpeed;
 	ProjectileMovementComponent->Velocity = NewVelocity;
 }
 
-void ASphereTarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
+void ATarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
 {
 	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToRemove))
 	{
@@ -127,12 +127,12 @@ void ASphereTarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
 	}
 }
 
-void ASphereTarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
+void ATarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 {
 	SetUseSeparateOutlineColor(InPlayerSettings.bUseSeparateOutlineColor);
 }
 
-void ASphereTarget::BeginPlay()
+void ATarget::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -141,15 +141,15 @@ void ASphereTarget::BeginPlay()
 	SphereMesh->SetMaterial(0, TargetColorChangeMaterial);
 
 	/* Start to Peak Target Color */
-	OnStartToPeak.BindDynamic(this, &ASphereTarget::InterpStartToPeak);
+	OnStartToPeak.BindDynamic(this, &ATarget::InterpStartToPeak);
 	StartToPeakTimeline.AddInterpFloat(StartToPeakCurve, OnStartToPeak);
 
 	/* Play InterpPeakToEnd when InterpStartToPeak is finished */
-	OnStartToPeakFinished.BindDynamic(this, &ASphereTarget::PlayPeakToEndTimeline);
+	OnStartToPeakFinished.BindDynamic(this, &ATarget::PlayPeakToEndTimeline);
 	StartToPeakTimeline.SetTimelineFinishedFunc(OnStartToPeakFinished);
 
 	/* Peak Color to Fade Color */
-	OnPeakToFade.BindDynamic(this, &ASphereTarget::InterpPeakToEnd);
+	OnPeakToFade.BindDynamic(this, &ATarget::InterpPeakToEnd);
 	PeakToEndTimeline.AddInterpFloat(PeakToEndCurve, OnPeakToFade);
 
 	/* Set the playback rates based on TargetMaxLifeSpan */
@@ -179,20 +179,20 @@ void ASphereTarget::BeginPlay()
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow))
 	{
 		/* Fade the target from ColorWhenDestroyed to BeatGridInactiveColor */
-		OnShrinkQuickAndGrowSlow.BindDynamic(this, &ASphereTarget::InterpShrinkQuickAndGrowSlow);
+		OnShrinkQuickAndGrowSlow.BindDynamic(this, &ATarget::InterpShrinkQuickAndGrowSlow);
 		ShrinkQuickAndGrowSlowTimeline.AddInterpFloat(ShrinkQuickAndGrowSlowCurve, OnShrinkQuickAndGrowSlow);
 	}
 }
 
-void ASphereTarget::PostInitializeComponents()
+void ATarget::PostInitializeComponents()
 {
 	if (GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
 		
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
-		HealthComponent->OnHealthChanged.AddUObject(this, &ASphereTarget::OnHealthChanged);
-		GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ASphereTarget::OnImmunityBlockGameplayEffect);
+		HealthComponent->OnHealthChanged.AddUObject(this, &ATarget::OnHealthChanged);
+		GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
 
 		switch (Config.TargetDamageType)
 		{
@@ -215,7 +215,7 @@ void ASphereTarget::PostInitializeComponents()
 
 	if (ProjectileMovementComponent)
 	{
-		ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ASphereTarget::OnProjectileBounce);
+		ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ATarget::OnProjectileBounce);
 		if (!Config.bMoveTargetsForward)
 		{
 			ProjectileMovementComponent->bConstrainToPlane = true;
@@ -226,7 +226,7 @@ void ASphereTarget::PostInitializeComponents()
 	Super::PostInitializeComponents();
 }
 
-void ASphereTarget::Tick(float DeltaSeconds)
+void ATarget::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	StartToPeakTimeline.TickTimeline(DeltaSeconds);
@@ -234,12 +234,12 @@ void ASphereTarget::Tick(float DeltaSeconds)
 	ShrinkQuickAndGrowSlowTimeline.TickTimeline(DeltaSeconds);
 }
 
-void ASphereTarget::OnTargetMaxLifeSpanExpired()
+void ATarget::OnTargetMaxLifeSpanExpired()
 {
 	DamageSelf(Config.ExpirationHealthPenalty);
 }
 
-void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
+void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
 {
 	const float TimeAlive = ActorInstigator == this ? -1.f : GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
@@ -251,7 +251,7 @@ void ASphereTarget::OnHealthChanged(AActor* ActorInstigator, const float OldValu
 	HandleDestruction(ActorInstigator == this, NewValue);
 }
 
-bool ASphereTarget::ActivateTarget(const float Lifespan)
+bool ATarget::ActivateTarget(const float Lifespan)
 {
 	if (!bCanBeReactivated)
 	{
@@ -264,14 +264,14 @@ bool ASphereTarget::ActivateTarget(const float Lifespan)
 	if (Lifespan > 0)
 	{
 		GetWorldTimerManager().ClearTimer(DamageableWindow);
-		GetWorldTimerManager().SetTimer(DamageableWindow, this, &ASphereTarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
+		GetWorldTimerManager().SetTimer(DamageableWindow, this, &ATarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
 		PlayStartToPeakTimeline();
 	}
 	bCanBeReactivated = false;
 	return true;
 }
 
-void ASphereTarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
+void ATarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
 {
 	if (ShouldDeactivate(bExpired, CurrentHealth))
 	{
@@ -280,7 +280,7 @@ void ASphereTarget::HandleDeactivation(const bool bExpired, const float CurrentH
 	}
 }
 
-void ASphereTarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
+void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
 {
 	if (ShouldDestroy(bExpired, CurrentHealth))
 	{
@@ -288,7 +288,7 @@ void ASphereTarget::HandleDestruction(const bool bExpired, const float CurrentHe
 	}
 }
 
-bool ASphereTarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
+bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
 {
 	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
 	{
@@ -305,7 +305,7 @@ bool ASphereTarget::ShouldDeactivate(const bool bExpired, const float CurrentHea
 	return false;
 }
 
-bool ASphereTarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) const
+bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) const
 {
 	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
 	{
@@ -334,7 +334,7 @@ bool ASphereTarget::ShouldDestroy(const bool bExpired, const float CurrentHealth
 	return false;
 }
 
-void ASphereTarget::HandleDeactivationResponses(const bool bExpired)
+void ATarget::HandleDeactivationResponses(const bool bExpired)
 {
 	// Immunity
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::RemoveImmunity))
@@ -383,7 +383,7 @@ void ASphereTarget::HandleDeactivationResponses(const bool bExpired)
 	}
 }
 
-void ASphereTarget::DamageSelf(const float Damage)
+void ATarget::DamageSelf(const float Damage)
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
@@ -396,25 +396,25 @@ void ASphereTarget::DamageSelf(const float Damage)
 	}
 }
 
-void ASphereTarget::PlayStartToPeakTimeline()
+void ATarget::PlayStartToPeakTimeline()
 {
 	StopAllTimelines();
 	StartToPeakTimeline.PlayFromStart();
 }
 
-void ASphereTarget::PlayPeakToEndTimeline()
+void ATarget::PlayPeakToEndTimeline()
 {
 	StopAllTimelines();
 	PeakToEndTimeline.PlayFromStart();
 }
 
-void ASphereTarget::PlayShrinkQuickAndGrowSlowTimeline()
+void ATarget::PlayShrinkQuickAndGrowSlowTimeline()
 {
 	StopAllTimelines();
 	ShrinkQuickAndGrowSlowTimeline.PlayFromStart();
 }
 
-void ASphereTarget::StopAllTimelines()
+void ATarget::StopAllTimelines()
 {
 	if (StartToPeakTimeline.IsPlaying())
 	{
@@ -430,12 +430,12 @@ void ASphereTarget::StopAllTimelines()
 	}
 }
 
-void ASphereTarget::SetColorToInactiveColor()
+void ATarget::SetColorToInactiveColor()
 {
 	SetSphereColor(Config.InactiveTargetColor);
 }
 
-void ASphereTarget::InterpStartToPeak(const float Alpha)
+void ATarget::InterpStartToPeak(const float Alpha)
 {
 	SetSphereColor(UKismetMathLibrary::LinearColorLerp(Config.StartColor, Config.PeakColor, Alpha));
 	if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
@@ -450,7 +450,7 @@ void ASphereTarget::InterpStartToPeak(const float Alpha)
 	}
 }
 
-void ASphereTarget::InterpPeakToEnd(const float Alpha)
+void ATarget::InterpPeakToEnd(const float Alpha)
 {
 	SetSphereColor(UKismetMathLibrary::LinearColorLerp(Config.PeakColor, Config.EndColor, Alpha));
 	if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
@@ -465,14 +465,14 @@ void ASphereTarget::InterpPeakToEnd(const float Alpha)
 	}
 }
 
-void ASphereTarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
+void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
 	SetSphereScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, InitialTargetScale.X, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, Config.InactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetSphereColor(Color);
 }
 
-void ASphereTarget::ApplyImmunityEffect() const
+void ATarget::ApplyImmunityEffect() const
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
@@ -483,7 +483,7 @@ void ASphereTarget::ApplyImmunityEffect() const
 	}
 }
 
-void ASphereTarget::RemoveImmunityEffect() const
+void ATarget::RemoveImmunityEffect() const
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
@@ -494,48 +494,48 @@ void ASphereTarget::RemoveImmunityEffect() const
 	}
 }
 
-void ASphereTarget::SetSphereColor(const FLinearColor& Color)
+void ATarget::SetSphereColor(const FLinearColor& Color)
 {
 	TargetColorChangeMaterial->SetVectorParameterValue(TEXT("BaseColor"), Color);
 }
 
-void ASphereTarget::SetOutlineColor(const FLinearColor& Color)
+void ATarget::SetOutlineColor(const FLinearColor& Color)
 {
 	TargetColorChangeMaterial->SetVectorParameterValue(TEXT("OutlineColor"), Color);
 }
 
-FLinearColor ASphereTarget::GetPeakTargetColor() const
+FLinearColor ATarget::GetPeakTargetColor() const
 {
 	return Config.PeakColor;
 }
 
-FLinearColor ASphereTarget::GetEndTargetColor() const
+FLinearColor ATarget::GetEndTargetColor() const
 {
 	return Config.EndColor;
 }
 
-FLinearColor ASphereTarget::GetInActiveTargetColor() const
+FLinearColor ATarget::GetInActiveTargetColor() const
 {
 	return Config.InactiveTargetColor;
 }
 
-bool ASphereTarget::IsTargetImmune() const
+bool ATarget::IsTargetImmune() const
 {
 	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune);
 }
 
-bool ASphereTarget::IsTargetImmuneToTracking() const
+bool ATarget::IsTargetImmuneToTracking() const
 {
 	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune) ||
 		AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune_Tracking);
 }
 
-bool ASphereTarget::IsDamageWindowActive() const
+bool ATarget::IsDamageWindowActive() const
 {
 	return GetWorldTimerManager().IsTimerActive(DamageableWindow);
 }
 
-FVector ASphereTarget::GetTargetDirection() const
+FVector ATarget::GetTargetDirection() const
 {
 	if (ProjectileMovementComponent->IsActive())
 	{
@@ -544,7 +544,7 @@ FVector ASphereTarget::GetTargetDirection() const
 	return FVector(0.f);
 }
 
-float ASphereTarget::GetTargetSpeed() const
+float ATarget::GetTargetSpeed() const
 {
 	if (ProjectileMovementComponent->IsActive())
 	{
@@ -553,7 +553,7 @@ float ASphereTarget::GetTargetSpeed() const
 	return 0.f;
 }
 
-FVector ASphereTarget::GetTargetVelocity() const
+FVector ATarget::GetTargetVelocity() const
 {
 	if (ProjectileMovementComponent->IsActive())
 	{
@@ -562,7 +562,7 @@ FVector ASphereTarget::GetTargetVelocity() const
 	return FVector(0.f);
 }
 
-void ASphereTarget::SetTargetDirection(const FVector& NewDirection) const
+void ATarget::SetTargetDirection(const FVector& NewDirection) const
 {
 	if (ProjectileMovementComponent->IsActive())
 	{
@@ -570,7 +570,7 @@ void ASphereTarget::SetTargetDirection(const FVector& NewDirection) const
 	}
 }
 
-void ASphereTarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
+void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
 {
 	if (ProjectileMovementComponent->IsActive())
 	{
@@ -578,7 +578,7 @@ void ASphereTarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
 	}
 }
 
-void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
+void ATarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
 {
 	if (bUseSeparateOutlineColor)
 	{
@@ -589,7 +589,7 @@ void ASphereTarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineCol
 	TargetColorChangeMaterial->SetScalarParameterValue("bUseSeparateOutlineColor", 0.f);
 }
 
-void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
+void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
 {
 	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
 	{
@@ -599,17 +599,17 @@ void ASphereTarget::PlayExplosionEffect(const FVector& ExplosionLocation, const 
 	}
 }
 
-void ASphereTarget::SetSphereScale(const FVector& NewScale) const
+void ATarget::SetSphereScale(const FVector& NewScale) const
 {
 	CapsuleComponent->SetRelativeScale3D(NewScale);
 }
 
-FVector ASphereTarget::GetCurrentTargetScale() const
+FVector ATarget::GetCurrentTargetScale() const
 {
 	return CapsuleComponent->GetRelativeScale3D();
 }
 
-void ASphereTarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
+void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
 {
 	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
 }

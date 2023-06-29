@@ -181,9 +181,9 @@ void ABSGameMode::StartGameModeTimers()
 
 void ABSGameMode::BindGameModeDelegates()
 {
-	if (!GetTargetManager()->OnTargetActivatedOrSpawned.IsBoundToObject(this))
+	if (!GetTargetManager()->OnTargetActivated.IsBoundToObject(this))
 	{
-		GetTargetManager()->OnTargetActivatedOrSpawned.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
+		GetTargetManager()->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 	}
 	if (!GetTargetManager()->OnTargetDeactivated.IsBoundToObject(this))
 	{
@@ -210,9 +210,9 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 		SaveCommonScoreInfo(BSConfig.DefiningConfig, ScoreInfo);
 		CurrentPlayerScore.LocationAccuracy = TargetManager->GetLocationAccuracy();
 
-		if (GetTargetManager()->OnTargetActivatedOrSpawned.IsBoundToObject(this))
+		if (GetTargetManager()->OnTargetActivated.IsBoundToObject(this))
 		{
-			GetTargetManager()->OnTargetActivatedOrSpawned.RemoveAll(this);
+			GetTargetManager()->OnTargetActivated.RemoveAll(this);
 		}
 		if (GetTargetManager()->OnTargetDeactivated.IsBoundToObject(this))
 		{

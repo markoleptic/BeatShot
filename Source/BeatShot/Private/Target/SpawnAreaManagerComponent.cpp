@@ -592,7 +592,7 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 	});
 	if (bShowDebug)
 	{
-		DrawDebug_Boxes(OverlappingPoints, FColor::Red, 4);
+		DrawDebug_Boxes(OverlappingPoints, FColor::Red, 4, 3);
 	}
 }
 
@@ -655,7 +655,7 @@ void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const
 	}
 	if (bShowDebug)
 	{
-		DrawDebug_Boxes(Removed, FColor::Purple, 4);
+		DrawDebug_Boxes(Removed, FColor::Purple, 4, 2);
 	}
 }
 
@@ -787,12 +787,12 @@ TArray<FVector> USpawnAreaManagerComponent::GetValidSpawnLocations(const FVector
 	case ETargetDistributionPolicy::EdgeOnly:
 		HandleEdgeOnlySpawnLocations(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
 		RemoveOverlappingSpawnLocations(ValidSpawnLocations, Scale, bShowDebug_SpawnMemory);
-		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema);
+		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
 		break;
 	case ETargetDistributionPolicy::FullRange:
 		HandleFullRangeSpawnLocations(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
 		RemoveOverlappingSpawnLocations(ValidSpawnLocations, Scale, bShowDebug_SpawnMemory);
-		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema);
+		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
 		break;
 	case ETargetDistributionPolicy::Grid:
 		HandleGridSpawnLocations(ValidSpawnLocations, CurrentSpawnArea, bShowDebug_SpawnMemory);
@@ -802,13 +802,13 @@ TArray<FVector> USpawnAreaManagerComponent::GetValidSpawnLocations(const FVector
 	default:
 		ValidSpawnLocations = GetAllBottomLeftVertices();
 		RemoveOverlappingSpawnLocations(ValidSpawnLocations, Scale, bShowDebug_SpawnMemory);
-		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema);
+		RemoveSharedVertices(ValidSpawnLocations, InCurrentExtrema, bShowDebug_SpawnMemory);
 		break;
 	}
 	
 	if (bShowDebug_SpawnMemory)
 	{
-		DrawDebug_Boxes(ValidSpawnLocations, FColor::Emerald, 6);
+		DrawDebug_Boxes(ValidSpawnLocations, FColor::Emerald, 4, 0);
 	}
 	
 	return ValidSpawnLocations;
@@ -836,7 +836,7 @@ void USpawnAreaManagerComponent::HandleEdgeOnlySpawnLocations(TArray<FVector>& V
 		{
 			return !ValidSpawnLocations.Contains(Vector);
 		});
-		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4, 3);
 	}
 }
 
@@ -857,7 +857,7 @@ void USpawnAreaManagerComponent::HandleFullRangeSpawnLocations(TArray<FVector>& 
 	});
 	if (bShowDebug)
 	{
-		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4, 3);
 	}
 }
 
@@ -938,7 +938,7 @@ void USpawnAreaManagerComponent::HandleFilterRecent(TArray<FVector>& ValidSpawnL
 	});
 	if (bShowDebug)
 	{
-		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4, 3);
 	}
 }
 
@@ -960,7 +960,7 @@ void USpawnAreaManagerComponent::HandleFilterActivated(TArray<FVector>& ValidSpa
 	});
 	if (bShowDebug)
 	{
-		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4);
+		DrawDebug_Boxes(RemovedLocations, FColor::Red, 4, 3);
 	}
 }
 
@@ -983,7 +983,7 @@ int32 USpawnAreaManagerComponent::GetOutArrayIndexFromSpawnAreaIndex(const int32
 	return Index;
 }
 
-void USpawnAreaManagerComponent::DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness) const
+void USpawnAreaManagerComponent::DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const
 {
 	for (const FVector& Vector : InLocations)
 	{

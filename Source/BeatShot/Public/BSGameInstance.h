@@ -10,7 +10,7 @@
 
 class AGameModeBase;
 class USteamManager;
-class ASphereTarget;
+class ATarget;
 class ABSPlayerController;
 
 /** Base GameInstance for this game */

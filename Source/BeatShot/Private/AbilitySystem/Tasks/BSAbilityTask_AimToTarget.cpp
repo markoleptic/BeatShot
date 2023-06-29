@@ -2,7 +2,7 @@
 
 #include "AbilitySystem/Tasks/BSAbilityTask_AimToTarget.h"
 #include "AbilitySystemGlobals.h"
-#include "Target/SphereTarget.h"
+#include "Target/Target.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -68,7 +68,7 @@ UBSAbilityTask_AimToTarget* UBSAbilityTask_AimToTarget::AimBot(UGameplayAbility*
 			FName TaskInstanceName,
 			AController* Controller,
 			UCurveFloat* RotationCurve,
-			ASphereTarget* TargetToDestroy,
+			ATarget* TargetToDestroy,
 			FGameplayTagContainer EventTags,
 			float TimelinePlaybackRate,
 			bool bStopWhenAbilityEnds)

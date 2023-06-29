@@ -374,7 +374,7 @@ public:
 	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const;
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
-	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness) const;
+	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const;
 
 	/** Prints debug info about a SpawnArea */
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;

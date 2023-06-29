@@ -9,7 +9,7 @@
 #include "GameFramework/Actor.h"
 #include "SaveGamePlayerSettings.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
-#include "SphereTarget.generated.h"
+#include "Target.generated.h"
 
 class UProjectileMovementComponent;
 class UBSHealthComponent;
@@ -19,21 +19,21 @@ class UTimelineComponent;
 class UNiagaraSystem;
 class UCurveFloat;
 class UBSAttributeSetBase;
-class ASphereTarget;
+class ATarget;
 
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
 
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
-class BEATSHOT_API ASphereTarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
+class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
 {
 	GENERATED_BODY()
 
 	friend class ATargetManager;
 
 	/** Sets default values for this actor's properties */
-	ASphereTarget();
+	ATarget();
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -130,7 +130,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetOutlineColor(const FLinearColor& Color);
 
-	/** Called from HealthComponent when a SphereTarget receives damage. Calls HandleDeactivation, HandleDestruction,
+	/** Called from HealthComponent when a target receives damage. Calls HandleDeactivation, HandleDestruction,
 	 *  and broadcasts OnTargetDamageEventOrTimeout before finally calling HandleDestruction*/
 	UFUNCTION()
 	void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue);

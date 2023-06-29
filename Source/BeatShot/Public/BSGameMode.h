@@ -17,7 +17,7 @@ class ABSCharacter;
 class AVisualizerBase;
 class AFloatingTextActor;
 class ATargetManager;
-class ASphereTarget;
+class ATarget;
 class ABSPlayerController;
 class UAudioAnalyzerManager;
 
@@ -296,7 +296,7 @@ private:
 	UFUNCTION()
 	void UpdateTrackingScore(const float DamageDelta, const float TotalPossibleDamage);
 
-	/** Function bound to DefaultGameMode's OnTargetActivatedOrSpawned delegate to keep track of number of targets spawned.
+	/** Function bound to DefaultGameMode's OnTargetActivated delegate to keep track of number of targets spawned.
 	 *  Executed by TargetManager */
 	UFUNCTION()
 	void UpdateTargetsSpawned();

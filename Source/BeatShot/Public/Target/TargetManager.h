@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Target/SphereTarget.h"
+#include "Target/Target.h"
 #include "SaveLoadInterface.h"
 #include "GameFramework/Actor.h"
 #include "SpawnAreaManagerComponent.h"
 #include "Components/BoxComponent.h"
 #include "TargetManager.generated.h"
 
-class ASphereTarget;
+class ATarget;
 class UReinforcementLearningComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBeatTrackTargetDamaged, const float DamageDelta, const float TotalPossibleDamage);
 DECLARE_MULTICAST_DELEGATE(FOnTargetActivated);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ASphereTarget* Target);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FTransform& Transform);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
@@ -71,7 +71,7 @@ protected:
 	
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	TSubclassOf<ASphereTarget> TargetToSpawn;
+	TSubclassOf<ATarget> TargetToSpawn;
 
 	/** Curve to look up values for DynamicSpawnScale */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
@@ -106,8 +106,8 @@ public:
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
 	FCommonScoreInfo GetCommonScoreInfo() const;
 
-	/** Delegate that is executed every time a target has been spawned or activated */
-	FOnTargetActivated OnTargetActivatedOrSpawned;
+	/** Delegate that is executed every time a target has been activated */
+	FOnTargetActivated OnTargetActivated;
 
 	/** Delegate that is executed every time a target has been spawned, and passes a pointer to that target. Used for AimBot */
 	FOnTargetActivated_AimBot OnTargetActivated_AimBot;
@@ -124,11 +124,11 @@ public:
 private:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
-	ASphereTarget* SpawnTarget(USpawnArea* InSpawnArea);
+	ATarget* SpawnTarget(USpawnArea* InSpawnArea);
 
 	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags associated SpawnArea as recent, fires OnActivation delegate,
 	 *  and adds to ReinforcementLearningComponent ActiveTargetPairs if active */
-	bool ActivateTarget(ASphereTarget* InTarget) const;
+	bool ActivateTarget(ATarget* InTarget) const;
 	
 	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce. Also activates the target */
 	void HandleRuntimeSpawnAndActivation();
@@ -189,10 +189,10 @@ private:
 	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
 
 	/** Returns a copy of ManagedTargets */
-	TArray<TObjectPtr<ASphereTarget>> GetManagedTargets() const { return ManagedTargets; }
+	TArray<TObjectPtr<ATarget>> GetManagedTargets() const { return ManagedTargets; }
 
 	/** Returns the SphereTarget that has the matching Guid, or nullptr if not found in ManagedTargets */
-	ASphereTarget* FindManagedTargetByGuid(const FGuid Guid) const;
+	ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
 	FVector GetBoxExtents_Static() const { return StaticExtents; }
@@ -207,7 +207,7 @@ private:
 	FExtrema GenerateBoxExtremaGrid() const;
 
 	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnArea IsCurrentlyManaged flag */
-	int32 AddToManagedTargets(ASphereTarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea);
+	int32 AddToManagedTargets(ATarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
@@ -267,7 +267,7 @@ private:
 
 	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()
-	TArray<TObjectPtr<ASphereTarget>> ManagedTargets;
+	TArray<TObjectPtr<ATarget>> ManagedTargets;
 
 	/** All Spawn Locations that were generated on initialization */
 	TArray<FVector> AllSpawnLocations;

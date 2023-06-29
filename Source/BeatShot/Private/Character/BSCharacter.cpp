@@ -7,7 +7,7 @@
 #include "Player/BSPlayerController.h"
 #include "Player/BSPlayerState.h"
 #include "Character/BSRecoilComponent.h"
-#include "Target/SphereTarget.h"
+#include "Target/Target.h"
 #include "Equipment/BSGun.h"
 #include "Engine/DamageEvents.h"
 #include "GameFramework/DamageType.h"
@@ -87,9 +87,9 @@ USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
 	return Cast<USkeletalMeshComponent>(HandsMesh);
 }
 
-ASphereTarget* ABSCharacter::PeekActiveTargets()
+ATarget* ABSCharacter::PeekActiveTargets()
 {
-	ASphereTarget* Target;
+	ATarget* Target;
 	while (!ActiveTargets_AimBot.IsEmpty())
 	{
 		ActiveTargets_AimBot.Peek(Target);
@@ -747,7 +747,7 @@ void ABSCharacter::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionVa
 	}
 }
 
-void ABSCharacter::OnTargetSpawned_AimBot(ASphereTarget* SpawnedTarget)
+void ABSCharacter::OnTargetSpawned_AimBot(ATarget* SpawnedTarget)
 {
 	ActiveTargets_AimBot.Enqueue(SpawnedTarget);
 	OnTargetAddedToQueue.Broadcast();
