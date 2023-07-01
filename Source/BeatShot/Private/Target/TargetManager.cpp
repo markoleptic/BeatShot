@@ -91,7 +91,7 @@ void ATargetManager::Tick(float DeltaTime)
 	}
 }
 
-void ATargetManager::InitTargetManager(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManager::Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
 {
 	/* Initialize local copy of FBSConfig */
 	BSConfig = InBSConfig;
@@ -237,9 +237,10 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	{
 		return nullptr;
 	}
-	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(TargetToSpawn, FTransform(FRotator::ZeroRotator, InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale()), this, nullptr,
-	                                                                      ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
-	Target->InitTarget(BSConfig.TargetConfig);
+	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(TargetToSpawn,
+		FTransform(FRotator::ZeroRotator, InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale()),
+		this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	Target->Init(BSConfig.TargetConfig);
 	Target->FinishSpawning(FTransform(), true);
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
 	InSpawnArea->SetTargetGuid(Target->GetGuid());
@@ -301,45 +302,33 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 
 void ATargetManager::HandleRuntimeSpawnAndActivation()
 {
-	const int32 NumAllowedToSpawn = GetNumberOfRuntimeTargetsToSpawn();
-	int32 NumToActivate = GetNumberOfTargetsToActivate();
-	for (int i = 0; i < NumAllowedToSpawn; i++)
+	int32 NumberToSpawn = GetNumberOfRuntimeTargetsToSpawn();
+	int32 NumberToActivate = GetNumberOfTargetsToActivate();
+	
+	if (!BSConfig.TargetConfig.bAllowSpawnWithoutActivation)
 	{
-		if (BSConfig.TargetConfig.bAllowSpawnWithoutActivation)
+		// Only spawn targets that can be activated
+		if (NumberToSpawn > NumberToActivate)
 		{
-			// TODO: Ugly temporary fix
-			if (CurrentSpawnArea->IsCurrentlyManaged())
-			{
-				FindNextTargetProperties();
-			}
-			// TODO: Ugly temporary fix
-			if (!CurrentSpawnArea->IsCurrentlyManaged())
-			{
-				if (ATarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
-				{
-					if (NumToActivate > 0)
-					{
-						ActivateTarget(SpawnedTarget);
-						NumToActivate--;
-					}
-					// Get new SpawnArea
-					FindNextTargetProperties();
-				}
-			}
+			NumberToSpawn = NumberToActivate;
 		}
-		else
+	}
+
+	if (CurrentSpawnArea->IsCurrentlyManaged())
+	{
+		FindNextTargetProperties();
+	}
+	
+	for (int i = 0; i < NumberToSpawn; i++)
+	{
+		if (ATarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
 		{
-			if (NumToActivate > 0)
+			if (NumberToActivate > 0)
 			{
-				if (ATarget* SpawnedTarget = SpawnTarget(CurrentSpawnArea))
-				{
-					if (ActivateTarget(SpawnedTarget))
-					{
-						// Get new SpawnArea
-						FindNextTargetProperties();
-					}
-				}
+				ActivateTarget(SpawnedTarget);
+				NumberToActivate--;
 			}
+			FindNextTargetProperties();
 		}
 	}
 
@@ -489,11 +478,17 @@ int32 ATargetManager::GetNumberOfTargetsToActivate() const
 
 void ATargetManager::SpawnUpfrontOnlyTargets()
 {
-	switch(BSConfig.TargetConfig.TargetDistributionPolicy) {
-	case ETargetDistributionPolicy::None:
-	case ETargetDistributionPolicy::HeadshotHeightOnly:
-	case ETargetDistributionPolicy::EdgeOnly:
-	case ETargetDistributionPolicy::FullRange:
+	if (BSConfig.TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+	{
+		for (int i = 0; i < SpawnAreaManager->GetSpawnAreas().Num(); i++)
+		{
+			SpawnAreaManager->GetSpawnAreasRef()[i]->SetTargetScale(GetNextTargetScale());
+			SpawnTarget(SpawnAreaManager->GetSpawnAreasRef()[i]);
+		}
+		FindNextTargetProperties();
+	}
+	else
+	{
 		for (int i = 0; i < BSConfig.TargetConfig.NumUpfrontTargetsToSpawn; i++)
 		{
 			FindNextTargetProperties();
@@ -502,17 +497,6 @@ void ATargetManager::SpawnUpfrontOnlyTargets()
 				SpawnTarget(CurrentSpawnArea);
 			}
 		}
-		break;
-	case ETargetDistributionPolicy::Grid:
-		for (int i = 0; i < SpawnAreaManager->GetSpawnAreas().Num(); i++)
-		{
-			SpawnAreaManager->GetSpawnAreasRef()[i]->SetTargetScale(GetNextTargetScale());
-			SpawnTarget(SpawnAreaManager->GetSpawnAreasRef()[i]);
-		}
-		FindNextTargetProperties();
-		break;
-	default:
-		break;
 	}
 }
 
@@ -939,12 +923,14 @@ void ATargetManager::ShowDebug_SpawnBox(const bool bShow)
 	if (bShowDebug_SpawnBox)
 	{
 		SpawnBox->SetHiddenInGame(false);
-		TopBox->SetHiddenInGame(false);
+		SpawnBox->ShapeColor = FColor::Blue;
+		/*TopBox->SetHiddenInGame(false);
 		BottomBox->SetHiddenInGame(false);
 		LeftBox->SetHiddenInGame(false);
 		RightBox->SetHiddenInGame(false);
 		ForwardBox->SetHiddenInGame(false);
-		BackwardBox->SetHiddenInGame(false);
+		BackwardBox->SetHiddenInGame(false);*/
+		DrawDebugBox(GetWorld(), GetBoxOrigin(), StaticExtents, FColor::Yellow, true, -1, 0, 4);
 	}
 	else
 	{
@@ -1000,6 +986,11 @@ void ATargetManager::ShowDebug_NumRecentNumActivated() const
 		}
 	}
 	UE_LOG(LogTemp, Display, TEXT("NumRecent: %d NumActivated: %d"), NumRecent, NumAct);
+}
+
+void ATargetManager::ShowDebug_OverlappingVertices(const bool bShow)
+{
+	SpawnAreaManager->bShowDebug_OverlappingVertices = bShow;
 }
 
 TArray<FAccuracyRow> ATargetManager::GetLocationAccuracy() const

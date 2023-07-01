@@ -82,13 +82,10 @@ public:
 	void ShowDebug_SpawnMemory(const bool bShow);
 	void ShowDebug_ReinforcementLearningWidget(const bool bShow);
 	void ShowDebug_NumRecentNumActivated() const;
-
-	bool IsDebugActive_SpawnBox() const { return bShowDebug_SpawnBox; }
-	bool IsDebugActive_SpawnMemory() const { return bShowDebug_SpawnMemory; }
-	bool IsDebugActive_ReinforcementLearningWidget() const { return bShowDebug_ReinforcementLearningWidget; }
+	void ShowDebug_OverlappingVertices(const bool bShow);
 	
 	/** Called from selected DefaultGameMode */
-	void InitTargetManager(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
+	void Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
 	/** Called from selected DefaultGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn);

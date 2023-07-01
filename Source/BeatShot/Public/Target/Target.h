@@ -94,7 +94,7 @@ protected:
 public:
 
 	/** Called in TargetManager to initialize the target */
-	void InitTarget(const FBS_TargetConfig& InTargetConfig);
+	void Init(const FBS_TargetConfig& InTargetConfig);
 	
 	/* ~Begin IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;

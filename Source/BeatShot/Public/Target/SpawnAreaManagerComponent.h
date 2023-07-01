@@ -119,10 +119,10 @@ class BEATSHOT_API USpawnArea : public UObject
 	int32 TotalHits;
 	
 	/** The indices of the SpawnAreas adjacent to this SpawnArea */
-	TArray<int32> BorderingIndices;
+	TArray<int32> AdjacentIndices;
 
 	/** The SpawnAreas that the target overlapped with */
-	TArray<FVector> OverlappingSpawnAreas;
+	TArray<FVector> OverlappingVertices;
 
 public:
 	USpawnArea();
@@ -194,8 +194,8 @@ public:
 	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
 	double GetTimeSetRecent() const { return TimeSetRecent; }
-	TArray<int32> GetBorderingIndices() const { return BorderingIndices; }
-	TArray<FVector> GetOverlappingSpawnAreas() const { return OverlappingSpawnAreas; }
+	TArray<int32> GetBorderingIndices() const { return AdjacentIndices; }
+	TArray<FVector> GetOverlappingVertices() const { return OverlappingVertices; }
 	FGuid GetTargetGuid() const { return TargetGuid; }
 	EGridIndexType GetIndexType() const { return IndexType; }
 	int32 GetTotalSpawns() const { return TotalSpawns; }
@@ -222,7 +222,7 @@ public:
 
 private:
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
-	static TArray<int32> FindBorderingIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
+	static TArray<int32> FindAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
@@ -242,17 +242,17 @@ private:
 		bIsActivated = bSetIsActivated;
 	}
 
-	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and clears OverlappingSpawnAreas */
+	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and clears OverlappingVertices */
 	void SetIsRecent(const bool bSetIsRecent);
 	
-	/** Sets the value of OverlappingSpawnAreas */
-	void SetOverlappingSpawnAreas(const TArray<FVector>& InOverlappingSpawnAreas);
+	/** Sets the value of OverlappingVertices */
+	void SetOverlappingVertices(const TArray<FVector>& InOverlappingVertices);
 
-	/** Finds and returns the OverlappingSpawnAreas, based on the parameters, Width, & Height */
-	TArray<FVector> GenerateOverlappingPoints(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale) const;
+	/** Finds and returns the OverlappingVertices, based on the parameters, Width, & Height */
+	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale, TArray<FVector>& DebugVertices, const bool bAddDebugVertices = false) const;
 
-	/** Empties the OverlappingSpawnAreas array */
-	void EmptyOverlappingSpawnAreas() { OverlappingSpawnAreas.Empty(); }
+	/** Empties the OverlappingVertices array */
+	void EmptyOverlappingVertices() { OverlappingVertices.Empty(); }
 	
 	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not spawned there yet */
 	void IncrementTotalSpawns();
@@ -315,10 +315,10 @@ public:
 	void RefreshRecentFlags();
 
 	/** Removes all locations that are occupied by activated and recent targets, readjusted by scale if needed */
-	void RemoveOverlappingSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale, const bool bShowDebug = false) const;
+	void RemoveOverlappingSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale) const;
 
 	/** Removes locations from the InArray that don't have an adjacent vertex to the top and to the left. Used so that it's safe to spawn a target within a square area */
-	void RemoveSharedVertices(TArray<FVector>& In, const FExtrema& Extrema, const bool bShowDebug = false) const;
+	void RemoveSharedVertices(TArray<FVector>& In, const FExtrema& Extrema) const;
 
 	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
 	TArray<USpawnArea*> GetSpawnAreas() const { return SpawnAreas; }
@@ -327,10 +327,10 @@ public:
 	int32 GetSpawnAreasWidth() const { return Width; }
 	int32 GetSpawnAreasHeight() const { return Height; }
 
-	/** Flags the SpawnArea as being actively managed by TargetManager. Calls SetOverlappingSpawnAreas if needed */
+	/** Flags the SpawnArea as being actively managed by TargetManager. Calls SetOverlappingVertices if needed */
 	void FlagSpawnAreaAsManaged(const FGuid TargetGuid) const;
 	
-	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingSpawnAreas if needed */
+	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices if needed */
 	void FlagSpawnAreaAsActivated(const FGuid TargetGuid);
 	
 	/** Flags the SpawnArea as recent */
@@ -346,7 +346,7 @@ public:
 	void RemoveActivatedFlagFromSpawnArea(const FTargetDamageEvent& TargetDamageEvent) const;
 	
 	/** Removes the Recent flag, meaning the SpawnArea is not longer being considered as a blocked SpawnArea.
-	 *  SpawnAreas empty their OverlappingSpawnAreas when their Recent Flag is removed */
+	 *  SpawnAreas empty their OverlappingVertices when their Recent Flag is removed */
 	void RemoveRecentFlagFromSpawnArea(const FGuid TargetGuid);
 	
 	int32 GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
@@ -356,22 +356,22 @@ public:
 	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const FExtrema &InCurrentExtrema, const USpawnArea* CurrentSpawnArea) const;
 
 	/** Adds valid spawn locations for an edge-only TargetDistributionPolicy */
-	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema, const bool bShowDebug) const;
+	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema) const;
 
 	/** Adds valid spawn locations for a full range TargetDistributionPolicy */
-	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema, const bool bShowDebug) const;
+	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema) const;
 
 	/** Adds valid spawn locations for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
-	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea, const bool bShowDebug) const;
+	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
 
 	/** Adds/filters valid spawn locations for a Bordering TargetActivationSelectionPolicy */
-	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea, const bool bShowDebug) const;
+	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
 
 	/** Filters out any locations that correspond to recent points flagged as activated */
-	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const;
+	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations) const;
 
 	/** Filters out any locations that correspond to recent points flagged as recent */
-	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations, const bool bShowDebug) const;
+	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations) const;
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const;
@@ -380,6 +380,8 @@ public:
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
 
 	bool bShowDebug_SpawnMemory;
+
+	bool bShowDebug_OverlappingVertices;
 
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */

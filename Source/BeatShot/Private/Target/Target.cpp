@@ -78,7 +78,7 @@ ATarget::ATarget()
 	PeakToEndTimelinePlayRate = 1.f;
 }
 
-void ATarget::InitTarget(const FBS_TargetConfig& InTargetConfig)
+void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 {
 	Config = InTargetConfig;
 	HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);

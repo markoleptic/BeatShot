@@ -100,7 +100,7 @@ void ABSGameMode::InitializeGameMode()
 
 	/* Spawn TargetManager and VisualizerManager */
 	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator, SpawnParameters);
-	TargetManager->InitTargetManager(BSConfig, PlayerSettings.Game);
+	TargetManager->Init(BSConfig, PlayerSettings.Game);
 
 	if (!VisualizerManager)
 	{

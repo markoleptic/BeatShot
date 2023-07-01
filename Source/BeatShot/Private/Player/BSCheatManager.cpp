@@ -18,6 +18,7 @@ namespace BeatShotConsoleVariables
 	static TAutoConsoleVariable CVarShowDebugReinforcementLearningWidget(TEXT("bs.showdebug.targetmanager.rl"), 0, TEXT("Show the reinforcement learning widget"));
 	static TAutoConsoleVariable CVarShowDebugSpawnMemory(TEXT("bs.showdebug.targetmanager.spawnmemory"), 0, TEXT("Show the recent target locations that are being tracked"));
 	static TAutoConsoleVariable CVarShowDebugAllTargetManager(TEXT("bs.showdebug.targetmanager"), 0, TEXT("Show all target manager debug"));
+	static TAutoConsoleVariable CVarShowDebugOverlappingVertices(TEXT("bs.showdebug.overlap"), 0, TEXT("Show overlapping vertices"));
 }
 
 void UBSCheatManager::InitCheatManager()
@@ -43,6 +44,10 @@ void UBSCheatManager::InitCheatManager()
 	FConsoleVariableDelegate CVarShowDebugAllTargetManagerDelegate;
 	CVarShowDebugAllTargetManagerDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugAllTargetManager);
 	BeatShotConsoleVariables::CVarShowDebugAllTargetManager.AsVariable()->SetOnChangedCallback(CVarShowDebugAllTargetManagerDelegate);
+
+	FConsoleVariableDelegate CVarShowDebugOverlappingVerticesDelegate;
+	CVarShowDebugOverlappingVerticesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugOverlappingVertices);
+	BeatShotConsoleVariables::CVarShowDebugOverlappingVertices.AsVariable()->SetOnChangedCallback(CVarShowDebugOverlappingVerticesDelegate);
 }
 
 void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
@@ -108,4 +113,9 @@ void UBSCheatManager::CVarOnChanged_ShowDebugAllTargetManager(IConsoleVariable* 
 	CVarOnChanged_ShowDebugSpawnBox(Variable);
 	CVarOnChanged_ShowDebugReinforcementLearningWidget(Variable);
 	CVarOnChanged_ShowDebugSpawnMemory(Variable);
+}
+
+void UBSCheatManager::CVarOnChanged_ShowDebugOverlappingVertices(IConsoleVariable* Variable)
+{
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_OverlappingVertices(Variable->GetBool());
 }
