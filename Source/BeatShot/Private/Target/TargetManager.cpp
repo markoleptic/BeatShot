@@ -930,7 +930,7 @@ void ATargetManager::ShowDebug_SpawnBox(const bool bShow)
 		RightBox->SetHiddenInGame(false);
 		ForwardBox->SetHiddenInGame(false);
 		BackwardBox->SetHiddenInGame(false);*/
-		DrawDebugBox(GetWorld(), GetBoxOrigin(), StaticExtents, FColor::Yellow, true, -1, 0, 4);
+		DrawDebugBox(GetWorld(), GetBoxOrigin(), StaticExtents, FColor::Yellow, true, -1, 0, 6);
 	}
 	else
 	{

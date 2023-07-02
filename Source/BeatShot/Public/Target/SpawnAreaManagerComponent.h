@@ -318,7 +318,7 @@ public:
 	void RemoveOverlappingSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale) const;
 
 	/** Removes locations from the InArray that don't have an adjacent vertex to the top and to the left. Used so that it's safe to spawn a target within a square area */
-	void RemoveSharedVertices(TArray<FVector>& In, const FExtrema& Extrema) const;
+	void RemoveSharedVertices(TArray<FVector>& SpawnLocations, const FExtrema& Extrema) const;
 
 	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
 	TArray<USpawnArea*> GetSpawnAreas() const { return SpawnAreas; }
@@ -381,7 +381,11 @@ public:
 
 	bool bShowDebug_SpawnMemory;
 
+	/** Shows the overlapping vertices generated when a target was flagged as managed */
 	bool bShowDebug_OverlappingVertices;
+
+	/** Shows the overlapping vertices during RemoveOverlappingSpawnLocations */
+	bool bShowDebug_OverlappingVertices_All;
 
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */

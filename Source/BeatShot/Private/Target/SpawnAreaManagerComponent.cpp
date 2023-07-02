@@ -215,31 +215,30 @@ TArray<FVector> USpawnArea::GenerateOverlappingVertices(const float InMinTargetD
 	const float ScaledRadius = InScale.X * SphereTargetRadius;
 	// multiply by two so that any point outside the sphere will not be overlapping
 	float Radius = ScaledRadius * 2.f + (InMinTargetDistance / 2.f);
-	Radius = FMath::Max(Radius, InMinOverlapRadius);
+	Radius = FMath::Max(Radius, InMinOverlapRadius) + FMath::Max(Width, Height);
 	
 	const FSphere Sphere = FSphere(ChosenPoint, Radius);
-	
 	int32 IncrementsInYRadius = 1;
 	int32 IncrementsInZRadius = 1;
 	
 	if (Radius > Width)
 	{
-		IncrementsInYRadius = ceil(Radius / Width);
+		IncrementsInYRadius = floor(Radius / Width);
 	}
 	if (Radius > Height)
 	{
-		IncrementsInZRadius = ceil(Radius / Height);
+		IncrementsInZRadius = floor(Radius / Height);
 	}
 
-	const float MinY = Vertex_BottomLeft.Y - (IncrementsInYRadius + 1) * Width;
-	const float MaxY = Vertex_BottomRight.Y + (IncrementsInYRadius + 1) * Width;
-	const float MinZ = Vertex_BottomLeft.Z - (IncrementsInZRadius + 1) * Height;
-	const float MaxZ = Vertex_TopLeft.Z + (IncrementsInZRadius + 1) * Height;
+	const float MinY = Vertex_BottomLeft.Y - IncrementsInYRadius * Width;
+	const float MaxY = Vertex_TopRight.Y + IncrementsInYRadius * Width;
+	const float MinZ = Vertex_BottomLeft.Z - IncrementsInZRadius * Height;
+	const float MaxZ = Vertex_TopRight.Z + IncrementsInZRadius * Height;
 	
 	int Count = 0;
-	for (float Z = MinZ; Z < MaxZ; Z += Height)
+	for (float Z = MinZ; Z <= MaxZ; Z += Height)
 	{
-		for (float Y = MinY; Y < MaxY; Y += Width)
+		for (float Y = MinY; Y <= MaxY; Y += Width)
 		{
 			if (FVector Loc = FVector(ChosenPoint.X, Y, Z); Sphere.IsInside(Loc))
 			{
@@ -255,8 +254,6 @@ TArray<FVector> USpawnArea::GenerateOverlappingVertices(const float InMinTargetD
 			Count++;
 		}
 	}
-	//UE_LOG(LogTargetManager, Display, TEXT("GetOverlappingVertices Count %d"), Count);
-	//UE_LOG(LogTargetManager, Display, TEXT("BlockedPoints: %d"), BlockedPoints.Num());
 	return OutPoints;
 }
 
@@ -576,21 +573,20 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 		if (Scale.Length() > SpawnArea->GetTargetScale().Length())
 		{
 			TArray<FVector> ScaledOverlappingPoints = SpawnArea->GenerateOverlappingVertices(
-				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices);
+				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices_All);
 			for (const FVector& Vector : ScaledOverlappingPoints)
 			{
 				OverlappingVertices.AddUnique(Vector);
-				if (bShowDebug_OverlappingVertices)
+				if (bShowDebug_OverlappingVertices_All)
 				{
 					DrawDebugPoint(GetWorld(), Vector, 10.f, FColor::Red, false, 0.5f);
 				}
 			}
-			if (bShowDebug_OverlappingVertices)
+			if (bShowDebug_OverlappingVertices_All)
 			{
 				const float ScaledRadius = Scale.X * SphereTargetRadius;
-				// multiply by two so that any point outside the sphere will not be overlapping
 				float Radius = ScaledRadius * 2.f + (BSConfig.TargetConfig.MinDistanceBetweenTargets / 2.f);
-				Radius = FMath::Max(Radius, MinOverlapRadius);
+				Radius = FMath::Max(Radius, MinOverlapRadius) + FMath::Max(Width, Height);
 				DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 16, FColor::Magenta, false, 0.5f);
 				for (FVector Vertex : DebugVertices)
 				{
@@ -603,17 +599,16 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 			for (const FVector& Vector : SpawnArea->GetOverlappingVertices())
 			{
 				OverlappingVertices.AddUnique(Vector);
-				if (bShowDebug_OverlappingVertices)
+				if (bShowDebug_OverlappingVertices_All)
 				{
 					DrawDebugPoint(GetWorld(), Vector, 10.f, FColor::Red, false, 0.5f);
 				}
 			}
-			if (bShowDebug_OverlappingVertices)
+			if (bShowDebug_OverlappingVertices_All)
 			{
 				const float ScaledRadius = Scale.X * SphereTargetRadius;
-				// multiply by two so that any point outside the sphere will not be overlapping
 				float Radius = ScaledRadius * 2.f + (BSConfig.TargetConfig.MinDistanceBetweenTargets / 2.f);
-				Radius = FMath::Max(Radius, MinOverlapRadius);
+				Radius = FMath::Max(Radius, MinOverlapRadius) + FMath::Max(Width, Height);
 				DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 16, FColor::Magenta, false, 0.5f);
 			}
 		}
@@ -628,12 +623,12 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 	}
 }
 
-void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const FExtrema& Extrema) const
+void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& SpawnLocations, const FExtrema& Extrema) const
 {
-	TArray<FVector> Removed;
+	/*TArray<FVector> Removed;
 	if (BSConfig.TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::EdgeOnly)
 	{
-		In = In.FilterByPredicate([&](const FVector& Vector)
+		SpawnLocations = SpawnLocations.FilterByPredicate([&](const FVector& Vector)
 		{
 			if (Vector == Origin)
 			{
@@ -641,7 +636,7 @@ void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const
 			}
 			const FVector Right = Vector + FVector(0, SpawnMemoryIncY, 0);
 			const FVector Top = Vector + FVector(0, 0, SpawnMemoryIncZ);
-			if (Vector.Y != Extrema.Min.Y && Right.Y < Extrema.Max.Y && !In.Contains(Right))
+			if (Vector.Y != Extrema.Min.Y && Right.Y < Extrema.Max.Y && !SpawnLocations.Contains(Right))
 			{
 				if (bShowDebug_SpawnMemory)
 				{
@@ -649,7 +644,7 @@ void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const
 				}
 				return false;
 			}
-			if (Vector.Z != Extrema.Min.Z && Top.Z < Extrema.Max.Z && !In.Contains(Top))
+			if (Vector.Z != Extrema.Min.Z && Top.Z < Extrema.Max.Z && !SpawnLocations.Contains(Top))
 			{
 				if (bShowDebug_SpawnMemory)
 				{
@@ -662,11 +657,11 @@ void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const
 	}
 	else
 	{
-		In = In.FilterByPredicate([&](const FVector& Vector)
+		SpawnLocations = SpawnLocations.FilterByPredicate([&](const FVector& Vector)
 		{
 			const FVector Right = Vector + FVector(0, SpawnMemoryIncY, 0);
 			const FVector Top = Vector + FVector(0, 0, SpawnMemoryIncZ);
-			if (Right.Y < Extrema.Max.Y && !In.Contains(Right))
+			if (Right.Y < Extrema.Max.Y && !SpawnLocations.Contains(Right))
 			{
 				if (bShowDebug_SpawnMemory)
 				{
@@ -674,7 +669,7 @@ void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const
 				}
 				return false;
 			}
-			if (Top.Z < Extrema.Max.Z && !In.Contains(Top))
+			if (Top.Z < Extrema.Max.Z && !SpawnLocations.Contains(Top))
 			{
 				if (bShowDebug_SpawnMemory)
 				{
@@ -687,8 +682,8 @@ void USpawnAreaManagerComponent::RemoveSharedVertices(TArray<FVector>& In, const
 	}
 	if (bShowDebug_SpawnMemory)
 	{
-		DrawDebug_Boxes(Removed, FColor::Purple, 4, 2);
-	}
+		DrawDebug_Boxes(Removed, FColor::Purple, 5, 2);
+	}*/
 }
 
 // flags (activation and recent)
@@ -704,8 +699,25 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(const FGuid TargetGuid) 
 		if (SpawnArea->OverlappingVertices.IsEmpty())
 		{
 			TArray<FVector> DebugVertices;
-			SpawnArea->SetOverlappingVertices(SpawnArea->GenerateOverlappingVertices(
-				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, false));
+			TArray<FVector> OverlappingPoints = SpawnArea->GenerateOverlappingVertices(
+				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices);
+			SpawnArea->SetOverlappingVertices(OverlappingPoints);
+			if (bShowDebug_OverlappingVertices)
+			{
+				const float ScaledRadius = SpawnArea->GetTargetScale().X * SphereTargetRadius;
+				float Radius = ScaledRadius * 2.f + (BSConfig.TargetConfig.MinDistanceBetweenTargets / 2.f);
+				Radius = FMath::Max(Radius, MinOverlapRadius) + FMath::Max(Width, Height);
+				DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 16, FColor::Magenta, false, 0.5f);
+				
+				for (const FVector& Vector : OverlappingPoints)
+				{
+					DrawDebugPoint(GetWorld(), Vector, 10.f, FColor::Red, false, 0.5f);
+				}
+				for (FVector Vertex : DebugVertices)
+				{
+					DrawDebugPoint(GetWorld(), Vertex, 10.f, FColor::Green, false, 0.5f);
+				}
+			}
 		}
 	}
 }
@@ -812,10 +824,6 @@ TArray<FVector> USpawnAreaManagerComponent::GetValidSpawnLocations(const FVector
 {
 	TArray<FVector> ValidSpawnLocations;
 
-	// TODO instead of starting with full array, might as well just only get valid ones instead of removing.
-	// TODO NVM, have to account for dynamic spawn size
-	// Start by removing all SpawnAreas that don't have a point in the current extrema
-	
 	// TODO Need a setting that instructs whether to allow a managed target to be considered a valid spawn destination
 	
 	switch (BSConfig.TargetConfig.TargetDistributionPolicy)
