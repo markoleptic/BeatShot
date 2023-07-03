@@ -32,7 +32,8 @@ void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 void UScoreBrowserWidget::InitializeScoringOverlay()
 {
 	/* If user has logged in before, check Refresh Token */
-	if (const FPlayerSettings PlayerSettings = LoadPlayerSettings(); PlayerSettings.User.HasLoggedInHttp)
+	const FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
+	if (PlayerSettings.HasLoggedInHttp)
 	{
 		if (!IsRefreshTokenValid(PlayerSettings))
 		{
@@ -43,7 +44,7 @@ void UScoreBrowserWidget::InitializeScoringOverlay()
 		{
 			/* If logged in and has valid refresh token */
 			OnAccessTokenResponseDelegate.BindUFunction(this, "OnAccessTokenResponse");
-			RequestAccessToken(PlayerSettings.User.LoginCookie, OnAccessTokenResponseDelegate);
+			RequestAccessToken(PlayerSettings.LoginCookie, OnAccessTokenResponseDelegate);
 		}
 	}
 	/* Show Register screen if new user */
@@ -131,7 +132,7 @@ void UScoreBrowserWidget::LoginUserHttp(const FLoginPayload LoginPayload, const 
 	LoginUser(LoginPayload, OnLoginResponse);
 }
 
-void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings& PlayerSettings, FString ResponseMsg, const int32 ResponseCode)
+void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings_User& PlayerSettings, FString ResponseMsg, const int32 ResponseCode)
 {
 	if (ResponseCode != 200)
 	{
@@ -162,12 +163,12 @@ void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings& PlayerSetti
 	}
 	else
 	{
-		FPlayerSettings PlayerSettingsToSave = LoadPlayerSettings();
-		PlayerSettingsToSave.User.HasLoggedInHttp = PlayerSettings.User.HasLoggedInHttp;
-		PlayerSettingsToSave.User.Username = PlayerSettings.User.Username;
-		PlayerSettingsToSave.User.LoginCookie = PlayerSettings.User.LoginCookie;
+		FPlayerSettings_User PlayerSettingsToSave = LoadPlayerSettings().User;
+		PlayerSettingsToSave.HasLoggedInHttp = PlayerSettings.HasLoggedInHttp;
+		PlayerSettingsToSave.Username = PlayerSettings.Username;
+		PlayerSettingsToSave.LoginCookie = PlayerSettings.LoginCookie;
 		SavePlayerSettings(PlayerSettingsToSave);
-		LoginInfo.Username = PlayerSettings.User.Username;
+		LoginInfo.Username = PlayerSettings.Username;
 		LoginUserBrowser(LoginInfo);
 	}
 	LoginInfo = FLoginPayload();

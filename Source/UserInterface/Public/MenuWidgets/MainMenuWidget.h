@@ -54,6 +54,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Feedback;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_Login_Register;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
@@ -86,9 +88,9 @@ protected:
 
 private:
 	UFUNCTION()
-	void OnButtonClicked_BSButton(const UBSButton* Button);
+	void OnMenuButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
-	void OnButtonClicked_Scoring();
+	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
 	void OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup);
 	UFUNCTION()

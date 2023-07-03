@@ -7,17 +7,17 @@
 #include "SaveGamePlayerScore.h"
 #include "Interfaces/IHttpResponse.h"
 
-bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings& PlayerSettings)
+bool IHttpRequestInterface::IsRefreshTokenValid(const FPlayerSettings_User& PlayerSettings)
 {
-	if (PlayerSettings.User.HasLoggedInHttp == true)
+	if (PlayerSettings.HasLoggedInHttp == true)
 	{
-		if (PlayerSettings.User.LoginCookie.IsEmpty())
+		if (PlayerSettings.LoginCookie.IsEmpty())
 		{
 			return false;
 		}
 		FDateTime CookieExpireDate;
-		const int32 ExpiresStartPos = PlayerSettings.User.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
-		const FString RightChopped = PlayerSettings.User.LoginCookie.RightChop(ExpiresStartPos + 8);
+		const int32 ExpiresStartPos = PlayerSettings.LoginCookie.Find("Expires=", ESearchCase::CaseSensitive, ESearchDir::FromStart, 0);
+		const FString RightChopped = PlayerSettings.LoginCookie.RightChop(ExpiresStartPos + 8);
 		const FString CookieExpireString = RightChopped.Left(RightChopped.Find(";", ESearchCase::IgnoreCase, ESearchDir::FromStart, 0));
 		FDateTime::ParseHttpDate(CookieExpireString, CookieExpireDate);
 
@@ -43,7 +43,7 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, FOnLogi
 	LoginRequest->SetContentAsString(LoginString);
 	LoginRequest->OnProcessRequestComplete().BindLambda([this, &OnLoginResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 	{
-		FPlayerSettings PlayerSettings;
+		FPlayerSettings_User PlayerSettings;
 		if (Response->GetResponseCode() != 200)
 		{
 			UE_LOG(LogTemp, Display, TEXT("Login Request Failed."));
@@ -55,11 +55,11 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, FOnLogi
 		TSharedPtr<FJsonObject> LoginResponseObj;
 		const TSharedRef<TJsonReader<>> LoginResponseReader = TJsonReaderFactory<>::Create(LoginResponseString);
 		FJsonSerializer::Deserialize(LoginResponseReader, LoginResponseObj);
-		PlayerSettings.User.HasLoggedInHttp = true;
-		PlayerSettings.User.Username = LoginResponseObj->GetStringField("username");
-		PlayerSettings.User.LoginCookie = Response->GetHeader("set-cookie");
+		PlayerSettings.HasLoggedInHttp = true;
+		PlayerSettings.Username = LoginResponseObj->GetStringField("username");
+		PlayerSettings.LoginCookie = Response->GetHeader("set-cookie");
 		OnLoginResponse.Execute(PlayerSettings, Response->GetContentAsString(), Response->GetResponseCode());
-		UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.User.Username);
+		UE_LOG(LogTemp, Display, TEXT("Login successful for %s"), *PlayerSettings.Username);
 	});
 	LoginRequest->ProcessRequest();
 }

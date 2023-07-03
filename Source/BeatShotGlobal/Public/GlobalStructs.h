@@ -1457,6 +1457,9 @@ struct FPlayerSettings_User
 	UPROPERTY(BlueprintReadOnly)
 	bool bNightModeUnlocked;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bHasSeenRegisterPopup;
+
 	FPlayerSettings_User()
 	{
 		Sensitivity = DefaultSensitivity;
@@ -1464,6 +1467,7 @@ struct FPlayerSettings_User
 		Username = "";
 		LoginCookie = "";
 		bNightModeUnlocked = false;
+		bHasSeenRegisterPopup = false;
 	}
 };
 

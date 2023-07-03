@@ -42,7 +42,7 @@ public:
 
 	/** Function called when there a response is returned for logging in user through Http */
 	UFUNCTION()
-	void OnHttpLoginResponse(const FPlayerSettings& PlayerSettings, FString ResponseMsg, int32 ResponseCode);
+	void OnHttpLoginResponse(const FPlayerSettings_User& PlayerSettings, FString ResponseMsg, int32 ResponseCode);
 
 	/** Called to change the overlay text in PostGameMenuWidget */
 	UFUNCTION()
