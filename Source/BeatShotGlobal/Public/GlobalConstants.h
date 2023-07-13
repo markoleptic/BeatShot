@@ -533,5 +533,36 @@ namespace Constants
 	inline constexpr float MaxSpectrumValueDecrementDivide = 500.f;
 	
 #pragma endregion
+
+#pragma region URLs
+
+	/** base url */
+	const FString OriginURL = "localhost:3000";
+	
+	/** endpoint, safe to use as standalone URL */
+	const FString Endpoint_PatchNotes = OriginURL + "/patchnotes";
+	/** endpoint, safe to use as standalone URL */
+	const FString Endpoint_Login = OriginURL + "/api/login";
+	/** endpoint, safe to use as standalone URL */
+	const FString Endpoint_Refresh = OriginURL + "/api/refresh";
+	/** endpoint, safe to use as standalone URL */
+	const FString Endpoint_SendFeedback = OriginURL + "/sendfeedback";
+
+	/** endpoint, safe to use as standalone URL WITH an AuthTicket appended */
+	const FString Endpoint_AuthenticateUserTicket = OriginURL + "/login/steam/authenticate/";
+	/** endpoint, safe to use as standalone URL WITH an AuthTicket appended */
+	const FString Endpoint_AuthenticateUserTicketNoRedirect = OriginURL + "/login/steam/authenticate/noredirect/";
+
+	/** Segment only containing origin+profile+/ , NOT standalone URL*/
+	const FString Segment_Profile = OriginURL + "/profile/";
+	/** Segment only containing origin+api+profile+/ NOT standalone URL, needs a suffix to be used, like (Segment_ApiProfile + userID + Segment_SaveScores) */
+	const FString Segment_ApiProfile =  OriginURL + "/api/profile/";
+	/** Segment, NOT standalone URL, needs a prefix to be used */
+	const FString Segment_SaveScores = "/savescores";
+	/** Segment, NOT standalone URL, needs a prefix to be used, like (Segment_Profile+userID+Segment_DefaultModes) */
+	const FString Segment_DefaultModes = "/stats/defaultmodes";
+	/** Segment, NOT standalone URL, needs a prefix to be used, like (Segment_Profile+userID+Segment_CustomModes) */
+	const FString Segment_CustomModes = "/stats/custommodes";
+#pragma endregion
 	
 }

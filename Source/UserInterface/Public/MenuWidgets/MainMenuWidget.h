@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "HttpRequestInterface.h"
 #include "SubMenuWidgets/GameModesWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
@@ -25,7 +26,7 @@ class UMenuButton;
 
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets */
 UCLASS()
-class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface, public IHttpRequestInterface
 {
 	GENERATED_BODY()
 
@@ -34,6 +35,8 @@ public:
 	UGameModesWidget* GameModesWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreBrowserWidget* ScoresWidget;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -55,12 +58,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Feedback;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_Login_Register;
+	UMenuButton* Button_Login_Register;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* WebBrowserOverlayPatchNotes;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScoreBrowserWidget* ScoresWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -92,12 +93,15 @@ private:
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
-	void OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup);
+	void OnButtonClicked_Login(const FLoginPayload LoginPayload);
 	UFUNCTION()
-	void OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup);
+	void OnURLChangedResult_ScoresBrowser(const bool bSuccess);
 	UFUNCTION()
-	virtual void UpdateLoginState(const bool bSuccessfulLogin);
+	void UpdateLoginState(const bool bSuccessfulLogin);
+	UFUNCTION()
+	void OnLoginWidgetExitAnimationCompleted();
 
-	/** Whether or not to fade out the browser overlay to reveal the web browser for the ScoresWidget */
-	bool bShowWebBrowserScoring;
+	FOnLoginResponse OnLoginResponse;
+
+	bool bFadeInScoreBrowserOnButtonPress = false;
 };

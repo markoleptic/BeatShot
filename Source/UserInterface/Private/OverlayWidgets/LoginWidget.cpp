@@ -2,10 +2,11 @@
 
 
 #include "OverlayWidgets/LoginWidget.h"
+
+#include "Animation/WidgetAnimation.h"
 #include "Components/HorizontalBox.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
-#include "Components/BackgroundBlur.h"
 #include "WidgetComponents/BSButton.h"
 
 void ULoginWidget::NativeConstruct()
@@ -39,11 +40,11 @@ void ULoginWidget::LoginButtonClicked()
 	const FRegexPattern EmailPattern("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
 	if (FRegexMatcher EmailMatch(EmailPattern, Value_UsernameEmail->GetText().ToString()); EmailMatch.FindNext())
 	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(), Value_Password->GetText().ToString()), bIsPopup);
+		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(), Value_Password->GetText().ToString()));
 	}
 	else
 	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "", Value_Password->GetText().ToString()), bIsPopup);
+		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "", Value_Password->GetText().ToString()));
 	}
 	
 	PlayFadeOutLogin();
@@ -56,19 +57,13 @@ void ULoginWidget::OnLoginSuccess()
 
 void ULoginWidget::ShowRegisterScreen()
 {
-	if (!bIsPopup)
-	{
-		BackgroundBlur->SetVisibility(ESlateVisibility::Collapsed);
-		Button_NoRegister->SetVisibility(ESlateVisibility::Collapsed);
-		Button_NoLogin->SetVisibility(ESlateVisibility::Collapsed);
-	}
 	SetVisibility(ESlateVisibility::Visible);
 	PlayFadeInRegister();
 }
 
 void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
-	if (LoadPlayerSettings().User.HasLoggedInHttp)
+	if (LoadPlayerSettings().User.bHasLoggedInBefore)
 	{
 		TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
 		TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
@@ -78,11 +73,6 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 	{
 		Box_Error->SetVisibility(ESlateVisibility::Visible);
 		SetErrorText(Key);
-	}
-	if (!bIsPopup)
-	{
-		BackgroundBlur->SetVisibility(ESlateVisibility::Collapsed);
-		Button_NoLogin->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	SetVisibility(ESlateVisibility::Visible);
 	PlayFadeInLogin();
@@ -105,18 +95,26 @@ void ULoginWidget::InitializeExit()
 {
 	if (IsAnimationPlaying(FadeOutLoggedIn))
 	{
-		FadeOutLoggedInDelegate.BindDynamic(this, &ULoginWidget::RemoveFromParent);
+		FadeOutLoggedInDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
 		BindToAnimationFinished(FadeOutLoggedIn, FadeOutLoggedInDelegate);
 	}
 	else if (IsAnimationPlaying(FadeOutContinueWithout))
 	{
-		FadeOutContinueWithoutDelegate.BindDynamic(this, &ULoginWidget::RemoveFromParent);
+		FadeOutContinueWithoutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
 		BindToAnimationFinished(FadeOutContinueWithout, FadeOutContinueWithoutDelegate);
 	}
 	else
 	{
-		RemoveFromParent();
+		OnExitAnimationCompleted();
 	}
+}
+
+void ULoginWidget::OnExitAnimationCompleted()
+{
+	OnExitAnimationCompletedDelegate.Broadcast();
+	UnbindFromAnimationFinished(FadeOutContinueWithout, FadeOutContinueWithoutDelegate);
+	UnbindFromAnimationFinished(FadeOutLoggedIn, FadeOutLoggedInDelegate);
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
@@ -138,11 +136,6 @@ void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	}
 	else if (Button == Button_GotoRegister)
 	{
-		if (!bIsPopup)
-		{
-			LaunchRegisterURL();
-			return;
-		}
 		PlayFadeOutLogin();
 		PlayFadeInRegister();
 	}
@@ -159,7 +152,7 @@ void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	else if (Button == Button_NoRegisterCancel)
 	{
 		PlayFadeOutContinueWithout();
-		if (LoadPlayerSettings().User.HasLoggedInHttp)
+		if (LoadPlayerSettings().User.bHasLoggedInBefore)
 		{
 			PlayFadeInLogin();
 		}

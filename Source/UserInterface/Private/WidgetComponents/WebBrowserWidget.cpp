@@ -4,64 +4,74 @@
 #include "WidgetComponents/WebBrowserWidget.h"
 #include "TimerManager.h"
 #include "WebBrowser.h"
-#include "Kismet/KismetStringLibrary.h"
 
 void UWebBrowserWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 }
 
-void UWebBrowserWidget::LoadCustomGameModesURL(const FString& Username)
+void UWebBrowserWidget::LoadAuthenticateSteamUserURL(const FString& AuthTicket)
 {
-	UserProfileURL = ProfileURL + Username;
-	Browser->LoadURL(ProfileURL + Username + CustomModesString);
-	OnURLChanged();
+	IntendedDestinationURL = Segment_Profile;
+	Browser->LoadURL(Endpoint_AuthenticateUserTicket + AuthTicket);
+	CheckNewURL();
 }
 
-void UWebBrowserWidget::LoadDefaultGameModesURL(const FString& Username)
+void UWebBrowserWidget::LoadCustomGameModesURL(const FString& UserID)
 {
-	UserProfileURL = ProfileURL + Username;
-	Browser->LoadURL(ProfileURL + Username + DefaultModesString);
-	OnURLChanged();
+	IntendedDestinationURL = Segment_Profile + UserID + Segment_CustomModes;
+	Browser->LoadURL(Segment_Profile + UserID + Segment_CustomModes);
+	CheckNewURL();
+}
+
+void UWebBrowserWidget::LoadDefaultGameModesURL(const FString& UserID)
+{
+	IntendedDestinationURL = Segment_Profile + UserID;
+	Browser->LoadURL(Segment_Profile + UserID + Segment_DefaultModes);
+	CheckNewURL();
 }
 
 void UWebBrowserWidget::LoadPatchNotesURL() const
 {
-	Browser->LoadURL(PatchNotesURL);
+	Browser->LoadURL(Endpoint_PatchNotes);
 }
 
-void UWebBrowserWidget::LoadProfileURL(const FString& Username)
+void UWebBrowserWidget::LoadProfileURL(const FString& UserID)
 {
-	UserProfileURL = ProfileURL + Username;
-	Browser->LoadURL(ProfileURL + Username);
-	OnURLChanged();
+	IntendedDestinationURL = Segment_Profile + UserID;
+	Browser->LoadURL(Segment_Profile + UserID);
+	CheckNewURL();
 }
 
-void UWebBrowserWidget::HandleUserLogin(const FLoginPayload LoginPayload)
+void UWebBrowserWidget::LoginUserToBeatShotWebsite(const FLoginPayload LoginPayload, const FString UserID)
 {
-	if (!FillLoginForm(LoginPayload))
+	// fill in the forms with text
+	if (!ExecuteJS_LoginFormEntries(LoginPayload))
 	{
 		return;
 	}
-	if (!LoginPayload.Username.IsEmpty())
-	{
-		UserProfileURL = ProfileURL + LoginPayload.Username;
-	}
+	
+	IntendedDestinationURL = Segment_Profile + UserID;
 
+	// This happens second
 	CheckboxDelegate.BindLambda([this]
 	{
 		Browser->ExecuteJavascript(CheckPersistScript);
 		GetWorld()->GetTimerManager().SetTimer(ClickLoginDelay, ClickLoginDelegate, 0.1f, false);
 	});
+	
+	// This happens third
 	ClickLoginDelegate.BindLambda([this]
 	{
 		Browser->ExecuteJavascript(ClickLoginScript);
-		OnURLChanged();
+		CheckNewURL();
 	});
+
+	// This happens first
 	GetWorld()->GetTimerManager().SetTimer(CheckCheckboxDelay, CheckboxDelegate, 0.1f, false);
 }
 
-bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
+bool UWebBrowserWidget::ExecuteJS_LoginFormEntries(const FLoginPayload LoginPayload) const
 {
 	if ((LoginPayload.Username.IsEmpty() && LoginPayload.Email.IsEmpty()) || LoginPayload.Password.IsEmpty())
 	{
@@ -80,47 +90,29 @@ bool UWebBrowserWidget::FillLoginForm(const FLoginPayload LoginPayload) const
 	return true;
 }
 
-void UWebBrowserWidget::OnURLChanged()
+void UWebBrowserWidget::CheckNewURL()
 {
 	CheckURLDelegate.BindLambda([this]
 	{
 		const FString URL = Browser->GetUrl();
+		UE_LOG(LogTemp, Display, TEXT("CurrentURL: %s"), *URL);
+		UE_LOG(LogTemp, Display, TEXT("IntendedDestinationURL: %s"), *IntendedDestinationURL);
 		URLCheckAttempts++;
 		if (URLCheckAttempts > 6)
 		{
 			OnURLLoaded.Broadcast(false);
-			UserProfileURL = "";
+			IntendedDestinationURL = "";
 			URLCheckAttempts = 0;
 			GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
 			return;
 		}
-		if (UKismetStringLibrary::StartsWith(URL, UserProfileURL, ESearchCase::IgnoreCase))
+		if (URL.Contains(IntendedDestinationURL, ESearchCase::IgnoreCase))
 		{
-			UserProfileURL = "";
+			IntendedDestinationURL = "";
 			URLCheckAttempts = 0;
 			OnURLLoaded.Broadcast(true);
 			GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
 		}
 	});
 	GetWorld()->GetTimerManager().SetTimer(CheckURLTimer, CheckURLDelegate, 0.5f, true);
-	// GetWorld()->GetTimerManager().SetTimer(CheckURLTimer, FTimerDelegate::CreateLambda([&]
-	// {
-	// 	const FString URL = Browser->GetUrl();
-	// 	URLCheckAttempts++;
-	// 	if (URLCheckAttempts > 6)
-	// 	{
-	// 		OnURLLoaded.Broadcast(false);
-	// 		UserProfileURL = "";
-	// 		URLCheckAttempts = 0;
-	// 		GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
-	// 		return;
-	// 	}
-	// 	if (UKismetStringLibrary::StartsWith(URL, UserProfileURL, ESearchCase::IgnoreCase))
-	// 	{
-	// 		UserProfileURL = "";
-	// 		URLCheckAttempts = 0;
-	// 		OnURLLoaded.Broadcast(true);
-	// 		GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
-	// 	}
-	// }), 0.5f, true);
 }

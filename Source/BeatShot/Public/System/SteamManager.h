@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "ThirdParty/Steamworks/Steamv153/sdk/public/steam/steam_api.h"
+#include <steam/isteamfriends.h>
+#include <steam/isteamuser.h>
 #include "SteamManager.generated.h"
 
 class UBSGameInstance;
@@ -15,7 +16,6 @@ class BEATSHOT_API USteamManager : public UObject
 
 public:
 	USteamManager();
-
 	~USteamManager();
 
 	void InitializeSteamManager();
@@ -25,7 +25,13 @@ public:
 	UPROPERTY()
 	UBSGameInstance* DefaultGameInstance;
 
+	void ResetWebApiTicket() { WebApiTicket.Empty(); }
+
 private:
-	//Steam Callback Setups Using STEAM_CALLBACK_MANUAL()
+	/**Steam Callback Setups Using STEAM_CALLBACK_MANUAL() */
+	
 	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveCallback);
+	STEAM_CALLBACK_MANUAL(USteamManager, OnTicketForWebApiResponse, GetTicketForWebApiResponse_t, OnTicketForWebApiResponseCallback);
+
+	FString WebApiTicket;
 };

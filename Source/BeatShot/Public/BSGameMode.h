@@ -106,8 +106,8 @@ public:
 	UFUNCTION()
 	void StartGameMode();
 
-	/** Destroys all actors involved in a game mode and optionally save scores */
-	void EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu);
+	/** Destroys all actors involved in a game mode and saves scores if applicable */
+	void EndGameMode(const bool bSaveScores, const bool ShowPostGameMenu);
 
 	/** Called in BeginPlay from a weapon to bind to UpdateShotsFired */
 	void RegisterWeapon(FOnShotFired& OnShotFiredDelegate);
@@ -206,6 +206,7 @@ public:
 	FOnGameModeStarted OnGameModeStarted;
 	
 	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
+	 *  It can also be called early inside this class if it does not make it to calling PostPlayerScores(). 
 	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
 	FOnPostScoresResponse OnPostScoresResponse;
 
@@ -222,7 +223,7 @@ private:
 
 	/** Saves player scores to slot and calls SaveScoresToDatabase() if bShouldSavePlayerScores is true and
 	 *  GetCompletedPlayerScores() returns a valid score object. Otherwise Broadcasts OnPostScoresResponse with "None" */
-	void HandleScoreSaving(bool bShouldSavePlayerScores);
+	void HandleScoreSaving(const bool bExternalSaveScores);
 
 	/** Function bound to the response of an access token, which is broadcast from RequestAccessToken() */
 	UFUNCTION()
@@ -230,7 +231,7 @@ private:
 
 	/** Function bound to the response of posting player scores to database, which is broadcast from PostPlayerScores() */
 	UFUNCTION()
-	void OnPostScoresResponseReceived(const ELoginState& LoginState);
+	void OnPostScoresResponseReceived(const EPostScoresResponse& LoginState);
 
 	/** Returns the current player scores, checking for NaNs and updating the time */
 	FPlayerScore GetCompletedPlayerScores();

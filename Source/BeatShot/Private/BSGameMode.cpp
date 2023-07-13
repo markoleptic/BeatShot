@@ -195,7 +195,7 @@ void ABSGameMode::BindGameModeDelegates()
 	}
 }
 
-void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool ShowPostGameMenu)
+void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMenu)
 {
 	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
@@ -267,7 +267,8 @@ void ABSGameMode::EndGameMode(const bool ShouldSavePlayerScores, const bool Show
 			}
 		}
 	}
-	HandleScoreSaving(ShouldSavePlayerScores);
+	
+	HandleScoreSaving(bSaveScores);
 }
 
 void ABSGameMode::RegisterWeapon(FOnShotFired& OnShotFiredDelegate)
@@ -294,12 +295,6 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 
 void ABSGameMode::OnGameModeLengthTimerComplete()
 {
-	/* don't save scores if score is zero */
-	if (CurrentPlayerScore.Score <= 0 || (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.CustomGameModeName == ""))
-	{
-		EndGameMode(false, true);
-		return;
-	}
 	EndGameMode(true, true);
 }
 
@@ -552,13 +547,23 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	}
 }
 
-void ABSGameMode::HandleScoreSaving(const bool bShouldSavePlayerScores)
+void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores)
 {
-	/** don't save scores if score is zero */
-	if (!bShouldSavePlayerScores || CurrentPlayerScore.Score <= 0 || (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.CustomGameModeName ==
-		""))
+	if (!bExternalSaveScores)
 	{
-		OnPostScoresResponse.Broadcast(ELoginState::None);
+		CurrentPlayerScore.ResetStruct();
+		return;
+	}
+	if (CurrentPlayerScore.Score <= 0)
+	{
+		CurrentPlayerScore.ResetStruct();
+		OnPostScoresResponse.Broadcast(EPostScoresResponse::ZeroScore);
+		return;
+	}
+	if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.CustomGameModeName == "")
+	{
+		CurrentPlayerScore.ResetStruct();
+		OnPostScoresResponse.Broadcast(EPostScoresResponse::UnsavedGameMode);
 		return;
 	}
 	const FPlayerScore Scores = GetCompletedPlayerScores();
@@ -588,12 +593,12 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 
 void ABSGameMode::SaveScoresToDatabase()
 {
-	if (!LoadPlayerSettings().User.HasLoggedInHttp)
+	if (LoadPlayerSettings().User.RefreshCookie.IsEmpty())
 	{
-		OnPostScoresResponse.Broadcast(ELoginState::NewUser);
+		OnPostScoresResponse.Broadcast(EPostScoresResponse::NoAccount);
 		return;
 	}
-	RequestAccessToken(LoadPlayerSettings().User.LoginCookie, OnAccessTokenResponse);
+	RequestAccessToken(LoadPlayerSettings().User.RefreshCookie, OnAccessTokenResponse);
 }
 
 void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
@@ -633,7 +638,7 @@ void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
 {
 	if (AccessToken.IsEmpty())
 	{
-		OnPostScoresResponse.Broadcast(ELoginState::InvalidHttp);
+		OnPostScoresResponse.Broadcast(EPostScoresResponse::HttpError);
 		return;
 	}
 	TArray<FPlayerScore> ScoresNotSavedToDB;
@@ -644,12 +649,12 @@ void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
 			ScoresNotSavedToDB.Add(PlayerScoreObj);
 		}
 	}
-	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().User.Username, AccessToken, OnPostScoresResponse);
+	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().User.UserID, AccessToken, OnPostScoresResponse);
 }
 
-void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
+void ABSGameMode::OnPostScoresResponseReceived(const EPostScoresResponse& LoginState)
 {
-	if (LoginState == ELoginState::LoggedInHttp)
+	if (LoginState == EPostScoresResponse::HttpSuccess)
 	{
 		TArray<FPlayerScore> ScoresToUpdate = LoadPlayerScores();
 		for (FPlayerScore& Score : ScoresToUpdate)
@@ -658,6 +663,7 @@ void ABSGameMode::OnPostScoresResponseReceived(const ELoginState& LoginState)
 		}
 		SavePlayerScores(ScoresToUpdate);
 	}
+	CurrentPlayerScore.ResetStruct();
 }
 
 void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FTransform& Transform)

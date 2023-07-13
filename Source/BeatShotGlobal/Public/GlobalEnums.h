@@ -15,20 +15,28 @@ enum class EAudioFormat : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
-/** Current player login state */
+/** Describes if player scores were posted or not */
 UENUM()
-enum class ELoginState : uint8
+enum class EPostScoresResponse : uint8
 {
-	None UMETA(DisplayName="None"),
-	NewUser UMETA(DisplayName="NewUser"),
-	LoggedInHttp UMETA(DisplayName="LoggedInHttp"),
-	LoggedInHttpAndBrowser UMETA(DisplayName="LoggedInHttpAndBrowser"),
-	InvalidHttp UMETA(DisplayName="InvalidHttp"),
-	InvalidBrowser UMETA(DisplayName="InvalidBrowser"),
-	InvalidCredentials UMETA(DisplayName="InvalidCredentials"),
-	TimeOut UMETA(DisplayName="TimeOut"),
+	ZeroScore UMETA(DisplayName="ZeroScore"),
+	UnsavedGameMode UMETA(DisplayName="UnsavedGameMode"),
+	NoAccount UMETA(DisplayName="NoAccount"),
+	HttpError UMETA(DisplayName="HttpError"),
+	HttpSuccess UMETA(DisplayName="HttpSuccess"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ELoginState, ELoginState::None, ELoginState::TimeOut);
+ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore, EPostScoresResponse::HttpSuccess);
+
+UENUM()
+enum class EScoreBrowserType : uint8
+{
+	MainMenuScores UMETA(DisplayName="MainMenuScores"),
+	PostGameModeMenuScores UMETA(DisplayName="PostGameModeMenuScores"),
+	PatchNotes UMETA(DisplayName="PatchNotes"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EScoreBrowserType, EScoreBrowserType::MainMenuScores, EScoreBrowserType::PatchNotes);
+
+
 
 /** Nvidia Reflex Mode */
 UENUM(BlueprintType)

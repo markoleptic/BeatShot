@@ -1259,13 +1259,13 @@ struct FLoginPayload
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	UPROPERTY()
 	FString Username;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	UPROPERTY()
 	FString Email;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Login")
+	UPROPERTY()
 	FString Password;
 
 	FLoginPayload()
@@ -1280,6 +1280,65 @@ struct FLoginPayload
 		Username = InUsername;
 		Email = InEmail;
 		Password = InPassword;
+	}
+};
+
+/** Login Response object */
+USTRUCT(BlueprintType)
+struct FLoginResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString UserID;
+
+	UPROPERTY()
+	FString DisplayName;
+
+	UPROPERTY()
+	FString AccessToken;
+
+	UPROPERTY()
+	FString RefreshToken;
+
+	FLoginResponse() = default;
+};
+
+/** Response object returned as JSON from authentication using SteamAuthTicket */
+USTRUCT(BlueprintType)
+struct FSteamAuthTicketResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString Result;
+
+	UPROPERTY()
+	FString SteamID;
+
+	UPROPERTY()
+	FString OwnerSteamID;
+
+	UPROPERTY()
+	bool VacBanned;
+
+	UPROPERTY()
+	bool PublisherBanned;
+
+	UPROPERTY()
+	FString DisplayName;
+
+	UPROPERTY()
+	FString RefreshCookie;
+
+	UPROPERTY()
+	FString ErrorCode;
+
+	UPROPERTY()
+	FString ErrorDesc;
+
+	FSteamAuthTicketResponse(): VacBanned(false), PublisherBanned(false)
+	{
 	}
 };
 
@@ -1446,13 +1505,16 @@ struct FPlayerSettings_User
 	float Sensitivity;
 
 	UPROPERTY(BlueprintReadOnly)
-	FString Username;
+	FString UserID;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool HasLoggedInHttp;
+	FString DisplayName;
 
 	UPROPERTY(BlueprintReadOnly)
-	FString LoginCookie;
+	bool bHasLoggedInBefore;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString RefreshCookie;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bNightModeUnlocked;
@@ -1463,9 +1525,9 @@ struct FPlayerSettings_User
 	FPlayerSettings_User()
 	{
 		Sensitivity = DefaultSensitivity;
-		HasLoggedInHttp = false;
-		Username = "";
-		LoginCookie = "";
+		bHasLoggedInBefore = false;
+		UserID = FString();
+		RefreshCookie = FString();
 		bNightModeUnlocked = false;
 		bHasSeenRegisterPopup = false;
 	}

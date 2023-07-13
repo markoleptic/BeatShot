@@ -10,16 +10,17 @@
 #include "OverlayWidgets/FeedbackWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "WidgetComponents/MenuButton.h"
-#include "WidgetComponents/WebBrowserWidget.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UMainMenuWidget::OnLoginStateChange);
+	ScoresWidget->OnURLChangedResult.AddDynamic(this, &UMainMenuWidget::OnURLChangedResult_ScoresBrowser);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
 	LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	LoginWidget->OnExitAnimationCompletedDelegate.AddDynamic(this, &ThisClass::OnLoginWidgetExitAnimationCompleted);
 	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
 	Button_Login_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 
 	MenuButton_PatchNotes->SetDefaults(Box_PatchNotes, MenuButton_GameModes);
@@ -36,17 +37,10 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_FAQ->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	
-	ScoresWidget->InitializeScoringOverlay();
-	WebBrowserOverlayPatchNotes->BrowserWidget->LoadPatchNotesURL();
-	WebBrowserOverlayPatchNotes->FadeOutLoadingOverlay();
-
+	WebBrowserOverlayPatchNotes->InitScoreBrowser(EScoreBrowserType::PatchNotes);
+	ScoresWidget->InitScoreBrowser(EScoreBrowserType::MainMenuScores);
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetBox());
-}
-
-void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload, const bool bIsPopup)
-{
-	ScoresWidget->LoginUserHttp(LoginPayload, bIsPopup);
 }
 
 void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
@@ -58,12 +52,14 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 		return;
 	}
 
-	// Scores Menu button
-	if (Button == MenuButton_Scores)
+	
+	// Manually fade out browser overlay to avoid abrupt change
+	if (MenuButton == MenuButton_Scores)
 	{
-		if (bShowWebBrowserScoring)
+		if (bFadeInScoreBrowserOnButtonPress)
 		{
 			ScoresWidget->FadeOutLoadingOverlay();
+			bFadeInScoreBrowserOnButtonPress = false;
 		}
 	}
 	
@@ -88,10 +84,7 @@ void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		// Manually set scores button active and set score box as active
 		MenuButton_Scores->SetActive();
 		MainMenuSwitcher->SetActiveWidget(MenuButton_Scores->GetBox());
-		if (bShowWebBrowserScoring)
-		{
-			ScoresWidget->FadeOutLoadingOverlay();
-		}
+		ScoresWidget->FadeOutLoadingOverlay();
 		return;
 	}
 
@@ -108,62 +101,18 @@ void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	}
 }
 
-void UMainMenuWidget::OnLoginStateChange(const ELoginState& LoginState, const bool bIsPopup)
+void UMainMenuWidget::OnURLChangedResult_ScoresBrowser(const bool bSuccess)
 {
-	FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
-
-	switch (LoginState)
+	UpdateLoginState(bSuccess);
+	if (!bSuccess)
 	{
-	case ELoginState::NewUser:
-		{
-			if (!PlayerSettings.bHasSeenRegisterPopup)
-			{
-				LoginWidget->ShowRegisterScreen();
-				PlayerSettings.bHasSeenRegisterPopup = true;
-				SavePlayerSettings(PlayerSettings);
-			}
-			UpdateLoginState(false);
-			return;
-		}
-	case ELoginState::InvalidHttp:
-		{
-			LoginWidget->ShowLoginScreen("Login_LoginErrorText");
-			UpdateLoginState(false);
-			return;
-		}
-	case ELoginState::InvalidBrowser:
-		{
-			LoginWidget->ShowLoginScreen("Login_BrowserLoginErrorText");
-			UpdateLoginState(false);
-			return;
-		}
-	case ELoginState::LoggedInHttpAndBrowser:
-		{
-			UE_LOG(LogTemp, Display, TEXT("Login success"));
-			bShowWebBrowserScoring = true;
-			if (bIsPopup)
-			{
-				LoginWidget->OnLoginSuccess();
-			}
-			UpdateLoginState(true);
-			break;
-		}
-	case ELoginState::InvalidCredentials:
-		{
-			LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
-			UpdateLoginState(false);
-			break;
-		}
-	case ELoginState::TimeOut:
-		{
-			LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
-			UpdateLoginState(false);
-			break;
-		}
-	default:
-		{
-			break;
-		}
+		bFadeInScoreBrowserOnButtonPress = false;
+		LoginWidget->ShowLoginScreen("Login_BrowserLoginErrorText");
+	}
+	else
+	{
+		bFadeInScoreBrowserOnButtonPress = true;
+		LoginWidget->OnLoginSuccess();
 	}
 }
 
@@ -177,6 +126,55 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)
 		return;
 	}
 	TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
-	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.Username));
+	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.DisplayName));
 	Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UMainMenuWidget::OnLoginWidgetExitAnimationCompleted()
+{
+	Button_Login_Register->SetInActive();
+}
+
+// ReSharper disable once CppPassValueParameterByConstReference
+void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
+{
+	OnLoginResponse.BindLambda([&] (const FLoginResponse& Response, const FString& ResponseMsg, int ResponseCode)
+	{
+		if (ResponseCode != 200)
+		{
+			if (ResponseCode == 401)
+			{
+				LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
+				
+			}
+			else if (ResponseCode == 408 || ResponseCode == 504)
+			{
+				LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
+			}
+			else
+			{
+				LoginWidget->ShowLoginScreen("Login_LoginErrorText");
+			}
+			UpdateLoginState(false);
+		}
+		else
+		{
+			FPlayerSettings_User PlayerSettingsToSave = LoadPlayerSettings().User;
+			PlayerSettingsToSave.UserID = Response.UserID;
+			PlayerSettingsToSave.DisplayName = Response.DisplayName;
+			PlayerSettingsToSave.RefreshCookie = Response.RefreshToken;
+			PlayerSettingsToSave.bHasLoggedInBefore = true;
+			SavePlayerSettings(PlayerSettingsToSave);
+			TextBlock_SignInState->SetText(FText::FromString("Logging in to web browser..."));
+
+			// Callback function for this will be OnURLChangedResult_ScoresBrowser
+			ScoresWidget->LoginUserBrowser(LoginPayload, PlayerSettingsToSave.UserID);
+		}
+		if (OnLoginResponse.IsBound())
+		{
+			OnLoginResponse.Unbind();
+		}
+	});
+	TextBlock_SignInState->SetText(FText::FromString("Sending HTTP login request..."));
+	LoginUser(LoginPayload, OnLoginResponse);
 }

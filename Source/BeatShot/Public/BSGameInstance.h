@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ThirdParty/Steamworks/Steamv153/sdk/public/steam/steam_api.h"
+#include "HttpRequestInterface.h"
 #include "SaveLoadInterface.h"
 #include "Engine/GameInstance.h"
 #include "BSGameInstance.generated.h"
@@ -15,7 +15,7 @@ class ABSPlayerController;
 
 /** Base GameInstance for this game */
 UCLASS()
-class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInterface
+class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInterface, public IHttpRequestInterface
 {
 	GENERATED_BODY()
 
@@ -51,6 +51,15 @@ public:
 
 	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;
+	
+	FOnTicketWebApiResponse TicketWebApiResponse;
+
+	/** Called from the Steam Manager after the AuthTicket has been generated */
+	void OnAuthTicketForWebApiResponseReady(const FString AuthTicket);
+
+	/** Called after an HTTP request has been sent to BeatShot website and a response was received */
+	UFUNCTION()
+	void OnTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
 
 	/** Binds an actor's Game Settings delegate to the Game Instance's OnPlayerSettingsChanged_Game function,
 	 *  which broadcasts OnPlayerSettingsChangedDelegate_Game to all actors subscribed for updates */

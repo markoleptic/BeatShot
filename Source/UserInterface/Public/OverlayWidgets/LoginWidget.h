@@ -15,7 +15,8 @@ class UTextBlock;
 class UBSButton;
 class UHorizontalBox;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnLoginButtonClicked, const FLoginPayload, LoginPayload, const bool, bIsPopup);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginButtonClicked, const FLoginPayload, LoginPayload);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExitAnimationCompleted);
 
 /** Widget used to prompt a user to login and handle login through HTTP requests */
 UCLASS()
@@ -46,13 +47,11 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnLoginButtonClicked OnLoginButtonClicked;
 
+	FOnExitAnimationCompleted OnExitAnimationCompletedDelegate;
+
 	/** WebBrowserOverlay binds to this button's OnClick event */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* OkayButton;
-
-	/** Whether or not this widget is a popup (MainMenu direct child) or a WebBrowserOverlay child */
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
-	bool bIsPopup;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -118,6 +117,8 @@ protected:
 	void ClearErrorText(const FText& Text);
 	UFUNCTION()
 	void InitializeExit();
+	UFUNCTION()
+	void OnExitAnimationCompleted();
 	UFUNCTION()
 	void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
 

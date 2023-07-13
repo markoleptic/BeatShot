@@ -6,6 +6,8 @@
 #include "Player/BSPlayerController.h"
 #include "System/SteamManager.h"
 #include "Kismet/GameplayStatics.h"
+#include <steam/isteamuser.h>
+#include <steam/steam_api.h>
 
 void UBSGameInstance::Init()
 {
@@ -20,12 +22,13 @@ bool UBSGameInstance::InitializeCPPElements()
 		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Failed"));
 		return false;
 	}
-
 	if (EnableUSteamManagerFeatures && SteamUser() != nullptr)
 	{
 		SteamManager = NewObject<USteamManager>(this);
 		SteamManager->InitializeSteamManager();
 		SteamManager->AssignGameInstance(this);
+		TicketWebApiResponse.BindUObject(this, &ThisClass::OnTicketForWebApiResponse);
+		SteamUser()->GetAuthTicketForWebApi("kxuhYhcZQyDdFtpS");
 		return true;
 	}
 	return false;
@@ -131,6 +134,32 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 			break;
 		}
 	}
+}
+
+void UBSGameInstance::OnAuthTicketForWebApiResponseReady(const FString AuthTicket)
+{
+	AuthenticateSteamUser(AuthTicket, TicketWebApiResponse);
+	Cast<ABSPlayerController>(GetFirstLocalPlayerController())->LoginToScoreBrowserWithSteam(AuthTicket);
+}
+
+void UBSGameInstance::OnTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess)
+{
+	// TODO: handle error & ResetWebApiTicket
+	if (bSuccess)
+	{
+		const uint64 LocalSteamID = SteamUser()->GetSteamID().ConvertToUint64();
+		const uint64 ResponseSteamID = FCString::Atoi64(*Response.SteamID);
+		
+		if (LocalSteamID == ResponseSteamID)
+		{
+			FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
+			PlayerSettings.DisplayName = FString(SteamFriends()->GetPersonaName());
+			PlayerSettings.UserID = Response.SteamID;
+			PlayerSettings.RefreshCookie = Response.RefreshCookie;
+			SavePlayerSettings(PlayerSettings);
+		}
+	}
+	//SteamManager->ResetWebApiTicket();
 }
 
 void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_Game& Delegate)

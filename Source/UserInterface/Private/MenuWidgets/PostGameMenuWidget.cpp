@@ -29,7 +29,6 @@ void UPostGameMenuWidget::NativeConstruct()
 
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SetQuitMenuButtonsInActive");
 	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "Restart");
-	ScoresWidget->OnLoginStateChange.AddDynamic(this, &UPostGameMenuWidget::OnLoginStateChange);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
 	
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
@@ -69,14 +68,6 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		{
 			MenuSwitcher->SetActiveWidget(MenuButton->GetBox());
 		}
-	}
-}
-
-void UPostGameMenuWidget::OnLoginStateChange(const ELoginState& LoginState, bool bIsPopup)
-{
-	if (LoginState == ELoginState::LoggedInHttpAndBrowser)
-	{
-		ScoresWidget->FadeOutLoadingOverlay();
 	}
 }
 

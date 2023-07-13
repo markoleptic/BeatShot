@@ -24,7 +24,7 @@ void UFeedbackWidget::NativeConstruct()
 	Value_Title->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Title);
 	Value_Content->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Content);
 	
-	OnPostFeedbackResponseDelegate.AddUObject(this, &ThisClass::OnPostFeedbackResponse);
+	OnPostFeedbackResponseDelegate.BindUObject(this, &ThisClass::OnPostFeedbackResponse);
 
 	Button_SubmitFeedback->SetIsEnabled(false);
 }

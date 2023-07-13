@@ -6,7 +6,6 @@
 #include "Components/TextBlock.h"
 #include "Components/Overlay.h"
 #include "OverlayWidgets/LoginWidget.h"
-#include "WidgetComponents/BSButton.h"
 #include "WidgetComponents/WebBrowserWidget.h"
 
 void UScoreBrowserWidget::NativeConstruct()
@@ -15,103 +14,81 @@ void UScoreBrowserWidget::NativeConstruct()
 	BindToAnimationFinished(FadeOutOverlay, FadeOutDelegate);
 	FadeOutDelegate.BindUFunction(BrowserOverlay, FName("RemoveFromParent"));
 	MID_LoadingIcon = LoadingIcon->GetDynamicMaterial();
-	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UScoreBrowserWidget::LoginUserHttp);
 	BrowserWidget->OnURLLoaded.AddDynamic(this, &UScoreBrowserWidget::OnURLLoaded);
 }
 
 void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	TotalDeltaTime += InDeltaTime;
 	if (BrowserOverlay)
 	{
+		TotalDeltaTime += InDeltaTime;
 		MID_LoadingIcon->SetScalarParameterValue(FName("Time"), TotalDeltaTime);
 	}
 }
 
-void UScoreBrowserWidget::InitializeScoringOverlay()
+void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowserType, const EPostScoresResponse& Response)
 {
-	/* If user has logged in before, check Refresh Token */
-	const FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
-	if (PlayerSettings.HasLoggedInHttp)
+	ScoreBrowserType = InScoreBrowserType;
+	switch (InScoreBrowserType) {
+	case EScoreBrowserType::MainMenuScores:
+	case EScoreBrowserType::PostGameModeMenuScores:
+		break;
+	case EScoreBrowserType::PatchNotes:
+		BrowserWidget->LoadPatchNotesURL();
+		FadeOutLoadingOverlay();
+		break;
+	default:
+		break;
+	}
+
+	if (ScoreBrowserType == EScoreBrowserType::PostGameModeMenuScores)
 	{
-		if (!IsRefreshTokenValid(PlayerSettings))
+		switch (Response)
 		{
-			LoginWidget->ShowLoginScreen("Login_LoginErrorText");
-			OnLoginStateChange.Broadcast(ELoginState::InvalidHttp, false);
+		case EPostScoresResponse::ZeroScore:
+		case EPostScoresResponse::UnsavedGameMode:
+			SetOverlayTextAndFadeIn("SBW_DidNotSaveScores");
+			return;
+		case EPostScoresResponse::NoAccount:
+			SetOverlayTextAndFadeIn("SBW_NoAccount");
+			return;
+		case EPostScoresResponse::HttpError:
+			SetOverlayTextAndFadeIn("SBW_SavedScoresLocallyOnly");
+			return;
+		case EPostScoresResponse::HttpSuccess:
+			break;
+		default:
+			break;
+		}
+		int64 MinTimeDifference = FDateTime::MinValue().ToUnixTimestamp();
+		FPlayerScore MinDateScore = FPlayerScore();
+		/** Could probably just use the last value in PlayerScoreArray, but just to be sure: */
+		for (const FPlayerScore& Score : LoadPlayerScores())
+		{
+			FDateTime ParsedTime;
+			FDateTime::ParseIso8601(*Score.Time, ParsedTime);
+			if (ParsedTime.ToUnixTimestamp() > MinTimeDifference)
+			{
+				MinTimeDifference = ParsedTime.ToUnixTimestamp();
+				MinDateScore = Score;
+			}
+		}
+		if (MinDateScore.DefiningConfig.GameModeType == EGameModeType::Preset)
+		{
+			BrowserWidget->LoadDefaultGameModesURL(LoadPlayerSettings().User.UserID);
 		}
 		else
 		{
-			/* If logged in and has valid refresh token */
-			OnAccessTokenResponseDelegate.BindUFunction(this, "OnAccessTokenResponse");
-			RequestAccessToken(PlayerSettings.LoginCookie, OnAccessTokenResponseDelegate);
+			BrowserWidget->LoadCustomGameModesURL(LoadPlayerSettings().User.UserID);
 		}
-	}
-	/* Show Register screen if new user */
-	else
-	{
-		LoginWidget->ShowRegisterScreen();
-		OnLoginStateChange.Broadcast(ELoginState::NewUser, false);
 	}
 }
 
-void UScoreBrowserWidget::InitializePostGameScoringOverlay(const ELoginState& LoginState)
-{
-	switch (LoginState)
-	{
-	/** Didn't save scores because of zero score or unsaved game mode */
-	case ELoginState::None:
-		{
-			SetOverlayText("SBW_DidNotSaveScores");
-			return;
-		}
-	/** User doesn't have an account*/
-	case ELoginState::NewUser:
-		{
-			SetOverlayText("SBW_NoAccount");
-			return;
-		}
-	/** Successful Http POST scores request*/
-	case ELoginState::LoggedInHttp:
-		{
-			break;
-		}
-	/** Invalid Refresh Token or Http POST scores request failed */
-	default:
-		{
-			SetOverlayText("SBW_SavedScoresLocallyOnly");
-
-			return;
-		}
-	}
-
-	int64 MinTimeDifference = FDateTime::MinValue().ToUnixTimestamp();
-	FPlayerScore MinDateScore = FPlayerScore();
-	/** Could probably just use the last value in PlayerScoreArray, but just to be sure: */
-	for (const FPlayerScore& Score : LoadPlayerScores())
-	{
-		FDateTime ParsedTime;
-		FDateTime::ParseIso8601(*Score.Time, ParsedTime);
-		if (ParsedTime.ToUnixTimestamp() > MinTimeDifference)
-		{
-			MinTimeDifference = ParsedTime.ToUnixTimestamp();
-			MinDateScore = Score;
-		}
-	}
-	if (MinDateScore.DefiningConfig.GameModeType == EGameModeType::Preset)
-	{
-		BrowserWidget->LoadDefaultGameModesURL(LoadPlayerSettings().User.Username);
-	}
-	else
-	{
-		BrowserWidget->LoadCustomGameModesURL(LoadPlayerSettings().User.Username);
-	}
-}
-
-void UScoreBrowserWidget::SetOverlayText(const FString& Key)
+void UScoreBrowserWidget::SetOverlayTextAndFadeIn(const FString& Key)
 {
 	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
-	FadeInText();
+	PlayAnimationForward(FadeInOverlayText);
 }
 
 void UScoreBrowserWidget::FadeOutLoadingOverlay()
@@ -119,128 +96,28 @@ void UScoreBrowserWidget::FadeOutLoadingOverlay()
 	PlayAnimationForward(FadeOutOverlay);
 }
 
-void UScoreBrowserWidget::FadeInText()
+void UScoreBrowserWidget::LoginUserBrowser(const FLoginPayload LoginPayload, const FString UserID)
 {
-	PlayAnimationForward(FadeInOverlayText);
+	BrowserWidget->LoginUserToBeatShotWebsite(LoginPayload, UserID);
 }
 
-void UScoreBrowserWidget::LoginUserHttp(const FLoginPayload LoginPayload, const bool bIsPopup)
+void UScoreBrowserWidget::LoginUserBrowser(const FString SteamAuthTicket)
 {
-	bSignedInThroughPopup = bIsPopup;
-	OnLoginResponse.BindUFunction(this, "OnHttpLoginResponse");
-	LoginInfo = LoginPayload;
-	LoginUser(LoginPayload, OnLoginResponse);
-}
-
-void UScoreBrowserWidget::OnHttpLoginResponse(const FPlayerSettings_User& PlayerSettings, FString ResponseMsg, const int32 ResponseCode)
-{
-	if (ResponseCode != 200)
-	{
-		if (ResponseCode == 401)
-		{
-			OnLoginStateChange.Broadcast(ELoginState::InvalidCredentials, bSignedInThroughPopup);
-			if (!bSignedInThroughPopup)
-			{
-				LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
-			}
-		}
-		else if (ResponseCode == 408 || ResponseCode == 504)
-		{
-			OnLoginStateChange.Broadcast(ELoginState::TimeOut, bSignedInThroughPopup);
-			if (!bSignedInThroughPopup)
-			{
-				LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
-			}
-		}
-		else
-		{
-			OnLoginStateChange.Broadcast(ELoginState::InvalidHttp, bSignedInThroughPopup);
-			if (!bSignedInThroughPopup)
-			{
-				LoginWidget->ShowLoginScreen("Login_LoginErrorText");
-			}
-		}
-	}
-	else
-	{
-		FPlayerSettings_User PlayerSettingsToSave = LoadPlayerSettings().User;
-		PlayerSettingsToSave.HasLoggedInHttp = PlayerSettings.HasLoggedInHttp;
-		PlayerSettingsToSave.Username = PlayerSettings.Username;
-		PlayerSettingsToSave.LoginCookie = PlayerSettings.LoginCookie;
-		SavePlayerSettings(PlayerSettingsToSave);
-		LoginInfo.Username = PlayerSettings.Username;
-		LoginUserBrowser(LoginInfo);
-	}
-	LoginInfo = FLoginPayload();
-	if (OnLoginResponse.IsBound())
-	{
-		OnLoginResponse.Unbind();
-	}
-}
-
-void UScoreBrowserWidget::LoginUserBrowser(const FLoginPayload LoginPayload)
-{
-	BrowserWidget->HandleUserLogin(LoginPayload);
+	BrowserWidget->LoadAuthenticateSteamUserURL(SteamAuthTicket);
 }
 
 void UScoreBrowserWidget::OnURLLoaded(const bool bLoadedSuccessfully)
 {
-	/* Limited set of instructions if this widget is a child of PostGameMenuWidget */
-	if (bIsPostGameScoringOverlay)
+	if (ScoreBrowserType == EScoreBrowserType::PostGameModeMenuScores)
 	{
-		if (bLoadedSuccessfully)
-		{
-			FadeOutLoadingOverlay();
-		}
-		else
-		{
-			SetOverlayText("SBW_SavedScoresButNotLoggedIn");
-		}
+		bLoadedSuccessfully ? FadeOutLoadingOverlay() : SetOverlayTextAndFadeIn("SBW_SavedScoresButNotLoggedIn");
 		return;
 	}
 
-	/* Unsuccessful URL load in browser */
-	if (!bLoadedSuccessfully)
+	// let main menu handle fading out since it will be abrupt change if not already in view
+	if (ScoreBrowserType == EScoreBrowserType::MainMenuScores)
 	{
-		LoginWidget->ShowLoginScreen("Login_BrowserLoginErrorText");
-		OnLoginStateChange.Broadcast(ELoginState::InvalidBrowser, bSignedInThroughPopup);
-		return;
-	}
-
-	/** Don't not show a success message if they were logging in from the Popup in MainMenu so the user does not receive two success messages */
-	if (!bSignedInThroughPopup)
-	{
-		LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &UScoreBrowserWidget::OnButtonClicked_BSButton);
-		LoginWidget->OnLoginSuccess();
-	}
-	else
-	{
-		LoginWidget->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	OnLoginStateChange.Broadcast(ELoginState::LoggedInHttpAndBrowser, bSignedInThroughPopup);
-}
-
-void UScoreBrowserWidget::OnAccessTokenResponse(const FString& AccessToken)
-{
-	if (!AccessToken.IsEmpty())
-	{
-		BrowserWidget->LoadProfileURL(ISaveLoadInterface::LoadPlayerSettings().User.Username);
-	}
-	else
-	{
-		SetOverlayText("SBW_InvalidHttpResponse");
-		OnLoginStateChange.Broadcast(ELoginState::InvalidHttp, bSignedInThroughPopup);
-	}
-	if (OnAccessTokenResponseDelegate.IsBound())
-	{
-		OnAccessTokenResponseDelegate.Unbind();
-	}
-}
-
-void UScoreBrowserWidget::OnButtonClicked_BSButton(const UBSButton* Button)
-{
-	if (LoginWidget && Button == LoginWidget->OkayButton)
-	{
-		FadeOutLoadingOverlay();
+		if (!bLoadedSuccessfully) OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SBW_FailedToLoadURL"));
+		OnURLChangedResult.Broadcast(bLoadedSuccessfully);
 	}
 }

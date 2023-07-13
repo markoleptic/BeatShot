@@ -18,50 +18,53 @@ class USERINTERFACE_API UWebBrowserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+	friend class UScoreBrowserWidget;
+
 protected:
 	virtual void NativeConstruct() override;
 
-public:
 	/** The WebBrowser widget */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UWebBrowser* Browser;
+	
+	/** Load the steam authenticate URL to receive refresh token as cookie and get redirected to profile */
+	UFUNCTION()
+	void LoadAuthenticateSteamUserURL(const FString& AuthTicket);
 
 	/** Load Custom GameModes for the user */
-	UFUNCTION(BlueprintCallable)
-	void LoadCustomGameModesURL(const FString& Username);
+	UFUNCTION()
+	void LoadCustomGameModesURL(const FString& UserID);
 
 	/** Load Default GameModes for the user */
-	UFUNCTION(BlueprintCallable)
-	void LoadDefaultGameModesURL(const FString& Username);
-
-	/** Load Patch Notes for any user */
-	UFUNCTION(BlueprintCallable)
-	void LoadPatchNotesURL() const;
+	UFUNCTION()
+	void LoadDefaultGameModesURL(const FString& UserID);
 
 	/** Profile for a user */
-	UFUNCTION(BlueprintCallable)
-	void LoadProfileURL(const FString& Username);
+	UFUNCTION()
+	void LoadProfileURL(const FString& UserID);
 
-	/** Executes Javascript to login a user */
-	UFUNCTION(BlueprintCallable)
-	void HandleUserLogin(const FLoginPayload LoginPayload);
+	/** Load Patch Notes for any user */
+	UFUNCTION()
+	void LoadPatchNotesURL() const;
+	
+	/** Executes a series of Javascript scripts to login a user */
+	UFUNCTION()
+	void LoginUserToBeatShotWebsite(const FLoginPayload LoginPayload, const FString UserID);
 
-	/** Allows other widgets to bind to loading of URLs */
-	UPROPERTY(BlueprintCallable, BlueprintAssignable)
+	/** Broadcast true when the new WebBrowser URL matches the IntendedDestinationURL set by a LoadURL function, otherwise false */
+	UPROPERTY()
 	FOnURLLoaded OnURLLoaded;
 
 private:
 	/** Fills the login form on the login screen of the website using Javascript */
-	bool FillLoginForm(const FLoginPayload LoginPayload) const;
+	bool ExecuteJS_LoginFormEntries(const FLoginPayload LoginPayload) const;
 
-	/** Compares the browser's current URL address against the UserProfileURL */
+	/** Compares the browser's current URL address against the IntendedDestinationURL */
 	UFUNCTION()
-	void OnURLChanged();
+	void CheckNewURL();
 
 	FTimerDelegate CheckboxDelegate;
-
 	FTimerDelegate ClickLoginDelegate;
-
 	FTimerDelegate CheckURLDelegate;
 
 	/** Timer to delay clicking the Checkbox_SyncSlidersAndValues on the login page */
@@ -73,27 +76,11 @@ private:
 	/** Timer to delay URL address comparisons */
 	FTimerHandle CheckURLTimer;
 
-	/** The user's profile URL to check the current browser URL against */
-	FString UserProfileURL;
+	/** The intended destination URL set by a LoadURL function used to check the current browser URL against */
+	FString IntendedDestinationURL;
 
-	/** The number of OnURLChanged function calls, or number of profile URL checks */
+	/** The number of CheckNewURL function calls, or number of profile URL checks */
 	int32 URLCheckAttempts = 0;
-
-#pragma region URLs
-
-	/* Patch Notes URL */
-	const FString PatchNotesURL = "https://beatshot.gg/patchnotes";
-
-	/* Base profile URL */
-	const FString ProfileURL = "https://beatshot.gg/profile/";
-
-	/* Default GameMode end URL */
-	const FString DefaultModesString = "/stats/defaultmodes";
-
-	/* Custom GameMode end URL */
-	const FString CustomModesString = "/stats/custommodes";
-
-#pragma endregion
 
 #pragma region SCRIPTS
 

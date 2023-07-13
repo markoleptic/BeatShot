@@ -105,7 +105,6 @@ void ABSPlayerController::ShowMainMenu()
 	{
 		return;
 	}
-	//FadeScreenFromBlack();
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
@@ -281,7 +280,7 @@ void ABSPlayerController::ShowPostGameMenu()
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
-void ABSPlayerController::OnPostScoresResponseReceived(const ELoginState& LoginState)
+void ABSPlayerController::OnPostScoresResponseReceived(const EPostScoresResponse& Response)
 {
 	if (!IsLocalController())
 	{
@@ -291,7 +290,7 @@ void ABSPlayerController::OnPostScoresResponseReceived(const ELoginState& LoginS
 	{
 		return;
 	}
-	PostGameMenuWidget->ScoresWidget->InitializePostGameScoringOverlay(LoginState);
+	PostGameMenuWidget->ScoresWidget->InitScoreBrowser(EScoreBrowserType::PostGameModeMenuScores, Response);
 	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
 		if (GameMode->OnPostScoresResponse.IsBoundToObject(this))
@@ -321,6 +320,14 @@ void ABSPlayerController::OnRep_PlayerState()
 ABSCharacter* ABSPlayerController::GetBSCharacter() const
 {
 	return Cast<ABSCharacter>(GetPawn());
+}
+
+void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket)
+{
+	if (MainMenu->ScoresWidget && MainMenu->ScoresWidget)
+	{
+		MainMenu->ScoresWidget->LoginUserBrowser(FString(AuthTicket));
+	}
 }
 
 void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)

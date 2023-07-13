@@ -87,6 +87,4 @@ protected:
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
 	void SetQuitMenuButtonsInActive();
-	UFUNCTION()
-	void OnLoginStateChange(const ELoginState& LoginState, bool bIsPopup);
 };

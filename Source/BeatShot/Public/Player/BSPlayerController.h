@@ -85,7 +85,7 @@ public:
 	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
 	UFUNCTION()
-	void OnPostScoresResponseReceived(const ELoginState& LoginState);
+	void OnPostScoresResponseReceived(const EPostScoresResponse& Response);
 
 	UFUNCTION(BlueprintCallable)
 	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
@@ -106,6 +106,10 @@ public:
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
 	ABSCharacter* GetBSCharacter() const;
+
+	void LoginToScoreBrowserWithSteam(const FString AuthTicket);
+
+	FString TempAuthTicket = FString();
 	
 	/** ~ILoadingProcessInterface begin */
 	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
