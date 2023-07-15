@@ -289,26 +289,6 @@ void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningC
 	UpdateCommonScoreInfo(Map);
 }
 
-void ISaveLoadInterface::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
-{
-}
-
-void ISaveLoadInterface::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
-{
-}
-
-void ISaveLoadInterface::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
-{
-}
-
-void ISaveLoadInterface::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
-{
-}
-
-void ISaveLoadInterface::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
-{
-}
-
 void ISaveLoadInterface::UpdateCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave) const
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))

@@ -158,10 +158,10 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback& InFeedback, FOnPos
 	FeedbackRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::AuthenticateSteamUser(const FString& AuthTicket, FOnTicketWebApiResponse& OnTicketWebApiResponse)
+void IHttpRequestInterface::AuthenticateSteamUser(const FString& AuthTicket, FOnTicketWebApiResponse& OnTicketWebApiResponse) const
 {
 	const FHttpRequestRef AuthRequest = FHttpModule::Get().CreateRequest();
-	AuthRequest->OnProcessRequestComplete().BindLambda([&OnTicketWebApiResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+	AuthRequest->OnProcessRequestComplete().BindLambda([this, &OnTicketWebApiResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 	{
 		// create Json object to access string fields
 		const FString JsonResponseString = Response->GetContentAsString();

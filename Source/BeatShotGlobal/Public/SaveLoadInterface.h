@@ -106,24 +106,37 @@ public:
 	
 	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
 	virtual void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
+
+	// These functions should be overriden when a class wants to receive updates about settings changes
+	// Example:
+	// GameInstance->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ThisClass::OnPlayerSettingsChanged_Game);
 	
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings);
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) {}
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings);
+	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) {}
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings);
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) {}
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings);
+	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) {}
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings);
+	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) {}
 
 protected:
+
+	// These delegates are executed when their respective settings categories are changed, allowing other classes to receive updates
+	// Example:
+	// GameInstance->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
 	
+	/** The delegate that is broadcast when this class saves Game settings */
 	FOnPlayerSettingsChanged_Game OnPlayerSettingsChangedDelegate_Game;
+	/** The delegate that is broadcast when this class saves AudioAnalyzer settings */
 	FOnPlayerSettingsChanged_AudioAnalyzer OnPlayerSettingsChangedDelegate_AudioAnalyzer;
+	/** The delegate that is broadcast when this class saves User settings */
 	FOnPlayerSettingsChanged_User OnPlayerSettingsChangedDelegate_User;
+	/** The delegate that is broadcast when this class saves CrossHair settings */
 	FOnPlayerSettingsChanged_CrossHair OnPlayerSettingsChangedDelegate_CrossHair;
+	/** The delegate that is broadcast when this class saves VideoAndSound settings */
 	FOnPlayerSettingsChanged_VideoAndSound OnPlayerSettingsChangedDelegate_VideoAndSound;
 	
 private:

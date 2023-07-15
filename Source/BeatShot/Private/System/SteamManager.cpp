@@ -8,7 +8,6 @@
 
 USteamManager::USteamManager()
 {
-	UE_LOG(LogTemp, Display, TEXT("USteamManager Constructor Called"));
 }
 
 USteamManager::~USteamManager()
@@ -25,6 +24,14 @@ void USteamManager::InitializeSteamManager()
 void USteamManager::AssignGameInstance(UBSGameInstance* InDefaultGameInstance)
 {
 	DefaultGameInstance = InDefaultGameInstance;
+}
+
+void USteamManager::CreateAuthTicketForWebApi()
+{
+	if (SteamUser())
+	{
+		SteamUser()->GetAuthTicketForWebApi("kxuhYhcZQyDdFtpS");
+	}
 }
 
 /** Callback for when steam overlay is toggled */
@@ -54,9 +61,10 @@ void USteamManager::OnTicketForWebApiResponse(GetTicketForWebApiResponse_t* pPar
 	if (pParam->m_eResult == k_EResultOK)
 	{
 		BytesToHex(pParam->m_rgubTicket, pParam->m_cubTicket, WebApiTicket);
-		AsyncTask(ENamedThreads::GameThread, [&]()
-		{
-			DefaultGameInstance->OnAuthTicketForWebApiResponseReady(WebApiTicket);
-		});
+		if (OnAuthTicketForWebApiReady.IsBound()) OnAuthTicketForWebApiReady.Execute(true);
+	}
+	else
+	{
+		if (OnAuthTicketForWebApiReady.IsBound()) OnAuthTicketForWebApiReady.Execute(false);
 	}
 }

@@ -106,10 +106,23 @@ void ABSPlayerController::ShowMainMenu()
 		return;
 	}
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
-	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
+	
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetGameDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetVideoAndSoundDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetCrossHairDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetUserDelegate());
+	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->GetUserDelegate());
+	MainMenu->AddToViewport();
+	
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+
+	// Let Game Instance know that it can send AuthTicketForWebApp
+	GI->OnPlayerControllerReadyForSteamLogin(this);
 }
 
 void ABSPlayerController::HideMainMenu()
@@ -322,11 +335,19 @@ ABSCharacter* ABSPlayerController::GetBSCharacter() const
 	return Cast<ABSCharacter>(GetPawn());
 }
 
-void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket)
+void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnFinishedUsingAuthTicket& OnFinishedUsingAuthTicket)
 {
-	if (MainMenu->ScoresWidget && MainMenu->ScoresWidget)
+	if (MainMenu && MainMenu->ScoresWidget && !AuthTicket.IsEmpty())
 	{
+		MainMenu->ScoresWidget->OnURLChangedResult.AddLambda([&OnFinishedUsingAuthTicket] (const bool bSuccess)
+		{
+			if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
+		});
 		MainMenu->ScoresWidget->LoginUserBrowser(FString(AuthTicket));
+	}
+	else
+	{
+		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
 	}
 }
 

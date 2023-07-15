@@ -15,7 +15,7 @@ class ULoginWidget;
 class UTextBlock;
 class UOverlay;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnURLChangedResult, const bool, bSuccess);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnURLChangedResult, const bool bSuccess);
 
 /** Container that wraps around WebBrowserWidget providing additional functionality */
 UCLASS()

@@ -11,11 +11,16 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "WidgetComponents/MenuButton.h"
 
+void UMainMenuWidget::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+{
+	UE_LOG(LogTemp, Display, TEXT("PlayerSettingsChangedUser in MainMenu"));
+}
+
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	ScoresWidget->OnURLChangedResult.AddDynamic(this, &UMainMenuWidget::OnURLChangedResult_ScoresBrowser);
+	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresBrowser);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
 	LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	LoginWidget->OnExitAnimationCompletedDelegate.AddDynamic(this, &ThisClass::OnLoginWidgetExitAnimationCompleted);
@@ -116,16 +121,30 @@ void UMainMenuWidget::OnURLChangedResult_ScoresBrowser(const bool bSuccess)
 	}
 }
 
-void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin)
+void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalMessage)
 {
 	if (!bSuccessfulLogin)
 	{
-		TextBlock_SignInState->SetText(FText::FromString("Not Signed In"));
+		if (!OptionalMessage.IsEmpty())
+		{
+			TextBlock_SignInState->SetText(FText::FromString(OptionalMessage));
+		}
+		else
+		{
+			TextBlock_SignInState->SetText(FText::FromString("Not Signed In"));
+		}
 		TextBlock_Username->SetText(FText());
 		Button_Login_Register->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		return;
 	}
-	TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
+	if (!OptionalMessage.IsEmpty())
+	{
+		TextBlock_SignInState->SetText(FText::FromString(OptionalMessage));
+	}
+	else
+	{
+		TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
+	}
 	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.DisplayName));
 	Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
 }

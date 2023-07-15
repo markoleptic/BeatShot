@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSGameInstance.h"
 #include "HttpRequestInterface.h"
 #include "LoadingProcessInterface.h"
 #include "BeatShot/BeatShot.h"
@@ -107,9 +108,8 @@ public:
 
 	ABSCharacter* GetBSCharacter() const;
 
-	void LoginToScoreBrowserWithSteam(const FString AuthTicket);
-
-	FString TempAuthTicket = FString();
+	/** Attempts to use the provided AuthTicket to log in to BeatShot website, and executes OnFinishedUsingAuthTicket when done */
+	void LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnFinishedUsingAuthTicket& OnFinishedUsingAuthTicket);
 	
 	/** ~ILoadingProcessInterface begin */
 	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;

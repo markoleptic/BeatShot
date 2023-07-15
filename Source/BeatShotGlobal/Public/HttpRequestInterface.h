@@ -86,8 +86,10 @@ public:
 
 	/** Makes a POST request to BeatShot website which emails the feedback. Executes supplied OnPostFeedbackResponse */
 	static void PostFeedback(const FJsonFeedback& InFeedback, FOnPostFeedbackResponse& OnPostFeedbackResponse);
-
+	
+	// Can't be static since Game Instance calls on Async thread
+	
 	/** Makes a GET request to BeatShot website that uses the AuthenticateUserTicket request from the ISteamUserAuthInterface. Executes supplied OnTicketWebApiResponse */
-	static void AuthenticateSteamUser(const FString& AuthTicket, FOnTicketWebApiResponse& OnTicketWebApiResponse);
+	void AuthenticateSteamUser(const FString& AuthTicket, FOnTicketWebApiResponse& OnTicketWebApiResponse) const;
 
 };

@@ -27,8 +27,10 @@ bool UBSGameInstance::InitializeCPPElements()
 		SteamManager = NewObject<USteamManager>(this);
 		SteamManager->InitializeSteamManager();
 		SteamManager->AssignGameInstance(this);
-		TicketWebApiResponse.BindUObject(this, &ThisClass::OnTicketForWebApiResponse);
-		SteamUser()->GetAuthTicketForWebApi("kxuhYhcZQyDdFtpS");
+		SteamManager->OnAuthTicketForWebApiReady.BindUObject(this, &ThisClass::OnAuthTicketForWebApiReady);
+		OnFinishedUsingAuthTicket.BindUObject(SteamManager, &USteamManager::ResetWebApiTicket);
+		TicketWebApiResponse.BindUObject(this, &ThisClass::OnAuthTicketForWebApiResponse);
+		SteamManager->CreateAuthTicketForWebApi();
 		return true;
 	}
 	return false;
@@ -136,13 +138,38 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 	}
 }
 
-void UBSGameInstance::OnAuthTicketForWebApiResponseReady(const FString AuthTicket)
+void UBSGameInstance::OnPlayerControllerReadyForSteamLogin(ABSPlayerController* PlayerController)
 {
-	AuthenticateSteamUser(AuthTicket, TicketWebApiResponse);
-	Cast<ABSPlayerController>(GetFirstLocalPlayerController())->LoginToScoreBrowserWithSteam(AuthTicket);
+	// Should have an AuthTicket at this point
+	// TODO: might need to handle case where SteamManager doesn't have Auth Ticket ready yet
+	if (!bFailedToCreateAuthTicketForWebApi && SteamManager->IsAuthTicketReady())
+	{
+		UE_LOG(LogTemp, Display, TEXT("!bFailedToCreateAuthTicketForWebApi && SteamManager->IsAuthTicketReady()"));
+		PlayerController->LoginToScoreBrowserWithSteam(SteamManager->GetWebApiTicket(), OnFinishedUsingAuthTicket);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("bFailedToCreateAuthTicketForWebApi || !SteamManager->IsAuthTicketReady()"));
+		PlayerController->LoginToScoreBrowserWithSteam("", OnFinishedUsingAuthTicket);
+	}
 }
 
-void UBSGameInstance::OnTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess)
+void UBSGameInstance::OnAuthTicketForWebApiReady(const bool bSuccess)
+{
+	if (bSuccess)
+	{
+		AsyncTask(ENamedThreads::GameThread, [&, this]()
+		{
+			AuthenticateSteamUser(SteamManager->GetWebApiTicket(), TicketWebApiResponse);
+		});
+	}
+	else
+	{
+		bFailedToCreateAuthTicketForWebApi = true;
+	}
+}
+
+void UBSGameInstance::OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess)
 {
 	// TODO: handle error & ResetWebApiTicket
 	if (bSuccess)

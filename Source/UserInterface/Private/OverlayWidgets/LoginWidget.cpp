@@ -2,7 +2,6 @@
 
 
 #include "OverlayWidgets/LoginWidget.h"
-
 #include "Animation/WidgetAnimation.h"
 #include "Components/HorizontalBox.h"
 #include "Components/EditableTextBox.h"

@@ -37,6 +37,14 @@ public:
 	USettingsMenuWidget* SettingsMenuWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
+	UFUNCTION()
+	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalMessage = "");
+
+	/** Returns OnPlayerSettingsChangedDelegate_User, the delegate that is broadcast when this class saves User settings */
+	FOnPlayerSettingsChanged_User& GetUserDelegate() { return OnPlayerSettingsChangedDelegate_User; }
+
+	/** Called when another class saves User settings */
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -96,8 +104,6 @@ private:
 	void OnButtonClicked_Login(const FLoginPayload LoginPayload);
 	UFUNCTION()
 	void OnURLChangedResult_ScoresBrowser(const bool bSuccess);
-	UFUNCTION()
-	void UpdateLoginState(const bool bSuccessfulLogin);
 	UFUNCTION()
 	void OnLoginWidgetExitAnimationCompleted();
 

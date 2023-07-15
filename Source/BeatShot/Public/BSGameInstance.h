@@ -13,6 +13,8 @@ class USteamManager;
 class ATarget;
 class ABSPlayerController;
 
+DECLARE_DELEGATE(FOnFinishedUsingAuthTicket);
+
 /** Base GameInstance for this game */
 UCLASS()
 class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInterface, public IHttpRequestInterface
@@ -51,15 +53,22 @@ public:
 
 	UPROPERTY()
 	FGameModeTransitionState LastGameModeTransitionState;
-	
+
+	/** Delegate passed to AuthenticateSteamUser Http request which is executed when it receives a response */
 	FOnTicketWebApiResponse TicketWebApiResponse;
 
+	/** Delegate passed to PlayerController LoginToScoreBrowserWithSteam to be executed when it's done using the AuthTicket */
+	FOnFinishedUsingAuthTicket OnFinishedUsingAuthTicket;
+
+	/** Called when the Player Controller has shown the Main Menu */
+	void OnPlayerControllerReadyForSteamLogin(ABSPlayerController* PlayerController);
+
 	/** Called from the Steam Manager after the AuthTicket has been generated */
-	void OnAuthTicketForWebApiResponseReady(const FString AuthTicket);
+	void OnAuthTicketForWebApiReady(const bool bSuccess);
 
 	/** Called after an HTTP request has been sent to BeatShot website and a response was received */
 	UFUNCTION()
-	void OnTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
+	void OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
 
 	/** Binds an actor's Game Settings delegate to the Game Instance's OnPlayerSettingsChanged_Game function,
 	 *  which broadcasts OnPlayerSettingsChangedDelegate_Game to all actors subscribed for updates */
@@ -105,6 +114,8 @@ private:
 	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
 	UPROPERTY(EditDefaultsOnly)
 	FBSConfig BSConfig;
+
+	bool bFailedToCreateAuthTicketForWebApi = false;
 	
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
