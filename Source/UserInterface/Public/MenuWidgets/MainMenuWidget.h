@@ -24,6 +24,8 @@ class UTextBlock;
 class UButton;
 class UMenuButton;
 
+DECLARE_DELEGATE(FOnSteamLoginRequest);
+
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets */
 UCLASS()
 class USERINTERFACE_API UMainMenuWidget : public UUserWidget, public ISaveLoadInterface, public IHttpRequestInterface
@@ -45,6 +47,9 @@ public:
 
 	/** Called when another class saves User settings */
 	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
+
+	/** Executed when the player requests to try to login through Steam after a failed attempt */
+	FOnSteamLoginRequest OnSteamLoginRequest;
 
 protected:
 	virtual void NativeConstruct() override;

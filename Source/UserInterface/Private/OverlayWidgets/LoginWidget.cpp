@@ -13,51 +13,13 @@ void ULoginWidget::NativeConstruct()
 	Super::NativeConstruct();
 	
 	Button_Login->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_GotoLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_GotoRegister->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_NoLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_NoRegister->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_NoRegisterCancel->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_NoRegisterConfirm->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoLoginCancel->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoLoginConfirm->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	
 	Value_UsernameEmail->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 	Value_Password->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
-}
-
-// ReSharper disable once CppMemberFunctionMayBeConst
-void ULoginWidget::LoginButtonClicked()
-{
-	if (Value_UsernameEmail->GetText().IsEmpty() || Value_Password->GetText().IsEmpty())
-	{
-		Box_Error->SetVisibility(ESlateVisibility::Visible);
-		SetErrorText("MissingInfoErrorText");
-		return;
-	}
-	
-	const FRegexPattern EmailPattern("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
-	if (FRegexMatcher EmailMatch(EmailPattern, Value_UsernameEmail->GetText().ToString()); EmailMatch.FindNext())
-	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(), Value_Password->GetText().ToString()));
-	}
-	else
-	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "", Value_Password->GetText().ToString()));
-	}
-	
-	PlayFadeOutLogin();
-}
-
-void ULoginWidget::OnLoginSuccess()
-{
-	PlayFadeInLoggedIn();
-}
-
-void ULoginWidget::ShowRegisterScreen()
-{
-	SetVisibility(ESlateVisibility::Visible);
-	PlayFadeInRegister();
 }
 
 void ULoginWidget::ShowLoginScreen(const FString& Key)
@@ -66,7 +28,7 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 	{
 		TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
 		TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
-		Button_NoRegisterCancel->ChangeButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
+		Button_NoLoginCancel->ChangeButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
 	}
 	if (!Key.IsEmpty())
 	{
@@ -92,12 +54,7 @@ void ULoginWidget::SetErrorText(const FString& Key)
 
 void ULoginWidget::InitializeExit()
 {
-	if (IsAnimationPlaying(FadeOutLoggedIn))
-	{
-		FadeOutLoggedInDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
-		BindToAnimationFinished(FadeOutLoggedIn, FadeOutLoggedInDelegate);
-	}
-	else if (IsAnimationPlaying(FadeOutContinueWithout))
+	if (IsAnimationPlaying(FadeOutContinueWithout))
 	{
 		FadeOutContinueWithoutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
 		BindToAnimationFinished(FadeOutContinueWithout, FadeOutContinueWithoutDelegate);
@@ -112,7 +69,6 @@ void ULoginWidget::OnExitAnimationCompleted()
 {
 	OnExitAnimationCompletedDelegate.Broadcast();
 	UnbindFromAnimationFinished(FadeOutContinueWithout, FadeOutContinueWithoutDelegate);
-	UnbindFromAnimationFinished(FadeOutLoggedIn, FadeOutLoggedInDelegate);
 	SetVisibility(ESlateVisibility::Collapsed);
 }
 
@@ -125,49 +81,43 @@ void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	else if (Button == Button_Register)
 	{
 		LaunchRegisterURL();
-		PlayFadeOutRegister();
-		PlayFadeInLogin();
-	}
-	else if (Button == Button_GotoLogin)
-	{
-		PlayFadeOutRegister();
-		PlayFadeInLogin();
-	}
-	else if (Button == Button_GotoRegister)
-	{
-		PlayFadeOutLogin();
-		PlayFadeInRegister();
 	}
 	else if (Button == Button_NoLogin)
 	{
 		PlayFadeOutLogin();
 		PlayFadeInContinueWithout();
 	}
-	else if (Button == Button_NoRegister)
-	{
-		PlayFadeOutRegister();
-		PlayFadeInContinueWithout();
-	}
-	else if (Button == Button_NoRegisterCancel)
+	else if (Button == Button_NoLoginCancel)
 	{
 		PlayFadeOutContinueWithout();
-		if (LoadPlayerSettings().User.bHasLoggedInBefore)
-		{
-			PlayFadeInLogin();
-		}
-		else
-		{
-			PlayFadeInRegister();
-		}
+		PlayFadeInLogin();
 	}
-	else if (Button == Button_NoRegisterConfirm)
+	else if (Button == Button_NoLoginConfirm)
 	{
 		PlayFadeOutContinueWithout();
 		InitializeExit();
 	}
-	else if (Button == OkayButton)
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+void ULoginWidget::LoginButtonClicked()
+{
+	if (Value_UsernameEmail->GetText().IsEmpty() || Value_Password->GetText().IsEmpty())
 	{
-		PlayFadeOutLoggedIn();
-		InitializeExit();
+		Box_Error->SetVisibility(ESlateVisibility::Visible);
+		SetErrorText("MissingInfoErrorText");
+		return;
 	}
+	
+	const FRegexPattern EmailPattern("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+	if (FRegexMatcher EmailMatch(EmailPattern, Value_UsernameEmail->GetText().ToString()); EmailMatch.FindNext())
+	{
+		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(), Value_Password->GetText().ToString()));
+	}
+	else
+	{
+		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "", Value_Password->GetText().ToString()));
+	}
+	
+	PlayFadeOutLogin();
 }

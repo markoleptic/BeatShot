@@ -8,7 +8,7 @@
 
 class UBSGameInstance;
 
-DECLARE_DELEGATE_OneParam(FOnAuthTicketForWebApiReady, const bool bSuccess)
+DECLARE_DELEGATE_OneParam(FOnAuthTicketForWebApiReady, const bool bSuccess);
 
 /** Class responsible for linking to Steam */
 UCLASS()
@@ -28,7 +28,7 @@ public:
 	UBSGameInstance* DefaultGameInstance;
 
 	/** Calls GetAuthTicketForWebApi using Steam Api, callback is OnTicketForWebApiResponse */
-	void CreateAuthTicketForWebApi();
+	static void CreateAuthTicketForWebApi();
 	
 	/** Returns true if the WebApiTicket has been filled, otherwise false */
 	bool IsAuthTicketReady() const { return !WebApiTicket.IsEmpty(); }

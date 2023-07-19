@@ -27,14 +27,6 @@ class USERINTERFACE_API ULoginWidget : public UUserWidget, public ISaveLoadInter
 	virtual void NativeConstruct() override;
 
 public:
-	/** Since LoginWidget is not responsible for logging the user into the Beatshot website,
-	 *  WebBrowserOverlay or its parent widget will call this function to show success message */
-	UFUNCTION()
-	void OnLoginSuccess();
-
-	/** Shows the register screen */
-	UFUNCTION()
-	void ShowRegisterScreen();
 
 	/** Shows the login screen */
 	UFUNCTION()
@@ -49,26 +41,16 @@ public:
 
 	FOnExitAnimationCompleted OnExitAnimationCompletedDelegate;
 
-	/** WebBrowserOverlay binds to this button's OnClick event */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* OkayButton;
-
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBackgroundBlur* BackgroundBlur;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_Error;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* Overlay_LoginRegisterSwitcher;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* Overlay_Register;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_ContinueWithout;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_Login;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UOverlay* Overlay_LoggedIn;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* Value_UsernameEmail;
@@ -81,35 +63,24 @@ protected:
 	UTextBlock* TextBlock_ContinueWithoutTitle;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_ContinueWithoutBody;
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Register;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_GotoLogin;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_NoRegister;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Login;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_GotoRegister;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_NoLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_NoRegisterConfirm;
+	UBSButton* Button_NoLoginConfirm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_NoRegisterCancel;
+	UBSButton* Button_NoLoginCancel;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	UWidgetAnimation* FadeOutRegister;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutContinueWithout;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	UWidgetAnimation* FadeOutLoggedIn;
 
 	FWidgetAnimationDynamicEvent FadeOutContinueWithoutDelegate;
-	FWidgetAnimationDynamicEvent FadeOutLoggedInDelegate;
 	
 	UFUNCTION()
 	void LoginButtonClicked();
@@ -119,8 +90,8 @@ protected:
 	void InitializeExit();
 	UFUNCTION()
 	void OnExitAnimationCompleted();
-	UFUNCTION()
-	void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
+	
+	static void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
 
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
@@ -130,15 +101,7 @@ protected:
 	UFUNCTION()
 	void PlayFadeOutLogin() { PlayAnimationForward(FadeOutLogin); }
 	UFUNCTION()
-	void PlayFadeInRegister() { PlayAnimationReverse(FadeOutRegister); }
-	UFUNCTION()
-	void PlayFadeOutRegister() { PlayAnimationForward(FadeOutRegister); }
-	UFUNCTION()
 	void PlayFadeInContinueWithout() { PlayAnimationReverse(FadeOutContinueWithout); }
 	UFUNCTION()
 	void PlayFadeOutContinueWithout() { PlayAnimationForward(FadeOutContinueWithout); }
-	UFUNCTION()
-	void PlayFadeInLoggedIn() { PlayAnimationReverse(FadeOutLoggedIn); }
-	UFUNCTION()
-	void PlayFadeOutLoggedIn() { PlayAnimationForward(FadeOutLoggedIn); }
 };

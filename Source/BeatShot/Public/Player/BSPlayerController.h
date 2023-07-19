@@ -108,8 +108,10 @@ public:
 
 	ABSCharacter* GetBSCharacter() const;
 
-	/** Attempts to use the provided AuthTicket to log in to BeatShot website, and executes OnFinishedUsingAuthTicket when done */
-	void LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnFinishedUsingAuthTicket& OnFinishedUsingAuthTicket);
+	/** Attempts to use the provided AuthTicket to log in to BeatShot website, and executes OnPCFinishedUsingAuthTicket when done */
+	void LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket);
+
+	void InitiateSteamLogin();
 	
 	/** ~ILoadingProcessInterface begin */
 	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;

@@ -28,7 +28,7 @@
 void ABSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasAuthority())
+	/*if (HasAuthority())
 	{
 		if (IsLocalController())
 		{
@@ -49,7 +49,7 @@ void ABSPlayerController::BeginPlay()
 		{
 			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
-	}
+	}*/
 
 	if (LoadPlayerSettings().VideoAndSound.bShowFPSCounter)
 	{
@@ -106,10 +106,12 @@ void ABSPlayerController::ShowMainMenu()
 		return;
 	}
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
-	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
-	
-	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
+	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+	MainMenu->OnSteamLoginRequest.BindUObject(this, &ThisClass::InitiateSteamLogin);
+	
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetGameDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetVideoAndSoundDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetCrossHairDelegate());
@@ -155,7 +157,7 @@ void ABSPlayerController::ShowPauseMenu()
 	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetUserDelegate());
 	
-	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUObject(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())), &UBSGameInstance::HandleGameModeTransition);
+	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	PauseMenu->AddToViewport();
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
@@ -335,9 +337,11 @@ ABSCharacter* ABSPlayerController::GetBSCharacter() const
 	return Cast<ABSCharacter>(GetPawn());
 }
 
-void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnFinishedUsingAuthTicket& OnFinishedUsingAuthTicket)
+void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket)
 {
-	if (MainMenu && MainMenu->ScoresWidget && !AuthTicket.IsEmpty())
+	if (!MainMenu) return;
+	
+	if (!AuthTicket.IsEmpty())
 	{
 		MainMenu->ScoresWidget->OnURLChangedResult.AddLambda([&OnFinishedUsingAuthTicket] (const bool bSuccess)
 		{
@@ -348,7 +352,16 @@ void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket,
 	else
 	{
 		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
+		MainMenu->UpdateLoginState(false, "Steam Sign In Failed");
 	}
+}
+
+void ABSPlayerController::InitiateSteamLogin()
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+
+	// Tell Game Instance to get an AuthTicketForWebApp
+	GI->OnPlayerControllerReadyForSteamLogin(this);
 }
 
 void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)

@@ -13,7 +13,7 @@ class USteamManager;
 class ATarget;
 class ABSPlayerController;
 
-DECLARE_DELEGATE(FOnFinishedUsingAuthTicket);
+DECLARE_DELEGATE(FOnPCFinishedUsingAuthTicket);
 
 /** Base GameInstance for this game */
 UCLASS()
@@ -32,15 +32,12 @@ public:
 
 	const bool EnableUSteamManagerFeatures = true;
 
-	/** Fire this from Blueprints to tell the actor when to initialize CPP elements */
-	UFUNCTION(BlueprintCallable, Category = "Steamworks")
-	bool InitializeCPPElements();
+	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions */
+	bool InitializeSteamManager();
 
 	/** A function pair that can be called externally executes OnSteamOverlayIsActive() */
 	void OnSteamOverlayIsOn();
 	void OnSteamOverlayIsOff();
-
-	UFUNCTION()
 	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
 
 	UFUNCTION()
@@ -57,14 +54,11 @@ public:
 	/** Delegate passed to AuthenticateSteamUser Http request which is executed when it receives a response */
 	FOnTicketWebApiResponse TicketWebApiResponse;
 
-	/** Delegate passed to PlayerController LoginToScoreBrowserWithSteam to be executed when it's done using the AuthTicket */
-	FOnFinishedUsingAuthTicket OnFinishedUsingAuthTicket;
+	/** Delegate passed to a PlayerController with AuthTickets to be called when they're done being used */
+	FOnPCFinishedUsingAuthTicket OnPCFinishedUsingAuthTicket;
 
 	/** Called when the Player Controller has shown the Main Menu */
 	void OnPlayerControllerReadyForSteamLogin(ABSPlayerController* PlayerController);
-
-	/** Called from the Steam Manager after the AuthTicket has been generated */
-	void OnAuthTicketForWebApiReady(const bool bSuccess);
 
 	/** Called after an HTTP request has been sent to BeatShot website and a response was received */
 	UFUNCTION()
@@ -115,7 +109,14 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	FBSConfig BSConfig;
 
-	bool bFailedToCreateAuthTicketForWebApi = false;
+	bool bHttpAuthTicketAsyncTaskComplete = false;
+	bool bLoginToScoreBrowserAsyncTaskComplete = false;
+	
+	/** Checks if bHttpAuthTicketAsyncTaskComplete and bLoginToScoreBrowserAsyncTaskComplete are true and if so calls ResetWebApiTicket on SteamManager */
+	void CheckIfAsyncAuthTasksComplete();
+	
+	/** Callback for when PlayerController is done using the AuthTicket */
+	void OnLoginToScoreBrowserAsyncTaskComplete();
 	
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;

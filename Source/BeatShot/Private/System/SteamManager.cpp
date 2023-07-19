@@ -16,9 +16,8 @@ USteamManager::~USteamManager()
 
 void USteamManager::InitializeSteamManager()
 {
-	UE_LOG(LogTemp, Display, TEXT("Initializing USteamManager"));
-	OnSteamOverlayActiveCallback.Register(this, &USteamManager::OnSteamOverlayActive);
-	OnTicketForWebApiResponseCallback.Register(this, &USteamManager::OnTicketForWebApiResponse);
+	OnSteamOverlayActiveCallback.Register(this, &ThisClass::OnSteamOverlayActive);
+	OnTicketForWebApiResponseCallback.Register(this, &ThisClass::OnTicketForWebApiResponse);
 }
 
 void USteamManager::AssignGameInstance(UBSGameInstance* InDefaultGameInstance)
@@ -41,14 +40,14 @@ void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 	//DefaultGameInstance; //So that the call list reference on the Lambda works
 	if (bIsCurrentOverlayActive)
 	{
-		AsyncTask(ENamedThreads::GameThread, [&]()
+		AsyncTask(ENamedThreads::GameThread, [this]()
 		{
 			DefaultGameInstance->OnSteamOverlayIsOn();
 		});
 	}
 	else
 	{
-		AsyncTask(ENamedThreads::GameThread, [&]()
+		AsyncTask(ENamedThreads::GameThread, [this]()
 		{
 			DefaultGameInstance->OnSteamOverlayIsOff();
 		});

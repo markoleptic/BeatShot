@@ -22,7 +22,6 @@ void UMainMenuWidget::NativeConstruct()
 	
 	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresBrowser);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
-	LoginWidget->OkayButton->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	LoginWidget->OnExitAnimationCompletedDelegate.AddDynamic(this, &ThisClass::OnLoginWidgetExitAnimationCompleted);
 	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	
@@ -83,20 +82,10 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 
 void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	// Successful login, show scores menu
-	if (LoginWidget && Button == LoginWidget->OkayButton)
-	{
-		// Manually set scores button active and set score box as active
-		MenuButton_Scores->SetActive();
-		MainMenuSwitcher->SetActiveWidget(MenuButton_Scores->GetBox());
-		ScoresWidget->FadeOutLoadingOverlay();
-		return;
-	}
-
 	// Login/Register button
 	if (Button == Button_Login_Register)
 	{
-		LoginWidget->ShowRegisterScreen();
+		LoginWidget->ShowLoginScreen(FString());
 	}
 
 	// Feedback button
@@ -117,7 +106,6 @@ void UMainMenuWidget::OnURLChangedResult_ScoresBrowser(const bool bSuccess)
 	else
 	{
 		bFadeInScoreBrowserOnButtonPress = true;
-		LoginWidget->OnLoginSuccess();
 	}
 }
 
