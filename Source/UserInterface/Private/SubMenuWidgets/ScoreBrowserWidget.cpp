@@ -30,7 +30,8 @@ void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowserType, const EPostScoresResponse& Response)
 {
 	ScoreBrowserType = InScoreBrowserType;
-	switch (InScoreBrowserType) {
+	switch (InScoreBrowserType)
+	{
 	case EScoreBrowserType::MainMenuScores:
 	case EScoreBrowserType::PostGameModeMenuScores:
 		break;
@@ -96,6 +97,16 @@ void UScoreBrowserWidget::FadeOutLoadingOverlay()
 	PlayAnimationForward(FadeOutOverlay);
 }
 
+void UScoreBrowserWidget::FadeOutLoadingIconAndShowText()
+{
+	PlayAnimationForward(FadeInOverlayText);
+}
+
+void UScoreBrowserWidget::SetOverlayText(const FString& Key)
+{
+	OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
+}
+
 void UScoreBrowserWidget::LoginUserBrowser(const FLoginPayload LoginPayload, const FString UserID)
 {
 	BrowserWidget->LoginUserToBeatShotWebsite(LoginPayload, UserID);
@@ -104,6 +115,11 @@ void UScoreBrowserWidget::LoginUserBrowser(const FLoginPayload LoginPayload, con
 void UScoreBrowserWidget::LoginUserBrowser(const FString SteamAuthTicket)
 {
 	BrowserWidget->LoadAuthenticateSteamUserURL(SteamAuthTicket);
+}
+
+void UScoreBrowserWidget::LoadProfile(const FString& UserID)
+{
+	BrowserWidget->LoadProfileURL(UserID);
 }
 
 void UScoreBrowserWidget::OnURLLoaded(const bool bLoadedSuccessfully)
@@ -117,7 +133,6 @@ void UScoreBrowserWidget::OnURLLoaded(const bool bLoadedSuccessfully)
 	// let main menu handle fading out since it will be abrupt change if not already in view
 	if (ScoreBrowserType == EScoreBrowserType::MainMenuScores)
 	{
-		if (!bLoadedSuccessfully) OverlayText->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SBW_FailedToLoadURL"));
 		OnURLChangedResult.Broadcast(bLoadedSuccessfully);
 	}
 }

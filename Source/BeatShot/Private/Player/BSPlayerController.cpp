@@ -341,23 +341,25 @@ void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket,
 {
 	if (!MainMenu) return;
 	
-	if (!AuthTicket.IsEmpty())
+	if (AuthTicket.IsEmpty())
+	{
+		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
+		MainMenu->UpdateLoginState(false, "Steam Sign In Failed");
+		MainMenu->TryFallbackLogin();
+	}
+	else
 	{
 		MainMenu->ScoresWidget->OnURLChangedResult.AddLambda([&OnFinishedUsingAuthTicket] (const bool bSuccess)
 		{
 			if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
 		});
-		MainMenu->ScoresWidget->LoginUserBrowser(FString(AuthTicket));
-	}
-	else
-	{
-		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
-		MainMenu->UpdateLoginState(false, "Steam Sign In Failed");
+		MainMenu->LoginScoresWidgetWithSteam(FString(AuthTicket));
 	}
 }
 
 void ABSPlayerController::InitiateSteamLogin()
 {
+	UE_LOG(LogTemp, Display, TEXT("InitiateSteamLogin"));
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 	// Tell Game Instance to get an AuthTicketForWebApp

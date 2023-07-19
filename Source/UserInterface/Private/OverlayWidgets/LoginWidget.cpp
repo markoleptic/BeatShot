@@ -12,9 +12,15 @@ void ULoginWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
+	Button_RetrySteamLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_FromSteam_ToLegacyLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_NoSteamLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
 	Button_Login->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_NoLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_FromLogin_ToSteam->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	
 	Button_NoLoginCancel->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_NoLoginConfirm->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	
@@ -24,12 +30,10 @@ void ULoginWidget::NativeConstruct()
 
 void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
-	if (LoadPlayerSettings().User.bHasLoggedInBefore)
-	{
-		TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
-		TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
-		Button_NoLoginCancel->ChangeButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
-	}
+	TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
+	TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
+	Button_NoLoginCancel->ChangeButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
+	
 	if (!Key.IsEmpty())
 	{
 		Box_Error->SetVisibility(ESlateVisibility::Visible);
@@ -37,6 +41,12 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 	}
 	SetVisibility(ESlateVisibility::Visible);
 	PlayFadeInLogin();
+}
+
+void ULoginWidget::ShowSteamLoginScreen()
+{
+	SetVisibility(ESlateVisibility::Visible);
+	PlayFadeInSteamLogin();
 }
 
 // ReSharper disable once CppMemberFunctionMayBeConst
@@ -56,25 +66,56 @@ void ULoginWidget::InitializeExit()
 {
 	if (IsAnimationPlaying(FadeOutContinueWithout))
 	{
-		FadeOutContinueWithoutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
-		BindToAnimationFinished(FadeOutContinueWithout, FadeOutContinueWithoutDelegate);
+		FadeOutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
+		BindToAnimationFinished(FadeOutContinueWithout, FadeOutDelegate);
+		UE_LOG(LogTemp, Display, TEXT("FadeOutContinueWithout"));
+	}
+	else if (IsAnimationPlaying(FadeOutLogin))
+	{
+		FadeOutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
+		BindToAnimationFinished(FadeOutLogin, FadeOutDelegate);
+		UE_LOG(LogTemp, Display, TEXT("FadeOutLogin"));
+	}
+	else if (IsAnimationPlaying(FadeOutSteam))
+	{
+		FadeOutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
+		BindToAnimationFinished(FadeOutSteam, FadeOutDelegate);
+		UE_LOG(LogTemp, Display, TEXT("FadeOutSteam"));
 	}
 	else
 	{
 		OnExitAnimationCompleted();
+		UE_LOG(LogTemp, Display, TEXT("No animatino playing"));
 	}
 }
 
 void ULoginWidget::OnExitAnimationCompleted()
 {
 	OnExitAnimationCompletedDelegate.Broadcast();
-	UnbindFromAnimationFinished(FadeOutContinueWithout, FadeOutContinueWithoutDelegate);
+	UnbindFromAnimationFinished(FadeOutContinueWithout, FadeOutDelegate);
+	UnbindFromAnimationFinished(FadeOutSteam, FadeOutDelegate);
+	UnbindFromAnimationFinished(FadeOutLogin, FadeOutDelegate);
 	SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	if (Button == Button_Login)
+	if (Button == Button_RetrySteamLogin)
+	{
+		PlayFadeOutSteamLogin();
+		InitializeExit();
+	}
+	else if (Button == Button_FromSteam_ToLegacyLogin)
+	{
+		PlayFadeOutSteamLogin();
+		PlayFadeInLogin();
+	}
+	else if (Button == Button_NoSteamLogin)
+	{
+		PlayFadeOutSteamLogin();
+		PlayFadeInContinueWithout();
+	}
+	else if (Button == Button_Login)
 	{
 		LoginButtonClicked();
 	}
@@ -87,10 +128,15 @@ void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		PlayFadeOutLogin();
 		PlayFadeInContinueWithout();
 	}
+	else if (Button == Button_FromLogin_ToSteam)
+	{
+		PlayFadeOutLogin();
+		PlayFadeInSteamLogin();
+	}
 	else if (Button == Button_NoLoginCancel)
 	{
 		PlayFadeOutContinueWithout();
-		PlayFadeInLogin();
+		PlayFadeInSteamLogin();
 	}
 	else if (Button == Button_NoLoginConfirm)
 	{
@@ -120,4 +166,5 @@ void ULoginWidget::LoginButtonClicked()
 	}
 	
 	PlayFadeOutLogin();
+	InitializeExit();
 }

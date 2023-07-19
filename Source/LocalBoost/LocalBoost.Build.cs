@@ -9,20 +9,18 @@ public class LocalBoost : ModuleRules
 	{
 		Type = ModuleType.External;
 
-		string BoostVersion = "1_81_1";
+
 		string[] BoostLibraries = { "atomic", "chrono", "iostreams", "program_options", "python39", "regex", "system", "thread", "date_time" };
 		
-		string BoostVersionDir = "boost-" + BoostVersion;
-		//string BoostPath = Path.Combine(Target.UEThirdPartySourceDirectory, "Boost", BoostVersionDir);
+		// string BoostVersion = "1_81_1";
+		// string BoostVersionDir = "boost-" + BoostVersion;
+		
 		string BoostPath = Path.Combine(ModuleDirectory);
-		//string BoostIncludePath = Path.Combine(BoostPath, "include");
-
+		
 		if (Target.Platform == UnrealTargetPlatform.Win64)
 		{
 			string BoostToolsetVersion = "vc143";
 			string BoostLibPath = Path.Combine(BoostPath, "lib");
-			//Path.Combine(BoostPath, "lib", "Win64");
-			//string BoostVersionShort = BoostVersion.Substring(BoostVersion.Length - 2) == "_0" ? BoostVersion.Substring(0 BoostVersion.Length - 2) : BoostVersion;
 			string BoostVersionShort = "1_81";
 			foreach (string BoostLib in BoostLibraries)
 			{

@@ -31,6 +31,8 @@ public:
 	bool IsSteamOverlayActive;
 
 	const bool EnableUSteamManagerFeatures = true;
+	UPROPERTY()
+	bool bSteamManagerInitialized = false;
 
 	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions */
 	bool InitializeSteamManager();

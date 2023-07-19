@@ -8,19 +8,21 @@
 #include "Kismet/GameplayStatics.h"
 #include <steam/isteamuser.h>
 #include <steam/steam_api.h>
+#include "OnlineSubsystem.h"
 
 void UBSGameInstance::Init()
 {
 	Super::Init();
 	OnPCFinishedUsingAuthTicket.BindUObject(this, &ThisClass::OnLoginToScoreBrowserAsyncTaskComplete);
-	InitializeSteamManager();
+	bSteamManagerInitialized = InitializeSteamManager();
+	IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));
 }
 
 bool UBSGameInstance::InitializeSteamManager()
 {
 	if (!SteamAPI_Init())
 	{
-		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Failed"));
+		UE_LOG(LogTemp, Warning, TEXT("SteamAPI_Init Failed"));
 		return false;
 	}
 	if (EnableUSteamManagerFeatures && SteamUser() != nullptr)
@@ -29,9 +31,8 @@ bool UBSGameInstance::InitializeSteamManager()
 		SteamManager->InitializeSteamManager();
 		SteamManager->AssignGameInstance(this);
 
-		//SteamManager->OnAuthTicketForWebApiReady.BindUObject(this, &ThisClass::OnAuthTicketForWebApiReady);
 		TicketWebApiResponse.BindUObject(this, &ThisClass::OnAuthTicketForWebApiResponse);
-		
+		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Success"));
 		return true;
 	}
 	return false;
@@ -141,10 +142,17 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 
 void UBSGameInstance::OnPlayerControllerReadyForSteamLogin(ABSPlayerController* PlayerController)
 {
-	// Should have an AuthTicket at this point
 	// TODO: might need to handle case where SteamManager doesn't have Auth Ticket ready yet
 	bHttpAuthTicketAsyncTaskComplete = false;
 	bLoginToScoreBrowserAsyncTaskComplete = false;
+
+	if (!bSteamManagerInitialized)
+	{
+		PlayerController->LoginToScoreBrowserWithSteam("", OnPCFinishedUsingAuthTicket);
+		UE_LOG(LogTemp, Warning, TEXT("SteamManager not initialized"));
+		return;
+	}
+	
 	SteamManager->OnAuthTicketForWebApiReady.BindLambda([this, PlayerController] (const bool bSuccess)
 	{
 		if (bSuccess)
@@ -160,19 +168,13 @@ void UBSGameInstance::OnPlayerControllerReadyForSteamLogin(ABSPlayerController* 
 				PlayerController->LoginToScoreBrowserWithSteam(SteamManager->GetWebApiTicket(), OnPCFinishedUsingAuthTicket);
 			});
 		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Auth Ticket Creation Unsuccessful"));
+			PlayerController->LoginToScoreBrowserWithSteam("", OnPCFinishedUsingAuthTicket);
+		}
 	});
 	SteamManager->CreateAuthTicketForWebApi();
-	
-	// TEMP AUTO FAIL LOGIN
-	/*if (!bFailedToCreateAuthTicketForWebApi && SteamManager->IsAuthTicketReady())
-	{
-		PlayerController->LoginToScoreBrowserWithSteam(SteamManager->GetWebApiTicket(), OnPCFinishedUsingAuthTicket);
-	}
-	else*/
-	//{
-		//UE_LOG(LogTemp, Display, TEXT("bFailedToCreateAuthTicketForWebApi || !SteamManager->IsAuthTicketReady()"));
-		//PlayerController->LoginToScoreBrowserWithSteam("", OnPCFinishedUsingAuthTicket);
-	//}
 }
 
 void UBSGameInstance::OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess)

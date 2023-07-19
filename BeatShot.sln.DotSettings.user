@@ -1,4 +1,5 @@
 ﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	
 	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=UI/@EntryIndexedValue">UI</s:String>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=022cf32f_002D6dde_002D3d8a_002D856e_002D4d27d68d1af9_0023InterchangeWorker/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UnloadedProject/UnloadedProjects/=0454ee5e_002Df350_002D304d_002Da29b_002Dd7b3ed21d6c1_0023DatasmithSketchUpRuby2021/@EntryIndexedValue">True</s:Boolean>

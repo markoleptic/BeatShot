@@ -10,12 +10,11 @@ public class UserInterface : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "BeatShotGlobal",
-			"EasyFileDialog", "OnlineSubsystem", "OnlineSubsystemUtils", "Steamworks", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint",
-			"CommonLoadingScreen", "GameplayTags", "InputCore"
+			"EasyFileDialog", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "CommonLoadingScreen", "GameplayTags", "InputCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
-		{ 
+		{
 			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib"
 		});
 
@@ -27,14 +26,8 @@ public class UserInterface : ModuleRules
 			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio/include",
 			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb"
 		});
-		
+
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
-		
-		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
-		
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 	}
 }

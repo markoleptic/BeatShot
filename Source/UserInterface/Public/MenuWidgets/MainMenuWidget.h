@@ -24,6 +24,16 @@ class UTextBlock;
 class UButton;
 class UMenuButton;
 
+/** Describes if player scores were posted or not */
+UENUM()
+enum class ELoginMethod : uint8
+{
+	None UMETA(DisplayName="None"),
+	Steam UMETA(DisplayName="Steam"),
+	Legacy UMETA(DisplayName="Legacy"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ELoginMethod, ELoginMethod::None, ELoginMethod::Legacy);
+
 DECLARE_DELEGATE(FOnSteamLoginRequest);
 
 /** Widget that is the entry point into the game, holding most other widgets that aren't MenuWidgets */
@@ -39,8 +49,9 @@ public:
 	USettingsMenuWidget* SettingsMenuWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
+	
 	UFUNCTION()
-	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalMessage = "");
+	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalFailureMessage = "");
 
 	/** Returns OnPlayerSettingsChangedDelegate_User, the delegate that is broadcast when this class saves User settings */
 	FOnPlayerSettingsChanged_User& GetUserDelegate() { return OnPlayerSettingsChangedDelegate_User; }
@@ -50,6 +61,10 @@ public:
 
 	/** Executed when the player requests to try to login through Steam after a failed attempt */
 	FOnSteamLoginRequest OnSteamLoginRequest;
+
+	void LoginScoresWidgetWithSteam(const FString SteamAuthTicket);
+
+	void TryFallbackLogin();
 
 protected:
 	virtual void NativeConstruct() override;
@@ -108,11 +123,14 @@ private:
 	UFUNCTION()
 	void OnButtonClicked_Login(const FLoginPayload LoginPayload);
 	UFUNCTION()
-	void OnURLChangedResult_ScoresBrowser(const bool bSuccess);
+	void OnURLChangedResult_ScoresWidget(const bool bSuccess);
 	UFUNCTION()
 	void OnLoginWidgetExitAnimationCompleted();
 
 	FOnLoginResponse OnLoginResponse;
 
+	ELoginMethod CurrentLoginMethod;
+
 	bool bFadeInScoreBrowserOnButtonPress = false;
+	bool bFadeInOverlayTextOnButtonPress = false;
 };

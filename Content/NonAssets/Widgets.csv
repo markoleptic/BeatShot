@@ -176,18 +176,12 @@ Interact_MoveDown,Hold Shift+E to move platform down
 Interact_MoveUp,Hold E to move platform up
 Login_BrowserLoginErrorText,"The game received a valid response from the server, but couldn't log you in to the website in the browser."
 Login_ContinueWithoutBodyTextLogin,"You won't be able to see your played game data, but it will still be saved locally if you decide to sign in later."
-Login_ContinueWithoutBodyTextRegister,"You won't be able to see your played game data, but it will still be saved locally if you ever decide to make an account."
 Login_ContinueWithoutCancelButtonTextLogin,Go Back and Sign In
-Login_ContinueWithoutCancelButtonTextRegister,Go Back and Register
 Login_ContinueWithoutConfirmButtonText,Yes I'm Sure
 Login_ContinueWithoutTitleTextLogin,Are you sure you want to continue without signing in?
-Login_ContinueWithoutTitleTextRegister,Are you sure you want to continue without registering?
 Login_EmailText,Email:
-Login_GotoLoginText,Already have an account?
 Login_GotoRegisterButtonText,Don't have an account?
 Login_InvalidCredentialsText,"Incorrect username, email, and/or password."
-Login_LoggedInBodyText,You've been logged in and won't have to login again until your cookie expires.
-Login_LoggedInTitleText,Login Success
 Login_LoginButtonText,Login
 Login_LoginErrorText,Something went wrong or your login expired. Please sign again to see your scores.
 Login_LoginSubtitleText,You can use your username OR email.
@@ -195,15 +189,9 @@ Login_LoginTitleText,Sign In
 Login_MissingInfoError,Please enter your username/email and password to login.
 Login_MissingInfoErrorText,Please enter your username/email and password to login.
 Login_NoLoginButtonText,Continue without signing in
-Login_NoRegisterText,Continue without Registering
-Login_OkayButtonText,Sick
+,
+,
 Login_PasswordText,Password:
-Login_RegisterBody1,Signs you in each time you start the game
-Login_RegisterBody2,Saves your scores in the cloud
-Login_RegisterBody3,Grants access to detailed score data online and in game
-Login_RegisterBodyTitle,Registering for a free account automatically:
-Login_RegisterButtonText,Register
-Login_RegisterTitleText,It looks like you don't have an account yet
 Login_TimeOutErrorText,Couldn't connect to BeatShot servers.
 Login_UsernameText,Username:
 LoginState_NotSignedIn,Not Signed In

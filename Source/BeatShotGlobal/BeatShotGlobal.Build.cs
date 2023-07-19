@@ -9,17 +9,10 @@ public class BeatShotGlobal : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange(new[]
 		{ 
-			"Core", "CoreUObject", "Engine", "HTTP", "Json", "HttpLibrary", "JsonLibrary", "JsonUtilities", "OnlineSubsystem", 
-			"OnlineSubsystemUtils", "Steamworks", "NumCpp", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "GameplayTags"
+			"Core", "CoreUObject", "Engine", "HTTP", "HttpLibrary", "Json", "JsonLibrary", "JsonUtilities", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "GameplayTags"
 		});
 
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
-		
-		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
-
-		// Uncomment if you are using online features
-		// PrivateDependencyModuleNames.Add("OnlineSubsystem");
-		// To include OnlineSubsystemSteam, add it to the plugins section in your uproject file with the Enabled attribute set to true
 	}
 }

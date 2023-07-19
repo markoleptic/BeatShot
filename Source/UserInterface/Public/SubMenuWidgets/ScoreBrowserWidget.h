@@ -71,18 +71,26 @@ public:
 	/** Logs in to BeatShot website using a SteamAuthTicket */
 	void LoginUserBrowser(const FString SteamAuthTicket);
 
+	void LoadProfile(const FString& UserID);
+
 	/** Fade Out the loading screen overlay and show the web browser */
 	UFUNCTION()
 	void FadeOutLoadingOverlay();
+
+	/** Fade out the loading screen icon and show the overlay text */
+	void FadeOutLoadingIconAndShowText();
+
+	/** Changes the overlay text and plays FadeInText animation */
+	UFUNCTION()
+	void SetOverlayTextAndFadeIn(const FString& Key);
+
+	/** Changes the overlay text */
+	void SetOverlayText(const FString& Key);
 
 private:
 	/** Handles the response from LoginWidget LoginUserToBeatShotWebsite */
 	UFUNCTION()
 	void OnURLLoaded(const bool bLoadedSuccessfully);
-
-	/** Changes the overlay text and plays FadeInText animation */
-	UFUNCTION()
-	void SetOverlayTextAndFadeIn(const FString& Key);
 	
 	/** Delegate used to remove the overlay from WebBrowserOverlay after FadeOut */
 	UPROPERTY()

@@ -11,20 +11,15 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "WidgetComponents/MenuButton.h"
 
-void UMainMenuWidget::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
-{
-	UE_LOG(LogTemp, Display, TEXT("PlayerSettingsChangedUser in MainMenu"));
-}
-
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresBrowser);
+	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresWidget);
 	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
 	LoginWidget->OnExitAnimationCompletedDelegate.AddDynamic(this, &ThisClass::OnLoginWidgetExitAnimationCompleted);
 	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	
+	LoginWidget->Button_RetrySteamLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Login_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 
 	MenuButton_PatchNotes->SetDefaults(Box_PatchNotes, MenuButton_GameModes);
@@ -47,6 +42,27 @@ void UMainMenuWidget::NativeConstruct()
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetBox());
 }
 
+void UMainMenuWidget::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+{
+	UE_LOG(LogTemp, Display, TEXT("PlayerSettingsChangedUser in MainMenu"));
+}
+
+void UMainMenuWidget::LoginScoresWidgetWithSteam(const FString SteamAuthTicket)
+{
+	CurrentLoginMethod = ELoginMethod::Steam;
+	ScoresWidget->LoginUserBrowser(FString(SteamAuthTicket));
+}
+
+void UMainMenuWidget::TryFallbackLogin()
+{
+	CurrentLoginMethod = ELoginMethod::Legacy;
+	const FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
+	if (IsRefreshTokenValid(PlayerSettings.RefreshCookie) && !PlayerSettings.UserID.IsEmpty())
+	{
+		ScoresWidget->LoadProfile(PlayerSettings.UserID);
+	}
+}
+
 void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 {
 	const UMenuButton* MenuButton = Cast<UMenuButton>(Button);
@@ -55,7 +71,6 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 	{
 		return;
 	}
-
 	
 	// Manually fade out browser overlay to avoid abrupt change
 	if (MenuButton == MenuButton_Scores)
@@ -64,6 +79,11 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 		{
 			ScoresWidget->FadeOutLoadingOverlay();
 			bFadeInScoreBrowserOnButtonPress = false;
+		}
+		if (bFadeInOverlayTextOnButtonPress)
+		{
+			ScoresWidget->FadeOutLoadingIconAndShowText();
+			bFadeInOverlayTextOnButtonPress = false;
 		}
 	}
 	
@@ -85,56 +105,68 @@ void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	// Login/Register button
 	if (Button == Button_Login_Register)
 	{
-		LoginWidget->ShowLoginScreen(FString());
+		LoginWidget->ShowSteamLoginScreen();
 	}
 
 	// Feedback button
-	if (Button == Button_Feedback)
+	else if (Button == Button_Feedback)
 	{
 		FeedbackWidget->ShowFeedbackWidget();
 	}
+
+	else if (Button == LoginWidget->Button_RetrySteamLogin)
+	{
+		CurrentLoginMethod = ELoginMethod::Steam;
+		TextBlock_SignInState->SetText(FText());
+		if (OnSteamLoginRequest.IsBound()) OnSteamLoginRequest.Execute();
+	}
 }
 
-void UMainMenuWidget::OnURLChangedResult_ScoresBrowser(const bool bSuccess)
+void UMainMenuWidget::OnURLChangedResult_ScoresWidget(const bool bSuccess)
 {
 	UpdateLoginState(bSuccess);
-	if (!bSuccess)
-	{
-		bFadeInScoreBrowserOnButtonPress = false;
-		LoginWidget->ShowLoginScreen("Login_BrowserLoginErrorText");
-	}
-	else
-	{
-		bFadeInScoreBrowserOnButtonPress = true;
-	}
 }
 
-void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalMessage)
+void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalFailureMessage)
 {
 	if (!bSuccessfulLogin)
 	{
-		if (!OptionalMessage.IsEmpty())
-		{
-			TextBlock_SignInState->SetText(FText::FromString(OptionalMessage));
-		}
-		else
+		if (OptionalFailureMessage.IsEmpty())
 		{
 			TextBlock_SignInState->SetText(FText::FromString("Not Signed In"));
 		}
+		else
+		{
+			TextBlock_SignInState->SetText(FText::FromString(OptionalFailureMessage));
+		}
 		TextBlock_Username->SetText(FText());
 		Button_Login_Register->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		
+		bFadeInOverlayTextOnButtonPress = true;
+		CurrentLoginMethod = ELoginMethod::None;
 		return;
 	}
-	if (!OptionalMessage.IsEmpty())
+
+	
+	if (CurrentLoginMethod == ELoginMethod::Steam)
 	{
-		TextBlock_SignInState->SetText(FText::FromString(OptionalMessage));
+		TextBlock_SignInState->SetText(FText::FromString("Signed in through Steam as"));
+		Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else if (CurrentLoginMethod == ELoginMethod::Legacy)
+	{
+		TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
+		Button_Login_Register->ChangeButtonText(FText::FromString("Login Through Steam"));
 	}
 	else
 	{
-		TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
+		TextBlock_SignInState->SetText(FText::FromString("Unhandled Login Method"));
 	}
+
 	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.DisplayName));
-	Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
+	
+	bFadeInScoreBrowserOnButtonPress = true;
+	CurrentLoginMethod = ELoginMethod::None;
 }
 
 void UMainMenuWidget::OnLoginWidgetExitAnimationCompleted()
@@ -145,7 +177,8 @@ void UMainMenuWidget::OnLoginWidgetExitAnimationCompleted()
 // ReSharper disable once CppPassValueParameterByConstReference
 void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 {
-	OnLoginResponse.BindLambda([&] (const FLoginResponse& Response, const FString& ResponseMsg, int ResponseCode)
+	CurrentLoginMethod = ELoginMethod::Legacy;
+	OnLoginResponse.BindLambda([this, LoginPayload] (const FLoginResponse& Response, const FString& ResponseMsg, int ResponseCode)
 	{
 		if (ResponseCode != 200)
 		{
@@ -174,7 +207,7 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 			SavePlayerSettings(PlayerSettingsToSave);
 			TextBlock_SignInState->SetText(FText::FromString("Logging in to web browser..."));
 
-			// Callback function for this will be OnURLChangedResult_ScoresBrowser
+			// Callback function for this will be OnURLChangedResult_ScoresWidget
 			ScoresWidget->LoginUserBrowser(LoginPayload, PlayerSettingsToSave.UserID);
 		}
 		if (OnLoginResponse.IsBound())
