@@ -204,7 +204,7 @@ private:
 	FExtrema GenerateBoxExtremaGrid() const;
 
 	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnArea IsCurrentlyManaged flag */
-	int32 AddToManagedTargets(ATarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea);
+	int32 AddToManagedTargets(ATarget* SpawnTarget);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);

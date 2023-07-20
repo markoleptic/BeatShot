@@ -367,11 +367,14 @@ public:
 	/** Adds/filters valid spawn locations for a Bordering TargetActivationSelectionPolicy */
 	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
 
-	/** Filters out any locations that correspond to recent points flagged as activated */
+	/** Filters out any locations that correspond to areas flagged as activated */
 	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations) const;
 
-	/** Filters out any locations that correspond to recent points flagged as recent */
+	/** Filters out any locations that correspond to areas flagged as recent */
 	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations) const;
+
+	/** Filters out any locations that correspond to areas flagged as managed */
+	void HandleFilterManaged(TArray<FVector>& ValidSpawnLocations) const;
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const;

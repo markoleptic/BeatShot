@@ -241,10 +241,10 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 		FTransform(FRotator::ZeroRotator, InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale()),
 		this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Target->Init(BSConfig.TargetConfig);
-	Target->FinishSpawning(FTransform(), true);
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
 	InSpawnArea->SetTargetGuid(Target->GetGuid());
-	AddToManagedTargets(Target, InSpawnArea);
+	Target->FinishSpawning(FTransform(), true);
+	AddToManagedTargets(Target);
 	return Target;
 }
 
@@ -328,13 +328,9 @@ void ATargetManager::HandleRuntimeSpawnAndActivation()
 				ActivateTarget(SpawnedTarget);
 				NumberToActivate--;
 			}
-			FindNextTargetProperties();
 		}
+		FindNextTargetProperties();
 	}
-
-	// TODO: Still need to handle activating targets without spawning one? or maybe HandleActivateExistingTargets will take care of it...
-	// TODO: Without being activated, the spawned target won't show up when finding next SpawnArea.
-	// TODO: Might need to add a parameter to specify including deactivated managed points
 }
 
 void ATargetManager::HandleActivateExistingTargets() 
@@ -589,7 +585,7 @@ void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionC
 	
 }
 
-// Finding next Point
+// Finding next spawn location and scale
 
 void ATargetManager::FindNextTargetProperties()
 {
@@ -840,9 +836,9 @@ FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 	return FExtrema(FVector(GetBoxOrigin().X, MinY, MinZ), FVector(GetBoxOrigin().X, MaxY, MaxZ));
 }
 
-int32 ATargetManager::AddToManagedTargets(ATarget* SpawnTarget, const USpawnArea* AssociatedSpawnArea)
+int32 ATargetManager::AddToManagedTargets(ATarget* SpawnTarget)
 {
-	SpawnAreaManager->FlagSpawnAreaAsManaged(AssociatedSpawnArea->GetTargetGuid());
+	SpawnAreaManager->FlagSpawnAreaAsManaged(SpawnTarget->GetGuid());
 	TArray<TObjectPtr<ATarget>> Targets = GetManagedTargets();
 	const int32 NewIndex = Targets.Add(TObjectPtr<ATarget>(SpawnTarget));
 	ManagedTargets = Targets;
@@ -872,8 +868,8 @@ void ATargetManager::SetBoxExtents_Dynamic() const
 	const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
 	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Y, GetBoxExtents_Static().Y * 0.5f, NewFactor);
 	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Z, GetBoxExtents_Static().Z * 0.5f, NewFactor);
-	const float Y = FMath::GridSnap(LerpY, SpawnAreaManager->GetSpawnMemoryIncY());
-	const float Z = FMath::GridSnap(LerpZ, SpawnAreaManager->GetSpawnMemoryIncZ());
+	const float Y = FMath::GridSnap<float>(LerpY, SpawnAreaManager->GetSpawnMemoryIncY());
+	const float Z = FMath::GridSnap<float>(LerpZ, SpawnAreaManager->GetSpawnMemoryIncZ());
 	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
 	UpdateSpawnVolume();
 }
