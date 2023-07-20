@@ -9,6 +9,7 @@
 #include "OverlayWidgets/LoginWidget.h"
 #include "OverlayWidgets/FeedbackWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
+#include "BSWidgetInterface.h"
 #include "WidgetComponents/MenuButton.h"
 
 void UMainMenuWidget::NativeConstruct()
@@ -16,9 +17,11 @@ void UMainMenuWidget::NativeConstruct()
 	Super::NativeConstruct();
 	
 	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresWidget);
-	LoginWidget->OnLoginButtonClicked.AddDynamic(this, &UMainMenuWidget::OnButtonClicked_Login);
-	LoginWidget->OnExitAnimationCompletedDelegate.AddDynamic(this, &ThisClass::OnLoginWidgetExitAnimationCompleted);
-	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	LoginWidget->OnLoginButtonClicked.AddUObject(this, &UMainMenuWidget::OnButtonClicked_Login);
+	
+	LoginWidget->OnExitAnimationCompletedDelegate.AddUObject(this, &ThisClass::OnWidgetExitAnimationCompleted, Button_Login_Register);
+	FeedbackWidget->OnExitAnimationCompletedDelegate.AddUObject(this, &ThisClass::OnWidgetExitAnimationCompleted, Button_Feedback);
+
 	LoginWidget->Button_RetrySteamLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Login_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 
@@ -26,7 +29,8 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Scores);
 	MenuButton_Scores->SetDefaults(Box_Scores, MenuButton_Settings);
 	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_FAQ);
-	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_Quit);
+	MenuButton_FAQ->SetDefaults(Box_FAQ, Button_Feedback);
+	Button_Feedback->SetDefaults(nullptr, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(Box_PatchNotes, MenuButton_PatchNotes);
 	
 	MenuButton_PatchNotes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
@@ -34,6 +38,7 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_Scores->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Settings->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_FAQ->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
+	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	
 	WebBrowserOverlayPatchNotes->InitScoreBrowser(EScoreBrowserType::PatchNotes);
@@ -86,6 +91,11 @@ void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 			bFadeInOverlayTextOnButtonPress = false;
 		}
 	}
+	// Feedback button
+	else if (Button == Button_Feedback)
+	{
+		FeedbackWidget->ShowFeedbackWidget();
+	}
 	
 	// Menu button
 	if (MenuButton->GetBox())
@@ -107,13 +117,6 @@ void UMainMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	{
 		LoginWidget->ShowSteamLoginScreen();
 	}
-
-	// Feedback button
-	else if (Button == Button_Feedback)
-	{
-		FeedbackWidget->ShowFeedbackWidget();
-	}
-
 	else if (Button == LoginWidget->Button_RetrySteamLogin)
 	{
 		CurrentLoginMethod = ELoginMethod::Steam;
@@ -127,19 +130,23 @@ void UMainMenuWidget::OnURLChangedResult_ScoresWidget(const bool bSuccess)
 	UpdateLoginState(bSuccess);
 }
 
-void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalFailureMessage)
+void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalStringTableKey)
 {
 	if (!bSuccessfulLogin)
 	{
-		if (OptionalFailureMessage.IsEmpty())
+		if (OptionalStringTableKey.IsEmpty())
 		{
-			TextBlock_SignInState->SetText(FText::FromString("Not Signed In"));
+			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NotSignedIn"));
 		}
 		else
 		{
-			TextBlock_SignInState->SetText(FText::FromString(OptionalFailureMessage));
+			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey(OptionalStringTableKey));
 		}
+		// Collapse username
 		TextBlock_Username->SetText(FText());
+		TextBlock_Username->SetVisibility(ESlateVisibility::Collapsed);
+
+		// Show Login Button
 		Button_Login_Register->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		
 		bFadeInOverlayTextOnButtonPress = true;
@@ -150,28 +157,33 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FStrin
 	
 	if (CurrentLoginMethod == ELoginMethod::Steam)
 	{
-		TextBlock_SignInState->SetText(FText::FromString("Signed in through Steam as"));
+		TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_SignedInSteam"));
+		// Only collapse login button if signed in through steam
 		Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	else if (CurrentLoginMethod == ELoginMethod::Legacy)
 	{
-		TextBlock_SignInState->SetText(FText::FromString("Signed in as"));
-		Button_Login_Register->ChangeButtonText(FText::FromString("Login Through Steam"));
+		TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_SignedInAs"));
+		Button_Login_Register->ChangeButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_Register_SteamButtonText"));
+		LoginWidget->SetIsLegacySignedIn(true);
 	}
 	else
 	{
 		TextBlock_SignInState->SetText(FText::FromString("Unhandled Login Method"));
+		UE_LOG(LogTemp, Warning, TEXT("Unhandled Login Method in Main Menu"));
 	}
 
+	// Show username
 	TextBlock_Username->SetText(FText::FromString(LoadPlayerSettings().User.DisplayName));
+	TextBlock_Username->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	
 	bFadeInScoreBrowserOnButtonPress = true;
 	CurrentLoginMethod = ELoginMethod::None;
 }
 
-void UMainMenuWidget::OnLoginWidgetExitAnimationCompleted()
+void UMainMenuWidget::OnWidgetExitAnimationCompleted(UMenuButton* ButtonToSetInactive)
 {
-	Button_Login_Register->SetInActive();
+	ButtonToSetInactive->SetInActive();
 }
 
 // ReSharper disable once CppPassValueParameterByConstReference
@@ -205,7 +217,7 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 			PlayerSettingsToSave.RefreshCookie = Response.RefreshToken;
 			PlayerSettingsToSave.bHasLoggedInBefore = true;
 			SavePlayerSettings(PlayerSettingsToSave);
-			TextBlock_SignInState->SetText(FText::FromString("Logging in to web browser..."));
+			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("SignInState_LoggingWebBrowser"));
 
 			// Callback function for this will be OnURLChangedResult_ScoresWidget
 			ScoresWidget->LoginUserBrowser(LoginPayload, PlayerSettingsToSave.UserID);
@@ -215,6 +227,6 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 			OnLoginResponse.Unbind();
 		}
 	});
-	TextBlock_SignInState->SetText(FText::FromString("Sending HTTP login request..."));
+	TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("SignInState_SendingRequest"));
 	LoginUser(LoginPayload, OnLoginResponse);
 }

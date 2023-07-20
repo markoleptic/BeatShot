@@ -28,6 +28,7 @@
 void ABSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	
 	/*if (HasAuthority())
 	{
 		if (IsLocalController())
@@ -344,14 +345,15 @@ void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket,
 	if (AuthTicket.IsEmpty())
 	{
 		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
-		MainMenu->UpdateLoginState(false, "Steam Sign In Failed");
+		MainMenu->UpdateLoginState(false, "SignInState_SteamSignInFailed");
 		MainMenu->TryFallbackLogin();
 	}
 	else
 	{
-		MainMenu->ScoresWidget->OnURLChangedResult.AddLambda([&OnFinishedUsingAuthTicket] (const bool bSuccess)
+		FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda([&OnFinishedUsingAuthTicket, &Handle] (const bool bSuccess)
 		{
 			if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
+			Handle.Reset();
 		});
 		MainMenu->LoginScoresWidgetWithSteam(FString(AuthTicket));
 	}

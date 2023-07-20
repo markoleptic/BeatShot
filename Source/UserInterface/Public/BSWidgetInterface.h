@@ -15,6 +15,8 @@ class UTooltipWidget;
 class UEditableTextBox;
 class USlider;
 
+DECLARE_MULTICAST_DELEGATE(FOnExitAnimationCompleted);
+
 /** Enum representing a setting button */
 UENUM(BlueprintType)
 enum class ESettingButtonType : uint8
@@ -98,6 +100,17 @@ public:
 		if (InKey.IsEmpty() || StringTableEntry.IsEmpty())
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Couldn't find String Table entry for key: %s"), *InKey);
+		}
+		return StringTableEntry;
+	}
+
+	/** Returns the String Table entry from the ST_Widgets string table, provided a valid key */
+	static FText GetWidgetTextFromKey(const FString& InKey)
+	{
+		const FText StringTableEntry = FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", InKey);
+		if (InKey.IsEmpty() || StringTableEntry.IsEmpty())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Couldn't find ST_Widgets entry for key: %s"), *InKey);
 		}
 		return StringTableEntry;
 	}

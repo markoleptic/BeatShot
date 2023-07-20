@@ -6,6 +6,7 @@
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "BSWidgetInterface.h"
 #include "LoginWidget.generated.h"
 
 class UBackgroundBlur;
@@ -15,8 +16,7 @@ class UTextBlock;
 class UBSButton;
 class UHorizontalBox;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLoginButtonClicked, const FLoginPayload, LoginPayload);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnExitAnimationCompleted);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnLoginButtonClicked, const FLoginPayload LoginPayload);
 
 /** Widget used to prompt a user to login and handle login through HTTP requests */
 UCLASS()
@@ -38,10 +38,12 @@ public:
 	/** Sets the Text in the Box_Error given a key for the ST_Login string table */
 	void SetErrorText(const FString& Key);
 
+	void SetIsLegacySignedIn(const bool bIsSignedIn);
+
 	/** Broadcasts the user's login info to WebBrowserOverlay in order to log them into the web browser */
-	UPROPERTY(BlueprintAssignable)
 	FOnLoginButtonClicked OnLoginButtonClicked;
 
+	/** Broadcast when the widget is hidden after animations have completed */
 	FOnExitAnimationCompleted OnExitAnimationCompletedDelegate;
 
 protected:
@@ -124,4 +126,6 @@ protected:
 	void PlayFadeInSteamLogin() { PlayAnimationReverse(FadeOutSteam); }
 	UFUNCTION()
 	void PlayFadeOutSteamLogin() { PlayAnimationForward(FadeOutSteam); }
+
+	bool bIsLegacySignedIn = false;
 };

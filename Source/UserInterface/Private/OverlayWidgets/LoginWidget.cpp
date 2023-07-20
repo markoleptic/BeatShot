@@ -62,6 +62,14 @@ void ULoginWidget::SetErrorText(const FString& Key)
 	TextBlock_Error->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
 }
 
+void ULoginWidget::SetIsLegacySignedIn(const bool bIsSignedIn)
+{
+	bIsLegacySignedIn = bIsSignedIn;
+	Button_FromSteam_ToLegacyLogin->SetVisibility(ESlateVisibility::Collapsed);
+	TextBlock_SteamBody->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	Button_NoSteamLogin->ChangeButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NoSteamLoginButtonText"));
+}
+
 void ULoginWidget::InitializeExit()
 {
 	if (IsAnimationPlaying(FadeOutContinueWithout))
@@ -112,8 +120,16 @@ void ULoginWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	}
 	else if (Button == Button_NoSteamLogin)
 	{
-		PlayFadeOutSteamLogin();
-		PlayFadeInContinueWithout();
+		if (bIsLegacySignedIn)
+		{
+			PlayFadeOutSteamLogin();
+			InitializeExit();
+		}
+		else
+		{
+			PlayFadeOutSteamLogin();
+			PlayFadeInContinueWithout();
+		}
 	}
 	else if (Button == Button_Login)
 	{

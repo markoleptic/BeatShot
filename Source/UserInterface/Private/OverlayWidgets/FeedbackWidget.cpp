@@ -105,5 +105,6 @@ void UFeedbackWidget::SetCollapsedAndUnbindDelegates()
 		UnbindFromAnimationFinished(FadeOutResponse, FadeOutResponseDelegate);
 		FadeOutResponseDelegate.Unbind();
 	}
+	OnExitAnimationCompletedDelegate.Broadcast();
 	SetVisibility(ESlateVisibility::Collapsed);
 }

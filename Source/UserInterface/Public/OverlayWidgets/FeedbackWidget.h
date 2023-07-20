@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
+#include "BSWidgetInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "FeedbackWidget.generated.h"
 
@@ -20,6 +21,9 @@ class USERINTERFACE_API UFeedbackWidget : public UUserWidget, public IHttpReques
 
 public:
 	void ShowFeedbackWidget();
+
+	/** Broadcast when the widget is hidden after animations have completed */
+	FOnExitAnimationCompleted OnExitAnimationCompletedDelegate;
 	
 protected:
 

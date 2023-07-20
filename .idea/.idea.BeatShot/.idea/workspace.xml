@@ -85,24 +85,19 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Login.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_Login.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerController.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/BeatShotGlobal.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/BeatShotGlobal.Build.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/LocalBoost/LocalBoost.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/LocalBoost/LocalBoost.Build.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/FeedbackWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/FeedbackWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/LoginWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/WebBrowserWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/WebBrowserWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/MainMenuWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/MenuWidgets/MainMenuWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/FeedbackWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/FeedbackWidget.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/LoginWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/LoginWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/ScoreBrowserWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/ScoreBrowserWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -306,35 +301,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "DebuggerViewTab_PTCS_FirstProportionKey": "0.4473151",
-    "DebuggerViewTab_PTCS_LastProportionKey": "0.0",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "TODO_SCOPE": "All Places",
-    "WebServerToolWindowFactoryState": "false",
-    "XThreadsFramesViewSplitterKey": "0.4474708",
-    "ezargs.lastUsed": "",
-    "git-widget-placeholder": "develop",
-    "ignore.virus.scanning.warn.message": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "Errors",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_ADD_EXTERNAL_FILES&quot;: &quot;true&quot;,
+    &quot;DebuggerViewTab_PTCS_FirstProportionKey&quot;: &quot;0.4473151&quot;,
+    &quot;DebuggerViewTab_PTCS_LastProportionKey&quot;: &quot;0.0&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;TODO_SCOPE&quot;: &quot;All Places&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.4474708&quot;,
+    &quot;ezargs.lastUsed&quot;: &quot;&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "rider.external.source.directories": [
-      "C:\\Users\\marka\\AppData\\Roaming\\JetBrains\\Rider2023.1\\resharper-host\\DecompilerCache",
-      "C:\\Users\\marka\\AppData\\Roaming\\JetBrains\\Rider2023.1\\resharper-host\\SourcesCache",
-      "C:\\Users\\marka\\AppData\\Local\\Symbols\\src"
+  &quot;keyToStringList&quot;: {
+    &quot;rider.external.source.directories&quot;: [
+      &quot;C:\\Users\\marka\\AppData\\Roaming\\JetBrains\\Rider2023.1\\resharper-host\\DecompilerCache&quot;,
+      &quot;C:\\Users\\marka\\AppData\\Roaming\\JetBrains\\Rider2023.1\\resharper-host\\SourcesCache&quot;,
+      &quot;C:\\Users\\marka\\AppData\\Local\\Symbols\\src&quot;
     ]
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="C++ Project.BeatShot">
     <configuration name="BaseTextureBuildWorker" type="CppProject" factoryName="C++ Project" folderName="Programs">
       <configuration_1>
@@ -27155,7 +27150,8 @@
       <workItem from="1689439514822" duration="8895000" />
       <workItem from="1689710333056" duration="1153000" />
       <workItem from="1689711959313" duration="14224000" />
-      <workItem from="1689779124968" duration="18872000" />
+      <workItem from="1689779124968" duration="19515000" />
+      <workItem from="1689867557275" duration="5912000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

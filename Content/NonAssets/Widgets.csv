@@ -176,21 +176,28 @@ Interact_MoveDown,Hold Shift+E to move platform down
 Interact_MoveUp,Hold E to move platform up
 Login_BrowserLoginErrorText,"The game received a valid response from the server, but couldn't log you in to the website in the browser."
 Login_ContinueWithoutBodyTextLogin,"You won't be able to see your played game data, but it will still be saved locally if you decide to sign in later."
-Login_ContinueWithoutCancelButtonTextLogin,Go Back and Sign In
-Login_ContinueWithoutConfirmButtonText,Yes I'm Sure
+Login_ContinueWithoutCancelButtonTextLogin,Go back and sign in
+Login_ContinueWithoutConfirmButtonText,Yes I'm sure
 Login_ContinueWithoutTitleTextLogin,Are you sure you want to continue without signing in?
 Login_EmailText,Email:
 Login_GotoRegisterButtonText,Don't have an account?
 Login_InvalidCredentialsText,"Incorrect username, email, and/or password."
 Login_LoginButtonText,Login
-Login_LoginErrorText,Something went wrong or your login expired. Please sign again to see your scores.
+Login_LoginErrorText,Something went wrong or your login expired. Please sign again.
 Login_LoginSubtitleText,You can use your username OR email.
 Login_LoginTitleText,Sign In
 Login_MissingInfoError,Please enter your username/email and password to login.
 Login_MissingInfoErrorText,Please enter your username/email and password to login.
+Login_NoSteamLoginButtonText,Continue without Steam sign in
 Login_NoLoginButtonText,Continue without signing in
-,
-,
+Login_SignedInAs,Signed in as
+Login_SignedInSteam,Signed in through Steam as
+Login_Register_SteamButtonText,Login through Steam
+Login_SteamBody,"Something went wrong when signing in through Steam, but you're logged in using your BeatShot account."
+Login_NotSignedIn,Not signed in
+SignInState_LoggingWebBrowser,Logging in to web browser
+SignInState_SteamSignInFailed,Steam sign in failed
+SignInState_SendingRequest,Sending HTTP login request
 Login_PasswordText,Password:
 Login_TimeOutErrorText,Couldn't connect to BeatShot servers.
 Login_UsernameText,Username:

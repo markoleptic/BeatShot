@@ -51,7 +51,7 @@ public:
 	UScoreBrowserWidget* ScoresWidget;
 	
 	UFUNCTION()
-	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalFailureMessage = "");
+	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalStringTableKey = "");
 
 	/** Returns OnPlayerSettingsChangedDelegate_User, the delegate that is broadcast when this class saves User settings */
 	FOnPlayerSettingsChanged_User& GetUserDelegate() { return OnPlayerSettingsChangedDelegate_User; }
@@ -84,7 +84,7 @@ protected:
 	UVerticalBox* Box_FAQ;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_Feedback;
+	UMenuButton* Button_Feedback;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* Button_Login_Register;
 
@@ -125,7 +125,7 @@ private:
 	UFUNCTION()
 	void OnURLChangedResult_ScoresWidget(const bool bSuccess);
 	UFUNCTION()
-	void OnLoginWidgetExitAnimationCompleted();
+	void OnWidgetExitAnimationCompleted(UMenuButton* ButtonToSetInactive);
 
 	FOnLoginResponse OnLoginResponse;
 
