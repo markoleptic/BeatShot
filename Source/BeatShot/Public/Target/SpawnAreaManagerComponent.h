@@ -310,15 +310,15 @@ public:
 
 	/** Returns a filtered array containing only SpawnAreas flagged as activated or recent */
 	TArray<USpawnArea*> GetActivatedOrRecentSpawnAreas() const;
+
+	/** Returns a filtered array containing SpawnAreas flagged as managed, activated, or recent */
+	TArray<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
 	
 	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
 	void RefreshRecentFlags();
 
 	/** Removes all locations that are occupied by activated and recent targets, readjusted by scale if needed */
 	void RemoveOverlappingSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale) const;
-
-	/** Removes locations from the InArray that don't have an adjacent vertex to the top and to the left. Used so that it's safe to spawn a target within a square area */
-	void RemoveSharedVertices(TArray<FVector>& SpawnLocations, const FExtrema& Extrema) const;
 
 	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
 	TArray<USpawnArea*> GetSpawnAreas() const { return SpawnAreas; }

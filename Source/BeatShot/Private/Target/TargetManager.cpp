@@ -303,11 +303,17 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 void ATargetManager::HandleRuntimeSpawnAndActivation()
 {
 	int32 NumberToSpawn = GetNumberOfRuntimeTargetsToSpawn();
-	int32 NumberToActivate = GetNumberOfTargetsToActivate();
-	
+	int32 NumberToActivate = GetNumberOfTargetsToActivate(NumberToSpawn);
+
+	// If not limit on activation, activate all spawned targets
+	if (NumberToActivate == -1)
+	{
+		NumberToActivate = NumberToSpawn;
+	}
+
+	// Only spawn targets that can be activated
 	if (!BSConfig.TargetConfig.bAllowSpawnWithoutActivation)
 	{
-		// Only spawn targets that can be activated
 		if (NumberToSpawn > NumberToActivate)
 		{
 			NumberToSpawn = NumberToActivate;
@@ -352,10 +358,9 @@ void ATargetManager::HandleActivateExistingTargets()
 	{
 		return;
 	}
+
+	const int32 NumToActivate = GetNumberOfTargetsToActivate(SpawnAreaManager->GetDeactivatedManagedSpawnAreas().Num());
 	
-	const int32 NumToActivate = GetNumberOfTargetsToActivate();
-	
-	// Points that are referencing managed targets, but are not activated
 	for (int i = 0; i < NumToActivate; i++)
 	{
 		if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
@@ -435,26 +440,39 @@ int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
 	return NumAllowedToSpawn;
 }
 
-int32 ATargetManager::GetNumberOfTargetsToActivate() const
+int32 ATargetManager::GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const
 {
 	// Depends on: MaxNumActivatedTargetsAtOnce, MinNumTargetsToActivateAtOnce, MaxNumTargetsToActivateAtOnce,
 	// DeactivatedManagedSpawnAreas, ActivatedSpawnAreas
-
-	int32 Min = BSConfig.TargetConfig.MinNumTargetsToActivateAtOnce;
-	int32 Max = BSConfig.TargetConfig.MaxNumTargetsToActivateAtOnce;
 	
-	// Set default max/min values
-	Max = Max == -1 ? 1 : Max;
-	Min = Min == -1 ? 1 : Min;
-	
-	// If no constraint on max number of targets activated at once, defer to Min/Max NumTargetsToActivateAtOnce
 	int32 Limit = BSConfig.TargetConfig.MaxNumActivatedTargetsAtOnce;
-	if (Limit == -1)
+	int32 MinToActivate = BSConfig.TargetConfig.MinNumTargetsToActivateAtOnce;
+	int32 MaxToActivate = BSConfig.TargetConfig.MaxNumTargetsToActivateAtOnce;
+	
+	// No constraints
+	if (Limit == -1 && MinToActivate == -1 && MaxToActivate == -1)
 	{
-		Limit = Max > Min ? Max : Min;
+		return MaxPossibleToActivate;
 	}
 	
-	// Check limit on max number of targets activated at once
+	// No min constraint, set to zero
+	if (MinToActivate == -1)
+	{
+		MinToActivate = 0;
+	}
+	
+	// No max constraint, set to MaxPossibleToActivate
+	if (MaxToActivate == -1)
+	{
+		MaxToActivate = MaxPossibleToActivate;
+	}
+
+	// No constraint on total activated at once
+	if (Limit == -1)
+	{
+		Limit = MaxPossibleToActivate;
+	}
+
 	const int32 NumCurrent = SpawnAreaManager->GetActivatedSpawnAreas().Num();
 	if (NumCurrent >= Limit)
 	{
@@ -463,13 +481,12 @@ int32 ATargetManager::GetNumberOfTargetsToActivate() const
 	
 	// Current limit is MaxNumActivatedTargetsAtOnce - Currently activated targets
 	const int32 CurrentLimit = Limit - NumCurrent;
-	
 	// Don't let Max exceed CurrentLimit
-	Max = Max > CurrentLimit ? CurrentLimit : Max;
+	MaxToActivate = MaxToActivate > CurrentLimit ? CurrentLimit : MaxToActivate;
 	// Don't let min exceed max
-	Min = Min > Max ? Max : Min;
+	MinToActivate = MinToActivate > MaxToActivate ? MaxToActivate : MinToActivate;
 	
-	return FMath::RandRange(Min, Max);
+	return FMath::RandRange(MinToActivate, MaxToActivate);
 }
 
 void ATargetManager::SpawnUpfrontOnlyTargets()

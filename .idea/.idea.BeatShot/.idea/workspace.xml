@@ -85,9 +85,6 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_SphereTarget.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_SphereTarget.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Lighting.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Lighting.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/SpawnAreaManagerComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/SpawnAreaManagerComponent.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Target/SpawnAreaManagerComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/SpawnAreaManagerComponent.h" afterDir="false" />
@@ -27066,7 +27063,8 @@
       <workItem from="1689877446698" duration="2154000" />
       <workItem from="1689879817571" duration="2030000" />
       <workItem from="1689883702073" duration="1838000" />
-      <workItem from="1689885639185" duration="7597000" />
+      <workItem from="1689885639185" duration="7794000" />
+      <workItem from="1689957761980" duration="6952000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

@@ -134,7 +134,7 @@ private:
 	int32 GetNumberOfRuntimeTargetsToSpawn() const;
 
 	/** Returns the number of targets that are allowed to be activated at once */
-	int32 GetNumberOfTargetsToActivate() const;
+	int32 GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const;
 
 	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
 	void HandleActivateExistingTargets();
