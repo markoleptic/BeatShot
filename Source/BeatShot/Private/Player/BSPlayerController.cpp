@@ -118,7 +118,6 @@ void ABSPlayerController::ShowMainMenu()
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetCrossHairDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetUserDelegate());
-	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetUserDelegate_Input());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->GetUserDelegate());
 	MainMenu->AddToViewport();
 	

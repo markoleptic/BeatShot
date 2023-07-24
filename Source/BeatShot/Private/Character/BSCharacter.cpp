@@ -247,7 +247,6 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 	Subsystem->ClearAllMappings();
 	/* Add each mapping context, along with their priority values. Higher values out-prioritize lower values */
 	Subsystem->AddMappingContext(BaseMappingContext, BaseMappingPriority);
-
 	if (const UBSInputConfig* LoadedConfig = InputConfig)
 	{
 		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(PlayerInputComponent);

@@ -9,11 +9,9 @@
 #include "SettingsMenuWidget_Game.h"
 #include "SettingsMenuWidget_Input.h"
 #include "SettingsMenuWidget_VideoAndSound.h"
-#include "SettingsMenuWidget_Sensitivity.h"
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
-class USettingsMenuWidget_Input;
 class UBSButton;
 class UMenuButton;
 class UVerticalBox;
@@ -45,11 +43,8 @@ public:
 	/** Returns the UAASettings widget's OnPlayerSettingsChangedDelegate_AudioAnalyzer, which is broadcast when the widget changes Audio Analyzer Settings */
 	FOnPlayerSettingsChanged_AudioAnalyzer& GetAudioAnalyzerDelegate() const { return AudioAnalyzer_Widget->GetPublicAudioAnalyzerSettingsChangedDelegate(); }
 
-	/** Returns the USensitivity widget's OnPlayerSettingsChangedDelegate_User, which is broadcast when the widget changes User Settings */
-	FOnPlayerSettingsChanged_User& GetUserDelegate() const { return Sensitivity_Widget->GetPublicUserSettingsChangedDelegate();}
-
-	/** TEMP */
-	FOnPlayerSettingsChanged_User& GetUserDelegate_Input() const { return Input_Widget->GetPublicUserSettingsChangedDelegate();}
+	/** Returns the UInputSettings widget's OnPlayerSettingsChangedDelegate_User, which is broadcast when the widget changes User Settings */
+	FOnPlayerSettingsChanged_User& GetUserDelegate() const { return Input_Widget->GetPublicUserSettingsChangedDelegate();}
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -71,8 +66,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* AudioAnalyzer;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Sensitivity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* CrossHair;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Input;
@@ -85,8 +78,6 @@ protected:
 	USettingsMenuWidget_Game* Game_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget_VideoAndSound* VideoAndSound_Widget;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USettingsMenuWidget_Sensitivity* Sensitivity_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget_CrossHair* CrossHair_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -105,7 +96,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_AudioAnalyzer;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_Sensitivity;
+	UMenuButton* MenuButton_Input;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_CrossHair;
 

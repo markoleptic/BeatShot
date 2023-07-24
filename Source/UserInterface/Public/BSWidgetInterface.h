@@ -24,7 +24,7 @@ enum class ESettingButtonType : uint8
 	None UMETA(DisplayName="None"),
 	Save UMETA(DisplayName="Save"),
 	Reset UMETA(DisplayName="Reset"),
-	Revert UMETA(DisplayName="Reset"),
+	Revert UMETA(DisplayName="Revert"),
 	SaveAndRestart UMETA(DisplayName="Save And Restart"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ESettingButtonType, ESettingButtonType::Save, ESettingButtonType::SaveAndRestart);
