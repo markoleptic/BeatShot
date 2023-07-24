@@ -6,6 +6,7 @@
 #include "GameplayTagContainer.h"
 #include "GlobalConstants.h"
 #include "NISLibrary.h"
+#include "InputCoreTypes.h"
 #include "StreamlineLibraryDLSSG.h"
 #include "StreamlineLibraryReflex.h"
 #include "GlobalStructs.generated.h"
@@ -1522,6 +1523,9 @@ struct FPlayerSettings_User
 	UPROPERTY(BlueprintReadOnly)
 	bool bHasSeenRegisterPopup;
 
+	UPROPERTY(BlueprintReadOnly)
+	TMap<FName, FKey> Keybindings;
+
 	FPlayerSettings_User()
 	{
 		Sensitivity = DefaultSensitivity;
@@ -1530,6 +1534,7 @@ struct FPlayerSettings_User
 		RefreshCookie = FString();
 		bNightModeUnlocked = false;
 		bHasSeenRegisterPopup = false;
+		Keybindings = TMap<FName, FKey>();
 	}
 };
 

@@ -18,7 +18,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
-#include "EnhancedInputComponent.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "Components/CapsuleComponent.h"
 #include "Equipment/BSEquipmentManagerComponent.h"

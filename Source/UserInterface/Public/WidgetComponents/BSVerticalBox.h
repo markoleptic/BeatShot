@@ -18,7 +18,7 @@ class USERINTERFACE_API UBSVerticalBox : public UVerticalBox
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	
 public:
-	/** Updates the brush colors of the horizontal boxes contained anywhere inside the box */
+	/** Updates the brush colors of the BS horizontal boxes one level below any BS vertical box inside this widget */
 	void UpdateBrushColors();
 
 private:

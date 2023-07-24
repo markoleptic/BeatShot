@@ -821,7 +821,7 @@ FVector ATargetManager::GetRandomMovingTargetEndLocation(const FVector& Location
 	}
 
 	const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
-	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * TargetSpeed * BSConfig.TargetConfig.TargetSpawnCD;
+	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * FVector(TargetSpeed) * FVector(BSConfig.TargetConfig.TargetSpawnCD);
 }
 
 FExtrema ATargetManager::GetBoxExtrema(const bool bDynamic) const

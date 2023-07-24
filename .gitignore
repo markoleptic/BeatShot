@@ -103,6 +103,7 @@ Config/DefaultEngine.ini
 Config/DefaultGame.ini
 Content/Levels/Range.umap
 Content/ModularConcertStage
+Content/AdvancedGlassPack
 Windows/
 Plugins/BeatShotAudioAnalyzer
 Content/MetaHumans
@@ -115,5 +116,6 @@ MSPresets/
 Megascans/
 ResearchMegaPack/
 Characters/
+
 SDATAPROVIDERACTIVITYFILTER.ipch
 SMSWINDOW.ipch

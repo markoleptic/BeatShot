@@ -15,7 +15,7 @@ public class UserInterface : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib"
+			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput"
 		});
 
 		PublicIncludePaths.AddRange(new[]

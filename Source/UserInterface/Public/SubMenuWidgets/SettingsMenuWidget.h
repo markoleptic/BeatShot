@@ -7,11 +7,13 @@
 #include "SettingsMenuWidget_AudioAnalyzer.h"
 #include "SettingsMenuWidget_CrossHair.h"
 #include "SettingsMenuWidget_Game.h"
+#include "SettingsMenuWidget_Input.h"
 #include "SettingsMenuWidget_VideoAndSound.h"
 #include "SettingsMenuWidget_Sensitivity.h"
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
+class USettingsMenuWidget_Input;
 class UBSButton;
 class UMenuButton;
 class UVerticalBox;
@@ -45,6 +47,9 @@ public:
 
 	/** Returns the USensitivity widget's OnPlayerSettingsChangedDelegate_User, which is broadcast when the widget changes User Settings */
 	FOnPlayerSettingsChanged_User& GetUserDelegate() const { return Sensitivity_Widget->GetPublicUserSettingsChangedDelegate();}
+
+	/** TEMP */
+	FOnPlayerSettingsChanged_User& GetUserDelegate_Input() const { return Input_Widget->GetPublicUserSettingsChangedDelegate();}
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -69,6 +74,8 @@ protected:
 	UVerticalBox* Sensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* CrossHair;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVerticalBox* Input;
 
 	/* --------------- */
 	/* SubMenu Widgets */
@@ -84,6 +91,8 @@ protected:
 	USettingsMenuWidget_CrossHair* CrossHair_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget_AudioAnalyzer* AudioAnalyzer_Widget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USettingsMenuWidget_Input* Input_Widget;
 
 	/* ------------------ */
 	/* Navigation Buttons */

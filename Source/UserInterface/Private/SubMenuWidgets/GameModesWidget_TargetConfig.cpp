@@ -860,11 +860,11 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_RecentTargetMemoryPolicy(
 		BSBox_RecentTargetTimeLength->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		BSBox_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
 		break;
+	case ERecentTargetMemoryPolicy::None:
 	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
 		BSBox_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
 		BSBox_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
 		break;
-	case ERecentTargetMemoryPolicy::None:
 	case ERecentTargetMemoryPolicy::NumTargetsBased:
 		BSBox_MaxNumRecentTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		BSBox_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);

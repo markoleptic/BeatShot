@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{652E2636-47A6-FF9E-4592-85A8A4EFFDC9}",
+	"EngineAssociation": "{B9A36A20-4E86-EB0C-54B6-0CB5F5C1EA99}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -122,6 +122,15 @@
 		{
 			"Name": "Streamline",
 			"Enabled": true
+		},
+		{
+			"Name": "Bridge",
+			"Enabled": true,
+			"SupportedTargetPlatforms": [
+				"Win64",
+				"Mac",
+				"Linux"
+			]
 		}
 	],
 	"TargetPlatforms": [

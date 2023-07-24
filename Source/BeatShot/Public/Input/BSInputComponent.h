@@ -8,6 +8,7 @@
 #include "GameplayTagContainer.h"
 #include "HAL/Platform.h"
 #include "InputTriggers.h"
+#include "SaveLoadInterface.h"
 #include "Misc/AssertionMacros.h"
 #include "BSInputComponent.generated.h"
 
@@ -19,7 +20,7 @@ class UObject;
  *	Component used to manage input mappings, bindings, and GameplayTags using an input config data asset.
  */
 UCLASS()
-class UBSInputComponent : public UEnhancedInputComponent
+class UBSInputComponent : public UEnhancedInputComponent, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
