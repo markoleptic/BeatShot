@@ -45,6 +45,8 @@ struct FActionMappingInfo
 	}
 };*/
 
+class UScrollBox;
+class UInputKeySelector;
 class USavedTextWidget;
 class UBSButton;
 class UTextBlock;
@@ -70,6 +72,10 @@ protected:
 	/** Function bound to all InputMappingWidgets' OnKeySelected delegates */
 	void OnKeySelected(const FName MappingName, const FInputChord SelectedKey);
 
+	void OnIsSelectingKey(UInputKeySelector* KeySelector);
+
+	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
 	TArray<UInputMappingWidget*> FindInputMappingWidgetsByKey(const FKey InKey) const;
 	
 	UPROPERTY(EditDefaultsOnly)
@@ -83,6 +89,9 @@ protected:
 	UBSVerticalBox* BSBox_Movement;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* BSBox_Sensitivity;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UScrollBox* ScrollBox;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
 	UTextBlock* Value_CurrentSensitivity;
@@ -118,4 +127,9 @@ protected:
 	void OnButtonClicked_Revert();
 	
 	TArray<UInputMappingWidget*> InputMappingWidgets;
+
+	bool bIsSelectingKey = false;
+	
+	UPROPERTY()
+	UInputKeySelector* CurrentKeySelector;
 };

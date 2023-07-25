@@ -11,6 +11,7 @@ class UTextBlock;
 class UInputKeySelector;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnKeySelected, const FName MappingName, const FInputChord SelectedKey);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnIsSelectingKey, UInputKeySelector* KeySelector);
 
 UCLASS()
 class USERINTERFACE_API UInputMappingWidget : public UUserWidget
@@ -25,6 +26,8 @@ public:
 	/** Broadcast when a new Key has been selected from either of the InputKeySelectors */
 	FOnKeySelected OnKeySelected;
 
+	FOnIsSelectingKey OnIsSelectingKey;
+
 	/** Returns the array of Enhanced Action Key Mappings that this widget represents */
 	TArray<FEnhancedActionKeyMapping> GetActionKeyMappings() const { return ActionKeyMappings; }
 
@@ -32,7 +35,7 @@ public:
 	FName GetMappingNameForKey(const FKey InKey);
 
 	/** Calls SetSelectedKey with NewKey on the InputKeySelector with the matching OldKey */
-	FName SetKey(const FKey OldKey, const FKey NewKey);
+	void SetKey(const FName MappingName, const FKey NewKey);
 
 protected:
 

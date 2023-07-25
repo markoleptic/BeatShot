@@ -6,6 +6,8 @@
 #include "EnhancedActionKeyMapping.h"
 #include "EnhancedInputSubsystems.h"
 #include "Components/EditableTextBox.h"
+#include "Components/InputKeySelector.h"
+#include "Components/ScrollBox.h"
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -34,6 +36,7 @@ void USettingsMenuWidget_Input::NativeConstruct()
 
 void USettingsMenuWidget_Input::InitializeInputSettings(const FPlayerSettings_User& PlayerSettings_User)
 {
+	// Remove any existing InputMappingWidgets
 	for (UInputMappingWidget* InputMappingWidget : InputMappingWidgets)
 	{
 		InputMappingWidget->RemoveFromParent();
@@ -44,80 +47,71 @@ void USettingsMenuWidget_Input::InitializeInputSettings(const FPlayerSettings_Us
 	TempKeybindings = PlayerSettings_User.Keybindings;
 	Slider_Sensitivity->SetValue(Sensitivity);
 	Value_CurrentSensitivity->SetText(FText::AsNumber(Sensitivity));
-
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());
-	check(Subsystem);
 	
-	for (const TPair<FName, FKey>& Keybinding : TempKeybindings)
-	{
-		Subsystem->AddPlayerMappedKeyInSlot(Keybinding.Key, Keybinding.Value);
-	}
-	
-	TArray<FEnhancedActionKeyMapping> Mappings = Subsystem->GetAllPlayerMappableActionKeyMappings();
+	TArray<FEnhancedActionKeyMapping> Mappings = PlayerMappableInputConfig->GetPlayerMappableKeys();
 	TArray<TObjectPtr<const UInputAction>> Actions;
-	
+
+	// Extract all unique actions from PlayerMappable
 	for (FEnhancedActionKeyMapping& Mapping : Mappings)
 	{
 		Actions.AddUnique(Mapping.Action);
 	}
 	
+	// Extract all unique actions from PlayerMappable
 	for (const TObjectPtr<const UInputAction> Action : Actions)
 	{
+		// Find all Action Key Mappings for this Action
 		TArray<FEnhancedActionKeyMapping> ActionKeyMappings = Mappings.FilterByPredicate([&] (const FEnhancedActionKeyMapping& Mapping)
 		{
 			return Mapping.Action == Action;
 		});
+
+		// Replace user bound keybindings
+		for (FEnhancedActionKeyMapping& Mapping : ActionKeyMappings)
+		{
+			if (const FKey* Found = TempKeybindings.Find(Mapping.GetMappingName()))
+			{
+				Mapping.Key = *Found;
+			}
+		}
 		
-		FPlayerMappableKeyOptions Options = ActionKeyMappings[0].PlayerMappableOptions;
+		FText DisplayCategory = ActionKeyMappings[0].PlayerMappableOptions.DisplayCategory;
 		UInputMappingWidget* InputMappingWidget = CreateWidget<UInputMappingWidget>(this, InputMappingWidgetClass);
-		
-		if (Options.DisplayCategory.EqualTo(FText::FromString("Combat")))
+
+		// Place new widget in vertical box for category
+		if (DisplayCategory.EqualTo(FText::FromString("Combat")))
 		{
 			BSBox_Combat->AddChildToVerticalBox(InputMappingWidget);
 		}
-		else if (Options.DisplayCategory.EqualTo(FText::FromString("Movement")))
+		else if (DisplayCategory.EqualTo(FText::FromString("Movement")))
 		{
 			BSBox_Movement->AddChildToVerticalBox(InputMappingWidget);
 		}
 		
 		InputMappingWidget->Init(ActionKeyMappings);
 		InputMappingWidget->OnKeySelected.AddUObject(this, &ThisClass::OnKeySelected);
+		InputMappingWidget->OnIsSelectingKey.AddUObject(this, &ThisClass::OnIsSelectingKey);
 		
 		InputMappingWidgets.Add(InputMappingWidget);
 	}
-	
-	/*for (const FEnhancedActionKeyMapping& Mapping : Mappings)
-	{
-		FPlayerMappableKeyOptions Options = Mapping.PlayerMappableOptions;
-		
-		UInputMappingWidget* InputMappingWidget = CreateWidget<UInputMappingWidget>(this, InputMappingWidgetClass);
-		
-		if (Options.DisplayCategory.EqualTo(FText::FromString("Combat")))
-		{
-			BSBox_Combat->AddChildToVerticalBox(InputMappingWidget);
-		}
-		else if (Options.DisplayCategory.EqualTo(FText::FromString("Movement")))
-		{
-			BSBox_Movement->AddChildToVerticalBox(InputMappingWidget);
-		}
-		
-		TArray<FEnhancedActionKeyMapping> ActionKeyMappings = PlayerMappableInputConfig->GetKeysBoundToAction(Mapping.Action.Get());
-		InputMappingWidget->Init(ActionKeyMappings);
-		InputMappingWidget->OnKeySelected.AddUObject(this, &ThisClass::OnKeySelected);
 
-		UE_LOG(LogTemp, Display, TEXT("MappingName: %s"), *Mapping.GetMappingName().ToString());
-	}*/
 	UpdateBrushColors();
 }
 
 void USettingsMenuWidget_Input::OnKeySelected(const FName MappingName, const FInputChord SelectedKey)
 {
-	UE_LOG(LogTemp, Display, TEXT("NewKeySelected for %s: %s"), *MappingName.ToString(), *SelectedKey.GetInputText().ToString());
-	
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());
-	TArray<FEnhancedActionKeyMapping> Mappings = Subsystem->GetAllPlayerMappableActionKeyMappings();
-	
+	//UE_LOG(LogTemp, Display, TEXT("NewKeySelected for %s: %s"), *MappingName.ToString(), *SelectedKey.GetInputText().ToString());
+
+	// Key is Empty
+	if (SelectedKey.Key == FKey())
+	{
+		TempKeybindings.Remove(MappingName);
+		return;
+	}
+
+	// Check if any other keys are bound to this key if they aren't Empty
 	TArray<UInputMappingWidget*> Matching = FindInputMappingWidgetsByKey(SelectedKey.Key);
+
 	if (!Matching.IsEmpty())
 	{
 		for (UInputMappingWidget* InputMappingWidget : Matching)
@@ -125,21 +119,50 @@ void USettingsMenuWidget_Input::OnKeySelected(const FName MappingName, const FIn
 			FName FoundMappingName = InputMappingWidget->GetMappingNameForKey(SelectedKey.Key);
 			if (FoundMappingName != NAME_None && FoundMappingName != MappingName)
 			{
-				const FName OldMappingName = InputMappingWidget->SetKey(SelectedKey.Key, FKey());
-				Subsystem->RemovePlayerMappedKeyInSlot(OldMappingName);
+				InputMappingWidget->SetKey(FoundMappingName, FKey());
 			}
 		}
 	}
-
-	Subsystem->AddPlayerMappedKeyInSlot(MappingName, SelectedKey.Key);
 	
 	TempKeybindings.FindOrAdd(MappingName) = SelectedKey.Key;
-	
-	for (TPair<FName, FKey> Pair : TempKeybindings)
+}
+
+void USettingsMenuWidget_Input::OnIsSelectingKey(UInputKeySelector* KeySelector)
+{
+	// Lame workaround to allow Mouse Wheel Up and Mouse Wheel Down for InputKeySelectors
+	if (KeySelector == CurrentKeySelector)
 	{
-		UE_LOG(LogTemp, Display, TEXT("TempKeybindings:"));
-		UE_LOG(LogTemp, Display, TEXT("%s %s"), *Pair.Key.ToString(), *Pair.Value.ToString());
+		bIsSelectingKey = false;
+		CurrentKeySelector = nullptr;
+		ScrollBox->SetConsumeMouseWheel(EConsumeMouseWheel::WhenScrollingPossible);
+		return;
 	}
+
+	ScrollBox->SetConsumeMouseWheel(EConsumeMouseWheel::Never);
+	bIsSelectingKey = true;
+	CurrentKeySelector = KeySelector;
+}
+
+FReply USettingsMenuWidget_Input::NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	// Lame workaround to allow Mouse Wheel Up and Mouse Wheel Down for InputKeySelectors
+	if (bIsSelectingKey && CurrentKeySelector)
+	{
+		FInputChord Chord;
+		if (InMouseEvent.GetWheelDelta() > 0)
+		{
+			Chord.Key = FKey(EKeys::MouseScrollUp);
+		}
+		else
+		{
+			Chord.Key = FKey(EKeys::MouseScrollDown);
+		}
+		CurrentKeySelector->SetSelectedKey(Chord);
+		SetFocus();
+		bIsSelectingKey = false;
+		ScrollBox->SetConsumeMouseWheel(EConsumeMouseWheel::WhenScrollingPossible);
+	}
+	return Super::NativeOnMouseWheel(InGeometry, InMouseEvent);
 }
 
 TArray<UInputMappingWidget*> USettingsMenuWidget_Input::FindInputMappingWidgetsByKey(const FKey InKey) const
@@ -148,7 +171,7 @@ TArray<UInputMappingWidget*> USettingsMenuWidget_Input::FindInputMappingWidgetsB
 	{
 		return Widget->GetActionKeyMappings().ContainsByPredicate([&] (const FEnhancedActionKeyMapping& Mapping)
 		{
-			return Mapping.Key == InKey;
+			return Mapping.Key == InKey && Mapping.Key != FKey();
 		});
 	});
 }
@@ -198,14 +221,20 @@ void USettingsMenuWidget_Input::OnButtonClicked_BSButton(const UBSButton* Button
 void USettingsMenuWidget_Input::OnButtonClicked_Save()
 {
 	FPlayerSettings_User Settings_User = LoadPlayerSettings().User;
-	
 	Settings_User.Sensitivity = Slider_Sensitivity->GetValue();
-	Settings_User.Keybindings = TempKeybindings;
 	Value_CurrentSensitivity->SetText(FText::AsNumber(Slider_Sensitivity->GetValue()));
+	Settings_User.Keybindings = TempKeybindings;
+	
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());
+	Subsystem->RemoveAllPlayerMappedKeys();
+	for (const TPair<FName, FKey>& Keybinding : TempKeybindings)
+	{
+		Subsystem->AddPlayerMappedKeyInSlot(Keybinding.Key, Keybinding.Value);
+	}
+	
 	SavePlayerSettings(Settings_User);
-	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_Sensitivity"));
+	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_Input"));
 	SavedTextWidget->PlayFadeInFadeOut();
-
 }
 
 void USettingsMenuWidget_Input::OnButtonClicked_Reset()

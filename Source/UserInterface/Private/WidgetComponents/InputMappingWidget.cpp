@@ -14,22 +14,17 @@ void UInputMappingWidget::NativeConstruct()
 
 	InputKeySelectorSlot1->OnKeySelected.AddDynamic(this, &ThisClass::OnKeySelected_Slot1);
 	InputKeySelectorSlot2->OnKeySelected.AddDynamic(this, &ThisClass::OnKeySelected_Slot2);
+
+	ActionKeyMappings = TArray<FEnhancedActionKeyMapping>();
+	ActionKeyMappings.Init(FEnhancedActionKeyMapping(), 2);
 }
 
 void UInputMappingWidget::Init(const TArray<FEnhancedActionKeyMapping>& Mappings)
 {
 	ActionKeyMappings = Mappings;
 	TextBlock_KeyDescription->SetText(ActionKeyMappings[0].PlayerMappableOptions.DisplayName);
-	if (Mappings.Num() == 2)
-	{
-		InputKeySelectorSlot1->SetSelectedKey(Mappings[0].Key);
-
-		InputKeySelectorSlot2->SetSelectedKey(Mappings[1].Key);
-	}
-	else
-	{
-		InputKeySelectorSlot1->SetSelectedKey(Mappings[0].Key);
-	}
+	InputKeySelectorSlot1->SetSelectedKey(Mappings[0].Key);
+	InputKeySelectorSlot2->SetSelectedKey(Mappings[1].Key);
 }
 
 FName UInputMappingWidget::GetMappingNameForKey(const FKey InKey)
@@ -42,45 +37,43 @@ FName UInputMappingWidget::GetMappingNameForKey(const FKey InKey)
 	{
 		return ActionKeyMappings[0].GetMappingName();
 	}
-	if (ActionKeyMappings.Num() > 1 && InputKeySelectorSlot2->GetSelectedKey().Key == InKey)
+	if (InputKeySelectorSlot2->GetSelectedKey().Key == InKey)
 	{
 		return ActionKeyMappings[1].GetMappingName();
 	}
 	return NAME_None;
 }
 
-FName UInputMappingWidget::SetKey(const FKey OldKey, const FKey NewKey)
+void UInputMappingWidget::SetKey(const FName MappingName, const FKey NewKey)
 {
-	if (InputKeySelectorSlot1->GetSelectedKey().Key == OldKey)
+	if (ActionKeyMappings[0].GetMappingName() == MappingName)
 	{
 		InputKeySelectorSlot1->SetSelectedKey(NewKey);
-		return ActionKeyMappings[0].GetMappingName();
 	}
-	if (ActionKeyMappings.Num() > 1 && InputKeySelectorSlot2->GetSelectedKey().Key == OldKey)
+	else if (ActionKeyMappings[1].GetMappingName() == MappingName)
 	{
 		InputKeySelectorSlot2->SetSelectedKey(NewKey);
-		return ActionKeyMappings[1].GetMappingName();
 	}
-	return NAME_None;
 }
 
 void UInputMappingWidget::OnIsSelectingKeyChanged_Slot1()
 {
+	OnIsSelectingKey.Broadcast(InputKeySelectorSlot1);
 }
 
 void UInputMappingWidget::OnIsSelectingKeyChanged_Slot2()
 {
+	OnIsSelectingKey.Broadcast(InputKeySelectorSlot2);
 }
 
 void UInputMappingWidget::OnKeySelected_Slot1(FInputChord SelectedKey)
 {
+	ActionKeyMappings[0].Key = SelectedKey.Key;
 	OnKeySelected.Broadcast(ActionKeyMappings[0].GetMappingName(), SelectedKey);
 }
 
 void UInputMappingWidget::OnKeySelected_Slot2(FInputChord SelectedKey)
 {
-	if (ActionKeyMappings.Num() > 1)
-	{
-		OnKeySelected.Broadcast(ActionKeyMappings[1].GetMappingName(), SelectedKey);
-	}
+	ActionKeyMappings[1].Key = SelectedKey.Key;
+	OnKeySelected.Broadcast(ActionKeyMappings[1].GetMappingName(), SelectedKey);
 }

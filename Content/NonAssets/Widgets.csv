@@ -252,12 +252,12 @@ SettingsSavedText,Settings Saved
 SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
 SM_Save_CrossHair,Save Crosshair Settings
 SM_Save_Game,Save Game Settings
-SM_Save_Sensitivity,Save Sensitivity Settings
+SM_Save_Input,Save Input Settings
 SM_Save_VideoAndSound,Save Video and Sound Settings
 SM_Saved_AudioAnalyzer,Audio Analyzer Settings Saved
 SM_Saved_CrossHair,Crosshair Settings Saved
 SM_Saved_Game,Game Settings saved
-SM_Saved_Sensitivity,Sensitivity Settings Saved
+SM_Saved_Input,Input Settings Saved
 SM_Saved_VideoAndSound,Video and Sound Settings Saved
 SM_TargetColor_BeatGridInactive,Inactive BeatGrid Target Color
 SM_TargetColor_End,End Target Color
