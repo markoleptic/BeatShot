@@ -7,8 +7,7 @@
 #include "SaveGamePlayerSettings.h"
 #include "WebBrowserWidget.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnURLLoaded, bool, bLoadedSuccessfully);
-DECLARE_DYNAMIC_DELEGATE_OneParam(FOnTimerElapsed, const FString&, LastURL);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnURLLoaded, const bool bLoadedSuccessfully);
 
 class UWebBrowser;
 
@@ -52,7 +51,6 @@ protected:
 	void LoginUserToBeatShotWebsite(const FLoginPayload LoginPayload, const FString UserID);
 
 	/** Broadcast true when the new WebBrowser URL matches the IntendedDestinationURL set by a LoadURL function, otherwise false */
-	UPROPERTY()
 	FOnURLLoaded OnURLLoaded;
 
 private:

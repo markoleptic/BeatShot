@@ -14,7 +14,7 @@ void UScoreBrowserWidget::NativeConstruct()
 	BindToAnimationFinished(FadeOutOverlay, FadeOutDelegate);
 	FadeOutDelegate.BindUFunction(BrowserOverlay, FName("RemoveFromParent"));
 	MID_LoadingIcon = LoadingIcon->GetDynamicMaterial();
-	BrowserWidget->OnURLLoaded.AddDynamic(this, &UScoreBrowserWidget::OnURLLoaded);
+	BrowserWidget->OnURLLoaded.AddUObject(this, &UScoreBrowserWidget::OnURLLoaded);
 }
 
 void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)

@@ -26,6 +26,7 @@ public:
 	/** Broadcast when a new Key has been selected from either of the InputKeySelectors */
 	FOnKeySelected OnKeySelected;
 
+	/** Broadcast whenever the key selection mode starts or stops for either InputKeySelectors */
 	FOnIsSelectingKey OnIsSelectingKey;
 
 	/** Returns the array of Enhanced Action Key Mappings that this widget represents */

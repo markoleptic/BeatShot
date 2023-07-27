@@ -98,9 +98,9 @@ void UWebBrowserWidget::CheckNewURL()
 		URLCheckAttempts++;
 		if (URLCheckAttempts > 6)
 		{
-			OnURLLoaded.Broadcast(false);
 			IntendedDestinationURL = "";
 			URLCheckAttempts = 0;
+			OnURLLoaded.Broadcast(false);
 			GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
 			return;
 		}

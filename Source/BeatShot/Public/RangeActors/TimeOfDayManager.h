@@ -15,7 +15,6 @@ class AStaticMeshActor;
 class AVolumetricCloud;
 class ADirectionalLight;
 class UCurveFloat;
-class UCurveVector;
 class AMoon;
 class UMaterialInstanceDynamic;
 
@@ -26,6 +25,10 @@ class BEATSHOT_API ATimeOfDayManager : public AActor
 
 public:
 	ATimeOfDayManager();
+
+	virtual void PreInitializeComponents() override;
+
+	virtual void PostInitializeComponents() override;
 	
 	virtual void Tick(float DeltaTime) override;
 
@@ -37,8 +40,15 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void BeginTransitionToDay();
 
+	/** Changes TimeOfDay based on the value of TimeOfDay_Editor */
 	UFUNCTION(CallInEditor)
-	void ToggleTimeOfDay();
+	void UpdateTimeOfDay();
+	
+	UFUNCTION(CallInEditor)
+	void BeginTransitionToNight_Editor();
+
+	UFUNCTION(CallInEditor)
+	void BeginTransitionToDay_Editor();
 
 	/** Instantly changes the time of day */
 	void SetTimeOfDay(const ETimeOfDay InTimeOfDay);
@@ -79,15 +89,22 @@ protected:
 
 	/** Reference to SkySphere dynamic material instance */
 	UPROPERTY()
-	UMaterialInstanceDynamic* SkySphereMaterial;
+	TSoftObjectPtr<UMaterialInstanceDynamic> SkySphereMaterial;
 
-	/** The curve to link to OnTimelineVector and TransitionTimeline */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveVector* LightCurve;
-
-	/** The curve to link to OnTransitionMaterialTick and TransitionTimeline */
+	UCurveFloat* PositionCurve;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UCurveFloat* SkyMaterialCurve;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* DaylightCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* MoonlightCurve;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCurveFloat* SkylightCurve;
 
 	/** The current time of day */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -96,13 +113,10 @@ protected:
 	UPROPERTY(EditAnywhere)
 	ETimeOfDay TimeOfDay_Editor;
 
+	/** Timeline bound to Position Curve */
 	FTimeline TransitionTimeline;
-
-	/** Link TransitionTimeline, LightCurve to the function SetLightFromVectorCurve() */
-	FOnTimelineVector OnTimelineVector;
-
-	/** Link TransitionTimeline, SkyMaterialCurve to the function TransitionSkySphereMaterial() */
-	FOnTimelineFloat OnTransitionMaterialTick;
+	
+	FOnTimelineFloat OnTransitionTimelineTick;
 
 	/** Link TransitionTimeline to the function OnTimelineCompletedCallback() */
 	FOnTimelineEvent OnTimelineCompleted;
@@ -111,13 +125,9 @@ protected:
 	UFUNCTION()
 	void OnTimelineCompletedCallback();
 
-	/** Executes on every tick of TransitionTimeline, reads from LightCurve */
+	/** Executes on every tick of TransitionTimeline, reads from PositionCurve */
 	UFUNCTION()
-	void TransitionTimeOfDay(const FVector Vector);
-
-	/** Executes on every tick of TransitionTimeline, reads from SkyMaterialCurve */
-	UFUNCTION()
-	void TransitionSkySphereMaterial(float Alpha);
+	void TransitionTimeOfDay(const float Value);
 	
 	FVector DaytimeLeftRoofLocation = {2980, 0, 3371};
 	FVector DaytimeRightRoofLocation = {2020, 0, 3371};

@@ -46,10 +46,6 @@ void ARangeLevelScriptActor::Tick(float DeltaSeconds)
 
 void ARangeLevelScriptActor::OnStreakThresholdPassed()
 {
-	if (TimeOfDayManager->GetTimeOfDay() == ETimeOfDay::DayToNight || TimeOfDayManager->GetTimeOfDay() == ETimeOfDay::NightToDay)
-	{
-		return;
-	}
 	if (TimeOfDayManager->GetTimeOfDay() == ETimeOfDay::Day)
 	{
 		TimeOfDayManager->BeginTransitionToNight();
