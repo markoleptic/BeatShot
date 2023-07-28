@@ -23,25 +23,9 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 
 	virtual void Init() override;
 
+	virtual void Shutdown() override;
+
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "Steamworks")
-	USteamManager* SteamManager;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Steamworks")
-	bool IsSteamOverlayActive;
-
-	const bool EnableUSteamManagerFeatures = true;
-	UPROPERTY()
-	bool bSteamManagerInitialized = false;
-
-	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions */
-	bool InitializeSteamManager();
-
-	/** A function pair that can be called externally executes OnSteamOverlayIsActive() */
-	void OnSteamOverlayIsOn();
-	void OnSteamOverlayIsOff();
-	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
-
 	UFUNCTION()
 	void StartGameMode(const bool bIsRestart) const;
 
@@ -50,21 +34,14 @@ public:
 
 	FBSConfig GetBSConfig() const { return BSConfig; }
 
-	UPROPERTY()
-	FGameModeTransitionState LastGameModeTransitionState;
+	USteamManager* GetSteamManager() const { return SteamManager; }
 
-	/** Delegate passed to AuthenticateSteamUser Http request which is executed when it receives a response */
-	FOnTicketWebApiResponse TicketWebApiResponse;
-
-	/** Delegate passed to a PlayerController with AuthTickets to be called when they're done being used */
-	FOnPCFinishedUsingAuthTicket OnPCFinishedUsingAuthTicket;
+	/** A function pair that can be called externally, executes OnSteamOverlayIsActive() */
+	void OnSteamOverlayIsOn();
+	void OnSteamOverlayIsOff();
 
 	/** Called when the Player Controller has shown the Main Menu */
 	void OnPlayerControllerReadyForSteamLogin(ABSPlayerController* PlayerController);
-
-	/** Called after an HTTP request has been sent to BeatShot website and a response was received */
-	UFUNCTION()
-	void OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
 
 	/** Binds an actor's Game Settings delegate to the Game Instance's OnPlayerSettingsChanged_Game function,
 	 *  which broadcasts OnPlayerSettingsChangedDelegate_Game to all actors subscribed for updates */
@@ -106,19 +83,45 @@ public:
 	 *  The function is then called any time a Video And Sound Setting is changed */
 	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
 	
-private:
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Steamworks")
+	USteamManager* SteamManager;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Steamworks")
+	bool IsSteamOverlayActive;
+
+	const bool EnableUSteamManagerFeatures = true;
+	
+	UPROPERTY()
+	bool bSteamManagerInitialized = false;
+
+	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions */
+	bool InitializeSteamManager();
+	
+	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
+	
 	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
 	UPROPERTY(EditDefaultsOnly)
 	FBSConfig BSConfig;
 
 	bool bHttpAuthTicketAsyncTaskComplete = false;
 	bool bLoginToScoreBrowserAsyncTaskComplete = false;
+
+	/** Delegate passed to AuthenticateSteamUser Http request which is executed when it receives a response */
+	FOnTicketWebApiResponse TicketWebApiResponse;
+
+	/** Delegate passed to a PlayerController with AuthTickets to be called when they're done being used */
+	FOnPCFinishedUsingAuthTicket OnPCFinishedUsingAuthTicket;
 	
 	/** Checks if bHttpAuthTicketAsyncTaskComplete and bLoginToScoreBrowserAsyncTaskComplete are true and if so calls ResetWebApiTicket on SteamManager */
 	void CheckIfAsyncAuthTasksComplete();
 	
 	/** Callback for when PlayerController is done using the AuthTicket */
 	void OnLoginToScoreBrowserAsyncTaskComplete();
+
+	/** Called after an HTTP request has been sent to BeatShot website and a response was received */
+	UFUNCTION()
+	void OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
 	
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;

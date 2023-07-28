@@ -15,7 +15,17 @@ void UBSGameInstance::Init()
 	Super::Init();
 	OnPCFinishedUsingAuthTicket.BindUObject(this, &ThisClass::OnLoginToScoreBrowserAsyncTaskComplete);
 	bSteamManagerInitialized = InitializeSteamManager();
-	IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));
+	//IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));
+}
+
+void UBSGameInstance::Shutdown()
+{
+	if (bSteamManagerInitialized && SteamManager)
+	{
+		SteamManager->ShutdownSteamManager();
+	}
+	SteamAPI_Shutdown();
+	Super::Shutdown();
 }
 
 bool UBSGameInstance::InitializeSteamManager()

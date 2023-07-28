@@ -11,6 +11,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility_TrackGun.h"
 #include "Kismet/GameplayStatics.h"
+#include "System/SteamManager.h"
 
 DEFINE_LOG_CATEGORY(LogAudioData);
 
@@ -566,6 +567,8 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores)
 		OnPostScoresResponse.Broadcast(EPostScoresResponse::UnsavedGameMode);
 		return;
 	}
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	GI->GetSteamManager()->UpdateStat("NumGamesPlayed_GM1", ESteamStatType::Stat_Int, 1);
 	const FPlayerScore Scores = GetCompletedPlayerScores();
 	TArray<FPlayerScore> AllSavedScores = LoadPlayerScores();
 	AllSavedScores.Emplace(Scores);

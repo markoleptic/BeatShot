@@ -103,6 +103,8 @@ Config/DefaultEngine.ini
 Config/DefaultGame.ini
 Content/Levels/Range.umap
 Content/ModularConcertStage
+Content/ThirdPerson
+Content/CustomizableArmsAnims
 Content/AdvancedGlassPack
 Windows/
 Plugins/BeatShotAudioAnalyzer
