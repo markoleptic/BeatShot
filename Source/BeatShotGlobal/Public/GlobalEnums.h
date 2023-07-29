@@ -15,6 +15,7 @@ enum class EAudioFormat : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
+
 /** Describes if player scores were posted or not */
 UENUM()
 enum class EPostScoresResponse : uint8
@@ -27,6 +28,8 @@ enum class EPostScoresResponse : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore, EPostScoresResponse::HttpSuccess);
 
+
+/** The type of ScoreBrowserWidget */
 UENUM()
 enum class EScoreBrowserType : uint8
 {
@@ -35,7 +38,6 @@ enum class EScoreBrowserType : uint8
 	PatchNotes UMETA(DisplayName="PatchNotes"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EScoreBrowserType, EScoreBrowserType::MainMenuScores, EScoreBrowserType::PatchNotes);
-
 
 
 /** Nvidia Reflex Mode */
@@ -48,6 +50,8 @@ enum class EBudgetReflexMode : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EBudgetReflexMode, EBudgetReflexMode::Disabled, EBudgetReflexMode::EnabledPlusBoost);
 
+
+/** Nvidia DLSS Enabled Mode */
 UENUM(BlueprintType)
 enum class EDLSSEnabledMode : uint8
 {
@@ -56,6 +60,8 @@ enum class EDLSSEnabledMode : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EDLSSEnabledMode, EDLSSEnabledMode::Off, EDLSSEnabledMode::On);
 
+
+/** Nvidia NIS Enabled Mode */
 UENUM(BlueprintType)
 enum class ENISEnabledMode : uint8
 {
@@ -63,6 +69,7 @@ enum class ENISEnabledMode : uint8
 	On UMETA(DisplayName = "On"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ENISEnabledMode, ENISEnabledMode::Off, ENISEnabledMode::On);
+
 
 /** The transition state describing the start state and end state of a transition */
 UENUM()
@@ -106,21 +113,6 @@ enum class EBaseGameMode : uint8
 	ClusterBeat UMETA(DisplayName="ClusterBeat"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::ClusterBeat);
-
-
-/** Enum representing the preset, non-mutable game modes. Preset game modes aren't necessarily a BaseGameMode */
-UENUM(BlueprintType)
-enum class EPresetGameMode : uint8
-{
-	None UMETA(DisplayName="None"),
-	SingleBeat UMETA(DisplayName="SingleBeat"),
-	MultiBeat UMETA(DisplayName="MultiBeat"),
-	BeatGrid UMETA(DisplayName="BeatGrid"),
-	BeatTrack UMETA(DisplayName="BeatTrack"),
-	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
-	ClusterBeat UMETA(DisplayName="ClusterBeat"),
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EPresetGameMode, EPresetGameMode::SingleBeat, EPresetGameMode::ClusterBeat);
 
 
 /** Enum representing the default game mode difficulties */

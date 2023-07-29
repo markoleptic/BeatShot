@@ -85,13 +85,19 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultInput.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultInput.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/System/SteamManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/System/SteamManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameMode.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/System/SteamManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/System/SteamManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Private/SaveLoadInterface.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Private/SaveLoadInterface.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalConstants.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalEnums.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalEnums.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,79 +108,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/algorithm" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/cmath" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/functional" root0="SKIP_HIGHLIGHTING" />
@@ -215,6 +148,7 @@
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.2_Source/UnrealEngine/Engine/Source/ThirdParty/Steamworks/Steamv157/sdk/public/steam/isteamfriends.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.2_Source/UnrealEngine/Engine/Source/ThirdParty/Steamworks/Steamv157/sdk/public/steam/isteamuser.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.2_Source/UnrealEngine/Engine/Source/ThirdParty/Steamworks/Steamv157/sdk/public/steam/steamclientpublic.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.2_Source_Installed/Engine/Source/ThirdParty/Steamworks/Steamv157/sdk/public/steam/isteamuserstats.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/kiss_fft.c" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio/include/miniaudio.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot.Target.cs" root0="FORCE_HIGHLIGHTING" />
@@ -27119,7 +27053,9 @@
       <workItem from="1690387732004" duration="2780000" />
       <workItem from="1690398689022" duration="9201000" />
       <workItem from="1690409433840" duration="1802000" />
-      <workItem from="1690500248476" duration="11088000" />
+      <workItem from="1690500248476" duration="11278000" />
+      <workItem from="1690557842118" duration="1550000" />
+      <workItem from="1690582348716" duration="12487000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

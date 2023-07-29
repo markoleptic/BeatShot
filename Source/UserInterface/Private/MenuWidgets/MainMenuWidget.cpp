@@ -49,7 +49,6 @@ void UMainMenuWidget::NativeConstruct()
 
 void UMainMenuWidget::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
 {
-	UE_LOG(LogTemp, Display, TEXT("PlayerSettingsChangedUser in MainMenu"));
 }
 
 void UMainMenuWidget::LoginScoresWidgetWithSteam(const FString SteamAuthTicket)

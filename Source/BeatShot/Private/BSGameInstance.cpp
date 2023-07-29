@@ -15,6 +15,10 @@ void UBSGameInstance::Init()
 	Super::Init();
 	OnPCFinishedUsingAuthTicket.BindUObject(this, &ThisClass::OnLoginToScoreBrowserAsyncTaskComplete);
 	bSteamManagerInitialized = InitializeSteamManager();
+
+	FPlayerSettings_VideoAndSound Settings_VideoAndSound = LoadPlayerSettings().VideoAndSound;
+
+	
 	//IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));
 }
 
@@ -26,47 +30,6 @@ void UBSGameInstance::Shutdown()
 	}
 	SteamAPI_Shutdown();
 	Super::Shutdown();
-}
-
-bool UBSGameInstance::InitializeSteamManager()
-{
-	if (!SteamAPI_Init())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SteamAPI_Init Failed"));
-		return false;
-	}
-	if (EnableUSteamManagerFeatures && SteamUser() != nullptr)
-	{
-		SteamManager = NewObject<USteamManager>(this);
-		SteamManager->InitializeSteamManager();
-		SteamManager->AssignGameInstance(this);
-
-		TicketWebApiResponse.BindUObject(this, &ThisClass::OnAuthTicketForWebApiResponse);
-		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Success"));
-		return true;
-	}
-	return false;
-}
-
-void UBSGameInstance::OnSteamOverlayIsOn()
-{
-	IsSteamOverlayActive = true;
-	this->OnSteamOverlayIsActive(true);
-}
-
-void UBSGameInstance::OnSteamOverlayIsOff()
-{
-	IsSteamOverlayActive = false;
-	this->OnSteamOverlayIsActive(false);
-}
-
-void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
-{
-	if (bIsOverlayActive)
-	{
-		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		PlayerController->HandlePause();
-	}
 }
 
 void UBSGameInstance::StartGameMode(const bool bIsRestart) const
@@ -147,6 +110,47 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		{
 			break;
 		}
+	}
+}
+
+bool UBSGameInstance::InitializeSteamManager()
+{
+	if (!SteamAPI_Init())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SteamAPI_Init Failed"));
+		return false;
+	}
+	if (SteamUser() != nullptr)
+	{
+		SteamManager = NewObject<USteamManager>(this);
+		SteamManager->InitializeSteamManager();
+		SteamManager->AssignGameInstance(this);
+
+		TicketWebApiResponse.BindUObject(this, &ThisClass::OnAuthTicketForWebApiResponse);
+		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Success"));
+		return true;
+	}
+	return false;
+}
+
+void UBSGameInstance::OnSteamOverlayIsOn()
+{
+	IsSteamOverlayActive = true;
+	this->OnSteamOverlayIsActive(true);
+}
+
+void UBSGameInstance::OnSteamOverlayIsOff()
+{
+	IsSteamOverlayActive = false;
+	this->OnSteamOverlayIsActive(false);
+}
+
+void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
+{
+	if (bIsOverlayActive)
+	{
+		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		PlayerController->HandlePause();
 	}
 }
 

@@ -202,7 +202,7 @@ FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeNa
 
 bool ISaveLoadInterface::IsPresetGameMode(const FString& GameModeName) const
 {
-	for (const EPresetGameMode& Preset : TEnumRange<EPresetGameMode>())
+	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
 	{
 		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
 		{

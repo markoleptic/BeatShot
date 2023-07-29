@@ -19,6 +19,9 @@ ABSGameMode::ABSGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bShouldTick = false;
+	Elapsed = 0.f;
+	LastTargetOnSet = false;
+	TimePlayedGameMode = 0.f;
 }
 
 void ABSGameMode::BeginPlay()
@@ -88,6 +91,7 @@ void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
+	TimePlayedGameMode = 0.f;
 
 	/* Load settings */
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
@@ -198,6 +202,7 @@ void ABSGameMode::BindGameModeDelegates()
 
 void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMenu)
 {
+	TimePlayedGameMode = GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
@@ -567,8 +572,22 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores)
 		OnPostScoresResponse.Broadcast(EPostScoresResponse::UnsavedGameMode);
 		return;
 	}
+	
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->GetSteamManager()->UpdateStat("NumGamesPlayed_GM1", ESteamStatType::Stat_Int, 1);
+
+	// Update Steam Stat for Game Mode
+	if (TimePlayedGameMode > MinStatRequirement_Duration_NumGamesPlayed)
+	{
+		if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+		{
+			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
+		}
+		else
+		{
+			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
+		}
+	}
+	
 	const FPlayerScore Scores = GetCompletedPlayerScores();
 	TArray<FPlayerScore> AllSavedScores = LoadPlayerScores();
 	AllSavedScores.Emplace(Scores);

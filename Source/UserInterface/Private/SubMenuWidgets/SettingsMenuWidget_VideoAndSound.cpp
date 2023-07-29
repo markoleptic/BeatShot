@@ -639,7 +639,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS(const TArray<FSt
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_DLSS"));
 	switch (GetEnumFromString<EDLSSEnabledMode>(SelectedOptions.Top(), EDLSSEnabledMode::Off)) {
 	case EDLSSEnabledMode::Off:
 		CacheDLSSSettings(true);
@@ -660,7 +659,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_FrameGeneration(const
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_FrameGeneration"));
 	if (UStreamlineLibraryDLSSG::IsDLSSGSupported())
 	{
 		UStreamlineLibraryDLSSG::SetDLSSGMode(GetEnumFromString<UStreamlineDLSSGMode>(SelectedOptions.Top(), UStreamlineDLSSGMode::Off));
@@ -673,7 +671,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_SuperResolution(const
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_SuperResolution"));
 	if (UDLSSLibrary::IsDLSSSupported())
 	{
 		SetDLSSMode(GetEnumFromString<UDLSSMode>(SelectedOptions.Top(), UDLSSMode::Off));
@@ -689,7 +686,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS(const TArray<FStr
 	
 	const ENISEnabledMode NISEnabledMode = GetEnumFromString<ENISEnabledMode>(SelectedOptions.Top(), ENISEnabledMode::Off);
 	const EDLSSEnabledMode DLSSEnabledMode = GetSelectedDLSSEnabledMode();
-	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_NIS"));
 	if (NISEnabledMode == ENISEnabledMode::On || DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
 		Slider_ResolutionScale->SetLocked(true);
@@ -711,7 +707,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_Mode(const TArray
 
 	const UNISMode SelectedNISMode = GetEnumFromString<UNISMode>(SelectedOptions.Top(), UNISMode::Off);
 	const EDLSSEnabledMode DLSSEnabledMode = GetSelectedDLSSEnabledMode();
-	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_NIS_Mode"));
 	if (!UNISLibrary::IsNISSupported() || DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
 		return;
@@ -725,7 +720,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<F
 	{
 		return;
 	}
-	UE_LOG(LogTemp, Display, TEXT("OnSelectionChanged_Reflex"));
 	if (UStreamlineLibraryReflex::IsReflexSupported())
 	{
 		UStreamlineLibraryReflex::SetReflexMode(GetEnumFromString<UStreamlineReflexMode>(SelectedOptions.Top(), UStreamlineReflexMode::Disabled));

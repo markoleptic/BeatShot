@@ -579,24 +579,20 @@ void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionC
 	
 	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Removed based on OnDeactivation"));
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
 	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Removed based on OnExpiration"));
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
 	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) &&
 		TargetDamageEvent.CurrentHealth <= 0.f)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Removed based on OnHealthReachedZero"));
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
 	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) &&
 		TargetDamageEvent.TimeAlive != -1)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Removed based on OnAnyExternalDamageTaken"));
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
 	

@@ -43,6 +43,9 @@ namespace Constants
 	/** The time threshold required to receive full score for hitting a target */
 	inline constexpr float PerfectScoreTimeThreshold = 0.1f;
 
+	/** The min time required to receive credit for playing a game mode */
+	inline constexpr float MinStatRequirement_Duration_NumGamesPlayed = 60.f;
+
 #pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */

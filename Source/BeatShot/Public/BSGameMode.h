@@ -250,6 +250,8 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	float MaxScorePerTarget;
 
+	float TimePlayedGameMode = 0.f;
+
 #pragma endregion
 
 #pragma region Settings
