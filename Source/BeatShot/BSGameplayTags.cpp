@@ -78,6 +78,8 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(State_Weapon_AutomaticFire, "State.Weapon.AutomaticFire","");
 	AddTag(State_Weapon_ShowDecals, "State.Weapon.ShowDecals","");
 	AddTag(State_Weapon_ShowTracers, "State.Weapon.ShowTracers","");
+	AddTag(State_Weapon_ShowMuzzleFlash, "State.Weapon.ShowMuzzleFlash","");
+	AddTag(State_Weapon_ShowMesh, "State.Weapon.ShowMesh","");
 	AddTag(State_Weapon_Recoil, "State.Weapon.Recoil","");
 
 	AddTag(Target, "Target","");

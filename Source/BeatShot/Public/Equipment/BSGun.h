@@ -41,22 +41,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual FVector GetMuzzleLocation() const;
 
-	/** Returns whether or not the gun should recoil, based on GameplayTags */
-	UFUNCTION(BlueprintCallable)
-	bool ShouldRecoil() const;
-
-	/** Returns whether or not to show bullet decals, based on GameplayTags */
-	UFUNCTION(BlueprintCallable)
-	bool ShouldShowDecals() const;
-
-	/** Returns whether or not to show bullet tracers, based on GameplayTags */
-	UFUNCTION(BlueprintCallable)
-	bool ShouldShowTracers() const;
-
-	/** Returns whether or not the gun is auto fire rate, based on GameplayTags */
-	UFUNCTION(BlueprintCallable)
-	bool IsAutoFireRate() const;
-
 	/** Returns whether the weapon can fire or not */
 	UFUNCTION(BlueprintCallable)
 	bool CanFire() const { return bCanFire; }
@@ -84,6 +68,14 @@ public:
 	/** Sets whether or not the gun should show bullet tracers, updating its GameplayTags */
 	UFUNCTION(BlueprintCallable)
 	void SetShowTracers(const bool bShowTracers);
+
+	/** Sets whether or not the weapon mesh is visible, updating its GameplayTags */
+	UFUNCTION(BlueprintCallable)
+	void SetShowWeaponMesh(const bool bShow);
+
+	/** Sets whether or not the muzzle flash is shown, updating its GameplayTags */
+	UFUNCTION(BlueprintCallable)
+	void SetShowMuzzleFlash(const bool bShow);
 	
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;

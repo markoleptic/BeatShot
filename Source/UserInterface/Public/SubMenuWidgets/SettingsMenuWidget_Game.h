@@ -27,7 +27,7 @@ public:
 
 protected:
 	/** Fills all widgets with values from NewSettings */
-	void PopulateSettings();
+	void InitializeGameSettings(const FPlayerSettings_Game& PlayerSettings_Game);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
 	UColorSelectWidget* ColorSelect_StartTargetColor;
@@ -45,11 +45,25 @@ protected:
 	UEditableTextBox* Value_CombatTextFrequency;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
 	UCheckBox* CheckBox_ShowStreakCombatText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_Recoil;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_AutomaticFire;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ShowBulletDecals;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ShowBulletTracers;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ShowMuzzleFlash;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ShowMesh;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UBSButton* Button_Save;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
+	UBSButton* Button_Revert;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UBSButton* Button_Reset;
 
@@ -65,21 +79,35 @@ protected:
 	void OnColorChanged_BeatGridInactive(const FLinearColor& NewColor);
 	
 	UFUNCTION()
-	void CheckStateChanged_UseSeparateOutlineColor(const bool bIsChecked);
+	void OnCheckStateChanged_UseSeparateOutlineColor(const bool bIsChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ShowCombatText(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_Recoil(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_AutomaticFire(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ShowBulletDecals(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ShowBulletTracers(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ShowMuzzleFlash(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ShowMesh(const bool bIsChecked);
 	
 	UFUNCTION()
 	void OnValueChanged_CombatTextFrequency(const FText& NewValue, ETextCommit::Type CommitType);
 	
 	UFUNCTION()
-	void OnButtonClicked_Save();
-	UFUNCTION()
-	void OnButtonClicked_Reset();
-	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
+	void OnButtonClicked_Save();
+	void OnButtonClicked_Reset();
+	void OnButtonClicked_Revert();
+
+	/** The Player Settings at the time of opening the menu */
+	FPlayerSettings_Game InitialGameSettings;
+	
 	/** The Player Settings that are changed during setting menu interaction */
-	UPROPERTY()
-	FPlayerSettings_Game NewSettings;
+	FPlayerSettings_Game NewGameSettings;
 };

@@ -1388,6 +1388,15 @@ struct FPlayerSettings_Game
 	bool bShowBulletTracers;
 
 	UPROPERTY(BlueprintReadWrite)
+	bool bShowMuzzleFlash;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowCharacterMesh;
+	
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowWeaponMesh;
+	
+	UPROPERTY(BlueprintReadWrite)
 	bool bNightModeSelected;
 
 	UPROPERTY(BlueprintReadWrite)
@@ -1407,6 +1416,9 @@ struct FPlayerSettings_Game
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
 		bShowBulletTracers = true;
+		bShowMuzzleFlash = true;
+		bShowCharacterMesh = true;
+		bShowWeaponMesh = true;
 		bNightModeSelected = false;
 		bShowLightVisualizers = false;
 	}
@@ -1422,6 +1434,13 @@ struct FPlayerSettings_Game
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = DefaultTargetOutlineColor;
 		InactiveTargetColor = DefaultBeatGridInactiveTargetColor;
+		bShouldRecoil = false;
+		bAutomaticFire = true;
+		bShowBulletDecals = true;
+		bShowBulletTracers = true;
+		bShowMuzzleFlash = true;
+		bShowCharacterMesh = true;
+		bShowWeaponMesh = true;
 	}
 };
 

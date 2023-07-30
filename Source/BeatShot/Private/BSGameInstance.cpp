@@ -16,9 +16,7 @@ void UBSGameInstance::Init()
 	OnPCFinishedUsingAuthTicket.BindUObject(this, &ThisClass::OnLoginToScoreBrowserAsyncTaskComplete);
 	bSteamManagerInitialized = InitializeSteamManager();
 
-	FPlayerSettings_VideoAndSound Settings_VideoAndSound = LoadPlayerSettings().VideoAndSound;
-
-	
+	//FPlayerSettings_VideoAndSound Settings_VideoAndSound = LoadPlayerSettings().VideoAndSound;
 	//IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));
 }
 
@@ -115,6 +113,9 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 
 bool UBSGameInstance::InitializeSteamManager()
 {
+	SteamManager = NewObject<USteamManager>(this);
+	SteamManager->AssignGameInstance(this);
+	
 	if (!SteamAPI_Init())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SteamAPI_Init Failed"));
@@ -122,10 +123,7 @@ bool UBSGameInstance::InitializeSteamManager()
 	}
 	if (SteamUser() != nullptr)
 	{
-		SteamManager = NewObject<USteamManager>(this);
 		SteamManager->InitializeSteamManager();
-		SteamManager->AssignGameInstance(this);
-
 		TicketWebApiResponse.BindUObject(this, &ThisClass::OnAuthTicketForWebApiResponse);
 		UE_LOG(LogTemp, Display, TEXT("SteamAPI_Init Success"));
 		return true;

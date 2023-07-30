@@ -74,6 +74,8 @@ struct FBSGameplayTags
 	FGameplayTag State_Weapon_AutomaticFire;
 	FGameplayTag State_Weapon_ShowDecals;
 	FGameplayTag State_Weapon_ShowTracers;
+	FGameplayTag State_Weapon_ShowMuzzleFlash;
+	FGameplayTag State_Weapon_ShowMesh;
 	FGameplayTag State_Weapon_Recoil;
 
 	FGameplayTag Target;

@@ -53,6 +53,11 @@ TArray<FSteamAchievement> g_Achievements =
 
 USteamManager::USteamManager()
 {
+    WebApiTicket = FString();
+	AppId = 0;
+	StatsData = TArray<FSteamStat>();
+	AchievementData = TArray<FSteamAchievement>();
+	bInitializedStats = false;
 }
 
 void USteamManager::InitializeSteamManager()

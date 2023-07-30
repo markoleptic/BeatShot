@@ -136,9 +136,6 @@ public:
 	float GetMinLandBounceSpeed() const { return MinLandBounceSpeed; }
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
-	float GetDefaultBaseEyeHeight() const { return DefaultBaseEyeHeight; }
-
-	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	bool DoesWantToWalk() const { return bWantsToWalk; }
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
@@ -336,9 +333,6 @@ protected:
 
 	/** defer the jump stop for a frame (for early jumps) */
 	bool bDeferJumpStop;
-	
-	/** cached default eye height */
-	float DefaultBaseEyeHeight;
 
 	/** when we last jumped */
 	float LastJumpTime;

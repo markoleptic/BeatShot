@@ -114,7 +114,7 @@ protected:
 
 	/** Object that interfaces with Steam API */
 	UPROPERTY()
-	USteamManager* SteamManager;
+	TObjectPtr<USteamManager> SteamManager;
 
 	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
 	UPROPERTY(EditDefaultsOnly)

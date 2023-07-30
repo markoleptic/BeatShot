@@ -40,7 +40,9 @@ void ABSGun::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettin
 	SetShouldRecoil(GameSettings.bShouldRecoil);
 	SetFireRate(GameSettings.bAutomaticFire);
 	SetShowDecals(GameSettings.bShowBulletDecals);
-	SetShowTracers(GameSettings.bShowBulletTracers);
+	SetShowTracers(GameSettings.bShowBulletTracers && GameSettings.bShowWeaponMesh && GameSettings.bShowCharacterMesh);
+	SetShowMuzzleFlash(GameSettings.bShowMuzzleFlash && GameSettings.bShowWeaponMesh && GameSettings.bShowCharacterMesh);
+	SetShowWeaponMesh(GameSettings.bShowWeaponMesh);
 }
 
 void ABSGun::Fire()
@@ -64,26 +66,6 @@ void ABSGun::StopFire()
 FVector ABSGun::GetMuzzleLocation() const
 {
 	return MuzzleLocationComp->GetComponentLocation();
-}
-
-bool ABSGun::ShouldRecoil() const
-{
-	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_Recoil);
-}
-
-bool ABSGun::ShouldShowDecals() const
-{
-	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_ShowDecals);
-}
-
-bool ABSGun::ShouldShowTracers() const
-{
-	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_ShowTracers);
-}
-
-bool ABSGun::IsAutoFireRate() const
-{
-	return HasMatchingGameplayTag(FBSGameplayTags::Get().State_Weapon_AutomaticFire);
 }
 
 void ABSGun::SetFireRate(const bool bAutomatic)
@@ -128,4 +110,25 @@ void ABSGun::SetShowTracers(const bool bShowTracers)
 		return;
 	}
 	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowTracers);
+}
+
+void ABSGun::SetShowWeaponMesh(const bool bShow)
+{
+	SetActorHiddenInGame(!bShow);
+	if (bShow)
+	{
+		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMesh);
+		return;
+	}
+	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMesh);
+}
+
+void ABSGun::SetShowMuzzleFlash(const bool bShow)
+{
+	if (bShow)
+	{
+		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMuzzleFlash);
+		return;
+	}
+	RemoveGameplayTag(FBSGameplayTags().Get().State_Weapon_ShowMuzzleFlash);
 }

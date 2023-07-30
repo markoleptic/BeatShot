@@ -61,8 +61,7 @@ public:
 	/** Gets the friction from cached ground info */
 	float GetFrictionFromHit(const FHitResult& Hit) const;
 	
-	UPROPERTY()
-	ABSCharacter* BSCharacter;
+	TObjectPtr<ABSCharacter> BSCharacter;
 
 protected:
 
@@ -111,6 +110,10 @@ protected:
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite)
 	float MinStepHeight;
 
+	/** the minimum step height from moving fast */
+	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite)
+	float GroundBrakingDeceleration = 15.f;
+	
 	/** Time (in millis) the player has to re-jump without applying friction. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Character Movement: Jumping / Falling", meta=(DisplayName="Rejump Window", ForceUnits="ms"))
 	float BrakingWindow;
@@ -134,7 +137,7 @@ protected:
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float RunSpeed;
 
-	/** The target ground speed when sprinting.  */
+	/** The target ground speed when sprinting. */
 	UPROPERTY(Category = "Character Movement: Walking", EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float SprintSpeed;
 

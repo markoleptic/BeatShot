@@ -66,15 +66,13 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	EquipmentManagerComponent = CreateDefaultSubobject<UBSEquipmentManagerComponent>("Equipment Manager Component");
 	InventoryManagerComponent = CreateDefaultSubobject<UBSInventoryManagerComponent>("Inventory Manager Component");
 
-	GetCapsuleComponent()->InitCapsuleSize(30.48f, 68.58f);
+	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.f);
 	// Set collision settings. We are the invisible player with no 3rd person mesh.
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Camera, ECR_Block);
 
 	// Camera eye level
-	DefaultBaseEyeHeight = 53.34f;
-	BaseEyeHeight = DefaultBaseEyeHeight;
-	constexpr float CrouchedHalfHeight = 68.58f / 2.0f;
-	CrouchedEyeHeight = 53.34f - CrouchedHalfHeight;
+	BaseEyeHeight = 64.f;
+	CrouchedEyeHeight = 44.f;
 	MinSpeedForFallDamage = 1002.9825f;
 	MinLandBounceSpeed = 329.565f;
 	CapDamageMomentumZ = 476.25f;
@@ -811,6 +809,7 @@ void ABSCharacter::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& Game
 			}
 		}
 	}
+	SetActorHiddenInGame(!GameSettings.bShowCharacterMesh);
 }
 
 void ABSCharacter::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
