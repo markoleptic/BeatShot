@@ -154,9 +154,9 @@ void ABSGameMode::InitializeGameMode()
 		}
 	}
 
-	InitializeAudioManagers();
+	const bool bAudioManagerInitSuccess = InitializeAudioManagers();
 	BindGameModeDelegates();
-	bShouldTick = true;
+	bShouldTick = bAudioManagerInitSuccess;
 }
 
 void ABSGameMode::StartGameMode()
@@ -379,7 +379,7 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 	}
 }
 
-void ABSGameMode::InitializeAudioManagers()
+bool ABSGameMode::InitializeAudioManagers()
 {
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
 	switch (BSConfig.AudioConfig.AudioFormat) 
@@ -390,15 +390,15 @@ void ABSGameMode::InitializeAudioManagers()
 		if (!AATracker->InitPlayerAudio(BSConfig.AudioConfig.SongPath))
 		{
 			OnAAManagerError();
-			return;
+			return false;
 		}
 		break;
 	case EAudioFormat::Capture:
-		AATracker->SetDefaultDevicesCapturerAudio(*BSConfig.AudioConfig.InAudioDevice, *BSConfig.AudioConfig.OutAudioDevice);
+		 AATracker->SetDefaultDevicesCapturerAudio(*BSConfig.AudioConfig.InAudioDevice, *BSConfig.AudioConfig.OutAudioDevice);
 		 if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f, BSConfig.AudioConfig.bPlaybackAudio))
 		 {
 		 	OnAAManagerError();
-		 	return;
+		 	return false;
 		 }
 		 break;
 	case EAudioFormat::Loopback:
@@ -407,7 +407,7 @@ void ABSGameMode::InitializeAudioManagers()
 		if (!AATracker->InitLoopbackAudio())
 		{
 			OnAAManagerError();
-			return;
+			return false;
 		}
 		break;
 	default:
@@ -424,17 +424,18 @@ void ABSGameMode::InitializeAudioManagers()
 	if (BSConfig.AudioConfig.PlayerDelay < 0.01f)
 	{
 		AAPlayer = nullptr;
-		return;
+		return true;
 	}
 	AAPlayer = NewObject<UAudioAnalyzerManager>(this);
 	if (!AAPlayer->InitPlayerAudio(BSConfig.AudioConfig.SongPath))
 	{
 		OnAAManagerError();
-		return;
+		return false;
 	}
 	AAPlayer->InitBeatTrackingConfigWLimits(EAA_ChannelSelectionMode::All_in_one, 0, AASettings.BandLimits, AASettings.TimeWindow, AASettings.HistorySize, false, 100, 2.1);
 	AAPlayer->InitSpectrumConfigWLimits(EAA_ChannelSelectionMode::All_in_one, -1, AASettings.BandLimits, AASettings.TimeWindow, 10 / AASettings.TimeWindow, true, AASettings.NumBandChannels);
 	SetAAManagerVolume(0, 0, AAPlayer);
+	return true;
 }
 
 void ABSGameMode::OnTick_AudioAnalyzers(const float DeltaSeconds)

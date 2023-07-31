@@ -9,12 +9,17 @@
 #include <steam/isteamuser.h>
 #include <steam/steam_api.h>
 #include "OnlineSubsystem.h"
+#include "GameFramework/GameUserSettings.h"
 
 void UBSGameInstance::Init()
 {
 	Super::Init();
 	OnPCFinishedUsingAuthTicket.BindUObject(this, &ThisClass::OnLoginToScoreBrowserAsyncTaskComplete);
 	bSteamManagerInitialized = InitializeSteamManager();
+
+	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+	GameUserSettings->RunHardwareBenchmark();
+	GameUserSettings->ApplyHardwareBenchmarkResults();
 
 	//FPlayerSettings_VideoAndSound Settings_VideoAndSound = LoadPlayerSettings().VideoAndSound;
 	//IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));

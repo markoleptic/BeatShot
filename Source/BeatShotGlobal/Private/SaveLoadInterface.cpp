@@ -1,7 +1,6 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "SaveLoadInterface.h"
-
 #include "BSGameModeDataAsset.h"
 #include "SaveGameCustomGameMode.h"
 #include "SaveGamePlayerScore.h"
@@ -10,16 +9,21 @@
 
 FPlayerSettings ISaveLoadInterface::LoadPlayerSettings() const
 {
-	USaveGamePlayerSettings* SaveGamePlayerSettings;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
 	{
-		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0));
+		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0)))
+		{
+			return SaveGamePlayerSettings->PlayerSettings;
+		}
 	}
 	else
 	{
-		SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass()));
+		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+		{
+			return SaveGamePlayerSettings->PlayerSettings;
+		}
 	}
-	return SaveGamePlayerSettings->PlayerSettings;
+	return FPlayerSettings();
 }
 
 void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_Game& InGameSettings)
@@ -88,18 +92,19 @@ void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings& InPlayerSetti
 
 TArray<FBSConfig> ISaveLoadInterface::LoadCustomGameModes() const
 {
-	USaveGameCustomGameMode* SaveGameCustomGameMode;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
 	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3));
+		if (USaveGameCustomGameMode* SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3)))
+		{
+			return SaveGameCustomGameMode->CustomGameModes;
+		}
 	}
 	else
 	{
-		SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass()));
-	}
-	if (SaveGameCustomGameMode)
-	{
-		return SaveGameCustomGameMode->CustomGameModes;
+		if (USaveGameCustomGameMode* SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+		{
+			return SaveGameCustomGameMode->CustomGameModes;
+		}
 	}
 	return TArray<FBSConfig>();
 }
@@ -160,7 +165,7 @@ FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, co
 
 	if (BaseGameMode != EBaseGameMode::None)
 	{
-		const FBS_DefiningConfig DefiningConfig = FBSConfig::MakePresetConfig(BaseGameMode, Difficulty).DefiningConfig;
+		const FBS_DefiningConfig DefiningConfig = FBSConfig::GetConfigForPreset(BaseGameMode, Difficulty);
 		TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
 		FBSConfig* Found = Map.Find(DefiningConfig);
 		if (Found)
@@ -176,7 +181,7 @@ FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMo
 {
 	if (BaseGameMode != EBaseGameMode::None)
 	{
-		const FBS_DefiningConfig DefiningConfig = FBSConfig::MakePresetConfig(BaseGameMode, Difficulty).DefiningConfig;
+		const FBS_DefiningConfig DefiningConfig = FBSConfig::GetConfigForPreset(BaseGameMode, Difficulty);
 		TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
 		FBSConfig* Found = Map.Find(DefiningConfig);
 		if (Found)
@@ -226,14 +231,21 @@ bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName) const
 
 TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const
 {
-	USaveGamePlayerScore* SaveGamePlayerScore;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-		return SaveGamePlayerScore->PlayerScoreArray;
+		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1)))
+		{
+			return SaveGamePlayerScore->PlayerScoreArray;
+		}
 	}
-	SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
-	return SaveGamePlayerScore->PlayerScoreArray;
+	else
+	{
+		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+		{
+			return SaveGamePlayerScore->PlayerScoreArray;
+		}
+	}
+	return TArray<FPlayerScore>();
 }
 
 void ISaveLoadInterface::SavePlayerScores(const TArray<FPlayerScore>& PlayerScoreArrayToSave)
@@ -261,14 +273,21 @@ TArray<FPlayerScore> ISaveLoadInterface::GetMatchingPlayerScores(const FPlayerSc
 
 TMap<FBS_DefiningConfig, FCommonScoreInfo> ISaveLoadInterface::LoadCommonScoreInfo() const
 {
-	USaveGamePlayerScore* SaveGamePlayerScore;
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
 	{
-		SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1));
-		return SaveGamePlayerScore->CommonScoreInfo;
+		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1)))
+		{
+			return SaveGamePlayerScore->CommonScoreInfo;
+		}
 	}
-	SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass()));
-	return SaveGamePlayerScore->CommonScoreInfo;
+	else
+	{
+		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+		{
+			return SaveGamePlayerScore->CommonScoreInfo;
+		}
+	}
+	return TMap<FBS_DefiningConfig, FCommonScoreInfo>();
 }
 
 FCommonScoreInfo ISaveLoadInterface::GetScoreInfoFromDefiningConfig(const FBS_DefiningConfig& DefiningConfig) const

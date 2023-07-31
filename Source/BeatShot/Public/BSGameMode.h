@@ -147,7 +147,7 @@ public:
 
 private:
 	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
-	void InitializeAudioManagers();
+	bool InitializeAudioManagers();
 
 	/** Retrieves all AudioAnalyzer data on tick */
 	void OnTick_AudioAnalyzers(const float DeltaSeconds);

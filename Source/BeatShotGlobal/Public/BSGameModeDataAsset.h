@@ -15,6 +15,10 @@ class BEATSHOTGLOBAL_API UBSGameModeDataAsset : public UDataAsset
 public:
 	UBSGameModeDataAsset()
 	{
+		if (!DefaultGameModes.IsEmpty())
+		{
+			return;
+		}
 		for (const EBaseGameMode& GameMode : TEnumRange<EBaseGameMode>())
 		{
 			for (const EGameModeDifficulty& Difficulty : TEnumRange<EGameModeDifficulty>())
@@ -23,8 +27,7 @@ public:
 				{
 					continue;
 				}
-				FBSConfig TempConfig = FBSConfig::MakePresetConfig(GameMode, Difficulty);
-				DefaultGameModes.Add(TempConfig.DefiningConfig, TempConfig);
+				DefaultGameModes.Add(FBSConfig::GetConfigForPreset(GameMode, Difficulty), FBSConfig(GameMode, Difficulty));
 			}
 		}
 	}

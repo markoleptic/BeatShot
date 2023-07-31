@@ -192,7 +192,7 @@ void ATarget::PostInitializeComponents()
 		
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATarget::OnHealthChanged);
-		GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
+		//GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
 
 		switch (Config.TargetDamageType)
 		{
@@ -609,6 +609,7 @@ FVector ATarget::GetCurrentTargetScale() const
 	return CapsuleComponent->GetRelativeScale3D();
 }
 
+// Not being used
 void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
 {
 	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));

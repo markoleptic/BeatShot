@@ -160,8 +160,10 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	float MinScale;
 	float MaxScale;
 	Settings->GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScale, MinScale, MaxScale);
-	Slider_ResolutionScale->SetMinValue(MinScale / MaxScale);
-	Slider_ResolutionScale->SetMaxValue(1);
+
+	UE_LOG(LogTemp, Display, TEXT("MinScale %f MaxScale %f"), MinScale, MaxScale);
+	Slider_ResolutionScale->SetMinValue(0.f);
+	Slider_ResolutionScale->SetMaxValue(1.f);
 	
 	Value_GlobalSound->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_GlobalSound);
 	Value_MenuSound->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_MenuSound);
@@ -268,7 +270,9 @@ void USettingsMenuWidget_VideoAndSound::InitSettingCategoryWidget()
 
 void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
 {
-	const UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+	
+	UE_LOG(LogTemp, Display, TEXT("DLSS Mode from InitVideoAndSound: %s"), *UEnum::GetDisplayValueAsText(UDLSSLibrary::GetDLSSMode()).ToString());
 	
 	Slider_GlobalSound->SetValue(InVideoAndSoundSettings.GlobalVolume);
 	Slider_MenuSound->SetValue(InVideoAndSoundSettings.MenuVolume);

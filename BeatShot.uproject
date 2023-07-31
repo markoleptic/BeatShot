@@ -131,6 +131,10 @@
 				"Mac",
 				"Linux"
 			]
+		},
+		{
+			"Name": "ConsoleVariables",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
