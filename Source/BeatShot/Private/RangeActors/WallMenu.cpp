@@ -4,7 +4,7 @@
 #include "RangeActors/WallMenu.h"
 #include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
-#include "../../../../../../Epic Games/UE_5.2_Source_Installed/Engine/Plugins/Experimental/Text3D/Source/Text3D/Public/Text3DComponent.h"
+#include "Text3DComponent.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "Components/BoxComponent.h"
@@ -27,20 +27,95 @@ AWallMenu::AWallMenu()
 		// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
 		AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	}
-	
+
+	// Main Light Visualizer Enable
 	MainText_Enable_LightVisualizers = CreateDefaultSubobject<UText3DComponent>(FName("Enable Light Visualizers"));
 	SetupMainText(MainText_Enable_LightVisualizers, Corkboard, true, "WallMenu_LightVisualizer");
-
+	
 	ToggleText_LightVisualizers_On = CreateDefaultSubobject<UText3DComponent>(FName("Light Visualizers On"));
 	ToggleText_LightVisualizers_Off = CreateDefaultSubobject<UText3DComponent>(FName("Light Visualizers Off"));
 	Box_LightVisualizers_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Light Visualizers On"));
 	Box_LightVisualizers_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Light Visualizers Off"));
-	
+
 	SetupToggleText(MainText_Enable_LightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off,
-		Box_LightVisualizers_On, Box_LightVisualizers_Off);
+	Box_LightVisualizers_On, Box_LightVisualizers_Off);
+
+	// Front Beam Visualizer
+	MainText_Enable_LVFrontBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Front Beam"));
+	SetupMainText(MainText_Enable_LVFrontBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVFrontBeam", Indent);
+
+	ToggleText_LVFrontBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Front Beam On"));
+	ToggleText_LVFrontBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Front Beam Off"));
+	Box_LVFrontBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam On"));
+	Box_LVFrontBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam Off"));
+
+	SetupToggleText(MainText_Enable_LVFrontBeam, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
+	Box_LVFrontBeam_On, Box_LVFrontBeam_Off);
+
+	// Top Beam Visualizer
+	MainText_EnableLV_TopBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Top Beam"));
+	SetupMainText(MainText_EnableLV_TopBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVTopBeam", Offset_MainText + Indent);
+
+	ToggleText_LV_TopBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Top Beam On"));
+	ToggleText_LV_TopBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Top Beam Off"));
+	Box_LV_TopBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam On"));
+	Box_LV_TopBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam Off"));
+
+	SetupToggleText(MainText_EnableLV_TopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off,
+	Box_LV_TopBeam_On, Box_LV_TopBeam_Off);
 	
+	// Left Beam Visualizer
+	MainText_Enable_LVLeftBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Beam"));
+	SetupMainText(MainText_Enable_LVLeftBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftBeam", (Offset_MainText * 2) + Indent);
+	
+	ToggleText_LVLeftBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam On"));
+	ToggleText_LVLeftBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Left Beam Off"));
+	Box_LVLeftBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam On"));
+	Box_LVLeftBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam Off"));
+
+	SetupToggleText(MainText_Enable_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off,
+	Box_LVLeftBeam_On, Box_LVLeftBeam_Off);
+
+	// Right Beam Visualizer
+	MainText_Enable_LVRightBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Beam"));
+	SetupMainText(MainText_Enable_LVRightBeam, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightBeam", (Offset_MainText * 3) + Indent);
+
+	ToggleText_LVRightBeam_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam On"));
+	ToggleText_LVRightBeam_Off = CreateDefaultSubobject<UText3DComponent>(FName("Right Beam Off"));
+	Box_LVRightBeam_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam On"));
+	Box_LVRightBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam Off"));
+
+	SetupToggleText(MainText_Enable_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
+	Box_LVRightBeam_On, Box_LVRightBeam_Off);
+
+	// Left Cube Visualizer
+	MainText_EnableLV_LeftCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Cube"));
+	SetupMainText(MainText_EnableLV_LeftCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVLeftCube", (Offset_MainText * 4) + Indent);
+
+	ToggleText_LV_LeftCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube On"));
+	ToggleText_LV_LeftCube_Off = CreateDefaultSubobject<UText3DComponent>(FName("Left Cube Off"));
+	Box_LV_LeftCube_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube On"));
+	Box_LV_LeftCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube Off"));
+
+	SetupToggleText(MainText_EnableLV_LeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
+	Box_LV_LeftCube_On, Box_LV_LeftCube_Off);
+	
+	// Right Cube Visualizer
+	MainText_EnableLV_RightCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Cube"));
+	SetupMainText(MainText_EnableLV_RightCube, MainText_Enable_LightVisualizers, false, "WallMenu_LVRightCube", (Offset_MainText * 5) + Indent);
+
+	ToggleText_LV_RightCube_On = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube On"));
+	ToggleText_LV_RightCube_Off = CreateDefaultSubobject<UText3DComponent>(FName("Right Cube Off"));
+	Box_LV_RightCube_On = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube On"));
+	Box_LV_RightCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube Off"));
+
+	SetupToggleText(MainText_EnableLV_RightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
+	Box_LV_RightCube_On, Box_LV_RightCube_Off);
+	
+	
+	// Night Mode Enable
 	MainText_Enable_NightMode = CreateDefaultSubobject<UText3DComponent>(FName("Enable Night Mode"));
-	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "WallMenu_NightMode");
+	SetupMainText(MainText_Enable_NightMode, MainText_Enable_LightVisualizers, false, "WallMenu_NightMode", Offset_MainText * 6);
 
 	ToggleText_NightMode_On = CreateDefaultSubobject<UText3DComponent>(FName("Night Mode On"));
 	ToggleText_NightMode_Off = CreateDefaultSubobject<UText3DComponent>(FName("Night Mode Off"));
@@ -99,34 +174,143 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 			}
 			else if (Found->SettingType == "bShowLightVisualizers")
 			{
+				// Don't do anything if its already on
+				if (Found->bIsOnText && PlayerSettings_Game.bShowLightVisualizers)
+				{
+					return;
+				}
+				
 				PlayerSettings_Game.bShowLightVisualizers = Found->bIsOnText;
+
+				// By default, only turn on 3 lights when initially toggling on
+				if (Found->bIsOnText)
+				{
+					ToggleText(true, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off);
+					ToggleText(true, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off);
+					ToggleText(true, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off);
+					ToggleText(false, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off);
+					ToggleText(false, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off);
+					ToggleText(false, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off);
+									
+					PlayerSettings_Game.bShow_LVTopBeam = true;
+					PlayerSettings_Game.bShow_LVLeftCube = true;
+					PlayerSettings_Game.bShow_LVRightCube = true;
+					PlayerSettings_Game.bShow_LVFrontBeam = false;
+					PlayerSettings_Game.bShow_LVLeftBeam = false;
+					PlayerSettings_Game.bShow_LVRightBeam = false;
+				}
+				// Toggle all off if disabled
+				else if (!Found->bIsOnText)
+				{
+					ToggleText(false, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off);
+					ToggleText(false, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off);
+					ToggleText(false, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off);
+					ToggleText(false, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off);
+					ToggleText(false, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off);
+					ToggleText(false, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off);
+									
+					PlayerSettings_Game.bShow_LVTopBeam = false;
+					PlayerSettings_Game.bShow_LVLeftCube = false;
+					PlayerSettings_Game.bShow_LVRightCube = false;
+					PlayerSettings_Game.bShow_LVFrontBeam = false;
+					PlayerSettings_Game.bShow_LVLeftBeam = false;
+					PlayerSettings_Game.bShow_LVRightBeam = false;
+				}
 			}
+			else if (Found->SettingType == "bShow_LVFrontBeam")
+			{
+				PlayerSettings_Game.bShow_LVFrontBeam = Found->bIsOnText;
+			}
+			else if (Found->SettingType == "bShow_LVLeftBeam")
+			{
+				PlayerSettings_Game.bShow_LVLeftBeam = Found->bIsOnText;
+			}
+			else if (Found->SettingType == "bShow_LVRightBeam")
+			{
+				PlayerSettings_Game.bShow_LVRightBeam = Found->bIsOnText;
+			}
+			else if (Found->SettingType == "bShow_LVTopBeam")
+			{
+				PlayerSettings_Game.bShow_LVTopBeam = Found->bIsOnText;
+			}
+			else if (Found->SettingType == "bShow_LVLeftCube")
+			{
+				PlayerSettings_Game.bShow_LVLeftCube = Found->bIsOnText;
+			}
+			else if (Found->SettingType == "bShow_LVRightCube")
+			{
+				PlayerSettings_Game.bShow_LVRightCube = Found->bIsOnText;
+			}
+			
 			SavePlayerSettings(PlayerSettings_Game);
 			ToggleText(Found->bIsOnText, Found->OnText.Get(), Found->OffText.Get());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Display, TEXT("Didn't find associated FText3DToggle"));
 		}
 	}
 }
 
 void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings)
 {
-	ApplyMainTextMaterials();
-	ToggleText(GameSettings.bShowLightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off);
-	ToggleText(GameSettings.bNightModeSelected, ToggleText_NightMode_On, ToggleText_NightMode_Off);
-	
 	MainText_Enable_NightMode->SetVisibility(UserSettings.bNightModeUnlocked);
 	ToggleText_NightMode_On->SetVisibility(UserSettings.bNightModeUnlocked);
-	ToggleText_NightMode_Off->SetVisibility(UserSettings.bNightModeUnlocked, !UserSettings.bNightModeUnlocked);
+	ToggleText_NightMode_Off->SetVisibility(UserSettings.bNightModeUnlocked);
+	
+	ApplyMainTextMaterials();
+	
+	ToggleText(GameSettings.bShowLightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off);
+	ToggleText(GameSettings.bNightModeSelected, ToggleText_NightMode_On, ToggleText_NightMode_Off);
+	ToggleText(GameSettings.bShow_LVTopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off);
+	ToggleText(GameSettings.bShow_LVLeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off);
+	ToggleText(GameSettings.bShow_LVRightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off);
+	ToggleText(GameSettings.bShow_LVFrontBeam, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off);
+	ToggleText(GameSettings.bShow_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off);
+	ToggleText(GameSettings.bShow_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off);
+
 	
 	if (BoxToTextMap.IsEmpty())
 	{
 		BoxToTextMap.Add(Box_LightVisualizers_On, FText3DToggle(nullptr, Box_LightVisualizers_On, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off,
 			true, "bShowLightVisualizers"));
 		BoxToTextMap.Add(Box_LightVisualizers_Off, FText3DToggle(nullptr, Box_LightVisualizers_Off, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off,
-	false, "bShowLightVisualizers"));
+			false, "bShowLightVisualizers"));
+		
+		BoxToTextMap.Add(Box_LVFrontBeam_On, FText3DToggle(nullptr, Box_LVFrontBeam_On, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
+			true, "bShow_LVFrontBeam"));
+		BoxToTextMap.Add(Box_LVFrontBeam_Off, FText3DToggle(nullptr, Box_LVFrontBeam_Off, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
+			false, "bShow_LVFrontBeam"));
+
+		BoxToTextMap.Add(Box_LVLeftBeam_On, FText3DToggle(nullptr, Box_LVLeftBeam_On, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off,
+			true, "bShow_LVLeftBeam"));
+		BoxToTextMap.Add(Box_LVLeftBeam_Off, FText3DToggle(nullptr, Box_LVLeftBeam_Off, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off,
+			false, "bShow_LVLeftBeam"));
+
+		BoxToTextMap.Add(Box_LVRightBeam_On, FText3DToggle(nullptr, Box_LVRightBeam_On, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
+			true, "bShow_LVRightBeam"));
+		BoxToTextMap.Add(Box_LVRightBeam_Off, FText3DToggle(nullptr, Box_LVRightBeam_Off, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
+			false, "bShow_LVRightBeam"));
+
+		BoxToTextMap.Add(Box_LV_TopBeam_On, FText3DToggle(nullptr, Box_LV_TopBeam_On, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off,
+			true, "bShow_LVTopBeam"));
+		BoxToTextMap.Add(Box_LV_TopBeam_Off, FText3DToggle(nullptr, Box_LV_TopBeam_Off, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off,
+			false, "bShow_LVTopBeam"));
+		
+		BoxToTextMap.Add(Box_LV_LeftCube_On, FText3DToggle(nullptr, Box_LV_LeftCube_On, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
+			true, "bShow_LVLeftCube"));
+		BoxToTextMap.Add(Box_LV_LeftCube_Off, FText3DToggle(nullptr, Box_LV_LeftCube_Off, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
+			false, "bShow_LVLeftCube"));
+		
+		BoxToTextMap.Add(Box_LV_RightCube_On, FText3DToggle(nullptr, Box_LV_RightCube_On, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
+			true, "bShow_LVRightCube"));
+		BoxToTextMap.Add(Box_LV_RightCube_Off, FText3DToggle(nullptr, Box_LV_RightCube_Off, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
+			false, "bShow_LVRightCube"));
+		
 		BoxToTextMap.Add(Box_NightMode_On, FText3DToggle(nullptr, Box_NightMode_On, ToggleText_NightMode_On, ToggleText_NightMode_Off,
-	true, "bNightModeSelected"));
+			true, "bNightModeSelected"));
 		BoxToTextMap.Add(Box_NightMode_Off, FText3DToggle(nullptr, Box_NightMode_Off, ToggleText_NightMode_On, ToggleText_NightMode_Off,
-	true, "bNightModeSelected"));
+			false, "bNightModeSelected"));
 	}
 }
 
@@ -140,7 +324,7 @@ void AWallMenu::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSet
 	Init(LoadPlayerSettings().Game, UserSettings);
 }
 
-void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText, const FString& Key) const
+void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText, const FString& Key, const FVector& AdditionalOffset) const
 {
 	InComponent->SetupAttachment(InParent);
 	
@@ -151,7 +335,7 @@ void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* In
 	}
 	else
 	{
-		InComponent->SetRelativeLocation(Offset_MainText);
+		InComponent->SetRelativeLocation(Offset_MainText + AdditionalOffset);
 	}
 	
 	InComponent->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
@@ -247,13 +431,41 @@ void AWallMenu::ApplyMainTextMaterials() const
 	if (Material_Main_Front_Text3D)
 	{
 		MainText_Enable_LightVisualizers->SetFrontMaterial(Material_Main_Front_Text3D);
+		
+		MainText_Enable_LVFrontBeam->SetFrontMaterial(Material_Main_Front_Text3D);
+		MainText_EnableLV_TopBeam->SetFrontMaterial(Material_Main_Front_Text3D);
+		MainText_Enable_LVLeftBeam->SetFrontMaterial(Material_Main_Front_Text3D);
+		MainText_Enable_LVRightBeam->SetFrontMaterial(Material_Main_Front_Text3D);
+		MainText_EnableLV_LeftCube->SetFrontMaterial(Material_Main_Front_Text3D);
+		MainText_EnableLV_RightCube->SetFrontMaterial(Material_Main_Front_Text3D);
+		
 		MainText_Enable_NightMode->SetFrontMaterial(Material_Main_Front_Text3D);
+
 	}
 
 	if (Material_Main_Extrude_Text3D)
 	{
 		MainText_Enable_LightVisualizers->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
 		MainText_Enable_LightVisualizers->SetBevelMaterial(Material_Main_Extrude_Text3D);
+
+		MainText_Enable_LVFrontBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
+		MainText_Enable_LVFrontBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
+
+		MainText_EnableLV_TopBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
+		MainText_EnableLV_TopBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
+
+		MainText_Enable_LVLeftBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
+		MainText_Enable_LVLeftBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
+
+		MainText_Enable_LVRightBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
+		MainText_Enable_LVRightBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
+
+		MainText_EnableLV_LeftCube->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
+		MainText_EnableLV_LeftCube->SetBevelMaterial(Material_Main_Extrude_Text3D);
+
+		MainText_EnableLV_RightCube->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
+		MainText_EnableLV_RightCube->SetBevelMaterial(Material_Main_Extrude_Text3D);
+		
 		MainText_Enable_NightMode->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
 		MainText_Enable_NightMode->SetBevelMaterial(Material_Main_Extrude_Text3D);
 	}
@@ -261,6 +473,14 @@ void AWallMenu::ApplyMainTextMaterials() const
 	if (Font_Text3D)
 	{
 		MainText_Enable_LightVisualizers->SetFont(Font_Text3D);
+
+		MainText_Enable_LVFrontBeam->SetFont(Font_Text3D);
+		MainText_EnableLV_TopBeam->SetFont(Font_Text3D);
+		MainText_Enable_LVLeftBeam->SetFont(Font_Text3D);
+		MainText_Enable_LVRightBeam->SetFont(Font_Text3D);
+		MainText_EnableLV_LeftCube->SetFont(Font_Text3D);
+		MainText_EnableLV_RightCube->SetFont(Font_Text3D);
+		
 		MainText_Enable_NightMode->SetFont(Font_Text3D);
 	}
 }

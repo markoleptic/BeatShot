@@ -68,11 +68,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 	/* Split visualizer types into their own containers so that UpdateVisualizers can be as efficient as possible */
 	SplitVisualizers();
 	
-	if (PlayerSettings.bShowLightVisualizers)
-	{
-		bUpdateBeamVisualizers = true;
-	}
-	bUpdateCubeVisualizers = true;
+	UpdateVisualizerSettings(PlayerSettings);
 }
 
 float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bool bIsBeam)
@@ -134,7 +130,7 @@ void AVisualizerManager::UpdateBeamVisualizers(const int32 Index, const float Sp
 {
 	for (const TObjectPtr<ABeamVisualizer>& BeamVisualizer : GetBeamVisualizers())
 	{
-		BeamVisualizer->ActivateVisualizer(Index);
+		BeamVisualizer->UpdateVisualizer(Index, SpectrumValue);
 	}
 }
 
@@ -152,34 +148,39 @@ void AVisualizerManager::DeactivateVisualizers()
 	{
 		if (Visualizer)
 		{
-			Visualizer->DeactivateVisualizers();
+			Visualizer->SetActivationState(false);
 		}
 	}
 }
 
-void AVisualizerManager::DeactivateBeamVisualizers()
+void AVisualizerManager::SetActivationState_BeamVisualizer(const int32 Index, const bool bActivate)
 {
-	for (const TObjectPtr<ABeamVisualizer>& BeamVisualizer : GetBeamVisualizers())
+	if (GetBeamVisualizers().IsValidIndex(Index))
 	{
-		BeamVisualizer->DeactivateVisualizers();
+		GetBeamVisualizers()[Index]->SetActivationState(bActivate);
 	}
 }
 
-void AVisualizerManager::DeactivateCubeVisualizers()
+void AVisualizerManager::SetActivationState_CubeVisualizer(const int32 Index, const bool bActivate)
 {
-	for (const TObjectPtr<AStaticCubeVisualizer>& CubeVisualizer : GetCubeVisualizers())
+	if (GetCubeVisualizers().IsValidIndex(Index))
 	{
-		CubeVisualizer->DeactivateVisualizers();
+		GetCubeVisualizers()[Index]->SetActivationState(bActivate);
 	}
 }
 
 void AVisualizerManager::UpdateVisualizerSettings(const FPlayerSettings_Game& PlayerSettings)
 {
-	bUpdateBeamVisualizers = PlayerSettings.bShowLightVisualizers;
-	if (!bUpdateBeamVisualizers)
-	{
-		DeactivateBeamVisualizers();
-	}
+	SetActivationState_BeamVisualizer(0, PlayerSettings.bShow_LVTopBeam);
+	SetActivationState_BeamVisualizer(1, PlayerSettings.bShow_LVFrontBeam);
+	SetActivationState_BeamVisualizer(2, PlayerSettings.bShow_LVLeftBeam);
+	SetActivationState_BeamVisualizer(3, PlayerSettings.bShow_LVRightBeam);
+	SetActivationState_CubeVisualizer(0, PlayerSettings.bShow_LVLeftCube);
+	SetActivationState_CubeVisualizer(1, PlayerSettings.bShow_LVRightCube);
+
+	bUpdateCubeVisualizers = PlayerSettings.bShow_LVLeftCube || PlayerSettings.bShow_LVRightCube;
+	bUpdateBeamVisualizers = PlayerSettings.bShow_LVFrontBeam || PlayerSettings.bShow_LVTopBeam ||
+		PlayerSettings.bShow_LVLeftBeam || PlayerSettings.bShow_LVRightBeam;
 }
 
 void AVisualizerManager::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings)

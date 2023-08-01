@@ -969,6 +969,24 @@ struct FPlayerSettings_Game
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowLightVisualizers;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow_LVFrontBeam;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow_LVLeftBeam;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow_LVRightBeam;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow_LVTopBeam;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow_LVLeftCube;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShow_LVRightCube;
+
 	FPlayerSettings_Game()
 	{
 		bShowStreakCombatText = true;
@@ -988,6 +1006,12 @@ struct FPlayerSettings_Game
 		bShowWeaponMesh = true;
 		bNightModeSelected = false;
 		bShowLightVisualizers = false;
+		bShow_LVFrontBeam = false;
+		bShow_LVLeftBeam = false;
+		bShow_LVRightBeam = false;
+		bShow_LVTopBeam = false;
+		bShow_LVLeftCube = false;
+		bShow_LVRightCube = false;
 	}
 
 	/** Resets all game settings not on the wall menu */
@@ -1098,16 +1122,13 @@ struct FPlayerSettings_User
 	FString DisplayName;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bHasLoggedInBefore;
-
-	UPROPERTY(BlueprintReadOnly)
 	FString RefreshCookie;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bNightModeUnlocked;
 
 	UPROPERTY(BlueprintReadOnly)
-	bool bHasSeenRegisterPopup;
+	bool bHasRanBenchmark;
 
 	UPROPERTY(BlueprintReadOnly)
 	TMap<FName, FKey> Keybindings;
@@ -1115,11 +1136,10 @@ struct FPlayerSettings_User
 	FPlayerSettings_User()
 	{
 		Sensitivity = DefaultSensitivity;
-		bHasLoggedInBefore = false;
 		UserID = FString();
 		RefreshCookie = FString();
 		bNightModeUnlocked = false;
-		bHasSeenRegisterPopup = false;
+		bHasRanBenchmark = false;
 		Keybindings = TMap<FName, FKey>();
 	}
 };

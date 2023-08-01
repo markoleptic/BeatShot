@@ -392,8 +392,6 @@ private:
 	UFUNCTION()
 	void OnValueChanged_FrameLimitMenu(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
-	void OnValueChanged_FrameLimitGame(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
 	void OnValueChanged_DLSS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnValueChanged_NIS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType);
@@ -419,8 +417,6 @@ private:
 
 	UFUNCTION()
 	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_FPSCounter(const bool bIsChecked);
 	
 	/** Function bound to RevertVideoSettingsTimer_UpdateSecond */
 	UFUNCTION()
@@ -470,6 +466,7 @@ private:
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
 	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
+	/** Replacement function to set the DLSSMode since the old SetDLSSMode is deprecated */
 	static void SetDLSSMode(const UDLSSMode InDLSSMode, const bool bRestoreFullResWhenDisabled = true);
 	
 	UPROPERTY()
@@ -486,6 +483,4 @@ private:
 	
 	/** Timer that starts when window mode or resolution is changed, and calls RevertVideoSettingsTimerCallback every second */
 	FTimerHandle RevertVideoSettingsTimer_UpdateSecond;
-
-	const FString ScreenPercentageConsoleCommand = "r.ScreenPercentage ";
 };

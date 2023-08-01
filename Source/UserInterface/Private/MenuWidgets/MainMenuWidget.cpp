@@ -214,7 +214,6 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 			PlayerSettingsToSave.UserID = Response.UserID;
 			PlayerSettingsToSave.DisplayName = Response.DisplayName;
 			PlayerSettingsToSave.RefreshCookie = Response.RefreshToken;
-			PlayerSettingsToSave.bHasLoggedInBefore = true;
 			SavePlayerSettings(PlayerSettingsToSave);
 			TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("SignInState_LoggingWebBrowser"));
 

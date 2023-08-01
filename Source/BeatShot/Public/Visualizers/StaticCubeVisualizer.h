@@ -20,8 +20,7 @@ class BEATSHOT_API AStaticCubeVisualizer : public AVisualizerBase
 
 public:
 	AStaticCubeVisualizer();
-
-	/** Clears all StaticMeshInstances and generates new ones based on AASettings */
+	
 	virtual void InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings) override;
 
 	/** Updates the CubeHeightScale and the RedGreenAlpha for a cube at Index */
@@ -29,8 +28,13 @@ public:
 
 	/** Marks all instanced static meshes render states as dirty. Should be called by a VisualizerManager to limit the frequency of calls */
 	virtual void MarkRenderStateDirty() override;
+	
+	virtual void SetActivationState(const bool bActivate) override;
 
 protected:
+
+	/** Clears all StaticMeshInstances and generates new ones */
+	void CreateCubeInstances();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USceneComponent* RootSceneComponent;
@@ -86,4 +90,6 @@ private:
 
 	/** Adds an instance for each mesh that is updated, i.e. InstancedBaseMesh, InstancedVerticalOutlineMesh, and InstancedTopMesh with the given RelativeTransform*/
 	void AddInstancedCubeMesh(const FTransform& RelativeTransform);
+
+	TMap<int32, FTransform> IndexTransformMap;
 };

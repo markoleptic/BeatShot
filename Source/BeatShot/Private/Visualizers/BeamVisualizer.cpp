@@ -150,8 +150,9 @@ void ABeamVisualizer::InitializeVisualizerFromWorld(const FPlayerSettings_AudioA
 	}
 }
 
-void ABeamVisualizer::ActivateVisualizer(const int32 Index)
+void ABeamVisualizer::UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
 {
+	if (!bIsActivated) return;
 	for (const int32 LightIndex : GetLightIndices(Index))
 	{
 		if (ActiveLightIndices.Contains(LightIndex))
@@ -165,14 +166,23 @@ void ABeamVisualizer::ActivateVisualizer(const int32 Index)
 
 void ABeamVisualizer::DeactivateVisualizers()
 {
-	for (const TObjectPtr<ASimpleBeamLight> Light : GetSimpleBeamLights())
+	for (const TObjectPtr<ASimpleBeamLight>& Light : GetSimpleBeamLights())
 	{
-		if (Light && Light.Get())
+		if (Light)
 		{
 			Light->DeactivateLightComponents();
 		}
 	}
 	ActiveLightIndices.Empty();
+}
+
+void ABeamVisualizer::SetActivationState(const bool bActivate)
+{
+	Super::SetActivationState(bActivate);
+	if (!bActivate)
+	{
+		DeactivateVisualizers();
+	}
 }
 
 void ABeamVisualizer::OnBeamLightLifetimeCompleted(const int32 IndexToRemove)

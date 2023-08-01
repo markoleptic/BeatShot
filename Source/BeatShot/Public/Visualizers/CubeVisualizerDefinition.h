@@ -13,25 +13,25 @@ class BEATSHOT_API UCubeVisualizerDefinition : public UBSVisualizerDefinition
 	GENERATED_BODY()
 
 public:
-	/** Uniform scale applied to the instanced static mesh */
+	/** Scale applied to each instanced static mesh */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cube Visualizer|Scale", meta=(DisplayPriority=0))
-	float MeshScale;
+	FVector MeshScale;
 
 	/** Base height of the cube */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cube Visualizer|Scale", meta=(DisplayPriority=1))
 	float CubeHeight;
 
-	/** Min height of the cube when receiving no input */
+	/** Min scaling factor to apply to the height of the cube when receiving no input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cube Visualizer|Scale", meta=(DisplayPriority=2))
 	float MinCubeVisualizerHeightScale;
 
-	/** Max height of the cube when receiving max input */
+	/** Max scaling factor to apply to the height of the cube when receiving max input */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Cube Visualizer|Scale", meta=(DisplayPriority=3))
 	float MaxCubeVisualizerHeightScale;
 
 	UCubeVisualizerDefinition()
 	{
-		MeshScale = 0.5f;
+		MeshScale = FVector(0.5f);
 		CubeHeight = 100.f;
 		MinCubeVisualizerHeightScale = DefaultMinCubeVisualizerHeightScale;
 		MaxCubeVisualizerHeightScale = DefaultMaxCubeVisualizerHeightScale;

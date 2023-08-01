@@ -23,6 +23,10 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 
 	virtual void Init() override;
 
+	virtual void OnStart() override;
+
+	void InitVideoSettings();
+
 	virtual void Shutdown() override;
 
 public:

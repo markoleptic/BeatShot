@@ -24,10 +24,12 @@ public:
 	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers = INDEX_NONE) override;
 
 	/** Activates the matching visualizer from the given index if it isn't already */
-	virtual void ActivateVisualizer(const int32 Index) override;
+	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
 
-	/** Deactivates all visualizers */
-	virtual void DeactivateVisualizers() override;
+	/** Deactivates all Beam Light visualizers */
+	void DeactivateVisualizers();
+
+	virtual void SetActivationState(const bool bActivate) override;
 
 	/** Called by child beam lights to remove them from ActiveLightIndices */
 	UFUNCTION()

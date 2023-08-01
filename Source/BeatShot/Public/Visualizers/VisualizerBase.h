@@ -37,12 +37,12 @@ public:
 
 	/** Initializes a visualizer already in the level */
 	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers);
-
-	/** Activates the matching visualizer from the given AudioAnalyzer channel index */
-	virtual void ActivateVisualizer(const int32 Index) {}
 	
-	/** Deactivates all visualizers */
-	virtual void DeactivateVisualizers() {}
+	/** Sets whether or not the visualizer should receive input from the Audio Analyzer */
+	virtual void SetActivationState(const bool bActivate);
+
+	/** Returns whether or not the visualizer is receiving input from the Audio Analyzer */
+	bool IsActivated() const { return bIsActivated; }
 
 	/** Updates a visualizer state at Index inside Visualizers array. SpectrumAlpha should be a value between
 	 *  0 and 1, with 1 being the maximum visualizer state and 0 being the minimum */
@@ -105,4 +105,6 @@ protected:
 	/** The data asset that specifies the configuration for this visualizer */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Visualizer Definition", meta=(DisplayPriority=-20000))
 	UBSVisualizerDefinition* VisualizerDefinition;
+
+	bool bIsActivated;
 };

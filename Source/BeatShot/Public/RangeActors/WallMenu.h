@@ -120,6 +120,72 @@ protected:
 	UBoxComponent* Box_NightMode_On;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UBoxComponent* Box_NightMode_Off;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* MainText_Enable_LVFrontBeam;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LVFrontBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LVFrontBeam_Off;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LVFrontBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LVFrontBeam_Off;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* MainText_Enable_LVLeftBeam;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LVLeftBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LVLeftBeam_Off;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LVLeftBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LVLeftBeam_Off;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* MainText_Enable_LVRightBeam;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LVRightBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LVRightBeam_Off;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LVRightBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LVRightBeam_Off;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* MainText_EnableLV_TopBeam;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LV_TopBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LV_TopBeam_Off;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LV_TopBeam_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LV_TopBeam_Off;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* MainText_EnableLV_LeftCube;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LV_LeftCube_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LV_LeftCube_Off;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LV_LeftCube_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LV_LeftCube_Off;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* MainText_EnableLV_RightCube;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LV_RightCube_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UText3DComponent* ToggleText_LV_RightCube_Off;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LV_RightCube_On;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UBoxComponent* Box_LV_RightCube_Off;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Main")
 	UMaterialInterface* Material_Main_Front_Text3D;
@@ -135,6 +201,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
 	UFont* Font_Text3D;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
+	FVector Offset_MainText = { 0.f, 0.f, -50.f};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
+	FVector Indent = { 0.f, 50.f, 0.f};
 	
 	/** Displays which settings are on/off etc by lighting the correct words */
 	void Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings);
@@ -142,7 +212,7 @@ protected:
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 
-	void SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText, const FString& Key) const;
+	void SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText, const FString& Key, const FVector& AdditionalOffset = FVector::ZeroVector) const;
 	void SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff) const;
 	void ToggleText(const bool bIsOn, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff) const;
 	void ApplyMainTextMaterials() const;
@@ -158,10 +228,7 @@ protected:
 	FVector Position_FirstMainText = { 310.f, 40.f, 55.f};
 	/** Rotation first main text */
 	FRotator Rotation_FirstMainText = { -90.f, 0.f, 0.f};
-	/** Offset from previous main text */
-	FVector Offset_MainText = { 0.f, 0.f, -65.f};
-
-
+	
 	/** Offset from Toggle text to box component */
 	FVector Position_BoxCollision = { 2.f, 0, 22.5f };
 	/** Box component extents */

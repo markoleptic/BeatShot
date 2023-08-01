@@ -14,8 +14,8 @@ AVisualizerBase::AVisualizerBase()
 
 void AVisualizerBase::Destroyed()
 {
+	SetActivationState(false);
 	Super::Destroyed();
-	DeactivateVisualizers();
 }
 
 void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings)
@@ -29,6 +29,11 @@ void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
 {
 	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, NumSpawnedVisualizers);
+}
+
+void AVisualizerBase::SetActivationState(const bool bActivate)
+{
+	bIsActivated = bActivate;
 }
 
 void AVisualizerBase::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& InAASettings)

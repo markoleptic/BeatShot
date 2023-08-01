@@ -133,9 +133,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-500, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
 	FVector OffsetScale;
 
+	/*/** Whether or not to scale the visualizers to fit between OffsetExtreme1 and OffsetExtreme2 #1#
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-403, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
+	bool bScaleToFitWithinOffsetExtreme;
 
+	/** Relative offset scale to apply between lights when using position offset spawning method  #1#
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-402, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets && bScaleToFitWithinOffsetExtreme == true"))
+	FVector OffsetExtreme1;
 
-
+	/** Relative offset scale to apply between lights when using position offset spawning method  #1#
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-401, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets && bScaleToFitWithinOffsetExtreme == true"))
+	FVector OffsetExtreme2;*/
+	
 	
 	/** How to assign AudioAnalyzer channels to lights */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio Analyzer", meta=(DisplayPriority=-400))

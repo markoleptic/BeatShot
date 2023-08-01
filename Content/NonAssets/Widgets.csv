@@ -293,6 +293,12 @@ WallMenu_BulletDecals,BULLET DECALS
 WallMenu_BulletTracers,BULLET TRACERS
 WallMenu_FireRate,FIRE RATE
 WallMenu_LightVisualizer,LIGHT VISUALIZERS
+WallMenu_LVFrontBeam,FRONT BEAMS
+WallMenu_LVLeftBeam,LEFT BEAMS
+WallMenu_LVRightBeam,RIGHT BEAMS
+WallMenu_LVTopBeam,TOP BEAMS
+WallMenu_LVLeftCube,LEFT CUBES
+WallMenu_LVRightCube,RIGHT CUBES
 WallMenu_NightMode,NIGHT MODE
 WallMenu_Off,OFF
 WallMenu_On,ON

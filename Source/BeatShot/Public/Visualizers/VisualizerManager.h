@@ -32,11 +32,11 @@ public:
 	/** Deactivates all visualizers */
 	void DeactivateVisualizers();
 
-	/** Deactivates all Beam visualizers */
-	void DeactivateBeamVisualizers();
+	/** Updates a Beam Visualizer's activation state */
+	void SetActivationState_BeamVisualizer(const int32 Index, const bool bActivate);
 
-	/** Deactivates all Cube visualizers */
-	void DeactivateCubeVisualizers();
+	/** Updates a Cube Visualizer's activation state */
+	void SetActivationState_CubeVisualizer(const int32 Index, const bool bActivate);
 
 	/** Updates visualizers based on player game settings */
 	void UpdateVisualizerSettings(const FPlayerSettings_Game& PlayerSettings);
@@ -84,13 +84,13 @@ protected:
 	bool bUpdateCubeVisualizers;
 
 private:
+	TArray<TObjectPtr<ABeamVisualizer>> BeamVisualizers;
+	TArray<TObjectPtr<AStaticCubeVisualizer>> CubeVisualizers;
 	
 	TArray<TObjectPtr<ABeamVisualizer>>& GetBeamVisualizers() { return BeamVisualizers; }
 	TArray<TObjectPtr<AStaticCubeVisualizer>>& GetCubeVisualizers() { return CubeVisualizers; }
 	TArray<TObjectPtr<AVisualizerBase>>& GetVisualizers() { return Visualizers; }
-	TArray<TObjectPtr<ABeamVisualizer>> BeamVisualizers;
-	TArray<TObjectPtr<AStaticCubeVisualizer>> CubeVisualizers;
-
+	
 	/** Splits Visualizers into smaller subclass groups */
 	void SplitVisualizers();
 
