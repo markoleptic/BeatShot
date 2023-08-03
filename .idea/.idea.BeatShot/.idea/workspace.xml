@@ -84,35 +84,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Config/DefaultGameUserSettings.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/AbilitiySystem/FireGun/GA_FireGun.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/AbilitiySystem/FireGun/GA_FireGun.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Characters/BP_DefaultCharacter.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GCN_WeaponFire.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/GameplayCues/GCN_WeaponFire.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/BP_Gun_AK47.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/BP_Gun_AK47.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/BP_WeaponFire.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/BP_WeaponFire.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/ED_AK47.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/ED_AK47.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/ED_Knife.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/InventoryItems/Equipment/ED_Knife.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/Range/BP_WallMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Range/BP_WallMenu.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/Instanced/CubeVisualizers/BP_StaticCubeVisualizer_Left.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Visualizers/Instanced/CubeVisualizers/BP_StaticCubeVisualizer_Left.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/Instanced/CubeVisualizers/BP_StaticCubeVisualizer_Right.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Visualizers/Instanced/CubeVisualizers/BP_StaticCubeVisualizer_Right.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AASettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_AASettings.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BeatShot.Build.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/WallMenu.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/WallMenu.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/BeamVisualizer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/BeamVisualizer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/StaticCubeVisualizer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/StaticCubeVisualizer.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerBase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerBase.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Visualizers/VisualizerManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/WallMenu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/WallMenu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/BSVisualizerDefinition.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/BSVisualizerDefinition.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/BeamVisualizer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/BeamVisualizer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/CubeVisualizerDefinition.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/CubeVisualizerDefinition.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/StaticCubeVisualizer.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/StaticCubeVisualizer.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualizerBase.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualizerBase.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualizerManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Visualizers/VisualizerManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalStructs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/MenuWidgets/MainMenuWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/AudioSelectWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/OverlayWidgets/AudioSelectWidget.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,20 +110,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/algorithm" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/cmath" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/functional" root0="SKIP_HIGHLIGHTING" />
@@ -145,6 +118,8 @@
     <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared/intsafe.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/shared/ntverp.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/ucrt/corecrt_math.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um/ShObjIdl_core.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://C:/Program Files (x86)/Windows Kits/10/Include/10.0.22621.0/um/combaseapi.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/MSVC/14.36.32532/include/sal.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/Developer/GraphColor/Private/appconst.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../../Epic Games/UE_5.0/Engine/Source/Developer/GraphColor/Private/listcoll.cpp" root0="SKIP_HIGHLIGHTING" />
@@ -27093,7 +27068,10 @@
       <workItem from="1690745799829" duration="22194000" />
       <workItem from="1690779630898" duration="7893000" />
       <workItem from="1690830901849" duration="27449000" />
-      <workItem from="1690869150935" duration="1594000" />
+      <workItem from="1690869150935" duration="1621000" />
+      <workItem from="1690905003155" duration="4009000" />
+      <workItem from="1690942640519" duration="6389000" />
+      <workItem from="1691100796764" duration="608000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

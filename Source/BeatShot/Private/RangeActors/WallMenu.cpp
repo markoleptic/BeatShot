@@ -50,7 +50,7 @@ AWallMenu::AWallMenu()
 	Box_LVFrontBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Front Beam Off"));
 
 	SetupToggleText(MainText_Enable_LVFrontBeam, ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off,
-	Box_LVFrontBeam_On, Box_LVFrontBeam_Off);
+	Box_LVFrontBeam_On, Box_LVFrontBeam_Off, -Indent);
 
 	// Top Beam Visualizer
 	MainText_EnableLV_TopBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Top Beam"));
@@ -62,7 +62,7 @@ AWallMenu::AWallMenu()
 	Box_LV_TopBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Top Beam Off"));
 
 	SetupToggleText(MainText_EnableLV_TopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off,
-	Box_LV_TopBeam_On, Box_LV_TopBeam_Off);
+	Box_LV_TopBeam_On, Box_LV_TopBeam_Off, -Indent);
 	
 	// Left Beam Visualizer
 	MainText_Enable_LVLeftBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Beam"));
@@ -74,7 +74,7 @@ AWallMenu::AWallMenu()
 	Box_LVLeftBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Beam Off"));
 
 	SetupToggleText(MainText_Enable_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off,
-	Box_LVLeftBeam_On, Box_LVLeftBeam_Off);
+	Box_LVLeftBeam_On, Box_LVLeftBeam_Off, -Indent);
 
 	// Right Beam Visualizer
 	MainText_Enable_LVRightBeam = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Beam"));
@@ -86,7 +86,7 @@ AWallMenu::AWallMenu()
 	Box_LVRightBeam_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Beam Off"));
 
 	SetupToggleText(MainText_Enable_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off,
-	Box_LVRightBeam_On, Box_LVRightBeam_Off);
+	Box_LVRightBeam_On, Box_LVRightBeam_Off, -Indent);
 
 	// Left Cube Visualizer
 	MainText_EnableLV_LeftCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Left Cube"));
@@ -98,7 +98,7 @@ AWallMenu::AWallMenu()
 	Box_LV_LeftCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Left Cube Off"));
 
 	SetupToggleText(MainText_EnableLV_LeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off,
-	Box_LV_LeftCube_On, Box_LV_LeftCube_Off);
+	Box_LV_LeftCube_On, Box_LV_LeftCube_Off, -Indent);
 	
 	// Right Cube Visualizer
 	MainText_EnableLV_RightCube = CreateDefaultSubobject<UText3DComponent>(FName("Enable Right Cube"));
@@ -110,7 +110,7 @@ AWallMenu::AWallMenu()
 	Box_LV_RightCube_Off = CreateDefaultSubobject<UBoxComponent>(FName("Box Right Cube Off"));
 
 	SetupToggleText(MainText_EnableLV_RightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off,
-	Box_LV_RightCube_On, Box_LV_RightCube_Off);
+	Box_LV_RightCube_On, Box_LV_RightCube_Off, -Indent);
 	
 	
 	// Night Mode Enable
@@ -338,11 +338,24 @@ void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* In
 		InComponent->SetRelativeLocation(Offset_MainText + AdditionalOffset);
 	}
 	
+	InComponent->SetScaleProportionally(true);
+	InComponent->SetHasMaxHeight(true);
+	
+	if (AdditionalOffset == FVector::ZeroVector)
+	{
+		InComponent->SetMaxHeight(MaxHeightMainText);
+	}
+	else
+	{
+		InComponent->SetMaxHeight(MaxHeightIndentedText);
+	}
+	
 	InComponent->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", Key));
 	InComponent->SetExtrude(5.f);
 	InComponent->SetBevel(2.f);
 	InComponent->SetCastShadow(false);
 	InComponent->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Left);
+	
 	
 	if (Material_Main_Front_Text3D)
 	{
@@ -359,10 +372,10 @@ void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* In
 	}
 }
 
-void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff) const
+void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff, const FVector& AdditionalOffset) const
 {
 	InToggleTextOn->SetupAttachment(InParent);
-	InToggleTextOn->SetRelativeLocation(Offset_OnText);
+	InToggleTextOn->SetRelativeLocation(Offset_OnText + AdditionalOffset);
 	InToggleTextOn->SetExtrude(5.f);
 	InToggleTextOn->SetBevel(2.f);
 	InToggleTextOn->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "WallMenu_On"));
@@ -370,12 +383,28 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InT
 	InToggleTextOn->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
 	
 	InToggleTextOff->SetupAttachment(InParent);
-	InToggleTextOff->SetRelativeLocation(Offset_OffText);
+	InToggleTextOff->SetRelativeLocation(Offset_OffText + AdditionalOffset);
 	InToggleTextOff->SetExtrude(5.f);
 	InToggleTextOff->SetBevel(2.f);
 	InToggleTextOff->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "WallMenu_Off"));
 	InToggleTextOff->SetCastShadow(false);
 	InToggleTextOff->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Center);
+
+	InToggleTextOn->SetScaleProportionally(true);
+	InToggleTextOff->SetScaleProportionally(true);
+	InToggleTextOn->SetHasMaxHeight(true);
+	InToggleTextOff->SetHasMaxHeight(true);
+	
+	if (AdditionalOffset == FVector::ZeroVector)
+	{
+		InToggleTextOn->SetMaxHeight(MaxHeightMainText);
+		InToggleTextOff->SetMaxHeight(MaxHeightMainText);
+	}
+	else
+	{
+		InToggleTextOn->SetMaxHeight(MaxHeightIndentedText);
+		InToggleTextOff->SetMaxHeight(MaxHeightIndentedText);
+	}
 
 	if (Material_ToggleActive_Front_Text3D)
 	{

@@ -202,9 +202,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
 	UFont* Font_Text3D;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
-	FVector Offset_MainText = { 0.f, 0.f, -50.f};
+	FVector Offset_MainText = { 0.f, 0.f, -42.f};
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
-	FVector Indent = { 0.f, 50.f, 0.f};
+	FVector Indent = { 0.f, 40.f, 0.f};
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
+	float MaxHeightMainText = 55.f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
+	float MaxHeightIndentedText = 55.f;
 	
 	/** Displays which settings are on/off etc by lighting the correct words */
 	void Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings);
@@ -213,7 +217,7 @@ protected:
 	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 
 	void SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText, const FString& Key, const FVector& AdditionalOffset = FVector::ZeroVector) const;
-	void SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff) const;
+	void SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff, const FVector& AdditionalOffset = FVector::ZeroVector) const;
 	void ToggleText(const bool bIsOn, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff) const;
 	void ApplyMainTextMaterials() const;
 
@@ -225,18 +229,18 @@ protected:
 	FVector Offset_OffText = { 0, 944.f, 0};
 
 	/** Offset from Corkboard to first main text */
-	FVector Position_FirstMainText = { 310.f, 40.f, 55.f};
+	FVector Position_FirstMainText = { 335.f, 55.f, 55.f};
 	/** Rotation first main text */
 	FRotator Rotation_FirstMainText = { -90.f, 0.f, 0.f};
 	
 	/** Offset from Toggle text to box component */
-	FVector Position_BoxCollision = { 2.f, 0, 22.5f };
+	FVector Position_BoxCollision = { 2.f, 0, 16.75f };
 	/** Box component extents */
 	FVector Extents_BoxCollision = { 1.f, 32.f, 32.f };
 	/** Box component scale for on */
-	FVector Scale_BoxCollision_On = { 3.f, 1.75f, 0.95f };
+	FVector Scale_BoxCollision_On = { 3.f, 1.2f, 0.65f };
 	/** Box component scale for off */
-	FVector Scale_BoxCollision_Off = { 3.f, 2.25f, 0.95f };
+	FVector Scale_BoxCollision_Off = { 3.f, 1.4f, 0.65f };
 
 	TMap<TObjectPtr<UBoxComponent>, FText3DToggle> BoxToTextMap;
 };

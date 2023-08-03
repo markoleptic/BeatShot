@@ -15,7 +15,8 @@ public class BeatShot : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "UMG", "BeatShotGlobal", "NumCpp", "OnlineSubsystem", "OnlineSubsystemUtils", 
-			"Steamworks", "GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "PhysicsCore", "ModularGameplay", "CommonLoadingScreen", "Text3D", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint",
+			"Steamworks", "GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "PhysicsCore", "ModularGameplay", "CommonLoadingScreen", "Text3D", "DLSSBlueprint", "NISBlueprint", 
+			"StreamlineBlueprint"
 		});
 		
 		PrivateDependencyModuleNames.AddRange(new[]

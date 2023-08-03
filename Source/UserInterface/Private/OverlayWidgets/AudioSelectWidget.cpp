@@ -12,6 +12,11 @@
 #include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "WidgetComponents/BSButton.h"
+#include "Microsoft/COMPointer.h"
+#include <shobjidl_core.h>
+
+#define MAX_FILETYPES_STR 4096
+#define MAX_FILENAME_STR 65536 // This buffer has to be big enough to contain the names of all the selected files as well as the null characters between them and the null character at the end
 
 UTooltipWidget* UAudioSelectWidget::ConstructTooltipWidget()
 {
@@ -175,15 +180,16 @@ void UAudioSelectWidget::OnButtonClicked_Start()
 void UAudioSelectWidget::OnButtonClicked_LoadFile()
 {
 	TArray<FString> FileNames = {""};
-	OpenSongFileDialog(FileNames);
-	UE_LOG(LogTemp, Display, TEXT("PastOpenSongFileDialog"));
-	if (bWasInFullScreenMode)
+	OpenFileDialog(FileNames);
+
+	/*if (bWasInFullScreenMode)
 	{
 		UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
 		GameUserSettings->SetFullscreenMode(EWindowMode::Fullscreen);
 		GameUserSettings->ApplySettings(false);
 		bWasInFullScreenMode = false;
-	}
+	}*/
+	
 	if (FileNames.IsEmpty() || FileNames[0].IsEmpty())
 	{
 		ShowSongPathErrorMessage();
@@ -308,6 +314,208 @@ void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutF
 		GameUserSettings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
 		GameUserSettings->ApplySettings(false);
 	}
+}
+
+void UAudioSelectWidget::OpenFileDialog(TArray<FString>& OutFileNames)
+{
+	const FString DialogTitle = "Choose a Song in .mp3 or .ogg Format";
+	FString DefaultPath;
+	FString DefaultFile;
+	const FString FileTypes = ".mp3,.ogg";
+	int OutFilterIndex=0;
+	const bool Result = FileDialogShared(false, GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(), DialogTitle, DefaultPath, DefaultFile, FileTypes, 0, OutFileNames,OutFilterIndex);
+}
+
+bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames, int32& OutFilterIndex)
+{
+
+#if PLATFORM_WINDOWS
+	WCHAR Filename[MAX_FILENAME_STR];
+	FCString::Strcpy(Filename, MAX_FILENAME_STR, *(DefaultFile.Replace(TEXT("/"), TEXT("\\"))));
+
+	// Convert the forward slashes in the path name to backslashes, otherwise it'll be ignored as invalid and use whatever is cached in the registry
+	WCHAR Pathname[MAX_FILENAME_STR];
+	FCString::Strcpy(Pathname, MAX_FILENAME_STR, *(FPaths::ConvertRelativePathToFull(DefaultPath).Replace(TEXT("/"), TEXT("\\"))));
+
+	// Convert the "|" delimited list of filetypes to NULL delimited then add a second NULL character to indicate the end of the list
+	WCHAR FileTypeStr[MAX_FILETYPES_STR];
+	WCHAR* FileTypesPtr = NULL;
+	const int32 FileTypesLen = FileTypes.Len();
+
+	// Nicely formatted file types for lookup later and suitable to append to filenames without extensions
+	TArray<FString> CleanExtensionList;
+
+	// The strings must be in pairs for windows.
+	// It is formatted as follows: Pair1String1|Pair1String2|Pair2String1|Pair2String2
+	// where the second string in the pair is the extension.  To get the clean extensions we only care about the second string in the pair
+	TArray<FString> UnformattedExtensions;
+	FileTypes.ParseIntoArray(UnformattedExtensions, TEXT("|"), true);
+	for (int32 ExtensionIndex = 1; ExtensionIndex < UnformattedExtensions.Num(); ExtensionIndex += 2)
+	{
+		const FString& Extension = UnformattedExtensions[ExtensionIndex];
+		// Assume the user typed in an extension or doesnt want one when using the *.* extension. We can't determine what extension they wan't in that case
+		if (Extension != TEXT("*.*"))
+		{
+			// Add to the clean extension list, first removing the * wildcard from the extension
+			int32 WildCardIndex = Extension.Find(TEXT("*"));
+			CleanExtensionList.Add(WildCardIndex != INDEX_NONE ? Extension.RightChop(WildCardIndex + 1) : Extension);
+		}
+	}
+
+	if (FileTypesLen > 0 && FileTypesLen - 1 < MAX_FILETYPES_STR)
+	{
+		FileTypesPtr = FileTypeStr;
+		FCString::Strcpy(FileTypeStr, MAX_FILETYPES_STR, *FileTypes);
+
+		TCHAR* Pos = FileTypeStr;
+		while (Pos[0] != 0)
+		{
+			if (Pos[0] == '|')
+			{
+				Pos[0] = 0;
+			}
+
+			Pos++;
+		}
+
+		// Add two trailing NULL characters to indicate the end of the list
+		FileTypeStr[FileTypesLen] = 0;
+		FileTypeStr[FileTypesLen + 1] = 0;
+	}
+
+	OPENFILENAME ofn;
+	FMemory::Memzero(&ofn, sizeof(OPENFILENAME));
+
+	ofn.lStructSize = sizeof(OPENFILENAME);
+	ofn.hwndOwner = (HWND)ParentWindowHandle;
+	ofn.lpstrFilter = FileTypesPtr;
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFile = Filename;
+	ofn.nMaxFile = MAX_FILENAME_STR;
+	ofn.lpstrInitialDir = Pathname;
+	ofn.lpstrTitle = *DialogTitle;
+	if (FileTypesLen > 0)
+	{
+		ofn.lpstrDefExt = &FileTypeStr[0];
+	}
+
+	ofn.Flags = OFN_HIDEREADONLY | OFN_ENABLESIZING | OFN_EXPLORER;
+
+	if (bSave)
+	{
+		ofn.Flags |= OFN_CREATEPROMPT | OFN_OVERWRITEPROMPT | OFN_NOVALIDATE;
+	}
+	else
+	{
+		ofn.Flags |= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+	}
+
+	bool bSuccess;
+	if (bSave)
+	{
+		bSuccess = !!::GetSaveFileName(&ofn);
+	}
+	else
+	{
+		bSuccess = !!::GetOpenFileName(&ofn);
+	}
+
+	if (bSuccess)
+	{
+		// GetOpenFileName/GetSaveFileName changes the CWD on success. Change it back immediately.
+		//FPlatformProcess::SetCurrentWorkingDirectoryToBaseDir();
+		
+		new(OutFilenames) FString(Filename);
+		
+		// The index of the filter in OPENFILENAME starts at 1.
+		OutFilterIndex = ofn.nFilterIndex - 1;
+
+		// Get the extension to add to the filename (if one doesnt already exist)
+		FString Extension = CleanExtensionList.IsValidIndex(OutFilterIndex) ? CleanExtensionList[OutFilterIndex] : TEXT("");
+
+		// Make sure all filenames gathered have their paths normalized and proper extensions added
+		for (auto OutFilenameIt = OutFilenames.CreateIterator(); OutFilenameIt; ++OutFilenameIt)
+		{
+			FString& OutFilename = *OutFilenameIt;
+
+			OutFilename = IFileManager::Get().ConvertToRelativePath(*OutFilename);
+
+			if (FPaths::GetExtension(OutFilename).IsEmpty() && !Extension.IsEmpty())
+			{
+				// filename does not have an extension. Add an extension based on the filter that the user chose in the dialog
+				OutFilename += Extension;
+			}
+
+			FPaths::NormalizeFilename(OutFilename);
+		}
+	}
+	else
+	{
+		uint32 Error = ::CommDlgExtendedError();
+		if (Error != ERROR_SUCCESS)
+		{
+			//UE_LOG(LogDesktopPlatform, Warning, TEXT("Error reading results of file dialog. Error: 0x%04X"), Error);
+		}
+	}
+
+	return bSuccess;
+#endif
+
+	return false;
+}
+
+bool UAudioSelectWidget:: OpenFolderDialogInner(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName)
+{
+	//FScopedSystemModalMode SystemModalScope;
+
+	bool bSuccess = false;
+
+	TComPtr<IFileOpenDialog> FileDialog;
+	if (SUCCEEDED(::CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&FileDialog))))
+	{
+		// Set this up as a folder picker
+		{
+			DWORD dwFlags = 0;
+			FileDialog->GetOptions(&dwFlags);
+			FileDialog->SetOptions(dwFlags | FOS_PICKFOLDERS);
+		}
+
+		// Set up common settings
+		FileDialog->SetTitle(*DialogTitle);
+		if (!DefaultPath.IsEmpty())
+		{
+			// SHCreateItemFromParsingName requires the given path be absolute and use \ rather than / as our normalized paths do
+			FString DefaultWindowsPath = FPaths::ConvertRelativePathToFull(DefaultPath);
+			DefaultWindowsPath.ReplaceInline(TEXT("/"), TEXT("\\"), ESearchCase::CaseSensitive);
+
+			TComPtr<IShellItem> DefaultPathItem;
+			if (SUCCEEDED(::SHCreateItemFromParsingName(*DefaultWindowsPath, nullptr, IID_PPV_ARGS(&DefaultPathItem))))
+			{
+				FileDialog->SetFolder(DefaultPathItem);
+			}
+		}
+
+		// Show the picker
+		if (SUCCEEDED(FileDialog->Show((HWND)ParentWindowHandle)))
+		{
+			TComPtr<IShellItem> Result;
+			if (SUCCEEDED(FileDialog->GetResult(&Result)))
+			{
+				PWSTR pFilePath = nullptr;
+				if (SUCCEEDED(Result->GetDisplayName(SIGDN_FILESYSPATH, &pFilePath)))
+				{
+					bSuccess = true;
+
+					OutFolderName = pFilePath;
+					FPaths::NormalizeDirectoryName(OutFolderName);
+
+					::CoTaskMemFree(pFilePath);
+				}
+			}
+		}
+	}
+
+	return bSuccess;
 }
 
 void UAudioSelectWidget::ShowSongPathErrorMessage()
