@@ -179,8 +179,8 @@ void UAudioSelectWidget::OnButtonClicked_Start()
 
 void UAudioSelectWidget::OnButtonClicked_LoadFile()
 {
-	TArray<FString> FileNames = {""};
-	OpenFileDialog(FileNames);
+	TArray<FString> FileNames;
+	const bool bSuccess = OpenFileDialog(FileNames);
 
 	/*if (bWasInFullScreenMode)
 	{
@@ -190,7 +190,7 @@ void UAudioSelectWidget::OnButtonClicked_LoadFile()
 		bWasInFullScreenMode = false;
 	}*/
 	
-	if (FileNames.IsEmpty() || FileNames[0].IsEmpty())
+	if (!bSuccess || FileNames.IsEmpty() || FileNames[0].IsEmpty())
 	{
 		ShowSongPathErrorMessage();
 		return;
@@ -316,14 +316,14 @@ void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutF
 	}
 }
 
-void UAudioSelectWidget::OpenFileDialog(TArray<FString>& OutFileNames)
+bool UAudioSelectWidget::OpenFileDialog(TArray<FString>& OutFileNames)
 {
 	const FString DialogTitle = "Choose a Song in .mp3 or .ogg Format";
 	FString DefaultPath;
 	FString DefaultFile;
 	const FString FileTypes = ".mp3,.ogg";
 	int OutFilterIndex=0;
-	const bool Result = FileDialogShared(false, GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(), DialogTitle, DefaultPath, DefaultFile, FileTypes, 0, OutFileNames,OutFilterIndex);
+	return FileDialogShared(false, GEngine->GameViewport->GetWindow()->GetNativeWindow()->GetOSWindowHandle(), DialogTitle, DefaultPath, DefaultFile, FileTypes, 0, OutFileNames, OutFilterIndex);
 }
 
 bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames, int32& OutFilterIndex)
@@ -462,60 +462,6 @@ bool UAudioSelectWidget::FileDialogShared(bool bSave, const void* ParentWindowHa
 #endif
 
 	return false;
-}
-
-bool UAudioSelectWidget:: OpenFolderDialogInner(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName)
-{
-	//FScopedSystemModalMode SystemModalScope;
-
-	bool bSuccess = false;
-
-	TComPtr<IFileOpenDialog> FileDialog;
-	if (SUCCEEDED(::CoCreateInstance(CLSID_FileOpenDialog, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&FileDialog))))
-	{
-		// Set this up as a folder picker
-		{
-			DWORD dwFlags = 0;
-			FileDialog->GetOptions(&dwFlags);
-			FileDialog->SetOptions(dwFlags | FOS_PICKFOLDERS);
-		}
-
-		// Set up common settings
-		FileDialog->SetTitle(*DialogTitle);
-		if (!DefaultPath.IsEmpty())
-		{
-			// SHCreateItemFromParsingName requires the given path be absolute and use \ rather than / as our normalized paths do
-			FString DefaultWindowsPath = FPaths::ConvertRelativePathToFull(DefaultPath);
-			DefaultWindowsPath.ReplaceInline(TEXT("/"), TEXT("\\"), ESearchCase::CaseSensitive);
-
-			TComPtr<IShellItem> DefaultPathItem;
-			if (SUCCEEDED(::SHCreateItemFromParsingName(*DefaultWindowsPath, nullptr, IID_PPV_ARGS(&DefaultPathItem))))
-			{
-				FileDialog->SetFolder(DefaultPathItem);
-			}
-		}
-
-		// Show the picker
-		if (SUCCEEDED(FileDialog->Show((HWND)ParentWindowHandle)))
-		{
-			TComPtr<IShellItem> Result;
-			if (SUCCEEDED(FileDialog->GetResult(&Result)))
-			{
-				PWSTR pFilePath = nullptr;
-				if (SUCCEEDED(Result->GetDisplayName(SIGDN_FILESYSPATH, &pFilePath)))
-				{
-					bSuccess = true;
-
-					OutFolderName = pFilePath;
-					FPaths::NormalizeDirectoryName(OutFolderName);
-
-					::CoTaskMemFree(pFilePath);
-				}
-			}
-		}
-	}
-
-	return bSuccess;
 }
 
 void UAudioSelectWidget::ShowSongPathErrorMessage()

@@ -107,6 +107,12 @@ public:
 	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
 	virtual void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
 
+	/** Creates an FBSConfig from an exported FBSConfig string */
+	FBSConfig ImportCustomGameMode(const FString& InImportString);
+
+	/** Creates an export String from an FBSConfig */
+	FString ExportCustomGameMode(const FBSConfig& InGameMode);
+
 	// These functions should be overriden when a class wants to receive updates about settings changes
 	// Example:
 	// GameInstance->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ThisClass::OnPlayerSettingsChanged_Game);

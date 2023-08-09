@@ -25,6 +25,11 @@
 #include "SBSComboBox.h"
 #include "SBSListView.h"
 #include "SBSTableRow.h"
+
+#ifdef PlaySound
+#undef PlaySound
+#endif
+
 #if WITH_ACCESSIBILITY
 #include "GenericPlatform/Accessibility/GenericAccessibleInterfaces.h"
 #include "Widgets/Accessibility/SlateCoreAccessibleWidgets.h"
@@ -859,7 +864,7 @@ private:
 	/** Play the pressed sound */
 	void PlayPressedSound() const
 	{
-		FSlateApplication::Get().PlaySound( PressedSound );
+		FSlateApplication::Get().PlaySound(PressedSound);
 	}
 
 	/** Play the selection changed sound */

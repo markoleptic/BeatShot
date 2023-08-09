@@ -12,27 +12,31 @@ void UPopupMessageWidget::NativeConstruct()
 	Button_2->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 }
 
-void UPopupMessageWidget::NativeDestruct()
-{
-	Button_1->OnBSButtonPressed.Clear();
-	Button_2->OnBSButtonPressed.Clear();
-	Super::NativeDestruct();
-}
-
 void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, const FText& Button2TextInput) const
 {
 	TextBlock_Title->SetText(TitleInput);
-	TextBlock_Message->SetText(MessageInput);
-	Button_1->ChangeButtonText(Button1TextInput);
-	if (!Button2TextInput.IsEmpty())
+	if (MessageInput.IsEmpty())
 	{
-		Button_2->ChangeButtonText(Button2TextInput);
-		Button_2->SetVisibility(ESlateVisibility::Visible);
+		TextBlock_Message->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	else
 	{
+		TextBlock_Message->SetText(MessageInput);
+		TextBlock_Message->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+
+	Button_1->ChangeButtonText(Button1TextInput);
+	
+	if (Button2TextInput.IsEmpty())
+	{
 		Button_2->SetVisibility(ESlateVisibility::Collapsed);
 	}
+	else
+	{
+		Button_2->ChangeButtonText(Button2TextInput);
+		Button_2->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	
 }
 
 void UPopupMessageWidget::FadeIn()
@@ -49,23 +53,48 @@ void UPopupMessageWidget::FadeOut()
 
 void UPopupMessageWidget::ChangeMessageText(const FText& MessageInput)
 {
-	TextBlock_Message->SetText(MessageInput);
+	if (MessageInput.IsEmpty())
+	{
+		TextBlock_Message->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		TextBlock_Message->SetText(MessageInput);
+		TextBlock_Message->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
 }
 
 void UPopupMessageWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
 	if (Button == Button_1)
 	{
-		OnButton1Pressed.Broadcast();
+		if (OnButton1Pressed.IsBound())
+		{
+			OnButton1Pressed.Broadcast();
+		}
+		if (OnButton1Pressed_NonDynamic.IsBound())
+		{
+			OnButton1Pressed_NonDynamic.Broadcast();
+		}
 		return;
 	}
 	if (Button == Button_2)
 	{
-		OnButton2Pressed.Broadcast();
+		if (OnButton2Pressed.IsBound())
+		{
+			OnButton2Pressed.Broadcast();
+		}
+		if (OnButton2Pressed_NonDynamic.IsBound())
+		{
+			OnButton2Pressed_NonDynamic.Broadcast();
+		}
 	}
 }
 
 void UPopupMessageWidget::OnFadeOutPopupMessageFinish()
 {
-	RemoveFromParent();
+	if (bRemoveFromParentOnFadeOut)
+	{
+		RemoveFromParent();
+	}
 }

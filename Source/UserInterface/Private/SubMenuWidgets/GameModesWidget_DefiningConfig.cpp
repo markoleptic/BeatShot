@@ -35,6 +35,12 @@ void UGameModesWidget_DefiningConfig::NativeConstruct()
 	}
 
 	/* Add Custom Game Modes to GameModeName ComboBox */
+	if (!LoadCustomGameModes().IsEmpty())
+	{
+		const FBSConfig GameMode = LoadCustomGameModes()[0];
+		const FString Result = ExportCustomGameMode(GameMode);
+	}
+	
 	for (const FBSConfig& GameMode : LoadCustomGameModes())
 	{
 		ComboBox_GameModeName->AddOption(GameMode.DefiningConfig.CustomGameModeName);

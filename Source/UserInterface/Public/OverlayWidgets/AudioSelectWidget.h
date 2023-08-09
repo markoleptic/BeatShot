@@ -137,10 +137,8 @@ private:
 	void ShowSongPathErrorMessage();
 
 	/** Opens file dialog for song selection */
-	void OpenFileDialog(TArray<FString>& OutFileNames);
-
-	bool OpenFolderDialogInner(const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, FString& OutFolderName);
-
+	bool OpenFileDialog(TArray<FString>& OutFileNames);
+	
 	bool FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames, int32& OutFilterIndex);
 
 	/** Hides the error message */

@@ -9,7 +9,7 @@ public class UserInterface : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "BeatShotGlobal",
+			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "BeatShotGlobal",
 			"EasyFileDialog", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "CommonLoadingScreen", "GameplayTags", "InputCore"
 		});
 

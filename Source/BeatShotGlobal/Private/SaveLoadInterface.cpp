@@ -308,6 +308,26 @@ void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningC
 	UpdateCommonScoreInfo(Map);
 }
 
+FBSConfig ISaveLoadInterface::ImportCustomGameMode(const FString& InImportString)
+{
+	FBSConfig OutConfig = FBSConfig();
+	UScriptStruct* Struct = FBSConfig::StaticStruct();
+	const TCHAR* Result = Struct->ImportText(*InImportString, &OutConfig, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
+	if (!Result)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to import custom game mode"));
+	}
+	return OutConfig;
+}
+
+FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InGameMode)
+{
+	UScriptStruct* Struct = FBSConfig::StaticStruct();
+	FString Output = TEXT("");
+	Struct->ExportText(Output, &InGameMode, nullptr, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr);
+	return Output;
+}
+
 void ISaveLoadInterface::UpdateCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave) const
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))

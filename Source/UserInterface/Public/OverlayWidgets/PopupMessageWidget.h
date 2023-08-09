@@ -11,6 +11,8 @@ class UTextBlock;
 class UWidgetAnimation;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPopUpButtonPressed);
+DECLARE_MULTICAST_DELEGATE(FOnPopUpButtonPressed_NonDynamic);
+
 /** Provides a simple pop up dialog for other widgets */
 UCLASS()
 class USERINTERFACE_API UPopupMessageWidget : public UUserWidget
@@ -19,20 +21,27 @@ class USERINTERFACE_API UPopupMessageWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
 
 public:
-	UFUNCTION(BlueprintCallable)
-	void InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, const FText& Button2TextInput = FText::GetEmpty()) const;
 	UFUNCTION()
-	void FadeIn();
+	virtual void InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, const FText& Button2TextInput = FText::GetEmpty()) const;
 	UFUNCTION()
-	void FadeOut();
+	virtual void FadeIn();
+	UFUNCTION()
+	virtual void FadeOut();
 
+	void SetShouldRemoveFromParentOnFadeOut(const bool bShouldRemove) { bRemoveFromParentOnFadeOut = bShouldRemove; }
+
+	/** Broadcast when Button1 is pressed */
 	FOnPopUpButtonPressed OnButton1Pressed;
+	/** Broadcast when Button2 is pressed */
 	FOnPopUpButtonPressed OnButton2Pressed;
+	/** Broadcast when Button1 is pressed */
+	FOnPopUpButtonPressed_NonDynamic OnButton1Pressed_NonDynamic;
+	/** Broadcast when Button2 is pressed */
+	FOnPopUpButtonPressed_NonDynamic OnButton2Pressed_NonDynamic;
 	
-	void ChangeMessageText(const FText& MessageInput);
+	virtual void ChangeMessageText(const FText& MessageInput);
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -57,4 +66,6 @@ protected:
 	
 	UFUNCTION()
 	void OnFadeOutPopupMessageFinish();
+
+	bool bRemoveFromParentOnFadeOut = true;
 };
