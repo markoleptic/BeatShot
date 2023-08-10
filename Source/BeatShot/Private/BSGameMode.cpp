@@ -166,7 +166,7 @@ void ABSGameMode::StartGameMode()
 		OnGameModeStarted.Broadcast();
 	}
 	LoadMatchingPlayerScores();
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f);
 	StartGameModeTimers();
 	TargetManager->SetShouldSpawn(true);
 }
@@ -704,7 +704,7 @@ void ABSGameMode::UpdatePlayerScores(const float TimeElapsed, const int32 NewStr
 	//UpdateTimeOffset(TimeOffset, Transform);
 	UpdateHighScore();
 
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, GetNormalizedTimeOffset(TimeOffset, TimeElapsed));
 }
 
 void ABSGameMode::UpdateTrackingScore(const float DamageDelta, const float TotalPossibleDamage)
@@ -712,19 +712,19 @@ void ABSGameMode::UpdateTrackingScore(const float DamageDelta, const float Total
 	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
 	CurrentPlayerScore.Score += DamageDelta;
 	UpdateHighScore();
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f);
 }
 
 void ABSGameMode::UpdateTargetsSpawned()
 {
 	CurrentPlayerScore.TargetsSpawned++;
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f);
 }
 
 void ABSGameMode::UpdateShotsFired()
 {
 	CurrentPlayerScore.ShotsFired++;
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore);
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f);
 }
 
 void ABSGameMode::UpdateStreak(const int32 Streak, const FTransform& Transform)
@@ -808,4 +808,27 @@ float ABSGameMode::GetScoreFromTimeOffset(const float InTimeOffset, const float 
 		UE::Math::TVector2(0.f, 1.f), InTimeOffset);
 	
 	return FMath::Lerp(MaxScorePerTarget, MaxScorePerTarget / 2, LateShotTimeLerp);
+}
+
+float ABSGameMode::GetNormalizedTimeOffset(const float InTimeOffset, const float InTimeElapsed) const
+{
+	// Perfect score
+	if (InTimeOffset < PerfectScoreTimeThreshold)
+	{
+		return 0.5f;
+	}
+
+	// Early shot, interp between 0 at time zero to 0.5 at time (SpawnBeatDelay - PerfectScoreTimeThreshold)
+	if (InTimeElapsed < BSConfig.TargetConfig.SpawnBeatDelay)
+	{
+		return FMath::Lerp(0, 0.5f, InTimeElapsed / (BSConfig.TargetConfig.SpawnBeatDelay - PerfectScoreTimeThreshold));
+	}
+	
+	// Late shot, interp between 0.5 at (SpawnBeatDelay + PerfectScoreTimeThreshold) time to 0 at end of target lifespan
+	const float MaxLateShotTimeOffset = abs(BSConfig.TargetConfig.TargetMaxLifeSpan - BSConfig.TargetConfig.SpawnBeatDelay);
+	
+	const float LateShotTimeLerp = FMath::GetMappedRangeValueClamped(UE::Math::TVector2(PerfectScoreTimeThreshold, MaxLateShotTimeOffset),
+		UE::Math::TVector2(0.f, 1.f), InTimeOffset);
+	
+	return FMath::Lerp(0.5, 1.f, LateShotTimeLerp);
 }

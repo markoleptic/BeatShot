@@ -22,7 +22,7 @@ class ABSPlayerController;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
-DECLARE_MULTICAST_DELEGATE_OneParam(FUpdateScoresToHUD, const FPlayerScore& PlayerScore);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FUpdateScoresToHUD, const FPlayerScore& PlayerScore, const float TimeOffsetNormalized);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector& Position);
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
@@ -330,7 +330,11 @@ private:
 
 	static float FloatDivide(const float Num, const float Denom);
 
+	/** Returns the score based on the InTimeOffset (SpawnBeatDelay - TimeElapsed) */
 	float GetScoreFromTimeOffset(const float InTimeOffset, const float InTimeElapsed) const;
+
+	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the InTimeOffset (SpawnBeatDelay - TimeElapsed) */
+	float GetNormalizedTimeOffset(const float InTimeOffset, const float InTimeElapsed) const;
 
 #pragma endregion
 };

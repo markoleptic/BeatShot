@@ -6,6 +6,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
+#include "Components/Image.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 
@@ -17,6 +18,11 @@ void UPlayerHUD::NativeConstruct()
 	ProgressBar_Accuracy->SetPercent(0.f);
 	TextBlock_Accuracy->SetText(FText::AsPercent(0.f));
 	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
+
+	if (Image_HitTracking->GetDynamicMaterial())
+	{
+		DynamicImageMaterial = Image_HitTracking->GetDynamicMaterial();
+	}
 }
 
 void UPlayerHUD::InitHUD(const FBSConfig& InConfig)
@@ -53,7 +59,7 @@ void UPlayerHUD::InitHUD(const FBSConfig& InConfig)
 	Config = InConfig;
 }
 
-void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
+void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float TimeOffsetNormalized)
 {
 	switch (Config.TargetConfig.TargetDamageType)
 	{
@@ -118,6 +124,10 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct)
 	case ETargetDamageType::Combined:
 	case ETargetDamageType::None:
 		break;
+	}
+	if (TimeOffsetNormalized > 0.f && DynamicImageMaterial)
+	{
+		DynamicImageMaterial->SetScalarParameterValue(FName("Progress"), TimeOffsetNormalized);
 	}
 }
 

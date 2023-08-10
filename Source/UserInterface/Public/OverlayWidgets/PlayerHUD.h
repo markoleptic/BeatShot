@@ -7,11 +7,13 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.generated.h"
 
+class UImage;
 class UHorizontalBox;
 class ABeatAimGameModeBase;
 class ABSCharacter;
 class UProgressBar;
 class UTextBlock;
+class UMaterialInstanceDynamic;
 
 /** The widget displayed during a game mode that shows current stats */
 UCLASS()
@@ -59,11 +61,17 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_ShotsFired;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UImage* Image_HitTracking;
+	
+	UPROPERTY()
+	TObjectPtr<UMaterialInstanceDynamic> DynamicImageMaterial;
+
 	FBSConfig Config;
 
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
 	UFUNCTION()
-	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct);
+	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float TimeOffsetNormalized);
 	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
 	UFUNCTION()
 	void UpdateSongProgress(const float PlaybackTime);
