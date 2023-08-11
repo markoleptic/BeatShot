@@ -6,7 +6,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
-#include "Components/Image.h"
+#include "WidgetComponents/HitTimingWidget.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 
@@ -18,14 +18,9 @@ void UPlayerHUD::NativeConstruct()
 	ProgressBar_Accuracy->SetPercent(0.f);
 	TextBlock_Accuracy->SetText(FText::AsPercent(0.f));
 	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
-
-	if (Image_HitTracking->GetDynamicMaterial())
-	{
-		DynamicImageMaterial = Image_HitTracking->GetDynamicMaterial();
-	}
 }
 
-void UPlayerHUD::InitHUD(const FBSConfig& InConfig)
+void UPlayerHUD::Init(const FBSConfig& InConfig)
 {
 	switch (InConfig.TargetConfig.TargetDamageType)
 	{
@@ -34,6 +29,8 @@ void UPlayerHUD::InitHUD(const FBSConfig& InConfig)
 		Box_Streak->SetVisibility(ESlateVisibility::Collapsed);
 		Box_TargetsHit->SetVisibility(ESlateVisibility::Collapsed);
 		Box_ShotsFired->SetVisibility(ESlateVisibility::Collapsed);
+		HitTimingWidget->SetIsEnabled(false);
+		HitTimingWidget->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case ETargetDamageType::Hit:
 		break;
@@ -125,10 +122,11 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, con
 	case ETargetDamageType::None:
 		break;
 	}
-	if (TimeOffsetNormalized > 0.f && DynamicImageMaterial)
+	if (HitTimingWidget->GetIsEnabled())
 	{
-		DynamicImageMaterial->SetScalarParameterValue(FName("Progress"), TimeOffsetNormalized);
+		HitTimingWidget->UpdateHitTiming(TimeOffsetNormalized);
 	}
+	
 }
 
 void UPlayerHUD::UpdateSongProgress(const float PlaybackTime)

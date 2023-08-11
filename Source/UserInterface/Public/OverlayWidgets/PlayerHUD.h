@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.generated.h"
 
+class UHitTimingWidget;
 class UImage;
 class UHorizontalBox;
 class ABeatAimGameModeBase;
@@ -24,7 +25,17 @@ class USERINTERFACE_API UPlayerHUD : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
-	void InitHUD(const FBSConfig& InConfig);
+	void Init(const FBSConfig& InConfig);
+	
+	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
+	UFUNCTION()
+	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float TimeOffsetNormalized);
+	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
+	UFUNCTION()
+	void UpdateSongProgress(const float PlaybackTime);
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHitTimingWidget* HitTimingWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* ProgressBar_Accuracy;
@@ -60,19 +71,6 @@ public:
 	UHorizontalBox* Box_TargetsHit;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_ShotsFired;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UImage* Image_HitTracking;
 	
-	UPROPERTY()
-	TObjectPtr<UMaterialInstanceDynamic> DynamicImageMaterial;
-
 	FBSConfig Config;
-
-	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
-	UFUNCTION()
-	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float TimeOffsetNormalized);
-	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
-	UFUNCTION()
-	void UpdateSongProgress(const float PlaybackTime);
 };
