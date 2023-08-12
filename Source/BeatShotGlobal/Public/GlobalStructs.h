@@ -939,9 +939,7 @@ struct FPlayerSettings_Game
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 CombatTextFrequency;
-
-	/* Wall Menu settings */
-
+	
 	UPROPERTY(BlueprintReadWrite)
 	bool bShouldRecoil;
 
@@ -962,6 +960,11 @@ struct FPlayerSettings_Game
 	
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowWeaponMesh;
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bShowHitTimingWidget;
+
+	/* Wall Menu settings */
 	
 	UPROPERTY(BlueprintReadWrite)
 	bool bNightModeSelected;
@@ -1004,6 +1007,7 @@ struct FPlayerSettings_Game
 		bShowMuzzleFlash = true;
 		bShowCharacterMesh = true;
 		bShowWeaponMesh = true;
+		bShowHitTimingWidget = true;
 		bNightModeSelected = false;
 		bShowLightVisualizers = false;
 		bShow_LVFrontBeam = false;

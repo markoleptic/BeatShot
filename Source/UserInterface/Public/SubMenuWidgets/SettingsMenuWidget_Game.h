@@ -57,6 +57,8 @@ protected:
 	UCheckBox* CheckBox_ShowMuzzleFlash;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_ShowMesh;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBox* CheckBox_ShowHitTimingWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
@@ -94,6 +96,8 @@ protected:
 	void OnCheckStateChanged_ShowMuzzleFlash(const bool bIsChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ShowMesh(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ShowHitTimingWidget(const bool bIsChecked);
 	
 	UFUNCTION()
 	void OnValueChanged_CombatTextFrequency(const FText& NewValue, ETextCommit::Type CommitType);

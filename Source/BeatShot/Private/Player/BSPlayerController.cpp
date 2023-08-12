@@ -206,11 +206,16 @@ void ABSPlayerController::ShowPlayerHUD()
 	{
 		return;
 	}
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
 	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
+	PlayerHUD->Init(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig());
+	GI->AddDelegateToOnPlayerSettingsChanged(PlayerHUD->GetGameDelegate());
+	
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
-	PlayerHUD->Init(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig());
+	
 	PlayerHUD->AddToViewport();
 	PlayerHUDActive = true;
 }

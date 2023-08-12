@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SaveGamePlayerScore.h"
+#include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUD.generated.h"
 
@@ -18,7 +18,7 @@ class UMaterialInstanceDynamic;
 
 /** The widget displayed during a game mode that shows current stats */
 UCLASS()
-class USERINTERFACE_API UPlayerHUD : public UUserWidget
+class USERINTERFACE_API UPlayerHUD : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -26,10 +26,16 @@ public:
 	virtual void NativeConstruct() override;
 
 	void Init(const FBSConfig& InConfig);
+
+	FOnPlayerSettingsChanged_Game& GetGameDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
+
+	/** Called when another class saves Game settings */
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
 	UFUNCTION()
-	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float TimeOffsetNormalized);
+	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError, const float HitTimingError);
+	
 	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
 	UFUNCTION()
 	void UpdateSongProgress(const float PlaybackTime);

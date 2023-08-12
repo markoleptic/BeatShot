@@ -18,6 +18,8 @@ void UPlayerHUD::NativeConstruct()
 	ProgressBar_Accuracy->SetPercent(0.f);
 	TextBlock_Accuracy->SetText(FText::AsPercent(0.f));
 	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
+
+	
 }
 
 void UPlayerHUD::Init(const FBSConfig& InConfig)
@@ -33,6 +35,11 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 		HitTimingWidget->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	case ETargetDamageType::Hit:
+		{
+			const FString MinTick = FString::FromInt(-static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f)) + "ms";
+			const FString MaxTick = FString::FromInt(static_cast<int32>((InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) * 100.f)) + "ms";
+			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
+		}
 		break;
 	case ETargetDamageType::Combined:
 	case ETargetDamageType::None:
@@ -56,7 +63,27 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 	Config = InConfig;
 }
 
-void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float TimeOffsetNormalized)
+void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+{
+	if (GameSettings.bShowHitTimingWidget && Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit)
+	{
+		if (!HitTimingWidget->GetIsEnabled())
+		{
+			HitTimingWidget->SetIsEnabled(true);
+			HitTimingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+	}
+	else if (!GameSettings.bShowHitTimingWidget && Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit)
+	{
+		if (HitTimingWidget->GetIsEnabled())
+		{
+			HitTimingWidget->SetIsEnabled(false);
+			HitTimingWidget->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+}
+
+void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError, const float HitTimingError)
 {
 	switch (Config.TargetConfig.TargetDamageType)
 	{
@@ -124,7 +151,7 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, con
 	}
 	if (HitTimingWidget->GetIsEnabled())
 	{
-		HitTimingWidget->UpdateHitTiming(TimeOffsetNormalized);
+		HitTimingWidget->UpdateHitTiming(NormalizedHitTimingError, HitTimingError);
 	}
 	
 }

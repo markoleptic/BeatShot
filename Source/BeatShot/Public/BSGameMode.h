@@ -22,7 +22,7 @@ class ABSPlayerController;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FUpdateScoresToHUD, const FPlayerScore& PlayerScore, const float TimeOffsetNormalized);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FUpdateScoresToHUD, const FPlayerScore& PlayerScore, const float TimeOffsetNormalized, const float TimeOffsetRaw);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector& Position);
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
@@ -291,7 +291,7 @@ private:
 
 	/** Function bound to TargetManager's OnTargetDeactivated delegate, passes the time that the target was alive for */
 	UFUNCTION()
-	void UpdatePlayerScores(const float TimeElapsed, const int32 NewStreak, const FTransform& Transform);
+	void UpdatePlayerScores(const float TimeAlive, const int32 NewStreak, const FTransform& Transform);
 
 	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
 	 *  which passes the current damage taken, and the total possible damage. Executed on tick
@@ -330,11 +330,17 @@ private:
 
 	static float FloatDivide(const float Num, const float Denom);
 
-	/** Returns the score based on the InTimeOffset (SpawnBeatDelay - TimeElapsed) */
-	float GetScoreFromTimeOffset(const float InTimeOffset, const float InTimeElapsed) const;
+	/** Returns the score based on the time the target was alive for */
+	float GetScoreFromTimeAlive(const float InTimeAlive) const;
 
-	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the InTimeOffset (SpawnBeatDelay - TimeElapsed) */
-	float GetNormalizedTimeOffset(const float InTimeOffset, const float InTimeElapsed) const;
+	/** Returns the length of time away from a perfect shot, with negative values indicating an early shot and positive values indicating a late shot, based on the time the target was alive for */
+	float GetHitTimingError(const float InTimeAlive) const;
 
+	/** Returns the length of time away from a perfect shot, based on the time the target was alive for */
+	float GetAbsHitTimingError(const float InTimeAlive) const;
+	
+	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the time the target was alive for */
+	float GetNormalizedHitTimingError(const float InTimeAlive) const;
+	
 #pragma endregion
 };

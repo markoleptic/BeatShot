@@ -42,51 +42,64 @@ void UBSGameInstance::InitVideoSettings()
 		SavePlayerSettings(Settings);
 	}
 
-	FIntPoint ScreenResolution = FIntPoint(0, 0);
-	bool bIsSupported;
-	float OptimalScreenPercentage;
-	bool bIsFixedScreenPercentage;
-	float MinScreenPercentage;
-	float MaxScreenPercentage;
-	float OptimalSharpness;
-	
-	if (Settings.VideoAndSound.DLSSMode == UDLSSMode::Auto)
+	// DLSS
+	if (UDLSSLibrary::IsDLSSSupported())
 	{
-		ScreenResolution = UGameUserSettings::GetGameUserSettings()->GetScreenResolution();
-	}
+		const FIntPoint ScreenResolution = UGameUserSettings::GetGameUserSettings()->GetScreenResolution();
+		UDLSSMode Mode = LoadPlayerSettings().VideoAndSound.DLSSMode;
+
+		if (!UDLSSLibrary::IsDLSSModeSupported(Mode) && Mode != UDLSSMode::Auto)
+		{
+			Mode = UDLSSMode::Auto;
+		}
+
+		if (UDLSSLibrary::IsDLSSModeSupported(Mode))
+		{
+			bool bIsSupported;
+			float OptimalScreenPercentage;
+			bool bIsFixedScreenPercentage;
+			float MinScreenPercentage;
+			float MaxScreenPercentage;
+			float OptimalSharpness;
+			
+			UDLSSLibrary::GetDLSSModeInformation(Settings.VideoAndSound.DLSSMode, FVector2d(ScreenResolution.X, ScreenResolution.Y), bIsSupported, OptimalScreenPercentage,
+				bIsFixedScreenPercentage, MinScreenPercentage, MaxScreenPercentage, OptimalSharpness);
+
+			const bool bIsDLAA = Settings.VideoAndSound.DLSSMode == UDLSSMode::DLAA;
+			const bool bShouldEnable = (Settings.VideoAndSound.DLSSMode != UDLSSMode::Off || bIsDLAA) && bIsSupported;
+			const bool bValidScreenPercentage = OptimalScreenPercentage > 0.f && bIsSupported;
+
+			// Enable/Disable DLSS
+			UDLSSLibrary::EnableDLSS(bShouldEnable);
+
+			// Set Screen Percentage
+			float SelectedScreenPercentage;
+			if (!bValidScreenPercentage || bIsDLAA)
+			{
+				// DLAA overrides DLSS mode if both are enabled
+				SelectedScreenPercentage = 100.f;
+			}
+			else
+			{
+				SelectedScreenPercentage = OptimalScreenPercentage;
+			}
 	
-	UDLSSLibrary::GetDLSSModeInformation(Settings.VideoAndSound.DLSSMode, FVector2d(ScreenResolution.X, ScreenResolution.Y), bIsSupported, OptimalScreenPercentage,
-	bIsFixedScreenPercentage, MinScreenPercentage, MaxScreenPercentage, OptimalSharpness);
-
-	const bool bIsDLAA = Settings.VideoAndSound.DLSSMode == UDLSSMode::DLAA;
-	const bool bShouldEnable = (Settings.VideoAndSound.DLSSMode != UDLSSMode::Off || bIsDLAA) && bIsSupported;
-	const bool bValidScreenPercentage = OptimalScreenPercentage > 0.f && bIsSupported;
-
-	// Enable/Disable DLSS
-	UDLSSLibrary::EnableDLSS(bShouldEnable);
-
-	// Set Screen Percentage
-	float SelectedScreenPercentage;
-	if (!bValidScreenPercentage || bIsDLAA)
-	{
-		// DLAA overrides DLSS mode if both are enabled
-		SelectedScreenPercentage = 100.f;
+			// Execute Screen Percentage Console Command
+			if (bShouldEnable)
+			{
+				UDLSSLibrary::SetDLSSSharpness(Settings.VideoAndSound.DLSSSharpness);
+				if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage")))
+				{
+					CVarScreenPercentage->Set(SelectedScreenPercentage);
+				}
+			}
+		}
 	}
 	else
 	{
-		SelectedScreenPercentage = OptimalScreenPercentage;
+		UDLSSLibrary::EnableDLSS(false);
 	}
 	
-	// Execute Screen Percentage Console Command
-	if (bShouldEnable)
-	{
-		UDLSSLibrary::SetDLSSSharpness(Settings.VideoAndSound.DLSSSharpness);
-		if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage")))
-		{
-			CVarScreenPercentage->Set(SelectedScreenPercentage);
-		}
-	}
-
 	// Frame Generation
 	if (UStreamlineLibraryDLSSG::IsDLSSGModeSupported(Settings.VideoAndSound.FrameGenerationEnabledMode))
 	{

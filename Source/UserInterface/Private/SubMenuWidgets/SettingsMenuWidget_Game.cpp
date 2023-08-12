@@ -29,6 +29,7 @@ void USettingsMenuWidget_Game::NativeConstruct()
 	CheckBox_ShowBulletTracers->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowBulletTracers);
 	CheckBox_ShowMuzzleFlash->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowMuzzleFlash);
 	CheckBox_ShowMesh->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowMesh);
+	CheckBox_ShowHitTimingWidget->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowHitTimingWidget);
 
 	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Revert->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
@@ -162,6 +163,11 @@ void USettingsMenuWidget_Game::OnCheckStateChanged_ShowMesh(const bool bIsChecke
 {
 	NewGameSettings.bShowWeaponMesh = bIsChecked;
 	NewGameSettings.bShowCharacterMesh = bIsChecked;
+}
+
+void USettingsMenuWidget_Game::OnCheckStateChanged_ShowHitTimingWidget(const bool bIsChecked)
+{
+	NewGameSettings.bShowHitTimingWidget = bIsChecked;
 }
 
 void USettingsMenuWidget_Game::OnButtonClicked_BSButton(const UBSButton* Button)
