@@ -36,11 +36,11 @@ static void SetDLSSMode(const UDLSSMode InDLSSMode, const bool bRestoreFullResWh
 		UDLSSLibrary::EnableDLSS(bShouldEnable);
 		
 		// Set Screen Percentage
+		const float ScreenPercentage = bIsDLAA || !bValidScreenPercentage ? 100.f : OptimalScreenPercentage;
 		if (bShouldEnable || bRestoreFullResWhenDisabled)
 		{
 			if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage")))
 			{
-				const float ScreenPercentage = bIsDLAA || !bValidScreenPercentage ? 100.f : OptimalScreenPercentage;
 				CVarScreenPercentage->Set(ScreenPercentage);
 			}
 		}

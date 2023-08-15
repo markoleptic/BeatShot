@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SaveLoadInterface.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "BeatShot/BeatShot.h"
@@ -21,7 +22,7 @@ class AMoon;
 class UMaterialInstanceDynamic;
 
 UCLASS()
-class BEATSHOT_API ATimeOfDayManager : public AActor
+class BEATSHOT_API ATimeOfDayManager : public AActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -54,7 +55,19 @@ public:
 	/** Returns the current time of day */
 	ETimeOfDay GetTimeOfDay() const { return TimeOfDay; }
 
+	void SetSpotLightFrontEnabledState(const bool bEnable);
+
 protected:
+
+	/** Changes TimeOfDay */
+	UFUNCTION()
+	void OnStreakThresholdPassed();
+
+	/** Callback function to respond to NightMode change from WallMenu */
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+
+	/** Callback function to respond to NightMode change from WallMenu */
+	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	/** Calls RefreshMaterial function in SkySphere */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -121,7 +134,11 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	bool bUseSpotlight = true;
-	
+
+	UPROPERTY(EditAnywhere, Category = "Lighting")
+	float LowGISettingSkyLightIntensity = 1.f;
+
+	/** Constant Light Intensity of the sun */
 	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
 	float DayDirectionalLightIntensity = 10.f;
 
@@ -133,7 +150,8 @@ protected:
 	
 	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
 	float DaySpotlightIntensity = 0.f;
-	
+
+	/** Dynamic Light Intensity of the moon's directional light */
 	UPROPERTY(EditAnywhere, Category = "Lighting|Night")
 	float NightDirectionalLightIntensity = 1.f;
 
@@ -176,4 +194,6 @@ protected:
 	FVector NighttimeRightRoofLocation;
 	
 	float LastLerpRotation;
+
+	bool bUsingLowGISettings = false;
 };

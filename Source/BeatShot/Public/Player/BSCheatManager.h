@@ -28,6 +28,10 @@ public:
 
 	void CVarOnChanged_ShowDebugOverlappingVertices(IConsoleVariable* Variable);
 
+	void CVarOnChanged_ShowSpotLightFront(IConsoleVariable* Variable);
+
+	void CVarOnChanged_SetNightMode(IConsoleVariable* Variable);
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;
 

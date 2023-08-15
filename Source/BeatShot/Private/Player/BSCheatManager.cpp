@@ -10,6 +10,7 @@
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "RangeActors/TimeOfDayManager.h"
 
 namespace BeatShotConsoleVariables
 {
@@ -19,6 +20,8 @@ namespace BeatShotConsoleVariables
 	static TAutoConsoleVariable CVarShowDebugSpawnMemory(TEXT("bs.showdebug.targetmanager.spawnmemory"), 0, TEXT("Show the recent target locations that are being tracked"));
 	static TAutoConsoleVariable CVarShowDebugAllTargetManager(TEXT("bs.showdebug.targetmanager"), 0, TEXT("Show all target manager debug"));
 	static TAutoConsoleVariable CVarShowDebugOverlappingVertices(TEXT("bs.showdebug.overlap"), 0, TEXT("Show overlapping vertices"));
+	static TAutoConsoleVariable CVarShowSpotLightFront(TEXT("bs.showspotlightfront"), 0, TEXT("Show SpotLight Front"));
+	static TAutoConsoleVariable CVarSetNightMode(TEXT("bs.setnightmode"), 0, TEXT("Set the time of day to night"));
 }
 
 void UBSCheatManager::InitCheatManager()
@@ -48,6 +51,14 @@ void UBSCheatManager::InitCheatManager()
 	FConsoleVariableDelegate CVarShowDebugOverlappingVerticesDelegate;
 	CVarShowDebugOverlappingVerticesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugOverlappingVertices);
 	BeatShotConsoleVariables::CVarShowDebugOverlappingVertices.AsVariable()->SetOnChangedCallback(CVarShowDebugOverlappingVerticesDelegate);
+
+	FConsoleVariableDelegate CVarShowSpotLightFrontDelegate;
+	CVarShowSpotLightFrontDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowSpotLightFront);
+	BeatShotConsoleVariables::CVarShowSpotLightFront.AsVariable()->SetOnChangedCallback(CVarShowSpotLightFrontDelegate);
+
+	FConsoleVariableDelegate CVarSetNightModeDelegate;
+	CVarSetNightModeDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_SetNightMode);
+	BeatShotConsoleVariables::CVarSetNightMode.AsVariable()->SetOnChangedCallback(CVarSetNightModeDelegate);
 }
 
 void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
@@ -118,4 +129,29 @@ void UBSCheatManager::CVarOnChanged_ShowDebugAllTargetManager(IConsoleVariable* 
 void UBSCheatManager::CVarOnChanged_ShowDebugOverlappingVertices(IConsoleVariable* Variable)
 {
 	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_OverlappingVertices(Variable->GetBool());
+}
+
+void UBSCheatManager::CVarOnChanged_ShowSpotLightFront(IConsoleVariable* Variable)
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GI->TimeOfDayManager)
+	{
+		GI->TimeOfDayManager->SetSpotLightFrontEnabledState(Variable->GetBool());
+	}
+}
+
+void UBSCheatManager::CVarOnChanged_SetNightMode(IConsoleVariable* Variable)
+{
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (GI->TimeOfDayManager)
+	{
+		if (Variable->GetBool() == true)
+		{
+			GI->TimeOfDayManager->SetTimeOfDay(ETimeOfDay::Night);
+		}
+		else if (Variable->GetBool() == false)
+		{
+			GI->TimeOfDayManager->SetTimeOfDay(ETimeOfDay::Day);
+		}
+	}
 }

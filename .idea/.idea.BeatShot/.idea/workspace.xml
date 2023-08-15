@@ -84,45 +84,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/DLSSFunctions.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BeatShot.uproject" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.uproject" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/BP_TimeOfDayManager.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/BP_TimeOfDayManager.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_TargetSpawner.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_VisualizerManager.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Visualizers/BP_VisualizerManager.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Visualizers/Base/BP_SimpleBeamLight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Visualizers/Base/BP_SimpleBeamLight.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Curves/C_TimeOfDay_Transition.uasset" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Curves/C_Transition_Daylight.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Curves/C_Transition_Daylight.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_SphereTarget.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Targets/BP_SphereTarget.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Lighting.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Lighting.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/Range.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Range.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Sequences/LS_Fire.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Sequences/LS_Fire.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Sequences/LS_Idle.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Sequences/LS_Idle.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Sequences/LS_JumpEnd.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Sequences/LS_JumpEnd.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Levels/Sequences/LS_Run.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/Sequences/LS_Run.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/NonAssets/Tooltips.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Tooltips.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Tooltips.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Tooltips.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PlayerHUD.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/OverlayWidgets/WBP_PlayerHUD.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameSettings.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_HitTiming.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_HitTiming.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameInstance.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/BSGameMode.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerController.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSPlayerController.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSCheatManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Player/BSCheatManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/RangeLevelScriptActor.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/RangeLevelScriptActor.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/TimeOfDayManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/RangeActors/TimeOfDayManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/Target.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/Target.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/BSGameInstance.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Player/BSCheatManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Player/BSCheatManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/RangeLevelScriptActor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/RangeLevelScriptActor.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/TimeOfDayManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/TimeOfDayManager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalConstants.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalConstants.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalEnums.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalEnums.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalStructs.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/SaveLoadInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/SaveLoadInterface.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PlayerHUD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/OverlayWidgets/PlayerHUD.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Game.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Game.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/DLSSFunctions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/DLSSFunctions.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/HitTimingWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/HitTimingWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/SettingsMenuWidget_VideoAndSound.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/HitTimingWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/HitTimingWidget.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,10 +107,6 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/algorithm" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/cmath" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://C:/Program Files (x86)/Microsoft Visual Studio/2019/BuildTools/VC/Tools/MSVC/14.29.30133/include/functional" root0="SKIP_HIGHLIGHTING" />
@@ -199,6 +169,7 @@
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/RangeLevelScriptActor.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/RangeActors/WallMenu.h" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/BeatShot/Public/System/BSAssetManager.h" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://U:/UnrealSourceProjects/BeatShot5.2/Source/BeatShotGlobal/Public/DLSSFunctions.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/ScoreBrowserWidget.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/UserInterface/Private/UserInterfaceModule.cpp" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Source/UserInterface/UserInterface.Build.cs" root0="FORCE_HIGHLIGHTING" />
@@ -29715,6 +29686,7 @@
       <workItem from="1691971339276" duration="9010000" />
       <workItem from="1691989953774" duration="1193000" />
       <workItem from="1692050984119" duration="5345000" />
+      <workItem from="1692113646401" duration="19708000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

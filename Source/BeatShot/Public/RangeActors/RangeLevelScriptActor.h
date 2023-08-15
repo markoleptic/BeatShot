@@ -21,14 +21,4 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSoftObjectPtr<ATimeOfDayManager> TimeOfDayManager;
-
-	/** Changes TimeOfDay */
-	UFUNCTION()
-	void OnStreakThresholdPassed();
-
-	/** Callback function to respond to NightMode change from WallMenu */
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 };

@@ -159,15 +159,6 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	Slider_NIS_Sharpness->SetMaxValue(MaxValue_NISSharpness);
 	Slider_NIS_Sharpness->SetStepSize(SnapSize_NISSharpness);
 
-	const UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
-	float CurrentScaleNormalized;
-	float CurrentScale;
-	float MinScale;
-	float MaxScale;
-	Settings->GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScale, MinScale, MaxScale);
-	Slider_ResolutionScale->SetMinValue(MinScale / 100.f);
-	Slider_ResolutionScale->SetMaxValue(MaxScale / 100.f);
-
 	Value_GlobalSound->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_GlobalSound);
 	Value_MenuSound->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_MenuSound);
 	Value_MusicSound->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_MusicSound);
@@ -272,14 +263,23 @@ void USettingsMenuWidget_VideoAndSound::InitSettingCategoryWidget()
 
 void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
 {
-	const UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
-
+	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+	
+	float CurrentScaleNormalized;
+	float CurrentScale;
+	float MinScale;
+	float MaxScale;
+	
+	GameUserSettings->GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScale, MinScale, MaxScale);
+	Slider_ResolutionScale->SetMinValue(MinScale / 100.f);
+	Slider_ResolutionScale->SetMaxValue(MaxScale / 100.f);
+	
 	Slider_GlobalSound->SetValue(InVideoAndSoundSettings.GlobalVolume);
 	Slider_MenuSound->SetValue(InVideoAndSoundSettings.MenuVolume);
 	Slider_MusicSound->SetValue(InVideoAndSoundSettings.MusicVolume);
 	Slider_DLSS_Sharpness->SetValue(InVideoAndSoundSettings.DLSSSharpness);
 	Slider_NIS_Sharpness->SetValue(InVideoAndSoundSettings.NISSharpness);
-	Slider_ResolutionScale->SetValue(GameUserSettings->GetResolutionScaleNormalized());
+	Slider_ResolutionScale->SetValue(CurrentScale / 100.f);
 
 	Value_GlobalSound->SetText(FText::AsNumber(InVideoAndSoundSettings.GlobalVolume));
 	Value_MenuSound->SetText(FText::AsNumber(InVideoAndSoundSettings.MenuVolume));
@@ -288,7 +288,7 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	Value_FrameLimitMenu->SetText(FText::AsNumber(InVideoAndSoundSettings.FrameRateLimitMenu));
 	Value_DLSS_Sharpness->SetText(FText::AsNumber(InVideoAndSoundSettings.DLSSSharpness));
 	Value_NIS_Sharpness->SetText(FText::AsNumber(InVideoAndSoundSettings.NISSharpness));
-	Value_ResolutionScale->SetText(FText::AsNumber(GameUserSettings->GetResolutionScaleNormalized()));
+	Value_ResolutionScale->SetText(FText::FromString(FString::SanitizeFloat(CurrentScale / 100.f)));
 
 	CheckBox_FPSCounter->SetIsChecked(InVideoAndSoundSettings.bShowFPSCounter);
 
@@ -381,7 +381,7 @@ void USettingsMenuWidget_VideoAndSound::OnSliderChanged_MusicSound(const float N
 void USettingsMenuWidget_VideoAndSound::OnSliderChanged_DLSS_Sharpness(const float NewValue)
 {
 	const float Value = OnSliderChanged(NewValue, Value_DLSS_Sharpness, SnapSize_DLSSSharpness);
-	if (UDLSSLibrary::GetDLSSMode() != UDLSSMode::Off)
+	if (UDLSSLibrary::IsDLSSEnabled())
 	{
 		UDLSSLibrary::SetDLSSSharpness(Value);
 	}
@@ -390,7 +390,7 @@ void USettingsMenuWidget_VideoAndSound::OnSliderChanged_DLSS_Sharpness(const flo
 void USettingsMenuWidget_VideoAndSound::OnSliderChanged_NIS_Sharpness(const float NewValue)
 {
 	const float Value = OnSliderChanged(NewValue, Value_NIS_Sharpness, SnapSize_NISSharpness);
-	if (UDLSSLibrary::GetDLSSMode() == UDLSSMode::Off)
+	if (!UDLSSLibrary::IsDLSSEnabled())
 	{
 		UNISLibrary::SetNISSharpness(Value);
 	}
@@ -398,21 +398,18 @@ void USettingsMenuWidget_VideoAndSound::OnSliderChanged_NIS_Sharpness(const floa
 
 void USettingsMenuWidget_VideoAndSound::OnSliderChanged_ResolutionScale(const float NewValue)
 {
-	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	const float Value = OnSliderChanged(NewValue, Value_ResolutionScale, SnapSize_ResolutionScale);
 
-	if (UDLSSLibrary::GetDLSSMode() != UDLSSMode::Off)
+	if (!UDLSSLibrary::IsDLSSEnabled())
 	{
-		return;
+		UGameUserSettings::GetGameUserSettings()->SetResolutionScaleValueEx(Value  * 100.f);
 	}
-
-	Settings->SetResolutionScaleNormalized(Value);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_DLSS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float Value = OnEditableTextBoxChanged(NewValue, Value_DLSS_Sharpness, Slider_DLSS_Sharpness, SnapSize_DLSSSharpness, MinValue_DLSSSharpness, MaxValue_DLSSSharpness);
-	if (UDLSSLibrary::GetDLSSMode() != UDLSSMode::Off)
+	if (UDLSSLibrary::IsDLSSEnabled())
 	{
 		UDLSSLibrary::SetDLSSSharpness(Value);
 	}
@@ -421,7 +418,7 @@ void USettingsMenuWidget_VideoAndSound::OnValueChanged_DLSS_Sharpness(const FTex
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_NIS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float Value = OnEditableTextBoxChanged(NewValue, Value_NIS_Sharpness, Slider_NIS_Sharpness, SnapSize_NISSharpness, MinValue_NISSharpness, MaxValue_NISSharpness);
-	if (UDLSSLibrary::GetDLSSMode() == UDLSSMode::Off)
+	if (!UDLSSLibrary::IsDLSSEnabled())
 	{
 		UNISLibrary::SetNISSharpness(Value);
 	}
@@ -435,14 +432,12 @@ void USettingsMenuWidget_VideoAndSound::OnValueChanged_ResolutionScale(const FTe
 	float MinScale;
 	float MaxScale;
 	Settings->GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScale, MinScale, MaxScale);
-	const float Value = OnEditableTextBoxChanged(NewValue, Value_ResolutionScale, Slider_ResolutionScale, SnapSize_ResolutionScale, MinScale, MaxScale);
-
-	if (UDLSSLibrary::GetDLSSMode() != UDLSSMode::Off)
+	const float Value = OnEditableTextBoxChanged(NewValue, Value_ResolutionScale, Slider_ResolutionScale, SnapSize_ResolutionScale, MinScale / 100.f, MaxScale / 100.f);
+	
+	if (!UDLSSLibrary::IsDLSSEnabled())
 	{
-		return;
+		Settings->SetResolutionScaleValueEx(Value * 100.f);
 	}
-
-	Settings->SetResolutionScaleNormalized(Value);
 }
 
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_GlobalSound(const FText& NewGlobalSound, ETextCommit::Type CommitType)
@@ -626,7 +621,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Resolution(const FStr
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	LastConfirmedResolution = Settings->GetScreenResolution();
 	Settings->SetScreenResolution(NewResolution);
-	Settings->ApplyResolutionSettings(false);
 	if (SelectionType != ESelectInfo::Direct)
 	{
 		ShowConfirmVideoSettingsMessage();
@@ -939,12 +933,17 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const EDLSSEnable
 		if (GameUserSettings->IsVSyncEnabled())
 		{
 			GameUserSettings->SetVSyncEnabled(false);
-			GameUserSettings->ApplySettings(false);
 		}
 	}
 	else
 	{
 		CheckBox_VSyncEnabled->SetIsChecked(UGameUserSettings::GetGameUserSettings()->IsVSyncEnabled());
+	}
+
+	if (DLSSEnabledMode == EDLSSEnabledMode::On || NISEnabledMode == ENISEnabledMode::On)
+	{
+		Slider_ResolutionScale->SetValue(1.f);
+		Value_ResolutionScale->SetText(FText::FromString(FString::FromInt(1)));
 	}
 }
 
@@ -1003,6 +1002,7 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings()
 
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	Settings->ConfirmVideoMode();
+	Settings->ApplyResolutionSettings(false);
 	LastConfirmedResolution = Settings->GetScreenResolution();
 	PopulateResolutionComboBox();
 

@@ -8,6 +8,7 @@
 #include "Engine/GameInstance.h"
 #include "BSGameInstance.generated.h"
 
+class ATimeOfDayManager;
 class AGameModeBase;
 class USteamManager;
 class ATarget;
@@ -30,6 +31,9 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 	virtual void Shutdown() override;
 
 public:
+
+	TObjectPtr<ATimeOfDayManager> TimeOfDayManager;
+	
 	UFUNCTION()
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 

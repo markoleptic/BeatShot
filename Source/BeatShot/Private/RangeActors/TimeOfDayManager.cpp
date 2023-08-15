@@ -2,6 +2,9 @@
 
 
 #include "RangeActors/TimeOfDayManager.h"
+
+#include "BSGameInstance.h"
+#include "BSGameMode.h"
 #include "Components/StaticMeshComponent.h"
 #include "RangeActors/Moon.h"
 #include "Components/DirectionalLightComponent.h"
@@ -15,6 +18,8 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GlobalConstants.h"
 #include "Engine/SpotLight.h"
+#include "GameFramework/GameUserSettings.h"
+#include "Kismet/GameplayStatics.h"
 
 using namespace Constants;
 
@@ -47,6 +52,26 @@ void ATimeOfDayManager::PostInitializeComponents()
 	if (DayDirectionalLight)
 	{
 		DayDirectionalLight->GetLightComponent()->SetIntensity(DayDirectionalLightIntensity);
+	}
+	
+	bUsingLowGISettings = UGameUserSettings::GetGameUserSettings()->GetGlobalIlluminationQuality() < 2 ? true : false;
+	
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ATimeOfDayManager::OnPlayerSettingsChanged_Game);
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound);
+	GI->TimeOfDayManager = this;
+	
+	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	GameMode->OnStreakThresholdPassed.BindUObject(this, &ATimeOfDayManager::OnStreakThresholdPassed);
+
+	// Initialize the time of day
+	if (LoadPlayerSettings().User.bNightModeUnlocked && LoadPlayerSettings().Game.bNightModeSelected)
+	{
+		SetTimeOfDay(ETimeOfDay::Night);
+	}
+	else
+	{
+		SetTimeOfDay(ETimeOfDay::Day);
 	}
 }
 
@@ -143,6 +168,9 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 	{
 		return;
 	}
+
+	// Always the same intensity
+	DayDirectionalLight->GetLightComponent()->SetIntensity(DayDirectionalLightIntensity);
 	
 	if (InTimeOfDay == ETimeOfDay::Night)
 	{
@@ -159,7 +187,7 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		Moon->MoonLight->SetIntensity(NightDirectionalLightIntensity);
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(NighttimeLeftRoofLocation);
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(NighttimeRightRoofLocation);
-		SkyLight->GetLightComponent()->SetIntensity(NightSkylightIntensity);
+		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings ? LowGISettingSkyLightIntensity : NightSkylightIntensity);
 		RectLight->GetLightComponent()->SetIntensity(bUseRectLight ? NightRectLightIntensity : 0.f);
 		SpotLight_Front->GetLightComponent()->SetIntensity(bUseSpotlight ? NightSpotlightIntensity : 0.f);
 	}
@@ -178,12 +206,88 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		Moon->MoonLight->SetIntensity(0);
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeLeftRoofLocation);
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeRightRoofLocation);
-		SkyLight->GetLightComponent()->SetIntensity(DaySkylightIntensity);
+		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings ? LowGISettingSkyLightIntensity : DaySkylightIntensity);
 		RectLight->GetLightComponent()->SetIntensity(bUseRectLight ? DayRectLightIntensity : 0.f);
 		SpotLight_Front->GetLightComponent()->SetIntensity(bUseSpotlight ? DaySpotlightIntensity : 0.f);
 	}
 
 	RefreshSkySphereMaterial();
+}
+
+void ATimeOfDayManager::SetSpotLightFrontEnabledState(const bool bEnable)
+{
+	if (bEnable)
+	{
+		if (TimeOfDay == ETimeOfDay::Day)
+		{
+			SpotLight_Front->GetLightComponent()->SetIntensity(DaySpotlightIntensity);
+		}
+		if (TimeOfDay == ETimeOfDay::Night)
+		{
+			SpotLight_Front->GetLightComponent()->SetIntensity(NightSpotlightIntensity);
+		}
+	}
+	else
+	{
+		SpotLight_Front->GetLightComponent()->SetIntensity(0.f);
+	}
+}
+
+void ATimeOfDayManager::OnStreakThresholdPassed()
+{
+	if (GetTimeOfDay() == ETimeOfDay::Day)
+	{
+		BeginTransitionToNight();
+	}
+}
+
+void ATimeOfDayManager::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+{
+	if (LoadPlayerSettings().User.bNightModeUnlocked)
+	{
+		if (GameSettings.bNightModeSelected)
+		{
+			if (GetTimeOfDay() == ETimeOfDay::Day)
+			{
+				BeginTransitionToNight();
+			}
+		}
+		else
+		{
+			if (GetTimeOfDay() == ETimeOfDay::Night)
+			{
+				BeginTransitionToDay();
+			}
+		}
+	}
+}
+
+void ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+{
+	// Adjust SkyLight brightness if using Low or Medium Global Illumination Settings
+	if (UGameUserSettings::GetGameUserSettings()->GetGlobalIlluminationQuality() < 2)
+	{
+		bUsingLowGISettings = true;
+		if (SkyLight)
+		{
+			SkyLight->GetLightComponent()->SetIntensity(LowGISettingSkyLightIntensity);
+		}
+	}
+	else
+	{
+		bUsingLowGISettings = false;
+		if (SkyLight)
+		{
+			if (TimeOfDay == ETimeOfDay::Day)
+			{
+				SkyLight->GetLightComponent()->SetIntensity(DaySkylightIntensity);
+			}
+			else if (TimeOfDay == ETimeOfDay::Night)
+			{
+				SkyLight->GetLightComponent()->SetIntensity(NightSkylightIntensity);
+			}
+		}
+	}
 }
 
 void ATimeOfDayManager::OnTimelineCompletedCallback()
@@ -210,7 +314,7 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 		PositionAlpha = UKismetMathLibrary::Lerp(0, 1, Value);
 		NightAlpha = UKismetMathLibrary::Lerp(0, 1, Value);
 		MoonlightIntensity = UKismetMathLibrary::Lerp(0, NightDirectionalLightIntensity, MoonlightCurve->GetFloatValue(Value));
-		SkylightIntensity = UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity, SkyLightCurve->GetFloatValue(Value));
+		SkylightIntensity = bUsingLowGISettings ? LowGISettingSkyLightIntensity : UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity, SkyLightCurve->GetFloatValue(Value));
 		SpotlightIntensity = bUseSpotlight ? UKismetMathLibrary::Lerp(DaySpotlightIntensity, NightSpotlightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
 		RectLightIntensity = bUseRectLight ? UKismetMathLibrary::Lerp(DayRectLightIntensity, NightRectLightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
 	}
@@ -219,7 +323,7 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 		PositionAlpha = UKismetMathLibrary::Lerp(1, 0, Value);
 		NightAlpha = UKismetMathLibrary::Lerp(1, 0, Value);
 		MoonlightIntensity = UKismetMathLibrary::Lerp(NightDirectionalLightIntensity, 0, MoonlightCurve->GetFloatValue(Value));
-		SkylightIntensity = UKismetMathLibrary::Lerp(NightSkylightIntensity, DaySkylightIntensity, SkyLightCurve->GetFloatValue(Value));
+		SkylightIntensity = bUsingLowGISettings ? LowGISettingSkyLightIntensity : UKismetMathLibrary::Lerp(NightSkylightIntensity, DaySkylightIntensity, SkyLightCurve->GetFloatValue(Value));
 		SpotlightIntensity = bUseSpotlight ? UKismetMathLibrary::Lerp(NightSpotlightIntensity, DaySpotlightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
 		RectLightIntensity = bUseRectLight ? UKismetMathLibrary::Lerp(NightRectLightIntensity, DayRectLightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
 	}
