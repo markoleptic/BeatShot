@@ -8,6 +8,8 @@
 #include "BeatShot/BeatShot.h"
 #include "TimeOfDayManager.generated.h"
 
+class ARectLight;
+class ASpotLight;
 class AVisualizerBase;
 class UDirectionalLightComponent;
 class ASkyLight;
@@ -26,23 +28,19 @@ class BEATSHOT_API ATimeOfDayManager : public AActor
 public:
 	ATimeOfDayManager();
 
-	virtual void PreInitializeComponents() override;
-
 	virtual void PostInitializeComponents() override;
 	
 	virtual void Tick(float DeltaTime) override;
 
 	/** Changes TimeOfDay and plays TransitionTimeline */
-	UFUNCTION(BlueprintCallable)
 	void BeginTransitionToNight();
 
 	/** Changes TimeOfDay and plays TransitionTimeline */
-	UFUNCTION(BlueprintCallable)
 	void BeginTransitionToDay();
 
 	/** Changes TimeOfDay based on the value of TimeOfDay_Editor */
 	UFUNCTION(CallInEditor)
-	void UpdateTimeOfDay();
+	void UpdateTimeOfDay_Editor();
 	
 	UFUNCTION(CallInEditor)
 	void BeginTransitionToNight_Editor();
@@ -53,79 +51,122 @@ public:
 	/** Instantly changes the time of day */
 	void SetTimeOfDay(const ETimeOfDay InTimeOfDay);
 
+	/** Returns the current time of day */
 	ETimeOfDay GetTimeOfDay() const { return TimeOfDay; }
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	/** Calls RefreshMaterial function in SkySphere */
 	UFUNCTION(BlueprintImplementableEvent)
 	void RefreshSkySphereMaterial();
 
 	/** Soft Reference to SkySphere in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSoftObjectPtr<AActor> SkySphere_Soft;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Lighting|References")
+	TSoftObjectPtr<AActor> SkySphere;
 
 	/** Soft Reference to Moon in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSoftObjectPtr<AMoon> Moon_Soft;
+	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
+	TSoftObjectPtr<AMoon> Moon;
 
 	/** Soft Reference to Daylight in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSoftObjectPtr<ADirectionalLight> Daylight_Soft;
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "Lighting|References")
+	TSoftObjectPtr<ADirectionalLight> DayDirectionalLight;
 
 	/** Soft Reference to Skylight in Range level */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSoftObjectPtr<ASkyLight> Skylight_Soft;
+	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
+	TSoftObjectPtr<ASkyLight> SkyLight;
 
 	/** Reference to left roof mesh to move */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
 	TSoftObjectPtr<AStaticMeshActor> LeftWindowCover;
 
 	/** Reference to right roof mesh to move */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
 	TSoftObjectPtr<AStaticMeshActor> RightWindowCover;
 
+	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
+	TSoftObjectPtr<ASpotLight> SpotLight_Front;
+
+	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
+	TSoftObjectPtr<ARectLight> RectLight;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
+	UCurveFloat* TransitionCurve;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
+	UCurveFloat* SkyMaterialCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
+	UCurveFloat* MoonlightCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
+	UCurveFloat* SkyLightCurve;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
+	UCurveFloat* SecondaryLightCurve;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting")
+	ETimeOfDay TimeOfDay_Editor;
+	
+	/** Distance along the x-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
+	UPROPERTY(EditAnywhere, Category = "Lighting")
+	float DayToNightRoofXTravelDistance = -1000.f;
+
+	/** Distance along the z-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
+	UPROPERTY(EditAnywhere, Category = "Lighting")
+	float DayToNightRoofZTravelDistance = 20.f;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting")
+	bool bUseRectLight = true;
+	
+	UPROPERTY(EditAnywhere, Category = "Lighting")
+	bool bUseSpotlight = true;
+	
+	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
+	float DayDirectionalLightIntensity = 10.f;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
+	float DaySkylightIntensity = 3.f;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
+	float DayRectLightIntensity = 0.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
+	float DaySpotlightIntensity = 0.f;
+	
+	UPROPERTY(EditAnywhere, Category = "Lighting|Night")
+	float NightDirectionalLightIntensity = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting|Night")
+	float NightSkylightIntensity = 3.f;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting|Night")
+	float NightRectLightIntensity = 160.f;
+
+	UPROPERTY(EditAnywhere, Category = "Lighting|Night")
+	float NightSpotlightIntensity = 2000.f;
+	
 	/** Reference to SkySphere dynamic material instance */
 	UPROPERTY()
 	TSoftObjectPtr<UMaterialInstanceDynamic> SkySphereMaterial;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* PositionCurve;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* SkyMaterialCurve;
-	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* DaylightCurve;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* MoonlightCurve;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UCurveFloat* SkylightCurve;
-
 	/** The current time of day */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ETimeOfDay TimeOfDay;
-
-	UPROPERTY(EditAnywhere)
-	ETimeOfDay TimeOfDay_Editor;
 
 	/** Timeline bound to Position Curve */
 	FTimeline TransitionTimeline;
-	
+
+	/** Delegate that binds to TransitionTimeline's InterpFloat, using the TransitionCurve and TransitionTimeOfDay function */
 	FOnTimelineFloat OnTransitionTimelineTick;
 
-	/** Link TransitionTimeline to the function OnTimelineCompletedCallback() */
+	/** Delegate that binds to TransitionTimeline's TimelineFinishedFunc, using the OnTimelineCompletedCallback function */
 	FOnTimelineEvent OnTimelineCompleted;
 
 	/** Changes TimeOfDay after TransitionTimeline completes */
 	UFUNCTION()
 	void OnTimelineCompletedCallback();
 
-	/** Executes on every tick of TransitionTimeline, reads from PositionCurve */
+	/** Executes on every tick of TransitionTimeline, reads from TransitionCurve */
 	UFUNCTION()
 	void TransitionTimeOfDay(const float Value);
 	
@@ -133,26 +174,6 @@ protected:
 	FVector DaytimeRightRoofLocation = {2020, 0, 3371};
 	FVector NighttimeLeftRoofLocation;
 	FVector NighttimeRightRoofLocation;
-
-	/** Distance along the x-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
-	UPROPERTY(EditAnywhere, Category = "Day-Night Cycle")
-	float DayToNightRoofXTravelDistance = -1000.f;
-
-	/** Distance along the z-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
-	UPROPERTY(EditAnywhere, Category = "Day-Night Cycle")
-	float DayToNightRoofZTravelDistance = 20.f;
-
-	UPROPERTY(EditAnywhere)
-	float MaxMoonlightIntensity = 1.f;
-
-	UPROPERTY(EditAnywhere)
-	float MaxDaylightIntensity = 15.f;
-
-	UPROPERTY(EditAnywhere)
-	float DaySkylightIntensity = 3.f;
-
-	UPROPERTY(EditAnywhere)
-	float NightSkylightIntensity = 10.f;
-
+	
 	float LastLerpRotation;
 };

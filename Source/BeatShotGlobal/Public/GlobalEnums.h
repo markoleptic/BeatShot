@@ -344,10 +344,10 @@ enum class ETargetDeactivationResponse : uint8
 	PlayExplosionEffect UMETA(DisplayName="Play Explosion Effect"),
 	/** Destroy the target permanently */
 	Destroy UMETA(DisplayName="Destroy"),
+	/** Hide the target */
+	HideTarget UMETA(DisplayName="HideTarget"),
 	/** DEPRECATED */
-	ResetColorToStartColor UMETA(DisplayName="Reset Color To Start Color"),
-	/** DEPRECATED */
-	Hide UMETA(DisplayName="Hide"),
+	Deprecated1 UMETA(DisplayName="Hide"),
 	/** DEPRECATED */
 	ChangeDirection UMETA(DisplayName="Change Direction"),
 	/** DEPRECATED */
@@ -355,8 +355,7 @@ enum class ETargetDeactivationResponse : uint8
 	/** DEPRECATED */
 	ChangeScale UMETA(DisplayName="Change Scale"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::Destroy);
-
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::HideTarget);
 
 /** How to handle activating a target. For example, if a target was spawned, activated, and deactivated but not destroyed, should another target be allowed to spawned/activated? */
 /*UENUM(BlueprintType)

@@ -92,17 +92,17 @@ namespace Constants
 	inline constexpr FLinearColor DefaultCrossHairColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
 	inline constexpr float DefaultOutlineOpacity = 1.f;
 	inline constexpr int32 DefaultOutlineWidth = 20;
-
-	inline constexpr float SnapSize_TimeWindow = 0.01f;
+	
 	inline constexpr float MaxValue_TimeWindow = 0.01f;
 	inline constexpr float MinValue_TimeWindow = 1.00f;
-
+	inline constexpr float SnapSize_TimeWindow = 0.01f;
+	
+	inline constexpr float MaxValue_FrameRateLimit = 1000.f;
+	inline constexpr float MinValue_FrameRateLimit = 0.f;
 	inline constexpr int32 SnapSize_FrameRateLimit = 1;
-	inline constexpr int32 MaxValue_FrameRateLimit = 1000;
-	inline constexpr int32 MinValue_FrameRateLimit = 0;
 
-	inline constexpr int32 MinValue_Volume = 0;
-	inline constexpr int32 MaxValue_Volume = 100;
+	inline constexpr float MinValue_Volume = 0.f;
+	inline constexpr float MaxValue_Volume = 100.f;
 	inline constexpr int32 SnapSize_Volume = 1;
 
 	inline constexpr float MinValue_DLSSSharpness = 0.f;

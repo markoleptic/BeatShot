@@ -376,6 +376,12 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
 	}
 
+	// Hide target
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
+	{
+		SetActorHiddenInGame(true);
+	}
+
 	// Colors
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetColorToInactiveColor))
 	{

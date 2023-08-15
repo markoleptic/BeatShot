@@ -19,54 +19,6 @@ class USavedTextWidget;
 class UVerticalBox;
 class UBSButton;
 
-
-/** Video and sound settings */
-USTRUCT(BlueprintType)
-struct FPreviousSettingsDLSS
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(BlueprintReadOnly)
-	EDLSSEnabledMode DLSSEnabledMode;
-
-	UPROPERTY(BlueprintReadOnly)
-	UStreamlineDLSSGMode FrameGenerationEnabledMode;
-
-	UPROPERTY(BlueprintReadOnly)
-	UDLSSMode DLSSMode;
-
-	UPROPERTY(BlueprintReadOnly)
-	float DLSSSharpness;
-
-	UPROPERTY(BlueprintReadOnly)
-	ENISEnabledMode NISEnabledMode;
-
-	UPROPERTY(BlueprintReadOnly)
-	UNISMode NISMode;
-
-	UPROPERTY(BlueprintReadOnly)
-	float NISSharpness;
-
-	UPROPERTY(BlueprintReadOnly)
-	UStreamlineReflexMode StreamlineReflexMode;
-
-	bool bHasBeenInitialized;
-
-	FPreviousSettingsDLSS()
-	{
-		DLSSEnabledMode = EDLSSEnabledMode::On;
-		FrameGenerationEnabledMode = UStreamlineDLSSGMode::On;
-		DLSSMode = UDLSSMode::Auto;
-		DLSSSharpness = 0.f;
-		NISEnabledMode = ENISEnabledMode::Off;
-		NISMode = UNISMode::Off;
-		NISSharpness = 0.f;
-		StreamlineReflexMode = UStreamlineReflexMode::Enabled;
-		bHasBeenInitialized = false;
-	}
-};
-
-
 /** Settings category widget holding Video and Sound settings */
 UCLASS()
 class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCategoryWidget, public ISaveLoadInterface
@@ -403,13 +355,13 @@ private:
 	UFUNCTION()
 	void OnSelectionChanged_Resolution(const FString SelectedOption, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_DLSS(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_DLSS_EnabledMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_FrameGeneration(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_SuperResolution(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_NIS(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_NIS_EnabledMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -424,15 +376,12 @@ private:
 	
 	/** Clears and repopulates the ComboBox_Resolution based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
 	void PopulateResolutionComboBox();
-
-	/** Saves the DLSS/NIS settings just before changing the DLSS enabled mode so they can be reverted to if swapped back */
-	void CacheDLSSSettings(const bool bDLSSWasEnabled);
 	
 	/** Sets enabled/disabled states for any NVIDIA DLSS related settings */
-	void HandleDLSSEnabledChanged(const bool bIsDLSSEnabled);
+	void HandleDLSSEnabledChanged(const EDLSSEnabledMode DLSSEnabledMode);
 
-	/** Forces certain DLSS/NIS settings depending on if DLSS is enabled, and changes those selected options */
-	void HandleDLSSDependencies(const bool bIsDLSSEnabled);
+	/** Forces certain DLSS/NIS settings depending on if DLSS is enabled, and changes those selected options. Only called when a user changes the DLSS Enabled Mode selection */
+	void HandleDLSSDependencies(const EDLSSEnabledMode DLSSEnabledMode);
 	
 	/** Returns the selected DLSS enabled mode */
 	EDLSSEnabledMode GetSelectedDLSSEnabledMode() const;
@@ -465,15 +414,6 @@ private:
 	
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
 	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
-
-	/** Replacement function to set the DLSSMode since the old SetDLSSMode is deprecated */
-	static void SetDLSSMode(const UDLSSMode InDLSSMode, const bool bRestoreFullResWhenDisabled = true);
-	
-	UPROPERTY()
-	FPreviousSettingsDLSS PreviousDLSSOffSettings;
-
-	UPROPERTY()
-	FPreviousSettingsDLSS PreviousDLSSOnSettings;
 	
 	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
 	FIntPoint LastConfirmedResolution;

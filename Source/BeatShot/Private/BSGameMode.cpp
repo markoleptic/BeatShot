@@ -169,12 +169,11 @@ void ABSGameMode::StartGameMode()
 	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
 	StartGameModeTimers();
 	TargetManager->SetShouldSpawn(true);
-
-	// TODO: TEMP
-	for (float i = 0.f; i < BSConfig.TargetConfig.TargetMaxLifeSpan; i+=0.01f)
+	
+	/*for (float i = 0.f; i < BSConfig.TargetConfig.TargetMaxLifeSpan; i+=0.01f)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Score: %f Err: %f: AbsError: %f NormError: %f"), GetScoreFromTimeAlive(i), GetHitTimingError(i), GetAbsHitTimingError(i), GetNormalizedHitTimingError(i));
-	}
+	}*/
 }
 
 void ABSGameMode::StartGameModeTimers()
@@ -801,6 +800,7 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 		return MaxScorePerTarget;
 	}
 
+	const float MinScorePerTarget = MaxScorePerTarget / 2.f;
 	// Early shot
 	if (InTimeAlive < BSConfig.TargetConfig.SpawnBeatDelay)
 	{
@@ -810,7 +810,8 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 		const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);
 		
 		// interp between half perfect score at MinEarlyShot to perfect score at MaxEarlyShot
-		return FMath::Lerp<float>(MaxScorePerTarget / 2.f, MaxScorePerTarget, LerpValue);
+		return MinScorePerTarget + LerpValue * (MaxScorePerTarget - MinScorePerTarget);
+		//return FMath::Lerp<float>(MaxScorePerTarget / 2.f, MaxScorePerTarget, LerpValue);
 	}
 	
 	// Late shot
@@ -820,7 +821,8 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 	const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);
 	
 	// interp between perfect score at MinLateShot to half perfect score at MaxLateShot
-	return FMath::Lerp<float>(MaxScorePerTarget, MaxScorePerTarget / 2.f, LerpValue);
+	return MaxScorePerTarget + LerpValue * (MinScorePerTarget - MaxScorePerTarget);
+	//return FMath::Lerp<float>(MaxScorePerTarget, MaxScorePerTarget / 2.f, LerpValue);
 }
 
 float ABSGameMode::GetHitTimingError(const float InTimeAlive) const

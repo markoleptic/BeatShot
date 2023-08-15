@@ -79,6 +79,7 @@ void USettingsMenuWidget_Game::InitializeGameSettings(const FPlayerSettings_Game
 	CheckBox_ShowBulletTracers->SetIsChecked(PlayerSettings_Game.bShowBulletTracers);
 	CheckBox_ShowMuzzleFlash->SetIsChecked(PlayerSettings_Game.bShowMuzzleFlash);
 	CheckBox_ShowMesh->SetIsChecked(PlayerSettings_Game.bShowCharacterMesh && PlayerSettings_Game.bShowWeaponMesh);
+	CheckBox_ShowHitTimingWidget->SetIsChecked(PlayerSettings_Game.bShowHitTimingWidget);
 }
 
 void USettingsMenuWidget_Game::OnColorChanged_StartTarget(const FLinearColor& NewColor)

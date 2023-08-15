@@ -8,9 +8,7 @@
 #include "Kismet/GameplayStatics.h"
 #include <steam/isteamuser.h>
 #include <steam/steam_api.h>
-#include "DLSSLibrary.h"
-#include "NISLibrary.h"
-#include "StreamlineLibraryReflex.h"
+#include "DLSSFunctions.h"
 #include "GameFramework/GameUserSettings.h"
 
 void UBSGameInstance::Init()
@@ -32,104 +30,20 @@ void UBSGameInstance::OnStart()
 void UBSGameInstance::InitVideoSettings()
 {
 	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
-	FPlayerSettings Settings = LoadPlayerSettings();
-	
-	if (!Settings.User.bHasRanBenchmark)
+
+	// Run hardware benchmark if first time launching game
+	if (!LoadPlayerSettings().User.bHasRanBenchmark)
 	{
 		GameUserSettings->RunHardwareBenchmark();
 		GameUserSettings->ApplyHardwareBenchmarkResults();
+		FPlayerSettings Settings = LoadPlayerSettings();
 		Settings.User.bHasRanBenchmark = true;
 		SavePlayerSettings(Settings);
 	}
 
-	// DLSS
-	if (UDLSSLibrary::IsDLSSSupported())
-	{
-		const FIntPoint ScreenResolution = UGameUserSettings::GetGameUserSettings()->GetScreenResolution();
-		UDLSSMode Mode = LoadPlayerSettings().VideoAndSound.DLSSMode;
-
-		if (!UDLSSLibrary::IsDLSSModeSupported(Mode) && Mode != UDLSSMode::Auto)
-		{
-			Mode = UDLSSMode::Auto;
-		}
-
-		if (UDLSSLibrary::IsDLSSModeSupported(Mode))
-		{
-			bool bIsSupported;
-			float OptimalScreenPercentage;
-			bool bIsFixedScreenPercentage;
-			float MinScreenPercentage;
-			float MaxScreenPercentage;
-			float OptimalSharpness;
-			
-			UDLSSLibrary::GetDLSSModeInformation(Settings.VideoAndSound.DLSSMode, FVector2d(ScreenResolution.X, ScreenResolution.Y), bIsSupported, OptimalScreenPercentage,
-				bIsFixedScreenPercentage, MinScreenPercentage, MaxScreenPercentage, OptimalSharpness);
-
-			const bool bIsDLAA = Settings.VideoAndSound.DLSSMode == UDLSSMode::DLAA;
-			const bool bShouldEnable = (Settings.VideoAndSound.DLSSMode != UDLSSMode::Off || bIsDLAA) && bIsSupported;
-			const bool bValidScreenPercentage = OptimalScreenPercentage > 0.f && bIsSupported;
-
-			// Enable/Disable DLSS
-			UDLSSLibrary::EnableDLSS(bShouldEnable);
-
-			// Set Screen Percentage
-			float SelectedScreenPercentage;
-			if (!bValidScreenPercentage || bIsDLAA)
-			{
-				// DLAA overrides DLSS mode if both are enabled
-				SelectedScreenPercentage = 100.f;
-			}
-			else
-			{
-				SelectedScreenPercentage = OptimalScreenPercentage;
-			}
-	
-			// Execute Screen Percentage Console Command
-			if (bShouldEnable)
-			{
-				UDLSSLibrary::SetDLSSSharpness(Settings.VideoAndSound.DLSSSharpness);
-				if (static IConsoleVariable* CVarScreenPercentage = IConsoleManager::Get().FindConsoleVariable(TEXT("r.ScreenPercentage")))
-				{
-					CVarScreenPercentage->Set(SelectedScreenPercentage);
-				}
-			}
-		}
-	}
-	else
-	{
-		UDLSSLibrary::EnableDLSS(false);
-	}
-	
-	// Frame Generation
-	if (UStreamlineLibraryDLSSG::IsDLSSGModeSupported(Settings.VideoAndSound.FrameGenerationEnabledMode))
-	{
-		UStreamlineLibraryDLSSG::SetDLSSGMode(Settings.VideoAndSound.FrameGenerationEnabledMode);
-	}
-	else
-	{
-		UStreamlineLibraryDLSSG::SetDLSSGMode(UStreamlineDLSSGMode::Off);
-	}
-
-	// NIS
-	if (UNISLibrary::IsNISModeSupported(Settings.VideoAndSound.NISMode))
-	{
-		UNISLibrary::SetNISMode(Settings.VideoAndSound.NISMode);
-		UNISLibrary::SetNISSharpness(Settings.VideoAndSound.NISSharpness);
-	}
-	else
-	{
-		UNISLibrary::SetNISMode(UNISMode::Off);
-	}
-
-	// Reflex
-	if (UStreamlineLibraryReflex::IsReflexSupported())
-	{
-		UStreamlineLibraryReflex::SetReflexMode(Settings.VideoAndSound.StreamlineReflexMode);
-	}
-	else
-	{
-		UStreamlineLibraryReflex::SetReflexMode(UStreamlineReflexMode::Disabled);
-	}
+	FPlayerSettings_VideoAndSound VideoSettings = LoadPlayerSettings().VideoAndSound;
+	InitDLSSSettings(VideoSettings);
+	SavePlayerSettings(VideoSettings);
 }
 
 void UBSGameInstance::Shutdown()

@@ -177,6 +177,16 @@ void ATargetManager::Init(const FBSConfig& InBSConfig, const FPlayerSettings_Gam
 
 void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 {
+	if (bShouldSpawn)
+	{
+		if (BSConfig.TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
+		{
+			for (const TObjectPtr<ATarget> Target : GetManagedTargets())
+			{
+				Target->SetActorHiddenInGame(true);
+			}
+		}
+	}
 	ShouldSpawn = bShouldSpawn;
 }
 
@@ -256,6 +266,12 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	if (!InTarget || !SpawnAreaManager->IsSpawnAreaValid(SpawnAreaManager->FindSpawnAreaFromGuid(InTarget->GetGuid())))
 	{
 		return false;
+	}
+
+	// Make sure it isn't hidden
+	if (InTarget->IsHidden())
+	{
+		InTarget->SetActorHiddenInGame(false);
 	}
 
 	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::AddImmunity))

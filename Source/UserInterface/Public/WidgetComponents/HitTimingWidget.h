@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TimelineComponent.h"
 #include "HitTimingWidget.generated.h"
 
 class UTextBlock;
@@ -20,6 +21,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	FText MakeCurrentTickText(const float TimeOffsetRaw) const;
 	
@@ -42,6 +44,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* EaseInNewOffset;
 
+	UPROPERTY(EditDefaultsOnly)
+	UCurveFloat* Tick_Current_Curve;
+	FTimeline Tick_Transition_Timeline;
+	FOnTimelineFloat OnTickTransition;
+	UFUNCTION()
+	void TickTransition(const float Value);
+
+	float Tick_Current_Offset_Start = 0.f;
+	float Tick_Current_Offset_End = 0.f;
 	float LastTimeOffset = 0.5f;
 	
 };

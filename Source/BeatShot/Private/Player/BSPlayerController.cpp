@@ -160,6 +160,7 @@ void ABSPlayerController::ShowPauseMenu()
 	
 	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	PauseMenu->AddToViewport();
+	
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -186,8 +187,10 @@ void ABSPlayerController::ShowCrossHair()
 		return;
 	}
 	CrossHair = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
+	
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->GetPublicCrossHairSettingsChangedDelegate().AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChanged_CrossHair);
+	
 	CrossHair->AddToViewport();
 }
 
@@ -206,11 +209,13 @@ void ABSPlayerController::ShowPlayerHUD()
 	{
 		return;
 	}
-	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	
 	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
 	PlayerHUD->Init(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig());
+	
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(PlayerHUD->GetGameDelegate());
+	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(PlayerHUD, &UPlayerHUD::OnPlayerSettingsChanged_Game);
 	
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);

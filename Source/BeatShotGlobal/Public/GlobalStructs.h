@@ -15,7 +15,6 @@ struct FGameplayTagContainer;
 using namespace Constants;
 
 #define M_FBS_SETTING( SettingName, DependentSettings ) { SettingName, DependentSettings }
-
 USTRUCT()
 struct FBS_Setting
 {
@@ -1066,30 +1065,36 @@ struct FPlayerSettings_VideoAndSound
 	UPROPERTY(BlueprintReadOnly)
 	bool bShowFPSCounter;
 
+	// DLSS On/Off
 	UPROPERTY(BlueprintReadOnly)
 	EDLSSEnabledMode DLSSEnabledMode;
 
+	// NIS On/Off
+	UPROPERTY(BlueprintReadOnly)
+	ENISEnabledMode NISEnabledMode;
+
+	// Frame Generation
 	UPROPERTY(BlueprintReadOnly)
 	UStreamlineDLSSGMode FrameGenerationEnabledMode;
 
+	// Super Resolution Mode
 	UPROPERTY(BlueprintReadOnly)
 	UDLSSMode DLSSMode;
 
+	// NIS Mode
+	UPROPERTY(BlueprintReadOnly)
+	UNISMode NISMode;
+
+	// Reflex Mode
+	UPROPERTY(BlueprintReadOnly)
+	UStreamlineReflexMode StreamlineReflexMode;
+	
 	UPROPERTY(BlueprintReadOnly)
 	float DLSSSharpness;
 
 	UPROPERTY(BlueprintReadOnly)
-	ENISEnabledMode NISEnabledMode;
-
-	UPROPERTY(BlueprintReadOnly)
-	UNISMode NISMode;
-
-	UPROPERTY(BlueprintReadOnly)
 	float NISSharpness;
-
-	UPROPERTY(BlueprintReadOnly)
-	UStreamlineReflexMode StreamlineReflexMode;
-
+	
 	FPlayerSettings_VideoAndSound()
 	{
 		GlobalVolume = DefaultGlobalVolume;

@@ -18,8 +18,6 @@ void UPlayerHUD::NativeConstruct()
 	ProgressBar_Accuracy->SetPercent(0.f);
 	TextBlock_Accuracy->SetText(FText::AsPercent(0.f));
 	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
-
-	
 }
 
 void UPlayerHUD::Init(const FBSConfig& InConfig)
