@@ -268,16 +268,16 @@ private:
 	void ToggleCrouch();
 
 	/** Triggered on pressing E */
-	void OnInteractStarted(const FInputActionValue& Value);
+	void Input_OnInteractStarted(const FInputActionValue& Value);
 
 	/** Triggered on releasing E */
-	void OnInteractCompleted(const FInputActionValue& Value);
+	void Input_OnInteractCompleted(const FInputActionValue& Value);
 
 	/** Triggered on pressing Shift + E */
-	void OnShiftInteractStarted(const FInputActionValue& Value);
+	void Input_OnShiftInteractStarted(const FInputActionValue& Value);
 
 	/** Triggered on releasing Shift + E */
-	void OnShiftInteractCompleted(const FInputActionValue& Value);
+	void Input_OnShiftInteractCompleted(const FInputActionValue& Value);
 
 	void Input_OnInspectStarted(const FInputActionValue& Value);
 
@@ -290,6 +290,9 @@ private:
 	void Input_OnEquipmentSlot3Started(const FInputActionValue& Value);
 
 	void Input_OnEquipmentSlotLastEquippedStarted(const FInputActionValue& Value);
+
+	/** Triggered from IA_Pause */
+	void Input_OnPause(const FInputActionValue& Value);
 
 	/** Let ASC know an ability bound to an input was pressed. */
 	UFUNCTION(BlueprintCallable)

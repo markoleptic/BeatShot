@@ -326,6 +326,39 @@ void ABSPlayerController::OnPostScoresResponseReceived(const EPostScoresResponse
 	}
 }
 
+void ABSPlayerController::HandlePause()
+{
+	if (IsPostGameMenuActive())
+	{
+		return;
+	}
+	
+	const UWorld* World = GetWorld();
+	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(World));
+
+	if (!World || !GameMode)
+	{
+		return;
+	}
+	
+	if (UGameplayStatics::IsGamePaused(World))
+	{
+		HidePauseMenu();
+		UGameplayStatics::SetGamePaused(World, false);
+		GameMode->PauseAAManager(false);
+		SetInputMode(FInputModeGameOnly());
+		SetShowMouseCursor(false);
+	}
+	else
+	{
+		ShowPauseMenu();
+		UGameplayStatics::SetGamePaused(World, true);
+		GameMode->PauseAAManager(true);
+		SetInputMode(FInputModeGameAndUI());
+		SetShowMouseCursor(true);
+	}
+}
+
 void ABSPlayerController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);

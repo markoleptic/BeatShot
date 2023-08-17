@@ -264,6 +264,8 @@ void USettingsMenuWidget_VideoAndSound::InitSettingCategoryWidget()
 void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
 {
 	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+
+	UE_LOG(LogTemp, Display, TEXT("ResolutionScale: %f %f"), GameUserSettings->GetDefaultResolutionScale(), GameUserSettings->GetRecommendedResolutionScale());
 	
 	float CurrentScaleNormalized;
 	float CurrentScale;
@@ -316,7 +318,6 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	}
 
 	PopulateResolutionComboBox();
-	LastConfirmedResolution = GameUserSettings->GetScreenResolution();
 
 	FindVideoSettingButton(GameUserSettings->GetAntiAliasingQuality(), EVideoSettingType::AntiAliasing)->SetActive();
 	FindVideoSettingButton(GameUserSettings->GetGlobalIlluminationQuality(), EVideoSettingType::GlobalIllumination)->SetActive();
@@ -593,38 +594,51 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const FStr
 	{
 		return;
 	}
+	
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	LastConfirmedResolution = Settings->GetLastConfirmedScreenResolution();
+	LastConfirmedWindowMode = Settings->GetLastConfirmedFullscreenMode();
+	
 	if (SelectedOption.Equals("Fullscreen"))
 	{
-		Settings->SetFullscreenMode(EWindowMode::Fullscreen);
+		Settings->SetFullscreenMode(EWindowMode::Type::Fullscreen);
 	}
 	else if (SelectedOption.Equals("Windowed Fullscreen"))
 	{
-		Settings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
+		Settings->SetFullscreenMode(EWindowMode::Type::WindowedFullscreen);
 	}
 	else if (SelectedOption.Equals("Windowed"))
 	{
-		Settings->SetFullscreenMode(EWindowMode::Windowed);
+		Settings->SetFullscreenMode(EWindowMode::Type::Windowed);
 	}
+
 	Settings->ApplyResolutionSettings(false);
 	ShowConfirmVideoSettingsMessage();
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Resolution(const FString SelectedOption, ESelectInfo::Type SelectionType)
 {
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	
 	FString LeftS;
 	FString RightS;
 	SelectedOption.Split("x", &LeftS, &RightS);
 	LeftS = UKismetStringLibrary::Replace(LeftS, ",", "");
 	RightS = UKismetStringLibrary::Replace(RightS, ",", "");
+	
 	const FIntPoint NewResolution = FIntPoint(FCString::Atoi(*LeftS), FCString::Atoi(*RightS));
+	
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
-	LastConfirmedResolution = Settings->GetScreenResolution();
+	LastConfirmedResolution = Settings->GetLastConfirmedScreenResolution();
+	LastConfirmedWindowMode = Settings->GetLastConfirmedFullscreenMode();
+	
 	Settings->SetScreenResolution(NewResolution);
-	if (SelectionType != ESelectInfo::Direct)
-	{
-		ShowConfirmVideoSettingsMessage();
-	}
+	Settings->ApplyResolutionSettings(false);
+	
+	ShowConfirmVideoSettingsMessage();
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS_EnabledMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
@@ -637,7 +651,6 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS_EnabledMode(cons
 	const EDLSSEnabledMode Mode = GetSelectedDLSSEnabledMode();
 	HandleDLSSEnabledChanged(Mode);
 	HandleDLSSDependencies(Mode);
-
 }
 
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_FrameGeneration(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
@@ -730,40 +743,16 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<F
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
-{
-	const float Elapsed = GetWorld()->GetTimerManager().GetTimerElapsed(RevertVideoSettingsTimer);
-	if (Elapsed >= VideoSettingsTimeoutLength || Elapsed == -1.f)
-	{
-		OnButtonPressed_CancelVideoSettings();
-		return;
-	}
-	TArray<FString> Out;
-	FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage").ToString().ParseIntoArray(Out, TEXT(" "));
-	int32 Index = INDEX_NONE;
-	for (int i = 0; i < Out.Num(); i++)
-	{
-		if (UKismetStringLibrary::IsNumeric(Out[i]))
-		{
-			Index = i;
-			break;
-		}
-	}
-	if (Index != INDEX_NONE && PopupMessageWidget)
-	{
-		Out[Index] = FString::FromInt(roundf(VideoSettingsTimeoutLength - Elapsed));
-		PopupMessageWidget->ChangeMessageText(FText::FromString(UKismetStringLibrary::JoinStringArray(Out)));
-	}
-}
-
 void USettingsMenuWidget_VideoAndSound::PopulateResolutionComboBox()
 {
 	const UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	const FIntPoint CurrentResolution = Settings->GetScreenResolution();
 	TArray<FIntPoint> Resolutions;
 	FIntPoint MaxResolution = FIntPoint(0, 0);
 	bool bIsWindowedFullscreen = false;
+	
 	ComboBox_Resolution->ClearOptions();
-	LastConfirmedResolution = Settings->GetScreenResolution();
+
 	switch (Settings->GetFullscreenMode())
 	{
 	case EWindowMode::Fullscreen:
@@ -788,12 +777,13 @@ void USettingsMenuWidget_VideoAndSound::PopulateResolutionComboBox()
 			break;
 		}
 	}
+	
 	for (const FIntPoint Resolution : Resolutions)
 	{
 		if (!bIsWindowedFullscreen)
 		{
 			ComboBox_Resolution->AddOption(FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
-			if (Resolution == LastConfirmedResolution)
+			if (Resolution == CurrentResolution)
 			{
 				ComboBox_Resolution->SetSelectedOption(FString::FormatAsNumber(Resolution.X) + "x" + FString::FormatAsNumber(Resolution.Y));
 			}
@@ -989,7 +979,7 @@ void USettingsMenuWidget_VideoAndSound::ShowConfirmVideoSettingsMessage()
 		PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings);
 		PopupMessageWidget->OnButton2Pressed.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond, this, &USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback, 1.f, true);
-		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, Constants::VideoSettingsTimeoutLength, false);
+		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, VideoSettingsTimeoutLength, false);
 	}
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();
@@ -1001,14 +991,22 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings()
 	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
 
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	
 	Settings->ConfirmVideoMode();
+	Settings->SetResolutionScaleValueEx(100.f);
+	Slider_ResolutionScale->SetValue(1.f);
+	Value_ResolutionScale->SetText(FText::FromString(FString::FromInt(1)));
 	Settings->ApplyResolutionSettings(false);
-	LastConfirmedResolution = Settings->GetScreenResolution();
+	Settings->SaveSettings();
+
 	PopulateResolutionComboBox();
 
 	PopupMessageWidget->FadeOut();
+	
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_VideoAndSound"));
 	SavedTextWidget->PlayFadeInFadeOut();
+
+	UE_LOG(LogTemp, Display, TEXT("ResolutionScale: %f %f"), Settings->GetDefaultResolutionScale(), Settings->GetRecommendedResolutionScale());
 }
 
 void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
@@ -1017,34 +1015,74 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
 	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
 
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	
 	Settings->RevertVideoMode();
 	Settings->SetScreenResolution(LastConfirmedResolution);
+	Settings->SetFullscreenMode(LastConfirmedWindowMode);
+	Settings->SetResolutionScaleValueEx(100.f);
+	
+	Slider_ResolutionScale->SetValue(1.f);
+	Value_ResolutionScale->SetText(FText::FromString(FString::FromInt(1)));
+	
 	Settings->ApplyResolutionSettings(false);
-	switch (UGameUserSettings::GetGameUserSettings()->GetFullscreenMode())
+	Settings->ConfirmVideoMode();
+	Settings->SaveSettings();
+	
+	switch (LastConfirmedWindowMode)
 	{
-	case EWindowMode::Fullscreen:
+	case EWindowMode::Type::Fullscreen:
 		{
 			ComboBox_WindowMode->SetSelectedOption("Fullscreen");
 			break;
 		}
-	case EWindowMode::WindowedFullscreen:
+	case EWindowMode::Type::WindowedFullscreen:
 		{
 			ComboBox_WindowMode->SetSelectedOption("Windowed Fullscreen");
 			break;
 		}
-	case EWindowMode::Windowed:
+	case EWindowMode::Type::Windowed:
 		{
 			ComboBox_WindowMode->SetSelectedOption("Windowed");
 			break;
 		}
-	case EWindowMode::NumWindowModes:
+	case EWindowMode::Type::NumWindowModes:
 		{
 			break;
 		}
 	}
-	PopulateResolutionComboBox();
+
+	ComboBox_Resolution->SetSelectedOption(FString::FormatAsNumber(LastConfirmedResolution.X) + "x" + FString::FormatAsNumber(LastConfirmedResolution.Y));
 
 	PopupMessageWidget->FadeOut();
+	
+	SavedTextWidget->SetSavedText(FText::FromString("Fullscreen Mode and Resolution Reset"));
+	SavedTextWidget->PlayFadeInFadeOut();
+}
+
+void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
+{
+	const float Elapsed = GetWorld()->GetTimerManager().GetTimerElapsed(RevertVideoSettingsTimer);
+	if (Elapsed >= VideoSettingsTimeoutLength || Elapsed == -1.f)
+	{
+		OnButtonPressed_CancelVideoSettings();
+		return;
+	}
+	TArray<FString> Out;
+	FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage").ToString().ParseIntoArray(Out, TEXT(" "));
+	int32 Index = INDEX_NONE;
+	for (int i = 0; i < Out.Num(); i++)
+	{
+		if (UKismetStringLibrary::IsNumeric(Out[i]))
+		{
+			Index = i;
+			break;
+		}
+	}
+	if (Index != INDEX_NONE && PopupMessageWidget)
+	{
+		Out[Index] = FString::FromInt(roundf(VideoSettingsTimeoutLength - Elapsed));
+		PopupMessageWidget->ChangeMessageText(FText::FromString(UKismetStringLibrary::JoinStringArray(Out)));
+	}
 }
 
 UWidget* USettingsMenuWidget_VideoAndSound::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)

@@ -45,6 +45,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_KnifeAttack, "Input.KnifeAttack","");
 	AddTag(Input_BackStab, "Input.BackStab","");
 	AddTag(Input_Disabled, "Input.Disabled","");
+	AddTag(Input_Pause, "Input.Pause","");
 
 	AddTag(Input_EquipmentSlot, "Input.EquipmentSlot","");
 	AddTag(Input_EquipmentSlot_1, "Input.EquipmentSlot.1","");

@@ -63,7 +63,7 @@ public:
 
 	void ShowCountdown(const bool bIsRestart);
 	void HideCountdown();
-
+	
 	void ShowPostGameMenu();
 	void HidePostGameMenu();
 	
@@ -87,11 +87,10 @@ public:
 
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const EPostScoresResponse& Response);
-
-	UFUNCTION(BlueprintCallable)
+	
 	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	/** Called by Character when receiving input from IA_Pause, or by exiting the PostGameMenu */
 	void HandlePause();
 
 	// Server only

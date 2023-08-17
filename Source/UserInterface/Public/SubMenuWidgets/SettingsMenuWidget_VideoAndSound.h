@@ -415,8 +415,11 @@ private:
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
 	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 	
-	/** Holds the last confirmed resolution, since RevertVideoMode does not actually revert the resolution */
+	/** Holds the last confirmed resolution */
 	FIntPoint LastConfirmedResolution;
+
+	/** Holds the last confirmed WindowMode */
+	EWindowMode::Type LastConfirmedWindowMode;
 
 	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes. Not bound to any function, but checked every second in RevertVideoSettingsTimerCallback */
 	FTimerHandle RevertVideoSettingsTimer;

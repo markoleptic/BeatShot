@@ -47,6 +47,7 @@ struct FBSGameplayTags
 	FGameplayTag Input_EquipmentSlot_2;
 	FGameplayTag Input_EquipmentSlot_3;
 	FGameplayTag Input_EquipmentSlot_LastEquipped;
+	FGameplayTag Input_Pause;
 
 	FGameplayTag Ability;
 	FGameplayTag Ability_Fire;
