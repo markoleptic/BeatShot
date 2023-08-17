@@ -17,6 +17,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GlobalConstants.h"
+#include "Components/SpotLightComponent.h"
 #include "Engine/SpotLight.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
@@ -103,7 +104,7 @@ void ATimeOfDayManager::BeginTransitionToDay()
 		return;
 	}
 
-	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpotLight_Front || !LeftWindowCover || !RightWindowCover)
+	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !LeftWindowCover || !RightWindowCover)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("One of the Soft References for TimeOfDayManager is invalid."));
 		return;
@@ -164,7 +165,7 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 {
 	TimeOfDay = InTimeOfDay;
 	
-	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpotLight_Front || !LeftWindowCover || !RightWindowCover)
+	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !LeftWindowCover || !RightWindowCover)
 	{
 		return;
 	}
@@ -189,7 +190,7 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(NighttimeRightRoofLocation);
 		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings ? LowGISettingSkyLightIntensity : NightSkylightIntensity);
 		RectLight->GetLightComponent()->SetIntensity(bUseRectLight ? NightRectLightIntensity : 0.f);
-		SpotLight_Front->GetLightComponent()->SetIntensity(bUseSpotlight ? NightSpotlightIntensity : 0.f);
+		SpawnAreaSpotLight->GetLightComponent()->SetIntensity(bUseSpotlight ? NightSpotlightIntensity : 0.f);
 	}
 	else if (InTimeOfDay == ETimeOfDay::Day)
 	{
@@ -208,7 +209,7 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeRightRoofLocation);
 		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings ? LowGISettingSkyLightIntensity : DaySkylightIntensity);
 		RectLight->GetLightComponent()->SetIntensity(bUseRectLight ? DayRectLightIntensity : 0.f);
-		SpotLight_Front->GetLightComponent()->SetIntensity(bUseSpotlight ? DaySpotlightIntensity : 0.f);
+		SpawnAreaSpotLight->GetLightComponent()->SetIntensity(bUseSpotlight ? DaySpotlightIntensity : 0.f);
 	}
 
 	RefreshSkySphereMaterial();
@@ -220,16 +221,16 @@ void ATimeOfDayManager::SetSpotLightFrontEnabledState(const bool bEnable)
 	{
 		if (TimeOfDay == ETimeOfDay::Day)
 		{
-			SpotLight_Front->GetLightComponent()->SetIntensity(DaySpotlightIntensity);
+			SpawnAreaSpotLight->GetLightComponent()->SetIntensity(DaySpotlightIntensity);
 		}
 		if (TimeOfDay == ETimeOfDay::Night)
 		{
-			SpotLight_Front->GetLightComponent()->SetIntensity(NightSpotlightIntensity);
+			SpawnAreaSpotLight->GetLightComponent()->SetIntensity(NightSpotlightIntensity);
 		}
 	}
 	else
 	{
-		SpotLight_Front->GetLightComponent()->SetIntensity(0.f);
+		SpawnAreaSpotLight->GetLightComponent()->SetIntensity(0.f);
 	}
 }
 
@@ -350,7 +351,7 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", PositionAlpha);
 	SkyLight->GetLightComponent()->SetIntensity(SkylightIntensity);
 	SkySphereMaterial->SetScalarParameterValue("NightAlpha", NightAlpha);
-	SpotLight_Front->GetLightComponent()->SetIntensity(SpotlightIntensity);
+	SpawnAreaSpotLight->GetLightComponent()->SetIntensity(SpotlightIntensity);
 	RectLight->GetLightComponent()->SetIntensity(RectLightIntensity);
 
 	RefreshSkySphereMaterial();

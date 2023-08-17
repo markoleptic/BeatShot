@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "SpawnAreaSpotLight.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "BeatShot/BeatShot.h"
@@ -96,9 +97,9 @@ protected:
 	/** Reference to right roof mesh to move */
 	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
 	TSoftObjectPtr<AStaticMeshActor> RightWindowCover;
-
+	
 	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
-	TSoftObjectPtr<ASpotLight> SpotLight_Front;
+	TSoftObjectPtr<ASpawnAreaSpotLight> SpawnAreaSpotLight;
 
 	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
 	TSoftObjectPtr<ARectLight> RectLight;
