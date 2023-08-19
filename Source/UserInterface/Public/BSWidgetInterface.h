@@ -8,6 +8,7 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "BSWidgetInterface.generated.h"
 
+class UBSComboBoxEntry;
 class UBSComboBoxString;
 class UButton;
 class UTooltipImage;
@@ -63,6 +64,20 @@ public:
 	/** All Tooltip Images are bound to this function */
 	UFUNCTION()
 	virtual void OnTooltipImageHovered(UTooltipImage* TooltipImage, const FTooltipData& InTooltipData);
+
+	/** Override this function to use OnGenerateWidgetEvent and OnSelectionChanged_GenerateMultiSelectionItem */
+	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() { return nullptr; }
+
+	/** Returns the widget used for a ComboBox entry. Must override ConstructComboBoxEntryWidget */
+	UFUNCTION()
+	virtual UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
+	
+	/** Returns the widget used for a selected ComboBox entry. Must override ConstructComboBoxEntryWidget */
+	UFUNCTION()
+	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
+
+	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
+	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
 
 	/** Returns the enum value corresponding to the string, or the specified DefaultNotFound if no matches were found */
 	template<typename T, typename Enum_Value>

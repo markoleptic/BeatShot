@@ -3,7 +3,7 @@
 
 #include "OverlayWidgets/PopupMessageWidget.h"
 #include "Components/TextBlock.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 
 void UPopupMessageWidget::NativeConstruct()
 {

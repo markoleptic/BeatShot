@@ -3,7 +3,7 @@
 
 #include "OverlayWidgets/GameModeSharingWidget.h"
 #include "Components/MultiLineEditableTextBox.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 
 FString UGameModeSharingWidget::GetImportString() const
 {

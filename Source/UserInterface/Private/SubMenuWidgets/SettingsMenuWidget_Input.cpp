@@ -11,7 +11,7 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
 void USettingsMenuWidget_Input::NativeConstruct()

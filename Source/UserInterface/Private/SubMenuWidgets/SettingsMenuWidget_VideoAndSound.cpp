@@ -15,7 +15,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/BSComboBoxEntry.h"
 #include "WidgetComponents/SavedTextWidget.h"
@@ -577,6 +577,11 @@ UVideoSettingButton* USettingsMenuWidget_VideoAndSound::FindVideoSettingButton(c
 	return Head;
 }
 
+UBSComboBoxEntry* USettingsMenuWidget_VideoAndSound::ConstructComboBoxEntryWidget()
+{
+	return CreateWidget<UBSComboBoxEntry>(this, ComboBox_DLSS->GetComboboxEntryWidget());
+}
+
 void USettingsMenuWidget_VideoAndSound::OnValueChanged_FrameLimitMenu(const FText& NewValue, ETextCommit::Type CommitType)
 {
 	const float FrameLimit = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*NewValue.ToString()), SnapSize_FrameRateLimit);
@@ -1083,63 +1088,6 @@ void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
 		Out[Index] = FString::FromInt(roundf(VideoSettingsTimeoutLength - Elapsed));
 		PopupMessageWidget->ChangeMessageText(FText::FromString(UKismetStringLibrary::JoinStringArray(Out)));
 	}
-}
-
-UWidget* USettingsMenuWidget_VideoAndSound::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
-{
-	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
-	FText TooltipText = FText::GetEmpty();
-	if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, Method); !Key.IsEmpty())
-	{
-		TooltipText = GetTooltipTextFromKey(Key);
-	}
-	const bool bShowTooltipImage = !TooltipText.IsEmpty();
-
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
-		return Entry;
-	}
-	return nullptr;
-}
-
-UWidget* USettingsMenuWidget_VideoAndSound::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
-{
-	FString EntryString = FString();
-
-	if (!SelectedOptions.IsEmpty())
-	{
-		for (int i = 0; i < SelectedOptions.Num(); i++)
-		{
-			if (!SelectedOptions[i].IsEmpty())
-			{
-				EntryString.Append(SelectedOptions[i]);
-				if (i < SelectedOptions.Num() - 1)
-				{
-					EntryString.Append(", ");
-				}
-			}
-		}
-	}
-	FText TooltipText = FText::GetEmpty();
-	if (SelectedOptions.Num() == 1)
-	{
-		if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]); !Key.IsEmpty())
-		{
-			TooltipText = GetTooltipTextFromKey(Key);
-		}
-	}
-
-	const FText EntryText = FText::FromString(EntryString);
-	const bool bShowTooltipImage = !TooltipText.IsEmpty();
-
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
-		return Entry;
-	}
-
-	return nullptr;
 }
 
 FString USettingsMenuWidget_VideoAndSound::GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString)

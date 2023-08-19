@@ -40,7 +40,7 @@ DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForSingleItem
 DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelection, const UBSComboBoxString*, BSComboBoxString, const TArray<FString>&, Items);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections, const ESelectInfo::Type, SelectionType);
 
-UCLASS(meta=( DisplayName="BSComboBox (String)"))
+UCLASS(meta=( DisplayName="BSComboBox (String) C++"))
 class USERINTERFACE_API UBSComboBoxString : public UWidget, public IBSWidgetInterface
 {
 	GENERATED_BODY()

@@ -1,7 +1,7 @@
 // Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "WidgetComponents/SlideRightButton.h"
+#include "WidgetComponents/Buttons/SlideRightButton.h"
 #include "Components/HorizontalBox.h"
 #include "Components/TextBlock.h"
 

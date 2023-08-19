@@ -185,7 +185,7 @@ TSharedRef<SWidget> UBSComboBoxString::HandleGenerateWidget(TSharedPtr<FString> 
 			return Widget->TakeWidget();
 		}
 	}
-
+	
 	// If a row wasn't generated just create the default one, a simple text block of the item's name.
 	return SNew(STextBlock)
 		.Text(FText::FromString(StringItem))

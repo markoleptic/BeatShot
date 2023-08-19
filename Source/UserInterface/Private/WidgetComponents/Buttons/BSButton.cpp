@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"

@@ -6,7 +6,7 @@
 #include "Components/VerticalBox.h"
 #include "Components/Slider.h"
 #include "SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.h"
-#include "WidgetComponents/MenuButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
 
 void USettingsMenuWidget::NativeConstruct()
 {

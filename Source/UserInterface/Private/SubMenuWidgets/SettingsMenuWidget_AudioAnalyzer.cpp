@@ -8,7 +8,7 @@
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 
 void USettingsMenuWidget_AudioAnalyzer::InitMainMenuChild()

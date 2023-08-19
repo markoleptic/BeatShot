@@ -7,7 +7,7 @@
 #include "Math/Color.h"
 #include "Components/Slider.h"
 #include "OverlayWidgets/CrossHairWidget.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/ColorSelectWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
 

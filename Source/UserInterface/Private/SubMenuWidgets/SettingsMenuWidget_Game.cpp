@@ -6,7 +6,7 @@
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/ColorSelectWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
 

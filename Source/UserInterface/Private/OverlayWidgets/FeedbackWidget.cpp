@@ -5,7 +5,7 @@
 #include "Components/EditableTextBox.h"
 #include "Components/MultiLineEditableTextBox.h"
 #include "Components/TextBlock.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 
 void UFeedbackWidget::ShowFeedbackWidget()
 {

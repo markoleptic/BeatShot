@@ -23,7 +23,7 @@
 #include "SubMenuWidgets/GameModesWidget_GridConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
 #include "WidgetComponents/BSComboBoxString.h"
-#include "WidgetComponents/MenuButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
 
 using namespace Constants;

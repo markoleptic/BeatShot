@@ -11,7 +11,7 @@
 #include "Components/HorizontalBox.h"
 #include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "Microsoft/COMPointer.h"
 #include <shobjidl_core.h>
 

@@ -14,10 +14,10 @@ TSharedRef<SWidget> UBSVerticalBox::RebuildWidget()
 
 void UBSVerticalBox::UpdateBrushColors()
 {
-	UpdateHorizontalBoxBrushColors(Slots, false);
+	UpdateBrushColors_Private(Slots, false);
 }
 
-bool UBSVerticalBox::UpdateHorizontalBoxBrushColors(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark)
+bool UBSVerticalBox::UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark)
 {
 	for (const TObjectPtr<UPanelSlot>& BoxSlot : InSlots)
 	{
@@ -26,20 +26,28 @@ bool UBSVerticalBox::UpdateHorizontalBoxBrushColors(TArray<TObjectPtr<UPanelSlot
 		{
 			// First slot of every Vertical Box has the same border color
 			bLastLeftBorderDark = false;
-			bLastLeftBorderDark = UpdateHorizontalBoxBrushColors(SubVerticalBox->Slots, bLastLeftBorderDark);
+			bLastLeftBorderDark = UpdateBrushColors_Private(SubVerticalBox->Slots, bLastLeftBorderDark);
 			continue;
 		}
 
 		// Slot is a UUserWidget
 		if (const UUserWidget* UserWidget = Cast<UUserWidget>(BoxSlot->Content))
 		{
-			UserWidget->WidgetTree->ForEachWidget([&bLastLeftBorderDark] (UWidget* Widget)
+			if (UserWidget->GetVisibility() != ESlateVisibility::Collapsed)
 			{
-				if (Cast<UBSVerticalBox>(Widget))
+				UserWidget->WidgetTree->ForEachWidget([this, &bLastLeftBorderDark] (UWidget* Widget)
 				{
-					bLastLeftBorderDark = Cast<UBSVerticalBox>(Widget)->UpdateHorizontalBoxBrushColors(Cast<UBSVerticalBox>(Widget)->Slots, bLastLeftBorderDark);
-				}
-			});
+					if (UBSVerticalBox* VerticalBox = Cast<UBSVerticalBox>(Widget))
+					{
+						bLastLeftBorderDark = VerticalBox->UpdateBrushColors_Private(Cast<UBSVerticalBox>(Widget)->Slots, bLastLeftBorderDark);
+					}
+					// UUserWidget contains a HorizontalBox
+					else if (UBSHorizontalBox* HorizontalBox = Cast<UBSHorizontalBox>(Widget))
+					{
+						UpdateHorizontalBoxBorderColors(HorizontalBox, bLastLeftBorderDark);
+					}
+				});
+			}
 			continue;
 		}
 		
@@ -52,7 +60,7 @@ bool UBSVerticalBox::UpdateHorizontalBoxBrushColors(TArray<TObjectPtr<UPanelSlot
 				{
 					// First slot of every Vertical Box has the same border color
 					bLastLeftBorderDark = false;
-					bLastLeftBorderDark = UpdateHorizontalBoxBrushColors(Box->Slots, bLastLeftBorderDark);
+					bLastLeftBorderDark = UpdateBrushColors_Private(Box->Slots, bLastLeftBorderDark);
 				}
 				continue;
 			}
@@ -61,22 +69,27 @@ bool UBSVerticalBox::UpdateHorizontalBoxBrushColors(TArray<TObjectPtr<UPanelSlot
 		// Slot is a BSHorizontalBox
 		if (UBSHorizontalBox* HorizontalBox = Cast<UBSHorizontalBox>(BoxSlot->Content))
 		{
-			if (HorizontalBox->GetVisibility() != ESlateVisibility::Collapsed)
-			{
-				if (bLastLeftBorderDark)
-				{
-					HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
-					HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
-					bLastLeftBorderDark = false;
-				}
-				else
-				{
-					HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
-					HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
-					bLastLeftBorderDark = true;
-				}
-			}
+			UpdateHorizontalBoxBorderColors(HorizontalBox, bLastLeftBorderDark);
 		}
 	}
 	return bLastLeftBorderDark;
+}
+
+void UBSVerticalBox::UpdateHorizontalBoxBorderColors(UBSHorizontalBox* HorizontalBox, bool& bLastLeftBorderDark)
+{
+	if (HorizontalBox->GetVisibility() != ESlateVisibility::Collapsed)
+	{
+		if (bLastLeftBorderDark)
+		{
+			HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
+			HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
+			bLastLeftBorderDark = false;
+		}
+		else
+		{
+			HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
+			HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
+			bLastLeftBorderDark = true;
+		}
+	}
 }

@@ -6,7 +6,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/EditableTextBox.h"
 #include "Components/TextBlock.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 
 void ULoginWidget::NativeConstruct()
 {

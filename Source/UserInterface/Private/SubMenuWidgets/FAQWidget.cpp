@@ -4,8 +4,8 @@
 #include "SubMenuWidgets/FAQWidget.h"
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
-#include "WidgetComponents/MenuButton.h"
-#include "WidgetComponents/SlideRightButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
+#include "WidgetComponents/Buttons/SlideRightButton.h"
 
 void UFAQWidget::NativeConstruct()
 {

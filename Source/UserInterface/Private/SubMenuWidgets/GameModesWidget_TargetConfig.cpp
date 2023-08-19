@@ -789,6 +789,11 @@ void UGameModesWidget_TargetConfig::OnCheckStateChanged_UseBatchSpawning(const b
 {
 }
 
+UBSComboBoxEntry* UGameModesWidget_TargetConfig::ConstructComboBoxEntryWidget()
+{
+	return CreateWidget<UBSComboBoxEntry>(this, ComboBox_BoundsScalingPolicy->GetComboboxEntryWidget());
+}
+
 void UGameModesWidget_TargetConfig::OnTextCommitted_ChargeScaleMultiplier(const FText& NewChargeScaleMultiplier, ETextCommit::Type CommitType)
 {
 	OnEditableTextBoxChanged(NewChargeScaleMultiplier, Value_ConsecutiveChargeScaleMultiplier, Slider_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier,
@@ -994,63 +999,6 @@ void UGameModesWidget_TargetConfig::OnSelectionChanged_TargetDamageType(const TA
 		return;
 	}
 	OnTargetUpdate_SaveStartButtonStates.Broadcast();
-}
-
-UWidget* UGameModesWidget_TargetConfig::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
-{
-	const FText EntryText = Method.IsEmpty() ? FText::FromString("None Selected") : FText::FromString(Method);
-	FText TooltipText = FText::GetEmpty();
-	if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, Method); !Key.IsEmpty())
-	{
-		TooltipText = GetTooltipTextFromKey(Key);
-	}
-	const bool bShowTooltipImage = !TooltipText.IsEmpty();
-
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
-		return Entry;
-	}
-	return nullptr;
-}
-
-UWidget* UGameModesWidget_TargetConfig::OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions)
-{
-	FString EntryString = FString();
-
-	if (!SelectedOptions.IsEmpty())
-	{
-		for (int i = 0; i < SelectedOptions.Num(); i++)
-		{
-			if (!SelectedOptions[i].IsEmpty())
-			{
-				EntryString.Append(SelectedOptions[i]);
-				if (i < SelectedOptions.Num() - 1)
-				{
-					EntryString.Append(", ");
-				}
-			}
-		}
-	}
-	FText TooltipText = FText::GetEmpty();
-	if (SelectedOptions.Num() == 1)
-	{
-		if (const FString Key = GetStringTableKeyFromComboBox(ComboBoxString, SelectedOptions[0]); !Key.IsEmpty())
-		{
-			TooltipText = GetTooltipTextFromKey(Key);
-		}
-	}
-
-	const FText EntryText = FText::FromString(EntryString);
-	const bool bShowTooltipImage = !TooltipText.IsEmpty();
-	
-	if (UBSComboBoxEntry* Entry = CreateWidget<UBSComboBoxEntry>(this, ComboBoxString->GetComboboxEntryWidget()))
-	{
-		ComboBoxString->InitializeComboBoxEntry(Entry, EntryText, bShowTooltipImage, TooltipText);
-		return Entry;
-	}
-	
-	return nullptr;
 }
 
 FString UGameModesWidget_TargetConfig::GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString)

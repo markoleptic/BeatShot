@@ -426,16 +426,10 @@ protected:
 	UFUNCTION()
 	void OnCheckStateChanged_UseBatchSpawning(const bool bUseBatchSpawning);
 
-	/** Returns the widget used for a ComboBox entry */
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
-	
-	/** Returns the widget used for a selected ComboBox entry */
-	UFUNCTION()
-	UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
+	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
 	
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
-	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
+	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
 
 	const FText NewLineDelimit = FText::FromString("\n");
 };

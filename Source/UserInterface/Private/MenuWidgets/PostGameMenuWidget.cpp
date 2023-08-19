@@ -7,7 +7,7 @@
 #include "OverlayWidgets/QuitMenuWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
-#include "WidgetComponents/MenuButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
 
 void UPostGameMenuWidget::NativeConstruct()
 {

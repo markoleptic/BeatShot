@@ -10,7 +10,7 @@
 #include "OverlayWidgets/FeedbackWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "BSWidgetInterface.h"
-#include "WidgetComponents/MenuButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
 
 void UMainMenuWidget::NativeConstruct()
 {

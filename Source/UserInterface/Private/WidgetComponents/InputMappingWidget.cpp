@@ -4,7 +4,7 @@
 #include "WidgetComponents/InputMappingWidget.h"
 #include "Components/InputKeySelector.h"
 #include "Components/TextBlock.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 
 void UInputMappingWidget::NativeConstruct()
 {

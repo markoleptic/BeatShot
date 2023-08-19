@@ -3,7 +3,7 @@
 
 #include "OverlayWidgets/QuitMenuWidget.h"
 #include "OverlayWidgets/ScreenFadeWidget.h"
-#include "WidgetComponents/BSButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 
 void UQuitMenuWidget::NativeConstruct()
 {

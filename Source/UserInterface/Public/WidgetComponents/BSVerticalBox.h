@@ -24,7 +24,9 @@ public:
 private:
 	/** Iterates through all slots in the widget, and changes the Brush Color of the borders in each BSHorizontalBox.
 	 *  Returns true if the last left side border was dark, so that the next slot can do the opposite. Skips collapsed boxes */
-	bool UpdateHorizontalBoxBrushColors(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark);
+	bool UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& InSlots, bool bLastLeftBorderDark);
+
+	void UpdateHorizontalBoxBorderColors(UBSHorizontalBox* HorizontalBox, bool& bLastLeftBorderDark);
 };
 
 

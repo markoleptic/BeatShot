@@ -6,8 +6,8 @@
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/QuitMenuWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
-#include "WidgetComponents/BSButton.h"
-#include "WidgetComponents/MenuButton.h"
+#include "WidgetComponents/Buttons/BSButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
 
 void UPauseMenuWidget::NativeConstruct()
 {

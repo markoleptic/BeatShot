@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
-#include "WidgetComponents/VideoSettingButton.h"
+#include "WidgetComponents/Buttons/VideoSettingButton.h"
 #include "SettingsMenuWidget_VideoAndSound.generated.h"
 
 class UCheckBox;
@@ -404,16 +404,10 @@ private:
 	/** Returns the associated button given the quality and SettingType */
 	UVideoSettingButton* FindVideoSettingButton(const int32 Quality, const EVideoSettingType& SettingType) const;
 
-	/** Returns the widget used for a ComboBox entry */
-	UFUNCTION()
-	UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
-	
-	/** Returns the widget used for a selected ComboBox entry */
-	UFUNCTION()
-	UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
+	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
 	
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
-	FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
+	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
 	
 	/** Holds the last confirmed resolution */
 	FIntPoint LastConfirmedResolution;

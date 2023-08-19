@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "WidgetComponents/MenuButton.h"
+#include "WidgetComponents/Buttons/MenuButton.h"
 
 void UMenuButton::SetDefaults(UVerticalBox* BoxToShow, UMenuButton* NextButton)
 {
