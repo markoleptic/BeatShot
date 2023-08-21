@@ -14,8 +14,9 @@ class UHorizontalBox;
 class USlider;
 class UTooltipImage;
 class UBSHorizontalBox;
+class USliderTextBoxWidget;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnSliderTextBoxValueChanged, const float);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnSliderTextBoxValueChanged, USliderTextBoxWidget* Widget, const float Value);
 
 UCLASS()
 class USERINTERFACE_API USliderTextBoxWidget : public UMenuOptionWidget
@@ -25,6 +26,7 @@ class USERINTERFACE_API USliderTextBoxWidget : public UMenuOptionWidget
 public:
 	void SetValues(const float Min, const float Max, const float SnapSize);
 	void SetValue(const float Value);
+	float GetValue() const;
 
 	FOnLockStateChanged OnLockStateChanged;
 	FOnSliderTextBoxValueChanged OnSliderTextBoxValueChanged;

@@ -74,7 +74,7 @@ public:
 	/** Removes all custom game modes and saves to slot */
 	virtual void RemoveAllCustomGameModes();
 
-	/** Returns the FBSConfig corresponding to the input GameModeName string and difficulty */
+	/** Returns the FBSConfig corresponding to the input GameModeName string and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const;
 
 	/** Returns the FBSConfig corresponding to the input BaseGameMode and difficulty */

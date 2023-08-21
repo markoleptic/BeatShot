@@ -1,8 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_Start.h"
-
+#include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "WidgetComponents/BSComboBoxString.h"
@@ -13,29 +12,10 @@
 void UCustomGameModesWidget_Start::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	CheckBoxOption_UseTemplate->SetIndentLevel(0);
-	CheckBoxOption_UseTemplate->SetShowTooltipImage(false);
-	CheckBoxOption_UseTemplate->SetShowTooltipWarningImage(false);
-	CheckBoxOption_UseTemplate->SetShowCheckBoxLock(false);
+
 	SetupTooltip(CheckBoxOption_UseTemplate->GetTooltipImage(), CheckBoxOption_UseTemplate->GetTooltipRegularText());
-	
-	ComboBoxOption_GameModeTemplates->SetIndentLevel(1);
-	ComboBoxOption_GameModeTemplates->SetShowTooltipImage(true);
-	ComboBoxOption_GameModeTemplates->SetShowTooltipWarningImage(false);
-	ComboBoxOption_GameModeTemplates->SetShowCheckBoxLock(false);
 	SetupTooltip(ComboBoxOption_GameModeTemplates->GetTooltipImage(), ComboBoxOption_GameModeTemplates->GetTooltipRegularText());
-
-	ComboBoxOption_GameModeDifficulty->SetIndentLevel(1);
-	ComboBoxOption_GameModeDifficulty->SetShowTooltipImage(true);
-	ComboBoxOption_GameModeDifficulty->SetShowTooltipWarningImage(false);
-	ComboBoxOption_GameModeDifficulty->SetShowCheckBoxLock(false);
 	SetupTooltip(ComboBoxOption_GameModeDifficulty->GetTooltipImage(), ComboBoxOption_GameModeDifficulty->GetTooltipRegularText());
-
-	EditableTextBoxOption_CustomGameModeName->SetIndentLevel(1);
-	EditableTextBoxOption_CustomGameModeName->SetShowTooltipImage(true);
-	EditableTextBoxOption_CustomGameModeName->SetShowTooltipWarningImage(false);
-	EditableTextBoxOption_CustomGameModeName->SetShowCheckBoxLock(false);
 	SetupTooltip(EditableTextBoxOption_CustomGameModeName->GetTooltipImage(), EditableTextBoxOption_CustomGameModeName->GetTooltipRegularText());
 
 	CheckBoxOption_UseTemplate->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_UseTemplate);
@@ -73,13 +53,23 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 
 	ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::Collapsed);
 	ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
+
 	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_Start::Init(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
+void UCustomGameModesWidget_Start::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
-	Super::Init(InConfigPtr, InNext);
-	UpdateOptions();
+	Super::InitComponent(InConfigPtr, InNext);
+}
+
+FString UCustomGameModesWidget_Start::GetNewCustomGameModeName() const
+{
+	return EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText().ToString();
+}
+
+void UCustomGameModesWidget_Start::SetNewCustomGameModeName(const FString& InCustomGameModeName) const
+{
+	EditableTextBoxOption_CustomGameModeName->EditableTextBox->SetText(FText::FromString(InCustomGameModeName));
 }
 
 bool UCustomGameModesWidget_Start::UpdateCanTransitionForward()
@@ -112,6 +102,9 @@ bool UCustomGameModesWidget_Start::UpdateCanTransitionForward()
 
 void UCustomGameModesWidget_Start::UpdateOptions()
 {
+	const FString GameModeString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
+	const FString DifficultyString = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
+	
 	if (ConfigPtr->DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
 		CheckBoxOption_UseTemplate->CheckBox->SetIsChecked(true);
@@ -119,6 +112,14 @@ void UCustomGameModesWidget_Start::UpdateOptions()
 		ComboBoxOption_GameModeTemplates->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(ConfigPtr->DefiningConfig.BaseGameMode).ToString());
 		ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		ComboBoxOption_GameModeDifficulty->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(ConfigPtr->DefiningConfig.Difficulty).ToString());
+	}
+	else if (ConfigPtr->DefiningConfig.GameModeType == EGameModeType::Custom)
+	{
+		CheckBoxOption_UseTemplate->CheckBox->SetIsChecked(true);
+		ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		ComboBoxOption_GameModeTemplates->ComboBox->SetSelectedOption(ConfigPtr->DefiningConfig.CustomGameModeName);
+		ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
+		ComboBoxOption_GameModeDifficulty->ComboBox->ClearSelection();
 	}
 	else
 	{
@@ -144,47 +145,71 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 		ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::Collapsed);
 		ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
 	}
+
 	UpdateBrushColors();
 	SetCanTransitionForward(UpdateCanTransitionForward());
 }
 
 void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText& Text)
 {
+	if (!Text.IsEmptyOrWhitespace())
+	{
+		ConfigPtr->DefiningConfig.CustomGameModeName = Text.ToString();
+	}
 	SetCanTransitionForward(UpdateCanTransitionForward());
 }
 
-void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
+void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
-	
 	if (Selected.Num() != 1)
 	{
+		SetCanTransitionForward(UpdateCanTransitionForward());
 		return;
 	}
 
-	const ESlateVisibility PreChangeVisibility = ComboBoxOption_GameModeDifficulty->GetVisibility();
+	const FString GameModeString = Selected[0];
+	FString DifficultyString = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty Difficulty = GetEnumFromString<EGameModeDifficulty>(DifficultyString, EGameModeDifficulty::None);
 	
-	if (IsPresetGameMode(Selected[0]))
+	if (IsPresetGameMode(GameModeString))
 	{
 		ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		if (PreChangeVisibility == ESlateVisibility::Collapsed)
+		
+		// Set default difficulty to Normal if switching from Custom (no difficulty) to preset
+		if (Difficulty == EGameModeDifficulty::None)
 		{
-			UpdateBrushColors();
+			DifficultyString = UEnum::GetDisplayValueAsText(EGameModeDifficulty::Normal).ToString();
 		}
 	}
-	else if (IsCustomGameMode(Selected[0]))
+	else
 	{
 		ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
-		if (PreChangeVisibility == ESlateVisibility::SelfHitTestInvisible)
-		{
-			UpdateBrushColors();
-		}
 	}
+
+	if (SelectionType != ESelectInfo::Type::Direct)
+	{
+		RequestGameModeTemplateUpdate.Broadcast(GameModeString, GetEnumFromString<EGameModeDifficulty>(DifficultyString, EGameModeDifficulty::None));
+	}
+
+	SetCanTransitionForward(UpdateCanTransitionForward());
+	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
+void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (Selected.Num() != 1)
+	{
+		SetCanTransitionForward(UpdateCanTransitionForward());
+		return;
+	}
+
+	const FString GameModeString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
+	
+	// Only request update for difficulty if Preset GameMode
+	if (SelectionType != ESelectInfo::Type::Direct && IsPresetGameMode(GameModeString))
+	{
+		RequestGameModeTemplateUpdate.Broadcast(GameModeString, GetEnumFromString<EGameModeDifficulty>(Selected[0], EGameModeDifficulty::None));
+	}
+
 	SetCanTransitionForward(UpdateCanTransitionForward());
 }

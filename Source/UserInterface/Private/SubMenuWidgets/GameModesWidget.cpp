@@ -22,6 +22,8 @@
 #include "SubMenuWidgets/GameModesWidget_AIConfig.h"
 #include "SubMenuWidgets/GameModesWidget_GridConfig.h"
 #include "SubMenuWidgets/GameModesWidget_TargetConfig.h"
+#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.h"
+#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_PropertyView.h"
 #include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
@@ -32,61 +34,63 @@ void UGameModesWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
+	SetupButtons();
+	BindAllDelegates();
+	
+	Border_DifficultySelect->SetVisibility(ESlateVisibility::Collapsed);
+	
+	GameModeConfig = FindPresetGameMode("MultiBeat", EGameModeDifficulty::Normal);
+	GameModeConfigPtr = &GameModeConfig;
+
+	CustomGameModesWidget_CreatorView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
+	CustomGameModesWidget_CreatorView->Init(GameModeConfigPtr, GetGameModeDataAsset());
+	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
+	CustomGameModesWidget_PropertyView->Init(GameModeConfigPtr, GetGameModeDataAsset());
+	
+	// Setup default custom game mode options to MultiBeat
+	PopulateGameModeOptions(GameModeConfig);
+}
+
+void UGameModesWidget::SetupButtons()
+{
+	// Default Button Enabled States
 	Button_PlayFromStandard->SetIsEnabled(false);
 	Button_CustomizeFromStandard->SetIsEnabled(false);
-	Border_DifficultySelect->SetVisibility(ESlateVisibility::Collapsed);
 	Button_SaveCustom->SetIsEnabled(false);
 	Button_SaveCustomAndStart->SetIsEnabled(false);
 	Button_RemoveSelectedCustom->SetIsEnabled(false);
 	Button_ExportCustom->SetIsEnabled(false);
 	Button_ImportCustom->SetIsEnabled(true);
+	Button_RemoveAllCustom->SetIsEnabled(!LoadCustomGameModes().IsEmpty());
+	MenuButton_CreatorView->SetActive();
+	MenuButton_PropertyView->SetInActive();
+	MenuButton_DefaultGameModes->SetActive();
 
-	if (!LoadCustomGameModes().IsEmpty())
-	{
-		Button_RemoveAllCustom->SetIsEnabled(true);
-	}
-	else
-	{
-		Button_RemoveAllCustom->SetIsEnabled(false);
-	}
-	
 	// Difficulty buttons
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
 	Button_HardDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Hard), Button_DeathDifficulty);
 	Button_DeathDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Death), Button_NormalDifficulty);
 
-	// Difficulty buttons
+	// Default Game Mode Buttons
 	Button_BeatGrid->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatGrid), Button_BeatTrack);
 	Button_BeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatTrack), Button_MultiBeat);
 	Button_MultiBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::MultiBeat), Button_SingleBeat);
 	Button_SingleBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::SingleBeat), Button_ClusterBeat);
 	Button_ClusterBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::ClusterBeat), Button_ChargedBeatTrack);
 	Button_ChargedBeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::ChargedBeatTrack), Button_BeatGrid);
-
+	
 	MenuButton_DefaultGameModes->SetDefaults(Box_DefaultGameModes, MenuButton_CustomGameModes);
 	MenuButton_CustomGameModes->SetDefaults(Box_CustomGameModes, MenuButton_DefaultGameModes);
-
-	AIConfig = CreateWidget<UGameModesWidget_AIConfig>(this, AIConfigClass);
-	Box_AIConfig->AddChildToVerticalBox(AIConfig);
-
-	TargetConfig = CreateWidget<UGameModesWidget_TargetConfig>(this, TargetConfigClass);
-	Box_TargetConfig->AddChildToVerticalBox(TargetConfig);
-
-	DefiningConfig = CreateWidget<UGameModesWidget_DefiningConfig>(this, DefiningConfigClass);
-	Box_DefiningConfig->AddChildToVerticalBox(DefiningConfig);
-	
-	BindAllDelegates();
-	MenuButton_DefaultGameModes->SetActive();
-	
-	/* Setup default custom game mode options to MultiBeat */
-	const FBSConfig DefaultMultiBeatMode = FindPresetGameMode("MultiBeat", EGameModeDifficulty::Normal);
-	PopulateGameModeOptions(DefaultMultiBeatMode);
+	MenuButton_PropertyView->SetDefaults(nullptr, MenuButton_CreatorView);
+	MenuButton_CreatorView->SetDefaults(nullptr, MenuButton_PropertyView);
 }
 
 void UGameModesWidget::BindAllDelegates()
 {
 	MenuButton_DefaultGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_MenuButton);
 	MenuButton_CustomGameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_MenuButton);
+	MenuButton_CreatorView->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_MenuButton);
+	MenuButton_PropertyView->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_MenuButton);
 	
 	Button_CustomizeFromStandard->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	Button_PlayFromStandard->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
@@ -98,6 +102,7 @@ void UGameModesWidget::BindAllDelegates()
 	Button_ImportCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	Button_ExportCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	
+	// Difficulty
 	Button_NormalDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
 	Button_HardDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
 	Button_DeathDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_Difficulty);
@@ -115,11 +120,14 @@ void UGameModesWidget::BindAllDelegates()
 	DefiningConfig->OnRepopulateGameModeOptions.AddUObject(this, &UGameModesWidget::PopulateGameModeOptions);
 	DefiningConfig->OnDefiningConfigUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
 	TargetConfig->GridConfig->OnBeatGridUpdate_SaveStartButtonStates.AddUObject(this, &UGameModesWidget::UpdateSaveStartButtonStates);
+
+	OnTransitionInCreatorViewFinish.BindDynamic(this, &UGameModesWidget::SetCollapsed_PropertyView);
+	OnTransitionInPropertyViewFinish.BindDynamic(this, &UGameModesWidget::SetCollapsed_CreatorView);
 }
 
-void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* GameModeButton)
+void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* Button)
 {
-	PresetSelection_PresetGameMode = static_cast<EBaseGameMode>(GameModeButton->GetEnumValue());
+	PresetSelection_PresetGameMode = static_cast<EBaseGameMode>(Button->GetEnumValue());
 	DefiningConfig->ComboBox_GameModeName->SetSelectedOption(UEnum::GetDisplayValueAsText(PresetSelection_PresetGameMode).ToString());
 	PopulateGameModeOptions(FindPresetGameMode(PresetSelection_PresetGameMode, EGameModeDifficulty::Normal));
 	
@@ -133,11 +141,74 @@ void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* GameMode
 	Button_CustomizeFromStandard->SetIsEnabled(true);
 }
 
-void UGameModesWidget::OnButtonClicked_Difficulty(const UBSButton* GameModeButton)
+void UGameModesWidget::OnButtonClicked_Difficulty(const UBSButton* Button)
 {
-	PresetSelection_Difficulty = static_cast<EGameModeDifficulty>(GameModeButton->GetEnumValue());
+	PresetSelection_Difficulty = static_cast<EGameModeDifficulty>(Button->GetEnumValue());
 	PopulateGameModeOptions(FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty));
 	Button_PlayFromStandard->SetIsEnabled(true);
+}
+
+void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* Button)
+{
+	if (Button == Button_CustomizeFromStandard)
+	{
+		MenuButton_CustomGameModes->SetActive();
+	}
+	else if (Button == Button_PlayFromStandard)
+	{
+		ShowAudioFormatSelect(true);
+	}
+	else if (Button == Button_SaveCustom)
+	{
+		OnButtonClicked_SaveCustom();
+	}
+	else if (Button == Button_SaveCustomAndStart)
+	{
+		OnButtonClicked_SaveCustomAndStart();
+	}
+	else if (Button == Button_StartWithoutSaving)
+	{
+		ShowAudioFormatSelect(false);
+	}
+	else if (Button == Button_RemoveAllCustom)
+	{
+		OnButtonClicked_RemoveAllCustom();
+	}
+	else if (Button == Button_RemoveSelectedCustom)
+	{
+		OnButtonClicked_RemoveSelectedCustom();
+	}
+	else if (Button == Button_ImportCustom)
+	{
+		OnButtonClicked_ImportCustom();
+	}
+	else if (Button == Button_ExportCustom)
+	{
+		OnButtonClicked_ExportCustom();
+	}
+}
+
+void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
+{
+	if (Button == MenuButton_CreatorView)
+	{
+		TransitionGameModeViewToCreator();
+	}
+	else if (Button == MenuButton_PropertyView)
+	{
+		TransitionGameModeViewToProperty();
+	}
+	else
+	{
+		if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
+		{
+			if (UVerticalBox* Box = MenuButton->GetBox())
+			{
+				MenuSwitcher->SetActiveWidget(Box);
+			}
+		}
+	}
+
 }
 
 void UGameModesWidget::OnButtonClicked_ImportCustom()
@@ -202,67 +273,6 @@ void UGameModesWidget::OnButtonClicked_ExportCustom()
 
 	SavedTextWidget->SetSavedText(FText::FromString("Export String copied to clipboard!"));
 	SavedTextWidget->PlayFadeInFadeOut();
-}
-
-void UGameModesWidget::OnTargetDamageTypeChanged()
-{
-	switch (TargetConfig->GetTargetDamageType()) {
-	case ETargetDamageType::Tracking:
-		AIConfig->CheckBox_EnableAI->SetIsChecked(false);
-		AIConfig->CheckBox_EnableAI->SetIsEnabled(false);
-		break;
-	case ETargetDamageType::Hit:
-		AIConfig->CheckBox_EnableAI->SetIsEnabled(true);
-		break;
-	case ETargetDamageType::Combined:
-	case ETargetDamageType::None:
-		break;
-	}
-}
-
-void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* Button)
-{
-	if (Button == Button_CustomizeFromStandard)
-	{
-		MenuButton_CustomGameModes->SetActive();
-	}
-	else if (Button == Button_PlayFromStandard)
-	{
-		ShowAudioFormatSelect(true);
-	}
-	else if (Button == Button_SaveCustom)
-	{
-		OnButtonClicked_SaveCustom();
-	}
-	else if (Button == Button_SaveCustomAndStart)
-	{
-		OnButtonClicked_SaveCustomAndStart();
-	}
-	else if (Button == Button_StartWithoutSaving)
-	{
-		ShowAudioFormatSelect(false);
-	}
-	else if (Button == Button_RemoveAllCustom)
-	{
-		OnButtonClicked_RemoveAllCustom();
-	}
-	else if (Button == Button_RemoveSelectedCustom)
-	{
-		OnButtonClicked_RemoveSelectedCustom();
-	}
-	else if (Button == Button_ImportCustom)
-	{
-		OnButtonClicked_ImportCustom();
-	}
-	else if (Button == Button_ExportCustom)
-	{
-		OnButtonClicked_ExportCustom();
-	}
-}
-
-void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
-{
-	MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
 
 void UGameModesWidget::OnButtonClicked_SaveCustom()
@@ -354,14 +364,34 @@ void UGameModesWidget::OnButtonClicked_RemoveAllCustom()
 	PopupMessageWidget->FadeIn();
 }
 
+// Replaced with RequestUpdateAfterConfigChange
+void UGameModesWidget::OnTargetDamageTypeChanged()
+{
+	switch (TargetConfig->GetTargetDamageType()) {
+	case ETargetDamageType::Tracking:
+		AIConfig->CheckBox_EnableAI->SetIsChecked(false);
+		AIConfig->CheckBox_EnableAI->SetIsEnabled(false);
+		break;
+	case ETargetDamageType::Hit:
+		AIConfig->CheckBox_EnableAI->SetIsEnabled(true);
+		break;
+	case ETargetDamageType::Combined:
+	case ETargetDamageType::None:
+		break;
+	}
+}
+
 void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
+	GameModeConfig = InBSConfig;
+	GameModeConfigPtr = &GameModeConfig;
 	DefiningConfig->InitializeDefiningConfig(InBSConfig.DefiningConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	TargetConfig->InitializeTargetConfig(InBSConfig.TargetConfig, InBSConfig.DefiningConfig.BaseGameMode);
 	TargetConfig->GridConfig->InitGridConfig(InBSConfig.GridConfig, TargetConfig->TargetScaleConstrained->GetTextTooltipBox_Max());
 	TargetConfig->GridConfig->OnBeatGridUpdate_MaxTargetScale(InBSConfig.TargetConfig.MaxTargetScale);
 	AIConfig->InitializeAIConfig(InBSConfig.AIConfig, InBSConfig.DefiningConfig.BaseGameMode);
-
+	CustomGameModesWidget_CreatorView->Update();
+	CustomGameModesWidget_PropertyView->Update();
 	OnTargetDamageTypeChanged();
 }
 
@@ -582,6 +612,58 @@ bool UGameModesWidget::IsAIValid()
 		TooltipWarningImage_EnableAI->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	return true;
+}
+
+void UGameModesWidget::TransitionGameModeViewToCreator()
+{
+	CustomGameModesWidget_CreatorView->Update();
+	SynchronizeCustomGameModeName(CustomGameModesWidget_PropertyView, CustomGameModesWidget_CreatorView);
+	BindToAnimationFinished(TransitionCustomGameModeView, OnTransitionInCreatorViewFinish);
+	Box_CreatorView->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	PlayAnimationReverse(TransitionCustomGameModeView);
+}
+
+void UGameModesWidget::TransitionGameModeViewToProperty()
+{
+	CustomGameModesWidget_PropertyView->Update();
+	SynchronizeCustomGameModeName(CustomGameModesWidget_CreatorView, CustomGameModesWidget_PropertyView);
+	BindToAnimationFinished(TransitionCustomGameModeView, OnTransitionInPropertyViewFinish);
+	Box_PropertyView->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	PlayAnimationForward(TransitionCustomGameModeView);
+}
+
+void UGameModesWidget::SetCollapsed_CreatorView()
+{
+	Box_CreatorView->SetVisibility(ESlateVisibility::Collapsed);
+	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionInPropertyViewFinish);
+}
+
+void UGameModesWidget::SetCollapsed_PropertyView()
+{
+	Box_PropertyView->SetVisibility(ESlateVisibility::Collapsed);
+	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionInCreatorViewFinish);
+}
+
+void UGameModesWidget::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)
+{
+	if (IsPresetGameMode(InGameMode))
+	{
+		PopulateGameModeOptions(FindPresetGameMode(InGameMode, Difficulty));
+	}
+	else if (IsCustomGameMode(InGameMode))
+	{
+		PopulateGameModeOptions(FindCustomGameMode(InGameMode));
+	}
+}
+
+void UGameModesWidget::SynchronizeCustomGameModeName(const TObjectPtr<UCustomGameModesWidgetBase> From, const TObjectPtr<UCustomGameModesWidgetBase> To)
+{
+	const FString NewGameModeName = From->GetNewCustomGameModeName();
+	if (NewGameModeName.IsEmpty() || IsCustomGameMode(NewGameModeName) || IsPresetGameMode(NewGameModeName))
+	{
+		return;
+	}
+	To->SetNewCustomGameModeName(NewGameModeName);
 }
 
 UTooltipImage* UGameModesWidget::ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn)

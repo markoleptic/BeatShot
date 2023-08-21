@@ -8,6 +8,9 @@
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"
 
+class UCustomGameModesWidgetBase;
+class UCustomGameModesWidget_PropertyView;
+class UCustomGameModesWidget_CreatorView;
 class UGameModeSharingWidget;
 class UTooltipImage;
 class UGameModesWidget_DefiningConfig;
@@ -53,25 +56,13 @@ protected:
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | AudioSelect")
 	TSubclassOf<UAudioSelectWidget> AudioSelectClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Defining Config")
-	TSubclassOf<UGameModesWidget_DefiningConfig> DefiningConfigClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | AI Config")
-	TSubclassOf<UGameModesWidget_AIConfig> AIConfigClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Target Config")
-	TSubclassOf<UGameModesWidget_TargetConfig> TargetConfigClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipImage> WarningEMarkClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Custom Game Modes")
 	TSubclassOf<UGameModeSharingWidget> GameModeSharingClass;
-	
+
 	UPROPERTY()
 	TObjectPtr<UTooltipImage> TooltipWarningImage_EnableAI;
-	UPROPERTY()
-	TObjectPtr<UGameModesWidget_DefiningConfig> DefiningConfig;
-	UPROPERTY()
-	TObjectPtr<UGameModesWidget_TargetConfig> TargetConfig;
-	UPROPERTY()
-	TObjectPtr<UGameModesWidget_AIConfig> AIConfig;
 	UPROPERTY()
 	TObjectPtr<UPopupMessageWidget> PopupMessageWidget;
 	UPROPERTY()
@@ -79,71 +70,95 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UGameModeSharingWidget> GameModeSharingWidget;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UGameModesWidget_DefiningConfig> DefiningConfig;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UGameModesWidget_TargetConfig> TargetConfig;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	TObjectPtr<UGameModesWidget_AIConfig> AIConfig;
+	
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	TObjectPtr<UCustomGameModesWidget_CreatorView> CustomGameModesWidget_CreatorView;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	TObjectPtr<UCustomGameModesWidget_PropertyView> CustomGameModesWidget_PropertyView;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Defining Config")
-	UVerticalBox* Box_DefiningConfig;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | Target Config")
-	UVerticalBox* Box_TargetConfig;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | AI Config")
-	UVerticalBox* Box_AIConfig;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_DefaultGameModes;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_CustomGameModes;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UVerticalBox* Box_PropertyView;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UVerticalBox* Box_CreatorView;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_DefaultGameModes;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Navigation")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_CustomGameModes;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UMenuButton* MenuButton_CreatorView;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UMenuButton* MenuButton_PropertyView;
 	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_SaveCustom;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_StartWithoutSaving;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_SaveCustomAndStart;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_RemoveSelectedCustom;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_RemoveAllCustom;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_CustomizeFromStandard;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_PlayFromStandard;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ImportCustom;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Custom Game Modes | SaveStart")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ExportCustom;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Difficulty")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* Border_DifficultySelect;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Difficulty")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_NormalDifficulty;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Difficulty")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_HardDifficulty;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | Difficulty")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_DeathDifficulty;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_BeatGrid;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_BeatTrack;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_MultiBeat;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_SingleBeat;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ClusterBeat;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Default Game Modes | ModeButtons")
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ChargedBeatTrack;
+
+	UPROPERTY(BlueprintReadOnly,Transient , meta = (BindWidgetAnim))
+	UWidgetAnimation* TransitionCustomGameModeView;
+
+	FWidgetAnimationDynamicEvent OnTransitionInPropertyViewFinish;
+	FWidgetAnimationDynamicEvent OnTransitionInCreatorViewFinish;
 	
 private:
 	/** Binds all widget delegates to functions */
 	void BindAllDelegates();
+
+	/** Sets button defaults and default enabled states */
+	void SetupButtons();
 	
 	/** Initializes all Custom game mode options based on the BSConfig */
 	void PopulateGameModeOptions(const FBSConfig& InBSConfig);
@@ -171,37 +186,38 @@ private:
 	 *  and calls ShowConfirmOverwriteMessage and returning true if so */
 	bool CheckForExistingAndDisplayOverwriteMessage(const bool bStartGameAfter);
 
+	/** Changes the SelectedGameMode depending on input button */
+	UFUNCTION()
+	void OnButtonClicked_DefaultGameMode(const UBSButton* Button);
+
+	/** Changes the Difficulty depending on input button */
+	UFUNCTION()
+	void OnButtonClicked_Difficulty(const UBSButton* Button);
+
+	/** Any Custom Game Mode Button binds to this function */
 	UFUNCTION()
 	void OnButtonClicked_CustomGameModeButton(const UBSButton* Button);
 
+	/** Any Menu Button binds to this function */
 	UFUNCTION()
 	void OnButtonClicked_MenuButton(const UBSButton* Button);
 
 	/** Saves the custom game mode to slot, repopulates ComboBox_GameModeName, and selects the new custom game mode */
-	UFUNCTION()
 	void OnButtonClicked_SaveCustom();
 
 	/** Calls CheckForExistingAndDisplayOverwriteMessage, and calls ShowAudioFormatSelect if no existing found */
-	UFUNCTION()
 	void OnButtonClicked_SaveCustomAndStart();
 
-	/** Calls RemoveCustomGameMode */
-	UFUNCTION()
+	/** Creates a confirm pop up widget and binds to its buttons, removing the selected custom if confirmed */
 	void OnButtonClicked_RemoveSelectedCustom();
-	
-	UFUNCTION()
+
+	/** Creates a confirm pop up widget and binds to its buttons, removing all custom if confirmed */
 	void OnButtonClicked_RemoveAllCustom();
 
-	/** Changes the SelectedGameMode depending on input button */
-	UFUNCTION(Category = "Default Game Modes | ModeButtons")
-	void OnButtonClicked_DefaultGameMode(const UBSButton* GameModeButton);
-
-	/** Changes the SelectedGameMode depending on input button */
-	UFUNCTION(Category = "Default Game Modes | ModeButtons")
-	void OnButtonClicked_Difficulty(const UBSButton* GameModeButton);
-	
+	/** Creates an import custom widget and adds to viewport */
 	void OnButtonClicked_ImportCustom();
-	
+
+	/** Copies the game mode to clipboard and updates Text */
 	void OnButtonClicked_ExportCustom();
 
 	UFUNCTION()
@@ -209,6 +225,23 @@ private:
 
 	/** Returns false only if the TargetDistributionPolicy is set to grid, AI is enabled, and the grid isn't in increments of 5 */
 	bool IsAIValid();
+
+	/** Plays TransitionCustomGameModeView */
+	void TransitionGameModeViewToCreator();
+	
+	/** Plays TransitionCustomGameModeView */
+	void TransitionGameModeViewToProperty();
+
+	UFUNCTION()
+	void SetCollapsed_CreatorView();
+	UFUNCTION()
+	void SetCollapsed_PropertyView();
+
+	/** Called when the GameModeTemplate selected option changes in either CustomGameModeWidget */
+	void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
+
+	/** Synchronizes CustomGameModeName between CreatorView and PropertyView */
+	void SynchronizeCustomGameModeName(const TObjectPtr<UCustomGameModesWidgetBase> From, const TObjectPtr<UCustomGameModesWidgetBase> To);
 
 	/** Returns a TooltipImage widget created and placed inside the BoxToPlaceIn */
 	UTooltipImage* ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn);
@@ -221,4 +254,7 @@ private:
 	
 	/** The difficulty for a selected Preset Game Mode */
 	EGameModeDifficulty PresetSelection_Difficulty;
+
+	FBSConfig GameModeConfig;
+	FBSConfig* GameModeConfigPtr;
 };

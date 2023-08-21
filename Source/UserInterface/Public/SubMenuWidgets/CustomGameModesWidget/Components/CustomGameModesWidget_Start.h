@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CustomGameModesWidgetComponent.h"
+#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.h"
 #include "CustomGameModesWidget_Start.generated.h"
 
 class UEditableTextBoxOptionWidget;
@@ -16,7 +17,12 @@ class USERINTERFACE_API UCustomGameModesWidget_Start : public UCustomGameModesWi
 	GENERATED_BODY()
 
 public:
-	virtual void Init(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
+	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
+
+	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
+	
+	FString GetNewCustomGameModeName() const;
+	void SetNewCustomGameModeName(const FString& InCustomGameModeName) const;
 
 protected:
 	virtual void NativeConstruct() override;

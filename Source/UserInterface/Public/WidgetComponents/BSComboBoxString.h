@@ -73,19 +73,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
 	FMargin ContentPadding;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Content)
 	ESelectionModeType SelectionMode = ESelectionModeType::Multi;
 
 	/** Should the user be able to select no options */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Content)
 	bool bCanSelectNone = false;
 	
 	/** Should the combo box automatically close when a selection is made */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Content)
 	bool bCloseComboBoxOnSelectionChanged = false;
 
 	/** The max number of options that a user can select */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Content)
 	int32 MaxNumberOfSelections = -1;
 
 	/** When false, directional keys will change the selection. When true, ComboBox 

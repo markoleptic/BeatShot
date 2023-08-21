@@ -17,7 +17,7 @@ class USERINTERFACE_API UCustomGameModesWidget_SpawnArea : public UCustomGameMod
 	GENERATED_BODY()
 
 public:
-	virtual void Init(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
+	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -53,4 +53,9 @@ protected:
 	void OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+
+	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
+
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 };

@@ -18,8 +18,15 @@ UBSComboBoxEntry* UComboBoxOptionWidget::ConstructComboBoxEntryWidget()
 	return CreateWidget<UBSComboBoxEntry>(this, ComboBox->GetComboboxEntryWidget());
 }
 
-void UComboBoxOptionWidget::OnSelectionChanged_ComboBox(const TArray<FString>& Selected,
-                                                        const ESelectInfo::Type SelectionType)
+FString UComboBoxOptionWidget::GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString)
 {
-	
+	if (GetComboBoxEntryTooltipStringTableKey.IsBound())
+	{
+		return GetComboBoxEntryTooltipStringTableKey.Execute(EnumString);
+	}
+	return IBSWidgetInterface::GetStringTableKeyFromComboBox(ComboBoxString, EnumString);
+}
+
+void UComboBoxOptionWidget::OnSelectionChanged_ComboBox(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+{
 }

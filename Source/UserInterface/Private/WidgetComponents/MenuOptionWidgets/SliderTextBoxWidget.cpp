@@ -16,12 +16,14 @@ void USliderTextBoxWidget::NativeConstruct()
 
 void USliderTextBoxWidget::OnSliderChanged_Slider(const float Value)
 {
-	IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);
+	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);
+	OnSliderTextBoxValueChanged.Broadcast(this, ClampedValue);
 }
 
 void USliderTextBoxWidget::OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType)
 {
-	IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(), Slider->GetMaxValue());
+	const float ClampedValue = IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(), Slider->GetMaxValue());
+	OnSliderTextBoxValueChanged.Broadcast(this, ClampedValue);
 }
 
 void USliderTextBoxWidget::SetValues(const float Min, const float Max, const float SnapSize)
@@ -34,8 +36,13 @@ void USliderTextBoxWidget::SetValues(const float Min, const float Max, const flo
 
 void USliderTextBoxWidget::SetValue(const float Value)
 {
-	Slider->SetValue(Value);
-	IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);
+	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);
+	Slider->SetValue(ClampedValue);
+}
+
+float USliderTextBoxWidget::GetValue() const
+{
+	return Slider->GetValue();
 }
 
 
