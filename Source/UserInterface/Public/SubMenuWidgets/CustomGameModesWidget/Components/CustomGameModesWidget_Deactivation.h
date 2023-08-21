@@ -19,7 +19,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual bool UpdateCanTransitionForward() override;
+	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptions() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

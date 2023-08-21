@@ -77,7 +77,7 @@ public:
 	/** Returns the FBSConfig corresponding to the input GameModeName string and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const;
 
-	/** Returns the FBSConfig corresponding to the input BaseGameMode and difficulty */
+	/** Returns the FBSConfig corresponding to the input BaseGameMode and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const;
 
 	/** Returns the FBSConfig corresponding to the input GameModeName string */

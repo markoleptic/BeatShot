@@ -46,7 +46,7 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Deactivation::UpdateCanTransitionForward()
+bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 {
 	if (ComboBoxOption_TargetDeactivationConditions->ComboBox->GetSelectedOptionCount() < 1)
 	{
@@ -74,20 +74,20 @@ void UCustomGameModesWidget_Deactivation::UpdateOptions()
 		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
 void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationConditions(
 	const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationResponses(
 	const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 FString UCustomGameModesWidget_Deactivation::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(

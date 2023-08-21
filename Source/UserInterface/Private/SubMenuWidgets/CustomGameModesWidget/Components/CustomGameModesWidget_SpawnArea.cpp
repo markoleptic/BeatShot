@@ -71,7 +71,7 @@ void UCustomGameModesWidget_SpawnArea::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_SpawnArea::UpdateCanTransitionForward()
+bool UCustomGameModesWidget_SpawnArea::UpdateAllOptionsValid()
 {
 	if (ComboBoxOption_BoundsScalingPolicy->ComboBox->GetSelectedOptionCount() != 1)
 	{
@@ -97,7 +97,7 @@ void UCustomGameModesWidget_SpawnArea::UpdateOptions()
 	SliderTextBoxOption_FloorDistance->SetValue(ConfigPtr->TargetConfig.FloorDistance);
 	SliderTextBoxOption_MinDistanceBetweenTargets->SetValue(ConfigPtr->TargetConfig.MinDistanceBetweenTargets);
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -105,19 +105,19 @@ void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(co
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
 	ConfigPtr->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0], EBoundsScalingPolicy::None);
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
@@ -140,7 +140,7 @@ void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_TargetDistributionPoli
 	
 	ConfigPtr->TargetConfig.TargetDistributionPolicy = TargetDistributionPolicy;
 	UpdateBrushColors();
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 FString UCustomGameModesWidget_SpawnArea::GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString)

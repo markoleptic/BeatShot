@@ -32,6 +32,8 @@ class UCheckBox;
 class UMenuButton;
 class UBSButton;
 
+DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
+
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface

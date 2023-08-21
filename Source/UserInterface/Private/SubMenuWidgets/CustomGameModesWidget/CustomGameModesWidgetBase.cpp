@@ -9,52 +9,44 @@ void UCustomGameModesWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_Start));
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_SpawnArea));
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_Activation));
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_Deactivation));
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_General));
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_Spawning));
-	AddComponent(Cast<UCustomGameModesWidgetComponent>(Widget_Target));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Start));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_SpawnArea));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Activation));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Deactivation));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_General));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Spawning));
+	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Target));
 
 	Widget_Start->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 }
 
 UBSGameModeDataAsset* UCustomGameModesWidgetBase::GetGameModeDataAsset() const
 {
-	if (GameModeDataAsset)
-	{
-		return GameModeDataAsset.Get();
-	}
-	return nullptr;
-}
-
-void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)
-{
-	RequestGameModeTemplateUpdate.Broadcast(InGameMode, Difficulty);
-}
-
-void UCustomGameModesWidgetBase::AddComponent(const TObjectPtr<UCustomGameModesWidgetComponent> Component)
-{
-	Components.AddUnique(Component);
-	Component->RequestUpdateAfterConfigChange.AddUObject(this, &ThisClass::UpdateAfterConfigChange);
+	return GameModeDataAsset ? GameModeDataAsset.Get() : nullptr;
 }
 
 void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
 {
 	CurrentConfigPtr = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
-	for (const TObjectPtr<UCustomGameModesWidgetComponent> Component : Components)
+	
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
 	{
-		Component->InitComponent(InConfig, nullptr);
+		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
+		{
+			Component->InitComponent(InConfig, nullptr);
+		}
 	}
 }
 
 void UCustomGameModesWidgetBase::Update()
 {
-	for (const TObjectPtr<UCustomGameModesWidgetComponent> Component : Components)
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
 	{
-		Component->UpdateOptions();
+		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
+		{
+			Component->UpdateOptions();
+		}
 	}
 }
 
@@ -68,9 +60,44 @@ void UCustomGameModesWidgetBase::SetNewCustomGameModeName(const FString& InCusto
 	Widget_Start->SetNewCustomGameModeName(InCustomGameModeName);
 }
 
-void UCustomGameModesWidgetBase::UpdateAfterConfigChange()
+bool UCustomGameModesWidgetBase::GetAllChildWidgetOptionsValid() const
 {
-	Update();
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
+	{
+		if (ChildWidgetValidity.Value == true)
+		{
+			continue;
+		}
+		return false;
+	}
+	return true;
 }
 
+FBS_DefiningConfig UCustomGameModesWidgetBase::GetDefiningConfig() const
+{
+	return Widget_Start->GetDefiningConfig();
+}
 
+void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)
+{
+	RequestGameModeTemplateUpdate.Broadcast(InGameMode, Difficulty);
+}
+
+void UCustomGameModesWidgetBase::OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid)
+{
+	if (Widget == Widget_Start)
+	{
+		if (ChildWidgetValidityMap.FindRef(Widget) != bAllOptionsValid)
+		{
+			RequestButtonStateUpdate.Broadcast();
+		}
+	}
+	ChildWidgetValidityMap.FindChecked(Widget) = bAllOptionsValid;
+}
+
+void UCustomGameModesWidgetBase::AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component)
+{
+	ChildWidgetValidityMap.FindOrAdd(Component) = false;
+	Component->RequestUpdateAfterConfigChange.AddUObject(this, &ThisClass::Update);
+	Component->OnValidOptionsStateChanged.AddUObject(this, &ThisClass::OnValidOptionsStateChanged);
+}

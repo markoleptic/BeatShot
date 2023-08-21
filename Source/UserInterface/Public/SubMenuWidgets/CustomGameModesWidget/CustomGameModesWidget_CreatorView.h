@@ -42,10 +42,11 @@ protected:
 	/** Transitions in the previous widget and assigns it to the value of CurrentWidget */
 	void TransitionBackward();
 
-	/** Bound to all UCustomGameModesWidgetComponent's OnCanTransitionForwardStateChanged delegates, updates the TransitionMap */
-	void OnCanTransitionForwardStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bCanTransition);
-
+	/** Changes the value of CurrentWidget and plays the appropriate widget animation */
 	void ChangeCurrentWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Widget);
+
+	/** Bound to all child widget's OnValidOptionsStateChanged delegates */
+	virtual void OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid) override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCustomGameModesWidget_Preview* Widget_Preview;

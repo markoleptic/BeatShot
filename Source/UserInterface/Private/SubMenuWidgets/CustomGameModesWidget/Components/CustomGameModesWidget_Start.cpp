@@ -72,7 +72,31 @@ void UCustomGameModesWidget_Start::SetNewCustomGameModeName(const FString& InCus
 	EditableTextBoxOption_CustomGameModeName->EditableTextBox->SetText(FText::FromString(InCustomGameModeName));
 }
 
-bool UCustomGameModesWidget_Start::UpdateCanTransitionForward()
+FBS_DefiningConfig UCustomGameModesWidget_Start::GetDefiningConfig() const
+{
+	FBS_DefiningConfig DefiningConfig = FBS_DefiningConfig();
+	
+	const FString GameModeString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
+	const FString DifficultyString = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
+
+	if (IsPresetGameMode(GameModeString))
+	{
+		DefiningConfig.BaseGameMode = GetEnumFromString<EBaseGameMode>(GameModeString, EBaseGameMode::None);
+	}
+	else
+	{
+		DefiningConfig.BaseGameMode = EBaseGameMode::None;
+		if (IsCustomGameMode(GameModeString))
+		{
+			DefiningConfig.CustomGameModeName = GameModeString;
+		}
+	}
+	DefiningConfig.Difficulty = GetEnumFromString<EGameModeDifficulty>(DifficultyString, EGameModeDifficulty::None);
+
+	return DefiningConfig;
+}
+
+bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 {
 	if (CheckBoxOption_UseTemplate->CheckBox->IsChecked())
 	{
@@ -130,7 +154,7 @@ void UCustomGameModesWidget_Start::UpdateOptions()
 		ComboBoxOption_GameModeDifficulty->ComboBox->ClearSelection();
 	}
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -147,7 +171,7 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 	}
 
 	UpdateBrushColors();
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText& Text)
@@ -156,14 +180,14 @@ void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText&
 	{
 		ConfigPtr->DefiningConfig.CustomGameModeName = Text.ToString();
 	}
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 
@@ -191,7 +215,7 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TA
 		RequestGameModeTemplateUpdate.Broadcast(GameModeString, GetEnumFromString<EGameModeDifficulty>(DifficultyString, EGameModeDifficulty::None));
 	}
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -199,7 +223,7 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const T
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 
@@ -211,5 +235,5 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const T
 		RequestGameModeTemplateUpdate.Broadcast(GameModeString, GetEnumFromString<EGameModeDifficulty>(Selected[0], EGameModeDifficulty::None));
 	}
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }

@@ -11,7 +11,26 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 	OnTransitionInRightFinish.BindDynamic(this, &ThisClass::SetCollapsed);
 }
 
-void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
+bool UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
+{
+	return false;
+}
+
+void UCustomGameModesWidgetComponent::SetAllOptionsValid(const bool bUpdateAllOptionsValid)
+{
+	if (bUpdateAllOptionsValid == bAllOptionsValid)
+	{
+		return;
+	}
+	bAllOptionsValid = bUpdateAllOptionsValid;
+	
+	if (OnValidOptionsStateChanged.IsBound())
+	{
+		OnValidOptionsStateChanged.Broadcast(this, bAllOptionsValid);
+	}
+}
+
+void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	ConfigPtr = InConfigPtr;
 	SetNext(InNext);
@@ -22,16 +41,23 @@ void UCustomGameModesWidgetComponent::UpdateOptions()
 {
 }
 
+bool UCustomGameModesWidgetComponent::GetAllOptionsValid() const
+{
+	return bAllOptionsValid;
+}
+
 void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish)
 {
 	if (bCollapseOnFinish)
 	{
 		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
 	}
+	
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
+	
 	PlayAnimationForward(TransitionInLeft);
 }
 
@@ -41,10 +67,12 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Reverse(const bo
 	{
 		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
 	}
+	
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
+	
 	PlayAnimationReverse(TransitionInLeft);
 }
 
@@ -54,10 +82,12 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Forward(const b
 	{
 		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
 	}
+	
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
+	
 	PlayAnimationForward(TransitionInRight);
 }
 
@@ -67,24 +97,13 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Reverse(const b
 	{
 		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
 	}
+	
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
+	
 	PlayAnimationReverse(TransitionInRight);
-}
-
-void UCustomGameModesWidgetComponent::SetCanTransitionForward(const bool bInCanTransitionForward)
-{
-	if (bInCanTransitionForward == bCanTransitionForward)
-	{
-		return;
-	}
-	bCanTransitionForward = bInCanTransitionForward;
-	if (OnCanTransitionForwardStateChanged.IsBound())
-	{
-		OnCanTransitionForwardStateChanged.Broadcast(this, bCanTransitionForward);
-	}
 }
 
 TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::GetNext() const

@@ -9,7 +9,7 @@
 
 class UCustomGameModesWidgetComponent;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnCanTransitionForwardStateChanged, const TObjectPtr<UCustomGameModesWidgetComponent>, const bool);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnValidOptionsStateChanged, const TObjectPtr<UCustomGameModesWidgetComponent>, const bool);
 DECLARE_MULTICAST_DELEGATE(FRequestUpdateAfterConfigChange);
 
 UCLASS(Abstract)
@@ -18,8 +18,8 @@ class USERINTERFACE_API UCustomGameModesWidgetComponent : public UBSSettingCateg
 	GENERATED_BODY()
 
 public:
-	/** Initializes options, sets the pointer to next widget in chain */
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext);
+	/** Sets ConfigPtr, sets the pointer to next widget in linked list, and calls UpdateOptions */
+	virtual void InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
 	/** Child classes should override to update the options using the ConfigPtr */
 	virtual void UpdateOptions();
@@ -27,14 +27,14 @@ public:
 	/** Returns the next CustomGameModesWidgetComponent to transition to */
 	TObjectPtr<UCustomGameModesWidgetComponent> GetNext() const;
 
-	/** Broadcast when the user should or shouldn't be able to proceed to the next step */
-	FOnCanTransitionForwardStateChanged OnCanTransitionForwardStateChanged;
+	/** Broadcasts whether or not all custom game mode options are valid for this widget */
+	FOnValidOptionsStateChanged OnValidOptionsStateChanged;
 
 	/** Broadcast when the ConfigPtr needed to be changed */
 	FRequestUpdateAfterConfigChange RequestUpdateAfterConfigChange;
 
-	/** Whether or not all options are valid and the user can proceed to the next step */
-	bool CanTransitionForward() const { return bCanTransitionForward; }
+	/** Returns the value of bAllOptionsValid, whether or not all custom game mode options are valid for this widget */
+	bool GetAllOptionsValid() const;
 	
 	/** Starts with the widget not visible and shifts to the right from the left */
 	void PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish);
@@ -48,16 +48,16 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	
-	/** Child classes should override and call this anytime an option is changed inside a call to SetCanTransitionForward */
-	virtual bool UpdateCanTransitionForward() { return CanTransitionForward(); }
+	/** Checks all custom game mode options for validity, returning true if valid and false if any are invalid. Should be called anytime an option is changed */
+	virtual bool UpdateAllOptionsValid();
 
-	/** Broadcasts the OnCanTransitionForwardStateChanged delegate if the value of bCanTransitionForward has changed.
-	 *  Child classes should override and call this anytime an option is changed */
-	void SetCanTransitionForward(const bool bInCanTransitionForward);
+	/** Sets the value bAllOptionsValid. Broadcasts the OnValidOptionsStateChanged delegate if it was changed */
+	void SetAllOptionsValid(const bool bUpdateAllOptionsValid);
 
 	/** Sets value of Next */
 	void SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
+	/** Sets the visibility of the widget to collapsed and unbinds from any OnAnimationFinished delegates */
 	UFUNCTION()
 	void SetCollapsed();
 
@@ -69,11 +69,14 @@ protected:
 
 	FWidgetAnimationDynamicEvent OnTransitionInRightFinish;
 	FWidgetAnimationDynamicEvent OnTransitionInLeftFinish;
-	
+
+	/** Pointer to the game mode config inside GameModesWidget */
 	FBSConfig* ConfigPtr;
 
+	/** Pointer to next widget in linked list. Used for CreatorView */
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetComponent> Next;
 
-	bool bCanTransitionForward = false;
+	/** Whether or not all custom game mode options are valid for this widget */
+	bool bAllOptionsValid = false;
 };

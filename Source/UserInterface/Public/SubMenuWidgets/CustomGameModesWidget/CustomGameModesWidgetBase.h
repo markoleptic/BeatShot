@@ -6,6 +6,7 @@
 #include "GlobalStructs.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
+#include "SubMenuWidgets/GameModesWidget.h"
 #include "CustomGameModesWidgetBase.generated.h"
 
 class UCustomGameModesWidgetComponent;
@@ -26,21 +27,45 @@ class USERINTERFACE_API UCustomGameModesWidgetBase : public UUserWidget, public 
 	GENERATED_BODY()
 
 public:
+	/** Sets the value of ConfigPtr and GameModeDataAsset. Calls InitComponent on all widgets in ChildWidgets array */
 	virtual void Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset);
-	virtual void Update();
 
+	/** Calls UpdateOptions on all widgets in ChildWidgets array */
+	UFUNCTION()
+	void Update();
+
+	/** Returns the NewCustomGameModeName from Widget_Start */
 	FString GetNewCustomGameModeName() const;
+
+	/** Sets the value of NewCustomGameModeName in Widget_Start */
 	void SetNewCustomGameModeName(const FString& InCustomGameModeName) const;
 
+	/** Returns whether or not all child widget custom game mode options are valid. Iterates through ChildWidgetValidityMap */
+	bool GetAllChildWidgetOptionsValid() const;
+
+	FBS_DefiningConfig GetDefiningConfig() const;
+
+	/** Broadcast any time a widget in ChildWidgets broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
-	
-	UFUNCTION()
-	void UpdateAfterConfigChange();
+
+	/** Broadcast when Widget_Start's OnValidOptionsStateChanged is changed */
+	FRequestButtonStateUpdate RequestButtonStateUpdate;
 
 protected:
+	/** Adds child widgets to ChildWidgets array, binds to Widget_Start's RequestGameModeTemplateUpdate */
 	virtual void NativeConstruct() override;
+
+	/** Override to provide widget with access to FindPresetGameMode functions from ISaveLoadInterface */
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override;
+
+	/** Called any time a widget in ChildWidgets broadcasts their RequestGameModeTemplateUpdate delegate */
 	virtual void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
+	
+	/** Bound to all child widget's OnValidOptionsStateChanged delegates */
+	virtual void OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid);
+
+	/** Adds a widget to ChildWidgets array. Binds to its RequestUpdateAfterConfigChange and OnValidOptionsStateChanged delegates */
+	void AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_Start> Widget_Start;
@@ -60,12 +85,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 
-	/** Adds a CustomGameModesWidgetComponent to Component Update Array and binds to its RequestUpdateAfterConfigChange */
-	void AddComponent(const TObjectPtr<UCustomGameModesWidgetComponent> Component);
-
 	/** Pointer to Game Mode Config held in controlling GameModesWidget*/
 	FBSConfig* CurrentConfigPtr;
 
-	/** Pointer to all Widget Components */
-	TArray<TObjectPtr<UCustomGameModesWidgetComponent>> Components;
+	/** Maps each child widget to a boolean value representing if all its custom game mode options are valid */
+	TMap<TObjectPtr<UCustomGameModesWidgetComponent>, bool> ChildWidgetValidityMap;
 };

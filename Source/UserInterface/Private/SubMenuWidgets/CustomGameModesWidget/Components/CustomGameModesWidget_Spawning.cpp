@@ -45,7 +45,7 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Spawning::UpdateCanTransitionForward()
+bool UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 {
 	if (ComboBoxOption_TargetSpawningPolicy->ComboBox->GetSelectedOptionCount() != 1)
 	{
@@ -73,19 +73,19 @@ void UCustomGameModesWidget_Spawning::UpdateOptions()
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	ConfigPtr->TargetConfig.bAllowSpawnWithoutActivation = bChecked;
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_BatchSpawning(const bool bChecked)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	ConfigPtr->TargetConfig.bUseBatchSpawning = bChecked;
 }
 
@@ -93,7 +93,7 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(co
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
@@ -111,7 +111,7 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(co
 	}
 
 	ConfigPtr->TargetConfig.TargetSpawningPolicy = Policy;
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 

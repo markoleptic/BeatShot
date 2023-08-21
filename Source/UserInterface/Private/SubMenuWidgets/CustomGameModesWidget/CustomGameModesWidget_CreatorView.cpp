@@ -24,14 +24,6 @@ void UCustomGameModesWidget_CreatorView::NativeConstruct()
 	Button_Previous->SetIsEnabled(false);
 	Button_Create->SetIsEnabled(false);
 
-	Widget_Start->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-	Widget_SpawnArea->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-	Widget_Spawning->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-	Widget_Activation->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-	Widget_Deactivation->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-	Widget_General->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-	Widget_Target->OnCanTransitionForwardStateChanged.AddUObject(this, &ThisClass::OnCanTransitionForwardStateChanged);
-
 	TransitionMap.Add(Widget_Start, false);
 	TransitionMap.Add(Widget_SpawnArea, false);
 	TransitionMap.Add(Widget_Spawning, false);
@@ -44,7 +36,24 @@ void UCustomGameModesWidget_CreatorView::NativeConstruct()
 	FirstWidget = Widget_Start;
 	LastWidget = Widget_Target;
 
-	AddComponent(Widget_Preview);
+	AddChildWidget(Widget_Preview);
+}
+
+void UCustomGameModesWidget_CreatorView::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
+{
+	// Doesn't call parent function so it can set correct Next widget values in InitComponent
+	
+	CurrentConfigPtr = InConfig;
+	GameModeDataAsset = InGameModeDataAsset;
+	
+	Widget_Start->InitComponent(CurrentConfigPtr, Widget_SpawnArea);
+	Widget_SpawnArea->InitComponent(CurrentConfigPtr, Widget_Spawning);
+	Widget_Spawning->InitComponent(CurrentConfigPtr, Widget_Activation);
+	Widget_Activation->InitComponent(CurrentConfigPtr, Widget_Deactivation);
+	Widget_Deactivation->InitComponent(CurrentConfigPtr, Widget_General);
+	Widget_General->InitComponent(CurrentConfigPtr, Widget_Target);
+	Widget_Target->InitComponent(CurrentConfigPtr, Widget_Start);
+	Widget_Preview->InitComponent(CurrentConfigPtr, nullptr);
 }
 
 void UCustomGameModesWidget_CreatorView::OnBSButtonPressed(const UBSButton* BSButton)
@@ -61,21 +70,6 @@ void UCustomGameModesWidget_CreatorView::OnBSButtonPressed(const UBSButton* BSBu
 	{
 		
 	}
-}
-
-void UCustomGameModesWidget_CreatorView::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
-{
-	CurrentConfigPtr = InConfig;
-	GameModeDataAsset = InGameModeDataAsset;
-	
-	Widget_Start->InitComponent(CurrentConfigPtr, Widget_SpawnArea);
-	Widget_SpawnArea->InitComponent(CurrentConfigPtr, Widget_Spawning);
-	Widget_Spawning->InitComponent(CurrentConfigPtr, Widget_Activation);
-	Widget_Activation->InitComponent(CurrentConfigPtr, Widget_Deactivation);
-	Widget_Deactivation->InitComponent(CurrentConfigPtr, Widget_General);
-	Widget_General->InitComponent(CurrentConfigPtr, Widget_Target);
-	Widget_Target->InitComponent(CurrentConfigPtr, Widget_Start);
-	Widget_Preview->InitComponent(CurrentConfigPtr, nullptr);
 }
 
 void UCustomGameModesWidget_CreatorView::TransitionForward()
@@ -127,20 +121,6 @@ void UCustomGameModesWidget_CreatorView::TransitionBackward()
 	}
 }
 
-void UCustomGameModesWidget_CreatorView::OnCanTransitionForwardStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bCanTransition)
-{
-	TransitionMap.FindChecked(Widget) = bCanTransition;
-	
-	if (TransitionMap.FindChecked(CurrentWidget) == true)
-	{
-		Button_Next->SetIsEnabled(true);
-	}
-	else if (TransitionMap.FindChecked(CurrentWidget) == false)
-	{
-		Button_Next->SetIsEnabled(false);
-	}
-}
-
 void UCustomGameModesWidget_CreatorView::ChangeCurrentWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Widget)
 {
 	CurrentWidget = Widget;
@@ -152,7 +132,7 @@ void UCustomGameModesWidget_CreatorView::ChangeCurrentWidget(const TObjectPtr<UC
 	}
 	else
 	{
-		Button_Next->SetIsEnabled(CurrentWidget->CanTransitionForward());
+		Button_Next->SetIsEnabled(CurrentWidget->GetAllOptionsValid());
 	}
 
 	// Disable previous button if CurrentWidget is FirstWidget
@@ -163,5 +143,21 @@ void UCustomGameModesWidget_CreatorView::ChangeCurrentWidget(const TObjectPtr<UC
 	else
 	{
 		Button_Previous->SetIsEnabled(true);
+	}
+}
+
+void UCustomGameModesWidget_CreatorView::OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid)
+{
+	Super::OnValidOptionsStateChanged(Widget, bAllOptionsValid);
+
+	TransitionMap.FindChecked(Widget) = bAllOptionsValid;
+	
+	if (TransitionMap.FindChecked(CurrentWidget) == true)
+	{
+		Button_Next->SetIsEnabled(true);
+	}
+	else if (TransitionMap.FindChecked(CurrentWidget) == false)
+	{
+		Button_Next->SetIsEnabled(false);
 	}
 }

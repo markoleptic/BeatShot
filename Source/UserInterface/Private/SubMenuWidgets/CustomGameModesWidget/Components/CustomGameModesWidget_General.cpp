@@ -66,7 +66,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_General::UpdateCanTransitionForward()
+bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 {
 	return true;
 }
@@ -131,7 +131,7 @@ void UCustomGameModesWidget_General::UpdateOptions()
 	SliderTextBoxOption_Epsilon->SetValue(ConfigPtr->AIConfig.Epsilon);
 	SliderTextBoxOption_Gamma->SetValue(ConfigPtr->AIConfig.Gamma);
 
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -150,7 +150,7 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bCh
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	ConfigPtr->AIConfig.bEnableReinforcementLearning = bChecked;
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -158,7 +158,7 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 
@@ -183,7 +183,7 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 	}
 
 	ConfigPtr->TargetConfig.RecentTargetMemoryPolicy = Policy;
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 

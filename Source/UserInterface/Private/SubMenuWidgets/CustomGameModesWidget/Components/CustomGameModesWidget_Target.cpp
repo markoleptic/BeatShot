@@ -67,9 +67,9 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Target::UpdateCanTransitionForward()
+bool UCustomGameModesWidget_Target::UpdateAllOptionsValid()
 {
-	return Super::UpdateCanTransitionForward();
+	return Super::UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Target::UpdateOptions()
@@ -100,7 +100,7 @@ void UCustomGameModesWidget_Target::UpdateOptions()
 		SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -123,7 +123,7 @@ void UCustomGameModesWidget_Target::OnCheckStateChanged_ConstantTargetScale(cons
 		ConfigPtr->TargetConfig.MaxTargetScale = SliderTextBoxOption_MaxTargetScale->GetValue();
 	}
 	
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
@@ -131,28 +131,28 @@ void UCustomGameModesWidget_Target::OnSelectionChanged_DamageType(const TArray<F
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
 	const ETargetDamageType TargetDamageType = GetEnumFromString<ETargetDamageType>(Selected[0], ETargetDamageType::None);
 	ConfigPtr->TargetConfig.TargetDamageType = TargetDamageType;
 	
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Target::OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() != 1)
 	{
-		SetCanTransitionForward(UpdateCanTransitionForward());
+		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
 	const EConsecutiveTargetScalePolicy TargetDistributionPolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(Selected[0], EConsecutiveTargetScalePolicy::None);
 	ConfigPtr->TargetConfig.ConsecutiveTargetScalePolicy = TargetDistributionPolicy;
 	
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 FString UCustomGameModesWidget_Target::GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString)

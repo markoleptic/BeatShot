@@ -92,7 +92,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Activation::UpdateCanTransitionForward()
+bool UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 {
 	// TODO: Handle more complex activation that could trip ppl up
 	if (ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->GetSelectedOptionCount() != 1)
@@ -212,7 +212,7 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantNumTargetsTo
 	}
 	
 	UpdateBrushColors();
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantTargetSpeed(const bool bChecked)
@@ -235,12 +235,12 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantTargetSpeed(
 	}
 
 	UpdateBrushColors();
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 
 	if (Selected.Num() != 1)
 	{
@@ -303,12 +303,12 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationRespo
 	}
 
 	UpdateBrushColors();
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 
 	if (Selected.Num() != 1)
 	{
@@ -320,7 +320,7 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_MovingTargetDirection
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_LifetimeTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	SetCanTransitionForward(UpdateCanTransitionForward());
+	SetAllOptionsValid(UpdateAllOptionsValid());
 
 	if (Selected.Num() != 1)
 	{
