@@ -21,7 +21,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptions() override;
+	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_SpawnBeatDelay;
@@ -50,11 +50,13 @@ protected:
 
 	UFUNCTION()
 	void OnCheckStateChanged_EnableAI(const bool bChecked);
+
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	
+	bool IsAIValid();
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 };

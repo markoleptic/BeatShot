@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptions() override;
+	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantNumTargetsToActivateAtOnce;
@@ -55,6 +55,8 @@ protected:
 	void OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantTargetSpeed(const bool bChecked);
+
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
@@ -64,9 +66,7 @@ protected:
 	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_LifetimeTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
-
+	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);

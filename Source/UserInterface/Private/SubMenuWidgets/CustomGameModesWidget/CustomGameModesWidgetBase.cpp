@@ -45,7 +45,7 @@ void UCustomGameModesWidgetBase::Update()
 	{
 		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
 		{
-			Component->UpdateOptions();
+			Component->UpdateOptionsFromConfig();
 		}
 	}
 }
@@ -60,22 +60,37 @@ void UCustomGameModesWidgetBase::SetNewCustomGameModeName(const FString& InCusto
 	Widget_Start->SetNewCustomGameModeName(InCustomGameModeName);
 }
 
-bool UCustomGameModesWidgetBase::GetAllChildWidgetOptionsValid() const
+FStartWidgetProperties UCustomGameModesWidgetBase::GetStartWidgetProperties() const
 {
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
-	{
-		if (ChildWidgetValidity.Value == true)
-		{
-			continue;
-		}
-		return false;
-	}
-	return true;
+	return Widget_Start->GetStartWidgetProperties();
 }
 
-FBS_DefiningConfig UCustomGameModesWidgetBase::GetDefiningConfig() const
+void UCustomGameModesWidgetBase::SetStartWidgetProperties(const FStartWidgetProperties& InProperties)
 {
-	return Widget_Start->GetDefiningConfig();
+	Widget_Start->SetStartWidgetProperties(InProperties);
+}
+
+bool UCustomGameModesWidgetBase::GetAllChildWidgetOptionsValid() const
+{
+	bool bReturnTrue = true;
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
+	{
+		if (ChildWidgetValidity.Value == false)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s has an invalid setting!"), *ChildWidgetValidity.Key->GetFName().ToString());
+			bReturnTrue = false;
+		}
+	}
+	if (bReturnTrue)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No invalid settings!"));
+	}
+	return bReturnTrue ? true : false;
+}
+
+void UCustomGameModesWidgetBase::RefreshGameModeTemplateOptions() const
+{
+	Widget_Start->RefreshGameModeTemplateOptions();
 }
 
 void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)
@@ -89,7 +104,10 @@ void UCustomGameModesWidgetBase::OnValidOptionsStateChanged(const TObjectPtr<UCu
 	{
 		if (ChildWidgetValidityMap.FindRef(Widget) != bAllOptionsValid)
 		{
+			UE_LOG(LogTemp, Display, TEXT("RequestButtonStateUpdate"));
+			ChildWidgetValidityMap.FindChecked(Widget) = bAllOptionsValid;
 			RequestButtonStateUpdate.Broadcast();
+			return;
 		}
 	}
 	ChildWidgetValidityMap.FindChecked(Widget) = bAllOptionsValid;

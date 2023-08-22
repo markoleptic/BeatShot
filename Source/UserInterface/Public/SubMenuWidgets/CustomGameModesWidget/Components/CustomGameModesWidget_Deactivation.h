@@ -20,7 +20,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptions() override;
+	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationConditions;
@@ -29,6 +29,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
 
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	
 	UFUNCTION()
 	void OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -36,6 +38,4 @@ protected:
 	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses(const FString& EnumString);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 };

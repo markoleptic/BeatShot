@@ -54,13 +54,13 @@ bool UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 	return true;
 }
 
-void UCustomGameModesWidget_Spawning::UpdateOptions()
+void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
 {
-	ComboBoxOption_TargetSpawningPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(ConfigPtr->TargetConfig.TargetSpawningPolicy).ToString());
-	CheckBoxOption_AllowSpawnWithoutActivation->CheckBox->SetIsChecked(ConfigPtr->TargetConfig.bAllowSpawnWithoutActivation);
-	CheckBoxOption_BatchSpawning->CheckBox->SetIsChecked(ConfigPtr->TargetConfig.bUseBatchSpawning);
-	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValue(ConfigPtr->TargetConfig.NumUpfrontTargetsToSpawn);
-	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValue(ConfigPtr->TargetConfig.NumRuntimeTargetsToSpawn);
+	ComboBoxOption_TargetSpawningPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.TargetSpawningPolicy).ToString());
+	CheckBoxOption_AllowSpawnWithoutActivation->CheckBox->SetIsChecked(BSConfig->TargetConfig.bAllowSpawnWithoutActivation);
+	CheckBoxOption_BatchSpawning->CheckBox->SetIsChecked(BSConfig->TargetConfig.bUseBatchSpawning);
+	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValue(BSConfig->TargetConfig.NumUpfrontTargetsToSpawn);
+	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValue(BSConfig->TargetConfig.NumRuntimeTargetsToSpawn);
 
 	if (ComboBoxOption_TargetSpawningPolicy->ComboBox->GetSelectedOption() == UEnum::GetDisplayValueAsText(ETargetSpawningPolicy::RuntimeOnly).ToString())
 	{
@@ -80,17 +80,35 @@ void UCustomGameModesWidget_Spawning::UpdateOptions()
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked)
 {
 	SetAllOptionsValid(UpdateAllOptionsValid());
-	ConfigPtr->TargetConfig.bAllowSpawnWithoutActivation = bChecked;
+	BSConfig->TargetConfig.bAllowSpawnWithoutActivation = bChecked;
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_BatchSpawning(const bool bChecked)
 {
 	SetAllOptionsValid(UpdateAllOptionsValid());
-	ConfigPtr->TargetConfig.bUseBatchSpawning = bChecked;
+	BSConfig->TargetConfig.bUseBatchSpawning = bChecked;
+}
+
+void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+{
+	if (Widget == SliderTextBoxOption_NumUpfrontTargetsToSpawn)
+	{
+		BSConfig->TargetConfig.NumUpfrontTargetsToSpawn = Value;
+	}
+	else if (Widget == SliderTextBoxOption_NumRuntimeTargetsToSpawn)
+	{
+		BSConfig->TargetConfig.NumRuntimeTargetsToSpawn = Value;
+	}
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	
 	if (Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
@@ -110,7 +128,7 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(co
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	ConfigPtr->TargetConfig.TargetSpawningPolicy = Policy;
+	BSConfig->TargetConfig.TargetSpawningPolicy = Policy;
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
@@ -119,16 +137,4 @@ FString UCustomGameModesWidget_Spawning::GetComboBoxEntryTooltipStringTableKey_T
 {
 	const ETargetSpawningPolicy EnumValue = GetEnumFromString<ETargetSpawningPolicy>(EnumString, ETargetSpawningPolicy::None);
 	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
-{
-	if (Widget == SliderTextBoxOption_NumUpfrontTargetsToSpawn)
-	{
-		ConfigPtr->TargetConfig.NumUpfrontTargetsToSpawn = Value;
-	}
-	else if (Widget == SliderTextBoxOption_NumRuntimeTargetsToSpawn)
-	{
-		ConfigPtr->TargetConfig.NumRuntimeTargetsToSpawn = Value;
-	}
 }

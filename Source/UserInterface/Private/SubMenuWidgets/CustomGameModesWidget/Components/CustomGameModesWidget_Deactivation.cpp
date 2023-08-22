@@ -6,8 +6,7 @@
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
 
-void UCustomGameModesWidget_Deactivation::InitComponent(FBSConfig* InConfigPtr,
-                                               TObjectPtr<UCustomGameModesWidgetComponent> InNext)
+void UCustomGameModesWidget_Deactivation::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	Super::InitComponent(InConfigPtr, InNext);
 }
@@ -20,19 +19,19 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 	SetupTooltip(ComboBoxOption_TargetDeactivationConditions->GetTooltipImage(), ComboBoxOption_TargetDeactivationConditions->GetTooltipRegularText());
 	SetupTooltip(ComboBoxOption_TargetDeactivationResponses->GetTooltipImage(), ComboBoxOption_TargetDeactivationResponses->GetTooltipRegularText());
 	SetupTooltip(SliderTextBoxOption_DeactivatedTargetScaleMultiplier->GetTooltipImage(), SliderTextBoxOption_DeactivatedTargetScaleMultiplier->GetTooltipRegularText());
-	
+
 	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetValues(MinValue_ConsecutiveChargeScaleMultiplier, MaxValue_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
 	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	
+
 	ComboBoxOption_TargetDeactivationConditions->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_TargetDeactivationConditions);
 	ComboBoxOption_TargetDeactivationResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_TargetDeactivationResponses);
 
 	ComboBoxOption_TargetDeactivationConditions->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions);
 	ComboBoxOption_TargetDeactivationResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses);
-	
+
 	ComboBoxOption_TargetDeactivationConditions->ComboBox->ClearOptions();
 	ComboBoxOption_TargetDeactivationResponses->ComboBox->ClearOptions();
-	
+
 	for (const ETargetDeactivationCondition& Method : TEnumRange<ETargetDeactivationCondition>())
 	{
 		ComboBoxOption_TargetDeactivationConditions->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
@@ -59,55 +58,70 @@ bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 	return true;
 }
 
-void UCustomGameModesWidget_Deactivation::UpdateOptions()
+void UCustomGameModesWidget_Deactivation::UpdateOptionsFromConfig()
 {
-	ComboBoxOption_TargetDeactivationConditions->ComboBox->SetSelectedOptions(GetStringArrayFromEnumArray(ConfigPtr->TargetConfig.TargetDeactivationConditions));
-	ComboBoxOption_TargetDeactivationResponses->ComboBox->SetSelectedOptions(GetStringArrayFromEnumArray(ConfigPtr->TargetConfig.TargetDeactivationResponses));
-	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetValue(ConfigPtr->TargetConfig.ConsecutiveChargeScaleMultiplier);
+	UpdateValueIfDifferent(ComboBoxOption_TargetDeactivationConditions, GetStringArrayFromEnumArray(BSConfig->TargetConfig.TargetDeactivationConditions));
+	UpdateValueIfDifferent(ComboBoxOption_TargetDeactivationResponses, GetStringArrayFromEnumArray(BSConfig->TargetConfig.TargetDeactivationResponses));
+	UpdateValueIfDifferent(SliderTextBoxOption_DeactivatedTargetScaleMultiplier, BSConfig->TargetConfig.ConsecutiveChargeScaleMultiplier);
 
-	if (ComboBoxOption_TargetDeactivationResponses->ComboBox->GetSelectedOptions().Contains(UEnum::GetDisplayValueAsText(ETargetDeactivationResponse::ChangeScale).ToString()))
+	ESlateVisibility OldVis = SliderTextBoxOption_DeactivatedTargetScaleMultiplier->GetVisibility();
+	ESlateVisibility NewVis = ComboBoxOption_TargetDeactivationResponses->ComboBox->GetSelectedOptions().Contains(GetStringFromEnum(ETargetDeactivationResponse::ChangeScale))
+		                          ? ESlateVisibility::SelfHitTestInvisible
+		                          : ESlateVisibility::Collapsed;
+	if (OldVis != NewVis)
 	{
-		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(NewVis);
+		UpdateBrushColors();
 	}
 
 	SetAllOptionsValid(UpdateAllOptionsValid());
-	UpdateBrushColors();
-}
-
-void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationConditions(
-	const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
-{
-	SetAllOptionsValid(UpdateAllOptionsValid());
-}
-
-void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationResponses(
-	const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
-{
-	SetAllOptionsValid(UpdateAllOptionsValid());
-}
-
-FString UCustomGameModesWidget_Deactivation::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(
-	const FString& EnumString)
-{
-	const ETargetDeactivationCondition EnumValue = GetEnumFromString<ETargetDeactivationCondition>(EnumString, ETargetDeactivationCondition::None);
-	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-FString UCustomGameModesWidget_Deactivation::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses(
-	const FString& EnumString)
-{
-	const ETargetDeactivationResponse EnumValue = GetEnumFromString<ETargetDeactivationResponse>(EnumString, ETargetDeactivationResponse::None);
-	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 void UCustomGameModesWidget_Deactivation::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_DeactivatedTargetScaleMultiplier)
 	{
-		ConfigPtr->TargetConfig.ConsecutiveChargeScaleMultiplier = Value;
+		BSConfig->TargetConfig.ConsecutiveChargeScaleMultiplier = Value;
 	}
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+{
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	if (Selected.Num() < 1)
+	{
+		SetAllOptionsValid(UpdateAllOptionsValid());
+		return;
+	}
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+{
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	if (Selected.Num() < 1)
+	{
+		SetAllOptionsValid(UpdateAllOptionsValid());
+		return;
+	}
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+FString UCustomGameModesWidget_Deactivation::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(const FString& EnumString)
+{
+	const ETargetDeactivationCondition EnumValue = GetEnumFromString<ETargetDeactivationCondition>(EnumString, ETargetDeactivationCondition::None);
+	return GetStringTableKeyNameFromEnum(EnumValue);
+}
+
+FString UCustomGameModesWidget_Deactivation::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses(const FString& EnumString)
+{
+	const ETargetDeactivationResponse EnumValue = GetEnumFromString<ETargetDeactivationResponse>(EnumString, ETargetDeactivationResponse::None);
+	return GetStringTableKeyNameFromEnum(EnumValue);
 }

@@ -27,24 +27,31 @@ class USERINTERFACE_API UCustomGameModesWidgetBase : public UUserWidget, public 
 	GENERATED_BODY()
 
 public:
-	/** Sets the value of ConfigPtr and GameModeDataAsset. Calls InitComponent on all widgets in ChildWidgets array */
+	/** Sets the value of BSConfig and GameModeDataAsset. Calls InitComponent on all widgets in ChildWidgets array */
 	virtual void Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset);
 
-	/** Calls UpdateOptions on all widgets in ChildWidgets array */
+	/** Calls UpdateOptionsFromConfig on all widgets in ChildWidgets array */
 	UFUNCTION()
 	void Update();
 
 	/** Returns the NewCustomGameModeName from Widget_Start */
 	FString GetNewCustomGameModeName() const;
-
+	
 	/** Sets the value of NewCustomGameModeName in Widget_Start */
 	void SetNewCustomGameModeName(const FString& InCustomGameModeName) const;
+
+	/** Returns the options for a start widget since they're not all shared with BSConfig pointer */
+	FStartWidgetProperties GetStartWidgetProperties() const;
+
+	/** Sets the options for a start widget since they're not all shared with BSConfig pointer */
+	void SetStartWidgetProperties(const FStartWidgetProperties& InProperties);
 
 	/** Returns whether or not all child widget custom game mode options are valid. Iterates through ChildWidgetValidityMap */
 	bool GetAllChildWidgetOptionsValid() const;
 
-	FBS_DefiningConfig GetDefiningConfig() const;
-
+	/** Clears all GameModeTemplate options and repopulates */
+	void RefreshGameModeTemplateOptions() const;
+	
 	/** Broadcast any time a widget in ChildWidgets broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
 

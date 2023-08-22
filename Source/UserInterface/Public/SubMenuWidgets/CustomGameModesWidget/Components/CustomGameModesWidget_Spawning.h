@@ -21,7 +21,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptions() override;
+	virtual void UpdateOptionsFromConfig() override;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
@@ -39,12 +39,13 @@ protected:
 
 	UFUNCTION()
 	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);
+
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	
 	UFUNCTION()
 	void OnCheckStateChanged_BatchSpawning(const bool bChecked);
 	UFUNCTION()
 	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-
+	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 };

@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptions() override;
+	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_TargetMaxLifeSpan;
@@ -47,6 +47,9 @@ protected:
 	
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantTargetScale(const bool bChecked);
+	
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	
 	UFUNCTION()
 	void OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -54,6 +57,4 @@ protected:
 
 	FString GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 };

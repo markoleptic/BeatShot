@@ -36,6 +36,7 @@ public:
 
 	UTooltipImage* GetTooltipImage() const { return TooltipImage; }
 	UTooltipImage* GetTooltipWarningImage() const { return TooltipWarningImage; }
+	bool GetTooltipWarningVisible() const;
 	FText GetTooltipRegularText() const { return TooltipRegularText; }
 	FText GetTooltipWarningText() const { return TooltipWarningText; }
 	FOnLockStateChanged OnLockStateChanged;

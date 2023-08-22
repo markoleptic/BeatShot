@@ -2,6 +2,13 @@
 
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h"
+#include "Components/CheckBox.h"
+#include "Components/EditableTextBox.h"
+#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
 
 void UCustomGameModesWidgetComponent::NativeConstruct()
 {
@@ -22,6 +29,7 @@ void UCustomGameModesWidgetComponent::SetAllOptionsValid(const bool bUpdateAllOp
 	{
 		return;
 	}
+	
 	bAllOptionsValid = bUpdateAllOptionsValid;
 	
 	if (OnValidOptionsStateChanged.IsBound())
@@ -32,12 +40,12 @@ void UCustomGameModesWidgetComponent::SetAllOptionsValid(const bool bUpdateAllOp
 
 void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
-	ConfigPtr = InConfigPtr;
+	BSConfig = InConfigPtr;
 	SetNext(InNext);
-	UpdateOptions();
+	UpdateOptionsFromConfig();
 }
 
-void UCustomGameModesWidgetComponent::UpdateOptions()
+void UCustomGameModesWidgetComponent::UpdateOptionsFromConfig()
 {
 }
 
@@ -121,5 +129,83 @@ void UCustomGameModesWidgetComponent::SetCollapsed()
 	SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
 	UnbindFromAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
+}
+
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value)
+{
+	if (!FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(Widget->GetEditableTextBoxValue(), Value))
+	{
+		Widget->SetValue(Value);
+		return true;
+	}
+	return false;
+}
+
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption)
+{
+	if (NewOption.IsEmpty())
+	{
+		if (Widget->ComboBox->GetSelectedOptionCount() == 0)
+		{
+			return false;
+		}
+		Widget->ComboBox->ClearSelection();
+		return true;
+	}
+	if (Widget->ComboBox->GetSelectedOption() == NewOption)
+	{
+		return false;
+	}
+	Widget->ComboBox->SetSelectedOption(NewOption);
+	return true;
+}
+
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions)
+{
+	if (NewOptions.IsEmpty())
+	{
+		if (Widget->ComboBox->GetSelectedOptionCount() == 0)
+		{
+			return false;
+		}
+		Widget->ComboBox->ClearSelection();
+		return true;
+	}
+	if (NewOptions.Num() == 1)
+	{
+		if (Widget->ComboBox->GetSelectedOption() == NewOptions[0])
+		{
+			return false;
+		}
+		Widget->ComboBox->SetSelectedOption(NewOptions[0]);
+		return true;
+	}
+
+	if (Widget->ComboBox->GetSelectedOptions() == NewOptions)
+	{
+		return false;
+	}
+	Widget->ComboBox->SetSelectedOptions(NewOptions);
+	return true;
+}
+
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked)
+{
+	if (Widget->CheckBox->IsChecked() == bIsChecked)
+	{
+		return false;
+	}
+	Widget->CheckBox->SetIsChecked(bIsChecked);
+	return true;
+}
+
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText)
+{
+	if (Widget->EditableTextBox->GetText().EqualTo(NewText))
+	{
+		return false;
+	}
+	Widget->EditableTextBox->SetText(NewText);
+	return true;
 }
 

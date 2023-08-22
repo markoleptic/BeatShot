@@ -25,9 +25,10 @@ class USERINTERFACE_API USliderTextBoxWidget : public UMenuOptionWidget
 
 public:
 	void SetValues(const float Min, const float Max, const float SnapSize);
-	void SetValue(const float Value);
-	float GetValue() const;
-
+	void SetValue(const float Value) const;
+	float GetSliderValue() const;
+	float GetEditableTextBoxValue() const;
+	
 	FOnLockStateChanged OnLockStateChanged;
 	FOnSliderTextBoxValueChanged OnSliderTextBoxValueChanged;
 

@@ -22,7 +22,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptions() override;
+	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_BoundsScalingPolicy;
@@ -48,14 +48,14 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MinDistanceBetweenTargets;
+
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-
+	
 	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 };

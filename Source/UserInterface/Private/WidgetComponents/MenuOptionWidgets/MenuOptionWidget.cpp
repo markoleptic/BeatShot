@@ -83,6 +83,11 @@ void UMenuOptionWidget::SetTooltipWarningText(const FText& InText)
 	TooltipWarningText = InText;
 }
 
+bool UMenuOptionWidget::GetTooltipWarningVisible() const
+{
+	return bShowTooltipWarningImage;
+}
+
 void UMenuOptionWidget::OnCheckBox_LockStateChanged(const bool bChecked)
 {
 	if (OnLockStateChanged.IsBound())

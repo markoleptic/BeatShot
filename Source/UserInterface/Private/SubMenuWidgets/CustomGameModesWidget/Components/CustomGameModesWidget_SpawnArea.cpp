@@ -84,37 +84,86 @@ bool UCustomGameModesWidget_SpawnArea::UpdateAllOptionsValid()
 	return true;
 }
 
-void UCustomGameModesWidget_SpawnArea::UpdateOptions()
+void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
 {
-	ComboBoxOption_BoundsScalingPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(ConfigPtr->TargetConfig.BoundsScalingPolicy).ToString());
-	SliderTextBoxOption_NumHorizontalGridTargets->SetValue(ConfigPtr->GridConfig.NumHorizontalGridTargets);
-	SliderTextBoxOption_NumVerticalGridTargets->SetValue(ConfigPtr->GridConfig.NumVerticalGridTargets);
-	SliderTextBoxOption_HorizontalSpacing->SetValue(ConfigPtr->GridConfig.GridSpacing.X);
-	SliderTextBoxOption_VerticalSpacing->SetValue(ConfigPtr->GridConfig.GridSpacing.Y);
-	ComboBoxOption_TargetDistributionPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(ConfigPtr->TargetConfig.TargetDistributionPolicy).ToString());
-	SliderTextBoxOption_HorizontalSpread->SetValue(ConfigPtr->TargetConfig.BoxBounds.Y);
-	SliderTextBoxOption_VerticalSpread->SetValue(ConfigPtr->TargetConfig.BoxBounds.Z);
-	SliderTextBoxOption_FloorDistance->SetValue(ConfigPtr->TargetConfig.FloorDistance);
-	SliderTextBoxOption_MinDistanceBetweenTargets->SetValue(ConfigPtr->TargetConfig.MinDistanceBetweenTargets);
+	ComboBoxOption_BoundsScalingPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.BoundsScalingPolicy).ToString());
+	ComboBoxOption_TargetDistributionPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.TargetDistributionPolicy).ToString());
+	
+	SliderTextBoxOption_NumHorizontalGridTargets->SetValue(BSConfig->GridConfig.NumHorizontalGridTargets);
+	SliderTextBoxOption_NumVerticalGridTargets->SetValue(BSConfig->GridConfig.NumVerticalGridTargets);
+	SliderTextBoxOption_HorizontalSpacing->SetValue(BSConfig->GridConfig.GridSpacing.X);
+	SliderTextBoxOption_VerticalSpacing->SetValue(BSConfig->GridConfig.GridSpacing.Y);
+	
+	SliderTextBoxOption_HorizontalSpread->SetValue(BSConfig->TargetConfig.BoxBounds.Y);
+	SliderTextBoxOption_VerticalSpread->SetValue(BSConfig->TargetConfig.BoxBounds.Z);
+	SliderTextBoxOption_FloorDistance->SetValue(BSConfig->TargetConfig.FloorDistance);
+	SliderTextBoxOption_MinDistanceBetweenTargets->SetValue(BSConfig->TargetConfig.MinDistanceBetweenTargets);
 
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
+void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+{
+	if (Widget == SliderTextBoxOption_NumHorizontalGridTargets)
+	{
+		BSConfig->GridConfig.NumHorizontalGridTargets = Value;
+	}
+	else if (Widget == SliderTextBoxOption_NumVerticalGridTargets)
+	{
+		BSConfig->GridConfig.NumVerticalGridTargets = Value;
+	}
+	else if (Widget == SliderTextBoxOption_HorizontalSpacing)
+	{
+		BSConfig->GridConfig.GridSpacing.X = Value;
+	}
+	else if (Widget == SliderTextBoxOption_VerticalSpacing)
+	{
+		BSConfig->GridConfig.GridSpacing.Y = Value;
+	}
+	else if (Widget == SliderTextBoxOption_HorizontalSpread)
+	{
+		BSConfig->TargetConfig.BoxBounds.Y = Value;
+	}
+	else if (Widget == SliderTextBoxOption_VerticalSpread)
+	{
+		BSConfig->TargetConfig.BoxBounds.Z = Value;
+	}
+	else if (Widget == SliderTextBoxOption_FloorDistance)
+	{
+		BSConfig->TargetConfig.FloorDistance = Value;
+	}
+	else if (Widget == SliderTextBoxOption_MinDistanceBetweenTargets)
+	{
+		BSConfig->TargetConfig.MinDistanceBetweenTargets = Value;
+	}
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
 void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	
 	if (Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
-	ConfigPtr->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0], EBoundsScalingPolicy::None);
+	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0], EBoundsScalingPolicy::None);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	
 	if (Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
@@ -138,7 +187,7 @@ void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_TargetDistributionPoli
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	
-	ConfigPtr->TargetConfig.TargetDistributionPolicy = TargetDistributionPolicy;
+	BSConfig->TargetConfig.TargetDistributionPolicy = TargetDistributionPolicy;
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
@@ -153,40 +202,4 @@ FString UCustomGameModesWidget_SpawnArea::GetComboBoxEntryTooltipStringTableKey_
 {
 	const ETargetDistributionPolicy EnumValue = GetEnumFromString<ETargetDistributionPolicy>(EnumString, ETargetDistributionPolicy::None);
 	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
-{
-	if (Widget == SliderTextBoxOption_NumHorizontalGridTargets)
-	{
-		ConfigPtr->GridConfig.NumHorizontalGridTargets = Value;
-	}
-	else if (Widget == SliderTextBoxOption_NumVerticalGridTargets)
-	{
-		ConfigPtr->GridConfig.NumVerticalGridTargets = Value;
-	}
-	else if (Widget == SliderTextBoxOption_HorizontalSpacing)
-	{
-		ConfigPtr->GridConfig.GridSpacing.X = Value;
-	}
-	else if (Widget == SliderTextBoxOption_VerticalSpacing)
-	{
-		ConfigPtr->GridConfig.GridSpacing.Y = Value;
-	}
-	else if (Widget == SliderTextBoxOption_HorizontalSpread)
-	{
-		ConfigPtr->TargetConfig.BoxBounds.Y = Value;
-	}
-	else if (Widget == SliderTextBoxOption_VerticalSpread)
-	{
-		ConfigPtr->TargetConfig.BoxBounds.Z = Value;
-	}
-	else if (Widget == SliderTextBoxOption_FloorDistance)
-	{
-		ConfigPtr->TargetConfig.FloorDistance = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinDistanceBetweenTargets)
-	{
-		ConfigPtr->TargetConfig.MinDistanceBetweenTargets = Value;
-	}
 }

@@ -92,6 +92,23 @@ public:
 		}
 		return DefaultNotFound;
 	}
+	
+	/** Returns the enum value corresponding to the string, or if not found, the the enum byte value of 0 for T */
+	template<typename T>
+	static T GetEnumFromString(const FString& InString)
+	{
+		const UEnum* const StaticCastedEnum = StaticEnum<T>();
+		const int64 Value = StaticCastedEnum->GetValueByNameString(InString);
+		return Value == INDEX_NONE ? static_cast<T>(0) : static_cast<T>(Value);
+	}
+
+	
+	template<typename T>
+	static FString GetStringFromEnum(const T& InEnum)
+	{
+		const UEnum* const StaticCastedEnum = StaticEnum<T>();
+		return StaticCastedEnum->GetNameStringByValue(static_cast<uint8>(InEnum));
+	}
 
 	/** Returns the String table key for an enum provided that the string table key format is EnumName_EnumValue */
 	template<typename T>

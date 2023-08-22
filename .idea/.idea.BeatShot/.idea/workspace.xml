@@ -85,8 +85,7 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/WBP_GameModes.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/SaveLoadInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/SaveLoadInterface.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultEngine.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEngine.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Activation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Activation.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Deactivation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Deactivation.cpp" afterDir="false" />
@@ -96,8 +95,10 @@
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Target.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Target.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/GameModesWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/BSWidgetInterface.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Activation.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Activation.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Deactivation.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Deactivation.h" afterDir="false" />
@@ -107,8 +108,9 @@
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Target.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Target.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/GameModesWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -119,6 +121,135 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
@@ -29722,6 +29853,7 @@
       <workItem from="1692380861091" duration="59179000" />
       <workItem from="1692555650964" duration="22657000" />
       <workItem from="1692586954826" duration="8140000" />
+      <workItem from="1692632181983" duration="36086000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

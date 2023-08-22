@@ -7,22 +7,27 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "CustomGameModesWidgetComponent.generated.h"
 
+class UEditableTextBoxOptionWidget;
+class UCheckBoxOptionWidget;
+class UComboBoxOptionWidget;
+class USliderTextBoxWidget;
 class UCustomGameModesWidgetComponent;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnValidOptionsStateChanged, const TObjectPtr<UCustomGameModesWidgetComponent>, const bool);
 DECLARE_MULTICAST_DELEGATE(FRequestUpdateAfterConfigChange);
 
+/** Base class for child widgets of UCustomGameModesWidgetBase */
 UCLASS(Abstract)
 class USERINTERFACE_API UCustomGameModesWidgetComponent : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
 public:
-	/** Sets ConfigPtr, sets the pointer to next widget in linked list, and calls UpdateOptions */
+	/** Sets BSConfig, sets the pointer to next widget in linked list, and calls UpdateOptionsFromConfig */
 	virtual void InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
-	/** Child classes should override to update the options using the ConfigPtr */
-	virtual void UpdateOptions();
+	/** Sets all custom game mode option values using the BSConfig pointer. Only changes the values if different */
+	virtual void UpdateOptionsFromConfig();
 
 	/** Returns the next CustomGameModesWidgetComponent to transition to */
 	TObjectPtr<UCustomGameModesWidgetComponent> GetNext() const;
@@ -30,7 +35,7 @@ public:
 	/** Broadcasts whether or not all custom game mode options are valid for this widget */
 	FOnValidOptionsStateChanged OnValidOptionsStateChanged;
 
-	/** Broadcast when the ConfigPtr needed to be changed */
+	/** Broadcast when the BSConfig was modified by this widget */
 	FRequestUpdateAfterConfigChange RequestUpdateAfterConfigChange;
 
 	/** Returns the value of bAllOptionsValid, whether or not all custom game mode options are valid for this widget */
@@ -61,6 +66,12 @@ protected:
 	UFUNCTION()
 	void SetCollapsed();
 
+	static bool UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value);
+	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption);
+	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions);
+	static bool UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked);
+	static bool UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText);
+
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* TransitionInRight;
 	
@@ -71,7 +82,7 @@ protected:
 	FWidgetAnimationDynamicEvent OnTransitionInLeftFinish;
 
 	/** Pointer to the game mode config inside GameModesWidget */
-	FBSConfig* ConfigPtr;
+	FBSConfig* BSConfig;
 
 	/** Pointer to next widget in linked list. Used for CreatorView */
 	UPROPERTY()

@@ -28,6 +28,8 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	SetupTooltip(SliderTextBoxOption_Epsilon->GetTooltipImage(), SliderTextBoxOption_Epsilon->GetTooltipRegularText());
 	SetupTooltip(SliderTextBoxOption_Gamma->GetTooltipImage(), SliderTextBoxOption_Gamma->GetTooltipRegularText());
 
+	SetupTooltip(CheckBoxOption_EnableAI->GetTooltipWarningImage(), GetTooltipTextFromKey("InvalidAI_GridSpacing"));
+
 	SliderTextBoxOption_SpawnBeatDelay->SetValues(MinValue_PlayerDelay, MaxValue_PlayerDelay, SnapSize_PlayerDelay);
 	SliderTextBoxOption_TargetSpawnCD->SetValues(MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD, SnapSize_TargetSpawnCD);
 	SliderTextBoxOption_MaxNumRecentTargets->SetValues(MinValue_MaxNumRecentTargets, MaxValue_MaxNumRecentTargets, SnapSize_MaxNumRecentTargets);
@@ -68,20 +70,20 @@ void UCustomGameModesWidget_General::NativeConstruct()
 
 bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 {
-	return true;
+	return IsAIValid();
 }
 
-void UCustomGameModesWidget_General::UpdateOptions()
+void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 {
-	SliderTextBoxOption_SpawnBeatDelay->SetValue(ConfigPtr->TargetConfig.SpawnBeatDelay);
-	SliderTextBoxOption_TargetSpawnCD->SetValue(ConfigPtr->TargetConfig.TargetSpawnCD);
-	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValue(ConfigPtr->TargetConfig.MaxNumTargetsAtOnce);
+	SliderTextBoxOption_SpawnBeatDelay->SetValue(BSConfig->TargetConfig.SpawnBeatDelay);
+	SliderTextBoxOption_TargetSpawnCD->SetValue(BSConfig->TargetConfig.TargetSpawnCD);
+	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValue(BSConfig->TargetConfig.MaxNumTargetsAtOnce);
 
-	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(ConfigPtr->TargetConfig.RecentTargetMemoryPolicy).ToString());
-	SliderTextBoxOption_MaxNumRecentTargets->SetValue(ConfigPtr->TargetConfig.MaxNumRecentTargets);
-	SliderTextBoxOption_RecentTargetTimeLength->SetValue(ConfigPtr->TargetConfig.RecentTargetTimeLength);
+	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.RecentTargetMemoryPolicy).ToString());
+	SliderTextBoxOption_MaxNumRecentTargets->SetValue(BSConfig->TargetConfig.MaxNumRecentTargets);
+	SliderTextBoxOption_RecentTargetTimeLength->SetValue(BSConfig->TargetConfig.RecentTargetTimeLength);
 
-	switch (ConfigPtr->TargetConfig.RecentTargetMemoryPolicy)
+	switch (BSConfig->TargetConfig.RecentTargetMemoryPolicy)
 	{
 	case ERecentTargetMemoryPolicy::CustomTimeBased:
 		SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -98,23 +100,23 @@ void UCustomGameModesWidget_General::UpdateOptions()
 		break;
 	}
 
-	if (ConfigPtr->AIConfig.bEnableReinforcementLearning)
+	if (BSConfig->AIConfig.bEnableReinforcementLearning)
 	{
-		if (ConfigPtr->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
 			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(false);
 			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(false);
-			ConfigPtr->AIConfig.bEnableReinforcementLearning = false;
+			BSConfig->AIConfig.bEnableReinforcementLearning = false;
 			RequestUpdateAfterConfigChange.Broadcast();
 		}
 		else
 		{
 			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(true);
-			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(ConfigPtr->AIConfig.bEnableReinforcementLearning);
+			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(BSConfig->AIConfig.bEnableReinforcementLearning);
 		}
 	}
 
-	if (ConfigPtr->AIConfig.bEnableReinforcementLearning)
+	if (BSConfig->AIConfig.bEnableReinforcementLearning)
 	{
 		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -127,9 +129,9 @@ void UCustomGameModesWidget_General::UpdateOptions()
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	SliderTextBoxOption_Alpha->SetValue(ConfigPtr->AIConfig.Alpha);
-	SliderTextBoxOption_Epsilon->SetValue(ConfigPtr->AIConfig.Epsilon);
-	SliderTextBoxOption_Gamma->SetValue(ConfigPtr->AIConfig.Gamma);
+	SliderTextBoxOption_Alpha->SetValue(BSConfig->AIConfig.Alpha);
+	SliderTextBoxOption_Epsilon->SetValue(BSConfig->AIConfig.Epsilon);
+	SliderTextBoxOption_Gamma->SetValue(BSConfig->AIConfig.Gamma);
 
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
@@ -149,13 +151,73 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bCh
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	ConfigPtr->AIConfig.bEnableReinforcementLearning = bChecked;
+	BSConfig->AIConfig.bEnableReinforcementLearning = bChecked;
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
 
+bool UCustomGameModesWidget_General::IsAIValid()
+{
+	if (CheckBoxOption_EnableAI->CheckBox->IsChecked())
+	{
+		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+		{
+			const FIntPoint Spacing = FIntPoint(BSConfig->GridConfig.GridSpacing.X, BSConfig->GridConfig.GridSpacing.Y);
+			if (Spacing.X % 5 != 0 || Spacing.Y % 5 != 0)
+			{
+				CheckBoxOption_EnableAI->SetShowTooltipWarningImage(true);
+				return false;
+			}
+		}
+	}
+	CheckBoxOption_EnableAI->SetShowTooltipWarningImage(false);
+	return true;
+}
+
+void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+{
+	if (Widget == SliderTextBoxOption_SpawnBeatDelay)
+	{
+		BSConfig->TargetConfig.SpawnBeatDelay = Value;
+	}
+	else if (Widget == SliderTextBoxOption_TargetSpawnCD)
+	{
+		BSConfig->TargetConfig.TargetSpawnCD = Value;
+	}
+	else if (Widget == SliderTextBoxOption_MaxNumRecentTargets)
+	{
+		BSConfig->TargetConfig.MaxNumRecentTargets = Value;
+	}
+	else if (Widget == SliderTextBoxOption_RecentTargetTimeLength)
+	{
+		BSConfig->TargetConfig.RecentTargetTimeLength = Value;
+	}
+	else if (Widget == SliderTextBoxOption_MaxNumTargetsAtOnce)
+	{
+		BSConfig->TargetConfig.MaxNumTargetsAtOnce = Value;
+	}
+	else if (Widget == SliderTextBoxOption_Alpha)
+	{
+		BSConfig->AIConfig.Alpha = Value;
+	}
+	else if (Widget == SliderTextBoxOption_Epsilon)
+	{
+		BSConfig->AIConfig.Epsilon = Value;
+	}
+	else if (Widget == SliderTextBoxOption_Gamma)
+	{
+		BSConfig->AIConfig.Gamma = Value;
+	}
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
 void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	
 	if (Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
@@ -182,7 +244,7 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 		break;
 	}
 
-	ConfigPtr->TargetConfig.RecentTargetMemoryPolicy = Policy;
+	BSConfig->TargetConfig.RecentTargetMemoryPolicy = Policy;
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
 }
@@ -191,40 +253,4 @@ FString UCustomGameModesWidget_General::GetComboBoxEntryTooltipStringTableKey_Ta
 {
 	const ERecentTargetMemoryPolicy EnumValue = GetEnumFromString<ERecentTargetMemoryPolicy>(EnumString, ERecentTargetMemoryPolicy::None);
 	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
-{
-	if (Widget == SliderTextBoxOption_SpawnBeatDelay)
-	{
-		ConfigPtr->TargetConfig.SpawnBeatDelay = Value;
-	}
-	else if (Widget == SliderTextBoxOption_TargetSpawnCD)
-	{
-		ConfigPtr->TargetConfig.TargetSpawnCD = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxNumRecentTargets)
-	{
-		ConfigPtr->TargetConfig.MaxNumRecentTargets = Value;
-	}
-	else if (Widget == SliderTextBoxOption_RecentTargetTimeLength)
-	{
-		ConfigPtr->TargetConfig.RecentTargetTimeLength = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxNumTargetsAtOnce)
-	{
-		ConfigPtr->TargetConfig.MaxNumTargetsAtOnce = Value;
-	}
-	else if (Widget == SliderTextBoxOption_Alpha)
-	{
-		ConfigPtr->AIConfig.Alpha = Value;
-	}
-	else if (Widget == SliderTextBoxOption_Epsilon)
-	{
-		ConfigPtr->AIConfig.Epsilon = Value;
-	}
-	else if (Widget == SliderTextBoxOption_Gamma)
-	{
-		ConfigPtr->AIConfig.Gamma = Value;
-	}
 }

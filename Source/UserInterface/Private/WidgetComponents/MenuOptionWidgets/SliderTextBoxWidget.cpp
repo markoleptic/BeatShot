@@ -34,15 +34,23 @@ void USliderTextBoxWidget::SetValues(const float Min, const float Max, const flo
 	GridSnapSize = SnapSize;
 }
 
-void USliderTextBoxWidget::SetValue(const float Value)
+void USliderTextBoxWidget::SetValue(const float Value) const
 {
 	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);
 	Slider->SetValue(ClampedValue);
 }
 
-float USliderTextBoxWidget::GetValue() const
+float USliderTextBoxWidget::GetSliderValue() const
 {
 	return Slider->GetValue();
+}
+
+float USliderTextBoxWidget::GetEditableTextBoxValue() const
+{
+	const FString StringTextValue = EditableTextBox->GetText().ToString().Replace(*FString(","), *FString(), ESearchCase::IgnoreCase);
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider->GetMinValue(), Slider->GetMaxValue());
+	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
+	return SnappedValue;
 }
 
 
