@@ -43,6 +43,7 @@ void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, cons
 	BSConfig = InConfigPtr;
 	SetNext(InNext);
 	UpdateOptionsFromConfig();
+	bIsInitialized = true;
 }
 
 void UCustomGameModesWidgetComponent::UpdateOptionsFromConfig()
@@ -162,29 +163,23 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOpti
 
 bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions)
 {
+	const TArray<FString> SelectedOptions = Widget->ComboBox->GetSelectedOptions();
+	
 	if (NewOptions.IsEmpty())
 	{
-		if (Widget->ComboBox->GetSelectedOptionCount() == 0)
+		if (SelectedOptions.IsEmpty())
 		{
 			return false;
 		}
 		Widget->ComboBox->ClearSelection();
 		return true;
 	}
-	if (NewOptions.Num() == 1)
-	{
-		if (Widget->ComboBox->GetSelectedOption() == NewOptions[0])
-		{
-			return false;
-		}
-		Widget->ComboBox->SetSelectedOption(NewOptions[0]);
-		return true;
-	}
-
-	if (Widget->ComboBox->GetSelectedOptions() == NewOptions)
+	
+	if (SelectedOptions == NewOptions && SelectedOptions.Num() == NewOptions.Num())
 	{
 		return false;
 	}
+	
 	Widget->ComboBox->SetSelectedOptions(NewOptions);
 	return true;
 }
@@ -207,5 +202,54 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableText
 	}
 	Widget->EditableTextBox->SetText(NewText);
 	return true;
+}
+
+bool UCustomGameModesWidgetComponent::UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FString>& NewKeys)
+{
+	const TArray<FString> OldKeys = Widget->GetTooltipWarningImageKeys();
+
+	if (NewKeys.IsEmpty())
+	{
+		if (OldKeys.IsEmpty())
+		{
+			return false;
+		}
+		if (!OldKeys.IsEmpty())
+		{
+			Widget->RemoveAllTooltipWarningImages();
+			return true;
+		}
+	}
+
+	if (NewKeys == OldKeys)
+	{
+		return false;
+	}
+	
+	// TooltipImages currently showing but shouldn't be
+	TArray<FString> KeysToRemove = OldKeys.FilterByPredicate([&NewKeys] (const FString& OldKey)
+	{
+		return !NewKeys.Contains(OldKey);
+	});
+	
+	// Remove TooltipImages currently showing but shouldn't be
+	for (const FString KeyToRemove : KeysToRemove)
+	{
+		Widget->RemoveTooltipWarningImage(KeyToRemove);
+	}
+
+	// Update the rest
+	for (const FString WarningString : NewKeys)
+	{
+		const FText WarningText = GetTooltipTextFromKey(WarningString);
+		UTooltipImage* TooltipImage = Widget->FindOrAddTooltipWarningImage(WarningString);
+		SetupTooltip(TooltipImage, WarningText);
+	}
+	return true;
+}
+
+TArray<FString> UCustomGameModesWidgetComponent::GetWarningTooltipKeys()
+{
+	return TArray<FString>();
 }
 

@@ -23,6 +23,8 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
+	virtual TArray<FString> GetWarningTooltipKeys();
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_BoundsScalingPolicy;

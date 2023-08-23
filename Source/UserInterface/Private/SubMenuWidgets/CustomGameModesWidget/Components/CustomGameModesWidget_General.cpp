@@ -17,18 +17,16 @@ void UCustomGameModesWidget_General::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetupTooltip(SliderTextBoxOption_SpawnBeatDelay->GetTooltipImage(), SliderTextBoxOption_SpawnBeatDelay->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_TargetSpawnCD->GetTooltipImage(), SliderTextBoxOption_TargetSpawnCD->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_RecentTargetMemoryPolicy->GetTooltipImage(), ComboBoxOption_RecentTargetMemoryPolicy->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MaxNumRecentTargets->GetTooltipImage(), SliderTextBoxOption_MaxNumRecentTargets->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_RecentTargetTimeLength->GetTooltipImage(), SliderTextBoxOption_RecentTargetTimeLength->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipRegularText());
-	SetupTooltip(CheckBoxOption_EnableAI->GetTooltipImage(), CheckBoxOption_EnableAI->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_Alpha->GetTooltipImage(), SliderTextBoxOption_Alpha->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_Epsilon->GetTooltipImage(), SliderTextBoxOption_Epsilon->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_Gamma->GetTooltipImage(), SliderTextBoxOption_Gamma->GetTooltipRegularText());
-
-	SetupTooltip(CheckBoxOption_EnableAI->GetTooltipWarningImage(), GetTooltipTextFromKey("InvalidAI_GridSpacing"));
+	SetupTooltip(SliderTextBoxOption_SpawnBeatDelay->GetTooltipImage(), SliderTextBoxOption_SpawnBeatDelay->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_TargetSpawnCD->GetTooltipImage(), SliderTextBoxOption_TargetSpawnCD->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_RecentTargetMemoryPolicy->GetTooltipImage(), ComboBoxOption_RecentTargetMemoryPolicy->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxNumRecentTargets->GetTooltipImage(), SliderTextBoxOption_MaxNumRecentTargets->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_RecentTargetTimeLength->GetTooltipImage(), SliderTextBoxOption_RecentTargetTimeLength->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImageText());
+	SetupTooltip(CheckBoxOption_EnableAI->GetTooltipImage(), CheckBoxOption_EnableAI->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_Alpha->GetTooltipImage(), SliderTextBoxOption_Alpha->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_Epsilon->GetTooltipImage(), SliderTextBoxOption_Epsilon->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_Gamma->GetTooltipImage(), SliderTextBoxOption_Gamma->GetTooltipImageText());
 
 	SliderTextBoxOption_SpawnBeatDelay->SetValues(MinValue_PlayerDelay, MaxValue_PlayerDelay, SnapSize_PlayerDelay);
 	SliderTextBoxOption_TargetSpawnCD->SetValues(MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD, SnapSize_TargetSpawnCD);
@@ -70,18 +68,50 @@ void UCustomGameModesWidget_General::NativeConstruct()
 
 bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 {
-	return IsAIValid();
+	const bool bUpdateNeeded = UpdateTooltipWarningImages(CheckBoxOption_EnableAI, GetWarningTooltipKeys());
+	
+	if (bUpdateNeeded)
+	{
+		if (CheckBoxOption_EnableAI->GetTooltipWarningImageKeys().IsEmpty())
+		{
+			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(true);
+			SliderTextBoxOption_Alpha->SetIsEnabled(true);
+			SliderTextBoxOption_Epsilon->SetIsEnabled(true);
+			SliderTextBoxOption_Gamma->SetIsEnabled(true);
+		}
+		else
+		{
+			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(false);
+			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(false);
+			SliderTextBoxOption_Alpha->SetIsEnabled(false);
+			SliderTextBoxOption_Epsilon->SetIsEnabled(false);
+			SliderTextBoxOption_Gamma->SetIsEnabled(false);
+		}
+		RequestComponentUpdate.Broadcast();
+	}
+	
+	if (!CheckBoxOption_EnableAI->GetTooltipWarningImageKeys().IsEmpty())
+	{
+		return false;
+	}
+	
+	return true;
 }
 
 void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 {
-	SliderTextBoxOption_SpawnBeatDelay->SetValue(BSConfig->TargetConfig.SpawnBeatDelay);
-	SliderTextBoxOption_TargetSpawnCD->SetValue(BSConfig->TargetConfig.TargetSpawnCD);
-	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValue(BSConfig->TargetConfig.MaxNumTargetsAtOnce);
+	UpdateValueIfDifferent(SliderTextBoxOption_SpawnBeatDelay, BSConfig->TargetConfig.SpawnBeatDelay);
+	UpdateValueIfDifferent(SliderTextBoxOption_TargetSpawnCD, BSConfig->TargetConfig.TargetSpawnCD);
+	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumTargetsAtOnce, BSConfig->TargetConfig.MaxNumTargetsAtOnce);
+	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumRecentTargets, BSConfig->TargetConfig.MaxNumRecentTargets);
+	UpdateValueIfDifferent(SliderTextBoxOption_RecentTargetTimeLength, BSConfig->TargetConfig.RecentTargetTimeLength);
+	
+	UpdateValueIfDifferent(SliderTextBoxOption_Alpha, BSConfig->AIConfig.Alpha);
+	UpdateValueIfDifferent(SliderTextBoxOption_Epsilon, BSConfig->AIConfig.Epsilon);
+	UpdateValueIfDifferent(SliderTextBoxOption_Gamma, BSConfig->AIConfig.Gamma);
 
-	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->SetSelectedOption(UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.RecentTargetMemoryPolicy).ToString());
-	SliderTextBoxOption_MaxNumRecentTargets->SetValue(BSConfig->TargetConfig.MaxNumRecentTargets);
-	SliderTextBoxOption_RecentTargetTimeLength->SetValue(BSConfig->TargetConfig.RecentTargetTimeLength);
+	UpdateValueIfDifferent(CheckBoxOption_EnableAI, BSConfig->AIConfig.bEnableReinforcementLearning);
+	UpdateValueIfDifferent(ComboBoxOption_RecentTargetMemoryPolicy, GetStringFromEnum(BSConfig->TargetConfig.RecentTargetMemoryPolicy));
 
 	switch (BSConfig->TargetConfig.RecentTargetMemoryPolicy)
 	{
@@ -102,22 +132,6 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 
 	if (BSConfig->AIConfig.bEnableReinforcementLearning)
 	{
-		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
-		{
-			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(false);
-			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(false);
-			BSConfig->AIConfig.bEnableReinforcementLearning = false;
-			RequestUpdateAfterConfigChange.Broadcast();
-		}
-		else
-		{
-			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(true);
-			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(BSConfig->AIConfig.bEnableReinforcementLearning);
-		}
-	}
-
-	if (BSConfig->AIConfig.bEnableReinforcementLearning)
-	{
 		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -128,13 +142,29 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
 	}
-
-	SliderTextBoxOption_Alpha->SetValue(BSConfig->AIConfig.Alpha);
-	SliderTextBoxOption_Epsilon->SetValue(BSConfig->AIConfig.Epsilon);
-	SliderTextBoxOption_Gamma->SetValue(BSConfig->AIConfig.Gamma);
-
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	
 	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+TArray<FString> UCustomGameModesWidget_General::GetWarningTooltipKeys()
+{
+	TArray<FString> ReturnArray;
+	if (BSConfig->AIConfig.bEnableReinforcementLearning)
+	{
+		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+		{
+			if (BSConfig->GridConfig.NumHorizontalGridTargets % 5 != 0 || BSConfig->GridConfig.NumVerticalGridTargets % 5 != 0)
+			{
+				ReturnArray.Emplace("InvalidAI_GridSpacing");
+			}
+		}
+		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+		{
+			ReturnArray.Emplace("InvalidAI_Tracking");
+		}
+	}
+	return ReturnArray;
 }
 
 void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bChecked)
@@ -154,24 +184,6 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bCh
 	BSConfig->AIConfig.bEnableReinforcementLearning = bChecked;
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
-}
-
-bool UCustomGameModesWidget_General::IsAIValid()
-{
-	if (CheckBoxOption_EnableAI->CheckBox->IsChecked())
-	{
-		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
-		{
-			const FIntPoint Spacing = FIntPoint(BSConfig->GridConfig.GridSpacing.X, BSConfig->GridConfig.GridSpacing.Y);
-			if (Spacing.X % 5 != 0 || Spacing.Y % 5 != 0)
-			{
-				CheckBoxOption_EnableAI->SetShowTooltipWarningImage(true);
-				return false;
-			}
-		}
-	}
-	CheckBoxOption_EnableAI->SetShowTooltipWarningImage(false);
-	return true;
 }
 
 void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -224,7 +236,7 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 		return;
 	}
 
-	const ERecentTargetMemoryPolicy Policy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0], ERecentTargetMemoryPolicy::None);
+	const ERecentTargetMemoryPolicy Policy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0]);
 
 	switch (Policy)
 	{
@@ -251,6 +263,5 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 
 FString UCustomGameModesWidget_General::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString)
 {
-	const ERecentTargetMemoryPolicy EnumValue = GetEnumFromString<ERecentTargetMemoryPolicy>(EnumString, ERecentTargetMemoryPolicy::None);
-	return GetStringTableKeyNameFromEnum(EnumValue);
+	return GetStringTableKeyNameFromEnum(GetEnumFromString<ERecentTargetMemoryPolicy>(EnumString));
 }

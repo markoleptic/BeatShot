@@ -49,6 +49,13 @@ struct FStartWidgetProperties
 		bUseTemplateChecked = false;
 		NewCustomGameModeName = FString();
 	}
+
+	FStartWidgetProperties(const FBS_DefiningConfig& InDefiningConfig, const bool bInUseTemplate)
+	{
+		DefiningConfig = InDefiningConfig;
+		bUseTemplateChecked = bInUseTemplate;
+		NewCustomGameModeName = FString();
+	}
 };
 
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
@@ -172,6 +179,9 @@ private:
 
 	/** Sets button defaults and default enabled states */
 	void SetupButtons();
+
+	/** Finds the associated default game mode, sets the StartWidgetProperties for both CustomGameModesWidgets, and calls PopulateGameModeOptions */
+	void InitCustomGameModesWidgetOptions(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty);
 	
 	/** Initializes all Custom game mode options based on the BSConfig */
 	void PopulateGameModeOptions(const FBSConfig& InBSConfig);
@@ -244,8 +254,11 @@ private:
 	/** Plays TransitionCustomGameModeView */
 	void TransitionGameModeViewToProperty();
 
+	/** Collapses Box_CreatorView and unbinds TransitionCustomGameModeView */
 	UFUNCTION()
 	void SetCollapsed_CreatorView();
+	
+	/** Collapses Box_PropertyView and unbinds TransitionCustomGameModeView */
 	UFUNCTION()
 	void SetCollapsed_PropertyView();
 
@@ -264,6 +277,9 @@ private:
 	/** The difficulty for a selected Preset Game Mode */
 	EGameModeDifficulty PresetSelection_Difficulty;
 
+	/** The custom game mode config */
 	FBSConfig GameModeConfig;
+
+	/** Pointer to the custom game mode config, shared with all CustomGameModeWidgets and their children */
 	FBSConfig* GameModeConfigPtr;
 };

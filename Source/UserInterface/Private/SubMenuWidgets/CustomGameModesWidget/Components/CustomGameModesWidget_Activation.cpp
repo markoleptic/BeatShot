@@ -18,18 +18,18 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetupTooltip(CheckBoxOption_ConstantNumTargetsToActivateAtOnce->GetTooltipImage(), CheckBoxOption_ConstantNumTargetsToActivateAtOnce->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_NumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_NumTargetsToActivateAtOnce->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_TargetActivationSelectionPolicy->GetTooltipImage(), ComboBoxOption_TargetActivationSelectionPolicy->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_TargetActivationResponses->GetTooltipImage(), ComboBoxOption_TargetActivationResponses->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_MovingTargetDirectionMode->GetTooltipImage(), ComboBoxOption_MovingTargetDirectionMode->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_LifetimeTargetScalePolicy->GetTooltipImage(), ComboBoxOption_LifetimeTargetScalePolicy->GetTooltipRegularText());
-	SetupTooltip(CheckBoxOption_ConstantTargetSpeed->GetTooltipImage(), CheckBoxOption_ConstantTargetSpeed->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_TargetSpeed->GetTooltipImage(), SliderTextBoxOption_TargetSpeed->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MinTargetSpeed->GetTooltipImage(), SliderTextBoxOption_MinTargetSpeed->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MaxTargetSpeed->GetTooltipImage(), SliderTextBoxOption_MaxTargetSpeed->GetTooltipRegularText());
+	SetupTooltip(CheckBoxOption_ConstantNumTargetsToActivateAtOnce->GetTooltipImage(), CheckBoxOption_ConstantNumTargetsToActivateAtOnce->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_NumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_NumTargetsToActivateAtOnce->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_TargetActivationSelectionPolicy->GetTooltipImage(), ComboBoxOption_TargetActivationSelectionPolicy->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_TargetActivationResponses->GetTooltipImage(), ComboBoxOption_TargetActivationResponses->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_MovingTargetDirectionMode->GetTooltipImage(), ComboBoxOption_MovingTargetDirectionMode->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_LifetimeTargetScalePolicy->GetTooltipImage(), ComboBoxOption_LifetimeTargetScalePolicy->GetTooltipImageText());
+	SetupTooltip(CheckBoxOption_ConstantTargetSpeed->GetTooltipImage(), CheckBoxOption_ConstantTargetSpeed->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_TargetSpeed->GetTooltipImage(), SliderTextBoxOption_TargetSpeed->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MinTargetSpeed->GetTooltipImage(), SliderTextBoxOption_MinTargetSpeed->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxTargetSpeed->GetTooltipImage(), SliderTextBoxOption_MaxTargetSpeed->GetTooltipImageText());
 	
 	SliderTextBoxOption_NumTargetsToActivateAtOnce->SetValues(MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
 	SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetValues(MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
@@ -126,7 +126,7 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetSpeed, BSConfig->TargetConfig.MinTargetSpeed);
 	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetSpeed, BSConfig->TargetConfig.MinTargetSpeed);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetSpeed, BSConfig->TargetConfig.MaxTargetSpeed);
-
+	
 	UpdateValueIfDifferent(ComboBoxOption_TargetActivationResponses, GetStringArrayFromEnumArray(BSConfig->TargetConfig.TargetActivationResponses));
 	UpdateValueIfDifferent(ComboBoxOption_TargetActivationSelectionPolicy, GetStringFromEnum(BSConfig->TargetConfig.TargetActivationSelectionPolicy));
 	UpdateValueIfDifferent(ComboBoxOption_MovingTargetDirectionMode, GetStringFromEnum(BSConfig->TargetConfig.MovingTargetDirectionMode));
@@ -345,7 +345,7 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationRespo
 	BSConfig->TargetConfig.TargetActivationResponses.Empty();
 	for (const FString& String : Selected)
 	{
-		BSConfig->TargetConfig.TargetActivationResponses.AddUnique(GetEnumFromString<ETargetActivationResponse>(String, ETargetActivationResponse::None));
+		BSConfig->TargetConfig.TargetActivationResponses.AddUnique(GetEnumFromString<ETargetActivationResponse>(String));
 	}
 
 	UpdateBrushColors();
@@ -364,7 +364,7 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_MovingTargetDirection
 		return;
 	}
 
-	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(Selected[0], EMovingTargetDirectionMode::None);
+	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(Selected[0]);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
@@ -380,30 +380,30 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_LifetimeTargetScalePo
 		return;
 	}
 
-	BSConfig->TargetConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(Selected[0], ELifetimeTargetScalePolicy::None);
+	BSConfig->TargetConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(Selected[0]);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 FString UCustomGameModesWidget_Activation::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString)
 {
-	const ETargetActivationSelectionPolicy EnumValue = GetEnumFromString<ETargetActivationSelectionPolicy>(EnumString, ETargetActivationSelectionPolicy::None);
+	const ETargetActivationSelectionPolicy EnumValue = GetEnumFromString<ETargetActivationSelectionPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCustomGameModesWidget_Activation::GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses(const FString& EnumString)
 {
-	const ETargetActivationResponse EnumValue = GetEnumFromString<ETargetActivationResponse>(EnumString, ETargetActivationResponse::None);
+	const ETargetActivationResponse EnumValue = GetEnumFromString<ETargetActivationResponse>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCustomGameModesWidget_Activation::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString)
 {
-	const EMovingTargetDirectionMode EnumValue = GetEnumFromString<EMovingTargetDirectionMode>(EnumString, EMovingTargetDirectionMode::None);
+	const EMovingTargetDirectionMode EnumValue = GetEnumFromString<EMovingTargetDirectionMode>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCustomGameModesWidget_Activation::GetComboBoxEntryTooltipStringTableKey_LifetimeTargetScalePolicy(const FString& EnumString)
 {
-	const ELifetimeTargetScalePolicy EnumValue = GetEnumFromString<ELifetimeTargetScalePolicy>(EnumString, ELifetimeTargetScalePolicy::None);
+	const ELifetimeTargetScalePolicy EnumValue = GetEnumFromString<ELifetimeTargetScalePolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

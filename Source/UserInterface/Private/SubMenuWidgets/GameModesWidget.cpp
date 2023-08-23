@@ -30,12 +30,13 @@ void UGameModesWidget::NativeConstruct()
 	SetupButtons();
 	BindAllDelegates();
 	
-	GameModeConfig = FindPresetGameMode("MultiBeat", EGameModeDifficulty::Normal);
+	GameModeConfig = FBSConfig();
 	GameModeConfigPtr = &GameModeConfig;
 
 	// Initialize CustomGameModesWidgets
 	CustomGameModesWidget_CreatorView->Init(GameModeConfigPtr, GetGameModeDataAsset());
 	CustomGameModesWidget_PropertyView->Init(GameModeConfigPtr, GetGameModeDataAsset());
+	InitCustomGameModesWidgetOptions(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal);
 	
 	Border_DifficultySelect->SetVisibility(ESlateVisibility::Collapsed);
 	Box_PropertyView->SetVisibility(ESlateVisibility::Collapsed);
@@ -78,6 +79,15 @@ void UGameModesWidget::SetupButtons()
 	MenuButton_CustomGameModes->SetDefaults(Box_CustomGameModes, MenuButton_DefaultGameModes);
 	MenuButton_PropertyView->SetDefaults(nullptr, MenuButton_CreatorView);
 	MenuButton_CreatorView->SetDefaults(nullptr, MenuButton_PropertyView);
+}
+
+void UGameModesWidget::InitCustomGameModesWidgetOptions(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty)
+{
+	const FBSConfig DefaultConfig = FindPresetGameMode(BaseGameMode, Difficulty);
+	const FStartWidgetProperties StartWidgetUpdate = FStartWidgetProperties(DefaultConfig.DefiningConfig, true);
+	CustomGameModesWidget_CreatorView->SetStartWidgetProperties(StartWidgetUpdate);
+	CustomGameModesWidget_PropertyView->SetStartWidgetProperties(StartWidgetUpdate);
+	PopulateGameModeOptions(DefaultConfig);
 }
 
 void UGameModesWidget::BindAllDelegates()
@@ -149,8 +159,8 @@ void UGameModesWidget::OnButtonClicked_DefaultGameMode(const UBSButton* Button)
 {
 	if (Button == Button_CustomizeFromStandard)
 	{
+		InitCustomGameModesWidgetOptions(PresetSelection_PresetGameMode, PresetSelection_Difficulty);
 		MenuButton_CustomGameModes->SetActive();
-		PopulateGameModeOptions(FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty));
 	}
 	else if (Button == Button_PlayFromStandard)
 	{
@@ -342,7 +352,6 @@ void UGameModesWidget::OnButtonClicked_RemoveAllCustom()
 	{
 		RemoveAllCustomGameModes();
 		PopupMessageWidget->FadeOut();
-		//DefiningConfig->PopulateGameModeNameComboBox("");
 		CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
 		SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_AllGameModesRemovedText"));
 		SavedTextWidget->PlayFadeInFadeOut();
@@ -432,24 +441,32 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	{
 		Button_RemoveAllCustom->SetIsEnabled(true);
 	}
-	
-	// TODO: Grid constraints
-	/*const bool bGridIsConstrained = false;
-	if (bGridIsConstrained)
+
+	// Remove Custom Button
+	if (bIsCustomMode)
 	{
-		Button_SaveCustom->SetIsEnabled(false);
-		Button_SaveCustomAndStart->SetIsEnabled(false);
-		Button_StartWithoutSaving->SetIsEnabled(false);
-		return;
-	}*/
+		Button_RemoveSelectedCustom->SetIsEnabled(true);
+	}
+	else
+	{
+		Button_RemoveSelectedCustom->SetIsEnabled(false);
+	}
+
+	// Export Button
+	if (bIsCustomMode && bNewCustomGameModeNameEmpty && bAllCustomGameModeOptionsValid)
+	{
+		Button_ExportCustom->SetIsEnabled(true);
+	}
+	else
+	{
+		Button_ExportCustom->SetIsEnabled(false);
+	}
 
 	if (!bAllCustomGameModeOptionsValid)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UpdateSaveStartButtonStates: bAllCustomGameModeOptionsValid not valid"));
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
 		Button_StartWithoutSaving->SetIsEnabled(false);
-		Button_ExportCustom->SetIsEnabled(false);
 		return;
 	}
 
@@ -459,29 +476,21 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	// No name for default mode or invalid name
 	if ((bIsDefaultMode && bNewCustomGameModeNameEmpty) || bInvalidCustomGameModeName)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UpdateSaveStartButtonStates: No name for default mode or invalid name"));
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
-		Button_RemoveSelectedCustom->SetIsEnabled(false);
-		Button_ExportCustom->SetIsEnabled(false);
 		return;
 	}
 
+	
 	if (!bIsCustomMode && !bIsDefaultMode && bNewCustomGameModeNameEmpty)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UpdateSaveStartButtonStates: No name for default mode or invalid name"));
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
-		Button_RemoveSelectedCustom->SetIsEnabled(false);
-		Button_ExportCustom->SetIsEnabled(false);
 		return;
 	}
 	
-	UE_LOG(LogTemp, Warning, TEXT("UpdateSaveStartButtonStates all good"));
 	Button_SaveCustom->SetIsEnabled(true);
 	Button_SaveCustomAndStart->SetIsEnabled(true);
-	Button_RemoveSelectedCustom->SetIsEnabled(true);
-	Button_ExportCustom->SetIsEnabled(true);
 }
 
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
@@ -604,7 +613,6 @@ void UGameModesWidget::TransitionGameModeViewToCreator()
 		return;
 	}
 	SynchronizeStartWidgets(CustomGameModesWidget_PropertyView, CustomGameModesWidget_CreatorView);
-	CustomGameModesWidget_CreatorView->Update();
 	BindToAnimationFinished(TransitionCustomGameModeView, OnTransitionInCreatorViewFinish);
 	Box_CreatorView->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	PlayAnimationReverse(TransitionCustomGameModeView);
@@ -617,7 +625,6 @@ void UGameModesWidget::TransitionGameModeViewToProperty()
 		return;
 	}
 	SynchronizeStartWidgets(CustomGameModesWidget_CreatorView, CustomGameModesWidget_PropertyView);
-	CustomGameModesWidget_PropertyView->Update();
 	BindToAnimationFinished(TransitionCustomGameModeView, OnTransitionInPropertyViewFinish);
 	Box_PropertyView->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	PlayAnimationForward(TransitionCustomGameModeView);
@@ -639,7 +646,14 @@ void UGameModesWidget::OnRequestGameModeTemplateUpdate(const FString& InGameMode
 {
 	if (IsPresetGameMode(InGameMode))
 	{
-		PopulateGameModeOptions(FindPresetGameMode(InGameMode, Difficulty));
+		if (Difficulty == EGameModeDifficulty::None)
+		{
+			PopulateGameModeOptions(FindPresetGameMode(InGameMode, EGameModeDifficulty::Normal));
+		}
+		else
+		{
+			PopulateGameModeOptions(FindPresetGameMode(InGameMode, Difficulty));
+		}
 	}
 	else if (IsCustomGameMode(InGameMode))
 	{
@@ -650,6 +664,7 @@ void UGameModesWidget::OnRequestGameModeTemplateUpdate(const FString& InGameMode
 void UGameModesWidget::SynchronizeStartWidgets(const TObjectPtr<UCustomGameModesWidgetBase> From, const TObjectPtr<UCustomGameModesWidgetBase> To)
 {
 	const FStartWidgetProperties StartWidgetUpdate = From->GetStartWidgetProperties();
+	To->Update();
 	To->SetStartWidgetProperties(StartWidgetUpdate);
 }
 
@@ -662,47 +677,3 @@ UTooltipImage* UGameModesWidget::ConstructWarningEMarkWidget(UHorizontalBox* Box
 	HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
 	return TooltipImage;
 }
-
-// Replaced with UCustomGameModesWidget_General::IsAIValid()
-/*bool UGameModesWidget::IsAIValid()
-{
-	if (AIConfig->CheckBox_EnableAI->IsChecked())
-	{
-		if (TargetConfig->GetTargetDistributionPolicy() == ETargetDistributionPolicy::Grid)
-		{
-			if (const FIntPoint Spacing = TargetConfig->GridConfig->GetGridSpacing(); Spacing.X % 5 != 0 || Spacing.Y % 5 != 0)
-			{
-				if (!TooltipWarningImage_EnableAI)
-				{
-					TooltipWarningImage_EnableAI = ConstructWarningEMarkWidget(AIConfig->HorizontalBox_EnableAI);
-					AIConfig->SetupTooltip(TooltipWarningImage_EnableAI.Get(), IBSWidgetInterface::GetTooltipTextFromKey("InvalidAI_GridSpacing"));
-				}
-				TooltipWarningImage_EnableAI->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-				return false;
-			}
-		}
-	}
-	
-	if (TooltipWarningImage_EnableAI)
-	{
-		TooltipWarningImage_EnableAI->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	return true;
-}*/
-
-// Replaced with RequestUpdateAfterConfigChange
-/*void UGameModesWidget::OnTargetDamageTypeChanged()
-{
-	switch (TargetConfig->GetTargetDamageType()) {
-	case ETargetDamageType::Tracking:
-		AIConfig->CheckBox_EnableAI->SetIsChecked(false);
-		AIConfig->CheckBox_EnableAI->SetIsEnabled(false);
-		break;
-	case ETargetDamageType::Hit:
-		AIConfig->CheckBox_EnableAI->SetIsEnabled(true);
-		break;
-	case ETargetDamageType::Combined:
-	case ETargetDamageType::None:
-		break;
-	}
-}*/

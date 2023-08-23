@@ -52,7 +52,7 @@ public:
 	/** Clears all GameModeTemplate options and repopulates */
 	void RefreshGameModeTemplateOptions() const;
 	
-	/** Broadcast any time a widget in ChildWidgets broadcasts their RequestGameModeTemplateUpdate delegate */
+	/** Broadcast any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
 
 	/** Broadcast when Widget_Start's OnValidOptionsStateChanged is changed */
@@ -71,7 +71,10 @@ protected:
 	/** Bound to all child widget's OnValidOptionsStateChanged delegates */
 	virtual void OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid);
 
-	/** Adds a widget to ChildWidgets array. Binds to its RequestUpdateAfterConfigChange and OnValidOptionsStateChanged delegates */
+	/** Bound to all child widget's RequestComponentUpdate delegates */
+	void OnRequestComponentUpdate();
+	
+	/** Adds a widget to ChildWidgets array. Binds to its RequestComponentUpdate and OnValidOptionsStateChanged delegates */
 	void AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -97,4 +100,7 @@ protected:
 
 	/** Maps each child widget to a boolean value representing if all its custom game mode options are valid */
 	TMap<TObjectPtr<UCustomGameModesWidgetComponent>, bool> ChildWidgetValidityMap;
+
+	bool bIsUpdatingFromComponentRequest = false;
+	bool bShouldUpdateFromComponentRequest = false;
 };

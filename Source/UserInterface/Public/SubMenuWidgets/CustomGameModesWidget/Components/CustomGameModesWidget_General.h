@@ -22,6 +22,8 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	/** Returns empty if valid, otherwise provides the Text that should be shown on the warning tooltip */
+	virtual TArray<FString> GetWarningTooltipKeys() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_SpawnBeatDelay;
@@ -55,8 +57,6 @@ protected:
 	
 	UFUNCTION()
 	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-	
-	bool IsAIValid();
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 };

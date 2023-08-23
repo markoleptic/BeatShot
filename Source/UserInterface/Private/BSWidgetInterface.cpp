@@ -28,6 +28,14 @@ float IBSWidgetInterface::OnSliderChanged(const float NewValue, UEditableTextBox
 	return ReturnValue;
 }
 
+void IBSWidgetInterface::SetSliderAndEditableTextBoxValues(const float NewValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+{
+	const float ClampedValue = FMath::Clamp(NewValue, Min, Max);
+	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
+	TextBoxToChange->SetText(FText::AsNumber(SnappedValue));
+	SliderToChange->SetValue(SnappedValue);
+}
+
 void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* TooltipImage, const FTooltipData& InTooltipData)
 {
 	if (!GetTooltipWidget())

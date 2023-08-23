@@ -17,15 +17,16 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetupTooltip(SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImage(), SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MaxHealth->GetTooltipImage(), SliderTextBoxOption_MaxHealth->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImage(), SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_DamageType->GetTooltipImage(), ComboBoxOption_DamageType->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImage(), ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipRegularText());
-	SetupTooltip(CheckBoxOption_ConstantTargetScale->GetTooltipImage(), CheckBoxOption_ConstantTargetScale->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_TargetScale->GetTooltipImage(), SliderTextBoxOption_TargetScale->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MinTargetScale->GetTooltipImage(), SliderTextBoxOption_MinTargetScale->GetTooltipRegularText());
-	SetupTooltip(SliderTextBoxOption_MaxTargetScale->GetTooltipImage(), SliderTextBoxOption_MaxTargetScale->GetTooltipRegularText());
+	SetupTooltip(SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImage(), SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImageText());
+	SetupTooltip(CheckBoxOption_UnlimitedTargetHealth->GetTooltipImage(), CheckBoxOption_UnlimitedTargetHealth->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxHealth->GetTooltipImage(), SliderTextBoxOption_MaxHealth->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImage(), SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_DamageType->GetTooltipImage(), ComboBoxOption_DamageType->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImage(), ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImageText());
+	SetupTooltip(CheckBoxOption_ConstantTargetScale->GetTooltipImage(), CheckBoxOption_ConstantTargetScale->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_TargetScale->GetTooltipImage(), SliderTextBoxOption_TargetScale->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MinTargetScale->GetTooltipImage(), SliderTextBoxOption_MinTargetScale->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxTargetScale->GetTooltipImage(), SliderTextBoxOption_MaxTargetScale->GetTooltipImageText());
 	
 	SliderTextBoxOption_TargetMaxLifeSpan->SetValues(MinValue_Lifespan, MaxValue_Lifespan, SnapSize_Lifespan);
 	SliderTextBoxOption_MaxHealth->SetValues(MinValue_MaxHealth, MaxValue_MaxHealth, SnapSize_MaxHealth);
@@ -47,6 +48,7 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 	ComboBoxOption_DamageType->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_DamageType);
 	ComboBoxOption_ConsecutiveTargetScalePolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy);
 
+	CheckBoxOption_UnlimitedTargetHealth->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_UnlimitedTargetHealth);
 	CheckBoxOption_ConstantTargetScale->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_ConstantTargetScale);
 	
 	ComboBoxOption_DamageType->ComboBox->ClearOptions();
@@ -60,7 +62,9 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 	{
 		ComboBoxOption_ConsecutiveTargetScalePolicy->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
-
+	
+	CheckBoxOption_ConstantTargetScale->CheckBox->SetIsChecked(true);
+	SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	
@@ -69,19 +73,43 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 
 bool UCustomGameModesWidget_Target::UpdateAllOptionsValid()
 {
+	const bool bUpdateRequired = UpdateTooltipWarningImages(ComboBoxOption_DamageType, GetWarningTooltipKeys());
+	if (bUpdateRequired)
+	{
+		RequestComponentUpdate.Broadcast();
+	}
+	if (!ComboBoxOption_DamageType->GetTooltipWarningImageKeys().IsEmpty())
+	{
+		return false;
+	}
 	return true;
 }
 
 void UCustomGameModesWidget_Target::UpdateOptionsFromConfig()
 {
+	bool bUpdateBrushColors = false;
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetMaxLifeSpan, BSConfig->TargetConfig.TargetMaxLifeSpan);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxHealth, BSConfig->TargetConfig.MaxHealth);
 	UpdateValueIfDifferent(SliderTextBoxOption_ExpirationHealthPenalty, BSConfig->TargetConfig.ExpirationHealthPenalty);
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetScale, BSConfig->TargetConfig.MinTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetScale, BSConfig->TargetConfig.MinTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetScale, BSConfig->TargetConfig.MaxTargetScale);
+	
 	UpdateValueIfDifferent(ComboBoxOption_DamageType, UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.TargetDamageType).ToString());
 	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy, UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy).ToString());
+
+	if (UpdateValueIfDifferent(CheckBoxOption_UnlimitedTargetHealth, BSConfig->TargetConfig.MaxHealth == -1))
+	{
+		if (BSConfig->TargetConfig.MaxHealth == -1)
+		{
+			SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+		bUpdateBrushColors = true;
+	}
 	
 	if (UpdateValueIfDifferent(CheckBoxOption_ConstantTargetScale, BSConfig->TargetConfig.MinTargetScale == BSConfig->TargetConfig.MaxTargetScale))
 	{
@@ -97,10 +125,42 @@ void UCustomGameModesWidget_Target::UpdateOptionsFromConfig()
 			SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 			SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
-		UpdateBrushColors();
+		bUpdateBrushColors = true;
 	}
 	
+	if (bUpdateBrushColors)
+	{
+		UpdateBrushColors();
+	}
 	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+TArray<FString> UCustomGameModesWidget_Target::GetWarningTooltipKeys()
+{
+	TArray<FString> ReturnArray;
+	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+	{
+		if (BSConfig->AIConfig.bEnableReinforcementLearning)
+		{
+			ReturnArray.Emplace("InvalidAI_Tracking");
+		}
+	}
+	return ReturnArray;
+}
+
+void UCustomGameModesWidget_Target::OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked)
+{
+	if (bChecked)
+	{
+		BSConfig->TargetConfig.MaxHealth = -1;
+		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		BSConfig->TargetConfig.MaxHealth = SliderTextBoxOption_MaxHealth->GetSliderValue();
+		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	UpdateBrushColors();
 }
 
 void UCustomGameModesWidget_Target::OnCheckStateChanged_ConstantTargetScale(const bool bChecked)
@@ -193,12 +253,12 @@ void UCustomGameModesWidget_Target::OnSelectionChanged_ConsecutiveTargetScalePol
 
 FString UCustomGameModesWidget_Target::GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString)
 {
-	const ETargetDamageType EnumValue = GetEnumFromString<ETargetDamageType>(EnumString, ETargetDamageType::None);
+	const ETargetDamageType EnumValue = GetEnumFromString<ETargetDamageType>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCustomGameModesWidget_Target::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString)
 {
-	const EConsecutiveTargetScalePolicy EnumValue = GetEnumFromString<EConsecutiveTargetScalePolicy>(EnumString, EConsecutiveTargetScalePolicy::None);
+	const EConsecutiveTargetScalePolicy EnumValue = GetEnumFromString<EConsecutiveTargetScalePolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

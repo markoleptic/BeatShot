@@ -10,4 +10,15 @@ UCLASS()
 class USERINTERFACE_API UCustomGameModesWidget_Preview : public UCustomGameModesWidgetComponent
 {
 	GENERATED_BODY()
+
+public:
+	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
+
+protected:
+	virtual void NativeConstruct() override;
+	virtual bool UpdateAllOptionsValid() override;
+	virtual void UpdateOptionsFromConfig() override;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateImages(const FBSConfig& InConfig);
 };

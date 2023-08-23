@@ -7,6 +7,7 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "CustomGameModesWidgetComponent.generated.h"
 
+class UMenuOptionWidget;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
@@ -14,7 +15,7 @@ class USliderTextBoxWidget;
 class UCustomGameModesWidgetComponent;
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnValidOptionsStateChanged, const TObjectPtr<UCustomGameModesWidgetComponent>, const bool);
-DECLARE_MULTICAST_DELEGATE(FRequestUpdateAfterConfigChange);
+DECLARE_MULTICAST_DELEGATE(FRequestComponentUpdate);
 
 /** Base class for child widgets of UCustomGameModesWidgetBase */
 UCLASS(Abstract)
@@ -36,10 +37,12 @@ public:
 	FOnValidOptionsStateChanged OnValidOptionsStateChanged;
 
 	/** Broadcast when the BSConfig was modified by this widget */
-	FRequestUpdateAfterConfigChange RequestUpdateAfterConfigChange;
+	FRequestComponentUpdate RequestComponentUpdate;
 
 	/** Returns the value of bAllOptionsValid, whether or not all custom game mode options are valid for this widget */
 	bool GetAllOptionsValid() const;
+
+	bool IsInitialized() const { return bIsInitialized; }
 	
 	/** Starts with the widget not visible and shifts to the right from the left */
 	void PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish);
@@ -72,6 +75,12 @@ protected:
 	static bool UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked);
 	static bool UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText);
 
+	/** Updates TooltipWarningImages for a MenuOptionWidget. Returns true if a component update is needed */
+	bool UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FString>& NewKeys);
+
+	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
+	virtual TArray<FString> GetWarningTooltipKeys();
+
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* TransitionInRight;
 	
@@ -90,4 +99,6 @@ protected:
 
 	/** Whether or not all custom game mode options are valid for this widget */
 	bool bAllOptionsValid = false;
+
+	bool bIsInitialized = false;
 };

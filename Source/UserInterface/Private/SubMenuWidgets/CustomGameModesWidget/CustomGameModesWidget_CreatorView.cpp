@@ -20,17 +20,9 @@ void UCustomGameModesWidget_CreatorView::NativeConstruct()
 	Button_Previous->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
 	Button_Create->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
 
-	Button_Next->SetIsEnabled(false);
+	Button_Next->SetIsEnabled(true);
 	Button_Previous->SetIsEnabled(false);
 	Button_Create->SetIsEnabled(false);
-
-	TransitionMap.Add(Widget_Start, false);
-	TransitionMap.Add(Widget_SpawnArea, false);
-	TransitionMap.Add(Widget_Spawning, false);
-	TransitionMap.Add(Widget_Activation, false);
-	TransitionMap.Add(Widget_Deactivation, false);
-	TransitionMap.Add(Widget_General, false);
-	TransitionMap.Add(Widget_Target, false);
 
 	CurrentWidget = Widget_Start;
 	FirstWidget = Widget_Start;
@@ -74,11 +66,6 @@ void UCustomGameModesWidget_CreatorView::OnBSButtonPressed(const UBSButton* BSBu
 
 void UCustomGameModesWidget_CreatorView::TransitionForward()
 {
-	if (TransitionMap.FindChecked(CurrentWidget) == false)
-	{
-		return;
-	}
-
 	if (CurrentWidget && CurrentWidget->GetNext())
 	{
 		Update();
@@ -132,7 +119,7 @@ void UCustomGameModesWidget_CreatorView::ChangeCurrentWidget(const TObjectPtr<UC
 	}
 	else
 	{
-		Button_Next->SetIsEnabled(CurrentWidget->GetAllOptionsValid());
+		Button_Next->SetIsEnabled(true);
 	}
 
 	// Disable previous button if CurrentWidget is FirstWidget
@@ -149,15 +136,4 @@ void UCustomGameModesWidget_CreatorView::ChangeCurrentWidget(const TObjectPtr<UC
 void UCustomGameModesWidget_CreatorView::OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid)
 {
 	Super::OnValidOptionsStateChanged(Widget, bAllOptionsValid);
-
-	TransitionMap.FindChecked(Widget) = bAllOptionsValid;
-	
-	if (TransitionMap.FindChecked(CurrentWidget) == true)
-	{
-		Button_Next->SetIsEnabled(true);
-	}
-	else if (TransitionMap.FindChecked(CurrentWidget) == false)
-	{
-		Button_Next->SetIsEnabled(false);
-	}
 }

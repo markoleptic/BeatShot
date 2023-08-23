@@ -23,9 +23,13 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
+	virtual TArray<FString> GetWarningTooltipKeys() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_TargetMaxLifeSpan;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_UnlimitedTargetHealth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MaxHealth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -44,7 +48,9 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_MinTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MaxTargetScale;
-	
+
+	UFUNCTION()
+	void OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantTargetScale(const bool bChecked);
 	

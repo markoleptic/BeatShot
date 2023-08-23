@@ -13,10 +13,10 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetupTooltip(CheckBoxOption_UseTemplate->GetTooltipImage(), CheckBoxOption_UseTemplate->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_GameModeTemplates->GetTooltipImage(), ComboBoxOption_GameModeTemplates->GetTooltipRegularText());
-	SetupTooltip(ComboBoxOption_GameModeDifficulty->GetTooltipImage(), ComboBoxOption_GameModeDifficulty->GetTooltipRegularText());
-	SetupTooltip(EditableTextBoxOption_CustomGameModeName->GetTooltipImage(), EditableTextBoxOption_CustomGameModeName->GetTooltipRegularText());
+	SetupTooltip(CheckBoxOption_UseTemplate->GetTooltipImage(), CheckBoxOption_UseTemplate->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_GameModeTemplates->GetTooltipImage(), ComboBoxOption_GameModeTemplates->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_GameModeDifficulty->GetTooltipImage(), ComboBoxOption_GameModeDifficulty->GetTooltipImageText());
+	SetupTooltip(EditableTextBoxOption_CustomGameModeName->GetTooltipImage(), EditableTextBoxOption_CustomGameModeName->GetTooltipImageText());
 
 	CheckBoxOption_UseTemplate->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_UseTemplate);
 	EditableTextBoxOption_CustomGameModeName->EditableTextBox->OnTextChanged.AddUniqueDynamic(this, &ThisClass::OnTextChanged_CustomGameModeName);
@@ -47,10 +47,6 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 			ComboBoxOption_GameModeDifficulty->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Difficulty).ToString());
 		}
 	}
-
-	ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::Collapsed);
-	ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
-
 	UpdateBrushColors();
 }
 
@@ -138,11 +134,11 @@ void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetPr
 	
 	// Updating values
 	UpdateValueIfDifferent(ComboBoxOption_GameModeTemplates, NewTemplateOptionString);
-	UpdateDifficultySelection(NewTemplateOptionString, BSConfig->DefiningConfig.Difficulty);
+	UpdateDifficultySelection(BSConfig->DefiningConfig.Difficulty);
 	
 	// Updating visibility
-	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility(bIsPreset, bIsCustom);
-	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility(NewTemplateOptionString);
+	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility();
+	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility();
 	
 	if (bUpdatedUseTemplate || bUpdatedTemplateVisibility || bUpdatedDifficultyVisibility)
 	{
@@ -152,9 +148,10 @@ void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetPr
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
-bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const FString& GameModeTemplateString, const EGameModeDifficulty& Difficulty) const
+bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficulty) const
 {
 	const int32 SelectedOptionCount = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount();
+	const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty CurrentDifficulty = GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption());
 
 	if (IsPresetGameMode(GameModeTemplateString))
@@ -190,9 +187,10 @@ bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const FString& Game
 	return false;
 }
 
-bool UCustomGameModesWidget_Start::UpdateDifficultyVisibility(const FString& GameModeTemplateString) const
+bool UCustomGameModesWidget_Start::UpdateDifficultyVisibility() const
 {
-	const ESlateVisibility NewVisibility = IsPresetGameMode(GameModeTemplateString) ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed;
+	const FString TemplateOptionString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
+	const ESlateVisibility NewVisibility = IsPresetGameMode(TemplateOptionString) ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed;
 	
 	if (ComboBoxOption_GameModeDifficulty->GetVisibility() == NewVisibility)
 	{
@@ -203,9 +201,11 @@ bool UCustomGameModesWidget_Start::UpdateDifficultyVisibility(const FString& Gam
 	return true;
 }
 
-bool UCustomGameModesWidget_Start::UpdateGameModeTemplateVisibility(const bool bIsPreset, const bool bIsCustom) const
+bool UCustomGameModesWidget_Start::UpdateGameModeTemplateVisibility() const
 {
-	const ESlateVisibility NewVisibility = bIsPreset || bIsCustom ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed;
+	const FString TemplateOptionString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
+	const bool bShouldShow = IsPresetGameMode(TemplateOptionString) || IsCustomGameMode(TemplateOptionString) || CheckBoxOption_UseTemplate->CheckBox->IsChecked();
+	const ESlateVisibility NewVisibility = bShouldShow ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed;
 
 	if (ComboBoxOption_GameModeTemplates->GetVisibility() == NewVisibility)
 	{
@@ -244,7 +244,6 @@ bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 	// Never let a user save a custom game mode with a Preset Game Mode name
 	if (IsPresetGameMode(CustomGameModeNameText.ToString()))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Never let a user save a custom game mode with a Preset Game Mode name"));
 		return false;
 	}
 
@@ -253,7 +252,6 @@ bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 	{
 		if (!IsCustomGameMode(GameModeTemplateString))
 		{
-			UE_LOG(LogTemp, Display, TEXT("Can only have empty CustomGameModeName if template is custom"));
 			return false;
 		}
 	}
@@ -263,7 +261,6 @@ bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 		// Need to select a template if use template
 		if (ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOptionCount() != 1)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Need to select a template if use template"));
 			return false;
 		}
 		if (IsPresetGameMode(GameModeTemplateString))
@@ -271,34 +268,25 @@ bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 			// Need to select a difficulty if using Preset
 			if (ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() != 1)
 			{
-				UE_LOG(LogTemp, Display, TEXT("Need to select a difficulty if using Preset"));
 				return false;
 			}
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("AllOptionsValid in UCustomGameModesWidget_Start"));
 	return true;
 }
 
 void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 {
-	const FString BaseGameModeString = GetStringFromEnum(BSConfig->DefiningConfig.BaseGameMode);
-	const FString DifficultyString = GetStringFromEnum(BSConfig->DefiningConfig.Difficulty);
-	const FString CustomGameModeString = BSConfig->DefiningConfig.CustomGameModeName;
-	
-	const bool bIsPreset = IsPresetGameMode(BaseGameModeString);
-	const bool bIsCustom = IsCustomGameMode(CustomGameModeString);
-	
-	const FString NewTemplateOptionString = bIsCustom ? CustomGameModeString : bIsPreset ? BaseGameModeString : "";
+	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility();
+	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility();
 
-	// Updating values
-	UpdateValueIfDifferent(ComboBoxOption_GameModeTemplates, NewTemplateOptionString);
-	UpdateDifficultySelection(NewTemplateOptionString, BSConfig->DefiningConfig.Difficulty);
-
-	// Updating visibility
-	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility(bIsPreset, bIsCustom);
-	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility(NewTemplateOptionString);
-	
+	if (IsPresetGameMode(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption()))
+	{
+		if (ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() == 0)
+		{
+			UpdateDifficultySelection(BSConfig->DefiningConfig.Difficulty);
+		}
+	}
 	if (bUpdatedTemplateVisibility || bUpdatedDifficultyVisibility)
 	{
 		UpdateBrushColors();
@@ -309,20 +297,20 @@ void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 
 void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bChecked)
 {
-	if (bChecked)
-	{
-		ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		UpdateDifficultyVisibility(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption());
-	}
-	else
+	if (!bChecked)
 	{
 		ComboBoxOption_GameModeTemplates->ComboBox->ClearSelection();
 		ComboBoxOption_GameModeDifficulty->ComboBox->ClearSelection();
-		ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::Collapsed);
-		ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	
-	UpdateBrushColors();
+	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility();
+	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility();
+	
+	if (bUpdatedTemplateVisibility || bUpdatedDifficultyVisibility)
+	{
+		UpdateBrushColors();
+	}
+
 	SetAllOptionsValid(UpdateAllOptionsValid());
 	RequestGameModeTemplateUpdate.Broadcast(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption(), GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()));
 }
@@ -330,7 +318,6 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText& Text)
 {
 	SetAllOptionsValid(UpdateAllOptionsValid());
-	RequestGameModeTemplateUpdate.Broadcast(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption(), GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()));
 }
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -341,24 +328,10 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TA
 	}
 	if (Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
-	const FString GameModeTemplateString = Selected[0];
-	const FString GameModeDifficultyString = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
-	const EGameModeDifficulty CurrentDifficulty = GetEnumFromString<EGameModeDifficulty>(GameModeDifficultyString);
-	const bool bUpdatedVisibility = UpdateDifficultyVisibility(GameModeTemplateString);
-	UpdateDifficultySelection(GameModeTemplateString, CurrentDifficulty);
-
-	SetAllOptionsValid(UpdateAllOptionsValid());
-	
 	RequestGameModeTemplateUpdate.Broadcast(Selected[0], GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()));
-	
-	if (bUpdatedVisibility)
-	{
-		UpdateBrushColors();
-	}
 }
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -369,15 +342,12 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const T
 	}
 	if (Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
-	
-	SetAllOptionsValid(UpdateAllOptionsValid());
 	
 	// Only request update for difficulty if Preset GameMode
 	if (const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption(); IsPresetGameMode(GameModeTemplateString))
 	{
-		RequestGameModeTemplateUpdate.Broadcast(GameModeTemplateString, GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()));
+		RequestGameModeTemplateUpdate.Broadcast(GameModeTemplateString,  GetEnumFromString<EGameModeDifficulty>(Selected[0]));
 	}
 }

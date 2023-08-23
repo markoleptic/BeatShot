@@ -31,7 +31,8 @@ class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, publ
 	GENERATED_BODY()
 
 	friend class ATargetManager;
-
+	
+public:
 	/** Sets default values for this actor's properties */
 	ATarget();
 

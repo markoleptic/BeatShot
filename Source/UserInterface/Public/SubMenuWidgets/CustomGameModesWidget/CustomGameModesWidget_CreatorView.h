@@ -64,6 +64,4 @@ protected:
 	TObjectPtr<UCustomGameModesWidgetComponent> FirstWidget;
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetComponent> LastWidget;
-
-	TMap<TObjectPtr<UCustomGameModesWidgetComponent>, bool> TransitionMap;
 };

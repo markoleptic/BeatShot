@@ -24,21 +24,19 @@ class USERINTERFACE_API UMenuOptionWidget : public UUserWidget
 
 public:
 	void SetIndentLevel(const int32 Value);
-	
 	void SetShowTooltipImage(const bool bShow);
-	void SetShowTooltipWarningImage(const bool bShow);
 	void SetShowCheckBoxLock(const bool bShow);
-	
 	void SetDescriptionText(const FText& InText);
-	
 	void SetTooltipText(const FText& InText);
-	void SetTooltipWarningText(const FText& InText);
 
-	UTooltipImage* GetTooltipImage() const { return TooltipImage; }
-	UTooltipImage* GetTooltipWarningImage() const { return TooltipWarningImage; }
-	bool GetTooltipWarningVisible() const;
-	FText GetTooltipRegularText() const { return TooltipRegularText; }
-	FText GetTooltipWarningText() const { return TooltipWarningText; }
+	UTooltipImage* GetTooltipImage() const;
+	FText GetTooltipImageText() const { return TooltipImageText; }
+	UTooltipImage* FindOrAddTooltipWarningImage(const FString& InTooltipStringTableKey);
+	TArray<FString> GetTooltipWarningImageKeys() const;
+	
+	void RemoveTooltipWarningImage(const FString& InTooltipStringTableKey);
+	void RemoveAllTooltipWarningImages();
+
 	FOnLockStateChanged OnLockStateChanged;
 
 protected:
@@ -49,11 +47,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* TooltipImage;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* TooltipWarningImage;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TooltipBox;
@@ -66,6 +62,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBox* CheckBox_Lock;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UTooltipImage> TooltipWarningImageClass;
 
 	/* Text that describes the values this widget controls */
 	UPROPERTY(EditInstanceOnly, Category="SliderTextBox")
@@ -82,14 +81,9 @@ protected:
 	
 	/* Text to show on the tooltip */
 	UPROPERTY(EditInstanceOnly, Category="SliderTextBox|Tooltip")
-	FText TooltipRegularText = FText();
-
-	UPROPERTY(EditInstanceOnly, Category="SliderTextBox|Tooltip")
-	bool bShowTooltipWarningImage = false;
-
-	/* Text to show on the warning tooltip */
-	UPROPERTY(EditInstanceOnly, Category="SliderTextBox|Tooltip")
-	FText TooltipWarningText = FText();
+	FText TooltipImageText = FText();
 	
 	float GridSnapSize = 1.f;
+
+	TMap<FString, UTooltipImage*> WarningTooltips;
 };

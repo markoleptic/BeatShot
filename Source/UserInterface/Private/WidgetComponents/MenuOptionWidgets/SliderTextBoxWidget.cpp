@@ -36,8 +36,7 @@ void USliderTextBoxWidget::SetValues(const float Min, const float Max, const flo
 
 void USliderTextBoxWidget::SetValue(const float Value) const
 {
-	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);
-	Slider->SetValue(ClampedValue);
+	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(), Slider->GetMaxValue());
 }
 
 float USliderTextBoxWidget::GetSliderValue() const

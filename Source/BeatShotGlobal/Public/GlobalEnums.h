@@ -345,7 +345,7 @@ enum class ETargetDeactivationResponse : uint8
 	/** Destroy the target permanently */
 	Destroy UMETA(DisplayName="Destroy"),
 	/** Hide the target */
-	HideTarget UMETA(DisplayName="HideTarget"),
+	HideTarget UMETA(DisplayName="Hide Target"),
 	/** DEPRECATED */
 	Deprecated1 UMETA(DisplayName="Hide"),
 	/** DEPRECATED */

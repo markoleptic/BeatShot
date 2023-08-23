@@ -45,8 +45,17 @@ void UCustomGameModesWidgetBase::Update()
 	{
 		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
 		{
-			Component->UpdateOptionsFromConfig();
+			if (Component->IsInitialized())
+			{
+				Component->UpdateOptionsFromConfig();
+			}
 		}
+	}
+	if (bShouldUpdateFromComponentRequest && !bIsUpdatingFromComponentRequest)
+	{
+		bIsUpdatingFromComponentRequest = true;
+		Update();
+		bIsUpdatingFromComponentRequest = false;
 	}
 }
 
@@ -77,13 +86,13 @@ bool UCustomGameModesWidgetBase::GetAllChildWidgetOptionsValid() const
 	{
 		if (ChildWidgetValidity.Value == false)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s has an invalid setting!"), *ChildWidgetValidity.Key->GetFName().ToString());
+			UE_LOG(LogTemp, Display, TEXT("%s has an invalid setting."), *ChildWidgetValidity.Key->GetFName().ToString());
 			bReturnTrue = false;
 		}
 	}
 	if (bReturnTrue)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No invalid settings!"));
+		UE_LOG(LogTemp, Display, TEXT("No invalid settings."));
 	}
 	return bReturnTrue ? true : false;
 }
@@ -100,22 +109,29 @@ void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& 
 
 void UCustomGameModesWidgetBase::OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid)
 {
-	if (Widget == Widget_Start)
-	{
-		if (ChildWidgetValidityMap.FindRef(Widget) != bAllOptionsValid)
-		{
-			UE_LOG(LogTemp, Display, TEXT("RequestButtonStateUpdate"));
-			ChildWidgetValidityMap.FindChecked(Widget) = bAllOptionsValid;
-			RequestButtonStateUpdate.Broadcast();
-			return;
-		}
-	}
+	const bool bOldAllOptionsValid = ChildWidgetValidityMap.FindRef(Widget);
 	ChildWidgetValidityMap.FindChecked(Widget) = bAllOptionsValid;
+	if (bOldAllOptionsValid != bAllOptionsValid)
+	{
+		const FString OldString = bOldAllOptionsValid ? "True" : "False";
+		const FString NewString = bOldAllOptionsValid ? "False" : "True";
+		UE_LOG(LogTemp, Display, TEXT("OnValidOptionsStateChanged %s changing from %s to %s"), *Widget->GetName(), *OldString, *NewString);
+		Update();
+		RequestButtonStateUpdate.Broadcast();
+	}
+}
+
+void UCustomGameModesWidgetBase::OnRequestComponentUpdate()
+{
+	if (!bIsUpdatingFromComponentRequest)
+	{
+		bShouldUpdateFromComponentRequest = true;
+	}
 }
 
 void UCustomGameModesWidgetBase::AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component)
 {
 	ChildWidgetValidityMap.FindOrAdd(Component) = false;
-	Component->RequestUpdateAfterConfigChange.AddUObject(this, &ThisClass::Update);
+	Component->RequestComponentUpdate.AddUObject(this, &ThisClass::OnRequestComponentUpdate);
 	Component->OnValidOptionsStateChanged.AddUObject(this, &ThisClass::OnValidOptionsStateChanged);
 }

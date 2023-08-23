@@ -35,13 +35,13 @@ public:
 	void SetStartWidgetProperties(const FStartWidgetProperties& InProperties);
 
 	/** Updates the Difficulty ComboBox selection if different from BSConfig, or if none selected with Preset. Returns true if the selection was changed */
-	bool UpdateDifficultySelection(const FString& GameModeTemplateString, const EGameModeDifficulty& Difficulty) const;
+	bool UpdateDifficultySelection(const EGameModeDifficulty& Difficulty) const;
 
 	/** Updates the Difficulty ComboBox visibility based on the type of game mode. Returns true if the visibility was changed */
-	bool UpdateDifficultyVisibility(const FString& GameModeTemplateString) const;
+	bool UpdateDifficultyVisibility() const;
 	
-	/** Updates the GameModeTemplate ComboBox visibility based on the type of game mode. Returns true if the visibility was changed */
-	bool UpdateGameModeTemplateVisibility(const bool bIsPreset, const bool bIsCustom) const;
+	/** Updates the GameModeTemplate ComboBox visibility based on the type of game mode and the checkbox. Returns true if the visibility was changed */
+	bool UpdateGameModeTemplateVisibility() const;
 
 	/** Clears all GameModeTemplate options and repopulates */
 	void RefreshGameModeTemplateOptions() const;
