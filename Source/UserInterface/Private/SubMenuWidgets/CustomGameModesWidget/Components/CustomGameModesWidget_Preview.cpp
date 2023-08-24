@@ -3,9 +3,20 @@
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Preview.h"
 
+#include "Components/OverlaySlot.h"
+
 void UCustomGameModesWidget_Preview::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	Super::InitComponent(InConfigPtr, InNext);
+}
+
+UTargetWidget* UCustomGameModesWidget_Preview::ConstructTargetWidget()
+{
+	UTargetWidget* TargetWidget = CreateWidget<UTargetWidget>(this, TargetWidgetClass);
+	UOverlaySlot* OverlaySlot = Overlay->AddChildToOverlay(TargetWidget);
+	OverlaySlot->SetHorizontalAlignment(HAlign_Center);
+	OverlaySlot->SetVerticalAlignment(VAlign_Center);
+	return TargetWidget;
 }
 
 void UCustomGameModesWidget_Preview::NativeConstruct()

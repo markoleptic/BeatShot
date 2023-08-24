@@ -200,7 +200,7 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 	{
 		if (Target && !Target->IsTargetImmuneToTracking())
 		{
-			Target->SetSphereColor(BSConfig.TargetConfig.EndColor);
+			Target->SetTargetColor(BSConfig.TargetConfig.EndColor);
 		}
 	}
 }
@@ -300,7 +300,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	}
 	if (BSConfig.TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
 	{
-		InTarget->SetSphereScale(GetNextTargetScale());
+		InTarget->SetTargetScale(GetNextTargetScale());
 	}
 	
 	if (InTarget->ActivateTarget(BSConfig.TargetConfig.TargetMaxLifeSpan))

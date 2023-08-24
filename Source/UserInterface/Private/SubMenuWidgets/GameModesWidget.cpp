@@ -638,6 +638,10 @@ void UGameModesWidget::SetCollapsed_CreatorView()
 
 void UGameModesWidget::SetCollapsed_PropertyView()
 {
+	if (RequestSimulateTargetManager.IsBound())
+	{
+		RequestSimulateTargetManager.Broadcast();
+	}
 	Box_PropertyView->SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionInCreatorViewFinish);
 }

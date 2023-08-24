@@ -8,6 +8,7 @@
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
 #include "FloatingTextActor.h"
+#include "MainMenuGameMode.h"
 #include "Player/BSPlayerState.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/Pawn.h"
@@ -24,6 +25,7 @@
 #include "OverlayWidgets/ScreenFadeWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
+#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.h"
 
 void ABSPlayerController::BeginPlay()
 {
@@ -106,20 +108,26 @@ void ABSPlayerController::ShowMainMenu()
 	{
 		return;
 	}
-	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
-
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	
+	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
+	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+	MainMenu->GameModesWidget->RequestSimulateTargetManager.AddUObject(GameMode, &AMainMenuGameMode::SimulateTargetManager);
 	MainMenu->OnSteamLoginRequest.BindUObject(this, &ThisClass::InitiateSteamLogin);
 	
+	if (GameMode)
+	{
+		GameMode->BindControllerToTargetManager(this, MainMenu->GameModesWidget);
+	}
+
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetGameDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetVideoAndSoundDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetCrossHairDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetUserDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->GetUserDelegate());
-	MainMenu->AddToViewport();
 	
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);

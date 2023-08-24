@@ -32,8 +32,6 @@ class UCheckBox;
 class UMenuButton;
 class UBSButton;
 
-DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
-
 USTRUCT()
 struct FStartWidgetProperties
 {
@@ -58,6 +56,8 @@ struct FStartWidgetProperties
 	}
 };
 
+DECLARE_MULTICAST_DELEGATE(FRequestSimulateTargetManager)
+
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
 class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface
@@ -74,6 +74,11 @@ public:
 
 	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition */
 	FOnGameModeStateChanged OnGameModeStateChanged;
+
+	FBSConfig* GetConfigPointer() const { return GameModeConfigPtr; }
+
+	/** Broadcast when this widget wants to run the custom game mode preview using the TargetManagerPreview (MainMenuGameMode) */
+	FRequestSimulateTargetManager RequestSimulateTargetManager;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Custom Game Modes")
@@ -95,12 +100,14 @@ protected:
 	TObjectPtr<UAudioSelectWidget> AudioSelectWidget;
 	UPROPERTY()
 	TObjectPtr<UGameModeSharingWidget> GameModeSharingWidget;
-	
+
+public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_CreatorView> CustomGameModesWidget_CreatorView;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_PropertyView> CustomGameModesWidget_PropertyView;
 	
+protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

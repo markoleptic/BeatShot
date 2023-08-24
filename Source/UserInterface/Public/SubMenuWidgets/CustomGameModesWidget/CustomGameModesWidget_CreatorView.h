@@ -47,10 +47,12 @@ protected:
 
 	/** Bound to all child widget's OnValidOptionsStateChanged delegates */
 	virtual void OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid) override;
-	
+
+public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCustomGameModesWidget_Preview* Widget_Preview;
-
+protected:
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Next;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

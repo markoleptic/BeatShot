@@ -19,6 +19,7 @@ class UCustomGameModesWidget_Activation;
 class UCustomGameModesWidget_SpawnArea;
 class UCustomGameModesWidget_Start;
 
+DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FRequestGameModeTemplateUpdate, const FString& GameMode, const EGameModeDifficulty& Difficulty);
 
 UCLASS()
@@ -55,7 +56,7 @@ public:
 	/** Broadcast any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
 
-	/** Broadcast when Widget_Start's OnValidOptionsStateChanged is changed */
+	/** Broadcast when the boolean AllOptionsValid value of any widget in ChildWidgetValidityMap is changed */
 	FRequestButtonStateUpdate RequestButtonStateUpdate;
 
 protected:

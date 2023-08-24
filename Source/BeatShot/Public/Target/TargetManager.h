@@ -32,13 +32,13 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 public:
 	ATargetManager();
 
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void Destroyed() override;
-
-	virtual void Tick(float DeltaTime) override;
-
+	
 	/** The 2D spawn area */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> SpawnBox;
@@ -85,17 +85,17 @@ public:
 	void ShowDebug_OverlappingVertices(const bool bShow);
 	
 	/** Called from selected DefaultGameMode */
-	void Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
+	virtual void Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
 	/** Called from selected DefaultGameMode */
-	void SetShouldSpawn(const bool bShouldSpawn);
+	virtual void SetShouldSpawn(const bool bShouldSpawn);
 
 	/** Called when a player moves the CrossHair off a target. Updates target colors if they are vulnerable to tracking damage */
 	UFUNCTION()
-	void OnPlayerStopTrackingTarget();
+	virtual void OnPlayerStopTrackingTarget();
 
 	/** Called from GameMode when it's an appropriate time to spawn or activate a target. This is the main loop that drives this class */
-	void OnAudioAnalyzerBeat();
+	virtual void OnAudioAnalyzerBeat();
 
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
 	TArray<FAccuracyRow> GetLocationAccuracy() const;
@@ -118,105 +118,105 @@ public:
 	/** Delegate that is executed when a player damages a BeatTrack target. */
 	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
 
-private:
+protected:
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
-	ATarget* SpawnTarget(USpawnArea* InSpawnArea);
+	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea);
 
 	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags associated SpawnArea as recent, fires OnActivation delegate,
 	 *  and adds to ReinforcementLearningComponent ActiveTargetPairs if active */
-	bool ActivateTarget(ATarget* InTarget) const;
+	virtual bool ActivateTarget(ATarget* InTarget) const;
 	
 	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce. Also activates the target */
-	void HandleRuntimeSpawnAndActivation();
+	virtual void HandleRuntimeSpawnAndActivation();
 
 	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
-	int32 GetNumberOfRuntimeTargetsToSpawn() const;
+	virtual int32 GetNumberOfRuntimeTargetsToSpawn() const;
 
 	/** Returns the number of targets that are allowed to be activated at once */
-	int32 GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const;
+	virtual int32 GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const;
 
 	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
-	void HandleActivateExistingTargets();
+	virtual void HandleActivateExistingTargets();
 
 	/** Handles permanently activated targets so they can still receive activation responses, called in HandleActivateExistingTargets */
-	void HandlePermanentlyActiveTargetActivation() const;
+	virtual void HandlePermanentlyActiveTargetActivation() const;
 
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
-	void SpawnUpfrontOnlyTargets();
+	virtual void SpawnUpfrontOnlyTargets();
 
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates, target flags, target removal */
 	UFUNCTION()
-	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
+	virtual void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Updates ConsecutiveTargetsHit, based on if the target expired or not */
-	void UpdateConsecutiveTargetsHit(const float TimeAlive);
+	virtual void UpdateConsecutiveTargetsHit(const float TimeAlive);
 
 	/** Updates DynamicSpawnScale, based on if the target expired or not */
-	void UpdateDynamicSpawnScale(const float TimeAlive);
+	virtual void UpdateDynamicSpawnScale(const float TimeAlive);
 
 	/** Broadcasts the appropriate delegate based on the damage type */
-	void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType, const FTargetDamageEvent& TargetDamageEvent) const;
+	virtual void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType, const FTargetDamageEvent& TargetDamageEvent) const;
 
 	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
-	void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions, const FTargetDamageEvent& TargetDamageEvent);
+	virtual void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions, const FTargetDamageEvent& TargetDamageEvent);
 	
 	/** Calls functions to get the next target's location and scale */
-	void FindNextTargetProperties();
+	virtual void FindNextTargetProperties();
 
 	/** Returns the scale for next target */
-	FVector GetNextTargetScale() const;
+	virtual FVector GetNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	USpawnArea* GetNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
+	virtual USpawnArea* GetNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
 	
 	/** Randomizes a location to set the BeatTrack target to move towards */
-	FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
+	virtual FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
 
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
-	void UpdateSpawnVolume() const;
+	virtual void UpdateSpawnVolume() const;
 
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
-	void UpdateTotalPossibleDamage();
+	virtual void UpdateTotalPossibleDamage();
 	
 	/** Returns true if a target exists that is vulnerable to tracking damage */
-	bool TrackingTargetIsDamageable() const;
+	virtual bool TrackingTargetIsDamageable() const;
 	
 	/** Returns a copy of all spawn locations that were created on initialization */
-	TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
+	virtual TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
 
 	/** Returns a copy of ManagedTargets */
-	TArray<TObjectPtr<ATarget>> GetManagedTargets() const { return ManagedTargets; }
+	virtual TArray<TObjectPtr<ATarget>> GetManagedTargets() const { return ManagedTargets; }
 
 	/** Returns the SphereTarget that has the matching Guid, or nullptr if not found in ManagedTargets */
-	ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
+	virtual ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
-	FVector GetBoxExtents_Static() const { return StaticExtents; }
+	virtual FVector GetBoxExtents_Static() const { return StaticExtents; }
 
 	/** Returns SpawnBox's origin, as it is in the game */
-	FVector GetBoxOrigin() const { return SpawnBox->Bounds.Origin; }
+	virtual FVector GetBoxOrigin() const { return SpawnBox->Bounds.Origin; }
 
 	/** Returns a FExtrema struct containing both the min extrema and max extrema */
-	FExtrema GetBoxExtrema(const bool bDynamic) const;
+	virtual FExtrema GetBoxExtrema(const bool bDynamic) const;
 
 	/** Creates the box extrema for a grid target distribution */
-	FExtrema GenerateBoxExtremaGrid() const;
+	virtual FExtrema GenerateBoxExtremaGrid() const;
 
 	/** Adds a SphereTarget to the ManagedTargets array, and updates the associated SpawnArea IsCurrentlyManaged flag */
-	int32 AddToManagedTargets(ATarget* SpawnTarget);
+	virtual int32 AddToManagedTargets(ATarget* SpawnTarget);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
-	void RemoveFromManagedTargets(const FGuid GuidToRemove);
+	virtual void RemoveFromManagedTargets(const FGuid GuidToRemove);
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
-	void SetBoxExtents_Dynamic() const;
+	virtual void SetBoxExtents_Dynamic() const;
 
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
-	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
+	virtual void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 	
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
-	USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
+	virtual USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 	
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfig;

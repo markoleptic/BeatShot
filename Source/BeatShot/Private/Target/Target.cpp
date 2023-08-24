@@ -78,60 +78,6 @@ ATarget::ATarget()
 	PeakToEndTimelinePlayRate = 1.f;
 }
 
-void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
-{
-	Config = InTargetConfig;
-	HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
-	HardRefAttributeSetBase->InitHealth(Config.MaxHealth);
-	
-	InitialTargetScale = GetActorScale();
-	InitialTargetLocation = GetActorLocation();
-}
-
-UAbilitySystemComponent* ATarget::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
-}
-
-void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
-{
-	GetAbilitySystemComponent()->GetOwnedGameplayTags(TagContainer);
-}
-
-bool ATarget::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
-{
-	return GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToCheck);
-}
-
-bool ATarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return GetAbilitySystemComponent()->HasAllMatchingGameplayTags(TagContainer);
-}
-
-bool ATarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
-{
-	return GetAbilitySystemComponent()->HasAnyMatchingGameplayTags(TagContainer);
-}
-
-void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
-{
-	const FVector NewVelocity = ProjectileMovementComponent->Velocity.GetSafeNormal() * ProjectileMovementComponent->InitialSpeed;
-	ProjectileMovementComponent->Velocity = NewVelocity;
-}
-
-void ATarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
-{
-	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToRemove))
-	{
-		GetAbilitySystemComponent()->RemoveLooseGameplayTag(TagToRemove);
-	}
-}
-
-void ATarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
-{
-	SetUseSeparateOutlineColor(InPlayerSettings.bUseSeparateOutlineColor);
-}
-
 void ATarget::BeginPlay()
 {
 	Super::BeginPlay();
@@ -159,7 +105,7 @@ void ATarget::BeginPlay()
 	PeakToEndTimeline.SetPlayRate(PeakToEndTimelinePlayRate);
 	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
 
-	SetSphereColor(Config.OnSpawnColor);
+	SetTargetColor(Config.OnSpawnColor);
 	
 	if (Config.bUseSeparateOutlineColor)
 	{
@@ -234,10 +180,92 @@ void ATarget::Tick(float DeltaSeconds)
 	ShrinkQuickAndGrowSlowTimeline.TickTimeline(DeltaSeconds);
 }
 
-void ATarget::OnTargetMaxLifeSpanExpired()
+void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 {
-	DamageSelf(Config.ExpirationHealthPenalty);
+	Config = InTargetConfig;
+	HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
+	HardRefAttributeSetBase->InitHealth(Config.MaxHealth);
+	
+	InitialTargetScale = GetActorScale();
+	InitialTargetLocation = GetActorLocation();
 }
+
+void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
+{
+	const FVector NewVelocity = ProjectileMovementComponent->Velocity.GetSafeNormal() * ProjectileMovementComponent->InitialSpeed;
+	ProjectileMovementComponent->Velocity = NewVelocity;
+}
+
+void ATarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
+{
+	SetUseSeparateOutlineColor(InPlayerSettings.bUseSeparateOutlineColor);
+}
+
+// AbilitySystem functions
+
+UAbilitySystemComponent* ATarget::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
+}
+
+void ATarget::ApplyImmunityEffect() const
+{
+	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	{
+		if (!IsTargetImmune())
+		{
+			Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
+		}
+	}
+}
+
+void ATarget::RemoveImmunityEffect() const
+{
+	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	{
+		if (IsTargetImmune())
+		{
+			Comp->RemoveActiveGameplayEffectBySourceEffect(TargetImmunity, Comp);
+		}
+	}
+}
+
+void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
+{
+	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
+}
+
+// GameplayTags functions
+
+void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
+{
+	GetAbilitySystemComponent()->GetOwnedGameplayTags(TagContainer);
+}
+
+bool ATarget::HasMatchingGameplayTag(FGameplayTag TagToCheck) const
+{
+	return GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToCheck);
+}
+
+bool ATarget::HasAllMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+{
+	return GetAbilitySystemComponent()->HasAllMatchingGameplayTags(TagContainer);
+}
+
+bool ATarget::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagContainer) const
+{
+	return GetAbilitySystemComponent()->HasAnyMatchingGameplayTags(TagContainer);
+}
+
+void ATarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
+{
+	if (GetAbilitySystemComponent()->HasMatchingGameplayTag(TagToRemove))
+	{
+		GetAbilitySystemComponent()->RemoveLooseGameplayTag(TagToRemove);
+	}
+}
+
+// Health functions
 
 void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
 {
@@ -250,6 +278,26 @@ void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, con
 	bCanBeReactivated = true;
 	HandleDestruction(ActorInstigator == this, NewValue);
 }
+
+void ATarget::OnTargetMaxLifeSpanExpired()
+{
+	DamageSelf(Config.ExpirationHealthPenalty);
+}
+
+void ATarget::DamageSelf(const float Damage)
+{
+	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	{
+		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
+		EffectContextHandle.Get()->AddInstigator(this, this);
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(ExpirationHealthPenalty, 1.f, EffectContextHandle);
+		FGameplayEffectSpec* Spec = Handle.Data.Get();
+		Spec->SetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, Damage);
+		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
+	}
+}
+
+// Activation, Deactivation, Destruction
 
 bool ATarget::ActivateTarget(const float Lifespan)
 {
@@ -280,14 +328,6 @@ void ATarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
 	}
 }
 
-void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
-{
-	if (ShouldDestroy(bExpired, CurrentHealth))
-	{
-		Destroy();
-	}
-}
-
 bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
 {
 	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
@@ -303,6 +343,69 @@ bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) c
 		return true;
 	}
 	return false;
+}
+
+void ATarget::HandleDeactivationResponses(const bool bExpired)
+{
+	// Immunity
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::RemoveImmunity))
+	{
+		RemoveImmunityEffect();
+	}
+	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::AddImmunity))
+	{
+		ApplyImmunityEffect();
+	}
+	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
+	{
+		IsTargetImmune() ? RemoveImmunityEffect() : ApplyImmunityEffect();
+	}
+
+	// Scale
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScale))
+	{
+		SetTargetScale(InitialTargetScale);
+	}
+	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
+	{
+		SetTargetScale(GetCurrentTargetScale() * Config.ConsecutiveChargeScaleMultiplier);
+	}
+
+	// Position and Velocity
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPosition))
+	{
+		SetActorLocation(InitialTargetLocation);
+	}
+
+	// Effects
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow) && !bExpired)
+	{
+		PlayShrinkQuickAndGrowSlowTimeline();
+	}
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::PlayExplosionEffect) && !bExpired)
+	{
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
+	}
+
+	// Hide target
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
+	{
+		SetActorHiddenInGame(true);
+	}
+
+	// Colors
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetColorToInactiveColor))
+	{
+		SetTargetColor(Config.InactiveTargetColor);
+	}
+}
+
+void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
+{
+	if (ShouldDestroy(bExpired, CurrentHealth))
+	{
+		Destroy();
+	}
 }
 
 bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) const
@@ -334,73 +437,7 @@ bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) cons
 	return false;
 }
 
-void ATarget::HandleDeactivationResponses(const bool bExpired)
-{
-	// Immunity
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::RemoveImmunity))
-	{
-		RemoveImmunityEffect();
-	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::AddImmunity))
-	{
-		ApplyImmunityEffect();
-	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
-	{
-		IsTargetImmune() ? RemoveImmunityEffect() : ApplyImmunityEffect();
-	}
-
-	// Scale
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScale))
-	{
-		SetSphereScale(InitialTargetScale);
-	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
-	{
-		SetSphereScale(GetCurrentTargetScale() * Config.ConsecutiveChargeScaleMultiplier);
-	}
-
-	// Position and Velocity
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPosition))
-	{
-		SetActorLocation(InitialTargetLocation);
-	}
-
-	// Effects
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow) && !bExpired)
-	{
-		PlayShrinkQuickAndGrowSlowTimeline();
-	}
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::PlayExplosionEffect) && !bExpired)
-	{
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
-	}
-
-	// Hide target
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
-	{
-		SetActorHiddenInGame(true);
-	}
-
-	// Colors
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetColorToInactiveColor))
-	{
-		SetSphereColor(Config.InactiveTargetColor);
-	}
-}
-
-void ATarget::DamageSelf(const float Damage)
-{
-	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
-	{
-		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
-		EffectContextHandle.Get()->AddInstigator(this, this);
-		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(ExpirationHealthPenalty, 1.f, EffectContextHandle);
-		FGameplayEffectSpec* Spec = Handle.Data.Get();
-		Spec->SetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, Damage);
-		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
-	}
-}
+// Timelines
 
 void ATarget::PlayStartToPeakTimeline()
 {
@@ -436,79 +473,105 @@ void ATarget::StopAllTimelines()
 	}
 }
 
-void ATarget::SetColorToInactiveColor()
-{
-	SetSphereColor(Config.InactiveTargetColor);
-}
+// Timeline-bound functions
 
 void ATarget::InterpStartToPeak(const float Alpha)
 {
-	SetSphereColor(UKismetMathLibrary::LinearColorLerp(Config.StartColor, Config.PeakColor, Alpha));
+	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.StartColor, Config.PeakColor, Alpha));
 	if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
 	{
-		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
 	}
 	else if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
 	{
-		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
 	}
 }
 
 void ATarget::InterpPeakToEnd(const float Alpha)
 {
-	SetSphereColor(UKismetMathLibrary::LinearColorLerp(Config.PeakColor, Config.EndColor, Alpha));
+	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.PeakColor, Config.EndColor, Alpha));
 	if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
 	{
-		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
 	}
 	else if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
 	{
-		SetSphereScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
 	}
 }
 
 void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	SetSphereScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, InitialTargetScale.X, Alpha)));
+	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, InitialTargetScale.X, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, Config.InactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
-	SetSphereColor(Color);
+	SetTargetColor(Color);
 }
 
-void ATarget::ApplyImmunityEffect() const
-{
-	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
-	{
-		if (!IsTargetImmune())
-		{
-			Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
-		}
-	}
-}
+// Setter functions
 
-void ATarget::RemoveImmunityEffect() const
-{
-	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
-	{
-		if (IsTargetImmune())
-		{
-			Comp->RemoveActiveGameplayEffectBySourceEffect(TargetImmunity, Comp);
-		}
-	}
-}
-
-void ATarget::SetSphereColor(const FLinearColor& Color)
+void ATarget::SetTargetColor(const FLinearColor& Color)
 {
 	TargetColorChangeMaterial->SetVectorParameterValue(TEXT("BaseColor"), Color);
 }
 
-void ATarget::SetOutlineColor(const FLinearColor& Color)
+void ATarget::SetTargetOutlineColor(const FLinearColor& Color)
 {
 	TargetColorChangeMaterial->SetVectorParameterValue(TEXT("OutlineColor"), Color);
 }
+
+void ATarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
+{
+	if (bUseSeparateOutlineColor)
+	{
+		SetTargetOutlineColor(Config.OutlineColor);
+		TargetColorChangeMaterial->SetScalarParameterValue("bUseSeparateOutlineColor", 1.f);
+		return;
+	}
+	TargetColorChangeMaterial->SetScalarParameterValue("bUseSeparateOutlineColor", 0.f);
+}
+
+void ATarget::SetTargetColorToInactiveColor()
+{
+	SetTargetColor(Config.InactiveTargetColor);
+}
+
+void ATarget::SetTargetDirection(const FVector& NewDirection) const
+{
+	if (ProjectileMovementComponent->IsActive())
+	{
+		ProjectileMovementComponent->Velocity = NewDirection * ProjectileMovementComponent->InitialSpeed;
+	}
+}
+
+void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
+{
+	if (ProjectileMovementComponent->IsActive())
+	{
+		ProjectileMovementComponent->InitialSpeed = NewMovingTargetSpeed;
+	}
+}
+
+void ATarget::SetTargetScale(const FVector& NewScale) const
+{
+	CapsuleComponent->SetRelativeScale3D(NewScale);
+}
+
+void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
+{
+	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
+	{
+		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion, ExplosionLocation);
+		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
+		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
+	}
+}
+
+// Getter functions
 
 FLinearColor ATarget::GetPeakTargetColor() const
 {
@@ -534,11 +597,6 @@ bool ATarget::IsTargetImmuneToTracking() const
 {
 	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune) ||
 		AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune_Tracking);
-}
-
-bool ATarget::IsDamageWindowActive() const
-{
-	return GetWorldTimerManager().IsTimerActive(DamageableWindow);
 }
 
 FVector ATarget::GetTargetDirection() const
@@ -568,55 +626,7 @@ FVector ATarget::GetTargetVelocity() const
 	return FVector(0.f);
 }
 
-void ATarget::SetTargetDirection(const FVector& NewDirection) const
-{
-	if (ProjectileMovementComponent->IsActive())
-	{
-		ProjectileMovementComponent->Velocity = NewDirection * ProjectileMovementComponent->InitialSpeed;
-	}
-}
-
-void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
-{
-	if (ProjectileMovementComponent->IsActive())
-	{
-		ProjectileMovementComponent->InitialSpeed = NewMovingTargetSpeed;
-	}
-}
-
-void ATarget::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
-{
-	if (bUseSeparateOutlineColor)
-	{
-		SetOutlineColor(Config.OutlineColor);
-		TargetColorChangeMaterial->SetScalarParameterValue("bUseSeparateOutlineColor", 1.f);
-		return;
-	}
-	TargetColorChangeMaterial->SetScalarParameterValue("bUseSeparateOutlineColor", 0.f);
-}
-
-void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
-{
-	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
-	{
-		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion, ExplosionLocation);
-		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
-		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
-	}
-}
-
-void ATarget::SetSphereScale(const FVector& NewScale) const
-{
-	CapsuleComponent->SetRelativeScale3D(NewScale);
-}
-
 FVector ATarget::GetCurrentTargetScale() const
 {
 	return CapsuleComponent->GetRelativeScale3D();
-}
-
-// Not being used
-void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
-{
-	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
 }
