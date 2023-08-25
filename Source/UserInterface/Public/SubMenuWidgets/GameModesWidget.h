@@ -54,9 +54,26 @@ struct FStartWidgetProperties
 		bUseTemplateChecked = bInUseTemplate;
 		NewCustomGameModeName = FString();
 	}
+
+	FORCEINLINE bool operator==(const FStartWidgetProperties& Other) const
+	{
+		if (DefiningConfig == Other.DefiningConfig)
+		{
+			if (bUseTemplateChecked == Other.bUseTemplateChecked)
+			{
+				if (NewCustomGameModeName.Equals(NewCustomGameModeName, ESearchCase::CaseSensitive))
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 };
 
 DECLARE_MULTICAST_DELEGATE(FRequestSimulateTargetManager)
+DECLARE_MULTICAST_DELEGATE(FOnPopulateGameModeOptions)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnCreatorViewVisibilityChanged, const bool);
 
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
@@ -65,6 +82,7 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override { return GameModeDataAsset.Get(); }
 
 public:
@@ -75,10 +93,20 @@ public:
 	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition */
 	FOnGameModeStateChanged OnGameModeStateChanged;
 
-	FBSConfig* GetConfigPointer() const { return GameModeConfigPtr; }
+	/** Returns BSConfig */
+	FBSConfig* GetConfigPointer() const { return BSConfig; }
 
 	/** Broadcast when this widget wants to run the custom game mode preview using the TargetManagerPreview (MainMenuGameMode) */
 	FRequestSimulateTargetManager RequestSimulateTargetManager;
+
+	/** Broadcast PopulateGameModeOptions is called */
+	FOnPopulateGameModeOptions OnPopulateGameModeOptions;
+
+	/** Broadcast when CustomGameModesWidget_CreatorView visibility changes */
+	FOnCreatorViewVisibilityChanged OnCreatorViewVisibilityChanged;
+
+	/** Returns whether or not CustomGameModesWidget_CreatorView is visible */
+	bool GetCreatorViewVisible() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Custom Game Modes")
@@ -106,6 +134,8 @@ public:
 	TObjectPtr<UCustomGameModesWidget_CreatorView> CustomGameModesWidget_CreatorView;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_PropertyView> CustomGameModesWidget_PropertyView;
+	UPROPERTY()
+	TObjectPtr<UCustomGameModesWidgetBase> CustomGameModesWidget_Current;
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -177,8 +207,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly,Transient , meta = (BindWidgetAnim))
 	UWidgetAnimation* TransitionCustomGameModeView;
 
-	FWidgetAnimationDynamicEvent OnTransitionInPropertyViewFinish;
-	FWidgetAnimationDynamicEvent OnTransitionInCreatorViewFinish;
+	FWidgetAnimationDynamicEvent OnTransitionComplete_ToPropertyView;
+	FWidgetAnimationDynamicEvent OnTransitionComplete_ToCreatorView;
 	
 private:
 	/** Binds all widget delegates to functions */
@@ -261,13 +291,13 @@ private:
 	/** Plays TransitionCustomGameModeView */
 	void TransitionGameModeViewToProperty();
 
-	/** Collapses Box_CreatorView and unbinds TransitionCustomGameModeView */
+	/** Collapses Box_CreatorView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnCreatorViewVisibilityChanged */
 	UFUNCTION()
-	void SetCollapsed_CreatorView();
+	void OnTransitionCompleted_ToPropertyView();
 	
-	/** Collapses Box_PropertyView and unbinds TransitionCustomGameModeView */
+	/** Collapses Box_PropertyView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnCreatorViewVisibilityChanged */
 	UFUNCTION()
-	void SetCollapsed_PropertyView();
+	void OnTransitionCompleted_ToCreatorView();
 
 	/** Called when the GameModeTemplate selected option changes in either CustomGameModeWidget */
 	void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
@@ -288,5 +318,5 @@ private:
 	FBSConfig GameModeConfig;
 
 	/** Pointer to the custom game mode config, shared with all CustomGameModeWidgets and their children */
-	FBSConfig* GameModeConfigPtr;
+	FBSConfig* BSConfig;
 };

@@ -8,6 +8,7 @@
 
 class UImage;
 
+/** Represents a spawned target, to be used with CustomGameModesWidget_Preview */
 UCLASS()
 class USERINTERFACE_API UTargetWidget : public UUserWidget
 {
@@ -16,17 +17,13 @@ class USERINTERFACE_API UTargetWidget : public UUserWidget
 	virtual void NativeConstruct() override;
 	
 public:
-	/** Change the scale of the target */
+	/** Sets the desired size override of the TargetImage */
 	void SetTargetScale(const FVector& NewScale) const;
 
-	/** Sets the color of the Base Target */
+	/** Sets the color of the TargetImage */
 	void SetTargetColor(const FLinearColor& Color) const;
-	
-	/** Sets the color of the Target Outline */
-	void SetTargetOutlineColor(const FLinearColor& Color) const;
 
-	void SetUseSeparateTargetOutlineColor(const float bUse) const;
-
+	/** Sets the OverlaySlot padding of the TargetImage */
 	void SetTargetPosition(const FVector2d& InPosition) const;
 	
 protected:

@@ -2,6 +2,8 @@
 
 
 #include "Target/TargetPreview.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "WidgetComponents/TargetWidget.h"
 
 ATargetPreview::ATargetPreview()
@@ -10,14 +12,16 @@ ATargetPreview::ATargetPreview()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void ATargetPreview::BeginPlay()
+void ATargetPreview::Tick(float DeltaSeconds)
 {
-	Super::BeginPlay();
-}
-
-void ATargetPreview::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
+	Super::Tick(DeltaSeconds);
+	if (ProjectileMovementComponent->IsActive())
+	{
+		if (ProjectileMovementComponent->Velocity.Length() > 0.f)
+		{
+			SetTargetWidgetLocation(GetActorLocation());
+		}
+	}
 }
 
 void ATargetPreview::Init(const FBS_TargetConfig& InTargetConfig)
@@ -25,30 +29,106 @@ void ATargetPreview::Init(const FBS_TargetConfig& InTargetConfig)
 	Super::Init(InTargetConfig);
 }
 
-void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector2d& NewLocation)
+void ATargetPreview::Destroyed()
+{
+	Super::Destroyed();
+	if (TargetWidget)
+	{
+		TargetWidget->RemoveFromParent();
+	}
+}
+
+void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation)
 {
 	TargetWidget = InTargetWidget;
-	SetTargetLocation(NewLocation);
+	BoxBoundsOrigin = InBoxBoundsOrigin;
+	SetTargetWidgetLocation(InStartLocation);
+	TargetWidget->SetTargetScale(CapsuleComponent->GetRelativeScale3D());
+}
+
+void ATargetPreview::SetSimulatePlayerDestroying(const bool bInSimulatePlayerDestroying, const float InDestroyChance)
+{
+	bSimulatePlayerDestroying = bInSimulatePlayerDestroying;
+	DestroyChance = InDestroyChance;
+}
+
+void ATargetPreview::SetActorHiddenInGame(bool bNewHidden)
+{
+	Super::SetActorHiddenInGame(bNewHidden);
+
+	if (TargetWidget)
+	{
+		if (bNewHidden)
+		{
+			TargetWidget->SetRenderOpacity(0.2f);
+		}
+		else
+		{
+			TargetWidget->SetRenderOpacity(1.f);
+		}
+	}
+}
+
+bool ATargetPreview::ActivateTarget(const float Lifespan)
+{
+	const bool bWasActivated = Super::ActivateTarget(Lifespan);
+	if (bSimulatePlayerDestroying && bWasActivated && Lifespan > 0)
+	{
+		if (DestroyChance > FMath::FRandRange(0.f, 1.f))
+		{
+			const float DestroyTime = FMath::FRandRange(Lifespan * 0.25f, Lifespan * 0.75f);
+			GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
+			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this, &ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
+		}
+	}
+	return bWasActivated;
+}
+
+void ATargetPreview::OnSimulatePlayerDestroyingTimerExpired()
+{
+	DamageSelf(Config.ExpirationHealthPenalty);
 }
 
 void ATargetPreview::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
 {
-	Super::OnHealthChanged(ActorInstigator, OldValue, NewValue);
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	float TimeAlive;
+	if (TimerManager.IsTimerActive(DamageableWindow))
+	{
+		TimeAlive = TimerManager.GetTimerElapsed(DamageableWindow);
+	}
+	else
+	{
+		TimeAlive = -1.f;
+	}
+	TimerManager.ClearTimer(DamageableWindow);
+	
+	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(), abs(OldValue - NewValue));
+	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
+	HandleDeactivation(TimeAlive < 0.f, NewValue);
+	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);
+	bCanBeReactivated = true;
+	HandleDestruction(TimeAlive < 0.f, NewValue);
 }
 
 void ATargetPreview::OnTargetMaxLifeSpanExpired()
 {
+	GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
 	Super::OnTargetMaxLifeSpanExpired();
-}
-
-bool ATargetPreview::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
-{
-	return Super::ShouldDeactivate(bExpired, CurrentHealth);
 }
 
 void ATargetPreview::HandleDeactivationResponses(const bool bExpired)
 {
 	Super::HandleDeactivationResponses(bExpired);
+	
+	// Hide target
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
+	{
+		if (TargetWidget)
+		{
+			TargetWidget->SetRenderOpacity(0.2f);
+		}
+	}
 }
 
 void ATargetPreview::HandleDestruction(const bool bExpired, const float CurrentHealth)
@@ -60,21 +140,19 @@ void ATargetPreview::HandleDestruction(const bool bExpired, const float CurrentH
 	Super::HandleDestruction(bExpired, CurrentHealth);
 }
 
+FVector2d ATargetPreview::GetWidgetPositionFromWorldPosition(const FVector& InPosition) const
+{
+	const float X = InPosition.Y;
+	const float Y = InPosition.Z - BoxBoundsOrigin.Z;
+	return FVector2d(X, Y);
+}
+
 void ATargetPreview::SetTargetColor(const FLinearColor& Color)
 {
 	Super::SetTargetColor(Color);
 	if (TargetWidget)
 	{
 		TargetWidget->SetTargetColor(Color);
-	}
-}
-
-void ATargetPreview::SetTargetOutlineColor(const FLinearColor& Color)
-{
-	Super::SetTargetOutlineColor(Color);
-	if (TargetWidget)
-	{
-		TargetWidget->SetTargetOutlineColor(Color);
 	}
 }
 
@@ -87,20 +165,11 @@ void ATargetPreview::SetTargetScale(const FVector& NewScale) const
 	}
 }
 
-void ATargetPreview::SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor)
+void ATargetPreview::SetTargetWidgetLocation(const FVector& NewLocation) const
 {
-	Super::SetUseSeparateOutlineColor(bUseSeparateOutlineColor);
-
-	if (bUseSeparateOutlineColor)
+	if (TargetWidget)
 	{
-		TargetWidget->SetUseSeparateTargetOutlineColor(1.f);
-		return;
+		TargetWidget->SetTargetPosition(GetWidgetPositionFromWorldPosition(NewLocation));
 	}
-	TargetWidget->SetUseSeparateTargetOutlineColor(0.f);
-}
-
-void ATargetPreview::SetTargetLocation(const FVector2d& NewLocation) const
-{
-	TargetWidget->SetTargetPosition(NewLocation);
 }
 

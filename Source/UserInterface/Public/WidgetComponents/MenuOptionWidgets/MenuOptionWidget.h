@@ -17,26 +17,46 @@ class UBSHorizontalBox;
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnLockStateChanged, const bool);
 
+/** Base class for a Menu Option Widget, which is basically just a description, tooltip, and some value(s) that can be changed */
 UCLASS()
 class USERINTERFACE_API UMenuOptionWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
+	/** Sets the left hand side indent, with each level increasing by 50 */
 	void SetIndentLevel(const int32 Value);
+
+	/** Toggles showing the TooltipImage */
 	void SetShowTooltipImage(const bool bShow);
+
+	/** Toggles showing the CheckBoxLock */
 	void SetShowCheckBoxLock(const bool bShow);
+
+	/** Sets the Description Text */
 	void SetDescriptionText(const FText& InText);
+
+	/** Sets the TooltipImage Text */
 	void SetTooltipText(const FText& InText);
 
+	/** Returns the TooltipImage */
 	UTooltipImage* GetTooltipImage() const;
-	FText GetTooltipImageText() const { return TooltipImageText; }
-	UTooltipImage* FindOrAddTooltipWarningImage(const FString& InTooltipStringTableKey);
-	TArray<FString> GetTooltipWarningImageKeys() const;
-	
-	void RemoveTooltipWarningImage(const FString& InTooltipStringTableKey);
-	void RemoveAllTooltipWarningImages();
 
+	/** Returns the TooltipImage Text */
+	FText GetTooltipImageText() const { return TooltipImageText; }
+
+	/** Returns the TooltipWarningImage corresponding to The StringTableKey, or creates one if not found */
+	UTooltipImage* FindOrAddTooltipWarningImage(const FString& InTooltipStringTableKey);
+
+	/** Returns the StringTableKeys that correspond to each TooltipWarningImage */
+	TArray<FString> GetTooltipWarningImageKeys() const;
+
+	/** Removes the TooltipWarningImage corresponding to the StringTableKey */
+	void RemoveTooltipWarningImage(const FString& InTooltipStringTableKey);
+
+	/** Removes all TooltipWarningImages */
+	void RemoveAllTooltipWarningImages();
+	
 	FOnLockStateChanged OnLockStateChanged;
 
 protected:
@@ -66,7 +86,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UTooltipImage> TooltipWarningImageClass;
 
-	/* Text that describes the values this widget controls */
+	/** Text that describes the values this widget controls */
 	UPROPERTY(EditInstanceOnly, Category="SliderTextBox")
 	FText DescriptionText = FText();
 
@@ -79,11 +99,10 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category="SliderTextBox|Tooltip")
 	bool bShowTooltipImage = true;
 	
-	/* Text to show on the tooltip */
+	/** Text to show on the tooltip */
 	UPROPERTY(EditInstanceOnly, Category="SliderTextBox|Tooltip")
 	FText TooltipImageText = FText();
-	
-	float GridSnapSize = 1.f;
 
+	/** A map of StringTableKeys to ToolTipWarningImages */
 	TMap<FString, UTooltipImage*> WarningTooltips;
 };

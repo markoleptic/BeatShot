@@ -23,6 +23,8 @@ class USERINTERFACE_API UCustomGameModesWidgetComponent : public UBSSettingCateg
 {
 	GENERATED_BODY()
 
+	virtual void NativeDestruct() override;
+
 public:
 	/** Sets BSConfig, sets the pointer to next widget in linked list, and calls UpdateOptionsFromConfig */
 	virtual void InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
@@ -42,6 +44,7 @@ public:
 	/** Returns the value of bAllOptionsValid, whether or not all custom game mode options are valid for this widget */
 	bool GetAllOptionsValid() const;
 
+	/** Returns whether or not Init has been called */
 	bool IsInitialized() const { return bIsInitialized; }
 	
 	/** Starts with the widget not visible and shifts to the right from the left */
@@ -100,5 +103,6 @@ protected:
 	/** Whether or not all custom game mode options are valid for this widget */
 	bool bAllOptionsValid = false;
 
+	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
 };

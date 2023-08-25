@@ -280,43 +280,57 @@ void USpawnArea::IncrementTotalHits()
 
 USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 {
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
+	BSConfig = nullptr;
+	bShowDebug_SpawnMemory = false;
+	bShowDebug_OverlappingVertices = false;
+	bShowDebug_OverlappingVertices_All = false;
+	SpawnAreas = TArray<USpawnArea*>();
+	AllBottomLeftVertices = TArray<FVector>();
 }
 
-void USpawnAreaManagerComponent::Init(const FBSConfig& InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents)
+void USpawnAreaManagerComponent::DestroyComponent(bool bPromoteChildren)
 {
+	BSConfig = nullptr;
+	Super::DestroyComponent(bPromoteChildren);
+}
+
+void USpawnAreaManagerComponent::Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents, const FExtrema& InStaticExtrema)
+{
+	SpawnAreas.Empty();
+	AllBottomLeftVertices.Empty();
+	
 	BSConfig = InBSConfig;
 	Origin = InOrigin;
 	StaticExtents = InStaticExtents;
-}
-
-TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas(const FExtrema& InStaticExtrema)
-{
 	StaticExtrema = InStaticExtrema;
 	
 	SetAppropriateSpawnMemoryValues();
-	
-	TArray<FVector> AllSpawnLocations;
-	
+	AllBottomLeftVertices = InitializeSpawnAreas();
+}
+
+TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas()
+{
 	int TempWidth = 0;
 	int TempHeight = 0;
 	int Index = 0;
+
+	TArray<FVector> AllSpawnLocations;
 	
-	for (float Z = InStaticExtrema.Min.Z; Z < InStaticExtrema.Max.Z; Z += SpawnMemoryIncZ)
+	for (float Z = StaticExtrema.Min.Z; Z < StaticExtrema.Max.Z; Z += SpawnMemoryIncZ)
 	{
 		TempWidth = 0;
-		for (float Y = InStaticExtrema.Min.Y; Y < InStaticExtrema.Max.Y; Y += SpawnMemoryIncY)
+		for (float Y = StaticExtrema.Min.Y; Y < StaticExtrema.Max.Y; Y += SpawnMemoryIncY)
 		{
 			FVector Loc(Origin.X, Y, Z);
 			AllSpawnLocations.Add(Loc);
-			AllBottomLeftVertices.Add(Loc);
 			USpawnArea* SpawnArea = NewObject<USpawnArea>();
 			SpawnArea->Init(Index,
 					Loc,
 					SpawnMemoryIncY,
 					SpawnMemoryIncZ,
-					BSConfig.GridConfig.NumHorizontalGridTargets,
-					BSConfig.GridConfig.NumVerticalGridTargets * BSConfig.GridConfig.NumHorizontalGridTargets);
+					GetBSConfig()->GridConfig.NumHorizontalGridTargets,
+					GetBSConfig()->GridConfig.NumVerticalGridTargets * GetBSConfig()->GridConfig.NumHorizontalGridTargets);
 			SpawnArea->ChosenPoint = Loc;
 			SpawnAreas.Add(SpawnArea);
 			Index++;
@@ -334,7 +348,7 @@ TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas(const FExtrema&
 
 void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 {
-	switch (BSConfig.TargetConfig.TargetDistributionPolicy)
+	switch (GetBSConfig()->TargetConfig.TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::None:
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
@@ -377,8 +391,8 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 		}
 		break;
 	case ETargetDistributionPolicy::Grid:
-		SpawnMemoryIncY = BSConfig.GridConfig.GridSpacing.X + BSConfig.TargetConfig.MaxTargetScale * SphereTargetDiameter;
-		SpawnMemoryIncZ = BSConfig.GridConfig.GridSpacing.Y + BSConfig.TargetConfig.MaxTargetScale * SphereTargetDiameter;
+		SpawnMemoryIncY = GetBSConfig()->GridConfig.GridSpacing.X + GetBSConfig()->TargetConfig.MaxTargetScale * SphereTargetDiameter;
+		SpawnMemoryIncZ = GetBSConfig()->GridConfig.GridSpacing.Y + GetBSConfig()->TargetConfig.MaxTargetScale * SphereTargetDiameter;
 		break;
 	}
 	MinOverlapRadius = FMath::Max(SpawnMemoryIncY, SpawnMemoryIncZ) / 2.f;
@@ -562,7 +576,7 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetManagedActivatedOrRecentSpawn
 
 void USpawnAreaManagerComponent::RefreshRecentFlags()
 {
-	if (const int32 NumToRemove = GetRecentSpawnAreas().Num() - BSConfig.TargetConfig.MaxNumRecentTargets; NumToRemove > 0)
+	if (const int32 NumToRemove = GetRecentSpawnAreas().Num() - GetBSConfig()->TargetConfig.MaxNumRecentTargets; NumToRemove > 0)
 	{
 		for (int32 CurrentRemoveNum = 0; CurrentRemoveNum < NumToRemove; CurrentRemoveNum++)
 		{
@@ -582,7 +596,7 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 
 	// Consider Managed Targets to be overlapping/invalid if runtime targets can be spawned without activation
 	TArray<USpawnArea*> InvalidSpawnAreas;
-	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly && BSConfig.TargetConfig.bAllowSpawnWithoutActivation)
+	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly && GetBSConfig()->TargetConfig.bAllowSpawnWithoutActivation)
 	{
 		InvalidSpawnAreas = GetManagedActivatedOrRecentSpawnAreas();
 	}
@@ -597,7 +611,7 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 		if (Scale.Length() > SpawnArea->GetTargetScale().Length())
 		{
 			TArray<FVector> ScaledOverlappingPoints = SpawnArea->GenerateOverlappingVertices(
-				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices_All);
+				GetBSConfig()->TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices_All);
 			for (const FVector& Vector : ScaledOverlappingPoints)
 			{
 				OverlappingVertices.AddUnique(Vector);
@@ -609,7 +623,7 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 			if (bShowDebug_OverlappingVertices_All)
 			{
 				const float ScaledRadius = Scale.X * SphereTargetRadius;
-				float Radius = ScaledRadius * 2.f + (BSConfig.TargetConfig.MinDistanceBetweenTargets / 2.f);
+				float Radius = ScaledRadius * 2.f + (GetBSConfig()->TargetConfig.MinDistanceBetweenTargets / 2.f);
 				Radius = FMath::Max(Radius, MinOverlapRadius) + FMath::Max(Width, Height);
 				DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 16, FColor::Magenta, false, 0.5f);
 				for (FVector Vertex : DebugVertices)
@@ -631,7 +645,7 @@ void USpawnAreaManagerComponent::RemoveOverlappingSpawnLocations(TArray<FVector>
 			if (bShowDebug_OverlappingVertices_All)
 			{
 				const float ScaledRadius = Scale.X * SphereTargetRadius;
-				float Radius = ScaledRadius * 2.f + (BSConfig.TargetConfig.MinDistanceBetweenTargets / 2.f);
+				float Radius = ScaledRadius * 2.f + (GetBSConfig()->TargetConfig.MinDistanceBetweenTargets / 2.f);
 				Radius = FMath::Max(Radius, MinOverlapRadius) + FMath::Max(Width, Height);
 				DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 16, FColor::Magenta, false, 0.5f);
 			}
@@ -665,12 +679,12 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(const FGuid TargetGuid) 
 		{
 			TArray<FVector> DebugVertices;
 			TArray<FVector> OverlappingPoints = SpawnArea->GenerateOverlappingVertices(
-				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices);
+				GetBSConfig()->TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, bShowDebug_OverlappingVertices);
 			SpawnArea->SetOverlappingVertices(OverlappingPoints);
 			if (bShowDebug_OverlappingVertices)
 			{
 				const float ScaledRadius = SpawnArea->GetTargetScale().X * SphereTargetRadius;
-				float Radius = ScaledRadius * 2.f + (BSConfig.TargetConfig.MinDistanceBetweenTargets / 2.f);
+				float Radius = ScaledRadius * 2.f + (GetBSConfig()->TargetConfig.MinDistanceBetweenTargets / 2.f);
 				Radius = FMath::Max(Radius, MinOverlapRadius) + FMath::Max(Width, Height);
 				DrawDebugSphere(GetWorld(), SpawnArea->ChosenPoint, Radius, 16, FColor::Magenta, false, 0.5f);
 				
@@ -707,7 +721,7 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid
 		{
 			TArray<FVector> DebugVertices;
 			SpawnArea->SetOverlappingVertices(SpawnArea->GenerateOverlappingVertices(
-				BSConfig.TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, false));
+				GetBSConfig()->TargetConfig.MinDistanceBetweenTargets, MinOverlapRadius, SpawnArea->GetTargetScale(), DebugVertices, false));
 		}
 	}
 }
@@ -741,14 +755,14 @@ void USpawnAreaManagerComponent::HandleRecentTargetRemoval(const ERecentTargetMe
 		break;
 	case ERecentTargetMemoryPolicy::CustomTimeBased:
 		RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea, TargetDamageEvent.Guid);
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.RecentTargetTimeLength, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, GetBSConfig()->TargetConfig.RecentTargetTimeLength, false);
 		break;
 	case ERecentTargetMemoryPolicy::NumTargetsBased:
 		RefreshRecentFlags();
 		break;
 	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
 		RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea, TargetDamageEvent.Guid);
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, BSConfig.TargetConfig.TargetSpawnCD, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, GetBSConfig()->TargetConfig.TargetSpawnCD, false);
 		break;
 	}
 }
@@ -809,7 +823,7 @@ TArray<FVector> USpawnAreaManagerComponent::GetValidSpawnLocations(const FVector
 {
 	TArray<FVector> ValidSpawnLocations;
 	
-	switch (BSConfig.TargetConfig.TargetDistributionPolicy)
+	switch (GetBSConfig()->TargetConfig.TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::EdgeOnly:
 		HandleEdgeOnlySpawnLocations(ValidSpawnLocations, InCurrentExtrema);
@@ -888,7 +902,7 @@ void USpawnAreaManagerComponent::HandleFullRangeSpawnLocations(TArray<FVector>& 
 void USpawnAreaManagerComponent::HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const
 {
 	ValidSpawnLocations = GetAllBottomLeftVertices();
-	switch (BSConfig.TargetConfig.TargetActivationSelectionPolicy)
+	switch (GetBSConfig()->TargetConfig.TargetActivationSelectionPolicy)
 	{
 	case ETargetActivationSelectionPolicy::None:
 	case ETargetActivationSelectionPolicy::Random:
@@ -928,7 +942,7 @@ void USpawnAreaManagerComponent::HandleBorderingSelectionPolicy(TArray<FVector>&
 	// Without this condition, ValidSpawnLocations can contain locations that refer to a non-activated already managed target.
 	// This means that the SpawnArea corresponding to an already managed target will get overriden with a new target, and the old target will no longer
 	// have an associated SpawnArea, causing the game to get stuck with a non-activated target. Only applies for modes that allow spawning targets without activation.
-	if (BSConfig.TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly && BSConfig.TargetConfig.bAllowSpawnWithoutActivation)
+	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly && GetBSConfig()->TargetConfig.bAllowSpawnWithoutActivation)
 	{
 		HandleFilterActivated(ValidSpawnLocations);
 		if (!ValidSpawnLocations.IsEmpty())
@@ -1052,7 +1066,7 @@ void USpawnAreaManagerComponent::DrawDebug_Boxes(const TArray<FVector>& InLocati
 	{
 		FVector Loc = FVector(Vector.X, Vector.Y + GetSpawnMemoryIncY() / 2.f, Vector.Z + GetSpawnMemoryIncZ() / 2.f);
 		DrawDebugBox(GetWorld(), Loc, FVector(0, GetSpawnMemoryIncY() / 2.f, GetSpawnMemoryIncZ() / 2.f),
-			InColor, false, BSConfig.TargetConfig.TargetSpawnCD, 0, InThickness);
+			InColor, false, GetBSConfig()->TargetConfig.TargetSpawnCD, 0, InThickness);
 	}
 }
 

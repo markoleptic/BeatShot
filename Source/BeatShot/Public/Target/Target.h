@@ -138,7 +138,7 @@ protected:
 
 public:
 	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */
-	bool ActivateTarget(const float Lifespan);
+	virtual bool ActivateTarget(const float Lifespan);
 
 protected:
 	/** Finds if target should be deactivated, and calls StopAllTimelines and HandleDeactivationResponses if so */

@@ -19,13 +19,30 @@ class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public ISaveLoadInt
 	GENERATED_BODY()
 
 public:
-	
 	AMainMenuGameMode();
-	void BindControllerToTargetManager(ABSPlayerController* InController, UGameModesWidget* GameModesWidget);
+
 	virtual void BeginPlay() override;
 
+	/** Enables communication between GameModesWidget and TargetManager */
+	void BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget);
+	
+	/** Called when the GameModesWidget calls PopulateGameModeOptions */
+	void OnGameModesWidgetPopulateGameModeOptions();
+
+	/** Called when the CustomGameModesWidget_CreatorView visibility changes */
+	void OnCreatorViewVisibilityChanged(const bool bVisible);
+
+	/** Starts timers, binds timer delegates, restarts TargetManager */
+	void StartSimulation();
+	
 	/** Manually calls OnAudioAnalyzerTick in TargetManager at fixed intervals */
-	void SimulateTargetManager();
+	void OnSimulationInterval();
+	
+	/** Clears the timers and calls FinishSimulation on TargetManager */
+	void FinishSimulation();
+
+	/** Returns whether or not the SimulationTimer is active */
+	bool TargetManagerIsSimulating() const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
@@ -43,7 +60,9 @@ protected:
     UPROPERTY()
     TObjectPtr<ATargetManagerPreview> TargetManager;
 	
-	FTimerDelegate SimulateTargetManagerDelegate;
-	FTimerHandle SimulateTargetManagerTimer;
-	FTimerHandle TotalSimulationTimer;
+	FTimerDelegate SimulationIntervalDelegate;
+	FTimerHandle SimulationIntervalTimer;
+
+	FTimerDelegate SimulationTimerDelegate;
+	FTimerHandle SimulationTimer;
 };

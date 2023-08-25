@@ -216,7 +216,7 @@ bool UCustomGameModesWidget_Start::UpdateGameModeTemplateVisibility() const
 	return true;
 }
 
-void UCustomGameModesWidget_Start::RefreshGameModeTemplateOptions() const
+void UCustomGameModesWidget_Start::RefreshGameModeTemplateComboBoxOptions() const
 {
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	
@@ -287,6 +287,17 @@ void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 			UpdateDifficultySelection(BSConfig->DefiningConfig.Difficulty);
 		}
 	}
+
+	// Select a custom mode
+	if (CheckBoxOption_UseTemplate->CheckBox->IsChecked() &&
+		IsCustomGameMode(BSConfig->DefiningConfig.CustomGameModeName) &&
+		ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOptionCount() == 0 &&
+		ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() == 0 &&
+		EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText().IsEmpty())
+	{
+		ComboBoxOption_GameModeTemplates->ComboBox->SetSelectedOption(BSConfig->DefiningConfig.CustomGameModeName);
+	}
+	
 	if (bUpdatedTemplateVisibility || bUpdatedDifficultyVisibility)
 	{
 		UpdateBrushColors();

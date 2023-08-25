@@ -14,14 +14,6 @@ AMainMenuGameMode::AMainMenuGameMode()
 	SetRootComponent(MainMenuMusicComp);
 }
 
-void AMainMenuGameMode::BindControllerToTargetManager(ABSPlayerController* InController, UGameModesWidget* GameModesWidget)
-{
-	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator);
-	TargetManager->Init(*GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
-	TargetManager->InitTargetManagerPreview(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds, GameModesWidget->GetConfigPointer());
-	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview, &UCustomGameModesWidget_Preview::ConstructTargetWidget);
-}
-
 void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
@@ -33,30 +25,95 @@ void AMainMenuGameMode::BeginPlay()
 	MainMenuMusicComp->FadeIn(2.f, 1.f, 0.f);
 }
 
-void AMainMenuGameMode::SimulateTargetManager()
+void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)
 {
-	if (GetWorld()->GetTimerManager().IsTimerActive(TotalSimulationTimer))
+	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator);
+	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds);
+	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
+	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview, &UCustomGameModesWidget_Preview::ConstructTargetWidget);
+
+	GameModesWidget->RequestSimulateTargetManager.AddUObject(this, &ThisClass::StartSimulation);
+	GameModesWidget->OnPopulateGameModeOptions.AddUObject(this, &ThisClass::OnGameModesWidgetPopulateGameModeOptions);
+	GameModesWidget->OnCreatorViewVisibilityChanged.AddUObject(this, &ThisClass::OnCreatorViewVisibilityChanged);
+}
+
+void AMainMenuGameMode::OnGameModesWidgetPopulateGameModeOptions()
+{
+	StartSimulation();
+}
+
+void AMainMenuGameMode::OnCreatorViewVisibilityChanged(const bool bVisible)
+{
+	if (bVisible)
+	{
+		StartSimulation();
+	}
+	else
+	{
+		FinishSimulation();
+	}
+}
+
+void AMainMenuGameMode::StartSimulation()
+{
+	if (!TargetManager)
 	{
 		return;
 	}
+
+	if (TargetManagerIsSimulating())
+	{
+		FinishSimulation();
+	}
 	
-	GetWorld()->GetTimerManager().SetTimer(TotalSimulationTimer, 10.f, false);
+	TargetManager->RestartSimulation();
+	TargetManager->SetSimulatePlayerDestroyingTargets(true, 1.1f);
 	TargetManager->SetShouldSpawn(true);
 	
-	SimulateTargetManagerDelegate.BindLambda([this]
+	// Bind the simulation timer
+	SimulationTimerDelegate.BindUObject(this, &ThisClass::FinishSimulation);
+	SimulationIntervalDelegate.BindUObject(this, &ThisClass::OnSimulationInterval);
+
+	// Start timers
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.SetTimer(SimulationTimer, SimulationTimerDelegate, 15.f, false);
+	TimerManager.SetTimer(SimulationIntervalTimer, SimulationIntervalDelegate, TargetManager->GetSimulation_TargetSpawnCD(), true, 1.f);
+}
+
+void AMainMenuGameMode::OnSimulationInterval()
+{
+	if (TargetManager)
 	{
-		if (!GetWorld()->GetTimerManager().IsTimerActive(TotalSimulationTimer))
-		{
-			GetWorld()->GetTimerManager().ClearTimer(SimulateTargetManagerTimer);
-			TargetManager->SetShouldSpawn(false);
-			return;
-		}
-		if (TargetManager)
-		{
-			
-			TargetManager->OnAudioAnalyzerBeat();
-		}
-	});
+		TargetManager->OnAudioAnalyzerBeat();
+	}
+}
+
+void AMainMenuGameMode::FinishSimulation()
+{
+	// Unbind delegates
+	if (SimulationTimerDelegate.IsBound())
+	{
+		SimulationTimerDelegate.Unbind();
+	}
+	if (SimulationIntervalDelegate.IsBound())
+	{
+		SimulationIntervalDelegate.Unbind();
+	}
 	
-	GetWorld()->GetTimerManager().SetTimer(SimulateTargetManagerTimer, SimulateTargetManagerDelegate, 0.5f, true, 5.f);
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+
+	// Clear Timers
+	TimerManager.ClearTimer(SimulationIntervalTimer);
+	TimerManager.ClearTimer(SimulationTimer);
+
+	if (TargetManager)
+	{
+		TargetManager->SetShouldSpawn(false);
+		TargetManager->FinishSimulation();
+	}
+}
+
+bool AMainMenuGameMode::TargetManagerIsSimulating() const
+{
+	return GetWorld()->GetTimerManager().IsTimerActive(SimulationTimer);
 }

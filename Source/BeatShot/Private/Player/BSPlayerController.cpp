@@ -114,12 +114,11 @@ void ABSPlayerController::ShowMainMenu()
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-	MainMenu->GameModesWidget->RequestSimulateTargetManager.AddUObject(GameMode, &AMainMenuGameMode::SimulateTargetManager);
 	MainMenu->OnSteamLoginRequest.BindUObject(this, &ThisClass::InitiateSteamLogin);
 	
 	if (GameMode)
 	{
-		GameMode->BindControllerToTargetManager(this, MainMenu->GameModesWidget);
+		GameMode->BindGameModesWidgetToTargetManager(MainMenu->GameModesWidget);
 	}
 
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetGameDelegate());

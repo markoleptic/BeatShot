@@ -2,42 +2,52 @@
 
 
 #include "Target/TargetManagerPreview.h"
-
 #include "Target/TargetPreview.h"
 
 
-// Sets default values
 ATargetManagerPreview::ATargetManagerPreview()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ATargetManagerPreview::Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings)
+void ATargetManagerPreview::InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InBoxBoundsWidget)
 {
-	Super::Init(InBSConfig, InPlayerSettings);
+	BoxBoundsWidget = InBoxBoundsWidget;
 }
 
-void ATargetManagerPreview::InitTargetManagerPreview(const TObjectPtr<UBoxBoundsWidget> InTargetWidget, FBSConfig* InBSConfig)
+void ATargetManagerPreview::RestartSimulation()
 {
-	BoxBoundsWidget = InTargetWidget;
-	BoxBoundsWidget->SetBoxBounds(FVector2d(BSConfig.TargetConfig.BoxBounds.Y, BSConfig.TargetConfig.BoxBounds.Z));
-	ConfigPtr = InBSConfig;
+	Init(BSConfig, PlayerSettings);
 }
 
-void ATargetManagerPreview::SetShouldSpawn(const bool bShouldSpawn)
+void ATargetManagerPreview::FinishSimulation()
 {
-	Super::SetShouldSpawn(bShouldSpawn);
+	if (!GetManagedTargets().IsEmpty())
+	{
+		for (TObjectPtr<ATarget> Target : GetManagedTargets())
+		{
+			if (Target)
+			{
+				Target->Destroy();
+			}
+		}
+		ManagedTargets.Empty();
+	}
 }
 
-void ATargetManagerPreview::OnPlayerStopTrackingTarget()
+float ATargetManagerPreview::GetSimulation_TargetSpawnCD() const
 {
-	Super::OnPlayerStopTrackingTarget();
+	if (BSConfig)
+	{
+		return BSConfig->TargetConfig.TargetSpawnCD;
+	}
+	return -1.f;
 }
 
-void ATargetManagerPreview::OnAudioAnalyzerBeat()
+void ATargetManagerPreview::SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets, const float InDestroyChance)
 {
-	Super::OnAudioAnalyzerBeat();
+	bSimulatePlayerDestroyingTargets = bInSimulatePlayerDestroyingTargets;
+	DestroyChance = InDestroyChance;
 }
 
 ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
@@ -51,7 +61,8 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 			{
 				if (UTargetWidget* TargetWidget = CreateTargetWidget.Execute())
 				{
-					TargetPreview->InitTargetWidget(TargetWidget, GetWidgetPositionFromWorldPosition(TargetPreview->GetActorLocation()));
+					TargetPreview->InitTargetWidget(TargetWidget, GetBoxOrigin(), TargetPreview->GetActorLocation());
+					TargetPreview->SetSimulatePlayerDestroying(bSimulatePlayerDestroyingTargets, DestroyChance);
 				}
 			}
 		}
@@ -59,159 +70,12 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 	return Target;
 }
 
-bool ATargetManagerPreview::ActivateTarget(ATarget* InTarget) const
-{
-	return Super::ActivateTarget(InTarget);
-}
-
-void ATargetManagerPreview::HandleRuntimeSpawnAndActivation()
-{
-	Super::HandleRuntimeSpawnAndActivation();
-}
-
-int32 ATargetManagerPreview::GetNumberOfRuntimeTargetsToSpawn() const
-{
-	return Super::GetNumberOfRuntimeTargetsToSpawn();
-}
-
-int32 ATargetManagerPreview::GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const
-{
-	return Super::GetNumberOfTargetsToActivate(MaxPossibleToActivate);
-}
-
-void ATargetManagerPreview::HandleActivateExistingTargets()
-{
-	Super::HandleActivateExistingTargets();
-}
-
-void ATargetManagerPreview::HandlePermanentlyActiveTargetActivation() const
-{
-	Super::HandlePermanentlyActiveTargetActivation();
-}
-
-void ATargetManagerPreview::SpawnUpfrontOnlyTargets()
-{
-	Super::SpawnUpfrontOnlyTargets();
-}
-
-void ATargetManagerPreview::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent)
-{
-	Super::OnTargetHealthChangedOrExpired(TargetDamageEvent);
-}
-
-void ATargetManagerPreview::UpdateConsecutiveTargetsHit(const float TimeAlive)
-{
-	Super::UpdateConsecutiveTargetsHit(TimeAlive);
-}
-
-void ATargetManagerPreview::UpdateDynamicSpawnScale(const float TimeAlive)
-{
-	Super::UpdateDynamicSpawnScale(TimeAlive);
-}
-
-void ATargetManagerPreview::HandleTargetExpirationDelegate(const ETargetDamageType& DamageType, const FTargetDamageEvent& TargetDamageEvent) const
-{
-	Super::HandleTargetExpirationDelegate(DamageType, TargetDamageEvent);
-}
-
-void ATargetManagerPreview::HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions, const FTargetDamageEvent& TargetDamageEvent)
-{
-	Super::HandleManagedTargetRemoval(TargetDestructionConditions, TargetDamageEvent);
-}
-
-void ATargetManagerPreview::FindNextTargetProperties()
-{
-	Super::FindNextTargetProperties();
-}
-
-FVector ATargetManagerPreview::GetNextTargetScale() const
-{
-	return Super::GetNextTargetScale();
-}
-
-USpawnArea* ATargetManagerPreview::GetNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const
-{
-	return Super::GetNextSpawnArea(BoundsScalingPolicy, NewTargetScale);
-}
-
-FVector ATargetManagerPreview::GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const
-{
-	return Super::GetRandomMovingTargetEndLocation(LocationBeforeChange, TargetSpeed, bLastDirectionChangeHorizontal);
-}
-
 void ATargetManagerPreview::UpdateSpawnVolume() const
 {
 	Super::UpdateSpawnVolume();
-	if (BoxBoundsWidget && ConfigPtr)
+	if (BoxBoundsWidget && GetBSConfig())
 	{
-		BoxBoundsWidget->SetBoxBounds(FVector2d(ConfigPtr->TargetConfig.BoxBounds.Y, ConfigPtr->TargetConfig.BoxBounds.Z));
+		BoxBoundsWidget->SetBoxBounds(FVector2d(SpawnBox->GetUnscaledBoxExtent().Y * 2.f, SpawnBox->GetUnscaledBoxExtent().Z * 2.f));
 	}
-}
-
-void ATargetManagerPreview::UpdateTotalPossibleDamage()
-{
-	Super::UpdateTotalPossibleDamage();
-}
-
-bool ATargetManagerPreview::TrackingTargetIsDamageable() const
-{
-	return Super::TrackingTargetIsDamageable();
-}
-
-ATarget* ATargetManagerPreview::FindManagedTargetByGuid(const FGuid Guid) const
-{
-	return Super::FindManagedTargetByGuid(Guid);
-}
-
-FVector ATargetManagerPreview::GetBoxExtents_Static() const
-{
-	return Super::GetBoxExtents_Static();
-}
-
-FVector ATargetManagerPreview::GetBoxOrigin() const
-{
-	return Super::GetBoxOrigin();
-}
-
-FExtrema ATargetManagerPreview::GetBoxExtrema(const bool bDynamic) const
-{
-	return Super::GetBoxExtrema(bDynamic);
-}
-
-FExtrema ATargetManagerPreview::GenerateBoxExtremaGrid() const
-{
-	return Super::GenerateBoxExtremaGrid();
-}
-
-int32 ATargetManagerPreview::AddToManagedTargets(ATarget* SpawnTarget)
-{
-	return Super::AddToManagedTargets(SpawnTarget);
-}
-
-void ATargetManagerPreview::RemoveFromManagedTargets(const FGuid GuidToRemove)
-{
-	Super::RemoveFromManagedTargets(GuidToRemove);
-}
-
-void ATargetManagerPreview::SetBoxExtents_Dynamic() const
-{
-	Super::SetBoxExtents_Dynamic();
-}
-
-void ATargetManagerPreview::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
-{
-	Super::UpdatePlayerSettings(InPlayerSettings);
-}
-
-USpawnArea* ATargetManagerPreview::TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const
-{
-	return Super::TryGetSpawnAreaFromReinforcementLearningComponent(OpenLocations);
-}
-
-FVector2d ATargetManagerPreview::GetWidgetPositionFromWorldPosition(const FVector& InPosition) const
-{
-	const float X = InPosition.Y;
-	const float Y = InPosition.Z - GetBoxOrigin().Z;
-	return FVector2d(X, Y);
 }
 

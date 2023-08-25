@@ -20,6 +20,12 @@ void UCustomGameModesWidgetBase::NativeConstruct()
 	Widget_Start->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 }
 
+void UCustomGameModesWidgetBase::NativeDestruct()
+{
+	Super::NativeDestruct();
+	BSConfig = nullptr;
+}
+
 UBSGameModeDataAsset* UCustomGameModesWidgetBase::GetGameModeDataAsset() const
 {
 	return GameModeDataAsset ? GameModeDataAsset.Get() : nullptr;
@@ -27,7 +33,7 @@ UBSGameModeDataAsset* UCustomGameModesWidgetBase::GetGameModeDataAsset() const
 
 void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
 {
-	CurrentConfigPtr = InConfig;
+	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
 	
 	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
@@ -97,9 +103,9 @@ bool UCustomGameModesWidgetBase::GetAllChildWidgetOptionsValid() const
 	return bReturnTrue ? true : false;
 }
 
-void UCustomGameModesWidgetBase::RefreshGameModeTemplateOptions() const
+void UCustomGameModesWidgetBase::RefreshGameModeTemplateComboBoxOptions() const
 {
-	Widget_Start->RefreshGameModeTemplateOptions();
+	Widget_Start->RefreshGameModeTemplateComboBoxOptions();
 }
 
 void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)

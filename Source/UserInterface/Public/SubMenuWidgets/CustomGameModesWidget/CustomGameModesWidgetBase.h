@@ -22,6 +22,7 @@ class UCustomGameModesWidget_Start;
 DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FRequestGameModeTemplateUpdate, const FString& GameMode, const EGameModeDifficulty& Difficulty);
 
+/** Base class for the two types of CustomGameModesWidgets */
 UCLASS()
 class USERINTERFACE_API UCustomGameModesWidgetBase : public UUserWidget, public ISaveLoadInterface
 {
@@ -34,7 +35,7 @@ public:
 	/** Calls UpdateOptionsFromConfig on all widgets in ChildWidgets array */
 	UFUNCTION()
 	void Update();
-
+	
 	/** Returns the NewCustomGameModeName from Widget_Start */
 	FString GetNewCustomGameModeName() const;
 	
@@ -50,8 +51,8 @@ public:
 	/** Returns whether or not all child widget custom game mode options are valid. Iterates through ChildWidgetValidityMap */
 	bool GetAllChildWidgetOptionsValid() const;
 
-	/** Clears all GameModeTemplate options and repopulates */
-	void RefreshGameModeTemplateOptions() const;
+	/** Clears all GameModeTemplate ComboBox options and repopulates */
+	void RefreshGameModeTemplateComboBoxOptions() const;
 	
 	/** Broadcast any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
@@ -59,9 +60,13 @@ public:
 	/** Broadcast when the boolean AllOptionsValid value of any widget in ChildWidgetValidityMap is changed */
 	FRequestButtonStateUpdate RequestButtonStateUpdate;
 
+	FBSConfig* GetBSConfig() const { return BSConfig; }
+
 protected:
 	/** Adds child widgets to ChildWidgets array, binds to Widget_Start's RequestGameModeTemplateUpdate */
 	virtual void NativeConstruct() override;
+
+	virtual void NativeDestruct() override;
 
 	/** Override to provide widget with access to FindPresetGameMode functions from ISaveLoadInterface */
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override;
@@ -97,7 +102,7 @@ protected:
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
 
 	/** Pointer to Game Mode Config held in controlling GameModesWidget*/
-	FBSConfig* CurrentConfigPtr;
+	FBSConfig* BSConfig;
 
 	/** Maps each child widget to a boolean value representing if all its custom game mode options are valid */
 	TMap<TObjectPtr<UCustomGameModesWidgetComponent>, bool> ChildWidgetValidityMap;

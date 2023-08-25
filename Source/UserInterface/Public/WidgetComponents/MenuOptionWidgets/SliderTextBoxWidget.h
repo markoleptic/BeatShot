@@ -24,12 +24,19 @@ class USERINTERFACE_API USliderTextBoxWidget : public UMenuOptionWidget
 	GENERATED_BODY()
 
 public:
+	/** Sets the Min and Max values of the slider and sets the grid snap size */
 	void SetValues(const float Min, const float Max, const float SnapSize);
-	void SetValue(const float Value) const;
-	float GetSliderValue() const;
-	float GetEditableTextBoxValue() const;
 	
-	FOnLockStateChanged OnLockStateChanged;
+	/** Sets the value for the slider and EditableTextBox */
+	void SetValue(const float Value) const;
+
+	/** Returns the value for the slider */
+	float GetSliderValue() const;
+
+	/** Returns the value for the EditableTextBox */
+	float GetEditableTextBoxValue() const;
+
+	/** Broadcast when the slider value changes or the EditableTextBox has text committed to it */
 	FOnSliderTextBoxValueChanged OnSliderTextBoxValueChanged;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -44,4 +51,6 @@ protected:
 	void OnSliderChanged_Slider(const float Value);
 	UFUNCTION()
 	void OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType);
+	
+	float GridSnapSize = 1.f;
 };

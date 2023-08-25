@@ -38,6 +38,12 @@ void UCustomGameModesWidgetComponent::SetAllOptionsValid(const bool bUpdateAllOp
 	}
 }
 
+void UCustomGameModesWidgetComponent::NativeDestruct()
+{
+	Super::NativeDestruct();
+	BSConfig = nullptr;
+}
+
 void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	BSConfig = InConfigPtr;

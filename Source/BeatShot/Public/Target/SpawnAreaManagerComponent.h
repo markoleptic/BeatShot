@@ -268,12 +268,11 @@ class BEATSHOT_API USpawnAreaManagerComponent : public UActorComponent
 	
 public:
 	USpawnAreaManagerComponent();
+
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 	
 	/** Initializes basic variables in SpawnAreaManagerComponent */
-	void Init(const FBSConfig& InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents);
-
-	/** Initializes the SpawnCounter array */
-	TArray<FVector> InitializeSpawnAreas(const FExtrema& InStaticExtrema);
+	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents, const FExtrema& InStaticExtrema);
 	
 	/** Finds a SpawnArea with the matching InIndex */
 	USpawnArea* FindSpawnAreaFromIndex(const int32 InIndex) const;
@@ -394,10 +393,15 @@ private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
 	void SetAppropriateSpawnMemoryValues();
 	
-	TArray<FVector> GetAllBottomLeftVertices() const { return AllBottomLeftVertices; }
+	/** Initializes the SpawnCounter array */
+	TArray<FVector> InitializeSpawnAreas();
 	
-	/** Initialized at start */
-	FBSConfig BSConfig;
+	TArray<FVector> GetAllBottomLeftVertices() const { return AllBottomLeftVertices; }
+
+	FBSConfig* GetBSConfig() const { return BSConfig; }
+	
+	/** Pointer to TargetManager's BSConfig */
+	FBSConfig* BSConfig;
 	
 	/** The total amount of horizontal SpawnAreas in SpawnAreas */
 	int32 Width;
@@ -408,7 +412,7 @@ private:
 	/** Stores all possible spawn locations and the total spawns & player hits at each location */
 	UPROPERTY()
 	TArray<USpawnArea*> SpawnAreas;
-
+	
 	/** An array containing the BottomLeftVertex of all SpawnAreas */
 	TArray<FVector> AllBottomLeftVertices;
 

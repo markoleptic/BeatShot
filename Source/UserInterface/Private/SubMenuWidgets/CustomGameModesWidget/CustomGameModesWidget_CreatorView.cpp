@@ -18,7 +18,7 @@ void UCustomGameModesWidget_CreatorView::NativeConstruct()
 
 	Button_Next->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
 	Button_Previous->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
-	Button_Create->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
+	// GameModesWidget binds to Button_Create
 
 	Button_Next->SetIsEnabled(true);
 	Button_Previous->SetIsEnabled(false);
@@ -35,17 +35,17 @@ void UCustomGameModesWidget_CreatorView::Init(FBSConfig* InConfig, const TObject
 {
 	// Doesn't call parent function so it can set correct Next widget values in InitComponent
 	
-	CurrentConfigPtr = InConfig;
+	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
 	
-	Widget_Start->InitComponent(CurrentConfigPtr, Widget_SpawnArea);
-	Widget_SpawnArea->InitComponent(CurrentConfigPtr, Widget_Spawning);
-	Widget_Spawning->InitComponent(CurrentConfigPtr, Widget_Activation);
-	Widget_Activation->InitComponent(CurrentConfigPtr, Widget_Deactivation);
-	Widget_Deactivation->InitComponent(CurrentConfigPtr, Widget_General);
-	Widget_General->InitComponent(CurrentConfigPtr, Widget_Target);
-	Widget_Target->InitComponent(CurrentConfigPtr, Widget_Start);
-	Widget_Preview->InitComponent(CurrentConfigPtr, nullptr);
+	Widget_Start->InitComponent(BSConfig, Widget_SpawnArea);
+	Widget_SpawnArea->InitComponent(BSConfig, Widget_Spawning);
+	Widget_Spawning->InitComponent(BSConfig, Widget_Activation);
+	Widget_Activation->InitComponent(BSConfig, Widget_Deactivation);
+	Widget_Deactivation->InitComponent(BSConfig, Widget_General);
+	Widget_General->InitComponent(BSConfig, Widget_Target);
+	Widget_Target->InitComponent(BSConfig, Widget_Start);
+	Widget_Preview->InitComponent(BSConfig, nullptr);
 }
 
 void UCustomGameModesWidget_CreatorView::OnBSButtonPressed(const UBSButton* BSButton)
@@ -57,10 +57,6 @@ void UCustomGameModesWidget_CreatorView::OnBSButtonPressed(const UBSButton* BSBu
 	else if (BSButton == Button_Previous)
 	{
 		TransitionBackward();
-	}
-	else if (BSButton == Button_Create)
-	{
-		
 	}
 }
 

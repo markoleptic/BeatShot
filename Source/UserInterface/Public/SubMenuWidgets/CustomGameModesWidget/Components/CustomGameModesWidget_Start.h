@@ -44,7 +44,7 @@ public:
 	bool UpdateGameModeTemplateVisibility() const;
 
 	/** Clears all GameModeTemplate options and repopulates */
-	void RefreshGameModeTemplateOptions() const;
+	void RefreshGameModeTemplateComboBoxOptions() const;
 
 protected:
 	virtual void NativeConstruct() override;

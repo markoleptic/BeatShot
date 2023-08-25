@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "CustomGameModesWidgetBase.h"
 #include "Components/CustomGameModesWidget_Start.h"
-#include "WidgetComponents/Buttons/BSButton.h"
 #include "CustomGameModesWidget_CreatorView.generated.h"
 
 class UCustomGameModesWidget_Target;
@@ -51,14 +50,16 @@ protected:
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCustomGameModesWidget_Preview* Widget_Preview;
-protected:
 	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_Create;
+	
+protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Next;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Previous;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_Create;
+
 	
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetComponent> CurrentWidget;

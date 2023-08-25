@@ -85,8 +85,11 @@ public:
 	void ShowDebug_OverlappingVertices(const bool bShow);
 	
 	/** Called from selected DefaultGameMode */
-	virtual void Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
+	void Init(const FBSConfig& InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
+	/** Called from MainMenuGameMode */
+	virtual void Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
+	
 	/** Called from selected DefaultGameMode */
 	virtual void SetShouldSpawn(const bool bShouldSpawn);
 
@@ -119,6 +122,8 @@ public:
 	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
 
 protected:
+	void Init_Internal();
+	
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
 	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea);
@@ -181,9 +186,8 @@ protected:
 	
 	/** Returns true if a target exists that is vulnerable to tracking damage */
 	virtual bool TrackingTargetIsDamageable() const;
-	
-	/** Returns a copy of all spawn locations that were created on initialization */
-	virtual TArray<FVector> GetAllSpawnLocations() const { return AllSpawnLocations; }
+
+	virtual FBSConfig* GetBSConfig() const { return BSConfig; }
 
 	/** Returns a copy of ManagedTargets */
 	virtual TArray<TObjectPtr<ATarget>> GetManagedTargets() const { return ManagedTargets; }
@@ -219,7 +223,8 @@ protected:
 	virtual USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 	
 	/** Initialized at start of game mode by DefaultGameMode */
-	FBSConfig BSConfig;
+	FBSConfig BSConfigLocal;
+	FBSConfig* BSConfig;
 
 	/** Settings that get updated by DefaultGameMode if they change */
 	FPlayerSettings_Game PlayerSettings;
@@ -265,9 +270,6 @@ protected:
 	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()
 	TArray<TObjectPtr<ATarget>> ManagedTargets;
-
-	/** All Spawn Locations that were generated on initialization */
-	TArray<FVector> AllSpawnLocations;
 
 	/** The total amount of ticks while at least one tracking target was damageable */
 	double TotalPossibleDamage;

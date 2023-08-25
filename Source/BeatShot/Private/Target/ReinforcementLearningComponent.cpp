@@ -18,6 +18,14 @@ void UReinforcementLearningComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+void UReinforcementLearningComponent::DestroyComponent(bool bPromoteChildren)
+{
+	QTableIndices.Empty();
+	TargetPairs.Empty();
+	ActiveTargetPairs.Empty();
+	Super::DestroyComponent(bPromoteChildren);
+}
+
 void UReinforcementLearningComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);

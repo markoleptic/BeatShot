@@ -186,6 +186,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	virtual void DestroyComponent(bool bPromoteChildren) override;
+	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 

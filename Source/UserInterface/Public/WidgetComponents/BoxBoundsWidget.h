@@ -9,17 +9,19 @@
 class USizeBox;
 class UImage;
 
+/** Represents the BoxBounds of a game mode, to be used with CustomGameModesWidget_Preview */
 UCLASS()
 class USERINTERFACE_API UBoxBoundsWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
-	virtual void NativeConstruct() override;
-	
+
 public:
+	/** Sets the Width and Height overrides of the BoxBounds, which adjust the BoxBoundsImage size */
 	void SetBoxBounds(const FVector2d& InBounds) const;
 	
 protected:
+	virtual void NativeConstruct() override;
+	
 	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
 	USizeBox* BoxBounds;
 	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
