@@ -1029,24 +1029,27 @@ void ATargetManager::ShowDebug_SpawnBox(const bool bShow)
 	if (bShowDebug_SpawnBox)
 	{
 		SpawnBox->SetHiddenInGame(false);
+		SpawnVolume->SetHiddenInGame(false);
+		SpawnBox->SetVisibility(true);
+		SpawnVolume->SetVisibility(true);
 		SpawnBox->ShapeColor = FColor::Blue;
+		SpawnVolume->MarkRenderStateDirty();
+		SpawnBox->MarkRenderStateDirty();
 		/*TopBox->SetHiddenInGame(false);
 		BottomBox->SetHiddenInGame(false);
 		LeftBox->SetHiddenInGame(false);
 		RightBox->SetHiddenInGame(false);
 		ForwardBox->SetHiddenInGame(false);
 		BackwardBox->SetHiddenInGame(false);*/
-		DrawDebugBox(GetWorld(), GetBoxOrigin(), StaticExtents, FColor::Yellow, true, -1, 0, 6);
 	}
 	else
 	{
+		SpawnVolume->SetHiddenInGame(true);
 		SpawnBox->SetHiddenInGame(true);
-		TopBox->SetHiddenInGame(true);
-		BottomBox->SetHiddenInGame(true);
-		LeftBox->SetHiddenInGame(true);
-		RightBox->SetHiddenInGame(true);
-		ForwardBox->SetHiddenInGame(true);
-		BackwardBox->SetHiddenInGame(true);
+		SpawnVolume->SetVisibility(false);
+		SpawnVolume->SetVisibility(false);
+		SpawnVolume->MarkRenderStateDirty();
+		SpawnBox->MarkRenderStateDirty();
 		FlushPersistentDebugLines(GetWorld());
 	}
 }

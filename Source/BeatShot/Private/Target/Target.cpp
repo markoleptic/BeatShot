@@ -128,6 +128,8 @@ void ATarget::BeginPlay()
 
 void ATarget::PostInitializeComponents()
 {
+	Super::PostInitializeComponents();
+	
 	if (GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
@@ -157,9 +159,7 @@ void ATarget::PostInitializeComponents()
 
 	if (ProjectileMovementComponent)
 	{
-		if (!Config.bMoveTargetsForward &&
-			!Config.bApplyVelocityWhenSpawned &&
-			!Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity) &&
+		if (!Config.bMoveTargetsForward && !Config.bApplyVelocityWhenSpawned && !Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity) &&
 			!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 		{
 			ProjectileMovementComponent->Deactivate();
@@ -174,8 +174,6 @@ void ATarget::PostInitializeComponents()
 			}
 		}
 	}
-	
-	Super::PostInitializeComponents();
 }
 
 void ATarget::Tick(float DeltaSeconds)
