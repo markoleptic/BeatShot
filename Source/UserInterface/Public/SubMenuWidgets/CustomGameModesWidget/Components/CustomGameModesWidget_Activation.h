@@ -32,6 +32,9 @@ protected:
 
 	/** Updates options that depend on the value selection of TargetActivationResponses and ConstantTargetSpeed */
 	void UpdateDependentOptions_ConstantTargetSpeed(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
+
+	/** Updates options that depend on the value selection of MoveTargetsForward */
+	void UpdateDependentOptions_MoveTargetsForward(const bool bMoveTargetsForward);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantNumTargetsToActivateAtOnce;
@@ -54,18 +57,25 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_LifetimeTargetScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantTargetSpeed;
+	UCheckBoxOptionWidget* CheckBoxOption_ConstantActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_TargetSpeed;
+	USliderTextBoxWidget* SliderTextBoxOption_ActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinTargetSpeed;
+	USliderTextBoxWidget* SliderTextBoxOption_MinActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxTargetSpeed;
+	USliderTextBoxWidget* SliderTextBoxOption_MaxActivatedTargetVelocity;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_MoveTargetsForward;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MoveForwardDistance;
 
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce(const bool bChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ConstantTargetSpeed(const bool bChecked);
+	void OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_MoveTargetsForward(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	

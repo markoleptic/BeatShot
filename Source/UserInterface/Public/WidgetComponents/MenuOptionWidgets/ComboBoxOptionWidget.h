@@ -22,13 +22,12 @@ public:
 
 	/** Executed when a ComboBoxEntry requests a tooltip description. If an empty string is returned, no tooltip image is shown */
 	FGetComboBoxEntryTooltipStringTableKey GetComboBoxEntryTooltipStringTableKey;
+
+	void SortAndAddOptions(TArray<FString>& InOptions) const;
 	
 protected:
 	virtual void NativeConstruct() override;
 	virtual UTooltipWidget* IBSWidgetInterface::ConstructTooltipWidget() override { return nullptr; }
 	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
 	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
-
-	UFUNCTION()
-	void OnSelectionChanged_ComboBox(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 };

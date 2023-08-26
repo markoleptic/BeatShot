@@ -174,6 +174,9 @@ protected:
 
 	/** Find the next spawn location for a target */
 	virtual USpawnArea* GetNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
+
+	/** Calls GetRandomMovingTargetEndLocation and sets the new direction of the target. Spawn = 0, Activation  = 1, Deactivation = 2 */
+	void ChangeTargetDirection(ATarget* InTarget, const uint8 InSpawnActivationDeactivation) const;
 	
 	/** Randomizes a location to set the BeatTrack target to move towards */
 	virtual FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
@@ -273,4 +276,10 @@ protected:
 
 	/** The total amount of ticks while at least one tracking target was damageable */
 	double TotalPossibleDamage;
+
+	/** Whether or not the last activated target direction change was horizontal */
+	mutable bool bLastActivatedTargetDirectionChangeHorizontal;
+
+	/** Whether or not the last spawned target direction change was horizontal */
+	mutable bool bLastSpawnedTargetDirectionChangeHorizontal;
 };

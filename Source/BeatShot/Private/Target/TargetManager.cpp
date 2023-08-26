@@ -58,6 +58,8 @@ ATargetManager::ATargetManager()
 	DynamicSpawnScale = 0;
 	ManagedTargets = TArray<ATarget*>();
 	TotalPossibleDamage = 0.f;
+	bLastSpawnedTargetDirectionChangeHorizontal = false;
+	bLastActivatedTargetDirectionChangeHorizontal = false;
 }
 
 void ATargetManager::BeginPlay()
@@ -299,9 +301,19 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 		this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Target->Init(GetBSConfig()->TargetConfig);
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
+	if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
+	{
+		Target->OnDeactivationResponse_ChangeDirection.AddUObject(this, &ATargetManager::ChangeTargetDirection);
+	}
 	InSpawnArea->SetTargetGuid(Target->GetGuid());
 	Target->FinishSpawning(FTransform(), true);
 	AddToManagedTargets(Target);
+	if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned)
+	{
+		Target->SetTargetSpeed(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetSpeed, GetBSConfig()->TargetConfig.MaxSpawnedTargetSpeed));
+		ChangeTargetDirection(Target, 0);
+		bLastSpawnedTargetDirectionChangeHorizontal = !bLastSpawnedTargetDirectionChangeHorizontal;
+	}
 	return Target;
 }
 
@@ -325,31 +337,28 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	{
 		InTarget->ApplyImmunityEffect();
 	}
-	else if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
+	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
 	{
 		InTarget->RemoveImmunityEffect();
 	}
-	else if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ToggleImmunity))
+	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ToggleImmunity))
 	{
 		InTarget->IsTargetImmune() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
 	}
-	
 	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
-		InTarget->SetTargetSpeed(FMath::FRandRange(GetBSConfig()->TargetConfig.MinTargetSpeed, GetBSConfig()->TargetConfig.MaxTargetSpeed));
+		InTarget->SetTargetSpeed(FMath::FRandRange(GetBSConfig()->TargetConfig.MinActivatedTargetSpeed, GetBSConfig()->TargetConfig.MaxActivatedTargetSpeed));
 	}
 	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
 	{
-		const FVector NewDirection = UKismetMathLibrary::GetDirectionUnitVector(InTarget->GetActorLocation(),
-			GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetTargetSpeed(), InTarget->GetLastDirectionChangeHorizontal()));
-		InTarget->SetTargetDirection(NewDirection);
-		InTarget->SetLastDirectionChangeHorizontal(!InTarget->GetLastDirectionChangeHorizontal());
+		ChangeTargetDirection(InTarget, 1);
+		bLastActivatedTargetDirectionChangeHorizontal = !bLastActivatedTargetDirectionChangeHorizontal;
 	}
 	
-	/*if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
+	if (InTarget->HasTargetBeenActivatedBefore() && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
 	{
 		InTarget->SetTargetScale(GetNextTargetScale());
-	}*/
+	}
 	
 	if (InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan))
 	{
@@ -699,9 +708,9 @@ FVector ATargetManager::GetNextTargetScale() const
 	if (GetBSConfig()->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
 	{
 		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MinSpawnTargetScale, GetBSConfig()->TargetConfig.MaxSpawnTargetScale, NewFactor));
+		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale, NewFactor));
 	}
-	return FVector(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnTargetScale, GetBSConfig()->TargetConfig.MaxSpawnTargetScale));
+	return FVector(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale));
 }
 
 USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const
@@ -756,11 +765,35 @@ USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsSc
 	return nullptr;
 }
 
+void ATargetManager::ChangeTargetDirection(ATarget* InTarget, const uint8 InSpawnActivationDeactivation) const
+{
+	// Alternate directions of spawned targets, while also alternating directions of individual target direction changes
+	bool bLastDirectionChangeHorizontal;
+	
+	if (InSpawnActivationDeactivation == 0)
+	{
+		bLastDirectionChangeHorizontal = bLastSpawnedTargetDirectionChangeHorizontal;
+	}
+	else if (InSpawnActivationDeactivation == 1)
+	{
+		bLastDirectionChangeHorizontal = bLastActivatedTargetDirectionChangeHorizontal;
+	}
+	else
+	{
+		bLastDirectionChangeHorizontal = InTarget->GetLastDirectionChangeHorizontal();
+	}
+	
+	const FVector NewDirection = UKismetMathLibrary::GetDirectionUnitVector(InTarget->GetActorLocation(),
+	GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetTargetSpeed(), bLastDirectionChangeHorizontal));
+	InTarget->SetTargetDirection(NewDirection);
+	InTarget->SetLastDirectionChangeHorizontal(!InTarget->GetLastDirectionChangeHorizontal());
+}
+
 void ATargetManager::UpdateSpawnVolume() const
 {
 	const float LocationX = GetBoxOrigin().X - GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f;
 	// X Extent should be half move forward distance + max sphere radius
-	const float ExtentX = GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f + GetBSConfig()->TargetConfig.MaxSpawnTargetScale * SphereTargetRadius + 10.f;
+	const float ExtentX = GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius + 10.f;
 
 	const FVector DynamicExtent = SpawnBox->Bounds.BoxExtent;
 		
@@ -895,7 +928,7 @@ FExtrema ATargetManager::GetBoxExtrema(const bool bDynamic) const
 
 FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 {
-	const float MaxTargetDiameter = GetBSConfig()->TargetConfig.MaxSpawnTargetScale * SphereTargetDiameter;
+	const float MaxTargetDiameter = GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
 	// This will be SpawnMemoryIncY
 	const float HSpacing = GetBSConfig()->GridConfig.GridSpacing.X + MaxTargetDiameter;
 	// This will be SpawnMemoryIncZ

@@ -346,11 +346,11 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bApplyImmunityOnSpawn;
 
-	/** Whether or not the targets ever move */
+	/** Whether or not the targets should have a velocity when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bMoveTargets;
+	bool bApplyVelocityWhenSpawned;
 	
-	/** If true, move the targets forward towards the player after spawning */
+	/** If true, move the targets forward towards the player after activation */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bMoveTargetsForward;
 
@@ -451,21 +451,37 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float LifetimeTargetScaleMultiplier;
 
-	/** Min multiplier to target size */
+	/** Min target scale to apply to the target when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MinSpawnTargetScale;
+	float MinSpawnedTargetScale;
 
-	/** Max multiplier to target size */
+	/** Max target scale to apply to the target when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MaxSpawnTargetScale;
+	float MaxSpawnedTargetScale;
+
+	/** Min velocity to apply to a target when spawned */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MinSpawnedTargetSpeed;
+
+	/** Max velocity to apply to a target when spawned */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MaxSpawnedTargetSpeed;
 	
-	/** Minimum speed multiplier for a moving target */
+	/** Min velocity to apply to a target when activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MinTargetSpeed;
+	float MinActivatedTargetSpeed;
 
-	/** Maximum speed multiplier for a moving target */
+	/** Max velocity to apply to a target when activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MaxTargetSpeed;
+	float MaxActivatedTargetSpeed;
+
+	/** Min velocity to apply to a target when deactivated */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MinDeactivatedTargetSpeed;
+
+	/** Max velocity to apply to a target when deactivated */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float MaxDeactivatedTargetSpeed;
 
 	/** Length of time to keep targets flags as recent, if not using MaxNumRecentTargets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -550,7 +566,7 @@ struct FBS_TargetConfig
 	{
 		bAllowSpawnWithoutActivation = false;
 		bApplyImmunityOnSpawn = false;
-		bMoveTargets = false;
+		bApplyVelocityWhenSpawned = false;
 		bMoveTargetsForward = false;
 		bSpawnAtOriginWheneverPossible = false;
 		bSpawnEveryOtherTargetInCenter = false;
@@ -579,10 +595,14 @@ struct FBS_TargetConfig
 		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
 		MaxHealth = BaseTargetHealth;
 		MoveForwardDistance = 0.f;
-		MinSpawnTargetScale = DefaultMinTargetScale;
-		MaxSpawnTargetScale = DefaultMaxTargetScale;
-		MinTargetSpeed = 0.f;
-		MaxTargetSpeed = 0.f;
+		MinSpawnedTargetScale = DefaultMinTargetScale;
+		MaxSpawnedTargetScale = DefaultMaxTargetScale;
+		MinSpawnedTargetSpeed = 0.f;
+		MaxSpawnedTargetSpeed = 0.f;
+		MinActivatedTargetSpeed = 0.f;
+		MaxActivatedTargetSpeed = 0.f;
+		MinDeactivatedTargetSpeed = 0.f;
+		MaxDeactivatedTargetSpeed = 0.f;
 		SpawnBeatDelay = DefaultSpawnBeatDelay;
 		RecentTargetTimeLength = 0.f;
 		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
@@ -606,8 +626,7 @@ struct FBS_TargetConfig
 		EndColor = FLinearColor();
 		OutlineColor = FLinearColor();
 	}
-
-
+	
 	/** Returns the location to spawn the SpawnBox at */
 	FVector GenerateSpawnBoxLocation() const
 	{

@@ -71,8 +71,8 @@ ATarget::ATarget()
 	
 	InitialLifeSpan = 0.f;
 	Guid = FGuid::NewGuid();
-	TargetScale_Spawn = FVector::ZeroVector;
 	TargetLocation_Spawn = FVector::ZeroVector;
+	TargetLocation_Activation = FVector::ZeroVector;
 	TargetScale_Spawn = FVector::ZeroVector;
 	TargetScale_Activation = FVector::ZeroVector;
 	TargetScale_Deactivation = FVector::ZeroVector;
@@ -81,6 +81,7 @@ ATarget::ATarget()
 	PeakToEndTimelinePlayRate = 1.f;
 	bCanBeReactivated = true;
 	bApplyLifetimeTargetScaling = false;
+	bHasBeenActivated = false;
 }
 
 void ATarget::BeginPlay()
@@ -115,17 +116,6 @@ void ATarget::BeginPlay()
 	if (Config.bUseSeparateOutlineColor)
 	{
 		SetUseSeparateOutlineColor(true);
-	}
-
-	if (ProjectileMovementComponent && !Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity)
-		&& !Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
-	{
-		ProjectileMovementComponent->Deactivate();
-	}
-
-	if (ProjectileMovementComponent->IsActive())
-	{
-		ProjectileMovementComponent->InitialSpeed = Config.MinTargetSpeed;
 	}
 	
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow))
@@ -167,11 +157,21 @@ void ATarget::PostInitializeComponents()
 
 	if (ProjectileMovementComponent)
 	{
-		ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ATarget::OnProjectileBounce);
-		if (!Config.bMoveTargetsForward)
+		if (!Config.bMoveTargetsForward &&
+			!Config.bApplyVelocityWhenSpawned &&
+			!Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity) &&
+			!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 		{
-			ProjectileMovementComponent->bConstrainToPlane = true;
-			ProjectileMovementComponent->SetPlaneConstraintNormal(FVector(1.f, 0.f, 0.f));
+			ProjectileMovementComponent->Deactivate();
+		}
+		else
+		{
+			ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ATarget::OnProjectileBounce);
+			if (!Config.bMoveTargetsForward)
+			{
+				ProjectileMovementComponent->bConstrainToPlane = true;
+				ProjectileMovementComponent->SetPlaneConstraintNormal(FVector(1.f, 0.f, 0.f));
+			}
 		}
 	}
 	
@@ -335,6 +335,7 @@ bool ATarget::ActivateTarget(const float Lifespan)
 	if (Lifespan > 0)
 	{
 		GetWorldTimerManager().ClearTimer(DamageableWindow);
+		bHasBeenActivated = true;
 		TargetScale_Activation = GetTargetScale_Current();
 		GetWorldTimerManager().SetTimer(DamageableWindow, this, &ATarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
 		PlayStartToPeakTimeline();
@@ -377,29 +378,53 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	{
 		RemoveImmunityEffect();
 	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::AddImmunity))
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::AddImmunity))
 	{
 		ApplyImmunityEffect();
 	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
 	{
 		IsTargetImmune() ? RemoveImmunityEffect() : ApplyImmunityEffect();
 	}
 
 	// Scale
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScale))
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScaleToSpawnedScale))
 	{
-		SetTargetScale(TargetScale_Spawn);
+		SetTargetScale(GetTargetScale_Spawn());
 	}
-	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScaleToActivatedScale))
+	{
+		SetTargetScale(GetTargetScale_Activation());
+	}
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
 	{
 		SetTargetScale(GetTargetScale_Current() * Config.ConsecutiveChargeScaleMultiplier);
 	}
 
-	// Position and Velocity
-	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPosition))
+
+	// Position
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPositionToSpawnedPosition))
 	{
-		SetActorLocation(TargetLocation_Spawn);
+		SetActorLocation(GetTargetLocation_Spawn());
+	}
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPositionToActivatedPosition))
+	{
+		SetActorLocation(GetTargetLocation_Activation());
+	}
+
+	// Velocity
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
+	{
+		SetTargetSpeed(FMath::FRandRange(Config.MinDeactivatedTargetSpeed, Config.MaxDeactivatedTargetSpeed));
+	}
+
+	// Direction
+	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
+	{
+		if (OnDeactivationResponse_ChangeDirection.IsBound())
+		{
+			OnDeactivationResponse_ChangeDirection.Broadcast(this, 2);
+		}
 	}
 
 	// Effects
@@ -522,7 +547,7 @@ void ATarget::InterpPeakToEnd(const float Alpha)
 
 void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, TargetScale_Spawn.X, Alpha)));
+	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, GetTargetScale_Activation().X, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, Config.InactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetTargetColor(Color);
 }
@@ -564,7 +589,7 @@ void ATarget::SetTargetDirection(const FVector& NewDirection) const
 }
 
 void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
-{
+ {
 	if (ProjectileMovementComponent->IsActive())
 	{
 		ProjectileMovementComponent->InitialSpeed = NewMovingTargetSpeed;
@@ -601,6 +626,11 @@ FLinearColor ATarget::GetEndTargetColor() const
 FLinearColor ATarget::GetInActiveTargetColor() const
 {
 	return Config.InactiveTargetColor;
+}
+
+bool ATarget::HasTargetBeenActivatedBefore() const
+{
+	return bHasBeenActivated;
 }
 
 bool ATarget::IsTargetImmune() const
@@ -649,6 +679,20 @@ FVector ATarget::GetTargetScale_Deactivation() const
 FVector ATarget::GetTargetScale_Spawn() const
 {
 	return TargetScale_Spawn;
+}
+
+FVector ATarget::GetTargetLocation_Activation() const
+{
+	if (TargetLocation_Activation != FVector::ZeroVector)
+	{
+		return TargetLocation_Activation;
+	}
+	return TargetLocation_Spawn;
+}
+
+FVector ATarget::GetTargetLocation_Spawn() const
+{
+	return TargetLocation_Spawn;
 }
 
 float ATarget::GetTargetSpeed() const

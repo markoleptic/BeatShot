@@ -24,6 +24,11 @@ protected:
 	virtual void UpdateOptionsFromConfig() override;
 	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy);
 
+	void UpdateDependentOptions_ApplyVelocityWhenSpawned(const bool bApplyVelocityWhenSpawned, const bool bConstantSpawnedTargetVelocity);
+	
+	/** Updates options that depend on the value selection of ConstantSpawnedTargetVelocity */
+	void UpdateDependentOptions_ConstantSpawnedTargetVelocity(const bool bApplyVelocityWhenSpawned, const bool bInConstant);
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
 	
@@ -43,6 +48,17 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_NumRuntimeTargetsToSpawn;
 	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_ApplyVelocityWhenSpawned;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_ConstantSpawnedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_SpawnedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MinSpawnedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MaxSpawnedTargetVelocity;
+	
 	UFUNCTION()
 	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);
 	UFUNCTION()
@@ -53,6 +69,10 @@ protected:
 	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ApplyVelocityWhenSpawned(const bool bChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	

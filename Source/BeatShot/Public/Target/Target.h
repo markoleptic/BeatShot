@@ -23,6 +23,7 @@ class ATarget;
 
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget, const uint8 InSpawnActivationDeactivation);
 
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
@@ -121,6 +122,9 @@ public:
 
 	/** Removes a gameplay tag from AbilitySystemComponent */
 	void RemoveGameplayTag(FGameplayTag TagToRemove) const;
+
+	/** Broadcast when the target needs a new direction because of a deactivation response */
+	FOnDeactivationResponse_ChangeDirection OnDeactivationResponse_ChangeDirection;
 	
 protected:
 	/** Called from HealthComponent when a target receives damage. Calls HandleDeactivation, HandleDestruction,
@@ -229,8 +233,8 @@ public:
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
 
-	
-	bool HasTargetBeenActivatedBefore();
+	/** Returns whether or not the target has been activated before */
+	bool HasTargetBeenActivatedBefore() const;
 
 	/** Whether or not the target is immune to all damage */
 	bool IsTargetImmune() const;
@@ -253,6 +257,12 @@ public:
 
 	/** Returns the scale of the target when it was spawned */
 	FVector GetTargetScale_Spawn() const;
+
+	/** Returns the location of the target when it was activated, falling back to spawn location if not activated yet */
+	FVector GetTargetLocation_Activation() const;
+
+	/** Returns the location of the target when it was spawned */
+	FVector GetTargetLocation_Spawn() const;
 
 	/** Returns the InitialSpeed of the ProjectileMovementComponent */
 	float GetTargetSpeed() const;
@@ -298,8 +308,11 @@ protected:
 	/** The world scale of the target when deactivated */
 	FVector TargetScale_Deactivation;
 
-	/** The location of the target when spawned*/
+	/** The location of the target when spawned */
 	FVector TargetLocation_Spawn;
+
+	/** The location of the target when activated */
+	FVector TargetLocation_Activation;
 
 	/** The color of the target when it was destroyed */
 	FLinearColor ColorWhenDestroyed;
@@ -318,4 +331,7 @@ protected:
 
 	/** Whether or not to apply the LifetimeTargetScaling Method */
 	bool bApplyLifetimeTargetScaling;
+
+	/** Whether or not the target has ever been activated */
+	bool bHasBeenActivated;
 };

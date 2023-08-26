@@ -27,6 +27,9 @@ protected:
 
 	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */
 	void UpdateDependentOptions_TargetDeactivationResponses(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses);
+
+	/** Updates options that depend on the value selection of ConstantDeactivatedTargetVelocity */
+	void UpdateDependentOptions_ConstantDeactivatedTargetVelocity(const TArray<ETargetDeactivationResponse>& Responses, const bool bInConstant);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationConditions;
@@ -37,9 +40,21 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_ConstantDeactivatedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_DeactivatedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MinDeactivatedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MaxDeactivatedTargetVelocity;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDestructionConditions;
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+
+	UFUNCTION()
+	void OnCheckStateChanged_ConstantDeactivatedTargetVelocity(const bool bChecked);
 	
 	UFUNCTION()
 	void OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);

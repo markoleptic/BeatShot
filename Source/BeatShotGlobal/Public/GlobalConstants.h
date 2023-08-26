@@ -315,44 +315,44 @@ namespace Constants
 
 #pragma region MinMaxSnapSize
 	
-	inline constexpr float MinValue_PlayerDelay = 0;
-	inline constexpr float MaxValue_PlayerDelay = 0.5;
-	inline constexpr float SnapSize_PlayerDelay = 0.01;
+	inline constexpr float MinValue_PlayerDelay = 0.f;
+	inline constexpr float MaxValue_PlayerDelay = 0.5f;
+	inline constexpr float SnapSize_PlayerDelay = 0.01f;
 
-	inline constexpr float MinValue_Lifespan = 0.25;
-	inline constexpr float MaxValue_Lifespan = 2;
-	inline constexpr float SnapSize_Lifespan = 0.01;
+	inline constexpr float MinValue_Lifespan = 0.25f;
+	inline constexpr float MaxValue_Lifespan = 2.f;
+	inline constexpr float SnapSize_Lifespan = 0.01f;
 
-	inline constexpr float MinValue_TargetSpawnCD = 0.05;
-	inline constexpr float MaxValue_TargetSpawnCD = 2;
-	inline constexpr float SnapSize_TargetSpawnCD = 0.01;
+	inline constexpr float MinValue_TargetSpawnCD = 0.05f;
+	inline constexpr float MaxValue_TargetSpawnCD = 2.f;
+	inline constexpr float SnapSize_TargetSpawnCD = 0.01f;
 
-	inline constexpr float MinValue_MinTargetDistance = 0;
-	inline constexpr float MaxValue_MinTargetDistance = 600;
-	inline constexpr float SnapSize_MinTargetDistance = 5;
+	inline constexpr float MinValue_MinTargetDistance = 0.f;
+	inline constexpr float MaxValue_MinTargetDistance = 600.f;
+	inline constexpr float SnapSize_MinTargetDistance = 5.f;
 
-	inline constexpr float MinValue_HorizontalSpread = 200;
-	inline constexpr float MaxValue_HorizontalSpread = 3200;
-	inline constexpr float SnapSize_HorizontalSpread = 100;
+	inline constexpr float MinValue_HorizontalSpread = 200.f;
+	inline constexpr float MaxValue_HorizontalSpread = 3200.f;
+	inline constexpr float SnapSize_HorizontalSpread = 100.f;
 	
-	inline constexpr float MinValue_VerticalSpread = 200;
-	inline constexpr float MaxValue_VerticalSpread = 1000;
-	inline constexpr float SnapSize_VerticalSpread = 100;
+	inline constexpr float MinValue_VerticalSpread = 200.f;
+	inline constexpr float MaxValue_VerticalSpread = 1000.f;
+	inline constexpr float SnapSize_VerticalSpread = 100.f;
 	
-	inline constexpr float MinValue_ForwardSpread = 100;
-	inline constexpr float MaxValue_ForwardSpread = 5000;
+	inline constexpr float MinValue_ForwardSpread = 100.f;
+	inline constexpr float MaxValue_ForwardSpread = 5000.f;
 	
-	inline constexpr float MinValue_TargetScale = 0.1;
-	inline constexpr float MaxValue_TargetScale = 2;
-	inline constexpr float SnapSize_TargetScale = 0.01;
+	inline constexpr float MinValue_TargetScale = 0.f;
+	inline constexpr float MaxValue_TargetScale = 2.f;
+	inline constexpr float SnapSize_TargetScale = 0.01f;
 
-	inline constexpr float MinValue_TargetSpeed = 300;
-	inline constexpr float MaxValue_TargetSpeed = 1000;
-	inline constexpr float SnapSize_TargetSpeed = 10;
+	inline constexpr float MinValue_TargetSpeed = 0.f;
+	inline constexpr float MaxValue_TargetSpeed = 1000.f;
+	inline constexpr float SnapSize_TargetSpeed = 10.f;
 
-	inline constexpr float MinValue_FloorDistance = 110;
-	inline constexpr float MaxValue_FloorDistance = 1000;
-	inline constexpr float SnapSize_FloorDistance = 10;
+	inline constexpr float MinValue_FloorDistance = 110.f;
+	inline constexpr float MaxValue_FloorDistance = 1000.f;
+	inline constexpr float SnapSize_FloorDistance = 10.f;
 
 	inline constexpr float MinValue_ConsecutiveChargeScaleMultiplier = 0.25f;
 	inline constexpr float MaxValue_ConsecutiveChargeScaleMultiplier = 1.f;

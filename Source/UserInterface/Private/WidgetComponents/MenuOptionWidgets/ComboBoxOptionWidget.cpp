@@ -8,7 +8,6 @@
 void UComboBoxOptionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_ComboBox);
 	ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
 	ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 }
@@ -27,6 +26,14 @@ FString UComboBoxOptionWidget::GetStringTableKeyFromComboBox(const UBSComboBoxSt
 	return IBSWidgetInterface::GetStringTableKeyFromComboBox(ComboBoxString, EnumString);
 }
 
-void UComboBoxOptionWidget::OnSelectionChanged_ComboBox(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+void UComboBoxOptionWidget::SortAndAddOptions(TArray<FString>& InOptions) const
 {
+	InOptions.Sort([] (const FString& FirstOption, const FString& SecondOption)
+	{
+		return FirstOption < SecondOption;
+	});
+	for (const FString Option : InOptions)
+	{
+		ComboBox->AddOption(Option);
+	}
 }

@@ -119,8 +119,6 @@ GM_MaxTrackingSpeed,Max Tracking Speed
 GM_MinDistanceBetweenTargets,Minimum Distance Between Targets
 GM_MinNumTargetsToActivateAtOnce,Min Number of Targets to Activate at Once
 GM_MinTargetScale,Min Target Scale
-GM_MinTrackingSpeed,Min Tracking Speed
-GM_MoveTargets,Move Targets
 GM_MoveTargetsForward,Move Targets Forward
 GM_MovingTargetDirectionMode,Moving Target Direction Mode
 GM_MultiBeat,Multi Beat
@@ -335,9 +333,18 @@ GM_UseGameModeTemplate,Use Game Mode Template
 GM_LifetimeTargetScaleMultiplier,Lifetime Target Scaling Multiplier
 GM_ConstantNumTargetsToActivateAtOnce,Constant Number of Targets to Activate
 GM_NumTargetsToActivateAtOnce,Number of Targets to Activate At Once
-GM_TargetSpeed,Target Velocity
-GM_MinTargetSpeed,Minimum Target Velocity
-GM_MaxTargetSpeed,Maximum Target Velocity
-GM_ConstantTargetSpeed,Constant Target Velocity
 GM_InfiniteTargetHealth,Infinite Target Health
 GM_TargetScale,Target Scale
+GM_ApplyVelocityWhenSpawned,Apply Velocity On Spawn
+GM_ConstantSpawnedTargetVelocity,Constant Spawned Target Velocity
+GM_SpawnedTargetVelocity,Spawned Target Velocity
+GM_MinSpawnedTargetVelocity,Min Spawned Target Velocity
+GM_MaxSpawnedTargetVelocity,Max Spawned Target Velocity
+GM_ConstantActivatedTargetVelocity,Constant Activated Target Velocity
+GM_ActivatedTargetVelocity,Activated Target Velocity
+GM_MinActivatedTargetVelocity,Min Activated Target Velocity
+GM_MaxActivatedTargetVelocity,Max Activated Target Velocity
+GM_ConstantDeactivatedTargetVelocity,Constant Deactivated Target Velocity
+GM_DeactivatedTargetVelocity,Deactivated Target Velocity
+GM_MinDeactivatedTargetVelocity,Min Deactivated Target Velocity
+GM_MaxDeactivatedTargetVelocity,Max Deactivated Target Velocity

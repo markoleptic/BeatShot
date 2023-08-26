@@ -321,10 +321,10 @@ enum class ETargetDeactivationResponse : uint8
 	ToggleImmunity UMETA(DisplayName="Toggle Immunity"),
 	/** The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this */
 	ApplyDeactivatedTargetScaleMultiplier UMETA(DisplayName="Apply Deactivated Target Scale Multiplier"),
-	/** Reset the scale of the target to the scale it was initialized with */
-	ResetScale UMETA(DisplayName="Reset Scale"),
-	/** Reset the position of the target to the position it was initialized with */
-	ResetPosition UMETA(DisplayName="Reset Position"),
+	/** Reset the scale of the target to the scale it was spawned with */
+	ResetScaleToSpawnedScale UMETA(DisplayName="Reset Scale To Spawned Scale"),
+	/** Reset the position of the target to the position it was spawned with */
+	ResetPositionToSpawnedPosition UMETA(DisplayName="Reset Position To Spawned Position"),
 	/** Reset the color of the target to the inactive color */
 	ResetColorToInactiveColor UMETA(DisplayName="Reset Color To Inactive Color"),
 	/** Reset the scale of the target to the scale it was initialized with */
@@ -335,16 +335,16 @@ enum class ETargetDeactivationResponse : uint8
 	Destroy UMETA(DisplayName="Destroy"),
 	/** Hide the target */
 	HideTarget UMETA(DisplayName="Hide Target"),
-	/** DEPRECATED */
-	Deprecated1 UMETA(DisplayName="Hide"),
-	/** DEPRECATED */
+	/** Change the direction of the target */
 	ChangeDirection UMETA(DisplayName="Change Direction"),
-	/** DEPRECATED */
+	/** Change the velocity of the target according to DeactivationVelocity */
 	ChangeVelocity UMETA(DisplayName="Change Velocity"),
-	/** DEPRECATED */
-	ChangeScale UMETA(DisplayName="Change Scale"),
+	/** Reset the scale of the target to the scale it was activated with */
+	ResetScaleToActivatedScale UMETA(DisplayName="Reset Scale To Activated Scale"),
+	/** Reset the position of the target to the position it was activated with */
+	ResetPositionToActivatedPosition UMETA(DisplayName="Reset Position To Activated Position"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::HideTarget);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::ResetPositionToActivatedPosition);
 
 
 // DEPRECATED

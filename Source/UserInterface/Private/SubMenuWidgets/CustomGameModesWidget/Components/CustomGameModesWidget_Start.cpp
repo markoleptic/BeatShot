@@ -25,20 +25,8 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	ComboBoxOption_GameModeDifficulty->ComboBox->ClearOptions();
-	
-	for (const EBaseGameMode& GameMode : TEnumRange<EBaseGameMode>())
-	{
-		if (GameMode != EBaseGameMode::None)
-		{
-			const FString GameModeName = UEnum::GetDisplayValueAsText(GameMode).ToString();
-			ComboBoxOption_GameModeTemplates->ComboBox->AddOption(GameModeName);
-		}
-	}
-	
-	for (const FBSConfig& GameMode : LoadCustomGameModes())
-	{
-		ComboBoxOption_GameModeTemplates->ComboBox->AddOption(GameMode.DefiningConfig.CustomGameModeName);
-	}
+
+	RefreshGameModeTemplateComboBoxOptions();
 	
 	for (const EGameModeDifficulty& Difficulty : TEnumRange<EGameModeDifficulty>())
 	{
@@ -47,6 +35,7 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 			ComboBoxOption_GameModeDifficulty->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Difficulty).ToString());
 		}
 	}
+	
 	UpdateBrushColors();
 }
 
@@ -219,20 +208,34 @@ bool UCustomGameModesWidget_Start::UpdateGameModeTemplateVisibility() const
 void UCustomGameModesWidget_Start::RefreshGameModeTemplateComboBoxOptions() const
 {
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
+	TArray<FString> Options;
 	
 	for (const EBaseGameMode& GameMode : TEnumRange<EBaseGameMode>())
 	{
 		if (GameMode != EBaseGameMode::None)
 		{
-			const FString GameModeName = UEnum::GetDisplayValueAsText(GameMode).ToString();
-			ComboBoxOption_GameModeTemplates->ComboBox->AddOption(GameModeName);
+			Options.Add(GetStringFromEnum(GameMode));
 		}
 	}
-	
+	for (const FString& Option : Options)
+	{
+		ComboBoxOption_GameModeTemplates->ComboBox->AddOption(Option);
+	}
+	Options.Empty();
+
 	for (const FBSConfig& GameMode : LoadCustomGameModes())
 	{
-		ComboBoxOption_GameModeTemplates->ComboBox->AddOption(GameMode.DefiningConfig.CustomGameModeName);
+		Options.Add(GameMode.DefiningConfig.CustomGameModeName);
 	}
+	Options.Sort([] (const FString& FirstOption, const FString& SecondOption)
+	{
+		return FirstOption < SecondOption;
+	});
+	for (const FString& Option : Options)
+	{
+		ComboBoxOption_GameModeTemplates->ComboBox->AddOption(Option);
+	}
+	Options.Empty();
 }
 
 bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()

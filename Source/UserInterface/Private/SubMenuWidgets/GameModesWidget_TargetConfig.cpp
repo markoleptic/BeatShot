@@ -481,14 +481,14 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	
 	CheckBox_MoveTargetsForward->SetIsChecked(InTargetConfig.bMoveTargetsForward);
 	CheckBox_ApplyImmunityOnSpawn->SetIsChecked(InTargetConfig.bApplyImmunityOnSpawn);
-	CheckBox_MoveTargets->SetIsChecked(InTargetConfig.bMoveTargets);
+	//CheckBox_MoveTargets->SetIsChecked(InTargetConfig.bMoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->SetIsChecked(InTargetConfig.bSpawnAtOriginWheneverPossible);
 	CheckBox_SpawnEveryOtherTargetInCenter->SetIsChecked(InTargetConfig.bSpawnEveryOtherTargetInCenter);
 	CheckBox_AllowSpawnWithoutActivation->SetIsChecked(InTargetConfig.bAllowSpawnWithoutActivation);
 	CheckBox_UseBatchSpawning->SetIsChecked(InTargetConfig.bUseBatchSpawning);
 	
-	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinSpawnTargetScale, InTargetConfig.MaxSpawnTargetScale, InTargetConfig.MinSpawnTargetScale == InTargetConfig.MaxSpawnTargetScale);
-	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
+	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinSpawnedTargetScale, InTargetConfig.MaxSpawnedTargetScale, InTargetConfig.MinSpawnedTargetScale == InTargetConfig.MaxSpawnedTargetScale);
+	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinActivatedTargetSpeed, InTargetConfig.MaxActivatedTargetSpeed, InTargetConfig.MinActivatedTargetSpeed == InTargetConfig.MaxActivatedTargetSpeed);
 	TargetsToActivateAtOnce->UpdateDefaultValuesAbsolute(InTargetConfig.MinNumTargetsToActivateAtOnce, InTargetConfig.MaxNumTargetsToActivateAtOnce, InTargetConfig.MinNumTargetsToActivateAtOnce == InTargetConfig.MaxNumTargetsToActivateAtOnce);
 	ComboBox_BoundsScalingPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.BoundsScalingPolicy).ToString());
 	ComboBox_ConsecutiveTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
@@ -508,7 +508,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	OnSelectionChanged_TargetDistributionPolicy(TArray({UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString()}), ESelectInfo::Type::Direct);
 	OnSelectionChanged_RecentTargetMemoryPolicy(TArray({UEnum::GetDisplayValueAsText(InTargetConfig.RecentTargetMemoryPolicy).ToString()}), ESelectInfo::Type::Direct);
 	OnCheckStateChanged_MoveTargetsForward(InTargetConfig.bMoveTargetsForward);
-	OnCheckStateChanged_MoveTargets(InTargetConfig.bMoveTargets);
+	//OnCheckStateChanged_MoveTargets(InTargetConfig.bMoveTargets);
 	
 	UpdateBrushColors();
 }
@@ -519,13 +519,13 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	
 	ReturnConfig.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(Slider_Lifespan->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
 	ReturnConfig.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(Slider_TargetSpawnCD->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
-	ReturnConfig.MinSpawnTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
-	ReturnConfig.MaxSpawnTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
+	ReturnConfig.MinSpawnedTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
+	ReturnConfig.MaxSpawnedTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
 	ReturnConfig.ConsecutiveChargeScaleMultiplier = FMath::GridSnap(FMath::Clamp(Slider_ConsecutiveChargeScaleMultiplier->GetValue(), MinValue_ConsecutiveChargeScaleMultiplier,
 		MaxValue_ConsecutiveChargeScaleMultiplier), SnapSize_ConsecutiveChargeScaleMultiplier);
-	ReturnConfig.MinTargetSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMinValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
-	ReturnConfig.MaxTargetSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMaxValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.MinActivatedTargetSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMinValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
+	ReturnConfig.MaxActivatedTargetSpeed = FMath::GridSnap(FMath::Clamp(TargetSpeedConstrained->GetMaxValue(), MinValue_TargetSpeed, MaxValue_TargetSpeed), SnapSize_TargetSpeed);
 	ReturnConfig.MinNumTargetsToActivateAtOnce = FMath::GridSnap(FMath::Clamp(TargetsToActivateAtOnce->GetMinValue(), MinValue_MinNumTargetsToActivateAtOnce, MaxValue_MinNumTargetsToActivateAtOnce), SnapSize_MinNumTargetsToActivateAtOnce);
 	ReturnConfig.MaxNumTargetsToActivateAtOnce = FMath::GridSnap(FMath::Clamp(TargetsToActivateAtOnce->GetMaxValue(), MinValue_MaxNumTargetsToActivateAtOnce, MaxValue_MaxNumTargetsToActivateAtOnce), SnapSize_MaxNumTargetsToActivateAtOnce);
 	
@@ -571,7 +571,7 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	
 	ReturnConfig.bApplyImmunityOnSpawn = CheckBox_ApplyImmunityOnSpawn->IsChecked();
 	ReturnConfig.bMoveTargetsForward = CheckBox_MoveTargetsForward->IsChecked();
-	ReturnConfig.bMoveTargets = CheckBox_MoveTargets->IsChecked();
+	//ReturnConfig.bMoveTargets = CheckBox_MoveTargets->IsChecked();
 	ReturnConfig.bSpawnAtOriginWheneverPossible = CheckBox_SpawnAtOriginWheneverPossible->IsChecked();
 	ReturnConfig.bSpawnEveryOtherTargetInCenter = CheckBox_SpawnEveryOtherTargetInCenter->IsChecked();
 	ReturnConfig.bAllowSpawnWithoutActivation = CheckBox_AllowSpawnWithoutActivation->IsChecked();

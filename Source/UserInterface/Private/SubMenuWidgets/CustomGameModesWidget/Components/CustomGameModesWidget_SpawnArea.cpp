@@ -55,15 +55,22 @@ void UCustomGameModesWidget_SpawnArea::NativeConstruct()
 	ComboBoxOption_BoundsScalingPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_TargetDistributionPolicy->ComboBox->ClearOptions();
 
+	TArray<FString> Options;
+	
 	for (const EBoundsScalingPolicy& Method : TEnumRange<EBoundsScalingPolicy>())
 	{
-		ComboBoxOption_BoundsScalingPolicy->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+		Options.Add(GetStringFromEnum(Method));
 	}
+	ComboBoxOption_BoundsScalingPolicy->SortAndAddOptions(Options);
+	Options.Empty();
+	
 	for (const ETargetDistributionPolicy& Method : TEnumRange<ETargetDistributionPolicy>())
 	{
-		ComboBoxOption_TargetDistributionPolicy->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+		Options.Add(GetStringFromEnum(Method));
 	}
-
+	ComboBoxOption_TargetDistributionPolicy->SortAndAddOptions(Options);
+	Options.Empty();
+	
 	SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);

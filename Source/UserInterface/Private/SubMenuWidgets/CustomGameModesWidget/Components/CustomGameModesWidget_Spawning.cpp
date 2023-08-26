@@ -26,30 +26,52 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	SetupTooltip(CheckBoxOption_SpawnAtOriginWheneverPossible->GetTooltipImage(), CheckBoxOption_SpawnAtOriginWheneverPossible->GetTooltipImageText());
 	SetupTooltip(CheckBoxOption_SpawnEveryOtherTargetInCenter->GetTooltipImage(), CheckBoxOption_SpawnEveryOtherTargetInCenter->GetTooltipImageText());
 
+	SetupTooltip(CheckBoxOption_ApplyVelocityWhenSpawned->GetTooltipImage(), CheckBoxOption_ApplyVelocityWhenSpawned->GetTooltipImageText());
+	SetupTooltip(CheckBoxOption_ConstantSpawnedTargetVelocity->GetTooltipImage(), CheckBoxOption_ConstantSpawnedTargetVelocity->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_SpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_SpawnedTargetVelocity->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MinSpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MinSpawnedTargetVelocity->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_MaxSpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MaxSpawnedTargetVelocity->GetTooltipImageText());
+
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValues(MinValue_NumUpfrontTargetsToSpawn, MaxValue_NumUpfrontTargetsToSpawn, SnapSize_NumUpfrontTargetsToSpawn);
 	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValues(MinValue_NumRuntimeTargetsToSpawn, MaxValue_NumRuntimeTargetsToSpawn, SnapSize_NumRuntimeTargetsToSpawn);
+	SliderTextBoxOption_SpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
+	SliderTextBoxOption_MinSpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
+	SliderTextBoxOption_MaxSpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
 
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_NumRuntimeTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_SpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MinSpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MaxSpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_TargetSpawningPolicy);
 	ComboBoxOption_TargetSpawningPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy);
 	
 	CheckBoxOption_AllowSpawnWithoutActivation->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_AllowSpawnWithoutActivation);
 	CheckBoxOption_BatchSpawning->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_BatchSpawning);
-	CheckBoxOption_ApplyImmunityOnSpawn->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_BatchSpawning);
+	CheckBoxOption_ApplyImmunityOnSpawn->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ApplyImmunityOnSpawn);
 	CheckBoxOption_SpawnAtOriginWheneverPossible->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_SpawnAtOriginWheneverPossible);
 	CheckBoxOption_SpawnEveryOtherTargetInCenter->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_SpawnEveryOtherTargetInCenter);
+	CheckBoxOption_ApplyVelocityWhenSpawned->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ApplyVelocityWhenSpawned);
+	CheckBoxOption_ConstantSpawnedTargetVelocity->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ConstantSpawnedTargetVelocity);
 	
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->ClearOptions();
-
+	
+	TArray<FString> Options;
 	for (const ETargetSpawningPolicy& Method : TEnumRange<ETargetSpawningPolicy>())
 	{
-		ComboBoxOption_TargetSpawningPolicy->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+		Options.Add(GetStringFromEnum(Method));
 	}
+	ComboBoxOption_TargetSpawningPolicy->SortAndAddOptions(Options);
+	Options.Empty();
 
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
+
+	CheckBoxOption_ConstantSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 
 	UpdateBrushColors();
 }
@@ -76,7 +98,14 @@ void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(CheckBoxOption_SpawnAtOriginWheneverPossible, BSConfig->TargetConfig.bSpawnAtOriginWheneverPossible);
 	UpdateValueIfDifferent(CheckBoxOption_SpawnEveryOtherTargetInCenter, BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter);
 	
+	UpdateValueIfDifferent(CheckBoxOption_ApplyVelocityWhenSpawned, BSConfig->TargetConfig.bApplyVelocityWhenSpawned);
+	UpdateValueIfDifferent(CheckBoxOption_ConstantSpawnedTargetVelocity, BSConfig->TargetConfig.MinSpawnedTargetSpeed == BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
+	UpdateValueIfDifferent(SliderTextBoxOption_SpawnedTargetVelocity, BSConfig->TargetConfig.MinSpawnedTargetSpeed);
+	UpdateValueIfDifferent(SliderTextBoxOption_MinSpawnedTargetVelocity, BSConfig->TargetConfig.MinSpawnedTargetSpeed);
+	UpdateValueIfDifferent(SliderTextBoxOption_MaxSpawnedTargetVelocity, BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
+	
 	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy);
+	UpdateDependentOptions_ApplyVelocityWhenSpawned(BSConfig->TargetConfig.bApplyVelocityWhenSpawned, BSConfig->TargetConfig.MinSpawnedTargetSpeed == BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
 	
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
@@ -103,6 +132,44 @@ void UCustomGameModesWidget_Spawning::UpdateDependentOptions_TargetSpawningPolic
 		CheckBoxOption_SpawnAtOriginWheneverPossible->CheckBox->SetIsChecked(false);
 		CheckBoxOption_SpawnEveryOtherTargetInCenter->CheckBox->SetIsChecked(false);
 		BSConfig->TargetConfig.bUseBatchSpawning = false;
+	}
+}
+
+void UCustomGameModesWidget_Spawning::UpdateDependentOptions_ApplyVelocityWhenSpawned(const bool bApplyVelocityWhenSpawned, const bool bConstantSpawnedTargetVelocity)
+{
+	if (bApplyVelocityWhenSpawned)
+	{
+		CheckBoxOption_ConstantSpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		CheckBoxOption_ConstantSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	UpdateDependentOptions_ConstantSpawnedTargetVelocity(bApplyVelocityWhenSpawned, bConstantSpawnedTargetVelocity);
+}
+
+void UCustomGameModesWidget_Spawning::UpdateDependentOptions_ConstantSpawnedTargetVelocity(const bool bApplyVelocityWhenSpawned, const bool bInConstant)
+{
+	if (bApplyVelocityWhenSpawned)
+	{
+		if (bInConstant)
+		{
+			SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+			SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+		}
+		else
+		{
+			SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+			SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		}
+	}
+	else
+	{
+		SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -136,6 +203,32 @@ void UCustomGameModesWidget_Spawning::OnCheckStateChanged_SpawnEveryOtherTargetI
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
+void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ApplyVelocityWhenSpawned(const bool bChecked)
+{
+	BSConfig->TargetConfig.bApplyVelocityWhenSpawned = bChecked;
+	UpdateDependentOptions_ApplyVelocityWhenSpawned(BSConfig->TargetConfig.bApplyVelocityWhenSpawned, BSConfig->TargetConfig.MinSpawnedTargetSpeed == BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
+	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked)
+{
+	if (bChecked)
+	{
+		BSConfig->TargetConfig.MinSpawnedTargetSpeed = SliderTextBoxOption_SpawnedTargetVelocity->GetSliderValue();
+		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = SliderTextBoxOption_SpawnedTargetVelocity->GetSliderValue();
+	}
+	else
+	{
+		BSConfig->TargetConfig.MinSpawnedTargetSpeed = SliderTextBoxOption_MinSpawnedTargetVelocity->GetSliderValue();
+		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = SliderTextBoxOption_MaxSpawnedTargetVelocity->GetSliderValue();
+	}
+	
+	UpdateDependentOptions_ConstantSpawnedTargetVelocity(BSConfig->TargetConfig.bApplyVelocityWhenSpawned, bChecked);
+	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
 void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_NumUpfrontTargetsToSpawn)
@@ -146,6 +239,20 @@ void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBox
 	{
 		BSConfig->TargetConfig.NumRuntimeTargetsToSpawn = Value;
 	}
+	else if (Widget == SliderTextBoxOption_SpawnedTargetVelocity && SliderTextBoxOption_SpawnedTargetVelocity->GetVisibility() != ESlateVisibility::Collapsed)
+	{
+		BSConfig->TargetConfig.MinSpawnedTargetSpeed = Value;
+		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = Value;
+	}
+	else if (Widget == SliderTextBoxOption_MinSpawnedTargetVelocity)
+	{
+		BSConfig->TargetConfig.MinSpawnedTargetSpeed = Value;
+	}
+	else if (Widget == SliderTextBoxOption_MaxSpawnedTargetVelocity)
+	{
+		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = Value;
+	}
+	
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 

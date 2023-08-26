@@ -52,10 +52,13 @@ void UCustomGameModesWidget_General::NativeConstruct()
 
 	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->ClearOptions();
 
+	TArray<FString> Options;
 	for (const ERecentTargetMemoryPolicy& Method : TEnumRange<ERecentTargetMemoryPolicy>())
 	{
-		ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
+		Options.Add(GetStringFromEnum(Method));
 	}
+	ComboBoxOption_RecentTargetMemoryPolicy->SortAndAddOptions(Options);
+	Options.Empty();
 
 	SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
