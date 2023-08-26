@@ -24,6 +24,15 @@ protected:
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 	
+	/** Updates options that depend on the value selection of ConstantNumTargetsToActivateAtOnce */
+	void UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(const bool bInConstant);
+
+	/** Updates options that depend on the value selection of TargetActivationResponses */
+	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
+
+	/** Updates options that depend on the value selection of bChangeVelocity and ConstantTargetSpeed */
+	void UpdateDependentOptions_ConstantTargetSpeed(const bool bChangeVelocity, const bool bUseConstantTargetSpeed);
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantNumTargetsToActivateAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

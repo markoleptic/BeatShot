@@ -18,11 +18,13 @@ void UCustomGameModesWidget_CreatorView::NativeConstruct()
 
 	Button_Next->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
 	Button_Previous->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
+	Button_RefreshPreview->OnBSButtonPressed.AddUniqueDynamic(this, &ThisClass::OnBSButtonPressed);
 	// GameModesWidget binds to Button_Create
 
 	Button_Next->SetIsEnabled(true);
 	Button_Previous->SetIsEnabled(false);
 	Button_Create->SetIsEnabled(false);
+	Button_RefreshPreview->SetIsEnabled(false);
 
 	CurrentWidget = Widget_Start;
 	FirstWidget = Widget_Start;
@@ -64,7 +66,7 @@ void UCustomGameModesWidget_CreatorView::TransitionForward()
 {
 	if (CurrentWidget && CurrentWidget->GetNext())
 	{
-		Update();
+		UpdateOptionsFromConfig();
 		CurrentWidget->PlayAnim_TransitionInLeft_Reverse(true);
 		CurrentWidget->GetNext()->PlayAnim_TransitionInRight_Forward(false);
 		ChangeCurrentWidget(CurrentWidget->GetNext());
@@ -96,7 +98,7 @@ void UCustomGameModesWidget_CreatorView::TransitionBackward()
 		
 		if (Previous)
 		{
-			Update();
+			UpdateOptionsFromConfig();
 			CurrentWidget->PlayAnim_TransitionInRight_Reverse(true);
 			Previous->PlayAnim_TransitionInLeft_Forward(false);
 			ChangeCurrentWidget(Previous);

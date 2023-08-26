@@ -26,11 +26,10 @@ void UCustomGameModesWidget_Preview::NativeConstruct()
 
 bool UCustomGameModesWidget_Preview::UpdateAllOptionsValid()
 {
-	return Super::UpdateAllOptionsValid();
+	return true;
 }
 
 void UCustomGameModesWidget_Preview::UpdateOptionsFromConfig()
 {
 	Super::UpdateOptionsFromConfig();
-	UpdateImages(*BSConfig);
 }

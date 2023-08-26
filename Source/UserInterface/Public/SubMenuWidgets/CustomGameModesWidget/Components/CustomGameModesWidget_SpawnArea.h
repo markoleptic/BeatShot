@@ -23,6 +23,9 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	/** Updates options that depend on the value selection of InTargetDistributionPolicy */
+	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& InTargetDistributionPolicy);
+	
 	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
 	virtual TArray<FString> GetWarningTooltipKeys();
 	

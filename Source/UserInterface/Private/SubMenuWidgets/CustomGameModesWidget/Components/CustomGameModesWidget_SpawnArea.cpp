@@ -109,8 +109,16 @@ void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
 	UpdateValueIfDifferent(SliderTextBoxOption_FloorDistance, BSConfig->TargetConfig.FloorDistance);
 	UpdateValueIfDifferent(SliderTextBoxOption_MinDistanceBetweenTargets, BSConfig->TargetConfig.MinDistanceBetweenTargets);
+
+	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	
-	if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& InTargetDistributionPolicy)
+{
+	if (InTargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
 		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -124,9 +132,6 @@ void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	
-	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 TArray<FString> UCustomGameModesWidget_SpawnArea::GetWarningTooltipKeys()
@@ -184,52 +189,27 @@ void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBo
 
 void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
-	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0], EBoundsScalingPolicy::None);
+	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0]);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
-	
-	const ETargetDistributionPolicy TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(Selected[0]);
 
-	if (TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
-	{
-		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
-	}
+	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(Selected[0]);
+	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	
-	BSConfig->TargetConfig.TargetDistributionPolicy = TargetDistributionPolicy;
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }

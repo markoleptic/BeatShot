@@ -59,7 +59,8 @@ protected:
 	UBSButton* Button_Next;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Previous;
-
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_RefreshPreview;
 	
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetComponent> CurrentWidget;

@@ -21,13 +21,20 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+
+	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */
+	void UpdateDependentOptions_TargetDeactivationConditions();
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationConditions;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationResponses;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_TargetDestructionConditions;
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	
@@ -35,7 +42,10 @@ protected:
 	void OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetDestructionConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_TargetDestructionConditions(const FString& EnumString);
 };

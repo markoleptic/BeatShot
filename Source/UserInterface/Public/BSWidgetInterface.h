@@ -141,6 +141,22 @@ public:
 		return OutArray;
 	}
 
+	/** Returns an array of enums corresponding to each string using GetEnumFromString */
+	template<typename T>
+	static TArray<T> GetEnumArrayFromStringArray(const TArray<FString>& InStringArray)
+	{
+		TArray<T> OutArray;
+		if (InStringArray.IsEmpty())
+		{
+			return OutArray;
+		}
+		for (const FString& InString : InStringArray)
+		{
+			OutArray.Add(GetEnumFromString<T>(InString));
+		}
+		return OutArray;
+	}
+
 	/** Returns the String table key for an enum provided that the string table key format is EnumName_EnumValue */
 	template<typename T>
 	static FString GetStringTableKeyNameFromEnum(const T& InEnum)

@@ -8,43 +8,6 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_Input.generated.h"
 
-
-/*USTRUCT()
-struct FActionMappingInfo
-{
-	GENERATED_BODY()
-
-	UPROPERTY()
-	TArray<float> Accuracy;
-	TArray<int32> TotalSpawns;
-	TArray<int32> TotalHits;
-
-	FActionMappingInfo()
-	{
-		Accuracy = TArray<float>();
-		TotalSpawns = TArray<int32>();
-		TotalHits = TArray<int32>();
-	}
-
-	FActionMappingInfo(const int32 Size)
-	{
-		Accuracy = TArray<float>();
-		Accuracy.Init(-1.f, Size);
-		TotalSpawns = TArray<int32>();
-		TotalSpawns.Init(-1, Size);
-		TotalHits = TArray<int32>();
-		TotalHits.Init(0, Size);
-	}
-	FORCEINLINE bool operator==(const FActionMappingInfo& Other) const
-	{
-		return false;
-	}
-	friend FORCEINLINE uint32 GetTypeHash(const FActionMappingInfo& ActionMappingInfo)
-	{
-		return HashCombine(GetTypeHash(ActionMappingInfo.GameModeType), HashCombine(GetTypeHash(ActionMappingInfo.BaseGameMode), HashCombine(GetTypeHash(ActionMappingInfo.CustomGameModeName), GetTypeHash(ActionMappingInfo.Difficulty))));
-	}
-};*/
-
 class UScrollBox;
 class UInputKeySelector;
 class USavedTextWidget;

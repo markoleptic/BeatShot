@@ -23,6 +23,13 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+
+	/** Updates options that depend on the value selection of UnlimitedTargetHealth */
+	void UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth);
+
+	/** Updates options that depend on the value selection of ConsecutiveTargetScalePolicy */
+	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy);
+	
 	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
 	virtual TArray<FString> GetWarningTooltipKeys() override;
 	
@@ -39,9 +46,7 @@ protected:
 	UComboBoxOptionWidget* ComboBoxOption_DamageType;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_ConsecutiveTargetScalePolicy;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantTargetScale;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_TargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -51,8 +56,6 @@ protected:
 
 	UFUNCTION()
 	void OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantTargetScale(const bool bChecked);
 	
 	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	

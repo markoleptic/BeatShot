@@ -34,7 +34,7 @@ public:
 
 	/** Calls UpdateOptionsFromConfig on all widgets in ChildWidgets array */
 	UFUNCTION()
-	void Update();
+	void UpdateOptionsFromConfig();
 	
 	/** Returns the NewCustomGameModeName from Widget_Start */
 	FString GetNewCustomGameModeName() const;

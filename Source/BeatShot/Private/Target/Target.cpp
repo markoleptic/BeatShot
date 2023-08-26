@@ -112,7 +112,8 @@ void ATarget::BeginPlay()
 		SetUseSeparateOutlineColor(true);
 	}
 
-	if (!Config.bMoveTargets && ProjectileMovementComponent)
+	if (ProjectileMovementComponent && !Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity)
+		&& !Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
 	{
 		ProjectileMovementComponent->Deactivate();
 	}
@@ -478,12 +479,12 @@ void ATarget::StopAllTimelines()
 void ATarget::InterpStartToPeak(const float Alpha)
 {
 	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.StartColor, Config.PeakColor, Alpha));
-	if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
+	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
 	{
 		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
 	}
-	else if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
+	else if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
 	{
 		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
@@ -493,12 +494,12 @@ void ATarget::InterpStartToPeak(const float Alpha)
 void ATarget::InterpPeakToEnd(const float Alpha)
 {
 	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.PeakColor, Config.EndColor, Alpha));
-	if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
+	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
 	{
 		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
 	}
-	else if (Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
+	else if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
 	{
 		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));

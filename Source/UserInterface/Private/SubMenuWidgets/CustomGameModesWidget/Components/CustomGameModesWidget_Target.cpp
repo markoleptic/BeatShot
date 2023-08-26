@@ -23,7 +23,6 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 	SetupTooltip(SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImage(), SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImageText());
 	SetupTooltip(ComboBoxOption_DamageType->GetTooltipImage(), ComboBoxOption_DamageType->GetTooltipImageText());
 	SetupTooltip(ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImage(), ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_ConstantTargetScale->GetTooltipImage(), CheckBoxOption_ConstantTargetScale->GetTooltipImageText());
 	SetupTooltip(SliderTextBoxOption_TargetScale->GetTooltipImage(), SliderTextBoxOption_TargetScale->GetTooltipImageText());
 	SetupTooltip(SliderTextBoxOption_MinTargetScale->GetTooltipImage(), SliderTextBoxOption_MinTargetScale->GetTooltipImageText());
 	SetupTooltip(SliderTextBoxOption_MaxTargetScale->GetTooltipImage(), SliderTextBoxOption_MaxTargetScale->GetTooltipImageText());
@@ -49,7 +48,6 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 	ComboBoxOption_ConsecutiveTargetScalePolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy);
 
 	CheckBoxOption_UnlimitedTargetHealth->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_UnlimitedTargetHealth);
-	CheckBoxOption_ConstantTargetScale->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_ConstantTargetScale);
 	
 	ComboBoxOption_DamageType->ComboBox->ClearOptions();
 	ComboBoxOption_ConsecutiveTargetScalePolicy->ComboBox->ClearOptions();
@@ -63,8 +61,7 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 		ComboBoxOption_ConsecutiveTargetScalePolicy->ComboBox->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
 	
-	CheckBoxOption_ConstantTargetScale->CheckBox->SetIsChecked(true);
-	SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	
@@ -87,7 +84,6 @@ bool UCustomGameModesWidget_Target::UpdateAllOptionsValid()
 
 void UCustomGameModesWidget_Target::UpdateOptionsFromConfig()
 {
-	bool bUpdateBrushColors = false;
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetMaxLifeSpan, BSConfig->TargetConfig.TargetMaxLifeSpan);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxHealth, BSConfig->TargetConfig.MaxHealth);
 	UpdateValueIfDifferent(SliderTextBoxOption_ExpirationHealthPenalty, BSConfig->TargetConfig.ExpirationHealthPenalty);
@@ -95,44 +91,43 @@ void UCustomGameModesWidget_Target::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetScale, BSConfig->TargetConfig.MinTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetScale, BSConfig->TargetConfig.MaxTargetScale);
 	
-	UpdateValueIfDifferent(ComboBoxOption_DamageType, UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.TargetDamageType).ToString());
-	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy, UEnum::GetDisplayValueAsText(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy).ToString());
-
-	if (UpdateValueIfDifferent(CheckBoxOption_UnlimitedTargetHealth, BSConfig->TargetConfig.MaxHealth == -1))
-	{
-		if (BSConfig->TargetConfig.MaxHealth == -1)
-		{
-			SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		bUpdateBrushColors = true;
-	}
+	UpdateValueIfDifferent(ComboBoxOption_DamageType, GetStringFromEnum(BSConfig->TargetConfig.TargetDamageType));
+	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy, GetStringFromEnum(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy));
+	UpdateValueIfDifferent(CheckBoxOption_UnlimitedTargetHealth, BSConfig->TargetConfig.MaxHealth == -1);
 	
-	if (UpdateValueIfDifferent(CheckBoxOption_ConstantTargetScale, BSConfig->TargetConfig.MinTargetScale == BSConfig->TargetConfig.MaxTargetScale))
-	{
-		if (BSConfig->TargetConfig.MinTargetScale == BSConfig->TargetConfig.MaxTargetScale)
-		{
-			SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		bUpdateBrushColors = true;
-	}
+	UpdateDependentOptions_UnlimitedTargetHealth(BSConfig->TargetConfig.MaxHealth == -1);
+	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
 	
-	if (bUpdateBrushColors)
-	{
-		UpdateBrushColors();
-	}
+	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_Target::UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth)
+{
+	if (bInUnlimitedTargetHealth)
+	{
+		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void UCustomGameModesWidget_Target::UpdateDependentOptions_ConsecutiveTargetScalePolicy(const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy)
+{
+	if (InConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::Static)
+	{
+		SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
 }
 
 TArray<FString> UCustomGameModesWidget_Target::GetWarningTooltipKeys()
@@ -150,40 +145,12 @@ TArray<FString> UCustomGameModesWidget_Target::GetWarningTooltipKeys()
 
 void UCustomGameModesWidget_Target::OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked)
 {
-	if (bChecked)
-	{
-		BSConfig->TargetConfig.MaxHealth = -1;
-		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	else
-	{
-		BSConfig->TargetConfig.MaxHealth = SliderTextBoxOption_MaxHealth->GetSliderValue();
-		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	UpdateBrushColors();
-}
 
-void UCustomGameModesWidget_Target::OnCheckStateChanged_ConstantTargetScale(const bool bChecked)
-{
-	if (bChecked)
-	{
-		SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
-		BSConfig->TargetConfig.MinTargetScale = SliderTextBoxOption_TargetScale->GetSliderValue();
-		BSConfig->TargetConfig.MaxTargetScale = SliderTextBoxOption_TargetScale->GetSliderValue();
-	}
-	else
-	{
-		SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		BSConfig->TargetConfig.MinTargetScale = SliderTextBoxOption_MinTargetScale->GetSliderValue();
-		BSConfig->TargetConfig.MaxTargetScale = SliderTextBoxOption_MaxTargetScale->GetSliderValue();
-	}
+	BSConfig->TargetConfig.MaxHealth = bChecked ? -1 : SliderTextBoxOption_MaxHealth->GetSliderValue();
+	UpdateDependentOptions_UnlimitedTargetHealth(bChecked);
 	
-	SetAllOptionsValid(UpdateAllOptionsValid());
 	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Target::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -219,35 +186,38 @@ void UCustomGameModesWidget_Target::OnSliderTextBoxValueChanged(USliderTextBoxWi
 
 void UCustomGameModesWidget_Target::OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
-	const ETargetDamageType TargetDamageType = GetEnumFromString<ETargetDamageType>(Selected[0], ETargetDamageType::None);
-	BSConfig->TargetConfig.TargetDamageType = TargetDamageType;
+	BSConfig->TargetConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(Selected[0]);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Target::OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 	
-	const EConsecutiveTargetScalePolicy TargetDistributionPolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(Selected[0], EConsecutiveTargetScalePolicy::None);
-	BSConfig->TargetConfig.ConsecutiveTargetScalePolicy = TargetDistributionPolicy;
+	BSConfig->TargetConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(Selected[0]);
+	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
+
+	if (BSConfig->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::Static)
+	{
+		BSConfig->TargetConfig.MinTargetScale = SliderTextBoxOption_TargetScale->GetSliderValue();
+		BSConfig->TargetConfig.MaxTargetScale = SliderTextBoxOption_TargetScale->GetSliderValue();
+	}
+	else
+	{
+		BSConfig->TargetConfig.MinTargetScale = SliderTextBoxOption_MinTargetScale->GetSliderValue();
+		BSConfig->TargetConfig.MaxTargetScale = SliderTextBoxOption_MaxTargetScale->GetSliderValue();
+	}
+	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 

@@ -58,7 +58,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	}
 
 	SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MaxNumTargetsAtOnce->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
@@ -113,7 +113,16 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(CheckBoxOption_EnableAI, BSConfig->AIConfig.bEnableReinforcementLearning);
 	UpdateValueIfDifferent(ComboBoxOption_RecentTargetMemoryPolicy, GetStringFromEnum(BSConfig->TargetConfig.RecentTargetMemoryPolicy));
 
-	switch (BSConfig->TargetConfig.RecentTargetMemoryPolicy)
+	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
+	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning);
+	
+	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_General::UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy& InRecentTargetMemoryPolicy)
+{
+	switch (InRecentTargetMemoryPolicy)
 	{
 	case ERecentTargetMemoryPolicy::CustomTimeBased:
 		SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -129,8 +138,11 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 		SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
 		break;
 	}
+}
 
-	if (BSConfig->AIConfig.bEnableReinforcementLearning)
+void UCustomGameModesWidget_General::UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning)
+{
+	if (bInEnableReinforcementLearning)
 	{
 		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -142,9 +154,6 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	
-	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 TArray<FString> UCustomGameModesWidget_General::GetWarningTooltipKeys()
@@ -169,21 +178,11 @@ TArray<FString> UCustomGameModesWidget_General::GetWarningTooltipKeys()
 
 void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bChecked)
 {
-	if (bChecked)
-	{
-		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
-	}
 	BSConfig->AIConfig.bEnableReinforcementLearning = bChecked;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning);
+	
 	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -235,30 +234,12 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
-
-	const ERecentTargetMemoryPolicy Policy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0]);
-
-	switch (Policy)
-	{
-	case ERecentTargetMemoryPolicy::CustomTimeBased:
-		SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	case ERecentTargetMemoryPolicy::NumTargetsBased:
-		SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		break;
-	case ERecentTargetMemoryPolicy::None:
-	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
-		default:
-		SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	}
-
-	BSConfig->TargetConfig.RecentTargetMemoryPolicy = Policy;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	
+	BSConfig->TargetConfig.RecentTargetMemoryPolicy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0]);
+	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
 	UpdateBrushColors();
+	
+	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 FString UCustomGameModesWidget_General::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString)

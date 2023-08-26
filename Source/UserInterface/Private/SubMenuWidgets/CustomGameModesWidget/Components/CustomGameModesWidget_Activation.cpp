@@ -116,8 +116,11 @@ bool UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 
 void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 {
-	const bool bUseConstant = BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce == BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce;
-	const bool bUpdatedConstantNumTargetsToActivateAtOnce = UpdateValueIfDifferent(CheckBoxOption_ConstantNumTargetsToActivateAtOnce, bUseConstant);
+	const bool bConstantNumTargetsToActivateAtOnce = BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce == BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce;
+	const bool bConstantTargetSpeed = BSConfig->TargetConfig.MinTargetSpeed == BSConfig->TargetConfig.MaxTargetSpeed;
+	
+	UpdateValueIfDifferent(CheckBoxOption_ConstantNumTargetsToActivateAtOnce, bConstantNumTargetsToActivateAtOnce);
+	UpdateValueIfDifferent(CheckBoxOption_ConstantTargetSpeed, bConstantTargetSpeed);
 	
 	UpdateValueIfDifferent(SliderTextBoxOption_NumTargetsToActivateAtOnce, BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce);
 	UpdateValueIfDifferent(SliderTextBoxOption_MinNumTargetsToActivateAtOnce, BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce);
@@ -131,91 +134,102 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(ComboBoxOption_TargetActivationSelectionPolicy, GetStringFromEnum(BSConfig->TargetConfig.TargetActivationSelectionPolicy));
 	UpdateValueIfDifferent(ComboBoxOption_MovingTargetDirectionMode, GetStringFromEnum(BSConfig->TargetConfig.MovingTargetDirectionMode));
 	UpdateValueIfDifferent(ComboBoxOption_LifetimeTargetScalePolicy, GetStringFromEnum(BSConfig->TargetConfig.LifetimeTargetScalePolicy));
-
-	if (bUpdatedConstantNumTargetsToActivateAtOnce)
-	{
-		if (bUseConstant)
-		{
-			SliderTextBoxOption_NumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			SliderTextBoxOption_NumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-	}
-
-
-	const TArray<FString> Options = ComboBoxOption_TargetActivationResponses->ComboBox->GetSelectedOptions();
 	
-	ESlateVisibility OldVis = ComboBoxOption_MovingTargetDirectionMode->GetVisibility();
-	ESlateVisibility NewVis = Options.Contains(GetStringFromEnum(ETargetActivationResponse::ChangeDirection)) ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed;
-	if (OldVis != NewVis)
+	UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(bConstantNumTargetsToActivateAtOnce);
+	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses, bConstantTargetSpeed);
+
+	UpdateBrushColors();
+	SetAllOptionsValid(UpdateAllOptionsValid());
+}
+
+void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(const bool bInConstant)
+{
+	if (bInConstant)
 	{
-		ComboBoxOption_MovingTargetDirectionMode->SetVisibility(NewVis);
+		SliderTextBoxOption_NumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		SliderTextBoxOption_NumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void UCustomGameModesWidget_Activation::UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed)
+{
+	if (InResponses.Contains(ETargetActivationResponse::ChangeDirection))
+	{
+		ComboBoxOption_MovingTargetDirectionMode->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		ComboBoxOption_MovingTargetDirectionMode->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	OldVis = ComboBoxOption_LifetimeTargetScalePolicy->GetVisibility();
-	NewVis = Options.Contains(GetStringFromEnum(ETargetActivationResponse::ChangeScale)) ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed;
-	if (OldVis != NewVis)
+	if (InResponses.Contains(ETargetActivationResponse::ChangeScale))
 	{
-		ComboBoxOption_LifetimeTargetScalePolicy->SetVisibility(NewVis);
+		ComboBoxOption_LifetimeTargetScalePolicy->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		ComboBoxOption_LifetimeTargetScalePolicy->SetVisibility(ESlateVisibility::Collapsed);
 	}
 
-	// TODO: check pre change vis
-	if (Options.Contains(GetStringFromEnum(ETargetActivationResponse::ChangeVelocity)))
+	if (InResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
 		CheckBoxOption_ConstantTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		if (BSConfig->TargetConfig.MinTargetSpeed == BSConfig->TargetConfig.MaxTargetSpeed)
-		{
-			CheckBoxOption_ConstantTargetSpeed->CheckBox->SetIsChecked(true);
-			SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		}
-		else
-		{
-			CheckBoxOption_ConstantTargetSpeed->CheckBox->SetIsChecked(false);
-			SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
+		UpdateDependentOptions_ConstantTargetSpeed(true, bUseConstantTargetSpeed);
 	}
 	else
 	{
 		CheckBoxOption_ConstantTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
+		UpdateDependentOptions_ConstantTargetSpeed(false, bUseConstantTargetSpeed);
+	}
+}
+
+void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantTargetSpeed(const bool bChangeVelocity, const bool bUseConstantTargetSpeed)
+{
+	// Change Velocity not selected as a TargetActivationResponse
+	if (!bChangeVelocity)
+	{
 		SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
+		return;
 	}
-
-	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	
+	// Change Velocity is selected as a TargetActivationResponse
+	if (bUseConstantTargetSpeed)
+	{
+		SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
 }
 
 void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce(const bool bChecked)
 {
 	if (bChecked)
 	{
-		CheckBoxOption_ConstantNumTargetsToActivateAtOnce->CheckBox->SetIsChecked(true);
-		SliderTextBoxOption_NumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
 		BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce = SliderTextBoxOption_NumTargetsToActivateAtOnce->GetSliderValue();
 		BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce = SliderTextBoxOption_NumTargetsToActivateAtOnce->GetSliderValue();
 	}
 	else
 	{
-		CheckBoxOption_ConstantNumTargetsToActivateAtOnce->CheckBox->SetIsChecked(false);
-		SliderTextBoxOption_NumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce = SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetSliderValue();
 		BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce = SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetSliderValue();
 	}
+	
+	UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(bChecked);
 	
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
@@ -225,21 +239,17 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantTargetSpeed(
 {
 	if (bChecked)
 	{
-		SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
 		BSConfig->TargetConfig.MinTargetSpeed = SliderTextBoxOption_TargetSpeed->GetSliderValue();
 		BSConfig->TargetConfig.MaxTargetSpeed = SliderTextBoxOption_TargetSpeed->GetSliderValue();
 	}
 	else
 	{
-		SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		BSConfig->TargetConfig.MinTargetSpeed = SliderTextBoxOption_MinTargetSpeed->GetSliderValue();
 		BSConfig->TargetConfig.MaxTargetSpeed = SliderTextBoxOption_MaxTargetSpeed->GetSliderValue();
 	}
-
+	
+	UpdateDependentOptions_ConstantTargetSpeed(BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity), bChecked);
+	
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
@@ -277,17 +287,13 @@ void UCustomGameModesWidget_Activation::OnSliderTextBoxValueChanged(USliderTextB
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
 	}
 
-	BSConfig->TargetConfig.TargetActivationSelectionPolicy = GetEnumFromString<ETargetActivationSelectionPolicy>(Selected[0], ETargetActivationSelectionPolicy::None);
+	BSConfig->TargetConfig.TargetActivationSelectionPolicy = GetEnumFromString<ETargetActivationSelectionPolicy>(Selected[0]);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
@@ -298,55 +304,8 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationRespo
 		return;
 	}
 	
-	if (Selected.Contains(UEnum::GetDisplayValueAsText(ETargetActivationResponse::ChangeDirection).ToString()))
-	{
-		ComboBoxOption_MovingTargetDirectionMode->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		ComboBoxOption_MovingTargetDirectionMode->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	if (Selected.Contains(UEnum::GetDisplayValueAsText(ETargetActivationResponse::ChangeScale).ToString()))
-	{
-		ComboBoxOption_LifetimeTargetScalePolicy->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		ComboBoxOption_LifetimeTargetScalePolicy->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	if (Selected.Contains(UEnum::GetDisplayValueAsText(ETargetActivationResponse::ChangeVelocity).ToString()))
-	{
-		CheckBoxOption_ConstantTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		if (SliderTextBoxOption_MinTargetSpeed->Slider->GetValue() != SliderTextBoxOption_MaxTargetSpeed->Slider->GetValue())
-		{
-			CheckBoxOption_ConstantTargetSpeed->CheckBox->SetIsChecked(true);
-			SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			CheckBoxOption_ConstantTargetSpeed->CheckBox->SetIsChecked(false);
-			SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		}
-	}
-	else
-	{
-		CheckBoxOption_ConstantTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_TargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxTargetSpeed->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	BSConfig->TargetConfig.TargetActivationResponses.Empty();
-	for (const FString& String : Selected)
-	{
-		BSConfig->TargetConfig.TargetActivationResponses.AddUnique(GetEnumFromString<ETargetActivationResponse>(String));
-	}
+	BSConfig->TargetConfig.TargetActivationResponses = GetEnumArrayFromStringArray<ETargetActivationResponse>(Selected);
+	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses, BSConfig->TargetConfig.MinTargetSpeed == BSConfig->TargetConfig.MaxTargetSpeed);
 
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
@@ -354,11 +313,7 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationRespo
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;
@@ -370,11 +325,7 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_MovingTargetDirection
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_LifetimeTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		SetAllOptionsValid(UpdateAllOptionsValid());
 		return;

@@ -32,12 +32,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UTargetWidget> TargetWidgetClass;
-
-
-
+	
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UOverlay* Overlay;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void UpdateImages(const FBSConfig& InConfig);
 };

@@ -422,8 +422,8 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		CustomGameModesWidget_PropertyView->SetStartWidgetProperties(StartWidgetUpdate);
 	}
 	
-	CustomGameModesWidget_CreatorView->Update();
-	CustomGameModesWidget_PropertyView->Update();
+	CustomGameModesWidget_CreatorView->UpdateOptionsFromConfig();
+	CustomGameModesWidget_PropertyView->UpdateOptionsFromConfig();
 	
 	if (GetCreatorViewVisible() && OnPopulateGameModeOptions.IsBound())
 	{
@@ -756,7 +756,7 @@ void UGameModesWidget::SynchronizeStartWidgets(const TObjectPtr<UCustomGameModes
 	if (FromProperties == ToProperties)
 	{
 		UE_LOG(LogTemp, Display, TEXT("FromProperties == ToProperties"));
-		To->Update();
+		To->UpdateOptionsFromConfig();
 		return;
 	}
 
@@ -776,7 +776,7 @@ void UGameModesWidget::SynchronizeStartWidgets(const TObjectPtr<UCustomGameModes
 		*IBSWidgetInterface::GetStringFromEnum(ToProperties.DefiningConfig.Difficulty));
 	
 	To->SetStartWidgetProperties(FromProperties);
-	To->Update();
+	To->UpdateOptionsFromConfig();
 }
 
 UTooltipImage* UGameModesWidget::ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn)

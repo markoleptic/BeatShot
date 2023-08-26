@@ -22,6 +22,13 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	
+	/** Updates options that depend on the value selection of RecentTargetMemoryPolicy */
+	void UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy& InRecentTargetMemoryPolicy);
+	
+	/** Updates options that depend on the value selection of bEnableReinforcementLearning */
+	void UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning);
+	
 	/** Returns empty if valid, otherwise provides the Text that should be shown on the warning tooltip */
 	virtual TArray<FString> GetWarningTooltipKeys() override;
 	

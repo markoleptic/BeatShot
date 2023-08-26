@@ -45,7 +45,7 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 	}
 }
 
-void UCustomGameModesWidgetBase::Update()
+void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
 {
 	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
 	{
@@ -60,7 +60,7 @@ void UCustomGameModesWidgetBase::Update()
 	if (bShouldUpdateFromComponentRequest && !bIsUpdatingFromComponentRequest)
 	{
 		bIsUpdatingFromComponentRequest = true;
-		Update();
+		UpdateOptionsFromConfig();
 		bIsUpdatingFromComponentRequest = false;
 	}
 }
@@ -122,7 +122,7 @@ void UCustomGameModesWidgetBase::OnValidOptionsStateChanged(const TObjectPtr<UCu
 		const FString OldString = bOldAllOptionsValid ? "True" : "False";
 		const FString NewString = bOldAllOptionsValid ? "False" : "True";
 		UE_LOG(LogTemp, Display, TEXT("OnValidOptionsStateChanged %s changing from %s to %s"), *Widget->GetName(), *OldString, *NewString);
-		Update();
+		UpdateOptionsFromConfig();
 		RequestButtonStateUpdate.Broadcast();
 	}
 }

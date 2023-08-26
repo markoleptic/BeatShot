@@ -278,6 +278,9 @@ protected:
 	/** The scale that was applied when spawned */
 	FVector InitialTargetScale;
 
+	/** The scale that was applied when the target was activated */
+	FVector TargetScaleAtActivation;
+
 	/** The scale that was applied when spawned */
 	FVector InitialTargetLocation;
 

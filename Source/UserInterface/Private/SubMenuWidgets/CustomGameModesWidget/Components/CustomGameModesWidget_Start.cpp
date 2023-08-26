@@ -288,7 +288,7 @@ void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 		}
 	}
 
-	// Select a custom mode
+	// Select a custom mode if conditions permit, mainly for saving and repopulating after saving
 	if (CheckBoxOption_UseTemplate->CheckBox->IsChecked() &&
 		IsCustomGameMode(BSConfig->DefiningConfig.CustomGameModeName) &&
 		ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOptionCount() == 0 &&
@@ -308,6 +308,7 @@ void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 
 void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bChecked)
 {
+	// Hide Templates and Difficulty if not checked
 	if (!bChecked)
 	{
 		ComboBoxOption_GameModeTemplates->ComboBox->ClearSelection();
@@ -333,11 +334,7 @@ void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText&
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		return;
 	}
@@ -347,11 +344,7 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TA
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct)
-	{
-		return;
-	}
-	if (Selected.Num() != 1)
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
 		return;
 	}
