@@ -146,8 +146,8 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	SetupTooltip(TargetsToActivateAtOnce->GetQMark_Max(), GetTooltipTextFromKey("MaxNumTargetsToActivateAtOnce"));
 	SetupTooltip(TargetSpeedConstrained->GetQMark_Min(), GetTooltipTextFromKey("MinTargetSpeed"));
 	SetupTooltip(TargetSpeedConstrained->GetQMark_Max(), GetTooltipTextFromKey("MaxTargetSpeed"));
-	SetupTooltip(TargetScaleConstrained->GetQMark_Min(), GetTooltipTextFromKey("MinTargetScale"));
-	SetupTooltip(TargetScaleConstrained->GetQMark_Max(), GetTooltipTextFromKey("MaxTargetScale"));
+	SetupTooltip(TargetScaleConstrained->GetQMark_Min(), GetTooltipTextFromKey("MinSpawnTargetScale"));
+	SetupTooltip(TargetScaleConstrained->GetQMark_Max(), GetTooltipTextFromKey("MaxSpawnTargetScale"));
 	SetupTooltip(QMark_Lifespan, GetTooltipTextFromKey("Lifespan"));
 	SetupTooltip(QMark_TargetSpawnCD, GetTooltipTextFromKey("MinDistance"));
 	SetupTooltip(QMark_SpawnBeatDelay, GetTooltipTextFromKey("SpawnBeatDelay"));
@@ -349,10 +349,10 @@ void UGameModesWidget_TargetConfig::NativeConstruct()
 	{
 		ComboBox_ConsecutiveTargetScalePolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
 	}
-	for (const ELifetimeTargetScalePolicy& Method : TEnumRange<ELifetimeTargetScalePolicy>())
+	/*for (const ELifetimeTargetScalePolicy& Method : TEnumRange<ELifetimeTargetScalePolicy>())
 	{
 		ComboBox_LifetimeTargetScalePolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
-	}
+	}*/
 	for (const ERecentTargetMemoryPolicy& Method : TEnumRange<ERecentTargetMemoryPolicy>())
 	{
 		ComboBox_RecentTargetMemoryPolicy->AddOption(UEnum::GetDisplayValueAsText(Method).ToString());
@@ -487,12 +487,12 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	CheckBox_AllowSpawnWithoutActivation->SetIsChecked(InTargetConfig.bAllowSpawnWithoutActivation);
 	CheckBox_UseBatchSpawning->SetIsChecked(InTargetConfig.bUseBatchSpawning);
 	
-	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetScale, InTargetConfig.MaxTargetScale, InTargetConfig.MinTargetScale == InTargetConfig.MaxTargetScale);
+	TargetScaleConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinSpawnTargetScale, InTargetConfig.MaxSpawnTargetScale, InTargetConfig.MinSpawnTargetScale == InTargetConfig.MaxSpawnTargetScale);
 	TargetSpeedConstrained->UpdateDefaultValuesAbsolute(InTargetConfig.MinTargetSpeed, InTargetConfig.MaxTargetSpeed, InTargetConfig.MinTargetSpeed == InTargetConfig.MaxTargetSpeed);
 	TargetsToActivateAtOnce->UpdateDefaultValuesAbsolute(InTargetConfig.MinNumTargetsToActivateAtOnce, InTargetConfig.MaxNumTargetsToActivateAtOnce, InTargetConfig.MinNumTargetsToActivateAtOnce == InTargetConfig.MaxNumTargetsToActivateAtOnce);
 	ComboBox_BoundsScalingPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.BoundsScalingPolicy).ToString());
 	ComboBox_ConsecutiveTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.ConsecutiveTargetScalePolicy).ToString());
-	ComboBox_LifetimeTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScalePolicy).ToString());
+	//ComboBox_LifetimeTargetScalePolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.LifetimeTargetScalePolicy).ToString());
 	ComboBox_RecentTargetMemoryPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.RecentTargetMemoryPolicy).ToString());
 	ComboBox_TargetActivationSelectionPolicy->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetActivationSelectionPolicy).ToString());
 	ComboBox_TargetDamageType->SetSelectedOption(UEnum::GetDisplayValueAsText(InTargetConfig.TargetDamageType).ToString());
@@ -519,8 +519,8 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	
 	ReturnConfig.TargetMaxLifeSpan = FMath::GridSnap(FMath::Clamp(Slider_Lifespan->GetValue(), MinValue_Lifespan, MaxValue_Lifespan), SnapSize_Lifespan);
 	ReturnConfig.TargetSpawnCD = FMath::GridSnap(FMath::Clamp(Slider_TargetSpawnCD->GetValue(), MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD), SnapSize_TargetSpawnCD);
-	ReturnConfig.MinTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
-	ReturnConfig.MaxTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
+	ReturnConfig.MinSpawnTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMinValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
+	ReturnConfig.MaxSpawnTargetScale = FMath::GridSnap(FMath::Clamp(TargetScaleConstrained->GetMaxValue(), MinValue_TargetScale, MaxValue_TargetScale), SnapSize_TargetScale);
 	ReturnConfig.SpawnBeatDelay = FMath::GridSnap(FMath::Clamp(Slider_SpawnBeatDelay->GetValue(), MinValue_PlayerDelay, MaxValue_PlayerDelay), SnapSize_PlayerDelay);
 	ReturnConfig.ConsecutiveChargeScaleMultiplier = FMath::GridSnap(FMath::Clamp(Slider_ConsecutiveChargeScaleMultiplier->GetValue(), MinValue_ConsecutiveChargeScaleMultiplier,
 		MaxValue_ConsecutiveChargeScaleMultiplier), SnapSize_ConsecutiveChargeScaleMultiplier);
@@ -545,7 +545,7 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	
 	ReturnConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(ComboBox_BoundsScalingPolicy->GetSelectedOption(), EBoundsScalingPolicy::None);
 	ReturnConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(ComboBox_ConsecutiveTargetScalePolicy->GetSelectedOption(), EConsecutiveTargetScalePolicy::None);
-	ReturnConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(ComboBox_LifetimeTargetScalePolicy->GetSelectedOption(), ELifetimeTargetScalePolicy::None);
+	//ReturnConfig.LifetimeTargetScalePolicy = GetEnumFromString<ELifetimeTargetScalePolicy>(ComboBox_LifetimeTargetScalePolicy->GetSelectedOption(), ELifetimeTargetScalePolicy::None);
 	ReturnConfig.RecentTargetMemoryPolicy = GetEnumFromString<ERecentTargetMemoryPolicy>(ComboBox_RecentTargetMemoryPolicy->GetSelectedOption(), ERecentTargetMemoryPolicy::None);
 	ReturnConfig.TargetActivationSelectionPolicy = GetEnumFromString<ETargetActivationSelectionPolicy>(ComboBox_TargetActivationSelectionPolicy->GetSelectedOption(), ETargetActivationSelectionPolicy::None);
 	ReturnConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(ComboBox_TargetDamageType->GetSelectedOption(), ETargetDamageType::None);
@@ -1013,10 +1013,10 @@ FString UGameModesWidget_TargetConfig::GetStringTableKeyFromComboBox(const UBSCo
 		const EConsecutiveTargetScalePolicy EnumValue = GetEnumFromString<EConsecutiveTargetScalePolicy>(EnumString, EConsecutiveTargetScalePolicy::None);
 		return GetStringTableKeyNameFromEnum(EnumValue);
 	}
-	if (ComboBoxString == ComboBox_LifetimeTargetScalePolicy)
+	/*if (ComboBoxString == ComboBox_LifetimeTargetScalePolicy)
 	{
 		return GetStringTableKeyNameFromEnum<ELifetimeTargetScalePolicy>(GetEnumFromString<ELifetimeTargetScalePolicy>(EnumString, ELifetimeTargetScalePolicy::None));
-	}
+	}*/
 	if (ComboBoxString == ComboBox_RecentTargetMemoryPolicy)
 	{
 		return GetStringTableKeyNameFromEnum<ERecentTargetMemoryPolicy>(GetEnumFromString<ERecentTargetMemoryPolicy>(EnumString, ERecentTargetMemoryPolicy::None));

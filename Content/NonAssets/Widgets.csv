@@ -108,12 +108,11 @@ GM_General,General
 GM_General_Info,"Select a template to see default values for different game modes. You can save custom game modes based on any game mode templates, and everything can be customized."
 GM_HorizontalGridSpacing,Horizontal Spacing
 GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
-GM_LifetimeTargetScalePolicy,Lifetime Target Scaling Policy
 GM_MaxHealth,Max Target Health
 GM_MaximumTargetLifespan,Maximum Target Lifespan
 GM_MaxNumActivatedTargetsAtOnce,Maximum Allowed Activated Targets at Once
 GM_MaxNumRecentTargets,Max Number of Recent Targets
-GM_MaxNumTargetsAtOnce,Maximum Allowed Targets at Once
+GM_MaxNumTargetsAtOnce,Maximum Allowed Spawned Targets at Once
 GM_MaxNumTargetsToActivateAtOnce,Max Number of Targets to Activate at Once
 GM_MaxTargetScale,Max Target Scale
 GM_MaxTrackingSpeed,Max Tracking Speed
@@ -149,7 +148,7 @@ GM_SpawnAtOriginWheneverPossible,Spawn In Center Whenever Possible
 GM_SpawnBeatDelay,Spawn Beat Delay
 GM_SpawnEveryOtherTargetInCenter,Spawn Every Other Target In Center
 GM_Spread,Target Spread
-GM_Standard_Info,Hop right into a session by selecting a game mode with default configured difficulty
+GM_Standard_Info,Hop right into a session by selecting a game mode and and difficulty.
 GM_StartCustom,Start Custom
 GM_StartWithoutSaving,Start Without Saving
 GM_TargetActivationResponses,Target Activation Responses
@@ -159,12 +158,10 @@ GM_TargetDeactivationConditions,Target Deactivation Conditions
 GM_TargetDeactivationResponses,Target Deactivation Responses
 GM_TargetDestructionConditions,Target Destruction Conditions
 GM_TargetDistributionPolicy,Target Distribution Policy
-GM_TargetSpawnCooldown,Target Spawn Cooldown
+GM_TargetSpawnCooldown,Target Activation/Spawn Cooldown
 GM_TargetSpawningPolicy,Target Spawning Policy
-GM_Time,Time Related
 GM_VerticalGridSpacing,Vertical Spacing
 GM_VerticalSpread,Vertical Spread (Max if Dynamic)
-GM_WideSpread,Wide
 HUD_Accuracy,Accuracy:
 HUD_HighScore,High Score:
 HUD_Score,Score:
@@ -334,3 +331,13 @@ Video_SuperResolution,DLSS Super Resolution
 Video_Sharpness,Sharpness
 Video_NISEnabled,NVIDIA Image Scaling
 Video_ResolutionScale,Resolution Scale
+GM_UseGameModeTemplate,Use Game Mode Template
+GM_LifetimeTargetScaleMultiplier,Lifetime Target Scaling Multiplier
+GM_ConstantNumTargetsToActivateAtOnce,Constant Number of Targets to Activate
+GM_NumTargetsToActivateAtOnce,Number of Targets to Activate At Once
+GM_TargetSpeed,Target Velocity
+GM_MinTargetSpeed,Minimum Target Velocity
+GM_MaxTargetSpeed,Maximum Target Velocity
+GM_ConstantTargetSpeed,Constant Target Velocity
+GM_InfiniteTargetHealth,Infinite Target Health
+GM_TargetScale,Target Scale

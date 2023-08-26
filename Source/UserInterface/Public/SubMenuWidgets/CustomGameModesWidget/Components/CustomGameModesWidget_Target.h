@@ -26,7 +26,7 @@ protected:
 
 	/** Updates options that depend on the value selection of UnlimitedTargetHealth */
 	void UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth);
-
+	
 	/** Updates options that depend on the value selection of ConsecutiveTargetScalePolicy */
 	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy);
 	
@@ -41,18 +41,20 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_MaxHealth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_ExpirationHealthPenalty;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_DamageType;
+
+		
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_ConsecutiveTargetScalePolicy;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_TargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MinTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MaxTargetScale;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_DamageType;
+
 
 	UFUNCTION()
 	void OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked);

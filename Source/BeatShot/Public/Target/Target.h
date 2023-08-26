@@ -205,9 +205,10 @@ public:
 	/** Sets the InitialSpeed of the ProjectileMovementComponent */
 	void SetTargetSpeed(const float NewMovingTargetSpeed) const;
 	
-	/** Change the sphere scale*/
+	/** Changes the current scale of the target */
 	virtual void SetTargetScale(const FVector& NewScale) const;
-	
+
+	/** Sets whether or not the last direction change was horizontally */
 	void SetLastDirectionChangeHorizontal(const bool bLastHorizontal) { bLastDirectionChangeHorizontal = bLastHorizontal; }
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
@@ -228,15 +229,30 @@ public:
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
 
-	/** Whether or not the target is immune to damage */
+	
+	bool HasTargetBeenActivatedBefore();
+
+	/** Whether or not the target is immune to all damage */
 	bool IsTargetImmune() const;
 
-	/** Whether or not the target is immune to damage */
+	/** Whether or not the target is immune to tracking damage */
 	UFUNCTION(BlueprintPure)
 	bool IsTargetImmuneToTracking() const;
 
 	/** Returns the velocity / speed of the ProjectileMovementComponent (unit direction vector) */
 	FVector GetTargetDirection() const;
+
+	/** Returns the scale of the target when it was last activated, or the spawn scale if it has not been activated */
+	FVector GetTargetScale_Activation() const;
+
+	/** Returns the current scale of the target */
+	FVector GetTargetScale_Current() const;
+
+	/** Returns the scale of the target when it was last deactivated, falling back to activation or spawn scale if not deactivated yet */
+	FVector GetTargetScale_Deactivation() const;
+
+	/** Returns the scale of the target when it was spawned */
+	FVector GetTargetScale_Spawn() const;
 
 	/** Returns the InitialSpeed of the ProjectileMovementComponent */
 	float GetTargetSpeed() const;
@@ -244,9 +260,7 @@ public:
 	/** Returns the velocity of the ProjectileMovementComponent */
 	FVector GetTargetVelocity() const;
 
-	/** Returns the current scale of the target */
-	FVector GetCurrentTargetScale() const;
-	
+	/** Returns whether or not the last direction change was horizontally */
 	bool GetLastDirectionChangeHorizontal() const { return bLastDirectionChangeHorizontal; }
 	
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
@@ -275,14 +289,17 @@ protected:
 
 	FOnTimelineEvent OnStartToPeakFinished;
 
-	/** The scale that was applied when spawned */
-	FVector InitialTargetScale;
+	/** The world scale of the target when spawned */
+	FVector TargetScale_Spawn;
 
-	/** The scale that was applied when the target was activated */
-	FVector TargetScaleAtActivation;
+	/** The world scale of the target when activated */
+	FVector TargetScale_Activation;
 
-	/** The scale that was applied when spawned */
-	FVector InitialTargetLocation;
+	/** The world scale of the target when deactivated */
+	FVector TargetScale_Deactivation;
+
+	/** The location of the target when spawned*/
+	FVector TargetLocation_Spawn;
 
 	/** The color of the target when it was destroyed */
 	FLinearColor ColorWhenDestroyed;
@@ -293,7 +310,12 @@ protected:
 	/** Playback rate for PeakToEnd timeline */
 	float PeakToEndTimelinePlayRate;
 
+	/** Whether or not the last direction change was horizontally */
 	bool bLastDirectionChangeHorizontal;
-	
-	bool bCanBeReactivated = true;
+
+	/** False if the target is currently activated */
+	bool bCanBeReactivated;
+
+	/** Whether or not to apply the LifetimeTargetScaling Method */
+	bool bApplyLifetimeTargetScaling;
 };

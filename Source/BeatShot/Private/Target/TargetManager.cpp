@@ -345,10 +345,11 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 		InTarget->SetTargetDirection(NewDirection);
 		InTarget->SetLastDirectionChangeHorizontal(!InTarget->GetLastDirectionChangeHorizontal());
 	}
-	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale))
+	
+	/*if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
 	{
 		InTarget->SetTargetScale(GetNextTargetScale());
-	}
+	}*/
 	
 	if (InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan))
 	{
@@ -698,9 +699,9 @@ FVector ATargetManager::GetNextTargetScale() const
 	if (GetBSConfig()->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
 	{
 		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MinTargetScale, GetBSConfig()->TargetConfig.MaxTargetScale, NewFactor));
+		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MinSpawnTargetScale, GetBSConfig()->TargetConfig.MaxSpawnTargetScale, NewFactor));
 	}
-	return FVector(FMath::FRandRange(GetBSConfig()->TargetConfig.MinTargetScale, GetBSConfig()->TargetConfig.MaxTargetScale));
+	return FVector(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnTargetScale, GetBSConfig()->TargetConfig.MaxSpawnTargetScale));
 }
 
 USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const
@@ -759,7 +760,7 @@ void ATargetManager::UpdateSpawnVolume() const
 {
 	const float LocationX = GetBoxOrigin().X - GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f;
 	// X Extent should be half move forward distance + max sphere radius
-	const float ExtentX = GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f + GetBSConfig()->TargetConfig.MaxTargetScale * SphereTargetRadius + 10.f;
+	const float ExtentX = GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f + GetBSConfig()->TargetConfig.MaxSpawnTargetScale * SphereTargetRadius + 10.f;
 
 	const FVector DynamicExtent = SpawnBox->Bounds.BoxExtent;
 		
@@ -894,7 +895,7 @@ FExtrema ATargetManager::GetBoxExtrema(const bool bDynamic) const
 
 FExtrema ATargetManager::GenerateBoxExtremaGrid() const
 {
-	const float MaxTargetDiameter = GetBSConfig()->TargetConfig.MaxTargetScale * SphereTargetDiameter;
+	const float MaxTargetDiameter = GetBSConfig()->TargetConfig.MaxSpawnTargetScale * SphereTargetDiameter;
 	// This will be SpawnMemoryIncY
 	const float HSpacing = GetBSConfig()->GridConfig.GridSpacing.X + MaxTargetDiameter;
 	// This will be SpawnMemoryIncZ

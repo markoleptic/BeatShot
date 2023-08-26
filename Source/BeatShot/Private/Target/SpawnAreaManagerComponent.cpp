@@ -391,8 +391,8 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 		}
 		break;
 	case ETargetDistributionPolicy::Grid:
-		SpawnMemoryIncY = GetBSConfig()->GridConfig.GridSpacing.X + GetBSConfig()->TargetConfig.MaxTargetScale * SphereTargetDiameter;
-		SpawnMemoryIncZ = GetBSConfig()->GridConfig.GridSpacing.Y + GetBSConfig()->TargetConfig.MaxTargetScale * SphereTargetDiameter;
+		SpawnMemoryIncY = GetBSConfig()->GridConfig.GridSpacing.X + GetBSConfig()->TargetConfig.MaxSpawnTargetScale * SphereTargetDiameter;
+		SpawnMemoryIncZ = GetBSConfig()->GridConfig.GridSpacing.Y + GetBSConfig()->TargetConfig.MaxSpawnTargetScale * SphereTargetDiameter;
 		break;
 	}
 	MinOverlapRadius = FMath::Max(SpawnMemoryIncY, SpawnMemoryIncZ) / 2.f;

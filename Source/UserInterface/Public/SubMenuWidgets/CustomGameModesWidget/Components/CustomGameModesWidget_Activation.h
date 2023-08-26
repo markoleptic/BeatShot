@@ -30,8 +30,8 @@ protected:
 	/** Updates options that depend on the value selection of TargetActivationResponses */
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
 
-	/** Updates options that depend on the value selection of bChangeVelocity and ConstantTargetSpeed */
-	void UpdateDependentOptions_ConstantTargetSpeed(const bool bChangeVelocity, const bool bUseConstantTargetSpeed);
+	/** Updates options that depend on the value selection of TargetActivationResponses and ConstantTargetSpeed */
+	void UpdateDependentOptions_ConstantTargetSpeed(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantNumTargetsToActivateAtOnce;
@@ -44,12 +44,14 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationSelectionPolicy;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationResponses;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_MovingTargetDirectionMode;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_LifetimeTargetScalePolicy;
+	USliderTextBoxWidget* SliderTextBoxOption_LifetimeTargetScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantTargetSpeed;
@@ -73,11 +75,9 @@ protected:
 	void OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_LifetimeTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
-	FString GetComboBoxEntryTooltipStringTableKey_LifetimeTargetScalePolicy(const FString& EnumString);
+
 };

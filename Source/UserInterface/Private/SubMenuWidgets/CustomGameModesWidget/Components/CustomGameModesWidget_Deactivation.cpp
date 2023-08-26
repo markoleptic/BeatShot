@@ -54,10 +54,6 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 
 bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 {
-	//if (ComboBoxOption_TargetDeactivationConditions->ComboBox->GetSelectedOptionCount() < 1)
-	//{
-	//	return false;
-	//}
 	return true;
 }
 
@@ -68,35 +64,44 @@ void UCustomGameModesWidget_Deactivation::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_DeactivatedTargetScaleMultiplier, BSConfig->TargetConfig.ConsecutiveChargeScaleMultiplier);
 	UpdateValueIfDifferent(ComboBoxOption_TargetDestructionConditions, GetStringArrayFromEnumArray(BSConfig->TargetConfig.TargetDestructionConditions));
 
-	UpdateDependentOptions_TargetDeactivationConditions();
+	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
 	
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
-void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_TargetDeactivationConditions()
+void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_TargetDeactivationConditions(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses)
 {
 	// Persistant Deactivation Condition
-	if (BSConfig->TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
+	if (Conditions.Contains(ETargetDeactivationCondition::Persistant))
 	{
 		if (!BSConfig->TargetConfig.TargetDeactivationResponses.IsEmpty())
 		{
 			BSConfig->TargetConfig.TargetDeactivationResponses.Empty();
 		}
-		// Empty Target Deactivation Responses Combo Box
 		UpdateValueIfDifferent(ComboBoxOption_TargetDeactivationResponses, TArray<FString>());
-		// Disable Target Deactivation Responses Combo Box
 		ComboBoxOption_TargetDeactivationResponses->ComboBox->SetIsEnabled(false);
-		// Collapse any dependent options
-		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
 	}
 	// No Persistant Deactivation Condition
 	else
 	{
-		// Enable Target Deactivation Responses Combo Box
 		ComboBoxOption_TargetDeactivationResponses->ComboBox->SetIsEnabled(true);
-		// Show any Target dependent options if present in Target Deactivation Responses
-		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
+	}
+	UpdateDependentOptions_TargetDeactivationResponses(Conditions, Responses);
+}
+
+void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_TargetDeactivationResponses(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses)
+{
+	// Collapse any Responses dependent upon Conditions
+	if (Conditions.Contains(ETargetDeactivationCondition::Persistant))
+	{
+		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	
+	// Show any Responses dependent upon Conditions
+	if (!Conditions.Contains(ETargetDeactivationCondition::Persistant))
+	{
+		if (Responses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
 		{
 			SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
@@ -124,7 +129,7 @@ void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationC
 		return;
 	}
 	BSConfig->TargetConfig.TargetDeactivationConditions = GetEnumArrayFromStringArray<ETargetDeactivationCondition>(Selected);
-	UpdateDependentOptions_TargetDeactivationConditions();
+	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
@@ -137,6 +142,7 @@ void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationR
 	}
 
 	BSConfig->TargetConfig.TargetDeactivationResponses = GetEnumArrayFromStringArray<ETargetDeactivationResponse>(Selected);
+	UpdateDependentOptions_TargetDeactivationResponses(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 

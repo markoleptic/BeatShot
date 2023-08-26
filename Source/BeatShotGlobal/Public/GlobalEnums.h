@@ -175,21 +175,6 @@ enum class EMovingTargetDirectionMode : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::HorizontalOnly, EMovingTargetDirectionMode::Any);
 
 
-/** How to handle changing target scale over its damageable lifetime. This can override ConsecutiveTargetScalePolicy only if
- *  the scale is changed while the target is already active */
-UENUM(BlueprintType)
-enum class ELifetimeTargetScalePolicy : uint8
-{
-	/** Target does not change scale over its damageable lifetime, used if not applicable to a game mode */
-	None UMETA(DisplayName="None"),
-	/** Target grows from the spawn size to max target scale over its damageable lifetime */
-	Grow UMETA(DisplayName="Grow"),
-	/** Target shrinks from the spawn size to min target scale over its damageable lifetime */
-	Shrink UMETA(DisplayName="Shrink")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ELifetimeTargetScalePolicy, ELifetimeTargetScalePolicy::None, ELifetimeTargetScalePolicy::Shrink);
-
-
 /** How to handle changing the target scale between consecutively activated targets */
 UENUM(BlueprintType)
 enum class EConsecutiveTargetScalePolicy : uint8
@@ -311,12 +296,16 @@ enum class ETargetActivationResponse : uint8
 	ToggleImmunity UMETA(DisplayName="Toggle Immunity"),
 	/** If a moving target, the direction is changed */
 	ChangeDirection UMETA(DisplayName="Change Direction"),
-	/** The scale is set according to ConsecutiveTargetScale. LifetimeTargetScale can still override this */
+	/** DEPRECATED */
 	ChangeScale UMETA(DisplayName="Change Scale"),
 	/** If a moving target, the velocity of the target is changed */
 	ChangeVelocity UMETA(DisplayName="Change Velocity"),
+	/** The consecutive Target Scale is applied */
+	ApplyConsecutiveTargetScale UMETA(DisplayName="Apply Consecutive Target Scale"),
+	/** Lifetime Target Scaling is applied throughout the target's lifetime */
+	ApplyLifetimeTargetScaling UMETA(DisplayName="Apply Lifetime Target Scaling"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity, ETargetActivationResponse::ChangeVelocity);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity, ETargetActivationResponse::ApplyLifetimeTargetScaling);
 
 
 /** What does the target do when its deactivated */
@@ -357,6 +346,8 @@ enum class ETargetDeactivationResponse : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::HideTarget);
 
+
+// DEPRECATED
 /** How to handle activating a target. For example, if a target was spawned, activated, and deactivated but not destroyed, should another target be allowed to spawned/activated? */
 /*UENUM(BlueprintType)
 enum class ETargetActivationPolicy : uint8
@@ -368,3 +359,19 @@ enum class ETargetActivationPolicy : uint8
 	DoNotInterrupt UMETA(DisplayName="Do Not Interrupt"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationPolicy, ETargetActivationPolicy::Interrupt, ETargetActivationPolicy::DoNotInterrupt);*/
+
+
+// DEPRECATED
+/** How to handle changing target scale over its damageable lifetime. This can override ConsecutiveTargetScalePolicy only if
+ *  the scale is changed while the target is already active */
+/*UENUM(BlueprintType)
+enum class ELifetimeTargetScalePolicy : uint8
+{
+	/** Target does not change scale over its damageable lifetime, used if not applicable to a game mode #1#
+	None UMETA(DisplayName="None"),
+	/** Target grows from the spawn size to max target scale over its damageable lifetime #1#
+	Grow UMETA(DisplayName="Grow"),
+	/** Target shrinks from the spawn size to min target scale over its damageable lifetime #1#
+	Shrink UMETA(DisplayName="Shrink")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ELifetimeTargetScalePolicy, ELifetimeTargetScalePolicy::None, ELifetimeTargetScalePolicy::Shrink);*/

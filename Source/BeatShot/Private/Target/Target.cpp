@@ -71,11 +71,16 @@ ATarget::ATarget()
 	
 	InitialLifeSpan = 0.f;
 	Guid = FGuid::NewGuid();
-	InitialTargetScale = FVector();
-	InitialTargetLocation = FVector();
+	TargetScale_Spawn = FVector::ZeroVector;
+	TargetLocation_Spawn = FVector::ZeroVector;
+	TargetScale_Spawn = FVector::ZeroVector;
+	TargetScale_Activation = FVector::ZeroVector;
+	TargetScale_Deactivation = FVector::ZeroVector;
 	ColorWhenDestroyed = FLinearColor();
 	StartToPeakTimelinePlayRate = 1.f;
 	PeakToEndTimelinePlayRate = 1.f;
+	bCanBeReactivated = true;
+	bApplyLifetimeTargetScaling = false;
 }
 
 void ATarget::BeginPlay()
@@ -184,11 +189,28 @@ void ATarget::Tick(float DeltaSeconds)
 void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 {
 	Config = InTargetConfig;
-	HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
-	HardRefAttributeSetBase->InitHealth(Config.MaxHealth);
+	if (Config.MaxHealth == -1.f)
+	{
+		HardRefAttributeSetBase->InitMaxHealth(FLT_MAX);
+		HardRefAttributeSetBase->InitHealth(FLT_MAX);
+	}
+	else
+	{
+		HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
+		HardRefAttributeSetBase->InitHealth(Config.MaxHealth);
+	}
 	
-	InitialTargetScale = GetActorScale();
-	InitialTargetLocation = GetActorLocation();
+	TargetScale_Spawn = GetActorScale();
+	TargetLocation_Spawn = GetActorLocation();
+	
+	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyLifetimeTargetScaling))
+	{
+		bApplyLifetimeTargetScaling = true;
+	}
+	else
+	{
+		bApplyLifetimeTargetScaling = false;
+	}
 }
 
 void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
@@ -313,6 +335,7 @@ bool ATarget::ActivateTarget(const float Lifespan)
 	if (Lifespan > 0)
 	{
 		GetWorldTimerManager().ClearTimer(DamageableWindow);
+		TargetScale_Activation = GetTargetScale_Current();
 		GetWorldTimerManager().SetTimer(DamageableWindow, this, &ATarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
 		PlayStartToPeakTimeline();
 	}
@@ -326,6 +349,7 @@ void ATarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
 	{
 		StopAllTimelines();
 		HandleDeactivationResponses(bExpired);
+		TargetScale_Deactivation = GetTargetScale_Current();
 	}
 }
 
@@ -365,17 +389,17 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	// Scale
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetScale))
 	{
-		SetTargetScale(InitialTargetScale);
+		SetTargetScale(TargetScale_Spawn);
 	}
 	else if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
 	{
-		SetTargetScale(GetCurrentTargetScale() * Config.ConsecutiveChargeScaleMultiplier);
+		SetTargetScale(GetTargetScale_Current() * Config.ConsecutiveChargeScaleMultiplier);
 	}
 
 	// Position and Velocity
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPosition))
 	{
-		SetActorLocation(InitialTargetLocation);
+		SetActorLocation(TargetLocation_Spawn);
 	}
 
 	// Effects
@@ -385,7 +409,7 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	}
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::PlayExplosionEffect) && !bExpired)
 	{
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetCurrentTargetScale().X, ColorWhenDestroyed);
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetTargetScale_Current().X, ColorWhenDestroyed);
 	}
 
 	// Hide target
@@ -479,14 +503,9 @@ void ATarget::StopAllTimelines()
 void ATarget::InterpStartToPeak(const float Alpha)
 {
 	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.StartColor, Config.PeakColor, Alpha));
-	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
+	if (bApplyLifetimeTargetScaling)
 	{
-		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
-		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
-	}
-	else if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
-	{
-		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X, GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
 		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
 	}
 }
@@ -494,21 +513,16 @@ void ATarget::InterpStartToPeak(const float Alpha)
 void ATarget::InterpPeakToEnd(const float Alpha)
 {
 	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.PeakColor, Config.EndColor, Alpha));
-	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Grow)
+	if (bApplyLifetimeTargetScaling)
 	{
-		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MaxTargetScale,
-		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
-	}
-	else if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeScale) && Config.LifetimeTargetScalePolicy == ELifetimeTargetScalePolicy::Shrink)
-	{
-		SetTargetScale(FVector(UKismetMathLibrary::Lerp(InitialTargetScale.X, Config.MinTargetScale,
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X, GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
 		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
 	}
 }
 
 void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
-	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, InitialTargetScale.X, Alpha)));
+	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, TargetScale_Spawn.X, Alpha)));
 	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, Config.InactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetTargetColor(Color);
 }
@@ -609,6 +623,34 @@ FVector ATarget::GetTargetDirection() const
 	return FVector(0.f);
 }
 
+FVector ATarget::GetTargetScale_Activation() const
+{
+	if (TargetScale_Activation != FVector::ZeroVector)
+	{
+		return TargetScale_Activation;
+	}
+	return GetTargetScale_Spawn();
+}
+
+FVector ATarget::GetTargetScale_Current() const
+{
+	return GetActorScale();
+}
+
+FVector ATarget::GetTargetScale_Deactivation() const
+{
+	if (TargetScale_Deactivation != FVector::ZeroVector)
+	{
+		return TargetScale_Deactivation;
+	}
+	return GetTargetScale_Activation();
+}
+
+FVector ATarget::GetTargetScale_Spawn() const
+{
+	return TargetScale_Spawn;
+}
+
 float ATarget::GetTargetSpeed() const
 {
 	if (ProjectileMovementComponent->IsActive())
@@ -627,7 +669,4 @@ FVector ATarget::GetTargetVelocity() const
 	return FVector(0.f);
 }
 
-FVector ATarget::GetCurrentTargetScale() const
-{
-	return CapsuleComponent->GetRelativeScale3D();
-}
+

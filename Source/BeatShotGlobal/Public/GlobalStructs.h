@@ -382,10 +382,6 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EConsecutiveTargetScalePolicy ConsecutiveTargetScalePolicy;
 
-	/** The method for handling changing target scale over it's lifetime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	ELifetimeTargetScalePolicy LifetimeTargetScalePolicy;
-
 	/** Which direction(s) to move targets. Separate from moving a target forward */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EMovingTargetDirectionMode MovingTargetDirectionMode;
@@ -451,13 +447,17 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MoveForwardDistance;
 
+	/** The multiplier to apply to the scale of the target if using LifetimeTargetScalePolicy */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float LifetimeTargetScaleMultiplier;
+
 	/** Min multiplier to target size */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MinTargetScale;
+	float MinSpawnTargetScale;
 
 	/** Max multiplier to target size */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MaxTargetScale;
+	float MaxSpawnTargetScale;
 	
 	/** Minimum speed multiplier for a moving target */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -560,7 +560,6 @@ struct FBS_TargetConfig
 
 		BoundsScalingPolicy = EBoundsScalingPolicy::None;
 		ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::None;
-		LifetimeTargetScalePolicy = ELifetimeTargetScalePolicy::None;
 		MovingTargetDirectionMode = EMovingTargetDirectionMode::None;
 		RecentTargetMemoryPolicy = ERecentTargetMemoryPolicy::None;
 		TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::None;
@@ -574,13 +573,14 @@ struct FBS_TargetConfig
 		TargetDestructionConditions = TArray<ETargetDestructionCondition>();
 
 		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
+		LifetimeTargetScaleMultiplier = DefaultChargeScaleMultiplier;
 		ExpirationHealthPenalty = BaseTargetHealth;
 		FloorDistance = DistanceFromFloor;
 		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
 		MaxHealth = BaseTargetHealth;
 		MoveForwardDistance = 0.f;
-		MinTargetScale = DefaultMinTargetScale;
-		MaxTargetScale = DefaultMaxTargetScale;
+		MinSpawnTargetScale = DefaultMinTargetScale;
+		MaxSpawnTargetScale = DefaultMaxTargetScale;
 		MinTargetSpeed = 0.f;
 		MaxTargetSpeed = 0.f;
 		SpawnBeatDelay = DefaultSpawnBeatDelay;

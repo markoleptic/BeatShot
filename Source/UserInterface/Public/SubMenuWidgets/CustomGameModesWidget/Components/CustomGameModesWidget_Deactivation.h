@@ -23,7 +23,10 @@ protected:
 	virtual void UpdateOptionsFromConfig() override;
 
 	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */
-	void UpdateDependentOptions_TargetDeactivationConditions();
+	void UpdateDependentOptions_TargetDeactivationConditions(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses);
+
+	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */
+	void UpdateDependentOptions_TargetDeactivationResponses(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationConditions;
