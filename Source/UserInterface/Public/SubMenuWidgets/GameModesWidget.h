@@ -73,6 +73,7 @@ struct FStartWidgetProperties
 
 DECLARE_MULTICAST_DELEGATE(FRequestSimulateTargetManager)
 DECLARE_MULTICAST_DELEGATE(FOnPopulateGameModeOptions)
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGameModeBreaking);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnCreatorViewVisibilityChanged, const bool);
 
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
@@ -104,6 +105,9 @@ public:
 
 	/** Broadcast when CustomGameModesWidget_CreatorView visibility changes */
 	FOnCreatorViewVisibilityChanged OnCreatorViewVisibilityChanged;
+
+	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true. Only Broadcasts if different than the previous */
+	FOnGameModeBreakingChange OnGameModeBreakingChange;
 
 	/** Returns whether or not CustomGameModesWidget_CreatorView is visible */
 	bool GetCreatorViewVisible() const;
@@ -139,7 +143,7 @@ public:
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USavedTextWidget* SavedTextWidget;
+	USavedTextWidget* SavedTextWidget_PropertyView;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_DefaultGameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -236,6 +240,9 @@ private:
 	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
 	void ShowAudioFormatSelect(const bool bStartFromDefaultGameMode);
 
+	/** Returns whether or not BSConfig is identical to the currently selected template option */
+	bool IsCurrentConfigIdenticalToSelectedCustom();
+
 	/** Checks to see if the GameModeName ComboBox or the CustomGameModeName text box has a matching custom game mode that is already saved,
 	 *  and calls ShowConfirmOverwriteMessage and returning true if so */
 	bool CheckForExistingAndDisplayOverwriteMessage(const bool bStartGameAfter);
@@ -303,10 +310,17 @@ private:
 	void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
 
 	/** Synchronizes properties like CustomGameModeName between CreatorView and PropertyView */
-	void SynchronizeStartWidgets(const TObjectPtr<UCustomGameModesWidgetBase> From, const TObjectPtr<UCustomGameModesWidgetBase> To);
+	void SynchronizeStartWidgets();
 
 	/** Returns a TooltipImage widget created and placed inside the BoxToPlaceIn */
 	UTooltipImage* ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn);
+
+	/** Sets the SavedText and plays FadeInFadeOut for the SavedTextWidget corresponding to the CustomGameModesWidget_Current */
+	void SetAndPlaySavedText(const FText& InText);
+
+	/** Called when one of the custom game modes widgets has at least one breaking game mode option, or none. Updates the value of bGameModeBreakingOptionPresent
+	 *  and Broadcasts OnGameModeBreakingChange if the value is different */
+	void OnGameModeBreakingOptionPresentStateChanged(const bool bIsPresent);
 	
 	/** The BaseGameMode for a selected Preset Game Mode */
 	EBaseGameMode PresetSelection_PresetGameMode;
@@ -319,4 +333,7 @@ private:
 
 	/** Pointer to the custom game mode config, shared with all CustomGameModeWidgets and their children */
 	FBSConfig* BSConfig;
+
+	/** Whether or not one of the custom game modes widgets has at least one breaking game mode option, or none */
+	bool bGameModeBreakingOptionPresent = true;
 };

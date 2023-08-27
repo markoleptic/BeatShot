@@ -51,6 +51,9 @@ public:
 	/** Returns whether or not all child widget custom game mode options are valid. Iterates through ChildWidgetValidityMap */
 	bool GetAllChildWidgetOptionsValid() const;
 
+	/** Returns whether or not all non Widget_Start child widget custom game mode options are valid. Iterates through ChildWidgetValidityMap */
+	bool GetAllNonStartChildWidgetOptionsValid() const;
+
 	/** Clears all GameModeTemplate ComboBox options and repopulates */
 	void RefreshGameModeTemplateComboBoxOptions() const;
 	
@@ -59,6 +62,9 @@ public:
 
 	/** Broadcast when the boolean AllOptionsValid value of any widget in ChildWidgetValidityMap is changed */
 	FRequestButtonStateUpdate RequestButtonStateUpdate;
+
+	/** Broadcast true if there is a game mode breaking option */
+	FOnGameModeBreakingChange OnGameModeBreakingChange;
 
 	FBSConfig* GetBSConfig() const { return BSConfig; }
 
@@ -82,6 +88,12 @@ protected:
 	
 	/** Adds a widget to ChildWidgets array. Binds to its RequestComponentUpdate and OnValidOptionsStateChanged delegates */
 	void AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component);
+
+	/** Updates the value of bContainsGameModeBreakingOption and broadcasts OnGameModeBreakingChange only if its different than the current value */
+	void UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent);
+
+	/** Calls UpdateAllOptionsValid and SetAllOptionsValid for each child widget. */
+	void UpdateAllChildWidgetOptionsValid();
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_Start> Widget_Start;
@@ -109,4 +121,5 @@ protected:
 
 	bool bIsUpdatingFromComponentRequest = false;
 	bool bShouldUpdateFromComponentRequest = false;
+	bool bContainsGameModeBreakingOption = false;
 };

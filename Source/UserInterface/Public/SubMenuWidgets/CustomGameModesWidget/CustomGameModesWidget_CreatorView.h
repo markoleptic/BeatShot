@@ -53,14 +53,16 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Create;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_RefreshPreview;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USavedTextWidget* SavedTextWidget_CreatorView;
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Next;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Previous;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_RefreshPreview;
 	
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetComponent> CurrentWidget;

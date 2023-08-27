@@ -229,6 +229,26 @@ bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName) const
 	return false;
 }
 
+bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig) const
+{
+	if (!IsCustomGameMode(CustomGameModeName))
+	{
+		return false;
+	}
+	const FBSConfig CustomMode = FindCustomGameMode(CustomGameModeName);
+	if (CustomMode.DefiningConfig.CustomGameModeName != CustomGameModeName)
+	{
+		return false;
+	}
+	if (CustomMode.AIConfig == InConfig.AIConfig &&
+		CustomMode.GridConfig == InConfig.GridConfig &&
+		CustomMode.TargetConfig == InConfig.TargetConfig)
+	{
+		return true;
+	}
+	return false;
+}
+
 TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const
 {
 	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))

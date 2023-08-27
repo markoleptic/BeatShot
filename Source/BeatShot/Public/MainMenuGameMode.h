@@ -44,6 +44,9 @@ public:
 	/** Returns whether or not the SimulationTimer is active */
 	bool TargetManagerIsSimulating() const;
 
+	/** Called when the GameModesWidget contains at least one breaking game mode option, or none */
+	void OnGameModeBreakingChange(const bool bIsGameModeBreakingChange);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
 	USoundClass* GlobalSound;
@@ -65,4 +68,7 @@ protected:
 
 	FTimerDelegate SimulationTimerDelegate;
 	FTimerHandle SimulationTimer;
+
+	/** Whether or not GameModesWidget has at least one breaking game mode option, or none. Prevents simulation if true */
+	bool bGameModeBreakingChangePresent = false;
 };

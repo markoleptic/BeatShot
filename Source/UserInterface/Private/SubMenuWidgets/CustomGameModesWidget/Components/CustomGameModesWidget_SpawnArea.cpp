@@ -80,6 +80,7 @@ void UCustomGameModesWidget_SpawnArea::NativeConstruct()
 
 bool UCustomGameModesWidget_SpawnArea::UpdateAllOptionsValid()
 {
+	CheckGridConstraints();
 	const bool bUpdateNeeded = UpdateTooltipWarningImages(SliderTextBoxOption_NumHorizontalGridTargets, GetWarningTooltipKeys());
 	const bool bUpdateNeeded2 = UpdateTooltipWarningImages(SliderTextBoxOption_NumVerticalGridTargets, GetWarningTooltipKeys());
 	
@@ -231,4 +232,91 @@ FString UCustomGameModesWidget_SpawnArea::GetComboBoxEntryTooltipStringTableKey_
 {
 	const ETargetDistributionPolicy EnumValue = GetEnumFromString<ETargetDistributionPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
+}
+
+
+void UCustomGameModesWidget_SpawnArea::CheckGridConstraints()
+{
+	if (BSConfig->GridConfig.NumHorizontalGridTargets > GetMaxAllowedNumHorizontalTargets())
+	{
+		UE_LOG(LogTemp, Display, TEXT("NumHorizontalGridTargets: %d Max allowed: %d"), BSConfig->GridConfig.NumHorizontalGridTargets, GetMaxAllowedNumHorizontalTargets());
+	}
+	if (BSConfig->GridConfig.NumVerticalGridTargets > GetMaxAllowedNumVerticalTargets())
+	{
+		UE_LOG(LogTemp, Display, TEXT("NumHorizontalGridTargets: %d Max allowed: %d"), BSConfig->GridConfig.NumVerticalGridTargets, GetMaxAllowedNumVerticalTargets());
+	}
+	if (BSConfig->TargetConfig.MaxSpawnedTargetScale > GetMaxAllowedTargetScale())
+	{
+		UE_LOG(LogTemp, Display, TEXT("TargetScale: %f Max allowed: %f"), BSConfig->TargetConfig.MaxSpawnedTargetScale, GetMaxAllowedTargetScale());
+	}
+	if (BSConfig->GridConfig.GridSpacing.X > GetMaxAllowedHorizontalSpacing())
+	{
+		UE_LOG(LogTemp, Display, TEXT("HorizontalSpacing: %f Max allowed: %f"), BSConfig->GridConfig.GridSpacing.X, GetMaxAllowedHorizontalSpacing());
+	}
+	if (BSConfig->GridConfig.GridSpacing.Y > GetMaxAllowedVerticalSpacing())
+	{
+		UE_LOG(LogTemp, Display, TEXT("VerticalSpacing: %f Max allowed: %f"), BSConfig->GridConfig.GridSpacing.Y, GetMaxAllowedVerticalSpacing());
+	}
+}
+
+int32 UCustomGameModesWidget_SpawnArea::GetMaxAllowedNumHorizontalTargets() const
+{
+	// HorizontalSpread = MaxTargetSize * NumHorizontalTargets + HorizontalSpacing * (NumHorizontalTargets - 1)
+	//int32 Value = (GetHorizontalSpread() + BSConfig->GridConfig.GridSpacing.X) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.X);
+	return (GetHorizontalSpread() + BSConfig->GridConfig.GridSpacing.X) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.X);
+}
+
+int32 UCustomGameModesWidget_SpawnArea::GetMaxAllowedNumVerticalTargets() const
+{
+	return (GetVerticalSpread() + BSConfig->GridConfig.GridSpacing.Y) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.Y);
+}
+
+float UCustomGameModesWidget_SpawnArea::GetMaxAllowedTargetScale() const
+{
+	const float MaxAllowedHorizontal = (GetHorizontalSpread() - BSConfig->GridConfig.GridSpacing.X * BSConfig->GridConfig.NumHorizontalGridTargets + BSConfig->GridConfig.GridSpacing.X) / (SphereTargetDiameter * BSConfig->GridConfig.NumHorizontalGridTargets);
+	const float MaxAllowedVertical = (GetVerticalSpread() - BSConfig->GridConfig.GridSpacing.Y * BSConfig->GridConfig.NumVerticalGridTargets + BSConfig->GridConfig.GridSpacing.Y) / (SphereTargetDiameter * BSConfig->GridConfig.NumVerticalGridTargets);
+	if (MaxAllowedVertical < MaxAllowedHorizontal)
+	{
+		return MaxAllowedVertical;
+	}
+	return MaxAllowedHorizontal;
+}
+
+float UCustomGameModesWidget_SpawnArea::GetMaxAllowedHorizontalSpacing() const
+{
+	const float TotalTargetWidth = GetMaxTargetDiameter() * BSConfig->GridConfig.NumHorizontalGridTargets;
+	return (GetHorizontalSpread() - TotalTargetWidth) / (BSConfig->GridConfig.NumHorizontalGridTargets - 1);
+}
+
+float UCustomGameModesWidget_SpawnArea::GetMaxAllowedVerticalSpacing() const
+{
+	const float TotalTargetHeight = GetMaxTargetDiameter() * BSConfig->GridConfig.NumVerticalGridTargets;
+	return (GetVerticalSpread() - TotalTargetHeight) / (BSConfig->GridConfig.NumVerticalGridTargets - 1);
+}
+
+float UCustomGameModesWidget_SpawnArea::GetMinRequiredHorizontalSpread() const
+{
+	const float TotalTargetWidth = GetMaxTargetDiameter() * BSConfig->GridConfig.NumHorizontalGridTargets;
+	return BSConfig->GridConfig.GridSpacing.X * (BSConfig->GridConfig.NumHorizontalGridTargets - 1) + TotalTargetWidth;
+}
+
+float UCustomGameModesWidget_SpawnArea::GetMinRequiredVerticalSpread() const
+{
+	const float TotalTargetHeight = GetMaxTargetDiameter() * BSConfig->GridConfig.NumVerticalGridTargets;
+	return BSConfig->GridConfig.GridSpacing.Y * (BSConfig->GridConfig.NumVerticalGridTargets - 1) + TotalTargetHeight;
+}
+
+float UCustomGameModesWidget_SpawnArea::GetHorizontalSpread() const
+{
+	return MaxValue_HorizontalSpread + BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+}
+
+float UCustomGameModesWidget_SpawnArea::GetVerticalSpread() const
+{
+	return MaxValue_VerticalSpread + BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+}
+
+float UCustomGameModesWidget_SpawnArea::GetMaxTargetDiameter() const
+{
+	return BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
 }

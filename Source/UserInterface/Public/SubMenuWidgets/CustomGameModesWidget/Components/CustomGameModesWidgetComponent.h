@@ -56,15 +56,15 @@ public:
 	/** Starts with the widget visible and shifts to the right from the left */
 	void PlayAnim_TransitionInRight_Reverse(const bool bCollapseOnFinish);
 
-protected:
-	virtual void NativeConstruct() override;
-	
 	/** Checks all custom game mode options for validity, returning true if valid and false if any are invalid. Should be called anytime an option is changed */
 	virtual bool UpdateAllOptionsValid();
 
 	/** Sets the value bAllOptionsValid. Broadcasts the OnValidOptionsStateChanged delegate if it was changed */
 	void SetAllOptionsValid(const bool bUpdateAllOptionsValid);
 
+protected:
+	virtual void NativeConstruct() override;
+	
 	/** Sets value of Next */
 	void SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 

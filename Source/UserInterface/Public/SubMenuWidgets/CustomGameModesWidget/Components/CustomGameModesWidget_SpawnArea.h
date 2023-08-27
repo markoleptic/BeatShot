@@ -23,11 +23,12 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	
 	/** Updates options that depend on the value selection of InTargetDistributionPolicy */
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& InTargetDistributionPolicy);
 	
 	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
-	virtual TArray<FString> GetWarningTooltipKeys();
+	virtual TArray<FString> GetWarningTooltipKeys() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_BoundsScalingPolicy;
@@ -63,4 +64,22 @@ protected:
 	
 	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
+
+	void CheckGridConstraints();
+	int32 GetMaxAllowedNumHorizontalTargets() const;
+	int32 GetMaxAllowedNumVerticalTargets() const;
+	float GetMaxAllowedTargetScale() const;
+	float GetMaxAllowedHorizontalSpacing() const;
+	float GetMaxAllowedVerticalSpacing() const;
+	float GetMinRequiredHorizontalSpread() const;
+	float GetMinRequiredVerticalSpread() const;
+	
+	/** Width of spawn area, which is StaticHorizontalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
+	float GetHorizontalSpread() const;
+
+	/** Height of spawn area, which is StaticVerticalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
+	float GetVerticalSpread() const;
+
+	/** MaxSpawnedTargetScale * SphereTargetDiameter */
+	float GetMaxTargetDiameter() const;
 };

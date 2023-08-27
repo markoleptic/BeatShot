@@ -35,6 +35,7 @@ void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* Gam
 	GameModesWidget->RequestSimulateTargetManager.AddUObject(this, &ThisClass::StartSimulation);
 	GameModesWidget->OnPopulateGameModeOptions.AddUObject(this, &ThisClass::OnGameModesWidgetPopulateGameModeOptions);
 	GameModesWidget->OnCreatorViewVisibilityChanged.AddUObject(this, &ThisClass::OnCreatorViewVisibilityChanged);
+	GameModesWidget->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingChange);
 }
 
 void AMainMenuGameMode::OnGameModesWidgetPopulateGameModeOptions()
@@ -56,7 +57,7 @@ void AMainMenuGameMode::OnCreatorViewVisibilityChanged(const bool bVisible)
 
 void AMainMenuGameMode::StartSimulation()
 {
-	if (!TargetManager)
+	if (!TargetManager || bGameModeBreakingChangePresent)
 	{
 		return;
 	}
@@ -82,7 +83,7 @@ void AMainMenuGameMode::StartSimulation()
 
 void AMainMenuGameMode::OnSimulationInterval()
 {
-	if (TargetManager)
+	if (TargetManager && !bGameModeBreakingChangePresent)
 	{
 		TargetManager->OnAudioAnalyzerBeat();
 	}
@@ -116,4 +117,17 @@ void AMainMenuGameMode::FinishSimulation()
 bool AMainMenuGameMode::TargetManagerIsSimulating() const
 {
 	return GetWorld()->GetTimerManager().IsTimerActive(SimulationTimer);
+}
+
+void AMainMenuGameMode::OnGameModeBreakingChange(const bool bIsGameModeBreakingChange)
+{
+	if (bIsGameModeBreakingChange == bGameModeBreakingChangePresent)
+	{
+		return;
+	}
+	bGameModeBreakingChangePresent = bIsGameModeBreakingChange;
+	if (bIsGameModeBreakingChange && TargetManagerIsSimulating())
+	{
+		FinishSimulation();
+	}
 }

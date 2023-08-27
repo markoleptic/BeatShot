@@ -252,6 +252,27 @@ struct FBS_AIConfig
 		Epsilon = DefaultEpsilon;
 		Gamma = DefaultGamma;
 	}
+
+	FORCEINLINE bool operator==(const FBS_AIConfig& Other) const
+	{
+		if (bEnableReinforcementLearning != Other.bEnableReinforcementLearning)
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(Alpha, Other.Alpha))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(Epsilon, Other.Epsilon))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(Gamma, Other.Gamma))
+		{
+			return false;
+		}
+		return true;
+	}
 };
 
 USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
@@ -281,6 +302,27 @@ struct FBS_GridConfig
 		NumVerticalGridTargets = NumVerticalBeatGridTargets_Normal;
 		NumGridTargetsVisibleAtOnce = NumTargetsAtOnceBeatGrid_Normal;
 		GridSpacing = BeatGridSpacing_Normal;
+	}
+
+	FORCEINLINE bool operator==(const FBS_GridConfig& Other) const
+	{
+		if (NumHorizontalGridTargets != Other.NumHorizontalGridTargets)
+		{
+			return false;
+		}
+		if (GridSpacing != Other.GridSpacing)
+		{
+			return false;
+		}
+		if (NumHorizontalGridTargets != Other.NumHorizontalGridTargets)
+		{
+			return false;
+		}
+		if (NumGridTargetsVisibleAtOnce != Other.NumGridTargetsVisibleAtOnce)
+		{
+			return false;
+		}
+		return true;
 	}
 };
 
@@ -365,10 +407,6 @@ struct FBS_TargetConfig
 	/** If true, postpones spawning target(s) until the previous target(s) have all been activated and deactivated. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseBatchSpawning;
-
-	/** If true, reverse the direction of a moving target after it stops overlapping the SpawnArea */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bUseOverlapSpawnBox;
 	
 	/** If true, use separate outline color */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -571,8 +609,6 @@ struct FBS_TargetConfig
 		bSpawnAtOriginWheneverPossible = false;
 		bSpawnEveryOtherTargetInCenter = false;
 		bUseBatchSpawning = false;
-		bUseOverlapSpawnBox = false;
-		bUseSeparateOutlineColor = false;
 
 		BoundsScalingPolicy = EBoundsScalingPolicy::None;
 		ConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::None;
@@ -619,6 +655,7 @@ struct FBS_TargetConfig
 		NumRuntimeTargetsToSpawn = 0;
 		NumUpfrontTargetsToSpawn = 0;
 
+		bUseSeparateOutlineColor = false;
 		InactiveTargetColor = FLinearColor();
 		OnSpawnColor = FLinearColor();
 		StartColor = FLinearColor();
@@ -650,6 +687,203 @@ struct FBS_TargetConfig
 			return FVector(0.f, BoxBounds.Y / 2.f, 1.f);
 		}
 		return FVector(0.f, BoxBounds.Y / 2.f, BoxBounds.Z / 2.f);
+	}
+
+	FORCEINLINE bool operator==(const FBS_TargetConfig& Other) const
+	{
+		if (bAllowSpawnWithoutActivation != Other.bAllowSpawnWithoutActivation)
+		{
+			return false;
+		}
+		if (bApplyImmunityOnSpawn != Other.bApplyImmunityOnSpawn)
+		{
+			return false;
+		}
+		if (bApplyVelocityWhenSpawned != Other.bApplyVelocityWhenSpawned)
+		{
+			return false;
+		}
+		if (bMoveTargetsForward != Other.bMoveTargetsForward)
+		{
+			return false;
+		}
+		if (bSpawnAtOriginWheneverPossible != Other.bSpawnAtOriginWheneverPossible)
+		{
+			return false;
+		}
+		if (bSpawnEveryOtherTargetInCenter != Other.bSpawnEveryOtherTargetInCenter)
+		{
+			return false;
+		}
+		if (bUseBatchSpawning != Other.bUseBatchSpawning)
+		{
+			return false;
+		}
+		if (BoundsScalingPolicy != Other.BoundsScalingPolicy)
+		{
+			return false;
+		}
+		if (ConsecutiveTargetScalePolicy != Other.ConsecutiveTargetScalePolicy)
+		{
+			return false;
+		}
+		if (MovingTargetDirectionMode != Other.MovingTargetDirectionMode)
+		{
+			return false;
+		}
+		if (RecentTargetMemoryPolicy != Other.RecentTargetMemoryPolicy)
+		{
+			return false;
+		}
+		if (TargetActivationSelectionPolicy != Other.TargetActivationSelectionPolicy)
+		{
+			return false;
+		}
+		if (TargetDamageType != Other.TargetDamageType)
+		{
+			return false;
+		}
+		if (TargetDistributionPolicy != Other.TargetDistributionPolicy)
+		{
+			return false;
+		}
+		if (TargetSpawningPolicy != Other.TargetSpawningPolicy)
+		{
+			return false;
+		}
+		if (TargetActivationResponses != Other.TargetActivationResponses)
+		{
+			return false;
+		}
+		if (TargetDeactivationConditions != Other.TargetDeactivationConditions)
+		{
+			return false;
+		}
+		if (TargetDeactivationResponses != Other.TargetDeactivationResponses)
+		{
+			return false;
+		}
+		if (TargetDestructionConditions != Other.TargetDestructionConditions)
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(ConsecutiveChargeScaleMultiplier, Other.ConsecutiveChargeScaleMultiplier))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(LifetimeTargetScaleMultiplier, Other.LifetimeTargetScaleMultiplier))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(ExpirationHealthPenalty, Other.ExpirationHealthPenalty))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(FloorDistance, Other.FloorDistance))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MinDistanceBetweenTargets, Other.MinDistanceBetweenTargets))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(ConsecutiveChargeScaleMultiplier, Other.ConsecutiveChargeScaleMultiplier))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MaxHealth, Other.MaxHealth))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MoveForwardDistance, Other.MoveForwardDistance))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MinSpawnedTargetScale, Other.MinSpawnedTargetScale))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MaxSpawnedTargetScale, Other.MaxSpawnedTargetScale))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MaxSpawnedTargetScale, Other.MaxSpawnedTargetScale))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MinSpawnedTargetSpeed, Other.MinSpawnedTargetSpeed))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MaxSpawnedTargetSpeed, Other.MaxSpawnedTargetSpeed))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MinActivatedTargetSpeed, Other.MinActivatedTargetSpeed))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MaxActivatedTargetSpeed, Other.MaxActivatedTargetSpeed))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MinDeactivatedTargetSpeed, Other.MinDeactivatedTargetSpeed))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(MaxDeactivatedTargetSpeed, Other.MaxDeactivatedTargetSpeed))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(SpawnBeatDelay, Other.SpawnBeatDelay))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(RecentTargetTimeLength, Other.RecentTargetTimeLength))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(TargetMaxLifeSpan, Other.TargetMaxLifeSpan))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(TargetSpawnCD, Other.TargetSpawnCD))
+		{
+			return false;
+		}
+		if (BoxBounds != Other.BoxBounds)
+		{
+			return false;
+		}
+		if (MaxNumActivatedTargetsAtOnce != Other.MaxNumActivatedTargetsAtOnce)
+		{
+			return false;
+		}
+		if (MaxNumRecentTargets != Other.MaxNumRecentTargets)
+		{
+			return false;
+		}
+		if (MaxNumTargetsAtOnce != Other.MaxNumTargetsAtOnce)
+		{
+			return false;
+		}
+		if (MinNumTargetsToActivateAtOnce != Other.MinNumTargetsToActivateAtOnce)
+		{
+			return false;
+		}
+		if (MaxNumTargetsToActivateAtOnce != Other.MaxNumTargetsToActivateAtOnce)
+		{
+			return false;
+		}
+		if (NumRuntimeTargetsToSpawn != Other.NumRuntimeTargetsToSpawn)
+		{
+			return false;
+		}
+		if (NumUpfrontTargetsToSpawn != Other.NumUpfrontTargetsToSpawn)
+		{
+			return false;
+		}
+		return true;
 	}
 };
 

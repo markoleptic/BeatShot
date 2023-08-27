@@ -352,6 +352,7 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 	{
 	case ETargetDistributionPolicy::None:
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
+		
 	case ETargetDistributionPolicy::EdgeOnly:
 	case ETargetDistributionPolicy::FullRange:
 		{
@@ -386,7 +387,7 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 			}
 			if (!bWidthScaleSelected || !bHeightScaleSelected)
 			{
-				UE_LOG(LogTemp, Error, TEXT("Couldn't Find Height/Width"));
+				UE_LOG(LogTemp, Warning, TEXT("Couldn't Find Height/Width for StaticExtents: Y:%f Z:%f"), StaticExtents.Y, StaticExtents.Z);
 			}
 		}
 		break;

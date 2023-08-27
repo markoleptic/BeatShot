@@ -89,6 +89,9 @@ public:
 	/** Returns whether or not the GameModeName is already a custom game mode name */
 	bool IsCustomGameMode(const FString& GameModeName) const;
 
+	/** Returns whether or not the CustomGameMode is Custom and identical to the config */
+	bool DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig) const;
+
 	/** Loads all player scores from slot */
 	TArray<FPlayerScore> LoadPlayerScores() const;
 	

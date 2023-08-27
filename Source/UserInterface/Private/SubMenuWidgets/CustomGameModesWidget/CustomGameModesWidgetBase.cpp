@@ -65,6 +65,20 @@ void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
 	}
 }
 
+void UCustomGameModesWidgetBase::UpdateAllChildWidgetOptionsValid()
+{
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
+	{
+		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
+		{
+			if (Component->IsInitialized() && Component != Widget_Start)
+			{
+				Component->SetAllOptionsValid(Component->UpdateAllOptionsValid());
+			}
+		}
+	}
+}
+
 FString UCustomGameModesWidgetBase::GetNewCustomGameModeName() const
 {
 	return Widget_Start->GetNewCustomGameModeName();
@@ -103,6 +117,22 @@ bool UCustomGameModesWidgetBase::GetAllChildWidgetOptionsValid() const
 	return bReturnTrue ? true : false;
 }
 
+bool UCustomGameModesWidgetBase::GetAllNonStartChildWidgetOptionsValid() const
+{
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, bool>& ChildWidgetValidity : ChildWidgetValidityMap)
+	{
+		if (ChildWidgetValidity.Key == Widget_Start)
+		{
+			continue;
+		}
+		if (ChildWidgetValidity.Value == false)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void UCustomGameModesWidgetBase::RefreshGameModeTemplateComboBoxOptions() const
 {
 	Widget_Start->RefreshGameModeTemplateComboBoxOptions();
@@ -117,13 +147,21 @@ void UCustomGameModesWidgetBase::OnValidOptionsStateChanged(const TObjectPtr<UCu
 {
 	const bool bOldAllOptionsValid = ChildWidgetValidityMap.FindRef(Widget);
 	ChildWidgetValidityMap.FindChecked(Widget) = bAllOptionsValid;
+	
 	if (bOldAllOptionsValid != bAllOptionsValid)
 	{
 		const FString OldString = bOldAllOptionsValid ? "True" : "False";
 		const FString NewString = bOldAllOptionsValid ? "False" : "True";
 		UE_LOG(LogTemp, Display, TEXT("OnValidOptionsStateChanged %s changing from %s to %s"), *Widget->GetName(), *OldString, *NewString);
-		UpdateOptionsFromConfig();
+
+		// Called so that when an error that stems from two different child widgets is cleared, the other is also cleared
+		UpdateAllChildWidgetOptionsValid();
+		
 		RequestButtonStateUpdate.Broadcast();
+		if (Widget != Widget_Start)
+		{
+			UpdateContainsGameModeBreakingOption(!GetAllNonStartChildWidgetOptionsValid());
+		}
 	}
 }
 
@@ -140,4 +178,14 @@ void UCustomGameModesWidgetBase::AddChildWidget(const TObjectPtr<UCustomGameMode
 	ChildWidgetValidityMap.FindOrAdd(Component) = false;
 	Component->RequestComponentUpdate.AddUObject(this, &ThisClass::OnRequestComponentUpdate);
 	Component->OnValidOptionsStateChanged.AddUObject(this, &ThisClass::OnValidOptionsStateChanged);
+}
+
+void UCustomGameModesWidgetBase::UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent)
+{
+	if (bGameModeBreakingOptionPresent == bContainsGameModeBreakingOption)
+	{
+		return;
+	}
+	bContainsGameModeBreakingOption = bGameModeBreakingOptionPresent;
+	OnGameModeBreakingChange.Broadcast(bContainsGameModeBreakingOption);
 }

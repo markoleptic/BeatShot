@@ -75,21 +75,18 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 	
 	if (bUpdateNeeded)
 	{
-		if (CheckBoxOption_EnableAI->GetTooltipWarningImageKeys().IsEmpty())
+		/*if (CheckBoxOption_EnableAI->GetTooltipWarningImageKeys().IsEmpty())
 		{
-			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(true);
 			SliderTextBoxOption_Alpha->SetIsEnabled(true);
 			SliderTextBoxOption_Epsilon->SetIsEnabled(true);
 			SliderTextBoxOption_Gamma->SetIsEnabled(true);
 		}
 		else
 		{
-			CheckBoxOption_EnableAI->CheckBox->SetIsChecked(false);
-			CheckBoxOption_EnableAI->CheckBox->SetIsEnabled(false);
 			SliderTextBoxOption_Alpha->SetIsEnabled(false);
 			SliderTextBoxOption_Epsilon->SetIsEnabled(false);
 			SliderTextBoxOption_Gamma->SetIsEnabled(false);
-		}
+		}*/
 		RequestComponentUpdate.Broadcast();
 	}
 	
