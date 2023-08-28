@@ -4,7 +4,63 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CheckBox.h"
 #include "MenuOptionWidget.generated.h"
+
+class UTooltipImage;
+
+/** Data structure that contains info about a Tooltip Warning Image*/
+USTRUCT()
+struct FTooltipWarningValue
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	UTooltipImage* TooltipWarningImage;
+	
+	FString TooltipStringTableKey;
+
+	FText AdditionalTooltipText;
+
+	FTooltipWarningValue()
+	{
+		TooltipWarningImage = nullptr;
+		TooltipStringTableKey = FString();
+		AdditionalTooltipText = FText();
+	}
+
+	FTooltipWarningValue(UTooltipImage* InTooltipImage, const FString& InKey, const FText& InAdditionalText = FText())
+	{
+		TooltipWarningImage = InTooltipImage;
+		TooltipStringTableKey = InKey;
+		AdditionalTooltipText = InAdditionalText;
+	}
+
+	explicit FTooltipWarningValue(const FString& InKey)
+	{
+		TooltipWarningImage = nullptr;
+		TooltipStringTableKey = InKey;
+		AdditionalTooltipText = FText();
+	}
+
+	FORCEINLINE bool operator==(const FTooltipWarningValue& Other) const
+	{
+		if (!TooltipStringTableKey.Equals(Other.TooltipStringTableKey))
+		{
+			return false;
+		}
+		if (!AdditionalTooltipText.EqualTo(Other.AdditionalTooltipText))
+		{
+			return false;
+		}
+		return true;
+	}
+	
+	friend FORCEINLINE uint32 GetTypeHash(const FTooltipWarningValue& Value)
+	{
+		return HashCombine(GetTypeHash(Value.TooltipStringTableKey), GetTypeHash(Value.AdditionalTooltipText.ToString()));
+	}
+};
 
 class UCheckBox;
 class UTextBlock;
@@ -12,10 +68,9 @@ class UEditableTextBox;
 class USpacer;
 class UHorizontalBox;
 class USlider;
-class UTooltipImage;
 class UBSHorizontalBox;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnLockStateChanged, const bool);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLockStateChanged, uint8, const bool);
 
 /** Base class for a Menu Option Widget, which is basically just a description, tooltip, and some value(s) that can be changed */
 UCLASS()
@@ -45,18 +100,32 @@ public:
 	/** Returns the TooltipImage Text */
 	FText GetTooltipImageText() const { return TooltipImageText; }
 
-	/** Returns the TooltipWarningImage corresponding to The StringTableKey, or creates one if not found */
-	UTooltipImage* FindOrAddTooltipWarningImage(const FString& InTooltipStringTableKey);
+	/** Returns the FTooltipWarningValue corresponding to The StringTableKey, or creates one if not found */
+	FTooltipWarningValue FindOrAddTooltipWarningValue(const FString& InTooltipStringTableKey, const FText& OptionalAdditionalText = FText());
 
 	/** Returns the StringTableKeys that correspond to each TooltipWarningImage */
 	TArray<FString> GetTooltipWarningImageKeys() const;
+
+	/** Returns the values of the WarningTooltips map */
+	TArray<FTooltipWarningValue> GetTooltipWarningImageValues() const;
 
 	/** Removes the TooltipWarningImage corresponding to the StringTableKey */
 	void RemoveTooltipWarningImage(const FString& InTooltipStringTableKey);
 
 	/** Removes all TooltipWarningImages */
 	void RemoveAllTooltipWarningImages();
+
+	/** Returns true if locked */
+	bool GetIsLocked() const { return CheckBox_Lock->IsChecked(); }
+
+	/** Sets the locked state */
+	void SetIsLocked(const bool bLocked) const { CheckBox_Lock->SetIsChecked(bLocked); }
+
+	void SetIndex(const uint8 InIndex) { Index = InIndex; }
+
+	uint8 GetIndex() const { return Index; }
 	
+	/** Broadcasts the new state of the lock and the index */
 	FOnLockStateChanged OnLockStateChanged;
 
 protected:
@@ -102,7 +171,10 @@ protected:
 	/** Text to show on the tooltip */
 	UPROPERTY(EditInstanceOnly, Category="SliderTextBox|Tooltip")
 	FText TooltipImageText = FText();
-
+	
 	/** A map of StringTableKeys to ToolTipWarningImages */
-	TMap<FString, UTooltipImage*> WarningTooltips;
+	UPROPERTY()
+	TMap<FString, FTooltipWarningValue> WarningTooltips;
+
+	uint8 Index = 0;
 };

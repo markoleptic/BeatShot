@@ -35,7 +35,7 @@ void UTargetWidget::SetTargetPosition(const FVector2d& InPosition) const
 {
 	if (TargetImage)
 	{
-		const FMargin NewPadding(InPosition.X, 0, 0, InPosition.Y);
+		const FMargin NewPadding(FMath::Clamp(InPosition.X, -1700, 1700), 0, 0, FMath::Clamp(InPosition.Y, -600, 600));
 		if (UOverlaySlot* OverlaySlot = Cast<UOverlaySlot>(Slot))
 		{
 			OverlaySlot->SetPadding(NewPadding);

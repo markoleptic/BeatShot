@@ -210,52 +210,69 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableText
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FString>& NewKeys)
+bool UCustomGameModesWidgetComponent::UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FTooltipWarningValue>& NewValues)
 {
-	const TArray<FString> OldKeys = Widget->GetTooltipWarningImageKeys();
-
-	if (NewKeys.IsEmpty())
+	const TArray<FTooltipWarningValue> OldValues = Widget->GetTooltipWarningImageValues();
+	
+	if (NewValues.IsEmpty())
 	{
-		if (OldKeys.IsEmpty())
+		if (OldValues.IsEmpty())
 		{
 			return false;
 		}
-		if (!OldKeys.IsEmpty())
+		if (!OldValues.IsEmpty())
 		{
 			Widget->RemoveAllTooltipWarningImages();
 			return true;
 		}
 	}
 
-	if (NewKeys == OldKeys)
+	TArray<FString> NewKeys;
+	for (const FTooltipWarningValue& Value : NewValues)
 	{
-		return false;
+		NewKeys.Add(Value.TooltipStringTableKey);
+	}
+
+	if (NewValues.Num() == OldValues.Num())
+	{
+		bool bAllSame = true;
+		for (int i = 0; i < NewValues.Num(); i++ )
+		{
+			if (NewValues[i] == OldValues[i])
+			{
+				continue;
+			}
+			bAllSame = false;
+		}
+		if (bAllSame)
+		{
+			return false;
+		}
 	}
 	
 	// TooltipImages currently showing but shouldn't be
-	TArray<FString> KeysToRemove = OldKeys.FilterByPredicate([&NewKeys] (const FString& OldKey)
+	TArray<FTooltipWarningValue> ValuesToRemove = OldValues.FilterByPredicate([&NewValues] (const FTooltipWarningValue& Value)
 	{
-		return !NewKeys.Contains(OldKey);
+		return !NewValues.Contains(Value);
 	});
 	
 	// Remove TooltipImages currently showing but shouldn't be
-	for (const FString KeyToRemove : KeysToRemove)
+	for (const FTooltipWarningValue& ValueToRemove : ValuesToRemove)
 	{
-		Widget->RemoveTooltipWarningImage(KeyToRemove);
+		Widget->RemoveTooltipWarningImage(ValueToRemove.TooltipStringTableKey);
 	}
 
 	// Update the rest
-	for (const FString WarningString : NewKeys)
+	for (const FTooltipWarningValue& Value : NewValues)
 	{
-		const FText WarningText = GetTooltipTextFromKey(WarningString);
-		UTooltipImage* TooltipImage = Widget->FindOrAddTooltipWarningImage(WarningString);
-		SetupTooltip(TooltipImage, WarningText);
+		const FTooltipWarningValue TooltipWarningValue = Widget->FindOrAddTooltipWarningValue(Value.TooltipStringTableKey);
+		const FText TextFromStringTable = GetTooltipTextFromKey(Value.TooltipStringTableKey);
+		if (TooltipWarningValue.TooltipWarningImage)
+		{
+			SetupTooltip(TooltipWarningValue.TooltipWarningImage, FText::Join(FText::FromString(" "), TextFromStringTable, Value.AdditionalTooltipText));
+		}
 	}
+	
 	return true;
-}
-
-TArray<FString> UCustomGameModesWidgetComponent::GetWarningTooltipKeys()
-{
-	return TArray<FString>();
 }
 

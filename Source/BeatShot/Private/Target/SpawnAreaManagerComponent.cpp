@@ -287,6 +287,13 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	bShowDebug_OverlappingVertices_All = false;
 	SpawnAreas = TArray<USpawnArea*>();
 	AllBottomLeftVertices = TArray<FVector>();
+	Width = 0;
+	Height = 0;
+	SpawnMemoryIncY = 0;
+	SpawnMemoryIncZ = 0;
+	SpawnMemoryScaleY = 0;
+	SpawnMemoryScaleZ = 0;
+	MinOverlapRadius = 0;
 }
 
 void USpawnAreaManagerComponent::DestroyComponent(bool bPromoteChildren)
@@ -348,18 +355,43 @@ TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas()
 
 void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 {
+	const int32 HalfWidth = StaticExtents.Y;
+	const int32 HalfHeight = StaticExtents.Z;
+	bool bWidthScaleSelected = false;
+	bool bHeightScaleSelected = false;
+	
 	switch (GetBSConfig()->TargetConfig.TargetDistributionPolicy)
 	{
-	case ETargetDistributionPolicy::None:
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
-		
+		{
+			SpawnMemoryScaleZ = 1.f;
+			SpawnMemoryIncZ = 1.f;
+			for (const int32 Scale : PreferredScales)
+			{
+				if (!bWidthScaleSelected)
+				{
+					if (HalfWidth % Scale == 0)
+					{
+						SpawnMemoryScaleY = 1.f / static_cast<float>(Scale);
+						SpawnMemoryIncY = Scale;
+						bWidthScaleSelected = true;
+					}
+				}
+				if (bWidthScaleSelected)
+				{
+					break;
+				}
+			}
+			if (!bWidthScaleSelected)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Couldn't Find Width for StaticExtents: Y:%f Z:%f"), StaticExtents.Y, StaticExtents.Z);
+			}
+		}
+		break;
+	case ETargetDistributionPolicy::None:
 	case ETargetDistributionPolicy::EdgeOnly:
 	case ETargetDistributionPolicy::FullRange:
 		{
-			const int32 HalfWidth = StaticExtents.Y;
-			const int32 HalfHeight = StaticExtents.Z;
-			bool bWidthScaleSelected = false;
-			bool bHeightScaleSelected = false;
 			for (const int32 Scale : PreferredScales)
 			{
 				if (!bWidthScaleSelected)

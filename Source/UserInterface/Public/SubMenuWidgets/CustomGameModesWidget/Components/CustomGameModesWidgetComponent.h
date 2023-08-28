@@ -5,7 +5,52 @@
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
 #include "CustomGameModesWidgetComponent.generated.h"
+
+
+/** Data structure for dynamic tooltip text */
+USTRUCT()
+struct FMenuOptionWarning
+{
+	GENERATED_BODY()
+
+	float MinAllowed;
+	FString TooltipTextKey;
+	FText FallbackText;
+	FString TryChangeString;
+
+	FMenuOptionWarning()
+	{
+		MinAllowed = 0.f;
+		FallbackText = FText();
+		TooltipTextKey = FString();
+		TryChangeString = "Try lowering this value to <= ";
+	}
+
+	FMenuOptionWarning(const float InMin, const FString& InKey, const FText& InFallback)
+	{
+		MinAllowed = InMin;
+		TooltipTextKey = InKey;
+		FallbackText = InFallback;
+		TryChangeString = "Try lowering this value to <= ";
+	}
+
+	void UpdateArray(TArray<FTooltipWarningValue>& InUpdateArray, const float InActual, const float InMaxAllowed)
+	{
+		if (InActual > InMaxAllowed)
+		{
+			if (InMaxAllowed < MinAllowed)
+			{
+				InUpdateArray.Emplace(nullptr, TooltipTextKey, FallbackText);
+			}
+			else
+			{
+				InUpdateArray.Emplace(nullptr, TooltipTextKey, FText::FromString(TryChangeString + FString::FromInt(InMaxAllowed) + "."));
+			}
+		}
+	}
+};
 
 class UMenuOptionWidget;
 class UEditableTextBoxOptionWidget;
@@ -29,7 +74,7 @@ public:
 	/** Sets BSConfig, sets the pointer to next widget in linked list, and calls UpdateOptionsFromConfig */
 	virtual void InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
-	/** Sets all custom game mode option values using the BSConfig pointer. Only changes the values if different */
+	/** Sets all custom game mode option values using the BSConfig pointer. Only changes the values if different. Only called during transitions */
 	virtual void UpdateOptionsFromConfig();
 
 	/** Returns the next CustomGameModesWidgetComponent to transition to */
@@ -79,10 +124,7 @@ protected:
 	static bool UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText);
 
 	/** Updates TooltipWarningImages for a MenuOptionWidget. Returns true if a component update is needed */
-	bool UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FString>& NewKeys);
-
-	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
-	virtual TArray<FString> GetWarningTooltipKeys();
+	bool UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FTooltipWarningValue>& NewValues);
 
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* TransitionInRight;

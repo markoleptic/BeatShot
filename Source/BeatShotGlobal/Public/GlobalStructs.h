@@ -310,6 +310,10 @@ struct FBS_GridConfig
 		{
 			return false;
 		}
+		if (NumVerticalGridTargets != Other.NumVerticalGridTargets)
+		{
+			return false;
+		}
 		if (GridSpacing != Other.GridSpacing)
 		{
 			return false;
@@ -391,10 +395,6 @@ struct FBS_TargetConfig
 	/** Whether or not the targets should have a velocity when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bApplyVelocityWhenSpawned;
-	
-	/** If true, move the targets forward towards the player after activation */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bMoveTargetsForward;
 
 	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -480,10 +480,6 @@ struct FBS_TargetConfig
 	/** Value to set the MaxHealth attribute value to */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MaxHealth;
-
-	/** How far to move the target forward over its lifetime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	float MoveForwardDistance;
 
 	/** The multiplier to apply to the scale of the target if using LifetimeTargetScalePolicy */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -605,7 +601,6 @@ struct FBS_TargetConfig
 		bAllowSpawnWithoutActivation = false;
 		bApplyImmunityOnSpawn = false;
 		bApplyVelocityWhenSpawned = false;
-		bMoveTargetsForward = false;
 		bSpawnAtOriginWheneverPossible = false;
 		bSpawnEveryOtherTargetInCenter = false;
 		bUseBatchSpawning = false;
@@ -630,7 +625,6 @@ struct FBS_TargetConfig
 		FloorDistance = DistanceFromFloor;
 		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
 		MaxHealth = BaseTargetHealth;
-		MoveForwardDistance = 0.f;
 		MinSpawnedTargetScale = DefaultMinTargetScale;
 		MaxSpawnedTargetScale = DefaultMaxTargetScale;
 		MinSpawnedTargetSpeed = 0.f;
@@ -679,7 +673,7 @@ struct FBS_TargetConfig
 		return SpawnBoxCenter;
 	}
 
-	/** Returns the actual BoxBounds that the TargetManager sets its BoxBounds to */
+	/** Returns the actual BoxBounds that the TargetManager sets its 2D BoxBounds to */
 	FVector GenerateTargetManagerBoxBounds() const
 	{
 		if (TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
@@ -700,10 +694,6 @@ struct FBS_TargetConfig
 			return false;
 		}
 		if (bApplyVelocityWhenSpawned != Other.bApplyVelocityWhenSpawned)
-		{
-			return false;
-		}
-		if (bMoveTargetsForward != Other.bMoveTargetsForward)
 		{
 			return false;
 		}
@@ -792,10 +782,6 @@ struct FBS_TargetConfig
 			return false;
 		}
 		if (!FMath::IsNearlyEqual(MaxHealth, Other.MaxHealth))
-		{
-			return false;
-		}
-		if (!FMath::IsNearlyEqual(MoveForwardDistance, Other.MoveForwardDistance))
 		{
 			return false;
 		}

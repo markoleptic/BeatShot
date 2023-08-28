@@ -17,6 +17,7 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	SetupTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImageText());
 	SetupTooltip(ComboBoxOption_TargetSpawningPolicy->GetTooltipImage(), ComboBoxOption_TargetSpawningPolicy->GetTooltipImageText());
 	SetupTooltip(SliderTextBoxOption_NumUpfrontTargetsToSpawn->GetTooltipImage(), SliderTextBoxOption_NumUpfrontTargetsToSpawn->GetTooltipImageText());
 	SetupTooltip(SliderTextBoxOption_NumRuntimeTargetsToSpawn->GetTooltipImage(), SliderTextBoxOption_NumRuntimeTargetsToSpawn->GetTooltipImageText());
@@ -32,12 +33,14 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	SetupTooltip(SliderTextBoxOption_MinSpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MinSpawnedTargetVelocity->GetTooltipImageText());
 	SetupTooltip(SliderTextBoxOption_MaxSpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MaxSpawnedTargetVelocity->GetTooltipImageText());
 
+	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValues(MinValue_MaxNumTargetsAtOnce, MaxValue_MaxNumTargetsAtOnce, SnapSize_MaxNumTargetsAtOnce);
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValues(MinValue_NumUpfrontTargetsToSpawn, MaxValue_NumUpfrontTargetsToSpawn, SnapSize_NumUpfrontTargetsToSpawn);
 	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValues(MinValue_NumRuntimeTargetsToSpawn, MaxValue_NumRuntimeTargetsToSpawn, SnapSize_NumRuntimeTargetsToSpawn);
 	SliderTextBoxOption_SpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
 	SliderTextBoxOption_MinSpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
 	SliderTextBoxOption_MaxSpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
 
+	SliderTextBoxOption_MaxNumTargetsAtOnce->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_NumRuntimeTargetsToSpawn->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_SpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
@@ -89,6 +92,7 @@ void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
 {
 	UpdateValueIfDifferent(ComboBoxOption_TargetSpawningPolicy, GetStringFromEnum(BSConfig->TargetConfig.TargetSpawningPolicy));
 
+	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumTargetsAtOnce, BSConfig->TargetConfig.MaxNumTargetsAtOnce);
 	UpdateValueIfDifferent(SliderTextBoxOption_NumUpfrontTargetsToSpawn, BSConfig->TargetConfig.NumUpfrontTargetsToSpawn);
 	UpdateValueIfDifferent(SliderTextBoxOption_NumRuntimeTargetsToSpawn, BSConfig->TargetConfig.NumRuntimeTargetsToSpawn);
 	
@@ -231,7 +235,11 @@ void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ConstantSpawnedTargetV
 
 void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
 {
-	if (Widget == SliderTextBoxOption_NumUpfrontTargetsToSpawn)
+	if (Widget == SliderTextBoxOption_MaxNumTargetsAtOnce)
+	{
+		BSConfig->TargetConfig.MaxNumTargetsAtOnce = Value;
+	}
+	else if (Widget == SliderTextBoxOption_NumUpfrontTargetsToSpawn)
 	{
 		BSConfig->TargetConfig.NumUpfrontTargetsToSpawn = Value;
 	}

@@ -30,6 +30,9 @@ protected:
 	void UpdateDependentOptions_ConstantSpawnedTargetVelocity(const bool bApplyVelocityWhenSpawned, const bool bInConstant);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -42,7 +45,7 @@ protected:
 	UCheckBoxOptionWidget* CheckBoxOption_SpawnAtOriginWheneverPossible;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_SpawnEveryOtherTargetInCenter;
-
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_NumUpfrontTargetsToSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

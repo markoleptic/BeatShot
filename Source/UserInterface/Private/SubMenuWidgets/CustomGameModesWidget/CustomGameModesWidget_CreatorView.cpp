@@ -9,7 +9,6 @@
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_SpawnArea.h"
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Spawning.h"
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.h"
-#include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Target.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 
 void UCustomGameModesWidget_CreatorView::NativeConstruct()
@@ -28,7 +27,7 @@ void UCustomGameModesWidget_CreatorView::NativeConstruct()
 
 	CurrentWidget = Widget_Start;
 	FirstWidget = Widget_Start;
-	LastWidget = Widget_Target;
+	LastWidget = Widget_Deactivation;
 
 	AddChildWidget(Widget_Preview);
 }
@@ -40,14 +39,14 @@ void UCustomGameModesWidget_CreatorView::Init(FBSConfig* InConfig, const TObject
 	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
 	
-	Widget_Start->InitComponent(BSConfig, Widget_SpawnArea);
+	Widget_Preview->InitComponent(BSConfig, nullptr);
+	
+	Widget_Start->InitComponent(BSConfig, Widget_General);
+	Widget_General->InitComponent(BSConfig, Widget_SpawnArea);
 	Widget_SpawnArea->InitComponent(BSConfig, Widget_Spawning);
 	Widget_Spawning->InitComponent(BSConfig, Widget_Activation);
 	Widget_Activation->InitComponent(BSConfig, Widget_Deactivation);
-	Widget_Deactivation->InitComponent(BSConfig, Widget_General);
-	Widget_General->InitComponent(BSConfig, Widget_Target);
-	Widget_Target->InitComponent(BSConfig, Widget_Start);
-	Widget_Preview->InitComponent(BSConfig, nullptr);
+	Widget_Deactivation->InitComponent(BSConfig, Widget_Start);
 }
 
 void UCustomGameModesWidget_CreatorView::OnBSButtonPressed(const UBSButton* BSButton)

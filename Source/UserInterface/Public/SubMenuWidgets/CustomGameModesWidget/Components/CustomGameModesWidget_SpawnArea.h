@@ -27,9 +27,6 @@ protected:
 	/** Updates options that depend on the value selection of InTargetDistributionPolicy */
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& InTargetDistributionPolicy);
 	
-	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
-	virtual TArray<FString> GetWarningTooltipKeys() override;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_BoundsScalingPolicy;
 	
@@ -51,6 +48,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_VerticalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_ForwardSpread;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MinDistanceBetweenTargets;
@@ -64,8 +63,7 @@ protected:
 	
 	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
-
-	void CheckGridConstraints();
+	
 	int32 GetMaxAllowedNumHorizontalTargets() const;
 	int32 GetMaxAllowedNumVerticalTargets() const;
 	float GetMaxAllowedTargetScale() const;
@@ -82,4 +80,9 @@ protected:
 
 	/** MaxSpawnedTargetScale * SphereTargetDiameter */
 	float GetMaxTargetDiameter() const;
+
+	FMenuOptionWarning OptionWarning_NumHorizontalTargets;
+	FMenuOptionWarning OptionWarning_NumVerticalTargets;
+	FMenuOptionWarning OptionWarning_HorizontalSpacing;
+	FMenuOptionWarning OptionWarning_VerticalSpacing;
 };

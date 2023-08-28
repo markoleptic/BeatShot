@@ -287,7 +287,7 @@ namespace Constants
 #pragma region Target
 
 	/** The default location to spawn the SpawnBox */
-	inline const FVector DefaultTargetManagerLocation(3700.f, 0.f, 160.f);
+	inline const FVector DefaultTargetManagerLocation(3700.f, 0.f, 0.f);
 	
 	/** The default BoxBounds multiplied by two for the user interface. The real box bounds are 1600 x 500, which creates a box with size 3200 x 1000 */
 	inline const FVector DefaultSpawnBoxBounds(0.f, 3200.f, 1000.f);
@@ -305,7 +305,7 @@ namespace Constants
 	inline constexpr float DistanceFromFloor = 110.f;
 
 	/** Distance between floor and HeadshotHeight */
-	inline constexpr float HeadshotHeight = 160.f;
+	inline constexpr float HeadshotHeight = 189.5f;
 
 	inline constexpr float BaseTargetHealth = 100.f;
 
@@ -339,10 +339,11 @@ namespace Constants
 	inline constexpr float MaxValue_VerticalSpread = 1000.f;
 	inline constexpr float SnapSize_VerticalSpread = 100.f;
 	
-	inline constexpr float MinValue_ForwardSpread = 100.f;
-	inline constexpr float MaxValue_ForwardSpread = 5000.f;
+	inline constexpr float MinValue_ForwardSpread = 0.f;
+	inline constexpr float MaxValue_ForwardSpread = 2000.f;
+	inline constexpr float SnapSize_ForwardSpread = 100.f;
 	
-	inline constexpr float MinValue_TargetScale = 0.f;
+	inline constexpr float MinValue_TargetScale = 0.25f;
 	inline constexpr float MaxValue_TargetScale = 2.f;
 	inline constexpr float SnapSize_TargetScale = 0.01f;
 

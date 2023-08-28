@@ -4,6 +4,7 @@
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Preview.h"
 
 #include "Components/OverlaySlot.h"
+#include "Components/SizeBox.h"
 
 void UCustomGameModesWidget_Preview::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
@@ -32,4 +33,8 @@ bool UCustomGameModesWidget_Preview::UpdateAllOptionsValid()
 void UCustomGameModesWidget_Preview::UpdateOptionsFromConfig()
 {
 	Super::UpdateOptionsFromConfig();
+	if (FloorDistance)
+	{
+		FloorDistance->SetHeightOverride(BSConfig->TargetConfig.FloorDistance);
+	}
 }

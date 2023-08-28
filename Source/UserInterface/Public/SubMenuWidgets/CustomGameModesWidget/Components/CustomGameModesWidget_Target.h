@@ -30,9 +30,6 @@ protected:
 	/** Updates options that depend on the value selection of ConsecutiveTargetScalePolicy */
 	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy);
 	
-	/** Returns an array of keys for use with UpdateTooltipWarningImages based on invalid settings */
-	virtual TArray<FString> GetWarningTooltipKeys() override;
-	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_TargetMaxLifeSpan;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

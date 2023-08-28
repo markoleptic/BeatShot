@@ -35,4 +35,7 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UOverlay* Overlay;
+
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	USizeBox* FloorDistance;
 };

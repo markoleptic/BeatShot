@@ -175,11 +175,11 @@ protected:
 	/** Find the next spawn location for a target */
 	virtual USpawnArea* GetNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
 
-	/** Calls GetRandomMovingTargetEndLocation and sets the new direction of the target. Spawn = 0, Activation  = 1, Deactivation = 2 */
+	/** Calls GetNewTargetDirection and sets the new direction of the target. Spawn = 0, Activation  = 1, Deactivation = 2 */
 	void ChangeTargetDirection(ATarget* InTarget, const uint8 InSpawnActivationDeactivation) const;
 	
-	/** Randomizes a location to set the BeatTrack target to move towards */
-	virtual FVector GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const;
+	/** Returns a new unit vector direction for a target */
+	virtual FVector GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const;
 
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
 	virtual void UpdateSpawnVolume() const;

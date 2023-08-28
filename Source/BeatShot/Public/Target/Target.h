@@ -206,7 +206,7 @@ public:
 	/** Sets the velocity of the ProjectileMovementComponent by multiplying the InitialSpeed and the new direction */
 	void SetTargetDirection(const FVector& NewDirection) const;
 
-	/** Sets the InitialSpeed of the ProjectileMovementComponent */
+	/** Finds the direction by dividing the velocity by the initial speed. Sets initial speed equal to NewMovingTargetSpeed and calls SetTargetDirection */
 	void SetTargetSpeed(const float NewMovingTargetSpeed) const;
 	
 	/** Changes the current scale of the target */

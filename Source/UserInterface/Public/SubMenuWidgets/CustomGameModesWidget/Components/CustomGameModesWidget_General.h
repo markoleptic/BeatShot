@@ -28,9 +28,12 @@ protected:
 	
 	/** Updates options that depend on the value selection of bEnableReinforcementLearning */
 	void UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning);
+
+	/** Updates options that depend on the value selection of UnlimitedTargetHealth */
+	void UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth);
 	
-	/** Returns empty if valid, otherwise provides the Text that should be shown on the warning tooltip */
-	virtual TArray<FString> GetWarningTooltipKeys() override;
+	/** Updates options that depend on the value selection of ConsecutiveTargetScalePolicy */
+	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_SpawnBeatDelay;
@@ -45,9 +48,6 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_RecentTargetTimeLength;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_EnableAI;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -56,14 +56,48 @@ protected:
 	USliderTextBoxWidget* SliderTextBoxOption_Epsilon;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_Gamma;
-
-	UFUNCTION()
-	void OnCheckStateChanged_EnableAI(const bool bChecked);
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_TargetMaxLifeSpan;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_UnlimitedTargetHealth;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MaxHealth;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_ExpirationHealthPenalty;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_ConsecutiveTargetScalePolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_TargetScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MinTargetScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_MaxTargetScale;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_DamageType;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_MovingTargetDirectionMode;
 	
 	UFUNCTION()
-	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	void OnCheckStateChanged_EnableAI(const bool bChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked);
+	
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 
+	UFUNCTION()
+	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
 };

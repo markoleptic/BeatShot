@@ -70,9 +70,9 @@ UTooltipImage* UMenuOptionWidget::GetTooltipImage() const
 	return TooltipImage;
 }
 
-UTooltipImage* UMenuOptionWidget::FindOrAddTooltipWarningImage(const FString& InTooltipStringTableKey)
+FTooltipWarningValue UMenuOptionWidget::FindOrAddTooltipWarningValue(const FString& InTooltipStringTableKey, const FText& OptionalAdditionalText)
 {
-	UTooltipImage** Found = WarningTooltips.Find(InTooltipStringTableKey);
+	FTooltipWarningValue* Found = WarningTooltips.Find(InTooltipStringTableKey);
 	if (!Found)
 	{
 		UTooltipImage* NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
@@ -80,8 +80,9 @@ UTooltipImage* UMenuOptionWidget::FindOrAddTooltipWarningImage(const FString& In
 		HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
 		HorizontalBoxSlot->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
 		HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
-		WarningTooltips.Add(InTooltipStringTableKey, NewTooltipImage);
-		return NewTooltipImage;
+		FTooltipWarningValue Value(NewTooltipImage, InTooltipStringTableKey, OptionalAdditionalText);
+		WarningTooltips.Emplace(InTooltipStringTableKey, Value);
+		return Value;
 	}
 	return *Found;
 }
@@ -93,26 +94,32 @@ TArray<FString> UMenuOptionWidget::GetTooltipWarningImageKeys() const
 	return KeyArray;
 }
 
+TArray<FTooltipWarningValue> UMenuOptionWidget::GetTooltipWarningImageValues() const
+{
+	TArray<FTooltipWarningValue> TooltipWarningValues;
+	WarningTooltips.GenerateValueArray(TooltipWarningValues);
+	return TooltipWarningValues;
+}
+
 void UMenuOptionWidget::RemoveTooltipWarningImage(const FString& InTooltipStringTableKey)
 {
-	UTooltipImage* Found = nullptr;
+	FTooltipWarningValue Found;
 	if (WarningTooltips.RemoveAndCopyValue(InTooltipStringTableKey, Found))
 	{
-		if (Found)
+		if (Found.TooltipWarningImage)
 		{
-			Found->RemoveFromParent();
+			Found.TooltipWarningImage->RemoveFromParent();
 		}
 	}
 }
 
 void UMenuOptionWidget::RemoveAllTooltipWarningImages()
 {
-	TArray<UTooltipImage*> TooltipWarningImages;
-	WarningTooltips.GenerateValueArray(TooltipWarningImages);
+	TArray<FTooltipWarningValue> TooltipWarningValues = GetTooltipWarningImageValues();
 	WarningTooltips.Empty();
-	for (UTooltipImage* TooltipImageToRemove : TooltipWarningImages)
+	for (const FTooltipWarningValue& Value : TooltipWarningValues)
 	{
-		TooltipImageToRemove->RemoveFromParent();
+		Value.TooltipWarningImage->RemoveFromParent();
 	}
 }
 
@@ -120,6 +127,6 @@ void UMenuOptionWidget::OnCheckBox_LockStateChanged(const bool bChecked)
 {
 	if (OnLockStateChanged.IsBound())
 	{
-		OnLockStateChanged.Broadcast(bChecked);
+		OnLockStateChanged.Broadcast(Index, bChecked);
 	}
 }

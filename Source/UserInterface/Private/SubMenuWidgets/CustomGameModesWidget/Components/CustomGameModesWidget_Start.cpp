@@ -123,7 +123,7 @@ void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetPr
 	
 	// Updating values
 	UpdateValueIfDifferent(ComboBoxOption_GameModeTemplates, NewTemplateOptionString);
-	UpdateDifficultySelection(BSConfig->DefiningConfig.Difficulty);
+	UpdateDifficultySelection(InProperties.DefiningConfig.Difficulty);
 	
 	// Updating visibility
 	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility();
@@ -141,8 +141,7 @@ bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const EGameModeDiff
 {
 	const int32 SelectedOptionCount = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount();
 	const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
-	const EGameModeDifficulty CurrentDifficulty = GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption());
-
+	
 	if (IsPresetGameMode(GameModeTemplateString))
 	{
 		if (SelectedOptionCount == 0)
@@ -151,9 +150,9 @@ bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const EGameModeDiff
 			ComboBoxOption_GameModeDifficulty->ComboBox->SetSelectedOption(GetStringFromEnum(EGameModeDifficulty::Normal));
 			return true;
 		}
-		
+
 		// No change
-		if (CurrentDifficulty == Difficulty)
+		if (GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()) == Difficulty)
 		{
 			return false;
 		}
@@ -327,7 +326,10 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 	}
 
 	SetAllOptionsValid(UpdateAllOptionsValid());
-	RequestGameModeTemplateUpdate.Broadcast(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption(), GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()));
+
+	const FString SelectedDifficulty = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty Difficulty = SelectedDifficulty.IsEmpty() ? EGameModeDifficulty::None : GetEnumFromString<EGameModeDifficulty>(SelectedDifficulty);
+	RequestGameModeTemplateUpdate.Broadcast(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption(), Difficulty);
 }
 
 void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText& Text)
@@ -341,8 +343,9 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TA
 	{
 		return;
 	}
-	
-	RequestGameModeTemplateUpdate.Broadcast(Selected[0], GetEnumFromString<EGameModeDifficulty>(ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption()));
+	const FString SelectedDifficulty = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
+	const EGameModeDifficulty Difficulty = SelectedDifficulty.IsEmpty() ? EGameModeDifficulty::None : GetEnumFromString<EGameModeDifficulty>(SelectedDifficulty);
+	RequestGameModeTemplateUpdate.Broadcast(Selected[0], Difficulty);
 }
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)

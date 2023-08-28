@@ -73,15 +73,29 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 
 bool UCustomGameModesWidget_Target::UpdateAllOptionsValid()
 {
-	const bool bUpdateRequired = UpdateTooltipWarningImages(ComboBoxOption_DamageType, GetWarningTooltipKeys());
-	if (bUpdateRequired)
+	TArray<FTooltipWarningValue> UpdateArray;
+	bool bRequestComponentUpdate = false;
+	
+	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+	{
+		if (BSConfig->AIConfig.bEnableReinforcementLearning)
+		{
+			UpdateArray.Emplace("InvalidAI_Tracking");
+		}
+	}
+	bRequestComponentUpdate = UpdateTooltipWarningImages(ComboBoxOption_DamageType, UpdateArray) || bRequestComponentUpdate;
+	UpdateArray.Empty();
+	
+	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
 	}
+	
 	if (!ComboBoxOption_DamageType->GetTooltipWarningImageKeys().IsEmpty())
 	{
 		return false;
 	}
+	
 	return true;
 }
 
@@ -161,19 +175,6 @@ void UCustomGameModesWidget_Target::OnSelectionChanged_ConsecutiveTargetScalePol
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
-TArray<FString> UCustomGameModesWidget_Target::GetWarningTooltipKeys()
-{
-	TArray<FString> ReturnArray;
-	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
-	{
-		if (BSConfig->AIConfig.bEnableReinforcementLearning)
-		{
-			ReturnArray.Emplace("InvalidAI_Tracking");
-		}
-	}
-	return ReturnArray;
-}
-
 void UCustomGameModesWidget_Target::OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked)
 {
 	BSConfig->TargetConfig.MaxHealth = bChecked ? -1 : SliderTextBoxOption_MaxHealth->GetSliderValue();
@@ -210,7 +211,6 @@ void UCustomGameModesWidget_Target::OnSliderTextBoxValueChanged(USliderTextBoxWi
 	{
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = Value;
 	}
-	SetAllOptionsValid(UpdateAllOptionsValid());
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 

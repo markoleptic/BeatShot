@@ -312,7 +312,6 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	{
 		Target->SetTargetSpeed(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetSpeed, GetBSConfig()->TargetConfig.MaxSpawnedTargetSpeed));
 		ChangeTargetDirection(Target, 0);
-		bLastSpawnedTargetDirectionChangeHorizontal = !bLastSpawnedTargetDirectionChangeHorizontal;
 	}
 	return Target;
 }
@@ -352,7 +351,6 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
 	{
 		ChangeTargetDirection(InTarget, 1);
-		bLastActivatedTargetDirectionChangeHorizontal = !bLastActivatedTargetDirectionChangeHorizontal;
 	}
 	
 	if (InTarget->HasTargetBeenActivatedBefore() && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
@@ -773,27 +771,27 @@ void ATargetManager::ChangeTargetDirection(ATarget* InTarget, const uint8 InSpaw
 	if (InSpawnActivationDeactivation == 0)
 	{
 		bLastDirectionChangeHorizontal = bLastSpawnedTargetDirectionChangeHorizontal;
+		bLastSpawnedTargetDirectionChangeHorizontal = !bLastDirectionChangeHorizontal;
 	}
 	else if (InSpawnActivationDeactivation == 1)
 	{
 		bLastDirectionChangeHorizontal = bLastActivatedTargetDirectionChangeHorizontal;
+		bLastActivatedTargetDirectionChangeHorizontal = !bLastDirectionChangeHorizontal;
 	}
 	else
 	{
 		bLastDirectionChangeHorizontal = InTarget->GetLastDirectionChangeHorizontal();
+		InTarget->SetLastDirectionChangeHorizontal(!bLastDirectionChangeHorizontal);
 	}
-	
-	const FVector NewDirection = UKismetMathLibrary::GetDirectionUnitVector(InTarget->GetActorLocation(),
-	GetRandomMovingTargetEndLocation(InTarget->GetActorLocation(), InTarget->GetTargetSpeed(), bLastDirectionChangeHorizontal));
-	InTarget->SetTargetDirection(NewDirection);
-	InTarget->SetLastDirectionChangeHorizontal(!InTarget->GetLastDirectionChangeHorizontal());
+
+	InTarget->SetTargetDirection(GetNewTargetDirection(InTarget->GetActorLocation(), bLastDirectionChangeHorizontal));
 }
 
 void ATargetManager::UpdateSpawnVolume() const
 {
-	const float LocationX = GetBoxOrigin().X - GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f;
+	const float LocationX = GetBoxOrigin().X - GetBSConfig()->TargetConfig.BoxBounds.X * 0.5f;
 	// X Extent should be half move forward distance + max sphere radius
-	const float ExtentX = GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5f + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius + 10.f;
+	const float ExtentX = GetBSConfig()->TargetConfig.BoxBounds.X * 0.5f + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius + 10.f;
 
 	const FVector DynamicExtent = SpawnBox->Bounds.BoxExtent;
 		
@@ -849,72 +847,86 @@ ATarget* ATargetManager::FindManagedTargetByGuid(const FGuid Guid) const
 	return nullptr;
 }
 
-FVector ATargetManager::GetRandomMovingTargetEndLocation(const FVector& LocationBeforeChange, const float TargetSpeed, const bool bLastDirectionChangeHorizontal) const
+FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const
 {
-	FVector NewExtent;
-	FVector OriginOffset;
-	
 	switch (GetBSConfig()->TargetConfig.MovingTargetDirectionMode)
 	{
 	case EMovingTargetDirectionMode::HorizontalOnly:
 		{
-			NewExtent = FVector(GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y, 0.f);
-			return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+			if (FMath::RandBool())
+			{
+				return FVector(0, 1, 0);
+			}
+			return FVector(0, -1, 0);
 		}
 	case EMovingTargetDirectionMode::VerticalOnly:
 		{
-			NewExtent = FVector(GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5, 0.f, GetBoxExtents_Static().Z);
-			return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+			if (FMath::RandBool())
+			{
+				return FVector(0, 0, 1);
+			}
+			return FVector(0, 0, -1);
 		}
 	case EMovingTargetDirectionMode::AlternateHorizontalVertical:
 		{
 			if (bLastDirectionChangeHorizontal)
 			{
-				NewExtent = FVector(GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5, 0.f, GetBoxExtents_Static().Z);
-				return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+				if (FMath::RandBool())
+				{
+					return FVector(0, 0, 1);
+				}
+				return FVector(0, 0, -1);
 			}
-			NewExtent = FVector(GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y, 0.f);
-			return UKismetMathLibrary::RandomPointInBoundingBox(LocationBeforeChange, NewExtent);
+			if (FMath::RandBool())
+			{
+				return FVector(0, 1, 0);
+			}
+			return FVector(0, -1, 0);
+		}
+	case EMovingTargetDirectionMode::Any:
+		{
+			const FVector NewExtent = FVector(GetBSConfig()->TargetConfig.BoxBounds.X * 0.5f, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5f);
+			const FVector OriginOffset = FVector(0, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5f);
+			const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, -OriginOffset.Y, -OriginOffset.Z), NewExtent);
+			const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, OriginOffset.Y, -OriginOffset.Z), NewExtent);
+			const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, -OriginOffset.Y, OriginOffset.Z), NewExtent);
+			const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, OriginOffset.Y, OriginOffset.Z), NewExtent);
+
+			TArray PossibleLocations = {BotLeft, BotRight, TopLeft, TopRight};
+
+			if (LocationBeforeChange.Y < 0)
+			{
+				if (LocationBeforeChange.Z < GetBoxOrigin().Z)
+				{
+					PossibleLocations.Remove(BotLeft);
+				}
+				else
+				{
+					PossibleLocations.Remove(TopLeft);
+				}
+			}
+			else
+			{
+				if (LocationBeforeChange.Z < GetBoxOrigin().Z)
+				{
+					PossibleLocations.Remove(BotRight);
+				}
+				else
+				{
+					PossibleLocations.Remove(TopRight);
+				}
+			}
+			const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
+			return UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation);
+		}
+	case EMovingTargetDirectionMode::ForwardOnly:
+		{
+			return FVector(-1.f, 0.f, 0.f);
 		}
 	case EMovingTargetDirectionMode::None:
-	case EMovingTargetDirectionMode::Any:
-		NewExtent = FVector(GetBSConfig()->TargetConfig.MoveForwardDistance * 0.5, GetBoxExtents_Static().Y * 0.5, GetBoxExtents_Static().Z * 0.5);
-		OriginOffset = FVector(0, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5);
 		break;
 	}
-	
-	const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, -OriginOffset.Y, -OriginOffset.Z), NewExtent);
-	const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, OriginOffset.Y, -OriginOffset.Z), NewExtent);
-	const FVector TopLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, -OriginOffset.Y, OriginOffset.Z), NewExtent);
-	const FVector TopRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, OriginOffset.Y, OriginOffset.Z), NewExtent);
-
-	TArray PossibleLocations = {BotLeft, BotRight, TopLeft, TopRight};
-
-	if (LocationBeforeChange.Y < 0)
-	{
-		if (LocationBeforeChange.Z < GetBoxOrigin().Z)
-		{
-			PossibleLocations.Remove(BotLeft);
-		}
-		else
-		{
-			PossibleLocations.Remove(TopLeft);
-		}
-	}
-	else
-	{
-		if (LocationBeforeChange.Z < GetBoxOrigin().Z)
-		{
-			PossibleLocations.Remove(BotRight);
-		}
-		else
-		{
-			PossibleLocations.Remove(TopRight);
-		}
-	}
-
-	const FVector NewLocation = PossibleLocations[UKismetMathLibrary::RandomIntegerInRange(0, 2)];
-	return NewLocation + UKismetMathLibrary::GetDirectionUnitVector(LocationBeforeChange, NewLocation) * FVector(TargetSpeed) * FVector(GetBSConfig()->TargetConfig.TargetSpawnCD);
+	return FVector::ZeroVector;
 }
 
 FExtrema ATargetManager::GetBoxExtrema(const bool bDynamic) const

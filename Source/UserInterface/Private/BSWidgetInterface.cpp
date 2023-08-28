@@ -126,7 +126,7 @@ void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& 
 	}
 	if (TooltipText.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetOuter()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetParent()->GetParent()->GetName());
 	}
 	
 	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);

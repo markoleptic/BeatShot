@@ -15,7 +15,6 @@ void UCustomGameModesWidgetBase::NativeConstruct()
 	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Deactivation));
 	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_General));
 	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Spawning));
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Target));
 
 	Widget_Start->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 }
@@ -56,12 +55,6 @@ void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
 				Component->UpdateOptionsFromConfig();
 			}
 		}
-	}
-	if (bShouldUpdateFromComponentRequest && !bIsUpdatingFromComponentRequest)
-	{
-		bIsUpdatingFromComponentRequest = true;
-		UpdateOptionsFromConfig();
-		bIsUpdatingFromComponentRequest = false;
 	}
 }
 
@@ -169,7 +162,9 @@ void UCustomGameModesWidgetBase::OnRequestComponentUpdate()
 {
 	if (!bIsUpdatingFromComponentRequest)
 	{
-		bShouldUpdateFromComponentRequest = true;
+		bIsUpdatingFromComponentRequest = true;
+		UpdateAllChildWidgetOptionsValid();
+		bIsUpdatingFromComponentRequest = false;
 	}
 }
 

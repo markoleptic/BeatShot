@@ -447,7 +447,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Slider_MinTargetDistance->SetValue(InTargetConfig.MinDistanceBetweenTargets);
 	Slider_HorizontalSpread->SetValue(InTargetConfig.BoxBounds.Y);
 	Slider_VerticalSpread->SetValue(InTargetConfig.BoxBounds.Z);
-	Slider_ForwardSpread->SetValue(InTargetConfig.MoveForwardDistance);
+	//Slider_ForwardSpread->SetValue(InTargetConfig.MoveForwardDistance);
 	Slider_Lifespan->SetValue(InTargetConfig.TargetMaxLifeSpan);
 	Slider_TargetSpawnCD->SetValue(InTargetConfig.TargetSpawnCD);
 	Slider_SpawnBeatDelay->SetValue(InTargetConfig.SpawnBeatDelay);
@@ -465,7 +465,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_MinTargetDistance->SetText(FText::AsNumber(InTargetConfig.MinDistanceBetweenTargets));
 	Value_HorizontalSpread->SetText(FText::AsNumber(InTargetConfig.BoxBounds.Y));
 	Value_VerticalSpread->SetText(FText::AsNumber(InTargetConfig.BoxBounds.Z));
-	Value_ForwardSpread->SetText(FText::AsNumber(InTargetConfig.MoveForwardDistance));
+	//Value_ForwardSpread->SetText(FText::AsNumber(InTargetConfig.MoveForwardDistance));
 	Value_Lifespan->SetText(FText::AsNumber(InTargetConfig.TargetMaxLifeSpan));
 	Value_TargetSpawnCD->SetText(FText::AsNumber(InTargetConfig.TargetSpawnCD));
 	Value_SpawnBeatDelay->SetText(FText::AsNumber(InTargetConfig.SpawnBeatDelay));
@@ -479,7 +479,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	Value_MaxNumActivatedTargetsAtOnce->SetText(FText::AsNumber(InTargetConfig.MaxNumActivatedTargetsAtOnce));
 	Value_MaxNumTargetsAtOnce->SetText(FText::AsNumber(InTargetConfig.MaxNumTargetsAtOnce));
 	
-	CheckBox_MoveTargetsForward->SetIsChecked(InTargetConfig.bMoveTargetsForward);
+	//CheckBox_MoveTargetsForward->SetIsChecked(InTargetConfig.bMoveTargetsForward);
 	CheckBox_ApplyImmunityOnSpawn->SetIsChecked(InTargetConfig.bApplyImmunityOnSpawn);
 	//CheckBox_MoveTargets->SetIsChecked(InTargetConfig.bMoveTargets);
 	CheckBox_SpawnAtOriginWheneverPossible->SetIsChecked(InTargetConfig.bSpawnAtOriginWheneverPossible);
@@ -507,7 +507,7 @@ void UGameModesWidget_TargetConfig::InitializeTargetConfig(const FBS_TargetConfi
 	
 	OnSelectionChanged_TargetDistributionPolicy(TArray({UEnum::GetDisplayValueAsText(InTargetConfig.TargetDistributionPolicy).ToString()}), ESelectInfo::Type::Direct);
 	OnSelectionChanged_RecentTargetMemoryPolicy(TArray({UEnum::GetDisplayValueAsText(InTargetConfig.RecentTargetMemoryPolicy).ToString()}), ESelectInfo::Type::Direct);
-	OnCheckStateChanged_MoveTargetsForward(InTargetConfig.bMoveTargetsForward);
+	//OnCheckStateChanged_MoveTargetsForward(InTargetConfig.bMoveTargetsForward);
 	//OnCheckStateChanged_MoveTargets(InTargetConfig.bMoveTargets);
 	
 	UpdateBrushColors();
@@ -533,7 +533,7 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	ReturnConfig.MinDistanceBetweenTargets = FMath::GridSnap(FMath::Clamp(Slider_MinTargetDistance->GetValue(), MinValue_MinTargetDistance, MaxValue_MinTargetDistance), SnapSize_MinTargetDistance);
 	ReturnConfig.BoxBounds = FVector(0, FMath::GridSnap(FMath::Clamp(Slider_HorizontalSpread->GetValue(), MinValue_HorizontalSpread, MaxValue_HorizontalSpread), SnapSize_HorizontalSpread),
 									 FMath::GridSnap(FMath::Clamp(Slider_VerticalSpread->GetValue(), MinValue_VerticalSpread, MaxValue_VerticalSpread), SnapSize_VerticalSpread));
-	ReturnConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(Slider_ForwardSpread->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
+	//ReturnConfig.MoveForwardDistance = FMath::GridSnap(FMath::Clamp(Slider_ForwardSpread->GetValue(), MinValue_ForwardSpread, MaxValue_ForwardSpread), SnapSize_HorizontalSpread);
 	ReturnConfig.MaxNumRecentTargets = FMath::GridSnap(FMath::Clamp(Slider_MaxNumRecentTargets->GetValue(), MinValue_MaxNumRecentTargets, MaxValue_MaxNumRecentTargets), SnapSize_MaxNumRecentTargets);
 	ReturnConfig.RecentTargetTimeLength = FMath::GridSnap(FMath::Clamp(Slider_RecentTargetTimeLength->GetValue(), MinValue_RecentTargetTimeLength, MaxValue_RecentTargetTimeLength), SnapSize_RecentTargetTimeLength);
 	ReturnConfig.NumUpfrontTargetsToSpawn = FMath::GridSnap(FMath::Clamp(Slider_NumUpfrontTargetsToSpawn->GetValue(), MinValue_NumUpfrontTargetsToSpawn, MaxValue_NumUpfrontTargetsToSpawn), SnapSize_NumUpfrontTargetsToSpawn);
@@ -570,7 +570,7 @@ FBS_TargetConfig UGameModesWidget_TargetConfig::GetTargetConfig() const
 	}
 	
 	ReturnConfig.bApplyImmunityOnSpawn = CheckBox_ApplyImmunityOnSpawn->IsChecked();
-	ReturnConfig.bMoveTargetsForward = CheckBox_MoveTargetsForward->IsChecked();
+	//ReturnConfig.bMoveTargetsForward = CheckBox_MoveTargetsForward->IsChecked();
 	//ReturnConfig.bMoveTargets = CheckBox_MoveTargets->IsChecked();
 	ReturnConfig.bSpawnAtOriginWheneverPossible = CheckBox_SpawnAtOriginWheneverPossible->IsChecked();
 	ReturnConfig.bSpawnEveryOtherTargetInCenter = CheckBox_SpawnEveryOtherTargetInCenter->IsChecked();

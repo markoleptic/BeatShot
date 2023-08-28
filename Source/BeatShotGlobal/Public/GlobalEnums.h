@@ -171,8 +171,10 @@ enum class EMovingTargetDirectionMode : uint8
 	AlternateHorizontalVertical UMETA(DisplayName="Alternate Horizontal Vertical"),
 	/** Move targets in any direction */
 	Any UMETA(DisplayName="Any"),
+	/** Only move targets forward */
+	ForwardOnly UMETA(DisplayName="Forward Only"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::HorizontalOnly, EMovingTargetDirectionMode::Any);
+ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None, EMovingTargetDirectionMode::ForwardOnly);
 
 
 /** How to handle changing the target scale between consecutively activated targets */

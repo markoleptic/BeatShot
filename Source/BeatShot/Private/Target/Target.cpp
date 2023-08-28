@@ -159,15 +159,16 @@ void ATarget::PostInitializeComponents()
 
 	if (ProjectileMovementComponent)
 	{
-		if (!Config.bMoveTargetsForward && !Config.bApplyVelocityWhenSpawned && !Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity) &&
-			!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
+		if (Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
 		{
 			ProjectileMovementComponent->Deactivate();
 		}
 		else
 		{
 			ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ATarget::OnProjectileBounce);
-			if (!Config.bMoveTargetsForward)
+			if (Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly ||
+				Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly ||
+				Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::AlternateHorizontalVertical)
 			{
 				ProjectileMovementComponent->bConstrainToPlane = true;
 				ProjectileMovementComponent->SetPlaneConstraintNormal(FVector(1.f, 0.f, 0.f));
@@ -213,7 +214,67 @@ void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 
 void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
-	const FVector NewVelocity = ProjectileMovementComponent->Velocity.GetSafeNormal() * ProjectileMovementComponent->InitialSpeed;
+	const FVector Normal = ProjectileMovementComponent->Velocity.GetSafeNormal();
+	FVector RoundedNormal = FVector::ZeroVector;
+	switch(Config.MovingTargetDirectionMode)
+	{
+	case EMovingTargetDirectionMode::None:
+		break;
+	case EMovingTargetDirectionMode::HorizontalOnly:
+		if (Normal.Y > 0.f)
+		{
+			RoundedNormal.Y = 1.f;
+		}
+		else
+		{
+			RoundedNormal.Y = -1.f;
+		}
+		break;
+	case EMovingTargetDirectionMode::VerticalOnly:
+		if (FMath::Abs(Normal.Z) > 0.f)
+		{
+			RoundedNormal.Z = 1.f;
+		}
+		else
+		{
+			RoundedNormal.Z = -1.f;
+		}
+		break;
+	case EMovingTargetDirectionMode::AlternateHorizontalVertical:
+		if (FMath::Abs(Normal.Y) > FMath::Abs(Normal.Z))
+		{
+			if (Normal.Y > 0.f)
+			{
+				RoundedNormal.Y = 1.f;
+				RoundedNormal.Z = 0.f;
+			}
+			else
+			{
+				RoundedNormal.Y = -1.f;
+				RoundedNormal.Z = 0.f;
+			}
+		}
+		else
+		{
+			if (Normal.Z > 0.f)
+			{
+				RoundedNormal.Y = 0.f;
+				RoundedNormal.Z = 1.f;
+			}
+			else
+			{
+				RoundedNormal.Y = 0.f;
+				RoundedNormal.Z = -1.f;
+			}
+		}
+		break;
+	case EMovingTargetDirectionMode::Any:
+	default:
+		RoundedNormal = Normal;
+		break;
+	}
+
+	const FVector NewVelocity = RoundedNormal * ImpactVelocity.Length();
 	ProjectileMovementComponent->Velocity = NewVelocity;
 }
 
@@ -398,8 +459,7 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	{
 		SetTargetScale(GetTargetScale_Current() * Config.ConsecutiveChargeScaleMultiplier);
 	}
-
-
+	
 	// Position
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPositionToSpawnedPosition))
 	{
@@ -590,7 +650,17 @@ void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
  {
 	if (ProjectileMovementComponent->IsActive())
 	{
+		FVector DirectionUnitVector;
+		if (ProjectileMovementComponent->Velocity.IsNearlyZero() || FMath::IsNearlyZero(ProjectileMovementComponent->InitialSpeed))
+		{
+			DirectionUnitVector = FVector::ZeroVector; 
+		}
+		else
+		{
+			DirectionUnitVector = ProjectileMovementComponent->Velocity / ProjectileMovementComponent->InitialSpeed;
+		}
 		ProjectileMovementComponent->InitialSpeed = NewMovingTargetSpeed;
+		ProjectileMovementComponent->Velocity = DirectionUnitVector * ProjectileMovementComponent->InitialSpeed;
 	}
 }
 

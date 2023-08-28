@@ -107,8 +107,6 @@ protected:
 	TObjectPtr<UCustomGameModesWidget_General> Widget_General;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_Spawning> Widget_Spawning;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidget_Target> Widget_Target;
 
 	UPROPERTY()
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
@@ -120,6 +118,5 @@ protected:
 	TMap<TObjectPtr<UCustomGameModesWidgetComponent>, bool> ChildWidgetValidityMap;
 
 	bool bIsUpdatingFromComponentRequest = false;
-	bool bShouldUpdateFromComponentRequest = false;
 	bool bContainsGameModeBreakingOption = false;
 };
