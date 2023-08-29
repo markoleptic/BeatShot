@@ -42,6 +42,7 @@ void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWi
 {
 	TargetWidget = InTargetWidget;
 	BoxBoundsOrigin = InBoxBoundsOrigin;
+	UE_LOG(LogTemp, Display, TEXT("BoxBoundsOrigin: %s"), *BoxBoundsOrigin.ToString());
 	SetTargetWidgetLocation(InStartLocation);
 	TargetWidget->SetTargetScale(CapsuleComponent->GetRelativeScale3D());
 }
@@ -143,7 +144,7 @@ void ATargetPreview::HandleDestruction(const bool bExpired, const float CurrentH
 FVector2d ATargetPreview::GetWidgetPositionFromWorldPosition(const FVector& InPosition) const
 {
 	const float X = InPosition.Y;
-	const float Y = InPosition.Z - BoxBoundsOrigin.Z;
+	const float Y = InPosition.Z - (1000.f + Config.FloorDistance) / 2.f;
 	return FVector2d(X, Y);
 }
 

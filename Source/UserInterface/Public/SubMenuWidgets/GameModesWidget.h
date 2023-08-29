@@ -71,10 +71,8 @@ struct FStartWidgetProperties
 	}
 };
 
-DECLARE_MULTICAST_DELEGATE(FRequestSimulateTargetManager)
-DECLARE_MULTICAST_DELEGATE(FOnPopulateGameModeOptions)
+DECLARE_MULTICAST_DELEGATE_OneParam(FRequestSimulateTargetManagerStateChange, const bool bSimulate)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGameModeBreaking);
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnCreatorViewVisibilityChanged, const bool);
 
 /** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
@@ -97,17 +95,11 @@ public:
 	/** Returns BSConfig */
 	FBSConfig* GetConfigPointer() const { return BSConfig; }
 
-	/** Broadcast when this widget wants to run the custom game mode preview using the TargetManagerPreview (MainMenuGameMode) */
-	FRequestSimulateTargetManager RequestSimulateTargetManager;
-
-	/** Broadcast PopulateGameModeOptions is called */
-	FOnPopulateGameModeOptions OnPopulateGameModeOptions;
-
-	/** Broadcast when CustomGameModesWidget_CreatorView visibility changes */
-	FOnCreatorViewVisibilityChanged OnCreatorViewVisibilityChanged;
-
 	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true. Only Broadcasts if different than the previous */
 	FOnGameModeBreakingChange OnGameModeBreakingChange;
+
+	/** Called to request the start or stop of a game mode preview */
+	FRequestSimulateTargetManagerStateChange RequestSimulateTargetManagerStateChange;
 
 	/** Returns whether or not CustomGameModesWidget_CreatorView is visible */
 	bool GetCreatorViewVisible() const;
@@ -298,11 +290,11 @@ private:
 	/** Plays TransitionCustomGameModeView */
 	void TransitionGameModeViewToProperty();
 
-	/** Collapses Box_CreatorView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnCreatorViewVisibilityChanged */
+	/** Collapses Box_CreatorView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnRequestSimulationStateChange */
 	UFUNCTION()
 	void OnTransitionCompleted_ToPropertyView();
 	
-	/** Collapses Box_PropertyView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnCreatorViewVisibilityChanged */
+	/** Collapses Box_PropertyView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnRequestSimulationStateChange */
 	UFUNCTION()
 	void OnTransitionCompleted_ToCreatorView();
 

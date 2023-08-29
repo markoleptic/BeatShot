@@ -15,7 +15,6 @@
 #include "OverlayWidgets/GameModeSharingWidget.h"
 #include "WidgetComponents/DoubleSyncedSliderAndTextBox.h"
 #include "WidgetComponents/SavedTextWidget.h"
-#include "SubMenuWidgets/GameModesWidget_DefiningConfig.h"
 #include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.h"
 #include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_PropertyView.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
@@ -145,8 +144,8 @@ void UGameModesWidget::BindAllDelegates()
 	CustomGameModesWidget_CreatorView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	
-	// TODO: Might need to also bind to CreatorView
 	CustomGameModesWidget_PropertyView->RequestButtonStateUpdate.AddUObject(this, &ThisClass::UpdateSaveStartButtonStates);
+	CustomGameModesWidget_CreatorView->RequestButtonStateUpdate.AddUObject(this, &ThisClass::UpdateSaveStartButtonStates);
 	CustomGameModesWidget_PropertyView->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingOptionPresentStateChanged);
 	CustomGameModesWidget_CreatorView->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingOptionPresentStateChanged);
 	
@@ -206,9 +205,9 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 	}
 	else if (Button == CustomGameModesWidget_CreatorView->Button_RefreshPreview)
 	{
-		if (OnCreatorViewVisibilityChanged.IsBound())
+		if (RequestSimulateTargetManagerStateChange.IsBound())
 		{
-			OnCreatorViewVisibilityChanged.Broadcast(true);
+			RequestSimulateTargetManagerStateChange.Broadcast(true);
 		}
 	}
 	else if (Button == Button_StartWithoutSaving)
@@ -260,16 +259,16 @@ void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 		// Execute OnCreatorViewVisibilityChanged if CreatorView is currently showing or will be showing
 		if (Box == Box_DefaultGameModes && GetCreatorViewVisible())
 		{
-			if (OnCreatorViewVisibilityChanged.IsBound())
+			if (RequestSimulateTargetManagerStateChange.IsBound())
 			{
-				OnCreatorViewVisibilityChanged.Broadcast(false);
+				RequestSimulateTargetManagerStateChange.Broadcast(false);
 			}
 		}
 		else if (Box == Box_CustomGameModes && GetCreatorViewVisible())
 		{
-			if (OnCreatorViewVisibilityChanged.IsBound())
+			if (RequestSimulateTargetManagerStateChange.IsBound())
 			{
-				OnCreatorViewVisibilityChanged.Broadcast(true);
+				RequestSimulateTargetManagerStateChange.Broadcast(true);
 			}
 		}
 		
@@ -454,9 +453,9 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	CustomGameModesWidget_CreatorView->UpdateOptionsFromConfig();
 	CustomGameModesWidget_PropertyView->UpdateOptionsFromConfig();
 	
-	if (GetCreatorViewVisible() && OnPopulateGameModeOptions.IsBound())
+	if (GetCreatorViewVisible() && RequestSimulateTargetManagerStateChange.IsBound())
 	{
-		OnPopulateGameModeOptions.Broadcast();
+		RequestSimulateTargetManagerStateChange.Broadcast(true);
 	}
 }
 
@@ -464,9 +463,9 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 {
 	FBSConfig ReturnStruct = GameModeConfig;
 	
-	if (!CustomGameModesWidget_PropertyView->GetNewCustomGameModeName().IsEmpty())
+	if (!CustomGameModesWidget_Current->GetNewCustomGameModeName().IsEmpty())
 	{
-		ReturnStruct.DefiningConfig.CustomGameModeName = CustomGameModesWidget_PropertyView->GetNewCustomGameModeName();
+		ReturnStruct.DefiningConfig.CustomGameModeName = CustomGameModesWidget_Current->GetNewCustomGameModeName();
 	}
 	
 	// Override GameModeType to always be Custom
@@ -487,6 +486,7 @@ bool UGameModesWidget::SaveCustomAndReselect(const FText& SuccessMessage)
 	if (IsPresetGameMode(GameModeToSave.DefiningConfig.CustomGameModeName) || GameModeToSave.DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
 		CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
+		CustomGameModesWidget_CreatorView->SetNewCustomGameModeName("");
 		const TArray SavedText = {FText::FromString("Error trying to save Custom Game Mode:"), FText::FromString(GameModeToSave.DefiningConfig.CustomGameModeName)};
 		SetAndPlaySavedText(FText::Join(FText::FromString(" "), SavedText));
 		return false;
@@ -514,14 +514,14 @@ bool UGameModesWidget::SaveCustomAndReselect(const FText& SuccessMessage)
 
 void UGameModesWidget::UpdateSaveStartButtonStates()
 {
-	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_PropertyView->GetStartWidgetProperties();
+	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
+	const bool bAllCustomGameModeOptionsValid = CustomGameModesWidget_Current->GetAllChildWidgetOptionsValid();
 	
 	const bool bIsDefaultMode = StartWidgetProperties.DefiningConfig.BaseGameMode != EBaseGameMode::None;
 	const bool bIsCustomMode = IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName);
 
 	const bool bNewCustomGameModeNameEmpty = StartWidgetProperties.NewCustomGameModeName.IsEmpty();
 	const bool bInvalidCustomGameModeName = IsPresetGameMode(StartWidgetProperties.NewCustomGameModeName);
-	const bool bAllCustomGameModeOptionsValid = CustomGameModesWidget_PropertyView->GetAllChildWidgetOptionsValid();
 	
 	// RemoveAll Button
 	if (LoadCustomGameModes().IsEmpty())
@@ -627,7 +627,7 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 
 bool UGameModesWidget::IsCurrentConfigIdenticalToSelectedCustom()
 {
-	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_PropertyView->GetStartWidgetProperties();
+	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
 	
 	// Bypass saving if identical to existing
 	if (IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName))
@@ -643,7 +643,7 @@ bool UGameModesWidget::IsCurrentConfigIdenticalToSelectedCustom()
 
 bool UGameModesWidget::CheckForExistingAndDisplayOverwriteMessage(const bool bStartGameAfter)
 {
-	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_PropertyView->GetStartWidgetProperties();
+	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
 	const FString NewCustomGameModeName = StartWidgetProperties.NewCustomGameModeName;
 
 	// If NewCustomGameModeName is blank, ask to override
@@ -736,9 +736,9 @@ void UGameModesWidget::OnTransitionCompleted_ToPropertyView()
 	Box_CreatorView->SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionComplete_ToPropertyView);
 	CustomGameModesWidget_Current = CustomGameModesWidget_PropertyView;
-	if (OnCreatorViewVisibilityChanged.IsBound())
+	if (RequestSimulateTargetManagerStateChange.IsBound())
 	{
-		OnCreatorViewVisibilityChanged.Broadcast(false);
+		RequestSimulateTargetManagerStateChange.Broadcast(false);
 	}
 }
 
@@ -747,9 +747,9 @@ void UGameModesWidget::OnTransitionCompleted_ToCreatorView()
 	Box_PropertyView->SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionComplete_ToCreatorView);
 	CustomGameModesWidget_Current = CustomGameModesWidget_CreatorView;
-	if (OnCreatorViewVisibilityChanged.IsBound())
+	if (RequestSimulateTargetManagerStateChange.IsBound())
 	{
-		OnCreatorViewVisibilityChanged.Broadcast(true);
+		RequestSimulateTargetManagerStateChange.Broadcast(true);
 	}
 }
 

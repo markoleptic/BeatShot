@@ -23,7 +23,16 @@ public:
 	UTargetWidget* ConstructTargetWidget();
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
-	UBoxBoundsWidget* BoxBounds;
+	UBoxBoundsWidget* BoxBounds_Current;
+
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UBoxBoundsWidget* BoxBounds_Max;
+
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UBoxBoundsWidget* BoxBounds_Min;
+	
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	USizeBox* FloorDistance;
 
 protected:
 	virtual void NativeConstruct() override;
@@ -35,7 +44,4 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UOverlay* Overlay;
-
-	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
-	USizeBox* FloorDistance;
 };

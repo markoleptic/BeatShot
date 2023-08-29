@@ -25,12 +25,9 @@ public:
 
 	/** Enables communication between GameModesWidget and TargetManager */
 	void BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget);
-	
-	/** Called when the GameModesWidget calls PopulateGameModeOptions */
-	void OnGameModesWidgetPopulateGameModeOptions();
 
-	/** Called when the CustomGameModesWidget_CreatorView visibility changes */
-	void OnCreatorViewVisibilityChanged(const bool bVisible);
+	/** Called when the GameModesWidget wants to start or stop previewing a game mode */
+	void OnRequestSimulationStateChange(const bool bSimulate);
 
 	/** Starts timers, binds timer delegates, restarts TargetManager */
 	void StartSimulation();

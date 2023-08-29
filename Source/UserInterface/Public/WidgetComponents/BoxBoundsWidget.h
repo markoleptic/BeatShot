@@ -18,6 +18,9 @@ class USERINTERFACE_API UBoxBoundsWidget : public UUserWidget
 public:
 	/** Sets the Width and Height overrides of the BoxBounds, which adjust the BoxBoundsImage size */
 	void SetBoxBounds(const FVector2d& InBounds) const;
+
+	/** Sets the vertical padding of the BoxBounds */
+	void SetBoxBoundsPosition(const float VerticalOffset) const;
 	
 protected:
 	virtual void NativeConstruct() override;

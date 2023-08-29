@@ -28,24 +28,20 @@ void AMainMenuGameMode::BeginPlay()
 void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)
 {
 	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator);
-	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds);
+	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Current,
+		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Min,
+		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Max,
+		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->FloorDistance);
 	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
 	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview, &UCustomGameModesWidget_Preview::ConstructTargetWidget);
-
-	GameModesWidget->RequestSimulateTargetManager.AddUObject(this, &ThisClass::StartSimulation);
-	GameModesWidget->OnPopulateGameModeOptions.AddUObject(this, &ThisClass::OnGameModesWidgetPopulateGameModeOptions);
-	GameModesWidget->OnCreatorViewVisibilityChanged.AddUObject(this, &ThisClass::OnCreatorViewVisibilityChanged);
+	
+	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this, &ThisClass::OnRequestSimulationStateChange);
 	GameModesWidget->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingChange);
 }
 
-void AMainMenuGameMode::OnGameModesWidgetPopulateGameModeOptions()
+void AMainMenuGameMode::OnRequestSimulationStateChange(const bool bSimulate)
 {
-	StartSimulation();
-}
-
-void AMainMenuGameMode::OnCreatorViewVisibilityChanged(const bool bVisible)
-{
-	if (bVisible)
+	if (bSimulate)
 	{
 		StartSimulation();
 	}
@@ -57,7 +53,7 @@ void AMainMenuGameMode::OnCreatorViewVisibilityChanged(const bool bVisible)
 
 void AMainMenuGameMode::StartSimulation()
 {
-	if (!TargetManager || bGameModeBreakingChangePresent)
+	if (!TargetManager)
 	{
 		return;
 	}
@@ -65,6 +61,11 @@ void AMainMenuGameMode::StartSimulation()
 	if (TargetManagerIsSimulating())
 	{
 		FinishSimulation();
+	}
+
+	if (bGameModeBreakingChangePresent)
+	{
+		return;
 	}
 	
 	TargetManager->RestartSimulation();

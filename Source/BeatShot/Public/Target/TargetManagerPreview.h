@@ -19,7 +19,7 @@ public:
 	ATargetManagerPreview();
 
 	/** Initializes the BoxBounds widget */
-	void InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InBoxBoundsWidget);
+	void InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent, const TObjectPtr<UBoxBoundsWidget> InMin, const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance);
 
 	/** Reinitialize the TargetManager by calling Init */
 	void RestartSimulation();
@@ -51,5 +51,14 @@ protected:
 	virtual void UpdateSpawnVolume() const override;
 
 	UPROPERTY()
-	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget;
+	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget_Current;
+
+	UPROPERTY()
+	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget_Min;
+
+	UPROPERTY()
+	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget_Max;
+	
+	UPROPERTY()
+	TObjectPtr<USizeBox> FloorDistance;
 };

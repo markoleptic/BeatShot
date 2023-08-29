@@ -2,6 +2,7 @@
 
 
 #include "Target/TargetManagerPreview.h"
+#include "Components/SizeBox.h"
 #include "Target/TargetPreview.h"
 
 
@@ -10,9 +11,13 @@ ATargetManagerPreview::ATargetManagerPreview()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ATargetManagerPreview::InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InBoxBoundsWidget)
+void ATargetManagerPreview::InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent,
+	const TObjectPtr<UBoxBoundsWidget> InMin, const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance)
 {
-	BoxBoundsWidget = InBoxBoundsWidget;
+	BoxBoundsWidget_Current = InCurrent;
+	BoxBoundsWidget_Min = InMin;
+	BoxBoundsWidget_Max = InMax;
+	FloorDistance = InFloorDistance;
 }
 
 void ATargetManagerPreview::RestartSimulation()
@@ -73,9 +78,49 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 void ATargetManagerPreview::UpdateSpawnVolume() const
 {
 	Super::UpdateSpawnVolume();
-	if (BoxBoundsWidget && GetBSConfig())
+	if (!GetBSConfig())
 	{
-		BoxBoundsWidget->SetBoxBounds(FVector2d(SpawnBox->GetUnscaledBoxExtent().Y * 2.f, SpawnBox->GetUnscaledBoxExtent().Z * 2.f));
+		return;
+	}
+	if (BoxBoundsWidget_Current)
+	{
+		BoxBoundsWidget_Current->SetBoxBounds(FVector2d(SpawnBox->GetUnscaledBoxExtent().Y * 2.f, SpawnBox->GetUnscaledBoxExtent().Z * 2.f));
+		BoxBoundsWidget_Current->SetBoxBoundsPosition(GetBoxOrigin().Z - SpawnBox->Bounds.BoxExtent.Z);
+	}
+	
+	if (BoxBoundsWidget_Min)
+	{
+		if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+		{
+			BoxBoundsWidget_Min->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			const float MinY = FMath::GridSnap<float>(GetBoxExtents_Static().Y * 0.5f, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
+			const float MinZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z * 0.5f, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
+			BoxBoundsWidget_Min->SetBoxBounds(FVector2d(MinY, MinZ));
+			BoxBoundsWidget_Min->SetBoxBoundsPosition(GetBoxOrigin().Z - (MinZ / 2.f));
+		}
+		else
+		{
+			BoxBoundsWidget_Min->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+	if (BoxBoundsWidget_Max)
+	{
+		if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+		{
+			BoxBoundsWidget_Max->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			const float MaxY = FMath::GridSnap<float>(GetBoxExtents_Static().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
+			const float MaxZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
+			BoxBoundsWidget_Max->SetBoxBounds(FVector2d(MaxY, MaxZ));
+			BoxBoundsWidget_Max->SetBoxBoundsPosition(GetBoxOrigin().Z - (MaxZ / 2.f));
+		}
+		else
+		{
+			BoxBoundsWidget_Max->SetVisibility(ESlateVisibility::Collapsed);
+		}
+	}
+	if (FloorDistance)
+	{
+		FloorDistance->SetHeightOverride(BSConfig->TargetConfig.FloorDistance);
 	}
 }
 
