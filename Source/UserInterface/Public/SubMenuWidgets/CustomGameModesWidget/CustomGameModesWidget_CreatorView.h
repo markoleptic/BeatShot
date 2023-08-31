@@ -7,6 +7,9 @@
 #include "Components/CustomGameModesWidget_Start.h"
 #include "CustomGameModesWidget_CreatorView.generated.h"
 
+class UScrollBox;
+class UBSCarouselNavBar;
+class UCommonWidgetCarouselNavBar;
 class UCustomGameModesWidget_Target;
 class UCustomGameModesWidget_Spawning;
 class UCustomGameModesWidget_General;
@@ -20,6 +23,7 @@ class UCustomGameModesWidget_Start;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
+class UCommonWidgetCarousel;
 
 UCLASS()
 class USERINTERFACE_API UCustomGameModesWidget_CreatorView : public UCustomGameModesWidgetBase
@@ -31,43 +35,26 @@ public:
 	
 protected:
 	virtual void NativeConstruct() override;
-	
-	UFUNCTION()
-	void OnBSButtonPressed(const UBSButton* BSButton);
-	
-	/** Checks the CurrentWidget's Can Transition Forward State and if allowed, transitions in the Next widget and assigns it to the value of CurrentWidget */
-	void TransitionForward();
-
-	/** Transitions in the previous widget and assigns it to the value of CurrentWidget */
-	void TransitionBackward();
-
-	/** Changes the value of CurrentWidget and plays the appropriate widget animation */
-	void ChangeCurrentWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Widget);
 
 	/** Bound to all child widget's OnValidOptionsStateChanged delegates */
 	virtual void OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid) override;
 
+	UFUNCTION()
+	void OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex);
+
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCustomGameModesWidget_Preview* Widget_Preview;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_Create;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_RefreshPreview;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget_CreatorView;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UScrollBox* ScrollBox;
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_Next;
+	UCommonWidgetCarousel* Carousel;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_Previous;
-	
-	UPROPERTY()
-	TObjectPtr<UCustomGameModesWidgetComponent> CurrentWidget;
-	UPROPERTY()
-	TObjectPtr<UCustomGameModesWidgetComponent> FirstWidget;
-	UPROPERTY()
-	TObjectPtr<UCustomGameModesWidgetComponent> LastWidget;
+	UBSCarouselNavBar* CarouselNavBar;
+	UPROPERTY(EditDefaultsOnly, Category="Carousel")
+	TArray<FText> NavBarButtonText;
 };

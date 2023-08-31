@@ -119,23 +119,30 @@ void UCustomGameModesWidget_Spawning::UpdateDependentOptions_TargetSpawningPolic
 {
 	if (InTargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
-		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		CheckBoxOption_BatchSpawning->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		CheckBoxOption_SpawnAtOriginWheneverPossible->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		
+		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
 	}
 	else if (InTargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
 	{
-		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
+		BSConfig->TargetConfig.bUseBatchSpawning = false;
+		BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter = false;
+		BSConfig->TargetConfig.bSpawnAtOriginWheneverPossible = false;
+		
+		UpdateValueIfDifferent(CheckBoxOption_BatchSpawning, false);
+		UpdateValueIfDifferent(CheckBoxOption_SpawnAtOriginWheneverPossible, false);
+		UpdateValueIfDifferent(CheckBoxOption_SpawnEveryOtherTargetInCenter, false);
+
 		CheckBoxOption_BatchSpawning->SetVisibility(ESlateVisibility::Collapsed);
 		CheckBoxOption_SpawnAtOriginWheneverPossible->SetVisibility(ESlateVisibility::Collapsed);
 		CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::Collapsed);
-		CheckBoxOption_BatchSpawning->CheckBox->SetIsChecked(false);
-		CheckBoxOption_SpawnAtOriginWheneverPossible->CheckBox->SetIsChecked(false);
-		CheckBoxOption_SpawnEveryOtherTargetInCenter->CheckBox->SetIsChecked(false);
-		BSConfig->TargetConfig.bUseBatchSpawning = false;
+
+		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 

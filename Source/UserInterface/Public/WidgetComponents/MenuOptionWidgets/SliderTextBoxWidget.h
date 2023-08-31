@@ -36,6 +36,9 @@ public:
 	/** Returns the value for the EditableTextBox */
 	float GetEditableTextBoxValue() const;
 
+	/** Locks or unlocks the slider and sets the EditableTextBox to read-only or not */
+	void SetSliderAndTextBoxEnabledStates(const bool bEnabled) const;
+
 	/** Broadcast when the slider value changes or the EditableTextBox has text committed to it */
 	FOnSliderTextBoxValueChanged OnSliderTextBoxValueChanged;
 

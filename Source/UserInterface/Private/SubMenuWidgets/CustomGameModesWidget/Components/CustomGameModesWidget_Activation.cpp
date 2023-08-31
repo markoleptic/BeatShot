@@ -61,8 +61,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 
 	ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_TargetActivationResponses->ComboBox->ClearOptions();
-
-
+	
 	TArray<FString> Options;
 	
 	for (const ETargetActivationSelectionPolicy& Method : TEnumRange<ETargetActivationSelectionPolicy>())
@@ -82,8 +81,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 	}
 	ComboBoxOption_TargetActivationResponses->SortAndAddOptions(Options);
 	Options.Empty();
-
-
+	
 	SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
 	CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
@@ -133,6 +131,8 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 
 	UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(bConstantNumTargetsToActivateAtOnce);
 	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses, bConstantTargetSpeed);
+
+	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	
 	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
@@ -200,6 +200,23 @@ void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantTargetSpe
 		SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void UCustomGameModesWidget_Activation::UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& Policy)
+{
+	switch(Policy) {
+	case ETargetDistributionPolicy::Grid:
+		ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->SetIsEnabled(true);
+		break;
+	case ETargetDistributionPolicy::None:
+	case ETargetDistributionPolicy::HeadshotHeightOnly:
+	case ETargetDistributionPolicy::EdgeOnly:
+	case ETargetDistributionPolicy::FullRange:
+		BSConfig->TargetConfig.TargetActivationSelectionPolicy = ETargetActivationSelectionPolicy::Random;
+		UpdateValueIfDifferent(ComboBoxOption_TargetActivationSelectionPolicy, GetStringFromEnum(BSConfig->TargetConfig.TargetActivationSelectionPolicy));
+		ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->SetIsEnabled(false);
+		break;
 	}
 }
 

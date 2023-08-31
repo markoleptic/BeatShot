@@ -91,6 +91,8 @@ public:
 
 	/** Returns whether or not Init has been called */
 	bool IsInitialized() const { return bIsInitialized; }
+
+	float GetAnimTimeRemaining();
 	
 	/** Starts with the widget not visible and shifts to the right from the left */
 	void PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish);
@@ -100,6 +102,22 @@ public:
 	void PlayAnim_TransitionInRight_Forward(const bool bCollapseOnFinish);
 	/** Starts with the widget visible and shifts to the right from the left */
 	void PlayAnim_TransitionInRight_Reverse(const bool bCollapseOnFinish);
+
+	/** Skips to the end of whichever animation is playing and unbinds the delegates */
+	void SkipToEndTransitionAnimation();
+
+	void BindToCurrentAnimFinished();
+
+	/** Returns if TransitionInRight or TransitionInLeft is playing */
+	bool IsTransitionAnimationPlaying();
+
+	bool IsTransitionAnimationPlayingForward();
+	
+	FWidgetAnimationDynamicEvent& GetCurrentlyPlayingAnimationDelegate();
+
+	UWidgetAnimation* GetCurrentlyPlayingAnimation();
+
+	void UnbindAllAnimationDelegates();
 
 	/** Checks all custom game mode options for validity, returning true if valid and false if any are invalid. Should be called anytime an option is changed */
 	virtual bool UpdateAllOptionsValid();
@@ -113,9 +131,9 @@ protected:
 	/** Sets value of Next */
 	void SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
-	/** Sets the visibility of the widget to collapsed and unbinds from any OnAnimationFinished delegates */
+	/** Unbinds from any OnAnimationFinished delegates */
 	UFUNCTION()
-	void SetCollapsed();
+	void OnTransitionFinished();
 
 	static bool UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value);
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption);
@@ -148,3 +166,4 @@ protected:
 	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
 };
+

@@ -2,8 +2,10 @@
 
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h"
+#include "Animation/WidgetAnimation.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
+#include "Components/ScrollBox.h"
 #include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
@@ -14,8 +16,8 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	OnTransitionInLeftFinish.BindDynamic(this, &ThisClass::SetCollapsed);
-	OnTransitionInRightFinish.BindDynamic(this, &ThisClass::SetCollapsed);
+	OnTransitionInLeftFinish.BindDynamic(this, &ThisClass::OnTransitionFinished);
+	OnTransitionInRightFinish.BindDynamic(this, &ThisClass::OnTransitionFinished);
 }
 
 bool UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
@@ -61,9 +63,22 @@ bool UCustomGameModesWidgetComponent::GetAllOptionsValid() const
 	return bAllOptionsValid;
 }
 
+float UCustomGameModesWidgetComponent::GetAnimTimeRemaining()
+{
+	if (IsAnimationPlaying(TransitionInLeft))
+	{
+		return TransitionInLeft->GetEndTime() - GetAnimationCurrentTime(TransitionInLeft);
+	}
+	if (IsAnimationPlayingForward(TransitionInRight))
+	{
+		return TransitionInRight->GetEndTime() - GetAnimationCurrentTime(TransitionInRight);
+	}
+	return -1.f;
+}
+
 void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish)
 {
-	if (bCollapseOnFinish)
+	/*if (bCollapseOnFinish)
 	{
 		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
 	}
@@ -71,14 +86,14 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Forward(const bo
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
+	}*/
 	
 	PlayAnimationForward(TransitionInLeft);
 }
 
 void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Reverse(const bool bCollapseOnFinish)
 {
-	if (bCollapseOnFinish)
+	/*if (bCollapseOnFinish)
 	{
 		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
 	}
@@ -86,14 +101,14 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Reverse(const bo
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
+	}*/
 	
 	PlayAnimationReverse(TransitionInLeft);
 }
 
 void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Forward(const bool bCollapseOnFinish)
 {
-	if (bCollapseOnFinish)
+	/*if (bCollapseOnFinish)
 	{
 		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
 	}
@@ -101,14 +116,14 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Forward(const b
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
+	}*/
 	
 	PlayAnimationForward(TransitionInRight);
 }
 
 void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Reverse(const bool bCollapseOnFinish)
 {
-	if (bCollapseOnFinish)
+	/*if (bCollapseOnFinish)
 	{
 		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
 	}
@@ -116,9 +131,65 @@ void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Reverse(const b
 	if (GetVisibility() == ESlateVisibility::Collapsed)
 	{
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
+	}*/
 	
 	PlayAnimationReverse(TransitionInRight);
+}
+
+void UCustomGameModesWidgetComponent::SkipToEndTransitionAnimation()
+{
+	if (!IsAnimationPlayingForward(TransitionInLeft) && IsAnimationPlaying(TransitionInLeft))
+	{
+		SetAnimationCurrentTime(TransitionInLeft, TransitionInLeft->GetEndTime());
+	}
+	else if (!IsAnimationPlayingForward(TransitionInRight) && IsAnimationPlaying(TransitionInRight))
+	{
+		SetAnimationCurrentTime(TransitionInRight, TransitionInRight->GetEndTime());
+	}
+}
+
+void UCustomGameModesWidgetComponent::BindToCurrentAnimFinished()
+{
+	if (IsAnimationPlaying(TransitionInLeft))
+	{
+		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
+	}
+	else if (IsAnimationPlayingForward(TransitionInRight))
+	{
+		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
+	}
+}
+
+bool UCustomGameModesWidgetComponent::IsTransitionAnimationPlaying()
+{
+	return IsAnimationPlaying(TransitionInLeft) || IsAnimationPlaying(TransitionInRight);
+}
+
+bool UCustomGameModesWidgetComponent::IsTransitionAnimationPlayingForward()
+{
+	return IsAnimationPlayingForward(TransitionInLeft) || IsAnimationPlayingForward(TransitionInRight);
+}
+
+FWidgetAnimationDynamicEvent& UCustomGameModesWidgetComponent::GetCurrentlyPlayingAnimationDelegate()
+{
+	if (IsAnimationPlaying(TransitionInLeft))
+	{
+		return OnTransitionInLeftFinish;
+	}
+	return OnTransitionInRightFinish;
+}
+
+UWidgetAnimation* UCustomGameModesWidgetComponent::GetCurrentlyPlayingAnimation()
+{
+	if (IsAnimationPlaying(TransitionInLeft))
+	{
+		return TransitionInLeft;
+	}
+	if (IsAnimationPlaying(TransitionInRight))
+	{
+		return TransitionInRight;
+	}
+	return nullptr;
 }
 
 TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::GetNext() const
@@ -131,11 +202,16 @@ void UCustomGameModesWidgetComponent::SetNext(const TObjectPtr<UCustomGameModesW
 	Next = InNext;
 }
 
-void UCustomGameModesWidgetComponent::SetCollapsed()
+void UCustomGameModesWidgetComponent::OnTransitionFinished()
 {
-	SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
 	UnbindFromAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
+}
+
+void UCustomGameModesWidgetComponent::UnbindAllAnimationDelegates()
+{
+	OnTransitionInRightFinish.Unbind();
+	OnTransitionInLeftFinish.Unbind();
 }
 
 bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value)

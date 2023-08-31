@@ -666,7 +666,8 @@ void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
 
 void ATarget::SetTargetScale(const FVector& NewScale) const
 {
-	CapsuleComponent->SetRelativeScale3D(NewScale);
+	// Cap target scale at MaxValue_TargetScale
+	CapsuleComponent->SetRelativeScale3D(NewScale.X < MaxValue_TargetScale ? NewScale : FVector(MaxValue_TargetScale));
 }
 
 void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const

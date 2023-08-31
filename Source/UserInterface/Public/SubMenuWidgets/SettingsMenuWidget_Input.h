@@ -8,6 +8,8 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_Input.generated.h"
 
+class UEditableTextBoxOptionWidget;
+class USliderTextBoxWidget;
 class UScrollBox;
 class UInputKeySelector;
 class USavedTextWidget;
@@ -56,14 +58,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UScrollBox* ScrollBox;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	UTextBlock* Value_CurrentSensitivity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	UEditableTextBox* Value_NewSensitivity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	UEditableTextBox* Value_NewSensitivityCsgo;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Sensitivity")
-	USlider* Slider_Sensitivity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBoxOptionWidget* MenuOption_CurrentSensitivity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* MenuOption_NewSensitivity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* MenuOption_NewSensitivityCsgo;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UBSButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
@@ -77,12 +78,8 @@ protected:
 	TMap<FName, FKey> TempKeybindings;
 	FPlayerSettings_User InitialPlayerSettings;
 
-	UFUNCTION()
-	void OnValueChanged_NewSensitivity(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_NewSensitivityCsgo(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSliderChanged_Sensitivity(const float NewValue);
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	void OnButtonClicked_Save();

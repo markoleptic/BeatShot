@@ -8,19 +8,23 @@
 #include "Components/EditableTextBox.h"
 #include "Components/InputKeySelector.h"
 #include "Components/ScrollBox.h"
-#include "Components/Slider.h"
-#include "Components/TextBlock.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
 
 void USettingsMenuWidget_Input::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	MenuOption_CurrentSensitivity->EditableTextBox->SetIsReadOnly(true);
+	MenuOption_CurrentSensitivity->EditableTextBox->SetJustification(ETextJustify::Type::Right);
 	
-	Value_NewSensitivity->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Input::OnValueChanged_NewSensitivity);
-	Value_NewSensitivityCsgo->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_Input::OnValueChanged_NewSensitivityCsgo);
-	Slider_Sensitivity->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_Input::OnSliderChanged_Sensitivity);
+	MenuOption_NewSensitivity->SetValues(0, 100, 0.001);
+	MenuOption_NewSensitivityCsgo->SetValues(0, 100 * CsgoMultiplier, 0.001);
+
+	MenuOption_NewSensitivity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	MenuOption_NewSensitivityCsgo->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 
 	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Revert->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
@@ -36,17 +40,19 @@ void USettingsMenuWidget_Input::NativeConstruct()
 
 void USettingsMenuWidget_Input::InitializeInputSettings(const FPlayerSettings_User& PlayerSettings_User)
 {
+	Sensitivity = PlayerSettings_User.Sensitivity;
+	TempKeybindings = PlayerSettings_User.Keybindings;
+	
+	MenuOption_CurrentSensitivity->EditableTextBox->SetText(FText::AsNumber(Sensitivity));
+	MenuOption_NewSensitivity->SetValue(Sensitivity);
+	MenuOption_NewSensitivityCsgo->SetValue(Sensitivity * CsgoMultiplier);
+	
 	// Remove any existing InputMappingWidgets
 	for (UInputMappingWidget* InputMappingWidget : InputMappingWidgets)
 	{
 		InputMappingWidget->RemoveFromParent();
 	}
 	InputMappingWidgets.Empty();
-	
-	Sensitivity = PlayerSettings_User.Sensitivity;
-	TempKeybindings = PlayerSettings_User.Keybindings;
-	Slider_Sensitivity->SetValue(Sensitivity);
-	Value_CurrentSensitivity->SetText(FText::AsNumber(Sensitivity));
 	
 	TArray<FEnhancedActionKeyMapping> Mappings = PlayerMappableInputConfig->GetPlayerMappableKeys();
 	TArray<TObjectPtr<const UInputAction>> Actions;
@@ -176,29 +182,18 @@ TArray<UInputMappingWidget*> USettingsMenuWidget_Input::FindInputMappingWidgetsB
 	});
 }
 
-void USettingsMenuWidget_Input::OnValueChanged_NewSensitivity(const FText& NewValue, ETextCommit::Type CommitType)
+void USettingsMenuWidget_Input::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
 {
-	const float NewSensValue = FCString::Atof(*NewValue.ToString());
-	Slider_Sensitivity->SetValue(NewSensValue);
-	Value_NewSensitivityCsgo->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue * CsgoMultiplier)));
-	Sensitivity = NewSensValue;
-}
-
-void USettingsMenuWidget_Input::OnValueChanged_NewSensitivityCsgo(const FText& NewValue, ETextCommit::Type CommitType)
-{
-	const float NewCsgoSensValue = FCString::Atof(*NewValue.ToString());
-	Slider_Sensitivity->SetValue(NewCsgoSensValue / CsgoMultiplier);
-	Value_NewSensitivity->SetText(FText::FromString(FString::SanitizeFloat(NewCsgoSensValue / CsgoMultiplier)));
-	Sensitivity = NewCsgoSensValue / CsgoMultiplier;
-}
-
-void USettingsMenuWidget_Input::OnSliderChanged_Sensitivity(const float NewValue)
-{
-	const float NewSensValue = UKismetMathLibrary::GridSnap_Float(NewValue, 0.1);
-	Slider_Sensitivity->SetValue(NewSensValue);
-	Value_NewSensitivity->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue)));
-	Value_NewSensitivityCsgo->SetText(FText::FromString(FString::SanitizeFloat(NewSensValue * CsgoMultiplier)));
-	Sensitivity = NewSensValue;
+	if (Widget == MenuOption_NewSensitivity)
+	{
+		MenuOption_NewSensitivityCsgo->SetValue(Value * CsgoMultiplier);
+		Sensitivity = Value;
+	}
+	else if (Widget == MenuOption_NewSensitivityCsgo)
+	{
+		MenuOption_NewSensitivity->SetValue(Value / CsgoMultiplier);
+		Sensitivity = Value / CsgoMultiplier;
+	}
 }
 
 void USettingsMenuWidget_Input::OnButtonClicked_BSButton(const UBSButton* Button)
@@ -221,8 +216,9 @@ void USettingsMenuWidget_Input::OnButtonClicked_BSButton(const UBSButton* Button
 void USettingsMenuWidget_Input::OnButtonClicked_Save()
 {
 	FPlayerSettings_User Settings_User = LoadPlayerSettings().User;
-	Settings_User.Sensitivity = Slider_Sensitivity->GetValue();
-	Value_CurrentSensitivity->SetText(FText::AsNumber(Slider_Sensitivity->GetValue()));
+	Settings_User.Sensitivity = Sensitivity;
+	MenuOption_CurrentSensitivity->EditableTextBox->SetText(FText::AsNumber(Sensitivity));
+	//Value_CurrentSensitivity->SetText(FText::AsNumber(Slider_Sensitivity->GetValue()));
 	Settings_User.Keybindings = TempKeybindings;
 	
 	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetOwningPlayer()->GetLocalPlayer());

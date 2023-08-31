@@ -149,7 +149,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Description;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
 	UCheckBox* CheckBox_Lock;
 
 	UPROPERTY(EditDefaultsOnly)

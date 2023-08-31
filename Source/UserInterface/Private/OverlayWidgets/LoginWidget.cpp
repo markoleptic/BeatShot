@@ -32,7 +32,7 @@ void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
 	TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
 	TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
-	Button_NoLoginCancel->ChangeButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
+	Button_NoLoginCancel->SetButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
 	
 	if (!Key.IsEmpty())
 	{
@@ -67,7 +67,7 @@ void ULoginWidget::SetIsLegacySignedIn(const bool bIsSignedIn)
 	bIsLegacySignedIn = bIsSignedIn;
 	Button_FromSteam_ToLegacyLogin->SetVisibility(ESlateVisibility::Collapsed);
 	TextBlock_SteamBody->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	Button_NoSteamLogin->ChangeButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NoSteamLoginButtonText"));
+	Button_NoSteamLogin->SetButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_NoSteamLoginButtonText"));
 }
 
 void ULoginWidget::InitializeExit()

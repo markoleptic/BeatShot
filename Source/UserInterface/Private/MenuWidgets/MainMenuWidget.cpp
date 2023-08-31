@@ -163,7 +163,7 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FStrin
 	else if (CurrentLoginMethod == ELoginMethod::Legacy)
 	{
 		TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("Login_SignedInAs"));
-		Button_Login_Register->ChangeButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_Register_SteamButtonText"));
+		Button_Login_Register->SetButtonText(IBSWidgetInterface::GetWidgetTextFromKey("Login_Register_SteamButtonText"));
 		LoginWidget->SetIsLegacySignedIn(true);
 	}
 	else

@@ -4,9 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
-#include "Blueprint/UserWidget.h"
+#include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_Game.generated.h"
 
+class USliderTextBoxWidget;
+class UCheckBoxOptionWidget;
+class UColorSelectOptionWidget;
 class UCheckBox;
 class UEditableTextBox;
 class UBSButton;
@@ -15,7 +18,7 @@ class USavedTextWidget;
 
 /** Settings category widget holding game settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_Game : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_Game : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -29,36 +32,37 @@ protected:
 	/** Fills all widgets with values from NewSettings */
 	void InitializeGameSettings(const FPlayerSettings_Game& PlayerSettings_Game);
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* ColorSelect_StartTargetColor;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* ColorSelect_PeakTargetColor;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* ColorSelect_EndTargetColor;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UCheckBox* Checkbox_UseSeparateOutlineColor;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* ColorSelect_TargetOutlineColor;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Target Color")
-	UColorSelectWidget* ColorSelect_BeatGridInactiveColor;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
-	UEditableTextBox* Value_CombatTextFrequency;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Streak")
-	UCheckBox* CheckBox_ShowStreakCombatText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_Recoil;
+	UColorSelectOptionWidget* MenuOption_StartTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_AutomaticFire;
+	UColorSelectOptionWidget* MenuOption_PeakTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ShowBulletDecals;
+	UColorSelectOptionWidget* MenuOption_EndTargetColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ShowBulletTracers;
+	UCheckBoxOptionWidget* MenuOption_UseSeparateOutlineColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ShowMuzzleFlash;
+	UColorSelectOptionWidget* MenuOption_TargetOutlineColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ShowMesh;
+	UColorSelectOptionWidget* MenuOption_InactiveColor;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_ShowHitTimingWidget;
+	UCheckBoxOptionWidget* MenuOption_ShowStreakCombatText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_Recoil;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_AutomaticFire;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_ShowBulletDecals;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_ShowBulletTracers;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_ShowMuzzleFlash;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_ShowMesh;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* MenuOption_ShowHitTimingWidget;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* MenuOption_CombatTextFrequency;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
@@ -99,8 +103,7 @@ protected:
 	UFUNCTION()
 	void OnCheckStateChanged_ShowHitTimingWidget(const bool bIsChecked);
 	
-	UFUNCTION()
-	void OnValueChanged_CombatTextFrequency(const FText& NewValue, ETextCommit::Type CommitType);
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);

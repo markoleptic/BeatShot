@@ -1274,6 +1274,7 @@ struct FPlayerSettings_Game
 		bShowMuzzleFlash = true;
 		bShowCharacterMesh = true;
 		bShowWeaponMesh = true;
+		bShowHitTimingWidget = true;
 	}
 };
 

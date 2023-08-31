@@ -13,8 +13,11 @@
 void UMenuOptionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	CheckBox_Lock->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckBox_LockStateChanged);
+
+	if (CheckBox_Lock)
+	{
+		CheckBox_Lock->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckBox_LockStateChanged);
+	}
 	SetIndentLevel(IndentLevel);
 	SetShowTooltipImage(bShowTooltipImage);
 	SetShowCheckBoxLock(bShowCheckBoxLock);
@@ -44,6 +47,10 @@ void UMenuOptionWidget::SetShowTooltipImage(const bool bShow)
 void UMenuOptionWidget::SetShowCheckBoxLock(const bool bShow)
 {
 	bShowCheckBoxLock = bShow;
+	if (!CheckBox_Lock)
+	{
+		return;
+	}
 	if (bShow)
 	{
 		CheckBox_Lock->SetVisibility(ESlateVisibility::SelfHitTestInvisible);

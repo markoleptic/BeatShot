@@ -20,6 +20,7 @@
 #include "WidgetComponents/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
 #include "BSWidgetInterface.h"
+#include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Preview.h"
 
 using namespace Constants;
 
@@ -46,6 +47,11 @@ void UGameModesWidget::NativeConstruct()
 	InitCustomGameModesWidgetOptions(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal);
 	
 	Border_DifficultySelect->SetVisibility(ESlateVisibility::Collapsed);
+
+	if (CustomGameModesWidget_CreatorView->Widget_Preview)
+	{
+		CustomGameModesWidget_CreatorView->Widget_Preview->ToggleGameModePreview(bIsMainMenuChild);
+	}
 }
 
 void UGameModesWidget::NativeDestruct()
@@ -74,6 +80,10 @@ void UGameModesWidget::SetupButtons()
 	MenuButton_CreatorView->SetActive();
 	MenuButton_PropertyView->SetInActive();
 	MenuButton_DefaultGameModes->SetActive();
+	
+	// GameModesWidget binds to Button_Create
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->SetIsEnabled(false);
 
 	// Difficulty buttons
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
@@ -139,8 +149,8 @@ void UGameModesWidget::BindAllDelegates()
 	Button_ChargedBeatTrack->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
 
 	// Custom Game Modes Widgets
-	CustomGameModesWidget_CreatorView->Button_Create->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
-	CustomGameModesWidget_CreatorView->Button_RefreshPreview->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	CustomGameModesWidget_CreatorView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	
@@ -193,7 +203,7 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 		SynchronizeStartWidgets();
 		OnButtonClicked_SaveCustom();
 	}
-	else if (Button == CustomGameModesWidget_CreatorView->Button_Create)
+	else if (Button == CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create)
 	{
 		SynchronizeStartWidgets();
 		OnButtonClicked_SaveCustom();
@@ -203,7 +213,7 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 		SynchronizeStartWidgets();
 		OnButtonClicked_SaveCustomAndStart();
 	}
-	else if (Button == CustomGameModesWidget_CreatorView->Button_RefreshPreview)
+	else if (Button == CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview)
 	{
 		if (RequestSimulateTargetManagerStateChange.IsBound())
 		{
@@ -557,7 +567,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	{
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
-		CustomGameModesWidget_CreatorView->Button_Create->SetIsEnabled(false);
+		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 		Button_StartWithoutSaving->SetIsEnabled(false);
 		
 		return;
@@ -571,7 +581,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	{
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
-		CustomGameModesWidget_CreatorView->Button_Create->SetIsEnabled(false);
+		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 		return;
 	}
 
@@ -580,13 +590,13 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	{
 		Button_SaveCustom->SetIsEnabled(false);
 		Button_SaveCustomAndStart->SetIsEnabled(false);
-		CustomGameModesWidget_CreatorView->Button_Create->SetIsEnabled(false);
+		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 		return;
 	}
 	
 	Button_SaveCustom->SetIsEnabled(true);
 	Button_SaveCustomAndStart->SetIsEnabled(true);
-	CustomGameModesWidget_CreatorView->Button_Create->SetIsEnabled(true);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(true);
 }
 
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
@@ -883,7 +893,7 @@ void UGameModesWidget::OnGameModeBreakingOptionPresentStateChanged(const bool bI
 		return;
 	}
 
-	CustomGameModesWidget_CreatorView->Button_RefreshPreview->SetIsEnabled(!bIsPresent);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->SetIsEnabled(!bIsPresent);
 	const FString From = bGameModeBreakingOptionPresent ? "True" : "False";
 	const FString To = bIsPresent ? "True" : "False";
 	UE_LOG(LogTemp, Display, TEXT("OnGameModeBreakingOption GameModesWidget: %s -> %s"), *From, *To);

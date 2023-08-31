@@ -42,7 +42,6 @@ void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWi
 {
 	TargetWidget = InTargetWidget;
 	BoxBoundsOrigin = InBoxBoundsOrigin;
-	UE_LOG(LogTemp, Display, TEXT("BoxBoundsOrigin: %s"), *BoxBoundsOrigin.ToString());
 	SetTargetWidgetLocation(InStartLocation);
 	TargetWidget->SetTargetScale(CapsuleComponent->GetRelativeScale3D());
 }

@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
-#include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"
+#include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_CrossHair.generated.h"
 
+class UColorSelectOptionWidget;
+class USliderTextBoxWidget;
 class USavedTextWidget;
 class UColorSelectWidget;
 class UCrossHairWidget;
@@ -18,7 +20,7 @@ class UBSButton;
 
 /** Settings category widget holding CrossHair settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -31,32 +33,22 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UCrossHairWidget* CrossHairWidget;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UColorSelectWidget* ColorSelectWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_InnerOffset;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_LineLength;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_LineWidth;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_OutlineOpacity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_OutlineWidth;
+	UColorSelectOptionWidget* MenuOption_ColorSelect;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_InnerOffset;
+	USliderTextBoxWidget* MenuOption_InnerOffset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_LineLength;
+	USliderTextBoxWidget* MenuOption_LineLength;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_LineWidth;
+	USliderTextBoxWidget* MenuOption_LineWidth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_OutlineOpacity;
+	USliderTextBoxWidget* MenuOption_OutlineOpacity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_OutlineWidth;
+	USliderTextBoxWidget* MenuOption_OutlineWidth;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Reset;
@@ -66,29 +58,10 @@ protected:
 	UBSButton* Button_Save;
 
 private:
+	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	
 	UFUNCTION()
 	void OnColorChanged(const FLinearColor& NewColor);
-	UFUNCTION()
-	void OnValueChanged_InnerOffset(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_LineLength(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_LineWidth(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_OutlineOpacity(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_OutlineWidth(const FText& NewValue, ETextCommit::Type CommitType);
-
-	UFUNCTION()
-	void OnSliderChanged_InnerOffset(const float NewValue);
-	UFUNCTION()
-	void OnSliderChanged_LineLength(const float NewValue);
-	UFUNCTION()
-	void OnSliderChanged_LineWidth(const float NewValue);
-	UFUNCTION()
-	void OnSliderChanged_OutlineOpacity(const float NewValue);
-	UFUNCTION()
-	void OnSliderChanged_OutlineWidth(const float NewValue);
 
 	UFUNCTION()
 	void OnButtonClicked_Reset();
@@ -101,8 +74,10 @@ private:
 
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);
+	
 	/** The PlayerSettings that were initially loaded */
 	FPlayerSettings_CrossHair InitialCrossHairSettings;
+	
 	/** The PlayerSettings that are changed when interacting with the CrossHairSettingsWidget */
 	FPlayerSettings_CrossHair NewCrossHairSettings;
 };

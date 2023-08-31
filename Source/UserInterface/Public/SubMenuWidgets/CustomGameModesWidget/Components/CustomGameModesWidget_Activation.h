@@ -33,6 +33,9 @@ protected:
 	/** Updates options that depend on the value selection of TargetActivationResponses and ConstantTargetSpeed */
 	void UpdateDependentOptions_ConstantTargetSpeed(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
 
+	/** Updates options that depend on the value selection of TargetDistributionPolicy */
+	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& Policy);
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_MaxNumActivatedTargetsAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

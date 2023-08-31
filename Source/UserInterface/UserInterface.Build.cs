@@ -10,7 +10,7 @@ public class UserInterface : ModuleRules
 		PublicDependencyModuleNames.AddRange(new[]
 		{
 			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "BeatShotGlobal",
-			"EasyFileDialog", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "CommonLoadingScreen", "GameplayTags", "InputCore"
+			"EasyFileDialog", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "CommonLoadingScreen", "GameplayTags", "InputCore", "CommonUI"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]

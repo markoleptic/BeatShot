@@ -25,7 +25,7 @@ void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& Messag
 		TextBlock_Message->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
-	Button_1->ChangeButtonText(Button1TextInput);
+	Button_1->SetButtonText(Button1TextInput);
 	
 	if (Button2TextInput.IsEmpty())
 	{
@@ -33,7 +33,7 @@ void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& Messag
 	}
 	else
 	{
-		Button_2->ChangeButtonText(Button2TextInput);
+		Button_2->SetButtonText(Button2TextInput);
 		Button_2->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	

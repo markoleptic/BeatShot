@@ -213,31 +213,36 @@ void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_TargetDistribution
 {
 	if (InTargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
+		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_HorizontalSpread->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_VerticalSpread->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_FloorDistance->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::Collapsed);
+		
 		BSConfig->TargetConfig.BoxBounds.Y = MaxValue_HorizontalSpread;
 		BSConfig->TargetConfig.BoxBounds.Z = MaxValue_VerticalSpread;
-		BSConfig->TargetConfig.FloorDistance = MinValue_FloorDistance;
+		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
+		
 		UpdateValueIfDifferent(SliderTextBoxOption_HorizontalSpread, BSConfig->TargetConfig.BoxBounds.Y);
 		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
 		UpdateValueIfDifferent(SliderTextBoxOption_FloorDistance, BSConfig->TargetConfig.FloorDistance);
+		UpdateValueIfDifferent(ComboBoxOption_BoundsScalingPolicy, GetStringFromEnum(BSConfig->TargetConfig.BoundsScalingPolicy));
+		
+		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(false);
+		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(false);
+		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(false);
 	}
 	else
 	{
+		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumVerticalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_HorizontalSpacing->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_VerticalSpacing->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_HorizontalSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_VerticalSpread->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_FloorDistance->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinDistanceBetweenTargets->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		
+		SliderTextBoxOption_HorizontalSpread->SetSliderAndTextBoxEnabledStates(true);
+		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(true);
+		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
 	}
 }
 
@@ -259,6 +264,10 @@ void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBo
 	{
 		BSConfig->GridConfig.GridSpacing.Y = Value;
 	}
+	else if (Widget == SliderTextBoxOption_ForwardSpread)
+	{
+		BSConfig->TargetConfig.BoxBounds.X = Value;
+	}
 	else if (Widget == SliderTextBoxOption_HorizontalSpread)
 	{
 		BSConfig->TargetConfig.BoxBounds.Y = Value;
@@ -275,10 +284,7 @@ void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBo
 	{
 		BSConfig->TargetConfig.MinDistanceBetweenTargets = Value;
 	}
-	else if (Widget == SliderTextBoxOption_ForwardSpread)
-	{
-		BSConfig->TargetConfig.BoxBounds.X = Value;
-	}
+
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 

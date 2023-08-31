@@ -46,7 +46,7 @@ public:
 	bool HasSetDefaults() const { return bHasSetDefaults; }
 
 	/** Change the text of the button at runtime */
-	void ChangeButtonText(const FText& InText);
+	void SetButtonText(const FText& InText);
 
 	/** Broadcast when the button is pressed */
 	FOnBSButtonButtonPressed OnBSButtonPressed;

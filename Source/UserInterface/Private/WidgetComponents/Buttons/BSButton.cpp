@@ -80,7 +80,7 @@ void UBSButton::SetDefaults(const uint8 InEnum, UBSButton* NextButton)
 	SetHasSetDefaults(true);
 }
 
-void UBSButton::ChangeButtonText(const FText& InText)
+void UBSButton::SetButtonText(const FText& InText)
 {
 	ButtonText = InText;
 	TextBlock->SetText(ButtonText);

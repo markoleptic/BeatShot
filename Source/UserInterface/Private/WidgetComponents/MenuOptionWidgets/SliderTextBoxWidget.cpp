@@ -52,4 +52,10 @@ float USliderTextBoxWidget::GetEditableTextBoxValue() const
 	return SnappedValue;
 }
 
+void USliderTextBoxWidget::SetSliderAndTextBoxEnabledStates(const bool bEnabled) const
+{
+	Slider->SetLocked(!bEnabled);
+	EditableTextBox->SetIsReadOnly(!bEnabled);
+}
+
 

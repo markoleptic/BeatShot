@@ -7,6 +7,7 @@
 #include "Components/Overlay.h"
 #include "WidgetComponents/BoxBoundsWidget.h"
 #include "WidgetComponents/TargetWidget.h"
+#include "WidgetComponents/Buttons/BSButton.h"
 #include "CustomGameModesWidget_Preview.generated.h"
 
 DECLARE_DELEGATE_RetVal(UTargetWidget*, FCreateTargetWidget);
@@ -34,6 +35,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	USizeBox* FloorDistance;
 
+	/** Shows or hides the BoxBounds Current, Min, Max and TextBlock_GameModePreviewAvailability */
+	void ToggleGameModePreview(const bool bEnable);
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_RefreshPreview;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_Create;
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual bool UpdateAllOptionsValid() override;
@@ -44,4 +53,7 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UOverlay* Overlay;
+
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UTextBlock* TextBlock_GameModePreviewAvailability;
 };
