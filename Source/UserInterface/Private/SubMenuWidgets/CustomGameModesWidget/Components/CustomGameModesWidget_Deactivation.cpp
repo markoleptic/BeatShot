@@ -18,16 +18,6 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetupTooltip(ComboBoxOption_TargetDeactivationConditions->GetTooltipImage(), ComboBoxOption_TargetDeactivationConditions->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_TargetDeactivationResponses->GetTooltipImage(), ComboBoxOption_TargetDeactivationResponses->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_DeactivatedTargetScaleMultiplier->GetTooltipImage(), SliderTextBoxOption_DeactivatedTargetScaleMultiplier->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_TargetDestructionConditions->GetTooltipImage(), ComboBoxOption_TargetDestructionConditions->GetTooltipImageText());
-	
-	SetupTooltip(CheckBoxOption_ConstantDeactivatedTargetVelocity->GetTooltipImage(), CheckBoxOption_ConstantDeactivatedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_DeactivatedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_DeactivatedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MinDeactivatedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MinDeactivatedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxDeactivatedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MaxDeactivatedTargetVelocity->GetTooltipImageText());
-	
 	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetValues(MinValue_ConsecutiveChargeScaleMultiplier, MaxValue_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
 	SliderTextBoxOption_DeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
 	SliderTextBoxOption_MinDeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed, SnapSize_TargetSpeed);
@@ -84,7 +74,7 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 
 bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 {
-	TArray<FTooltipWarningValue> UpdateArray;
+	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
 
 	// ComboBoxOption_TargetDeactivationResponses
@@ -92,14 +82,14 @@ bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 	{
 		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None");
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Warning);
 		}
 		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
 		{
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None");
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateTooltipWarningImages(ComboBoxOption_TargetDeactivationResponses, UpdateArray))
+	if (UpdateWarningTooltips(ComboBoxOption_TargetDeactivationResponses, UpdateArray))
 	{
 		bRequestComponentUpdate = true;
 	}

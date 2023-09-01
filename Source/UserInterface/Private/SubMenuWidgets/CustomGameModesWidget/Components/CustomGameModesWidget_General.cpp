@@ -16,26 +16,6 @@ void UCustomGameModesWidget_General::InitComponent(FBSConfig* InConfigPtr, TObje
 void UCustomGameModesWidget_General::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	SetupTooltip(SliderTextBoxOption_SpawnBeatDelay->GetTooltipImage(), SliderTextBoxOption_SpawnBeatDelay->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_TargetSpawnCD->GetTooltipImage(), SliderTextBoxOption_TargetSpawnCD->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_RecentTargetMemoryPolicy->GetTooltipImage(), ComboBoxOption_RecentTargetMemoryPolicy->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxNumRecentTargets->GetTooltipImage(), SliderTextBoxOption_MaxNumRecentTargets->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_RecentTargetTimeLength->GetTooltipImage(), SliderTextBoxOption_RecentTargetTimeLength->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImage(), SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_UnlimitedTargetHealth->GetTooltipImage(), CheckBoxOption_UnlimitedTargetHealth->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxHealth->GetTooltipImage(), SliderTextBoxOption_MaxHealth->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImage(), SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_TargetScale->GetTooltipImage(), SliderTextBoxOption_TargetScale->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MinTargetScale->GetTooltipImage(), SliderTextBoxOption_MinTargetScale->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxTargetScale->GetTooltipImage(), SliderTextBoxOption_MaxTargetScale->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_DamageType->GetTooltipImage(), ComboBoxOption_DamageType->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImage(), ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_EnableAI->GetTooltipImage(), CheckBoxOption_EnableAI->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_Alpha->GetTooltipImage(), SliderTextBoxOption_Alpha->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_Epsilon->GetTooltipImage(), SliderTextBoxOption_Epsilon->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_Gamma->GetTooltipImage(), SliderTextBoxOption_Gamma->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_MovingTargetDirectionMode->GetTooltipImage(), ComboBoxOption_MovingTargetDirectionMode->GetTooltipImageText());
 	
 	SliderTextBoxOption_SpawnBeatDelay->SetValues(MinValue_PlayerDelay, MaxValue_PlayerDelay, SnapSize_PlayerDelay);
 	SliderTextBoxOption_TargetSpawnCD->SetValues(MinValue_TargetSpawnCD, MaxValue_TargetSpawnCD, SnapSize_TargetSpawnCD);
@@ -127,7 +107,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 
 bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 {
-	TArray<FTooltipWarningValue> UpdateArray;
+	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
 
 	// CheckBoxOption_EnableAI
@@ -137,20 +117,20 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 		{
 			if (BSConfig->GridConfig.NumHorizontalGridTargets % 5 != 0 || BSConfig->GridConfig.NumVerticalGridTargets % 5 != 0)
 			{
-				UpdateArray.Emplace("Invalid_Grid_AI_NumTargets");
+				UpdateArray.Emplace("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning);
 			}
 		}
 		else if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
 		{
-			UpdateArray.Emplace("Invalid_HeadshotHeightOnly_AI");
+			UpdateArray.Emplace("Invalid_HeadshotHeightOnly_AI", ETooltipImageType::Warning);
 		}
 		
 		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
-			UpdateArray.Emplace("InvalidAI_Tracking");
+			UpdateArray.Emplace("InvalidAI_Tracking", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateTooltipWarningImages(CheckBoxOption_EnableAI, UpdateArray))
+	if (UpdateWarningTooltips(CheckBoxOption_EnableAI, UpdateArray))
 	{
 		bRequestComponentUpdate = true;
 	}
@@ -161,10 +141,10 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 	{
 		if (BSConfig->AIConfig.bEnableReinforcementLearning)
 		{
-			UpdateArray.Emplace("InvalidAI_Tracking");
+			UpdateArray.Emplace("InvalidAI_Tracking", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateTooltipWarningImages(ComboBoxOption_DamageType, UpdateArray))
+	if (UpdateWarningTooltips(ComboBoxOption_DamageType, UpdateArray))
 	{
 		bRequestComponentUpdate = true;
 	}
@@ -177,15 +157,15 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 			BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity) ||
 			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None_2");
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None_2", ETooltipImageType::Warning);
 		}
 		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) ||
 			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
 		{
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None_2");
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None_2", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateTooltipWarningImages(ComboBoxOption_MovingTargetDirectionMode, UpdateArray))
+	if (UpdateWarningTooltips(ComboBoxOption_MovingTargetDirectionMode, UpdateArray))
 	{
 		bRequestComponentUpdate = true;
 	}

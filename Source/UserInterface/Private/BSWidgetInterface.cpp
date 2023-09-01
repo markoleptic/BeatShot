@@ -38,7 +38,8 @@ void IBSWidgetInterface::SetSliderAndEditableTextBoxValues(const float NewValue,
 
 void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* TooltipImage, const FTooltipData& InTooltipData)
 {
-	if (!GetTooltipWidget())
+	UTooltipWidget* TooltipWidget = GetTooltipWidget();
+	if (!TooltipWidget)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid tooltip widget"));
 		return;
@@ -48,10 +49,10 @@ void IBSWidgetInterface::OnTooltipImageHovered(UTooltipImage* TooltipImage, cons
 		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipImage."));
 		return;
 	}
-	UTooltipWidget* Tooltip = GetTooltipWidget();
-	Tooltip->TooltipDescriptor->SetText(InTooltipData.TooltipText);
-	Tooltip->TooltipDescriptor->SetAutoWrapText(InTooltipData.bAllowTextWrap);
-	TooltipImage->SetToolTip(Tooltip);
+
+	TooltipWidget->TooltipDescriptor->SetText(InTooltipData.TooltipText);
+	TooltipWidget->TooltipDescriptor->SetAutoWrapText(InTooltipData.bAllowTextWrap);
+	TooltipImage->SetToolTip(TooltipWidget);
 }
 
 UWidget* IBSWidgetInterface::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
@@ -130,21 +131,47 @@ void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& 
 	}
 	
 	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);
-	if (!TooltipImage->OnTooltipHovered.IsBound())
+	if (!TooltipImage->GetTooltipHoveredDelegate().IsBound())
 	{
-		TooltipImage->OnTooltipHovered.AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
+		TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
 	}
 }
 
-void IBSWidgetInterface::UpdateTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap)
+void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, FTooltipData& InTooltipData)
 {
 	if (!TooltipImage)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipImage."));
 	}
-	if (TooltipText.IsEmpty())
+	if (InTooltipData.TooltipStringTableKey.IsEmpty() && InTooltipData.TooltipText.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetOuter()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetParent()->GetParent()->GetName());
 	}
-	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);
+
+	// Set the TooltipData Tooltip Text
+	if (InTooltipData.TooltipText.IsEmpty())
+	{
+		if (!InTooltipData.AdditionalTooltipText.IsEmpty())
+		{
+			InTooltipData.TooltipText = FText::Join(FText::FromString(" "), GetTooltipTextFromKey(InTooltipData.TooltipStringTableKey), InTooltipData.AdditionalTooltipText);
+		}
+		else
+		{
+			InTooltipData.TooltipText = GetTooltipTextFromKey(InTooltipData.TooltipStringTableKey);
+		}
+	}
+
+	// Update pointer
+	if (!InTooltipData.TooltipImage.IsValid())
+	{
+		InTooltipData.TooltipImage = TooltipImage;
+	}
+
+	// Pass Tooltip Data to Tooltip Image
+	TooltipImage->SetTooltipData(InTooltipData);
+	
+	if (!TooltipImage->GetTooltipHoveredDelegate().IsBound())
+	{
+		TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
+	}
 }

@@ -2,10 +2,10 @@
 
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h"
-#include "Animation/WidgetAnimation.h"
+
+#include "Blueprint/WidgetTree.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
-#include "Components/ScrollBox.h"
 #include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
@@ -15,9 +15,15 @@
 void UCustomGameModesWidgetComponent::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	OnTransitionInLeftFinish.BindDynamic(this, &ThisClass::OnTransitionFinished);
-	OnTransitionInRightFinish.BindDynamic(this, &ThisClass::OnTransitionFinished);
+	
+	WidgetTree->ForEachWidget([this] (UWidget* Widget)
+	{
+		if (const UMenuOptionWidget* MenuOption = Cast<UMenuOptionWidget>(Widget))
+		{
+			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
+			SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
+		}
+	});
 }
 
 bool UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
@@ -63,135 +69,6 @@ bool UCustomGameModesWidgetComponent::GetAllOptionsValid() const
 	return bAllOptionsValid;
 }
 
-float UCustomGameModesWidgetComponent::GetAnimTimeRemaining()
-{
-	if (IsAnimationPlaying(TransitionInLeft))
-	{
-		return TransitionInLeft->GetEndTime() - GetAnimationCurrentTime(TransitionInLeft);
-	}
-	if (IsAnimationPlayingForward(TransitionInRight))
-	{
-		return TransitionInRight->GetEndTime() - GetAnimationCurrentTime(TransitionInRight);
-	}
-	return -1.f;
-}
-
-void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish)
-{
-	/*if (bCollapseOnFinish)
-	{
-		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
-	}
-	
-	if (GetVisibility() == ESlateVisibility::Collapsed)
-	{
-		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}*/
-	
-	PlayAnimationForward(TransitionInLeft);
-}
-
-void UCustomGameModesWidgetComponent::PlayAnim_TransitionInLeft_Reverse(const bool bCollapseOnFinish)
-{
-	/*if (bCollapseOnFinish)
-	{
-		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
-	}
-	
-	if (GetVisibility() == ESlateVisibility::Collapsed)
-	{
-		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}*/
-	
-	PlayAnimationReverse(TransitionInLeft);
-}
-
-void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Forward(const bool bCollapseOnFinish)
-{
-	/*if (bCollapseOnFinish)
-	{
-		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
-	}
-	
-	if (GetVisibility() == ESlateVisibility::Collapsed)
-	{
-		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}*/
-	
-	PlayAnimationForward(TransitionInRight);
-}
-
-void UCustomGameModesWidgetComponent::PlayAnim_TransitionInRight_Reverse(const bool bCollapseOnFinish)
-{
-	/*if (bCollapseOnFinish)
-	{
-		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
-	}
-	
-	if (GetVisibility() == ESlateVisibility::Collapsed)
-	{
-		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}*/
-	
-	PlayAnimationReverse(TransitionInRight);
-}
-
-void UCustomGameModesWidgetComponent::SkipToEndTransitionAnimation()
-{
-	if (!IsAnimationPlayingForward(TransitionInLeft) && IsAnimationPlaying(TransitionInLeft))
-	{
-		SetAnimationCurrentTime(TransitionInLeft, TransitionInLeft->GetEndTime());
-	}
-	else if (!IsAnimationPlayingForward(TransitionInRight) && IsAnimationPlaying(TransitionInRight))
-	{
-		SetAnimationCurrentTime(TransitionInRight, TransitionInRight->GetEndTime());
-	}
-}
-
-void UCustomGameModesWidgetComponent::BindToCurrentAnimFinished()
-{
-	if (IsAnimationPlaying(TransitionInLeft))
-	{
-		BindToAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
-	}
-	else if (IsAnimationPlayingForward(TransitionInRight))
-	{
-		BindToAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
-	}
-}
-
-bool UCustomGameModesWidgetComponent::IsTransitionAnimationPlaying()
-{
-	return IsAnimationPlaying(TransitionInLeft) || IsAnimationPlaying(TransitionInRight);
-}
-
-bool UCustomGameModesWidgetComponent::IsTransitionAnimationPlayingForward()
-{
-	return IsAnimationPlayingForward(TransitionInLeft) || IsAnimationPlayingForward(TransitionInRight);
-}
-
-FWidgetAnimationDynamicEvent& UCustomGameModesWidgetComponent::GetCurrentlyPlayingAnimationDelegate()
-{
-	if (IsAnimationPlaying(TransitionInLeft))
-	{
-		return OnTransitionInLeftFinish;
-	}
-	return OnTransitionInRightFinish;
-}
-
-UWidgetAnimation* UCustomGameModesWidgetComponent::GetCurrentlyPlayingAnimation()
-{
-	if (IsAnimationPlaying(TransitionInLeft))
-	{
-		return TransitionInLeft;
-	}
-	if (IsAnimationPlaying(TransitionInRight))
-	{
-		return TransitionInRight;
-	}
-	return nullptr;
-}
-
 TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::GetNext() const
 {
 	return Next;
@@ -200,18 +77,6 @@ TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::Get
 void UCustomGameModesWidgetComponent::SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	Next = InNext;
-}
-
-void UCustomGameModesWidgetComponent::OnTransitionFinished()
-{
-	UnbindFromAnimationFinished(TransitionInLeft, OnTransitionInLeftFinish);
-	UnbindFromAnimationFinished(TransitionInRight, OnTransitionInRightFinish);
-}
-
-void UCustomGameModesWidgetComponent::UnbindAllAnimationDelegates()
-{
-	OnTransitionInRightFinish.Unbind();
-	OnTransitionInLeftFinish.Unbind();
 }
 
 bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value)
@@ -286,9 +151,9 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableText
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FTooltipWarningValue>& NewValues)
+bool UCustomGameModesWidgetComponent::UpdateWarningTooltips(UMenuOptionWidget* Widget, const TArray<FTooltipData>& NewValues)
 {
-	const TArray<FTooltipWarningValue> OldValues = Widget->GetTooltipWarningImageValues();
+	const TArray<FTooltipData> OldValues = Widget->GetAllTooltipData();
 	
 	if (NewValues.IsEmpty())
 	{
@@ -301,12 +166,6 @@ bool UCustomGameModesWidgetComponent::UpdateTooltipWarningImages(UMenuOptionWidg
 			Widget->RemoveAllTooltipWarningImages();
 			return true;
 		}
-	}
-
-	TArray<FString> NewKeys;
-	for (const FTooltipWarningValue& Value : NewValues)
-	{
-		NewKeys.Add(Value.TooltipStringTableKey);
 	}
 
 	if (NewValues.Num() == OldValues.Num())
@@ -327,25 +186,24 @@ bool UCustomGameModesWidgetComponent::UpdateTooltipWarningImages(UMenuOptionWidg
 	}
 	
 	// TooltipImages currently showing but shouldn't be
-	TArray<FTooltipWarningValue> ValuesToRemove = OldValues.FilterByPredicate([&NewValues] (const FTooltipWarningValue& Value)
+	TArray<FTooltipData> ValuesToRemove = OldValues.FilterByPredicate([&NewValues] (const FTooltipData& Value)
 	{
 		return !NewValues.Contains(Value);
 	});
 	
 	// Remove TooltipImages currently showing but shouldn't be
-	for (const FTooltipWarningValue& ValueToRemove : ValuesToRemove)
+	for (const FTooltipData& ValueToRemove : ValuesToRemove)
 	{
 		Widget->RemoveTooltipWarningImage(ValueToRemove.TooltipStringTableKey);
 	}
-
+	
 	// Update the rest
-	for (const FTooltipWarningValue& Value : NewValues)
+	for (const FTooltipData& Value : NewValues)
 	{
-		const FTooltipWarningValue TooltipWarningValue = Widget->FindOrAddTooltipWarningValue(Value.TooltipStringTableKey);
-		const FText TextFromStringTable = GetTooltipTextFromKey(Value.TooltipStringTableKey);
-		if (TooltipWarningValue.TooltipWarningImage)
+		FTooltipData TooltipWarningValue = Widget->FindOrAddTooltip(Value.TooltipStringTableKey, Value.TooltipType, Value.AdditionalTooltipText);
+		if (TooltipWarningValue.TooltipImage.IsValid())
 		{
-			SetupTooltip(TooltipWarningValue.TooltipWarningImage, FText::Join(FText::FromString(" "), TextFromStringTable, Value.AdditionalTooltipText));
+			SetupTooltip(TooltipWarningValue.TooltipImage.Get(), TooltipWarningValue);
 		}
 	}
 	

@@ -18,21 +18,6 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetupTooltip(SliderTextBoxOption_MaxNumActivatedTargetsAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumActivatedTargetsAtOnce->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_ConstantNumTargetsToActivateAtOnce->GetTooltipImage(), CheckBoxOption_ConstantNumTargetsToActivateAtOnce->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_ConstantActivatedTargetVelocity->GetTooltipImage(), CheckBoxOption_ConstantActivatedTargetVelocity->GetTooltipImageText());
-	
-	SetupTooltip(SliderTextBoxOption_NumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_NumTargetsToActivateAtOnce->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_MinNumTargetsToActivateAtOnce->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_ActivatedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_ActivatedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MinActivatedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MinActivatedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxActivatedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MaxActivatedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_LifetimeTargetScaleMultiplier->GetTooltipImage(), SliderTextBoxOption_LifetimeTargetScaleMultiplier->GetTooltipImageText());
-
-	SetupTooltip(ComboBoxOption_TargetActivationSelectionPolicy->GetTooltipImage(), ComboBoxOption_TargetActivationSelectionPolicy->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_TargetActivationResponses->GetTooltipImage(), ComboBoxOption_TargetActivationResponses->GetTooltipImageText());
-
 	SliderTextBoxOption_MaxNumActivatedTargetsAtOnce->SetValues(MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
 	SliderTextBoxOption_NumTargetsToActivateAtOnce->SetValues(MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
 	SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetValues(MinValue_MaxNumActivatedTargetsAtOnce, MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
@@ -95,7 +80,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 
 bool UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 {
-	TArray<FTooltipWarningValue> UpdateArray;
+	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
 
 	// ComboBoxOption_TargetActivationResponses
@@ -103,14 +88,18 @@ bool UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 	{
 		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None");
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Warning);
+			if (BSConfig->TargetConfig.BoxBounds.X <= 0.f)
+			{
+				UpdateArray.Emplace("Caution_ZeroForwardDistance_MTDM_ForwardOnly", ETooltipImageType::Caution);
+			}
 		}
 		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
 		{
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None");
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateTooltipWarningImages(ComboBoxOption_TargetActivationResponses, UpdateArray))
+	if (UpdateWarningTooltips(ComboBoxOption_TargetActivationResponses, UpdateArray))
 	{
 		bRequestComponentUpdate = true;
 	}

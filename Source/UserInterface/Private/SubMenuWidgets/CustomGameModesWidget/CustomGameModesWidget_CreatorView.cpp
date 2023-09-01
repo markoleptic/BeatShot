@@ -48,40 +48,4 @@ void UCustomGameModesWidget_CreatorView::OnValidOptionsStateChanged(const TObjec
 void UCustomGameModesWidget_CreatorView::OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex)
 {
 	UpdateOptionsFromConfig();
-
-	/*if (NewIndex > CurrentWidgetIndex)
-	{
-		if (CurrentWidget && CurrentWidget->GetNext())
-		{
-			SetCurrentWidget(CurrentWidget->GetNext());
-		}
-	}
-	else if (NewIndex < CurrentWidgetIndex)
-	{
-		if (CurrentWidget && CurrentWidget->GetNext())
-		{
-			TObjectPtr<UCustomGameModesWidgetComponent> Previous = nullptr;
-			TObjectPtr<UCustomGameModesWidgetComponent> Current = CurrentWidget->GetNext();
-
-			// Find the previous widget in linked list
-			while (Previous == nullptr)
-			{
-				if (Current->GetNext() == CurrentWidget)
-				{
-					Previous = Current;
-					break;
-				}
-				Current = Current->GetNext();
-			}
-			if (Previous)
-			{
-				SetCurrentWidget(Previous);
-			}
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("NewIndex == CurrentWidgetIndex"));
-	}*/
-	//CurrentWidgetIndex = NewIndex;
 }

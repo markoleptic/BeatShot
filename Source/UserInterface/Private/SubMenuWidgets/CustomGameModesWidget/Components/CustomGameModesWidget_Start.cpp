@@ -13,11 +13,6 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetupTooltip(CheckBoxOption_UseTemplate->GetTooltipImage(), CheckBoxOption_UseTemplate->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_GameModeTemplates->GetTooltipImage(), ComboBoxOption_GameModeTemplates->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_GameModeDifficulty->GetTooltipImage(), ComboBoxOption_GameModeDifficulty->GetTooltipImageText());
-	SetupTooltip(EditableTextBoxOption_CustomGameModeName->GetTooltipImage(), EditableTextBoxOption_CustomGameModeName->GetTooltipImageText());
-
 	CheckBoxOption_UseTemplate->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_UseTemplate);
 	EditableTextBoxOption_CustomGameModeName->EditableTextBox->OnTextChanged.AddUniqueDynamic(this, &ThisClass::OnTextChanged_CustomGameModeName);
 	ComboBoxOption_GameModeTemplates->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_GameModeTemplates);

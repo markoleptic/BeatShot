@@ -17,22 +17,6 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	SetupTooltip(SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImage(), SliderTextBoxOption_MaxNumTargetsAtOnce->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_TargetSpawningPolicy->GetTooltipImage(), ComboBoxOption_TargetSpawningPolicy->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_NumUpfrontTargetsToSpawn->GetTooltipImage(), SliderTextBoxOption_NumUpfrontTargetsToSpawn->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_NumRuntimeTargetsToSpawn->GetTooltipImage(), SliderTextBoxOption_NumRuntimeTargetsToSpawn->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_AllowSpawnWithoutActivation->GetTooltipImage(), CheckBoxOption_AllowSpawnWithoutActivation->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_BatchSpawning->GetTooltipImage(), CheckBoxOption_BatchSpawning->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_ApplyImmunityOnSpawn->GetTooltipImage(), CheckBoxOption_ApplyImmunityOnSpawn->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_SpawnAtOriginWheneverPossible->GetTooltipImage(), CheckBoxOption_SpawnAtOriginWheneverPossible->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_SpawnEveryOtherTargetInCenter->GetTooltipImage(), CheckBoxOption_SpawnEveryOtherTargetInCenter->GetTooltipImageText());
-
-	SetupTooltip(CheckBoxOption_ApplyVelocityWhenSpawned->GetTooltipImage(), CheckBoxOption_ApplyVelocityWhenSpawned->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_ConstantSpawnedTargetVelocity->GetTooltipImage(), CheckBoxOption_ConstantSpawnedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_SpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_SpawnedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MinSpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MinSpawnedTargetVelocity->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxSpawnedTargetVelocity->GetTooltipImage(), SliderTextBoxOption_MaxSpawnedTargetVelocity->GetTooltipImageText());
-
 	SliderTextBoxOption_MaxNumTargetsAtOnce->SetValues(MinValue_MaxNumTargetsAtOnce, MaxValue_MaxNumTargetsAtOnce, SnapSize_MaxNumTargetsAtOnce);
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValues(MinValue_NumUpfrontTargetsToSpawn, MaxValue_NumUpfrontTargetsToSpawn, SnapSize_NumUpfrontTargetsToSpawn);
 	SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetValues(MinValue_NumRuntimeTargetsToSpawn, MaxValue_NumRuntimeTargetsToSpawn, SnapSize_NumRuntimeTargetsToSpawn);
@@ -81,7 +65,7 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 
 bool UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 {
-	TArray<FTooltipWarningValue> UpdateArray;
+	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
 
 	// CheckBoxOption_EnableAI
@@ -89,10 +73,10 @@ bool UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 	{
 		if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None");
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateTooltipWarningImages(CheckBoxOption_ApplyVelocityWhenSpawned, UpdateArray))
+	if (UpdateWarningTooltips(CheckBoxOption_ApplyVelocityWhenSpawned, UpdateArray))
 	{
 		bRequestComponentUpdate = true;
 	}

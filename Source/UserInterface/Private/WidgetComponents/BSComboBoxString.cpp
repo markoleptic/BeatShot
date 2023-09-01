@@ -75,7 +75,7 @@ void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, c
 
 	if (UTooltipImage* TooltipImage = Entry->GetTooltipImage())
 	{
-		TooltipImage->OnTooltipHovered.AddDynamic(this, &ThisClass::OnTooltipImageHovered);
+		TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this, &ThisClass::OnTooltipImageHovered);
 		TooltipImage->SetupTooltipImage(TooltipText);
 	}
 }

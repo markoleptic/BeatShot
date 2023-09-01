@@ -81,8 +81,8 @@ protected:
 	/** MaxSpawnedTargetScale * SphereTargetDiameter */
 	float GetMaxTargetDiameter() const;
 
-	FMenuOptionWarning OptionWarning_NumHorizontalTargets;
-	FMenuOptionWarning OptionWarning_NumVerticalTargets;
-	FMenuOptionWarning OptionWarning_HorizontalSpacing;
-	FMenuOptionWarning OptionWarning_VerticalSpacing;
+	FDynamicTooltipData OptionWarning_NumHorizontalTargets;
+	FDynamicTooltipData OptionWarning_NumVerticalTargets;
+	FDynamicTooltipData OptionWarning_HorizontalSpacing;
+	FDynamicTooltipData OptionWarning_VerticalSpacing;
 };

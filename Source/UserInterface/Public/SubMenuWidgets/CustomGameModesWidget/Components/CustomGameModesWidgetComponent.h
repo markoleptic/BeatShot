@@ -8,50 +8,6 @@
 #include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
 #include "CustomGameModesWidgetComponent.generated.h"
 
-
-/** Data structure for dynamic tooltip text */
-USTRUCT()
-struct FMenuOptionWarning
-{
-	GENERATED_BODY()
-
-	float MinAllowed;
-	FString TooltipTextKey;
-	FText FallbackText;
-	FString TryChangeString;
-
-	FMenuOptionWarning()
-	{
-		MinAllowed = 0.f;
-		FallbackText = FText();
-		TooltipTextKey = FString();
-		TryChangeString = "Try lowering this value to <= ";
-	}
-
-	FMenuOptionWarning(const float InMin, const FString& InKey, const FText& InFallback)
-	{
-		MinAllowed = InMin;
-		TooltipTextKey = InKey;
-		FallbackText = InFallback;
-		TryChangeString = "Try lowering this value to <= ";
-	}
-
-	void UpdateArray(TArray<FTooltipWarningValue>& InUpdateArray, const float InActual, const float InMaxAllowed)
-	{
-		if (InActual > InMaxAllowed)
-		{
-			if (InMaxAllowed < MinAllowed)
-			{
-				InUpdateArray.Emplace(nullptr, TooltipTextKey, FallbackText);
-			}
-			else
-			{
-				InUpdateArray.Emplace(nullptr, TooltipTextKey, FText::FromString(TryChangeString + FString::FromInt(InMaxAllowed) + "."));
-			}
-		}
-	}
-};
-
 class UMenuOptionWidget;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
@@ -92,33 +48,6 @@ public:
 	/** Returns whether or not Init has been called */
 	bool IsInitialized() const { return bIsInitialized; }
 
-	float GetAnimTimeRemaining();
-	
-	/** Starts with the widget not visible and shifts to the right from the left */
-	void PlayAnim_TransitionInLeft_Forward(const bool bCollapseOnFinish);
-	/** Starts with the widget visible and shifts to the left from the right */
-	void PlayAnim_TransitionInLeft_Reverse(const bool bCollapseOnFinish);
-	/** Starts with the widget not visible and shifts to the left from the right */
-	void PlayAnim_TransitionInRight_Forward(const bool bCollapseOnFinish);
-	/** Starts with the widget visible and shifts to the right from the left */
-	void PlayAnim_TransitionInRight_Reverse(const bool bCollapseOnFinish);
-
-	/** Skips to the end of whichever animation is playing and unbinds the delegates */
-	void SkipToEndTransitionAnimation();
-
-	void BindToCurrentAnimFinished();
-
-	/** Returns if TransitionInRight or TransitionInLeft is playing */
-	bool IsTransitionAnimationPlaying();
-
-	bool IsTransitionAnimationPlayingForward();
-	
-	FWidgetAnimationDynamicEvent& GetCurrentlyPlayingAnimationDelegate();
-
-	UWidgetAnimation* GetCurrentlyPlayingAnimation();
-
-	void UnbindAllAnimationDelegates();
-
 	/** Checks all custom game mode options for validity, returning true if valid and false if any are invalid. Should be called anytime an option is changed */
 	virtual bool UpdateAllOptionsValid();
 
@@ -131,10 +60,6 @@ protected:
 	/** Sets value of Next */
 	void SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
-	/** Unbinds from any OnAnimationFinished delegates */
-	UFUNCTION()
-	void OnTransitionFinished();
-
 	static bool UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value);
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption);
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions);
@@ -142,16 +67,7 @@ protected:
 	static bool UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText);
 
 	/** Updates TooltipWarningImages for a MenuOptionWidget. Returns true if a component update is needed */
-	bool UpdateTooltipWarningImages(UMenuOptionWidget* Widget, const TArray<FTooltipWarningValue>& NewValues);
-
-	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	UWidgetAnimation* TransitionInRight;
-	
-	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	UWidgetAnimation* TransitionInLeft;
-
-	FWidgetAnimationDynamicEvent OnTransitionInRightFinish;
-	FWidgetAnimationDynamicEvent OnTransitionInLeftFinish;
+	bool UpdateWarningTooltips(UMenuOptionWidget* Widget, const TArray<FTooltipData>& NewValues);
 
 	/** Pointer to the game mode config inside GameModesWidget */
 	FBSConfig* BSConfig;

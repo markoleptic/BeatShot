@@ -60,8 +60,8 @@ public:
 	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
 	void SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
 
-	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
-	static void UpdateTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
+	/** Add InTooltipData and bind the OnTooltipImageHovered function to a given TooltipImage */
+	void SetupTooltip(UTooltipImage* TooltipImage, FTooltipData& InTooltipData);
 
 	/** All Tooltip Images are bound to this function */
 	UFUNCTION()

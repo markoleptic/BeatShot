@@ -6,6 +6,11 @@
 #include "Components/Slider.h"
 #include "BSWidgetInterface.h"
 
+void USliderTextBoxWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+}
+
 void USliderTextBoxWidget::NativeConstruct()
 {
 	Super::NativeConstruct();

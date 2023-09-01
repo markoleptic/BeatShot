@@ -19,3 +19,8 @@ void UTooltipImage::SetupTooltipImage(const FText& InText, const bool bAllowText
 {
 	TooltipData = FTooltipData(InText, bAllowTextWrap);
 }
+
+void UTooltipImage::SetTooltipData(const FTooltipData& InTooltipData)
+{
+	TooltipData = InTooltipData;
+}

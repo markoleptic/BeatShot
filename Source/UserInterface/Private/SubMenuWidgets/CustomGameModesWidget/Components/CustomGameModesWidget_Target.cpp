@@ -17,16 +17,6 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
-	SetupTooltip(SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImage(), SliderTextBoxOption_TargetMaxLifeSpan->GetTooltipImageText());
-	SetupTooltip(CheckBoxOption_UnlimitedTargetHealth->GetTooltipImage(), CheckBoxOption_UnlimitedTargetHealth->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxHealth->GetTooltipImage(), SliderTextBoxOption_MaxHealth->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImage(), SliderTextBoxOption_ExpirationHealthPenalty->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_TargetScale->GetTooltipImage(), SliderTextBoxOption_TargetScale->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MinTargetScale->GetTooltipImage(), SliderTextBoxOption_MinTargetScale->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_MaxTargetScale->GetTooltipImage(), SliderTextBoxOption_MaxTargetScale->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_DamageType->GetTooltipImage(), ComboBoxOption_DamageType->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImage(), ComboBoxOption_ConsecutiveTargetScalePolicy->GetTooltipImageText());
-	
 	SliderTextBoxOption_TargetMaxLifeSpan->SetValues(MinValue_Lifespan, MaxValue_Lifespan, SnapSize_Lifespan);
 	SliderTextBoxOption_MaxHealth->SetValues(MinValue_MaxHealth, MaxValue_MaxHealth, SnapSize_MaxHealth);
 	SliderTextBoxOption_ExpirationHealthPenalty->SetValues(MinValue_ExpirationHealthPenalty, MaxValue_ExpirationHealthPenalty, SnapSize_ExpirationHealthPenalty);
@@ -73,17 +63,17 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 
 bool UCustomGameModesWidget_Target::UpdateAllOptionsValid()
 {
-	TArray<FTooltipWarningValue> UpdateArray;
+	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
 	
 	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{
 		if (BSConfig->AIConfig.bEnableReinforcementLearning)
 		{
-			UpdateArray.Emplace("InvalidAI_Tracking");
+			UpdateArray.Emplace("InvalidAI_Tracking", ETooltipImageType::Warning);
 		}
 	}
-	bRequestComponentUpdate = UpdateTooltipWarningImages(ComboBoxOption_DamageType, UpdateArray) || bRequestComponentUpdate;
+	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_DamageType, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
 	
 	if (bRequestComponentUpdate)

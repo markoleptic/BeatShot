@@ -5,7 +5,6 @@
 #include "Components/VerticalBox.h"
 #include "Components/WidgetSwitcher.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
-#include "WidgetComponents/Buttons/SlideRightButton.h"
 
 void UFAQWidget::NativeConstruct()
 {

@@ -10,6 +10,16 @@
 #include "Components/TextBlock.h"
 #include "WidgetComponents/TooltipImage.h"
 
+void UMenuOptionWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	SetIndentLevel(IndentLevel);
+	SetShowTooltipImage(bShowTooltipImage);
+	SetShowCheckBoxLock(bShowCheckBoxLock);
+	SetDescriptionText(DescriptionText);
+	SetTooltipText(DescriptionTooltipText);
+}
+
 void UMenuOptionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -22,25 +32,34 @@ void UMenuOptionWidget::NativeConstruct()
 	SetShowTooltipImage(bShowTooltipImage);
 	SetShowCheckBoxLock(bShowCheckBoxLock);
 	SetDescriptionText(DescriptionText);
-	SetTooltipText(TooltipImageText);
+	SetTooltipText(DescriptionTooltipText);
 }
 
 void UMenuOptionWidget::SetIndentLevel(const int32 Value)
 {
 	IndentLevel = Value;
-	Indent_Left->SetSize(FVector2d(Value * 50.f, 0.f));
+	if (Indent_Left)
+	{
+		Indent_Left->SetSize(FVector2d(Value * 50.f, 0.f));
+	}
 }
 
 void UMenuOptionWidget::SetShowTooltipImage(const bool bShow)
 {
 	bShowTooltipImage = bShow;
+
+	if (!DescriptionTooltip)
+	{
+		return;
+	}
+	
 	if (bShow)
 	{
-		TooltipImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		DescriptionTooltip->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	else
 	{
-		TooltipImage->SetVisibility(ESlateVisibility::Collapsed);
+		DescriptionTooltip->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -64,32 +83,57 @@ void UMenuOptionWidget::SetShowCheckBoxLock(const bool bShow)
 void UMenuOptionWidget::SetDescriptionText(const FText& InText)
 {
 	DescriptionText = InText;
+
+	if (!TextBlock_Description)
+	{
+		return;
+	}
+	
 	TextBlock_Description->SetText(InText);
 }
 
 void UMenuOptionWidget::SetTooltipText(const FText& InText)
 {
-	TooltipImageText = InText;
+	DescriptionTooltipText = InText;
 }
 
 UTooltipImage* UMenuOptionWidget::GetTooltipImage() const
 {
-	return TooltipImage;
+	return DescriptionTooltip;
 }
 
-FTooltipWarningValue UMenuOptionWidget::FindOrAddTooltipWarningValue(const FString& InTooltipStringTableKey, const FText& OptionalAdditionalText)
+FTooltipData UMenuOptionWidget::FindOrAddTooltip(const FString& InTooltipStringTableKey,  const ETooltipImageType& TooltipType, const FText& OptionalAdditionalText)
 {
-	FTooltipWarningValue* Found = WarningTooltips.Find(InTooltipStringTableKey);
+	FTooltipData* Found = GetAllTooltipData().FindByPredicate([&InTooltipStringTableKey, &TooltipType] (const FTooltipData& TooltipData)
+	{
+		return TooltipData.TooltipStringTableKey.Equals(InTooltipStringTableKey) && TooltipData.TooltipType == TooltipType;
+	});
 	if (!Found)
 	{
-		UTooltipImage* NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+		UTooltipImage* NewTooltipImage;
+		switch (TooltipType) {
+		case ETooltipImageType::Caution:
+			NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipCautionImageClass);
+			break;
+		case ETooltipImageType::Warning:
+			NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+			break;
+		case ETooltipImageType::Default:
+		default:
+			NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+			break;
+		}
 		UHorizontalBoxSlot* HorizontalBoxSlot = TooltipBox->AddChildToHorizontalBox(NewTooltipImage);
 		HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
 		HorizontalBoxSlot->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
 		HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
-		FTooltipWarningValue Value(NewTooltipImage, InTooltipStringTableKey, OptionalAdditionalText);
-		WarningTooltips.Emplace(InTooltipStringTableKey, Value);
-		return Value;
+		
+		FTooltipData TooltipData;
+		TooltipData.TooltipImage = NewTooltipImage;
+		TooltipData.AdditionalTooltipText = OptionalAdditionalText;
+		TooltipData.TooltipStringTableKey = InTooltipStringTableKey;
+		TooltipData.TooltipType = TooltipType;
+		return TooltipData;
 	}
 	return *Found;
 }
@@ -97,36 +141,83 @@ FTooltipWarningValue UMenuOptionWidget::FindOrAddTooltipWarningValue(const FStri
 TArray<FString> UMenuOptionWidget::GetTooltipWarningImageKeys() const
 {
 	TArray<FString> KeyArray;
-	WarningTooltips.GenerateKeyArray(KeyArray);
+	for (const UPanelSlot* PanelSlot: TooltipBox->GetSlots())
+	{
+		if (UTooltipImage* TooltipImage = Cast<UTooltipImage>(PanelSlot->Content))
+		{
+			if (TooltipImage->GetTooltipData()->TooltipType != ETooltipImageType::Default)
+			{
+				KeyArray.Add(TooltipImage->GetTooltipData()->TooltipStringTableKey);
+			}
+		}
+	}
 	return KeyArray;
 }
 
-TArray<FTooltipWarningValue> UMenuOptionWidget::GetTooltipWarningImageValues() const
+TArray<FTooltipData> UMenuOptionWidget::GetAllTooltipData() const
 {
-	TArray<FTooltipWarningValue> TooltipWarningValues;
-	WarningTooltips.GenerateValueArray(TooltipWarningValues);
+	TArray<FTooltipData> TooltipWarningValues;
+	for (const UPanelSlot* PanelSlot: TooltipBox->GetSlots())
+	{
+		if (UTooltipImage* TooltipImage = Cast<UTooltipImage>(PanelSlot->Content))
+		{
+			if (TooltipImage->GetTooltipData()->TooltipType != ETooltipImageType::Default)
+			{
+				TooltipWarningValues.Add(*TooltipImage->GetTooltipData());
+			}
+		}
+	}
 	return TooltipWarningValues;
 }
 
 void UMenuOptionWidget::RemoveTooltipWarningImage(const FString& InTooltipStringTableKey)
 {
-	FTooltipWarningValue Found;
-	if (WarningTooltips.RemoveAndCopyValue(InTooltipStringTableKey, Found))
+	for (const UPanelSlot* PanelSlot: TooltipBox->GetSlots())
 	{
-		if (Found.TooltipWarningImage)
+		if (UTooltipImage* TooltipImage = Cast<UTooltipImage>(PanelSlot->Content))
 		{
-			Found.TooltipWarningImage->RemoveFromParent();
+			if (TooltipImage->GetTooltipData()->TooltipType != ETooltipImageType::Default)
+			{
+				if (TooltipImage->GetTooltipData()->TooltipStringTableKey.Equals(InTooltipStringTableKey))
+				{
+					TooltipImage->RemoveFromParent();
+					return;
+				}
+			}
 		}
 	}
 }
 
 void UMenuOptionWidget::RemoveAllTooltipWarningImages()
 {
-	TArray<FTooltipWarningValue> TooltipWarningValues = GetTooltipWarningImageValues();
-	WarningTooltips.Empty();
-	for (const FTooltipWarningValue& Value : TooltipWarningValues)
+	for (const FTooltipData& Value : GetAllTooltipData())
 	{
-		Value.TooltipWarningImage->RemoveFromParent();
+		if (Value.TooltipImage.IsValid())
+		{
+			Value.TooltipImage->RemoveFromParent();
+		}
+	}
+}
+
+bool UMenuOptionWidget::GetIsLocked() const
+{
+	if (CheckBox_Lock)
+	{
+		return CheckBox_Lock->IsChecked();
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
+	return false;
+}
+
+void UMenuOptionWidget::SetIsLocked(const bool bLocked) const
+{
+	if (CheckBox_Lock)
+	{
+		CheckBox_Lock->SetIsChecked(bLocked);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to access a CheckBox_Lock that wasn't found in a MenuOptionWidget."));
 	}
 }
 
@@ -134,6 +225,6 @@ void UMenuOptionWidget::OnCheckBox_LockStateChanged(const bool bChecked)
 {
 	if (OnLockStateChanged.IsBound())
 	{
-		OnLockStateChanged.Broadcast(Index, bChecked);
+		OnLockStateChanged.Broadcast(this, bChecked);
 	}
 }
