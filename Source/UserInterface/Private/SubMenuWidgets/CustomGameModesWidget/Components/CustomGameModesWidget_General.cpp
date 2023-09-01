@@ -169,15 +169,37 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 		bRequestComponentUpdate = true;
 	}
 	UpdateArray.Empty();
+
+	// ComboBoxOption_MovingTargetDirectionMode
+	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
+	{
+		if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned ||
+			BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity) ||
+			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
+		{
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None_2");
+		}
+		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) ||
+			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
+		{
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None_2");
+		}
+	}
+	if (UpdateTooltipWarningImages(ComboBoxOption_MovingTargetDirectionMode, UpdateArray))
+	{
+		bRequestComponentUpdate = true;
+	}
+	UpdateArray.Empty();
+	
 	
 	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
 		return false;
 	}
-	
 	if (!CheckBoxOption_EnableAI->GetTooltipWarningImageKeys().IsEmpty() ||
-		!ComboBoxOption_DamageType->GetTooltipWarningImageKeys().IsEmpty())
+		!ComboBoxOption_DamageType->GetTooltipWarningImageKeys().IsEmpty() ||
+		!ComboBoxOption_MovingTargetDirectionMode->GetTooltipWarningImageKeys().IsEmpty())
 	{
 		return false;
 	}

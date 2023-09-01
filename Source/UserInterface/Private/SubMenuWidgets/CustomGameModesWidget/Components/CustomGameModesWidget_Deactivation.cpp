@@ -84,6 +84,37 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 
 bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 {
+	TArray<FTooltipWarningValue> UpdateArray;
+	bool bRequestComponentUpdate = false;
+
+	// ComboBoxOption_TargetDeactivationResponses
+	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
+	{
+		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
+		{
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None");
+		}
+		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
+		{
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None");
+		}
+	}
+	if (UpdateTooltipWarningImages(ComboBoxOption_TargetDeactivationResponses, UpdateArray))
+	{
+		bRequestComponentUpdate = true;
+	}
+	UpdateArray.Empty();
+	
+	if (bRequestComponentUpdate)
+	{
+		RequestComponentUpdate.Broadcast();
+		return false;
+	}
+	
+	if (!ComboBoxOption_TargetDeactivationResponses->GetTooltipWarningImageKeys().IsEmpty())
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -248,6 +279,7 @@ void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationR
 
 	BSConfig->TargetConfig.TargetDeactivationResponses = GetEnumArrayFromStringArray<ETargetDeactivationResponse>(Selected);
 	UpdateDependentOptions_TargetDeactivationResponses(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
+	UpdateBrushColors();
 	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 

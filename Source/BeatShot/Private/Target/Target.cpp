@@ -474,6 +474,11 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 	{
 		SetTargetSpeed(FMath::FRandRange(Config.MinDeactivatedTargetSpeed, Config.MaxDeactivatedTargetSpeed));
+		if (!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) &&
+			Config.MovingTargetDirectionMode != EMovingTargetDirectionMode::None)
+		{
+			OnDeactivationResponse_ChangeDirection.Broadcast(this, 2);
+		}
 	}
 
 	// Direction

@@ -328,11 +328,12 @@ void UGameModesWidget::OnButtonClicked_ImportCustom()
 
 void UGameModesWidget::OnButtonClicked_ExportCustom()
 {
-	const FString SelectedCustomGameMode = CustomGameModesWidget_PropertyView->GetNewCustomGameModeName();
+	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
+	CustomGameModesWidget_Current->SetNewCustomGameModeName("");
 	
-	if (!IsCustomGameMode(SelectedCustomGameMode))
+	if (!IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName))
 	{
-		SetAndPlaySavedText(FText::FromString("Can't export Default Game Modes"));
+		SetAndPlaySavedText(FText::FromString("The selected mode is not a custom game mode."));
 		return;
 	}
 
@@ -345,7 +346,7 @@ void UGameModesWidget::OnButtonClicked_ExportCustom()
 
 void UGameModesWidget::OnButtonClicked_SaveCustom()
 {
-	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_PropertyView->GetStartWidgetProperties();
+	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
 	const FString NewCustomGameModeName = StartWidgetProperties.NewCustomGameModeName;
 
 	if (StartWidgetProperties.DefiningConfig.CustomGameModeName.Equals(NewCustomGameModeName) || StartWidgetProperties.NewCustomGameModeName.IsEmpty())
@@ -437,6 +438,7 @@ void UGameModesWidget::OnButtonClicked_RemoveAllCustom()
 		RemoveAllCustomGameModes();
 		PopupMessageWidget->FadeOut();
 		CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
+		CustomGameModesWidget_CreatorView->SetNewCustomGameModeName("");
 		SetAndPlaySavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_AllGameModesRemovedText"));
 	});
 	PopupMessageWidget->OnButton2Pressed_NonDynamic.AddLambda([&]

@@ -179,3 +179,7 @@ Invalid_Grid_VerticalSpacing_Fallback,"Try lowering this value, the number of ve
 Invalid_HeadshotHeightOnly_AI,AI cannot be used with the Target Distribution Policy Headshot Height Only.
 NumHorizontalGridTargets,The number of horizontal targets in the grid.
 NumVerticalGridTargets,The number of vertical targets in the grid.
+Invalid_Velocity_MTDM_None,Change the Moving Target Direction Mode to something other than None for velocity changing to have an effect. Moving Target Direction Mode is in the General section.
+Invalid_Velocity_MTDM_None_2,One or more settings wants to change the velocity. Change the Moving Target Direction Mode to something other than None to allow them to have an effect.
+Invalid_Direction_MTDM_None,Change the Moving Target Direction Mode to something other than None for direction changing to have an effect. Moving Target Direction Mode is in the General section.
+Invalid_Direction_MTDM_None_2,One or more settings wants to change the direction. Change the Moving Target Direction Mode to something other than None to allow them to have an effect.

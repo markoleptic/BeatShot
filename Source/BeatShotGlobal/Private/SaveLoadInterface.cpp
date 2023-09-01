@@ -331,8 +331,15 @@ void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningC
 FBSConfig ISaveLoadInterface::ImportCustomGameMode(const FString& InImportString)
 {
 	FBSConfig OutConfig = FBSConfig();
+
+	if (!InImportString.Contains("DefiningConfig") || !InImportString.Contains("TargetConfig"))
+	{
+		return OutConfig;
+	}
+	
 	UScriptStruct* Struct = FBSConfig::StaticStruct();
-	const TCHAR* Result = Struct->ImportText(*InImportString, &OutConfig, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
+	const FString StringCopy = FString(InImportString);
+	const TCHAR* Result = Struct->ImportText(*StringCopy, &OutConfig, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
 	if (!Result)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to import custom game mode"));

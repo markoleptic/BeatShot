@@ -81,6 +81,34 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 
 bool UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 {
+	TArray<FTooltipWarningValue> UpdateArray;
+	bool bRequestComponentUpdate = false;
+
+	// CheckBoxOption_EnableAI
+	if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned)
+	{
+		if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
+		{
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None");
+		}
+	}
+	if (UpdateTooltipWarningImages(CheckBoxOption_ApplyVelocityWhenSpawned, UpdateArray))
+	{
+		bRequestComponentUpdate = true;
+	}
+	UpdateArray.Empty();
+	
+	if (bRequestComponentUpdate)
+	{
+		RequestComponentUpdate.Broadcast();
+		return false;
+	}
+	
+	if (!CheckBoxOption_ApplyVelocityWhenSpawned->GetTooltipWarningImageKeys().IsEmpty())
+	{
+		return false;
+	}
+	
 	if (ComboBoxOption_TargetSpawningPolicy->ComboBox->GetSelectedOptionCount() != 1)
 	{
 		return false;

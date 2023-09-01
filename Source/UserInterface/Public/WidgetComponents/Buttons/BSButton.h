@@ -90,7 +90,7 @@ protected:
 	FSlateFontInfo DefaultFontInfo;
 
 	/** Text to display on top of ImageMaterial; Sets the TextBlock text */
-	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	FText ButtonText;
 
 	/** Playback speed used for all animations */

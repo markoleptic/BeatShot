@@ -95,7 +95,37 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 
 bool UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 {
-	// TODO: Handle more complex activation that could trip ppl up
+	TArray<FTooltipWarningValue> UpdateArray;
+	bool bRequestComponentUpdate = false;
+
+	// ComboBoxOption_TargetActivationResponses
+	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
+	{
+		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
+		{
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None");
+		}
+		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
+		{
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None");
+		}
+	}
+	if (UpdateTooltipWarningImages(ComboBoxOption_TargetActivationResponses, UpdateArray))
+	{
+		bRequestComponentUpdate = true;
+	}
+	UpdateArray.Empty();
+	
+	if (bRequestComponentUpdate)
+	{
+		RequestComponentUpdate.Broadcast();
+		return false;
+	}
+	
+	if (!ComboBoxOption_TargetActivationResponses->GetTooltipWarningImageKeys().IsEmpty())
+	{
+		return false;
+	}
 	if (ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->GetSelectedOptionCount() != 1)
 	{
 		return false;
