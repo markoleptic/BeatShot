@@ -7,7 +7,6 @@
 #include "Components/Overlay.h"
 #include "WidgetComponents/BoxBoundsWidget.h"
 #include "WidgetComponents/TargetWidget.h"
-#include "WidgetComponents/Buttons/BSButton.h"
 #include "CustomGameModesWidget_Preview.generated.h"
 
 DECLARE_DELEGATE_RetVal(UTargetWidget*, FCreateTargetWidget);
@@ -44,9 +43,6 @@ public:
 	UBSButton* Button_Create;
 
 protected:
-	virtual void NativeConstruct() override;
-	virtual bool UpdateAllOptionsValid() override;
-	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UTargetWidget> TargetWidgetClass;

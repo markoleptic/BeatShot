@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
 #include "CustomGameModesWidgetComponent.generated.h"
@@ -15,7 +16,6 @@ class UComboBoxOptionWidget;
 class USliderTextBoxWidget;
 class UCustomGameModesWidgetComponent;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnValidOptionsStateChanged, const TObjectPtr<UCustomGameModesWidgetComponent>, const bool);
 DECLARE_MULTICAST_DELEGATE(FRequestComponentUpdate);
 
 /** Base class for child widgets of UCustomGameModesWidgetBase */
@@ -36,23 +36,17 @@ public:
 	/** Returns the next CustomGameModesWidgetComponent to transition to */
 	TObjectPtr<UCustomGameModesWidgetComponent> GetNext() const;
 
-	/** Broadcasts whether or not all custom game mode options are valid for this widget */
-	FOnValidOptionsStateChanged OnValidOptionsStateChanged;
-
-	/** Broadcast when the BSConfig was modified by this widget */
+	/** Broadcast when a caution/warning tooltip needed to be added, removed, or updated. Helps synchronize caution/warnings across different components */
 	FRequestComponentUpdate RequestComponentUpdate;
-
-	/** Returns the value of bAllOptionsValid, whether or not all custom game mode options are valid for this widget */
-	bool GetAllOptionsValid() const;
 
 	/** Returns whether or not Init has been called */
 	bool IsInitialized() const { return bIsInitialized; }
 
 	/** Checks all custom game mode options for validity, returning true if valid and false if any are invalid. Should be called anytime an option is changed */
-	virtual bool UpdateAllOptionsValid();
+	virtual void UpdateAllOptionsValid();
 
-	/** Sets the value bAllOptionsValid. Broadcasts the OnValidOptionsStateChanged delegate if it was changed */
-	void SetAllOptionsValid(const bool bUpdateAllOptionsValid);
+	/** Returns the struct containing info about the number of caution and warnings current present */
+	FCustomGameModeCategoryInfo* GetCustomGameModeCategoryInfo() { return &CustomGameModeCategoryInfo; }
 
 protected:
 	virtual void NativeConstruct() override;
@@ -76,10 +70,10 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetComponent> Next;
 
-	/** Whether or not all custom game mode options are valid for this widget */
-	bool bAllOptionsValid = false;
-
 	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
+
+	/** Struct containing info about NumWarning & NumCaution tooltips */
+	FCustomGameModeCategoryInfo CustomGameModeCategoryInfo;
 };
 

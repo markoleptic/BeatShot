@@ -19,7 +19,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual bool UpdateAllOptionsValid() override;
+	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 
 	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */

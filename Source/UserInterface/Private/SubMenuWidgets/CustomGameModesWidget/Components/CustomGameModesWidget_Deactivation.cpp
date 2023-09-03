@@ -72,40 +72,36 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
+void UCustomGameModesWidget_Deactivation::UpdateAllOptionsValid()
 {
 	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
+	uint32 NumWarnings = 0;
+	uint32 NumCautions = 0;
 
 	// ComboBoxOption_TargetDeactivationResponses
 	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
 	{
 		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Warning);
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution);
 		}
 		if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
 		{
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Warning);
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Caution);
 		}
 	}
-	if (UpdateWarningTooltips(ComboBoxOption_TargetDeactivationResponses, UpdateArray))
-	{
-		bRequestComponentUpdate = true;
-	}
+	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_TargetDeactivationResponses, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
+
+	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
 	
 	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
-		return false;
 	}
-	
-	if (!ComboBoxOption_TargetDeactivationResponses->GetTooltipWarningImageKeys().IsEmpty())
-	{
-		return false;
-	}
-	return true;
 }
 
 void UCustomGameModesWidget_Deactivation::UpdateOptionsFromConfig()
@@ -123,7 +119,6 @@ void UCustomGameModesWidget_Deactivation::UpdateOptionsFromConfig()
 	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_TargetDeactivationConditions(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses)
@@ -220,9 +215,8 @@ void UCustomGameModesWidget_Deactivation::OnCheckStateChanged_ConstantDeactivate
 	}
 	
 	UpdateDependentOptions_ConstantDeactivatedTargetVelocity(BSConfig->TargetConfig.TargetDeactivationResponses, bChecked);
-	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Deactivation::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -244,45 +238,45 @@ void UCustomGameModesWidget_Deactivation::OnSliderTextBoxValueChanged(USliderTex
 	{
 		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = Value;
 	}
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() < 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	BSConfig->TargetConfig.TargetDeactivationConditions = GetEnumArrayFromStringArray<ETargetDeactivationCondition>(Selected);
 	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDeactivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() < 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 
 	BSConfig->TargetConfig.TargetDeactivationResponses = GetEnumArrayFromStringArray<ETargetDeactivationResponse>(Selected);
 	UpdateDependentOptions_TargetDeactivationResponses(BSConfig->TargetConfig.TargetDeactivationConditions, BSConfig->TargetConfig.TargetDeactivationResponses);
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Deactivation::OnSelectionChanged_TargetDestructionConditions(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (Selected.Num() < 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 
 	BSConfig->TargetConfig.TargetDestructionConditions = GetEnumArrayFromStringArray<ETargetDestructionCondition>(Selected);
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 FString UCustomGameModesWidget_Deactivation::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(const FString& EnumString)

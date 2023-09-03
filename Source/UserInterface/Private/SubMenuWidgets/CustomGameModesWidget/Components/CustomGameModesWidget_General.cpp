@@ -56,7 +56,6 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	ComboBoxOption_ConsecutiveTargetScalePolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy);
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_MovingTargetDirectionMode);
 	ComboBoxOption_MovingTargetDirectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode);
-
 	
 	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_DamageType->ComboBox->ClearOptions();
@@ -105,10 +104,12 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
+void UCustomGameModesWidget_General::UpdateAllOptionsValid()
 {
 	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
+	uint32 NumWarnings = 0;
+	uint32 NumCautions = 0;
 
 	// CheckBoxOption_EnableAI
 	if (BSConfig->AIConfig.bEnableReinforcementLearning)
@@ -117,23 +118,23 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 		{
 			if (BSConfig->GridConfig.NumHorizontalGridTargets % 5 != 0 || BSConfig->GridConfig.NumVerticalGridTargets % 5 != 0)
 			{
+				NumWarnings++;
 				UpdateArray.Emplace("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning);
 			}
 		}
 		else if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
 		{
+			NumWarnings++;
 			UpdateArray.Emplace("Invalid_HeadshotHeightOnly_AI", ETooltipImageType::Warning);
 		}
 		
 		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
-			UpdateArray.Emplace("InvalidAI_Tracking", ETooltipImageType::Warning);
+			NumWarnings++;
+			UpdateArray.Emplace("Invalid_Tracking_AI", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateWarningTooltips(CheckBoxOption_EnableAI, UpdateArray))
-	{
-		bRequestComponentUpdate = true;
-	}
+	bRequestComponentUpdate = UpdateWarningTooltips(CheckBoxOption_EnableAI, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
 
 	// ComboBoxOption_DamageType
@@ -141,13 +142,11 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 	{
 		if (BSConfig->AIConfig.bEnableReinforcementLearning)
 		{
-			UpdateArray.Emplace("InvalidAI_Tracking", ETooltipImageType::Warning);
+			NumWarnings++;
+			UpdateArray.Emplace("Invalid_Tracking_AI", ETooltipImageType::Warning);
 		}
 	}
-	if (UpdateWarningTooltips(ComboBoxOption_DamageType, UpdateArray))
-	{
-		bRequestComponentUpdate = true;
-	}
+	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_DamageType, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
 
 	// ComboBoxOption_MovingTargetDirectionMode
@@ -157,34 +156,33 @@ bool UCustomGameModesWidget_General::UpdateAllOptionsValid()
 			BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity) ||
 			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None_2", ETooltipImageType::Warning);
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None_2", ETooltipImageType::Caution);
 		}
 		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) ||
 			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
 		{
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None_2", ETooltipImageType::Warning);
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None_2", ETooltipImageType::Caution);
 		}
 	}
-	if (UpdateWarningTooltips(ComboBoxOption_MovingTargetDirectionMode, UpdateArray))
+	else if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::ForwardOnly)
 	{
-		bRequestComponentUpdate = true;
+		if (BSConfig->TargetConfig.BoxBounds.X <= 0.f)
+		{
+			NumCautions++;
+			UpdateArray.Emplace("Caution_ZeroForwardDistance_MTDM_ForwardOnly", ETooltipImageType::Caution);
+		}
 	}
+	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_MovingTargetDirectionMode, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
-	
+
+	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
 	
 	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
-		return false;
 	}
-	if (!CheckBoxOption_EnableAI->GetTooltipWarningImageKeys().IsEmpty() ||
-		!ComboBoxOption_DamageType->GetTooltipWarningImageKeys().IsEmpty() ||
-		!ComboBoxOption_MovingTargetDirectionMode->GetTooltipWarningImageKeys().IsEmpty())
-	{
-		return false;
-	}
-	
-	return true;
 }
 
 void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
@@ -222,7 +220,6 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_General::UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy& InRecentTargetMemoryPolicy)
@@ -295,7 +292,7 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bCh
 	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked)
@@ -304,7 +301,7 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_UnlimitedTargetHealth(c
 	UpdateDependentOptions_UnlimitedTargetHealth(bChecked);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -362,7 +359,7 @@ void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxW
 	{
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = Value;
 	}
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -374,34 +371,33 @@ void UCustomGameModesWidget_General::OnSelectionChanged_RecentTargetMemoryPolicy
 	
 	if (Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	
 	BSConfig->TargetConfig.RecentTargetMemoryPolicy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0]);
 	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
 	UpdateBrushColors();
-	
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	
 	BSConfig->TargetConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(Selected[0]);
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	
@@ -419,19 +415,19 @@ void UCustomGameModesWidget_General::OnSelectionChanged_ConsecutiveTargetScalePo
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = SliderTextBoxOption_MaxTargetScale->GetSliderValue();
 	}
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 
 	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(Selected[0]);
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 FString UCustomGameModesWidget_General::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString)

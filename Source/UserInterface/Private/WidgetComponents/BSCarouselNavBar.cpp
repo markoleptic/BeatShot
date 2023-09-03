@@ -4,6 +4,7 @@
 #include "WidgetComponents/BSCarouselNavBar.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "CommonWidgetCarousel.h"
+#include "WidgetComponents/ButtonNotificationWidget.h"
 
 void UBSCarouselNavBar::SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel)
 {
@@ -25,6 +26,15 @@ void UBSCarouselNavBar::SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel)
 void UBSCarouselNavBar::SetNavButtonText(const TArray<FText>& InButtonText)
 {
 	ButtonText = InButtonText;
+}
+
+void UBSCarouselNavBar::UpdateNotifications(const int32 Index, const int32 NumCautions, const int32 NumWarnings)
+{
+	if (Notifications.IsValidIndex(Index))
+	{
+		Notifications[Index]->SetNumWarnings(NumWarnings);
+		Notifications[Index]->SetNumCautions(NumCautions);
+	}
 }
 
 void UBSCarouselNavBar::ReleaseSlateResources(bool bReleaseChildren)
@@ -70,18 +80,32 @@ void UBSCarouselNavBar::RebuildButtons()
 		for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 		{
 			UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
-			if (ensure(ButtonUserWidget))
+			UButtonNotificationWidget* NotificationWidget = Cast<UButtonNotificationWidget>(CreateWidget(GetOwningPlayer(), NotificationWidgetType));
+			if (ensure(ButtonUserWidget) && ensure(NotificationWidget))
 			{
 				if (ButtonText.IsValidIndex(CurPage))
 				{
 					ButtonUserWidget->SetButtonText(ButtonText[CurPage]);
 				}
 				Buttons.Add(ButtonUserWidget);
+				Notifications.Add(NotificationWidget);
 				TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
+				TSharedRef<SWidget> NotificationSWidget = NotificationWidget->TakeWidget();
 				MyContainer->AddSlot()
 					.Padding(ButtonPadding)
 					[
-						ButtonSWidget
+						SNew(SVerticalBox)
+
+						+ SVerticalBox::Slot()
+						.AutoHeight().HAlign(HAlign_Right).VAlign(VAlign_Center)
+						[
+							NotificationSWidget
+						]
+						+ SVerticalBox::Slot()
+						.AutoHeight().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+						[
+							ButtonSWidget
+						]
 					];
 			}
 		}
@@ -90,6 +114,12 @@ void UBSCarouselNavBar::RebuildButtons()
 			for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 			{
 				const int32 NextPage = CurPage + 1;
+
+				if (Notifications.IsValidIndex(CurPage))
+				{
+					Notifications[CurPage]->SetNumCautions(0);
+					Notifications[CurPage]->SetNumWarnings(0);
+				}
 				
 				if (Buttons.IsValidIndex(CurPage))
 				{

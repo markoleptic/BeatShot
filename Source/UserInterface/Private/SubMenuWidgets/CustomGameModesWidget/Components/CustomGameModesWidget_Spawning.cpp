@@ -63,41 +63,31 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
+void UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 {
 	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
+	uint32 NumWarnings = 0;
+	uint32 NumCautions = 0;
 
 	// CheckBoxOption_EnableAI
 	if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned)
 	{
 		if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Warning);
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution);
 		}
 	}
-	if (UpdateWarningTooltips(CheckBoxOption_ApplyVelocityWhenSpawned, UpdateArray))
-	{
-		bRequestComponentUpdate = true;
-	}
+	bRequestComponentUpdate = UpdateWarningTooltips(CheckBoxOption_ApplyVelocityWhenSpawned, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
+
+	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
 	
 	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
-		return false;
 	}
-	
-	if (!CheckBoxOption_ApplyVelocityWhenSpawned->GetTooltipWarningImageKeys().IsEmpty())
-	{
-		return false;
-	}
-	
-	if (ComboBoxOption_TargetSpawningPolicy->ComboBox->GetSelectedOptionCount() != 1)
-	{
-		return false;
-	}
-	return true;
 }
 
 void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
@@ -124,7 +114,7 @@ void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
 	UpdateDependentOptions_ApplyVelocityWhenSpawned(BSConfig->TargetConfig.bApplyVelocityWhenSpawned, BSConfig->TargetConfig.MinSpawnedTargetSpeed == BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	
 }
 
 void UCustomGameModesWidget_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy)
@@ -199,31 +189,31 @@ void UCustomGameModesWidget_Spawning::UpdateDependentOptions_ConstantSpawnedTarg
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked)
 {
 	BSConfig->TargetConfig.bAllowSpawnWithoutActivation = bChecked;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_BatchSpawning(const bool bChecked)
 {
 	BSConfig->TargetConfig.bUseBatchSpawning = bChecked;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bChecked)
 {
 	BSConfig->TargetConfig.bApplyImmunityOnSpawn = bChecked;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bChecked)
 {
 	BSConfig->TargetConfig.bSpawnAtOriginWheneverPossible = bChecked;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bChecked)
 {
 	BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter = bChecked;
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ApplyVelocityWhenSpawned(const bool bChecked)
@@ -231,7 +221,7 @@ void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ApplyVelocityWhenSpawn
 	BSConfig->TargetConfig.bApplyVelocityWhenSpawned = bChecked;
 	UpdateDependentOptions_ApplyVelocityWhenSpawned(BSConfig->TargetConfig.bApplyVelocityWhenSpawned, BSConfig->TargetConfig.MinSpawnedTargetSpeed == BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked)
@@ -249,7 +239,7 @@ void UCustomGameModesWidget_Spawning::OnCheckStateChanged_ConstantSpawnedTargetV
 	
 	UpdateDependentOptions_ConstantSpawnedTargetVelocity(BSConfig->TargetConfig.bApplyVelocityWhenSpawned, bChecked);
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -280,7 +270,7 @@ void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBox
 		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = Value;
 	}
 	
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -292,7 +282,7 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(co
 	
 	if (Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	
@@ -300,7 +290,7 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(co
 	
 	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy);
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 FString UCustomGameModesWidget_Spawning::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString)

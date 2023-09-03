@@ -100,7 +100,7 @@ void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetPr
 			ComboBoxOption_GameModeTemplates->SetVisibility(ESlateVisibility::Collapsed);
 			ComboBoxOption_GameModeDifficulty->SetVisibility(ESlateVisibility::Collapsed);
 			UpdateBrushColors();
-			SetAllOptionsValid(UpdateAllOptionsValid());
+			
 			return;
 		}
 		// Otherwise show game mode templates
@@ -129,7 +129,7 @@ void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetPr
 		UpdateBrushColors();
 	}
 
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficulty) const
@@ -232,16 +232,17 @@ void UCustomGameModesWidget_Start::RefreshGameModeTemplateComboBoxOptions() cons
 	Options.Empty();
 }
 
-bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
+void UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 {
 	const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
 	const FText CustomGameModeNameText = EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText();
 	const FString DifficultyString = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
+	uint8 NumWarnings = 0;
 
 	// Never let a user save a custom game mode with a Preset Game Mode name
 	if (IsPresetGameMode(CustomGameModeNameText.ToString()))
 	{
-		return false;
+		NumWarnings++;
 	}
 
 	// Can only have empty CustomGameModeName if template is custom
@@ -249,7 +250,7 @@ bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 	{
 		if (!IsCustomGameMode(GameModeTemplateString))
 		{
-			return false;
+			NumWarnings++;
 		}
 	}
 	
@@ -258,18 +259,19 @@ bool UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 		// Need to select a template if use template
 		if (ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOptionCount() != 1)
 		{
-			return false;
+			NumWarnings++;
 		}
 		if (IsPresetGameMode(GameModeTemplateString))
 		{
 			// Need to select a difficulty if using Preset
 			if (ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount() != 1)
 			{
-				return false;
+				NumWarnings++;
 			}
 		}
 	}
-	return true;
+	
+	CustomGameModeCategoryInfo.Update(0, NumWarnings);
 }
 
 void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
@@ -299,8 +301,6 @@ void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 	{
 		UpdateBrushColors();
 	}
-
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bChecked)
@@ -319,9 +319,7 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 	{
 		UpdateBrushColors();
 	}
-
-	SetAllOptionsValid(UpdateAllOptionsValid());
-
+	
 	const FString SelectedDifficulty = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOption();
 	const EGameModeDifficulty Difficulty = SelectedDifficulty.IsEmpty() ? EGameModeDifficulty::None : GetEnumFromString<EGameModeDifficulty>(SelectedDifficulty);
 	RequestGameModeTemplateUpdate.Broadcast(ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption(), Difficulty);
@@ -329,7 +327,8 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 
 void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText& Text)
 {
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
+	OnCustomGameModeNameChanged.Broadcast();
 }
 
 void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)

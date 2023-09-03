@@ -21,7 +21,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual bool UpdateAllOptionsValid() override;
+	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 
 	/** Updates options that depend on the value selection of UnlimitedTargetHealth */

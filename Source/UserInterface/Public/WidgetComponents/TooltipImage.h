@@ -123,7 +123,8 @@ struct FDynamicTooltipData
 		TooltipType = InTooltipImageType;
 	}
 
-	void UpdateArray(TArray<FTooltipData>& InTooltipData, const float InActual, const float InMaxAllowed) const
+	// Adds an element to InTooltipData and returns true if Actual > MaxAllowed, otherwise no change to array and returns false
+	bool UpdateArray(TArray<FTooltipData>& InTooltipData, const float InActual, const float InMaxAllowed) const
 	{
 		if (InActual > InMaxAllowed)
 		{
@@ -135,7 +136,9 @@ struct FDynamicTooltipData
 			{
 				InTooltipData.Emplace(TooltipTextKey, TooltipType, FText::FromString(TryChangeString + FString::FromInt(InMaxAllowed) + "."));
 			}
+			return true;
 		}
+		return false;
 	}
 };
 

@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "BSCarouselNavBar.generated.h"
 
+class UButtonNotificationWidget;
 class UCommonWidgetCarousel;
 class UBSButton;
 
@@ -19,6 +20,9 @@ public:
 	TSubclassOf<UBSButton> ButtonWidgetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
+	TSubclassOf<UButtonNotificationWidget> NotificationWidgetType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
 	FMargin ButtonPadding;
 
 	/**
@@ -29,6 +33,8 @@ public:
 	void SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel);
 
 	void SetNavButtonText(const TArray<FText>& InButtonText);
+
+	void UpdateNotifications(const int32 Index, const int32 NumCautions, const int32 NumWarnings);
 
 	// UWidget interface
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
@@ -44,8 +50,7 @@ protected:
 	// UWidget interface
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	// End of UWidget interface
-
-protected:
+	
 	void RebuildButtons();
 	
 	TSharedPtr<SHorizontalBox> MyContainer;
@@ -55,6 +60,8 @@ protected:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UBSButton>> Buttons;
+
+	TArray<TObjectPtr<UButtonNotificationWidget>> Notifications;
 
 	TArray<FText> ButtonText;
 };

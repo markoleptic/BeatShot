@@ -2,7 +2,6 @@
 
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h"
-
 #include "Blueprint/WidgetTree.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
@@ -26,24 +25,8 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 	});
 }
 
-bool UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
+void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
 {
-	return false;
-}
-
-void UCustomGameModesWidgetComponent::SetAllOptionsValid(const bool bUpdateAllOptionsValid)
-{
-	if (bUpdateAllOptionsValid == bAllOptionsValid)
-	{
-		return;
-	}
-	
-	bAllOptionsValid = bUpdateAllOptionsValid;
-	
-	if (OnValidOptionsStateChanged.IsBound())
-	{
-		OnValidOptionsStateChanged.Broadcast(this, bAllOptionsValid);
-	}
 }
 
 void UCustomGameModesWidgetComponent::NativeDestruct()
@@ -62,11 +45,6 @@ void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, cons
 
 void UCustomGameModesWidgetComponent::UpdateOptionsFromConfig()
 {
-}
-
-bool UCustomGameModesWidgetComponent::GetAllOptionsValid() const
-{
-	return bAllOptionsValid;
 }
 
 TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::GetNext() const

@@ -61,32 +61,30 @@ void UCustomGameModesWidget_Target::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Target::UpdateAllOptionsValid()
+void UCustomGameModesWidget_Target::UpdateAllOptionsValid()
 {
 	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
+	uint32 NumWarnings = 0;
+	uint32 NumCautions = 0;
 	
 	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{
 		if (BSConfig->AIConfig.bEnableReinforcementLearning)
 		{
-			UpdateArray.Emplace("InvalidAI_Tracking", ETooltipImageType::Warning);
+			UpdateArray.Emplace("Invalid_Tracking_AI", ETooltipImageType::Warning);
+			NumWarnings++;
 		}
 	}
 	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_DamageType, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
 	
+	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
+	
 	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
 	}
-	
-	if (!ComboBoxOption_DamageType->GetTooltipWarningImageKeys().IsEmpty())
-	{
-		return false;
-	}
-	
-	return true;
 }
 
 void UCustomGameModesWidget_Target::UpdateOptionsFromConfig()
@@ -109,7 +107,6 @@ void UCustomGameModesWidget_Target::UpdateOptionsFromConfig()
 	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Target::UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth)
@@ -144,7 +141,7 @@ void UCustomGameModesWidget_Target::OnSelectionChanged_ConsecutiveTargetScalePol
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	
@@ -162,7 +159,7 @@ void UCustomGameModesWidget_Target::OnSelectionChanged_ConsecutiveTargetScalePol
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = SliderTextBoxOption_MaxTargetScale->GetSliderValue();
 	}
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Target::OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked)
@@ -171,7 +168,7 @@ void UCustomGameModesWidget_Target::OnCheckStateChanged_UnlimitedTargetHealth(co
 	UpdateDependentOptions_UnlimitedTargetHealth(bChecked);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Target::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -201,19 +198,19 @@ void UCustomGameModesWidget_Target::OnSliderTextBoxValueChanged(USliderTextBoxWi
 	{
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = Value;
 	}
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Target::OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 	
 	BSConfig->TargetConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(Selected[0]);
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 FString UCustomGameModesWidget_Target::GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString)

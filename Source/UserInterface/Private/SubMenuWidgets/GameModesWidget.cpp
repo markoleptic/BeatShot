@@ -81,9 +81,8 @@ void UGameModesWidget::SetupButtons()
 	MenuButton_PropertyView->SetInActive();
 	MenuButton_DefaultGameModes->SetActive();
 	
-	// GameModesWidget binds to Button_Create
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
-	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->SetIsEnabled(false);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->SetIsEnabled(true);
 
 	// Difficulty buttons
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
@@ -527,7 +526,7 @@ bool UGameModesWidget::SaveCustomAndReselect(const FText& SuccessMessage)
 void UGameModesWidget::UpdateSaveStartButtonStates()
 {
 	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
-	const bool bAllCustomGameModeOptionsValid = CustomGameModesWidget_Current->GetAllChildWidgetOptionsValid();
+	const bool bAllCustomGameModeOptionsValid = CustomGameModesWidget_Current->GetAllNonStartChildWidgetOptionsValid();
 	
 	const bool bIsDefaultMode = StartWidgetProperties.DefiningConfig.BaseGameMode != EBaseGameMode::None;
 	const bool bIsCustomMode = IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName);
@@ -571,7 +570,6 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		Button_SaveCustomAndStart->SetIsEnabled(false);
 		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 		Button_StartWithoutSaving->SetIsEnabled(false);
-		
 		return;
 	}
 

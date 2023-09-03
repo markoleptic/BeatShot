@@ -40,12 +40,23 @@ void UCustomGameModesWidget_CreatorView::Init(FBSConfig* InConfig, const TObject
 	Widget_Deactivation->InitComponent(BSConfig, Widget_Start);
 }
 
-void UCustomGameModesWidget_CreatorView::OnValidOptionsStateChanged(const TObjectPtr<UCustomGameModesWidgetComponent> Widget, const bool bAllOptionsValid)
-{
-	Super::OnValidOptionsStateChanged(Widget, bAllOptionsValid);
-}
-
 void UCustomGameModesWidget_CreatorView::OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex)
 {
 	UpdateOptionsFromConfig();
+}
+
+void UCustomGameModesWidget_CreatorView::UpdateAllChildWidgetOptionsValid()
+{
+	Super::UpdateAllChildWidgetOptionsValid();
+	int Index = 0;
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity : ChildWidgetValidityMap)
+	{
+		if (ChildWidgetValidity.Key == Widget_Start)
+		{
+			Index++;
+			continue;
+		}
+		CarouselNavBar->UpdateNotifications(Index, ChildWidgetValidity.Value->NumCautions, ChildWidgetValidity.Value->NumWarnings);
+		Index++;
+	}
 }

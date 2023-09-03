@@ -59,20 +59,4 @@ void UCustomGameModesWidget_Preview::ToggleGameModePreview(const bool bEnable)
 			TextBlock_GameModePreviewAvailability->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
-
-}
-
-void UCustomGameModesWidget_Preview::NativeConstruct()
-{
-	Super::NativeConstruct();
-}
-
-bool UCustomGameModesWidget_Preview::UpdateAllOptionsValid()
-{
-	return true;
-}
-
-void UCustomGameModesWidget_Preview::UpdateOptionsFromConfig()
-{
-	Super::UpdateOptionsFromConfig();
 }

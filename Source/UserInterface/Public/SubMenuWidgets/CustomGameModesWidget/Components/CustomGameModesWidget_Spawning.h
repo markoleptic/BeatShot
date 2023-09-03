@@ -20,7 +20,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual bool UpdateAllOptionsValid() override;
+	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy);
 

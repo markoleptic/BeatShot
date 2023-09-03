@@ -78,52 +78,36 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 	UpdateBrushColors();
 }
 
-bool UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
+void UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 {
 	TArray<FTooltipData> UpdateArray;
 	bool bRequestComponentUpdate = false;
+	uint32 NumWarnings = 0;
+	uint32 NumCautions = 0;
 
 	// ComboBoxOption_TargetActivationResponses
 	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
 	{
 		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 		{
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Warning);
-			if (BSConfig->TargetConfig.BoxBounds.X <= 0.f)
-			{
-				UpdateArray.Emplace("Caution_ZeroForwardDistance_MTDM_ForwardOnly", ETooltipImageType::Caution);
-			}
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution);
 		}
 		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
 		{
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Warning);
+			NumCautions++;
+			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Caution);
 		}
 	}
-	if (UpdateWarningTooltips(ComboBoxOption_TargetActivationResponses, UpdateArray))
-	{
-		bRequestComponentUpdate = true;
-	}
+	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_TargetActivationResponses, UpdateArray) || bRequestComponentUpdate;
 	UpdateArray.Empty();
+	
+	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
 	
 	if (bRequestComponentUpdate)
 	{
 		RequestComponentUpdate.Broadcast();
-		return false;
 	}
-	
-	if (!ComboBoxOption_TargetActivationResponses->GetTooltipWarningImageKeys().IsEmpty())
-	{
-		return false;
-	}
-	if (ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->GetSelectedOptionCount() != 1)
-	{
-		return false;
-	}
-	if (ComboBoxOption_TargetActivationResponses->ComboBox->GetSelectedOptionCount() < 1)
-	{
-		return false;
-	}
-	return true;
 }
 
 void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
@@ -154,7 +138,6 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
 }
 
 void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(const bool bInConstant)
@@ -253,9 +236,8 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantNumTargetsTo
 	}
 	
 	UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(bChecked);
-	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked)
@@ -272,9 +254,8 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantActivatedTar
 	}
 	
 	UpdateDependentOptions_ConstantTargetSpeed(BSConfig->TargetConfig.TargetActivationResponses, bChecked);
-	
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Activation::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
@@ -313,19 +294,19 @@ void UCustomGameModesWidget_Activation::OnSliderTextBoxValueChanged(USliderTextB
 	{
 		BSConfig->TargetConfig.LifetimeTargetScaleMultiplier = Value;
 	}
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
 	{
-		SetAllOptionsValid(UpdateAllOptionsValid());
+		
 		return;
 	}
 
 	BSConfig->TargetConfig.TargetActivationSelectionPolicy = GetEnumFromString<ETargetActivationSelectionPolicy>(Selected[0]);
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
@@ -337,9 +318,8 @@ void UCustomGameModesWidget_Activation::OnSelectionChanged_TargetActivationRespo
 	
 	BSConfig->TargetConfig.TargetActivationResponses = GetEnumArrayFromStringArray<ETargetActivationResponse>(Selected);
 	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses, BSConfig->TargetConfig.MinActivatedTargetSpeed == BSConfig->TargetConfig.MaxActivatedTargetSpeed);
-
 	UpdateBrushColors();
-	SetAllOptionsValid(UpdateAllOptionsValid());
+	UpdateAllOptionsValid();
 }
 
 FString UCustomGameModesWidget_Activation::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString)

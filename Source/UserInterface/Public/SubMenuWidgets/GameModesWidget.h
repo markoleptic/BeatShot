@@ -327,5 +327,5 @@ private:
 	FBSConfig* BSConfig;
 
 	/** Whether or not one of the custom game modes widgets has at least one breaking game mode option, or none */
-	bool bGameModeBreakingOptionPresent = true;
+	bool bGameModeBreakingOptionPresent = false;
 };

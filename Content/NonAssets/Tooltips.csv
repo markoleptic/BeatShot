@@ -185,3 +185,4 @@ Invalid_Direction_MTDM_None,Change the Moving Target Direction Mode to something
 Invalid_Direction_MTDM_None_2,One or more settings wants to change the direction. Change the Moving Target Direction Mode to something other than None to allow them to have an effect.
 Caution_ZeroForwardDistance_MTDM_ForwardOnly,You might want to change the Forward Spread to greater than zero. Forward  Spread is in the Spawn Area Section.
 Caution_ZeroForwardDistance_MTDM_ForwardOnly_2,"One or more settings wants to move the target forward, but will not be moved if the forward spread is zero."
+Invalid_Tracking_AI,AI cannot be used with the Target Damage Type Tracking.

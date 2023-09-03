@@ -19,8 +19,11 @@ class USERINTERFACE_API UCustomGameModesWidget_Start : public UCustomGameModesWi
 public:
 	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
 
-	/** Broadcast when the user changes anything in a start widget */
+	/** Broadcast when the user changes the template checkbox, template combo box, or difficulty combo box */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
+
+	/** Broadcast when the user changes the EditableTextBoxOption_CustomGameModeName */
+	FRequestButtonStateUpdate OnCustomGameModeNameChanged;
 
 	/** Returns the value of EditableTextBoxOption_CustomGameModeName */
 	FString GetNewCustomGameModeName() const;
@@ -48,7 +51,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual bool UpdateAllOptionsValid() override;
+	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
