@@ -96,7 +96,7 @@ protected:
 	TMap<TEnumAsByte<EPhysicalSurface>, TSubclassOf<UBSMoveStepSound>> MoveStepSounds;
 	
 	TWeakObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
-	TWeakObjectPtr<UBSAttributeSetBase> AttributeSetBase;
+	TWeakObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 	FBSAbilitySet_GrantedHandles AbilitySet_GrantedHandles;
 
 public:

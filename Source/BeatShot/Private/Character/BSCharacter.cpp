@@ -208,6 +208,13 @@ void ABSCharacter::PossessedBy(AController* NewController)
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
 	if (PS)
 	{
+		//Attribute change callbacks
+		//HealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetHealthAttribute()).AddUObject(this, &ThisClass::HealthChanged);
+		//MaxHealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMaxHealthAttribute()).AddUObject(this, &ThisClass::MaxHealthChanged);
+		//MoveSpeedChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMoveSpeedAttribute()).AddUObject(this, &ThisClass::MoveSpeedChanged);
+		//Tag change callbacks
+		//AbilitySystemComponent->RegisterGameplayTagEvent(FBSGameplayTags::Get().Input_Sprint, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::TagChange_State_Sprint);
+		
 		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
 		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 
@@ -253,14 +260,13 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		
 		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Forward, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Backward, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Left, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, ETriggerEvent::Triggered, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Forward, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Backward, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Left, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
 
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
-		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, ETriggerEvent::Started, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
 		
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Started, this, &ThisClass::Input_WalkStart, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Completed, this, &ThisClass::Input_WalkEnd, /*bLogIfNotFound=*/ true);
@@ -274,12 +280,12 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::Input_OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::Input_OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
 		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_1, ETriggerEvent::Started, this, &ThisClass::Input_OnEquipmentSlot1Started, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_2, ETriggerEvent::Started, this, &ThisClass::Input_OnEquipmentSlot2Started, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_3, ETriggerEvent::Started, this, &ThisClass::Input_OnEquipmentSlot3Started, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_LastEquipped, ETriggerEvent::Started, this, &ThisClass::Input_OnEquipmentSlotLastEquippedStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_1, this, &ThisClass::Input_OnEquipmentSlot1Started, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_2, this, &ThisClass::Input_OnEquipmentSlot2Started, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_3, this, &ThisClass::Input_OnEquipmentSlot3Started, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_LastEquipped, this, &ThisClass::Input_OnEquipmentSlotLastEquippedStarted, /*bLogIfNotFound=*/ true);
 
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Pause, ETriggerEvent::Started, this, &ThisClass::Input_OnPause, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Pause, this, &ThisClass::Input_OnPause, /*bLogIfNotFound=*/ true);
 	}
 }
 

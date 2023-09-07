@@ -9,6 +9,7 @@
 
 UBSGameplayAbility_FireGun::UBSGameplayAbility_FireGun()
 {
+	FireHipMontage = nullptr;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 

@@ -34,13 +34,11 @@ class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, publ
 	friend class ATargetManager;
 
 protected:
-	/** Actual hard pointer to AbilitySystemComponent */
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
-
-	/** Actual hard pointer to AttributeSetBase */
+	
 	UPROPERTY()
-	UBSAttributeSetBase* HardRefAttributeSetBase;
+	const UBSAttributeSetBase* AttributeSetBase;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UCapsuleComponent* CapsuleComponent;
@@ -138,7 +136,7 @@ protected:
 	virtual void OnTargetMaxLifeSpanExpired();
 	
 	/** Apply damage to self, for example when the DamageableWindow timer expires */
-	void DamageSelf(const float Damage);
+	void DamageSelf();
 
 public:
 	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */

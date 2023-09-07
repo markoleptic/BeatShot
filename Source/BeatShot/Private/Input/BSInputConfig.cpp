@@ -4,6 +4,7 @@
 
 UBSInputConfig::UBSInputConfig(const FObjectInitializer& ObjectInitializer)
 {
+	PlayerMappableInputConfig = nullptr;
 }
 
 const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
@@ -40,4 +41,22 @@ const UInputAction* UBSInputConfig::FindAbilityInputActionForTag(const FGameplay
 	}
 
 	return nullptr;
+}
+
+FBSInputAction UBSInputConfig::FindBSInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const
+{
+	for (const FBSInputAction& Action : NativeInputActions)
+	{
+		if (Action.InputAction && (Action.InputTag == InputTag))
+		{
+			return Action;
+		}
+	}
+
+	if (bLogNotFound)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Can't find BSInputAction for InputTag [%s] on InputConfig [%s]."), *InputTag.ToString(), *GetNameSafe(this));
+	}
+
+	return FBSInputAction();
 }

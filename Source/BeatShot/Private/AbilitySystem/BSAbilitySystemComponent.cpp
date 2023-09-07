@@ -6,10 +6,6 @@
 #include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility.h"
 
-void UBSAbilitySystemComponent::ReceiveDamage(UBSAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage)
-{
-	ReceivedDamage.Broadcast(SourceASC, UnmitigatedDamage, MitigatedDamage);
-}
 
 void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
 {
@@ -309,7 +305,7 @@ void UBSAbilitySystemComponent::ClearAbilityInput()
 	InputHeldSpecHandles.Reset();
 }
 
-void UBSAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& InputTag)
+void UBSAbilitySystemComponent::AbilityInputTagPressed(FGameplayTag InputTag)
 {
 	if (InputTag.IsValid())
 	{
@@ -324,7 +320,7 @@ void UBSAbilitySystemComponent::AbilityInputTagPressed(const FGameplayTag& Input
 	}
 }
 
-void UBSAbilitySystemComponent::AbilityInputTagReleased(const FGameplayTag& InputTag)
+void UBSAbilitySystemComponent::AbilityInputTagReleased(FGameplayTag InputTag)
 {
 	if (InputTag.IsValid())
 	{

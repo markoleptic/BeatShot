@@ -8,8 +8,6 @@
 #include "NativeGameplayTags.h"
 #include "BSAbilitySystemComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FReceivedDamageDelegate, UBSAbilitySystemComponent*, SourceASC, float, UnmitigatedDamage, float, MitigatedDamage);
-
 /** Base AbilitySystemComponent in this game */
 UCLASS()
 class BEATSHOT_API UBSAbilitySystemComponent : public UAbilitySystemComponent
@@ -19,11 +17,6 @@ class BEATSHOT_API UBSAbilitySystemComponent : public UAbilitySystemComponent
 public:
 	bool bCharacterAbilitiesGiven = false;
 	bool bStartupEffectsApplied = false;
-
-	FReceivedDamageDelegate ReceivedDamage;
-
-	// Called from GDDamageExecCalculation. Broadcasts on ReceivedDamage whenever this ASC receives damage.
-	virtual void ReceiveDamage(UBSAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage);
 
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 
@@ -35,8 +28,8 @@ public:
 
 	void CancelInputActivatedAbilities(bool bReplicateCancelAbility);
 
-	void AbilityInputTagPressed(const FGameplayTag& InputTag);
-	void AbilityInputTagReleased(const FGameplayTag& InputTag);
+	void AbilityInputTagPressed(FGameplayTag InputTag);
+	void AbilityInputTagReleased(FGameplayTag InputTag);
 
 	void ProcessAbilityInput(float DeltaTime, bool bGamePaused);
 	void ClearAbilityInput();

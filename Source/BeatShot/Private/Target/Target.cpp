@@ -63,9 +63,9 @@ ATarget::ATarget()
 	// Create the attribute set, this replicates by default
 	// Adding it as a sub object of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
-	if (!HardRefAttributeSetBase)
+	if (!AttributeSetBase)
 	{
-		HardRefAttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>("Attribute Set Base");
+		AttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>("Attribute Set Base");
 		AbilitySystemComponent->SetIsReplicated(true);
 	}
 	
@@ -129,23 +129,41 @@ void ATarget::BeginPlay()
 void ATarget::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-	
-	if (GetAbilitySystemComponent())
+
+	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
+	if (ensure(ASC))
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
+
+		const UBSAttributeSetBase* Set = GetAbilitySystemComponent()->GetSet<UBSAttributeSetBase>();
+		if (ensure(Set))
+		{
+			if (Config.MaxHealth <= 0.f)
+			{
+				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), FLT_MAX);
+			}
+			else
+			{
+				
+				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), Config.MaxHealth);
+			}
+			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), Config.ExpirationHealthPenalty);
+			// TODO: temporarily use BasePlayerTrackingDamage
+			ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), Config.BasePlayerTrackingDamage);
+		}
 		
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATarget::OnHealthChanged);
-		//GetAbilitySystemComponent()->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
+		ASC->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
 
 		switch (Config.TargetDamageType)
 		{
 		case ETargetDamageType::None:
 		case ETargetDamageType::Hit:
-			GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(TrackingImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+			ASC->ApplyGameplayEffectToSelf(TrackingImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Tracking:
-			GetAbilitySystemComponent()->ApplyGameplayEffectToSelf(FireGunImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+			ASC->ApplyGameplayEffectToSelf(FireGunImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Combined:
 			break;
@@ -155,6 +173,18 @@ void ATarget::PostInitializeComponents()
 		{
 			ApplyImmunityEffect();
 		}
+	}
+
+	TargetScale_Spawn = GetActorScale();
+	TargetLocation_Spawn = GetActorLocation();
+	
+	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyLifetimeTargetScaling))
+	{
+		bApplyLifetimeTargetScaling = true;
+	}
+	else
+	{
+		bApplyLifetimeTargetScaling = false;
 	}
 
 	if (ProjectileMovementComponent)
@@ -188,28 +218,6 @@ void ATarget::Tick(float DeltaSeconds)
 void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 {
 	Config = InTargetConfig;
-	if (Config.MaxHealth == -1.f)
-	{
-		HardRefAttributeSetBase->InitMaxHealth(FLT_MAX);
-		HardRefAttributeSetBase->InitHealth(FLT_MAX);
-	}
-	else
-	{
-		HardRefAttributeSetBase->InitMaxHealth(Config.MaxHealth);
-		HardRefAttributeSetBase->InitHealth(Config.MaxHealth);
-	}
-	
-	TargetScale_Spawn = GetActorScale();
-	TargetLocation_Spawn = GetActorLocation();
-	
-	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyLifetimeTargetScaling))
-	{
-		bApplyLifetimeTargetScaling = true;
-	}
-	else
-	{
-		bApplyLifetimeTargetScaling = false;
-	}
 }
 
 void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
@@ -363,10 +371,10 @@ void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, con
 
 void ATarget::OnTargetMaxLifeSpanExpired()
 {
-	DamageSelf(Config.ExpirationHealthPenalty);
+	DamageSelf();
 }
 
-void ATarget::DamageSelf(const float Damage)
+void ATarget::DamageSelf()
 {
 	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
 	{
@@ -374,7 +382,6 @@ void ATarget::DamageSelf(const float Damage)
 		EffectContextHandle.Get()->AddInstigator(this, this);
 		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(ExpirationHealthPenalty, 1.f, EffectContextHandle);
 		FGameplayEffectSpec* Spec = Handle.Data.Get();
-		Spec->SetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, Damage);
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
 }

@@ -37,6 +37,10 @@ public:
 	template <class UserClass, typename FuncType>
 	void BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func, bool bLogIfNotFound);
 
+	/** Binds an (EnhancedInputAction, GameplayTag) pair to the specified trigger event. */
+	template <class UserClass, typename FuncType>
+	void BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, UserClass* Object, FuncType Func, bool bLogIfNotFound);
+
 	/** Binds an array of (EnhancedInputAction, GameplayTags) pair to the specified trigger events,
 	 *  and associates a GameplayTag with it. */
 	template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
@@ -53,6 +57,17 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, cons
 	if (const UInputAction* IA = InputConfig->FindNativeInputActionForTag(InputTag, bLogIfNotFound))
 	{
 		BindAction(IA, TriggerEvent, Object, Func);
+	}
+}
+
+template <class UserClass, typename FuncType>
+void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, UserClass* Object, FuncType Func, bool bLogIfNotFound)
+{
+	check(InputConfig);
+	const FBSInputAction IA = InputConfig->FindBSInputActionForTag(InputTag, bLogIfNotFound);
+	if (IA.InputAction)
+	{
+		BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, Func);
 	}
 }
 

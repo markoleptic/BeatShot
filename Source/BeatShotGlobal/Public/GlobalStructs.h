@@ -459,6 +459,14 @@ struct FBS_TargetConfig
 	/** Any condition that should permanently destroy a the target */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<ETargetDestructionCondition> TargetDestructionConditions;
+
+	/** The base damage to set the player's HitDamage Attribute to for Hit-Based damage */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float BasePlayerHitDamage;
+
+	/** The base damage to set the player's HitDamage Attribute to for Tracking-Based damage */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float BasePlayerTrackingDamage;
 	
 	/** How much to shrink the target each time a charge is consumed, if the target is charged. This is multiplied
 	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
@@ -641,6 +649,8 @@ struct FBS_TargetConfig
 		OnSpawn_ApplyTags = FGameplayTagContainer();
 		BoxBounds = DefaultSpawnBoxBounds;
 
+		BasePlayerHitDamage = 100.f;
+		BasePlayerTrackingDamage = 1.f;
 		MaxNumActivatedTargetsAtOnce = -1;
 		MaxNumRecentTargets = -1;
 		MaxNumTargetsAtOnce = -1;
@@ -834,6 +844,14 @@ struct FBS_TargetConfig
 			return false;
 		}
 		if (!FMath::IsNearlyEqual(TargetSpawnCD, Other.TargetSpawnCD))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(BasePlayerHitDamage, Other.BasePlayerHitDamage))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(BasePlayerTrackingDamage, Other.BasePlayerTrackingDamage))
 		{
 			return false;
 		}

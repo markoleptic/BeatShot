@@ -86,7 +86,7 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 
 void ATargetPreview::OnSimulatePlayerDestroyingTimerExpired()
 {
-	DamageSelf(Config.ExpirationHealthPenalty);
+	DamageSelf();
 }
 
 void ATargetPreview::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)

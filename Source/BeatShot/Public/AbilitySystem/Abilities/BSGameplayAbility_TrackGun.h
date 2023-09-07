@@ -40,10 +40,6 @@ protected:
 	UFUNCTION()
 	void OnTickTraceHitResultHit(const FHitResult& HitResult);
 
-	/** The damage to apply on trace hit */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float Damage = 1.0f;
-
 	/** How far to trace forward from Character camera */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float TraceDistance = 100000.f;

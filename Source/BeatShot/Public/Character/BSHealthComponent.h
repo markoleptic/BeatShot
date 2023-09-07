@@ -10,7 +10,6 @@
 class UBSAbilitySystemComponent;
 class UBSAttributeSetBase;
 
-DECLARE_MULTICAST_DELEGATE(FOnOutOfHealth);
 DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue);
 
 /** Base HealthComponent for this game */
@@ -26,26 +25,20 @@ public:
 protected:
 	/** Called when the game starts */
 	virtual void BeginPlay() override;
-
-	// Ability system used by this component.
+	
 	UPROPERTY()
 	TObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY()
 	TObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 
-	virtual void HandleHealthChanged(const FOnAttributeChangeData& ChangeData);
-	virtual void HandleMaxHealthChanged(const FOnAttributeChangeData& ChangeData);
-	virtual void HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude);
+	void OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	/** Initialize the component using an ability system component */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Health")
 	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC);
-
-	/** Broadcasts when out of health */
-	FOnOutOfHealth OnOutOfHealth;
 
 	/** Broadcasts when the health attribute changes */
 	FOnHealthChanged OnHealthChanged;

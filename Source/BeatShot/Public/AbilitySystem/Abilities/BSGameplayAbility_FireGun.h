@@ -27,14 +27,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	UAnimMontage* FireHipMontage;
 
-	/** The damage to apply on trace hit */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float Damage = 666.0f;
-
-	/** The speed fire the projectile at */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	float ProjectileSpeed = 250000.f;
-
 	/** How far to trace forward from Character camera */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float TraceDistance = 100000.f;

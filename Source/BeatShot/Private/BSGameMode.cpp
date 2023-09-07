@@ -10,6 +10,7 @@
 #include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
 #include "AbilitySystem/Abilities/BSGameplayAbility_TrackGun.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/SteamManager.h"
 
@@ -117,6 +118,14 @@ void ABSGameMode::InitializeGameMode()
 	{
 		if (ABSCharacter* Character = Controller->GetBSCharacter())
 		{
+			UBSAbilitySystemComponent* ASC = Character->GetBSAbilitySystemComponent();
+			const UBSAttributeSetBase* Set = ASC->GetSet<UBSAttributeSetBase>();
+			if (ensure(Set))
+			{
+				ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig.TargetConfig.BasePlayerHitDamage);
+				ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), BSConfig.TargetConfig.BasePlayerTrackingDamage);
+			}
+			
 			if (Character->HasMatchingGameplayTag(FBSGameplayTags::Get().Cheat_AimBot))
 			{
 				if (!GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
@@ -129,16 +138,16 @@ void ABSGameMode::InitializeGameMode()
 			{
 				if (TrackGunAbilityGrantedHandles.IsEmpty())
 				{
-					TrackGunAbilitySet->GiveToAbilitySystem(Character->GetBSAbilitySystemComponent(), &TrackGunAbilityGrantedHandles);
+					TrackGunAbilitySet->GiveToAbilitySystem(ASC, &TrackGunAbilityGrantedHandles);
 				}
-				for (FGameplayAbilitySpec& Spec : Character->GetBSAbilitySystemComponent()->GetActivatableAbilities())
+				for (FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
 				{
 					if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
 					{
 						if (UBSGameplayAbility_TrackGun* TrackAbility = Cast<UBSGameplayAbility_TrackGun>(Ability))
 						{
 							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
-							Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(Spec);
+							ASC->MarkAbilitySpecDirty(Spec);
 							break;
 						}
 					}

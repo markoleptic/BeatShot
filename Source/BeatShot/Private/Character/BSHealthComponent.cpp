@@ -2,10 +2,7 @@
 
 
 #include "Character/BSHealthComponent.h"
-#include "GameplayEffectExtension.h"
-#include "AbilitySystem/Globals/BSAbilitySystemGlobals.h"
 #include "Target/Target.h"
-#include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "GameFramework/Actor.h"
 
@@ -22,24 +19,9 @@ void UBSHealthComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UBSHealthComponent::HandleHealthChanged(const FOnAttributeChangeData& ChangeData)
+void UBSHealthComponent::OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue)
 {
-	AActor* Instigator = nullptr;
-	if (const FGameplayEffectSpec* Spec = ChangeData.GEModData ? &ChangeData.GEModData->EffectSpec : UBSAbilitySystemGlobals::GetTestGlobals().GetCurrentAppliedGE())
-	{
-		const FGameplayEffectContextHandle& EffectContext = Spec->GetEffectContext();
-		Instigator = EffectContext.GetOriginalInstigator();
-	}
-	OnHealthChanged.Broadcast(Instigator, ChangeData.OldValue, ChangeData.NewValue);
-}
-
-void UBSHealthComponent::HandleMaxHealthChanged(const FOnAttributeChangeData& ChangeData)
-{
-}
-
-void UBSHealthComponent::HandleOutOfHealth(AActor* DamageInstigator, AActor* DamageCauser, const FGameplayEffectSpec& DamageEffectSpec, float DamageMagnitude)
-{
-	OnOutOfHealth.Broadcast();
+	OnHealthChanged.Broadcast(EffectInstigator, OldValue, NewValue);
 }
 
 void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -71,8 +53,5 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 		UE_LOG(LogTemp, Error, TEXT("BSHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."), *GetNameSafe(Owner));
 		return;
 	}
-
-	// Register to listen for attribute changes.
-	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UBSAttributeSetBase::GetHealthAttribute()).AddUObject(this, &ThisClass::HandleHealthChanged);
-	AttributeSetBase->OnHealthReachZero.AddUObject(this, &ThisClass::HandleOutOfHealth);
+	AttributeSetBase->OnHealthChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
 }

@@ -48,6 +48,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Pawn")
 	const UInputAction* FindAbilityInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
 
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|Pawn")
+	FBSInputAction FindBSInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
+
 	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and must be manually bound.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (TitleProperty = "InputAction"))
 	TArray<FBSInputAction> NativeInputActions;

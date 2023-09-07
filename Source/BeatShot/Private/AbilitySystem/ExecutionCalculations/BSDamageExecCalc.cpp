@@ -2,26 +2,24 @@
 
 #include "AbilitySystem/ExecutionCalculations/BSDamageExecCalc.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 
 // Declare the attributes to capture and define how we want to capture them from the Source and Target.
 struct BSDamageStatics
 {
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Damage);
-	DECLARE_ATTRIBUTE_CAPTUREDEF(Health);
-
+	FGameplayEffectAttributeCaptureDefinition HitDamageDef;
+	FGameplayEffectAttributeCaptureDefinition TrackingDamageDef;
+	FGameplayEffectAttributeCaptureDefinition TotalDamageDef;
+	
 	BSDamageStatics()
 	{
-		// Snapshot happens at time of GESpec creation
-
-		// We're not capturing anything from the Source in this example, but there could be like AttackPower attributes that you might want.
-
-		// Capture optional Damage set on the damage GE as a CalculationModifier under the ExecutionCalculation
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UBSAttributeSetBase, Damage, Source, true);
-
+		// Capture HitDamage set on the damage GE as a CalculationModifier under the ExecutionCalculation
+		HitDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHitDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+		TrackingDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetTrackingDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
+		TotalDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetTotalDamageAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
+		
 		// Capture the Target's Health. Don't snapshot.
-		DEFINE_ATTRIBUTE_CAPTUREDEF(UBSAttributeSetBase, Health, Target, false);
+		//HealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHealthAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
 	}
 };
 
@@ -33,17 +31,18 @@ static const BSDamageStatics& DamageStatics()
 
 UBSDamageExecCalc::UBSDamageExecCalc()
 {
-	RelevantAttributesToCapture.Add(DamageStatics().DamageDef);
-	RelevantAttributesToCapture.Add(DamageStatics().HealthDef);
+	RelevantAttributesToCapture.Add(DamageStatics().HitDamageDef);
+	RelevantAttributesToCapture.Add(DamageStatics().TrackingDamageDef);
+	RelevantAttributesToCapture.Add(DamageStatics().TotalDamageDef);
 }
 
 void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
-	UAbilitySystemComponent* TargetAbilitySystemComponent = ExecutionParams.GetTargetAbilitySystemComponent();
-	UAbilitySystemComponent* SourceAbilitySystemComponent = ExecutionParams.GetSourceAbilitySystemComponent();
+	//UAbilitySystemComponent* TargetAbilitySystemComponent = ExecutionParams.GetTargetAbilitySystemComponent();
+	//UAbilitySystemComponent* SourceAbilitySystemComponent = ExecutionParams.GetSourceAbilitySystemComponent();
 
-	AActor* SourceActor = SourceAbilitySystemComponent ? SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
-	AActor* TargetActor = TargetAbilitySystemComponent ? TargetAbilitySystemComponent->GetAvatarActor() : nullptr;
+	//AActor* SourceActor = SourceAbilitySystemComponent ? SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
+	//AActor* TargetActor = TargetAbilitySystemComponent ? TargetAbilitySystemComponent->GetAvatarActor() : nullptr;
 
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
 
@@ -55,31 +54,34 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	EvaluationParameters.SourceTags = SourceTags;
 	EvaluationParameters.TargetTags = TargetTags;
 
-	float Health = 0.0f;
+	/*float Health = 0.0f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HealthDef, EvaluationParameters, Health);
-	Health = FMath::Max<float>(Health, 0.0f);
+	Health = FMath::Max<float>(Health, 0.0f);*/
 
-	float Damage = 0.0f;
-	// Capture optional damage value set on the damage GE as a CalculationModifier under the ExecutionCalculation
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().DamageDef, EvaluationParameters, Damage);
-	// Add SetByCaller damage if it exists
-	Damage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, true, -1.0f), 0.0f);
-
-	float UnmitigatedDamage = Damage; // Can multiply any damage boosters here
-	
-	float MitigatedDamage = UnmitigatedDamage;
-
-	if (MitigatedDamage > 0.f)
+	float HitDamage = 0.0f;
+	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_FireGun))
 	{
-		// Set the Target's damage meta attribute
-		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(DamageStatics().DamageProperty, EGameplayModOp::Additive, MitigatedDamage));
+		// Capture  damage value set on the damage GE as a CalculationModifier under the ExecutionCalculation
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HitDamageDef, EvaluationParameters, HitDamage);
 	}
-
-	// Broadcast damages to Target ASC
-	UBSAbilitySystemComponent* TargetASC = Cast<UBSAbilitySystemComponent>(TargetAbilitySystemComponent);
-	if (TargetASC)
+	
+	float TrackingDamage = 0.0f;
+	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_Tracking))
 	{
-		UBSAbilitySystemComponent* SourceASC = Cast<UBSAbilitySystemComponent>(SourceAbilitySystemComponent);
-		TargetASC->ReceiveDamage(SourceASC, UnmitigatedDamage, MitigatedDamage);
+		// Capture  damage value set on the damage GE as a CalculationModifier under the ExecutionCalculation
+		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().TrackingDamageDef, EvaluationParameters, TrackingDamage);
+	}
+	
+	UE_LOG(LogTemp, Display, TEXT("HitDamage captured: %f TrackingDamage captured: %f"), HitDamage, TrackingDamage);
+
+	const float TotalDamage = HitDamage + TrackingDamage;
+	
+	// Add SetByCaller damage if it exists
+	//TotalDamage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, true, -1.0f), 0.0f);
+
+	if (TotalDamage > 0.0f )
+	{
+		// Set the Target's total damage meta attribute, this gets turned into - health on the target
+		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UBSAttributeSetBase::GetTotalDamageAttribute(), EGameplayModOp::Additive, TotalDamage));
 	}
 }

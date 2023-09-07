@@ -9,6 +9,7 @@
 #include "GameplayEffectTypes.h"
 #include "BSPlayerState.generated.h"
 
+class UBSAttributeSetBase;
 class UBSAbilitySystemComponent;
 
 /** Base player state class for this game */
@@ -28,33 +29,16 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
-	class UBSAttributeSetBase* GetAttributeSetBase() const;
-
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
-	float GetMoveSpeed() const;
-
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
-	float GetHealth() const;
-
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Attributes")
-	float GetMaxHealth() const;
+	const UBSAttributeSetBase* GetAttributeSetBase() const;
 
 protected:
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
 
 	UPROPERTY()
-	UBSAttributeSetBase* AttributeSetBase;
+	const UBSAttributeSetBase* AttributeSetBase;
 
-	FDelegateHandle HealthChangedDelegateHandle;
-	FDelegateHandle MaxHealthChangedDelegateHandle;
-	FDelegateHandle MoveSpeedChangedDelegateHandle;
-
-	virtual void HealthChanged(const FOnAttributeChangeData& Data);
-	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data);
-	virtual void MoveSpeedChanged(const FOnAttributeChangeData& Data);
-	virtual void TagChange_State_Sprint(const FGameplayTag CallbackTag, int32 NewCount);
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	//FDelegateHandle HealthChangedDelegateHandle;
+	//FDelegateHandle MaxHealthChangedDelegateHandle;
+	//FDelegateHandle MoveSpeedChangedDelegateHandle;
 };
