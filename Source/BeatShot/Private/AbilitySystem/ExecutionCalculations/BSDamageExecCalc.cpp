@@ -13,7 +13,6 @@ struct BSDamageStatics
 	
 	BSDamageStatics()
 	{
-		// Capture HitDamage set on the damage GE as a CalculationModifier under the ExecutionCalculation
 		HitDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHitDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 		TrackingDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetTrackingDamageAttribute(), EGameplayEffectAttributeCaptureSource::Source, true);
 		TotalDamageDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetTotalDamageAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
@@ -38,15 +37,9 @@ UBSDamageExecCalc::UBSDamageExecCalc()
 
 void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
-	//UAbilitySystemComponent* TargetAbilitySystemComponent = ExecutionParams.GetTargetAbilitySystemComponent();
-	//UAbilitySystemComponent* SourceAbilitySystemComponent = ExecutionParams.GetSourceAbilitySystemComponent();
-
-	//AActor* SourceActor = SourceAbilitySystemComponent ? SourceAbilitySystemComponent->GetAvatarActor() : nullptr;
-	//AActor* TargetActor = TargetAbilitySystemComponent ? TargetAbilitySystemComponent->GetAvatarActor() : nullptr;
-
 	const FGameplayEffectSpec& Spec = ExecutionParams.GetOwningSpec();
 
-	// Gather the tags from the source and target as that can affect which buffs should be used
+	// Gather the tags from the source and target
 	const FGameplayTagContainer* SourceTags = Spec.CapturedSourceTags.GetAggregatedTags();
 	const FGameplayTagContainer* TargetTags = Spec.CapturedTargetTags.GetAggregatedTags();
 
@@ -54,28 +47,19 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	EvaluationParameters.SourceTags = SourceTags;
 	EvaluationParameters.TargetTags = TargetTags;
 
-	/*float Health = 0.0f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HealthDef, EvaluationParameters, Health);
-	Health = FMath::Max<float>(Health, 0.0f);*/
-
 	float HitDamage = 0.0f;
 	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_FireGun))
 	{
-		// Capture  damage value set on the damage GE as a CalculationModifier under the ExecutionCalculation
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HitDamageDef, EvaluationParameters, HitDamage);
 	}
 	
 	float TrackingDamage = 0.0f;
 	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_Tracking))
 	{
-		// Capture  damage value set on the damage GE as a CalculationModifier under the ExecutionCalculation
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().TrackingDamageDef, EvaluationParameters, TrackingDamage);
 	}
-	
-	UE_LOG(LogTemp, Display, TEXT("HitDamage captured: %f TrackingDamage captured: %f"), HitDamage, TrackingDamage);
+	float TotalDamage = HitDamage + TrackingDamage;
 
-	const float TotalDamage = HitDamage + TrackingDamage;
-	
 	// Add SetByCaller damage if it exists
 	//TotalDamage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, true, -1.0f), 0.0f);
 

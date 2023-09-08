@@ -18,6 +18,7 @@ struct FBSGameplayTags
 
 	FGameplayTag Data;
 	FGameplayTag Data_Damage;
+	FGameplayTag Data_Cooldown;
 
 	FGameplayTag Event;
 	FGameplayTag Event_Montage;

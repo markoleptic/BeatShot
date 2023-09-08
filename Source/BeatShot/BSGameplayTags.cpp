@@ -19,6 +19,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(GameplayCue_FireGun_Impact, "GameplayCue.FireGun.Impact","");
 
 	AddTag(Data, "Data","");
+	AddTag(Data_Cooldown, "Data.Cooldown","");
 	AddTag(Data_Damage, "Data.Damage","");
 
 	AddTag(Event, "Event","");
