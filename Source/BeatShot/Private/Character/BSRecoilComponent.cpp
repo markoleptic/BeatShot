@@ -11,6 +11,7 @@ UBSRecoilComponent::UBSRecoilComponent()
 	bIsFiring = false;
 	KickbackAlpha = 0.f;
 	KickbackAngle = 0.f;
+	ShotsFired = 0;
 	bShouldKickback = false;
 }
 
@@ -22,6 +23,7 @@ void UBSRecoilComponent::BeginPlay()
 	FOnTimelineVector RecoilProgressFunction;
 	RecoilProgressFunction.BindUFunction(this, FName("UpdateRecoil"));
 	RecoilTimeline.AddInterpVector(RecoilCurve, RecoilProgressFunction);
+	FireRateDelegate.BindUObject(this, &UBSRecoilComponent::StopRecoil);
 }
 
 void UBSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -36,10 +38,11 @@ FRotator UBSRecoilComponent::GetCurrentRecoilRotation() const
 	return FRotator(-CurrentShotRecoilRotation.Pitch, CurrentShotRecoilRotation.Yaw, CurrentShotRecoilRotation.Roll);
 }
 
-void UBSRecoilComponent::Recoil()
+void UBSRecoilComponent::Recoil(const float FireRate)
 {
 	bIsFiring = true;
 	RecoilTimeline.SetPlayRate(1.f);
+	GetWorld()->GetTimerManager().SetTimer(FireRateTimer, FireRateDelegate, FireRate, false, -1);
 	/* Resume timeline from current position if it hasn't fully recovered */
 	if (RecoilTimeline.IsReversing())
 	{
@@ -53,6 +56,7 @@ void UBSRecoilComponent::Recoil()
 		ShotsFired = 0;
 		RecoilTimeline.PlayFromStart();
 	}
+	UE_LOG(LogTemp, Display, TEXT("Shots fired: %d"), ShotsFired);
 	bShouldKickback = true;
 	KickbackAlpha = 0.f;
 }

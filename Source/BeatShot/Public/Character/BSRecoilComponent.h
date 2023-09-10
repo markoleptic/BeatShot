@@ -30,7 +30,7 @@ public:
 
 	/** Begins or resumes the recoil timeline, allowing UpdateRecoil to receive input from the timeline on tick */
 	UFUNCTION(BlueprintCallable, Category = "Recoil")
-	void Recoil();
+	void Recoil(const float FireRate);
 
 	UFUNCTION(BlueprintCallable, Category = "Recoil")
 	void StopRecoil();
@@ -71,6 +71,9 @@ protected:
 
 	/** Same as CurrentShotRecoilRotation but applied at half the scale */
 	FRotator CurrentShotCameraRecoilRotation;
+
+	FTimerDelegate FireRateDelegate;
+	FTimerHandle FireRateTimer;
 
 	/** Whether or not the player is holding down left click */
 	UPROPERTY(BlueprintReadWrite)

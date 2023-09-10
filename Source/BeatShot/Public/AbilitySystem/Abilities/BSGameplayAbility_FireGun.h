@@ -31,7 +31,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float TraceDistance = 100000.f;
 
-	/** Performs non-gameplay related tasks like muzzle flash, camera recoil, and decal spawning */
+	/** Executes Gameplay Parameters */
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnTargetDataReady(const FGameplayAbilityTargetDataHandle& TargetData);
 

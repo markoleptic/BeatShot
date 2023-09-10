@@ -38,15 +38,18 @@ public:
 	virtual void StopFire();
 
 	/** Returns the location of the muzzle */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure, BlueprintCallable)
 	virtual FVector GetMuzzleLocation() const;
 
+	UFUNCTION(BlueprintPure, BlueprintCallable)
+	float GetFireRate() const { return FireRate; }
+
 	/** Returns whether the weapon can fire or not */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure, BlueprintCallable)
 	bool CanFire() const { return bCanFire; }
 
 	/** Returns whether or not the gun is currently firing (input is being held down) */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure, BlueprintCallable)
 	bool IsFiring() const { return bIsFiring; }
 
 	/** Sets whether or not this gun can be fired */
@@ -82,18 +85,22 @@ public:
 
 protected:
 	/** The skeletal mesh of the gun */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon|Components")
 	USkeletalMeshComponent* MeshComp;
 
 	/** The location of the muzzle */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Weapon|Components")
 	USceneComponent* MuzzleLocationComp;
 
 	/** Whether or not the player is holding down left click */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon|State")
 	bool bIsFiring;
 	
 	/** Determines if the player can fire */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon|State")
 	bool bCanFire;
+
+	/** The fire rate of the weapon */
+	UPROPERTY(BlueprintReadWrite, Category = "Weapon|Stats")
+	float FireRate = 0.11f;
 };
