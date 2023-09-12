@@ -1,19 +1,19 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/Abilities/BSGameplayAbility_FireGun.h"
+#include "AbilitySystem/Abilities/BSGA_FireGun.h"
 #include "AbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
 #include "Character/BSRecoilComponent.h"
 #include "Physics/BSCollisionChannels.h"
 #include "Kismet/KismetMathLibrary.h"
 
-UBSGameplayAbility_FireGun::UBSGameplayAbility_FireGun()
+UBSGA_FireGun::UBSGA_FireGun()
 {
 	FireHipMontage = nullptr;
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void UBSGameplayAbility_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void UBSGA_FireGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                                  const FGameplayEventData* TriggerEventData)
 {
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
@@ -23,7 +23,7 @@ void UBSGameplayAbility_FireGun::ActivateAbility(const FGameplayAbilitySpecHandl
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGameplayAbility_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void UBSGA_FireGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                             bool bReplicateEndAbility, bool bWasCancelled)
 {
 	if (IsEndAbilityValid(Handle, ActorInfo))
@@ -45,7 +45,7 @@ void UBSGameplayAbility_FireGun::EndAbility(const FGameplayAbilitySpecHandle Han
 	}
 }
 
-void UBSGameplayAbility_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+void UBSGA_FireGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
@@ -77,7 +77,7 @@ void UBSGameplayAbility_FireGun::OnTargetDataReadyCallback(const FGameplayAbilit
 	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 }
 
-void UBSGameplayAbility_FireGun::StartTargeting()
+void UBSGA_FireGun::StartTargeting()
 {
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
 	FScopedPredictionWindow ScopedPrediction(Component, CurrentActivationInfo.GetActivationPredictionKey());
@@ -89,10 +89,11 @@ void UBSGameplayAbility_FireGun::StartTargeting()
 	OnTargetDataReadyCallback(TargetData, FGameplayTag());
 }
 
-FHitResult UBSGameplayAbility_FireGun::SingleWeaponTrace() const
+FHitResult UBSGA_FireGun::SingleWeaponTrace() const
 {
 	FHitResult HitResult;
-	UBSRecoilComponent* RecoilComponent = Cast<UBSRecoilComponent>(GetBSCharacterFromActorInfo()->GetComponentByClass(UBSRecoilComponent::StaticClass()));
+	
+	UBSRecoilComponent* RecoilComponent = Cast<UBSRecoilComponent>(GetBSCharacterFromActorInfo()->GetRecoilComponent());
 	const FRotator CurrentRecoilRotation = RecoilComponent->GetCurrentRecoilRotation();
 	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(), CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
 	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, RecoilComponent->GetUpVector());

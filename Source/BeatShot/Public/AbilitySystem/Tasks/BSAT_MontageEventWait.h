@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "BSAbilityTask_MontageEventWait.generated.h"
+#include "BSAT_MontageEventWait.generated.h"
 
 class UBSAbilitySystemComponent;
 
@@ -18,13 +18,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FMontageEventWait, FGameplayTag, Ev
  * It is expected that each game will have a set of game-specific tasks to do what they want
  */
 UCLASS()
-class BEATSHOT_API UBSAbilityTask_MontageEventWait : public UAbilityTask
+class BEATSHOT_API UBSAT_MontageEventWait : public UAbilityTask
 {
 	GENERATED_BODY()
 	
 public:
 	// Constructor and overrides
-	UBSAbilityTask_MontageEventWait(const FObjectInitializer& ObjectInitializer);
+	UBSAT_MontageEventWait();
 
 	/**
 	* The Blueprint node for this task, PlayMontageAndWaitForEvent, has some black magic from the plugin that automagically calls Activate()
@@ -71,7 +71,7 @@ public:
 	 * @param AnimRootMotionTranslationScale Change to modify size of root motion or set to 0 to block it entirely
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAbilityTask_MontageEventWait* PlayMontageAndWaitForEvent(
+	static UBSAT_MontageEventWait* PlayMontageAndWaitForEvent(
 			UGameplayAbility* OwningAbility,
 			FName TaskInstanceName,
 			UAnimMontage* MontageToPlay,

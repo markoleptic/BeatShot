@@ -20,8 +20,7 @@ class BEATSHOT_API ABSPlayerState : public APlayerState, public IAbilitySystemIn
 
 public:
 	ABSPlayerState();
-
-	// Implement IAbilitySystemInterface
+	
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|PlayerState")
@@ -37,8 +36,4 @@ protected:
 
 	UPROPERTY()
 	const UBSAttributeSetBase* AttributeSetBase;
-
-	//FDelegateHandle HealthChangedDelegateHandle;
-	//FDelegateHandle MaxHealthChangedDelegateHandle;
-	//FDelegateHandle MoveSpeedChangedDelegateHandle;
 };

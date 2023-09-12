@@ -1,42 +1,45 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/Tasks/BSAbilityTask_TickTrace.h"
+#include "AbilitySystem/Tasks/BSAT_TickTrace.h"
 #include "AbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
 #include "Character/BSRecoilComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Physics/BSCollisionChannels.h"
 
-UBSAbilityTask_TickTrace::UBSAbilityTask_TickTrace(const FObjectInitializer& ObjectInitializer)
+UBSAT_TickTrace::UBSAT_TickTrace()
 {
 	bTickingTask = true;
 }
 
-void UBSAbilityTask_TickTrace::Activate()
+void UBSAT_TickTrace::Activate()
 {
 	if (!Ability)
 	{
 		return;
 	}
 	
-	EventHandle = AbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &UBSAbilityTask_TickTrace::OnGameplayEvent));
-	CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UBSAbilityTask_TickTrace::OnAbilityCancelled);
-	Super::Activate();
+	EventHandle = AbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &UBSAT_TickTrace::OnGameplayEvent));
+	CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UBSAT_TickTrace::OnAbilityCancelled);
 }
 
-void UBSAbilityTask_TickTrace::ExternalCancel()
+void UBSAT_TickTrace::ExternalCancel()
 {
 	OnAbilityCancelled();
 	Super::ExternalCancel();
 }
 
-FString UBSAbilityTask_TickTrace::GetDebugString() const
+FString UBSAT_TickTrace::GetDebugString() const
 {
 	return Super::GetDebugString();
 }
 
-void UBSAbilityTask_TickTrace::OnDestroy(bool AbilityEnded)
+void UBSAT_TickTrace::OnDestroy(bool AbilityEnded)
 {
+	if (AbilitySystemComponent.IsValid())
+	{
+		AbilitySystemComponent->RemoveGameplayEventTagContainerDelegate(EventTags, EventHandle);
+	}
 	if (Ability)
 	{
 		Ability->OnGameplayAbilityCancelled.Remove(CancelledHandle);
@@ -44,16 +47,16 @@ void UBSAbilityTask_TickTrace::OnDestroy(bool AbilityEnded)
 	Super::OnDestroy(AbilityEnded);
 }
 
-void UBSAbilityTask_TickTrace::TickTask(float DeltaTime)
+void UBSAT_TickTrace::TickTask(float DeltaTime)
 {
 	Super::TickTask(DeltaTime);
 	PerformSingleWeaponTrace();
 }
 
-UBSAbilityTask_TickTrace* UBSAbilityTask_TickTrace::SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName, ABSCharacter* Character, const FGameplayTagContainer EventTags,
+UBSAT_TickTrace* UBSAT_TickTrace::SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName, ABSCharacter* Character, const FGameplayTagContainer EventTags,
 	const float TraceDistance, const bool bStopWhenAbilityEnds)
 {
-	UBSAbilityTask_TickTrace* MyObj = NewAbilityTask<UBSAbilityTask_TickTrace>(OwningAbility, TaskInstanceName);
+	UBSAT_TickTrace* MyObj = NewAbilityTask<UBSAT_TickTrace>(OwningAbility, TaskInstanceName);
 	MyObj->Character = Character;
 	MyObj->EventTags = EventTags;
 	MyObj->TraceDistance = TraceDistance;
@@ -61,7 +64,7 @@ UBSAbilityTask_TickTrace* UBSAbilityTask_TickTrace::SingleWeaponTrace(UGameplayA
 	return MyObj;
 }
 
-void UBSAbilityTask_TickTrace::PerformSingleWeaponTrace()
+void UBSAT_TickTrace::PerformSingleWeaponTrace()
 {
 	if (!Character)
 	{
@@ -69,17 +72,17 @@ void UBSAbilityTask_TickTrace::PerformSingleWeaponTrace()
 	}
 
 	FHitResult HitResult;
-	UBSRecoilComponent* RecoilComponent = Cast<UBSRecoilComponent>(Character->GetComponentByClass(UBSRecoilComponent::StaticClass()));
+	UBSRecoilComponent* RecoilComponent = Cast<UBSRecoilComponent>(Character->GetRecoilComponent());
 	const FRotator CurrentRecoilRotation = RecoilComponent->GetCurrentRecoilRotation();
 	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(), CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
 	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, RecoilComponent->GetUpVector());
-	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * FVector(TraceDistance);
+	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * TraceDistance;
 	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true, /*IgnoreActor=*/ Character);
 	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace, BS_TraceChannel_Weapon, TraceParams);
 	OnTickTraceHit.Broadcast(HitResult);
 }
 
-void UBSAbilityTask_TickTrace::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
+void UBSAT_TickTrace::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
@@ -87,7 +90,7 @@ void UBSAbilityTask_TickTrace::OnGameplayEvent(FGameplayTag EventTag, const FGam
 	}
 }
 
-void UBSAbilityTask_TickTrace::OnAbilityCancelled()
+void UBSAT_TickTrace::OnAbilityCancelled()
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{

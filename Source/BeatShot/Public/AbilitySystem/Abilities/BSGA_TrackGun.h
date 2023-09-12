@@ -4,21 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "BSGameplayAbility.h"
-#include "BSGameplayAbility_TrackGun.generated.h"
+#include "BSGA_TrackGun.generated.h"
 
 class ABSCharacter;
-class UBSAbilityTask_TickTrace;
+class UBSAT_TickTrace;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlayerStopTrackingTarget);
 
 /** GameplayAbility that provides the user with constant tracking from their gun barrel, used in BeatTrack game modes */
 UCLASS()
-class BEATSHOT_API UBSGameplayAbility_TrackGun : public UBSGameplayAbility
+class BEATSHOT_API UBSGA_TrackGun : public UBSGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	UBSGameplayAbility_TrackGun();
+	UBSGA_TrackGun();
 	
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
@@ -45,7 +45,7 @@ protected:
 	float TraceDistance = 100000.f;
 
 private:
-	TObjectPtr<UBSAbilityTask_TickTrace> TickTraceTask;
+	TObjectPtr<UBSAT_TickTrace> TickTraceTask;
 	
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
 };

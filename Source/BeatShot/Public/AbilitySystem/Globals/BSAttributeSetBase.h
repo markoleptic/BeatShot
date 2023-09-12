@@ -67,6 +67,12 @@ protected:
 
 	UFUNCTION()
 	virtual void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth);
+	
+	UFUNCTION()
+	virtual void OnRep_HitDamage(const FGameplayAttributeData& OldHitDamage);
+
+	UFUNCTION()
+	virtual void OnRep_TrackingDamage(const FGameplayAttributeData& OldTrackingDamage);
 
 private:
 	/** Current Health, when 0 we expect owner to die unless prevented by an ability. Capped by MaxHealth. Positive changes can directly use this.
@@ -78,12 +84,12 @@ private:
 	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxHealth, Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 	
-	/* HitDamage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health. Temporary value that only exists on the Server. Not replicated. */
-	UPROPERTY(BlueprintReadOnly, Category = "Damage", Meta = (AllowPrivateAccess = true))
+	/* HitDamage is is the amount of Hit-Based damage a player can deal in a single damage execution */
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_HitDamage, Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData HitDamage;
 
-	/* TrackingDamage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health. Temporary value that only exists on the Server. Not replicated. */
-	UPROPERTY(BlueprintReadOnly, Category = "Damage", Meta = (AllowPrivateAccess = true))
+	/* TrackingDamage is is the amount of Tracking-Based damage a player can deal in a single damage execution  */
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_TrackingDamage,  Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData TrackingDamage;
 
 	/* TotalDamage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health. Temporary value that only exists on the Server. Not replicated. */

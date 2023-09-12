@@ -87,8 +87,10 @@ void UBSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, Health, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, MaxHealth, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, Health, COND_None, REPNOTIFY_OnChanged);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, MaxHealth, COND_None, REPNOTIFY_OnChanged);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, HitDamage, COND_None, REPNOTIFY_OnChanged);
+	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, TrackingDamage, COND_None, REPNOTIFY_OnChanged);
 }
 
 void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue,
@@ -113,4 +115,14 @@ void UBSAttributeSetBase::OnRep_Health(const FGameplayAttributeData& OldHealth)
 void UBSAttributeSetBase::OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth)
 {
 	GAMEPLAYATTRIBUTE_REPNOTIFY(UBSAttributeSetBase, MaxHealth, OldMaxHealth);
+}
+
+void UBSAttributeSetBase::OnRep_HitDamage(const FGameplayAttributeData& OldHitDamage)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBSAttributeSetBase, HitDamage, OldHitDamage);
+}
+
+void UBSAttributeSetBase::OnRep_TrackingDamage(const FGameplayAttributeData& OldTrackingDamage)
+{
+	GAMEPLAYATTRIBUTE_REPNOTIFY(UBSAttributeSetBase, TrackingDamage, OldTrackingDamage);
 }

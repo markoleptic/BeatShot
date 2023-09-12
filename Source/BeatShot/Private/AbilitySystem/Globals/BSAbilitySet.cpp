@@ -98,7 +98,6 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 		FGameplayAbilitySpec AbilitySpec(AbilityCDO, AbilityToGrant.AbilityLevel);
 		AbilitySpec.SourceObject = SourceObject;
 		AbilitySpec.DynamicAbilityTags.AddTag(AbilityToGrant.InputTag);
-
 		const FGameplayAbilitySpecHandle AbilitySpecHandle = ASC->GiveAbility(AbilitySpec);
 
 		if (OutGrantedHandles && AbilitySpecHandle.IsValid())

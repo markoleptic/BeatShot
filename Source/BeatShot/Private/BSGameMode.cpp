@@ -9,7 +9,7 @@
 #include "Target/TargetManager.h"
 #include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
-#include "AbilitySystem/Abilities/BSGameplayAbility_TrackGun.h"
+#include "AbilitySystem/Abilities/BSGA_TrackGun.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/SteamManager.h"
@@ -144,7 +144,7 @@ void ABSGameMode::InitializeGameMode()
 				{
 					if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
 					{
-						if (UBSGameplayAbility_TrackGun* TrackAbility = Cast<UBSGameplayAbility_TrackGun>(Ability))
+						if (UBSGA_TrackGun* TrackAbility = Cast<UBSGA_TrackGun>(Ability))
 						{
 							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
 							ASC->MarkAbilitySpecDirty(Spec);

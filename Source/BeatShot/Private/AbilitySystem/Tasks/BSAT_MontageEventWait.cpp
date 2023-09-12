@@ -1,17 +1,17 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/Tasks/BSAbilityTask_MontageEventWait.h"
+#include "AbilitySystem/Tasks/BSAT_MontageEventWait.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemGlobals.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 
-UBSAbilityTask_MontageEventWait::UBSAbilityTask_MontageEventWait(const FObjectInitializer& ObjectInitializer)
+UBSAT_MontageEventWait::UBSAT_MontageEventWait()
 {
 	Rate = 1.f;
 	bStopWhenAbilityEnds = true;
 }
 
-void UBSAbilityTask_MontageEventWait::Activate()
+void UBSAT_MontageEventWait::Activate()
 {
 	if (Ability == nullptr)
 	{
@@ -28,7 +28,7 @@ void UBSAbilityTask_MontageEventWait::Activate()
 		if (AnimInstance != nullptr)
 		{
 			// Bind to event callback
-			EventHandle = BSAbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &UBSAbilityTask_MontageEventWait::OnGameplayEvent));
+			EventHandle = BSAbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &UBSAT_MontageEventWait::OnGameplayEvent));
 
 			if (BSAbilitySystemComponent->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate, StartSection) > 0.f)
 			{
@@ -38,12 +38,12 @@ void UBSAbilityTask_MontageEventWait::Activate()
 					return;
 				}
 
-				CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UBSAbilityTask_MontageEventWait::OnAbilityCancelled);
+				CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UBSAT_MontageEventWait::OnAbilityCancelled);
 
-				BlendingOutDelegate.BindUObject(this, &UBSAbilityTask_MontageEventWait::OnMontageBlendingOut);
+				BlendingOutDelegate.BindUObject(this, &UBSAT_MontageEventWait::OnMontageBlendingOut);
 				AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
 
-				MontageEndedDelegate.BindUObject(this, &UBSAbilityTask_MontageEventWait::OnMontageEnded);
+				MontageEndedDelegate.BindUObject(this, &UBSAT_MontageEventWait::OnMontageEnded);
 				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
 
 				ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
@@ -76,14 +76,14 @@ void UBSAbilityTask_MontageEventWait::Activate()
 	SetWaitingOnAvatar();
 }
 
-void UBSAbilityTask_MontageEventWait::ExternalCancel()
+void UBSAT_MontageEventWait::ExternalCancel()
 {
 	check(AbilitySystemComponent.IsValid());
 	OnAbilityCancelled();
 	Super::ExternalCancel();
 }
 
-FString UBSAbilityTask_MontageEventWait::GetDebugString() const
+FString UBSAT_MontageEventWait::GetDebugString() const
 {
 	UAnimMontage* PlayingMontage = nullptr;
 	if (Ability)
@@ -98,7 +98,7 @@ FString UBSAbilityTask_MontageEventWait::GetDebugString() const
 	return FString::Printf(TEXT("PlayMontageAndWaitForEvent. MontageToPlay: %s  (Currently Playing): %s"), *GetNameSafe(MontageToPlay), *GetNameSafe(PlayingMontage));
 }
 
-void UBSAbilityTask_MontageEventWait::OnDestroy(bool AbilityEnded)
+void UBSAT_MontageEventWait::OnDestroy(bool AbilityEnded)
 {
 	// Note: Clearing montage end delegate isn't necessary since its not a multicast and will be cleared when the next montage plays.
 	// (If we are destroyed, it will detect this and not do anything)
@@ -122,12 +122,12 @@ void UBSAbilityTask_MontageEventWait::OnDestroy(bool AbilityEnded)
 	Super::OnDestroy(AbilityEnded);
 }
 
-UBSAbilityTask_MontageEventWait* UBSAbilityTask_MontageEventWait::PlayMontageAndWaitForEvent(UGameplayAbility* OwningAbility, FName TaskInstanceName, UAnimMontage* MontageToPlay,
+UBSAT_MontageEventWait* UBSAT_MontageEventWait::PlayMontageAndWaitForEvent(UGameplayAbility* OwningAbility, FName TaskInstanceName, UAnimMontage* MontageToPlay,
 	FGameplayTagContainer EventTags, float Rate, FName StartSection, bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale)
 {
 	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(Rate);
 
-	UBSAbilityTask_MontageEventWait* MyObj = NewAbilityTask<UBSAbilityTask_MontageEventWait>(OwningAbility, TaskInstanceName);
+	UBSAT_MontageEventWait* MyObj = NewAbilityTask<UBSAT_MontageEventWait>(OwningAbility, TaskInstanceName);
 	MyObj->MontageToPlay = MontageToPlay;
 	MyObj->EventTags = EventTags;
 	MyObj->Rate = Rate;
@@ -138,7 +138,7 @@ UBSAbilityTask_MontageEventWait* UBSAbilityTask_MontageEventWait::PlayMontageAnd
 	return MyObj;
 }
 
-bool UBSAbilityTask_MontageEventWait::StopPlayingMontage() const
+bool UBSAT_MontageEventWait::StopPlayingMontage() const
 {
 	const FGameplayAbilityActorInfo* ActorInfo = Ability->GetCurrentActorInfo();
 	if (!ActorInfo)
@@ -172,12 +172,12 @@ bool UBSAbilityTask_MontageEventWait::StopPlayingMontage() const
 	return false;
 }
 
-UBSAbilitySystemComponent* UBSAbilityTask_MontageEventWait::GetTargetASC() const
+UBSAbilitySystemComponent* UBSAT_MontageEventWait::GetTargetASC() const
 {
 	return Cast<UBSAbilitySystemComponent>(AbilitySystemComponent);
 }
 
-void UBSAbilityTask_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted) const
+void UBSAT_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bInterrupted) const
 {
 	if (Ability && Ability->GetCurrentMontage() == MontageToPlay)
 	{
@@ -212,7 +212,7 @@ void UBSAbilityTask_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage
 	}
 }
 
-void UBSAbilityTask_MontageEventWait::OnAbilityCancelled() const
+void UBSAT_MontageEventWait::OnAbilityCancelled() const
 {
 	if (StopPlayingMontage())
 	{
@@ -224,7 +224,7 @@ void UBSAbilityTask_MontageEventWait::OnAbilityCancelled() const
 	}
 }
 
-void UBSAbilityTask_MontageEventWait::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void UBSAT_MontageEventWait::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	EndTask();
 	if (!bInterrupted)
@@ -243,7 +243,7 @@ void UBSAbilityTask_MontageEventWait::OnMontageEnded(UAnimMontage* Montage, bool
 	}
 }
 
-void UBSAbilityTask_MontageEventWait::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
+void UBSAT_MontageEventWait::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{

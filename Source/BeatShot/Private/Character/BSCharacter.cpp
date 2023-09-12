@@ -23,7 +23,7 @@
 #include "Equipment/BSEquipmentManagerComponent.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "AbilitySystem/Globals/BSAbilitySet.h"
-#include "AbilitySystem/Abilities/BSGameplayAbility_FireGun.h"
+#include "AbilitySystem/Abilities/BSGA_FireGun.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "Inventory/BSInventoryItemDefinition.h"
 #include "Inventory/BSInventoryItemInstance.h"

@@ -58,10 +58,7 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().TrackingDamageDef, EvaluationParameters, TrackingDamage);
 	}
-	float TotalDamage = HitDamage + TrackingDamage;
-
-	// Add SetByCaller damage if it exists
-	//TotalDamage += FMath::Max<float>(Spec.GetSetByCallerMagnitude(FBSGameplayTags::Get().Data_Damage, true, -1.0f), 0.0f);
+	const float TotalDamage = HitDamage + TrackingDamage;
 
 	if (TotalDamage > 0.0f )
 	{

@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "BSGameplayAbility.h"
-#include "BSGameplayAbility_FireGun.generated.h"
+#include "BSGA_FireGun.generated.h"
 
 class ABSCharacter;
 
 /** GameplayAbility that provides the user with the ability to fire their gun */
 UCLASS()
-class BEATSHOT_API UBSGameplayAbility_FireGun : public UBSGameplayAbility
+class BEATSHOT_API UBSGA_FireGun : public UBSGameplayAbility
 {
 	GENERATED_BODY()
 
 public:
-	UBSGameplayAbility_FireGun();
+	UBSGA_FireGun();
 
 	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	                             const FGameplayEventData* TriggerEventData) override;

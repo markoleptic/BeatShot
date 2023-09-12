@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
-#include "BSAbilityTask_TickTrace.generated.h"
+#include "BSAT_TickTrace.generated.h"
 
 class UBSAbilitySystemComponent;
 class ABSCharacter;
@@ -15,13 +15,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTickTraceHit, const FHitResult&, 
 
 /** Task used to trace a line from the gun to where the owner is facing on tick */
 UCLASS()
-class BEATSHOT_API UBSAbilityTask_TickTrace : public UAbilityTask
+class BEATSHOT_API UBSAT_TickTrace : public UAbilityTask
 {
 	GENERATED_BODY()
 	
 public:
 	// Constructor and overrides
-	UBSAbilityTask_TickTrace(const FObjectInitializer& ObjectInitializer);
+	UBSAT_TickTrace();
 	
 	virtual void Activate() override;
 	virtual void ExternalCancel() override;
@@ -52,7 +52,7 @@ public:
 	FTickTraceDelegate EventReceived;
 	
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAbilityTask_TickTrace* SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName, ABSCharacter* Character, const FGameplayTagContainer EventTags,
+	static UBSAT_TickTrace* SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName, ABSCharacter* Character, const FGameplayTagContainer EventTags,
 		const float TraceDistance, const bool bStopWhenAbilityEnds);
 
 private:

@@ -1,16 +1,16 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
-#include "AbilitySystem/Abilities/BSGameplayAbility_TrackGun.h"
+#include "AbilitySystem/Abilities/BSGA_TrackGun.h"
 #include "AbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
-#include "AbilitySystem/Tasks/BSAbilityTask_TickTrace.h"
+#include "AbilitySystem/Tasks/BSAT_TickTrace.h"
 
-UBSGameplayAbility_TrackGun::UBSGameplayAbility_TrackGun()
+UBSGA_TrackGun::UBSGA_TrackGun()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void UBSGameplayAbility_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void UBSGA_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                                   const FGameplayEventData* TriggerEventData)
 {
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
@@ -20,15 +20,15 @@ void UBSGameplayAbility_TrackGun::ActivateAbility(const FGameplayAbilitySpecHand
 		this, &ThisClass::OnTargetDataReadyCallback);
 
 
-	TickTraceTask = UBSAbilityTask_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
-	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit);
+	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
+	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGA_TrackGun::OnTickTraceHitResultHit);
 	TickTraceTask->ReadyForActivation();
 	
 	
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGameplayAbility_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void UBSGA_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	bool bReplicateEndAbility, bool bWasCancelled)
 {
 	if (IsEndAbilityValid(Handle, ActorInfo))
@@ -51,7 +51,7 @@ void UBSGameplayAbility_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Ha
 	}
 }
 
-void UBSGameplayAbility_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
+void UBSGA_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec)
 {
 	if (TickTraceTask)
 	{
@@ -60,7 +60,7 @@ void UBSGameplayAbility_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInf
 	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
-void UBSGameplayAbility_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
@@ -92,7 +92,7 @@ void UBSGameplayAbility_TrackGun::OnTargetDataReadyCallback(const FGameplayAbili
 	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
 }
 
-void UBSGameplayAbility_TrackGun::OnTickTraceHitResultHit(const FHitResult& HitResult)
+void UBSGA_TrackGun::OnTickTraceHitResultHit(const FHitResult& HitResult)
 {
 	FGameplayAbilityTargetDataHandle TargetData;
 	FGameplayAbilityTargetData_SingleTargetHit* SingleTargetData = new FGameplayAbilityTargetData_SingleTargetHit();

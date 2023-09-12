@@ -367,6 +367,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	{
 		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid());
 		OnTargetActivated.Broadcast();
+		OnTargetActivated_AimBot.Broadcast(InTarget);
 		if (ReinforcementLearningComponent->IsActive() && SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
 		{
 			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnArea->GetIndex(), CurrentSpawnArea->GetIndex());

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
 #include "Components/TimelineComponent.h"
-#include "BSAbilityTask_AimToTarget.generated.h"
+#include "BSAT_AimToTarget.generated.h"
 
 class UBSAbilitySystemComponent;
 class ATarget;
@@ -16,13 +16,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAimToTargetDelegate, FGameplayTag,
 
 /** AimBot task */
 UCLASS()
-class BEATSHOT_API UBSAbilityTask_AimToTarget : public UAbilityTask
+class BEATSHOT_API UBSAT_AimToTarget : public UAbilityTask
 {
 	GENERATED_BODY()
 	
 public:
-	// Constructor and overrides
-	UBSAbilityTask_AimToTarget(const FObjectInitializer& ObjectInitializer);
+	UBSAT_AimToTarget();
 	
 	virtual void Activate() override;
 	virtual void ExternalCancel() override;
@@ -63,7 +62,7 @@ public:
 	 * @param bStopWhenAbilityEnds If true, this montage will be aborted if the ability ends normally. It is always stopped when the ability is explicitly cancelled
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAbilityTask_AimToTarget* AimBot(
+	static UBSAT_AimToTarget* AimBot(
 			UGameplayAbility* OwningAbility,
 			FName TaskInstanceName,
 			AController* Controller,
