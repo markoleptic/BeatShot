@@ -84,13 +84,14 @@ struct FBSGameplayTags
 	FGameplayTag Target_State;
 	FGameplayTag Target_State_PreGameModeStart;
 	FGameplayTag Target_State_Immune;
-	FGameplayTag Target_State_Immune_Tracking;
-	FGameplayTag Target_State_Immune_FireGun;
+	FGameplayTag Target_State_Immune_TrackingDamage;
+	FGameplayTag Target_State_Immune_HitDamage;
 	FGameplayTag Target_State_Grid;
 	FGameplayTag Target_State_Single;
 	FGameplayTag Target_State_Multi;
 	FGameplayTag Target_State_Tracking;
 	FGameplayTag Target_State_Charged;
+	FGameplayTag Target_ResetHealth;
 
 	FGameplayTag Cheat;
 	FGameplayTag Cheat_AimBot;

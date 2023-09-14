@@ -264,8 +264,6 @@ void USettingsMenuWidget_VideoAndSound::InitSettingCategoryWidget()
 void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
 {
 	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
-
-	UE_LOG(LogTemp, Display, TEXT("ResolutionScale: %f %f"), GameUserSettings->GetDefaultResolutionScale(), GameUserSettings->GetRecommendedResolutionScale());
 	
 	float CurrentScaleNormalized;
 	float CurrentScale;

@@ -7,14 +7,16 @@
 #include "Components/TimelineComponent.h"
 #include "BSAT_AimToTarget.generated.h"
 
+class UBSRecoilComponent;
+class UBSGameplayAbility;
 class UBSAbilitySystemComponent;
 class ATarget;
 class UCurveFloat;
 
 /** Delegate type used in the AimToTarget ability task */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FAimToTargetDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FAimToTargetDelegate);
 
-/** AimBot task */
+/** AimToTarget task */
 UCLASS()
 class BEATSHOT_API UBSAT_AimToTarget : public UAbilityTask
 {
@@ -25,7 +27,6 @@ public:
 	
 	virtual void Activate() override;
 	virtual void ExternalCancel() override;
-	virtual FString GetDebugString() const override;
 	virtual void OnDestroy(bool AbilityEnded) override;
 	virtual void TickTask(float DeltaTime) override;
 
@@ -33,72 +34,29 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FAimToTargetDelegate OnCompleted;
 
-	/** Broadcast if the task was interrupted */
-	UPROPERTY(BlueprintAssignable)
-	FAimToTargetDelegate OnInterrupted;
-
-	/** Broadcast if the ability task was explicitly cancelled by another ability */
+	/** Broadcast if the ability task was cancelled or interrupted */
 	UPROPERTY(BlueprintAssignable)
 	FAimToTargetDelegate OnCancelled;
 
-	/** Broadcast when a triggering gameplay events occurred */
-	UPROPERTY(BlueprintAssignable)
-	FAimToTargetDelegate EventReceived;
-
 	/**
-	 * Linearly interpolate towards the TargetToDestroy starting from Controller's current rotation when passed in, and wait for it to finish aiming. 
-	 * If a gameplay event happens that matches EventTags (or EventTags is empty), the EventReceived delegate will fire with a tag and event data.
-	 * If StopWhenAbilityEnds is true, this montage will be aborted if the ability ends normally. It is always stopped when the ability is explicitly cancelled.
-	 * On normal execution, OnBlendOut is called when the montage is blending out, and OnCompleted when it is completely done playing
-	 * OnInterrupted is called if another montage overwrites this, and OnCancelled is called if the ability or task is cancelled
+	 * Linearly interpolate towards the TargetToDestroy starting from Controller's current rotation when passed in, and wait for it to finish. 
+	 * Need to call ReadyForActivation if calling in C++
 	 *
 	 * @param OwningAbility The owning ability of this task
 	 * @param TaskInstanceName Task instance name
-	 * @param Controller The controller of the player to apply the aim to
 	 * @param RotationCurve The float curve to apply to the linear interpolation
 	 * @param TargetToDestroy The target to aim to
-	 * @param EventTags Any gameplay events matching this tag will activate the EventReceived callback. If empty, all events will trigger callback
-	 * @param TimelinePlaybackRate Speed of the interpolation
-	 * @param bStopWhenAbilityEnds If true, this montage will be aborted if the ability ends normally. It is always stopped when the ability is explicitly cancelled
+	 * @param TimelinePlaybackRate Speed of the interpolation, will use 1 / SpawnBeatDelay if not specified
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAT_AimToTarget* AimBot(
-			UGameplayAbility* OwningAbility,
+	static UBSAT_AimToTarget* AimToTarget(
+			UBSGameplayAbility* OwningAbility,
 			FName TaskInstanceName,
-			AController* Controller,
 			UCurveFloat* RotationCurve,
 			ATarget* TargetToDestroy,
-			FGameplayTagContainer EventTags,
-			float TimelinePlaybackRate,
-			bool bStopWhenAbilityEnds = true);
+			float TimelinePlaybackRate = -1.f);
 
 private:
-
-	UPROPERTY()
-	AController* Controller;
-	
-	UPROPERTY()
-	FGameplayTagContainer EventTags;
-
-	UPROPERTY()
-	UCurveFloat* RotationCurve;
-	
-	UPROPERTY()
-	ATarget* Target;
-
-	UPROPERTY()
-	float TimelinePlaybackRate;
-	
-	UPROPERTY()
-	bool bStopWhenAbilityEnds;
-	
-	/** Timeline for interpolating the rotation to aim at the target to destroy */
-	UPROPERTY()
-	FTimeline AimBotTimeline;
-
-	/** The rotation at the start of the rotation interpolation */
-	UPROPERTY()
-	FRotator StartRotation;
 	
 	/** Float interpolation function bound to AimBotTimeline, which sets the rotation of the camera */
 	UFUNCTION()
@@ -108,12 +66,27 @@ private:
 	UFUNCTION()
 	void OnTimelineCompleted();
 
-	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const;
-
+	/** Function called when owning ability is cancelled */
 	void OnAbilityCancelled();
-
-	void StopTimeline();
 	
+	UPROPERTY()
+	TObjectPtr<AController> Controller;
+
+	UPROPERTY()
+	TObjectPtr<UCurveFloat> RotationCurve;
+	
+	UPROPERTY()
+	TObjectPtr<ATarget> Target;
+	
+	/** Timeline for interpolating the rotation to aim at the target to destroy */
+	FTimeline AimBotTimeline;
+
+	/** Delegate bound to Ability's cancel */
 	FDelegateHandle CancelledHandle;
-	FDelegateHandle EventHandle;
+
+	/** Delegate executed on timeline tick */
+	FOnTimelineFloat OnTimelineFloat;
+
+	/** Delegate for when the timeline is completed */
+	FOnTimelineEvent OnTimelineEvent;
 };

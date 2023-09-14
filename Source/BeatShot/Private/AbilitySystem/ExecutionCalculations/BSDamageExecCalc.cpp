@@ -10,6 +10,7 @@ struct BSDamageStatics
 	FGameplayEffectAttributeCaptureDefinition HitDamageDef;
 	FGameplayEffectAttributeCaptureDefinition TrackingDamageDef;
 	FGameplayEffectAttributeCaptureDefinition TotalDamageDef;
+	//FGameplayEffectAttributeCaptureDefinition HealthDef;
 	
 	BSDamageStatics()
 	{
@@ -33,6 +34,7 @@ UBSDamageExecCalc::UBSDamageExecCalc()
 	RelevantAttributesToCapture.Add(DamageStatics().HitDamageDef);
 	RelevantAttributesToCapture.Add(DamageStatics().TrackingDamageDef);
 	RelevantAttributesToCapture.Add(DamageStatics().TotalDamageDef);
+	//RelevantAttributesToCapture.Add(DamageStatics().HealthDef);
 }
 
 void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
@@ -48,21 +50,23 @@ void UBSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	EvaluationParameters.TargetTags = TargetTags;
 
 	float HitDamage = 0.0f;
-	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_FireGun))
+	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_HitDamage))
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().HitDamageDef, EvaluationParameters, HitDamage);
 	}
 	
 	float TrackingDamage = 0.0f;
-	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_Tracking))
+	if (!TargetTags->HasTag(FBSGameplayTags::Get().Target_State_Immune_TrackingDamage))
 	{
 		ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(DamageStatics().TrackingDamageDef, EvaluationParameters, TrackingDamage);
 	}
+	
 	const float TotalDamage = HitDamage + TrackingDamage;
 
-	if (TotalDamage > 0.0f )
+	if (TotalDamage > 0.0f)
 	{
 		// Set the Target's total damage meta attribute, this gets turned into - health on the target
 		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UBSAttributeSetBase::GetTotalDamageAttribute(), EGameplayModOp::Additive, TotalDamage));
+		//OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UBSAttributeSetBase::GetHealthAttribute(), EGameplayModOp::Additive, -TotalDamage));
 	}
 }

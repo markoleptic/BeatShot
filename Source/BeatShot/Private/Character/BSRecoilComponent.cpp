@@ -56,7 +56,7 @@ void UBSRecoilComponent::Recoil(const float FireRate)
 		ShotsFired = 0;
 		RecoilTimeline.PlayFromStart();
 	}
-	UE_LOG(LogTemp, Display, TEXT("Shots fired: %d"), ShotsFired);
+
 	bShouldKickback = true;
 	KickbackAlpha = 0.f;
 }

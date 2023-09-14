@@ -163,16 +163,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
 	bool IsEnabled_AimBot() const { return bEnabled_AimBot; }
 	
-	/** Sets whether or not to enable AimBot */
+	/** Sets whether or not to enable AimToTarget */
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
 	void SetEnabled_AimBot(const bool bEnable) { bEnabled_AimBot = bEnable; }
 
 	/** Bound to DefaultGameMode's OnTargetActivated delegate, executes when a target has been spawned and adds the spawned target to the ActiveTargetLocations_AimBot queue. */
 	UFUNCTION()
 	void OnTargetSpawned_AimBot(ATarget* SpawnedTarget);
-
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|Character")
-	float GetAimBotPlaybackSpeed() const;
 	
 	UPROPERTY(BlueprintAssignable, Category = "BeatShot|Character")
 	FOnTargetAddedToQueue OnTargetAddedToQueue;
@@ -181,7 +178,7 @@ private:
 	/** A queue of target locations that have not yet been destroyed */
 	TQueue<ATarget*> ActiveTargets_AimBot;
 
-	/** Whether the AimBot is active */
+	/** Whether the AimToTarget is active */
 	bool bEnabled_AimBot;
 
 #pragma endregion

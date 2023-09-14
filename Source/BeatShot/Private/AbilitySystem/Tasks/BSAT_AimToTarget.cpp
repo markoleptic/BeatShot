@@ -1,7 +1,6 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 #include "AbilitySystem/Tasks/BSAT_AimToTarget.h"
-#include "AbilitySystemGlobals.h"
 #include "Target/Target.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -11,33 +10,39 @@ UBSAT_AimToTarget::UBSAT_AimToTarget()
 	bTickingTask = true;
 }
 
-void UBSAT_AimToTarget::TickTask(float DeltaTime)
+UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbility, FName TaskInstanceName, UCurveFloat* RotationCurve, ATarget* TargetToDestroy, float TimelinePlaybackRate)
 {
-	Super::TickTask(DeltaTime);
-	AimBotTimeline.TickTimeline(DeltaTime);
+	UBSAT_AimToTarget* MyObj = NewAbilityTask<UBSAT_AimToTarget>(OwningAbility, TaskInstanceName);
+	
+	MyObj->Controller = OwningAbility->GetControllerFromActorInfo();
+	MyObj->Target = TargetToDestroy;
+	MyObj->RotationCurve = RotationCurve;
+
+	MyObj->OnTimelineFloat.BindUFunction(MyObj, FName("OnTimelineTick"));
+	MyObj->OnTimelineEvent.BindUFunction(MyObj, FName("OnTimelineCompleted"));
+
+	MyObj->AimBotTimeline.AddInterpFloat(RotationCurve, MyObj->OnTimelineFloat);
+	MyObj->AimBotTimeline.SetTimelineFinishedFunc(MyObj->OnTimelineEvent);
+	MyObj->AimBotTimeline.SetPlayRate(TimelinePlaybackRate);
+	
+	MyObj->CancelledHandle = OwningAbility->OnGameplayAbilityCancelled.AddUObject(MyObj, &UBSAT_AimToTarget::OnAbilityCancelled);
+	
+	return MyObj;
 }
 
 void UBSAT_AimToTarget::Activate()
 {
-	if (!Ability)
-	{
-		return;
-	}
-	
-	FOnTimelineFloat OnTimelineFloat;
-	OnTimelineFloat.BindUFunction(this, FName("OnTimelineTick"));
-	FOnTimelineEvent OnTimelineEvent;
-	OnTimelineEvent.BindUFunction(this, FName("OnTimelineCompleted"));
-	AimBotTimeline.SetTimelineFinishedFunc(OnTimelineEvent);
-	AimBotTimeline.AddInterpFloat(RotationCurve, OnTimelineFloat);
-	
-	EventHandle = AbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &UBSAT_AimToTarget::OnGameplayEvent));
-	CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UBSAT_AimToTarget::OnAbilityCancelled);
-	
-	AimBotTimeline.SetPlayRate(TimelinePlaybackRate);
 	AimBotTimeline.PlayFromStart();
-	
-	SetWaitingOnAvatar();
+	Super::Activate();
+}
+
+void UBSAT_AimToTarget::TickTask(float DeltaTime)
+{
+	Super::TickTask(DeltaTime);
+	if (TaskState == EGameplayTaskState::Active)
+	{
+		AimBotTimeline.TickTimeline(DeltaTime);
+	}
 }
 
 void UBSAT_AimToTarget::ExternalCancel()
@@ -46,61 +51,32 @@ void UBSAT_AimToTarget::ExternalCancel()
 	Super::ExternalCancel();
 }
 
-FString UBSAT_AimToTarget::GetDebugString() const
-{
-	return Super::GetDebugString();
-}
-
 void UBSAT_AimToTarget::OnDestroy(bool AbilityEnded)
 {
+	AimBotTimeline.Stop();
+
 	if (Ability)
 	{
 		Ability->OnGameplayAbilityCancelled.Remove(CancelledHandle);
-		if (AbilityEnded && bStopWhenAbilityEnds)
-		{
-			StopTimeline();
-		}
 	}
-	Super::OnDestroy(AbilityEnded);
-}
 
-UBSAT_AimToTarget* UBSAT_AimToTarget::AimBot(UGameplayAbility* OwningAbility,
-			FName TaskInstanceName,
-			AController* Controller,
-			UCurveFloat* RotationCurve,
-			ATarget* TargetToDestroy,
-			FGameplayTagContainer EventTags,
-			float TimelinePlaybackRate,
-			bool bStopWhenAbilityEnds)
-{
-	UBSAT_AimToTarget* MyObj = NewAbilityTask<UBSAT_AimToTarget>(OwningAbility, TaskInstanceName);
-	MyObj->Controller = Controller;
-	MyObj->EventTags = EventTags;
-	MyObj->Target = TargetToDestroy;
-	MyObj->TimelinePlaybackRate = TimelinePlaybackRate;
-	MyObj->RotationCurve = RotationCurve;
-	MyObj->bStopWhenAbilityEnds = bStopWhenAbilityEnds;
-	MyObj->StartRotation = Controller->GetControlRotation();
-	MyObj->StartRotation.Normalize();
-	
-	return MyObj;
+	OnCompleted.Clear();
+	OnCancelled.Clear();
+
+	Super::OnDestroy(AbilityEnded);
 }
 
 void UBSAT_AimToTarget::OnAbilityCancelled()
 {
-	/*StopTimeline();
-	if (ShouldBroadcastAbilityTaskDelegates())
-	{
-		OnCancelled.Broadcast(FGameplayTag(), FGameplayEventData());
-	}*/
-}
+	AimBotTimeline.Stop();
 
-void UBSAT_AimToTarget::OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const
-{
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
-		EventReceived.Broadcast(FGameplayTag(), FGameplayEventData());
+		OnCancelled.Broadcast();
 	}
+
+	OnCompleted.Clear();
+	OnCancelled.Clear();
 }
 
 void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
@@ -108,19 +84,14 @@ void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
 	FVector Loc;
 	FRotator Rot;
 	Controller->GetActorEyesViewPoint(Loc, Rot);
-	Controller->SetControlRotation(UKismetMathLibrary::RLerp(StartRotation, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, true));
+	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, false));
 }
 
 void UBSAT_AimToTarget::OnTimelineCompleted()
 {
 	if (ShouldBroadcastAbilityTaskDelegates())
 	{
-		OnCompleted.Broadcast(FGameplayTag(), FGameplayEventData());
+		OnCompleted.Broadcast();
 	}
 	EndTask();
-}
-
-void UBSAT_AimToTarget::StopTimeline()
-{
-	AimBotTimeline.Stop();
 }

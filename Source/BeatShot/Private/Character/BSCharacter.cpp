@@ -99,11 +99,6 @@ ATarget* ABSCharacter::PeekActiveTargets()
 	return nullptr;
 }
 
-float ABSCharacter::GetAimBotPlaybackSpeed() const
-{
-	return 1.f / Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig().TargetConfig.TargetSpawnCD;
-}
-
 UBSEquipmentManagerComponent* ABSCharacter::GetEquipmentManager() const
 {
 	return EquipmentManagerComponent.Get();

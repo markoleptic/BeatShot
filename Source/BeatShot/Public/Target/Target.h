@@ -56,16 +56,19 @@ protected:
 	UNiagaraSystem* TargetExplosion;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	TSubclassOf<UGameplayEffect> TargetImmunity;
+	TSubclassOf<UGameplayEffect> GE_TargetImmunity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	TSubclassOf<UGameplayEffect> FireGunImmunity;
+	TSubclassOf<UGameplayEffect> GE_HitImmunity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	TSubclassOf<UGameplayEffect> TrackingImmunity;
+	TSubclassOf<UGameplayEffect> GE_TrackingImmunity;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
-	TSubclassOf<UGameplayEffect> ExpirationHealthPenalty;
+	TSubclassOf<UGameplayEffect> GE_ExpirationHealthPenalty;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
+	TSubclassOf<UGameplayEffect> GE_ResetHealth;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Target Properties")
 	UCurveFloat* StartToPeakCurve;
@@ -102,11 +105,11 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
 	
-	/** Applies the TargetImmunity gameplay effect to the target */
-	void ApplyImmunityEffect() const;
+	/** Applies the GE_TargetImmunity gameplay effect to the target */
+	void ApplyImmunityEffect();
 
-	/** Applies the TargetImmunity gameplay effect to the target */
-	void RemoveImmunityEffect() const;
+	/** Applies the GE_TargetImmunity gameplay effect to the target */
+	void RemoveImmunityEffect();
 	
 	/** Called when a gameplay effect is blocked because of immunity */
 	void OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect);
@@ -135,8 +138,11 @@ protected:
 	UFUNCTION()
 	virtual void OnTargetMaxLifeSpanExpired();
 	
-	/** Apply damage to self, for example when the DamageableWindow timer expires */
+	/** Apply damage to self using a GE, for example when the DamageableWindow timer expires */
 	void DamageSelf();
+
+	/** Reset the health of the target using a GE */
+	void ResetHealth();
 
 public:
 	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */
@@ -235,11 +241,14 @@ public:
 	bool HasTargetBeenActivatedBefore() const;
 
 	/** Whether or not the target is immune to all damage */
-	bool IsTargetImmune() const;
+	bool IsImmuneToDamage() const;
+
+	/** Whether or not the target is immune to hit damage */
+	bool IsImmuneToHitDamage() const;
 
 	/** Whether or not the target is immune to tracking damage */
 	UFUNCTION(BlueprintPure)
-	bool IsTargetImmuneToTracking() const;
+	bool IsImmuneToTrackingDamage() const;
 
 	/** Returns the velocity / speed of the ProjectileMovementComponent (unit direction vector) */
 	FVector GetTargetDirection() const;
@@ -270,6 +279,9 @@ public:
 
 	/** Returns whether or not the last direction change was horizontally */
 	bool GetLastDirectionChangeHorizontal() const { return bLastDirectionChangeHorizontal; }
+
+	/** Mainly used so BSAT_AimBot can access SpawnBeatDelay easily */
+	float GetSpawnBeatDelay() const;
 	
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
@@ -332,4 +344,8 @@ protected:
 
 	/** Whether or not the target has ever been activated */
 	bool bHasBeenActivated;
+
+	FActiveGameplayEffectHandle ActiveGE_TargetImmunity;
+	FActiveGameplayEffectHandle ActiveGE_HitImmunity;
+	FActiveGameplayEffectHandle ActiveGE_TrackingImmunity;
 };

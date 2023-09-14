@@ -144,10 +144,9 @@ void ATarget::PostInitializeComponents()
 			}
 			else
 			{
-				
 				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), Config.MaxHealth);
 			}
-			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), Config.ExpirationHealthPenalty);
+			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), Config.BasePlayerHitDamage);
 			// TODO: temporarily use BasePlayerTrackingDamage
 			ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), Config.BasePlayerTrackingDamage);
 		}
@@ -155,15 +154,15 @@ void ATarget::PostInitializeComponents()
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATarget::OnHealthChanged);
 		ASC->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
-
+		
 		switch (Config.TargetDamageType)
 		{
 		case ETargetDamageType::None:
 		case ETargetDamageType::Hit:
-			ASC->ApplyGameplayEffectToSelf(TrackingImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Tracking:
-			ASC->ApplyGameplayEffectToSelf(FireGunImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Combined:
 			break;
@@ -298,26 +297,31 @@ UAbilitySystemComponent* ATarget::GetAbilitySystemComponent() const
 	return AbilitySystemComponent;
 }
 
-void ATarget::ApplyImmunityEffect() const
+void ATarget::ApplyImmunityEffect()
 {
-	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	UAbilitySystemComponent* Comp = GetAbilitySystemComponent();
+	if (!Comp || IsImmuneToDamage())
 	{
-		if (!IsTargetImmune())
-		{
-			Comp->ApplyGameplayEffectToSelf(TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
-		}
+		return;
+	}
+
+	const FActiveGameplayEffectHandle Handle = Comp->ApplyGameplayEffectToSelf(GE_TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
+	if (Handle.WasSuccessfullyApplied())
+	{
+		ActiveGE_TargetImmunity = Handle;
 	}
 }
 
-void ATarget::RemoveImmunityEffect() const
+void ATarget::RemoveImmunityEffect()
 {
-	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	UAbilitySystemComponent* Comp = GetAbilitySystemComponent();
+	if (!Comp || !IsImmuneToDamage())
 	{
-		if (IsTargetImmune())
-		{
-			Comp->RemoveActiveGameplayEffectBySourceEffect(TargetImmunity, Comp);
-		}
+		return;
 	}
+	
+	Comp->RemoveActiveGameplayEffect(ActiveGE_TargetImmunity);
+	ActiveGE_TargetImmunity.Invalidate();
 }
 
 void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect)
@@ -359,14 +363,18 @@ void ATarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
 
 void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
 {
+	if (NewValue > OldValue)
+	{
+		return;
+	}
 	const float TimeAlive = ActorInstigator == this ? -1.f : GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
 	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(), abs(OldValue - NewValue));
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
 	HandleDeactivation(ActorInstigator == this, NewValue);
 	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);
-	bCanBeReactivated = true;
 	HandleDestruction(ActorInstigator == this, NewValue);
+	bCanBeReactivated = true;
 }
 
 void ATarget::OnTargetMaxLifeSpanExpired()
@@ -380,7 +388,19 @@ void ATarget::DamageSelf()
 	{
 		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
 		EffectContextHandle.Get()->AddInstigator(this, this);
-		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(ExpirationHealthPenalty, 1.f, EffectContextHandle);
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f, EffectContextHandle);
+		FGameplayEffectSpec* Spec = Handle.Data.Get();
+		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
+	}
+}
+
+void ATarget::ResetHealth()
+{
+	if (UAbilitySystemComponent* Comp = GetAbilitySystemComponent())
+	{
+		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
+		EffectContextHandle.Get()->AddInstigator(this, this);
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ResetHealth, 1.f, EffectContextHandle);
 		FGameplayEffectSpec* Spec = Handle.Data.Get();
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
@@ -415,8 +435,8 @@ void ATarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
 	if (ShouldDeactivate(bExpired, CurrentHealth))
 	{
 		StopAllTimelines();
-		HandleDeactivationResponses(bExpired);
 		TargetScale_Deactivation = GetTargetScale_Current();
+		HandleDeactivationResponses(bExpired);
 	}
 }
 
@@ -450,7 +470,7 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	}
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ToggleImmunity))
 	{
-		IsTargetImmune() ? RemoveImmunityEffect() : ApplyImmunityEffect();
+		IsImmuneToDamage() ? RemoveImmunityEffect() : ApplyImmunityEffect();
 	}
 
 	// Scale
@@ -526,6 +546,11 @@ void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
 	{
 		Destroy();
 	}
+	else if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) &&
+		CurrentHealth <= 0.f)
+	{
+		ResetHealth();
+	}
 }
 
 bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) const
@@ -583,13 +608,13 @@ void ATarget::StopAllTimelines()
 	{
 		StartToPeakTimeline.Stop();
 	}
-	if (ShrinkQuickAndGrowSlowTimeline.IsPlaying())
-	{
-		ShrinkQuickAndGrowSlowTimeline.Stop();
-	}
 	if (PeakToEndTimeline.IsPlaying())
 	{
 		PeakToEndTimeline.Stop();
+	}
+	if (ShrinkQuickAndGrowSlowTimeline.IsPlaying())
+	{
+		ShrinkQuickAndGrowSlowTimeline.Stop();
 	}
 }
 
@@ -714,15 +739,19 @@ bool ATarget::HasTargetBeenActivatedBefore() const
 	return bHasBeenActivated;
 }
 
-bool ATarget::IsTargetImmune() const
+bool ATarget::IsImmuneToDamage() const
 {
-	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune);
+	return ActiveGE_TargetImmunity.IsValid();
 }
 
-bool ATarget::IsTargetImmuneToTracking() const
+bool ATarget::IsImmuneToHitDamage() const
 {
-	return AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune) ||
-		AbilitySystemComponent->HasExactMatchingGameplayTag(FBSGameplayTags::Get().Target_State_Immune_Tracking);
+	return ActiveGE_TargetImmunity.IsValid() || ActiveGE_HitImmunity.IsValid();
+}
+
+bool ATarget::IsImmuneToTrackingDamage() const
+{
+	return ActiveGE_TargetImmunity.IsValid() || ActiveGE_TrackingImmunity.IsValid();
 }
 
 FVector ATarget::GetTargetDirection() const
@@ -792,6 +821,11 @@ FVector ATarget::GetTargetVelocity() const
 		return ProjectileMovementComponent->Velocity;
 	}
 	return FVector(0.f);
+}
+
+float ATarget::GetSpawnBeatDelay() const
+{
+	return 1.f / Config.TargetSpawnCD;
 }
 
 

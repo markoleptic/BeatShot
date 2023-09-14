@@ -31,11 +31,11 @@ void ATargetPreview::Init(const FBS_TargetConfig& InTargetConfig)
 
 void ATargetPreview::Destroyed()
 {
-	Super::Destroyed();
 	if (TargetWidget)
 	{
 		TargetWidget->RemoveFromParent();
 	}
+	Super::Destroyed();
 }
 
 void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation)
@@ -91,6 +91,10 @@ void ATargetPreview::OnSimulatePlayerDestroyingTimerExpired()
 
 void ATargetPreview::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
 {
+	if (NewValue > OldValue)
+	{
+		UE_LOG(LogTemp, Display, TEXT("NewHelath grather"));
+	}
 	FTimerManager& TimerManager = GetWorldTimerManager();
 	float TimeAlive;
 	if (TimerManager.IsTimerActive(DamageableWindow))

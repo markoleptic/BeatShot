@@ -6,6 +6,8 @@
 #include "BSGameplayAbility.h"
 #include "BSGA_AimBot.generated.h"
 
+class UBSGA_FireGun;
+
 UCLASS()
 class BEATSHOT_API UBSGA_AimBot : public UBSGameplayAbility
 {
@@ -18,4 +20,26 @@ public:
 								 const FGameplayEventData* TriggerEventData) override;
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 							bool bWasCancelled) override;
+
+	UFUNCTION()
+	void OnTargetAddedToQueue();
+
+	/** The Aim Bot will ignore targets with a location greater than a positive value or less than a negative value */
+	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
+	FVector IgnoreStartLocation = FVector::ZeroVector;
+
+	/** The interpolation curve to use during AimToTarget task */
+	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
+	UCurveFloat* SmoothingCurve;
+
+	/** The ability to try and activate to destroy the target */
+	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
+	TSubclassOf<UBSGameplayAbility> GA_FireGun;
+
+private:
+	UFUNCTION()
+	void OnAimToTargetCancelled();
+
+	UFUNCTION()
+	void OnAimToTargetCompleted();
 };

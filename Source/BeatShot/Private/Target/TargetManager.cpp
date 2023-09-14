@@ -247,7 +247,7 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 	}
 	for (const TObjectPtr<ATarget> Target : GetManagedTargets())
 	{
-		if (Target && !Target->IsTargetImmuneToTracking())
+		if (Target && !Target->IsImmuneToTrackingDamage())
 		{
 			Target->SetTargetColor(GetBSConfig()->TargetConfig.EndColor);
 		}
@@ -342,7 +342,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	}
 	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ToggleImmunity))
 	{
-		InTarget->IsTargetImmune() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
+		InTarget->IsImmuneToDamage() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
 	}
 	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
@@ -832,7 +832,7 @@ bool ATargetManager::TrackingTargetIsDamageable() const
 	}
 	if (GetManagedTargets().FindByPredicate([] (const TObjectPtr<ATarget> target)
 	{
-		return !target->IsTargetImmuneToTracking();
+		return !target->IsImmuneToTrackingDamage();
 	}))
 	{
 		return true;
