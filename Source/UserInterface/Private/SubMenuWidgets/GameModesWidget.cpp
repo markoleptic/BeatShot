@@ -19,7 +19,6 @@
 #include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_PropertyView.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
-#include "BSWidgetInterface.h"
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Preview.h"
 
 using namespace Constants;
@@ -801,63 +800,12 @@ void UGameModesWidget::SynchronizeStartWidgets()
 	const FStartWidgetProperties FromProperties = From->GetStartWidgetProperties();
 	const FStartWidgetProperties ToProperties = To->GetStartWidgetProperties();
 	
-	const FBSConfig* FromConfig = From->GetBSConfig();
-	const FBSConfig* ToConfig = To->GetBSConfig();
-
-	const FString FromString = ExportCustomGameMode(*FromConfig);
-	const FString ToString = ExportCustomGameMode(*ToConfig);
-	const FString ThisString = ExportCustomGameMode(GameModeConfig);
-
-	if (FromString != ToString)
-	{
-		UE_LOG(LogTemp, Display, TEXT("FromConfig != ToConfig"));
-	}
-
-	if (FromString != ThisString)
-	{
-		UE_LOG(LogTemp, Display, TEXT("FromConfig != GameModeConfig"));
-	}
-	
 	if (FromProperties == ToProperties)
 	{
-		UE_LOG(LogTemp, Display, TEXT("FromProperties == ToProperties"));
 		To->UpdateOptionsFromConfig();
 		return;
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("FromProperties != ToProperties"));
-
-	const FString FromUseTemplate = FromProperties.bUseTemplateChecked ? "True" : "False";
-	const FString ToUseTemplate = ToProperties.bUseTemplateChecked ? "True" : "False";
-
-	if (FromUseTemplate != ToUseTemplate)
-	{
-		UE_LOG(LogTemp, Display, TEXT("bUseTemplateChecked: %s -> %s"), *FromUseTemplate, *ToUseTemplate);
-	}
-	if (FromProperties.NewCustomGameModeName != ToProperties.NewCustomGameModeName)
-	{
-		UE_LOG(LogTemp, Display, TEXT("NewCustomGameModeName: %s -> %s"), *FromProperties.NewCustomGameModeName, *ToProperties.NewCustomGameModeName);
-	}
-	if (FromProperties.DefiningConfig.CustomGameModeName != ToProperties.DefiningConfig.CustomGameModeName)
-	{
-		UE_LOG(LogTemp, Display, TEXT("CustomGameModeName: %s -> %s"), *FromProperties.DefiningConfig.CustomGameModeName, *ToProperties.DefiningConfig.CustomGameModeName);
-	}
-	if (FromProperties.DefiningConfig.GameModeType != ToProperties.DefiningConfig.GameModeType)
-	{
-		UE_LOG(LogTemp, Display, TEXT("GameModeType: %s -> %s"), *IBSWidgetInterface::GetStringFromEnum(FromProperties.DefiningConfig.GameModeType),
-			*IBSWidgetInterface::GetStringFromEnum(ToProperties.DefiningConfig.GameModeType));
-	}
-	if (FromProperties.DefiningConfig.BaseGameMode != ToProperties.DefiningConfig.BaseGameMode)
-	{
-		UE_LOG(LogTemp, Display, TEXT("BaseGameMode: %s -> %s"), *IBSWidgetInterface::GetStringFromEnum(FromProperties.DefiningConfig.BaseGameMode),
-			*IBSWidgetInterface::GetStringFromEnum(ToProperties.DefiningConfig.BaseGameMode));
-	}
-	if (FromProperties.DefiningConfig.Difficulty != ToProperties.DefiningConfig.Difficulty)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Difficulty: %s -> %s"), *IBSWidgetInterface::GetStringFromEnum(FromProperties.DefiningConfig.Difficulty),
-			*IBSWidgetInterface::GetStringFromEnum(ToProperties.DefiningConfig.Difficulty));
-	}
-	
 	To->SetStartWidgetProperties(FromProperties);
 	To->UpdateOptionsFromConfig();
 }

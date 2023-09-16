@@ -58,7 +58,6 @@ void UBSCarouselNavBar::HandleButtonClicked(const UBSButton* AssociatedButton)
 	{
 		LinkedCarousel->EndAutoScrolling();
 		const uint8 EnumValue = AssociatedButton->GetEnumValue();
-		UE_LOG(LogTemp, Display, TEXT("Enum Value: %d"), EnumValue);
 		LinkedCarousel->SetActiveWidgetIndex(EnumValue);
 	}
 }

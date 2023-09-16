@@ -59,35 +59,14 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-
+	
+	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
 }
 
 void UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
 {
-	TArray<FTooltipData> UpdateArray;
-	bool bRequestComponentUpdate = false;
-	uint32 NumWarnings = 0;
-	uint32 NumCautions = 0;
-
-	// CheckBoxOption_EnableAI
-	if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned)
-	{
-		if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
-		{
-			NumCautions++;
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution);
-		}
-	}
-	bRequestComponentUpdate = UpdateWarningTooltips(CheckBoxOption_ApplyVelocityWhenSpawned, UpdateArray) || bRequestComponentUpdate;
-	UpdateArray.Empty();
-
-	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
-	
-	if (bRequestComponentUpdate)
-	{
-		RequestComponentUpdate.Broadcast();
-	}
+	Super::UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
@@ -115,6 +94,14 @@ void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
 	
 	UpdateBrushColors();
 	
+}
+
+void UCustomGameModesWidget_Spawning::SetupWarningTooltipCallbacks()
+{
+	CheckBoxOption_ApplyVelocityWhenSpawned->AddWarningTooltipData(FTooltipData("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.bApplyVelocityWhenSpawned && BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None;
+	});
 }
 
 void UCustomGameModesWidget_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy)

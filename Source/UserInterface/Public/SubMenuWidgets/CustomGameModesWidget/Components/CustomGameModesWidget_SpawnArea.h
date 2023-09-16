@@ -23,6 +23,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	void SetupWarningTooltipCallbacks();
 	
 	/** Updates options that depend on the value selection of InTargetDistributionPolicy */
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& InTargetDistributionPolicy);
@@ -63,26 +64,4 @@ protected:
 	
 	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
-	
-	int32 GetMaxAllowedNumHorizontalTargets() const;
-	int32 GetMaxAllowedNumVerticalTargets() const;
-	float GetMaxAllowedTargetScale() const;
-	float GetMaxAllowedHorizontalSpacing() const;
-	float GetMaxAllowedVerticalSpacing() const;
-	float GetMinRequiredHorizontalSpread() const;
-	float GetMinRequiredVerticalSpread() const;
-	
-	/** Width of spawn area, which is StaticHorizontalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
-	float GetHorizontalSpread() const;
-
-	/** Height of spawn area, which is StaticVerticalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
-	float GetVerticalSpread() const;
-
-	/** MaxSpawnedTargetScale * SphereTargetDiameter */
-	float GetMaxTargetDiameter() const;
-
-	FDynamicTooltipData OptionWarning_NumHorizontalTargets;
-	FDynamicTooltipData OptionWarning_NumVerticalTargets;
-	FDynamicTooltipData OptionWarning_HorizontalSpacing;
-	FDynamicTooltipData OptionWarning_VerticalSpacing;
 };

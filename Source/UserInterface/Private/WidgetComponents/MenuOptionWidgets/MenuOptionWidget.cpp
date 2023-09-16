@@ -10,6 +10,7 @@
 #include "Components/TextBlock.h"
 #include "WidgetComponents/TooltipImage.h"
 
+
 void UMenuOptionWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
@@ -102,103 +103,6 @@ UTooltipImage* UMenuOptionWidget::GetTooltipImage() const
 	return DescriptionTooltip;
 }
 
-FTooltipData UMenuOptionWidget::FindOrAddTooltip(const FString& InTooltipStringTableKey,  const ETooltipImageType& TooltipType, const FText& OptionalAdditionalText)
-{
-	FTooltipData* Found = GetAllTooltipData().FindByPredicate([&InTooltipStringTableKey, &TooltipType] (const FTooltipData& TooltipData)
-	{
-		return TooltipData.TooltipStringTableKey.Equals(InTooltipStringTableKey) && TooltipData.TooltipType == TooltipType;
-	});
-	if (!Found)
-	{
-		UTooltipImage* NewTooltipImage;
-		switch (TooltipType) {
-		case ETooltipImageType::Caution:
-			NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipCautionImageClass);
-			break;
-		case ETooltipImageType::Warning:
-			NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
-			break;
-		case ETooltipImageType::Default:
-		default:
-			NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
-			break;
-		}
-		UHorizontalBoxSlot* HorizontalBoxSlot = TooltipBox->AddChildToHorizontalBox(NewTooltipImage);
-		HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
-		HorizontalBoxSlot->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
-		HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
-		
-		FTooltipData TooltipData;
-		TooltipData.TooltipImage = NewTooltipImage;
-		TooltipData.AdditionalTooltipText = OptionalAdditionalText;
-		TooltipData.TooltipStringTableKey = InTooltipStringTableKey;
-		TooltipData.TooltipType = TooltipType;
-		return TooltipData;
-	}
-	return *Found;
-}
-
-TArray<FString> UMenuOptionWidget::GetTooltipWarningImageKeys() const
-{
-	TArray<FString> KeyArray;
-	for (const UPanelSlot* PanelSlot: TooltipBox->GetSlots())
-	{
-		if (UTooltipImage* TooltipImage = Cast<UTooltipImage>(PanelSlot->Content))
-		{
-			if (TooltipImage->GetTooltipData()->TooltipType != ETooltipImageType::Default)
-			{
-				KeyArray.Add(TooltipImage->GetTooltipData()->TooltipStringTableKey);
-			}
-		}
-	}
-	return KeyArray;
-}
-
-TArray<FTooltipData> UMenuOptionWidget::GetAllTooltipData() const
-{
-	TArray<FTooltipData> TooltipWarningValues;
-	for (const UPanelSlot* PanelSlot: TooltipBox->GetSlots())
-	{
-		if (UTooltipImage* TooltipImage = Cast<UTooltipImage>(PanelSlot->Content))
-		{
-			if (TooltipImage->GetTooltipData()->TooltipType != ETooltipImageType::Default)
-			{
-				TooltipWarningValues.Add(*TooltipImage->GetTooltipData());
-			}
-		}
-	}
-	return TooltipWarningValues;
-}
-
-void UMenuOptionWidget::RemoveTooltipWarningImage(const FString& InTooltipStringTableKey)
-{
-	for (const UPanelSlot* PanelSlot: TooltipBox->GetSlots())
-	{
-		if (UTooltipImage* TooltipImage = Cast<UTooltipImage>(PanelSlot->Content))
-		{
-			if (TooltipImage->GetTooltipData()->TooltipType != ETooltipImageType::Default)
-			{
-				if (TooltipImage->GetTooltipData()->TooltipStringTableKey.Equals(InTooltipStringTableKey))
-				{
-					TooltipImage->RemoveFromParent();
-					return;
-				}
-			}
-		}
-	}
-}
-
-void UMenuOptionWidget::RemoveAllTooltipWarningImages()
-{
-	for (const FTooltipData& Value : GetAllTooltipData())
-	{
-		if (Value.TooltipImage.IsValid())
-		{
-			Value.TooltipImage->RemoveFromParent();
-		}
-	}
-}
-
 bool UMenuOptionWidget::GetIsLocked() const
 {
 	if (CheckBox_Lock)
@@ -227,4 +131,104 @@ void UMenuOptionWidget::OnCheckBox_LockStateChanged(const bool bChecked)
 	{
 		OnLockStateChanged.Broadcast(this, bChecked);
 	}
+}
+
+FUpdateTooltipState& UMenuOptionWidget::AddWarningTooltipData(const FTooltipData& InTooltipData)
+{
+	const int32 Index = WarningTooltipData.Add(InTooltipData);
+	return WarningTooltipData[Index].UpdateTooltipState;
+}
+
+FUpdateDynamicTooltipState& UMenuOptionWidget::AddDynamicWarningTooltipData(const FTooltipData& InTooltipData, const FString& FallbackStringTableKey, const float InMin, const int32 InPrecision)
+{
+	const int32 Index = WarningTooltipData.Add(InTooltipData);
+	WarningTooltipData[Index].SetDynamicData(InMin, FallbackStringTableKey, InPrecision);
+	return WarningTooltipData[Index].UpdateDynamicTooltipState;
+}
+
+void UMenuOptionWidget::ConstructTooltipWarningImageIfNeeded(FTooltipData& InTooltipData)
+{
+	if (InTooltipData.TooltipImage.IsValid())
+	{
+		return;
+	}
+
+	UTooltipImage* NewTooltipImage;
+	switch (InTooltipData.TooltipType) {
+	case ETooltipImageType::Caution:
+		NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipCautionImageClass);
+		break;
+	case ETooltipImageType::Warning:
+		NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+		break;
+	case ETooltipImageType::Default:
+	default:
+		NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+		break;
+	}
+	UHorizontalBoxSlot* HorizontalBoxSlot = TooltipBox->AddChildToHorizontalBox(NewTooltipImage);
+	HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
+	HorizontalBoxSlot->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
+	HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
+	
+	InTooltipData.TooltipImage = NewTooltipImage;
+}
+
+void UMenuOptionWidget::UpdateWarningTooltips()
+{
+	for (FTooltipData& Data : GetTooltipWarningData())
+	{
+		if (Data.UpdateTooltipState.IsBound())
+		{
+			Data.SetShouldShowTooltipImage(Data.UpdateTooltipState.Execute());
+		}
+		else
+		{
+			Data.SetShouldShowTooltipImage(false);
+		}
+	}
+}
+
+void UMenuOptionWidget::UpdateDynamicWarningTooltips()
+{
+	for (FTooltipData& Data : GetTooltipWarningData())
+	{
+		if (Data.IsDynamic() && Data.UpdateDynamicTooltipState.IsBound())
+		{
+			const FDynamicTooltipState State = Data.UpdateDynamicTooltipState.Execute();
+			Data.UpdateDynamicTooltipText(State.Actual, State.MaxAllowed);
+		}
+	}
+}
+
+void UMenuOptionWidget::UpdateAllWarningTooltips()
+{
+	UpdateWarningTooltips();
+	UpdateDynamicWarningTooltips();
+}
+
+int32 UMenuOptionWidget::GetNumberOfWarnings()
+{
+	int32 Num = 0;
+	for (FTooltipData& Data : WarningTooltipData)
+	{
+		if (Data.TooltipType == ETooltipImageType::Warning && Data.TooltipImage.IsValid() && Data.TooltipImage->IsVisible())
+		{
+			Num++;
+		}
+	}
+	return Num;
+}
+
+int32 UMenuOptionWidget::GetNumberOfCautions()
+{
+	int32 Num = 0;
+	for (FTooltipData& Data : WarningTooltipData)
+	{
+		if (Data.TooltipType == ETooltipImageType::Caution && Data.TooltipImage.IsValid() && Data.TooltipImage->IsVisible())
+		{
+			Num++;
+		}
+	}
+	return Num;
 }

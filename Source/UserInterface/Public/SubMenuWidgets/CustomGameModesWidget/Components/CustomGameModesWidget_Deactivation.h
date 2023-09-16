@@ -21,6 +21,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	void SetupWarningTooltipCallbacks();
 
 	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */
 	void UpdateDependentOptions_TargetDeactivationConditions(const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses);

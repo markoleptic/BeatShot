@@ -24,6 +24,10 @@ UCLASS()
 class USERINTERFACE_API UMenuOptionWidget : public UUserWidget
 {
 	GENERATED_BODY()
+	
+protected:
+	virtual void NativePreConstruct() override;
+	virtual void NativeConstruct() override;
 
 public:
 	/** Sets the left hand side indent, with each level increasing by 50 */
@@ -40,27 +44,12 @@ public:
 
 	/** Sets the TooltipImage Text */
 	void SetTooltipText(const FText& InText);
-
+	
 	/** Returns the TooltipImage */
 	UTooltipImage* GetTooltipImage() const;
 
 	/** Returns the TooltipImage Text */
 	FText GetTooltipImageText() const { return DescriptionTooltipText; }
-
-	/** Returns the FTooltipData corresponding to the StringTableKey, or creates one if not found */
-	FTooltipData FindOrAddTooltip(const FString& InTooltipStringTableKey, const ETooltipImageType& TooltipType, const FText& OptionalAdditionalText = FText());
-
-	/** Returns the StringTableKeys that correspond to each TooltipWarningImage */
-	TArray<FString> GetTooltipWarningImageKeys() const;
-
-	/** Returns the values of the WarningTooltips map */
-	TArray<FTooltipData> GetAllTooltipData() const;
-
-	/** Removes the TooltipWarningImage corresponding to the StringTableKey */
-	void RemoveTooltipWarningImage(const FString& InTooltipStringTableKey);
-
-	/** Removes all TooltipWarningImages */
-	void RemoveAllTooltipWarningImages();
 
 	/** Returns true if locked */
 	bool GetIsLocked() const;
@@ -73,10 +62,34 @@ public:
 	
 	/** Broadcasts the new state of the lock and the index */
 	FOnLockStateChanged OnLockStateChanged;
+	
+	/** Adds a Warning Tooltip to TooltipData array. Returns update delegate */
+	FUpdateTooltipState& AddWarningTooltipData(const FTooltipData& InTooltipData);
+
+	/** Adds a Dynamic Warning Tooltip to TooltipData array. Returns update delegate */
+	FUpdateDynamicTooltipState& AddDynamicWarningTooltipData(const FTooltipData& InTooltipData, const FString& FallbackStringTableKey, const float InMin, const int32 InPrecision = 0);
+
+	/** Calls UpdateWarningTooltips and UpdateDynamicWarningTooltips, which update the TooltipData by executing delegates on each FTooltipData struct */
+	void UpdateAllWarningTooltips();
+
+	/** Creates a TooltipImage if the TooltipImage in InTooltipData is not valid. Adds the widget to TooltipBox */
+	void ConstructTooltipWarningImageIfNeeded(FTooltipData& InTooltipData);
+
+	/** Returns by reference TooltipData array. This contains tooltip info for all Caution or Warning Tooltips */
+	TArray<FTooltipData>& GetTooltipWarningData() { return WarningTooltipData; }
+	
+	/** Returns number of visible Warning Tooltips */
+	int32 GetNumberOfWarnings();
+	
+	/** Returns number of visible Caution Tooltips */
+	int32 GetNumberOfCautions();
 
 protected:
-	virtual void NativePreConstruct() override;
-	virtual void NativeConstruct() override;
+	/** Executes UpdateTooltipState on each Warning Tooltip in TooltipData array. Calls SetShouldShowTooltipImage on result */
+	void UpdateWarningTooltips();
+	
+	/** Executes UpdateDynamicTooltipState on each Warning Tooltip in TooltipData array. Calls SetShouldShowTooltipImage on result */
+	void UpdateDynamicWarningTooltips();
 	
 	UFUNCTION()
 	void OnCheckBox_LockStateChanged(const bool bChecked);
@@ -121,8 +134,7 @@ protected:
 	/** Text to show on the tooltip */
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget|Tooltip")
 	FText DescriptionTooltipText = FText();
-	
-	/** A map of StringTableKeys to ToolTipWarningImages */
-	//UPROPERTY()
-	//TMap<FString, FTooltipData> WarningTooltips;
+
+	/** Contains tooltip info for all Caution or Warning Tooltips. Size of array never changes after NativeConstruct has been called. */
+	TArray<FTooltipData> WarningTooltipData;
 };

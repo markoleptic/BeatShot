@@ -17,22 +17,27 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 	
 	WidgetTree->ForEachWidget([this] (UWidget* Widget)
 	{
-		if (const UMenuOptionWidget* MenuOption = Cast<UMenuOptionWidget>(Widget))
+		if (UMenuOptionWidget* MenuOption = Cast<UMenuOptionWidget>(Widget))
 		{
 			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
 			SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
+			MenuOptionWidgets.Add(MenuOption);
 		}
 	});
-}
-
-void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
-{
 }
 
 void UCustomGameModesWidgetComponent::NativeDestruct()
 {
 	Super::NativeDestruct();
 	BSConfig = nullptr;
+}
+
+void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
+{
+	if (!UpdateWarningTooltips())
+	{
+		RequestComponentUpdate.Broadcast();
+	}
 }
 
 void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
@@ -129,62 +134,114 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableText
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateWarningTooltips(UMenuOptionWidget* Widget, const TArray<FTooltipData>& NewValues)
+bool UCustomGameModesWidgetComponent::UpdateWarningTooltips()
 {
-	const TArray<FTooltipData> OldValues = Widget->GetAllTooltipData();
-	
-	if (NewValues.IsEmpty())
+	bool bAllClean = true;
+	for (const TObjectPtr<UMenuOptionWidget> Widget : MenuOptionWidgets)
 	{
-		if (OldValues.IsEmpty())
+		Widget->UpdateAllWarningTooltips();
+		TArray<FTooltipData>& TooltipData = Widget->GetTooltipWarningData();
+		for (FTooltipData& Data : TooltipData)
 		{
-			return false;
-		}
-		if (!OldValues.IsEmpty())
-		{
-			Widget->RemoveAllTooltipWarningImages();
-			return true;
-		}
-	}
-
-	if (NewValues.Num() == OldValues.Num())
-	{
-		bool bAllSame = true;
-		for (int i = 0; i < NewValues.Num(); i++ )
-		{
-			if (NewValues[i] == OldValues[i])
+			if (Data.IsDirty())
 			{
-				continue;
+				bAllClean = false;
+				if (Data.ShouldShowTooltipImage())
+				{
+					Widget->ConstructTooltipWarningImageIfNeeded(Data);
+					SetupTooltip(Data);
+				}
+				else
+				{
+					Data.RemoveTooltipImage();
+				}
+				Data.SetIsClean(true);
 			}
-			bAllSame = false;
-		}
-		if (bAllSame)
-		{
-			return false;
 		}
 	}
-	
-	// TooltipImages currently showing but shouldn't be
-	TArray<FTooltipData> ValuesToRemove = OldValues.FilterByPredicate([&NewValues] (const FTooltipData& Value)
-	{
-		return !NewValues.Contains(Value);
-	});
-	
-	// Remove TooltipImages currently showing but shouldn't be
-	for (const FTooltipData& ValueToRemove : ValuesToRemove)
-	{
-		Widget->RemoveTooltipWarningImage(ValueToRemove.TooltipStringTableKey);
-	}
-	
-	// Update the rest
-	for (const FTooltipData& Value : NewValues)
-	{
-		FTooltipData TooltipWarningValue = Widget->FindOrAddTooltip(Value.TooltipStringTableKey, Value.TooltipType, Value.AdditionalTooltipText);
-		if (TooltipWarningValue.TooltipImage.IsValid())
-		{
-			SetupTooltip(TooltipWarningValue.TooltipImage.Get(), TooltipWarningValue);
-		}
-	}
-	
-	return true;
+	UpdateCustomGameModeCategoryInfo();
+	return bAllClean;
 }
+
+void UCustomGameModesWidgetComponent::UpdateCustomGameModeCategoryInfo()
+{
+	int32 NumWarnings = 0;
+	int32 NumCautions = 0;
+	for (const TObjectPtr<UMenuOptionWidget> Widget : MenuOptionWidgets)
+	{
+		NumWarnings += Widget->GetNumberOfWarnings();
+		NumCautions += Widget->GetNumberOfCautions();
+	}
+	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
+}
+
+float UCustomGameModesWidgetComponent::GetHorizontalSpread() const
+{
+	return MaxValue_HorizontalSpread + BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+}
+
+float UCustomGameModesWidgetComponent::GetVerticalSpread() const
+{
+	return MaxValue_VerticalSpread + BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+}
+
+float UCustomGameModesWidgetComponent::GetMinRequiredHorizontalSpread() const
+{
+	const float TotalTargetWidth = GetMaxTargetDiameter() * BSConfig->GridConfig.NumHorizontalGridTargets;
+	return BSConfig->GridConfig.GridSpacing.X * (BSConfig->GridConfig.NumHorizontalGridTargets - 1) + TotalTargetWidth;
+}
+
+float UCustomGameModesWidgetComponent::GetMinRequiredVerticalSpread() const
+{
+	const float TotalTargetHeight = GetMaxTargetDiameter() * BSConfig->GridConfig.NumVerticalGridTargets;
+	return BSConfig->GridConfig.GridSpacing.Y * (BSConfig->GridConfig.NumVerticalGridTargets - 1) + TotalTargetHeight;
+}
+
+float UCustomGameModesWidgetComponent::GetMaxTargetDiameter() const
+{
+	return BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+}
+
+int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumHorizontalTargets() const
+{
+	// HorizontalSpread = MaxTargetSize * NumHorizontalTargets + HorizontalSpacing * (NumHorizontalTargets - 1)
+	return (GetHorizontalSpread() + BSConfig->GridConfig.GridSpacing.X) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.X);
+}
+
+int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumVerticalTargets() const
+{
+	return (GetVerticalSpread() + BSConfig->GridConfig.GridSpacing.Y) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.Y);
+}
+
+float UCustomGameModesWidgetComponent::GetMaxAllowedHorizontalSpacing() const
+{
+	const float TotalTargetWidth = GetMaxTargetDiameter() * BSConfig->GridConfig.NumHorizontalGridTargets;
+	return (GetHorizontalSpread() - TotalTargetWidth) / (BSConfig->GridConfig.NumHorizontalGridTargets - 1);
+}
+
+float UCustomGameModesWidgetComponent::GetMaxAllowedVerticalSpacing() const
+{
+	const float TotalTargetHeight = GetMaxTargetDiameter() * BSConfig->GridConfig.NumVerticalGridTargets;
+	return (GetVerticalSpread() - TotalTargetHeight) / (BSConfig->GridConfig.NumVerticalGridTargets - 1);
+}
+
+float UCustomGameModesWidgetComponent::GetMaxAllowedTargetScale() const
+{
+	const float MaxAllowedHorizontal = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.GridSpacing.X * BSConfig->GridConfig.NumHorizontalGridTargets + BSConfig->GridConfig.GridSpacing.X) /
+		(SphereTargetDiameter * BSConfig->GridConfig.NumHorizontalGridTargets);
+	
+	const float MaxAllowedVertical = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.GridSpacing.Y * BSConfig->GridConfig.NumVerticalGridTargets + BSConfig->GridConfig.GridSpacing.Y) /
+		(SphereTargetDiameter * BSConfig->GridConfig.NumVerticalGridTargets);
+	
+	
+	if (MaxAllowedVertical < MaxAllowedHorizontal)
+	{
+		return MaxAllowedVertical;
+	}
+	return MaxAllowedHorizontal;
+}
+
+
+
+
 

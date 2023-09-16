@@ -19,6 +19,45 @@ enum class ETooltipImageType : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETooltipImageType, ETooltipImageType::Default, ETooltipImageType::Warning);
 
+/** Data structure to pass the actual value and the max allowed value */
+USTRUCT()
+struct FDynamicTooltipState
+{
+	GENERATED_BODY()
+
+	float Actual;
+	float MaxAllowed;
+	
+	FDynamicTooltipState()
+	{
+		Actual = -1.f;
+		MaxAllowed = -1.f;
+	}
+	FDynamicTooltipState(const float InActual, const float InMax)
+	{
+		Actual = InActual;
+		MaxAllowed = InMax;
+	}
+};
+
+DECLARE_DELEGATE_RetVal(bool, FUpdateTooltipState);
+DECLARE_DELEGATE_RetVal(FDynamicTooltipState, FUpdateDynamicTooltipState);
+
+/** Data structure for dynamic tooltip text */
+USTRUCT()
+struct FDynamicTooltipData
+{
+	GENERATED_BODY()
+
+	float MinAllowed;
+	int32 Precision = 0;
+	FText FallbackText;
+	FString TryChangeString;
+
+	FDynamicTooltipData();
+	FDynamicTooltipData(const float InMin, const FString& InFallbackStringTableKey);
+};
+
 /** Contains data for the tooltip of a widget */
 USTRUCT(BlueprintType)
 struct FTooltipData
@@ -43,37 +82,79 @@ struct FTooltipData
 
 	/** Additional text to append to TooltipText */
 	FText AdditionalTooltipText;
+
+	/** Optional delegate that can be used to call SetShouldShowTooltipImage by executing it */
+	FUpdateTooltipState UpdateTooltipState;
+
+	/** Optional delegate that can be used to call UpdateDynamicTooltipText by executing it */
+	FUpdateDynamicTooltipState UpdateDynamicTooltipState;
 	
-	FTooltipData()
-	{
-		TooltipImage = TWeakObjectPtr<UTooltipImage>(nullptr);
-		TooltipText = FText();
-		bAllowTextWrap = false;
-		TooltipType = ETooltipImageType::Default;
-		TooltipStringTableKey = FString();
-		AdditionalTooltipText = FText();
-	}
+	FTooltipData();
+	FTooltipData(const FText& InTooltipText, const bool InbAllowTextWrap);
+	FTooltipData(const FString& InStringTableKey, const ETooltipImageType& InType, const FText& InAdditionalTooltipText = FText());
 
-	FTooltipData(const FText& InTooltipText, const bool InbAllowTextWrap)
-	{
-		TooltipImage = TWeakObjectPtr<UTooltipImage>(nullptr);
-		TooltipText = InTooltipText;
-		bAllowTextWrap = InbAllowTextWrap;
-		TooltipType = ETooltipImageType::Default;
-		TooltipStringTableKey = FString();
-		AdditionalTooltipText = FText();
-	}
+	/** Returns true if SetDynamicData was called */
+	bool IsDynamic() const { return bIsDynamic; }
+	
+	/** Returns true if the TooltipImage should be shown */
+	bool ShouldShowTooltipImage() const { return bShouldShowTooltipImage; }
 
-	FTooltipData(const FString& InStringTableKey, const ETooltipImageType& InType, const FText& InAdditionalTooltipText = FText())
-	{
-		TooltipImage = TWeakObjectPtr<UTooltipImage>(nullptr);
-		TooltipText = FText();
-		bAllowTextWrap = false;
-		TooltipType = InType;
-		TooltipStringTableKey = InStringTableKey;
-		AdditionalTooltipText = InAdditionalTooltipText;
-	}
+	/** Returns true if TooltipStringTableKey is not empty */
+	bool HasStringTableKey() const { return !TooltipStringTableKey.IsEmpty(); }
 
+	/** Returns true if the third construct was used */
+	bool HasBeenInitialized() const { return bHasBeenInitialized; }
+
+	/** Returns true if the TooltipText == FallbackText */
+	bool IsUsingFallbackText() const { return TooltipText.EqualTo(DynamicTooltipData.FallbackText); }
+
+	/** Sets up the DynamicTooltipData struct. Used for tooltips that should display a single float value */
+	void SetDynamicData(const float InMin, const FString& InFallbackStringTableKey, const int32 InPrecision = 0);
+	
+	/** Updates TooltipText by getting the TooltipText from a string table using TooltipStringTableKey and appending any AdditionalTooltipText */
+	void UpdateTooltipData(const FTooltipData& InUpdateData);
+
+	/** Sets up the value of bShouldShowTooltipImage. Sets bIsDirty to true if changed */
+	void SetShouldShowTooltipImage(const bool bShow);
+
+	/** Updates TooltipText if Actual > MaxAllowed. Sets bIsDirty to true if changed */
+	void UpdateDynamicTooltipText(const float InActual, const float InMaxAllowed);
+	
+	/** Returns true if SetShouldShowTooltipImage changed the value of bShouldShowTooltipImage, or if UpdateDynamicTooltipText changed the TooltipText */
+	bool IsDirty() const;
+
+	/** Sets up the value of bIsDirty with the opposite */
+	void SetIsClean(const bool bClean) { bIsDirty = !bClean; }
+
+	/** Removes the TooltipImage from parent and clears the TooltipImage pointer */
+	void RemoveTooltipImage();
+
+private:
+	/** Internal initialize */
+	void InitTooltipText();
+	
+	/** Optional Data structure for dynamic tooltip text */
+	FDynamicTooltipData DynamicTooltipData;
+	
+	/** Whether or not the tooltip has been initialized */
+	bool bHasBeenInitialized;
+	
+	/** Whether or not SetDynamicData was called */
+	bool bIsDynamic;
+
+	/** Whether or not the TooltipImage should be shown */
+	bool bShouldShowTooltipImage;
+
+	/** Last value of InActual for a dynamic tooltip */
+	float LastActual;
+
+	/** Last value of InMaxAllowed for a dynamic tooltip */
+	float LastMaxAllowed;
+
+	/** Whether or not the bShouldShowTooltipImage or TooltipText were updated but the tooltip still requires action */
+	bool bIsDirty;
+
+public:
 	FORCEINLINE bool operator==(const FTooltipData& Other) const
 	{
 		if (!TooltipStringTableKey.Equals(Other.TooltipStringTableKey))
@@ -89,56 +170,7 @@ struct FTooltipData
 	
 	friend FORCEINLINE uint32 GetTypeHash(const FTooltipData& Value)
 	{
-		return HashCombine(HashCombine(GetTypeHash(Value.TooltipStringTableKey), GetTypeHash(Value.TooltipText.ToString())), GetTypeHash(Value.TooltipType));
-	}
-};
-
-/** Data structure for dynamic tooltip text */
-USTRUCT()
-struct FDynamicTooltipData
-{
-	GENERATED_BODY()
-
-	float MinAllowed;
-	FString TooltipTextKey;
-	FText FallbackText;
-	FString TryChangeString;
-	ETooltipImageType TooltipType;
-
-	FDynamicTooltipData()
-	{
-		MinAllowed = 0.f;
-		FallbackText = FText();
-		TooltipTextKey = FString();
-		TryChangeString = "Try lowering this value to <= ";
-		TooltipType = ETooltipImageType::Default;
-	}
-
-	FDynamicTooltipData(const float InMin, const FString& InKey, const FText& InFallback, const ETooltipImageType& InTooltipImageType)
-	{
-		MinAllowed = InMin;
-		TooltipTextKey = InKey;
-		FallbackText = InFallback;
-		TryChangeString = "Try lowering this value to <= ";
-		TooltipType = InTooltipImageType;
-	}
-
-	// Adds an element to InTooltipData and returns true if Actual > MaxAllowed, otherwise no change to array and returns false
-	bool UpdateArray(TArray<FTooltipData>& InTooltipData, const float InActual, const float InMaxAllowed) const
-	{
-		if (InActual > InMaxAllowed)
-		{
-			if (InMaxAllowed < MinAllowed)
-			{
-				InTooltipData.Emplace(TooltipTextKey, TooltipType, FallbackText);
-			}
-			else
-			{
-				InTooltipData.Emplace(TooltipTextKey, TooltipType, FText::FromString(TryChangeString + FString::FromInt(InMaxAllowed) + "."));
-			}
-			return true;
-		}
-		return false;
+		return HashCombine(GetTypeHash(Value.TooltipStringTableKey), GetTypeHash(Value.TooltipType));
 	}
 };
 
@@ -156,7 +188,7 @@ public:
 	UFUNCTION()
 	void OnTooltipImageHoveredCallback();
 
-	/** Sets the TooltipData that is accessed when the tooltip is hovered over */
+	/** Constructs the FTooltipData and sets the TooltipText that is accessed when the tooltip is hovered over */
 	void SetupTooltipImage(const FText& InText, const bool bAllowTextWrap = false);
 
 	/** Sets the TooltipData that is accessed when the tooltip is hovered over */

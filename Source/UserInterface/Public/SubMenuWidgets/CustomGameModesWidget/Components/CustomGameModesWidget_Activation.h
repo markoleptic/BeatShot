@@ -23,6 +23,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
+	void SetupWarningTooltipCallbacks();
 	
 	/** Updates options that depend on the value selection of ConstantNumTargetsToActivateAtOnce */
 	void UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(const bool bInConstant);

@@ -74,40 +74,14 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 	SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-
+	
+	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
 }
 
 void UCustomGameModesWidget_Activation::UpdateAllOptionsValid()
 {
-	TArray<FTooltipData> UpdateArray;
-	bool bRequestComponentUpdate = false;
-	uint32 NumWarnings = 0;
-	uint32 NumCautions = 0;
-
-	// ComboBoxOption_TargetActivationResponses
-	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
-	{
-		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity))
-		{
-			NumCautions++;
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution);
-		}
-		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection))
-		{
-			NumCautions++;
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None", ETooltipImageType::Caution);
-		}
-	}
-	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_TargetActivationResponses, UpdateArray) || bRequestComponentUpdate;
-	UpdateArray.Empty();
-	
-	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
-	
-	if (bRequestComponentUpdate)
-	{
-		RequestComponentUpdate.Broadcast();
-	}
+	Super::UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
@@ -138,6 +112,18 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	
 	UpdateBrushColors();
+}
+
+void UCustomGameModesWidget_Activation::SetupWarningTooltipCallbacks()
+{
+	ComboBoxOption_TargetActivationResponses->AddWarningTooltipData(FTooltipData("Invalid_Velocity_MTDM_None", ETooltipImageType::Caution)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None && BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity);
+	});
+	ComboBoxOption_TargetActivationResponses->AddWarningTooltipData(FTooltipData("Invalid_Direction_MTDM_None", ETooltipImageType::Caution)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None && BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection);
+	});
 }
 
 void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(const bool bInConstant)

@@ -137,41 +137,26 @@ void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& 
 	}
 }
 
-void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, FTooltipData& InTooltipData)
+void IBSWidgetInterface::SetupTooltip(const FTooltipData& InTooltipData)
 {
-	if (!TooltipImage)
+	if (!InTooltipData.TooltipImage.IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid TooltipImage."));
+		return;
 	}
 	if (InTooltipData.TooltipStringTableKey.IsEmpty() && InTooltipData.TooltipText.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetParent()->GetParent()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *InTooltipData.TooltipImage->GetParent()->GetParent()->GetName());
 	}
-
-	// Set the TooltipData Tooltip Text
-	if (InTooltipData.TooltipText.IsEmpty())
-	{
-		if (!InTooltipData.AdditionalTooltipText.IsEmpty())
-		{
-			InTooltipData.TooltipText = FText::Join(FText::FromString(" "), GetTooltipTextFromKey(InTooltipData.TooltipStringTableKey), InTooltipData.AdditionalTooltipText);
-		}
-		else
-		{
-			InTooltipData.TooltipText = GetTooltipTextFromKey(InTooltipData.TooltipStringTableKey);
-		}
-	}
-
-	// Update pointer
-	if (!InTooltipData.TooltipImage.IsValid())
-	{
-		InTooltipData.TooltipImage = TooltipImage;
-	}
-
-	// Pass Tooltip Data to Tooltip Image
-	TooltipImage->SetTooltipData(InTooltipData);
 	
-	if (!TooltipImage->GetTooltipHoveredDelegate().IsBound())
+	//if (!InTooltipData.HasBeenInitialized())
+	//{
+		// Pass Tooltip Data to Tooltip Image
+		InTooltipData.TooltipImage->SetTooltipData(InTooltipData);
+	//}
+	
+	if (!InTooltipData.TooltipImage->GetTooltipHoveredDelegate().IsBound())
 	{
-		TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
+		InTooltipData.TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
 	}
 }

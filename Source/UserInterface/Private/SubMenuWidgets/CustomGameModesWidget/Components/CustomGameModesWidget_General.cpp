@@ -100,89 +100,14 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
-
+	
+	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
 }
 
 void UCustomGameModesWidget_General::UpdateAllOptionsValid()
 {
-	TArray<FTooltipData> UpdateArray;
-	bool bRequestComponentUpdate = false;
-	uint32 NumWarnings = 0;
-	uint32 NumCautions = 0;
-
-	// CheckBoxOption_EnableAI
-	if (BSConfig->AIConfig.bEnableReinforcementLearning)
-	{
-		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
-		{
-			if (BSConfig->GridConfig.NumHorizontalGridTargets % 5 != 0 || BSConfig->GridConfig.NumVerticalGridTargets % 5 != 0)
-			{
-				NumWarnings++;
-				UpdateArray.Emplace("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning);
-			}
-		}
-		else if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-		{
-			NumWarnings++;
-			UpdateArray.Emplace("Invalid_HeadshotHeightOnly_AI", ETooltipImageType::Warning);
-		}
-		
-		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
-		{
-			NumWarnings++;
-			UpdateArray.Emplace("Invalid_Tracking_AI", ETooltipImageType::Warning);
-		}
-	}
-	bRequestComponentUpdate = UpdateWarningTooltips(CheckBoxOption_EnableAI, UpdateArray) || bRequestComponentUpdate;
-	UpdateArray.Empty();
-
-	// ComboBoxOption_DamageType
-	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
-	{
-		if (BSConfig->AIConfig.bEnableReinforcementLearning)
-		{
-			NumWarnings++;
-			UpdateArray.Emplace("Invalid_Tracking_AI", ETooltipImageType::Warning);
-		}
-	}
-	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_DamageType, UpdateArray) || bRequestComponentUpdate;
-	UpdateArray.Empty();
-
-	// ComboBoxOption_MovingTargetDirectionMode
-	if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None)
-	{
-		if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned ||
-			BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity) ||
-			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
-		{
-			NumCautions++;
-			UpdateArray.Emplace("Invalid_Velocity_MTDM_None_2", ETooltipImageType::Caution);
-		}
-		if (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) ||
-			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
-		{
-			NumCautions++;
-			UpdateArray.Emplace("Invalid_Direction_MTDM_None_2", ETooltipImageType::Caution);
-		}
-	}
-	else if (BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::ForwardOnly)
-	{
-		if (BSConfig->TargetConfig.BoxBounds.X <= 0.f)
-		{
-			NumCautions++;
-			UpdateArray.Emplace("Caution_ZeroForwardDistance_MTDM_ForwardOnly", ETooltipImageType::Caution);
-		}
-	}
-	bRequestComponentUpdate = UpdateWarningTooltips(ComboBoxOption_MovingTargetDirectionMode, UpdateArray) || bRequestComponentUpdate;
-	UpdateArray.Empty();
-
-	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
-	
-	if (bRequestComponentUpdate)
-	{
-		RequestComponentUpdate.Broadcast();
-	}
+	Super::UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
@@ -220,6 +145,58 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
 	
 	UpdateBrushColors();
+}
+
+void UCustomGameModesWidget_General::SetupWarningTooltipCallbacks()
+{
+	CheckBoxOption_EnableAI->AddWarningTooltipData(FTooltipData("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && (BSConfig->GridConfig.NumHorizontalGridTargets % 5 != 0 || BSConfig->GridConfig.NumVerticalGridTargets % 5 != 0);
+	});
+	CheckBoxOption_EnableAI->AddWarningTooltipData(FTooltipData("Invalid_HeadshotHeightOnly_AI", ETooltipImageType::Warning)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly;
+	});
+	CheckBoxOption_EnableAI->AddWarningTooltipData(FTooltipData("Invalid_Tracking_AI", ETooltipImageType::Warning)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking;
+	});
+	ComboBoxOption_DamageType->AddWarningTooltipData(FTooltipData("Invalid_Tracking_AI", ETooltipImageType::Warning)).BindLambda([this]()
+	{
+		return BSConfig->AIConfig.bEnableReinforcementLearning && BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking;
+	});
+	ComboBoxOption_MovingTargetDirectionMode->AddWarningTooltipData(FTooltipData("Invalid_Velocity_MTDM_None_2", ETooltipImageType::Caution)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None && (BSConfig->TargetConfig.bApplyVelocityWhenSpawned ||
+			BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeVelocity) ||
+			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity)
+			);
+	});
+	ComboBoxOption_MovingTargetDirectionMode->AddWarningTooltipData(FTooltipData("Invalid_Direction_MTDM_None_2", ETooltipImageType::Caution)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None && (BSConfig->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) ||
+			BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection));
+	});
+	ComboBoxOption_MovingTargetDirectionMode->AddWarningTooltipData(FTooltipData("Caution_ZeroForwardDistance_MTDM_ForwardOnly", ETooltipImageType::Caution)).BindLambda([this]()
+	{
+		return BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::ForwardOnly && BSConfig->TargetConfig.BoxBounds.X <= 0.f;
+	});
+	SliderTextBoxOption_TargetScale->AddDynamicWarningTooltipData(FTooltipData("Invalid_Grid_MaxSpawnedTargetScale", ETooltipImageType::Warning),
+		"Invalid_Grid_MaxSpawnedTargetScale_Fallback", MinValue_TargetScale, 2).BindLambda([this]()
+	{
+		const float Max = FMath::Max(BSConfig->TargetConfig.MaxSpawnedTargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
+		return FDynamicTooltipState(Max, GetMaxAllowedTargetScale());
+	});
+	SliderTextBoxOption_MinTargetScale->AddDynamicWarningTooltipData(FTooltipData("Invalid_Grid_MaxSpawnedTargetScale", ETooltipImageType::Warning),
+	"Invalid_Grid_MaxSpawnedTargetScale_Fallback", MinValue_TargetScale, 2).BindLambda([this]()
+	{
+		return FDynamicTooltipState(BSConfig->TargetConfig.MinSpawnedTargetScale, GetMaxAllowedTargetScale());
+	});
+	SliderTextBoxOption_MaxTargetScale->AddDynamicWarningTooltipData(FTooltipData("Invalid_Grid_MaxSpawnedTargetScale", ETooltipImageType::Warning),
+	"Invalid_Grid_MaxSpawnedTargetScale_Fallback", MinValue_TargetScale, 2).BindLambda([this]()
+	{
+		return FDynamicTooltipState(BSConfig->TargetConfig.MaxSpawnedTargetScale, GetMaxAllowedTargetScale());
+	});
 }
 
 void UCustomGameModesWidget_General::UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy& InRecentTargetMemoryPolicy)
