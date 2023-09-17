@@ -2,7 +2,9 @@
 
 
 #include "RangeActors/RangeLevelScriptActor.h"
+#include "BSGameInstance.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/PostProcessVolume.h"
 
 ARangeLevelScriptActor::ARangeLevelScriptActor()
 {
@@ -11,13 +13,21 @@ ARangeLevelScriptActor::ARangeLevelScriptActor()
 void ARangeLevelScriptActor::BeginPlay()
 {
 	Super::BeginPlay();
-	/*if (!HasAuthority())
+	if (!HasAuthority())
 	{
 		return;
-	}*/
+	}
+
+	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ThisClass::OnPlayerSettingsChanged_VideoAndSound);
+	OnPlayerSettingsChanged_VideoAndSound(LoadPlayerSettings().VideoAndSound);
 }
 
-void ARangeLevelScriptActor::Tick(float DeltaSeconds)
+void ARangeLevelScriptActor::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
-	Super::Tick(DeltaSeconds);
+	if (PostProcessVolume)
+	{
+		PostProcessVolume->Settings.bOverride_AutoExposureBias = true;
+		PostProcessVolume->Settings.AutoExposureBias = VideoAndSoundSettings.GetPostProcessBiasFromBrightness();
+	}
 }

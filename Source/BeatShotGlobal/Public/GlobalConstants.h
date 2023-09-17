@@ -46,6 +46,16 @@ namespace Constants
 	/** The min time required to receive credit for playing a game mode */
 	inline constexpr float MinStatRequirement_Duration_NumGamesPlayed = 60.f;
 
+	/** The min Exposure Compensation for the Post Process Volume */
+	inline constexpr float MinValue_ExposureCompensation = -3.f;
+
+	/** The max Exposure Compensation for the Post Process Volume */
+	inline constexpr float MaxValue_ExposureCompensation = 5.f;
+	
+	inline constexpr float MinValue_Brightness = 0.f;
+	inline constexpr float MaxValue_Brightness = 100.f;
+	inline constexpr float SnapSize_Brightness = 1.f;
+
 #pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */

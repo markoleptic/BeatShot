@@ -129,8 +129,8 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	SetupTooltip(QMark_SuperResolution, GetTooltipTextFromKey("DLSS_SuperResolution"));
 	SetupTooltip(QMark_NIS, GetTooltipTextFromKey("NIS"));
 	SetupTooltip(QMark_Reflex, GetTooltipTextFromKey("Reflex"));
-	SetupTooltip(CheckBoxOption_HDREnabled->GetTooltipImage(), CheckBoxOption_HDREnabled->GetToolTipText());
-	SetupTooltip(SliderTextBoxOption_HDRNits->GetTooltipImage(), SliderTextBoxOption_HDRNits->GetToolTipText());
+	SetupTooltip(CheckBoxOption_HDREnabled->GetTooltipImage(), CheckBoxOption_HDREnabled->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_Brightness->GetTooltipImage(), SliderTextBoxOption_Brightness->GetTooltipImageText());
 
 	Slider_GlobalSound->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSliderChanged_GlobalSound);
 	Slider_MenuSound->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSliderChanged_MenuSound);
@@ -191,7 +191,9 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 
 	CheckBoxOption_HDREnabled->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_HDREnabled);
 	SliderTextBoxOption_HDRNits->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_Brightness->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_HDRNits->SetValues(1000.f, 2000.f, 1.f);
+	SliderTextBoxOption_Brightness->SetValues(MinValue_Brightness, MaxValue_Brightness, SnapSize_Brightness);
 
 	Value_FrameLimitMenu->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_FrameLimitMenu);
 	CheckBox_VSyncEnabled->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_VSyncEnabled);
@@ -345,6 +347,8 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	
 	CheckBoxOption_HDREnabled->CheckBox->SetIsEnabled(bSupportsHDR);
 	SliderTextBoxOption_HDRNits->SetSliderAndTextBoxEnabledStates(bSupportsHDR && bHDREnabled);
+
+	SliderTextBoxOption_Brightness->SetValue(InVideoAndSoundSettings.Brightness);
 	
 	HandleDLSSEnabledChanged(InVideoAndSoundSettings.DLSSEnabledMode);
 }
@@ -369,6 +373,7 @@ FPlayerSettings_VideoAndSound USettingsMenuWidget_VideoAndSound::GetVideoAndSoun
 	                                                           SnapSize_FrameRateLimit);
 	ReturnSettings.FrameRateLimitMenu = FMath::GridSnap<int32>(FMath::Clamp(FCString::Atof(*Value_FrameLimitMenu->GetText().ToString()), MinValue_FrameRateLimit, MaxValue_FrameRateLimit),
 	                                                           SnapSize_FrameRateLimit);
+	ReturnSettings.Brightness = SliderTextBoxOption_Brightness->GetSliderValueSnapped();
 	return ReturnSettings;
 }
 
@@ -778,6 +783,10 @@ void USettingsMenuWidget_VideoAndSound::OnSliderTextBoxValueChanged(USliderTextB
 		{
 			GameUserSettings->EnableHDRDisplayOutput(CheckBoxOption_HDREnabled->CheckBox->IsChecked(), SliderTextBoxOption_HDRNits->GetSliderValueSnapped());
 		}
+	}
+	else if (Widget == SliderTextBoxOption_Brightness)
+	{
+		
 	}
 }
 

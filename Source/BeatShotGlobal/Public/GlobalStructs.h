@@ -1352,6 +1352,9 @@ struct FPlayerSettings_VideoAndSound
 
 	UPROPERTY(BlueprintReadOnly)
 	float NISSharpness;
+
+	UPROPERTY(BlueprintReadOnly)
+	float Brightness;
 	
 	FPlayerSettings_VideoAndSound()
 	{
@@ -1369,6 +1372,19 @@ struct FPlayerSettings_VideoAndSound
 		NISMode = UNISMode::Off;
 		NISSharpness = 0.f;
 		StreamlineReflexMode = UStreamlineReflexMode::Enabled;
+		Brightness = 50.f;
+	}
+
+	float GetPostProcessBiasFromBrightness() const
+	{
+		return FMath::GetMappedRangeValueClamped(FVector2D(MinValue_Brightness, MaxValue_Brightness),
+			FVector2D(MinValue_ExposureCompensation, MaxValue_ExposureCompensation), Brightness);
+	}
+
+	static float GetBrightnessFromPostProcessBias(const float InBias)
+	{
+		return FMath::GetMappedRangeValueClamped(FVector2D(MinValue_ExposureCompensation, MaxValue_ExposureCompensation),
+			FVector2D(MinValue_Brightness, MaxValue_Brightness), InBias);
 	}
 };
 

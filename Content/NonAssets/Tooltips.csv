@@ -186,3 +186,5 @@ Invalid_Direction_MTDM_None_2,One or more settings wants to change the direction
 Caution_ZeroForwardDistance_MTDM_ForwardOnly,You might want to change the Forward Spread to greater than zero. Forward  Spread is in the Spawn Area Section.
 Caution_ZeroForwardDistance_MTDM_ForwardOnly_2,"One or more settings wants to move the target forward, but will not be moved if the forward spread is zero."
 Invalid_Tracking_AI,AI cannot be used with the Target Damage Type Tracking.
+Video_Brightness,Only affects in-game brightness and not UI brightness.
+Video_HDR,Requires an HDR10 compatible monitor and HDR must be turned on in Windows Settings.

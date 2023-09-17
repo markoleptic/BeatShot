@@ -71,6 +71,8 @@ protected:
 	UCheckBoxOptionWidget* CheckBoxOption_HDREnabled;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxWidget* SliderTextBoxOption_HDRNits;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxWidget* SliderTextBoxOption_Brightness;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox_GlobalSound;
