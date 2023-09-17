@@ -57,6 +57,11 @@ float USliderTextBoxWidget::GetEditableTextBoxValue() const
 	return SnappedValue;
 }
 
+float USliderTextBoxWidget::GetSliderValueSnapped() const
+{
+	return FMath::GridSnap(Slider->GetValue(), GridSnapSize);
+}
+
 void USliderTextBoxWidget::SetSliderAndTextBoxEnabledStates(const bool bEnabled) const
 {
 	Slider->SetLocked(!bEnabled);

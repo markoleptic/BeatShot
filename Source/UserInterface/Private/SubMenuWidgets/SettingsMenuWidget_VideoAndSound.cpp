@@ -19,15 +19,13 @@
 #include "WidgetComponents/BSComboBoxString.h"
 #include "WidgetComponents/BSComboBoxEntry.h"
 #include "WidgetComponents/SavedTextWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
 
 ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport, UDLSSSupport::Supported, UDLSSSupport::NotSupportedIncompatibleAPICaptureToolActive);
-
 ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSMode, UDLSSMode::Off, UDLSSMode::UltraPerformance);
-
 ENUM_RANGE_BY_FIRST_AND_LAST(UNISMode, UNISMode::Off, UNISMode::Custom);
-
 ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineReflexMode, UStreamlineReflexMode::Disabled, UStreamlineReflexMode::EnabledPlusBoost);
-
 ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineDLSSGMode, UStreamlineDLSSGMode::Off, UStreamlineDLSSGMode::On);
 
 void USettingsMenuWidget_VideoAndSound::NativeConstruct()
@@ -131,6 +129,8 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	SetupTooltip(QMark_SuperResolution, GetTooltipTextFromKey("DLSS_SuperResolution"));
 	SetupTooltip(QMark_NIS, GetTooltipTextFromKey("NIS"));
 	SetupTooltip(QMark_Reflex, GetTooltipTextFromKey("Reflex"));
+	SetupTooltip(CheckBoxOption_HDREnabled->GetTooltipImage(), CheckBoxOption_HDREnabled->GetToolTipText());
+	SetupTooltip(SliderTextBoxOption_HDRNits->GetTooltipImage(), SliderTextBoxOption_HDRNits->GetToolTipText());
 
 	Slider_GlobalSound->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSliderChanged_GlobalSound);
 	Slider_MenuSound->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnSliderChanged_MenuSound);
@@ -188,6 +188,10 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	ComboBox_NIS->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBox_NIS_Mode->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBox_Reflex->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+
+	CheckBoxOption_HDREnabled->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_HDREnabled);
+	SliderTextBoxOption_HDRNits->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_HDRNits->SetValues(1000.f, 2000.f, 1.f);
 
 	Value_FrameLimitMenu->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnValueChanged_FrameLimitMenu);
 	CheckBox_VSyncEnabled->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_VSyncEnabled);
@@ -264,7 +268,6 @@ void USettingsMenuWidget_VideoAndSound::InitSettingCategoryWidget()
 void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
 {
 	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
-	
 	float CurrentScaleNormalized;
 	float CurrentScale;
 	float MinScale;
@@ -333,6 +336,15 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	ComboBox_NIS->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.NISEnabledMode).ToString());
 	ComboBox_NIS_Mode->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.NISMode).ToString());
 	ComboBox_Reflex->SetSelectedOption(UEnum::GetDisplayValueAsText(InVideoAndSoundSettings.StreamlineReflexMode).ToString());
+
+	const bool bSupportsHDR = GameUserSettings->SupportsHDRDisplayOutput();
+	const bool bHDREnabled = GameUserSettings->IsHDREnabled();
+
+	CheckBoxOption_HDREnabled->CheckBox->SetIsChecked(bSupportsHDR && bHDREnabled);
+	SliderTextBoxOption_HDRNits->SetValue(GameUserSettings->GetCurrentHDRDisplayNits());
+	
+	CheckBoxOption_HDREnabled->CheckBox->SetIsEnabled(bSupportsHDR);
+	SliderTextBoxOption_HDRNits->SetSliderAndTextBoxEnabledStates(bSupportsHDR && bHDREnabled);
 	
 	HandleDLSSEnabledChanged(InVideoAndSoundSettings.DLSSEnabledMode);
 }
@@ -591,6 +603,17 @@ void USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_VSyncEnabled(const b
 	UGameUserSettings::GetGameUserSettings()->SetVSyncEnabled(bIsChecked);
 }
 
+void USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_HDREnabled(const bool bIsChecked)
+{
+	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+	SliderTextBoxOption_HDRNits->SetSliderAndTextBoxEnabledStates(bIsChecked);
+	if (GameUserSettings->SupportsHDRDisplayOutput())
+	{
+		const float Clamped = FMath::Clamp(SliderTextBoxOption_HDRNits->GetSliderValueSnapped(), 1000, 2000);
+		GameUserSettings->EnableHDRDisplayOutput(bIsChecked, Clamped);
+	}
+}
+
 void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const FString SelectedOption, ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct)
@@ -743,6 +766,18 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<F
 	if (UStreamlineLibraryReflex::IsReflexSupported())
 	{
 		UStreamlineLibraryReflex::SetReflexMode(GetSelectedReflexMode());
+	}
+}
+
+void USettingsMenuWidget_VideoAndSound::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+{
+	if (Widget == SliderTextBoxOption_HDRNits)
+	{
+		UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
+		if (GameUserSettings->SupportsHDRDisplayOutput())
+		{
+			GameUserSettings->EnableHDRDisplayOutput(CheckBoxOption_HDREnabled->CheckBox->IsChecked(), SliderTextBoxOption_HDRNits->GetSliderValueSnapped());
+		}
 	}
 }
 

@@ -36,6 +36,9 @@ public:
 	/** Returns the value for the EditableTextBox */
 	float GetEditableTextBoxValue() const;
 
+	/** Returns the slider value snapped to the grid snap size */
+	float GetSliderValueSnapped() const;
+	
 	/** Locks or unlocks the slider and sets the EditableTextBox to read-only or not */
 	void SetSliderAndTextBoxEnabledStates(const bool bEnabled) const;
 

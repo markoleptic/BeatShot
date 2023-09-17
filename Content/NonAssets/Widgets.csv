@@ -348,3 +348,5 @@ GM_ConstantDeactivatedTargetVelocity,Constant Deactivated Target Velocity
 GM_DeactivatedTargetVelocity,Deactivated Target Velocity
 GM_MinDeactivatedTargetVelocity,Min Deactivated Target Velocity
 GM_MaxDeactivatedTargetVelocity,Max Deactivated Target Velocity
+Video_EnableHDR,High Dynamic Range (HDR)
+Video_HDRNits,Display Nits

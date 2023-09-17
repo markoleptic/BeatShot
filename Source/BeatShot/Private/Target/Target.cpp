@@ -140,14 +140,13 @@ void ATarget::PostInitializeComponents()
 		{
 			if (Config.MaxHealth <= 0.f)
 			{
-				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), FLT_MAX);
+				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), 10000);
 			}
 			else
 			{
 				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), Config.MaxHealth);
 			}
 			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), Config.BasePlayerHitDamage);
-			// TODO: temporarily use BasePlayerTrackingDamage
 			ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), Config.BasePlayerTrackingDamage);
 		}
 		
@@ -546,8 +545,7 @@ void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
 	{
 		Destroy();
 	}
-	else if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) &&
-		CurrentHealth <= 0.f)
+	else if ((Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) || Config.MaxHealth <= 0.f) && CurrentHealth <= 0.f)
 	{
 		ResetHealth();
 	}
