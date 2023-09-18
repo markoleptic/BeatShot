@@ -1,44 +1,23 @@
 # BeatShot
 
 This project is a standalone FPS aim trainer that controls target behavior by analyzing user selected music in real time.
-If you want to access a beta version on steam, just send me a message on Discord @Markoleptic#6174
 
-**[WISHLIST ON STEAM](https://store.steampowered.com/app/2126580/BeatShot/)**
+**[PURCHASE ON STEAM](https://store.steampowered.com/app/2126580/BeatShot/)**
 
 In Game                    |  Customize Game Mode Menu
 :-------------------------:|:-------------------------:
 ![](https://user-images.githubusercontent.com/86213229/226467498-79851ec5-62b9-4614-a804-eccbb0c1c623.png)  |  ![](https://user-images.githubusercontent.com/86213229/226468050-38d159c3-f3b4-40cf-8c24-aa9a1836879c.png)
 
-## What I'm working on / Planned Features:
-- Show example videos for default game modes
-- Create AI system tailored to player goals: (I've created a Reinforcement Learning program in Python, but have yet to transfer code to C++ or find a way to connect the two reliably
-- Game Optimization (its not great right now)
-- (Maybe) Game mode that cycles between multiple game modes within one song
-- (Maybe) Multiplayer
-
 ## Features
 - standard sensitivity settings (Options for CS:GO and Valorant), video & audio settings, target color settings, crosshair settings
-- four base gamemodes with 3 base difficulties:
-    - MultiBeat: continuously spawn targets
-    - SingleBeat: only one at a time
-    - BeatTrack: tracking one target
-    - BeatGrid: static grid of activating targets
+- multiple default game modes
 - Full CS:GO AK-47 recoil pattern (not 100% accurate), which is togglable use in game wall menu
 - Full auto/semi-auto fire modes
 
-### BeatShot is designed to enable players to have full control over the game. Create custom game modes using:
-- any base game mode & difficulty as a template, or from another custom game mode
-- headshot height only mode
-- time it takes for target to reach peak color (green) / this is also the point in time that syncs with a beat
-- max target lifespan
-- min distance between targets
-- spawn area height/width
-- target spawn cooldown
-- minimum and maximum size of targets
-- minimum and maximum speed of targets (BeatGrid and BeatGrid derived modes only)
-- dynamic target sizing
-- dynamic spawn area sizing
-- moving targets forward over time
+### BeatShot is designed to enable players to have full control over the game
+- Create custom game modes using any default game mode as a template, or from another custom game mode
+- Preview the game mode in the custom game mode editor
+- 40+ settings to customize from which all default game modes are derived
 
 ### Customize the audio analysis using:
 - User defined frequency band channels (e.g. 0-87 Hz for a bass channel)
@@ -48,8 +27,7 @@ In Game                    |  Customize Game Mode Menu
 
 ## Getting .mp3/.ogg files:
 1. To convert Spotify playlists into Youtube playlists, I use [Soundiiz](https://soundiiz.com/) (also works with Apple Music, etc.)
-2. You can use [this application](https://github.com/shaked6540/YoutubePlaylistDownloader) to download entire playlists from YouTube. Download and install. *You might need restart the application
-   after you open it for the first time for it to work correctly.*
+2. You can use [this application](https://github.com/shaked6540/YoutubePlaylistDownloader) to download entire playlists from YouTube. Download and install. *You might need restart the application after you open it for the first time for it to work correctly.*
 3. Click on the cog wheel next to the "Insert a youtube link here" text.
 4. Select where you want the files to be downloaded to at the top.
 5. Under the Audio heading, make sure the box with "Convert videos to" is checked, then select either ogg or mp3.
@@ -63,6 +41,6 @@ Website Integration        |  NightTime
 ![](https://user-images.githubusercontent.com/86213229/226467406-3a05d922-05e7-4d52-a722-0b3ebb071c4d.png) | ![](https://user-images.githubusercontent.com/86213229/226467534-aa06b55a-5f9f-4620-a9da-70a2927b8352.png)
 
 ## Collaboration / Copyright
-I plan to release this game on Steam in a few months. This project is on GitHub because Unreal Engine is real handful to learn, so perhaps there's some code that I've used in this project that could help someone else out. If you wish to collaborate or want to reach out for any reason, you can contact me on Discord @Markoleptic#6174.
+This project is on GitHub because Unreal Engine is real handful to learn, so perhaps there's some code that I've used in this project that could help someone else out. If you wish to collaborate or want to reach out for any reason, you can contact me on Discord @Markoleptic#6174.
 
 Note that copying my work and releasing a game based on my work is a violation of the Unreal Engine UELA and United States Copyright Laws.
