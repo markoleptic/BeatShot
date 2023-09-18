@@ -10,6 +10,7 @@
 #include "Components/BoxComponent.h"
 #include "TargetManager.generated.h"
 
+class UCompositeCurveTable;
 class ATarget;
 class UReinforcementLearningComponent;
 
@@ -73,9 +74,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	TSubclassOf<ATarget> TargetToSpawn;
 
-	/** Curve to look up values for DynamicSpawnScale */
+	/** Curves to look up values for Dynamic SpawnArea scaling */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UCurveFloat* DynamicSpawnCurve;
+	UCompositeCurveTable* CompositeCurveTable_SpawnArea;
+
+	/** Curves to look up values for Dynamic target scaling */
+	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
+	UCompositeCurveTable* CompositeCurveTable_TargetScale;
 
 public:
 	void ShowDebug_SpawnBox(const bool bShow);
@@ -123,6 +128,9 @@ public:
 
 protected:
 	void Init_Internal();
+
+	/** Initializes the Composite Curve Tables */
+	void Init_Tables();
 	
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
@@ -157,8 +165,8 @@ protected:
 	/** Updates ConsecutiveTargetsHit, based on if the target expired or not */
 	virtual void UpdateConsecutiveTargetsHit(const float TimeAlive);
 
-	/** Updates DynamicSpawnScale, based on if the target expired or not */
-	virtual void UpdateDynamicSpawnScale(const float TimeAlive);
+	/** Updates DynamicLookUpValue_TargetScale and DynamicLookUpValue_SpawnAreaScale, based on if the target expired or not */
+	virtual void UpdateDynamicLookUpValues(const float TimeAlive);
 
 	/** Broadcasts the appropriate delegate based on the damage type */
 	virtual void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType, const FTargetDamageEvent& TargetDamageEvent) const;
@@ -224,6 +232,9 @@ protected:
 	
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
 	virtual USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
+
+	/** Evaluates the specified curve at InTime */
+	float GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const;
 	
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfigLocal;
@@ -267,8 +278,11 @@ protected:
 	/** Consecutively destroyed targets */
 	int32 ConsecutiveTargetsHit;
 
-	/** The time to use when looking up values from DynamicSpawnCurve */
-	int32 DynamicSpawnScale;
+	/** The time to use when looking up values from CompositeCurveTable_TargetScale. Incremented by for each consecutive target hit, decremented by setting value */
+	int32 DynamicLookUpValue_TargetScale;
+
+	/** The time to use when looking up values from CompositeCurveTable_SpawnArea. Incremented by for each consecutive target hit, decremented by setting value  */
+	int32 DynamicLookUpValue_SpawnAreaScale;
 
 	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
 	UPROPERTY()

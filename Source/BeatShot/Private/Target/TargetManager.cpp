@@ -6,6 +6,8 @@
 #include "GlobalConstants.h"
 #include "Target/Target.h"
 #include "Components/BoxComponent.h"
+#include "Engine/CompositeCurveTable.h"
+#include "Kismet/DataTableFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -55,7 +57,8 @@ ATargetManager::ATargetManager()
 	StaticExtrema = FExtrema();
 	StaticExtents = FVector();
 	ConsecutiveTargetsHit = 0;
-	DynamicSpawnScale = 0;
+	DynamicLookUpValue_TargetScale = 0;
+	DynamicLookUpValue_SpawnAreaScale = 0;
 	ManagedTargets = TArray<ATarget*>();
 	TotalPossibleDamage = 0.f;
 	bLastSpawnedTargetDirectionChangeHorizontal = false;
@@ -150,7 +153,8 @@ void ATargetManager::Init_Internal()
 	StaticExtrema = FExtrema();
 	StaticExtents = FVector();
 	ConsecutiveTargetsHit = 0;
-	DynamicSpawnScale = 0;
+	DynamicLookUpValue_TargetScale = 0;
+	DynamicLookUpValue_SpawnAreaScale = 0;
 	TotalPossibleDamage = 0.f;
 	
 	GetBSConfig()->TargetConfig.bUseSeparateOutlineColor = PlayerSettings.bUseSeparateOutlineColor;
@@ -181,7 +185,9 @@ void ATargetManager::Init_Internal()
 	// Initialize SpawnAreaManager and SpawnAreas
 	const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema(false);
 	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), StaticExtents, Extrema);
-
+	
+	Init_Tables();
+	
 	// Initialize Dynamic SpawnBox
 	if (IsDynamicBoundsScalingPolicy(GetBSConfig()->TargetConfig.BoundsScalingPolicy))
 	{
@@ -222,6 +228,27 @@ void ATargetManager::Init_Internal()
 	}
 	
 	UE_LOG(LogTargetManager, Display, TEXT("SpawnBoxWidth %f SpawnBoxHeight %f"), StaticExtents.Y * 2, StaticExtents.Z * 2);
+}
+
+void ATargetManager::Init_Tables()
+{
+	FRealCurve* PreThresholdCurve = CompositeCurveTable_SpawnArea->GetCurves()[0].CurveToEdit;
+	int32 CurveIndex = GetBSConfig()->DynamicBoundsScaling.bIsCubicInterpolation ? 2 : 1;
+	FRealCurve* ThresholdMetCurve = CompositeCurveTable_SpawnArea->GetCurves()[CurveIndex].CurveToEdit;
+	
+	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetFirstKeyHandle(), 0);
+	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetLastKeyHandle(), GetBSConfig()->DynamicBoundsScaling.StartThreshold);
+	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetFirstKeyHandle(), GetBSConfig()->DynamicBoundsScaling.StartThreshold);
+	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetLastKeyHandle(), GetBSConfig()->DynamicBoundsScaling.EndThreshold);
+	
+	PreThresholdCurve = CompositeCurveTable_TargetScale->GetCurves()[0].CurveToEdit;
+	CurveIndex = GetBSConfig()->DynamicTargetScaling.bIsCubicInterpolation ? 2 : 1;
+	ThresholdMetCurve = CompositeCurveTable_TargetScale->GetCurves()[CurveIndex].CurveToEdit;
+	
+	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetFirstKeyHandle(), 0);
+	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetLastKeyHandle(), GetBSConfig()->DynamicTargetScaling.StartThreshold);
+	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetFirstKeyHandle(), GetBSConfig()->DynamicTargetScaling.StartThreshold);
+	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetLastKeyHandle(), GetBSConfig()->DynamicTargetScaling.EndThreshold);
 }
 
 void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
@@ -595,7 +622,7 @@ void ATargetManager::SpawnUpfrontOnlyTargets()
 void ATargetManager::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent)
 {
 	UpdateConsecutiveTargetsHit(TargetDamageEvent.TimeAlive);
-	UpdateDynamicSpawnScale(TargetDamageEvent.TimeAlive);
+	UpdateDynamicLookUpValues(TargetDamageEvent.TimeAlive);
 	HandleTargetExpirationDelegate(GetBSConfig()->TargetConfig.TargetDamageType, TargetDamageEvent);
 	HandleManagedTargetRemoval(GetBSConfig()->TargetConfig.TargetDestructionConditions, TargetDamageEvent);
 
@@ -623,15 +650,17 @@ void ATargetManager::UpdateConsecutiveTargetsHit(const float TimeAlive)
 	}
 }
 
-void ATargetManager::UpdateDynamicSpawnScale(const float TimeAlive)
+void ATargetManager::UpdateDynamicLookUpValues(const float TimeAlive)
 {
-	if (TimeAlive == -1)
+	if (TimeAlive < 0.f)
 	{
-		DynamicSpawnScale = FMath::Clamp(DynamicSpawnScale - 5, 0, 100);
+		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale - GetBSConfig()->DynamicTargetScaling.DecrementAmount, 0, GetBSConfig()->DynamicTargetScaling.EndThreshold);
+		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale - GetBSConfig()->DynamicBoundsScaling.DecrementAmount, 0, GetBSConfig()->DynamicBoundsScaling.EndThreshold);
 	}
 	else
 	{
-		DynamicSpawnScale = FMath::Clamp(DynamicSpawnScale + 1, 0, 100);
+		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale + 1, 0, GetBSConfig()->DynamicTargetScaling.EndThreshold);
+		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale + 1, 0, GetBSConfig()->DynamicBoundsScaling.EndThreshold);
 	}
 }
 
@@ -711,8 +740,8 @@ FVector ATargetManager::GetNextTargetScale() const
 {
 	if (GetBSConfig()->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
 	{
-		const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale, NewFactor));
+		const float NewFactor = GetDynamicValueFromCurveTable(false, DynamicLookUpValue_TargetScale);
+		return FVector(UKismetMathLibrary::Lerp(GetBSConfig()->TargetConfig.MaxSpawnedTargetScale, GetBSConfig()->TargetConfig.MinSpawnedTargetScale, NewFactor));
 	}
 	return FVector(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale));
 }
@@ -993,9 +1022,9 @@ void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 
 void ATargetManager::SetBoxExtents_Dynamic() const
 {
-	const float NewFactor = DynamicSpawnCurve->GetFloatValue(DynamicSpawnScale);
-	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Y, GetBoxExtents_Static().Y * 0.5f, NewFactor);
-	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Z, GetBoxExtents_Static().Z * 0.5f, NewFactor);
+	const float NewFactor = GetDynamicValueFromCurveTable(true, DynamicLookUpValue_SpawnAreaScale);
+	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Y, NewFactor);
+	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Z * 0.5f, GetBoxExtents_Static().Z, NewFactor);
 	const float Y = FMath::GridSnap<float>(LerpY, SpawnAreaManager->GetSpawnMemoryIncY());
 	const float Z = FMath::GridSnap<float>(LerpZ, SpawnAreaManager->GetSpawnMemoryIncZ());
 	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
@@ -1039,6 +1068,34 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(co
 	USpawnArea* ChosenPoint = SpawnAreaManager->GetSpawnAreasRef()[ChosenIndex];
 	ChosenPoint->SetRandomChosenPoint();
 	return ChosenPoint;
+}
+
+float ATargetManager::GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const
+{
+	UCompositeCurveTable* Table = bIsSpawnArea ? CompositeCurveTable_SpawnArea : CompositeCurveTable_TargetScale;
+	const bool bThresholdMet = bIsSpawnArea ? (InTime > GetBSConfig()->DynamicBoundsScaling.StartThreshold) : InTime > GetBSConfig()->DynamicTargetScaling.StartThreshold;
+	const bool bIsCubicInterpolation = bIsSpawnArea ? GetBSConfig()->DynamicBoundsScaling.bIsCubicInterpolation : GetBSConfig()->DynamicTargetScaling.bIsCubicInterpolation;
+
+	float OutXY = -1.f;
+	TEnumAsByte<EEvaluateCurveTableResult::Type> OutResult;
+
+	if (bThresholdMet)
+	{
+		if (bIsCubicInterpolation)
+		{
+			UDataTableFunctionLibrary::EvaluateCurveTableRow(Table,  FName("Cubic_ThresholdMet"), InTime, OutResult, OutXY, "");
+		}
+		else
+		{
+			UDataTableFunctionLibrary::EvaluateCurveTableRow(Table,  FName("Linear_ThresholdMet"), InTime, OutResult, OutXY, "");
+		}
+	}
+	else
+	{
+		UDataTableFunctionLibrary::EvaluateCurveTableRow(Table,  FName("Linear_PreThreshold"), InTime, OutResult, OutXY, "");
+	}
+	
+	return OutXY;
 }
 
 void ATargetManager::ShowDebug_SpawnBox(const bool bShow)

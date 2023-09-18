@@ -14,19 +14,6 @@
 struct FGameplayTagContainer;
 using namespace Constants;
 
-#define M_FBS_SETTING( SettingName, DependentSettings ) { SettingName, DependentSettings }
-USTRUCT()
-struct FBS_Setting
-{
-	GENERATED_BODY()
-
-private:
-	FName SettingName;
-	TArray<FBS_Setting> DependentSettings;
-	
-public:
-	FName GetName() const { return SettingName; }
-};
 
 /** Struct only used to save accuracy to database */
 USTRUCT()
@@ -376,6 +363,32 @@ struct FBS_AudioConfig
 		SongTitle = "";
 		SongLength = 0.f;
 		PlayerDelay = DefaultPlayerDelay;
+	}
+};
+
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+struct FBS_Dynamic
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 StartThreshold;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 EndThreshold;
+	
+	UPROPERTY(EditDefaultsOnly)
+	bool bIsCubicInterpolation;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 DecrementAmount;
+	
+	FBS_Dynamic()
+	{
+		StartThreshold = 5;
+		EndThreshold = 100;
+		bIsCubicInterpolation = true;
+		DecrementAmount = 5;
 	}
 };
 
@@ -917,6 +930,14 @@ struct FBSConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	FBS_TargetConfig TargetConfig;
 
+	/** Contains info for dynamic SpawnArea scaling */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	FBS_Dynamic DynamicBoundsScaling;
+
+	/** Contains info for dynamic target scaling */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	FBS_Dynamic DynamicTargetScaling;
+
 	FORCEINLINE bool operator==(const FBSConfig& Other) const
 	{
 		if (DefiningConfig == Other.DefiningConfig)
@@ -934,6 +955,8 @@ struct FBSConfig
 		AudioConfig = FBS_AudioConfig();
 		GridConfig = FBS_GridConfig();
 		TargetConfig = FBS_TargetConfig();
+		DynamicBoundsScaling = FBS_Dynamic();
+		DynamicTargetScaling = FBS_Dynamic();
 	}
 
 	FBSConfig(const EBaseGameMode& InBaseGameMode, const EGameModeDifficulty& InDifficulty)
@@ -954,6 +977,39 @@ struct FBSConfig
 		Config.GameModeType = EGameModeType::Preset;
 		Config.CustomGameModeName = "";
 		return Config;
+	}
+};
+
+
+DECLARE_DELEGATE_RetVal(bool, FGetConstraintState);
+
+USTRUCT()
+struct FBS_PropertyConstraint
+{
+	GENERATED_BODY()
+
+private:
+	bool bIsConstrained;
+
+public:
+	FGetConstraintState ConstraintCallback;
+	
+	FBS_PropertyConstraint()
+	{
+		bIsConstrained = false;
+	}
+
+	void Update()
+	{
+		if (ConstraintCallback.IsBound())
+		{
+			bIsConstrained = ConstraintCallback.Execute();
+		}
+	}
+	
+	bool IsConstrained() const
+	{
+		return bIsConstrained;
 	}
 };
 
