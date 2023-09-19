@@ -17,7 +17,7 @@ Epsilon,"The epsilon value. A value of 1 will result in only choosing random val
 ExpirationHealthPenalty,Amount of health to take away from the target if its lifetime expires. A hit target takes 100 damage by default.
 FloorDistance,Distance from floor to bottom of the spawn area.
 MoveTargetsForward,"If checked, the targets will move forward towards the player by ForwardDistance over the maximum target lifespan."
-ForwardSpread,How far targets are allowed to move forward. This only has an effect if the Moving Target Direction Mode is set to Any or Forward Only.
+ForwardSpread,The distance targets are allowed to move forward. This only has an effect if the Moving Target Direction Mode is set to Any or Forward Only.
 GameModeDifficulty,"Useful for seeing what settings the default game modes use, but custom game modes have no difficulty by default."
 GameModeTemplate,Select a preset or custom game mode to populate all options. You can edit custom game modes after selecting them.
 Gamma,The gamma value. How much to value future rewards vs immediate rewards
@@ -188,3 +188,16 @@ Caution_ZeroForwardDistance_MTDM_ForwardOnly_2,"One or more settings wants to mo
 Invalid_Tracking_AI,AI cannot be used with the Target Damage Type Tracking.
 Video_Brightness,Only affects in-game brightness and not UI brightness.
 Video_HDR,Requires an HDR10 compatible monitor and HDR must be turned on in Windows Settings.
+DynamicBoundsScaling_StartThreshold,The number of consecutively destroyed targets required to begin increasing the minimum spread to the maximum spread.
+DynamicBoundsScaling_EndThreshold,The number of consecutively destroyed targets required to reach the maximum spread.
+DynamicBoundsScaling_MinHorizontalSpread,The minimum width of the area where targets can spawn before StartThreshold is reached.
+DynamicBoundsScaling_MinVerticalSpread,The minimum height of the area where targets can spawn before StartThreshold is reached.
+DynamicBoundsScaling_MinForwardSpread,The minimum distance targets are allowed to move forward before StartThreshold is reached. This only has an effect for game modes that move targets.
+DynamicBoundsScalingPolicy_Horizontal,"If selected, the horizontal spread of the spawn area will grow from minimum horizontal spread (starting at StartThreshold) to horizontal spread (at EndThreshold)."
+DynamicBoundsScalingPolicy_Vertical,"If selected, the vertical spread will grow from min vertical spread (starting at StartThreshold) to vertical spread (at EndThreshold)."
+DynamicBoundsScalingPolicy_Forward,"If selected, the forward spread of the spawn area will grow from minimum forward spread (starting at StartThreshold) to forward spread (at EndThreshold)."
+DynamicBoundsScalingPolicy,"Which direction(s) to dynamically change for Dynamic Bounds Scaling. If a direction is not selected, it will remain at its minimum spread."
+DynamicBoundsScaling_DecrementAmount,"Instead of resetting consecutively hit targets to zero each time a target is missed, this value is subtracted from it."
+DynamicTargetScaling_StartThreshold,The number of consecutively destroyed targets required to begin decreasing the Max Target Scale to the Min Target Scale.
+DynamicTargetScaling_EndThreshold,The number of consecutively destroyed targets required to reach the Min Target Scale.
+DynamicTargetScaling_DecrementAmount,"Instead of resetting consecutively hit targets to zero each time a target is missed, this value is subtracted from it."

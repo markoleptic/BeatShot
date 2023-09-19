@@ -366,20 +366,28 @@ struct FBS_AudioConfig
 	}
 };
 
+/** Defines how to dynamically change the scale of a game mode feature.
+ *  Requires using an external counter that increments each time a target
+ *  is consecutively destroyed and decrements by DecrementAmount each time
+ *  a target was not destroyed. */
 USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FBS_Dynamic
 {
 	GENERATED_BODY()
-	
+
+	/** The number of consecutively destroyed targets required to begin changing the scale */
 	UPROPERTY(EditDefaultsOnly)
 	int32 StartThreshold;
-	
+
+	/** The number of consecutively destroyed targets required to reach the final scale */
 	UPROPERTY(EditDefaultsOnly)
 	int32 EndThreshold;
-	
+
+	/** Whether or not to use cubic interpolation or linear interpolation from StartThreshold to EndThreshold */
 	UPROPERTY(EditDefaultsOnly)
 	bool bIsCubicInterpolation;
 
+	/** The amount to decrement from consecutively destroyed targets after a miss */
 	UPROPERTY(EditDefaultsOnly)
 	int32 DecrementAmount;
 	
@@ -387,8 +395,41 @@ struct FBS_Dynamic
 	{
 		StartThreshold = 5;
 		EndThreshold = 100;
-		bIsCubicInterpolation = true;
+		bIsCubicInterpolation = false;
 		DecrementAmount = 5;
+	}
+};
+
+/** Defines how to dynamically change the scale of the SpawnArea.
+ *  Requires using an external counter that increments each time a target
+ *  is consecutively destroyed and decrements by DecrementAmount each time
+ *  a target was not destroyed. */
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
+{
+	GENERATED_BODY()
+
+	/** Which direction(s) to change the SpawnArea/BoxBounds. If a direction is not included, it will always stay at MinSize */
+	UPROPERTY(EditDefaultsOnly)
+	TArray<EDynamicBoundsScalingPolicy> DynamicBoundsScalingPolicy;
+
+	/** The size of the SpawnArea/BoxBounds when zero consecutively destroyed targets. X is forward, Y is horizontal, Z is vertical */
+	UPROPERTY(EditDefaultsOnly)
+	FVector MinSize;
+
+	FVector GetMinExtent() const
+	{
+		return FVector(MinSize.X * 0.5f, MinSize.Y * 0.5f, MinSize.Z * 0.5f);
+	}
+	
+	FBS_Dynamic_SpawnArea()
+	{
+		StartThreshold = 5;
+		EndThreshold = 100;
+		bIsCubicInterpolation = false;
+		DecrementAmount = 5;
+		DynamicBoundsScalingPolicy = TArray({EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Vertical});
+		MinSize = FVector(0, 200.f, 200.f);
 	}
 };
 
@@ -701,9 +742,9 @@ struct FBS_TargetConfig
 	{
 		if (TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
 		{
-			return FVector(0.f, BoxBounds.Y / 2.f, 1.f);
+			return FVector(BoxBounds.X / 2.f, BoxBounds.Y / 2.f, 1.f);
 		}
-		return FVector(0.f, BoxBounds.Y / 2.f, BoxBounds.Z / 2.f);
+		return FVector(BoxBounds.X / 2.f, BoxBounds.Y / 2.f, BoxBounds.Z / 2.f);
 	}
 
 	FORCEINLINE bool operator==(const FBS_TargetConfig& Other) const
@@ -932,7 +973,7 @@ struct FBSConfig
 
 	/** Contains info for dynamic SpawnArea scaling */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
-	FBS_Dynamic DynamicBoundsScaling;
+	FBS_Dynamic_SpawnArea DynamicSpawnAreaScaling;
 
 	/** Contains info for dynamic target scaling */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
@@ -955,7 +996,7 @@ struct FBSConfig
 		AudioConfig = FBS_AudioConfig();
 		GridConfig = FBS_GridConfig();
 		TargetConfig = FBS_TargetConfig();
-		DynamicBoundsScaling = FBS_Dynamic();
+		DynamicSpawnAreaScaling = FBS_Dynamic_SpawnArea();
 		DynamicTargetScaling = FBS_Dynamic();
 	}
 

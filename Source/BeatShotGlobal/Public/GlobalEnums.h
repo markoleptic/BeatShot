@@ -348,6 +348,20 @@ enum class ETargetDeactivationResponse : uint8
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::ResetPositionToActivatedPosition);
 
+/** Defines in which directions the box bounds will grow */
+UENUM(BlueprintType)
+enum class EDynamicBoundsScalingPolicy : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Allow the bounds to grow horizontally */
+	Horizontal UMETA(DisplayName="Horizontal"),
+	/** Allow the bounds to grow vertically */
+	Vertical UMETA(DisplayName="Vertical"),
+	/** Allow the bounds to grow forward  */
+	Forward UMETA(DisplayName="Forward")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EDynamicBoundsScalingPolicy, EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Forward);
+
 
 // DEPRECATED
 /** How to handle activating a target. For example, if a target was spawned, activated, and deactivated but not destroyed, should another target be allowed to spawned/activated? */

@@ -99,7 +99,7 @@ GM_DynamicSpread,Dynamic
 GM_EvenSpacing,Even Vertical/Horizontal Spacing
 GM_ExpirationHealthPenalty,Expiration Health Penalty
 GM_FloorDistance,Floor Distance
-GM_ForwardSpread,Forward Spread
+GM_ForwardSpread,Forward Spread (Max if Dynamic)
 GM_GameModeDifficulty,Game Mode Difficulty
 GM_GameModeRemovedText,Game mode removed
 GM_GameModeSavedText,saved
@@ -351,3 +351,10 @@ GM_MaxDeactivatedTargetVelocity,Max Deactivated Target Velocity
 Video_EnableHDR,High Dynamic Range (HDR)
 Video_HDRNits,Display Nits
 Video_Brightness,Brightness
+GM_Dynamic_StartThreshold,Start Threshold
+GM_Dynamic_EndThreshold,End Threshold
+GM_Dynamic_DecrementAmount,Decrement Amount
+GM_Dynamic_MinHorizontalSpread,Minimum Horizontal Spread
+GM_Dynamic_MinVerticalSpread,Minimum Vertical Spread
+GM_Dynamic_MinForwardSpread,Minimum Forward Spread
+GM_DynamicBoundsScalingPolicy,Directions To Change

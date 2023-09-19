@@ -93,8 +93,8 @@ void ATargetManagerPreview::UpdateSpawnVolume() const
 		if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 		{
 			BoxBoundsWidget_Min->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			const float MinY = FMath::GridSnap<float>(GetBoxExtents_Static().Y * 0.5f, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
-			const float MinZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z * 0.5f, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
+			const float MinY = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
+			const float MinZ = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
 			BoxBoundsWidget_Min->SetBoxBounds(FVector2d(MinY, MinZ));
 			BoxBoundsWidget_Min->SetBoxBoundsPosition(GetBoxOrigin().Z - (MinZ / 2.f));
 		}

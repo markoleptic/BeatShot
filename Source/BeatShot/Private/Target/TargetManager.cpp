@@ -184,14 +184,14 @@ void ATargetManager::Init_Internal()
 
 	// Initialize SpawnAreaManager and SpawnAreas
 	const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema(false);
-	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), StaticExtents, Extrema);
+	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), GetBoxExtents_Static(), Extrema);
 	
 	Init_Tables();
 	
 	// Initialize Dynamic SpawnBox
 	if (IsDynamicBoundsScalingPolicy(GetBSConfig()->TargetConfig.BoundsScalingPolicy))
 	{
-		SetBoxExtents_Dynamic();
+		UpdateSpawnBox();
 	}
 
 	// Enable / Disable Reinforcement Learning
@@ -233,13 +233,13 @@ void ATargetManager::Init_Internal()
 void ATargetManager::Init_Tables()
 {
 	FRealCurve* PreThresholdCurve = CompositeCurveTable_SpawnArea->GetCurves()[0].CurveToEdit;
-	int32 CurveIndex = GetBSConfig()->DynamicBoundsScaling.bIsCubicInterpolation ? 2 : 1;
+	int32 CurveIndex = GetBSConfig()->DynamicSpawnAreaScaling.bIsCubicInterpolation ? 2 : 1;
 	FRealCurve* ThresholdMetCurve = CompositeCurveTable_SpawnArea->GetCurves()[CurveIndex].CurveToEdit;
 	
 	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetFirstKeyHandle(), 0);
-	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetLastKeyHandle(), GetBSConfig()->DynamicBoundsScaling.StartThreshold);
-	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetFirstKeyHandle(), GetBSConfig()->DynamicBoundsScaling.StartThreshold);
-	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetLastKeyHandle(), GetBSConfig()->DynamicBoundsScaling.EndThreshold);
+	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetLastKeyHandle(), GetBSConfig()->DynamicSpawnAreaScaling.StartThreshold);
+	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetFirstKeyHandle(), GetBSConfig()->DynamicSpawnAreaScaling.StartThreshold);
+	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetLastKeyHandle(), GetBSConfig()->DynamicSpawnAreaScaling.EndThreshold);
 	
 	PreThresholdCurve = CompositeCurveTable_TargetScale->GetCurves()[0].CurveToEdit;
 	CurveIndex = GetBSConfig()->DynamicTargetScaling.bIsCubicInterpolation ? 2 : 1;
@@ -655,12 +655,12 @@ void ATargetManager::UpdateDynamicLookUpValues(const float TimeAlive)
 	if (TimeAlive < 0.f)
 	{
 		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale - GetBSConfig()->DynamicTargetScaling.DecrementAmount, 0, GetBSConfig()->DynamicTargetScaling.EndThreshold);
-		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale - GetBSConfig()->DynamicBoundsScaling.DecrementAmount, 0, GetBSConfig()->DynamicBoundsScaling.EndThreshold);
+		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale - GetBSConfig()->DynamicSpawnAreaScaling.DecrementAmount, 0, GetBSConfig()->DynamicSpawnAreaScaling.EndThreshold);
 	}
 	else
 	{
 		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale + 1, 0, GetBSConfig()->DynamicTargetScaling.EndThreshold);
-		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale + 1, 0, GetBSConfig()->DynamicBoundsScaling.EndThreshold);
+		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale + 1, 0, GetBSConfig()->DynamicSpawnAreaScaling.EndThreshold);
 	}
 }
 
@@ -749,10 +749,7 @@ FVector ATargetManager::GetNextTargetScale() const
 USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const
 {
 	// Change the BoxExtent of the SpawnBox if dynamic
-	if (IsDynamicBoundsScalingPolicy(BoundsScalingPolicy))
-	{
-		SetBoxExtents_Dynamic();
-	}
+	UpdateSpawnBox();
 
 	// Can skip GetValidSpawnLocations if forcing every other target in center
 	if (GetBSConfig()->TargetConfig.bSpawnEveryOtherTargetInCenter && CurrentSpawnArea && CurrentSpawnArea != SpawnAreaManager->FindSpawnAreaFromLocation(GetBoxOrigin()))
@@ -820,32 +817,6 @@ void ATargetManager::ChangeTargetDirection(ATarget* InTarget, const uint8 InSpaw
 	}
 
 	InTarget->SetTargetDirection(GetNewTargetDirection(InTarget->GetActorLocation(), bLastDirectionChangeHorizontal));
-}
-
-void ATargetManager::UpdateSpawnVolume() const
-{
-	const float LocationX = GetBoxOrigin().X - GetBSConfig()->TargetConfig.BoxBounds.X * 0.5f;
-	// X Extent should be half move forward distance + max sphere radius
-	const float ExtentX = GetBSConfig()->TargetConfig.BoxBounds.X * 0.5f + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius + 10.f;
-
-	const FVector DynamicExtent = SpawnBox->Bounds.BoxExtent;
-		
-	SpawnVolume->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z));
-	SpawnVolume->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, DynamicExtent.Z));
-		
-	TopBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z + DynamicExtent.Z));
-	BottomBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z - DynamicExtent.Z));
-	LeftBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y - DynamicExtent.Y, GetBoxOrigin().Z));
-	RightBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y + DynamicExtent.Y, GetBoxOrigin().Z));
-	ForwardBox->SetRelativeLocation(FVector(LocationX + ExtentX, GetBoxOrigin().Y, GetBoxOrigin().Z));
-	BackwardBox->SetRelativeLocation(FVector(LocationX - ExtentX, GetBoxOrigin().Y, GetBoxOrigin().Z));
-		
-	TopBox->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, 0));
-	BottomBox->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, 0));
-	LeftBox->SetBoxExtent(FVector(ExtentX, 0, DynamicExtent.Z));
-	RightBox->SetBoxExtent(FVector(ExtentX, 0, DynamicExtent.Z));
-	ForwardBox->SetBoxExtent(FVector(0, DynamicExtent.Y, DynamicExtent.Z));
-	BackwardBox->SetBoxExtent(FVector(0, DynamicExtent.Y, DynamicExtent.Z));
 }
 
 void ATargetManager::UpdateTotalPossibleDamage()
@@ -920,7 +891,8 @@ FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChang
 		}
 	case EMovingTargetDirectionMode::Any:
 		{
-			const FVector NewExtent = FVector(GetBSConfig()->TargetConfig.BoxBounds.X * 0.5f, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5f);
+			// TODO something is probably wrong with this
+			const FVector NewExtent = FVector(GetBoxExtents_Static().Z * 0.5f, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5f);
 			const FVector OriginOffset = FVector(0, GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Z * 0.5f);
 			const FVector BotLeft = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, -OriginOffset.Y, -OriginOffset.Z), NewExtent);
 			const FVector BotRight = UKismetMathLibrary::RandomPointInBoundingBox(SpawnVolume->Bounds.Origin + FVector(0, OriginOffset.Y, -OriginOffset.Z), NewExtent);
@@ -1020,15 +992,66 @@ void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 	ManagedTargets = Targets;
 }
 
-void ATargetManager::SetBoxExtents_Dynamic() const
+void ATargetManager::UpdateSpawnBox() const
 {
-	const float NewFactor = GetDynamicValueFromCurveTable(true, DynamicLookUpValue_SpawnAreaScale);
-	const float LerpY = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Y * 0.5f, GetBoxExtents_Static().Y, NewFactor);
-	const float LerpZ = UKismetMathLibrary::Lerp(GetBoxExtents_Static().Z * 0.5f, GetBoxExtents_Static().Z, NewFactor);
-	const float Y = FMath::GridSnap<float>(LerpY, SpawnAreaManager->GetSpawnMemoryIncY());
-	const float Z = FMath::GridSnap<float>(LerpZ, SpawnAreaManager->GetSpawnMemoryIncZ());
-	SpawnBox->SetBoxExtent(FVector(0, Y, Z));
+	// Update dynamic Y & Z extent. Dynamic X extent updated in UpdateSpawnVolume
+	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+	{
+		const float NewFactor = GetDynamicValueFromCurveTable(true, DynamicLookUpValue_SpawnAreaScale);
+	
+		const float LerpY = UKismetMathLibrary::Lerp(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Y, GetBoxExtents_Static().Y, NewFactor);
+		const float LerpZ = UKismetMathLibrary::Lerp(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, GetBoxExtents_Static().Z, NewFactor);
+	
+		const float Y = FMath::GridSnap<float>(LerpY, SpawnAreaManager->GetSpawnMemoryIncY());
+		const float Z = FMath::GridSnap<float>(LerpZ, SpawnAreaManager->GetSpawnMemoryIncZ());
+	
+		SpawnBox->SetBoxExtent(FVector(0, Y, Z));
+	}
+	
 	UpdateSpawnVolume();
+}
+
+void ATargetManager::UpdateSpawnVolume() const
+{
+	float LocationX;
+	float ExtentX;
+
+	// Update dynamic X extent
+	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+	{
+		const float NewFactor = GetDynamicValueFromCurveTable(true, DynamicLookUpValue_SpawnAreaScale);
+		// Min X Extent needs to be multiplied by 0.5
+		const float DynamicExtentX = FMath::GridSnap<float>(UKismetMathLibrary::Lerp(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().X, GetBoxExtents_Static().X, NewFactor), 100.f);
+		
+		LocationX = GetBoxOrigin().X - DynamicExtentX;
+		// X Extent (BoxBounds.X/2) + max sphere radius
+		ExtentX = DynamicExtentX + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius + 10.f;
+	}
+	else
+	{
+		LocationX = GetBoxOrigin().X - GetBoxExtents_Static().X;
+		// X Extent (BoxBounds.X/2) + max sphere radius
+		ExtentX = GetBoxExtents_Static().X + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius + 10.f;
+	}
+	
+	const FVector DynamicExtent = SpawnBox->Bounds.BoxExtent;
+		
+	SpawnVolume->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z));
+	SpawnVolume->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, DynamicExtent.Z));
+		
+	TopBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z + DynamicExtent.Z));
+	BottomBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z - DynamicExtent.Z));
+	LeftBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y - DynamicExtent.Y, GetBoxOrigin().Z));
+	RightBox->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y + DynamicExtent.Y, GetBoxOrigin().Z));
+	ForwardBox->SetRelativeLocation(FVector(LocationX + ExtentX, GetBoxOrigin().Y, GetBoxOrigin().Z));
+	BackwardBox->SetRelativeLocation(FVector(LocationX - ExtentX, GetBoxOrigin().Y, GetBoxOrigin().Z));
+		
+	TopBox->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, 0));
+	BottomBox->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, 0));
+	LeftBox->SetBoxExtent(FVector(ExtentX, 0, DynamicExtent.Z));
+	RightBox->SetBoxExtent(FVector(ExtentX, 0, DynamicExtent.Z));
+	ForwardBox->SetBoxExtent(FVector(0, DynamicExtent.Y, DynamicExtent.Z));
+	BackwardBox->SetBoxExtent(FVector(0, DynamicExtent.Y, DynamicExtent.Z));
 }
 
 void ATargetManager::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
@@ -1073,8 +1096,8 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(co
 float ATargetManager::GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const
 {
 	UCompositeCurveTable* Table = bIsSpawnArea ? CompositeCurveTable_SpawnArea : CompositeCurveTable_TargetScale;
-	const bool bThresholdMet = bIsSpawnArea ? (InTime > GetBSConfig()->DynamicBoundsScaling.StartThreshold) : InTime > GetBSConfig()->DynamicTargetScaling.StartThreshold;
-	const bool bIsCubicInterpolation = bIsSpawnArea ? GetBSConfig()->DynamicBoundsScaling.bIsCubicInterpolation : GetBSConfig()->DynamicTargetScaling.bIsCubicInterpolation;
+	const bool bThresholdMet = bIsSpawnArea ? (InTime > GetBSConfig()->DynamicSpawnAreaScaling.StartThreshold) : InTime > GetBSConfig()->DynamicTargetScaling.StartThreshold;
+	const bool bIsCubicInterpolation = bIsSpawnArea ? GetBSConfig()->DynamicSpawnAreaScaling.bIsCubicInterpolation : GetBSConfig()->DynamicTargetScaling.bIsCubicInterpolation;
 
 	float OutXY = -1.f;
 	TEnumAsByte<EEvaluateCurveTableResult::Type> OutResult;

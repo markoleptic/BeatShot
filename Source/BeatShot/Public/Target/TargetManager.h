@@ -189,9 +189,6 @@ protected:
 	/** Returns a new unit vector direction for a target */
 	virtual FVector GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const;
 
-	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
-	virtual void UpdateSpawnVolume() const;
-
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
 	virtual void UpdateTotalPossibleDamage();
 	
@@ -225,7 +222,10 @@ protected:
 	virtual void RemoveFromManagedTargets(const FGuid GuidToRemove);
 	
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
-	virtual void SetBoxExtents_Dynamic() const;
+	virtual void UpdateSpawnBox() const;
+
+	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
+	virtual void UpdateSpawnVolume() const;
 
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	virtual void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);

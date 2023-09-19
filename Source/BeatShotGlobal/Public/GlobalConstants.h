@@ -46,16 +46,6 @@ namespace Constants
 	/** The min time required to receive credit for playing a game mode */
 	inline constexpr float MinStatRequirement_Duration_NumGamesPlayed = 60.f;
 
-	/** The min Exposure Compensation for the Post Process Volume */
-	inline constexpr float MinValue_ExposureCompensation = -3.f;
-
-	/** The max Exposure Compensation for the Post Process Volume */
-	inline constexpr float MaxValue_ExposureCompensation = 5.f;
-	
-	inline constexpr float MinValue_Brightness = 0.f;
-	inline constexpr float MaxValue_Brightness = 100.f;
-	inline constexpr float SnapSize_Brightness = 1.f;
-
 #pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */
@@ -440,6 +430,32 @@ namespace Constants
 	inline constexpr int32 MinValue_NumVerticalGridTargets = 2;
 	inline constexpr int32 MaxValue_NumVerticalGridTargets = 15;
 	inline constexpr int32 SnapSize_NumVerticalGridTargets = 1;
+
+	/** The min Exposure Compensation for the Post Process Volume */
+	inline constexpr float MinValue_ExposureCompensation = -3.f;
+
+	/** The max Exposure Compensation for the Post Process Volume */
+	inline constexpr float MaxValue_ExposureCompensation = 5.f;
+	
+	inline constexpr float MinValue_Brightness = 0.f;
+	inline constexpr float MaxValue_Brightness = 100.f;
+	inline constexpr float SnapSize_Brightness = 1.f;
+
+	inline constexpr float MinValue_DynamicStartThreshold = 0.f;
+	inline constexpr float MaxValue_DynamicStartThreshold = 100.f;
+	inline constexpr float SnapSize_DynamicStartThreshold = 1.f;
+
+	inline constexpr float MinValue_DynamicEndThreshold = 0.f;
+	inline constexpr float MaxValue_DynamicEndThreshold = 150.f;
+	inline constexpr float SnapSize_DynamicEndThreshold = 1.f;
+
+	inline constexpr float MinValue_DynamicDecrementAmount = 1.f;
+	inline constexpr float MaxValue_DynamicDecrementAmount = 150.f;
+	inline constexpr float SnapSize_DynamicDecrementAmount = 1.f;
+
+	inline const FVector MinValue_DynamicSpread(0.f, 200.f, 200.f);
+	inline const FVector MaxValue_DynamicSpread(2000.f, 3200.f, 1000.f);
+	inline const FVector SnapSize_DynamicSpread(100.f, 100.f, 100.f);
 
 #pragma endregion
 

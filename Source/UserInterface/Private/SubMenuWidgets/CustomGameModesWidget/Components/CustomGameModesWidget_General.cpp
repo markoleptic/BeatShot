@@ -30,7 +30,10 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	SliderTextBoxOption_Alpha->SetValues(MinValue_Alpha, MaxValue_Alpha, SnapSize_Alpha);
 	SliderTextBoxOption_Epsilon->SetValues(MinValue_Epsilon, MaxValue_Epsilon, SnapSize_Epsilon);
 	SliderTextBoxOption_Gamma->SetValues(MinValue_Gamma, MaxValue_Gamma, SnapSize_Gamma);
-
+	SliderTextBoxOption_StartThreshold->SetValues(MinValue_DynamicStartThreshold, MaxValue_DynamicStartThreshold, SnapSize_DynamicStartThreshold);
+	SliderTextBoxOption_EndThreshold->SetValues(MinValue_DynamicEndThreshold, MaxValue_DynamicEndThreshold, SnapSize_DynamicEndThreshold);
+	SliderTextBoxOption_DecrementAmount->SetValues(MinValue_DynamicDecrementAmount, MaxValue_DynamicDecrementAmount, SnapSize_DynamicDecrementAmount);
+	
 	SliderTextBoxOption_SpawnBeatDelay->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_TargetSpawnCD->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_MaxNumRecentTargets->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
@@ -44,6 +47,9 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	SliderTextBoxOption_TargetMaxLifeSpan->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_MaxHealth->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_ExpirationHealthPenalty->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_StartThreshold->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_EndThreshold->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_DecrementAmount->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 
 	CheckBoxOption_EnableAI->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckStateChanged_EnableAI);
 	
@@ -100,6 +106,9 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	SliderTextBoxOption_TargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
+	SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
 	
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
@@ -139,6 +148,10 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale);
+	
+	UpdateValueIfDifferent(SliderTextBoxOption_StartThreshold, BSConfig->DynamicTargetScaling.StartThreshold);
+	UpdateValueIfDifferent(SliderTextBoxOption_EndThreshold, BSConfig->DynamicTargetScaling.EndThreshold);
+	UpdateValueIfDifferent(SliderTextBoxOption_DecrementAmount, BSConfig->DynamicTargetScaling.DecrementAmount);
 
 	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy, GetStringFromEnum(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy));
 	
@@ -261,6 +274,19 @@ void UCustomGameModesWidget_General::UpdateDependentOptions_ConsecutiveTargetSca
 		SliderTextBoxOption_MinTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		SliderTextBoxOption_MaxTargetScale->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
+	
+	if (InConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
+	{
+		SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+	else
+	{
+		SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
+	}
 }
 
 void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bChecked)
@@ -335,6 +361,18 @@ void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxW
 	else if (Widget == SliderTextBoxOption_MaxTargetScale)
 	{
 		BSConfig->TargetConfig.MaxSpawnedTargetScale = Value;
+	}
+	else if (Widget == SliderTextBoxOption_StartThreshold)
+	{
+		BSConfig->DynamicTargetScaling.StartThreshold = Value;
+	}
+	else if (Widget == SliderTextBoxOption_EndThreshold)
+	{
+		BSConfig->DynamicTargetScaling.EndThreshold = Value;
+	}
+	else if (Widget == SliderTextBoxOption_DecrementAmount)
+	{
+		BSConfig->DynamicTargetScaling.DecrementAmount = Value;
 	}
 	UpdateAllOptionsValid();
 }
