@@ -22,6 +22,10 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
 			SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
 			MenuOptionWidgets.Add(MenuOption);
+			if (UComboBoxOptionWidget* ComboBoxOptionWidget = Cast<UComboBoxOptionWidget>(MenuOption))
+			{
+				ComboBoxOptionWidget->SetGameModeCategoryTagWidgets(GameModeCategoryTagWidgets);
+			}
 		}
 	});
 }

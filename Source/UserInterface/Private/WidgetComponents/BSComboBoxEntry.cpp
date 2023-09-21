@@ -11,6 +11,11 @@ void UBSComboBoxEntry::SetEntryText(const FText& InText) const
 	TextBlock_Entry->SetText(InText);
 }
 
+FText UBSComboBoxEntry::GetEntryText() const
+{
+	return TextBlock_Entry->GetText();
+}
+
 void UBSComboBoxEntry::SetTooltipImageVisibility(const bool bIsVisible) const
 {
 	if (bIsVisible && !bAlwaysHideTooltipImage)

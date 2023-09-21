@@ -95,7 +95,24 @@ struct FBSGameplayTags
 
 	FGameplayTag Cheat;
 	FGameplayTag Cheat_AimBot;
+
+	FGameplayTag GameModeCategory;
+	FGameplayTag GameModeCategory_Spawning;
+	FGameplayTag GameModeCategory_Activation;
+	FGameplayTag GameModeCategory_Deactivation;
+	FGameplayTag GameModeCategory_Destruction;
 	
+	FGameplayTag GameModeCategory_SpawnArea;
+	FGameplayTag GameModeCategory_Scale;
+	FGameplayTag GameModeCategory_Movement;
+	FGameplayTag GameModeCategory_Velocity;
+	FGameplayTag GameModeCategory_Direction;
+	FGameplayTag GameModeCategory_Health;
+	FGameplayTag GameModeCategory_Damage;
+	FGameplayTag GameModeCategory_Time;
+	FGameplayTag GameModeCategory_Dynamic;
+	FGameplayTag GameModeCategory_Target;
+	FGameplayTag GameModeCategory_AI;
 
 protected:
 	void AddAllTags(UGameplayTagsManager& Manager);

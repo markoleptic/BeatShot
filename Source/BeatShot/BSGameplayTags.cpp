@@ -99,6 +99,23 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(Cheat, "Cheat","");
 	AddTag(Cheat_AimBot, "Cheat.AimBot","");
+
+	AddTag(GameModeCategory, "GameModeCategory","");
+	AddTag(GameModeCategory_Spawning, "GameModeCategory.Spawning","");
+	AddTag(GameModeCategory_Activation, "GameModeCategory.Activation","");
+	AddTag(GameModeCategory_Deactivation, "GameModeCategory.Deactivation","");
+	AddTag(GameModeCategory_Destruction, "GameModeCategory.Destruction","");
+	AddTag(GameModeCategory_SpawnArea, "GameModeCategory.SpawnArea","");
+	AddTag(GameModeCategory_Scale, "GameModeCategory.Scale","");
+	AddTag(GameModeCategory_Movement, "GameModeCategory.Movement","");
+	AddTag(GameModeCategory_Velocity, "GameModeCategory.Velocity","");
+	AddTag(GameModeCategory_Direction, "GameModeCategory.Direction","");
+	AddTag(GameModeCategory_Health, "GameModeCategory.Health","");
+	AddTag(GameModeCategory_Damage, "GameModeCategory.Damage","");
+	AddTag(GameModeCategory_Time, "GameModeCategory.Time","");
+	AddTag(GameModeCategory_Dynamic, "GameModeCategory.Dynamic","");
+	AddTag(GameModeCategory_Target, "GameModeCategory.Target","");
+	AddTag(GameModeCategory_AI, "GameModeCategory.AI","");
 }
 
 void FBSGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

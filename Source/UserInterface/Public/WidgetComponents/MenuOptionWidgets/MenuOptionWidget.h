@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/CheckBox.h"
 #include "WidgetComponents/TooltipImage.h"
 #include "MenuOptionWidget.generated.h"
 
@@ -84,6 +84,9 @@ public:
 	/** Returns number of visible Caution Tooltips */
 	int32 GetNumberOfCautions();
 
+	/** Returns Game mode category tags associated with this menu option */
+	void GetGameModeCategoryTags(FGameplayTagContainer& OutTags) const { return OutTags.AppendTags(GameModeCategoryTags); }
+
 protected:
 	/** Executes UpdateTooltipState on each Warning Tooltip in TooltipData array. Calls SetShouldShowTooltipImage on result */
 	void UpdateWarningTooltips();
@@ -108,7 +111,7 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Description;
-
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
 	UCheckBox* CheckBox_Lock;
 
@@ -134,6 +137,10 @@ protected:
 	/** Text to show on the tooltip */
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget|Tooltip")
 	FText DescriptionTooltipText = FText();
+
+	/** The categories this menu option represents */
+	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget")
+	FGameplayTagContainer GameModeCategoryTags;
 
 	/** Contains tooltip info for all Caution or Warning Tooltips. Size of array never changes after NativeConstruct has been called. */
 	TArray<FTooltipData> WarningTooltipData;

@@ -6,6 +6,7 @@
 #include "SaveLoadInterface.h"
 #include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
+#include "WidgetComponents/GameModeCategoryTagWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
 #include "CustomGameModesWidgetComponent.generated.h"
 
@@ -123,5 +124,8 @@ protected:
 	
 	UPROPERTY()
 	TArray<TObjectPtr<UMenuOptionWidget>> MenuOptionWidgets;
+
+	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
+	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>> GameModeCategoryTagWidgets;
 };
 

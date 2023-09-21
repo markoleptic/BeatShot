@@ -42,6 +42,8 @@ public:
 	/** Sets the main text of the entry */
 	void SetEntryText(const FText& InText) const;
 
+	FText GetEntryText() const;
+
 	/** Returns the TooltipImage */
 	UTooltipImage* GetTooltipImage() const { return TooltipImage; }
 
