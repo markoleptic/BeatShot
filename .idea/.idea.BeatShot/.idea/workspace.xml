@@ -84,18 +84,45 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSComboBoxEntry_Tagged.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeCategoryTagWidget.cpp" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSComboBoxEntry_Tagged.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeCategoryTagWidget.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Private/EnumTagMap.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/EnumTagMap.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/BSGameplayTags.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Activation.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Activation.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_CustomGameModes_CreatorView.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_CustomGameModes_CreatorView.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_CustomGameModes_PropertyView.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_CustomGameModes_PropertyView.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Deactivation.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Deactivation.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_GameModePreview.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_GameModePreview.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_General.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_General.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_SpawnArea.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_SpawnArea.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Spawning.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Spawning.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Start.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/CustomGameModes/WBP_Start.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/Settings/WBP_AASettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/Settings/WBP_AASettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/Settings/WBP_InputSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/Settings/WBP_InputSettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/Settings/WBP_VideoAndSoundSettings.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/Settings/WBP_VideoAndSoundSettings.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/BSComboBoxString.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_CheckBoxOption.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_CheckBoxOption.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ColorSelectOption.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ColorSelectOption.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ComboBoxOption.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ComboBoxOption.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ComboBoxOption_Multi.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ComboBoxOption_Multi.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_EditableTextOption.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_EditableTextOption.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_SliderTextBoxOption.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_SliderTextBoxOption.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/Tooltips/WBP_Tooltip.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/Tooltips/WBP_Tooltip.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/Tooltips/WBP_TooltipImage.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/Tooltips/WBP_TooltipImage.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BoxBounds.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BoxBounds_Max.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_BoxBounds_Min.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_ComboBoxEntry.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_InputMapping.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_InputMapping.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_TargetPreview.uasset" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalStructs.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/GlobalStructs.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSComboBoxEntry.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSComboBoxEntry.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Input.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubMenuWidgets/SettingsMenuWidget_Input.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeCategoryTagWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/GameModeCategoryTagWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidgetComponent.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSComboBoxEntry.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/BSComboBoxEntry.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeCategoryTagWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/GameModeCategoryTagWidget.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h" afterDir="false" />
     </list>
@@ -58812,6 +58839,8 @@
       <workItem from="1694991162402" duration="14218000" />
       <workItem from="1695072636886" duration="13268000" />
       <workItem from="1695267133273" duration="5966000" />
+      <workItem from="1695316983205" duration="12439000" />
+      <workItem from="1695357998376" duration="7467000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>

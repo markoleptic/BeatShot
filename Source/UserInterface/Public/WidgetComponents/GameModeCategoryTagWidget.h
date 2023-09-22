@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "GameModeCategoryTagWidget.generated.h"
 
+class UImage;
 /** Visual tag that can applied to a Game mode or Game Mode setting */
 UCLASS()
 class USERINTERFACE_API UGameModeCategoryTagWidget : public UUserWidget
@@ -16,6 +17,8 @@ class USERINTERFACE_API UGameModeCategoryTagWidget : public UUserWidget
 
 public:
 	void SetText(const FText& InText);
+	void SetColor(const FLinearColor& InColor);
+	FGameplayTag GetGameModeCategoryTag() const { return GameModeCategoryTag; }
 	
 protected:
 	virtual void NativePreConstruct() override;
@@ -23,10 +26,15 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Category;
-
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UImage* Image_Material;
+	
 	UPROPERTY(EditDefaultsOnly, Category="GameModeCategoryTagWidget")
 	FText CategoryText = FText();
 
 	UPROPERTY(EditDefaultsOnly, Category="GameModeCategoryTagWidget")
 	FGameplayTag GameModeCategoryTag;
+
+	UPROPERTY(EditDefaultsOnly, Category="GameModeCategoryTagWidget")
+	FLinearColor TagColor;
 };

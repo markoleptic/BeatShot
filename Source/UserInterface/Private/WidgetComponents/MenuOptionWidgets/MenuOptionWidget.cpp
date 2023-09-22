@@ -8,6 +8,7 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Spacer.h"
 #include "Components/TextBlock.h"
+#include "WidgetComponents/GameModeCategoryTagWidget.h"
 #include "WidgetComponents/TooltipImage.h"
 
 
@@ -231,4 +232,27 @@ int32 UMenuOptionWidget::GetNumberOfCautions()
 		}
 	}
 	return Num;
+}
+
+void UMenuOptionWidget::AddGameModeCategoryTagWidget(UGameModeCategoryTagWidget* InGameModeCategoryTagWidget)
+{
+	UHorizontalBoxSlot* BoxSlot = Box_TagWidgets->AddChildToHorizontalBox(Cast<UWidget>(InGameModeCategoryTagWidget));
+	BoxSlot->SetPadding(FMargin(5.f, 0.f, 0.f, 0.f));
+	BoxSlot->SetHorizontalAlignment(HAlign_Left);
+	BoxSlot->SetVerticalAlignment(VAlign_Center);
+}
+
+void UMenuOptionWidget::AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTagWidget*>& InGameModeCategoryTagWidgets)
+{
+	InGameModeCategoryTagWidgets.Sort([&] (const UGameModeCategoryTagWidget& Widget, const UGameModeCategoryTagWidget& Widget2)
+	{
+		return Widget.GetGameModeCategoryTag().ToString() < Widget2.GetGameModeCategoryTag().ToString();
+	});
+	for (UGameModeCategoryTagWidget* Widget : InGameModeCategoryTagWidgets)
+	{
+		UHorizontalBoxSlot* BoxSlot = Box_TagWidgets->AddChildToHorizontalBox(Cast<UWidget>(Widget));
+		BoxSlot->SetPadding(FMargin(5.f, 0.f, 0.f, 0.f));
+		BoxSlot->SetHorizontalAlignment(HAlign_Left);
+		BoxSlot->SetVerticalAlignment(VAlign_Center);
+	}
 }

@@ -6,6 +6,7 @@
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/GameModeCategoryTagWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
@@ -22,9 +23,29 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
 			SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
 			MenuOptionWidgets.Add(MenuOption);
+			
+			FGameplayTagContainer Container;
+			MenuOption->GetGameModeCategoryTags(Container);
+			TArray<UGameModeCategoryTagWidget*> GameModeCategoryTagWidgets;
+			
+			for (const FGameplayTag& Tag : Container)
+			{
+				const int32 TagWidgetIndex = GameModeCategoryTagClasses.Find(Tag);
+				if (!GameModeCategoryTagClasses.IsValidIndex(TagWidgetIndex))
+				{
+					continue;
+				}
+				UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, GameModeCategoryTagClasses[TagWidgetIndex].GameModeCategoryTagClass);
+				GameModeCategoryTagWidgets.Add(TagWidget);
+			}
+			if (GameModeCategoryTagWidgets.Num() > 0)
+			{
+				MenuOption->AddGameModeCategoryTagWidgets(GameModeCategoryTagWidgets);
+			}
+			
 			if (UComboBoxOptionWidget* ComboBoxOptionWidget = Cast<UComboBoxOptionWidget>(MenuOption))
 			{
-				ComboBoxOptionWidget->SetGameModeCategoryTagWidgets(GameModeCategoryTagWidgets);
+				ComboBoxOptionWidget->SetGameModeCategoryTagWidgets(GameModeCategoryTagClasses);
 			}
 		}
 	});

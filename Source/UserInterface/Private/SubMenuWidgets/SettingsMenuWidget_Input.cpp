@@ -16,9 +16,10 @@
 void USettingsMenuWidget_Input::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	
 	MenuOption_CurrentSensitivity->EditableTextBox->SetIsReadOnly(true);
-	MenuOption_CurrentSensitivity->EditableTextBox->SetJustification(ETextJustify::Type::Right);
+	MenuOption_CurrentSensitivity->EditableTextBox->WidgetStyle.TextStyle.SetTypefaceFontName(FName("Semi-Bold"));
+	MenuOption_CurrentSensitivity->EditableTextBox->SetJustification(ETextJustify::Type::Center);
 	
 	MenuOption_NewSensitivity->SetValues(0, 100, 0.001);
 	MenuOption_NewSensitivityCsgo->SetValues(0, 100 * CsgoMultiplier, 0.001);

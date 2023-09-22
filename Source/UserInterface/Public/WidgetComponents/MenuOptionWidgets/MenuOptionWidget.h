@@ -8,6 +8,7 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "MenuOptionWidget.generated.h"
 
+class UGameModeCategoryTagWidget;
 class UCheckBox;
 class UTextBlock;
 class UEditableTextBox;
@@ -86,8 +87,17 @@ public:
 
 	/** Returns Game mode category tags associated with this menu option */
 	void GetGameModeCategoryTags(FGameplayTagContainer& OutTags) const { return OutTags.AppendTags(GameModeCategoryTags); }
+	
+	/** Adds the widget to Box_TagWidgets */
+	void AddGameModeCategoryTagWidget(UGameModeCategoryTagWidget* InGameModeCategoryTagWidget);
+
+	/** Adds the widget to Box_TagWidgets */
+	void AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTagWidget*>& InGameModeCategoryTagWidgets);
 
 protected:
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UHorizontalBox* Box_TagWidgets;
+	
 	/** Executes UpdateTooltipState on each Warning Tooltip in TooltipData array. Calls SetShouldShowTooltipImage on result */
 	void UpdateWarningTooltips();
 	

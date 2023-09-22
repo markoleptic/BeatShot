@@ -22,28 +22,35 @@ UBSComboBoxEntry* UComboBoxOptionWidget::ConstructComboBoxEntryWidget()
 UWidget* UComboBoxOptionWidget::OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method)
 {
 	UWidget* Widget = IBSWidgetInterface::OnGenerateWidgetEvent(ComboBoxString, Method);
-	
-	if (UBSComboBoxEntry_Tagged* Tagged = Cast<UBSComboBoxEntry_Tagged>(Widget))
+
+	if (!GameModeCategoryTagClasses)
 	{
-		const FText EntryText = Tagged->GetEntryText();
-		FCategoryEntryTag EntryTag;
-		EntryTag.EntryText = Tagged->GetEntryText();
-		const int32 Found = EntryTags.Find(EntryTag);
-		if (Found != INDEX_NONE)
-		{
-			for (const FGameplayTag& Tag : EntryTags[Found].GameModeCategoryTags)
-			{
-				if (GameModeCategoryTagWidgets)
-				{
-					if (const TSubclassOf<UGameModeCategoryTagWidget>* Subclass = GameModeCategoryTagWidgets->Find(Tag))
-					{
-						UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, *Subclass);
-						Tagged->AddGameModeCategoryTagWidget(TagWidget);
-					}
-				}
-			}
-		}
+		return Widget;
 	}
+	UBSComboBoxEntry_Tagged* Tagged = Cast<UBSComboBoxEntry_Tagged>(Widget);
+	if (!Tagged)
+	{
+		return Widget;
+		
+	}
+	UE_LOG(LogTemp, Display, TEXT("%s %s"), *Method, *Tagged->GetEntryText().ToString());
+	const int32 TagIndex = EntryTags.Find(Tagged->GetEntryText());
+	if (!EntryTags.IsValidIndex(TagIndex))
+	{
+		return Widget;
+	}
+	
+	for (const FGameplayTag& Tag : EntryTags[TagIndex].GameModeCategoryTags)
+	{
+		const int32 TagWidgetIndex = GameModeCategoryTagClasses->Find(Tag);
+		if (!GameModeCategoryTagClasses->IsValidIndex(TagWidgetIndex))
+		{
+			continue;
+		}
+		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, (*GameModeCategoryTagClasses)[TagWidgetIndex].GameModeCategoryTagClass);
+		Tagged->AddGameModeCategoryTagWidget(TagWidget);
+	}
+	
 	return Widget;
 }
 
@@ -51,27 +58,33 @@ UWidget* UComboBoxOptionWidget::OnSelectionChanged_GenerateMultiSelectionItem(co
 {
 	UWidget* Widget = IBSWidgetInterface::OnSelectionChanged_GenerateMultiSelectionItem(ComboBoxString, SelectedOptions);
 	
-	if (UBSComboBoxEntry_Tagged* Tagged = Cast<UBSComboBoxEntry_Tagged>(Widget))
+	/*if (!GameModeCategoryTagClasses)
 	{
-		const FText EntryText = Tagged->GetEntryText();
-		FCategoryEntryTag EntryTag;
-		EntryTag.EntryText = Tagged->GetEntryText();
-		const int32 Found = EntryTags.Find(EntryTag);
-		if (Found != INDEX_NONE)
-		{
-			for (const FGameplayTag& Tag : EntryTags[Found].GameModeCategoryTags)
-			{
-				if (GameModeCategoryTagWidgets)
-				{
-					if (const TSubclassOf<UGameModeCategoryTagWidget>* Subclass = GameModeCategoryTagWidgets->Find(Tag))
-					{
-						UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, *Subclass);
-						Tagged->AddGameModeCategoryTagWidget(TagWidget);
-					}
-				}
-			}
-		}
+		return Widget;
 	}
+	UBSComboBoxEntry_Tagged* Tagged = Cast<UBSComboBoxEntry_Tagged>(Widget);
+	if (!Tagged)
+	{
+		return Widget;
+		
+	}
+	const int32 TagIndex = EntryTags.Find(Tagged->GetEntryText());
+	if (!EntryTags.IsValidIndex(TagIndex))
+	{
+		return Widget;
+	}
+	
+	for (const FGameplayTag& Tag : EntryTags[TagIndex].GameModeCategoryTags)
+	{
+		const int32 TagWidgetIndex = GameModeCategoryTagClasses->Find(Tag);
+		if (!GameModeCategoryTagClasses->IsValidIndex(TagWidgetIndex))
+		{
+			continue;
+		}
+		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, (*GameModeCategoryTagClasses)[TagWidgetIndex].GameModeCategoryTagClass);
+		Tagged->AddGameModeCategoryTagWidget(TagWidget);
+	}*/
+	
 	return Widget;
 }
 
@@ -94,9 +107,10 @@ void UComboBoxOptionWidget::SortAndAddOptions(TArray<FString>& InOptions) const
 	{
 		ComboBox->AddOption(Option);
 	}
+	
 }
 
-void UComboBoxOptionWidget::SetGameModeCategoryTagWidgets(TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>>& InMap)
+void UComboBoxOptionWidget::SetGameModeCategoryTagWidgets(TArray<FCategoryEntryTagClass>& InArray)
 {
-	GameModeCategoryTagWidgets = &InMap;
+	GameModeCategoryTagClasses = &InArray;
 }

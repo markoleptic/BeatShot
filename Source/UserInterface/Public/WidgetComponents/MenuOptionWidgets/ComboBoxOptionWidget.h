@@ -12,20 +12,60 @@ DECLARE_DELEGATE_RetVal_OneParam(FString, FGetComboBoxEntryTooltipStringTableKey
 
 class UBSComboBoxString;
 
-USTRUCT()
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FCategoryEntryTag
 {
 	GENERATED_BODY()
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FText EntryText;
 	
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FGameplayTagContainer GameModeCategoryTags;
 
 	FORCEINLINE bool operator==(const FCategoryEntryTag& Other) const
 	{
 		return EntryText.EqualTo(Other.EntryText);
+	}
+	
+	FCategoryEntryTag()
+	{
+		EntryText = FText();
+		GameModeCategoryTags = FGameplayTagContainer();
+	}
+	
+	FCategoryEntryTag(const FText& InCompareText)
+	{
+		EntryText = InCompareText;
+		GameModeCategoryTags = FGameplayTagContainer();
+	}
+};
+
+USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+struct FCategoryEntryTagClass
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FGameplayTag GameModeCategoryTag;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UGameModeCategoryTagWidget> GameModeCategoryTagClass;
+
+	FORCEINLINE bool operator==(const FCategoryEntryTagClass& Other) const
+	{
+		return GameModeCategoryTag.MatchesTagExact(Other.GameModeCategoryTag);
+	}
+	
+	FCategoryEntryTagClass()
+	{
+		GameModeCategoryTag = FGameplayTag();
+		GameModeCategoryTagClass = TSubclassOf<UGameModeCategoryTagWidget>(nullptr);
+	}
+	FCategoryEntryTagClass(const FGameplayTag& InTag)
+	{
+		GameModeCategoryTag = InTag;
+		GameModeCategoryTagClass = TSubclassOf<UGameModeCategoryTagWidget>(nullptr);
 	}
 };
 
@@ -44,7 +84,7 @@ public:
 	void SortAndAddOptions(TArray<FString>& InOptions) const;
 
 	/** Sets the GameModeCategoryTagWidgets */
-	void SetGameModeCategoryTagWidgets(TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>>& InMap);
+	void SetGameModeCategoryTagWidgets(TArray<FCategoryEntryTagClass>& InArray);
 
 	/** An array of entries, where each entry has tags that correspond to the entry text */
 	UPROPERTY(EditInstanceOnly, Category="ComboBoxOptionWidget")
@@ -59,5 +99,5 @@ protected:
 	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
 
 	/** Pointer to CustomGameModesWidgetComponent's map */
-	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>>* GameModeCategoryTagWidgets;
+	TArray<FCategoryEntryTagClass>* GameModeCategoryTagClasses;
 };
