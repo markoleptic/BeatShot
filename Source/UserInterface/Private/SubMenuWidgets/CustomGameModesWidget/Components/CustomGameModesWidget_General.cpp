@@ -73,21 +73,21 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_RecentTargetMemoryPolicy->SortAndAddOptions(Options);
+	ComboBoxOption_RecentTargetMemoryPolicy->SortAddOptionsAndSetEnumType<ERecentTargetMemoryPolicy>(Options);
 	Options.Empty();
 
 	for (const ETargetDamageType& Method : TEnumRange<ETargetDamageType>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_DamageType->SortAndAddOptions(Options);
+	ComboBoxOption_DamageType->SortAddOptionsAndSetEnumType<ETargetDamageType>(Options);
 	Options.Empty();
 	
 	for (const EConsecutiveTargetScalePolicy& Method : TEnumRange<EConsecutiveTargetScalePolicy>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_ConsecutiveTargetScalePolicy->SortAndAddOptions(Options);
+	ComboBoxOption_ConsecutiveTargetScalePolicy->SortAddOptionsAndSetEnumType<EConsecutiveTargetScalePolicy>(Options);
 	Options.Empty();
 
 		
@@ -95,7 +95,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_MovingTargetDirectionMode->SortAndAddOptions(Options);
+	ComboBoxOption_MovingTargetDirectionMode->SortAddOptionsAndSetEnumType<EMovingTargetDirectionMode>(Options);
 	Options.Empty();
 
 	SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);

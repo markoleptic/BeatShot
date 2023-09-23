@@ -3,6 +3,7 @@
 
 #include "Target/TargetManagerPreview.h"
 #include "Components/SizeBox.h"
+#include "Components/TextBlock.h"
 #include "Target/TargetPreview.h"
 
 
@@ -12,12 +13,13 @@ ATargetManagerPreview::ATargetManagerPreview()
 }
 
 void ATargetManagerPreview::InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent,
-	const TObjectPtr<UBoxBoundsWidget> InMin, const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance)
+	const TObjectPtr<UBoxBoundsWidget> InMin, const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance, const TObjectPtr<UTextBlock> InFloorDistText)
 {
 	BoxBoundsWidget_Current = InCurrent;
 	BoxBoundsWidget_Min = InMin;
 	BoxBoundsWidget_Max = InMax;
 	FloorDistance = InFloorDistance;
+	TextBlock_FloorDistance = InFloorDistText;
 }
 
 void ATargetManagerPreview::RestartSimulation()
@@ -85,7 +87,7 @@ void ATargetManagerPreview::UpdateSpawnVolume() const
 	if (BoxBoundsWidget_Current)
 	{
 		BoxBoundsWidget_Current->SetBoxBounds(FVector2d(SpawnBox->GetUnscaledBoxExtent().Y * 2.f, SpawnBox->GetUnscaledBoxExtent().Z * 2.f));
-		BoxBoundsWidget_Current->SetBoxBoundsPosition(GetBoxOrigin().Z - SpawnBox->Bounds.BoxExtent.Z);
+		BoxBoundsWidget_Current->SetBoxBoundsPosition(GetBoxOrigin().Z - SpawnBox->Bounds.BoxExtent.Z + ClampedOverflowAmount);
 	}
 	
 	if (BoxBoundsWidget_Min)
@@ -96,7 +98,7 @@ void ATargetManagerPreview::UpdateSpawnVolume() const
 			const float MinY = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
 			const float MinZ = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
 			BoxBoundsWidget_Min->SetBoxBounds(FVector2d(MinY, MinZ));
-			BoxBoundsWidget_Min->SetBoxBoundsPosition(GetBoxOrigin().Z - (MinZ / 2.f));
+			BoxBoundsWidget_Min->SetBoxBoundsPosition(GetBoxOrigin().Z - (MinZ / 2.f) + ClampedOverflowAmount);
 		}
 		else
 		{
@@ -111,7 +113,7 @@ void ATargetManagerPreview::UpdateSpawnVolume() const
 			const float MaxY = FMath::GridSnap<float>(GetBoxExtents_Static().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
 			const float MaxZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
 			BoxBoundsWidget_Max->SetBoxBounds(FVector2d(MaxY, MaxZ));
-			BoxBoundsWidget_Max->SetBoxBoundsPosition(GetBoxOrigin().Z - (MaxZ / 2.f));
+			BoxBoundsWidget_Max->SetBoxBoundsPosition(GetBoxOrigin().Z - (MaxZ / 2.f) + ClampedOverflowAmount);
 		}
 		else
 		{
@@ -120,7 +122,26 @@ void ATargetManagerPreview::UpdateSpawnVolume() const
 	}
 	if (FloorDistance)
 	{
-		FloorDistance->SetHeightOverride(BSConfig->TargetConfig.FloorDistance);
+		FloorDistance->SetHeightOverride(FMath::Clamp(BSConfig->TargetConfig.FloorDistance, 110.f, MaxAllowedFloorDistance));
+		
+		if (BSConfig->TargetConfig.FloorDistance > MaxAllowedFloorDistance)
+		{
+			ClampedOverflowAmount = MaxAllowedFloorDistance - BSConfig->TargetConfig.FloorDistance;
+			if (!bIsExceedingMaxFloorDistance)
+			{
+				TextBlock_FloorDistance->SetText(FloorDistanceExceededText);
+			}
+			bIsExceedingMaxFloorDistance = true;
+		}
+		else
+		{
+			ClampedOverflowAmount = 0.f;
+			if (bIsExceedingMaxFloorDistance)
+			{
+				TextBlock_FloorDistance->SetText(FloorDistanceText);
+			}
+			bIsExceedingMaxFloorDistance = false;
+		}
 	}
 }
 

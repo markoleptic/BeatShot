@@ -23,29 +23,13 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
 			SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
 			MenuOptionWidgets.Add(MenuOption);
-			
-			FGameplayTagContainer Container;
-			MenuOption->GetGameModeCategoryTags(Container);
-			TArray<UGameModeCategoryTagWidget*> GameModeCategoryTagWidgets;
-			
-			for (const FGameplayTag& Tag : Container)
-			{
-				const int32 TagWidgetIndex = GameModeCategoryTagClasses.Find(Tag);
-				if (!GameModeCategoryTagClasses.IsValidIndex(TagWidgetIndex))
-				{
-					continue;
-				}
-				UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, GameModeCategoryTagClasses[TagWidgetIndex].GameModeCategoryTagClass);
-				GameModeCategoryTagWidgets.Add(TagWidget);
-			}
-			if (GameModeCategoryTagWidgets.Num() > 0)
-			{
-				MenuOption->AddGameModeCategoryTagWidgets(GameModeCategoryTagWidgets);
-			}
+
+			AddGameModeCategoryTagWidgets(MenuOption);
 			
 			if (UComboBoxOptionWidget* ComboBoxOptionWidget = Cast<UComboBoxOptionWidget>(MenuOption))
 			{
-				ComboBoxOptionWidget->SetGameModeCategoryTagWidgets(GameModeCategoryTagClasses);
+				ComboBoxOptionWidget->SetGameplayTagWidgetMap(GameplayTagWidgetMap);
+				ComboBoxOptionWidget->SetEnumTagMap(EnumTagMap);
 			}
 		}
 	});
@@ -85,6 +69,28 @@ TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::Get
 void UCustomGameModesWidgetComponent::SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	Next = InNext;
+}
+
+void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget)
+{
+	FGameplayTagContainer Container;
+	MenuOptionWidget->GetGameModeCategoryTags(Container);
+	TArray<UGameModeCategoryTagWidget*> GameModeCategoryTagWidgets;
+			
+	for (const FGameplayTag& Tag : Container)
+	{
+		const TSubclassOf<UGameModeCategoryTagWidget>* SubClass = GameplayTagWidgetMap.Find(Tag);
+		if (!SubClass)
+		{
+			continue;
+		}
+		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, *SubClass);
+		GameModeCategoryTagWidgets.Add(TagWidget);
+	}
+	if (GameModeCategoryTagWidgets.Num() > 0)
+	{
+		MenuOptionWidget->AddGameModeCategoryTagWidgets(GameModeCategoryTagWidgets);
+	}
 }
 
 bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value)

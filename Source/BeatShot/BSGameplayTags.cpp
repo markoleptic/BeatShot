@@ -108,6 +108,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(GameModeCategory_SpawnArea, "GameModeCategory.SpawnArea","");
 	AddTag(GameModeCategory_Scale, "GameModeCategory.Scale","");
 	AddTag(GameModeCategory_Movement, "GameModeCategory.Movement","");
+	AddTag(GameModeCategory_Position, "GameModeCategory.Position","");
 	AddTag(GameModeCategory_Velocity, "GameModeCategory.Velocity","");
 	AddTag(GameModeCategory_Direction, "GameModeCategory.Direction","");
 	AddTag(GameModeCategory_Health, "GameModeCategory.Health","");
@@ -116,6 +117,9 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(GameModeCategory_Dynamic, "GameModeCategory.Dynamic","");
 	AddTag(GameModeCategory_Target, "GameModeCategory.Target","");
 	AddTag(GameModeCategory_AI, "GameModeCategory.AI","");
+	AddTag(GameModeCategory_Grid, "GameModeCategory.Grid","");
+	AddTag(GameModeCategory_Effects, "GameModeCategory.Effects","");
+	AddTag(GameModeCategory_Static, "GameModeCategory.Static","");
 }
 
 void FBSGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

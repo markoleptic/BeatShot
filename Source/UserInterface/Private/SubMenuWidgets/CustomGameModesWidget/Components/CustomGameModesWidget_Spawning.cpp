@@ -45,11 +45,14 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->ClearOptions();
 	
 	TArray<FString> Options;
+	
 	for (const ETargetSpawningPolicy& Method : TEnumRange<ETargetSpawningPolicy>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
+	
 	ComboBoxOption_TargetSpawningPolicy->SortAndAddOptions(Options);
+	ComboBoxOption_TargetSpawningPolicy->SetEnumType<ETargetSpawningPolicy>();
 	Options.Empty();
 
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);

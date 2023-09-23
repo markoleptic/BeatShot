@@ -21,6 +21,7 @@ class UCustomGameModesWidget_Start;
 
 DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FRequestGameModeTemplateUpdate, const FString& GameMode, const EGameModeDifficulty& Difficulty);
+DECLARE_MULTICAST_DELEGATE(FRequestGameModePreviewUpdate);
 
 /** Contains data about the state of a CustomGameModesWidgetComponent */
 USTRUCT(BlueprintType)
@@ -110,6 +111,9 @@ public:
 	/** Broadcast true if there is a game mode breaking option */
 	FOnGameModeBreakingChange OnGameModeBreakingChange;
 
+	/** Broadcast when a widget wants to refresh the preview after a change to the config */
+	FRequestGameModePreviewUpdate RequestGameModePreviewUpdate;
+
 	FBSConfig* GetBSConfig() const { return BSConfig; }
 
 protected:
@@ -128,6 +132,9 @@ protected:
 	
 	/** Bound to all child widget's RequestComponentUpdate delegates */
 	void OnRequestComponentUpdate();
+
+	/** Bound to all child widget's OnRequestGameModePreview delegates */
+	void OnRequestGameModePreviewUpdate();
 	
 	/** Adds a widget to ChildWidgets array. Binds to its RequestComponentUpdate delegate */
 	void AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component);

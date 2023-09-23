@@ -19,7 +19,8 @@ public:
 	ATargetManagerPreview();
 
 	/** Initializes the BoxBounds widget */
-	void InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent, const TObjectPtr<UBoxBoundsWidget> InMin, const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance);
+	void InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent, const TObjectPtr<UBoxBoundsWidget> InMin,
+		const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance, const TObjectPtr<UTextBlock> InFloorDistText);
 
 	/** Reinitialize the TargetManager by calling Init */
 	void RestartSimulation();
@@ -61,4 +62,20 @@ protected:
 	
 	UPROPERTY()
 	TObjectPtr<USizeBox> FloorDistance;
+
+	UPROPERTY()
+	TObjectPtr<UTextBlock> TextBlock_FloorDistance;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TargetManagerPreview")
+	FText FloorDistanceText = FText::FromString("Floor Distance");
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TargetManagerPreview")
+	FText FloorDistanceExceededText = FText::FromString("Floor Distance (Clamped due to overflow)");
+
+	mutable bool bIsExceedingMaxFloorDistance = false;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TargetManagerPreview")
+	float MaxAllowedFloorDistance = 600.f;
+
+	mutable float ClampedOverflowAmount = 0.f;
 };

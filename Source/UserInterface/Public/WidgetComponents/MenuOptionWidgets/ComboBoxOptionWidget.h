@@ -4,70 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "BSWidgetInterface.h"
+#include "EnumTagMap.h"
 #include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
 #include "ComboBoxOptionWidget.generated.h"
 
+class UBSComboBoxEntry_Tagged;
+class UEnumTagMap;
 class UGameModeCategoryTagWidget;
-DECLARE_DELEGATE_RetVal_OneParam(FString, FGetComboBoxEntryTooltipStringTableKey, const FString& EnumString);
-
 class UBSComboBoxString;
 
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
-struct FCategoryEntryTag
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FText EntryText;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTagContainer GameModeCategoryTags;
-
-	FORCEINLINE bool operator==(const FCategoryEntryTag& Other) const
-	{
-		return EntryText.EqualTo(Other.EntryText);
-	}
-	
-	FCategoryEntryTag()
-	{
-		EntryText = FText();
-		GameModeCategoryTags = FGameplayTagContainer();
-	}
-	
-	FCategoryEntryTag(const FText& InCompareText)
-	{
-		EntryText = InCompareText;
-		GameModeCategoryTags = FGameplayTagContainer();
-	}
-};
-
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
-struct FCategoryEntryTagClass
-{
-	GENERATED_BODY()
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FGameplayTag GameModeCategoryTag;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<UGameModeCategoryTagWidget> GameModeCategoryTagClass;
-
-	FORCEINLINE bool operator==(const FCategoryEntryTagClass& Other) const
-	{
-		return GameModeCategoryTag.MatchesTagExact(Other.GameModeCategoryTag);
-	}
-	
-	FCategoryEntryTagClass()
-	{
-		GameModeCategoryTag = FGameplayTag();
-		GameModeCategoryTagClass = TSubclassOf<UGameModeCategoryTagWidget>(nullptr);
-	}
-	FCategoryEntryTagClass(const FGameplayTag& InTag)
-	{
-		GameModeCategoryTag = InTag;
-		GameModeCategoryTagClass = TSubclassOf<UGameModeCategoryTagWidget>(nullptr);
-	}
-};
+DECLARE_DELEGATE_RetVal_OneParam(FString, FGetComboBoxEntryTooltipStringTableKey, const FString& EnumString);
 
 UCLASS()
 class USERINTERFACE_API UComboBoxOptionWidget : public UMenuOptionWidget, public IBSWidgetInterface
@@ -80,15 +26,23 @@ public:
 
 	/** Executed when a ComboBoxEntry requests a tooltip description. If an empty string is returned, no tooltip image is shown */
 	FGetComboBoxEntryTooltipStringTableKey GetComboBoxEntryTooltipStringTableKey;
+	
+	/** Sorts the array alphabetically and adds each option to the ComboBox */
+	void SortAndAddOptions(TArray<FString>& InOptions);
+	
+	/** Sets the correct EnumTagMapping from the EnumTagMap depending on the enum class */
+	template<typename T>
+	void SetEnumType();
 
-	void SortAndAddOptions(TArray<FString>& InOptions) const;
+	/** Combines SetEnumType and SortAndAddOptions */
+	template<typename T>
+	void SortAddOptionsAndSetEnumType(TArray<FString>& InOptions);
 
-	/** Sets the GameModeCategoryTagWidgets */
-	void SetGameModeCategoryTagWidgets(TArray<FCategoryEntryTagClass>& InArray);
+	/** Sets the GameplayTagWidgetMap */
+	void SetGameplayTagWidgetMap(const TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>>& InMap);
 
-	/** An array of entries, where each entry has tags that correspond to the entry text */
-	UPROPERTY(EditInstanceOnly, Category="ComboBoxOptionWidget")
-	TArray<FCategoryEntryTag> EntryTags;
+	/** Sets the EnumTagMap */
+	void SetEnumTagMap(const TObjectPtr<UEnumTagMap> InEnumTagMap);
 	
 protected:
 	virtual void NativeConstruct() override;
@@ -98,6 +52,35 @@ protected:
 	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions) override;
 	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
 
-	/** Pointer to CustomGameModesWidgetComponent's map */
-	TArray<FCategoryEntryTagClass>* GameModeCategoryTagClasses;
+	/** Adds GameModeCategoryTagWidgets to the ComboBox entry if matching tags are found */
+	UWidget* AddGameModeCategoryTagWidgets(UBSComboBoxEntry_Tagged* ComboBoxEntry);
+
+	/** Pointer to CustomGameModesWidgetComponent's GameplayTagWidgetMap */
+	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>> GameplayTagWidgetMap;;
+
+	/** Pointer to CustomGameModesWidgetComponent's EnumTagMap */
+	UPROPERTY()
+	TObjectPtr<UEnumTagMap> EnumTagMap;
+
+	/** The enum to gameplay tag mapping for this combo box option widget */
+	FEnumTagMapping EnumTagMapping;
 };
+
+template <typename T>
+void UComboBoxOptionWidget::SetEnumType()
+{
+	if (const FEnumTagMapping* FoundEnumTagMapping = EnumTagMap->GetEnumTagMapping<T>())
+	{
+		EnumTagMapping = *FoundEnumTagMapping;
+	}
+}
+
+template <typename T>
+void UComboBoxOptionWidget::SortAddOptionsAndSetEnumType(TArray<FString>& InOptions)
+{
+	if (const FEnumTagMapping* FoundEnumTagMapping = EnumTagMap->GetEnumTagMapping<T>())
+	{
+		EnumTagMapping = *FoundEnumTagMapping;
+	}
+	SortAndAddOptions(InOptions);
+}

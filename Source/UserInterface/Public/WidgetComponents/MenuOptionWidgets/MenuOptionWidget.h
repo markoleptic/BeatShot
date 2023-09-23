@@ -87,9 +87,6 @@ public:
 
 	/** Returns Game mode category tags associated with this menu option */
 	void GetGameModeCategoryTags(FGameplayTagContainer& OutTags) const { return OutTags.AppendTags(GameModeCategoryTags); }
-	
-	/** Adds the widget to Box_TagWidgets */
-	void AddGameModeCategoryTagWidget(UGameModeCategoryTagWidget* InGameModeCategoryTagWidget);
 
 	/** Adds the widget to Box_TagWidgets */
 	void AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTagWidget*>& InGameModeCategoryTagWidgets);
@@ -131,6 +128,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UTooltipImage> TooltipCautionImageClass;
 
+	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|GameModeCategoryTags")
+	FMargin Padding_TagWidget;
+	
+	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|GameModeCategoryTags")
+	TEnumAsByte<EVerticalAlignment>  VerticalAlignment_TagWidget;
+
+	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|GameModeCategoryTags")
+	TEnumAsByte<EHorizontalAlignment> HorizontalAlignment_TagWidget;
+
 	/** Text that describes the values this widget controls */
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget")
 	FText DescriptionText = FText();
@@ -149,7 +155,7 @@ protected:
 	FText DescriptionTooltipText = FText();
 
 	/** The categories this menu option represents */
-	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget")
+	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget|GameModeCategoryTags")
 	FGameplayTagContainer GameModeCategoryTags;
 
 	/** Contains tooltip info for all Caution or Warning Tooltips. Size of array never changes after NativeConstruct has been called. */

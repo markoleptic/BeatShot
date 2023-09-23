@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "EnumTagMap.h"
 #include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidgetBase.h"
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
@@ -63,6 +64,9 @@ public:
 	/** Broadcast when a caution/warning tooltip needed to be added, removed, or updated. Helps synchronize caution/warnings across different components */
 	FRequestComponentUpdate RequestComponentUpdate;
 
+	/** Broadcast when a widget wants to refresh the preview after a change to the config */
+	FRequestGameModePreviewUpdate RequestGameModePreviewUpdate;
+
 	/** Returns whether or not Init has been called */
 	bool IsInitialized() const { return bIsInitialized; }
 
@@ -76,6 +80,9 @@ public:
 protected:
 	/** Sets value of Next */
 	void SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
+
+	/** Adds a GameModeCategoryTagWidget for each matching GameplayTag on the Menu Option widget*/
+	void AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget);
 
 	static bool UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value);
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption);
@@ -124,8 +131,11 @@ protected:
 	
 	UPROPERTY()
 	TArray<TObjectPtr<UMenuOptionWidget>> MenuOptionWidgets;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
-	TArray<FCategoryEntryTagClass> GameModeCategoryTagClasses;
+	TObjectPtr<UEnumTagMap> EnumTagMap;
+	
+	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
+	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>> GameplayTagWidgetMap;
 };
 

@@ -91,21 +91,28 @@ void UBSCarouselNavBar::RebuildButtons()
 				TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
 				TSharedRef<SWidget> NotificationSWidget = NotificationWidget->TakeWidget();
 				MyContainer->AddSlot()
+				.VAlign(VAlign_Center)
+				.HAlign(HAlign_Fill)
+				.FillWidth(1.f)
+				[
+					SNew(SVerticalBox)
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.HAlign(HAlign_Center)
+					.VAlign(VAlign_Bottom)
+					.Padding(NotificationWidgetContainerPadding)
+					[
+						NotificationSWidget
+					]
+					+ SVerticalBox::Slot()
+					.AutoHeight()
+					.HAlign(HAlign_Fill)
+					.VAlign(VAlign_Center)
 					.Padding(ButtonPadding)
 					[
-						SNew(SVerticalBox)
-
-						+ SVerticalBox::Slot()
-						.AutoHeight().HAlign(HAlign_Right).VAlign(VAlign_Center)
-						[
-							NotificationSWidget
-						]
-						+ SVerticalBox::Slot()
-						.AutoHeight().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
-						[
-							ButtonSWidget
-						]
-					];
+						ButtonSWidget
+					]
+				];
 			}
 		}
 		if (NumPages > 0)

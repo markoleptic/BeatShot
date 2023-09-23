@@ -41,7 +41,7 @@ void UGameModesWidget::NativeConstruct()
 	// Initialize CustomGameModesWidgets
 	CustomGameModesWidget_CreatorView->Init(BSConfig, GetGameModeDataAsset());
 	CustomGameModesWidget_PropertyView->Init(BSConfig, GetGameModeDataAsset());
-
+	
 	// Setup default custom game mode options to MultiBeat Normal
 	InitCustomGameModesWidgetOptions(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal);
 	
@@ -151,6 +151,8 @@ void UGameModesWidget::BindAllDelegates()
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	CustomGameModesWidget_CreatorView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
+
+	CustomGameModesWidget_CreatorView->RequestGameModePreviewUpdate.AddUObject(this, &ThisClass::RefreshGameModePreview);
 	
 	CustomGameModesWidget_PropertyView->RequestButtonStateUpdate.AddUObject(this, &ThisClass::UpdateSaveStartButtonStates);
 	CustomGameModesWidget_CreatorView->RequestButtonStateUpdate.AddUObject(this, &ThisClass::UpdateSaveStartButtonStates);
@@ -213,10 +215,7 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 	}
 	else if (Button == CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview)
 	{
-		if (RequestSimulateTargetManagerStateChange.IsBound())
-		{
-			RequestSimulateTargetManagerStateChange.Broadcast(true);
-		}
+		RefreshGameModePreview();
 	}
 	else if (Button == Button_StartWithoutSaving)
 	{
@@ -265,19 +264,13 @@ void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 		}
 		
 		// Execute OnCreatorViewVisibilityChanged if CreatorView is currently showing or will be showing
-		if (Box == Box_DefaultGameModes && GetCreatorViewVisible())
+		if (Box == Box_DefaultGameModes)
 		{
-			if (RequestSimulateTargetManagerStateChange.IsBound())
-			{
-				RequestSimulateTargetManagerStateChange.Broadcast(false);
-			}
+			RefreshGameModePreview();
 		}
-		else if (Box == Box_CustomGameModes && GetCreatorViewVisible())
+		else if (Box == Box_CustomGameModes)
 		{
-			if (RequestSimulateTargetManagerStateChange.IsBound())
-			{
-				RequestSimulateTargetManagerStateChange.Broadcast(true);
-			}
+			RefreshGameModePreview();
 		}
 		
 		MenuSwitcher->SetActiveWidget(Box);
@@ -462,11 +455,8 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 	
 	CustomGameModesWidget_CreatorView->UpdateOptionsFromConfig();
 	CustomGameModesWidget_PropertyView->UpdateOptionsFromConfig();
-	
-	if (GetCreatorViewVisible() && RequestSimulateTargetManagerStateChange.IsBound())
-	{
-		RequestSimulateTargetManagerStateChange.Broadcast(true);
-	}
+
+	RefreshGameModePreview();
 }
 
 FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
@@ -745,10 +735,7 @@ void UGameModesWidget::OnTransitionCompleted_ToPropertyView()
 	Box_CreatorView->SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionComplete_ToPropertyView);
 	CustomGameModesWidget_Current = CustomGameModesWidget_PropertyView;
-	if (RequestSimulateTargetManagerStateChange.IsBound())
-	{
-		RequestSimulateTargetManagerStateChange.Broadcast(false);
-	}
+	StopGameModePreview();
 }
 
 void UGameModesWidget::OnTransitionCompleted_ToCreatorView()
@@ -756,10 +743,7 @@ void UGameModesWidget::OnTransitionCompleted_ToCreatorView()
 	Box_PropertyView->SetVisibility(ESlateVisibility::Collapsed);
 	UnbindFromAnimationFinished(TransitionCustomGameModeView, OnTransitionComplete_ToCreatorView);
 	CustomGameModesWidget_Current = CustomGameModesWidget_CreatorView;
-	if (RequestSimulateTargetManagerStateChange.IsBound())
-	{
-		RequestSimulateTargetManagerStateChange.Broadcast(true);
-	}
+	RefreshGameModePreview();
 }
 
 void UGameModesWidget::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)
@@ -847,4 +831,20 @@ void UGameModesWidget::OnGameModeBreakingOptionPresentStateChanged(const bool bI
 	UE_LOG(LogTemp, Display, TEXT("OnGameModeBreakingOption GameModesWidget: %s -> %s"), *From, *To);
 	bGameModeBreakingOptionPresent = bIsPresent;
 	OnGameModeBreakingChange.Broadcast(bGameModeBreakingOptionPresent);
+}
+
+void UGameModesWidget::RefreshGameModePreview()
+{
+	if (GetCreatorViewVisible() && RequestSimulateTargetManagerStateChange.IsBound())
+	{
+		RequestSimulateTargetManagerStateChange.Broadcast(true);
+	}
+}
+
+void UGameModesWidget::StopGameModePreview()
+{
+	if (RequestSimulateTargetManagerStateChange.IsBound())
+	{
+		RequestSimulateTargetManagerStateChange.Broadcast(false);
+	}
 }

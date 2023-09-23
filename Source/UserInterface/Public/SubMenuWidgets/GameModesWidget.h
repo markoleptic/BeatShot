@@ -314,6 +314,10 @@ private:
 	 *  and Broadcasts OnGameModeBreakingChange if the value is different */
 	void OnGameModeBreakingOptionPresentStateChanged(const bool bIsPresent);
 	
+	void RefreshGameModePreview();
+
+	void StopGameModePreview();
+	
 	/** The BaseGameMode for a selected Preset Game Mode */
 	EBaseGameMode PresetSelection_PresetGameMode;
 	

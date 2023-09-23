@@ -101,10 +101,10 @@ struct FBSGameplayTags
 	FGameplayTag GameModeCategory_Activation;
 	FGameplayTag GameModeCategory_Deactivation;
 	FGameplayTag GameModeCategory_Destruction;
-	
 	FGameplayTag GameModeCategory_SpawnArea;
 	FGameplayTag GameModeCategory_Scale;
 	FGameplayTag GameModeCategory_Movement;
+	FGameplayTag GameModeCategory_Position;
 	FGameplayTag GameModeCategory_Velocity;
 	FGameplayTag GameModeCategory_Direction;
 	FGameplayTag GameModeCategory_Health;
@@ -113,6 +113,9 @@ struct FBSGameplayTags
 	FGameplayTag GameModeCategory_Dynamic;
 	FGameplayTag GameModeCategory_Target;
 	FGameplayTag GameModeCategory_AI;
+	FGameplayTag GameModeCategory_Grid;
+	FGameplayTag GameModeCategory_Effects;
+	FGameplayTag GameModeCategory_Static;
 
 protected:
 	void AddAllTags(UGameplayTagsManager& Manager);

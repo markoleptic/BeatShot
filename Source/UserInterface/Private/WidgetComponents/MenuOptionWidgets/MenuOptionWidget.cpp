@@ -234,25 +234,17 @@ int32 UMenuOptionWidget::GetNumberOfCautions()
 	return Num;
 }
 
-void UMenuOptionWidget::AddGameModeCategoryTagWidget(UGameModeCategoryTagWidget* InGameModeCategoryTagWidget)
-{
-	UHorizontalBoxSlot* BoxSlot = Box_TagWidgets->AddChildToHorizontalBox(Cast<UWidget>(InGameModeCategoryTagWidget));
-	BoxSlot->SetPadding(FMargin(5.f, 0.f, 0.f, 0.f));
-	BoxSlot->SetHorizontalAlignment(HAlign_Left);
-	BoxSlot->SetVerticalAlignment(VAlign_Center);
-}
-
 void UMenuOptionWidget::AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTagWidget*>& InGameModeCategoryTagWidgets)
 {
 	InGameModeCategoryTagWidgets.Sort([&] (const UGameModeCategoryTagWidget& Widget, const UGameModeCategoryTagWidget& Widget2)
 	{
-		return Widget.GetGameModeCategoryTag().ToString() < Widget2.GetGameModeCategoryTag().ToString();
+		return Widget.GetGameModeCategoryText().ToString() < Widget2.GetGameModeCategoryText().ToString();
 	});
 	for (UGameModeCategoryTagWidget* Widget : InGameModeCategoryTagWidgets)
 	{
 		UHorizontalBoxSlot* BoxSlot = Box_TagWidgets->AddChildToHorizontalBox(Cast<UWidget>(Widget));
-		BoxSlot->SetPadding(FMargin(5.f, 0.f, 0.f, 0.f));
-		BoxSlot->SetHorizontalAlignment(HAlign_Left);
-		BoxSlot->SetVerticalAlignment(VAlign_Center);
+		BoxSlot->SetPadding(Padding_TagWidget);
+		BoxSlot->SetHorizontalAlignment(HorizontalAlignment_TagWidget);
+		BoxSlot->SetVerticalAlignment(VerticalAlignment_TagWidget);
 	}
 }

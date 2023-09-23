@@ -53,7 +53,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_TargetActivationSelectionPolicy->SortAndAddOptions(Options);
+	ComboBoxOption_TargetActivationSelectionPolicy->SortAddOptionsAndSetEnumType<ETargetActivationSelectionPolicy>(Options);
 	Options.Empty();
 	
 	for (const ETargetActivationResponse& Method : TEnumRange<ETargetActivationResponse>())
@@ -64,7 +64,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 			Options.Add(GetStringFromEnum(Method));
 		}
 	}
-	ComboBoxOption_TargetActivationResponses->SortAndAddOptions(Options);
+	ComboBoxOption_TargetActivationResponses->SortAddOptionsAndSetEnumType<ETargetActivationResponse>(Options);
 	Options.Empty();
 	
 	SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);

@@ -19,6 +19,7 @@ public:
 	void SetText(const FText& InText);
 	void SetColor(const FLinearColor& InColor);
 	FGameplayTag GetGameModeCategoryTag() const { return GameModeCategoryTag; }
+	FText GetGameModeCategoryText() const { return CategoryText; }
 	
 protected:
 	virtual void NativePreConstruct() override;

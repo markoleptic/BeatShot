@@ -187,7 +187,7 @@ Login_NoSteamLoginButtonText,Continue without Steam sign in
 Login_NoLoginButtonText,Continue without signing in
 Login_SignedInAs,Signed in as
 Login_SignedInSteam,Signed in through Steam as
-Login_Register_SteamButtonText,Login through Steam
+Login_Register_SteamButtonText,Steam Login
 Login_SteamBody,"Something went wrong when signing in through Steam, but you're logged in using your BeatShot account."
 Login_NotSignedIn,Not signed in
 SignInState_LoggingWebBrowser,Logging in to web browser

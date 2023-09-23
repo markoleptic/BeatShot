@@ -47,21 +47,21 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_TargetDeactivationConditions->SortAndAddOptions(Options);
+	ComboBoxOption_TargetDeactivationConditions->SortAddOptionsAndSetEnumType<ETargetDeactivationCondition>(Options);
 	Options.Empty();
 	
 	for (const ETargetDeactivationResponse& Method : TEnumRange<ETargetDeactivationResponse>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_TargetDeactivationResponses->SortAndAddOptions(Options);
+	ComboBoxOption_TargetDeactivationResponses->SortAddOptionsAndSetEnumType<ETargetDeactivationResponse>(Options);
 	Options.Empty();
 	
 	for (const ETargetDestructionCondition& Method : TEnumRange<ETargetDestructionCondition>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_TargetDestructionConditions->SortAndAddOptions(Options);
+	ComboBoxOption_TargetDestructionConditions->SortAddOptionsAndSetEnumType<ETargetDestructionCondition>(Options);
 	Options.Empty();
 	
 	CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);

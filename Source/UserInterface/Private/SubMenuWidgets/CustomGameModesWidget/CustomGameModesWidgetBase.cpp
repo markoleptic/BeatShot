@@ -151,10 +151,16 @@ void UCustomGameModesWidgetBase::OnRequestComponentUpdate()
 	}
 }
 
+void UCustomGameModesWidgetBase::OnRequestGameModePreviewUpdate()
+{
+	RequestGameModePreviewUpdate.Broadcast();
+}
+
 void UCustomGameModesWidgetBase::AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component)
 {
 	ChildWidgetValidityMap.FindOrAdd(Component) = Component->GetCustomGameModeCategoryInfo();
 	Component->RequestComponentUpdate.AddUObject(this, &ThisClass::OnRequestComponentUpdate);
+	Component->RequestGameModePreviewUpdate.AddUObject(this, &ThisClass::OnRequestGameModePreviewUpdate);
 }
 
 void UCustomGameModesWidgetBase::UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent)

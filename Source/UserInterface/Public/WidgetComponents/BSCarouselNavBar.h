@@ -25,6 +25,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
 	FMargin ButtonPadding;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
+	FMargin NotificationWidgetContainerPadding;
+
 	/**
 	 * Establishes the Widget Carousel instance that this Nav Bar should interact with
 	 * @param CommonCarousel The carousel that this nav bar should be associated with and manipulate

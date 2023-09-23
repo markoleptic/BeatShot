@@ -68,21 +68,21 @@ void UCustomGameModesWidget_SpawnArea::NativeConstruct()
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_BoundsScalingPolicy->SortAndAddOptions(Options);
+	ComboBoxOption_BoundsScalingPolicy->SortAddOptionsAndSetEnumType<EBoundsScalingPolicy>(Options);
 	Options.Empty();
 
 	for (const ETargetDistributionPolicy& Method : TEnumRange<ETargetDistributionPolicy>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_TargetDistributionPolicy->SortAndAddOptions(Options);
+	ComboBoxOption_TargetDistributionPolicy->SortAddOptionsAndSetEnumType<ETargetDistributionPolicy>(Options);
 	Options.Empty();
 
 	for (const EDynamicBoundsScalingPolicy& Method : TEnumRange<EDynamicBoundsScalingPolicy>())
 	{
 		Options.Add(GetStringFromEnum(Method));
 	}
-	ComboBoxOption_DynamicBoundsScalingPolicy->SortAndAddOptions(Options);
+	ComboBoxOption_DynamicBoundsScalingPolicy->SortAddOptionsAndSetEnumType<EDynamicBoundsScalingPolicy>(Options);
 	Options.Empty();
 
 	SliderTextBoxOption_NumHorizontalGridTargets->SetVisibility(ESlateVisibility::Collapsed);
@@ -282,6 +282,7 @@ void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBo
 	else if (Widget == SliderTextBoxOption_FloorDistance)
 	{
 		BSConfig->TargetConfig.FloorDistance = Value;
+		RequestGameModePreviewUpdate.Broadcast();
 	}
 	else if (Widget == SliderTextBoxOption_MinDistanceBetweenTargets)
 	{

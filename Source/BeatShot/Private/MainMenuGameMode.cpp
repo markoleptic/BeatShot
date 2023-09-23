@@ -31,7 +31,8 @@ void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* Gam
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Current,
 		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Min,
 		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Max,
-		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->FloorDistance);
+		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->FloorDistance,
+		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->TextBlock_FloorDistance);
 	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
 	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview, &UCustomGameModesWidget_Preview::ConstructTargetWidget);
 	

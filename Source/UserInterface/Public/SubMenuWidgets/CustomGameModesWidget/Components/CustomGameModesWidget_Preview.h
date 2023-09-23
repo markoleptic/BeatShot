@@ -33,6 +33,9 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	USizeBox* FloorDistance;
+	
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UTextBlock* TextBlock_FloorDistance;
 
 	/** Shows or hides the BoxBounds Current, Min, Max and TextBlock_GameModePreviewAvailability */
 	void ToggleGameModePreview(const bool bEnable);
