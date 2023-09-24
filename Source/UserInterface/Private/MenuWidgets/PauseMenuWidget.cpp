@@ -5,6 +5,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/QuitMenuWidget.h"
+#include "Styles/MenuStyle.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
@@ -12,7 +13,7 @@
 void UPauseMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	SetStyles();
 	MenuButton_Resume->SetDefaults(Box_PauseScreen, MenuButton_Settings);
 	MenuButton_Settings->SetDefaults(Box_SettingsMenu, MenuButton_FAQ);
 	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_RestartCurrentMode);
@@ -28,6 +29,17 @@ void UPauseMenuWidget::NativeConstruct()
 	QuitMenuWidget->OnExitQuitMenu.BindUFunction(this, "SetQuitMenuButtonsInActive");
 	SettingsMenuWidget->OnRestartButtonClicked.BindUFunction(this, "OnButtonClicked_RestartCurrentMode");
 	FadeInWidget();
+}
+
+void UPauseMenuWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	SetStyles();
+}
+
+void UPauseMenuWidget::SetStyles()
+{
+	MenuStyle = IBSWidgetInterface::GetStyleCDO(MenuStyleClass);
 }
 
 void UPauseMenuWidget::SetQuitMenuButtonsInActive()

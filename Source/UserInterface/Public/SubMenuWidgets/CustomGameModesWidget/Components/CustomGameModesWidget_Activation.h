@@ -6,7 +6,7 @@
 #include "CustomGameModesWidgetComponent.h"
 #include "CustomGameModesWidget_Activation.generated.h"
 
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
@@ -38,15 +38,15 @@ protected:
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& Policy);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxNumActivatedTargetsAtOnce;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumActivatedTargetsAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantNumTargetsToActivateAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_NumTargetsToActivateAtOnce;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumTargetsToActivateAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinNumTargetsToActivateAtOnce;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinNumTargetsToActivateAtOnce;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxNumTargetsToActivateAtOnce;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumTargetsToActivateAtOnce;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationSelectionPolicy;
@@ -54,23 +54,23 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationResponses;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_LifetimeTargetScaleMultiplier;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_LifetimeTargetScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_ActivatedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_ActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinActivatedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxActivatedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxActivatedTargetVelocity;
 
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked);
 
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);

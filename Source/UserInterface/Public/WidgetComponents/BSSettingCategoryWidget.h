@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BSWidgetInterface.h"
-#include "BSVerticalBox.h"
+#include "Boxes/BSVerticalBox.h"
 #include "Blueprint/UserWidget.h"
 #include "BSSettingCategoryWidget.generated.h"
 

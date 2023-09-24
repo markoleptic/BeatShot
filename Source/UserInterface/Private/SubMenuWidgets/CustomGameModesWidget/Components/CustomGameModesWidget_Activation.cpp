@@ -4,10 +4,10 @@
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Activation.h"
 #include "Components/CheckBox.h"
 #include "Components/Slider.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void UCustomGameModesWidget_Activation::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
@@ -244,7 +244,7 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantActivatedTar
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Activation::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void UCustomGameModesWidget_Activation::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_MaxNumActivatedTargetsAtOnce)
 	{

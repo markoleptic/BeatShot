@@ -4,8 +4,11 @@
 #include "WidgetComponents/MenuOptionWidgets/ColorSelectOptionWidget.h"
 #include "BSWidgetInterface.h"
 #include "Components/EditableTextBox.h"
+#include "Components/HorizontalBoxSlot.h"
 #include "Components/Image.h"
 #include "Components/Slider.h"
+#include "Components/TextBlock.h"
+#include "Styles/MenuOptionStyle.h"
 
 void UColorSelectOptionWidget::NativeConstruct()
 {
@@ -21,6 +24,82 @@ void UColorSelectOptionWidget::NativeConstruct()
 	ColorRSlider->OnValueChanged.AddDynamic(this, &UColorSelectOptionWidget::OnColorRSliderChange);
 	ColorGSlider->OnValueChanged.AddDynamic(this, &UColorSelectOptionWidget::OnColorGSliderChange);
 	ColorBSlider->OnValueChanged.AddDynamic(this, &UColorSelectOptionWidget::OnColorBSliderChange);
+}
+
+void UColorSelectOptionWidget::SetStyling()
+{
+	Super::SetStyling();
+	if (MenuOptionStyle)
+	{
+		const FMargin NewMargin(0.f, MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftHorizontalBox.Top,
+		                        0.f, MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftHorizontalBox.Bottom);
+		if (ColorAValue)
+		{
+			ColorAValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
+		}
+		if (ColorRValue)
+		{
+			ColorRValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
+		}
+		if (ColorGValue)
+		{
+			ColorGValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
+		}
+		if (ColorBValue)
+		{
+			ColorBValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
+		}
+		if (HexValue)
+		{
+			ColorBValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
+		}
+		if (ColorRText)
+		{
+			ColorRText->SetFont(MenuOptionStyle->Font_DescriptionText);
+			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorRText->Slot);
+			if (HorizontalBoxSlot)
+			{
+				HorizontalBoxSlot->SetPadding(NewMargin);
+			}
+		}
+		if (ColorGText)
+		{
+			ColorGText->SetFont(MenuOptionStyle->Font_DescriptionText);
+			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorGText->Slot);
+			if (HorizontalBoxSlot)
+			{
+				HorizontalBoxSlot->SetPadding(NewMargin);
+			}
+		}
+		if (ColorBText)
+		{
+			ColorBText->SetFont(MenuOptionStyle->Font_DescriptionText);
+			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorBText->Slot);
+			if (HorizontalBoxSlot)
+			{
+				HorizontalBoxSlot->SetPadding(NewMargin);
+			}
+		}
+		if (ColorAText)
+		{
+			ColorAText->SetFont(MenuOptionStyle->Font_DescriptionText);
+			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(ColorAText->Slot);
+			if (HorizontalBoxSlot)
+			{
+				HorizontalBoxSlot->SetPadding(NewMargin);
+			}
+		}
+		if (HexText)
+		{
+			HexText->SetFont(MenuOptionStyle->Font_DescriptionText);
+			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(HexText->Slot);
+			if (HorizontalBoxSlot)
+			{
+
+				HorizontalBoxSlot->SetPadding(NewMargin);
+			}
+		}
+	}
 }
 
 void UColorSelectOptionWidget::InitializeColor(const FLinearColor& NewColor)

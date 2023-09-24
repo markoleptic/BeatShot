@@ -16,8 +16,5 @@ public:
 	UEditableTextBox* EditableTextBox;
 	
 protected:
-	virtual void NativeConstruct() override;
-	
-	UFUNCTION()
-	void OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType);
+	virtual void SetStyling() override;
 };

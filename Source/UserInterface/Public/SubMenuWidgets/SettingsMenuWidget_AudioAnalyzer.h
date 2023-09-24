@@ -4,28 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
-#include "Blueprint/UserWidget.h"
-#include "WidgetComponents/BandChannelWidget.h"
-#include "WidgetComponents/BandThresholdWidget.h"
+#include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_AudioAnalyzer.generated.h"
+
+class UBandThresholdWidget;
+class UBandChannelWidget;
+class USliderTextBoxOptionWidget;
+class UComboBoxOptionWidget;
+class UBSButton;
+class USavedTextWidget;
+class UPopupMessageWidget;
 
 DECLARE_DELEGATE(FOnRestartButtonClicked);
 
-class USlider;
-class UBSButton;
-class UEditableTextBox;
-class UVerticalBox;
-class UHorizontalBox;
-class UComboBoxString;
-class UComboBox;
-class UTextBlock;
-class USavedTextWidget;
-class UProgressBar;
-class UPopupMessageWidget;
-
 /** Settings category widget holding AudioAnalyzer settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UBSSettingCategoryWidget,  public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -58,18 +52,16 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_NumBandChannels;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_TimeWindow;
 	
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UVerticalBox* Box_BandChannelBounds;
+	UBSVerticalBox* Box_BandChannelBounds;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UVerticalBox* Box_BandThresholdBounds;
-	
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UComboBoxString* ComboBox_NumBandChannels;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	USlider* Slider_TimeWindow;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UEditableTextBox* Value_TimeWindow;
+	UBSVerticalBox* Box_BandThresholdBounds;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSButton* Button_Reset;
@@ -82,18 +74,16 @@ protected:
 	FPlayerSettings_AudioAnalyzer AASettings;
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer NewAASettings;
-
+	
 	UFUNCTION()
 	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
 	UFUNCTION()
 	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
+
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
-	void OnSelectionChanged_NumBandChannels(FString NewNum, ESelectInfo::Type SelectType);
-	UFUNCTION()
-	void OnTextCommitted_TimeWindow(const FText& NewTimeWindow, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnSliderChanged_TimeWindow(const float NewTimeWindow);
+	void OnSelectionChanged_NumBandChannels(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	

@@ -21,19 +21,38 @@ void UFeedbackWidget::NativeConstruct()
 	Button_Back->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Okay->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	
+	Button_BugReport->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
+	Button_BugReport->SetDefaults(0, Button_Feedback);
+	Button_Feedback->SetDefaults(1, Button_BugReport);
+	
 	Value_Title->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Title);
 	Value_Content->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Content);
 	
 	OnPostFeedbackResponseDelegate.BindUObject(this, &ThisClass::OnPostFeedbackResponse);
 
 	Button_SubmitFeedback->SetIsEnabled(false);
+	Value_Title->SetIsReadOnly(true);
+	Value_Content->SetIsReadOnly(true);
 }
 
 void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
-	if (Button == Button_SubmitFeedback)
+	if (Button == Button_Feedback)
 	{
-		const FJsonFeedback Feedback(Value_Title->GetText().ToString(), Value_Content->GetText().ToString());
+		TitlePrefix = BugReportTitle;
+		Value_Title->SetIsReadOnly(false);
+		Value_Content->SetIsReadOnly(false);
+	}
+	else if (Button == Button_BugReport)
+	{
+		TitlePrefix = FeedbackTitle;
+		Value_Title->SetIsReadOnly(false);
+		Value_Content->SetIsReadOnly(false);
+	}
+	else if (Button == Button_SubmitFeedback)
+	{
+		const FJsonFeedback Feedback(TitlePrefix.ToString() + Value_Title->GetText().ToString(), Value_Content->GetText().ToString());
 		PostFeedback(Feedback, OnPostFeedbackResponseDelegate);
 		PlayFadeOut();
 	}
@@ -71,19 +90,11 @@ void UFeedbackWidget::OnPostFeedbackResponse(const bool bSuccess)
 
 void UFeedbackWidget::OnTextCommitted_Title(const FText& NewTitle, ETextCommit::Type CommitType)
 {
-	if (!NewTitle.IsEmptyOrWhitespace() && !Value_Content->GetText().IsEmptyOrWhitespace())
-	{
-		Button_SubmitFeedback->SetIsEnabled(true);
-	}
-	else
-	{
-		Button_SubmitFeedback->SetIsEnabled(false);
-	}
 }
 
 void UFeedbackWidget::OnTextCommitted_Content(const FText& NewContent, ETextCommit::Type CommitType)
 {
-	if (!NewContent.IsEmptyOrWhitespace() && !Value_Title->GetText().IsEmptyOrWhitespace())
+	if (!NewContent.IsEmptyOrWhitespace())
 	{
 		Button_SubmitFeedback->SetIsEnabled(true);
 	}

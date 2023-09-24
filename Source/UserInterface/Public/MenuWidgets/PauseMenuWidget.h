@@ -7,6 +7,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PauseMenuWidget.generated.h"
 
+class UMenuStyle;
 class UQuitMenuWidget;
 class UVerticalBox;
 class UWidgetSwitcher;
@@ -33,6 +34,15 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
+
+	UPROPERTY(EditDefaultsOnly, Category="MainMenuWidget")
+	TSubclassOf<UMenuStyle> MenuStyleClass;
+
+	UPROPERTY()
+	const UMenuStyle* MenuStyle;
+
+	void SetStyles();
 
 #pragma region MenuWidgets
 

@@ -7,7 +7,7 @@
 #include "CustomGameModesWidget_General.generated.h"
 
 class UCheckBoxOptionWidget;
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UComboBoxOptionWidget;
 
 UCLASS()
@@ -37,52 +37,52 @@ protected:
 	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_SpawnBeatDelay;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_SpawnBeatDelay;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_TargetSpawnCD;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetSpawnCD;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_RecentTargetMemoryPolicy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxNumRecentTargets;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumRecentTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_RecentTargetTimeLength;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_RecentTargetTimeLength;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_EnableAI;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_Alpha;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_Alpha;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_Epsilon;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_Epsilon;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_Gamma;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_Gamma;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_TargetMaxLifeSpan;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetMaxLifeSpan;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_UnlimitedTargetHealth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxHealth;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxHealth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_ExpirationHealthPenalty;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_ExpirationHealthPenalty;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_ConsecutiveTargetScalePolicy;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_TargetScale;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinTargetScale;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinTargetScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxTargetScale;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxTargetScale;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_StartThreshold;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_StartThreshold;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_EndThreshold;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_EndThreshold;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_DecrementAmount;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_DecrementAmount;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_DamageType;
@@ -94,7 +94,7 @@ protected:
 	UFUNCTION()
 	void OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked);
 	
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 
 	UFUNCTION()
 	void OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);

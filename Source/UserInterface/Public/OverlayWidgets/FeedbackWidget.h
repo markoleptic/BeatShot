@@ -40,6 +40,11 @@ protected:
 	UMultiLineEditableTextBox* Value_Content;
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UBSButton* Button_BugReport;
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UBSButton* Button_Feedback;
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSButton* Button_SubmitFeedback;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSButton* Button_Back;
@@ -83,4 +88,8 @@ private:
 
 	/** Always bound to FadeOutResponse animation and SetCollapsedAndUnbindDelegates */
 	FWidgetAnimationDynamicEvent FadeOutResponseDelegate;
+
+	FText TitlePrefix;
+	FText BugReportTitle = FText::FromString("Bug Report: ");
+	FText FeedbackTitle = FText::FromString("Feedback: ");
 };

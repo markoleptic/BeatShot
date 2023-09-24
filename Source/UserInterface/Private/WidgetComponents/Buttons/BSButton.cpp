@@ -12,8 +12,8 @@ void UBSButton::NativePreConstruct()
 
 	if (TextBlock)
 	{
-		TextBlock->SetText(ButtonText);
-		TextBlock->SetFont(DefaultFontInfo);
+		SetButtonText(ButtonText);
+		SetButtonFont(DefaultFontInfo);
 	}
 	if (ImageMaterial)
 	{
@@ -29,8 +29,8 @@ void UBSButton::NativeConstruct()
 
 	if (TextBlock)
 	{
-		TextBlock->SetText(ButtonText);
-		TextBlock->SetFont(DefaultFontInfo);
+		SetButtonText(ButtonText);
+		SetButtonFont(DefaultFontInfo);
 	}
 	if (ImageMaterial)
 	{
@@ -84,6 +84,15 @@ void UBSButton::SetButtonText(const FText& InText)
 {
 	ButtonText = InText;
 	TextBlock->SetText(ButtonText);
+}
+
+void UBSButton::SetButtonFont(const FSlateFontInfo& InSlateFontInfo)
+{
+	DefaultFontInfo = InSlateFontInfo;
+	if (TextBlock)
+	{
+		TextBlock->SetFont(InSlateFontInfo);
+	}
 }
 
 void UBSButton::OnPressed_Button()

@@ -2,6 +2,9 @@
 
 
 #include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
+
+#include "BSWidgetInterface.h"
+#include "Components/BorderSlot.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "Components/HorizontalBox.h"
@@ -10,22 +13,25 @@
 #include "Components/TextBlock.h"
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
 #include "WidgetComponents/TooltipImage.h"
+#include "Styles/MenuOptionStyle.h"
 
 
 void UMenuOptionWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
+	
 	SetIndentLevel(IndentLevel);
 	SetShowTooltipImage(bShowTooltipImage);
 	SetShowCheckBoxLock(bShowCheckBoxLock);
 	SetDescriptionText(DescriptionText);
 	SetTooltipText(DescriptionTooltipText);
+
+	SetStyling();
 }
 
 void UMenuOptionWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
 	if (CheckBox_Lock)
 	{
 		CheckBox_Lock->OnCheckStateChanged.AddUniqueDynamic(this, &ThisClass::OnCheckBox_LockStateChanged);
@@ -35,15 +41,53 @@ void UMenuOptionWidget::NativeConstruct()
 	SetShowCheckBoxLock(bShowCheckBoxLock);
 	SetDescriptionText(DescriptionText);
 	SetTooltipText(DescriptionTooltipText);
+
+	SetStyling();
+}
+
+void UMenuOptionWidget::SetStyling()
+{
+	MenuOptionStyle = IBSWidgetInterface::GetStyleCDO(MenuOptionStyleClass);
+
+	if (!MenuOptionStyle)
+	{
+		return;
+	}
+	
+	if (Box_Left)
+	{
+		UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot);
+		if (BorderSlot)
+		{
+			BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftHorizontalBox);
+		}
+	}
+	if (Box_TagsAndTooltips)
+	{
+		UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(Box_TagsAndTooltips->Slot);
+		if (HorizontalBoxSlot)
+		{
+			HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_TagsAndTooltips);
+		}
+	}
+	if (TextBlock_Description)
+	{
+		TextBlock_Description->SetFont(MenuOptionStyle->Font_DescriptionText);
+		UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Description->Slot);
+		if (HorizontalBoxSlot)
+		{
+			HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_DescriptionText);
+		}
+	}
+	if (Indent_Left)
+	{
+		Indent_Left->SetSize(FVector2d(IndentLevel * MenuOptionStyle->IndentAmount, 0.f));
+	}
 }
 
 void UMenuOptionWidget::SetIndentLevel(const int32 Value)
 {
 	IndentLevel = Value;
-	if (Indent_Left)
-	{
-		Indent_Left->SetSize(FVector2d(Value * 50.f, 0.f));
-	}
 }
 
 void UMenuOptionWidget::SetShowTooltipImage(const bool bShow)
@@ -85,13 +129,10 @@ void UMenuOptionWidget::SetShowCheckBoxLock(const bool bShow)
 void UMenuOptionWidget::SetDescriptionText(const FText& InText)
 {
 	DescriptionText = InText;
-
-	if (!TextBlock_Description)
+	if (TextBlock_Description)
 	{
-		return;
+		TextBlock_Description->SetText(InText);
 	}
-	
-	TextBlock_Description->SetText(InText);
 }
 
 void UMenuOptionWidget::SetTooltipText(const FText& InText)
@@ -157,19 +198,19 @@ void UMenuOptionWidget::ConstructTooltipWarningImageIfNeeded(FTooltipData& InToo
 	UTooltipImage* NewTooltipImage;
 	switch (InTooltipData.TooltipType) {
 	case ETooltipImageType::Caution:
-		NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipCautionImageClass);
+		NewTooltipImage = CreateWidget<UTooltipImage>(this, MenuOptionStyle->TooltipCautionImageClass);
 		break;
 	case ETooltipImageType::Warning:
-		NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+		NewTooltipImage = CreateWidget<UTooltipImage>(this, MenuOptionStyle->TooltipWarningImageClass);
 		break;
 	case ETooltipImageType::Default:
 	default:
-		NewTooltipImage = CreateWidget<UTooltipImage>(this, TooltipWarningImageClass);
+		NewTooltipImage = CreateWidget<UTooltipImage>(this, MenuOptionStyle->TooltipWarningImageClass);
 		break;
 	}
 	UHorizontalBoxSlot* HorizontalBoxSlot = TooltipBox->AddChildToHorizontalBox(NewTooltipImage);
 	HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
-	HorizontalBoxSlot->SetPadding(FMargin(10.f, 0.f, 0.f, 0.f));
+	HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_TooltipWarning);
 	HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
 	
 	InTooltipData.TooltipImage = NewTooltipImage;
@@ -243,8 +284,8 @@ void UMenuOptionWidget::AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTa
 	for (UGameModeCategoryTagWidget* Widget : InGameModeCategoryTagWidgets)
 	{
 		UHorizontalBoxSlot* BoxSlot = Box_TagWidgets->AddChildToHorizontalBox(Cast<UWidget>(Widget));
-		BoxSlot->SetPadding(Padding_TagWidget);
-		BoxSlot->SetHorizontalAlignment(HorizontalAlignment_TagWidget);
-		BoxSlot->SetVerticalAlignment(VerticalAlignment_TagWidget);
+		BoxSlot->SetPadding(MenuOptionStyle->Padding_TagWidget);
+		BoxSlot->SetHorizontalAlignment(MenuOptionStyle->HorizontalAlignment_TagWidget);
+		BoxSlot->SetVerticalAlignment(MenuOptionStyle->VerticalAlignment_TagWidget);
 	}
 }

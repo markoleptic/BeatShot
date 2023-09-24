@@ -2,9 +2,9 @@
 
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_SpawnArea.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 using namespace Constants;
 
@@ -249,7 +249,7 @@ void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_BoundsScalingPolic
 	}
 }
 
-void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_NumHorizontalGridTargets)
 	{

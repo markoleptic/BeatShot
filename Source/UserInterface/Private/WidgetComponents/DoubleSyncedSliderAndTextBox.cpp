@@ -11,7 +11,7 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Spacer.h"
 #include "Kismet/KismetStringLibrary.h"
-#include "WidgetComponents/BSHorizontalBox.h"
+#include "WidgetComponents/Boxes/BSHorizontalBox.h"
 
 float UDoubleSyncedSliderAndTextBox::GetMinValue() const
 {

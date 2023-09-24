@@ -9,7 +9,7 @@
 #include "SettingsMenuWidget_Input.generated.h"
 
 class UEditableTextBoxOptionWidget;
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UScrollBox;
 class UInputKeySelector;
 class USavedTextWidget;
@@ -61,9 +61,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBoxOptionWidget* MenuOption_CurrentSensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_NewSensitivity;
+	USliderTextBoxOptionWidget* MenuOption_NewSensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_NewSensitivityCsgo;
+	USliderTextBoxOptionWidget* MenuOption_NewSensitivityCsgo;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UBSButton* Button_Save;
@@ -78,7 +78,7 @@ protected:
 	TMap<FName, FKey> TempKeybindings;
 	FPlayerSettings_User InitialPlayerSettings;
 
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);

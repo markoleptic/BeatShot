@@ -4,10 +4,10 @@
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Deactivation.h"
 
 #include "Components/CheckBox.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void UCustomGameModesWidget_Deactivation::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
@@ -206,7 +206,7 @@ void UCustomGameModesWidget_Deactivation::OnCheckStateChanged_ConstantDeactivate
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Deactivation::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void UCustomGameModesWidget_Deactivation::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_DeactivatedTargetScaleMultiplier)
 	{

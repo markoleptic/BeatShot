@@ -6,7 +6,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
-#include "WidgetComponents/HitTimingWidget.h"
+#include "OverlayWidgets/HitTimingWidget.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 

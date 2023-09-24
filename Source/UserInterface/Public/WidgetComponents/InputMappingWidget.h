@@ -7,6 +7,8 @@
 #include "EnhancedActionKeyMapping.h"
 #include "InputMappingWidget.generated.h"
 
+class UHorizontalBox;
+class UMenuOptionStyle;
 class UTextBlock;
 class UInputKeySelector;
 
@@ -19,6 +21,8 @@ class USERINTERFACE_API UInputMappingWidget : public UUserWidget
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
+	virtual void SetStyles();
 
 public:
 	void Init(const TArray<FEnhancedActionKeyMapping>& Mappings);
@@ -39,6 +43,11 @@ public:
 	void SetKey(const FName MappingName, const FKey NewKey);
 
 protected:
+	UPROPERTY(EditDefaultsOnly, Category="InputMappingWidget|Style")
+	TSubclassOf<UMenuOptionStyle> MenuOptionStyleClass;
+
+	UPROPERTY()
+	const UMenuOptionStyle* MenuOptionStyle;
 
 	UFUNCTION()
 	void OnIsSelectingKeyChanged_Slot1();
@@ -51,6 +60,9 @@ protected:
 
 	UFUNCTION()
 	void OnKeySelected_Slot2(FInputChord SelectedKey);
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* Box_Left;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_KeyDescription;

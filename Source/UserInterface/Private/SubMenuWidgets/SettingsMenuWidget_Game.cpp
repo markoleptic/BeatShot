@@ -8,7 +8,7 @@
 #include "WidgetComponents/SavedTextWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ColorSelectOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void USettingsMenuWidget_Game::NativeConstruct()
 {
@@ -125,7 +125,7 @@ void USettingsMenuWidget_Game::OnColorChanged_BeatGridInactive(const FLinearColo
 	NewGameSettings.InactiveTargetColor = NewColor;
 }
 
-void USettingsMenuWidget_Game::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void USettingsMenuWidget_Game::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == MenuOption_CombatTextFrequency)
 	{

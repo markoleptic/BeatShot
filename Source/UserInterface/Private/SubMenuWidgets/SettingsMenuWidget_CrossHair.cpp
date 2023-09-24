@@ -8,7 +8,7 @@
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ColorSelectOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void USettingsMenuWidget_CrossHair::NativeConstruct()
 {
@@ -55,7 +55,7 @@ void USettingsMenuWidget_CrossHair::SetCrossHairOptions(const FPlayerSettings_Cr
 	CrossHairWidget->InitializeCrossHair(CrossHairSettings);
 }
 
-void USettingsMenuWidget_CrossHair::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void USettingsMenuWidget_CrossHair::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == MenuOption_InnerOffset)
 	{

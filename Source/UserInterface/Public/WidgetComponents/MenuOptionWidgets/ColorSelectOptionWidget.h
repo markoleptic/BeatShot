@@ -21,8 +21,9 @@ class USERINTERFACE_API UColorSelectOptionWidget : public UMenuOptionWidget
 {
 	GENERATED_BODY()
 
-	protected:
+protected:
 	virtual void NativeConstruct() override;
+	virtual void SetStyling() override;
 
 public:
 	void InitializeColor(const FLinearColor& NewColor);
@@ -40,6 +41,16 @@ protected:
 	UEditableTextBox* ColorBValue;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* HexValue;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* ColorRText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* ColorGText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* ColorBText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* ColorAText;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+    UTextBlock* HexText;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* ColorASlider;

@@ -8,6 +8,7 @@
 #include "WidgetComponents/TooltipImage.h"
 #include "MenuOptionWidget.generated.h"
 
+class UMenuOptionStyle;
 class UGameModeCategoryTagWidget;
 class UCheckBox;
 class UTextBlock;
@@ -29,6 +30,7 @@ class USERINTERFACE_API UMenuOptionWidget : public UUserWidget
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
+	virtual void SetStyling();
 
 public:
 	/** Sets the left hand side indent, with each level increasing by 50 */
@@ -106,12 +108,18 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox;
-
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* DescriptionTooltip;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TooltipBox;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* Box_Left;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* Box_TagsAndTooltips;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USpacer* Indent_Left;
@@ -122,20 +130,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
 	UCheckBox* CheckBox_Lock;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UTooltipImage> TooltipWarningImageClass;
+	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|Style")
+	TSubclassOf<UMenuOptionStyle> MenuOptionStyleClass;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UTooltipImage> TooltipCautionImageClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|GameModeCategoryTags")
-	FMargin Padding_TagWidget;
-	
-	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|GameModeCategoryTags")
-	TEnumAsByte<EVerticalAlignment>  VerticalAlignment_TagWidget;
-
-	UPROPERTY(EditDefaultsOnly, Category="MenuOptionWidget|GameModeCategoryTags")
-	TEnumAsByte<EHorizontalAlignment> HorizontalAlignment_TagWidget;
+	UPROPERTY()
+	const UMenuOptionStyle* MenuOptionStyle;
 
 	/** Text that describes the values this widget controls */
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget")

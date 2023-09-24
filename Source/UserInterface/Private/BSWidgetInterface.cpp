@@ -6,8 +6,8 @@
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Kismet/KismetStringLibrary.h"
-#include "WidgetComponents/BSComboBoxString.h"
-#include "WidgetComponents/BSComboBoxEntry.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxEntry.h"
 #include "WidgetComponents/TooltipImage.h"
 #include "WidgetComponents/TooltipWidget.h"
 

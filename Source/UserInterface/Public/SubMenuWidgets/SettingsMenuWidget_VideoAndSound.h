@@ -8,7 +8,10 @@
 #include "WidgetComponents/Buttons/VideoSettingButton.h"
 #include "SettingsMenuWidget_VideoAndSound.generated.h"
 
-class USliderTextBoxWidget;
+class UVideoSettingOptionWidget;
+class UEditableTextBoxOptionWidget;
+class UComboBoxOptionWidget;
+class USliderTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UCheckBox;
 class UComboBoxString;
@@ -30,8 +33,6 @@ class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCat
 	friend class USettingsMenuWidget;
 	
 	virtual void NativeConstruct() override;
-	virtual TSharedRef<SWidget> RebuildWidget() override;
-	virtual void InitSettingCategoryWidget() override;
 
 	/** Populates the settings menu with InVideoAndSoundSettings */
 	void InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
@@ -70,239 +71,70 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_HDREnabled;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_HDRNits;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_HDRNits;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_Brightness;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_Brightness;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_GlobalSound;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_GlobalSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_MenuSound;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MenuSound;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_MusicSound;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_AntiAliasing;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_GlobalIllumination;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_PostProcessing;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Reflection;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Shadow;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Shading;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Texture;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ViewDistance;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_VisualEffect;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_FrameLimitMenu;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_FrameLimitGame;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Resolution;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_WindowMode;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_FPSCounter;
-	
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MusicSound;
 
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_WindowMode;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_Resolution;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_DLSS;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_DLSS_FrameGeneration;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_DLSS_SuperResolution;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_DLSS_Sharpness;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_NIS;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_NIS_Mode;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NIS_Sharpness;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_Reflex;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_ResolutionScale;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_VSync;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_GlobalSound;
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_AA;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_MenuSound;
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_GI;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_MusicSound;
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_PP;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_RQ;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_SGQ;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_SWQ;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_TQ;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_VD;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UVideoSettingOptionWidget* VideoSettingOptionWidget_VEQ;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_GlobalSound;
+	UCheckBoxOptionWidget* CheckBoxOption_FPSCounter;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_MenuSound;
+	UEditableTextBoxOptionWidget* EditableTextBoxOption_FPSLimitMenu;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USlider* Slider_MusicSound;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_FrameLimitMenu;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBox* Value_FrameLimitGame;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxString* ComboBox_Resolution;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxString* ComboBox_WindowMode;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBox* CheckBox_FPSCounter;
-
-	// NVIDIA
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_DLSS;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSComboBoxString* ComboBox_DLSS;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSHorizontalBox* BSBox_FrameGeneration;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			UBSComboBoxString* ComboBox_FrameGeneration;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSHorizontalBox* BSBox_SuperResolution;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			UBSComboBoxString* ComboBox_SuperResolution;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSHorizontalBox* BSBox_DLSS_Sharpness;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			USlider* Slider_DLSS_Sharpness;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			UEditableTextBox* Value_DLSS_Sharpness;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_NIS;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSComboBoxString* ComboBox_NIS;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSHorizontalBox* BSBox_NIS_Mode;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			UBSComboBoxString* ComboBox_NIS_Mode;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UBSHorizontalBox* BSBox_NIS_Sharpness;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			USlider* Slider_NIS_Sharpness;
-			UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-			UEditableTextBox* Value_NIS_Sharpness;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_ResolutionScale;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		USlider* Slider_ResolutionScale;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UEditableTextBox* Value_ResolutionScale;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_VSync;
-		UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-		UCheckBox* CheckBox_VSyncEnabled;
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSHorizontalBox* BSBox_Reflex;
-		UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-		UBSComboBoxString* ComboBox_Reflex;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_DLSS;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_FrameGeneration;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_SuperResolution;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_NIS;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UTooltipImage* QMark_Reflex;
-
-	#pragma region Quality
-	
-	/* Anti-Aliasing */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Anti-Aliasing Quality")
-	UVideoSettingButton* AAQ3;
-
-	/* Global Illumination */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Global Illumination Quality")
-	UVideoSettingButton* GIQ3;
-
-	/* Post Processing */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Post Processing Quality")
-	UVideoSettingButton* PPQ3;
-
-	/* Reflection */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Reflection Quality")
-	UVideoSettingButton* RQ3;
-
-	/* Shadow */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shadow Quality")
-	UVideoSettingButton* SWQ3;
-
-	/* Shading */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Shading Quality")
-	UVideoSettingButton* SGQ3;
-
-	/* Texture */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Texture Quality")
-	UVideoSettingButton* TQ3;
-
-	/* View Distance */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | View Distance Quality")
-	UVideoSettingButton* VDQ3;
-
-	/* Visual Effect */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ0;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ1;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ2;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Video | Visual Effect Quality")
-	UVideoSettingButton* VEQ3;
-
-#pragma endregion
+	UEditableTextBoxOptionWidget* EditableTextBoxOption_FPSLimitGame;
 
 private:
 	/** Adds the ConfirmVideoSettingsMessage to viewport, and starts the RevertVideoSettingsTimer */
@@ -328,42 +160,15 @@ private:
 	UFUNCTION()
 	void OnBSButtonPressed_SaveReset(const UBSButton* Button);
 	
-	/** Changes video settings quality depending on input button */
 	UFUNCTION()
-	void OnBSButtonPressed_VideoQuality(const UBSButton* Button);
+	void OnVideoSettingOptionWidget_ButtonPressed(const EVideoSettingType VideoSettingType, const uint8 Quality);
 
-	UFUNCTION()
-	void OnSliderChanged_GlobalSound(const float NewGlobalSound);
-	UFUNCTION()
-	void OnSliderChanged_MenuSound(const float NewMenuSound);
-	UFUNCTION()
-	void OnSliderChanged_MusicSound(const float NewMusicSound);
-	UFUNCTION()
-	void OnSliderChanged_DLSS_Sharpness(const float NewValue);
-	UFUNCTION()
-	void OnSliderChanged_NIS_Sharpness(const float NewValue);
-	UFUNCTION()
-	void OnSliderChanged_ResolutionScale(const float NewValue);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
-	void OnValueChanged_GlobalSound(const FText& NewGlobalSound, ETextCommit::Type CommitType);
+	void OnSelectionChanged_WindowMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnValueChanged_MenuSound(const FText& NewMenuSound, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_MusicSound(const FText& NewMusicSound, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_FrameLimitMenu(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_DLSS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_NIS_Sharpness(const FText& NewValue, ETextCommit::Type CommitType);
-	UFUNCTION()
-	void OnValueChanged_ResolutionScale(const FText& NewValue, ETextCommit::Type CommitType);
-
-	UFUNCTION()
-	void OnSelectionChanged_WindowMode(const FString SelectedOption, ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_Resolution(const FString SelectedOption, ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_Resolution(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_DLSS_EnabledMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -376,14 +181,17 @@ private:
 	void OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
-
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_HDREnabled(const bool bIsChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_FPSCounter(const bool bIsChecked);
+	UFUNCTION()
+	void OnTextCommitted_FPSLimitMenu(const FText& Text, ETextCommit::Type CommitType);
+	UFUNCTION()
+	void OnTextCommitted_FPSLimitGame(const FText& Text, ETextCommit::Type CommitType);
 	
 	/** Function bound to RevertVideoSettingsTimer_UpdateSecond */
 	UFUNCTION()
@@ -415,14 +223,10 @@ private:
 
 	/** Returns the selected reflex mode */
 	UStreamlineReflexMode GetSelectedReflexMode() const;
-	
-	/** Returns the associated button given the quality and SettingType */
-	UVideoSettingButton* FindVideoSettingButton(const int32 Quality, const EVideoSettingType& SettingType) const;
 
-	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
-	
-	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
-	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
+	FString GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_DLSS_SuperResolution(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_Reflex(const FString& EnumString);
 	
 	/** Holds the last confirmed resolution */
 	FIntPoint LastConfirmedResolution;

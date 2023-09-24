@@ -9,6 +9,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+class UMenuStyle;
 class UFeedbackWidget;
 class UScoreBrowserWidget;
 class UVerticalBox;
@@ -68,6 +69,15 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
+
+	UPROPERTY(EditDefaultsOnly, Category="MainMenuWidget")
+	TSubclassOf<UMenuStyle> MenuStyleClass;
+
+	UPROPERTY()
+	const UMenuStyle* MenuStyle;
+
+	void SetStyles();
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MainMenuSwitcher;

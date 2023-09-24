@@ -2,7 +2,7 @@
 
 
 #include "WidgetComponents/BSSettingCategoryWidget.h"
-#include "WidgetComponents/BSVerticalBox.h"
+#include "WidgetComponents/Boxes/BSVerticalBox.h"
 #include "WidgetComponents/TooltipWidget.h"
 
 void UBSSettingCategoryWidget::NativeConstruct()

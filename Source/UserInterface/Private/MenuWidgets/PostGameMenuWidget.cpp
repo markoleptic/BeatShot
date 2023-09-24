@@ -5,6 +5,7 @@
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/QuitMenuWidget.h"
+#include "Styles/MenuStyle.h"
 #include "SubMenuWidgets/SettingsMenuWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
@@ -12,7 +13,7 @@
 void UPostGameMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	SetStyles();
 	MenuButton_Scores->SetDefaults(Box_Scores, MenuButton_PlayAgain);
 	MenuButton_PlayAgain->SetDefaults(nullptr, MenuButton_GameModes);
 	MenuButton_GameModes->SetDefaults(Box_GameModes, MenuButton_Settings);
@@ -33,6 +34,17 @@ void UPostGameMenuWidget::NativeConstruct()
 	
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
 	PlayFadeInWidget();
+}
+
+void UPostGameMenuWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	SetStyles();
+}
+
+void UPostGameMenuWidget::SetStyles()
+{
+	MenuStyle = IBSWidgetInterface::GetStyleCDO(MenuStyleClass);
 }
 
 void UPostGameMenuWidget::Restart()

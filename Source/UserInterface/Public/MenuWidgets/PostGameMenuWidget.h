@@ -8,6 +8,7 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "PostGameMenuWidget.generated.h"
 
+class UMenuStyle;
 class UWidgetSwitcher;
 class UVerticalBox;
 class UGameModesWidget;
@@ -26,6 +27,15 @@ class USERINTERFACE_API UPostGameMenuWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
+	
+	UPROPERTY(EditDefaultsOnly, Category="PostGameMenuWidget")
+	TSubclassOf<UMenuStyle> MenuStyleClass;
+	
+	UPROPERTY()
+	const UMenuStyle* MenuStyle;
+
+	void SetStyles();
 
 #pragma region MenuWidgets
 	

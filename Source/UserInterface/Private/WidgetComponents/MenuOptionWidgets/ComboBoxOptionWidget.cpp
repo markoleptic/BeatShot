@@ -3,10 +3,11 @@
 
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "EnumTagMap.h"
-#include "WidgetComponents/BSComboBoxEntry.h"
-#include "WidgetComponents/BSComboBoxEntry_Tagged.h"
+#include "WidgetComponents/Boxes/BSComboBoxEntry.h"
+#include "WidgetComponents/Boxes/BSComboBoxEntry_Tagged.h"
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
+#include "Styles/MenuOptionStyle.h"
 
 void UComboBoxOptionWidget::NativeConstruct()
 {
@@ -87,7 +88,7 @@ UWidget* UComboBoxOptionWidget::AddGameModeCategoryTagWidgets(UBSComboBoxEntry_T
 		TagWidgetsToAdd.Add(TagWidget);
 	}
 	
-	ComboBoxEntry->AddGameModeCategoryTagWidget(ParentTagWidgetsToAdd, TagWidgetsToAdd, Padding_TagWidget, VerticalAlignment_TagWidget, HorizontalAlignment_TagWidget);
+	ComboBoxEntry->AddGameModeCategoryTagWidget(ParentTagWidgetsToAdd, TagWidgetsToAdd, MenuOptionStyle->Padding_TagWidget, MenuOptionStyle->VerticalAlignment_TagWidget, MenuOptionStyle->HorizontalAlignment_TagWidget);
 	return ComboBoxEntry;
 }
 

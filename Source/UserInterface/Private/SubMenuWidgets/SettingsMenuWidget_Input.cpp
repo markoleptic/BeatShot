@@ -11,7 +11,7 @@
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void USettingsMenuWidget_Input::NativeConstruct()
 {
@@ -183,7 +183,7 @@ TArray<UInputMappingWidget*> USettingsMenuWidget_Input::FindInputMappingWidgetsB
 	});
 }
 
-void USettingsMenuWidget_Input::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void USettingsMenuWidget_Input::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == MenuOption_NewSensitivity)
 	{

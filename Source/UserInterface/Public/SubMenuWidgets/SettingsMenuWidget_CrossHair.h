@@ -9,7 +9,7 @@
 #include "SettingsMenuWidget_CrossHair.generated.h"
 
 class UColorSelectOptionWidget;
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class USavedTextWidget;
 class UColorSelectWidget;
 class UCrossHairWidget;
@@ -40,15 +40,15 @@ protected:
 	UColorSelectOptionWidget* MenuOption_ColorSelect;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_InnerOffset;
+	USliderTextBoxOptionWidget* MenuOption_InnerOffset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_LineLength;
+	USliderTextBoxOptionWidget* MenuOption_LineLength;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_LineWidth;
+	USliderTextBoxOptionWidget* MenuOption_LineWidth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_OutlineOpacity;
+	USliderTextBoxOptionWidget* MenuOption_OutlineOpacity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_OutlineWidth;
+	USliderTextBoxOptionWidget* MenuOption_OutlineWidth;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Reset;
@@ -58,7 +58,7 @@ protected:
 	UBSButton* Button_Save;
 
 private:
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnColorChanged(const FLinearColor& NewColor);

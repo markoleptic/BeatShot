@@ -6,7 +6,7 @@
 #include "CustomGameModesWidgetComponent.h"
 #include "CustomGameModesWidget_Spawning.generated.h"
 
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
 
@@ -32,7 +32,7 @@ protected:
 	void UpdateDependentOptions_ConstantSpawnedTargetVelocity(const bool bApplyVelocityWhenSpawned, const bool bInConstant);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
@@ -49,20 +49,20 @@ protected:
 	UCheckBoxOptionWidget* CheckBoxOption_SpawnEveryOtherTargetInCenter;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_NumUpfrontTargetsToSpawn;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumUpfrontTargetsToSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_NumRuntimeTargetsToSpawn;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumRuntimeTargetsToSpawn;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ApplyVelocityWhenSpawned;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantSpawnedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_SpawnedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_SpawnedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinSpawnedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinSpawnedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxSpawnedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxSpawnedTargetVelocity;
 	
 	UFUNCTION()
 	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);
@@ -79,7 +79,7 @@ protected:
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked);
 
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);

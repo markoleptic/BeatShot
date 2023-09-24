@@ -7,7 +7,7 @@
 #include "CustomGameModesWidget_Deactivation.generated.h"
 
 class UComboBoxOptionWidget;
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 
 UCLASS()
 class USERINTERFACE_API UCustomGameModesWidget_Deactivation : public UCustomGameModesWidgetComponent
@@ -38,21 +38,21 @@ protected:
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationResponses;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_ConstantDeactivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_DeactivatedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinDeactivatedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinDeactivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MaxDeactivatedTargetVelocity;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxDeactivatedTargetVelocity;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDestructionConditions;
 
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantDeactivatedTargetVelocity(const bool bChecked);

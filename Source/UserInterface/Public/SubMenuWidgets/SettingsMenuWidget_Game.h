@@ -7,7 +7,7 @@
 #include "WidgetComponents/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_Game.generated.h"
 
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UColorSelectOptionWidget;
 class UCheckBox;
@@ -62,7 +62,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* MenuOption_ShowHitTimingWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* MenuOption_CombatTextFrequency;
+	USliderTextBoxOptionWidget* MenuOption_CombatTextFrequency;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
@@ -103,7 +103,7 @@ protected:
 	UFUNCTION()
 	void OnCheckStateChanged_ShowHitTimingWidget(const bool bIsChecked);
 	
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);

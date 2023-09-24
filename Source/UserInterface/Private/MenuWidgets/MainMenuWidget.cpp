@@ -9,12 +9,14 @@
 #include "OverlayWidgets/LoginWidget.h"
 #include "OverlayWidgets/FeedbackWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
+#include "Styles/MenuStyle.h"
 #include "BSWidgetInterface.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetStyles();
 	
 	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresWidget);
 	LoginWidget->OnLoginButtonClicked.AddUObject(this, &UMainMenuWidget::OnButtonClicked_Login);
@@ -45,6 +47,17 @@ void UMainMenuWidget::NativeConstruct()
 	ScoresWidget->InitScoreBrowser(EScoreBrowserType::MainMenuScores);
 	MenuButton_PatchNotes->SetActive();
 	MainMenuSwitcher->SetActiveWidget(MenuButton_PatchNotes->GetBox());
+}
+
+void UMainMenuWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	SetStyles();
+}
+
+void UMainMenuWidget::SetStyles()
+{
+	MenuStyle = IBSWidgetInterface::GetStyleCDO<UMenuStyle>(MenuStyleClass);
 }
 
 void UMainMenuWidget::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)

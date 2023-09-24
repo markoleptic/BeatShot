@@ -2,14 +2,16 @@
 
 
 #include "SubMenuWidgets/SettingsMenuWidget_AudioAnalyzer.h"
-#include "Components/ComboBoxString.h"
-#include "Components/EditableTextBox.h"
-#include "Components/Slider.h"
 #include "Components/VerticalBox.h"
 #include "OverlayWidgets/AudioSelectWidget.h"
 #include "OverlayWidgets/PopupMessageWidget.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/SavedTextWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/BandChannelWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/BandThresholdWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void USettingsMenuWidget_AudioAnalyzer::InitMainMenuChild()
 {
@@ -28,20 +30,25 @@ void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 	Button_Save->SetDefaults(static_cast<uint8>(ESettingButtonType::Save));
 	Button_SaveAndRestart->SetDefaults(static_cast<uint8>(ESettingButtonType::SaveAndRestart));
 	
-	ComboBox_NumBandChannels->OnSelectionChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels);
+	SetupTooltip(ComboBoxOption_NumBandChannels->GetTooltipImage(), ComboBoxOption_NumBandChannels->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_TimeWindow->GetTooltipImage(), SliderTextBoxOption_TimeWindow->GetTooltipImageText());
 
-	Slider_TimeWindow->OnValueChanged.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnSliderChanged_TimeWindow);
-	Value_TimeWindow->OnTextCommitted.AddDynamic(this, &USettingsMenuWidget_AudioAnalyzer::OnTextCommitted_TimeWindow);
+	SliderTextBoxOption_TimeWindow->SetValues(0,1.f, 0.01f);
+	SliderTextBoxOption_TimeWindow->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+
+	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NumBandChannels);
+	ComboBoxOption_NumBandChannels->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
 
-	AASettings = ISaveLoadInterface::LoadPlayerSettings().AudioAnalyzer;
+	AASettings = LoadPlayerSettings().AudioAnalyzer;
 	NewAASettings = AASettings;
 	const FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 
 	for (int i = 0; i < DefaultAASettings.MaxNumBandChannels; i++)
 	{
-		ComboBox_NumBandChannels->AddOption(FString::FromInt(i + 1));
+		ComboBoxOption_NumBandChannels->ComboBox->AddOption(FString::FromInt(i + 1));
 	}
 
 	UBandChannelWidget* PreviousBandChannel = nullptr;
@@ -91,9 +98,22 @@ void USettingsMenuWidget_AudioAnalyzer::OnBandThresholdChanged(const UBandThresh
 	NewAASettings.BandLimitsThreshold[Index] = NewValue;
 }
 
-void USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels(FString NewNum, ESelectInfo::Type SelectType)
+void USettingsMenuWidget_AudioAnalyzer::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
-	NewAASettings.NumBandChannels = ComboBox_NumBandChannels->GetSelectedIndex() + 1;
+	if (Widget == SliderTextBoxOption_TimeWindow)
+	{
+		NewAASettings.TimeWindow = Value;
+	}
+}
+
+void USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+{
+	if (SelectionType == ESelectInfo::Type::Direct)
+	{
+		return;
+	}
+	
+	NewAASettings.NumBandChannels = ComboBoxOption_NumBandChannels->ComboBox->GetSelectedIndex() + 1;
 	FPlayerSettings_AudioAnalyzer DefaultAASettings = FPlayerSettings_AudioAnalyzer();
 	if (const int ElementsToAdd = NewAASettings.NumBandChannels - NewAASettings.BandLimits.Num(); ElementsToAdd > 0)
 	{
@@ -109,16 +129,6 @@ void USettingsMenuWidget_AudioAnalyzer::OnSelectionChanged_NumBandChannels(FStri
 		NewAASettings.BandLimitsThreshold.SetNum(NewAASettings.NumBandChannels, true);
 	}
 	PopulateAASettings();
-}
-
-void USettingsMenuWidget_AudioAnalyzer::OnTextCommitted_TimeWindow(const FText& NewTimeWindow, ETextCommit::Type CommitType)
-{
-	NewAASettings.TimeWindow = IBSWidgetInterface::OnEditableTextBoxChanged(NewTimeWindow, Value_TimeWindow, Slider_TimeWindow, SnapSize_TimeWindow, MinValue_TimeWindow, MaxValue_TimeWindow);
-}
-
-void USettingsMenuWidget_AudioAnalyzer::OnSliderChanged_TimeWindow(const float NewTimeWindow)
-{
-	NewAASettings.TimeWindow = IBSWidgetInterface::OnSliderChanged(NewTimeWindow, Value_TimeWindow, SnapSize_TimeWindow);
 }
 
 void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_BSButton(const UBSButton* Button)
@@ -145,7 +155,7 @@ void USettingsMenuWidget_AudioAnalyzer::OnButtonClicked_BSButton(const UBSButton
 
 void USettingsMenuWidget_AudioAnalyzer::PopulateAASettings()
 {
-	ComboBox_NumBandChannels->SetSelectedIndex(NewAASettings.NumBandChannels - 1);
+	ComboBoxOption_NumBandChannels->ComboBox->SetSelectedIndex(NewAASettings.NumBandChannels - 1);
 	BandChannelWidget->SetDefaultValues(NewAASettings.BandLimits[0], 0);
 	BandThresholdWidget->SetDefaultValue(NewAASettings.BandLimitsThreshold[0], 0);
 
@@ -185,8 +195,8 @@ void USettingsMenuWidget_AudioAnalyzer::PopulateAASettings()
 		PreviousBandThreshold = PreviousBandThreshold->Next;
 	}
 
-	Slider_TimeWindow->SetValue(NewAASettings.TimeWindow);
-	Value_TimeWindow->SetText(FText::AsNumber(NewAASettings.TimeWindow, &FNumberFormattingOptions::DefaultNoGrouping()));
+	SliderTextBoxOption_TimeWindow->SetValue(NewAASettings.TimeWindow);
+	UpdateBrushColors();
 }
 
 void USettingsMenuWidget_AudioAnalyzer::ResetAASettings()

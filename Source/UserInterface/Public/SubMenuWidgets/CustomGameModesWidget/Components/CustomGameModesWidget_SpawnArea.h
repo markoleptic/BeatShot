@@ -6,7 +6,7 @@
 #include "CustomGameModesWidgetComponent.h"
 #include "CustomGameModesWidget_SpawnArea.generated.h"
 
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
@@ -37,44 +37,44 @@ protected:
 	UComboBoxOptionWidget* ComboBoxOption_DynamicBoundsScalingPolicy;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinHorizontalSpread;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinHorizontalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinVerticalSpread;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinVerticalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinForwardSpread;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinForwardSpread;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_StartThreshold;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_StartThreshold;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_EndThreshold;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_EndThreshold;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_DecrementAmount;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_DecrementAmount;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_NumHorizontalGridTargets;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumHorizontalGridTargets;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_NumVerticalGridTargets;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumVerticalGridTargets;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_HorizontalSpacing;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_HorizontalSpacing;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_VerticalSpacing;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_VerticalSpacing;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDistributionPolicy;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_HorizontalSpread;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_HorizontalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_VerticalSpread;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_VerticalSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_ForwardSpread;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_ForwardSpread;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_FloorDistance;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxWidget* SliderTextBoxOption_MinDistanceBetweenTargets;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MinDistanceBetweenTargets;
 
-	void OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value);
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 	
 	UFUNCTION()
 	void OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);

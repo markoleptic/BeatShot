@@ -5,12 +5,12 @@
 #include "Blueprint/WidgetTree.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void UCustomGameModesWidgetComponent::NativeConstruct()
 {
@@ -93,7 +93,7 @@ void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionW
 	}
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value)
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (!FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(Widget->GetEditableTextBoxValue(), Value))
 	{

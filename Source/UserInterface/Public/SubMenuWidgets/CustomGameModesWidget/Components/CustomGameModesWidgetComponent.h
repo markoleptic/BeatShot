@@ -15,7 +15,7 @@ class UMenuOptionWidget;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
-class USliderTextBoxWidget;
+class USliderTextBoxOptionWidget;
 class UCustomGameModesWidgetComponent;
 
 USTRUCT(BlueprintType)
@@ -84,7 +84,7 @@ protected:
 	/** Adds a GameModeCategoryTagWidget for each matching GameplayTag on the Menu Option widget*/
 	void AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget);
 
-	static bool UpdateValueIfDifferent(const USliderTextBoxWidget* Widget, const float Value);
+	static bool UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget, const float Value);
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption);
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions);
 	static bool UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked);

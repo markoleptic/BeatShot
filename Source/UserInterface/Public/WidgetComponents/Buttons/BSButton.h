@@ -48,6 +48,9 @@ public:
 	/** Change the text of the button at runtime */
 	void SetButtonText(const FText& InText);
 
+	/** Change the button text font */
+	void SetButtonFont(const FSlateFontInfo& InSlateFontInfo);
+
 	/** Broadcast when the button is pressed */
 	FOnBSButtonButtonPressed OnBSButtonPressed;
 

@@ -3,14 +3,13 @@
 
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
 #include "Components/EditableTextBox.h"
+#include "Styles/MenuOptionStyle.h"
 
-void UEditableTextBoxOptionWidget::NativeConstruct()
+void UEditableTextBoxOptionWidget::SetStyling()
 {
-	Super::NativeConstruct();
-	EditableTextBox->OnTextCommitted.AddUniqueDynamic(this, &ThisClass::OnTextCommitted_EditableTextBox);
-}
-
-void UEditableTextBoxOptionWidget::OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType)
-{
-	
+	Super::SetStyling();
+	if (MenuOptionStyle)
+	{
+		EditableTextBox->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableText);
+	}
 }

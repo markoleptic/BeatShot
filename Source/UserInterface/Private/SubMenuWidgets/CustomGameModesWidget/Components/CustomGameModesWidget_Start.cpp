@@ -4,7 +4,7 @@
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Start.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"

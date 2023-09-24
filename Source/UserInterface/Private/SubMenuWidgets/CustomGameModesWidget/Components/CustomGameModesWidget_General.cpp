@@ -3,10 +3,10 @@
 
 #include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_General.h"
 #include "Components/CheckBox.h"
-#include "WidgetComponents/BSComboBoxString.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void UCustomGameModesWidget_General::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
@@ -307,7 +307,7 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_UnlimitedTargetHealth(c
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxWidget* Widget, const float Value)
+void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_SpawnBeatDelay)
 	{
