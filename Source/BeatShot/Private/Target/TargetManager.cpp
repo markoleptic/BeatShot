@@ -171,25 +171,25 @@ void ATargetManager::Init_Internal()
 	GetBSConfig()->TargetConfig.PeakColor = PlayerSettings.PeakTargetColor;
 	GetBSConfig()->TargetConfig.EndColor = PlayerSettings.EndTargetColor;
 	
-	// GameMode menu uses the full width, while box bounds are only half width / half height
-	StaticExtents = GetBSConfig()->TargetConfig.GenerateTargetManagerBoxBounds();
-
 	// Set new location & box extent
-	SpawnBox->SetRelativeLocation(GetBSConfig()->TargetConfig.GenerateSpawnBoxLocation());
+	SpawnBox->SetRelativeLocation(GenerateSpawnBoxLocation());
+	StaticExtents = GenerateBoxExtentsStatic();
 	SpawnBox->SetBoxExtent(StaticExtents);
+	
 	StaticExtrema.Min = SpawnBox->Bounds.GetBoxExtrema(0);
 	StaticExtrema.Max = SpawnBox->Bounds.GetBoxExtrema(1);
 
 	UpdateSpawnVolume();
 
 	// Initialize SpawnAreaManager and SpawnAreas
-	const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema(false);
-	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), GetBoxExtents_Static(), Extrema);
+	//const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema(false);
+	const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema_Max();
+	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), GetBoxExtents_Max(), Extrema);
 	
 	Init_Tables();
 	
 	// Initialize Dynamic SpawnBox
-	if (IsDynamicBoundsScalingPolicy(GetBSConfig()->TargetConfig.BoundsScalingPolicy))
+	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{
 		UpdateSpawnBox();
 	}
@@ -249,6 +249,31 @@ void ATargetManager::Init_Tables()
 	PreThresholdCurve->SetKeyTime(PreThresholdCurve->GetLastKeyHandle(), GetBSConfig()->DynamicTargetScaling.StartThreshold);
 	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetFirstKeyHandle(), GetBSConfig()->DynamicTargetScaling.StartThreshold);
 	ThresholdMetCurve->SetKeyTime(ThresholdMetCurve->GetLastKeyHandle(), GetBSConfig()->DynamicTargetScaling.EndThreshold);
+}
+
+FVector ATargetManager::GenerateSpawnBoxLocation() const
+{
+	FVector SpawnBoxCenter = DefaultTargetManagerLocation;
+	if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
+	{
+		SpawnBoxCenter.Z = HeadshotHeight;
+	}
+	else
+	{
+		const float MaxZ = FMath::Max(GetBSConfig()->TargetConfig.BoxBounds.Z, GetBSConfig()->DynamicSpawnAreaScaling.MinSize.Z);
+		SpawnBoxCenter.Z = MaxZ / 2.f + GetBSConfig()->TargetConfig.FloorDistance;
+	}
+	return SpawnBoxCenter;
+}
+
+FVector ATargetManager::GenerateBoxExtentsStatic() const
+{
+	if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
+	{
+		return FVector(GetBSConfig()->TargetConfig.BoxBounds.X / 2.f, GetBSConfig()->TargetConfig.BoxBounds.Y / 2.f, 1.f);
+	}
+	// GameMode menu uses the full width, while box bounds are only half width / half height
+	return FVector(GetBSConfig()->TargetConfig.BoxBounds.X / 2.f, GetBSConfig()->TargetConfig.BoxBounds.Y / 2.f, GetBSConfig()->TargetConfig.BoxBounds.Z / 2.f);
 }
 
 void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
@@ -851,6 +876,21 @@ ATarget* ATargetManager::FindManagedTargetByGuid(const FGuid Guid) const
 		return Found->Get();
 	}
 	return nullptr;
+}
+
+FVector ATargetManager::GetBoxExtents_Max() const
+{
+	const FVector MinExtents = GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent();
+	return FVector(FMath::Max(MinExtents.X, GetBoxExtents_Static().X),
+		FMath::Max(MinExtents.Y, GetBoxExtents_Static().Y),
+		FMath::Max(MinExtents.Z, GetBoxExtents_Static().Z));
+}
+
+FExtrema ATargetManager::GetBoxExtrema_Max() const
+{
+	const FVector MaxExtents = GetBoxExtents_Max();
+	return FExtrema(FVector(0.f, GetBoxOrigin().Y - MaxExtents.Y, GetBoxOrigin().Z - MaxExtents.Z),
+		FVector(0.f, GetBoxOrigin().Y + MaxExtents.Y, GetBoxOrigin().Z + MaxExtents.Z));
 }
 
 FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const

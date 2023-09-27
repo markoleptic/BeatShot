@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SubMenuWidgets/GameModesWidget.h"
-#include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "PostGameMenuWidget.generated.h"
 
 class UMenuStyle;

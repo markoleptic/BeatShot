@@ -54,15 +54,19 @@ UWidget* UComboBoxOptionWidget::AddGameModeCategoryTagWidgets(UBSComboBoxEntry_T
 	{
 		return ComboBoxEntry;
 	}
+	const FString CompareString = ComboBoxEntry->GetEntryText().ToString();
 	
-	const int32 Index = EnumTagMapping.EnumTagPairs.Find(FEnumTagPair(ComboBoxEntry->GetEntryText().ToString()));
-
-	if (!EnumTagMapping.EnumTagPairs.IsValidIndex(Index))
+	const FEnumTagPair* Found = EnumTagMapping.EnumTagPairs.FindByPredicate([this, &CompareString] (const FEnumTagPair& EnumTagPair)
+	{
+		return EnumTagPair.DisplayName.Equals(CompareString);
+	});
+	
+	if (!Found)
 	{
 		return ComboBoxEntry;
 	}
-
-	const FEnumTagPair& EnumTagPair = EnumTagMapping.EnumTagPairs[Index];
+	
+	const FEnumTagPair& EnumTagPair = EnumTagMapping.EnumTagPairs[Found->Index];
 	TArray<UGameModeCategoryTagWidget*> ParentTagWidgetsToAdd;
 	TArray<UGameModeCategoryTagWidget*> TagWidgetsToAdd;
 	

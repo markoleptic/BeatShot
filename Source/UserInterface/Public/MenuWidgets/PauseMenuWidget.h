@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "OverlayWidgets/QuitMenuWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "PauseMenuWidget.generated.h"
 
@@ -30,7 +29,7 @@ public:
 	FResumeGame ResumeGame;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UQuitMenuWidget* QuitMenuWidget;
+	TObjectPtr<UQuitMenuWidget> QuitMenuWidget;
 
 protected:
 	virtual void NativeConstruct() override;

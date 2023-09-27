@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Blueprint/UserWidget.h"
-#include "WidgetComponents/TooltipImage.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
 #include "MenuOptionWidget.generated.h"
 
 class UMenuOptionStyle;

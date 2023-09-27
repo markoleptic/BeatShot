@@ -4,9 +4,9 @@
 #include "MenuWidgets/PauseMenuWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
-#include "OverlayWidgets/QuitMenuWidget.h"
+#include "OverlayWidgets/PopupWidgets/QuitMenuWidget.h"
 #include "Styles/MenuStyle.h"
-#include "SubMenuWidgets/SettingsMenuWidget.h"
+#include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 

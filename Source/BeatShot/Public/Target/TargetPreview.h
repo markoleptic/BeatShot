@@ -24,7 +24,7 @@ public:
 	virtual void Destroyed() override;
 
 	/** Sets the values of TargetWidget and its position in the viewport */
-	void InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation);
+	void InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation, const float BoundsHeight);
 
 	/** Sets the values of bSimulatePlayerDestroying and DestroyChance */
 	void SetSimulatePlayerDestroying(const bool bInSimulatePlayerDestroying, const float InDestroyChance);
@@ -71,6 +71,8 @@ protected:
 	TObjectPtr<UTargetWidget> TargetWidget;
 	
 	FVector BoxBoundsOrigin;
+
+	float BoxBoundsHeight = 1000.f;
 
 public:
 	/** Change the target widget color in the viewport */

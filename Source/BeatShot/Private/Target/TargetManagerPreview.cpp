@@ -2,8 +2,6 @@
 
 
 #include "Target/TargetManagerPreview.h"
-#include "Components/SizeBox.h"
-#include "Components/TextBlock.h"
 #include "Target/TargetPreview.h"
 
 
@@ -12,14 +10,9 @@ ATargetManagerPreview::ATargetManagerPreview()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void ATargetManagerPreview::InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent,
-	const TObjectPtr<UBoxBoundsWidget> InMin, const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance, const TObjectPtr<UTextBlock> InFloorDistText)
+void ATargetManagerPreview::InitBoxBoundsWidget(const TObjectPtr<UCustomGameModesWidget_Preview> InGameModePreviewWidget)
 {
-	BoxBoundsWidget_Current = InCurrent;
-	BoxBoundsWidget_Min = InMin;
-	BoxBoundsWidget_Max = InMax;
-	FloorDistance = InFloorDistance;
-	TextBlock_FloorDistance = InFloorDistText;
+	GameModePreviewWidget = InGameModePreviewWidget;
 }
 
 void ATargetManagerPreview::RestartSimulation()
@@ -68,7 +61,8 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 			{
 				if (UTargetWidget* TargetWidget = CreateTargetWidget.Execute())
 				{
-					TargetPreview->InitTargetWidget(TargetWidget, GetBoxOrigin(), TargetPreview->GetActorLocation());
+					TargetPreview->InitTargetWidget(TargetWidget, GetBoxOrigin(), TargetPreview->GetActorLocation(),
+						FMath::Max(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, GetBoxExtents_Static().Z) * 2.f);
 					TargetPreview->SetSimulatePlayerDestroying(bSimulatePlayerDestroyingTargets, DestroyChance);
 				}
 			}
@@ -80,68 +74,63 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 void ATargetManagerPreview::UpdateSpawnVolume() const
 {
 	Super::UpdateSpawnVolume();
-	if (!GetBSConfig())
+	
+	if (!GetBSConfig() || !GameModePreviewWidget)
 	{
 		return;
 	}
-	if (BoxBoundsWidget_Current)
+
+	// Set the Current box bounds widget size and position
+	const float CurrentY = SpawnBox->GetUnscaledBoxExtent().Y * 2.f;
+	const float CurrentZ = SpawnBox->GetUnscaledBoxExtent().Z * 2.f;
+	float Height = GetBoxOrigin().Z - SpawnBox->Bounds.BoxExtent.Z + ClampedOverflowAmount;
+	GameModePreviewWidget->SetBoxBounds_Current(FVector2d(CurrentY, CurrentZ), Height);
+	
+	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{
-		BoxBoundsWidget_Current->SetBoxBounds(FVector2d(SpawnBox->GetUnscaledBoxExtent().Y * 2.f, SpawnBox->GetUnscaledBoxExtent().Z * 2.f));
-		BoxBoundsWidget_Current->SetBoxBoundsPosition(GetBoxOrigin().Z - SpawnBox->Bounds.BoxExtent.Z + ClampedOverflowAmount);
+		// Set the "Min"/Start box bounds widget size and position
+		const float StartZ = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
+		const float StartY = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
+		Height = GetBoxOrigin().Z - (StartZ/ 2.f) + ClampedOverflowAmount;
+		GameModePreviewWidget->SetBoxBounds_Min(FVector2d(StartY, StartZ), Height);
+
+		// Set the "Max"/End box bounds widget size and position
+		const float EndZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
+		const float EndY = FMath::GridSnap<float>(GetBoxExtents_Static().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
+		Height = GetBoxOrigin().Z - (EndZ / 2.f) + ClampedOverflowAmount;
+		GameModePreviewWidget->SetBoxBounds_Max(FVector2d(EndY, EndZ), Height);
+
+		// Adjust visibility and Preview Widget height
+		GameModePreviewWidget->SetBoxBoundsVisibility_Min(ESlateVisibility::SelfHitTestInvisible);
+		GameModePreviewWidget->SetBoxBoundsVisibility_Max(ESlateVisibility::SelfHitTestInvisible);
+		GameModePreviewWidget->SetStaticBoundsHeight(FMath::Max(StartZ, EndZ));
+	}
+	else
+	{
+		GameModePreviewWidget->SetBoxBoundsVisibility_Min(ESlateVisibility::Collapsed);
+		GameModePreviewWidget->SetBoxBoundsVisibility_Max(ESlateVisibility::Collapsed);
+		GameModePreviewWidget->SetStaticBoundsHeight(CurrentZ);
 	}
 	
-	if (BoxBoundsWidget_Min)
+	GameModePreviewWidget->SetFloorDistanceHeight(FMath::Clamp(GetBSConfig()->TargetConfig.FloorDistance, 110.f, MaxAllowedFloorDistance));
+	
+	if (GetBSConfig()->TargetConfig.FloorDistance > MaxAllowedFloorDistance)
 	{
-		if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+		ClampedOverflowAmount = MaxAllowedFloorDistance - GetBSConfig()->TargetConfig.FloorDistance;
+		if (!bIsExceedingMaxFloorDistance)
 		{
-			BoxBoundsWidget_Min->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			const float MinY = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
-			const float MinZ = FMath::GridSnap<float>(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
-			BoxBoundsWidget_Min->SetBoxBounds(FVector2d(MinY, MinZ));
-			BoxBoundsWidget_Min->SetBoxBoundsPosition(GetBoxOrigin().Z - (MinZ / 2.f) + ClampedOverflowAmount);
+			GameModePreviewWidget->SetText_FloorDistance(FloorDistanceExceededText);
 		}
-		else
-		{
-			BoxBoundsWidget_Min->SetVisibility(ESlateVisibility::Collapsed);
-		}
+		bIsExceedingMaxFloorDistance = true;
 	}
-	if (BoxBoundsWidget_Max)
+	else
 	{
-		if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+		ClampedOverflowAmount = 0.f;
+		if (bIsExceedingMaxFloorDistance)
 		{
-			BoxBoundsWidget_Max->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			const float MaxY = FMath::GridSnap<float>(GetBoxExtents_Static().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
-			const float MaxZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
-			BoxBoundsWidget_Max->SetBoxBounds(FVector2d(MaxY, MaxZ));
-			BoxBoundsWidget_Max->SetBoxBoundsPosition(GetBoxOrigin().Z - (MaxZ / 2.f) + ClampedOverflowAmount);
+			GameModePreviewWidget->SetText_FloorDistance(FloorDistanceText);
 		}
-		else
-		{
-			BoxBoundsWidget_Max->SetVisibility(ESlateVisibility::Collapsed);
-		}
-	}
-	if (FloorDistance)
-	{
-		FloorDistance->SetHeightOverride(FMath::Clamp(BSConfig->TargetConfig.FloorDistance, 110.f, MaxAllowedFloorDistance));
-		
-		if (BSConfig->TargetConfig.FloorDistance > MaxAllowedFloorDistance)
-		{
-			ClampedOverflowAmount = MaxAllowedFloorDistance - BSConfig->TargetConfig.FloorDistance;
-			if (!bIsExceedingMaxFloorDistance)
-			{
-				TextBlock_FloorDistance->SetText(FloorDistanceExceededText);
-			}
-			bIsExceedingMaxFloorDistance = true;
-		}
-		else
-		{
-			ClampedOverflowAmount = 0.f;
-			if (bIsExceedingMaxFloorDistance)
-			{
-				TextBlock_FloorDistance->SetText(FloorDistanceText);
-			}
-			bIsExceedingMaxFloorDistance = false;
-		}
+		bIsExceedingMaxFloorDistance = false;
 	}
 }
 

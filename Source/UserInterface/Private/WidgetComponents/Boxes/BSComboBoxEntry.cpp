@@ -5,7 +5,7 @@
 #include "BSWidgetInterface.h"
 #include "Components/Border.h"
 #include "Components/TextBlock.h"
-#include "WidgetComponents/TooltipImage.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
 #include "Styles/MenuOptionStyle.h"
 
 void UBSComboBoxEntry::NativePreConstruct()

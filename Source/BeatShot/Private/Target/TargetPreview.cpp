@@ -4,7 +4,7 @@
 #include "Target/TargetPreview.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "WidgetComponents/TargetWidget.h"
+#include "WidgetComponents/GameModePreviewWidgets/TargetWidget.h"
 
 ATargetPreview::ATargetPreview()
 {
@@ -38,8 +38,9 @@ void ATargetPreview::Destroyed()
 	Super::Destroyed();
 }
 
-void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation)
+void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation, const float BoundsHeight)
 {
+	BoxBoundsHeight = BoundsHeight;
 	TargetWidget = InTargetWidget;
 	BoxBoundsOrigin = InBoxBoundsOrigin;
 	SetTargetWidgetLocation(InStartLocation);
@@ -147,7 +148,7 @@ void ATargetPreview::HandleDestruction(const bool bExpired, const float CurrentH
 FVector2d ATargetPreview::GetWidgetPositionFromWorldPosition(const FVector& InPosition) const
 {
 	const float X = InPosition.Y;
-	const float Y = InPosition.Z - (1000.f + Config.FloorDistance) / 2.f;
+	const float Y = InPosition.Z - (BoxBoundsHeight + Config.FloorDistance) / 2.f;
 	return FVector2d(X, Y);
 }
 

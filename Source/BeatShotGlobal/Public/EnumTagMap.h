@@ -11,14 +11,18 @@
 
 class UGameModeCategoryTagWidget;
 
+/** Display name and associated GameplayTags for an enum */
 USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FEnumTagPair
 {
 	GENERATED_BODY()
 
-	/** String version of the Enum Value */
+	/** DisplayName */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FString DisplayName;
+
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, meta = (NoResetToDefault))
-	FString EnumValue;
+	int32 Index;
 
 	/** Gameplay Tags inherited from the Enum Class */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (Categories="GameModeCategory"))
@@ -27,15 +31,28 @@ struct FEnumTagPair
 	/** Gameplay Tags associated with the Enum Value */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (Categories="GameModeCategory"))
 	FGameplayTagContainer Tags;
-
+	
 	FEnumTagPair()
 	{
+		DisplayName = "";
+		ParentTags = FGameplayTagContainer();
+		Tags = FGameplayTagContainer();
+		Index = -1;
+	}
+
+	FEnumTagPair(const FString& InEnumValue, const int32 InIndex)
+	{
+		DisplayName = InEnumValue;
+		Index = InIndex;
+		ParentTags = FGameplayTagContainer();
 		Tags = FGameplayTagContainer();
 	}
 
-	FEnumTagPair(const FString& InEnumValue)
+	FEnumTagPair(const int32 InIndex)
 	{
-		EnumValue = InEnumValue;
+		DisplayName = "";
+		Index = InIndex;
+		ParentTags = FGameplayTagContainer();
 		Tags = FGameplayTagContainer();
 	}
 
@@ -54,10 +71,11 @@ struct FEnumTagPair
 
 	FORCEINLINE bool operator==(const FEnumTagPair& Other) const
 	{
-		return EnumValue.Equals(Other.EnumValue);
+		return Index == Other.Index;
 	}
 };
 
+/** A collection of FEnumTagPair for a particular enum type */
 USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
 struct FEnumTagMapping
 {
@@ -76,7 +94,7 @@ struct FEnumTagMapping
 	FGameplayTagContainer ParentTags;
 
 	/** Gameplay Tags associated with an Enum Value */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (TitleProperty="{EnumValue}"))
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (TitleProperty="{DisplayName}"))
 	TArray<FEnumTagPair> EnumTagPairs;
 
 	FEnumTagMapping()
@@ -101,7 +119,7 @@ struct FEnumTagMapping
 		for (int64 i = 0; i < Enum->GetMaxEnumValue(); i++)
 		{
 			const FText EnumValueText = Enum->GetDisplayNameTextByValue(i);
-			EnumTagPairs.Emplace(EnumValueText.ToString());
+			EnumTagPairs.Emplace(EnumValueText.ToString(), i);
 		}
 	}
 
@@ -142,6 +160,10 @@ public:
 	/** Returns a pointer to the entire EnumTagMappings array */
 	const TArray<FEnumTagMapping>* GetEnumTagMappings() const;
 
+	/** Returns the string associated with a specific full enum name */
+	template<typename T>
+	FString GetStringFromEnumTagPair(const T& InEnum);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, meta = (TitleProperty="{EnumClass}"))
 	TArray<FEnumTagMapping> EnumTagMappings;
@@ -172,8 +194,7 @@ FGameplayTagContainer UEnumTagMap::GetTagsForEnum(const T& InEnum)
 		return FGameplayTagContainer();
 	}
 	
-	const FText EnumValueText = EnumTagMapping->Enum->GetDisplayNameTextByValue(static_cast<int64>(InEnum));
-	const int32 Index = EnumTagMapping->EnumTagPairs.Find(FEnumTagPair(EnumValueText.ToString()));
+	const int32 Index = EnumTagMapping->EnumTagPairs.Find(FEnumTagPair(static_cast<int64>(InEnum)));
 
 	if (!EnumTagMapping->EnumTagPairs.IsValidIndex(Index))
 	{
@@ -198,4 +219,24 @@ const FEnumTagMapping* UEnumTagMap::GetEnumTagMapping()
 		return nullptr;
 	}
 	return &EnumTagMappings[Index];
+}
+
+template <typename T>
+FString UEnumTagMap::GetStringFromEnumTagPair(const T& InEnum)
+{
+	const FEnumTagMapping* EnumTagMapping = GetEnumTagMapping<T>();
+	if (!EnumTagMapping)
+	{
+		return FString();
+	}
+
+	const int32 Index = EnumTagMapping->EnumTagPairs.Find(FEnumTagPair(static_cast<int64>(InEnum)));
+
+	if (!EnumTagMapping->EnumTagPairs.IsValidIndex(Index))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Didn't find mapping for %llu"), static_cast<int64>(InEnum));
+		return FString();
+	}
+	
+	return EnumTagMapping->EnumTagPairs[Index].DisplayName;
 }

@@ -4,10 +4,11 @@
 #include "MenuWidgets/PostGameMenuWidget.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/VerticalBox.h"
-#include "OverlayWidgets/QuitMenuWidget.h"
+#include "OverlayWidgets/PopupWidgets/QuitMenuWidget.h"
 #include "Styles/MenuStyle.h"
-#include "SubMenuWidgets/SettingsMenuWidget.h"
+#include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
+#include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 
 void UPostGameMenuWidget::NativeConstruct()

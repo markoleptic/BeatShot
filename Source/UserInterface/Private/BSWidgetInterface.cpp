@@ -8,8 +8,8 @@
 #include "Kismet/KismetStringLibrary.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/Boxes/BSComboBoxEntry.h"
-#include "WidgetComponents/TooltipImage.h"
-#include "WidgetComponents/TooltipWidget.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
+#include "WidgetComponents/Tooltips/TooltipWidget.h"
 
 float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {

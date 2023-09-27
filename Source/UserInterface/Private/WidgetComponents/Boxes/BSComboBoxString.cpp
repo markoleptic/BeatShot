@@ -4,13 +4,13 @@
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/Boxes/BSComboBoxEntry.h"
 #include "WidgetComponents/Boxes/SBSComboBox.h"
-#include "WidgetComponents/TooltipWidget.h"
+#include "WidgetComponents/Tooltips/TooltipWidget.h"
 #include "Widgets/SNullWidget.h"
 #include "UObject/EditorObjectVersion.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/Font.h"
 #include "Styling/UMGCoreStyle.h"
-#include "WidgetComponents/TooltipImage.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
 
 #define LOCTEXT_NAMESPACE "UMG"
 
@@ -21,7 +21,6 @@ static FTableRowStyle* DefaultComboBoxRowStyle = nullptr;
 static FComboBoxStyle* EditorComboBoxStyle = nullptr;
 static FTableRowStyle* EditorComboBoxRowStyle = nullptr;
 #endif 
-
 
 void UBSComboBoxString::ReleaseSlateResources(bool bReleaseChildren)
 {

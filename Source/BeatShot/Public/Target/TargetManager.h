@@ -131,6 +131,12 @@ protected:
 
 	/** Initializes the Composite Curve Tables */
 	void Init_Tables();
+
+	/** Returns the location to spawn the SpawnBox at */
+	FVector GenerateSpawnBoxLocation() const;
+
+	/** Returns the actual BoxBounds that the TargetManager sets its 2D BoxBounds to */
+	FVector GenerateBoxExtentsStatic() const;
 	
 	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
 	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
@@ -195,6 +201,7 @@ protected:
 	/** Returns true if a target exists that is vulnerable to tracking damage */
 	virtual bool TrackingTargetIsDamageable() const;
 
+	/** Returns BSConfig pointer */
 	virtual FBSConfig* GetBSConfig() const { return BSConfig; }
 
 	/** Returns a copy of ManagedTargets */
@@ -205,6 +212,12 @@ protected:
 	
 	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
 	virtual FVector GetBoxExtents_Static() const { return StaticExtents; }
+
+	/** Returns max extents that the SpawnBox could have */
+	virtual FVector GetBoxExtents_Max() const;
+
+	/** Returns max extrema that the SpawnBox could have */
+	virtual FExtrema GetBoxExtrema_Max() const;
 
 	/** Returns SpawnBox's origin, as it is in the game */
 	virtual FVector GetBoxOrigin() const { return SpawnBox->Bounds.Origin; }

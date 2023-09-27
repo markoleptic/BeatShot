@@ -5,10 +5,8 @@
 #include "CoreMinimal.h"
 #include "TargetManager.h"
 #include "GameFramework/Actor.h"
-#include "SubMenuWidgets/CustomGameModesWidget/Components/CustomGameModesWidget_Preview.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Preview.h"
 #include "TargetManagerPreview.generated.h"
-
-class UBoxBoundsWidget;
 
 UCLASS()
 class BEATSHOT_API ATargetManagerPreview : public ATargetManager
@@ -19,8 +17,7 @@ public:
 	ATargetManagerPreview();
 
 	/** Initializes the BoxBounds widget */
-	void InitBoxBoundsWidget(const TObjectPtr<UBoxBoundsWidget> InCurrent, const TObjectPtr<UBoxBoundsWidget> InMin,
-		const TObjectPtr<UBoxBoundsWidget> InMax, const TObjectPtr<USizeBox> InFloorDistance, const TObjectPtr<UTextBlock> InFloorDistText);
+	void InitBoxBoundsWidget(const TObjectPtr<UCustomGameModesWidget_Preview> InGameModePreviewWidget);
 
 	/** Reinitialize the TargetManager by calling Init */
 	void RestartSimulation();
@@ -52,19 +49,7 @@ protected:
 	virtual void UpdateSpawnVolume() const override;
 
 	UPROPERTY()
-	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget_Current;
-
-	UPROPERTY()
-	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget_Min;
-
-	UPROPERTY()
-	TObjectPtr<UBoxBoundsWidget> BoxBoundsWidget_Max;
-	
-	UPROPERTY()
-	TObjectPtr<USizeBox> FloorDistance;
-
-	UPROPERTY()
-	TObjectPtr<UTextBlock> TextBlock_FloorDistance;
+	TObjectPtr<UCustomGameModesWidget_Preview> GameModePreviewWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TargetManagerPreview")
 	FText FloorDistanceText = FText::FromString("Floor Distance");

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
-#include "WidgetComponents/TooltipImage.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
 #include "MenuOptionStyle.generated.h"
 
 /** Defines styles used in MenuOptionWidgets */

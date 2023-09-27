@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Components/PanelWidget.h"
-#include "WidgetComponents/TooltipImage.h"
+#include "EnumTagMap.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
 #include "BSWidgetInterface.generated.h"
 
 class UBSComboBoxEntry;
@@ -56,6 +57,8 @@ public:
 
 	/** Returns TooltipWidget */
 	virtual UTooltipWidget* GetTooltipWidget() const { return nullptr; }
+
+	virtual UEnumTagMap* GetEnumTagMap() const { return nullptr; }
 	
 	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
 	void SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
@@ -93,24 +96,6 @@ public:
 			}
 		}
 		return nullptr;
-	}
-
-	/** Returns the enum value corresponding to the string, or the specified DefaultNotFound if no matches were found */
-	template<typename T, typename Enum_Value>
-	static T GetEnumFromString(const FString& InString, const Enum_Value& DefaultNotFound = 0)
-	{
-		const FString NewString = InString.Replace(*FString(" "), *FString("")).Replace(*FString("-"), *FString(""));
-		const UEnum* const EnumClass = StaticEnum<T>();
-		if (!EnumClass)
-		{
-			return static_cast<T>(DefaultNotFound);
-		}
-		const int64 Value = EnumClass->GetValueByNameString(NewString);
-		if (Value == INDEX_NONE)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Couldn't find Enum from String: %s"), *InString);
-		}
-		return Value == INDEX_NONE ? static_cast<T>(0) : static_cast<T>(Value);
 	}
 	
 	/** Returns the enum value corresponding to the string, or if not found, the the enum byte value of 0 for T */

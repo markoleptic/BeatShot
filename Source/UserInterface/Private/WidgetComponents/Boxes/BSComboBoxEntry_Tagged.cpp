@@ -6,7 +6,6 @@
 #include "Components/HorizontalBoxSlot.h"
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
 
-
 void UBSComboBoxEntry_Tagged::AddGameModeCategoryTagWidget(TArray<UGameModeCategoryTagWidget*>& InParentTagWidgets, TArray<UGameModeCategoryTagWidget*>& InTagWidgets,
 		const FMargin InMargin, const EVerticalAlignment InVAlign, const EHorizontalAlignment InHAlign)
 {

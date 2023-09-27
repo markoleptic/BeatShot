@@ -5,7 +5,7 @@
 #include "GlobalEnums.generated.h"
 
 /** The player chosen audio format for the current game mode */
-UENUM()
+UENUM(BlueprintType)
 enum class EAudioFormat : uint8
 {
 	None UMETA(DisplayName="None"),
@@ -17,7 +17,7 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loo
 
 
 /** Describes if player scores were posted or not */
-UENUM()
+UENUM(BlueprintType)
 enum class EPostScoresResponse : uint8
 {
 	ZeroScore UMETA(DisplayName="ZeroScore"),
@@ -30,7 +30,7 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore
 
 
 /** The type of ScoreBrowserWidget */
-UENUM()
+UENUM(BlueprintType)
 enum class EScoreBrowserType : uint8
 {
 	MainMenuScores UMETA(DisplayName="MainMenuScores"),
@@ -72,7 +72,7 @@ ENUM_RANGE_BY_FIRST_AND_LAST(ENISEnabledMode, ENISEnabledMode::Off, ENISEnabledM
 
 
 /** The transition state describing the start state and end state of a transition */
-UENUM()
+UENUM(BlueprintType)
 enum class ETransitionState : uint8
 {
 	StartFromMainMenu UMETA(DisplayName="StartFromMainMenu"),

@@ -721,31 +721,6 @@ struct FBS_TargetConfig
 		EndColor = FLinearColor();
 		OutlineColor = FLinearColor();
 	}
-	
-	/** Returns the location to spawn the SpawnBox at */
-	FVector GenerateSpawnBoxLocation() const
-	{
-		FVector SpawnBoxCenter = DefaultTargetManagerLocation;
-		if (TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-		{
-			SpawnBoxCenter.Z = HeadshotHeight;
-		}
-		else
-		{
-			SpawnBoxCenter.Z = BoxBounds.Z / 2.f + FloorDistance;
-		}
-		return SpawnBoxCenter;
-	}
-
-	/** Returns the actual BoxBounds that the TargetManager sets its 2D BoxBounds to */
-	FVector GenerateTargetManagerBoxBounds() const
-	{
-		if (TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-		{
-			return FVector(BoxBounds.X / 2.f, BoxBounds.Y / 2.f, 1.f);
-		}
-		return FVector(BoxBounds.X / 2.f, BoxBounds.Y / 2.f, BoxBounds.Z / 2.f);
-	}
 
 	FORCEINLINE bool operator==(const FBS_TargetConfig& Other) const
 	{
@@ -1018,39 +993,6 @@ struct FBSConfig
 		Config.GameModeType = EGameModeType::Preset;
 		Config.CustomGameModeName = "";
 		return Config;
-	}
-};
-
-
-DECLARE_DELEGATE_RetVal(bool, FGetConstraintState);
-
-USTRUCT()
-struct FBS_PropertyConstraint
-{
-	GENERATED_BODY()
-
-private:
-	bool bIsConstrained;
-
-public:
-	FGetConstraintState ConstraintCallback;
-	
-	FBS_PropertyConstraint()
-	{
-		bIsConstrained = false;
-	}
-
-	void Update()
-	{
-		if (ConstraintCallback.IsBound())
-		{
-			bIsConstrained = ConstraintCallback.Execute();
-		}
-	}
-	
-	bool IsConstrained() const
-	{
-		return bIsConstrained;
 	}
 };
 
@@ -1548,6 +1490,15 @@ struct FPlayerSettings_CrossHair
 	UPROPERTY(BlueprintReadOnly)
 	int32 OutlineWidth;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool bShowCrossHairDot;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor CrossHairDotColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 CrossHairDotSize;
+
 	FPlayerSettings_CrossHair()
 	{
 		LineWidth = DefaultLineWidth;
@@ -1556,6 +1507,9 @@ struct FPlayerSettings_CrossHair
 		CrossHairColor = DefaultCrossHairColor;
 		OutlineOpacity = DefaultOutlineOpacity;
 		OutlineWidth = DefaultOutlineWidth;
+		bShowCrossHairDot = false;
+		CrossHairDotColor = DefaultCrossHairColor;
+		CrossHairDotSize = DefaultCrossHairDotSize;
 	}
 };
 

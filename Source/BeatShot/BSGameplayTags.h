@@ -116,6 +116,7 @@ struct FBSGameplayTags
 	FGameplayTag GameModeCategory_Grid;
 	FGameplayTag GameModeCategory_Effects;
 	FGameplayTag GameModeCategory_Static;
+	FGameplayTag GameModeCategory_MultiSelect;
 
 protected:
 	void AddAllTags(UGameplayTagsManager& Manager);

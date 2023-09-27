@@ -120,6 +120,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(GameModeCategory_Grid, "GameModeCategory.Grid","");
 	AddTag(GameModeCategory_Effects, "GameModeCategory.Effects","");
 	AddTag(GameModeCategory_Static, "GameModeCategory.Static","");
+	AddTag(GameModeCategory_MultiSelect, "GameModeCategory.MultiSelect","");
 }
 
 void FBSGameplayTags::AddTag(FGameplayTag& OutTag, const ANSICHAR* TagName, const ANSICHAR* TagComment)

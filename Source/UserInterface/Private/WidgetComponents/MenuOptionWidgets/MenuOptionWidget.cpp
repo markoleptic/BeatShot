@@ -12,7 +12,7 @@
 #include "Components/Spacer.h"
 #include "Components/TextBlock.h"
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
-#include "WidgetComponents/TooltipImage.h"
+#include "WidgetComponents/Tooltips/TooltipImage.h"
 #include "Styles/MenuOptionStyle.h"
 
 

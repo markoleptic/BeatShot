@@ -4,8 +4,8 @@
 #include "MainMenuGameMode.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "SubMenuWidgets/GameModesWidget.h"
-#include "SubMenuWidgets/CustomGameModesWidget/CustomGameModesWidget_CreatorView.h"
+#include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
+#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidget_CreatorView.h"
 #include "Target/TargetManagerPreview.h"
 
 AMainMenuGameMode::AMainMenuGameMode()
@@ -28,11 +28,7 @@ void AMainMenuGameMode::BeginPlay()
 void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)
 {
 	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator);
-	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Current,
-		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Min,
-		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->BoxBounds_Max,
-		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->FloorDistance,
-		GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview->TextBlock_FloorDistance);
+	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
 	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
 	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview, &UCustomGameModesWidget_Preview::ConstructTargetWidget);
 	
