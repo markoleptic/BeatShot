@@ -1472,6 +1472,8 @@ struct FPlayerSettings_CrossHair
 {
 	GENERATED_USTRUCT_BODY()
 
+	// Lines
+	
 	UPROPERTY(BlueprintReadOnly)
 	int32 LineWidth;
 
@@ -1484,11 +1486,15 @@ struct FPlayerSettings_CrossHair
 	UPROPERTY(BlueprintReadOnly)
 	FLinearColor CrossHairColor;
 
-	UPROPERTY(BlueprintReadOnly)
-	float OutlineOpacity;
+	// Outline
 
 	UPROPERTY(BlueprintReadOnly)
-	int32 OutlineWidth;
+	FLinearColor OutlineColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 OutlineSize;
+
+	// Dot
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bShowCrossHairDot;
@@ -1505,8 +1511,10 @@ struct FPlayerSettings_CrossHair
 		LineLength = DefaultLineLength;
 		InnerOffset = DefaultInnerOffset;
 		CrossHairColor = DefaultCrossHairColor;
-		OutlineOpacity = DefaultOutlineOpacity;
-		OutlineWidth = DefaultOutlineWidth;
+		
+		OutlineColor = DefaultCrossHairOutlineColor;
+		OutlineSize = DefaultOutlineSize;
+		
 		bShowCrossHairDot = false;
 		CrossHairDotColor = DefaultCrossHairColor;
 		CrossHairDotSize = DefaultCrossHairDotSize;

@@ -19,15 +19,13 @@ void USettingsMenuWidget_CrossHair::NativeConstruct()
 	MenuOption_InnerOffset->SetValues(0, 30, 1);
 	MenuOption_LineLength->SetValues(0, 100, 1);
 	MenuOption_LineWidth->SetValues(0, 100, 1);
-	MenuOption_OutlineOpacity->SetValues(0, 100, 1);
-	MenuOption_OutlineWidth->SetValues(0, 50, 1);
+	MenuOption_OutlineSize->SetValues(0, 50, 1);
 	MenuOption_CrossHairDotSize->SetValues(0, 50, 1);
 	
 	MenuOption_InnerOffset->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	MenuOption_LineLength->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	MenuOption_LineWidth->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	MenuOption_OutlineOpacity->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	MenuOption_OutlineWidth->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	MenuOption_OutlineSize->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 	MenuOption_CrossHairDotSize->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
 
 	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
@@ -40,6 +38,7 @@ void USettingsMenuWidget_CrossHair::NativeConstruct()
 
 	MenuOption_ColorSelect->OnColorChanged.BindUObject(this, &USettingsMenuWidget_CrossHair::OnColorChanged_CrossHair);
 	MenuOption_CrossHairDotColorSelect->OnColorChanged.BindUObject(this, &USettingsMenuWidget_CrossHair::OnColorChanged_CrossHairDot);
+	MenuOption_OutlineColorSelect->OnColorChanged.BindUObject(this, &USettingsMenuWidget_CrossHair::OnColorChanged_CrossHairOutline);
 
 	MenuOption_ShowCrossHairDot->CheckBox->OnCheckStateChanged.AddDynamic(this, &USettingsMenuWidget_CrossHair::OnCheckStateChanged_MenuOption_ShowCrossHairDot);
 	
@@ -57,15 +56,16 @@ void USettingsMenuWidget_CrossHair::NativeConstruct()
 void USettingsMenuWidget_CrossHair::SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings)
 {
 	MenuOption_ColorSelect->InitializeColor(CrossHairSettings.CrossHairColor);
+	MenuOption_OutlineColorSelect->InitializeColor(CrossHairSettings.OutlineColor);
+	MenuOption_CrossHairDotColorSelect->InitializeColor(CrossHairSettings.CrossHairDotColor);
+	
 	MenuOption_InnerOffset->SetValue(CrossHairSettings.InnerOffset);
 	MenuOption_LineLength->SetValue(CrossHairSettings.LineLength);
 	MenuOption_LineWidth->SetValue(CrossHairSettings.LineWidth);
-	MenuOption_OutlineOpacity->SetValue(CrossHairSettings.OutlineOpacity * 100);
-	MenuOption_OutlineWidth->SetValue(CrossHairSettings.OutlineWidth);
+	MenuOption_OutlineSize->SetValue(CrossHairSettings.OutlineSize);
+	MenuOption_CrossHairDotSize->SetValue(CrossHairSettings.CrossHairDotSize);
 	
 	MenuOption_ShowCrossHairDot->CheckBox->SetIsChecked(CrossHairSettings.bShowCrossHairDot);
-	MenuOption_CrossHairDotSize->SetValue(CrossHairSettings.CrossHairDotSize);
-	MenuOption_CrossHairDotColorSelect->InitializeColor(CrossHairSettings.CrossHairDotColor);
 	
 	MenuOption_CrossHairDotSize->SetVisibility(CrossHairSettings.bShowCrossHairDot ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
 	MenuOption_CrossHairDotColorSelect->SetVisibility(CrossHairSettings.bShowCrossHairDot ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
@@ -78,48 +78,51 @@ void USettingsMenuWidget_CrossHair::OnSliderTextBoxValueChanged(USliderTextBoxOp
 	if (Widget == MenuOption_InnerOffset)
 	{
 		NewCrossHairSettings.InnerOffset = Value;
-		CrossHairWidget->SetInnerOffset(Value);
+		CrossHairWidget->SetInnerOffset(NewCrossHairSettings.InnerOffset);
 	}
 	else if (Widget == MenuOption_LineLength)
 	{
 		NewCrossHairSettings.LineLength = Value;
-		CrossHairWidget->SetLineLength(Value);
+		CrossHairWidget->SetLineSize(FVector2d(NewCrossHairSettings.LineWidth, NewCrossHairSettings.LineLength));
+		CrossHairWidget->SetOutlineSize(NewCrossHairSettings.OutlineSize, FVector2d(NewCrossHairSettings.LineWidth, NewCrossHairSettings.LineLength));
 	}
 	else if (Widget == MenuOption_LineWidth)
 	{
 		NewCrossHairSettings.LineWidth = Value;
-		CrossHairWidget->SetLineWidth(Value);
+		CrossHairWidget->SetLineSize(FVector2d(NewCrossHairSettings.LineWidth, NewCrossHairSettings.LineLength));
+		CrossHairWidget->SetOutlineSize(NewCrossHairSettings.OutlineSize, FVector2d(NewCrossHairSettings.LineWidth, NewCrossHairSettings.LineLength));
 	}
-	else if (Widget == MenuOption_OutlineOpacity)
+	else if (Widget == MenuOption_OutlineSize)
 	{
-		NewCrossHairSettings.OutlineOpacity = Value / 100.f;
-		CrossHairWidget->SetOutlineOpacity(Value / 100.f);
-		CrossHairWidget->SetCrossHairDotOutlineOpacity(Value / 100.f);
-	}
-	else if (Widget == MenuOption_OutlineWidth)
-	{
-		NewCrossHairSettings.OutlineWidth = Value;
-		CrossHairWidget->SetOutlineWidth(Value);
-		CrossHairWidget->SetCrossHairDotOutlineSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineWidth);
+		NewCrossHairSettings.OutlineSize = Value;
+		CrossHairWidget->SetOutlineSize(NewCrossHairSettings.OutlineSize, FVector2d(NewCrossHairSettings.LineWidth, NewCrossHairSettings.LineLength));
+		CrossHairWidget->SetCrossHairDotOutlineSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineSize);
 	}
 	else if (Widget == MenuOption_CrossHairDotSize)
 	{
 		NewCrossHairSettings.CrossHairDotSize = Value;
-		CrossHairWidget->SetCrossHairDotSize(Value);
-		CrossHairWidget->SetCrossHairDotOutlineSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineWidth);
+		CrossHairWidget->SetCrossHairDotSize(NewCrossHairSettings.CrossHairDotSize);
+		CrossHairWidget->SetCrossHairDotOutlineSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineSize);
 	}
 }
 
 void USettingsMenuWidget_CrossHair::OnColorChanged_CrossHair(const FLinearColor& NewColor)
 {
 	NewCrossHairSettings.CrossHairColor = NewColor;
-	CrossHairWidget->SetImageColor(NewCrossHairSettings.CrossHairColor);
+	CrossHairWidget->SetLineColor(NewCrossHairSettings.CrossHairColor);
 }
 
 void USettingsMenuWidget_CrossHair::OnColorChanged_CrossHairDot(const FLinearColor& NewColor)
 {
 	NewCrossHairSettings.CrossHairDotColor = NewColor;
 	CrossHairWidget->SetCrossHairDotColor(NewCrossHairSettings.CrossHairDotColor);
+}
+
+void USettingsMenuWidget_CrossHair::OnColorChanged_CrossHairOutline(const FLinearColor& NewColor)
+{
+	NewCrossHairSettings.OutlineColor = NewColor;
+	CrossHairWidget->SetOutlineColor(NewCrossHairSettings.OutlineColor);
+	CrossHairWidget->SetCrossHairDotOutlineColor(NewCrossHairSettings.OutlineColor);
 }
 
 void USettingsMenuWidget_CrossHair::OnCheckStateChanged_MenuOption_ShowCrossHairDot(const bool bIsChecked)

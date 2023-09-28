@@ -7,9 +7,9 @@
 #include "SaveLoadInterface.h"
 #include "CrossHairWidget.generated.h"
 
-class USizeBox;
+class UCanvasPanelSlot;
+class UOverlay;
 class UImage;
-class UScaleBox;
 
 /** Widget used to show the CrossHair */
 UCLASS()
@@ -24,22 +24,26 @@ protected:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* Container_Left;
+	UOverlay* Overlay_Left;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* Container_Top;
+	UOverlay* Overlay_Top;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* Container_Right;
+	UOverlay* Overlay_Right;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* Container_Bottom;
-
+	UOverlay* Overlay_Bottom;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* ScaleBox_Left;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* ScaleBox_Top;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* ScaleBox_Right;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScaleBox* ScaleBox_Bottom;
+	UOverlay* Overlay_Dot;
+	
+	UPROPERTY()
+	UCanvasPanelSlot* Slot_Left;
+	UPROPERTY()
+	UCanvasPanelSlot* Slot_Right;
+	UPROPERTY()
+	UCanvasPanelSlot* Slot_Top;
+	UPROPERTY()
+	UCanvasPanelSlot* Slot_Bottom;
+	UPROPERTY()
+	UCanvasPanelSlot* Slot_Dot;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_LeftOutline;
@@ -60,47 +64,40 @@ protected:
 	UImage* Image_Bottom;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USizeBox* SizeBox_CrossHairDot;
+	UImage* Image_Dot;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* Image_CrossHairDot;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USizeBox* SizeBox_CrossHairDotOutline;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* Image_CrossHairDotOutline;
+	UImage* Image_DotOutline;
 
 public:
-	/** Changes the width of the containers */
-	void SetLineWidth(const int32 NewWidthValue);
+	/** Sets the size of lines */
+	void SetLineSize(const FVector2d VerticalLineSize);
 	
-	/** Changes the length of the containers */
-	void SetLineLength(const float NewLengthValue);
+	/** Sets the size of the outlines */
+	void SetOutlineSize(const int32 NewSize, const FVector2d VerticalLineSize);
 	
-	/** Changes the size of the colored portion of the CrossHair (ScaleBox_Left, etc.) while leaving the outline unchanged */
-	void SetOutlineWidth(const int32 NewWidthValue);
+	/** Sets the color of the Outline Images */
+	void SetOutlineColor(const FLinearColor NewColor);
 	
-	/** Changes the opacity of the Outline Images */
-	void SetOutlineOpacity(const float NewOpacityValue);
+	/** Sets the color of the lines */
+	void SetLineColor(const FLinearColor NewColor);
 	
-	/** Changes the color of the images (Image_Left, etc.) while leaving the OutlineImages unchanged */
-	void SetImageColor(const FLinearColor NewColor);
-	
-	/** Changes the offset between the middle of the screen and the start of a container */
-	void SetInnerOffset(const int32 NewOffsetValue);
+	/** Sets the offset between the middle of the screen and the start of the lines */
+	void SetInnerOffset(const int32 NewOffset);
 
-	/** Changes the visibility of the CrossHair Dot */
+	/** Sets the visibility of the CrossHair Dot */
 	void SetShowCrossHairDot(const bool bShow);
 
-	/** Changes the color of the CrossHair Dot */
+	/** Sets the color of the CrossHair Dot */
 	void SetCrossHairDotColor(const FLinearColor NewColor);
 
-	/** Changes the size of the CrossHair Dot */
+	/** Sets the size of the CrossHair Dot */
 	void SetCrossHairDotSize(const int32 NewSize);
 	
-	/** Changes the size of the CrossHair Dot Outline */
-	void SetCrossHairDotOutlineSize(const int32 CrossHairDotSize, const int32 OutlineWidth);
+	/** Sets the size of the CrossHair Dot Outline */
+	void SetCrossHairDotOutlineSize(const int32 CrossHairDotSize, const int32 OutlineSize);
 
-	/** Changes the opacity of the CrossHair Dot Outline */
-	void SetCrossHairDotOutlineOpacity(const float NewOpacityValue);
+	/** Sets the color of the CrossHair Dot Outline */
+	void SetCrossHairDotOutlineColor(const FLinearColor NewColor);
 	
 	/** Reinitialize CrossHair if Player Settings change */
 	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;

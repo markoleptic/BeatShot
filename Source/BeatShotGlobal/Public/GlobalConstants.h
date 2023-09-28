@@ -90,9 +90,9 @@ namespace Constants
 	inline constexpr int32 DefaultLineLength = 10;
 	inline constexpr int32 DefaultInnerOffset = 6;
 	inline constexpr FLinearColor DefaultCrossHairColor(63.f / 255.f, 199.f / 255.f, 235.f / 255.f, 1.f);
-	inline constexpr float DefaultOutlineOpacity = 1.f;
-	inline constexpr int32 DefaultOutlineWidth = 20;
-	inline constexpr int32 DefaultCrossHairDotSize = 5;
+	inline constexpr FLinearColor DefaultCrossHairOutlineColor(0.f, 0.f, 0.f, 1.f);
+	inline constexpr int32 DefaultOutlineSize = 2;
+	inline constexpr int32 DefaultCrossHairDotSize = 4;
 	
 	inline constexpr float MaxValue_TimeWindow = 0.01f;
 	inline constexpr float MinValue_TimeWindow = 1.00f;

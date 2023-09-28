@@ -39,21 +39,23 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UColorSelectOptionWidget* MenuOption_ColorSelect;
-
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UColorSelectOptionWidget* MenuOption_OutlineColorSelect;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UColorSelectOptionWidget* MenuOption_CrossHairDotColorSelect;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_InnerOffset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_LineLength;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_LineWidth;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* MenuOption_OutlineOpacity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* MenuOption_OutlineWidth;
+	USliderTextBoxOptionWidget* MenuOption_OutlineSize;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* MenuOption_ShowCrossHairDot;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UColorSelectOptionWidget* MenuOption_CrossHairDotColorSelect;
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_CrossHairDotSize;
 	
@@ -71,6 +73,8 @@ private:
 	void OnColorChanged_CrossHair(const FLinearColor& NewColor);
 	UFUNCTION()
 	void OnColorChanged_CrossHairDot(const FLinearColor& NewColor);
+	UFUNCTION()
+	void OnColorChanged_CrossHairOutline(const FLinearColor& NewColor);
 	UFUNCTION()
 	void OnCheckStateChanged_MenuOption_ShowCrossHairDot(const bool bIsChecked);
 
