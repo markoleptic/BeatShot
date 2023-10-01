@@ -106,10 +106,10 @@ public:
 	virtual void OnAudioAnalyzerBeat();
 
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
-	TArray<FAccuracyRow> GetLocationAccuracy() const;
-
-	/** Called from DefaultGameMode, returns the player accuracy matrix */
-	FCommonScoreInfo GetCommonScoreInfo() const;
+	FAccuracyData GetLocationAccuracy() const;
+	
+	/** Saves the QTable inside InCommonScoreInfo */
+	void SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
 	/** Delegate that is executed every time a target has been activated */
 	FOnTargetActivated OnTargetActivated;
@@ -246,6 +246,9 @@ protected:
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
 	virtual USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 
+	/** Bound to ReinforcementLearningComponent's OnSpawnAreaValidityRequest delegate */
+	bool OnSpawnAreaValidityRequested(const int32 Index);
+
 	/** Evaluates the specified curve at InTime */
 	float GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const;
 	
@@ -277,7 +280,7 @@ protected:
 
 	/** SpawnArea for the previous target. Assigned the value of CurrentSpawnArea immediately before the CurrentSpawnArea is chosen in FindNextTargetProperties */
 	UPROPERTY()
-	USpawnArea* PreviousSpawnArea;
+	mutable USpawnArea* PreviousSpawnArea;
 
 	/** The scale to apply to the next/current target */
 	FVector CurrentTargetScale;

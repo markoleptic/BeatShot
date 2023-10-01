@@ -295,6 +295,9 @@ public:
 	/** Returns true if the SpawnArea is contained in SpawnAreas */
 	bool IsSpawnAreaValid(const USpawnArea* InSpawnArea) const;
 
+	/** Returns true if the SpawnArea is contained in SpawnAreas */
+	bool IsSpawnAreaValid(const int32 InIndex) const;
+
 	/** Returns an array of SpawnAreas that are flagged as currently managed */
 	TArray<USpawnArea*> GetManagedSpawnAreas() const;
 

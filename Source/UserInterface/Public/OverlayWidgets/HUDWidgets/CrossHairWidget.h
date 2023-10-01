@@ -65,8 +65,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_Dot;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UImage* Image_DotOutline;
 
 public:
 	/** Sets the size of lines */
@@ -91,10 +89,7 @@ public:
 	void SetCrossHairDotColor(const FLinearColor NewColor);
 
 	/** Sets the size of the CrossHair Dot */
-	void SetCrossHairDotSize(const int32 NewSize);
-	
-	/** Sets the size of the CrossHair Dot Outline */
-	void SetCrossHairDotOutlineSize(const int32 CrossHairDotSize, const int32 OutlineSize);
+	void SetCrossHairDotSize(const int32 NewSize, const int32 OutlineSize);
 
 	/** Sets the color of the CrossHair Dot Outline */
 	void SetCrossHairDotOutlineColor(const FLinearColor NewColor);

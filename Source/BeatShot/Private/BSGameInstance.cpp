@@ -36,8 +36,8 @@ void UBSGameInstance::InitVideoSettings()
 	{
 		GameUserSettings->RunHardwareBenchmark();
 		GameUserSettings->ApplyHardwareBenchmarkResults();
-		FPlayerSettings Settings = LoadPlayerSettings();
-		Settings.User.bHasRanBenchmark = true;
+		FPlayerSettings_User Settings = LoadPlayerSettings().User;
+		Settings.bHasRanBenchmark = true;
 		SavePlayerSettings(Settings);
 	}
 

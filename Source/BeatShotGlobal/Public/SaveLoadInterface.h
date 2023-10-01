@@ -3,9 +3,14 @@
 #pragma once
 
 #include "GlobalStructs.h"
+#include "Kismet/GameplayStatics.h"
 #include "SaveLoadInterface.generated.h"
 
+class USaveGamePlayerSettings;
+class USaveGameCustomGameMode;
+class USaveGamePlayerScore;
 class UBSGameModeDataAsset;
+
 /** Broadcast when game specific settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayerSettings_Game&, GameSettings);
 
@@ -36,13 +41,36 @@ class BEATSHOTGLOBAL_API ISaveLoadInterface
 {
 	GENERATED_BODY()
 
+private:
+	template<typename T>
+	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
+	static T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
+	
+	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
+	static USaveGamePlayerScore* LoadFromSlot_SaveGamePlayerScore();
+	
+	/** Performs the loading from SaveGame slot and returns the USaveGameCustomGameMode object */
+	static USaveGameCustomGameMode* LoadFromSlot_SaveGameCustomGameMode();
+
+	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerSettings object */
+	static USaveGamePlayerSettings* LoadFromSlot_SaveGamePlayerSettings();
+
+	/** Performs the saving to SaveGame slot and returns true if successful */
+	static bool SaveToSlot(USaveGamePlayerScore* SaveGamePlayerScore);
+
+	/** Performs the saving to SaveGame slot and returns true if successful */
+	static bool SaveToSlot(USaveGameCustomGameMode* SaveGameCustomGameMode);
+
+	/** Performs the saving to SaveGame slot and returns true if successful */
+	static bool SaveToSlot(USaveGamePlayerSettings* SaveGamePlayerSettings);
+	
 public:
 
 	/** Returns the GameModeDataAsset that contains all default/preset game modes. Expected to be overriden */
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const { return nullptr; }
 	
 	/** Loads all player settings from slot */
-	virtual FPlayerSettings LoadPlayerSettings() const;
+	static FPlayerSettings LoadPlayerSettings();
 
 	/** Saves Game specific settings, preserving all other settings */
 	virtual void SavePlayerSettings(const FPlayerSettings_Game& InGameSettings);
@@ -58,65 +86,66 @@ public:
 
 	/** Saves VideoAndSound settings, preserving all other settings */
 	virtual void SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
-	
-	/** Saves entire player settings, overwriting the previous player settings */
-	virtual void SavePlayerSettings(const FPlayerSettings& InPlayerSettings);
 
-	/** Loads all custom game modes from slot */
-	TArray<FBSConfig> LoadCustomGameModes() const;
+	/** Returns all Custom Game Modes */
+	static TArray<FBSConfig> LoadCustomGameModes();
+
+	/** Returns the Custom Game Mode corresponding to the input CustomGameModeName string */
+	static FBSConfig FindCustomGameMode(const FString& CustomGameModeName);
 
 	/** Saves a custom game mode to slot, checking if any matching exist and overriding if they do */
-	virtual void SaveCustomGameMode(const FBSConfig& ConfigToSave);
+	static void SaveCustomGameMode(const FBSConfig& ConfigToSave);
 
 	/** Removes a custom game mode and saves to slot */
-	virtual int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove);
+	static int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove);
 
 	/** Removes all custom game modes and saves to slot */
-	virtual void RemoveAllCustomGameModes();
+	static int32 RemoveAllCustomGameModes();
+
+	/** Returns whether or not the GameModeName is already a custom game mode name */
+	static bool IsCustomGameMode(const FString& GameModeName);
+
+	/** Returns whether or not the CustomGameMode is Custom and identical to the config */
+	static bool DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig);
+
+	/** Creates an FBSConfig from an exported FBSConfig string */
+	static FBSConfig ImportCustomGameMode(const FString& InImportString);
+
+	/** Creates an export String from an FBSConfig */
+	static FString ExportCustomGameMode(const FBSConfig& InGameMode);
 
 	/** Returns the FBSConfig corresponding to the input GameModeName string and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const;
 
 	/** Returns the FBSConfig corresponding to the input BaseGameMode and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const;
-
-	/** Returns the FBSConfig corresponding to the input GameModeName string */
-	FBSConfig FindCustomGameMode(const FString& CustomGameModeName) const;
-
-	/** Returns whether or not the GameModeName is part of the game's default game modes */
-	bool IsPresetGameMode(const FString& GameModeName) const;
-
-	/** Returns whether or not the GameModeName is already a custom game mode name */
-	bool IsCustomGameMode(const FString& GameModeName) const;
-
-	/** Returns whether or not the CustomGameMode is Custom and identical to the config */
-	bool DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig) const;
-
-	/** Loads all player scores from slot */
-	TArray<FPlayerScore> LoadPlayerScores() const;
 	
-	/** Saves entire player score array, overwriting the previous player score array */
-	virtual void SavePlayerScores(const TArray<FPlayerScore>& PlayerScoreArrayToSave);
+	/** Returns whether or not the GameModeName is part of the game's default game modes */
+	static bool IsPresetGameMode(const FString& GameModeName);
+	
+	/** Loads all player scores from slot */
+	static TArray<FPlayerScore> LoadPlayerScores();
+
+	/** Loads player scores not saved to database */
+	static TArray<FPlayerScore> LoadPlayerScores_UnsavedToDatabase();
+
+	/** Marks all player scores as saved to the database and saves to slot */
+	static void SetAllPlayerScoresSavedToDatabase();
 
 	/** Finds any PlayerScores that match the input PlayerScore based on DefaultMode, CustomGameModeName, Difficulty, and SongTitle */
-	TArray<FPlayerScore> GetMatchingPlayerScores(const FPlayerScore& PlayerScore) const;
+	static TArray<FPlayerScore> GetMatchingPlayerScores(const FPlayerScore& PlayerScore);
+	
+	/** Saves an instance of an FPlayerScore to slot */
+	static void SavePlayerScoreInstance(const FPlayerScore& PlayerScoreToSave);
 
 	/** Loads the map containing common score info for all game modes */
-	TMap<FBS_DefiningConfig, FCommonScoreInfo> LoadCommonScoreInfo() const;
+	static TMap<FBS_DefiningConfig, FCommonScoreInfo> LoadCommonScoreInfoMap();
 
-	/** Returns the CommonScoreInfo that matches a given DefiningConfig */
-	FCommonScoreInfo GetScoreInfoFromDefiningConfig(const FBS_DefiningConfig& DefiningConfig) const;
-	
+	/** Returns the CommonScoreInfo that matches a given DefiningConfig, or a blank one if none found */
+	static FCommonScoreInfo FindCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig);
+
 	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
-	virtual void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
-
-	/** Creates an FBSConfig from an exported FBSConfig string */
-	FBSConfig ImportCustomGameMode(const FString& InImportString);
-
-	/** Creates an export String from an FBSConfig */
-	FString ExportCustomGameMode(const FBSConfig& InGameMode);
-
-
+	static void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
 	
 	// These functions should be overriden when a class wants to receive updates about settings changes
 	// Example:
@@ -149,8 +178,24 @@ protected:
 	FOnPlayerSettingsChanged_CrossHair OnPlayerSettingsChangedDelegate_CrossHair;
 	/** The delegate that is broadcast when this class saves VideoAndSound settings */
 	FOnPlayerSettingsChanged_VideoAndSound OnPlayerSettingsChangedDelegate_VideoAndSound;
-	
-private:
-	/** Performs the actual saving to slot of the CommonScoreInfo, do not call directly. Instead use SaveCommonScoreInfo */
-	void UpdateCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave) const;
 };
+
+template <typename T>
+T* ISaveLoadInterface::LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex)
+{
+	if (UGameplayStatics::DoesSaveGameExist(InSlotName, InSlotIndex))
+	{
+		if (T* SaveGameObject = Cast<T>(UGameplayStatics::LoadGameFromSlot(InSlotName, InSlotIndex)))
+		{
+			return SaveGameObject;
+		}
+	}
+	else
+	{
+		if (T* SaveGameObject = Cast<T>(UGameplayStatics::CreateSaveGameObject(T::StaticClass())))
+		{
+			return SaveGameObject;
+		}
+	}
+	return nullptr;
+}

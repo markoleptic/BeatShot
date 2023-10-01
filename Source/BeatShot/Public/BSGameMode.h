@@ -223,7 +223,7 @@ private:
 
 	/** Saves player scores to slot and calls SaveScoresToDatabase() if bShouldSavePlayerScores is true and
 	 *  GetCompletedPlayerScores() returns a valid score object. Otherwise Broadcasts OnPostScoresResponse with "None" */
-	void HandleScoreSaving(const bool bExternalSaveScores);
+	void HandleScoreSaving(const bool bExternalSaveScores, const FCommonScoreInfo& InCommonScoreInfo);
 
 	/** Function bound to the response of an access token, which is broadcast from RequestAccessToken() */
 	UFUNCTION()

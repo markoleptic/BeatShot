@@ -72,5 +72,5 @@ void UVideoSettingOptionWidget::OnBSButtonPressed_VideoQuality(const UBSButton* 
 	{
 		return;
 	}
-	OnVideoSettingQualityButtonPressed.Broadcast(VideoSettingType, VideoSettingButton->GetVideoSettingQuality());
+	OnVideoSettingQualityButtonPressed.Broadcast(VideoSettingButton->GetVideoSettingType(), VideoSettingButton->GetVideoSettingQuality());
 }

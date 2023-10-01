@@ -17,8 +17,7 @@ void UCrossHairWidget::InitializeCrossHair(const FPlayerSettings_CrossHair& Cros
 	SetCrossHairDotColor(CrossHairSettings.CrossHairDotColor);
 	SetCrossHairDotOutlineColor(CrossHairSettings.OutlineColor);
 	
-	SetCrossHairDotSize(CrossHairSettings.CrossHairDotSize);
-	SetCrossHairDotOutlineSize(CrossHairSettings.CrossHairDotSize, CrossHairSettings.OutlineSize);
+	SetCrossHairDotSize(CrossHairSettings.CrossHairDotSize, CrossHairSettings.OutlineSize);
 	SetShowCrossHairDot(CrossHairSettings.bShowCrossHairDot);
 }
 
@@ -83,27 +82,34 @@ void UCrossHairWidget::SetInnerOffset(const int32 NewOffsetValue)
 void UCrossHairWidget::SetShowCrossHairDot(const bool bShow)
 {
 	Image_Dot->SetVisibility(bShow ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
-	Image_DotOutline->SetVisibility(bShow ? ESlateVisibility::SelfHitTestInvisible : ESlateVisibility::Collapsed);
 }
 
 void UCrossHairWidget::SetCrossHairDotColor(const FLinearColor NewColor)
 {
-	Image_Dot->SetColorAndOpacity(NewColor);
+	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
+	if (MaterialInstance)
+	{
+		MaterialInstance->SetVectorParameterValue("Color", NewColor);
+	}
 }
 
-void UCrossHairWidget::SetCrossHairDotSize(const int32 NewSize)
+void UCrossHairWidget::SetCrossHairDotSize(const int32 NewSize, const int32 OutlineSize)
 {
-	Image_Dot->SetDesiredSizeOverride(FVector2d(NewSize));
-}
-
-void UCrossHairWidget::SetCrossHairDotOutlineSize(const int32 CrossHairDotSize, const int32 OutlineSize)
-{
-	Image_DotOutline->SetDesiredSizeOverride(FVector2d(CrossHairDotSize + OutlineSize));
+	Image_Dot->SetDesiredSizeOverride(FVector2d(NewSize + OutlineSize));
+	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
+	if (MaterialInstance)
+	{
+		MaterialInstance->SetScalarParameterValue("FillOutlineRatio", static_cast<float>(NewSize) / static_cast<float>(NewSize + OutlineSize));
+	}
 }
 
 void UCrossHairWidget::SetCrossHairDotOutlineColor(const FLinearColor NewColor)
 {
-	Image_DotOutline->SetColorAndOpacity(NewColor);
+	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
+	if (MaterialInstance)
+	{
+		MaterialInstance->SetVectorParameterValue("OutlineColor", NewColor);
+	}
 }
 
 void UCrossHairWidget::OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)

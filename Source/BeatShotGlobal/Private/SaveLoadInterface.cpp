@@ -7,229 +7,222 @@
 #include "SaveGamePlayerSettings.h"
 #include "Kismet/GameplayStatics.h"
 
-FPlayerSettings ISaveLoadInterface::LoadPlayerSettings() const
+USaveGamePlayerScore* ISaveLoadInterface::LoadFromSlot_SaveGamePlayerScore()
 {
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
+	return LoadFromSlot<USaveGamePlayerScore>("ScoreSlot", 1);
+	/*if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
 	{
-		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0)))
+		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1)))
 		{
-			return SaveGamePlayerSettings->PlayerSettings;
+			return SaveGamePlayerScore;
 		}
 	}
 	else
 	{
-		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
 		{
-			return SaveGamePlayerSettings->PlayerSettings;
+			return SaveGamePlayerScore;
 		}
 	}
-	return FPlayerSettings();
+	return nullptr;*/
 }
 
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_Game& InGameSettings)
+USaveGameCustomGameMode* ISaveLoadInterface::LoadFromSlot_SaveGameCustomGameMode()
 {
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = LoadPlayerSettings();
-		SaveGameObject->PlayerSettings.Game = InGameSettings;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-	OnPlayerSettingsChangedDelegate_Game.Broadcast(InGameSettings);
-}
-
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InAudioAnalyzerSettings)
-{
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = LoadPlayerSettings();
-		SaveGameObject->PlayerSettings.AudioAnalyzer = InAudioAnalyzerSettings;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-	OnPlayerSettingsChangedDelegate_AudioAnalyzer.Broadcast(InAudioAnalyzerSettings);
-}
-
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_User& InUserSettings)
-{
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = LoadPlayerSettings();
-		SaveGameObject->PlayerSettings.User = InUserSettings;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-	OnPlayerSettingsChangedDelegate_User.Broadcast(InUserSettings);
-}
-
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_CrossHair& InCrossHairSettings)
-{
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = LoadPlayerSettings();
-		SaveGameObject->PlayerSettings.CrossHair = InCrossHairSettings;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-	OnPlayerSettingsChangedDelegate_CrossHair.Broadcast(InCrossHairSettings);
-}
-
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
-{
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = LoadPlayerSettings();
-		SaveGameObject->PlayerSettings.VideoAndSound = InVideoAndSoundSettings;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-	OnPlayerSettingsChangedDelegate_VideoAndSound.Broadcast(InVideoAndSoundSettings);
-}
-
-void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings& InPlayerSettings)
-{
-	if (USaveGamePlayerSettings* SaveGameObject = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-	{
-		SaveGameObject->PlayerSettings = InPlayerSettings;
-		UGameplayStatics::SaveGameToSlot(SaveGameObject, TEXT("SettingsSlot"), 0);
-	}
-}
-
-TArray<FBSConfig> ISaveLoadInterface::LoadCustomGameModes() const
-{
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
+	return LoadFromSlot<USaveGameCustomGameMode>("CustomGameModesSlot", 3);
+	/*if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
 	{
 		if (USaveGameCustomGameMode* SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3)))
 		{
-			return SaveGameCustomGameMode->CustomGameModes;
+			return SaveGameCustomGameMode;
 		}
 	}
 	else
 	{
 		if (USaveGameCustomGameMode* SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
 		{
-			return SaveGameCustomGameMode->CustomGameModes;
+			return SaveGameCustomGameMode;
 		}
+	}
+	return nullptr;*/
+}
+
+USaveGamePlayerSettings* ISaveLoadInterface::LoadFromSlot_SaveGamePlayerSettings()
+{
+	return LoadFromSlot<USaveGamePlayerSettings>("SettingsSlot", 0);
+	/*if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
+	{
+		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0)))
+		{
+			return SaveGamePlayerSettings;
+		}
+	}
+	else
+	{
+		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
+		{
+			return SaveGamePlayerSettings;
+		}
+	}
+	return nullptr;*/
+}
+
+bool ISaveLoadInterface::SaveToSlot(USaveGamePlayerSettings* SaveGamePlayerSettings)
+{
+	if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerSettings, TEXT("SettingsSlot"), 0))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SavePlayerSettings Succeeded"));
+		return true;
+	}
+	return false;
+}
+
+bool ISaveLoadInterface::SaveToSlot(USaveGamePlayerScore* SaveGamePlayerScore)
+{
+	if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScore, TEXT("ScoreSlot"), 1))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
+		return true;
+	}
+	return false;
+}
+
+bool ISaveLoadInterface::SaveToSlot(USaveGameCustomGameMode* SaveGameCustomGameMode)
+{
+	if (UGameplayStatics::SaveGameToSlot(SaveGameCustomGameMode, TEXT("CustomGameModesSlot"), 3))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SaveGameCustomGameModes Succeeded"));
+		return true;
+	}
+	return false;
+}
+
+/* --------------------------- */
+/* ----- Player Settings------ */
+/* --------------------------- */
+
+FPlayerSettings ISaveLoadInterface::LoadPlayerSettings()
+{
+	if (const USaveGamePlayerSettings* SaveGamePlayerSettings = LoadFromSlot_SaveGamePlayerSettings())
+	{
+		return SaveGamePlayerSettings->GetPlayerSettings();
+	}
+	return FPlayerSettings();
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_Game& InGameSettings)
+{
+	if (USaveGamePlayerSettings* SaveGamePlayerSettings = LoadFromSlot_SaveGamePlayerSettings())
+	{
+		SaveGamePlayerSettings->SavePlayerSettings(InGameSettings);
+		SaveToSlot(SaveGamePlayerSettings);
+		OnPlayerSettingsChangedDelegate_Game.Broadcast(InGameSettings);
+	}
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_AudioAnalyzer& InAudioAnalyzerSettings)
+{
+	if (USaveGamePlayerSettings* SaveGamePlayerSettings = LoadFromSlot_SaveGamePlayerSettings())
+	{
+		SaveGamePlayerSettings->SavePlayerSettings(InAudioAnalyzerSettings);
+		SaveToSlot(SaveGamePlayerSettings);
+		OnPlayerSettingsChangedDelegate_AudioAnalyzer.Broadcast(InAudioAnalyzerSettings);
+	}
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_User& InUserSettings)
+{
+	if (USaveGamePlayerSettings* SaveGamePlayerSettings = LoadFromSlot_SaveGamePlayerSettings())
+	{
+		SaveGamePlayerSettings->SavePlayerSettings(InUserSettings);
+		SaveToSlot(SaveGamePlayerSettings);
+		OnPlayerSettingsChangedDelegate_User.Broadcast(InUserSettings);
+	}
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_CrossHair& InCrossHairSettings)
+{
+	if (USaveGamePlayerSettings* SaveGamePlayerSettings = LoadFromSlot_SaveGamePlayerSettings())
+	{
+		SaveGamePlayerSettings->SavePlayerSettings(InCrossHairSettings);
+		SaveToSlot(SaveGamePlayerSettings);
+		OnPlayerSettingsChangedDelegate_CrossHair.Broadcast(InCrossHairSettings);
+	}
+}
+
+void ISaveLoadInterface::SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
+{
+	if (USaveGamePlayerSettings* SaveGamePlayerSettings = LoadFromSlot_SaveGamePlayerSettings())
+	{
+		SaveGamePlayerSettings->SavePlayerSettings(InVideoAndSoundSettings);
+		SaveToSlot(SaveGamePlayerSettings);
+		OnPlayerSettingsChangedDelegate_VideoAndSound.Broadcast(InVideoAndSoundSettings);
+	}
+}
+
+/* --------------------------- */
+/* ---- Custom Game Modes ---- */
+/* --------------------------- */
+
+TArray<FBSConfig> ISaveLoadInterface::LoadCustomGameModes()
+{
+	if (const USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
+	{
+		return SaveGameCustomGameMode->GetCustomGameModes();
 	}
 	return TArray<FBSConfig>();
 }
 
+FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeName)
+{
+	if (const USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
+	{
+		return SaveGameCustomGameMode->FindCustomGameMode(CustomGameModeName);
+	}
+	return FBSConfig();
+}
+
 void ISaveLoadInterface::SaveCustomGameMode(const FBSConfig& ConfigToSave)
 {
-	TArray<FBSConfig> CustomGameModesArray = LoadCustomGameModes();
-	if (const int32 Index = CustomGameModesArray.Find(ConfigToSave); Index != INDEX_NONE)
+	if (USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
 	{
-		CustomGameModesArray[Index] = ConfigToSave;
-	}
-	else
-	{
-		CustomGameModesArray.Add(ConfigToSave);
-	}
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
-	{
-		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
-		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+		SaveGameCustomGameMode->SaveCustomGameMode(ConfigToSave);
+		SaveToSlot(SaveGameCustomGameMode);
 	}
 }
 
 int32 ISaveLoadInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove)
 {
-	TArray<FBSConfig> CustomGameModesArray = LoadCustomGameModes();
-	const int32 NumRemoved = CustomGameModesArray.Remove(ConfigToRemove);
-	CustomGameModesArray.Shrink();
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	if (USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
 	{
-		SaveCustomGameModeObject->CustomGameModes = CustomGameModesArray;
-		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+		const int32 NumRemoved = SaveGameCustomGameMode->RemoveCustomGameMode(ConfigToRemove);
+		SaveToSlot(SaveGameCustomGameMode);
+		return NumRemoved;
 	}
-	return NumRemoved;
+	return 0;
 }
 
-void ISaveLoadInterface::RemoveAllCustomGameModes()
+int32 ISaveLoadInterface::RemoveAllCustomGameModes()
 {
-	const TArray<FBSConfig> Empty = TArray<FBSConfig>();
-	if (USaveGameCustomGameMode* SaveCustomGameModeObject = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
+	if (USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
 	{
-		SaveCustomGameModeObject->CustomGameModes = Empty;
-		UGameplayStatics::SaveGameToSlot(SaveCustomGameModeObject, TEXT("CustomGameModesSlot"), 3);
+		const int32 NumRemoved = SaveGameCustomGameMode->RemoveAll();
+		SaveToSlot(SaveGameCustomGameMode);
+		return NumRemoved;
 	}
+	return 0;
 }
 
-FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const
+bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName)
 {
-	EBaseGameMode BaseGameMode = EBaseGameMode::None;
-	
-	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
+	if (const USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
 	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
-		{
-			BaseGameMode = Preset;
-			break;
-		}
-	}
-
-	if (BaseGameMode != EBaseGameMode::None)
-	{
-		const FBS_DefiningConfig DefiningConfig = FBSConfig::GetConfigForPreset(BaseGameMode, Difficulty);
-		TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
-		FBSConfig* Found = Map.Find(DefiningConfig);
-		if (Found)
-		{
-			return *Found;
-		}
-	}
-	
-	return FBSConfig();
-}
-
-FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const
-{
-	if (BaseGameMode != EBaseGameMode::None)
-	{
-		const FBS_DefiningConfig DefiningConfig = FBSConfig::GetConfigForPreset(BaseGameMode, Difficulty);
-		TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
-		FBSConfig* Found = Map.Find(DefiningConfig);
-		if (Found)
-		{
-			return *Found;
-		}
-	}
-	
-	return FBSConfig();
-}
-
-FBSConfig ISaveLoadInterface::FindCustomGameMode(const FString& CustomGameModeName) const
-{
-	for (const FBSConfig& Mode : LoadCustomGameModes())
-	{
-		if (Mode.DefiningConfig.CustomGameModeName.Equals(CustomGameModeName))
-		{
-			return Mode;
-		}
-	}
-	return FBSConfig();
-}
-
-bool ISaveLoadInterface::IsPresetGameMode(const FString& GameModeName) const
-{
-	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
-	{
-		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
-		{
-			return true;
-		}
+		return SaveGameCustomGameMode->IsCustomGameMode(GameModeName);
 	}
 	return false;
 }
 
-bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName) const
-{
-	for (const FBSConfig& GameMode : LoadCustomGameModes())
-	{
-		if (GameMode.DefiningConfig.CustomGameModeName.Equals(GameModeName, ESearchCase::IgnoreCase))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig) const
+bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig)
 {
 	if (!IsCustomGameMode(CustomGameModeName))
 	{
@@ -247,85 +240,6 @@ bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGame
 		return true;
 	}
 	return false;
-}
-
-TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores() const
-{
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
-	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1)))
-		{
-			return SaveGamePlayerScore->PlayerScoreArray;
-		}
-	}
-	else
-	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
-		{
-			return SaveGamePlayerScore->PlayerScoreArray;
-		}
-	}
-	return TArray<FPlayerScore>();
-}
-
-void ISaveLoadInterface::SavePlayerScores(const TArray<FPlayerScore>& PlayerScoreArrayToSave)
-{
-	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
-	{
-		SaveGamePlayerScores->PlayerScoreArray = PlayerScoreArrayToSave;
-		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SavePlayerScores Succeeded"));
-		}
-	}
-}
-
-TArray<FPlayerScore> ISaveLoadInterface::GetMatchingPlayerScores(const FPlayerScore& PlayerScore) const
-{
-	return LoadPlayerScores().FilterByPredicate([&PlayerScore] (const FPlayerScore& ComparePlayerScore) {
-		if (ComparePlayerScore == PlayerScore)
-		{
-			return true;
-		}
-		return false;
-	});
-}
-
-TMap<FBS_DefiningConfig, FCommonScoreInfo> ISaveLoadInterface::LoadCommonScoreInfo() const
-{
-	if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
-	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1)))
-		{
-			return SaveGamePlayerScore->CommonScoreInfo;
-		}
-	}
-	else
-	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
-		{
-			return SaveGamePlayerScore->CommonScoreInfo;
-		}
-	}
-	return TMap<FBS_DefiningConfig, FCommonScoreInfo>();
-}
-
-FCommonScoreInfo ISaveLoadInterface::GetScoreInfoFromDefiningConfig(const FBS_DefiningConfig& DefiningConfig) const
-{
-	TMap<FBS_DefiningConfig, FCommonScoreInfo> Map = LoadCommonScoreInfo();
-	if (Map.Find(DefiningConfig) == nullptr)
-	{
-		return Map.Add(DefiningConfig);
-	}
-	return *Map.Find(DefiningConfig);
-}
-
-void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave)
-{
-	TMap<FBS_DefiningConfig, FCommonScoreInfo> Map = LoadCommonScoreInfo();
-	FCommonScoreInfo FoundOrAddedScoreInfo = Map.FindOrAdd(DefiningConfig);
-	FoundOrAddedScoreInfo.UpdateCommonValues(CommonScoreInfoToSave.TotalHits, CommonScoreInfoToSave.TotalSpawns);
-	UpdateCommonScoreInfo(Map);
 }
 
 FBSConfig ISaveLoadInterface::ImportCustomGameMode(const FString& InImportString)
@@ -355,14 +269,142 @@ FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InGameMode)
 	return Output;
 }
 
-void ISaveLoadInterface::UpdateCommonScoreInfo(const TMap<FBS_DefiningConfig, FCommonScoreInfo>& MapToSave) const
+/* --------------------------- */
+/* ---- Preset Game Modes ---- */
+/* --------------------------- */
+
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const
 {
-	if (USaveGamePlayerScore* SaveGamePlayerScores = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
+	EBaseGameMode BaseGameMode = EBaseGameMode::None;
+	
+	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
 	{
-		SaveGamePlayerScores->CommonScoreInfo = MapToSave;
-		if (UGameplayStatics::SaveGameToSlot(SaveGamePlayerScores, TEXT("ScoreSlot"), 1))
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("UpdateCommonScoreInfo Succeeded"));
+			BaseGameMode = Preset;
+			break;
 		}
+	}
+
+	if (BaseGameMode != EBaseGameMode::None)
+	{
+		const FBS_DefiningConfig DefiningConfig = FBSConfig::GetConfigForPreset(BaseGameMode, Difficulty);
+		const TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
+		const FBSConfig* Found = Map.Find(DefiningConfig);
+		if (Found)
+		{
+			return *Found;
+		}
+	}
+	return FBSConfig();
+}
+
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const
+{
+	if (BaseGameMode != EBaseGameMode::None)
+	{
+		const FBS_DefiningConfig DefiningConfig = FBSConfig::GetConfigForPreset(BaseGameMode, Difficulty);
+		const TMap<FBS_DefiningConfig, FBSConfig> Map = GetGameModeDataAsset()->GetDefaultGameModesMap();
+		const FBSConfig* Found = Map.Find(DefiningConfig);
+		if (Found)
+		{
+			return *Found;
+		}
+	}
+	
+	return FBSConfig();
+}
+
+bool ISaveLoadInterface::IsPresetGameMode(const FString& GameModeName)
+{
+	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
+	{
+		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+/* --------------------------- */
+/* --------- Scoring --------- */
+/* --------------------------- */
+
+TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores()
+{
+	if (const USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		return SaveGamePlayerScore->GetPlayerScores();
+	}
+	return TArray<FPlayerScore>();
+}
+
+TArray<FPlayerScore> ISaveLoadInterface::LoadPlayerScores_UnsavedToDatabase()
+{
+	if (const USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		return SaveGamePlayerScore->GetPlayerScores_UnsavedToDatabase();
+	}
+	return TArray<FPlayerScore>();
+}
+
+void ISaveLoadInterface::SetAllPlayerScoresSavedToDatabase()
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		SaveGamePlayerScore->SetAllScoresSavedToDatabase();
+		SaveToSlot(SaveGamePlayerScore);
+	}
+}
+
+TArray<FPlayerScore> ISaveLoadInterface::GetMatchingPlayerScores(const FPlayerScore& PlayerScore)
+{
+	return LoadPlayerScores().FilterByPredicate([&PlayerScore] (const FPlayerScore& ComparePlayerScore) {
+		if (ComparePlayerScore == PlayerScore)
+		{
+			return true;
+		}
+		return false;
+	});
+}
+
+void ISaveLoadInterface::SavePlayerScoreInstance(const FPlayerScore& PlayerScoreToSave)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		SaveGamePlayerScore->SavePlayerScoreInstance(PlayerScoreToSave);
+		SaveToSlot(SaveGamePlayerScore);
+	}
+}
+
+/* --------------------------- */
+/* ---- Common Score Info ---- */
+/* --------------------------- */
+
+TMap<FBS_DefiningConfig, FCommonScoreInfo> ISaveLoadInterface::LoadCommonScoreInfoMap()
+{
+	if (const USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		return SaveGamePlayerScore->GetCommonScoreInfo();
+	}
+	return TMap<FBS_DefiningConfig, FCommonScoreInfo>();
+}
+
+FCommonScoreInfo ISaveLoadInterface::FindCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		return SaveGamePlayerScore->FindCommonScoreInfo(DefiningConfig);
+	}
+	return FCommonScoreInfo();
+}
+
+void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		SaveGamePlayerScore->SaveCommonScoreInfo(DefiningConfig, CommonScoreInfoToSave);
+		SaveToSlot(SaveGamePlayerScore);
 	}
 }

@@ -36,13 +36,13 @@ public:
 	EVideoSettingType GetVideoSettingType() const { return SettingType; }
 
 	/** Returns the video setting quality for this button widget */
-	int32 GetVideoSettingQuality() const { return Quality; }
+	uint8 GetVideoSettingQuality() const { return Quality; }
 	
 	virtual UVideoSettingButton* GetNext() const override { return Cast<UVideoSettingButton>(Next); }
 
 private:
 	/** The video setting quality this button widget represents */
-	int32 Quality;
+	uint8 Quality;
 
 	/** The video setting type this button widget represents */
 	EVideoSettingType SettingType;

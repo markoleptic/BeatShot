@@ -726,6 +726,38 @@ void USettingsMenuWidget_VideoAndSound::OnBSButtonPressed_SaveReset(const UBSBut
 
 void USettingsMenuWidget_VideoAndSound::OnVideoSettingOptionWidget_ButtonPressed(const EVideoSettingType VideoSettingType, const uint8 Quality)
 {
+	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
+	switch(VideoSettingType)
+	{
+	case EVideoSettingType::AntiAliasing:
+		Settings->SetAntiAliasingQuality(Quality);
+		break;
+	case EVideoSettingType::GlobalIllumination:
+		Settings->SetGlobalIlluminationQuality(Quality);
+		break;
+	case EVideoSettingType::PostProcessing:
+		Settings->SetPostProcessingQuality(Quality);
+		break;
+	case EVideoSettingType::Reflection:
+		Settings->SetReflectionQuality(Quality);
+		break;
+	case EVideoSettingType::Shadow:
+		Settings->SetShadowQuality(Quality);
+		break;
+	case EVideoSettingType::Shading:
+		Settings->SetShadingQuality(Quality);
+		break;
+	case EVideoSettingType::Texture:
+		Settings->SetTextureQuality(Quality);
+		break;
+	case EVideoSettingType::ViewDistance:
+		Settings->SetViewDistanceQuality(Quality);
+		break;
+	case EVideoSettingType::VisualEffect:
+		Settings->SetVisualEffectQuality(Quality);
+		break;
+	default: ;
+	}
 }
 
 void USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_FPSCounter(const bool bIsChecked)

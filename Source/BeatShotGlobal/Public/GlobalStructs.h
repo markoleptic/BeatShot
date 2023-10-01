@@ -11,9 +11,9 @@
 #include "StreamlineLibraryReflex.h"
 #include "GlobalStructs.generated.h"
 
+struct FAccuracyData;
 struct FGameplayTagContainer;
 using namespace Constants;
-
 
 /** Struct only used to save accuracy to database */
 USTRUCT()
@@ -21,38 +21,143 @@ struct FAccuracyRow
 {
 	GENERATED_BODY()
 
+	friend FAccuracyData;
+
+	UPROPERTY()
+	int32 Size;
+	
 	UPROPERTY()
 	TArray<float> Accuracy;
-	TArray<int32> TotalSpawns;
-	TArray<int32> TotalHits;
+
+	UPROPERTY()
+	TArray<int64> TotalSpawns;
+
+	UPROPERTY()
+	TArray<int64> TotalHits;
 
 	FAccuracyRow()
 	{
+		Size = 0;
 		Accuracy = TArray<float>();
-		TotalSpawns = TArray<int32>();
-		TotalHits = TArray<int32>();
+		TotalSpawns = TArray<int64>();
+		TotalHits = TArray<int64>();
 	}
 
-	FAccuracyRow(const int32 Size)
+	FAccuracyRow(const int32 InSize)
 	{
-		Accuracy = TArray<float>();
+		Size = InSize;
 		Accuracy.Init(-1.f, Size);
-		TotalSpawns = TArray<int32>();
 		TotalSpawns.Init(-1, Size);
-		TotalHits = TArray<int32>();
 		TotalHits.Init(0, Size);
 	}
 
 	/** Updates the accuracy array based on all TotalSpawns and TotalHits */
-	void UpdateAccuracy()
+private:
+	void CalculateAccuracy()
 	{
-		for (int i = 0; i < Accuracy.Num(); i++)
+		CheckForEmpty();
+		for (int i = 0; i < Size; i++)
 		{
 			if (TotalSpawns[i] == INDEX_NONE)
 			{
 				continue;
 			}
 			Accuracy[i] = static_cast<float>(TotalHits[i]) / static_cast<float>(TotalSpawns[i]);
+		}
+	}
+
+	void operator+=(const FAccuracyRow& Other)
+	{
+		if (Other.Size != Size)
+		{
+			return;
+		}
+		for (int i = 0; i < Size; i++)
+		{
+			const int64 NewSpawns = Other.TotalSpawns[i];
+			const int64 NewHits = Other.TotalHits[i];
+			if (NewSpawns != -1)
+			{
+				if (TotalSpawns[i] == -1)
+				{
+					TotalSpawns[i] = NewSpawns;
+				}
+				else
+				{
+					TotalSpawns[i] += NewSpawns;
+				}
+			}
+			if (NewHits != -1)
+			{
+				if (TotalHits[i] == -1)
+				{
+					TotalHits[i] = NewHits;
+				}
+				else
+				{
+					TotalHits[i] += NewHits;
+				}
+			}
+		}
+	}
+
+	void CheckForEmpty()
+	{
+		Size = FMath::Max(5, FMath::Max3(Accuracy.Num(), TotalSpawns.Num(), TotalHits.Num()));
+		if (Accuracy.Num() != Size)
+		{
+			Accuracy.Init(-1.f, Size);
+		}
+		if (TotalSpawns.Num() != Size)
+		{
+			TotalSpawns.Init(-1, Size);
+		}
+		if (TotalHits.Num() != Size)
+		{
+			TotalHits.Init(0, Size);
+		}
+	}
+};
+
+/** Struct only used to save accuracy to database */
+USTRUCT()
+struct FAccuracyData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FAccuracyRow> AccuracyRows;
+	
+	FAccuracyData()
+	{
+		AccuracyRows.Init(FAccuracyRow(5), 5);
+	}
+
+	FAccuracyData(const int32 InNumRows, const int32 InNumCols)
+	{
+		AccuracyRows.Init(FAccuracyRow(InNumCols), InNumRows);
+	}
+	
+	/** Adds the InUpdate AccuracyRows to this struct's Accuracy rows, and recalculates the accuracy */
+	void UpdateAccuracyRows(const FAccuracyData& InUpdateData)
+	{
+		for (int i = 0; i < AccuracyRows.Num(); i++)
+		{
+			if (InUpdateData.AccuracyRows.IsValidIndex(i))
+			{
+				AccuracyRows[i] += InUpdateData.AccuracyRows[i];
+				AccuracyRows[i].CalculateAccuracy();
+			}
+
+		}
+	}
+
+	/** Calculates the accuracy for each accuracy row */
+	void CalculateAccuracy()
+	{
+		for (int i = 0; i < AccuracyRows.Num(); i++)
+		{
+			AccuracyRows[i].CalculateAccuracy();
 		}
 	}
 };
@@ -64,76 +169,45 @@ struct FCommonScoreInfo
 	GENERATED_BODY()
 
 	UPROPERTY()
-	TArray<float> Accuracy;
-
-	UPROPERTY()
-	TArray<int32> TotalSpawns;
-
-	UPROPERTY()
-	TArray<int32> TotalHits;
+	FAccuracyData AccuracyData;
 
 	UPROPERTY()
 	TArray<float> QTable;
 
+	UPROPERTY()
+	int32 QTableRowSize;
+
+	UPROPERTY()
+	int64 QTableTrainingSamples;
+
 	FCommonScoreInfo()
 	{
-		Accuracy = TArray<float>();
-		TotalSpawns = TArray<int32>();
-		TotalHits = TArray<int32>();
+		AccuracyData = FAccuracyData(5, 5);
 		QTable = TArray<float>();
+		QTableRowSize = 0;
+		QTableTrainingSamples = 0;
 	}
 
-	FCommonScoreInfo(const int32 Size)
+	FCommonScoreInfo(const int32 NumRows, const int32 NumCols)
 	{
-		Accuracy = TArray<float>();
-		Accuracy.Init(-1.f, Size);
-		TotalSpawns = TArray<int32>();
-		TotalSpawns.Init(-1, Size);
-		TotalHits = TArray<int32>();
-		TotalHits.Init(0, Size);
-		QTable.Init(0.f, Size * Size);
+		AccuracyData = FAccuracyData(NumRows, NumCols);
+		QTable = TArray<float>();
+		QTableRowSize = 0;
+		QTableTrainingSamples = 0;
 	}
-
-	/** Updates TotalSpawns, TotalHits, and calls UpdateAccuracy */
-	void UpdateCommonValues(const TArray<int32>& InTotalSpawns, const TArray<int32>& InTotalHits)
+	
+	/** Calls UpdateAccuracyRows on AccuracyData */
+	void UpdateAccuracy(const FAccuracyData& InAccuracyData)
 	{
-		if (InTotalSpawns.Num() != TotalSpawns.Num() || InTotalHits.Num() != TotalHits.Num())
-		{
-			return;
-		}
-		for (int32 i = 0; i < InTotalSpawns.Num(); i++)
-		{
-			if (InTotalSpawns[i] != INDEX_NONE)
-			{
-				CheckTotalSpawns(i);
-				TotalSpawns[i] += InTotalSpawns[i];
-			}
-			TotalHits[i] += InTotalHits[i];
-		}
-		UpdateAccuracy();
+		AccuracyData.UpdateAccuracyRows(InAccuracyData);
 	}
-
-private:
-	/** Do not call directly, called inside UpdateCommonValues */
-	void UpdateAccuracy()
+	
+	/** Sets the value of the QTable with InQTable */
+	void UpdateQTable(const TArray<float>& InQTable, const int32 InQTableRowSize, const int32 InQTableTrainingSamples)
 	{
-		for (int i = 0; i < Accuracy.Num(); i++)
-		{
-			if (TotalSpawns[i] == INDEX_NONE)
-			{
-				continue;
-			}
-			Accuracy[i] = static_cast<float>(TotalHits[i]) / static_cast<float>(TotalSpawns[i]);
-		}
-	}
-
-	/** Switches a TotalSpawn index to zero if it has not been activated yet */
-	void CheckTotalSpawns(const int32 IndexToActivate)
-	{
-		if (TotalSpawns[IndexToActivate] == INDEX_NONE)
-		{
-			TotalSpawns[IndexToActivate] = 0;
-		}
+		QTable = InQTable;
+		QTableRowSize = InQTableRowSize;
+		QTableTrainingSamples += InQTableTrainingSamples;
 	}
 };
 
@@ -1085,6 +1159,7 @@ struct FPlayerScore
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
+		LocationAccuracy = TArray<FAccuracyRow>();
 		bSavedToDatabase = false;
 	}
 
@@ -1103,6 +1178,7 @@ struct FPlayerScore
 		TargetsSpawned = 0;
 		TotalPossibleDamage = 0.f;
 		Streak = 0;
+		LocationAccuracy = TArray<FAccuracyRow>();
 		bSavedToDatabase = false;
 	}
 

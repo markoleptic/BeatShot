@@ -96,13 +96,12 @@ void USettingsMenuWidget_CrossHair::OnSliderTextBoxValueChanged(USliderTextBoxOp
 	{
 		NewCrossHairSettings.OutlineSize = Value;
 		CrossHairWidget->SetOutlineSize(NewCrossHairSettings.OutlineSize, FVector2d(NewCrossHairSettings.LineWidth, NewCrossHairSettings.LineLength));
-		CrossHairWidget->SetCrossHairDotOutlineSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineSize);
+		CrossHairWidget->SetCrossHairDotSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineSize);
 	}
 	else if (Widget == MenuOption_CrossHairDotSize)
 	{
 		NewCrossHairSettings.CrossHairDotSize = Value;
-		CrossHairWidget->SetCrossHairDotSize(NewCrossHairSettings.CrossHairDotSize);
-		CrossHairWidget->SetCrossHairDotOutlineSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineSize);
+		CrossHairWidget->SetCrossHairDotSize(NewCrossHairSettings.CrossHairDotSize, NewCrossHairSettings.OutlineSize);
 	}
 }
 

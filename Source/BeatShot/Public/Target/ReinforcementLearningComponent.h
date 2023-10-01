@@ -7,7 +7,6 @@
 #include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
 
-class USpawnAreaManagerComponent;
 THIRD_PARTY_INCLUDES_START
 #pragma push_macro("check")
 #undef check
@@ -47,13 +46,6 @@ public:
 		Reward = 0.f;
 	}
 
-	explicit FTargetPair(const int32 CurrentPointIndex)
-	{
-		Previous = INDEX_NONE;
-		Current = CurrentPointIndex;
-		Reward = 0.f;
-	}
-
 	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex)
 	{
 		Previous = PreviousPointIndex;
@@ -63,11 +55,7 @@ public:
 
 	FORCEINLINE bool operator ==(const FTargetPair& Other) const
 	{
-		if (Current == Other.Current)
-		{
-			return true;
-		}
-		return false;
+		return Previous == Other.Previous && Current == Other.Current;
 	}
 
 	/** Sets the reward for this TargetPair */
@@ -171,6 +159,7 @@ struct FQTableIndex
 	}
 };
 
+DECLARE_DELEGATE_RetVal_OneParam(bool, FOnSpawnAreaValidityRequest, const int32);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BEATSHOT_API UReinforcementLearningComponent : public UActorComponent
@@ -196,9 +185,6 @@ public:
 
 	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */
 	virtual void UpdateQTable(const FAlgoInput& In);
-
-	/** Updates EpisodeRewards by appending to the array */
-	virtual void UpdateEpisodeRewards(const float RewardReceived);
 	
 	/** Returns the QTable index corresponding to the maximum reward from starting at QTableIndex, using a greedy approach. Used to update Q-Table, but not to get actual spawn locations */
 	int32 GetMaxActionIndex(const int32 SpawnAreaIndex) const;
@@ -218,22 +204,32 @@ public:
 	/** Returns a TArray version of the full QTable */
 	TArray<float> GetSaveReadyQTable() const;
 
+	/** Returns the number of columns (Row Length) for the full QTable */
+	int32 GetQTableRowLength() const;
+
+	/** Returns the number of training samples the component has trained with this session */
+	int32 GetNumTrainingSamples() const { return TrainingSamples; }
+
 	/** Returns a copy of the QTable */
 	nc::NdArray<float> GetQTable() const;
 
-	/** Delegate that broadcasts when the QTable is updated */
+	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets */
 	FOnQTableUpdate OnQTableUpdate;
 
-	/** Updates a TargetPair's reward based on if hit or not. Removes from ActiveTargetPairs and adds to TargetPairs queue */
+	/** Delegate that broadcasts when the component wants to check the validity of a SpawnArea index */
+	FOnSpawnAreaValidityRequest OnSpawnAreaValidityRequest;
+
+	/** Updates a TargetPair's reward based on if hit or not. SpawnAreaIndex corresponds to the CurrentIndex of a TargetPair. Removes from ActiveTargetPairs and adds to TargetPairs queue */
 	void UpdateReinforcementLearningReward(const int32 SpawnAreaIndex, const bool bHit);
 
 	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
 	void AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex);
 
 	/** Updates RLAgent's QTable until TargetPairs queue is empty */
-	void UpdateReinforcementLearningComponent(const USpawnAreaManagerComponent* SpawnAreaManager);
+	void ClearCachedTargetPairs();
 
 private:
+	
 	/** Returns a random SpawnArea index from the provided SpawnAreaIndices */
 	int32 ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices) const;
 
@@ -259,12 +255,15 @@ private:
 	/** Broadcasts OnQTableUpdate delegate */
 	void UpdateQTableWidget() const;
 
+	/** Returns the first TargetPair with the matching CurrentIndex */
+	FTargetPair FindTargetPairByCurrentIndex(const int32 InCurrentIndex);
+
+	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
+	void PrintMaxAverageIndices(const nc::NdArray<unsigned>& MaxIndicesReverseSorted, const nc::NdArray<float>& MaxesReverseSorted) const;
+
 	/** A 2D array where the row and column have size equal to the number of possible spawn points. An element in the array represents the expected reward from starting at spawn location RowIndex
 	 *  and spawning a target at ColumnIndex. Its a scaled down version of the SpawnCounter where each each point in Q-Table represents multiple points in a square area inside the SpawnCounter */
 	nc::NdArray<float> QTable;
-
-	/** An array that accumulates the current episodes rewards. Not used for gameplay events */
-	nc::NdArray<float> EpisodeRewards;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
 	float Alpha;
@@ -309,4 +308,10 @@ private:
 	/** An array of (PreviousLocation, NextLocation), where NextLocation has not been destroyed or expired.
 	 *  Added directly after being spawned or activated, removed and added to TargetPairs queue upon being destroyed */
 	TArray<FTargetPair> ActiveTargetPairs;
+
+	FNumberFormattingOptions IntegerFormatting;
+	FNumberFormattingOptions FloatFormatting;
+
+	/** The number of samples collected starting from when the component was activated */
+	int32 TrainingSamples;
 };

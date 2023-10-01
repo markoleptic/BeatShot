@@ -198,8 +198,8 @@ void ATargetManager::Init_Internal()
 	if (GetBSConfig()->AIConfig.bEnableReinforcementLearning)
 	{
 		FRLAgentParams Params;
-		Params.InQTable = GetScoreInfoFromDefiningConfig(GetBSConfig()->DefiningConfig).QTable;
-		Params.DefaultMode = GetBSConfig()->DefiningConfig.BaseGameMode;
+		Params.InQTable = FindCommonScoreInfo(GetBSConfig()->DefiningConfig).QTable;
+		Params.DefaultMode = GetBSConfig()->DefiningConfig.BaseGameMode; 
 		Params.CustomGameModeName = GetBSConfig()->DefiningConfig.CustomGameModeName;
 		Params.Size = SpawnAreaManager->GetSpawnAreas().Num();
 		Params.SpawnAreasHeight = SpawnAreaManager->GetSpawnAreasHeight();
@@ -209,6 +209,7 @@ void ATargetManager::Init_Internal()
 		Params.InAlpha = GetBSConfig()->AIConfig.Alpha;
 		ReinforcementLearningComponent->SetActive(true);
 		ReinforcementLearningComponent->Init(Params);
+		ReinforcementLearningComponent->OnSpawnAreaValidityRequest.BindUObject(this, &ThisClass::OnSpawnAreaValidityRequested);
 	}
 	else
 	{
@@ -420,9 +421,13 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid());
 		OnTargetActivated.Broadcast();
 		OnTargetActivated_AimBot.Broadcast(InTarget);
-		if (ReinforcementLearningComponent->IsActive() && SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
+		if (ReinforcementLearningComponent->IsActive())
 		{
-			ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnArea->GetIndex(), CurrentSpawnArea->GetIndex());
+			if (SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
+			{
+				ReinforcementLearningComponent->AddToActiveTargetPairs(PreviousSpawnArea->GetIndex(), CurrentSpawnArea->GetIndex());
+			}
+			PreviousSpawnArea = CurrentSpawnArea;
 		}
 		return true;
 	}
@@ -656,7 +661,6 @@ void ATargetManager::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& Ta
 		if (const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(TargetDamageEvent.Guid))
 		{
 			ReinforcementLearningComponent->UpdateReinforcementLearningReward(Found->GetIndex(), TargetDamageEvent.TimeAlive != -1);
-			ReinforcementLearningComponent->UpdateReinforcementLearningComponent(SpawnAreaManager.Get());
 		}
 	}
 	
@@ -734,20 +738,13 @@ void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionC
 void ATargetManager::FindNextTargetProperties()
 {
 	const FVector NewScale = GetNextTargetScale();
-
-	if (CurrentSpawnArea)
-	{
-		LastTargetSpawnedCenter = CurrentSpawnArea->GetChosenPoint().Equals(GetBoxOrigin());
-		// Assign CurrentSpawnArea address to PreviousSpawnArea just before finding CurrentSpawnArea
-		PreviousSpawnArea = CurrentSpawnArea;
-	}
-	else
-	{
-		LastTargetSpawnedCenter = false;
-		PreviousSpawnArea = nullptr;
-	}
 	
+	// Assign CurrentSpawnArea address to PreviousSpawnArea just before finding CurrentSpawnArea
+	// PreviousSpawnArea = CurrentSpawnArea ? CurrentSpawnArea : nullptr;
+	
+	LastTargetSpawnedCenter = CurrentSpawnArea ? CurrentSpawnArea->GetChosenPoint().Equals(GetBoxOrigin()) : false;
 	CurrentSpawnArea = GetNextSpawnArea(GetBSConfig()->TargetConfig.BoundsScalingPolicy, NewScale);
+	
 	if (CurrentSpawnArea && SpawnAreaManager->GetSpawnAreas().IsValidIndex(CurrentSpawnArea->GetIndex()))
 	{
 		/*for (const USpawnArea* SpawnArea : SpawnAreaManager->GetActivatedOrRecentSpawnAreas())
@@ -1133,6 +1130,11 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(co
 	return ChosenPoint;
 }
 
+bool ATargetManager::OnSpawnAreaValidityRequested(const int32 Index)
+{
+	return SpawnAreaManager->IsSpawnAreaValid(Index);
+}
+
 float ATargetManager::GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const
 {
 	UCompositeCurveTable* Table = bIsSpawnArea ? CompositeCurveTable_SpawnArea : CompositeCurveTable_TargetScale;
@@ -1240,75 +1242,46 @@ void ATargetManager::ShowDebug_OverlappingVertices(const bool bShow)
 	SpawnAreaManager->bShowDebug_OverlappingVertices = bShow;
 }
 
-TArray<FAccuracyRow> ATargetManager::GetLocationAccuracy() const
+FAccuracyData ATargetManager::GetLocationAccuracy() const
 {
-	/* Each row in QTable has size equal to ScaledSize, and so does each column */
-	TArray<FAccuracyRow> OutArray;
-	OutArray.Init(FAccuracyRow(5), 5);
-	TArray<FQTableIndex> QTableIndices;
+	FAccuracyData OutData(5, 5);
 
-	for (int i = 0; i < 25; i++)
+	TArray<USpawnArea*> SpawnAreas = SpawnAreaManager->GetSpawnAreas();
+
+	// Update TotalSpawns and TotalHits from all SpawnAreas
+	for (int i = 0; i < SpawnAreas.Num(); i++)
 	{
-		QTableIndices.Add(FQTableIndex(i));
-	}
-
-	TArray<USpawnArea*> Counter = SpawnAreaManager->GetSpawnAreas();
-
-	for (int i = 0; i < SpawnAreaManager->GetSpawnAreas().Num(); i++)
-	{
-		if (const int32 Found = QTableIndices.Find(SpawnAreaManager->GetOutArrayIndexFromSpawnAreaIndex(i)); Found != INDEX_NONE)
+		const int32 Found = SpawnAreaManager->GetOutArrayIndexFromSpawnAreaIndex(i);
+		
+		if (Found == INDEX_NONE)
 		{
-			const int32 RowNum = Found / 5;
-			const int32 ColNum = Found % 5;
+			continue;
+		}
 
-			if (Counter[i]->GetTotalSpawns() != INDEX_NONE)
+		const int32 RowNum = Found / 5;
+		const int32 ColNum = Found % 5;
+
+		if (SpawnAreas[i]->GetTotalSpawns() != INDEX_NONE)
+		{
+			if (OutData.AccuracyRows[RowNum].TotalSpawns[ColNum] == INDEX_NONE)
 			{
-				if (OutArray[RowNum].TotalSpawns[ColNum] == INDEX_NONE)
-				{
-					OutArray[RowNum].TotalSpawns[ColNum] = 0;
-				}
-				OutArray[RowNum].TotalSpawns[ColNum] += Counter[i]->GetTotalSpawns();
-				OutArray[RowNum].TotalHits[ColNum] += Counter[i]->GetTotalHits();
+				OutData.AccuracyRows[RowNum].TotalSpawns[ColNum] = 0;
 			}
+			OutData.AccuracyRows[RowNum].TotalSpawns[ColNum] += SpawnAreas[i]->GetTotalSpawns();
+			OutData.AccuracyRows[RowNum].TotalHits[ColNum] += SpawnAreas[i]->GetTotalHits();
 		}
 	}
-
-	for (FAccuracyRow& AccuracyRow : OutArray)
-	{
-		AccuracyRow.UpdateAccuracy();
-	}
-	return OutArray;
+	OutData.CalculateAccuracy();
+	return OutData;
 }
 
-FCommonScoreInfo ATargetManager::GetCommonScoreInfo() const
+void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
 {
-	TArray<FQTableIndex> Indices;
-	for (int i = 0; i < 25; i++)
-	{
-		Indices.Add(FQTableIndex(i));
-	}
-
-	FCommonScoreInfo CommonScoreInfo = FCommonScoreInfo(25);
-	TArray<USpawnArea*> Counter = SpawnAreaManager->GetSpawnAreas();
-	for (int i = 0; i < SpawnAreaManager->GetSpawnAreas().Num(); i++)
-	{
-		if (const int32 Found = Indices.Find(FQTableIndex(SpawnAreaManager->GetOutArrayIndexFromSpawnAreaIndex(i))); Found != INDEX_NONE)
-		{
-			if (Counter[i]->GetTotalSpawns() != INDEX_NONE)
-			{
-				if (CommonScoreInfo.TotalSpawns[Found] == INDEX_NONE)
-				{
-					CommonScoreInfo.TotalSpawns[Found] = 0;
-				}
-				CommonScoreInfo.TotalSpawns[Found] += Counter[i]->GetTotalSpawns();
-				CommonScoreInfo.TotalHits[Found] += Counter[i]->GetTotalHits();
-			}
-		}
-	}
 	if (ReinforcementLearningComponent->IsActive())
 	{
-		CommonScoreInfo.QTable = ReinforcementLearningComponent->GetSaveReadyQTable();
-		ReinforcementLearningComponent->PrintRewards();
+		ReinforcementLearningComponent->ClearCachedTargetPairs();
+		InCommonScoreInfo.UpdateQTable(ReinforcementLearningComponent->GetSaveReadyQTable(),
+			ReinforcementLearningComponent->GetQTableRowLength(),
+			ReinforcementLearningComponent->GetNumTrainingSamples());
 	}
-	return CommonScoreInfo;
 }

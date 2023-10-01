@@ -23,6 +23,13 @@ ABSGameMode::ABSGameMode()
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
 	TimePlayedGameMode = 0.f;
+	AATracker = nullptr;
+	AAPlayer = nullptr;
+	TrackGunAbilitySet = nullptr;
+	MaxScorePerTarget = 0;
+	bShowStreakCombatText = false;
+	CombatTextFrequency = 0;
+	bNightModeUnlocked = false;
 }
 
 void ABSGameMode::BeginPlay()
@@ -93,6 +100,7 @@ void ABSGameMode::InitializeGameMode()
 	Elapsed = 0.f;
 	LastTargetOnSet = false;
 	TimePlayedGameMode = 0.f;
+	bShouldTick = false;
 
 	/* Load settings */
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
@@ -220,16 +228,23 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
-
+	
+	FCommonScoreInfo ScoreInfo;
+	
 	if (TargetManager)
 	{
 		TargetManager->SetShouldSpawn(false);
 
-		/* Saves CommonScoreInfo like total spawns, hits, and QTable */
-		const FCommonScoreInfo ScoreInfo = TargetManager->GetCommonScoreInfo();
-		SaveCommonScoreInfo(BSConfig.DefiningConfig, ScoreInfo);
-		CurrentPlayerScore.LocationAccuracy = TargetManager->GetLocationAccuracy();
+		const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
+		CurrentPlayerScore.LocationAccuracy = AccuracyData.AccuracyRows;
 
+		ScoreInfo = FindCommonScoreInfo(BSConfig.DefiningConfig);
+		ScoreInfo.UpdateAccuracy(AccuracyData);
+		if (BSConfig.AIConfig.bEnableReinforcementLearning)
+		{
+			GetTargetManager()->SaveQTable(ScoreInfo);
+		}
+		
 		if (GetTargetManager()->OnTargetActivated.IsBoundToObject(this))
 		{
 			GetTargetManager()->OnTargetActivated.RemoveAll(this);
@@ -242,6 +257,7 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 		{
 			GetTargetManager()->OnBeatTrackTargetDamaged.RemoveAll(this);
 		}
+		
 		TargetManager->Destroy();
 		TargetManager = nullptr;
 	}
@@ -250,12 +266,14 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 	{
 		VisualizerManager->DeactivateVisualizers();
 	}
+	
 	if (AATracker)
 	{
 		AATracker->UnloadCapturerAudio();
 		AATracker->UnloadPlayerAudio();
 		AATracker = nullptr;
 	}
+	
 	if (AAPlayer)
 	{
 		AAPlayer->UnloadCapturerAudio();
@@ -288,7 +306,7 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 		}
 	}
 	
-	HandleScoreSaving(bSaveScores);
+	HandleScoreSaving(bSaveScores, ScoreInfo);
 }
 
 void ABSGameMode::RegisterWeapon(FOnShotFired& OnShotFiredDelegate)
@@ -568,7 +586,7 @@ void ABSGameMode::LoadMatchingPlayerScores()
 	}
 }
 
-void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores)
+void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommonScoreInfo& InCommonScoreInfo)
 {
 	if (!bExternalSaveScores)
 	{
@@ -602,11 +620,9 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores)
 			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
 		}
 	}
-	
-	const FPlayerScore Scores = GetCompletedPlayerScores();
-	TArray<FPlayerScore> AllSavedScores = LoadPlayerScores();
-	AllSavedScores.Emplace(Scores);
-	SavePlayerScores(AllSavedScores);
+			
+	SaveCommonScoreInfo(BSConfig.DefiningConfig, InCommonScoreInfo);
+	SavePlayerScoreInstance(GetCompletedPlayerScores());
 	SaveScoresToDatabase();
 }
 
@@ -678,27 +694,16 @@ void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
 		OnPostScoresResponse.Broadcast(EPostScoresResponse::HttpError);
 		return;
 	}
-	TArray<FPlayerScore> ScoresNotSavedToDB;
-	for (const FPlayerScore& PlayerScoreObj : LoadPlayerScores())
-	{
-		if (!PlayerScoreObj.bSavedToDatabase)
-		{
-			ScoresNotSavedToDB.Add(PlayerScoreObj);
-		}
-	}
-	PostPlayerScores(ScoresNotSavedToDB, LoadPlayerSettings().User.UserID, AccessToken, OnPostScoresResponse);
+	const TArray<FPlayerScore> UnsavedScores = LoadPlayerScores_UnsavedToDatabase();
+	UE_LOG(LogTemp, Display, TEXT("UnsavedScores: %d"), UnsavedScores.Num());
+	PostPlayerScores(UnsavedScores, LoadPlayerSettings().User.UserID, AccessToken, OnPostScoresResponse);
 }
 
 void ABSGameMode::OnPostScoresResponseReceived(const EPostScoresResponse& LoginState)
 {
 	if (LoginState == EPostScoresResponse::HttpSuccess)
 	{
-		TArray<FPlayerScore> ScoresToUpdate = LoadPlayerScores();
-		for (FPlayerScore& Score : ScoresToUpdate)
-		{
-			Score.bSavedToDatabase = true;
-		}
-		SavePlayerScores(ScoresToUpdate);
+		SetAllPlayerScoresSavedToDatabase();
 	}
 	CurrentPlayerScore.ResetStruct();
 }

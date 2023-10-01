@@ -43,7 +43,7 @@ public:
 		return ReturnArray;
 	}
 
-	TMap<FBS_DefiningConfig, FBSConfig> GetDefaultGameModesMap() const
+	const TMap<FBS_DefiningConfig, FBSConfig>& GetDefaultGameModesMap() const
 	{
 		return DefaultGameModes;
 	}

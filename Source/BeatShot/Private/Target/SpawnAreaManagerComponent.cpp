@@ -525,6 +525,11 @@ bool USpawnAreaManagerComponent::IsSpawnAreaValid(const USpawnArea* InSpawnArea)
 	return false;
 }
 
+bool USpawnAreaManagerComponent::IsSpawnAreaValid(const int32 InIndex) const
+{
+	return SpawnAreas.IsValidIndex(InIndex);
+}
+
 // SpawnArea array getters
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetManagedSpawnAreas() const

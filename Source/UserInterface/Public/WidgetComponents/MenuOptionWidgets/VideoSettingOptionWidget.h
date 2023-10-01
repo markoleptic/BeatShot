@@ -44,6 +44,4 @@ public:
 	FText Button_2_Text = FText::FromString("High");
 	UPROPERTY(EditDefaultsOnly, Category="VideoSettingOptionWidget")
 	FText Button_3_Text = FText::FromString("Ultra");
-
-	EVideoSettingType VideoSettingType;
 };

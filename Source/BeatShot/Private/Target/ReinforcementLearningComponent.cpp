@@ -9,8 +9,26 @@
 UReinforcementLearningComponent::UReinforcementLearningComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	EpisodeRewards = nc::NdArray<float>(1);
 	QTable = nc::NdArray<float>();
+	Alpha = 0;
+	Gamma = 0;
+	Epsilon = 0;
+	SpawnAreasHeight = 0;
+	SpawnAreasWidth = 0;
+	SpawnAreasSize = 0;
+	ScaledSize = 0;
+	HeightScaleFactor = 0;
+	WidthScaleFactor = 0;
+	TrainingSamples = 0;
+
+	IntegerFormatting.MaximumFractionalDigits = 0;
+	IntegerFormatting.MaximumIntegralDigits = 2;
+	IntegerFormatting.MinimumIntegralDigits = 2;
+
+	FloatFormatting.MinimumFractionalDigits = 2;
+	FloatFormatting.MaximumFractionalDigits = 2;
+	FloatFormatting.MaximumIntegralDigits = 1;
+	FloatFormatting.MinimumIntegralDigits = 1;
 }
 
 void UReinforcementLearningComponent::BeginPlay()
@@ -39,6 +57,7 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	SpawnAreasHeight = AgentParams.SpawnAreasHeight;
 	SpawnAreasWidth =  AgentParams.SpawnAreasWidth;
 	SpawnAreasSize = SpawnAreasHeight * SpawnAreasWidth;
+	TrainingSamples = 0;
 	
 	if (SpawnAreasHeight % 5 != 0 || SpawnAreasWidth % 5 != 0 )
 	{
@@ -92,14 +111,8 @@ void UReinforcementLearningComponent::UpdateQTable(const FAlgoInput& In)
 	//UE_LOG(LogTemp, Display, TEXT("New QTable Value for SpawnAreaIndex [%d, %d] QTableIndex [%d, %d]: %f"), In.StateIndex, In.ActionIndex, InCopy.StateIndex, InCopy.ActionIndex, NewValue);
 	
 	QTable(InCopy.StateIndex, InCopy.ActionIndex) = NewValue;
+	TrainingSamples += 1;
 	UpdateQTableWidget();
-}
-
-void UReinforcementLearningComponent::UpdateEpisodeRewards(const float RewardReceived)
-{
-	nc::NdArray<float> Array = nc::NdArray<float>(1);
-	Array(0,0) = RewardReceived;
-	EpisodeRewards = append(EpisodeRewards, Array);
 }
 
 int32 UReinforcementLearningComponent::GetMaxActionIndex(const int32 SpawnAreaIndex) const
@@ -187,6 +200,11 @@ TArray<float> UReinforcementLearningComponent::GetSaveReadyQTable() const
 	return GetTArrayFromQTable(GetQTable());
 }
 
+int32 UReinforcementLearningComponent::GetQTableRowLength() const
+{
+	return GetQTable().numCols();
+}
+
 nc::NdArray<float> UReinforcementLearningComponent::GetQTable() const
 {
 	return QTable;
@@ -194,23 +212,20 @@ nc::NdArray<float> UReinforcementLearningComponent::GetQTable() const
 
 void UReinforcementLearningComponent::UpdateReinforcementLearningReward(const int32 SpawnAreaIndex, const bool bHit)
 {
-	for (FTargetPair Pair : ActiveTargetPairs)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Prev: %d Next: %d"), Pair.Previous, Pair.Current);
-	}
-	const int32 ActiveTargetPairIndex = ActiveTargetPairs.Find(FTargetPair(SpawnAreaIndex));
-	if (ActiveTargetPairIndex == INDEX_NONE)
+	FTargetPair FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex);
+	if (FoundPair.Previous == -1 || FoundPair.Current == -1)
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %d"), SpawnAreaIndex);
+		ActiveTargetPairs.Remove(FoundPair);
 		return;
 	}
-	FTargetPair FoundTargetPair = ActiveTargetPairs[ActiveTargetPairIndex];
 
 	/* Update reward */
 	const float Reward = bHit ? -1.f : 1.f;
-	FoundTargetPair.SetReward(Reward);
-	ActiveTargetPairs.Remove(FoundTargetPair);
-	TargetPairs.Enqueue(FoundTargetPair);
+	FoundPair.SetReward(Reward);
+	ActiveTargetPairs.Remove(FoundPair);
+	TargetPairs.Enqueue(FoundPair);
+	ClearCachedTargetPairs();
 }
 
 void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex)
@@ -219,11 +234,23 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 Previou
 	{
 		return;
 	}
+	if (ActiveTargetPairs.FindByPredicate([&PreviousIndex, &CurrentIndex] (const FTargetPair& TargetPair)
+	{
+		return TargetPair.Current == CurrentIndex && TargetPair.Previous == PreviousIndex;
+	}))
+	{
+		return;
+	}
 	ActiveTargetPairs.Emplace(PreviousIndex, CurrentIndex);
 }
 
-void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const USpawnAreaManagerComponent* SpawnAreaManager)
+void UReinforcementLearningComponent::ClearCachedTargetPairs()
 {
+	if (!OnSpawnAreaValidityRequest.IsBound())
+	{
+		return;
+	}
+	
 	while (!TargetPairs.IsEmpty())
 	{
 		FTargetPair TargetPair;
@@ -235,13 +262,13 @@ void UReinforcementLearningComponent::UpdateReinforcementLearningComponent(const
 		const int32 StateIndex = TargetPair.Previous;
 		const int32 State2Index = TargetPair.Current;
 		const int32 ActionIndex = State2Index;
-
-		/* Don't update RLAgent if something went wrong */
-		if (const int32 Action2Index = GetMaxActionIndex(State2Index); SpawnAreaManager->GetSpawnAreas().IsValidIndex(Action2Index))
+		const int32 Action2Index = GetMaxActionIndex(State2Index);
+		
+		/* Don't update RLAgent if this is not a valid Spawn Area index */
+		const bool bIsValidIndex = OnSpawnAreaValidityRequest.Execute(Action2Index);
+		if (bIsValidIndex)
 		{
-			UpdateEpisodeRewards(TargetPair.GetReward());
-			UpdateQTable(FAlgoInput(StateIndex, State2Index,
-				ActionIndex, Action2Index, TargetPair.GetReward()));
+			UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.GetReward()));
 		}
 		else
 		{
@@ -258,35 +285,13 @@ int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int3
 
 int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const
 {
-	FString Row;
-	FString Row2;
-	FString Row3;
-	FString Row4;
-	
 	/* Basically argmax but in descending order */
 	auto MaxIndicesReverseSorted = flip(GetQTable().max(nc::Axis::ROW).argsort(nc::Axis::COL));
 	auto MaxesReverseSorted = GetQTable().max(nc::Axis::ROW).sort();
 
-	/* Averages instead of maxes */
-	auto AveragesReverseSorted = flip(mean(GetQTable(), nc::Axis::ROW).sort());
-	auto AverageIndicesReverseSorted = flip(mean(GetQTable(), nc::Axis::ROW).argsort(nc::Axis::COL));
-	
-	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
-	{
-		const float MaxIndex = MaxIndicesReverseSorted(0, j);
-		const float AverageIndex = AverageIndicesReverseSorted(0, j);
-		const float MaxValue = roundf(MaxesReverseSorted(0, j) * 100.0) / 100.0;
-		const float AverageValue = roundf(AveragesReverseSorted(0, j) * 100.0) / 100.0;
-		
-		Row.Append(FString::SanitizeFloat(MaxIndex, 0) + " ");
-		Row2.Append(FString::SanitizeFloat(MaxValue, 2) + " ");
-		Row3.Append(FString::SanitizeFloat(AverageIndex, 0) + " ");
-		Row4.Append(FString::SanitizeFloat(AverageValue, 2) + " ");
-	}
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Row);
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Row2);
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Row3);
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Row4);
+#if !UE_BUILD_SHIPPING
+	PrintMaxAverageIndices(MaxIndicesReverseSorted, MaxesReverseSorted);
+#endif
 	
 	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
 	{
@@ -392,5 +397,62 @@ TArray<float> UReinforcementLearningComponent::GetTArrayFromQTable(const nc::NdA
 void UReinforcementLearningComponent::UpdateQTableWidget() const
 {
 	OnQTableUpdate.Broadcast(GetAveragedTArrayFromQTable());
+}
+
+FTargetPair UReinforcementLearningComponent::FindTargetPairByCurrentIndex(const int32 InCurrentIndex)
+{
+	const FTargetPair* Found = ActiveTargetPairs.FindByPredicate([&InCurrentIndex] (const FTargetPair& TargetPair)
+	{
+		return TargetPair.Current == InCurrentIndex;
+	});
+	return Found ? *Found : FTargetPair();
+}
+
+void UReinforcementLearningComponent::PrintMaxAverageIndices(const nc::NdArray<unsigned>& MaxIndicesReverseSorted, const nc::NdArray<float>& MaxesReverseSorted) const
+{
+	FString Row = " ";
+	FString Row2;
+	FString Row3 = " ";
+	FString Row4;
+	
+	/* Averages instead of maxes */
+	auto AveragesReverseSorted = flip(mean(GetQTable(), nc::Axis::ROW).sort());
+	auto AverageIndicesReverseSorted = flip(mean(GetQTable(), nc::Axis::ROW).argsort(nc::Axis::COL));
+	
+	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
+	{
+		const float MaxIndex = MaxIndicesReverseSorted(0, j);
+		const float AverageIndex = AverageIndicesReverseSorted(0, j);
+		const float MaxValue = roundf(MaxesReverseSorted(0, j) * 100.0) / 100.0;
+		const float AverageValue = roundf(AveragesReverseSorted(0, j) * 100.0) / 100.0;
+
+		Row += (FText::AsNumber(MaxIndex, &IntegerFormatting).ToString() + "     ");
+		
+		if (MaxValue >= 0.f)
+		{
+			Row2 += ("  " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " ");
+		}
+		else
+		{
+			Row2 += (" " + FText::AsNumber(MaxValue, &FloatFormatting).ToString() + " ");
+		}
+
+		Row3 += (FText::AsNumber(AverageIndex, &IntegerFormatting).ToString() + "     ");
+
+		if (AverageValue >= 0.f)
+		{
+			Row4 += ("  " + FText::AsNumber(AverageValue, &FloatFormatting).ToString() + " ");
+		}
+		else
+		{
+			Row4 += (" " + FText::AsNumber(AverageValue, &FloatFormatting).ToString() + " ");
+		}
+	}
+	UE_LOG(LogTemp, Display, TEXT("Max Indices & Max Values:"));
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row);
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row2);
+	UE_LOG(LogTemp, Display, TEXT("Average Indices & Average Values"));
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row3);
+	UE_LOG(LogTemp, Display, TEXT("%s"), *Row4);
 }
 
