@@ -67,6 +67,18 @@ void FBSAbilitySet_GrantedHandles::TakeFromAbilitySystem(UBSAbilitySystemCompone
 	GrantedAttributeSets.Reset();
 }
 
+FGameplayAbilitySpec* FBSAbilitySet_GrantedHandles::FindFirstAbilitySpecFromHandle(UBSAbilitySystemComponent* ASC)
+{
+	for (const FGameplayAbilitySpecHandle& Handle : AbilitySpecHandles)
+	{
+		if (Handle.IsValid())
+		{
+			return ASC->FindAbilitySpecFromHandle(Handle);
+		}
+	}
+	return nullptr;
+}
+
 bool FBSAbilitySet_GrantedHandles::IsEmpty() const
 {
 	return AbilitySpecHandles.IsEmpty() && GameplayEffectHandles.IsEmpty() && GrantedAttributeSets.IsEmpty();

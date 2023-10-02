@@ -24,9 +24,9 @@ class USERINTERFACE_API USettingsMenuWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	/** Whether or not this instance of SettingsMenuWidget belongs to MainMenuWidget or not */
+	/** Whether or not this instance of SettingsMenuWidget belongs to Pause Menu or not */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
-	bool bIsMainMenuChild;
+	bool bIsPauseMenuChild;
 
 	/** Broadcast to owning widget that user has clicked restart button */
 	FOnRestartButtonClicked OnRestartButtonClicked;

@@ -5,7 +5,8 @@
 #include <steam/isteamfriends.h>
 #include <steam/isteamuser.h>
 #include <steam/isteamuserstats.h>
-#include "GlobalEnums.h"
+
+#include "BSGameModeDataAsset.h"
 #include "SteamManager.generated.h"
 
 class UBSGameInstance;

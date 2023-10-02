@@ -62,11 +62,14 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	ComboBoxOption_ConsecutiveTargetScalePolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy);
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_MovingTargetDirectionMode);
 	ComboBoxOption_MovingTargetDirectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode);
+	ComboBoxOption_HyperParameterMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this, &ThisClass::OnSelectionChanged_HyperParameterMode);
+	ComboBoxOption_HyperParameterMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this, &ThisClass::GetComboBoxEntryTooltipStringTableKey_HyperParameterMode);
 	
 	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->ClearOptions();
 	ComboBoxOption_DamageType->ComboBox->ClearOptions();
 	ComboBoxOption_ConsecutiveTargetScalePolicy->ComboBox->ClearOptions();
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->ClearOptions();
+	ComboBoxOption_HyperParameterMode->ComboBox->ClearOptions();
 
 	TArray<FString> Options;
 	for (const ERecentTargetMemoryPolicy& Method : TEnumRange<ERecentTargetMemoryPolicy>())
@@ -98,6 +101,13 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	ComboBoxOption_MovingTargetDirectionMode->SortAddOptionsAndSetEnumType<EMovingTargetDirectionMode>(Options);
 	Options.Empty();
 
+	for (const EReinforcementLearningHyperParameterMode& Method : TEnumRange<EReinforcementLearningHyperParameterMode>())
+	{
+		Options.Add(GetStringFromEnum_FromTagMap(Method));
+	}
+	ComboBoxOption_HyperParameterMode->SortAddOptionsAndSetEnumType<EReinforcementLearningHyperParameterMode>(Options);
+	Options.Empty();
+
 	SliderTextBoxOption_RecentTargetTimeLength->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxNumRecentTargets->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::Collapsed);
@@ -109,6 +119,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 	SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
+	ComboBoxOption_HyperParameterMode->SetVisibility(ESlateVisibility::Collapsed);
 	
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
@@ -125,17 +136,16 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetSpawnCD, BSConfig->TargetConfig.TargetSpawnCD);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumRecentTargets, BSConfig->TargetConfig.MaxNumRecentTargets);
 	UpdateValueIfDifferent(SliderTextBoxOption_RecentTargetTimeLength, BSConfig->TargetConfig.RecentTargetTimeLength);
-	
+
+	UpdateValueIfDifferent(CheckBoxOption_EnableAI, BSConfig->AIConfig.bEnableReinforcementLearning);
+	UpdateValueIfDifferent(ComboBoxOption_HyperParameterMode, GetStringFromEnum_FromTagMap(BSConfig->AIConfig.HyperParameterMode));
 	UpdateValueIfDifferent(SliderTextBoxOption_Alpha, BSConfig->AIConfig.Alpha);
 	UpdateValueIfDifferent(SliderTextBoxOption_Epsilon, BSConfig->AIConfig.Epsilon);
 	UpdateValueIfDifferent(SliderTextBoxOption_Gamma, BSConfig->AIConfig.Gamma);
-
-	UpdateValueIfDifferent(CheckBoxOption_EnableAI, BSConfig->AIConfig.bEnableReinforcementLearning);
+	
 	UpdateValueIfDifferent(ComboBoxOption_RecentTargetMemoryPolicy, GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RecentTargetMemoryPolicy));
-
-	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
-	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning);
-
+	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy, GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy));
+	
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetMaxLifeSpan, BSConfig->TargetConfig.TargetMaxLifeSpan);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxHealth, BSConfig->TargetConfig.MaxHealth);
 	UpdateValueIfDifferent(SliderTextBoxOption_ExpirationHealthPenalty, BSConfig->TargetConfig.ExpirationHealthPenalty);
@@ -143,8 +153,7 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(ComboBoxOption_DamageType, GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.TargetDamageType));
 	UpdateValueIfDifferent(CheckBoxOption_UnlimitedTargetHealth, BSConfig->TargetConfig.MaxHealth == -1);
 	UpdateValueIfDifferent(ComboBoxOption_MovingTargetDirectionMode, GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.MovingTargetDirectionMode));
-	UpdateDependentOptions_UnlimitedTargetHealth(BSConfig->TargetConfig.MaxHealth == -1);
-
+	
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale);
@@ -152,9 +161,10 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_StartThreshold, BSConfig->DynamicTargetScaling.StartThreshold);
 	UpdateValueIfDifferent(SliderTextBoxOption_EndThreshold, BSConfig->DynamicTargetScaling.EndThreshold);
 	UpdateValueIfDifferent(SliderTextBoxOption_DecrementAmount, BSConfig->DynamicTargetScaling.DecrementAmount);
-
-	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy, GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy));
 	
+	UpdateDependentOptions_UnlimitedTargetHealth(BSConfig->TargetConfig.MaxHealth == -1);
+	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
+	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning, BSConfig->AIConfig.HyperParameterMode);
 	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
 	
 	UpdateBrushColors();
@@ -232,19 +242,40 @@ void UCustomGameModesWidget_General::UpdateDependentOptions_RecentTargetMemoryPo
 	}
 }
 
-void UCustomGameModesWidget_General::UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning)
+void UCustomGameModesWidget_General::UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning, const EReinforcementLearningHyperParameterMode HyperParameterMode)
 {
 	if (bInEnableReinforcementLearning)
 	{
-		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		ComboBoxOption_HyperParameterMode->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 	else
+	{
+		ComboBoxOption_HyperParameterMode->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	UpdateDependentOptions_HyperParameterMode(bInEnableReinforcementLearning, HyperParameterMode);
+}
+
+void UCustomGameModesWidget_General::UpdateDependentOptions_HyperParameterMode(const bool bInEnableReinforcementLearning, const EReinforcementLearningHyperParameterMode HyperParameterMode)
+{
+	if (!bInEnableReinforcementLearning)
 	{
 		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
+		return;
+	}
+	switch (HyperParameterMode) {
+	case EReinforcementLearningHyperParameterMode::None:
+	case EReinforcementLearningHyperParameterMode::Auto:
+		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::Collapsed);
+		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	case EReinforcementLearningHyperParameterMode::Custom:
+		SliderTextBoxOption_Alpha->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_Epsilon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SliderTextBoxOption_Gamma->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		break;
 	}
 }
 
@@ -292,7 +323,7 @@ void UCustomGameModesWidget_General::UpdateDependentOptions_ConsecutiveTargetSca
 void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bChecked)
 {
 	BSConfig->AIConfig.bEnableReinforcementLearning = bChecked;
-	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning);
+	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning, BSConfig->AIConfig.HyperParameterMode);
 	
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
@@ -443,6 +474,25 @@ void UCustomGameModesWidget_General::OnSelectionChanged_MovingTargetDirectionMod
 
 	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(Selected[0]);
 	UpdateAllOptionsValid();
+}
+
+void UCustomGameModesWidget_General::OnSelectionChanged_HyperParameterMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+{
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
+	{
+		return;
+	}
+	BSConfig->AIConfig.HyperParameterMode = GetEnumFromString<EReinforcementLearningHyperParameterMode>(Selected[0]);
+	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning, BSConfig->AIConfig.HyperParameterMode);
+	
+	UpdateBrushColors();
+	UpdateAllOptionsValid();
+}
+
+FString UCustomGameModesWidget_General::GetComboBoxEntryTooltipStringTableKey_HyperParameterMode(const FString& EnumString)
+{
+	const EReinforcementLearningHyperParameterMode EnumValue = GetEnumFromString<EReinforcementLearningHyperParameterMode>(EnumString);
+	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCustomGameModesWidget_General::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString)

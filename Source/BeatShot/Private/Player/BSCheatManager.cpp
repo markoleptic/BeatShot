@@ -7,15 +7,15 @@
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
 #include "Target/TargetManager.h"
-#include "BeatShot/BSGameplayTags.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
+#include "AbilitySystem/Abilities/BSGA_AimBot.h"
 #include "Kismet/GameplayStatics.h"
 #include "RangeActors/TimeOfDayManager.h"
 
 namespace BeatShotConsoleVariables
 {
 	static TAutoConsoleVariable CVarShowDebugSpawnBox(TEXT("bs.showdebug.targetmanager.spawnbox"), 0, TEXT("Draw debug boxes for the spawn box areas. orange: full size, green: open, red: blocked"));
-	static TAutoConsoleVariable CVarEnableAimBot(TEXT("bs.cheat.aimbot"), 0, TEXT("Enable Aim Bot"));
+	static TAutoConsoleVariable CVarEnableAimBot(TEXT("bs.cheat.aimbot"), FString(), TEXT("Enable Aim Bot"));
 	static TAutoConsoleVariable CVarShowDebugReinforcementLearningWidget(TEXT("bs.showdebug.targetmanager.rl"), 0, TEXT("Show the reinforcement learning widget"));
 	static TAutoConsoleVariable CVarShowDebugSpawnMemory(TEXT("bs.showdebug.targetmanager.spawnmemory"), 0, TEXT("Show the recent target locations that are being tracked"));
 	static TAutoConsoleVariable CVarShowDebugAllTargetManager(TEXT("bs.showdebug.targetmanager"), 0, TEXT("Show all target manager debug"));
@@ -70,37 +70,61 @@ void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
 	{
 		return;
 	}
-
-	if (Variable->GetBool())
+	
+	FString StringVariable = Variable->GetString();
+	
+	if (StringVariable.Contains("X=") || StringVariable.Contains("Y=") || StringVariable.Contains("Z="))
+	{
+		FVector IgnoreStartLocation;
+		IgnoreStartLocation.InitFromCompactString(StringVariable);
+		
+		if (!GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
+		{
+			GameMode->GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
+		}
+		
+		const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
+		AimBotSpecHandle = Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+		if (!AimBotSpecHandle.IsValid()) return;
+		
+		FGameplayAbilitySpec* Spec = Character->GetBSAbilitySystemComponent()->FindAbilitySpecFromHandle(AimBotSpecHandle);
+		if (!Spec) return;
+		
+		UGameplayAbility* Ability = Spec->GetPrimaryInstance();
+		if (!Ability) return;
+		
+		UBSGA_AimBot* AbilityInstance = Cast<UBSGA_AimBot>(Ability);
+		if (!AbilityInstance) return;
+		
+		AbilityInstance->SetIgnoreStartLocation(IgnoreStartLocation);
+		Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(*Spec);
+		
+		UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
+	}
+	else if (StringVariable.Equals("1"))
 	{
 		if (!GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
 		{
 			GameMode->GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
 		}
-		UBSGameplayAbility* AbilityCDO = AimBotAbility->GetDefaultObject<UBSGameplayAbility>();
-		if (const FGameplayAbilitySpec AbilitySpec(AbilityCDO, 1); Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec).IsValid())
-		{
-			UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
-		}
+		const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
+		AimBotSpecHandle = Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
+		if (!AimBotSpecHandle.IsValid()) return;
+		
+		UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
 	}
-	else
+	else if (StringVariable.Equals("0"))
 	{
 		if (GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
 		{
 			GameMode->GetTargetManager()->OnTargetActivated_AimBot.RemoveAll(Character);
 		}
-		FGameplayTagContainer Container;
-		TArray<FGameplayAbilitySpec*> Activatable;
-		Container.AddTag(FBSGameplayTags::Get().Cheat_AimBot);
-		Character->GetBSAbilitySystemComponent()->GetActivatableGameplayAbilitySpecsByAllMatchingTags(Container,Activatable);
-		if (!Activatable.IsEmpty())
+		FGameplayAbilitySpec* Spec = Character->GetBSAbilitySystemComponent()->FindAbilitySpecFromHandle(AimBotSpecHandle);
+		if (Spec)
 		{
-			for (const FGameplayAbilitySpec* Spec : Activatable)
-			{
-				Character->GetBSAbilitySystemComponent()->ClearAbility(Spec->Handle);
-				UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
-			}
+			Character->GetBSAbilitySystemComponent()->ClearAbility(Spec->Handle);
 		}
+		UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
 	}
 }
 

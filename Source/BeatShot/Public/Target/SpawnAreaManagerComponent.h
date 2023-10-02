@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlobalStructs.h"
+#include "BSGameModeDataAsset.h"
 #include "BeatShot/BeatShot.h"
 #include "UObject/Object.h"
 #include "SpawnAreaManagerComponent.generated.h"

@@ -15,6 +15,12 @@ UBSGA_AimBot::UBSGA_AimBot()
 	ActivationGroup = EBSAbilityActivationGroup::Independent;
 	AbilityTags.AddTag(FBSGameplayTags().Get().Cheat_AimBot);
 	ActivationOwnedTags.AddTag(FBSGameplayTags().Get().Cheat_AimBot);
+	bYPositive = false;
+	bYNegative = false;
+	bYZero = true;
+	bZPositive = false;
+	bZNegative = false;
+	bZZero = true;
 }
 
 void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
@@ -26,6 +32,7 @@ void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, cons
 		return;
 	}
 	Character->OnTargetAddedToQueue.AddUniqueDynamic(this, &ThisClass::OnTargetAddedToQueue);
+	SetIgnoreStartLocation(IgnoreStartLocation);
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
@@ -38,29 +45,34 @@ void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 void UBSGA_AimBot::OnTargetAddedToQueue()
 {
 	ABSCharacter* Character = GetBSCharacterFromActorInfo();
-	if (!Character)
+	ATarget* ActiveTarget = Character->PeekActiveTargets();
+	if (!Character || !ActiveTarget)
 	{
 		return;
 	}
-
-	if (ATarget* ActiveTarget = Character->PeekActiveTargets())
+	
+	if (TargetLocationIsInIgnoreRange(ActiveTarget->GetActorLocation()))
 	{
-		const FVector Location = ActiveTarget->GetActorLocation();
-		if (IgnoreStartLocation != FVector::ZeroVector)
-		{
-			if ((IgnoreStartLocation.Y > 0.f && IgnoreStartLocation.Y > Location.Y) ||
-				(IgnoreStartLocation.Z > 0.f && IgnoreStartLocation.Z > Location.Z) ||
-				(IgnoreStartLocation.Y < 0.f && IgnoreStartLocation.Y < Location.Y) ||
-				(IgnoreStartLocation.Z < 0.f && IgnoreStartLocation.Z < Location.Z))
-			{
-				return;
-			}
-		}
-		UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget, ActiveTarget->GetSpawnBeatDelay());
-		AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
-		AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);
-		AimToTarget->ReadyForActivation();
+		Character->PopActiveTargets();
+		return;
 	}
+	
+	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget, ActiveTarget->GetSpawnBeatDelay() + 0.01f);
+	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
+	AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);
+	AimToTarget->ReadyForActivation();
+}
+
+void UBSGA_AimBot::SetIgnoreStartLocation(const FVector& In)
+{
+	IgnoreStartLocation = In;
+	bYPositive = IgnoreStartLocation.Y > 0.f;
+	bYNegative = IgnoreStartLocation.Y < 0.f;
+	bYZero = IgnoreStartLocation.Y == 0.f;
+	
+	bZPositive = IgnoreStartLocation.Z > 0.f;
+	bZNegative = IgnoreStartLocation.Z < 0.f;
+	bZZero = IgnoreStartLocation.Z == 0.f;
 }
 
 void UBSGA_AimBot::OnAimToTargetCancelled()
@@ -73,7 +85,7 @@ void UBSGA_AimBot::OnAimToTargetCancelled()
 	}
 	
 	Character->PopActiveTargets();
-	bool bActivated = ASC->TryActivateAbilityByClass(GA_FireGun);
+	ASC->TryActivateAbilityByClass(GA_FireGun);
 }
 
 void UBSGA_AimBot::OnAimToTargetCompleted()
@@ -86,5 +98,51 @@ void UBSGA_AimBot::OnAimToTargetCompleted()
 	}
 	
 	Character->PopActiveTargets();
-	bool bActivated = ASC->TryActivateAbilityByClass(GA_FireGun);
+	ASC->TryActivateAbilityByClass(GA_FireGun);
+}
+
+bool UBSGA_AimBot::TargetLocationIsInIgnoreRange(const FVector& Loc) const
+{
+	if (bYZero && bZZero)
+	{
+		return false;
+	}
+	// Only consider Y values
+	if (!bYZero && bZZero)
+	{
+		if ((bYPositive && Loc.Y > IgnoreStartLocation.Y) || (bYNegative && Loc.Y < IgnoreStartLocation.Y))
+		{
+			return true;
+		}
+		return false;
+	}
+	// Only consider Z values
+	if (bYZero && !bZZero)
+	{
+		if ((bZPositive && Loc.Z > IgnoreStartLocation.Z) || (bZNegative && Loc.Z < IgnoreStartLocation.Z))
+		{
+			return true;
+		}
+		return false;
+	}
+	// Consider both
+	if (!bYZero && !bZZero)
+	{
+		if (bZPositive && Loc.Z > IgnoreStartLocation.Z)
+		{
+			if ((bYPositive && Loc.Y > IgnoreStartLocation.Y) || (bYNegative && Loc.Y < IgnoreStartLocation.Y))
+			{
+				return true;
+			}
+		}
+		else if (bZNegative && Loc.Z < IgnoreStartLocation.Z)
+		{
+			if ((bYPositive && Loc.Y > IgnoreStartLocation.Y) || (bYNegative && Loc.Y < IgnoreStartLocation.Y))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	return false;
 }

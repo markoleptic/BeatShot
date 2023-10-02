@@ -28,9 +28,9 @@ void USettingsMenuWidget::NativeConstruct()
 
 	MenuButton_Game->SetActive();
 
-	if (bIsMainMenuChild)
+	if (bIsPauseMenuChild)
 	{
-		AudioAnalyzer_Widget->InitMainMenuChild();
+		AudioAnalyzer_Widget->InitPauseMenuChild();
 	}
 }
 

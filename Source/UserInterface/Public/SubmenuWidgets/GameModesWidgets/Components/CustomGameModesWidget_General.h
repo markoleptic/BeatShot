@@ -28,7 +28,10 @@ protected:
 	void UpdateDependentOptions_RecentTargetMemoryPolicy(const ERecentTargetMemoryPolicy& InRecentTargetMemoryPolicy);
 	
 	/** Updates options that depend on the value selection of bEnableReinforcementLearning */
-	void UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning);
+	void UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning, const EReinforcementLearningHyperParameterMode HyperParameterMode);
+
+	/** Updates options that depend on the value selection of HyperParameterMode */
+	void UpdateDependentOptions_HyperParameterMode(const bool bInEnableReinforcementLearning, const EReinforcementLearningHyperParameterMode HyperParameterMode);
 
 	/** Updates options that depend on the value selection of UnlimitedTargetHealth */
 	void UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth);
@@ -50,6 +53,8 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_EnableAI;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_HyperParameterMode;
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_Alpha;
@@ -104,9 +109,12 @@ protected:
 	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_HyperParameterMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_HyperParameterMode(const FString& EnumString);
 };

@@ -2,8 +2,109 @@
 
 #pragma once
 
-#include "GlobalStructs.h"
+#include "SaveGamePlayerScore.h"
 #include "HttpRequestInterface.generated.h"
+
+/** Describes if player scores were posted or not */
+UENUM(BlueprintType)
+enum class EPostScoresResponse : uint8
+{
+	ZeroScore UMETA(DisplayName="ZeroScore"),
+	UnsavedGameMode UMETA(DisplayName="UnsavedGameMode"),
+	NoAccount UMETA(DisplayName="NoAccount"),
+	HttpError UMETA(DisplayName="HttpError"),
+	HttpSuccess UMETA(DisplayName="HttpSuccess"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore, EPostScoresResponse::HttpSuccess);
+
+/** Simple login payload */
+USTRUCT(BlueprintType)
+struct FLoginPayload
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString Username;
+
+	UPROPERTY()
+	FString Email;
+
+	UPROPERTY()
+	FString Password;
+
+	FLoginPayload()
+	{
+		Username = "";
+		Email = "";
+		Password = "";
+	}
+
+	FLoginPayload(const FString& InUsername, const FString& InEmail, const FString& InPassword)
+	{
+		Username = InUsername;
+		Email = InEmail;
+		Password = InPassword;
+	}
+};
+
+/** Login Response object */
+USTRUCT(BlueprintType)
+struct FLoginResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString UserID;
+
+	UPROPERTY()
+	FString DisplayName;
+
+	UPROPERTY()
+	FString AccessToken;
+
+	UPROPERTY()
+	FString RefreshToken;
+
+	FLoginResponse() = default;
+};
+
+/** Response object returned as JSON from authentication using SteamAuthTicket */
+USTRUCT(BlueprintType)
+struct FSteamAuthTicketResponse
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString Result;
+
+	UPROPERTY()
+	FString SteamID;
+
+	UPROPERTY()
+	FString OwnerSteamID;
+
+	UPROPERTY()
+	bool VacBanned;
+
+	UPROPERTY()
+	bool PublisherBanned;
+
+	UPROPERTY()
+	FString DisplayName;
+
+	UPROPERTY()
+	FString RefreshCookie;
+
+	UPROPERTY()
+	FString ErrorCode;
+
+	UPROPERTY()
+	FString ErrorDesc;
+
+	FSteamAuthTicketResponse(): VacBanned(false), PublisherBanned(false)
+	{
+	}
+};
 
 /** Broadcast if refresh token is invalid */
 DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString& AccessToken);

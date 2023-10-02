@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
-#include "GlobalStructs.h"
 #include "BSWidgetInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Delegates/DelegateCombinations.h"

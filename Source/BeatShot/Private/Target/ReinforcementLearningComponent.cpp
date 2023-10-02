@@ -2,14 +2,17 @@
 
 
 #include "Target/ReinforcementLearningComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 #include "Target/TargetManager.h"
 
 
 UReinforcementLearningComponent::UReinforcementLearningComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+	CompositeCurveTable_HyperParameters = nullptr;
+	ReinforcementLearningMode = EReinforcementLearningMode::None;
+	HyperParameterMode = EReinforcementLearningHyperParameterMode::None;
 	QTable = nc::NdArray<float>();
+	TrainingSamples = nc::NdArray<int32>();
 	Alpha = 0;
 	Gamma = 0;
 	Epsilon = 0;
@@ -19,7 +22,7 @@ UReinforcementLearningComponent::UReinforcementLearningComponent()
 	ScaledSize = 0;
 	HeightScaleFactor = 0;
 	WidthScaleFactor = 0;
-	TrainingSamples = 0;
+	TotalTrainingSamples = 0;
 
 	IntegerFormatting.MaximumFractionalDigits = 0;
 	IntegerFormatting.MaximumIntegralDigits = 2;
@@ -44,20 +47,17 @@ void UReinforcementLearningComponent::DestroyComponent(bool bPromoteChildren)
 	Super::DestroyComponent(bPromoteChildren);
 }
 
-void UReinforcementLearningComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-}
-
 void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 {
-	Alpha = AgentParams.InAlpha;
-	Gamma = AgentParams.InGamma;
-	Epsilon = AgentParams.InEpsilon;
+	Alpha = AgentParams.AIConfig.Alpha;
+	Gamma = AgentParams.AIConfig.Gamma;
+	Epsilon = AgentParams.AIConfig.Epsilon;
+	ReinforcementLearningMode = AgentParams.AIConfig.ReinforcementLearningMode;
+	HyperParameterMode = AgentParams.AIConfig.HyperParameterMode;
 	SpawnAreasHeight = AgentParams.SpawnAreasHeight;
 	SpawnAreasWidth =  AgentParams.SpawnAreasWidth;
 	SpawnAreasSize = SpawnAreasHeight * SpawnAreasWidth;
-	TrainingSamples = 0;
+	TotalTrainingSamples = AgentParams.TotalTrainingSamples;
 	
 	if (SpawnAreasHeight % 5 != 0 || SpawnAreasWidth % 5 != 0 )
 	{
@@ -68,70 +68,121 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	HeightScaleFactor = SpawnAreasHeight / ScaledHeight;
 	ScaledSize = ScaledWidth * ScaledHeight;
 
-	/* Each row in QTable has size equal to ScaledSize, and so does each column */
+	// Each row in QTable has size equal to ScaledSize, and so does each column
 	QTable = nc::zeros<float>(nc::Shape(ScaledSize, ScaledSize));
+	TrainingSamples = nc::zeros<int32>(nc::Shape(ScaledSize, ScaledSize));
 	
-	/* Initialize struct array containing mappings for each QTable index to multiple SpawnArea indices */
+	// Initialize struct array containing mappings for each QTable index to multiple SpawnArea indices
 	for (int i = 0; i < ScaledSize; i++)
 	{
 		QTableIndices.Add(FQTableIndex(i));
 	}
-	
-	for (int i  = 0; i < SpawnAreasSize; i++)
+
+	// Init QTableIndices array
+	for (int i = 0; i < SpawnAreasSize; i++)
 	{
-		if (const int32 Found = QTableIndices.Find(GetQTableIndexFromSpawnAreaIndex(i)); Found != INDEX_NONE)
+		const int32 Index = QTableIndices.Find(GetIndex_FromSpawnArea_ToQTable(i));
+		if (QTableIndices.IsValidIndex(Index))
 		{
-			QTableIndices[Found].SpawnAreasIndices.AddUnique(i);
+			QTableIndices[Index].SpawnAreasIndices.AddUnique(i);
 		}
 	}
 
-	if (AgentParams.InQTable.Num() == QTable.size())
+	// Use existing QTable if possible
+	if (AgentParams.QTable.Num() == QTable.size())
 	{
-		QTable = GetQTableFromTArray(AgentParams.InQTable);
+		QTable = GetNdArrayFromTArray<float>(AgentParams.QTable);
 	}
-	UE_LOG(LogTemp, Display, TEXT("InQTable.Num() %d"), AgentParams.InQTable.Num());
-	UE_LOG(LogTemp, Display, TEXT("QTable.size() %u"), QTable.size());
+	if (AgentParams.TrainingSamples.Num() == TrainingSamples.size())
+	{
+		TrainingSamples = GetNdArrayFromTArray<int32>(AgentParams.TrainingSamples);
+	}
+	
+	UE_LOG(LogTemp, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"), AgentParams.QTable.Num(), QTable.size());
 	UE_LOG(LogTemp, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"), SpawnAreasHeight, SpawnAreasWidth);
 	UE_LOG(LogTemp, Display, TEXT("QTableRows: %d QTableColumns: %d"), ScaledHeight, ScaledWidth);
-	UE_LOG(LogTemp, Display, TEXT("QTable Size: %d"), QTable.size());
+	UE_LOG(LogTemp, Display, TEXT("QTable Training Samples: %lld"), TotalTrainingSamples);
 }
 
-void UReinforcementLearningComponent::UpdateQTable(const FAlgoInput& In)
-{
-	FAlgoInput InCopy = In;
-	InCopy.StateIndex = GetQTableIndexFromSpawnAreaIndex(In.StateIndex);
-	InCopy.ActionIndex = GetQTableIndexFromSpawnAreaIndex(In.ActionIndex);
-	InCopy.StateIndex_2 = GetQTableIndexFromSpawnAreaIndex(In.StateIndex_2);
-	InCopy.ActionIndex_2 = GetQTableIndexFromSpawnAreaIndex(In.ActionIndex_2);
-	
-	const float Predict = QTable(InCopy.StateIndex, InCopy.ActionIndex);
-	const float Target = InCopy.Reward + Gamma * QTable(InCopy.StateIndex_2, InCopy.ActionIndex_2);
-	const float NewValue = QTable(InCopy.StateIndex, InCopy.ActionIndex) + Alpha * (Target - Predict);
+// Main QTable functions
 
-	//UE_LOG(LogTemp, Display, TEXT("New QTable Value for SpawnAreaIndex [%d, %d] QTableIndex [%d, %d]: %f"), In.StateIndex, In.ActionIndex, InCopy.StateIndex, InCopy.ActionIndex, NewValue);
-	
-	QTable(InCopy.StateIndex, InCopy.ActionIndex) = NewValue;
-	TrainingSamples += 1;
-	UpdateQTableWidget();
-}
-
-int32 UReinforcementLearningComponent::GetMaxActionIndex(const int32 SpawnAreaIndex) const
+void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex)
 {
-	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetQTableIndexFromSpawnAreaIndex(SpawnAreaIndex));
-	//UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for SpawnAreaIndex %d: %d"), SpawnAreaIndex, Index);
-	if (Index == INDEX_NONE)
+	if (PreviousIndex == CurrentIndex)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("GetMaxActionIndex return INDEX_NONE for QTableIndex of %d"), GetQTableIndexFromSpawnAreaIndex(SpawnAreaIndex));
+		return;
 	}
-	return Index;
+	if (ActiveTargetPairs.FindByPredicate([&PreviousIndex, &CurrentIndex] (const FTargetPair& TargetPair)
+	{
+		return TargetPair.Current == CurrentIndex && TargetPair.Previous == PreviousIndex;
+	}))
+	{
+		return;
+	}
+	ActiveTargetPairs.Emplace(PreviousIndex, CurrentIndex);
+}
+
+void UReinforcementLearningComponent::SetActiveTargetPairReward(const int32 SpawnAreaIndex, const bool bHit)
+{
+	FTargetPair FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex);
+	if (FoundPair.Previous == -1 || FoundPair.Current == -1)
+	{
+		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %d"), SpawnAreaIndex);
+		ActiveTargetPairs.Remove(FoundPair);
+		return;
+	}
+
+	/* Update reward */
+	const float Reward = bHit ? -1.f : 1.f;
+	FoundPair.SetReward(Reward);
+	ActiveTargetPairs.Remove(FoundPair);
+	TargetPairs.Enqueue(FoundPair);
+	ClearCachedTargetPairs();
+}
+
+void UReinforcementLearningComponent::ClearCachedTargetPairs()
+{
+	if (!OnSpawnAreaValidityRequest.IsBound())
+	{
+		return;
+	}
+	
+	while (!TargetPairs.IsEmpty())
+	{
+		FTargetPair TargetPair;
+		if (!TargetPairs.Peek(TargetPair))
+		{
+			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
+			break;
+		}
+		const int32 StateIndex = TargetPair.Previous;
+		const int32 State2Index = TargetPair.Current;
+		const int32 ActionIndex = State2Index;
+		const int32 Action2Index = GetIndex_MaxAction(State2Index);
+		
+		/* Don't update RLAgent if this is not a valid Spawn Area index */
+		const bool bIsValidIndex = OnSpawnAreaValidityRequest.Execute(Action2Index);
+		if (bIsValidIndex)
+		{
+			UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.GetReward()));
+		}
+		else
+		{
+			UE_LOG(LogTargetManager, Warning, TEXT("Invalid Spawn Area from RLAgent: TargetPair.Previous %d TargetPair.Current %d"), TargetPair.Previous, TargetPair.Current);
+		}
+		TargetPairs.Pop();
+	}
 }
 
 int32 UReinforcementLearningComponent::ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices) const
 {
-	if (SpawnAreaIndices.IsEmpty())
+	// Only Exploration and ActiveAgent Reinforcement Learning Modes should choose spawn locations
+	if (SpawnAreaIndices.IsEmpty() || ReinforcementLearningMode == EReinforcementLearningMode::None ||
+		ReinforcementLearningMode == EReinforcementLearningMode::Training)
 	{
 		return INDEX_NONE;
 	}
+	
 	if (FMath::FRandRange(0, 1.f) > Epsilon)
 	{
 		const int32 BestActionIndex = ChooseBestActionIndex(SpawnAreaIndices);
@@ -143,6 +194,128 @@ int32 UReinforcementLearningComponent::ChooseNextActionIndex(const TArray<int32>
 		return BestActionIndex;
 	}
 	return ChooseRandomActionIndex(SpawnAreaIndices);
+}
+
+int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices)
+{
+	return SpawnAreaIndices[FMath::RandRange(0, SpawnAreaIndices.Num() - 1)];
+}
+
+int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const
+{
+	/* Basically argmax but in descending order */
+	auto MaxIndicesReverseSorted = flip(GetQTable().max(nc::Axis::ROW).argsort(nc::Axis::COL));
+	auto MaxesReverseSorted = GetQTable().max(nc::Axis::ROW).sort();
+	
+	//PrintMaxAverageIndices(MaxIndicesReverseSorted, MaxesReverseSorted);
+	
+	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
+	{
+		/* Get the index from MaxesReverseSort */
+		const int32 ChosenIndex = MaxIndicesReverseSorted(0, j);
+
+		/* Get the SpawnArea indices that the chosen index represents */
+		TArray<int32> UnfilteredSpawnAreaIndices = GetSpawnAreaIndexRange(ChosenIndex);
+
+		/* Remove any indices that aren't inside the current SpawnAreasIndices */
+		const TArray<int32> FilteredSpawnAreaIndices = UnfilteredSpawnAreaIndices.FilterByPredicate([&SpawnAreaIndices] (const int32& Value)
+		{
+			if (SpawnAreaIndices.Contains(Value))
+			{
+				return true;
+			}
+			return false;
+		});
+
+		//UE_LOG(LogTemp, Display, TEXT("FilteredSpawnIndices Size: %d"), FilteredSpawnAreaIndices.Num());
+
+		/* Return a random point inside the filtered spawn indices if not empty */
+		if (!FilteredSpawnAreaIndices.IsEmpty())
+		{
+			const int32 RandomFilteredIndex = FMath::RandRange(0, FilteredSpawnAreaIndices.Num() - 1);
+			//UE_LOG(LogTemp, Display, TEXT("RandomFilteredIndex: %d"), FilteredSpawnAreaIndices[RandomFilteredIndex]);
+			return FilteredSpawnAreaIndices[RandomFilteredIndex];
+		}
+	}
+	return INDEX_NONE;
+}
+
+void UReinforcementLearningComponent::UpdateQTable(const FAlgoInput& In)
+{
+	FAlgoInput InCopy = In;
+	InCopy.StateIndex = GetIndex_FromSpawnArea_ToQTable(In.StateIndex);
+	InCopy.ActionIndex = GetIndex_FromSpawnArea_ToQTable(In.ActionIndex);
+	InCopy.StateIndex_2 = GetIndex_FromSpawnArea_ToQTable(In.StateIndex_2);
+	InCopy.ActionIndex_2 = GetIndex_FromSpawnArea_ToQTable(In.ActionIndex_2);
+	
+	const float Predict = QTable(InCopy.StateIndex, InCopy.ActionIndex);
+	const float Target = InCopy.Reward + Gamma * QTable(InCopy.StateIndex_2, InCopy.ActionIndex_2);
+	const float NewValue = QTable(InCopy.StateIndex, InCopy.ActionIndex) + Alpha * (Target - Predict);
+
+	//UE_LOG(LogTemp, Display, TEXT("New QTable Value for SpawnAreaIndex [%d, %d] QTableIndex [%d, %d]: %f"), In.StateIndex, In.ActionIndex, InCopy.StateIndex, InCopy.ActionIndex, NewValue);
+	
+	QTable(InCopy.StateIndex, InCopy.ActionIndex) = NewValue;
+	TrainingSamples(InCopy.StateIndex, InCopy.ActionIndex) += 1;
+	TotalTrainingSamples += 1;
+	UpdateQTableWidget();
+}
+
+// Getters and utility functions
+
+TArray<float> UReinforcementLearningComponent::GetTArray_FromNdArray_QTableAvg() const
+{
+	nc::NdArray<float> QTableMean = nc::mean(GetQTable(), nc::Axis::ROW).astype<float>();
+	const nc::NdArray<float> Reshaped = QTableMean.reshape(ScaledHeight,ScaledWidth);
+	const nc::NdArray<float> Flipped = nc::flipud<float>(Reshaped);
+	return GetTArrayFromNdArray<float>(Flipped);
+}
+
+int32 UReinforcementLearningComponent::GetIndex_MaxAction(const int32 SpawnAreaIndex) const
+{
+	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetIndex_FromSpawnArea_ToQTable(SpawnAreaIndex));
+	//UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for SpawnAreaIndex %d: %d"), SpawnAreaIndex, Index);
+	if (Index == INDEX_NONE)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetIndex_MaxAction return INDEX_NONE for QTableIndex of %d"), GetIndex_FromSpawnArea_ToQTable(SpawnAreaIndex));
+	}
+	return Index;
+}
+
+int32 UReinforcementLearningComponent::GetIndex_FromSpawnArea_ToQTable(const int32 SpawnAreaIndex) const
+{
+	/* First find the Row and Column number that corresponds to the SpawnArea index */
+	const int32 SpawnAreaRowNum = SpawnAreaIndex / SpawnAreasWidth;
+	const int32 SpawnAreaColNum = SpawnAreaIndex % SpawnAreasWidth;
+
+	/* Scale down the SpawnArea row and column numbers */
+	const int32 QTableRow = SpawnAreaRowNum / HeightScaleFactor;
+	const int32 QTableCol = SpawnAreaColNum / WidthScaleFactor /*% ScaledWidth*/;
+	const int32 QTableIndex = QTableRow * ScaledHeight + QTableCol;
+
+	//UE_LOG(LogTemp, Display, TEXT(" %d|   %d %d  %d %d   |%d"), SpawnAreaIndex, SpawnAreaRowNum, SpawnAreaColNum, QTableRow, QTableCol, QTableIndex);
+	
+	return QTableIndex;
+}
+
+TArray<int32> UReinforcementLearningComponent::GetSpawnAreaIndexRange(const int32 QTableIndex) const
+{
+	return QTableIndices[QTableIndex].SpawnAreasIndices;
+}
+
+FTargetPair UReinforcementLearningComponent::FindTargetPairByCurrentIndex(const int32 InCurrentIndex)
+{
+	const FTargetPair* Found = ActiveTargetPairs.FindByPredicate([&InCurrentIndex] (const FTargetPair& TargetPair)
+	{
+		return TargetPair.Current == InCurrentIndex;
+	});
+	return Found ? *Found : FTargetPair();
+}
+
+// Debug functions
+
+void UReinforcementLearningComponent::UpdateQTableWidget() const
+{
+	OnQTableUpdate.Broadcast(GetTArray_FromNdArray_QTableAvg());
 }
 
 void UReinforcementLearningComponent::PrintRewards() const
@@ -188,224 +361,6 @@ void UReinforcementLearningComponent::PrintRewards() const
 			Row.Empty();
 		}
 	}
-}
-
-TArray<float> UReinforcementLearningComponent::GetAveragedTArrayFromQTable() const
-{
-	return GetTArrayFromQTable(flipud(mean(GetQTable(), nc::Axis::ROW).reshape(ScaledHeight,ScaledWidth)));
-}
-
-TArray<float> UReinforcementLearningComponent::GetSaveReadyQTable() const
-{
-	return GetTArrayFromQTable(GetQTable());
-}
-
-int32 UReinforcementLearningComponent::GetQTableRowLength() const
-{
-	return GetQTable().numCols();
-}
-
-nc::NdArray<float> UReinforcementLearningComponent::GetQTable() const
-{
-	return QTable;
-}
-
-void UReinforcementLearningComponent::UpdateReinforcementLearningReward(const int32 SpawnAreaIndex, const bool bHit)
-{
-	FTargetPair FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex);
-	if (FoundPair.Previous == -1 || FoundPair.Current == -1)
-	{
-		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %d"), SpawnAreaIndex);
-		ActiveTargetPairs.Remove(FoundPair);
-		return;
-	}
-
-	/* Update reward */
-	const float Reward = bHit ? -1.f : 1.f;
-	FoundPair.SetReward(Reward);
-	ActiveTargetPairs.Remove(FoundPair);
-	TargetPairs.Enqueue(FoundPair);
-	ClearCachedTargetPairs();
-}
-
-void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex)
-{
-	if (PreviousIndex == CurrentIndex)
-	{
-		return;
-	}
-	if (ActiveTargetPairs.FindByPredicate([&PreviousIndex, &CurrentIndex] (const FTargetPair& TargetPair)
-	{
-		return TargetPair.Current == CurrentIndex && TargetPair.Previous == PreviousIndex;
-	}))
-	{
-		return;
-	}
-	ActiveTargetPairs.Emplace(PreviousIndex, CurrentIndex);
-}
-
-void UReinforcementLearningComponent::ClearCachedTargetPairs()
-{
-	if (!OnSpawnAreaValidityRequest.IsBound())
-	{
-		return;
-	}
-	
-	while (!TargetPairs.IsEmpty())
-	{
-		FTargetPair TargetPair;
-		if (!TargetPairs.Peek(TargetPair))
-		{
-			UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
-			break;
-		}
-		const int32 StateIndex = TargetPair.Previous;
-		const int32 State2Index = TargetPair.Current;
-		const int32 ActionIndex = State2Index;
-		const int32 Action2Index = GetMaxActionIndex(State2Index);
-		
-		/* Don't update RLAgent if this is not a valid Spawn Area index */
-		const bool bIsValidIndex = OnSpawnAreaValidityRequest.Execute(Action2Index);
-		if (bIsValidIndex)
-		{
-			UpdateQTable(FAlgoInput(StateIndex, State2Index, ActionIndex, Action2Index, TargetPair.GetReward()));
-		}
-		else
-		{
-			UE_LOG(LogTargetManager, Warning, TEXT("Invalid Spawn Area from RLAgent: TargetPair.Previous %d TargetPair.Current %d"), TargetPair.Previous, TargetPair.Current);
-		}
-		TargetPairs.Pop();
-	}
-}
-
-int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices) const
-{
-	return SpawnAreaIndices[FMath::RandRange(0, SpawnAreaIndices.Num() - 1)];
-}
-
-int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const
-{
-	/* Basically argmax but in descending order */
-	auto MaxIndicesReverseSorted = flip(GetQTable().max(nc::Axis::ROW).argsort(nc::Axis::COL));
-	auto MaxesReverseSorted = GetQTable().max(nc::Axis::ROW).sort();
-
-#if !UE_BUILD_SHIPPING
-	PrintMaxAverageIndices(MaxIndicesReverseSorted, MaxesReverseSorted);
-#endif
-	
-	for (int j = 0; j < static_cast<int>(MaxIndicesReverseSorted.numCols()); j++)
-	{
-		/* Get the index from MaxesReverseSort */
-		const int32 ChosenIndex = MaxIndicesReverseSorted(0, j);
-
-		/* Get the SpawnArea indices that the chosen index represents */
-		TArray<int32> UnfilteredSpawnAreaIndices = GetSpawnAreaIndexRange(ChosenIndex);
-
-		/* Remove any indices that aren't inside the current SpawnAreasIndices */
-		const TArray<int32> FilteredSpawnAreaIndices = UnfilteredSpawnAreaIndices.FilterByPredicate([&SpawnAreaIndices] (const int32& Value)
-		{
-			if (SpawnAreaIndices.Contains(Value))
-			{
-				return true;
-			}
-			return false;
-		});
-
-		UE_LOG(LogTemp, Display, TEXT("FilteredSpawnIndices Size: %d"), FilteredSpawnAreaIndices.Num());
-
-		/* Return a random point inside the filtered spawn indices if not empty */
-		if (!FilteredSpawnAreaIndices.IsEmpty())
-		{
-			const int32 RandomFilteredIndex = FMath::RandRange(0, FilteredSpawnAreaIndices.Num() - 1);
-			UE_LOG(LogTemp, Display, TEXT("RandomFilteredIndex: %d"), FilteredSpawnAreaIndices[RandomFilteredIndex]);
-			return FilteredSpawnAreaIndices[RandomFilteredIndex];
-		}
-	}
-	return INDEX_NONE;
-}
-
-int32 UReinforcementLearningComponent::GetQTableIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const
-{
-	/* First find the Row and Column number that corresponds to the SpawnArea index */
-	const int32 SpawnAreaRowNum = SpawnAreaIndex / SpawnAreasWidth;
-	const int32 SpawnAreaColNum = SpawnAreaIndex % SpawnAreasWidth;
-
-	/* Scale down the SpawnArea row and column numbers */
-	const int32 QTableRow = SpawnAreaRowNum / HeightScaleFactor;
-	const int32 QTableCol = SpawnAreaColNum / WidthScaleFactor /*% ScaledWidth*/;
-	const int32 QTableIndex = QTableRow * ScaledHeight + QTableCol;
-
-	//UE_LOG(LogTemp, Display, TEXT(" %d|   %d %d  %d %d   |%d"), SpawnAreaIndex, SpawnAreaRowNum, SpawnAreaColNum, QTableRow, QTableCol, QTableIndex);
-	
-	return QTableIndex;
-}
-
-TArray<int32> UReinforcementLearningComponent::GetSpawnAreaIndexRange(const int32 QTableIndex) const
-{
-	return QTableIndices[QTableIndex].SpawnAreasIndices;
-}
-
-nc::NdArray<float> UReinforcementLearningComponent::GetQTableFromTArray(const TArray<float>& InTArray) const
-{
-	const int32 RowSize = UKismetMathLibrary::Sqrt(InTArray.Num());
-	const int32 ColSize = RowSize;
-	
-	nc::NdArray<float> Out = nc::zeros<float>(RowSize, ColSize);
-	
-	for (int j = 0; j < ColSize; j++)
-	{
-		for (int i = 0; i < RowSize; i++)
-		{
-			Out(i, j) = InTArray[RowSize * j + i];
-		}
-	}
-	return Out;
-}
-
-TArray<float> UReinforcementLearningComponent::GetTArrayFromQTable(const nc::NdArray<float>& InQTable)
-{
-	const int32 RowSize = InQTable.numRows();
-	const int32 ColSize = InQTable.numCols();
-	
-	TArray<float> Out;
-	Out.Init(0.f, InQTable.size());
-	
-	for(int j = 0; j < ColSize; j++)
-	{
-		for(int i = 0; i < RowSize; i++)
-		{
-			Out[RowSize * j + i] = InQTable(i, j);
-		}
-	}
-	return Out;
-}
-
-TArray<float> UReinforcementLearningComponent::GetTArrayFromQTable(const nc::NdArray<double>& InQTable)
-{
-	TArray<float> Out;
-	Out.Init(0.f, InQTable.size());
-	for(int j = 0; j < static_cast<int>(InQTable.numCols()); j++)
-	{
-		for(int i = 0; i < static_cast<int>(InQTable.numRows()); i++)
-		{
-			Out[(static_cast<int>(InQTable.numRows()) * j) + i] = InQTable(i, j);
-		}
-	}
-	return Out;
-}
-
-void UReinforcementLearningComponent::UpdateQTableWidget() const
-{
-	OnQTableUpdate.Broadcast(GetAveragedTArrayFromQTable());
-}
-
-FTargetPair UReinforcementLearningComponent::FindTargetPairByCurrentIndex(const int32 InCurrentIndex)
-{
-	const FTargetPair* Found = ActiveTargetPairs.FindByPredicate([&InCurrentIndex] (const FTargetPair& TargetPair)
-	{
-		return TargetPair.Current == InCurrentIndex;
-	});
-	return Found ? *Found : FTargetPair();
 }
 
 void UReinforcementLearningComponent::PrintMaxAverageIndices(const nc::NdArray<unsigned>& MaxIndicesReverseSorted, const nc::NdArray<float>& MaxesReverseSorted) const

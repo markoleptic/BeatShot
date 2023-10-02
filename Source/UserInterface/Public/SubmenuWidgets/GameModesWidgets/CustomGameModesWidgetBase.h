@@ -3,14 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlobalStructs.h"
+#include "BSGameModeDataAsset.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "CustomGameModesWidgetBase.generated.h"
 
 class UCustomGameModesWidgetComponent;
-class UBSGameModeDataAsset;
 class UCustomGameModesWidget_Start;
 
 DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);

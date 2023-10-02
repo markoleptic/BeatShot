@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSGameModeDataAsset.h"
 #include "GameplayTagContainer.h"
-#include "GlobalEnums.h"
 #include "Engine/DataAsset.h"
 #include "EnumTagMap.generated.h"
 
@@ -181,7 +181,9 @@ protected:
 		StaticEnum<ETargetDeactivationResponse>(),
 		StaticEnum<EDynamicBoundsScalingPolicy>(),
 		StaticEnum<ETargetSpawningPolicy>(),
-		StaticEnum<ETargetDistributionPolicy>()
+		StaticEnum<ETargetDistributionPolicy>(),
+		StaticEnum<EReinforcementLearningMode>(),
+		StaticEnum<EReinforcementLearningHyperParameterMode>()
 	};
 };
 

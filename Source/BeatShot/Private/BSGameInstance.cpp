@@ -103,7 +103,6 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		}
 	case ETransitionState::Restart:
 		{
-			UE_LOG(LogTemp, Display, TEXT("Restarting"));
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
 			StartGameMode(true);
 			break;
@@ -130,8 +129,11 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
 			break;
 		}
-	default:
+	case ETransitionState::PlayAgain:
 		{
+			BSConfig.AudioConfig = NewGameModeTransitionState.BSConfig.AudioConfig;
+			BSConfig.OnCreate();
+			StartGameMode(true);
 			break;
 		}
 	}

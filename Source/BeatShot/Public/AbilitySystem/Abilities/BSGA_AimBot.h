@@ -24,6 +24,9 @@ public:
 	UFUNCTION()
 	void OnTargetAddedToQueue();
 
+	/** Sets the IgnoreStartLocation and the bool variables associated with it */
+	void SetIgnoreStartLocation(const FVector& In);
+
 	/** The Aim Bot will ignore targets with a location greater than a positive value or less than a negative value */
 	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
 	FVector IgnoreStartLocation = FVector::ZeroVector;
@@ -42,4 +45,14 @@ private:
 
 	UFUNCTION()
 	void OnAimToTargetCompleted();
+
+	bool TargetLocationIsInIgnoreRange(const FVector& Loc) const;
+	
+	bool bYPositive;
+	bool bYNegative;
+	bool bYZero;
+	
+	bool bZPositive;
+	bool bZNegative;
+	bool bZZero;
 };

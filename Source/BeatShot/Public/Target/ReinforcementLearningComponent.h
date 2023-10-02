@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlobalEnums.h"
+#include "BSGameModeDataAsset.h"
 #include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
+class UCompositeCurveTable;
 THIRD_PARTY_INCLUDES_START
 #pragma push_macro("check")
 #undef check
@@ -20,146 +22,44 @@ THIRD_PARTY_INCLUDES_END
 
 #include "ReinforcementLearningComponent.generated.h"
 
-/** A struct representing two consecutively spawned targets, used to keep track of the reward associated between two points */
-USTRUCT()
-struct FTargetPair
-{
-	GENERATED_BODY()
-
-	/** The SpawnAreas index of the target spawned before Current */
-	int32 Previous;
-
-	/** The SpawnAreas index of the target spawned after Previous */
-	int32 Current;
-
-private:
-
-	/** The reward for spawning a target at Previous and then spawning a target at Current */
-	float Reward;
-
-public:
-	
-	FTargetPair()
-	{
-		Previous = INDEX_NONE;
-		Current = INDEX_NONE;
-		Reward = 0.f;
-	}
-
-	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex)
-	{
-		Previous = PreviousPointIndex;
-		Current = CurrentPointIndex;
-		Reward = 0.f;
-	}
-
-	FORCEINLINE bool operator ==(const FTargetPair& Other) const
-	{
-		return Previous == Other.Previous && Current == Other.Current;
-	}
-
-	/** Sets the reward for this TargetPair */
-	void SetReward(const float InReward)
-	{
-		Reward = InReward;
-	}
-
-	/** Returns the reward for this TargetPair */
-	float GetReward() const { return Reward; }
-};
-
-/** A struct representing the inputs for a Reinforcement Learning Algorithm */
-USTRUCT()
-struct FAlgoInput
-{
-	GENERATED_BODY()
-
-	int32 StateIndex;
-	int32 ActionIndex;
-	int32 StateIndex_2;
-	int32 ActionIndex_2;
-	float Reward;
-
-	FAlgoInput()
-	{
-		StateIndex = -1;
-		ActionIndex = -1;
-		StateIndex_2 = -1;
-		ActionIndex_2 = -1;
-		Reward = 1;
-	}
-
-	FAlgoInput(const int32 InStateIndex, const int32 InActionIndex, const int32 InStateIndex_2, const int32 InActionIndex_2, const float InReward)
-	{
-		StateIndex = InStateIndex;
-		ActionIndex = InActionIndex;
-		StateIndex_2 = InStateIndex_2;
-		ActionIndex_2 = InActionIndex_2;
-		Reward = InReward;
-	}
-};
-
 /** A struct to pass the Agent upon Initialization */
 USTRUCT()
 struct FRLAgentParams
 {
 	GENERATED_BODY()
 
-	EBaseGameMode DefaultMode;
-	FString CustomGameModeName;
-	int32 Size;
-	TArray<float> InQTable;
+	FBS_AIConfig AIConfig;
 	float SpawnAreasHeight;
 	float SpawnAreasWidth;
-	float InAlpha;
-	float InGamma;
-	float InEpsilon;
-
+	int32 Size;
+	TArray<float> QTable;
+	TArray<int32> TrainingSamples;
+	int64 TotalTrainingSamples;
+	
 	FRLAgentParams()
 	{
-		DefaultMode = EBaseGameMode::None;
-		CustomGameModeName = "";
+		AIConfig = FBS_AIConfig();
 		Size = 0;
-		InQTable = TArray<float>();
+		QTable = TArray<float>();
+		TrainingSamples = TArray<int32>();
 		SpawnAreasHeight = 0.f;
 		SpawnAreasWidth = 0.f;
-		InAlpha = 0.f;
-		InGamma = 0.f;
-		InEpsilon = 0.f;
+		TotalTrainingSamples = 0;
+		
+	}
+
+	FRLAgentParams(const FBS_AIConfig& InAIConfig, const int32 InSize, const float InHeight, const float InWidth,
+		const TArray<float>& InQTable, const TArray<int32>& InTrainingSamples, const int32 InTotalTrainingSamples)
+	{
+		AIConfig = InAIConfig;
+		SpawnAreasHeight = InHeight;
+		SpawnAreasWidth = InWidth;
+		Size = InSize;
+		QTable = InQTable;
+		TrainingSamples = InTrainingSamples;
+		TotalTrainingSamples = InTotalTrainingSamples;
 	}
 };
-
-/** A struct each each element represents one QTable index mapping to multiple SpawnCounter indices */
-USTRUCT()
-struct FQTableIndex
-{
-	GENERATED_BODY()
-
-	int32 QTableIndex;
-	TArray<int32> SpawnAreasIndices;
-
-	FQTableIndex()
-	{
-		QTableIndex = INDEX_NONE;
-		SpawnAreasIndices = TArray<int32>();
-	}
-	FQTableIndex(const int32 InQTableIndex)
-	{
-		QTableIndex = InQTableIndex;
-		SpawnAreasIndices = TArray<int32>();
-	}
-
-	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
-	{
-		if (Other.QTableIndex == QTableIndex)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
-DECLARE_DELEGATE_RetVal_OneParam(bool, FOnSpawnAreaValidityRequest, const int32);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BEATSHOT_API UReinforcementLearningComponent : public UActorComponent
@@ -167,103 +67,119 @@ class BEATSHOT_API UReinforcementLearningComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
 	UReinforcementLearningComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "ReinforcementLearningComponent")
+	UCompositeCurveTable* CompositeCurveTable_HyperParameters;
 
 public:
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 	/** Initializes the QTable, called by TargetManager */
 	void Init(const FRLAgentParams& AgentParams);
+
+	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
+	void AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex);
+
+	/** Updates a TargetPair's reward based on if hit or not. SpawnAreaIndex corresponds to the CurrentIndex of a TargetPair. Removes from ActiveTargetPairs and adds to TargetPairs queue */
+	void SetActiveTargetPairReward(const int32 SpawnAreaIndex, const bool bHit);
+
+	/** Updates RLAgent's QTable until TargetPairs queue is empty */
+	void ClearCachedTargetPairs();
+	
+	/** Returns the SpawnCounter index of the next target to spawn, based on the Epsilon value */
+	int32 ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices) const;
+
+private:
+	/** Returns a random SpawnArea index from the provided SpawnAreaIndices */
+	static int32 ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices);
+
+	/** First computes a reverse-sorted array containing QTable indices where the rewards is highest. Then checks to see if there is a valid SpawnCounter index that corresponds to the QTable index.
+	 *  If there isn't, it goes to the next QTable index until there are no options left, in which case it returns INDEX_NONE. Returns a SpawnCounter index */
+	int32 ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const;
 
 	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */
 	virtual void UpdateQTable(const FAlgoInput& In);
 	
-	/** Returns the QTable index corresponding to the maximum reward from starting at QTableIndex, using a greedy approach. Used to update Q-Table, but not to get actual spawn locations */
-	int32 GetMaxActionIndex(const int32 SpawnAreaIndex) const;
-
-	/** Returns the SpawnCounter index of the next target to spawn, based on the Epsilon value */
-	int32 ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices) const;
-
-	/** Prints the Q-Table to Unreal console */
-	void PrintRewards() const;
-
+public:
+	/** Returns the number of columns or width */
 	int32 GetWidth() const { return ScaledWidth; }
+	
+	/** Returns the number of rows or height */
 	int32 GetHeight() const { return ScaledHeight; }
 
-	/** Returns a TArray version of the averaged flipped QTable, used to update widget */
-	TArray<float> GetAveragedTArrayFromQTable() const;
-
-	/** Returns a TArray version of the full QTable */
-	TArray<float> GetSaveReadyQTable() const;
-
-	/** Returns the number of columns (Row Length) for the full QTable */
-	int32 GetQTableRowLength() const;
-
 	/** Returns the number of training samples the component has trained with this session */
-	int32 GetNumTrainingSamples() const { return TrainingSamples; }
+	int64 GetTotalTrainingSamples() const { return TotalTrainingSamples; }
+
+	/** The mode that the RLC is operating in */
+	EReinforcementLearningMode GetReinforcementLearningMode() const { return ReinforcementLearningMode; }
 
 	/** Returns a copy of the QTable */
-	nc::NdArray<float> GetQTable() const;
+	nc::NdArray<float> GetQTable() const { return QTable; }
+
+	/** Returns the number of columns (Row Length) for the full QTable */
+	int32 GetQTableRowLength() const { return GetQTable().numCols(); }
+	
+	/** Returns a TArray version of the full QTable */
+	TArray<float> GetTArray_FromNdArray_QTable() const { return GetTArrayFromNdArray<float>(GetQTable()); }
+
+	/** Returns a TArray version of the full TrainingSamples */
+	TArray<int32> GetTArray_FromNdArray_TrainingSamples() const { return GetTArrayFromNdArray<int32>(TrainingSamples); }
+	
+	/** Returns a TArray version of the averaged flipped QTable, used to update widget */
+	TArray<float> GetTArray_FromNdArray_QTableAvg() const;
+	
+private:
+	template<typename T>
+	static TArray<T> GetTArrayFromNdArray(const nc::NdArray<T>& InArray);
+	
+	/** Converts a TArray of floats to an NdArray */
+	template<typename T>
+	static nc::NdArray<T> GetNdArrayFromTArray(const TArray<T>& InTArray);
+	
+	/** Returns the QTable index corresponding to the maximum reward from starting at QTableIndex, using a greedy approach. Used to update Q-Table, but not to get actual spawn locations */
+	int32 GetIndex_MaxAction(const int32 SpawnAreaIndex) const;
+	
+	/** Converts a SpawnAreaIndex to a QTableIndex */
+	int32 GetIndex_FromSpawnArea_ToQTable(const int32 SpawnAreaIndex) const;
+
+	/** Returns all SpawnCounter indices corresponding to the QTableIndex */
+	TArray<int32> GetSpawnAreaIndexRange(const int32 QTableIndex) const;
+	
+	/** Returns the first TargetPair with the matching CurrentIndex */
+	FTargetPair FindTargetPairByCurrentIndex(const int32 InCurrentIndex);
+
+public:
+	/** Broadcasts OnQTableUpdate delegate */
+	void UpdateQTableWidget() const;
+	
+	/** Prints the Q-Table to Unreal console */
+	void PrintRewards() const;
+	
+	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
+	void PrintMaxAverageIndices(const nc::NdArray<unsigned>& MaxIndicesReverseSorted, const nc::NdArray<float>& MaxesReverseSorted) const;
 
 	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets */
 	FOnQTableUpdate OnQTableUpdate;
 
 	/** Delegate that broadcasts when the component wants to check the validity of a SpawnArea index */
 	FOnSpawnAreaValidityRequest OnSpawnAreaValidityRequest;
-
-	/** Updates a TargetPair's reward based on if hit or not. SpawnAreaIndex corresponds to the CurrentIndex of a TargetPair. Removes from ActiveTargetPairs and adds to TargetPairs queue */
-	void UpdateReinforcementLearningReward(const int32 SpawnAreaIndex, const bool bHit);
-
-	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
-	void AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex);
-
-	/** Updates RLAgent's QTable until TargetPairs queue is empty */
-	void ClearCachedTargetPairs();
-
+	
 private:
+	/** The mode that the RLC is operating in */
+	EReinforcementLearningMode ReinforcementLearningMode;
+
+	/** Defines how to use the hyper-parameters Alpha, Gamma, and Epsilon */
+	EReinforcementLearningHyperParameterMode HyperParameterMode;
 	
-	/** Returns a random SpawnArea index from the provided SpawnAreaIndices */
-	int32 ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices) const;
-
-	/** First computes a reverse-sorted array containing QTable indices where the rewards is highest. Then checks to see if there is a valid SpawnCounter index that corresponds to the QTable index.
-	 *  If there isn't, it goes to the next QTable index until there are no options left, in which case it returns INDEX_NONE. Returns a SpawnCounter index */
-	int32 ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const;
-
-	/** Converts a SpawnAreaIndex to a QTableIndex */
-	int32 GetQTableIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
-
-	/** Returns all SpawnCounter indices corresponding to the QTableIndex */
-	TArray<int32> GetSpawnAreaIndexRange(const int32 QTableIndex) const;
-	
-	/** Converts a TArray of floats to an NdArray */
-	nc::NdArray<float> GetQTableFromTArray(const TArray<float>& InTArray) const;
-
-	/** Converts an NdArray of floats to a TArray of floats, so that it can be serialized and saved */
-	static TArray<float> GetTArrayFromQTable(const nc::NdArray<float>& InQTable);
-
-	/** Converts an NdArray of floats to a TArray of floats, so that it can be passed to widget */
-	static TArray<float> GetTArrayFromQTable(const nc::NdArray<double>& InQTable);
-
-	/** Broadcasts OnQTableUpdate delegate */
-	void UpdateQTableWidget() const;
-
-	/** Returns the first TargetPair with the matching CurrentIndex */
-	FTargetPair FindTargetPairByCurrentIndex(const int32 InCurrentIndex);
-
-	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
-	void PrintMaxAverageIndices(const nc::NdArray<unsigned>& MaxIndicesReverseSorted, const nc::NdArray<float>& MaxesReverseSorted) const;
-
 	/** A 2D array where the row and column have size equal to the number of possible spawn points. An element in the array represents the expected reward from starting at spawn location RowIndex
 	 *  and spawning a target at ColumnIndex. Its a scaled down version of the SpawnCounter where each each point in Q-Table represents multiple points in a square area inside the SpawnCounter */
 	nc::NdArray<float> QTable;
+
+	nc::NdArray<int32> TrainingSamples;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
 	float Alpha;
@@ -313,5 +229,42 @@ private:
 	FNumberFormattingOptions FloatFormatting;
 
 	/** The number of samples collected starting from when the component was activated */
-	int32 TrainingSamples;
+	int64 TotalTrainingSamples;
 };
+
+template <typename T>
+TArray<T> UReinforcementLearningComponent::GetTArrayFromNdArray(const nc::NdArray<T>& InArray)
+{
+	const int32 RowSize = InArray.numRows();
+	const int32 ColSize = InArray.numCols();
+	
+	TArray<T> Out;
+	Out.Init(0.f, InArray.size());
+	
+	for(int j = 0; j < ColSize; j++)
+	{
+		for(int i = 0; i < RowSize; i++)
+		{
+			Out[RowSize * j + i] = InArray(i, j);
+		}
+	}
+	return Out;
+}
+
+template <typename T>
+nc::NdArray<T> UReinforcementLearningComponent::GetNdArrayFromTArray(const TArray<T>& InTArray)
+{
+	const int32 RowSize = UKismetMathLibrary::Sqrt(InTArray.Num());
+	const int32 ColSize = RowSize;
+	
+	nc::NdArray<T> Out = nc::zeros<T>(RowSize, ColSize);
+	
+	for (int j = 0; j < ColSize; j++)
+	{
+		for (int i = 0; i < RowSize; i++)
+		{
+			Out(i, j) = InTArray[RowSize * j + i];
+		}
+	}
+	return Out;
+}

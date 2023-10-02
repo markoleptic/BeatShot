@@ -2,11 +2,10 @@
 
 #pragma once
 #include "CoreMinimal.h"
-#include "GlobalEnums.h"
-#include "GlobalStructs.h"
 #include "DLSSLibrary.h"
 #include "NISLibrary.h"
 #include "InputCoreTypes.h"
+#include "SaveGamePlayerSettings.h"
 #include "StreamlineLibraryDLSSG.h"
 #include "StreamlineLibraryReflex.h"
 #include "GameFramework/GameUserSettings.h"

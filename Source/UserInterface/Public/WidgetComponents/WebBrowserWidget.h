@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "SaveGamePlayerSettings.h"
+#include "HttpRequestInterface.h"
 #include "WebBrowserWidget.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnURLLoaded, const bool bLoadedSuccessfully);

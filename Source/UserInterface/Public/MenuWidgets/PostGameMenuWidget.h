@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "PostGameMenuWidget.generated.h"
 
+class UAudioSelectWidget;
 class UMenuStyle;
 class UWidgetSwitcher;
 class UVerticalBox;
@@ -26,16 +27,29 @@ class USERINTERFACE_API UPostGameMenuWidget : public UUserWidget
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
+
+public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UScoreBrowserWidget* ScoresWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UGameModesWidget* GameModesWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UQuitMenuWidget* QuitMenuWidget;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	USettingsMenuWidget* SettingsMenuWidget;
 	
+protected:
 	UPROPERTY(EditDefaultsOnly, Category="PostGameMenuWidget")
 	TSubclassOf<UMenuStyle> MenuStyleClass;
+	UPROPERTY(EditDefaultsOnly, Category="PostGameMenuWidget")
+	TSubclassOf<UAudioSelectWidget> AudioSelectClass;
+	UPROPERTY()
+	TObjectPtr<UAudioSelectWidget> AudioSelectWidget;
 	
 	UPROPERTY()
 	const UMenuStyle* MenuStyle;
 
 	void SetStyles();
-
-#pragma region MenuWidgets
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
@@ -48,18 +62,7 @@ protected:
 	UVerticalBox* Box_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_FAQ;
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UScoreBrowserWidget* ScoresWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UGameModesWidget* GameModesWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	UQuitMenuWidget* QuitMenuWidget;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
-	USettingsMenuWidget* SettingsMenuWidget;
-
-protected:
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
 
@@ -75,20 +78,18 @@ protected:
 	UMenuButton* MenuButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Quit;
-
-#pragma	endregion
-
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInWidget;
+	
 	UFUNCTION()
 	void PlayFadeInWidget() { PlayAnimationForward(FadeInWidget); }
-
-	bool bSavedScores;
+	
 	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur */
 	FWidgetAnimationDynamicEvent FadeInWidgetDelegate;
 
-	UFUNCTION()
-	virtual void Restart();
+	void ShowAudioFormatSelect();
+	
 	UFUNCTION()
 	void SetScoresWidgetVisibility();
 	UFUNCTION()

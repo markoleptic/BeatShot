@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlobalStructs.h"
+#include "BSGameModeDataAsset.h"
 #include "GameFramework/SaveGame.h"
 #include "SaveGameCustomGameMode.generated.h"
 

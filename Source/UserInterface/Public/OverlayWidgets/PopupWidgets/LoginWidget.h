@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
+#include "HttpRequestInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "BSWidgetInterface.h"

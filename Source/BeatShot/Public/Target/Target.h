@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "BSGameModeDataAsset.h"
 #include "BeatShot/BeatShot.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"

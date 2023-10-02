@@ -124,49 +124,36 @@ void ABSGameMode::InitializeGameMode()
 	
 	for (const ABSPlayerController* Controller : Controllers)
 	{
-		if (ABSCharacter* Character = Controller->GetBSCharacter())
-		{
-			UBSAbilitySystemComponent* ASC = Character->GetBSAbilitySystemComponent();
-			const UBSAttributeSetBase* Set = ASC->GetSet<UBSAttributeSetBase>();
-			if (ensure(Set))
-			{
-				ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig.TargetConfig.BasePlayerHitDamage);
-				ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), BSConfig.TargetConfig.BasePlayerTrackingDamage);
-			}
-			
-			if (Character->HasMatchingGameplayTag(FBSGameplayTags::Get().Cheat_AimBot))
-			{
-				if (!GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
-				{
-					GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
-				}
-			}
+		const ABSCharacter* Character = Controller->GetBSCharacter();
+		if (!Character) break;
+		
+		UBSAbilitySystemComponent* ASC = Character->GetBSAbilitySystemComponent();
+		if (!ASC) break;
+		
+		const UBSAttributeSetBase* Set = ASC->GetSet<UBSAttributeSetBase>();
+		if (!Set) break;
+		
+		ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig.TargetConfig.BasePlayerHitDamage);
+		ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), BSConfig.TargetConfig.BasePlayerTrackingDamage);
 
-			if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+		if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+		{
+			if (TrackGunAbilityGrantedHandles.IsEmpty())
 			{
-				if (TrackGunAbilityGrantedHandles.IsEmpty())
-				{
-					TrackGunAbilitySet->GiveToAbilitySystem(ASC, &TrackGunAbilityGrantedHandles);
-				}
-				for (FGameplayAbilitySpec& Spec : ASC->GetActivatableAbilities())
-				{
-					if (UGameplayAbility* Ability = Spec.GetPrimaryInstance())
-					{
-						if (UBSGA_TrackGun* TrackAbility = Cast<UBSGA_TrackGun>(Ability))
-						{
-							TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
-							ASC->MarkAbilitySpecDirty(Spec);
-							break;
-						}
-					}
-				}
+				TrackGunAbilitySet->GiveToAbilitySystem(ASC, &TrackGunAbilityGrantedHandles);
 			}
-			else
+			FGameplayAbilitySpec* TrackGunSpec = TrackGunAbilityGrantedHandles.FindFirstAbilitySpecFromHandle(ASC);
+			if (UBSGA_TrackGun* TrackAbility = Cast<UBSGA_TrackGun>(TrackGunSpec->GetPrimaryInstance()))
 			{
-				if (!TrackGunAbilityGrantedHandles.IsEmpty())
-				{
-					TrackGunAbilityGrantedHandles.TakeFromAbilitySystem(Character->GetBSAbilitySystemComponent());
-				}
+				TrackAbility->OnPlayerStopTrackingTarget.AddUniqueDynamic(TargetManager.Get(), &ATargetManager::OnPlayerStopTrackingTarget);
+				ASC->MarkAbilitySpecDirty(*TrackGunSpec);
+			}
+		}
+		else
+		{
+			if (!TrackGunAbilityGrantedHandles.IsEmpty())
+			{
+				TrackGunAbilityGrantedHandles.TakeFromAbilitySystem(Character->GetBSAbilitySystemComponent());
 			}
 		}
 	}
@@ -240,7 +227,7 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 
 		ScoreInfo = FindCommonScoreInfo(BSConfig.DefiningConfig);
 		ScoreInfo.UpdateAccuracy(AccuracyData);
-		if (BSConfig.AIConfig.bEnableReinforcementLearning)
+		if (BSConfig.AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
 		{
 			GetTargetManager()->SaveQTable(ScoreInfo);
 		}

@@ -13,9 +13,9 @@
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
-void USettingsMenuWidget_AudioAnalyzer::InitMainMenuChild()
+void USettingsMenuWidget_AudioAnalyzer::InitPauseMenuChild()
 {
-	Button_SaveAndRestart->SetVisibility(ESlateVisibility::Collapsed);
+	Button_SaveAndRestart->SetVisibility(ESlateVisibility::Visible);
 }
 
 void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
@@ -41,6 +41,8 @@ void USettingsMenuWidget_AudioAnalyzer::NativeConstruct()
 	ComboBoxOption_NumBandChannels->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 
 	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_AudioAnalyzer"));
+
+	Button_SaveAndRestart->SetVisibility(ESlateVisibility::Collapsed);
 
 	AASettings = LoadPlayerSettings().AudioAnalyzer;
 	NewAASettings = AASettings;

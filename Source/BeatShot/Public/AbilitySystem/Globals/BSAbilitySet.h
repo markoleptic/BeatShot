@@ -5,6 +5,7 @@
 #include "Containers/Array.h"
 #include "Engine/DataAsset.h"
 #include "ActiveGameplayEffectHandle.h"
+#include "GameplayAbilitySpec.h"
 #include "GameplayAbilitySpecHandle.h"
 #include "GameplayTagContainer.h"
 #include "BSAbilitySet.generated.h"
@@ -68,6 +69,7 @@ struct FBSAbilitySet_GrantedHandles
 	void AddGameplayEffectHandle(const FActiveGameplayEffectHandle& Handle);
 	void AddAttributeSet(UAttributeSet* Set);
 	void TakeFromAbilitySystem(UBSAbilitySystemComponent* ASC);
+	FGameplayAbilitySpec* FindFirstAbilitySpecFromHandle(UBSAbilitySystemComponent* ASC);
 	bool IsEmpty() const;
 
 protected:

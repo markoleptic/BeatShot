@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GlobalDelegates.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "GameModesWidget.generated.h"

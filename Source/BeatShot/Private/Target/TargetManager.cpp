@@ -110,6 +110,7 @@ void ATargetManager::Init(const FBSConfig& InBSConfig, const FPlayerSettings_Gam
 	{
 		SetShouldSpawn(false);
 	}
+	
 	// Initialize local copy of BSConfig
 	BSConfigLocal = InBSConfig;
 	BSConfig = &BSConfigLocal;
@@ -156,66 +157,34 @@ void ATargetManager::Init_Internal()
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	TotalPossibleDamage = 0.f;
+
+	// Initialize target colors
+	GetBSConfig()->InitColors(PlayerSettings.bUseSeparateOutlineColor, PlayerSettings.InactiveTargetColor, PlayerSettings.TargetOutlineColor,
+		PlayerSettings.StartTargetColor,PlayerSettings.PeakTargetColor, PlayerSettings.EndTargetColor);
 	
-	GetBSConfig()->TargetConfig.bUseSeparateOutlineColor = PlayerSettings.bUseSeparateOutlineColor;
-	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
-	{
-		GetBSConfig()->TargetConfig.OnSpawnColor = PlayerSettings.InactiveTargetColor;
-	}
-	else
-	{
-		GetBSConfig()->TargetConfig.OnSpawnColor = PlayerSettings.StartTargetColor;
-	}
-	GetBSConfig()->TargetConfig.InactiveTargetColor = PlayerSettings.InactiveTargetColor;
-	GetBSConfig()->TargetConfig.StartColor = PlayerSettings.StartTargetColor;
-	GetBSConfig()->TargetConfig.PeakColor = PlayerSettings.PeakTargetColor;
-	GetBSConfig()->TargetConfig.EndColor = PlayerSettings.EndTargetColor;
-	
-	// Set new location & box extent
+	// Set SpawnBox location & BoxExtent, StaticExtents, and StaticExtrema
 	SpawnBox->SetRelativeLocation(GenerateSpawnBoxLocation());
 	StaticExtents = GenerateBoxExtentsStatic();
 	SpawnBox->SetBoxExtent(StaticExtents);
-	
 	StaticExtrema.Min = SpawnBox->Bounds.GetBoxExtrema(0);
 	StaticExtrema.Max = SpawnBox->Bounds.GetBoxExtrema(1);
 
-	UpdateSpawnVolume();
-
-	// Initialize SpawnAreaManager and SpawnAreas
-	//const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema(false);
-	const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema_Max();
-	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), GetBoxExtents_Max(), Extrema);
-	
+	// Initialize the CompositeCurveTables in case they need to be modified
 	Init_Tables();
 	
-	// Initialize Dynamic SpawnBox
-	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
-	{
-		UpdateSpawnBox();
-	}
+	// Set the size of all the boxes that make up the SpawnVolume. Also calls UpdateSpawnVolume
+	UpdateSpawnBox();
 
-	// Enable / Disable Reinforcement Learning
-	if (GetBSConfig()->AIConfig.bEnableReinforcementLearning)
-	{
-		FRLAgentParams Params;
-		Params.InQTable = FindCommonScoreInfo(GetBSConfig()->DefiningConfig).QTable;
-		Params.DefaultMode = GetBSConfig()->DefiningConfig.BaseGameMode; 
-		Params.CustomGameModeName = GetBSConfig()->DefiningConfig.CustomGameModeName;
-		Params.Size = SpawnAreaManager->GetSpawnAreas().Num();
-		Params.SpawnAreasHeight = SpawnAreaManager->GetSpawnAreasHeight();
-		Params.SpawnAreasWidth = SpawnAreaManager->GetSpawnAreasWidth();
-		Params.InEpsilon = GetBSConfig()->AIConfig.Epsilon;
-		Params.InGamma = GetBSConfig()->AIConfig.Gamma;
-		Params.InAlpha = GetBSConfig()->AIConfig.Alpha;
-		ReinforcementLearningComponent->SetActive(true);
-		ReinforcementLearningComponent->Init(Params);
-		ReinforcementLearningComponent->OnSpawnAreaValidityRequest.BindUObject(this, &ThisClass::OnSpawnAreaValidityRequested);
-	}
-	else
-	{
-		ReinforcementLearningComponent->SetActive(false);
-		ReinforcementLearningComponent->Deactivate();
-	}
+	// Initialize SpawnAreaManager and SpawnAreas
+	const FExtrema Extrema = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid ? GenerateBoxExtremaGrid() : GetBoxExtrema_Max();
+	SpawnAreaManager->Init(GetBSConfig(), GetBoxOrigin(), GetBoxExtents_Max(), Extrema);
+
+	// Init RLC
+	const FCommonScoreInfo CommonScoreInfo = FindCommonScoreInfo(GetBSConfig()->DefiningConfig);
+	const FRLAgentParams Params(GetBSConfig()->AIConfig, SpawnAreaManager->GetSpawnAreas().Num(), SpawnAreaManager->GetSpawnAreasHeight(), SpawnAreaManager->GetSpawnAreasWidth(),
+		CommonScoreInfo.QTable, CommonScoreInfo.TrainingSamples, CommonScoreInfo.TotalTrainingSamples);
+	ReinforcementLearningComponent->Init(Params);
+	ReinforcementLearningComponent->OnSpawnAreaValidityRequest.BindUObject(this, &ThisClass::OnSpawnAreaValidityRequested);
 
 	// Initialize CurrentSpawnArea, and spawn any targets if needed
 	switch(GetBSConfig()->TargetConfig.TargetSpawningPolicy)
@@ -227,8 +196,6 @@ void ATargetManager::Init_Internal()
 	case ETargetSpawningPolicy::UpfrontOnly:
 		SpawnUpfrontOnlyTargets();
 	}
-	
-	UE_LOG(LogTargetManager, Display, TEXT("SpawnBoxWidth %f SpawnBoxHeight %f"), StaticExtents.Y * 2, StaticExtents.Z * 2);
 }
 
 void ATargetManager::Init_Tables()
@@ -421,7 +388,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid());
 		OnTargetActivated.Broadcast();
 		OnTargetActivated_AimBot.Broadcast(InTarget);
-		if (ReinforcementLearningComponent->IsActive())
+		if (ReinforcementLearningComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
 		{
 			if (SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
 			{
@@ -656,11 +623,11 @@ void ATargetManager::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& Ta
 	HandleTargetExpirationDelegate(GetBSConfig()->TargetConfig.TargetDamageType, TargetDamageEvent);
 	HandleManagedTargetRemoval(GetBSConfig()->TargetConfig.TargetDestructionConditions, TargetDamageEvent);
 
-	if (ReinforcementLearningComponent->IsActive())
+	if (ReinforcementLearningComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
 	{
 		if (const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(TargetDamageEvent.Guid))
 		{
-			ReinforcementLearningComponent->UpdateReinforcementLearningReward(Found->GetIndex(), TargetDamageEvent.TimeAlive != -1);
+			ReinforcementLearningComponent->SetActiveTargetPairReward(Found->GetIndex(), TargetDamageEvent.TimeAlive != -1);
 		}
 	}
 	
@@ -791,7 +758,8 @@ USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsSc
 		return SpawnAreaManager->FindSpawnAreaFromLocation(GetBoxOrigin());
 	}
 	
-	if (ReinforcementLearningComponent->IsActive())
+	if (ReinforcementLearningComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::Exploration ||
+		ReinforcementLearningComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::ActiveAgent)
 	{
 		if (USpawnArea* NextSpawnArea = TryGetSpawnAreaFromReinforcementLearningComponent(OpenLocations))
 		{
@@ -1202,7 +1170,7 @@ void ATargetManager::ShowDebug_SpawnMemory(const bool bShow)
 
 void ATargetManager::ShowDebug_ReinforcementLearningWidget(const bool bShow)
 {
-	if (!ReinforcementLearningComponent->IsActive())
+	if (!ReinforcementLearningComponent)
 	{
 		return;
 	}
@@ -1213,7 +1181,7 @@ void ATargetManager::ShowDebug_ReinforcementLearningWidget(const bool bShow)
 	if (bShowDebug_ReinforcementLearningWidget)
 	{
 		Controller->ShowRLAgentWidget(ReinforcementLearningComponent->OnQTableUpdate, ReinforcementLearningComponent->GetHeight(), ReinforcementLearningComponent->GetWidth(),
-		                              ReinforcementLearningComponent->GetAveragedTArrayFromQTable());
+		                              ReinforcementLearningComponent->GetTArray_FromNdArray_QTableAvg());
 		return;
 	}
 	Controller->HideRLAgentWidget();
@@ -1277,11 +1245,12 @@ FAccuracyData ATargetManager::GetLocationAccuracy() const
 
 void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
 {
-	if (ReinforcementLearningComponent->IsActive())
+	if (ReinforcementLearningComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
 	{
 		ReinforcementLearningComponent->ClearCachedTargetPairs();
-		InCommonScoreInfo.UpdateQTable(ReinforcementLearningComponent->GetSaveReadyQTable(),
+		InCommonScoreInfo.UpdateQTable(ReinforcementLearningComponent->GetTArray_FromNdArray_QTable(),
+		ReinforcementLearningComponent->GetTArray_FromNdArray_TrainingSamples(),
 			ReinforcementLearningComponent->GetQTableRowLength(),
-			ReinforcementLearningComponent->GetNumTrainingSamples());
+			ReinforcementLearningComponent->GetTotalTrainingSamples());
 	}
 }

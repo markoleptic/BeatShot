@@ -15,6 +15,16 @@ class ULoginWidget;
 class UTextBlock;
 class UOverlay;
 
+/** The type of ScoreBrowserWidget */
+UENUM(BlueprintType)
+enum class EScoreBrowserType : uint8
+{
+	MainMenuScores UMETA(DisplayName="MainMenuScores"),
+	PostGameModeMenuScores UMETA(DisplayName="PostGameModeMenuScores"),
+	PatchNotes UMETA(DisplayName="PatchNotes"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EScoreBrowserType, EScoreBrowserType::MainMenuScores, EScoreBrowserType::PatchNotes);
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnURLChangedResult, const bool bSuccess);
 
 /** Container that wraps around WebBrowserWidget providing additional functionality */

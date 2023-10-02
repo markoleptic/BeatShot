@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpecHandle.h"
 #include "HAL/IConsoleManager.h"
 #include "GameFramework/CheatManager.h"
 #include "BSCheatManager.generated.h"
@@ -36,4 +37,7 @@ public:
 	TSubclassOf<UGameplayAbility> AimBotAbility;
 
 	bool bAimBotEnabled = false;
+	
+	UPROPERTY()
+	FGameplayAbilitySpecHandle AimBotSpecHandle;
 };

@@ -4,6 +4,23 @@
 #include "SaveGamePlayerScore.h"
 
 
+USaveGamePlayerScore::USaveGamePlayerScore()
+{
+	PercentFormat.MaximumFractionalDigits = 0;
+	PercentFormat.MaximumIntegralDigits = 3;
+	PercentFormat.MinimumIntegralDigits = 1;
+
+	QTableFormat.MinimumFractionalDigits = 2;
+	QTableFormat.MaximumFractionalDigits = 2;
+	QTableFormat.MaximumIntegralDigits = 1;
+	QTableFormat.MinimumIntegralDigits = 1;
+
+	TrainingSamplesFormat.MinimumFractionalDigits = 0;
+	TrainingSamplesFormat.MaximumFractionalDigits = 0;
+	TrainingSamplesFormat.MaximumIntegralDigits = 4;
+	TrainingSamplesFormat.MinimumIntegralDigits = 1;
+}
+
 TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores() const
 {
 	return PlayerScoreArray;
@@ -44,7 +61,7 @@ void USaveGamePlayerScore::SetAllScoresSavedToDatabase()
 
 bool USaveGamePlayerScore::ContainsExistingTime(const FPlayerScore& InPlayerScore)
 {
-	const FPlayerScore* Found = PlayerScoreArray.FindByPredicate([&InPlayerScore] (const FPlayerScore& CompareScore)
+	const FPlayerScore* Found = PlayerScoreArray.FindByPredicate([&InPlayerScore](const FPlayerScore& CompareScore)
 	{
 		return InPlayerScore.Time.Equals(CompareScore.Time);
 	});
@@ -66,6 +83,7 @@ void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefin
 {
 	CommonScoreInfo.FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
 	FString GameModeString;
+
 	if (InDefiningConfig.CustomGameModeName.IsEmpty())
 	{
 		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " + UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
@@ -74,17 +92,53 @@ void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefin
 	{
 		GameModeString = InDefiningConfig.CustomGameModeName;
 	}
-	
-	FNumberFormattingOptions Options;
-	Options.MaximumFractionalDigits = 0;
-	Options.MaximumIntegralDigits = 3;
-	Options.MinimumIntegralDigits = 1;
 
+#if !UE_BUILD_SHIPPING
+	if (InCommonScoreInfo.QTableRowSize != 0 && InCommonScoreInfo.QTable.Num() > 0)
+	{
+		PrintAccuracy(GameModeString, InCommonScoreInfo);
+		PrintQTable(GameModeString, InCommonScoreInfo);
+		PrintTrainingSamples(GameModeString, InCommonScoreInfo);
+	}
+#endif
+}
+
+void USaveGamePlayerScore::PrintQTable(const FString& GameModeString, const FCommonScoreInfo& InCommonScoreInfo) const
+{
+	UE_LOG(LogTemp, Display, TEXT("Full QTable for %s:"), *GameModeString);
+
+	FString Line;
+	for (int i = 0; i < InCommonScoreInfo.QTable.Num(); i++)
+	{
+		const float Value = InCommonScoreInfo.QTable[i];
+		FString LineValue = FText::AsNumber(Value, &QTableFormat).ToString();
+
+		if (Value == 0.f)
+		{
+			LineValue = " " + LineValue;
+		}
+		else if (Value > 0.f)
+		{
+			LineValue = "+" + LineValue;
+		}
+
+		Line += LineValue + "  ";
+
+		if (i > 1 && (i + 1) % InCommonScoreInfo.QTableRowSize == 0)
+		{
+			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
+			Line.Empty();
+		}
+	}
+}
+
+void USaveGamePlayerScore::PrintAccuracy(const FString& GameModeString, const FCommonScoreInfo& InCommonScoreInfo) const
+{
 	int32 TotalSpawns = 0;
 	int32 TotalHits = 0;
-	
+
 	UE_LOG(LogTemp, Display, TEXT("Cumulative Accuracy for %s:"), *GameModeString);
-	
+
 	for (const FAccuracyRow& AccuracyRow : InCommonScoreInfo.AccuracyData.AccuracyRows)
 	{
 		FString Line;
@@ -94,9 +148,9 @@ void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefin
 			TotalHits += AccuracyRow.TotalHits[i];
 			TotalSpawns += AccuracyRow.TotalSpawns[i];
 			const float Value = AccuracyRow.Accuracy[i];
-			
-			FString PercentString = (Value == -1.f) ? "XXX%" : FText::AsPercent(Value, &Options).ToString();
-			
+
+			FString PercentString = (Value == -1.f) ? "XXX%" : FText::AsPercent(Value, &PercentFormat).ToString();
+
 			if (PercentString.Len() == 2)
 			{
 				PercentString = "  " + PercentString;
@@ -105,49 +159,51 @@ void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefin
 			{
 				PercentString = " " + PercentString;
 			}
-			
+
 			Line += PercentString + "  ";
 		}
 		UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
 	}
-	
-	UE_LOG(LogTemp, Display, TEXT("Total Hits: %d Total Spawns: %d"), TotalHits, TotalSpawns);
-	
-	UE_LOG(LogTemp, Display, TEXT("Full QTable for %s:"), *GameModeString);
 
-	if (InCommonScoreInfo.QTableRowSize == 0)
-	{
-		return;
-	}
+	UE_LOG(LogTemp, Display, TEXT("Total Hits: %d Total Spawns: %d"), TotalHits, TotalSpawns);
+}
+
+void USaveGamePlayerScore::PrintTrainingSamples(const FString& GameModeString, const FCommonScoreInfo& InCommonScoreInfo) const
+{
+	UE_LOG(LogTemp, Display, TEXT("Full TrainingSamples for %s:"), *GameModeString);
+
 	FString Line;
-	FNumberFormattingOptions NumOptions;
-	NumOptions.MinimumFractionalDigits = 2;
-	NumOptions.MaximumFractionalDigits = 2;
-	NumOptions.MaximumIntegralDigits = 1;
-	NumOptions.MinimumIntegralDigits = 1;
-	
-	for (int i = 0; i < InCommonScoreInfo.QTable.Num(); i++)
+
+	for (int i = 0; i < InCommonScoreInfo.TrainingSamples.Num(); i++)
 	{
-		const float Value = InCommonScoreInfo.QTable[i];
-		FString LineValue = FText::AsNumber(Value, &NumOptions).ToString();
-		
-		if (Value == 0.f)
+		const int32 Value = InCommonScoreInfo.TrainingSamples[i];
+		FString LineValue = FText::AsNumber(Value, &TrainingSamplesFormat).ToString();
+
+		if (LineValue.Len() == 1)
 		{
-			LineValue = " " + LineValue;
+			LineValue = "  " + LineValue + "  ";
 		}
-		else if (Value > 0.f)
+		if (LineValue.Len() == 2)
 		{
-			LineValue = "+" + LineValue;
+			LineValue = " 0" + LineValue + " ";
 		}
-		
+		else if (LineValue.Len() == 3)
+		{
+			LineValue = " " + LineValue + " ";;
+		}
+		else if (LineValue.Len() == 4)
+		{
+			LineValue = "0" + LineValue;
+		}
+
 		Line += LineValue + "  ";
-		
-		if (i % InCommonScoreInfo.QTableRowSize == 0)
+
+		if (i > 1 && (i + 1) % InCommonScoreInfo.QTableRowSize == 0)
 		{
 			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
 			Line.Empty();
 		}
 	}
-	
-	UE_LOG(LogTemp, Display, TEXT("Total Training Samples: %lld"), InCommonScoreInfo.QTableTrainingSamples);
+
+	UE_LOG(LogTemp, Display, TEXT("Total Training Samples: %lld"), InCommonScoreInfo.TotalTrainingSamples);
 }

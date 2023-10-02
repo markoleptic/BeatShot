@@ -29,8 +29,8 @@ public:
 	/** Broadcast when the restart and save button is clicked to apply AudioAnalyzer settings that require a restart */
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
-	/** Do specific things if this instance of AASettings belongs to MainMenuWidget */
-	void InitMainMenuChild();
+	/** Do specific things if this instance of AASettings belongs to Pause Menu */
+	void InitPauseMenuChild();
 
 	/** Returns OnPlayerSettingsChangedDelegate_AudioAnalyzer, the delegate that is broadcast when this class saves Audio Analyzer settings */
 	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_AudioAnalyzer; }

@@ -467,12 +467,7 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 		ReturnStruct.DefiningConfig.CustomGameModeName = CustomGameModesWidget_Current->GetNewCustomGameModeName();
 	}
 	
-	// Override GameModeType to always be Custom
-	ReturnStruct.DefiningConfig.GameModeType = EGameModeType::Custom;
-	// Override Difficulty to always be None
-	ReturnStruct.DefiningConfig.Difficulty = EGameModeDifficulty::None;
-	// Set PlayerDelay to same value as SpawnBeatDelay
-	ReturnStruct.AudioConfig.PlayerDelay = ReturnStruct.TargetConfig.SpawnBeatDelay;
+	ReturnStruct.OnCreate_Custom();
 	
 	return ReturnStruct;
 }
@@ -607,12 +602,10 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 		GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
 		GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
 
-		// Override the player delay to zero if using Capture
-		if (GameModeTransitionState.BSConfig.AudioConfig.AudioFormat == EAudioFormat::Capture ||
-			GameModeTransitionState.BSConfig.AudioConfig.AudioFormat == EAudioFormat::Loopback)
+		GameModeTransitionState.BSConfig.OnCreate();
+		if (!bStartFromDefaultGameMode)
 		{
-			GameModeTransitionState.BSConfig.AudioConfig.PlayerDelay = 0.f;
-			GameModeTransitionState.BSConfig.TargetConfig.SpawnBeatDelay = 0.f;
+			GameModeTransitionState.BSConfig.OnCreate_Custom();
 		}
 		
 		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
