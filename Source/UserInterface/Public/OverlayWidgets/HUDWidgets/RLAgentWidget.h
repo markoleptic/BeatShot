@@ -63,9 +63,11 @@ public:
 
 	FLinearColor InterpColor(const float Value) const;
 
-	float MinValue = -0.5f;
+	void UpdateExtrema(const TArray<float>& QTable);
 	
-	float MaxValue = 0.5f;
+	float MinValue = -1.0f;
+	
+	float MaxValue = 1.0f;
 
 	float MinValue2 = -0.5f;
 	
@@ -81,6 +83,8 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UUniformGridPanel* GridPanel2;
+
+	FNumberFormattingOptions NumberFormattingOptions;
 };
 
 

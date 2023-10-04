@@ -153,7 +153,7 @@ protected:
 	virtual int32 GetNumberOfRuntimeTargetsToSpawn() const;
 
 	/** Returns the number of targets that are allowed to be activated at once */
-	virtual int32 GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const;
+	virtual int32 GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const;
 
 	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
 	virtual void HandleActivateExistingTargets();
@@ -245,9 +245,6 @@ protected:
 	
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
 	virtual USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
-
-	/** Bound to ReinforcementLearningComponent's OnSpawnAreaValidityRequest delegate */
-	bool OnSpawnAreaValidityRequested(const int32 Index);
 
 	/** Evaluates the specified curve at InTime */
 	float GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const;

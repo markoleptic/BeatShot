@@ -6,6 +6,7 @@
 #include "BSGameplayAbility.h"
 #include "BSGA_AimBot.generated.h"
 
+class ATarget;
 class UBSGA_FireGun;
 
 UCLASS()
@@ -21,31 +22,48 @@ public:
 	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
 							bool bWasCancelled) override;
 
+	/** Bound to TargetSpawner's OnTargetActivated delegate */
 	UFUNCTION()
-	void OnTargetAddedToQueue();
+	void OnTargetActivated(ATarget* SpawnedTarget);
 
 	/** Sets the IgnoreStartLocation and the bool variables associated with it */
 	void SetIgnoreStartLocation(const FVector& In);
 
 	/** The Aim Bot will ignore targets with a location greater than a positive value or less than a negative value */
-	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
+	UPROPERTY(EditDefaultsOnly, Category="BeatShot|AimBot")
 	FVector IgnoreStartLocation = FVector::ZeroVector;
 
 	/** The interpolation curve to use during AimToTarget task */
-	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
+	UPROPERTY(EditDefaultsOnly, Category="BeatShot|AimBot")
 	UCurveFloat* SmoothingCurve;
 
 	/** The ability to try and activate to destroy the target */
 	UPROPERTY(EditDefaultsOnly, Category="BeatShot")
 	TSubclassOf<UBSGameplayAbility> GA_FireGun;
 
+public:
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|AimBot")
+	ATarget* PeekActiveTargets();
+
+	UFUNCTION(BlueprintCallable, Category = "BeatShot|AimBot")
+	void PopActiveTargets();
+
 private:
+	/** A queue of target locations that have not yet been destroyed */
+	TQueue<ATarget*> ActiveTargets_AimBot;
+	
+	/** Checks if there are any targets available in the Character's target queue, and if so creates a task to destroy it */
+	void CheckTargetQueue();
+
+	/** Callback for when the AimToTarget task is cancelled */
 	UFUNCTION()
 	void OnAimToTargetCancelled();
 
+	/** Callback for when the AimToTarget task is completed */
 	UFUNCTION()
 	void OnAimToTargetCompleted();
 
+	/** Checks if the location is within the range of ignorable locations */
 	bool TargetLocationIsInIgnoreRange(const FVector& Loc) const;
 	
 	bool bYPositive;

@@ -6,8 +6,8 @@
 #include "BSGameInstance.h"
 #include "HttpRequestInterface.h"
 #include "LoadingProcessInterface.h"
-#include "BeatShot/BeatShot.h"
 #include "SaveLoadInterface.h"
+#include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
 
 class AFloatingTextActor;

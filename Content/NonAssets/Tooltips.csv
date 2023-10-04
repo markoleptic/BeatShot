@@ -1,5 +1,5 @@
 Key,SourceString
-Alpha,The alpha value. How quickly the reinforcement learning agent will learn.
+Alpha,"The learning rate determines how sensitive the game mode is to new information about your performance. A higher learning rate results in faster adjustments to your aiming tendencies, whereas a lower setting means changes will happen more gradually."
 ApplyImmunityOnSpawn,Should the target be immune to damage when spawned? It can be removed later when activated.
 BaseGameMode,"The gamemode to base the custom game mode off of. For example, if you want targets in a grid, this needs to be set to BeatGrid."
 BoundsScalingPolicy,"How to change the vertical and horizontal spread of the spawn area, or not at all."
@@ -13,14 +13,14 @@ ConsecutiveTargetScalePolicy_Static,The starting scale/size of the target will r
 NewCustomGameModeName,"The name to save a new custom game mode as. If it already exists, you will be asked if you want to overwrite it."
 CustomGameModeName,"The name to save a new custom game mode as. If it is the same as an existing, you will be asked if you want to overwrite it."
 EnableAI,"If checked, the game will spawn targets according to reinforcment learning algorithms. This should expose you to your weaknesses more often."
-Epsilon,"The epsilon value. A value of 1 will result in only choosing random values (explore), while a value of zero will result in only choosing locations where your accuracy is lowest."
+Epsilon,"The exploration factor represents how willing the game mode is to introduce targets in unfamiliar places. Boosting the exploration factor increases the chances of selecting random locations, while lowering it prefers choosing spots where your accuracy tends to be lower."
 ExpirationHealthPenalty,Amount of health to take away from the target if its lifetime expires. A hit target takes 100 damage by default.
 FloorDistance,Distance from floor to bottom of the spawn area.
 MoveTargetsForward,"If checked, the targets will move forward towards the player by ForwardDistance over the maximum target lifespan."
 ForwardSpread,The distance targets are allowed to move forward. This only has an effect if the Moving Target Direction Mode is set to Any or Forward Only.
 GameModeDifficulty,"Useful for seeing what settings the default game modes use, but custom game modes have no difficulty by default."
 GameModeTemplate,Select a preset or custom game mode to populate all options. You can edit custom game modes after selecting them.
-Gamma,The gamma value. How much to value future rewards vs immediate rewards
+Gamma,"The discount factor influences how much your past performance matters. When the discount factor is higher, your previous accuracy in specific locations has a greater impact on where targets are placed. With a lower value, the game focuses more on your current accuracy and reacts more quickly to your current performance."
 Grid_HorizontalSpacingSuggest,Horizontal Spacing to <=
 Grid_NumHorizontalSuggest,Number of Horizontal Targets <=
 Grid_NumVerticalSuggest,Number of Vertical Targets to <=

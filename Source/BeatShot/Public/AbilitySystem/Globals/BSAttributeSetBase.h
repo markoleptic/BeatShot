@@ -93,7 +93,7 @@ protected:
 	virtual void OnRep_TrackingDamage(const FGameplayAttributeData& OldTrackingDamage);
 
 private:
-	/** Current Health, when 0 we expect owner to die unless prevented by an ability. Capped by MaxHealth. Positive changes can directly use this.
+	/** Second Health, when 0 we expect owner to die unless prevented by an ability. Capped by MaxHealth. Positive changes can directly use this.
 	 *  Negative changes to Health should go through HitDamage meta attribute. */
 	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_Health, Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData Health;

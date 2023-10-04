@@ -823,7 +823,7 @@ FVector ATarget::GetTargetVelocity() const
 
 float ATarget::GetSpawnBeatDelay() const
 {
-	return 1.f / Config.TargetSpawnCD;
+	return Config.SpawnBeatDelay;
 }
 
 

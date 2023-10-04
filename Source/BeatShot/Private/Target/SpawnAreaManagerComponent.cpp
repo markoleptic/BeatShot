@@ -314,6 +314,9 @@ void USpawnAreaManagerComponent::Init(FBSConfig* InBSConfig, const FVector& InOr
 	
 	SetAppropriateSpawnMemoryValues();
 	AllBottomLeftVertices = InitializeSpawnAreas();
+	UE_LOG(LogTemp, Display, TEXT("SpawnMemoryScaleY %f SpawnMemoryScaleZ %f"), SpawnMemoryScaleY, SpawnMemoryScaleZ);
+	UE_LOG(LogTemp, Display, TEXT("SpawnMemoryIncY %d SpawnMemoryIncZ %d"), SpawnMemoryIncY, SpawnMemoryIncZ);
+	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnAreas.Num(), SpawnAreas.GetAllocatedSize());
 }
 
 TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas()
@@ -347,9 +350,6 @@ TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas()
 	}
 	Width = TempWidth;
 	Height = TempHeight;
-	UE_LOG(LogTemp, Display, TEXT("SpawnMemoryScaleY %f SpawnMemoryScaleZ %f"), SpawnMemoryScaleY, SpawnMemoryScaleZ);
-	UE_LOG(LogTemp, Display, TEXT("SpawnMemoryIncY %d SpawnMemoryIncZ %d"), SpawnMemoryIncY, SpawnMemoryIncZ);
-	UE_LOG(LogTemp, Display, TEXT("SpawnCounterSize: %d %llu"), SpawnAreas.Num(), SpawnAreas.GetAllocatedSize());
 	return AllSpawnLocations;
 }
 
@@ -426,6 +426,8 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 	case ETargetDistributionPolicy::Grid:
 		SpawnMemoryIncY = GetBSConfig()->GridConfig.GridSpacing.X + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
 		SpawnMemoryIncZ = GetBSConfig()->GridConfig.GridSpacing.Y + GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+		SpawnMemoryScaleY = 1.f / SpawnMemoryIncY;
+		SpawnMemoryScaleZ = 1.f / SpawnMemoryIncZ;
 		break;
 	}
 	MinOverlapRadius = FMath::Max(SpawnMemoryIncY, SpawnMemoryIncZ) / 2.f;
@@ -790,6 +792,7 @@ void USpawnAreaManagerComponent::HandleRecentTargetRemoval(const ERecentTargetMe
 	switch (RecentTargetMemoryPolicy)
 	{
 	case ERecentTargetMemoryPolicy::None:
+		RemoveRecentFlagFromSpawnArea(TargetDamageEvent.Guid);
 		break;
 	case ERecentTargetMemoryPolicy::CustomTimeBased:
 		RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea, TargetDamageEvent.Guid);

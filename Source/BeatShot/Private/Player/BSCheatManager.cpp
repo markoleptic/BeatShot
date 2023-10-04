@@ -64,68 +64,53 @@ void UBSCheatManager::InitCheatManager()
 void UBSCheatManager::CVarOnChanged_EnableAimBot(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
-	
+	const ABSCharacter* Character = Cast<ABSCharacter>(Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))->GetPawn());
+
 	if (!GameMode || !Character)
 	{
 		return;
 	}
 	
-	FString StringVariable = Variable->GetString();
+	UBSAbilitySystemComponent* ASC = Character->GetBSAbilitySystemComponent();
+	if (!ASC) return;
 	
+	const FString StringVariable = Variable->GetString();
+
+	if (StringVariable.Equals("0"))
+	{
+		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(AimBotSpecHandle))
+		{
+			ASC->ClearAbility(Spec->Handle);
+		}
+		
+		UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
+		return;
+	}
+	
+	const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
+	AimBotSpecHandle = ASC->GiveAbility(AbilitySpec);
+	if (!AimBotSpecHandle.IsValid()) return;
+		
+	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(AimBotSpecHandle);
+	if (!Spec) return;
+		
+	UGameplayAbility* Ability = Spec->GetPrimaryInstance();
+	if (!Ability) return;
+		
+	UBSGA_AimBot* AbilityInstance = Cast<UBSGA_AimBot>(Ability);
+	if (!AbilityInstance) return;
+		
+	GameMode->GetTargetManager()->OnTargetActivated_AimBot.AddUObject(AbilityInstance, &UBSGA_AimBot::OnTargetActivated);
+
+	FVector IgnoreStartLocation = FVector::ZeroVector;
 	if (StringVariable.Contains("X=") || StringVariable.Contains("Y=") || StringVariable.Contains("Z="))
 	{
-		FVector IgnoreStartLocation;
 		IgnoreStartLocation.InitFromCompactString(StringVariable);
-		
-		if (!GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
-		{
-			GameMode->GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
-		}
-		
-		const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
-		AimBotSpecHandle = Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
-		if (!AimBotSpecHandle.IsValid()) return;
-		
-		FGameplayAbilitySpec* Spec = Character->GetBSAbilitySystemComponent()->FindAbilitySpecFromHandle(AimBotSpecHandle);
-		if (!Spec) return;
-		
-		UGameplayAbility* Ability = Spec->GetPrimaryInstance();
-		if (!Ability) return;
-		
-		UBSGA_AimBot* AbilityInstance = Cast<UBSGA_AimBot>(Ability);
-		if (!AbilityInstance) return;
-		
-		AbilityInstance->SetIgnoreStartLocation(IgnoreStartLocation);
-		Character->GetBSAbilitySystemComponent()->MarkAbilitySpecDirty(*Spec);
-		
-		UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
 	}
-	else if (StringVariable.Equals("1"))
-	{
-		if (!GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
-		{
-			GameMode->GetTargetManager()->OnTargetActivated_AimBot.AddUObject(Character, &ABSCharacter::OnTargetSpawned_AimBot);
-		}
-		const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
-		AimBotSpecHandle = Character->GetBSAbilitySystemComponent()->GiveAbility(AbilitySpec);
-		if (!AimBotSpecHandle.IsValid()) return;
+	AbilityInstance->SetIgnoreStartLocation(IgnoreStartLocation);
+	ASC->MarkAbilitySpecDirty(*Spec);
 		
-		UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
-	}
-	else if (StringVariable.Equals("0"))
-	{
-		if (GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(Character))
-		{
-			GameMode->GetTargetManager()->OnTargetActivated_AimBot.RemoveAll(Character);
-		}
-		FGameplayAbilitySpec* Spec = Character->GetBSAbilitySystemComponent()->FindAbilitySpecFromHandle(AimBotSpecHandle);
-		if (Spec)
-		{
-			Character->GetBSAbilitySystemComponent()->ClearAbility(Spec->Handle);
-		}
-		UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
-	}
+	UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebugReinforcementLearningWidget(IConsoleVariable* Variable)

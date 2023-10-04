@@ -376,18 +376,18 @@ public:
 	/** Finds or Adds the CommonScoreInfo for the given Defining Config */
 	void SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo);
 
+	/** Prints full QTable array to log/console */
+    static void PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+
+    /** Prints 5x5 accuracy to log/console */
+    static void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+
+    /** Prints full TrainingSamples array to log/console */
+    static void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+
 private:
 	/** Returns whether or not there exists a score with the same time */
 	bool ContainsExistingTime(const FPlayerScore& InPlayerScore);
-
-	/** Prints full QTable array to log/console */
-	void PrintQTable(const FString& GameModeString, const FCommonScoreInfo& InCommonScoreInfo) const;
-
-	/** Prints 5x5 accuracy to log/console */
-	void PrintAccuracy(const FString& GameModeString, const FCommonScoreInfo& InCommonScoreInfo) const;
-
-	/** Prints full TrainingSamples array to log/console */
-	void PrintTrainingSamples(const FString& GameModeString, const FCommonScoreInfo& InCommonScoreInfo) const;
 	
 	/** Array containing all saved score instances */
 	UPROPERTY()

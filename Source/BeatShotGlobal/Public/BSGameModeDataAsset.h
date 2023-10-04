@@ -1237,7 +1237,18 @@ struct FBSConfig
 	/** Returns whether or not the config is able to be used for reinforcement learning */
 	bool IsCompatibleWithReinforcementLearning() const
 	{
-		return TargetConfig.TargetDamageType != ETargetDamageType::Tracking;
+		if (TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+		{
+			if (GridConfig.NumHorizontalGridTargets % 5 != 0 || GridConfig.NumVerticalGridTargets % 5 != 0)
+			{
+				return false;
+			}
+		}
+		if (TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+		{
+			return false;
+		}
+		return true;
 	}
 
 	/** Sets the target colors from user settings */

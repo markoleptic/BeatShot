@@ -184,8 +184,7 @@ void ATargetManager::Init_Internal()
 	const FRLAgentParams Params(GetBSConfig()->AIConfig, SpawnAreaManager->GetSpawnAreas().Num(), SpawnAreaManager->GetSpawnAreasHeight(), SpawnAreaManager->GetSpawnAreasWidth(),
 		CommonScoreInfo.QTable, CommonScoreInfo.TrainingSamples, CommonScoreInfo.TotalTrainingSamples);
 	ReinforcementLearningComponent->Init(Params);
-	ReinforcementLearningComponent->OnSpawnAreaValidityRequest.BindUObject(this, &ThisClass::OnSpawnAreaValidityRequested);
-
+	
 	// Initialize CurrentSpawnArea, and spawn any targets if needed
 	switch(GetBSConfig()->TargetConfig.TargetSpawningPolicy)
 	{
@@ -196,6 +195,15 @@ void ATargetManager::Init_Internal()
 	case ETargetSpawningPolicy::UpfrontOnly:
 		SpawnUpfrontOnlyTargets();
 	}
+
+	// Print loaded QTable
+	FNumberFormattingOptions Options;
+	Options.MinimumFractionalDigits = 2;
+	Options.MaximumFractionalDigits = 2;
+	Options.MaximumIntegralDigits = 1;
+	Options.MinimumIntegralDigits = 1;
+	UE_LOG(LogTemp, Display, TEXT("Loaded QTable:"));
+	USaveGamePlayerScore::PrintQTable(GetBSConfig()->DefiningConfig, CommonScoreInfo, Options);
 }
 
 void ATargetManager::Init_Tables()
@@ -404,7 +412,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 void ATargetManager::HandleRuntimeSpawnAndActivation()
 {
 	int32 NumberToSpawn = GetNumberOfRuntimeTargetsToSpawn();
-	int32 NumberToActivate = GetNumberOfTargetsToActivate(NumberToSpawn);
+	int32 NumberToActivate = GetNumberOfTargetsToActivateAtOnce(NumberToSpawn);
 
 	// If not limit on activation, activate all spawned targets
 	if (NumberToActivate == -1)
@@ -460,7 +468,7 @@ void ATargetManager::HandleActivateExistingTargets()
 		return;
 	}
 
-	const int32 NumToActivate = GetNumberOfTargetsToActivate(SpawnAreaManager->GetDeactivatedManagedSpawnAreas().Num());
+	const int32 NumToActivate = GetNumberOfTargetsToActivateAtOnce(SpawnAreaManager->GetDeactivatedManagedSpawnAreas().Num());
 	
 	for (int i = 0; i < NumToActivate; i++)
 	{
@@ -541,52 +549,31 @@ int32 ATargetManager::GetNumberOfRuntimeTargetsToSpawn() const
 	return NumAllowedToSpawn;
 }
 
-int32 ATargetManager::GetNumberOfTargetsToActivate(const int32 MaxPossibleToActivate) const
+int32 ATargetManager::GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const
 {
-	// Depends on: MaxNumActivatedTargetsAtOnce, MinNumTargetsToActivateAtOnce, MaxNumTargetsToActivateAtOnce,
-	// DeactivatedManagedSpawnAreas, ActivatedSpawnAreas
-	
-	int32 Limit = GetBSConfig()->TargetConfig.MaxNumActivatedTargetsAtOnce;
-	int32 MinToActivate = GetBSConfig()->TargetConfig.MinNumTargetsToActivateAtOnce;
-	int32 MaxToActivate = GetBSConfig()->TargetConfig.MaxNumTargetsToActivateAtOnce;
-	
-	// No constraints
-	if (Limit == -1 && MinToActivate == -1 && MaxToActivate == -1)
-	{
-		return MaxPossibleToActivate;
-	}
-	
-	// No min constraint, set to zero
-	if (MinToActivate == -1)
-	{
-		MinToActivate = 0;
-	}
-	
-	// No max constraint, set to MaxPossibleToActivate
-	if (MaxToActivate == -1)
-	{
-		MaxToActivate = MaxPossibleToActivate;
-	}
+	// Depends on: MaxNumActivatedTargetsAtOnce, MinNumTargetsToActivateAtOnce, MaxNumTargetsToActivateAtOnce, ActivatedSpawnAreas
 
-	// No constraint on total activated at once
-	if (Limit == -1)
-	{
-		Limit = MaxPossibleToActivate;
-	}
+	// Default to very high number if less than 1
+	const int32 MaxAllowed = GetBSConfig()->TargetConfig.MaxNumActivatedTargetsAtOnce < 1 ? 100 : GetBSConfig()->TargetConfig.MaxNumActivatedTargetsAtOnce;
 
-	const int32 NumCurrent = SpawnAreaManager->GetActivatedSpawnAreas().Num();
-	if (NumCurrent >= Limit)
+	// Constraints: Max Possible & Max Allowed (both must be satisfied, so pick min)
+	const int32 ConstrainedLimit = FMath::Min(MaxAllowed - SpawnAreaManager->GetActivatedSpawnAreas().Num(), MaxPossibleToActivate);
+	if (ConstrainedLimit <= 0)
 	{
 		return 0;
 	}
+
+	// Can activate at least 1 at this point
 	
-	// Current limit is MaxNumActivatedTargetsAtOnce - Currently activated targets
-	const int32 CurrentLimit = Limit - NumCurrent;
-	// Don't let Max exceed CurrentLimit
-	MaxToActivate = MaxToActivate > CurrentLimit ? CurrentLimit : MaxToActivate;
-	// Don't let min exceed max
-	MinToActivate = MinToActivate > MaxToActivate ? MaxToActivate : MinToActivate;
-	
+	int32 MinToActivate = FMath::Min(GetBSConfig()->TargetConfig.MinNumTargetsToActivateAtOnce, GetBSConfig()->TargetConfig.MaxNumTargetsToActivateAtOnce);
+	int32 MaxToActivate = FMath::Max(GetBSConfig()->TargetConfig.MinNumTargetsToActivateAtOnce, GetBSConfig()->TargetConfig.MaxNumTargetsToActivateAtOnce);
+
+	// Allow 0, but don't default to it
+	if (MinToActivate != 0)
+	{
+		MinToActivate = FMath::Clamp(MinToActivate, 1, ConstrainedLimit);
+	}
+	MaxToActivate = FMath::Clamp(MaxToActivate, 1, ConstrainedLimit);
 	return FMath::RandRange(MinToActivate, MaxToActivate);
 }
 
@@ -650,8 +637,10 @@ void ATargetManager::UpdateDynamicLookUpValues(const float TimeAlive)
 {
 	if (TimeAlive < 0.f)
 	{
-		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale - GetBSConfig()->DynamicTargetScaling.DecrementAmount, 0, GetBSConfig()->DynamicTargetScaling.EndThreshold);
-		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale - GetBSConfig()->DynamicSpawnAreaScaling.DecrementAmount, 0, GetBSConfig()->DynamicSpawnAreaScaling.EndThreshold);
+		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale - GetBSConfig()->DynamicTargetScaling.DecrementAmount,
+			0, GetBSConfig()->DynamicTargetScaling.EndThreshold);
+		DynamicLookUpValue_SpawnAreaScale = FMath::Clamp(DynamicLookUpValue_SpawnAreaScale - GetBSConfig()->DynamicSpawnAreaScaling.DecrementAmount,
+			0, GetBSConfig()->DynamicSpawnAreaScaling.EndThreshold);
 	}
 	else
 	{
@@ -705,13 +694,9 @@ void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionC
 void ATargetManager::FindNextTargetProperties()
 {
 	const FVector NewScale = GetNextTargetScale();
-	
-	// Assign CurrentSpawnArea address to PreviousSpawnArea just before finding CurrentSpawnArea
-	// PreviousSpawnArea = CurrentSpawnArea ? CurrentSpawnArea : nullptr;
-	
 	LastTargetSpawnedCenter = CurrentSpawnArea ? CurrentSpawnArea->GetChosenPoint().Equals(GetBoxOrigin()) : false;
-	CurrentSpawnArea = GetNextSpawnArea(GetBSConfig()->TargetConfig.BoundsScalingPolicy, NewScale);
 	
+	CurrentSpawnArea = GetNextSpawnArea(GetBSConfig()->TargetConfig.BoundsScalingPolicy, NewScale);
 	if (CurrentSpawnArea && SpawnAreaManager->GetSpawnAreas().IsValidIndex(CurrentSpawnArea->GetIndex()))
 	{
 		/*for (const USpawnArea* SpawnArea : SpawnAreaManager->GetActivatedOrRecentSpawnAreas())
@@ -741,12 +726,16 @@ USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsSc
 	UpdateSpawnBox();
 
 	// Can skip GetValidSpawnLocations if forcing every other target in center
-	if (GetBSConfig()->TargetConfig.bSpawnEveryOtherTargetInCenter && CurrentSpawnArea && CurrentSpawnArea != SpawnAreaManager->FindSpawnAreaFromLocation(GetBoxOrigin()))
+	if (GetBSConfig()->TargetConfig.bSpawnEveryOtherTargetInCenter &&
+		CurrentSpawnArea &&
+		CurrentSpawnArea != SpawnAreaManager->FindSpawnAreaFromLocation(GetBoxOrigin()))
 	{
 		return SpawnAreaManager->FindSpawnAreaFromLocation(GetBoxOrigin());
 	}
 	
-	TArray<FVector> OpenLocations = SpawnAreaManager->GetValidSpawnLocations(NewTargetScale, GetBoxExtrema(GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic), CurrentSpawnArea);
+	TArray<FVector> OpenLocations = SpawnAreaManager->GetValidSpawnLocations(NewTargetScale,
+		GetBoxExtrema(GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic),
+		CurrentSpawnArea);
 	if (OpenLocations.IsEmpty())
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("OpenLocations is empty."));
@@ -781,7 +770,8 @@ USpawnArea* ATargetManager::GetNextSpawnArea(const EBoundsScalingPolicy BoundsSc
 		}
 		return NextSpawnArea;
 	}
-	//UE_LOG(LogTargetManager, Display, TEXT("Found Vertex_BottomLeft %s Found CenterPoint %s Found ChosenPoint %s"), *Found->Vertex_BottomLeft.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
+	//UE_LOG(LogTargetManager, Display, TEXT("Found Vertex_BottomLeft %s Found CenterPoint %s Found ChosenPoint %s"),
+	//*Found->Vertex_BottomLeft.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
 	return nullptr;
 }
 
@@ -1026,7 +1016,10 @@ void ATargetManager::UpdateSpawnVolume() const
 	{
 		const float NewFactor = GetDynamicValueFromCurveTable(true, DynamicLookUpValue_SpawnAreaScale);
 		// Min X Extent needs to be multiplied by 0.5
-		const float DynamicExtentX = FMath::GridSnap<float>(UKismetMathLibrary::Lerp(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().X, GetBoxExtents_Static().X, NewFactor), 100.f);
+		const float DynamicExtentX = FMath::GridSnap<float>(UKismetMathLibrary::Lerp(
+			GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().X,
+			GetBoxExtents_Static().X,
+			NewFactor), 100.f);
 		
 		LocationX = GetBoxOrigin().X - DynamicExtentX;
 		// X Extent (BoxBounds.X/2) + max sphere radius
@@ -1087,7 +1080,14 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(co
 		UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 		return nullptr;
 	}
-	const int32 ChosenIndex = ReinforcementLearningComponent->ChooseNextActionIndex(Indices);
+
+	
+	int32 PreviousIndex = INDEX_NONE;
+	if (PreviousSpawnArea)
+	{
+		PreviousIndex = PreviousSpawnArea->GetIndex();
+	}
+	const int32 ChosenIndex = ReinforcementLearningComponent->ChooseNextActionIndex(Indices, PreviousIndex);
 	if (!SpawnAreaManager->GetSpawnAreas().IsValidIndex(ChosenIndex))
 	{
 		return nullptr;
@@ -1096,11 +1096,6 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(co
 	USpawnArea* ChosenPoint = SpawnAreaManager->GetSpawnAreasRef()[ChosenIndex];
 	ChosenPoint->SetRandomChosenPoint();
 	return ChosenPoint;
-}
-
-bool ATargetManager::OnSpawnAreaValidityRequested(const int32 Index)
-{
-	return SpawnAreaManager->IsSpawnAreaValid(Index);
 }
 
 float ATargetManager::GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const

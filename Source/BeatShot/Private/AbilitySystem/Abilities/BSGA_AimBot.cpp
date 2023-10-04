@@ -26,12 +26,6 @@ UBSGA_AimBot::UBSGA_AimBot()
 void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
                                    const FGameplayEventData* TriggerEventData)
 {
-	ABSCharacter* Character = GetBSCharacterFromActorInfo();
-	if (!Character)
-	{
-		return;
-	}
-	Character->OnTargetAddedToQueue.AddUniqueDynamic(this, &ThisClass::OnTargetAddedToQueue);
 	SetIgnoreStartLocation(IgnoreStartLocation);
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
@@ -42,25 +36,33 @@ void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGa
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
-void UBSGA_AimBot::OnTargetAddedToQueue()
+void UBSGA_AimBot::OnTargetActivated(ATarget* SpawnedTarget)
 {
-	ABSCharacter* Character = GetBSCharacterFromActorInfo();
-	ATarget* ActiveTarget = Character->PeekActiveTargets();
-	if (!Character || !ActiveTarget)
+	ActiveTargets_AimBot.Enqueue(SpawnedTarget);
+	if (ActiveTasks.IsEmpty())
 	{
-		return;
+		CheckTargetQueue();
 	}
-	
-	if (TargetLocationIsInIgnoreRange(ActiveTarget->GetActorLocation()))
+}
+
+ATarget* UBSGA_AimBot::PeekActiveTargets()
+{
+	ATarget* Target;
+	while (!ActiveTargets_AimBot.IsEmpty())
 	{
-		Character->PopActiveTargets();
-		return;
+		ActiveTargets_AimBot.Peek(Target);
+		if (IsValid(Target))
+		{
+			return Target;
+		}
+		PopActiveTargets();
 	}
-	
-	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget, ActiveTarget->GetSpawnBeatDelay() + 0.01f);
-	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
-	AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);
-	AimToTarget->ReadyForActivation();
+	return nullptr;
+}
+
+void UBSGA_AimBot::PopActiveTargets()
+{
+	ActiveTargets_AimBot.Pop();
 }
 
 void UBSGA_AimBot::SetIgnoreStartLocation(const FVector& In)
@@ -75,30 +77,49 @@ void UBSGA_AimBot::SetIgnoreStartLocation(const FVector& In)
 	bZZero = IgnoreStartLocation.Z == 0.f;
 }
 
+void UBSGA_AimBot::CheckTargetQueue()
+{
+	ATarget* ActiveTarget = PeekActiveTargets();
+	if (!ActiveTarget)
+	{
+		return;
+	}
+	if (TargetLocationIsInIgnoreRange(ActiveTarget->GetActorLocation()))
+	{
+		PopActiveTargets();
+		return;
+	}
+	
+	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget, 1.f / ActiveTarget->GetSpawnBeatDelay());
+	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
+	AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);
+	AimToTarget->ReadyForActivation();
+}
+
 void UBSGA_AimBot::OnAimToTargetCancelled()
 {
-	ABSCharacter* Character = GetBSCharacterFromActorInfo();
 	UBSAbilitySystemComponent* ASC = GetBSAbilitySystemComponentFromActorInfo();
-	if (!Character || !ASC)
+	if (!ASC)
 	{
 		return;
 	}
 	
-	Character->PopActiveTargets();
+	PopActiveTargets();
 	ASC->TryActivateAbilityByClass(GA_FireGun);
+	CheckTargetQueue();
 }
 
 void UBSGA_AimBot::OnAimToTargetCompleted()
 {
-	ABSCharacter* Character = GetBSCharacterFromActorInfo();
 	UBSAbilitySystemComponent* ASC = GetBSAbilitySystemComponentFromActorInfo();
-	if (!Character || !ASC)
+	if (!ASC)
 	{
 		return;
 	}
 	
-	Character->PopActiveTargets();
+	PopActiveTargets();
 	ASC->TryActivateAbilityByClass(GA_FireGun);
+	CheckTargetQueue();
 }
 
 bool UBSGA_AimBot::TargetLocationIsInIgnoreRange(const FVector& Loc) const

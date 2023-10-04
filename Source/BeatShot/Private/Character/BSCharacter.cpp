@@ -76,27 +76,11 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 	MinSpeedForFallDamage = 1002.9825f;
 	MinLandBounceSpeed = 329.565f;
 	CapDamageMomentumZ = 476.25f;
-	bEnabled_AimBot = false;
 }
 
 USkeletalMeshComponent* ABSCharacter::GetHandsMesh() const
 {
 	return Cast<USkeletalMeshComponent>(HandsMesh);
-}
-
-ATarget* ABSCharacter::PeekActiveTargets()
-{
-	ATarget* Target;
-	while (!ActiveTargets_AimBot.IsEmpty())
-	{
-		ActiveTargets_AimBot.Peek(Target);
-		if (IsValid(Target))
-		{
-			return Target;
-		}
-		PopActiveTargets();
-	}
-	return nullptr;
 }
 
 UBSEquipmentManagerComponent* ABSCharacter::GetEquipmentManager() const
@@ -759,17 +743,6 @@ void ABSCharacter::Input_OnPause(const FInputActionValue& Value)
 		return;
 	}
 	BSPlayerController->HandlePause();
-}
-
-void ABSCharacter::OnTargetSpawned_AimBot(ATarget* SpawnedTarget)
-{
-	ActiveTargets_AimBot.Enqueue(SpawnedTarget);
-	OnTargetAddedToQueue.Broadcast();
-}
-
-void ABSCharacter::PopActiveTargets()
-{
-	ActiveTargets_AimBot.Pop();
 }
 
 void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)

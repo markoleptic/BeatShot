@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "BSGameModeDataAsset.h"
-#include "BeatShot/BeatShot.h"
 #include "Components/ActorComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -22,7 +21,127 @@ THIRD_PARTY_INCLUDES_END
 
 #include "ReinforcementLearningComponent.generated.h"
 
-/** A struct to pass the Agent upon Initialization */
+/** A struct representing two consecutively activated targets, used to keep track of the reward associated between two points */
+USTRUCT()
+struct FTargetPair
+{
+	GENERATED_BODY()
+
+	/** The SpawnArea index of the target spawned before Second */
+	int32 First;
+
+	/** The SpawnArea index of the target spawned after First */
+	int32 Second;
+
+private:
+
+	/** The reward for spawning a target at First and then spawning a target at Second */
+	float Reward;
+
+public:
+	
+	FTargetPair()
+	{
+		First = INDEX_NONE;
+		Second = INDEX_NONE;
+		Reward = 0.f;
+	}
+
+	FTargetPair(const int32 PreviousPointIndex, const int32 CurrentPointIndex)
+	{
+		First = PreviousPointIndex;
+		Second = CurrentPointIndex;
+		Reward = 0.f;
+	}
+
+	FORCEINLINE bool operator ==(const FTargetPair& Other) const
+	{
+		return First == Other.First && Second == Other.Second;
+	}
+
+	/** Sets the reward for this TargetPair */
+	void SetReward(const float InReward)
+	{
+		Reward = InReward;
+	}
+
+	/** Returns the reward for this TargetPair */
+	float GetReward() const { return Reward; }
+};
+
+/** A struct representing the parameters for the QTable Update function */
+USTRUCT()
+struct FQTableUpdateParams
+{
+	GENERATED_BODY()
+
+	/** The pair of targets that were activated */
+	FTargetPair TargetPair;
+
+	/** The QTable row index for the first target */
+	int32 StateIndex;
+
+	/** The QTable column index for the second target */
+	int32 ActionIndex;
+
+	/** The QTable row index of the second target */
+	int32 StateIndex_2;
+
+	/** The QTable column index for the index of maximum reward, starting from State_Index_2 */
+	int32 ActionIndex_2;
+
+	FQTableUpdateParams()
+	{
+		TargetPair = FTargetPair();
+		StateIndex = -1;
+		ActionIndex = -1;
+		StateIndex_2 = -1;
+		ActionIndex_2 = -1;
+	}
+
+	FQTableUpdateParams(const FTargetPair& InTargetPair)
+	{
+		TargetPair = InTargetPair;
+		StateIndex = -1;
+		ActionIndex = -1;
+		StateIndex_2 = -1;
+		ActionIndex_2 = -1;
+	}
+};
+
+/** A struct each each element represents one QTable index mapping to multiple SpawnArea indices */
+USTRUCT()
+struct FQTableIndex
+{
+	GENERATED_BODY()
+
+	int32 QTableIndex;
+	TArray<int32> SpawnAreasIndices;
+
+	FQTableIndex()
+	{
+		QTableIndex = INDEX_NONE;
+		SpawnAreasIndices = TArray<int32>();
+	}
+	FQTableIndex(const int32 InQTableIndex)
+	{
+		QTableIndex = InQTableIndex;
+		SpawnAreasIndices = TArray<int32>();
+	}
+
+	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
+	{
+		if (Other.QTableIndex == QTableIndex)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnQTableUpdate, const TArray<float>& UpdatedQTable);
+
+/** A struct to pass the component upon Initialization */
 USTRUCT()
 struct FRLAgentParams
 {
@@ -81,28 +200,30 @@ public:
 	/** Initializes the QTable, called by TargetManager */
 	void Init(const FRLAgentParams& AgentParams);
 
-	/** Adds two consecutively spawned targets to ActiveTargetPairs immediately after NextWorldLocation has been spawned */
-	void AddToActiveTargetPairs(const int32 PreviousIndex, const int32 CurrentIndex);
+	/** Adds two activated spawned targets to ActiveTargetPairs */
+	void AddToActiveTargetPairs(const int32 SpawnAreaIndex_First, const int32 SpawnAreaIndex_Second);
 
-	/** Updates a TargetPair's reward based on if hit or not. SpawnAreaIndex corresponds to the CurrentIndex of a TargetPair. Removes from ActiveTargetPairs and adds to TargetPairs queue */
+	/** Updates a TargetPair's reward based on if hit or not. SpawnAreaIndex corresponds to TargetPair.Second.
+	 *  Removes from ActiveTargetPairs and adds to TargetPairs queue */
 	void SetActiveTargetPairReward(const int32 SpawnAreaIndex, const bool bHit);
 
-	/** Updates RLAgent's QTable until TargetPairs queue is empty */
+	/** Updates the QTable until TargetPairs queue is empty */
 	void ClearCachedTargetPairs();
 	
 	/** Returns the SpawnCounter index of the next target to spawn, based on the Epsilon value */
-	int32 ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices) const;
+	int32 ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices, const int32 PreviousSpawnAreaIndex) const;
 
 private:
 	/** Returns a random SpawnArea index from the provided SpawnAreaIndices */
 	static int32 ChooseRandomActionIndex(const TArray<int32>& SpawnAreaIndices);
 
-	/** First computes a reverse-sorted array containing QTable indices where the rewards is highest. Then checks to see if there is a valid SpawnCounter index that corresponds to the QTable index.
-	 *  If there isn't, it goes to the next QTable index until there are no options left, in which case it returns INDEX_NONE. Returns a SpawnCounter index */
-	int32 ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices) const;
+	/** Returns the SpawnArea index that leads to the greatest reward. Calls GetIndices_MaximizeFirst or
+	 *  GetIndices_MaximizeSecond depending on the input previous index and iterates through the indices
+	 *  until it finds a corresponding SpawnArea index from the input array. */
+	int32 ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices, const int32 PreviousSpawnAreaIndex) const;
 
-	/** Updates a Q-Table element entry after a target has been spawned and either timed out or destroyed by player */
-	virtual void UpdateQTable(const FAlgoInput& In);
+	/** Updates the QTable from the QTableUpdateParams */
+	virtual void UpdateQTable(FQTableUpdateParams& UpdateParams);
 	
 public:
 	/** Returns the number of columns or width */
@@ -133,15 +254,19 @@ public:
 	TArray<float> GetTArray_FromNdArray_QTableAvg() const;
 	
 private:
+	/** Returns an array of Second Location Indices where the each index represents a column that leads to the greatest reward */
+	TArray<int32> GetIndices_MaximizeSecond(const int32 InPreviousIndex) const;
+
+	/** Returns an array of First Location Indices where the each index represents a row that leads to the greatest reward */
+	TArray<int32> GetIndices_MaximizeFirst() const;
+
+	/** Converts an NdArray of floats to a TArray of floats */
 	template<typename T>
 	static TArray<T> GetTArrayFromNdArray(const nc::NdArray<T>& InArray);
 	
-	/** Converts a TArray of floats to an NdArray */
+	/** Converts a TArray of floats to an NdArray of floats */
 	template<typename T>
 	static nc::NdArray<T> GetNdArrayFromTArray(const TArray<T>& InTArray);
-	
-	/** Returns the QTable index corresponding to the maximum reward from starting at QTableIndex, using a greedy approach. Used to update Q-Table, but not to get actual spawn locations */
-	int32 GetIndex_MaxAction(const int32 SpawnAreaIndex) const;
 	
 	/** Converts a SpawnAreaIndex to a QTableIndex */
 	int32 GetIndex_FromSpawnArea_ToQTable(const int32 SpawnAreaIndex) const;
@@ -160,13 +285,10 @@ public:
 	void PrintRewards() const;
 	
 	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
-	void PrintMaxAverageIndices(const nc::NdArray<unsigned>& MaxIndicesReverseSorted, const nc::NdArray<float>& MaxesReverseSorted) const;
+	void PrintMaxAverageIndices() const;
 
 	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets */
 	FOnQTableUpdate OnQTableUpdate;
-
-	/** Delegate that broadcasts when the component wants to check the validity of a SpawnArea index */
-	FOnSpawnAreaValidityRequest OnSpawnAreaValidityRequest;
 	
 private:
 	/** The mode that the RLC is operating in */
@@ -175,10 +297,13 @@ private:
 	/** Defines how to use the hyper-parameters Alpha, Gamma, and Epsilon */
 	EReinforcementLearningHyperParameterMode HyperParameterMode;
 	
-	/** A 2D array where the row and column have size equal to the number of possible spawn points. An element in the array represents the expected reward from starting at spawn location RowIndex
-	 *  and spawning a target at ColumnIndex. Its a scaled down version of the SpawnCounter where each each point in Q-Table represents multiple points in a square area inside the SpawnCounter */
+	/** A 2D array where the row and column have size equal to the number of possible spawn points.
+	 *  An element in the array represents the expected reward from starting at spawn location RowIndex
+	 *  and spawning a target at ColumnIndex. Its a scaled down version of the SpawnArea where each
+	 *  each point in Q-Table represents multiple points in a square area inside the SpawnArea */
 	nc::NdArray<float> QTable;
 
+	/** A 2D array that holds the number of updates at each QTable index */
 	nc::NdArray<int32> TrainingSamples;
 
 	/** Learning rate, or how much to update the Q-Table rewards when a reward is received */
