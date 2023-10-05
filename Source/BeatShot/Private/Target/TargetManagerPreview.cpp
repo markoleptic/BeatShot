@@ -62,7 +62,7 @@ ATarget* ATargetManagerPreview::SpawnTarget(USpawnArea* InSpawnArea)
 				if (UTargetWidget* TargetWidget = CreateTargetWidget.Execute())
 				{
 					TargetPreview->InitTargetWidget(TargetWidget, GetBoxOrigin(), TargetPreview->GetActorLocation(),
-						FMath::Max(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, GetBoxExtents_Static().Z) * 2.f);
+						FMath::Max(GetBSConfig()->DynamicSpawnAreaScaling.GetMinExtent().Z, GetBoxExtents().Z) * 2.f);
 					TargetPreview->SetSimulatePlayerDestroying(bSimulatePlayerDestroyingTargets, DestroyChance);
 				}
 			}
@@ -95,8 +95,8 @@ void ATargetManagerPreview::UpdateSpawnVolume() const
 		GameModePreviewWidget->SetBoxBounds_Min(FVector2d(StartY, StartZ), Height);
 
 		// Set the "Max"/End box bounds widget size and position
-		const float EndZ = FMath::GridSnap<float>(GetBoxExtents_Static().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
-		const float EndY = FMath::GridSnap<float>(GetBoxExtents_Static().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
+		const float EndZ = FMath::GridSnap<float>(GetBoxExtents().Z, SpawnAreaManager->GetSpawnMemoryIncZ()) * 2.f;
+		const float EndY = FMath::GridSnap<float>(GetBoxExtents().Y, SpawnAreaManager->GetSpawnMemoryIncY()) * 2.f;
 		Height = GetBoxOrigin().Z - (EndZ / 2.f) + ClampedOverflowAmount;
 		GameModePreviewWidget->SetBoxBounds_Max(FVector2d(EndY, EndZ), Height);
 

@@ -286,8 +286,11 @@ public:
 	/** Returns the oldest most recent SpawnArea */
 	USpawnArea* FindOldestRecentSpawnArea() const;
 
-	/** Returns the first index of GetDeactivatedManagedSpawnAreas */
+	/** NOT BEING USED, Returns the first index of GetDeactivatedManagedSpawnAreas */
 	USpawnArea* FindOldestDeactivatedManagedSpawnArea() const;
+
+	/** NOT BEING USED, Returns the first index of GetDeactivatedManagedSpawnAreas */
+	USpawnArea* FindBorderingDeactivatedManagedSpawnArea(const USpawnArea* InSpawnArea) const;
 
 	/** Returns the SpawnArea index corresponding to a world location, or INDEX_NONE if not found */
 	int32 FindSpawnAreaIndexFromLocation(const FVector& InLocation) const;
@@ -317,7 +320,7 @@ public:
 	TArray<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
 	
 	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
-	void RefreshRecentFlags();
+	void RefreshRecentFlags() const;
 
 	/** Removes all locations that are occupied by activated and recent targets, readjusted by scale if needed */
 	void RemoveOverlappingSpawnLocations(TArray<FVector>& SpawnLocations, const FVector& Scale) const;
@@ -333,7 +336,7 @@ public:
 	void FlagSpawnAreaAsManaged(const FGuid TargetGuid) const;
 	
 	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices if needed */
-	void FlagSpawnAreaAsActivated(const FGuid TargetGuid);
+	void FlagSpawnAreaAsActivated(const FGuid TargetGuid) const;
 	
 	/** Flags the SpawnArea as recent */
 	void FlagSpawnAreaAsRecent(const FGuid TargetGuid) const;
@@ -349,9 +352,7 @@ public:
 	
 	/** Removes the Recent flag, meaning the SpawnArea is not longer being considered as a blocked SpawnArea.
 	 *  SpawnAreas empty their OverlappingVertices when their Recent Flag is removed */
-	void RemoveRecentFlagFromSpawnArea(const FGuid TargetGuid);
-	
-	int32 GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
+	void RemoveRecentFlagFromSpawnArea(const FGuid TargetGuid) const;
 
 	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
 	*   TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
@@ -366,17 +367,19 @@ public:
 	/** Adds valid spawn locations for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
 	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
 
-	/** Adds/filters valid spawn locations for a Bordering TargetActivationSelectionPolicy */
-	void HandleBorderingSelectionPolicy(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
-
-	/** Filters out any locations that correspond to areas flagged as activated */
-	void HandleFilterRecent(TArray<FVector>& ValidSpawnLocations) const;
+	/** Filters out any locations that aren't bordering the CurrentSpawnArea */
+	void FilterBorderingIndices(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
 
 	/** Filters out any locations that correspond to areas flagged as recent */
-	void HandleFilterActivated(TArray<FVector>& ValidSpawnLocations) const;
+	void FilterRecentIndices(TArray<FVector>& ValidSpawnLocations) const;
+
+	/** Filters out any locations that correspond to areas flagged as activated */
+	void FilterActivatedIndices(TArray<FVector>& ValidSpawnLocations) const;
 
 	/** Filters out any locations that correspond to areas flagged as managed */
-	void HandleFilterManaged(TArray<FVector>& ValidSpawnLocations) const;
+	void FilterManagedIndices(TArray<FVector>& ValidSpawnLocations) const;
+		
+	int32 GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const;

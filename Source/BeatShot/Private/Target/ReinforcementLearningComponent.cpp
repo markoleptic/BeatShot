@@ -471,16 +471,3 @@ void UReinforcementLearningComponent::PrintMaxAverageIndices() const
 	UE_LOG(LogTemp, Display, TEXT("%s"), *Row3);
 	UE_LOG(LogTemp, Display, TEXT("%s"), *Row4);
 }
-
-/*int32 UReinforcementLearningComponent::GetIndex_MaxAction(const int32 SpawnAreaIndex) const
-{
-	nc::NdArray<unsigned> MaxIndicesReverseSorted = flip(GetQTable().max(nc::Axis::ROW).argsort(nc::Axis::COL));
-	const int32 Index = MaxIndicesReverseSorted(0, GetIndex_FromSpawnArea_ToQTable(SpawnAreaIndex));
-	const int32 Index = GetQTable().argmax(nc::Axis::COL)(0, GetIndex_FromSpawnArea_ToQTable(SpawnAreaIndex));
-	UE_LOG(LogTemp, Display, TEXT("MaxActionIndex for SpawnAreaIndex %d: %d"), SpawnAreaIndex, Index);
-	if (Index == INDEX_NONE)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("GetIndex_MaxAction return INDEX_NONE for QTableIndex of %d"), GetIndex_FromSpawnArea_ToQTable(SpawnAreaIndex));
-	}
-	return Index;
-}*/
