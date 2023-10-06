@@ -193,8 +193,11 @@ protected:
 	/** Returns SpawnBox's origin. This location never changes */
 	FVector GetBoxOrigin() const;
 	
-	/** Returns SpawnBox's BoxExtents as they are in the game, prior to any dynamic changes */
-	FVector GetBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
+	/** Returns SpawnBox's BoxExtents */
+	FVector Get3DBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
+
+	/** Returns SpawnBox's BoxExtents */
+	FVector Get2DBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
 	
 	/** Returns a FExtrema struct containing both the min extrema and max extrema */
 	FExtrema GetBoxExtrema(const bool bDynamic, const bool bAbsoluteMax = false) const;
@@ -241,6 +244,7 @@ public:
 	
 	void ShowDebug_SpawnBox(const bool bShow);
 	void ShowDebug_SpawnMemory(const bool bShow);
+	void ShowDebug_AllSpawnAreas(const bool bShow);
 	void ShowDebug_ReinforcementLearningWidget(const bool bShow);
 	void ShowDebug_NumRecentNumActivated() const;
 	void ShowDebug_OverlappingVertices(const bool bShow);
@@ -252,9 +256,6 @@ protected:
 
 	/** Settings that get updated by DefaultGameMode if they change */
 	FPlayerSettings_Game PlayerSettings;
-
-	/** Whether or not the last target spawned in center of spawn area, used for SingleBeat */
-	bool LastTargetSpawnedCenter = false;
 
 	/** Whether or not the TargetManager is allowed to spawn a target at a given time */
 	bool ShouldSpawn = false;
@@ -272,7 +273,7 @@ protected:
 	UPROPERTY()
 	USpawnArea* CurrentSpawnArea;
 
-	/** SpawnArea for the previous target. Assigned the value of CurrentSpawnArea immediately before the CurrentSpawnArea is chosen in FindNextTargetProperties */
+	/** SpawnArea for the previous target. Used for RLC */
 	UPROPERTY()
 	mutable USpawnArea* PreviousSpawnArea;
 
@@ -294,7 +295,7 @@ protected:
 	/** The time to use when looking up values from CompositeCurveTable_SpawnArea. Incremented by for each consecutive target hit, decremented by setting value  */
 	int32 DynamicLookUpValue_SpawnAreaScale;
 
-	/** An array of spawned SphereTargets that are being actively managed by this class. This is the only place references to spawned targets are stored */
+	/** An array of spawned Targets that are being actively managed by this class. This is the only place where references to spawned targets are stored */
 	UPROPERTY()
 	TArray<TObjectPtr<ATarget>> ManagedTargets;
 

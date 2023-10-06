@@ -4,8 +4,19 @@
 
 #include "CoreMinimal.h"
 #include "BSGameModeDataAsset.h"
+#include "SaveGamePlayerScore.h"
 #include "BeatShot/BeatShot.h"
 #include "UObject/Object.h"
+THIRD_PARTY_INCLUDES_START
+#pragma push_macro("check")
+#undef check
+#pragma warning (push)
+#pragma warning (disable : 4191)
+#pragma warning (disable : 4686)
+#include "NumCpp/Public/NumCpp.hpp"
+#pragma warning (pop)
+#pragma pop_macro("check")
+THIRD_PARTY_INCLUDES_END
 #include "SpawnAreaManagerComponent.generated.h"
 
 /** Enum representing the bordering directions for a target */
@@ -69,19 +80,19 @@ class BEATSHOT_API USpawnArea : public UObject
 	GENERATED_BODY()
 
 	friend class USpawnAreaManagerComponent;
-	
+
 	/** The center point of the box */
 	FVector CenterPoint;
 
 	/** The point chosen after a successful spawn or activation. Will be inside the sub area */
 	FVector ChosenPoint;
-	
+
 	/** The width of the box */
 	float Width;
 
 	/** The height of the box */
 	float Height;
-	
+
 	/** The index for this SpawnArea inside an array of SpawnAreas */
 	int32 Index;
 
@@ -90,13 +101,13 @@ class BEATSHOT_API USpawnArea : public UObject
 	FVector Vertex_TopRight;
 	FVector Vertex_BottomRight;
 	FVector Vertex_TopLeft;
-	
+
 	/** Whether or not this SpawnArea has a target active */
 	bool bIsActivated;
 
 	/** Whether or not this SpawnArea still corresponds to a managed target */
 	bool bIsCurrentlyManaged;
-	
+
 	/** Whether or not this SpawnArea recently had a target occupy its space */
 	bool bIsRecent;
 
@@ -117,7 +128,7 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** The total number of target hits by player in this SpawnArea */
 	int32 TotalHits;
-	
+
 	/** The indices of the SpawnAreas adjacent to this SpawnArea */
 	TArray<int32> AdjacentIndices;
 
@@ -127,7 +138,7 @@ class BEATSHOT_API USpawnArea : public UObject
 public:
 	USpawnArea();
 
-	void Init(const int32 InIndex, const FVector& InPoint, const float IncY, const float IncZ,  const int32 InNumHorizontalTargets = INDEX_NONE, const int32 InNumVerticalTargets = INDEX_NONE);
+	void Init(const int32 InIndex, const FVector& InPoint, const float IncY, const float IncZ, const int32 InNumHorizontalTargets = INDEX_NONE, const int32 InNumVerticalTargets = INDEX_NONE);
 
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
@@ -135,10 +146,8 @@ public:
 		{
 			return true;
 		}
-		if ((Other.Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) &&
-			(Other.Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) &&
-			(Other.Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) &&
-			(Other.Vertex_BottomLeft.Z < Vertex_TopRight.Z - 0.01))
+		if ((Other.Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other.Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) && (Other.Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other.
+			Vertex_BottomLeft.Z < Vertex_TopRight.Z - 0.01))
 		{
 			return true;
 		}
@@ -164,10 +173,8 @@ public:
 		{
 			return true;
 		}
-		if ((Other->Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) &&
-			(Other->Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) &&
-			(Other->Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) &&
-			(Other->Vertex_BottomLeft.Z < Vertex_TopRight.Z - 0.01))
+		if ((Other->Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other->Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) && (Other->Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other->
+			Vertex_BottomLeft.Z < Vertex_TopRight.Z - 0.01))
 		{
 			return true;
 		}
@@ -201,7 +208,7 @@ public:
 	int32 GetTotalSpawns() const { return TotalSpawns; }
 	int32 GetTotalHits() const { return TotalHits; }
 	FVector GetTargetScale() const { return TargetScale; }
-	
+
 	/** Sets the TargetScale */
 	void SetTargetScale(const FVector& InScale)
 	{
@@ -216,7 +223,7 @@ public:
 
 	/** Sets the value of ChosenPoint to the output of GenerateRandomPointInSpawnArea */
 	void SetRandomChosenPoint();
-	
+
 	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction. */
 	/*TArray<EBorderingDirection> GetBorderingEdges(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;*/
 
@@ -226,7 +233,7 @@ private:
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
-	
+
 	/** Returns a random non-overlapping point within the SpawnArea */
 	FVector GenerateRandomPointInSpawnArea() const;
 
@@ -235,7 +242,7 @@ private:
 	{
 		bIsCurrentlyManaged = bSetIsCurrentlyManaged;
 	}
-	
+
 	/** Sets the activated state for this SpawnArea */
 	void SetIsActivated(const bool bSetIsActivated)
 	{
@@ -244,16 +251,17 @@ private:
 
 	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and clears OverlappingVertices */
 	void SetIsRecent(const bool bSetIsRecent);
-	
+
 	/** Sets the value of OverlappingVertices */
 	void SetOverlappingVertices(const TArray<FVector>& InOverlappingVertices);
 
 	/** Finds and returns the OverlappingVertices, based on the parameters, Width, & Height */
-	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale, TArray<FVector>& DebugVertices, const bool bAddDebugVertices = false) const;
+	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale, TArray<FVector>& DebugVertices,
+	                                            const bool bAddDebugVertices = false) const;
 
 	/** Empties the OverlappingVertices array */
 	void EmptyOverlappingVertices() { OverlappingVertices.Empty(); }
-	
+
 	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not spawned there yet */
 	void IncrementTotalSpawns();
 
@@ -265,15 +273,15 @@ UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class BEATSHOT_API USpawnAreaManagerComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	
+
 public:
 	USpawnAreaManagerComponent();
 
 	virtual void DestroyComponent(bool bPromoteChildren) override;
-	
+
 	/** Initializes basic variables in SpawnAreaManagerComponent */
 	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents, const FExtrema& InStaticExtrema);
-	
+
 	/** Finds a SpawnArea with the matching InIndex */
 	USpawnArea* FindSpawnAreaFromIndex(const int32 InIndex) const;
 
@@ -309,7 +317,7 @@ public:
 
 	/** Returns a filtered array containing only SpawnAreas flagged as recent */
 	TArray<USpawnArea*> GetRecentSpawnAreas() const;
-	
+
 	/** Returns a filtered array containing only SpawnAreas flagged as activated */
 	TArray<USpawnArea*> GetActivatedSpawnAreas() const;
 
@@ -318,7 +326,7 @@ public:
 
 	/** Returns a filtered array containing SpawnAreas flagged as managed, activated, or recent */
 	TArray<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
-	
+
 	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
 	void RefreshRecentFlags() const;
 
@@ -334,35 +342,35 @@ public:
 
 	/** Flags the SpawnArea as being actively managed by TargetManager. Calls SetOverlappingVertices if needed */
 	void FlagSpawnAreaAsManaged(const FGuid TargetGuid) const;
-	
+
 	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices if needed */
 	void FlagSpawnAreaAsActivated(const FGuid TargetGuid) const;
-	
+
 	/** Flags the SpawnArea as recent */
 	void FlagSpawnAreaAsRecent(const FGuid TargetGuid) const;
-	
+
 	/** Calls RemoveActivatedFlagFromSpawnArea, calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
 	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy, const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Removes the Managed flag, meaning the target that the SpawnArea represents is not longer actively managed by TargetManager */
 	void RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid) const;
-	
+
 	/** Called after deactivation of a target. Increments TotalsSpawns and TotalHits if necessary, and removes activated flag */
 	void RemoveActivatedFlagFromSpawnArea(const FTargetDamageEvent& TargetDamageEvent) const;
-	
+
 	/** Removes the Recent flag, meaning the SpawnArea is not longer being considered as a blocked SpawnArea.
 	 *  SpawnAreas empty their OverlappingVertices when their Recent Flag is removed */
 	void RemoveRecentFlagFromSpawnArea(const FGuid TargetGuid) const;
 
 	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
 	*   TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
-	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const FExtrema &InCurrentExtrema, const USpawnArea* CurrentSpawnArea) const;
+	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const FExtrema& InCurrentExtrema, const USpawnArea* CurrentSpawnArea) const;
 
 	/** Adds valid spawn locations for an edge-only TargetDistributionPolicy */
-	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema) const;
+	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema) const;
 
 	/** Adds valid spawn locations for a full range TargetDistributionPolicy */
-	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema &Extrema) const;
+	void HandleFullRangeSpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema) const;
 
 	/** Adds valid spawn locations for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
 	void HandleGridSpawnLocations(TArray<FVector>& ValidSpawnLocations, const USpawnArea* CurrentSpawnArea) const;
@@ -378,11 +386,28 @@ public:
 
 	/** Filters out any locations that correspond to areas flagged as managed */
 	void FilterManagedIndices(TArray<FVector>& ValidSpawnLocations) const;
-		
+
+	/** Called from DefaultGameMode, returns the player accuracy matrix */
+	FAccuracyData GetLocationAccuracy();
+
+	/** Shrinks the input array to 5X5, averaging each value using the smallest amount of surrounding values as possible.
+	 *  Does not re-use any values from the input array */
+	template <typename T>
+	nc::NdArray<T> ShrinkAndAverageTo5X5(const TArray<T>& In, const int32 InRows, const int32 InCols, const bool bAverage);
+
+	/** Returns a flattened array of 5 values containing which indices should take in additional values in their average */
+	static nc::NdArray<int> Get5X5OverflowArray(const int32 Overflow);
+
 	int32 GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
 
+	/** Shows the grid of spawn areas drawn as debug boxes */
+	void DrawDebug_AllSpawnAreas();
+
+	/** Removes the grid of spawn areas drawn as debug boxes */
+	void ClearDebug_AllSpawnAreas();
+
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
-	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const;
+	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority, float Time = 0) const;
 
 	/** Prints debug info about a SpawnArea */
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
@@ -398,39 +423,39 @@ public:
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
 	void SetAppropriateSpawnMemoryValues();
-	
+
 	/** Initializes the SpawnCounter array */
 	TArray<FVector> InitializeSpawnAreas();
-	
+
 	TArray<FVector> GetAllBottomLeftVertices() const { return AllBottomLeftVertices; }
 
 	FBSConfig* GetBSConfig() const { return BSConfig; }
-	
+
 	/** Pointer to TargetManager's BSConfig */
 	FBSConfig* BSConfig;
-	
+
 	/** The total amount of horizontal SpawnAreas in SpawnAreas */
 	int32 Width;
 
 	/** The total amount of vertical SpawnAreas in SpawnAreas */
 	int32 Height;
 
-	/** Stores all possible spawn locations and the total spawns & player hits at each location */
+	/** Stores all possible spawn locations and the total spawns & player hits at each location. Array is filled bottom-up, left,right */
 	UPROPERTY()
 	TArray<USpawnArea*> SpawnAreas;
-	
+
 	/** An array containing the BottomLeftVertex of all SpawnAreas */
 	TArray<FVector> AllBottomLeftVertices;
 
 	/** Incremental step value used to iterate through SpawnAreas locations */
 	int32 SpawnMemoryIncY;
-	
+
 	/** Incremental step value used to iterate through SpawnAreas locations */
 	int32 SpawnMemoryIncZ;
 
 	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
 	float SpawnMemoryScaleY;
-	
+
 	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
 	float SpawnMemoryScaleZ;
 
@@ -448,7 +473,73 @@ private:
 
 	/** Preferred SpawnMemory increments */
 	const TArray<int32> PreferredScales = {/*100, 95, 90, 85, 80, 75, 70, 65, 60, 55,*/ 50, 45, 40, 30, 25, 20, 15, 10, 5};
-	
+
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() inside of OnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;
 };
+
+template <typename T>
+nc::NdArray<T> USpawnAreaManagerComponent::ShrinkAndAverageTo5X5(const TArray<T>& In, const int32 InRows, const int32 InCols, const bool bAverage)
+{
+	// Define the output size of the array (m x n)
+	constexpr int SmallM = 5;
+	constexpr int SmallN = 5;
+	
+	nc::NdArray<T> Out = nc::zeros<T>(nc::Shape(SmallM, SmallN));;
+	
+	const int MFloor = FMath::Floor(InRows / SmallM);
+	const int NFloor = FMath::Floor(InCols / SmallN);
+
+	const int MOverflow = InRows % SmallM;
+	const int NOverflow = InCols % SmallN;
+
+	// Define which columns/rows will avg extra values if not divisible by 5
+	nc::NdArray<int> MPad = Get5X5OverflowArray(MOverflow);
+	nc::NdArray<int> NPad = Get5X5OverflowArray(NOverflow);
+	
+	int MPadSum = 0;
+	// Iterate through the elements of the small array
+	for (int i = 0; i < SmallM; ++i)
+	{
+		int NPadSum = 0;
+		for (int j = 0; j < SmallN; ++j)
+		{
+			T Sum = 0;
+			int Count = 0;
+			
+			const int StartM = i * MFloor + MPadSum;
+			const int EndM = StartM + MFloor + MPad(0, i) - 1;
+			
+			const int StartN = j * NFloor + NPadSum;
+			const int EndN = StartN + NFloor + NPad(0, j) - 1;
+			NPadSum += NPad(0, j);
+			
+			for (int x = StartM; x <= EndM; ++x)
+			{
+				for (int y = StartN; y <= EndN; ++y)
+				{
+					T Value = In[x * InCols + y];
+					
+					if (Value > 0.f)
+					{
+						Sum += Value;
+						Count += 1;
+					}
+				}
+			}
+			if (Count > 0)
+			{
+				if (bAverage)
+				{
+					Out(i, j) = static_cast<T>(static_cast<float>(Sum) / Count);
+				}
+				else
+				{
+					Out(i, j) = Sum;
+				}
+			}
+		}
+		MPadSum += MPad(0, i);
+	}
+	return Out;
+}

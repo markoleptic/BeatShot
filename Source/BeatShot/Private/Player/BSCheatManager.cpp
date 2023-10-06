@@ -18,6 +18,7 @@ namespace BeatShotConsoleVariables
 	static TAutoConsoleVariable CVarEnableAimBot(TEXT("bs.cheat.aimbot"), FString(), TEXT("Enable Aim Bot"));
 	static TAutoConsoleVariable CVarShowDebugReinforcementLearningWidget(TEXT("bs.showdebug.targetmanager.rl"), 0, TEXT("Show the reinforcement learning widget"));
 	static TAutoConsoleVariable CVarShowDebugSpawnMemory(TEXT("bs.showdebug.targetmanager.spawnmemory"), 0, TEXT("Show the recent target locations that are being tracked"));
+	static TAutoConsoleVariable CVarShowDebugAllSpawnAreas(TEXT("bs.showdebug.targetmanager.allspawnareas"), 0, TEXT("Show all spawn areas"));
 	static TAutoConsoleVariable CVarShowDebugAllTargetManager(TEXT("bs.showdebug.targetmanager"), 0, TEXT("Show all target manager debug"));
 	static TAutoConsoleVariable CVarShowDebugOverlappingVertices(TEXT("bs.showdebug.overlap"), 0, TEXT("Show overlapping vertices"));
 	static TAutoConsoleVariable CVarShowSpotLightFront(TEXT("bs.showspotlightfront"), 0, TEXT("Show SpotLight Front"));
@@ -43,6 +44,10 @@ void UBSCheatManager::InitCheatManager()
 	FConsoleVariableDelegate CVarShowDebugSpawnMemoryDelegate;
 	CVarShowDebugSpawnMemoryDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugSpawnMemory);
 	BeatShotConsoleVariables::CVarShowDebugSpawnMemory.AsVariable()->SetOnChangedCallback(CVarShowDebugSpawnMemoryDelegate);
+
+	FConsoleVariableDelegate CVarShowDebugAllSpawnAreas;
+	CVarShowDebugAllSpawnAreas.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugAllSpawnAreas);
+	BeatShotConsoleVariables::CVarShowDebugAllSpawnAreas.AsVariable()->SetOnChangedCallback(CVarShowDebugAllSpawnAreas);
 
 	FConsoleVariableDelegate CVarShowDebugAllTargetManagerDelegate;
 	CVarShowDebugAllTargetManagerDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebugAllTargetManager);
@@ -121,6 +126,11 @@ void UBSCheatManager::CVarOnChanged_ShowDebugReinforcementLearningWidget(IConsol
 void UBSCheatManager::CVarOnChanged_ShowDebugSpawnMemory(IConsoleVariable* Variable)
 {
 	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_SpawnMemory(Variable->GetBool());
+}
+
+void UBSCheatManager::CVarOnChanged_ShowDebugAllSpawnAreas(IConsoleVariable* Variable)
+{
+	Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->GetTargetManager()->ShowDebug_AllSpawnAreas(Variable->GetBool());
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebugSpawnBox(IConsoleVariable* Variable)

@@ -22,6 +22,8 @@ public:
 	void CVarOnChanged_ShowDebugReinforcementLearningWidget(IConsoleVariable* Variable);
 	
 	void CVarOnChanged_ShowDebugSpawnMemory(IConsoleVariable* Variable);
+
+	void CVarOnChanged_ShowDebugAllSpawnAreas(IConsoleVariable* Variable);
 	
 	void CVarOnChanged_ShowDebugSpawnBox(IConsoleVariable* Variable);
 	

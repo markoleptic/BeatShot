@@ -326,21 +326,11 @@ TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas()
 	int Index = 0;
 
 	TArray<FVector> AllSpawnLocations;
-
-	float ZEnd = StaticExtrema.Max.Z;
-	float YEnd = StaticExtrema.Max.Y;
-
-	// Include the last extrema values if grid
-	if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
-	{
-		ZEnd+=1;
-		YEnd+=1;
-	}
 	
-	for (float Z = StaticExtrema.Min.Z; Z < ZEnd; Z += SpawnMemoryIncZ)
+	for (float Z = StaticExtrema.Min.Z; Z < StaticExtrema.Max.Z; Z += SpawnMemoryIncZ)
 	{
 		TempWidth = 0;
-		for (float Y = StaticExtrema.Min.Y; Y < YEnd; Y += SpawnMemoryIncY)
+		for (float Y = StaticExtrema.Min.Y; Y < StaticExtrema.Max.Y; Y += SpawnMemoryIncY)
 		{
 			FVector Loc(Origin.X, Y, Z);
 			AllSpawnLocations.Add(Loc);
@@ -351,7 +341,15 @@ TArray<FVector> USpawnAreaManagerComponent::InitializeSpawnAreas()
 					SpawnMemoryIncZ,
 					GetBSConfig()->GridConfig.NumHorizontalGridTargets,
 					GetBSConfig()->GridConfig.NumVerticalGridTargets * GetBSConfig()->GridConfig.NumHorizontalGridTargets);
-			SpawnArea->ChosenPoint = Loc;
+
+			if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+			{
+				SpawnArea->ChosenPoint = FVector(Loc.X, Loc.Y + SpawnMemoryIncY / 2.f, Loc.Z + SpawnMemoryIncZ / 2.f);
+			}
+			else
+			{
+				SpawnArea->ChosenPoint = Loc;
+			}
 			SpawnAreas.Add(SpawnArea);
 			Index++;
 			TempWidth++;
@@ -1102,6 +1100,108 @@ void USpawnAreaManagerComponent::FilterManagedIndices(TArray<FVector>& ValidSpaw
 	}
 }
 
+FAccuracyData USpawnAreaManagerComponent::GetLocationAccuracy()
+{
+	FAccuracyData OutData = FAccuracyData(5, 5);
+	
+	TArray<int32> TotalSpawns;
+	TArray<int32> TotalHits;
+	
+	TotalSpawns.Init(-1, SpawnAreas.Num());
+	TotalHits.Init(0, SpawnAreas.Num());
+	
+	int32 TotalSpawnsValueRef = 0;
+	int32 TotalHitsValueRef = 0;
+	int32 TotalSpawnsValueTest = 0;
+	int32 TotalHitsValueTest = 0;
+	
+	for (int i = 0; i < SpawnAreas.Num(); i++)
+	{
+		const int32 SpawnsValue = SpawnAreas[i]->GetTotalSpawns();
+		const int32 HitsValue = SpawnAreas[i]->GetTotalHits();
+		
+		TotalSpawns[i] = SpawnsValue;
+		TotalHits[i] = HitsValue;
+		
+		if (SpawnsValue >= 0)
+		{
+			TotalSpawnsValueRef += SpawnsValue;
+		}
+		if (HitsValue > 0)
+		{
+			TotalHitsValueRef += HitsValue;
+		}
+	}
+	
+	nc::NdArray<int32> ShrunkTotalSpawns = ShrinkAndAverageTo5X5<int32>(TotalSpawns, Height, Width, false);
+	nc::NdArray<int32> ShrunkTotalHits = ShrinkAndAverageTo5X5<int32>(TotalHits, Height, Width, false);
+
+	// ShrunkTotalSpawns = nc::flipud(ShrunkTotalSpawns);
+	// ShrunkTotalHits = nc::flipud(ShrunkTotalHits);
+
+	// TODO: Fix whatever the hell is making the total spawns/hits different from what they actually are
+	
+	for (int i = 0; i < 5; i++)
+	{
+		for (int j = 0; j < 5; j++)
+		{
+			const int32 TotalSpawnsValue = ShrunkTotalSpawns(i, j);
+			const int32 TotalHitsValue = ShrunkTotalHits(i, j);
+			
+			if (TotalSpawnsValue > 0)
+			{
+				TotalSpawnsValueTest += TotalSpawnsValue;
+				OutData.AccuracyRows[i].TotalSpawns[j] = static_cast<int64>(TotalSpawnsValue);
+			}
+			if (TotalHitsValue > 0)
+			{
+				TotalHitsValueTest += TotalHitsValue;
+				OutData.AccuracyRows[i].TotalHits[j] = static_cast<int64>(TotalHitsValueTest);
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Display, TEXT("Total Spawns:"));
+	for (int i = 0; i < 5; i++)
+	{
+		FString Line;
+		for (int j = 0; j < 5; j++)
+		{
+			Line.Append(FString::FromInt(ShrunkTotalSpawns(i, j)) + " ");
+		}
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Line);
+	}
+	
+	UE_LOG(LogTemp, Display, TEXT("Total Hits:"));
+	for (int i = 0; i < 5; i++)
+	{
+		FString Line;
+		for (int j = 0; j < 5; j++)
+		{
+			Line.Append(FString::FromInt(ShrunkTotalHits(i, j)) + " ");
+		}
+		UE_LOG(LogTemp, Display, TEXT("%s"), *Line);
+	}
+	
+	OutData.CalculateAccuracy();
+	
+	UE_LOG(LogTemp, Display, TEXT("Total Spawns/Hits Ref: %d %d"), TotalSpawnsValueRef, TotalHitsValueRef);
+	UE_LOG(LogTemp, Display, TEXT("Total Spawns/Hits Test: %d %d"), TotalSpawnsValueTest, TotalHitsValueTest);
+
+	return OutData;
+}
+
+nc::NdArray<int> USpawnAreaManagerComponent::Get5X5OverflowArray(const int32 Overflow)
+{
+	return nc::NdArray<int>({
+	Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0,
+	Overflow == 4 ? 1 : 0,
+	Overflow == 1 || Overflow == 3 ? 1 : 0,
+	Overflow == 4 ? 1 : 0,
+	Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0
+});
+}
+
 // Util or debug
 
 int32 USpawnAreaManagerComponent::GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const
@@ -1121,13 +1221,32 @@ int32 USpawnAreaManagerComponent::GetOutArrayIndexFromSpawnAreaIndex(const int32
 	return Index;
 }
 
-void USpawnAreaManagerComponent::DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority) const
+void USpawnAreaManagerComponent::DrawDebug_AllSpawnAreas()
+{
+	DrawDebug_Boxes(GetAllBottomLeftVertices(), FColor::Cyan, 4, 0, -1);
+}
+
+void USpawnAreaManagerComponent::ClearDebug_AllSpawnAreas()
+{
+	FlushPersistentDebugLines(GetWorld());
+}
+
+void USpawnAreaManagerComponent::DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority, float Time) const
 {
 	for (const FVector& Vector : InLocations)
 	{
+		bool PersistantLines = false;
+		if (Time == 0)
+		{
+			Time = GetBSConfig()->TargetConfig.TargetSpawnCD;
+		}
+		else
+		{
+			PersistantLines = true;
+		}
 		FVector Loc = FVector(Vector.X, Vector.Y + GetSpawnMemoryIncY() / 2.f, Vector.Z + GetSpawnMemoryIncZ() / 2.f);
 		DrawDebugBox(GetWorld(), Loc, FVector(0, GetSpawnMemoryIncY() / 2.f, GetSpawnMemoryIncZ() / 2.f),
-			InColor, false, GetBSConfig()->TargetConfig.TargetSpawnCD, 0, InThickness);
+			InColor, PersistantLines, Time, 0, InThickness);
 	}
 }
 
