@@ -25,10 +25,10 @@ using namespace Constants;
 void UGameModesWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	SetupButtons();
 	BindAllDelegates();
-	
+
 	GameModeConfig = FBSConfig();
 	BSConfig = &GameModeConfig;
 
@@ -40,10 +40,10 @@ void UGameModesWidget::NativeConstruct()
 	// Initialize CustomGameModesWidgets
 	CustomGameModesWidget_CreatorView->Init(BSConfig, GetGameModeDataAsset());
 	CustomGameModesWidget_PropertyView->Init(BSConfig, GetGameModeDataAsset());
-	
+
 	// Setup default custom game mode options to MultiBeat Normal
 	InitCustomGameModesWidgetOptions(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal);
-	
+
 	Border_DifficultySelect->SetVisibility(ESlateVisibility::Collapsed);
 
 	if (CustomGameModesWidget_CreatorView->Widget_Preview)
@@ -68,17 +68,18 @@ void UGameModesWidget::SetupButtons()
 	// Default Button Enabled States
 	Button_PlayFromStandard->SetIsEnabled(false);
 	Button_CustomizeFromStandard->SetIsEnabled(false);
-	
+
 	Button_SaveCustom->SetIsEnabled(false);
 	Button_SaveCustomAndStart->SetIsEnabled(false);
 	Button_RemoveSelectedCustom->SetIsEnabled(false);
 	Button_ExportCustom->SetIsEnabled(false);
 	Button_ImportCustom->SetIsEnabled(true);
+	Button_ClearRLHistory->SetIsEnabled(false);
 	Button_RemoveAllCustom->SetIsEnabled(!LoadCustomGameModes().IsEmpty());
 	MenuButton_CreatorView->SetActive();
 	MenuButton_PropertyView->SetInActive();
 	MenuButton_DefaultGameModes->SetActive();
-	
+
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->SetIsEnabled(true);
 
@@ -86,7 +87,7 @@ void UGameModesWidget::SetupButtons()
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
 	Button_HardDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Hard), Button_DeathDifficulty);
 	Button_DeathDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Death), Button_NormalDifficulty);
-	
+
 	// Preset Game Mode Buttons
 	Button_BeatGrid->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatGrid), Button_BeatTrack);
 	Button_BeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatTrack), Button_MultiBeat);
@@ -127,16 +128,17 @@ void UGameModesWidget::BindAllDelegates()
 	Button_RemoveSelectedCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	Button_ImportCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 	Button_ExportCustom->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
+	Button_ClearRLHistory->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_CustomGameModeButton);
 
 	// Default Game Modes Buttons
 	Button_CustomizeFromStandard->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_DefaultGameMode);
 	Button_PlayFromStandard->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_DefaultGameMode);
-	
+
 	// Difficulty Buttons
 	Button_NormalDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDifficulty);
 	Button_HardDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDifficulty);
 	Button_DeathDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDifficulty);
-	
+
 	// Default Game Modes Buttons
 	Button_BeatGrid->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
 	Button_BeatTrack->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
@@ -152,12 +154,12 @@ void UGameModesWidget::BindAllDelegates()
 	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 
 	CustomGameModesWidget_CreatorView->RequestGameModePreviewUpdate.AddUObject(this, &ThisClass::RefreshGameModePreview);
-	
+
 	CustomGameModesWidget_PropertyView->RequestButtonStateUpdate.AddUObject(this, &ThisClass::UpdateSaveStartButtonStates);
 	CustomGameModesWidget_CreatorView->RequestButtonStateUpdate.AddUObject(this, &ThisClass::UpdateSaveStartButtonStates);
 	CustomGameModesWidget_PropertyView->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingOptionPresentStateChanged);
 	CustomGameModesWidget_CreatorView->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingOptionPresentStateChanged);
-	
+
 	OnTransitionComplete_ToCreatorView.BindDynamic(this, &UGameModesWidget::OnTransitionCompleted_ToCreatorView);
 	OnTransitionComplete_ToPropertyView.BindDynamic(this, &UGameModesWidget::OnTransitionCompleted_ToPropertyView);
 }
@@ -165,12 +167,12 @@ void UGameModesWidget::BindAllDelegates()
 void UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode(const UBSButton* Button)
 {
 	PresetSelection_PresetGameMode = static_cast<EBaseGameMode>(Button->GetEnumValue());
-	
+
 	Button_NormalDifficulty->SetInActive();
 	Button_HardDifficulty->SetInActive();
 	Button_DeathDifficulty->SetInActive();
 	PresetSelection_Difficulty = EGameModeDifficulty::Normal;
-	
+
 	Border_DifficultySelect->SetVisibility(ESlateVisibility::Visible);
 	Button_PlayFromStandard->SetIsEnabled(false);
 	Button_CustomizeFromStandard->SetIsEnabled(true);
@@ -236,6 +238,10 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 	{
 		OnButtonClicked_ExportCustom();
 	}
+	else if (Button == Button_ClearRLHistory)
+	{
+		OnButtonClicked_ClearRLHistory();
+	}
 }
 
 void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
@@ -255,13 +261,13 @@ void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 		{
 			return;
 		}
-		
+
 		UVerticalBox* Box = MenuButton->GetBox();
 		if (!Box)
 		{
 			return;
 		}
-		
+
 		// Execute OnCreatorViewVisibilityChanged if CreatorView is currently showing or will be showing
 		if (Box == Box_DefaultGameModes)
 		{
@@ -271,7 +277,7 @@ void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 		{
 			RefreshGameModePreview();
 		}
-		
+
 		MenuSwitcher->SetActiveWidget(Box);
 	}
 }
@@ -279,10 +285,8 @@ void UGameModesWidget::OnButtonClicked_MenuButton(const UBSButton* Button)
 void UGameModesWidget::OnButtonClicked_ImportCustom()
 {
 	GameModeSharingWidget = CreateWidget<UGameModeSharingWidget>(this, GameModeSharingClass);
-	GameModeSharingWidget->InitPopup(FText::FromString("Import Custom Game Mode"), FText::GetEmpty(),
-							  FText::FromString("Import"),
-							  FText::FromString("Cancel"));
-	
+	GameModeSharingWidget->InitPopup(FText::FromString("Import Custom Game Mode"), FText::GetEmpty(), FText::FromString("Import"), FText::FromString("Cancel"));
+
 	GameModeSharingWidget->OnButton1Pressed_NonDynamic.AddLambda([&]
 	{
 		const FString ImportString = GameModeSharingWidget->GetImportString();
@@ -295,7 +299,7 @@ void UGameModesWidget::OnButtonClicked_ImportCustom()
 			GameModeSharingWidget->FadeOut();
 			return;
 		}
-		
+
 		GameModeSharingWidget->FadeOut();
 
 		// Check if overriding existing Custom Game Mode
@@ -320,7 +324,7 @@ void UGameModesWidget::OnButtonClicked_ExportCustom()
 {
 	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
 	CustomGameModesWidget_Current->SetNewCustomGameModeName("");
-	
+
 	if (!IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName))
 	{
 		SetAndPlaySavedText(FText::FromString("The selected mode is not a custom game mode."));
@@ -332,6 +336,38 @@ void UGameModesWidget::OnButtonClicked_ExportCustom()
 	FPlatformApplicationMisc::ClipboardCopy(*ExportString);
 
 	SetAndPlaySavedText(FText::FromString("Export String copied to clipboard!"));
+}
+
+void UGameModesWidget::OnButtonClicked_ClearRLHistory()
+{
+	if (!IsCustomGameMode(BSConfig->DefiningConfig.CustomGameModeName))
+	{
+		return;
+	}
+
+	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
+	PopupMessageWidget->InitPopup(FText::FromString("Reset RL History"),
+	                              FText::FromString("Are you sure you want reset the Reinforcement Learning history of "
+		                              + BSConfig->DefiningConfig.CustomGameModeName + "? This will set the all QTable values to zero, "
+		                              "deleting any learning that has taken place."),
+	                              FText::FromString("Yes"), FText::FromString("No"));
+	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this]
+	{
+		PopupMessageWidget->FadeOut();
+		const int32 NumReset = ResetQTable(BSConfig->DefiningConfig);
+		if (NumReset >= 1)
+		{
+			SetAndPlaySavedText(FText::FromString("Cleared RL History for " + BSConfig->DefiningConfig.CustomGameModeName));
+		}
+		UpdateSaveStartButtonStates();
+	});
+	PopupMessageWidget->OnButton2Pressed_NonDynamic.AddLambda([this]
+	{
+		PopupMessageWidget->FadeOut();
+	});
+
+	PopupMessageWidget->AddToViewport();
+	PopupMessageWidget->FadeIn();
 }
 
 void UGameModesWidget::OnButtonClicked_SaveCustom()
@@ -349,12 +385,12 @@ void UGameModesWidget::OnButtonClicked_SaveCustom()
 			return;
 		}
 	}
-	
+
 	if (CheckForExistingAndDisplayOverwriteMessage(false))
 	{
 		return;
 	}
-	
+
 	SaveCustomAndReselect();
 }
 
@@ -368,7 +404,7 @@ void UGameModesWidget::OnButtonClicked_SaveCustomAndStart()
 		ShowAudioFormatSelect(false);
 		return;
 	}
-	
+
 	if (CheckForExistingAndDisplayOverwriteMessage(true))
 	{
 		return;
@@ -386,13 +422,11 @@ void UGameModesWidget::OnButtonClicked_RemoveSelectedCustom()
 	{
 		return;
 	}
-	
+
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
-	PopupMessageWidget->InitPopup(FText::FromString("Removal Confirmation"),
-		FText::FromString("Are you sure you want remove " + BSConfig->DefiningConfig.CustomGameModeName + "?"),
-							  FText::FromString("Yes"),
-							  FText::FromString("No"));
-	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([&]
+	PopupMessageWidget->InitPopup(FText::FromString("Removal Confirmation"), FText::FromString("Are you sure you want remove " + BSConfig->DefiningConfig.CustomGameModeName + "?"),
+	                              FText::FromString("Yes"), FText::FromString("No"));
+	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this]
 	{
 		PopupMessageWidget->FadeOut();
 		const FString RemovedGameModeName = BSConfig->DefiningConfig.CustomGameModeName;
@@ -407,11 +441,11 @@ void UGameModesWidget::OnButtonClicked_RemoveSelectedCustom()
 		CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
 		UpdateSaveStartButtonStates();
 	});
-	PopupMessageWidget->OnButton2Pressed_NonDynamic.AddLambda([&]
+	PopupMessageWidget->OnButton2Pressed_NonDynamic.AddLambda([this]
 	{
 		PopupMessageWidget->FadeOut();
 	});
-	
+
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();
 }
@@ -419,19 +453,24 @@ void UGameModesWidget::OnButtonClicked_RemoveSelectedCustom()
 void UGameModesWidget::OnButtonClicked_RemoveAllCustom()
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
-	PopupMessageWidget->InitPopup(FText::FromString("Removal Confirmation"),
-		FText::FromString("Are you sure you want remove all custom game modes?"),
-							  FText::FromString("Yes"),
-							  FText::FromString("No"));
-	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([&]
+	PopupMessageWidget->InitPopup(FText::FromString("Removal Confirmation"), FText::FromString("Are you sure you want remove all custom game modes?"), FText::FromString("Yes"),
+	                              FText::FromString("No"));
+	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this]
 	{
-		RemoveAllCustomGameModes();
 		PopupMessageWidget->FadeOut();
+		const int32 NumRemoved = RemoveAllCustomGameModes();
+		if (NumRemoved >= 1)
+		{
+			SetAndPlaySavedText(FText::FromString(FString::FromInt(NumRemoved) + " game modes removed"));
+			CustomGameModesWidget_CreatorView->RefreshGameModeTemplateComboBoxOptions();
+			CustomGameModesWidget_PropertyView->RefreshGameModeTemplateComboBoxOptions();
+		}
+
 		CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
 		CustomGameModesWidget_CreatorView->SetNewCustomGameModeName("");
-		SetAndPlaySavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_AllGameModesRemovedText"));
+		UpdateSaveStartButtonStates();
 	});
-	PopupMessageWidget->OnButton2Pressed_NonDynamic.AddLambda([&]
+	PopupMessageWidget->OnButton2Pressed_NonDynamic.AddLambda([this]
 	{
 		PopupMessageWidget->FadeOut();
 	});
@@ -442,7 +481,7 @@ void UGameModesWidget::OnButtonClicked_RemoveAllCustom()
 void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 {
 	GameModeConfig = InBSConfig;
-	
+
 	// Override Difficulty for Custom Modes to always be None
 	if (IsCustomGameMode(GameModeConfig.DefiningConfig.CustomGameModeName))
 	{
@@ -451,7 +490,7 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 		CustomGameModesWidget_CreatorView->SetStartWidgetProperties(StartWidgetUpdate);
 		CustomGameModesWidget_PropertyView->SetStartWidgetProperties(StartWidgetUpdate);
 	}
-	
+
 	CustomGameModesWidget_CreatorView->UpdateOptionsFromConfig();
 	CustomGameModesWidget_PropertyView->UpdateOptionsFromConfig();
 
@@ -461,21 +500,21 @@ void UGameModesWidget::PopulateGameModeOptions(const FBSConfig& InBSConfig)
 FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 {
 	FBSConfig ReturnStruct = GameModeConfig;
-	
+
 	if (!CustomGameModesWidget_Current->GetNewCustomGameModeName().IsEmpty())
 	{
 		ReturnStruct.DefiningConfig.CustomGameModeName = CustomGameModesWidget_Current->GetNewCustomGameModeName();
 	}
-	
+
 	ReturnStruct.OnCreate_Custom();
-	
+
 	return ReturnStruct;
 }
 
 bool UGameModesWidget::SaveCustomAndReselect(const FText& SuccessMessage)
 {
 	const FBSConfig GameModeToSave = GetCustomGameModeOptions();
-	
+
 	// Last chance to fail
 	if (IsPresetGameMode(GameModeToSave.DefiningConfig.CustomGameModeName) || GameModeToSave.DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
@@ -485,7 +524,7 @@ bool UGameModesWidget::SaveCustomAndReselect(const FText& SuccessMessage)
 		SetAndPlaySavedText(FText::Join(FText::FromString(" "), SavedText));
 		return false;
 	}
-	
+
 	SaveCustomGameMode(GameModeToSave);
 
 	if (SuccessMessage.IsEmpty())
@@ -510,13 +549,13 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 {
 	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
 	const bool bAllCustomGameModeOptionsValid = CustomGameModesWidget_Current->GetAllNonStartChildWidgetOptionsValid();
-	
+
 	const bool bIsDefaultMode = StartWidgetProperties.DefiningConfig.BaseGameMode != EBaseGameMode::None;
 	const bool bIsCustomMode = IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName);
 
 	const bool bNewCustomGameModeNameEmpty = StartWidgetProperties.NewCustomGameModeName.IsEmpty();
 	const bool bInvalidCustomGameModeName = IsPresetGameMode(StartWidgetProperties.NewCustomGameModeName);
-	
+
 	// RemoveAll Button
 	if (LoadCustomGameModes().IsEmpty())
 	{
@@ -535,6 +574,16 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	else
 	{
 		Button_RemoveSelectedCustom->SetIsEnabled(false);
+	}
+
+    // Clear RL History Button
+	if (bIsCustomMode && bAllCustomGameModeOptionsValid)
+	{
+		Button_ClearRLHistory->SetIsEnabled(true);
+	}
+	else
+	{
+		Button_ClearRLHistory->SetIsEnabled(false);
 	}
 
 	// Export Button
@@ -568,7 +617,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		return;
 	}
 
-	
+
 	if (!bIsCustomMode && !bIsDefaultMode && bNewCustomGameModeNameEmpty)
 	{
 		Button_SaveCustom->SetIsEnabled(false);
@@ -576,7 +625,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 		return;
 	}
-	
+
 	Button_SaveCustom->SetIsEnabled(true);
 	Button_SaveCustomAndStart->SetIsEnabled(true);
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(true);
@@ -585,15 +634,15 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMode)
 {
 	AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode] (const FBS_AudioConfig& AudioConfig)
+
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this, bStartFromDefaultGameMode](const FBS_AudioConfig& AudioConfig)
 	{
 		FGameModeTransitionState GameModeTransitionState;
-		
+
 		GameModeTransitionState.bSaveCurrentScores = false;
 		GameModeTransitionState.TransitionState = bIsMainMenuChild ? ETransitionState::StartFromMainMenu : ETransitionState::StartFromPostGameMenu;
 		GameModeTransitionState.BSConfig = bStartFromDefaultGameMode ? FindPresetGameMode(PresetSelection_PresetGameMode, PresetSelection_Difficulty) : GetCustomGameModeOptions();
-		
+
 		GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
 		GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
 		GameModeTransitionState.BSConfig.AudioConfig.InAudioDevice = AudioConfig.InAudioDevice;
@@ -607,11 +656,11 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 		{
 			GameModeTransitionState.BSConfig.OnCreate_Custom();
 		}
-		
+
 		OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 		AudioSelectWidget->FadeOut();
 	});
-	
+
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();
 }
@@ -619,7 +668,7 @@ void UGameModesWidget::ShowAudioFormatSelect(const bool bStartFromDefaultGameMod
 bool UGameModesWidget::IsCurrentConfigIdenticalToSelectedCustom()
 {
 	const FStartWidgetProperties StartWidgetProperties = CustomGameModesWidget_Current->GetStartWidgetProperties();
-	
+
 	// Bypass saving if identical to existing
 	if (IsCustomGameMode(StartWidgetProperties.DefiningConfig.CustomGameModeName))
 	{
@@ -628,7 +677,7 @@ bool UGameModesWidget::IsCurrentConfigIdenticalToSelectedCustom()
 			return true;
 		}
 	}
-	
+
 	return false;
 }
 
@@ -643,14 +692,14 @@ bool UGameModesWidget::CheckForExistingAndDisplayOverwriteMessage(const bool bSt
 		ShowConfirmOverwriteMessage(bStartGameAfter);
 		return true;
 	}
-	
+
 	// If NewCustomGameModeName already exists as a saved custom game mode, ask to override
 	if (IsCustomGameMode(NewCustomGameModeName))
 	{
 		ShowConfirmOverwriteMessage(bStartGameAfter);
 		return true;
 	}
-	
+
 	return false;
 }
 
@@ -658,10 +707,10 @@ void UGameModesWidget::ShowConfirmOverwriteMessage(const bool bStartGameAfter)
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwritePopupTitle"), FText::GetEmpty(),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteConfirm"),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteCancel"));
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteConfirm"),
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteCancel"));
 
-	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this, bStartGameAfter]
+	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this, &bStartGameAfter]
 	{
 		PopupMessageWidget->FadeOut();
 		if (SaveCustomAndReselect() && bStartGameAfter)
@@ -682,9 +731,9 @@ void UGameModesWidget::ShowConfirmOverwriteMessage_Import(const FBSConfig& Impor
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwritePopupTitle"), FText::GetEmpty(),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteConfirm"),
-								  FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteCancel"));
-	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this, ImportedConfig]
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteConfirm"),
+	                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "GM_OverwriteCancel"));
+	PopupMessageWidget->OnButton1Pressed_NonDynamic.AddLambda([this, &ImportedConfig]
 	{
 		PopupMessageWidget->FadeOut();
 		SaveCustomAndReselect(FText::FromString("Successfully imported " + ImportedConfig.DefiningConfig.CustomGameModeName));
@@ -772,10 +821,10 @@ void UGameModesWidget::SynchronizeStartWidgets()
 		From = Cast<UCustomGameModesWidgetBase>(CustomGameModesWidget_PropertyView.Get());
 		To = Cast<UCustomGameModesWidgetBase>(CustomGameModesWidget_CreatorView.Get());
 	}
-	
+
 	const FStartWidgetProperties FromProperties = From->GetStartWidgetProperties();
 	const FStartWidgetProperties ToProperties = To->GetStartWidgetProperties();
-	
+
 	if (FromProperties == ToProperties)
 	{
 		To->UpdateOptionsFromConfig();

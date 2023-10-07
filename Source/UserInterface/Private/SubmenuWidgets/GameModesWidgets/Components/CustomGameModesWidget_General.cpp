@@ -172,10 +172,6 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 
 void UCustomGameModesWidget_General::SetupWarningTooltipCallbacks()
 {
-	CheckBoxOption_EnableAI->AddWarningTooltipData(FTooltipData("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning)).BindLambda([this]()
-	{
-		return BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && (BSConfig->GridConfig.NumHorizontalGridTargets % 5 != 0 || BSConfig->GridConfig.NumVerticalGridTargets % 5 != 0);
-	});
 	CheckBoxOption_EnableAI->AddWarningTooltipData(FTooltipData("Invalid_HeadshotHeightOnly_AI", ETooltipImageType::Warning)).BindLambda([this]()
 	{
 		return BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly;

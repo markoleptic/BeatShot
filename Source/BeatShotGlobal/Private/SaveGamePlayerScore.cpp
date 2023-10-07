@@ -39,7 +39,7 @@ TArray<FPlayerScore> USaveGamePlayerScore::GetPlayerScores_UnsavedToDatabase() c
 	return UnsavedScores;
 }
 
-void USaveGamePlayerScore::SavePlayerScoreInstance(const FPlayerScore& InPlayerScore)
+void USaveGamePlayerScore::AddPlayerScoreInstance(const FPlayerScore& InPlayerScore)
 {
 	if (!ContainsExistingTime(InPlayerScore))
 	{
@@ -79,19 +79,33 @@ FCommonScoreInfo USaveGamePlayerScore::FindCommonScoreInfo(const FBS_DefiningCon
 	return Found ? *Found : FCommonScoreInfo();
 }
 
-void USaveGamePlayerScore::SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo)
+void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo)
 {
 	CommonScoreInfo.FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
 
-
 #if !UE_BUILD_SHIPPING
-	if (InCommonScoreInfo.QTableRowSize != 0 && InCommonScoreInfo.QTable.Num() > 0)
+	if (InCommonScoreInfo.NumQTableRows != 0 && InCommonScoreInfo.QTable.Num() > 0)
 	{
 		PrintAccuracy(InDefiningConfig, InCommonScoreInfo, PercentFormat);
 		PrintQTable(InDefiningConfig, InCommonScoreInfo, QTableFormat);
 		PrintTrainingSamples(InDefiningConfig, InCommonScoreInfo, TrainingSamplesFormat);
 	}
 #endif
+}
+
+int32 USaveGamePlayerScore::ResetQTable(const FBS_DefiningConfig& InDefiningConfig)
+{
+	FCommonScoreInfo* Found = CommonScoreInfo.Find(InDefiningConfig);
+	
+	if (!Found) return 0;
+	
+	Found->ResetQTable();
+	return 1;
+}
+
+int32 USaveGamePlayerScore::RemoveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig)
+{
+	return CommonScoreInfo.Remove(InDefiningConfig);
 }
 
 void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
@@ -125,7 +139,7 @@ void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfi
 
 		Line += LineValue + "  ";
 
-		if (i > 1 && (i + 1) % InCommonScoreInfo.QTableRowSize == 0)
+		if (i > 1 && (i + 1) % InCommonScoreInfo.NumQTableRows == 0)
 		{
 			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
 			Line.Empty();
@@ -219,7 +233,7 @@ void USaveGamePlayerScore::PrintTrainingSamples(const FBS_DefiningConfig& InDefi
 
 		Line += LineValue + "  ";
 
-		if (i > 1 && (i + 1) % InCommonScoreInfo.QTableRowSize == 0)
+		if (i > 1 && (i + 1) % InCommonScoreInfo.NumQTableRows == 0)
 		{
 			UE_LOG(LogTemp, Display, TEXT("\t %s"), *Line);
 			Line.Empty();

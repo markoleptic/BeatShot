@@ -2,13 +2,11 @@
 
 #include "Target/TargetManager.h"
 #include "BSGameMode.h"
-#include "Player/BSPlayerController.h"
 #include "GlobalConstants.h"
 #include "Target/Target.h"
 #include "Components/BoxComponent.h"
 #include "Engine/CompositeCurveTable.h"
 #include "Kismet/DataTableFunctionLibrary.h"
-#include "Kismet/GameplayStatics.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Target/SpawnAreaManagerComponent.h"
@@ -47,9 +45,9 @@ ATargetManager::ATargetManager()
 	BSConfig = nullptr;
 	PlayerSettings = FPlayerSettings_Game();
 	ShouldSpawn = false;
-	bShowDebug_SpawnBox = false;
-	bShowDebug_SpawnMemory = false;
-	bShowDebug_ReinforcementLearningWidget = false;
+	bPrintDebug_NumRecentNumActive = false;
+	bPrintDebug_SpawnAreaInfo = false;
+	bPrintDebug_SpawnAreaDistance = false;
 	CurrentSpawnArea = nullptr;
 	PreviousSpawnArea = nullptr;
 	CurrentTargetScale = FVector(1.f);
@@ -179,8 +177,8 @@ void ATargetManager::Init_Internal()
 	if (GetBSConfig()->IsCompatibleWithReinforcementLearning())
 	{
 		const FCommonScoreInfo CommonScoreInfo = FindCommonScoreInfo(GetBSConfig()->DefiningConfig);
-		const FRLAgentParams Params(GetBSConfig()->AIConfig, SpawnAreaManager->GetSpawnAreas().Num(), SpawnAreaManager->GetSpawnAreasHeight(), SpawnAreaManager->GetSpawnAreasWidth(),
-			CommonScoreInfo.QTable, CommonScoreInfo.TrainingSamples, CommonScoreInfo.TotalTrainingSamples);
+		const FRLAgentParams Params(GetBSConfig()->AIConfig, SpawnAreaManager->GetSpawnAreasHeight(), SpawnAreaManager->GetSpawnAreasWidth(),
+			CommonScoreInfo.QTable, CommonScoreInfo.NumQTableRows, CommonScoreInfo.NumQTableColumns, CommonScoreInfo.TrainingSamples, CommonScoreInfo.TotalTrainingSamples);
 		ReinforcementLearningComponent->Init(Params);
 		
 #if !UE_BUILD_SHIPPING
@@ -190,7 +188,7 @@ void ATargetManager::Init_Internal()
 		Options.MaximumFractionalDigits = 2;
 		Options.MaximumIntegralDigits = 1;
 		Options.MinimumIntegralDigits = 1;
-		UE_LOG(LogTemp, Display, TEXT("Loaded QTable:"));
+		UE_LOG(LogTargetManager, Display, TEXT("Loaded QTable:"));
 		USaveGamePlayerScore::PrintQTable(GetBSConfig()->DefiningConfig, CommonScoreInfo, Options);
 #endif
 	}
@@ -266,9 +264,9 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	SpawnAreaManager->RefreshRecentFlags();
 
 #if !UE_BUILD_SHIPPING
-	if (bShowDebug_SpawnMemory)
+	if (bPrintDebug_NumRecentNumActive)
 	{
-		ShowDebug_NumRecentNumActivated();
+		PrintDebug_NumRecentNumActive();
 	}
 #endif
 }
@@ -559,13 +557,16 @@ void ATargetManager::FindNextTargetProperties()
 	CurrentSpawnArea = FindNextSpawnArea(GetBSConfig()->TargetConfig.BoundsScalingPolicy, NewScale);
 	if (CurrentSpawnArea && SpawnAreaManager->GetSpawnAreas().IsValidIndex(CurrentSpawnArea->GetIndex()))
 	{
-		/*for (const USpawnArea* SpawnArea : SpawnAreaManager->GetActivatedOrRecentSpawnAreas())
+#if !UE_BUILD_SHIPPING
+		if (bPrintDebug_SpawnAreaInfo)
 		{
-			if (FVector::Distance(SpawnArea->ChosenPoint, CurrentSpawnArea->GetChosenPoint()) < 200.f)
-			{
-				UE_LOG(LogTemp, Display, TEXT("Distance less than 200: %f"), FVector::Distance(SpawnArea->GetChosenPoint(), CurrentSpawnArea->GetChosenPoint()));
-			}
-		}*/
+			SpawnAreaManager->PrintDebug_SpawnArea(CurrentSpawnArea);
+		}
+		if (bPrintDebug_SpawnAreaDistance)
+		{
+			SpawnAreaManager->PrintDebug_SpawnAreaDist(CurrentSpawnArea);
+		}
+#endif
 		CurrentSpawnArea->SetTargetScale(NewScale);
 	}
 }
@@ -629,8 +630,6 @@ USpawnArea* ATargetManager::FindNextSpawnArea(const EBoundsScalingPolicy BoundsS
 		}
 		return NextSpawnArea;
 	}
-	//UE_LOG(LogTargetManager, Display, TEXT("Found Vertex_BottomLeft %s Found CenterPoint %s Found ChosenPoint %s"),
-	//*Found->Vertex_BottomLeft.ToString(), *Found->CenterPoint.ToString(), *Found->ChosenPoint.ToString());
 	return nullptr;
 }
 
@@ -984,10 +983,6 @@ void ATargetManager::UpdateSpawnVolume() const
 	}
 	
 	FVector DynamicExtent = SpawnBox->Bounds.BoxExtent;
-
-	// Add TargetScale * Radius so that all spheres fit inside volume
-	//DynamicExtent.Y += GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius;
-	//DynamicExtent.Z += GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius;
 		
 	SpawnVolume->SetRelativeLocation(FVector(LocationX, GetBoxOrigin().Y, GetBoxOrigin().Z));
 	SpawnVolume->SetBoxExtent(FVector(ExtentX, DynamicExtent.Y, DynamicExtent.Z));
@@ -1207,9 +1202,11 @@ void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
 	{
 		ReinforcementLearningComponent->ClearCachedTargetPairs();
 		InCommonScoreInfo.UpdateQTable(ReinforcementLearningComponent->GetTArray_FromNdArray_QTable(),
-		ReinforcementLearningComponent->GetTArray_FromNdArray_TrainingSamples(),
-			ReinforcementLearningComponent->GetQTableRowLength(),
-			ReinforcementLearningComponent->GetTotalTrainingSamples());
+			ReinforcementLearningComponent->GetNumQTableRows(),
+			ReinforcementLearningComponent->GetNumQTableColumns(),
+			ReinforcementLearningComponent->GetTArray_FromNdArray_TrainingSamples(),
+			ReinforcementLearningComponent->GetTotalTrainingSamples()
+			);
 	}
 }
 
@@ -1217,93 +1214,25 @@ void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
 /* -- Debug -- */
 /* ----------- */
 
-void ATargetManager::ShowDebug_SpawnBox(const bool bShow)
+void ATargetManager::PrintDebug_NumRecentNumActive()
 {
-	bShowDebug_SpawnBox = bShow;
-	if (bShowDebug_SpawnBox)
+	int NumRecent = 0;
+	int NumAct = 0;
+	int NumManaged = 0;
+	for (const USpawnArea* SpawnArea : SpawnAreaManager->GetSpawnAreas())
 	{
-		SpawnBox->SetHiddenInGame(false);
-		SpawnVolume->SetHiddenInGame(false);
-		SpawnBox->SetVisibility(true);
-		SpawnVolume->SetVisibility(true);
-		SpawnBox->ShapeColor = FColor::Blue;
-		SpawnVolume->MarkRenderStateDirty();
-		SpawnBox->MarkRenderStateDirty();
-		/*TopBox->SetHiddenInGame(false);
-		BottomBox->SetHiddenInGame(false);
-		LeftBox->SetHiddenInGame(false);
-		RightBox->SetHiddenInGame(false);
-		ForwardBox->SetHiddenInGame(false);
-		BackwardBox->SetHiddenInGame(false);*/
-	}
-	else
-	{
-		SpawnVolume->SetHiddenInGame(true);
-		SpawnBox->SetHiddenInGame(true);
-		SpawnVolume->SetVisibility(false);
-		SpawnVolume->SetVisibility(false);
-		SpawnVolume->MarkRenderStateDirty();
-		SpawnBox->MarkRenderStateDirty();
-		FlushPersistentDebugLines(GetWorld());
-	}
-}
-
-void ATargetManager::ShowDebug_SpawnMemory(const bool bShow)
-{
-	bShowDebug_SpawnMemory = bShow;
-	SpawnAreaManager->bShowDebug_SpawnMemory = bShow;
-}
-
-void ATargetManager::ShowDebug_AllSpawnAreas(const bool bShow)
-{
-	if (bShow)
-	{
-		SpawnAreaManager->DrawDebug_AllSpawnAreas();
-	}
-	else
-	{
-		SpawnAreaManager->ClearDebug_AllSpawnAreas();
-	}
-}
-
-void ATargetManager::ShowDebug_ReinforcementLearningWidget(const bool bShow)
-{
-	if (!ReinforcementLearningComponent)
-	{
-		return;
-	}
-
-	bShowDebug_ReinforcementLearningWidget = bShow;
-
-	ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (bShowDebug_ReinforcementLearningWidget)
-	{
-		Controller->ShowRLAgentWidget(ReinforcementLearningComponent->OnQTableUpdate, ReinforcementLearningComponent->GetHeight(), ReinforcementLearningComponent->GetWidth(),
-		                              ReinforcementLearningComponent->GetTArray_FromNdArray_QTableAvg());
-		return;
-	}
-	Controller->HideRLAgentWidget();
-}
-
-void ATargetManager::ShowDebug_NumRecentNumActivated() const
-{
-	int NumRecent=0;
-	int NumAct=0;
-	for (const USpawnArea* Hey : SpawnAreaManager->GetSpawnAreas())
-	{
-		if (Hey->IsRecent())
+		if (SpawnArea->IsRecent())
 		{
 			NumRecent++;
 		}
-		if (Hey->IsActivated())
+		if (SpawnArea->IsActivated())
 		{
 			NumAct++;
 		}
+		if (SpawnArea->IsCurrentlyManaged())
+		{
+			NumManaged++;
+		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("NumRecent: %d NumActivated: %d"), NumRecent, NumAct);
-}
-
-void ATargetManager::ShowDebug_OverlappingVertices(const bool bShow)
-{
-	SpawnAreaManager->bShowDebug_OverlappingVertices = bShow;
+	UE_LOG(LogTargetManager, Display, TEXT("NumRecent: %d NumActivated: %d NumManaged: %d"), NumRecent, NumAct, NumManaged);
 }

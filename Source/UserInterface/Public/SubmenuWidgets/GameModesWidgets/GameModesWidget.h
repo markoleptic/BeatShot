@@ -176,6 +176,8 @@ protected:
 	UBSButton* Button_ImportCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ExportCustom;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_ClearRLHistory;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBorder* Border_DifficultySelect;
@@ -282,6 +284,9 @@ private:
 
 	/** Copies the game mode to clipboard and updates Text */
 	void OnButtonClicked_ExportCustom();
+
+	/**  */
+	void OnButtonClicked_ClearRLHistory();
 
 	/** Plays TransitionCustomGameModeView */
 	void TransitionGameModeViewToCreator();

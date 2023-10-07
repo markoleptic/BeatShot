@@ -167,7 +167,10 @@ struct FCommonScoreInfo
 	TArray<float> QTable;
 
 	UPROPERTY()
-	int32 QTableRowSize;
+	int32 NumQTableRows;
+
+	UPROPERTY()
+	int32 NumQTableColumns;
 	
 	UPROPERTY()
 	TArray<int32> TrainingSamples;
@@ -175,37 +178,45 @@ struct FCommonScoreInfo
 	UPROPERTY()
 	int64 TotalTrainingSamples;
 
+	/** Generic constructor */
 	FCommonScoreInfo()
 	{
-		AccuracyData = FAccuracyData(5, 5);
+		AccuracyData = FAccuracyData(DefaultNumberOfAccuracyDataRows, DefaultNumberOfAccuracyDataColumns);
 		QTable = TArray<float>();
+		QTable.Init(0.f, DefaultQTableSize);
 		TrainingSamples = TArray<int32>();
-		QTableRowSize = 0;
-		TotalTrainingSamples = 0;
-	}
-
-	FCommonScoreInfo(const int32 NumRows, const int32 NumCols)
-	{
-		AccuracyData = FAccuracyData(NumRows, NumCols);
-		QTable = TArray<float>();
-		TrainingSamples = TArray<int32>();
-		QTableRowSize = 0;
+		TrainingSamples.Init(0.f, DefaultQTableSize);
+		NumQTableRows = DefaultNumberOfQTableRows;
+		NumQTableColumns = DefaultNumberOfQTableColumns;
 		TotalTrainingSamples = 0;
 	}
 	
-	/** Calls UpdateAccuracyRows on AccuracyData */
+	/** Calls UpdateAccuracyRows on AccuracyData which recalculates the accuracy for each entry */
 	void UpdateAccuracy(const FAccuracyData& InAccuracyData)
 	{
 		AccuracyData.UpdateAccuracyRows(InAccuracyData);
 	}
 	
 	/** Sets the value of the QTable with InQTable */
-	void UpdateQTable(const TArray<float>& InQTable, const TArray<int32>& InUpdatedTrainingSamples, const int32 InQTableRowSize, const int32 InUpdatedTotalTrainingSamples)
+	void UpdateQTable(const TArray<float>& InQTable, const int32 InNumQTableRows, const int32 InNumQTableColumns, const TArray<int32>& InUpdatedTrainingSamples, const int32 InUpdatedTotalTrainingSamples)
 	{
 		QTable = InQTable;
-		QTableRowSize = InQTableRowSize;
+		NumQTableRows = InNumQTableRows;
+		NumQTableColumns = InNumQTableColumns;
 		TrainingSamples = InUpdatedTrainingSamples;
 		TotalTrainingSamples = InUpdatedTotalTrainingSamples;
+	}
+
+	/** Resets the QTable, TrainingSamples, NumQTableRows & NumQTableColumns, and TotalTrainingSamples to default values */
+	void ResetQTable()
+	{
+		QTable = TArray<float>();
+		QTable.Init(0.f, DefaultQTableSize);
+		TrainingSamples = TArray<int32>();
+		TrainingSamples.Init(0.f, DefaultQTableSize);
+		NumQTableRows = DefaultNumberOfQTableRows;
+		NumQTableColumns = DefaultNumberOfQTableColumns;
+		TotalTrainingSamples = 0;
 	}
 
 	/** Returns the average number of training samples in the TotalTrainingSamples array */
@@ -346,6 +357,44 @@ struct FPlayerScore
 	}
 };
 
+/** A struct where each element is an index of a smaller matrix that represents multiple indices of a larger matrix */
+USTRUCT()
+struct FGenericIndexMapping
+{
+	GENERATED_BODY()
+	
+	UPROPERTY()
+	int32 Index;
+	
+	UPROPERTY()
+	TArray<int32> MappedIndices;
+
+	FGenericIndexMapping()
+	{
+		Index = INDEX_NONE;
+		MappedIndices = TArray<int32>();
+	}
+	FGenericIndexMapping(const int32 InIndex)
+	{
+		Index = InIndex;
+		MappedIndices = TArray<int32>();
+	}
+
+	FORCEINLINE bool operator ==(const FGenericIndexMapping& Other) const
+	{
+		if (Other.Index == Index)
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	friend FORCEINLINE uint32 GetTypeHash(const FGenericIndexMapping& Struct)
+	{
+		return GetTypeHash(Struct.Index);
+	}
+};
+
 
 UCLASS()
 class BEATSHOTGLOBAL_API USaveGamePlayerScore : public USaveGame
@@ -358,11 +407,11 @@ public:
 	/** Returns a copy of PlayerScoreArray */
 	TArray<FPlayerScore> GetPlayerScores() const;
 
-	/** Returns player scores not saved to database */
+	/** Returns a copy of player scores not saved to database */
 	TArray<FPlayerScore> GetPlayerScores_UnsavedToDatabase() const;
 
 	/** Adds a new entry to PlayerScoreArray */
-	void SavePlayerScoreInstance(const FPlayerScore& InPlayerScore);
+	void AddPlayerScoreInstance(const FPlayerScore& InPlayerScore);
 
 	/** Modifies score instances in PlayerScoreArray */
 	void SetAllScoresSavedToDatabase();
@@ -370,11 +419,17 @@ public:
 	/** Returns a copy of CommonScoreInfo */
 	TMap<FBS_DefiningConfig, FCommonScoreInfo> GetCommonScoreInfo() const;
 
-	/** Returns the CommonScoreInfo that matches a given DefiningConfig, or a blank one if none found  */
+	/** Returns a copy of the CommonScoreInfo that matches a given DefiningConfig, or a blank one if none found  */
 	FCommonScoreInfo FindCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig);
 
 	/** Finds or Adds the CommonScoreInfo for the given Defining Config */
-	void SaveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo);
+	void FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo);
+
+	/** Clears the QTable for an FCommonScoreInfo instance that matches the Defining Config. Returns 1 if successfully found and cleared */
+	int32 ResetQTable(const FBS_DefiningConfig& InDefiningConfig);
+
+	/** Removes an FCommonScoreInfo instance that matches the Defining Config. Returns the number of removed instances (should only be 1) */
+	int32 RemoveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig);
 
 	/** Prints full QTable array to log/console */
     static void PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);

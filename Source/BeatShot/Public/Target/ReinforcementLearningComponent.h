@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "BSGameModeDataAsset.h"
+#include "MatrixFunctions.h"
 #include "Components/ActorComponent.h"
-#include "Kismet/KismetMathLibrary.h"
 
 class UCompositeCurveTable;
 THIRD_PARTY_INCLUDES_START
@@ -109,33 +109,38 @@ struct FQTableUpdateParams
 	}
 };
 
-/** A struct each each element represents one QTable index mapping to multiple SpawnArea indices */
+/** SpawnArea index to QTable Index Pair */
 USTRUCT()
-struct FQTableIndex
+struct FSpawnAreaQTableIndexPair
 {
 	GENERATED_BODY()
 
 	int32 QTableIndex;
-	TArray<int32> SpawnAreasIndices;
+	int32 SpawnAreaIndex;
 
-	FQTableIndex()
+	FSpawnAreaQTableIndexPair()
 	{
+		SpawnAreaIndex = INDEX_NONE;
 		QTableIndex = INDEX_NONE;
-		SpawnAreasIndices = TArray<int32>();
 	}
-	FQTableIndex(const int32 InQTableIndex)
+	FSpawnAreaQTableIndexPair(const int32 InSpawnAreaIndex, const int32 InQTableIndex)
 	{
+		SpawnAreaIndex = InSpawnAreaIndex;
 		QTableIndex = InQTableIndex;
-		SpawnAreasIndices = TArray<int32>();
 	}
 
-	FORCEINLINE bool operator ==(const FQTableIndex& Other) const
+	FORCEINLINE bool operator ==(const FSpawnAreaQTableIndexPair& Other) const
 	{
-		if (Other.QTableIndex == QTableIndex)
+		if (Other.QTableIndex == QTableIndex && Other.SpawnAreaIndex == SpawnAreaIndex)
 		{
 			return true;
 		}
 		return false;
+	}
+	
+	friend FORCEINLINE uint32 GetTypeHash(const FSpawnAreaQTableIndexPair& Struct)
+	{
+		return HashCombine(GetTypeHash(Struct.QTableIndex), Struct.SpawnAreaIndex);
 	}
 };
 
@@ -150,7 +155,8 @@ struct FRLAgentParams
 	FBS_AIConfig AIConfig;
 	float SpawnAreasHeight;
 	float SpawnAreasWidth;
-	int32 Size;
+	int32 NumQTableRows;
+	int32 NumQTableColumns;
 	TArray<float> QTable;
 	TArray<int32> TrainingSamples;
 	int64 TotalTrainingSamples;
@@ -158,23 +164,24 @@ struct FRLAgentParams
 	FRLAgentParams()
 	{
 		AIConfig = FBS_AIConfig();
-		Size = 0;
 		QTable = TArray<float>();
 		TrainingSamples = TArray<int32>();
 		SpawnAreasHeight = 0.f;
 		SpawnAreasWidth = 0.f;
 		TotalTrainingSamples = 0;
-		
+		NumQTableRows = 0;
+		NumQTableColumns = 0;
 	}
 
-	FRLAgentParams(const FBS_AIConfig& InAIConfig, const int32 InSize, const float InHeight, const float InWidth,
-		const TArray<float>& InQTable, const TArray<int32>& InTrainingSamples, const int32 InTotalTrainingSamples)
+	FRLAgentParams(const FBS_AIConfig& InAIConfig, const float InSpawnAreaHeight, const float InSpawnAreaWidth,
+		const TArray<float>& InQTable, const int32 InNumQTableRows, const int32 InNumQTableColumns, const TArray<int32>& InTrainingSamples, const int32 InTotalTrainingSamples)
 	{
 		AIConfig = InAIConfig;
-		SpawnAreasHeight = InHeight;
-		SpawnAreasWidth = InWidth;
-		Size = InSize;
+		SpawnAreasHeight = InSpawnAreaHeight;
+		SpawnAreasWidth = InSpawnAreaWidth;
 		QTable = InQTable;
+		NumQTableRows = InNumQTableRows;
+		NumQTableColumns = InNumQTableColumns;
 		TrainingSamples = InTrainingSamples;
 		TotalTrainingSamples = InTotalTrainingSamples;
 	}
@@ -226,11 +233,11 @@ private:
 	virtual void UpdateQTable(FQTableUpdateParams& UpdateParams);
 	
 public:
-	/** Returns the number of columns or width */
-	int32 GetWidth() const { return ScaledWidth; }
-	
 	/** Returns the number of rows or height */
-	int32 GetHeight() const { return ScaledHeight; }
+	int32 GetNumQTableRows() const { return M; }
+	
+	/** Returns the number of columns or width */
+	int32 GetNumQTableColumns() const { return N; }
 
 	/** Returns the number of training samples the component has trained with this session */
 	int64 GetTotalTrainingSamples() const { return TotalTrainingSamples; }
@@ -252,6 +259,9 @@ public:
 	
 	/** Returns a TArray version of the averaged flipped QTable, used to update widget */
 	TArray<float> GetTArray_FromNdArray_QTableAvg() const;
+
+	/** Returns a TArray version of the maximum flipped QTable, used to update widget */
+	TArray<float> GetTArray_FromNdArray_QTableMax() const;
 	
 private:
 	/** Returns an array of Second Location Indices where the each index represents a column that leads to the greatest reward */
@@ -259,14 +269,6 @@ private:
 
 	/** Returns an array of First Location Indices where the each index represents a row that leads to the greatest reward */
 	TArray<int32> GetIndices_MaximizeFirst() const;
-
-	/** Converts an NdArray of floats to a TArray of floats */
-	template<typename T>
-	static TArray<T> GetTArrayFromNdArray(const nc::NdArray<T>& InArray);
-	
-	/** Converts a TArray of floats to an NdArray of floats */
-	template<typename T>
-	static nc::NdArray<T> GetNdArrayFromTArray(const TArray<T>& InTArray);
 	
 	/** Converts a SpawnAreaIndex to a QTableIndex */
 	int32 GetIndex_FromSpawnArea_ToQTable(const int32 SpawnAreaIndex) const;
@@ -287,8 +289,22 @@ public:
 	/** Prints the MaxIndices and MaxValues corresponding to the choices the component currently has */
 	void PrintMaxAverageIndices() const;
 
+	void PrintGetMaxIndex(const int32 PreviousIndex, const float MaxValue, const nc::NdArray<float>& PreviousRow, const nc::NdArray<unsigned>& ReverseSortedIndices) const;
+
 	/** Delegate that broadcasts when the QTable is updated. Used to broadcast to widgets */
 	FOnQTableUpdate OnQTableUpdate;
+
+	/** Whether to broadcast the average or max QTable when broadcasting OnQTableUpdate */
+	bool bBroadcastAverageOnQTableUpdate;
+
+	/** Whether or not to print QTable updates to log */
+	bool bPrintDebug_QTableUpdate;
+
+	/** Whether or not to print finding the max index to log */
+	bool bPrintDebug_GetMaxIndex;
+	
+	/** Whether or not to print finding the best action index to log */
+	bool bPrintDebug_ChooseBestActionIndex;
 	
 private:
 	/** The mode that the RLC is operating in */
@@ -315,33 +331,18 @@ private:
 	/** The exploration/exploitation balance factor. A value = 1 will result in only choosing random values (explore),
 	 *  while a value of zero will result in only choosing the max Q-value (exploitation) */
 	float Epsilon;
+
+	/** Number of rows of the QTable */
+	int32 M;
+
+	/** Number of columns of the QTable */
+	int32 N;
+
+	/** An array of structs where each element represents a unique SpawnArea index and QTable index */
+	TArray<FSpawnAreaQTableIndexPair> SpawnAreaToQTableIndexMap;
 	
-	/** The number of rows in SpawnAreas array */
-	int32 SpawnAreasHeight;
-
-	/** The number of columns in SpawnAreas array */
-	int32 SpawnAreasWidth;
-
-	/** The size of the SpawnAreas array */
-	int32 SpawnAreasSize;
-
-	/** How many rows the SpawnAreasHeight is divided into */
-	int32 ScaledHeight = 5;
-
-	/** The number of the SpawnAreasWidth is divided into */
-	int32 ScaledWidth = 5;
-
-	/** The size of both dimensions of the QTable (ScaledHeight * ScaledWidth) */
-	int32 ScaledSize;
-
-	/** SpawnAreasHeight divided by ScaledHeight */
-	int32 HeightScaleFactor;
-
-	/** SpawnAreasWidth divided by ScaledWidth */
-	int32 WidthScaleFactor;
-
-	/** An array of structs where each element represents one QTable index that maps to multiple SpawnCounter indices */
-	TArray<FQTableIndex> QTableIndices;
+	/** A map where each key is a QTable row/column that maps to multiple SpawnArea indices */
+	TMap<int32, FGenericIndexMapping> QTableToSpawnAreaIndexMap;
 
 	/** An FIFO queue of (PreviousLocation, NextLocation) that represent destroyed or timed out targets */
 	TQueue<FTargetPair> TargetPairs;
@@ -357,39 +358,4 @@ private:
 	int64 TotalTrainingSamples;
 };
 
-template <typename T>
-TArray<T> UReinforcementLearningComponent::GetTArrayFromNdArray(const nc::NdArray<T>& InArray)
-{
-	const int32 RowSize = InArray.numRows();
-	const int32 ColSize = InArray.numCols();
-	
-	TArray<T> Out;
-	Out.Init(0.f, InArray.size());
-	
-	for(int j = 0; j < ColSize; j++)
-	{
-		for(int i = 0; i < RowSize; i++)
-		{
-			Out[RowSize * j + i] = InArray(i, j);
-		}
-	}
-	return Out;
-}
 
-template <typename T>
-nc::NdArray<T> UReinforcementLearningComponent::GetNdArrayFromTArray(const TArray<T>& InTArray)
-{
-	const int32 RowSize = UKismetMathLibrary::Sqrt(InTArray.Num());
-	const int32 ColSize = RowSize;
-	
-	nc::NdArray<T> Out = nc::zeros<T>(RowSize, ColSize);
-	
-	for (int j = 0; j < ColSize; j++)
-	{
-		for (int i = 0; i < RowSize; i++)
-		{
-			Out(i, j) = InTArray[RowSize * j + i];
-		}
-	}
-	return Out;
-}

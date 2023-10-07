@@ -233,9 +233,7 @@ bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGame
 	{
 		return false;
 	}
-	if (CustomMode.AIConfig == InConfig.AIConfig &&
-		CustomMode.GridConfig == InConfig.GridConfig &&
-		CustomMode.TargetConfig == InConfig.TargetConfig)
+	if (CustomMode.AIConfig == InConfig.AIConfig && CustomMode.GridConfig == InConfig.GridConfig && CustomMode.TargetConfig == InConfig.TargetConfig)
 	{
 		return true;
 	}
@@ -250,7 +248,7 @@ FBSConfig ISaveLoadInterface::ImportCustomGameMode(const FString& InImportString
 	{
 		return OutConfig;
 	}
-	
+
 	UScriptStruct* Struct = FBSConfig::StaticStruct();
 	const FString StringCopy = FString(InImportString);
 	const TCHAR* Result = Struct->ImportText(*StringCopy, &OutConfig, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
@@ -276,7 +274,7 @@ FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InGameMode)
 FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const
 {
 	EBaseGameMode BaseGameMode = EBaseGameMode::None;
-	
+
 	for (const EBaseGameMode& Preset : TEnumRange<EBaseGameMode>())
 	{
 		if (GameModeName.Equals(UEnum::GetDisplayValueAsText(Preset).ToString(), ESearchCase::IgnoreCase))
@@ -311,7 +309,7 @@ FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMo
 			return *Found;
 		}
 	}
-	
+
 	return FBSConfig();
 }
 
@@ -360,7 +358,8 @@ void ISaveLoadInterface::SetAllPlayerScoresSavedToDatabase()
 
 TArray<FPlayerScore> ISaveLoadInterface::GetMatchingPlayerScores(const FPlayerScore& PlayerScore)
 {
-	return LoadPlayerScores().FilterByPredicate([&PlayerScore] (const FPlayerScore& ComparePlayerScore) {
+	return LoadPlayerScores().FilterByPredicate([&PlayerScore](const FPlayerScore& ComparePlayerScore)
+	{
 		if (ComparePlayerScore == PlayerScore)
 		{
 			return true;
@@ -373,7 +372,7 @@ void ISaveLoadInterface::SavePlayerScoreInstance(const FPlayerScore& PlayerScore
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{
-		SaveGamePlayerScore->SavePlayerScoreInstance(PlayerScoreToSave);
+		SaveGamePlayerScore->AddPlayerScoreInstance(PlayerScoreToSave);
 		SaveToSlot(SaveGamePlayerScore);
 	}
 }
@@ -404,7 +403,27 @@ void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningC
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{
-		SaveGamePlayerScore->SaveCommonScoreInfo(DefiningConfig, CommonScoreInfoToSave);
+		SaveGamePlayerScore->FindOrAddCommonScoreInfo(DefiningConfig, CommonScoreInfoToSave);
 		SaveToSlot(SaveGamePlayerScore);
 	}
+}
+
+int32 ISaveLoadInterface::RemoveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		const int32 NumRemoved = SaveGamePlayerScore->RemoveCommonScoreInfo(DefiningConfig);
+		if (SaveToSlot(SaveGamePlayerScore)) return NumRemoved;
+	}
+	return 0;
+}
+
+int32 ISaveLoadInterface::ResetQTable(const FBS_DefiningConfig& DefiningConfig)
+{
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		const int32 NumCleared = SaveGamePlayerScore->ResetQTable(DefiningConfig);
+		if (SaveToSlot(SaveGamePlayerScore)) return NumCleared;
+	}
+	return 0;
 }

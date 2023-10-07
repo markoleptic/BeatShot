@@ -142,21 +142,10 @@ void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
 
 void UCustomGameModesWidget_SpawnArea::SetupWarningTooltipCallbacks()
 {
-		SliderTextBoxOption_NumHorizontalGridTargets->AddWarningTooltipData(FTooltipData("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning)).BindLambda([this]()
-	{
-		return (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && BSConfig->GridConfig.NumHorizontalGridTargets %
-			5 != 0);
-	});
 	SliderTextBoxOption_NumHorizontalGridTargets->AddDynamicWarningTooltipData(FTooltipData("Invalid_Grid_NumHorizontalTargets", ETooltipImageType::Warning),
 		"Invalid_Grid_NumHorizontalTargets_Fallback", MinValue_NumHorizontalGridTargets).BindLambda([this]()
 	{
 		return FDynamicTooltipState(BSConfig->GridConfig.NumHorizontalGridTargets, GetMaxAllowedNumHorizontalTargets());
-	});
-
-	SliderTextBoxOption_NumVerticalGridTargets->AddWarningTooltipData(FTooltipData("Invalid_Grid_AI_NumTargets", ETooltipImageType::Warning)).BindLambda([this]()
-	{
-		return (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid && BSConfig->AIConfig.bEnableReinforcementLearning && BSConfig->GridConfig.NumVerticalGridTargets % 5
-			!= 0);
 	});
 	SliderTextBoxOption_NumVerticalGridTargets->AddDynamicWarningTooltipData(FTooltipData("Invalid_Grid_NumVerticalTargets", ETooltipImageType::Warning),
 		"Invalid_Grid_NumVerticalTargets_Fallback", MinValue_NumVerticalGridTargets).BindLambda([this]()

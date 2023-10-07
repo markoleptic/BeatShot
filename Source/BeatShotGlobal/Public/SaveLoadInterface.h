@@ -177,6 +177,12 @@ public:
 
 	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
 	static void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
+
+	/** Removes a DefiningConfig CommonScoreInfo pair and saves to slot. Returns the number of successfully removed entries */
+	static int32 RemoveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig);
+
+	/** Resets the QTable for a DefiningConfig CommonScoreInfo pair and saves to slot. Returns the number of successful resets */
+	static int32 ResetQTable(const FBS_DefiningConfig& DefiningConfig);
 	
 	// These functions should be overriden when a class wants to receive updates about settings changes
 	// Example:

@@ -7,16 +7,6 @@
 #include "SaveGamePlayerScore.h"
 #include "BeatShot/BeatShot.h"
 #include "UObject/Object.h"
-THIRD_PARTY_INCLUDES_START
-#pragma push_macro("check")
-#undef check
-#pragma warning (push)
-#pragma warning (disable : 4191)
-#pragma warning (disable : 4686)
-#include "NumCpp/Public/NumCpp.hpp"
-#pragma warning (pop)
-#pragma pop_macro("check")
-THIRD_PARTY_INCLUDES_END
 #include "SpawnAreaManagerComponent.generated.h"
 
 /** Enum representing the bordering directions for a target */
@@ -135,10 +125,13 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** The SpawnAreas that the target overlapped with */
 	TArray<FVector> OverlappingVertices;
 
+	/** NumHorizontalTargets * NumVerticalTargets */
+	int32 Size;
+
 public:
 	USpawnArea();
 
-	void Init(const int32 InIndex, const FVector& InPoint, const float IncY, const float IncZ, const int32 InNumHorizontalTargets = INDEX_NONE, const int32 InNumVerticalTargets = INDEX_NONE);
+	void Init(const int32 InIndex, const FVector& InBottomLeft, const float IncY, const float IncZ, const int32 InNumVerticalTargets, const int32 InNumHorizontalTargets);
 
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
@@ -387,18 +380,9 @@ public:
 	/** Filters out any locations that correspond to areas flagged as managed */
 	void FilterManagedIndices(TArray<FVector>& ValidSpawnLocations) const;
 
-	/** Called from DefaultGameMode, returns the player accuracy matrix */
+	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
+	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
 	FAccuracyData GetLocationAccuracy();
-
-	/** Shrinks the input array to 5X5, averaging each value using the smallest amount of surrounding values as possible.
-	 *  Does not re-use any values from the input array */
-	template <typename T>
-	nc::NdArray<T> ShrinkAndAverageTo5X5(const TArray<T>& In, const int32 InRows, const int32 InCols, const bool bAverage);
-
-	/** Returns a flattened array of 5 values containing which indices should take in additional values in their average */
-	static nc::NdArray<int> Get5X5OverflowArray(const int32 Overflow);
-
-	int32 GetOutArrayIndexFromSpawnAreaIndex(const int32 SpawnAreaIndex) const;
 
 	/** Shows the grid of spawn areas drawn as debug boxes */
 	void DrawDebug_AllSpawnAreas();
@@ -412,13 +396,33 @@ public:
 	/** Prints debug info about a SpawnArea */
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
 
-	bool bShowDebug_SpawnMemory;
+	/** Prints debug info about SpawnArea distance */
+	void PrintDebug_SpawnAreaDist(const USpawnArea* SpawnArea) const;
 
-	/** Shows the overlapping vertices generated when a target was flagged as managed */
-	bool bShowDebug_OverlappingVertices;
+	/** Toggles showing green debug boxes for valid spawn locations at the end of the GetValidSpawnLocations function */
+	bool bShowDebug_ValidSpawnLocations;
 
-	/** Shows the overlapping vertices during RemoveOverlappingSpawnLocations */
-	bool bShowDebug_OverlappingVertices_All;
+	/** Toggles showing red debug boxes for removed spawn locations */
+	bool bShowDebug_RemovedSpawnLocations;
+
+	/** Toggles showing turquoise debug boxes for filtered recent SpawnAreas at the end of the FilterRecentIndices function */
+	bool bShowDebug_FilteredRecentIndices;
+
+	/** Toggles showing cyan debug boxes for filtered activated SpawnAreas at the end of the FilterActivatedIndices function */
+	bool bShowDebug_FilteredActivatedIndices;
+
+	/** Toggles showing blue debug boxes for filtered managed SpawnAreas at the end of the FilterManagedIndices function */
+	bool bShowDebug_FilteredManagedIndices;
+
+	/** Shows the overlapping vertices generated when SpawnArea was flagged as Managed as red DebugPoints.
+	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
+	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
+	bool bShowDebug_OverlappingVertices_OnFlaggedManaged;
+
+	/** Shows the overlapping vertices generated during RemoveOverlappingSpawnLocations as red DebugPoints.
+	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
+	 *  Draws red Debug Boxes for the removed overlapping vertices */
+	bool bShowDebug_OverlappingVertices_Dynamic;
 
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
@@ -427,8 +431,10 @@ private:
 	/** Initializes the SpawnCounter array */
 	TArray<FVector> InitializeSpawnAreas();
 
+	/** Returns an array containing the BottomLeftVertex of all SpawnAreas */
 	TArray<FVector> GetAllBottomLeftVertices() const { return AllBottomLeftVertices; }
 
+	/** Returns pointer to TargetManager's BSConfig */
 	FBSConfig* GetBSConfig() const { return BSConfig; }
 
 	/** Pointer to TargetManager's BSConfig */
@@ -477,69 +483,3 @@ private:
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() inside of OnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;
 };
-
-template <typename T>
-nc::NdArray<T> USpawnAreaManagerComponent::ShrinkAndAverageTo5X5(const TArray<T>& In, const int32 InRows, const int32 InCols, const bool bAverage)
-{
-	// Define the output size of the array (m x n)
-	constexpr int SmallM = 5;
-	constexpr int SmallN = 5;
-	
-	nc::NdArray<T> Out = nc::zeros<T>(nc::Shape(SmallM, SmallN));;
-	
-	const int MFloor = FMath::Floor(InRows / SmallM);
-	const int NFloor = FMath::Floor(InCols / SmallN);
-
-	const int MOverflow = InRows % SmallM;
-	const int NOverflow = InCols % SmallN;
-
-	// Define which columns/rows will avg extra values if not divisible by 5
-	nc::NdArray<int> MPad = Get5X5OverflowArray(MOverflow);
-	nc::NdArray<int> NPad = Get5X5OverflowArray(NOverflow);
-	
-	int MPadSum = 0;
-	// Iterate through the elements of the small array
-	for (int i = 0; i < SmallM; ++i)
-	{
-		int NPadSum = 0;
-		for (int j = 0; j < SmallN; ++j)
-		{
-			T Sum = 0;
-			int Count = 0;
-			
-			const int StartM = i * MFloor + MPadSum;
-			const int EndM = StartM + MFloor + MPad(0, i) - 1;
-			
-			const int StartN = j * NFloor + NPadSum;
-			const int EndN = StartN + NFloor + NPad(0, j) - 1;
-			NPadSum += NPad(0, j);
-			
-			for (int x = StartM; x <= EndM; ++x)
-			{
-				for (int y = StartN; y <= EndN; ++y)
-				{
-					T Value = In[x * InCols + y];
-					
-					if (Value > 0.f)
-					{
-						Sum += Value;
-						Count += 1;
-					}
-				}
-			}
-			if (Count > 0)
-			{
-				if (bAverage)
-				{
-					Out(i, j) = static_cast<T>(static_cast<float>(Sum) / Count);
-				}
-				else
-				{
-					Out(i, j) = Sum;
-				}
-			}
-		}
-		MPadSum += MPad(0, i);
-	}
-	return Out;
-}

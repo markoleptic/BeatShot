@@ -29,7 +29,7 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 	GENERATED_BODY()
 
 	friend class ABSGameMode;
-
+	friend class UBSCheatManager;
 public:
 	ATargetManager();
 	virtual void Tick(float DeltaTime) override;
@@ -241,13 +241,9 @@ public:
 	
 	/** Saves the QTable inside InCommonScoreInfo */
 	void SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const;
-	
-	void ShowDebug_SpawnBox(const bool bShow);
-	void ShowDebug_SpawnMemory(const bool bShow);
-	void ShowDebug_AllSpawnAreas(const bool bShow);
-	void ShowDebug_ReinforcementLearningWidget(const bool bShow);
-	void ShowDebug_NumRecentNumActivated() const;
-	void ShowDebug_OverlappingVertices(const bool bShow);
+
+	/** Prints the number of activated, recent, and managed targets to log */
+	void PrintDebug_NumRecentNumActive();
 	
 protected:
 	/** Initialized at start of game mode by DefaultGameMode */
@@ -260,14 +256,14 @@ protected:
 	/** Whether or not the TargetManager is allowed to spawn a target at a given time */
 	bool ShouldSpawn = false;
 
-	/** Whether or not to show Debug SpawnBox outline */
-	bool bShowDebug_SpawnBox = false;
+	/** Whether or not to print NumRecent NumActive */
+	bool bPrintDebug_NumRecentNumActive = false;
 
-	/** Whether or not to show Debug components showing the SpawnMemory */
-	bool bShowDebug_SpawnMemory = false;
+	/** Whether or not to print information about each activated Spawn Area */
+	bool bPrintDebug_SpawnAreaInfo = false;
 
-	/** Whether or not to show the RLAgentWidget */
-	bool bShowDebug_ReinforcementLearningWidget = false;
+	/** Whether or not to print information about Spawn Areas spawning targets too close together */
+	bool bPrintDebug_SpawnAreaDistance = false;
 
 	/** SpawnArea for the next/current target */
 	UPROPERTY()

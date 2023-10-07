@@ -46,6 +46,16 @@ namespace Constants
 	/** The min time required to receive credit for playing a game mode */
 	inline constexpr float MinStatRequirement_Duration_NumGamesPlayed = 60.f;
 
+	inline constexpr int32 DefaultNumberOfQTableRows = 25;
+
+	inline constexpr int32 DefaultNumberOfQTableColumns = 25;
+
+	inline constexpr int32 DefaultQTableSize = 625;
+
+	inline constexpr int32 DefaultNumberOfAccuracyDataRows = 5;
+	
+	inline constexpr int32 DefaultNumberOfAccuracyDataColumns = 5;
+
 #pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */
