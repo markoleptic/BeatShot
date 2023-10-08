@@ -14,8 +14,8 @@ enum class EEquipmentType : uint8
 {
 	None UMETA(DisplayName="None"),
 	Gun UMETA(DisplayName="Gun"),
-	Knife UMETA(DisplayName="Knife")
-};
+	Knife UMETA(DisplayName="Knife")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EEquipmentType, EEquipmentType::None, EEquipmentType::Knife);
 
 USTRUCT()
@@ -24,7 +24,8 @@ struct FBSEquipmentActorToSpawn
 	GENERATED_BODY()
 
 	FBSEquipmentActorToSpawn()
-	{}
+	{
+	}
 
 	UPROPERTY(EditAnywhere, Category="Equipment")
 	TSubclassOf<AActor> ActorToSpawn;

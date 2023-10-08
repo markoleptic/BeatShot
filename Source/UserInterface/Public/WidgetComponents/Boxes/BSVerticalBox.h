@@ -16,7 +16,7 @@ class USERINTERFACE_API UBSVerticalBox : public UVerticalBox
 	friend class UBSSettingCategoryWidget;
 
 	virtual TSharedRef<SWidget> RebuildWidget() override;
-	
+
 public:
 	/** Updates the brush colors of the BS horizontal boxes one level below any BS vertical box inside this widget */
 	void UpdateBrushColors();
@@ -28,5 +28,3 @@ private:
 
 	void UpdateHorizontalBoxBorderColors(UBSHorizontalBox* HorizontalBox, bool& bLastLeftBorderDark);
 };
-
-

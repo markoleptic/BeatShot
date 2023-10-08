@@ -2,3 +2,12 @@
 
 
 #include "WidgetComponents/SavedTextWidget.h"
+
+void USavedTextWidget::PlayFadeInFadeOut()
+{
+	if (IsAnimationPlaying(FadeInFadeOut))
+	{
+		StopAnimation(FadeInFadeOut);
+	}
+	PlayAnimationForward(FadeInFadeOut);
+}

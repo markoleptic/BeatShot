@@ -21,10 +21,10 @@ UCLASS()
 class BEATSHOT_API UBSAT_AimToTarget : public UAbilityTask
 {
 	GENERATED_BODY()
-	
+
 public:
 	UBSAT_AimToTarget();
-	
+
 	virtual void Activate() override;
 	virtual void ExternalCancel() override;
 	virtual void OnDestroy(bool AbilityEnded) override;
@@ -48,36 +48,32 @@ public:
 	 * @param TargetToDestroy The target to aim to
 	 * @param TimelinePlaybackRate Speed of the interpolation, will use 1 / SpawnBeatDelay if not specified
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAT_AimToTarget* AimToTarget(
-			UBSGameplayAbility* OwningAbility,
-			FName TaskInstanceName,
-			UCurveFloat* RotationCurve,
-			ATarget* TargetToDestroy,
-			float TimelinePlaybackRate = -1.f);
+	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
+		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+	static UBSAT_AimToTarget* AimToTarget(UBSGameplayAbility* OwningAbility, FName TaskInstanceName,
+		UCurveFloat* RotationCurve, ATarget* TargetToDestroy, float TimelinePlaybackRate = -1.f);
 
 private:
-	
 	/** Float interpolation function bound to AimBotTimeline, which sets the rotation of the camera */
 	UFUNCTION()
 	void OnTimelineTick(const float Alpha) const;
-	
+
 	/** Executes when the AimBotTimeline completes */
 	UFUNCTION()
 	void OnTimelineCompleted();
 
 	/** Function called when owning ability is cancelled */
 	void OnAbilityCancelled();
-	
+
 	UPROPERTY()
 	TObjectPtr<AController> Controller;
 
 	UPROPERTY()
 	TObjectPtr<UCurveFloat> RotationCurve;
-	
+
 	UPROPERTY()
 	TObjectPtr<ATarget> Target;
-	
+
 	/** Timeline for interpolating the rotation to aim at the target to destroy */
 	FTimeline AimBotTimeline;
 

@@ -55,7 +55,7 @@ public:
 	bool HasStatTag(FGameplayTag Tag) const;
 
 	/** Returns the item definition for this instance */
-	TSubclassOf<UBSInventoryItemDefinition> GetItemDef() const{ return ItemDef; }
+	TSubclassOf<UBSInventoryItemDefinition> GetItemDef() const { return ItemDef; }
 
 	/** Returns the specified fragment of this instance if it exists */
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, meta=(DeterminesOutputType=FragmentClass))
@@ -73,7 +73,7 @@ private:
 	void SetItemDef(TSubclassOf<UBSInventoryItemDefinition> InDef);
 
 	friend struct FBSInventoryList;
-	
+
 	/** Basic gameplay tag container used only for identifying types of equipment */
 	UPROPERTY(Replicated)
 	FGameplayTagContainer IdentifierTags;

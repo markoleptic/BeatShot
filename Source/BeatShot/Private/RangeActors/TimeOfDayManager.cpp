@@ -28,8 +28,10 @@ ATimeOfDayManager::ATimeOfDayManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	LastLerpRotation = 0;
-	NighttimeLeftRoofLocation = DaytimeLeftRoofLocation + FVector(DayToNightRoofXTravelDistance, 0, DayToNightRoofZTravelDistance);
-	NighttimeRightRoofLocation = DaytimeRightRoofLocation + FVector(DayToNightRoofXTravelDistance, 0, DayToNightRoofZTravelDistance);
+	NighttimeLeftRoofLocation = DaytimeLeftRoofLocation + FVector(DayToNightRoofXTravelDistance, 0,
+		DayToNightRoofZTravelDistance);
+	NighttimeRightRoofLocation = DaytimeRightRoofLocation + FVector(DayToNightRoofXTravelDistance, 0,
+		DayToNightRoofZTravelDistance);
 }
 
 void ATimeOfDayManager::PostInitializeComponents()
@@ -38,30 +40,33 @@ void ATimeOfDayManager::PostInitializeComponents()
 
 	OnTransitionTimelineTick.BindUFunction(this, FName("TransitionTimeOfDay"));
 	OnTimelineCompleted.BindUFunction(this, FName("OnTimelineCompletedCallback"));
-	
+
 	if (TransitionCurve)
 	{
 		TransitionTimeline.AddInterpFloat(TransitionCurve, OnTransitionTimelineTick);
 		TransitionTimeline.SetTimelineFinishedFunc(OnTimelineCompleted);
 	}
-	
+
 	if (SkySphere)
 	{
-		SkySphereMaterial = Cast<UMaterialInstanceDynamic>(Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
+		SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
+			Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->
+			GetMaterial(0));
 	}
 
 	if (DayDirectionalLight)
 	{
 		DayDirectionalLight->GetLightComponent()->SetIntensity(DayDirectionalLightIntensity);
 	}
-	
+
 	bUsingLowGISettings = UGameUserSettings::GetGameUserSettings()->GetGlobalIlluminationQuality() < 2 ? true : false;
-	
+
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
 	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ATimeOfDayManager::OnPlayerSettingsChanged_Game);
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound);
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this,
+		&ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound);
 	GI->TimeOfDayManager = this;
-	
+
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->OnStreakThresholdPassed.BindUObject(this, &ATimeOfDayManager::OnStreakThresholdPassed);
 
@@ -104,12 +109,13 @@ void ATimeOfDayManager::BeginTransitionToDay()
 		return;
 	}
 
-	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !LeftWindowCover || !RightWindowCover)
+	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !
+		LeftWindowCover || !RightWindowCover)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("One of the Soft References for TimeOfDayManager is invalid."));
 		return;
 	}
-	
+
 	LastLerpRotation = 0;
 	TimeOfDay = ETimeOfDay::NightToDay;
 	TransitionTimeline.SetPlayRate(1.f / DayNightCycleSpeed);
@@ -122,7 +128,9 @@ void ATimeOfDayManager::UpdateTimeOfDay_Editor()
 	{
 		if (!SkySphereMaterial)
 		{
-			SkySphereMaterial = Cast<UMaterialInstanceDynamic>(Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
+			SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
+				Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->
+				GetMaterial(0));
 		}
 		if (SkySphereMaterial)
 		{
@@ -137,7 +145,9 @@ void ATimeOfDayManager::BeginTransitionToNight_Editor()
 	{
 		if (!SkySphereMaterial)
 		{
-			SkySphereMaterial = Cast<UMaterialInstanceDynamic>(Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
+			SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
+				Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->
+				GetMaterial(0));
 		}
 		if (SkySphereMaterial)
 		{
@@ -152,7 +162,9 @@ void ATimeOfDayManager::BeginTransitionToDay_Editor()
 	{
 		if (!SkySphereMaterial)
 		{
-			SkySphereMaterial = Cast<UMaterialInstanceDynamic>(Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->GetMaterial(0));
+			SkySphereMaterial = Cast<UMaterialInstanceDynamic>(
+				Cast<UStaticMeshComponent>(SkySphere.Get()->GetComponentByClass(UStaticMeshComponent::StaticClass()))->
+				GetMaterial(0));
 		}
 		if (SkySphereMaterial)
 		{
@@ -164,31 +176,36 @@ void ATimeOfDayManager::BeginTransitionToDay_Editor()
 void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 {
 	TimeOfDay = InTimeOfDay;
-	
-	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !LeftWindowCover || !RightWindowCover)
+
+	if (!SkyLight || !Moon || !DayDirectionalLight || !SkySphereMaterial || !RectLight || !SpawnAreaSpotLight || !
+		LeftWindowCover || !RightWindowCover)
 	{
 		return;
 	}
 
 	// Always the same intensity
 	DayDirectionalLight->GetLightComponent()->SetIntensity(DayDirectionalLightIntensity);
-	
+
 	if (InTimeOfDay == ETimeOfDay::Night)
 	{
 		SkySphereMaterial->SetScalarParameterValue("NightAlpha", 1);
 
 		// Need to add world rotation instead of setting so things don't get weird
-		if (FMath::IsNearlyEqual(static_cast<float>(DayDirectionalLight->GetLightComponent()->GetComponentRotation().GetNormalized().Roll), 0.f, 0.1f))
+		if (FMath::IsNearlyEqual(
+			static_cast<float>(DayDirectionalLight->GetLightComponent()->GetComponentRotation().GetNormalized().Roll),
+			0.f, 0.1f))
 		{
 			DayDirectionalLight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 		}
-		
+
 		Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 1);
 		Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", 1);
 		Moon->MoonLight->SetIntensity(NightDirectionalLightIntensity);
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(NighttimeLeftRoofLocation);
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(NighttimeRightRoofLocation);
-		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings ? LowGISettingSkyLightIntensity : NightSkylightIntensity);
+		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings
+			? LowGISettingSkyLightIntensity
+			: NightSkylightIntensity);
 		RectLight->GetLightComponent()->SetIntensity(bUseRectLight ? NightRectLightIntensity : 0.f);
 		SpawnAreaSpotLight->GetLightComponent()->SetIntensity(bUseSpotlight ? NightSpotlightIntensity : 0.f);
 	}
@@ -197,17 +214,21 @@ void ATimeOfDayManager::SetTimeOfDay(const ETimeOfDay InTimeOfDay)
 		SkySphereMaterial->SetScalarParameterValue("NightAlpha", 0);
 
 		// Need to add world rotation instead of setting so things don't get weird
-		if (FMath::IsNearlyEqual(static_cast<float>(DayDirectionalLight->GetLightComponent()->GetComponentRotation().GetNormalized().Roll), 180.f, 0.1f))
+		if (FMath::IsNearlyEqual(
+			static_cast<float>(DayDirectionalLight->GetLightComponent()->GetComponentRotation().GetNormalized().Roll),
+			180.f, 0.1f))
 		{
 			DayDirectionalLight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, 180));
 		}
-		
+
 		Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", 0);
 		Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", 0);
 		Moon->MoonLight->SetIntensity(0);
 		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeLeftRoofLocation);
 		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeRightRoofLocation);
-		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings ? LowGISettingSkyLightIntensity : DaySkylightIntensity);
+		SkyLight->GetLightComponent()->SetIntensity(bUsingLowGISettings
+			? LowGISettingSkyLightIntensity
+			: DaySkylightIntensity);
 		RectLight->GetLightComponent()->SetIntensity(bUseRectLight ? DayRectLightIntensity : 0.f);
 		SpawnAreaSpotLight->GetLightComponent()->SetIntensity(bUseSpotlight ? DaySpotlightIntensity : 0.f);
 	}
@@ -263,7 +284,8 @@ void ATimeOfDayManager::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game&
 	}
 }
 
-void ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+void ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound(
+	const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	// Adjust SkyLight brightness if using Low or Medium Global Illumination Settings
 	if (UGameUserSettings::GetGameUserSettings()->GetGlobalIlluminationQuality() < 2)
@@ -309,43 +331,69 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 	float NightAlpha;
 	float SpotlightIntensity;
 	float RectLightIntensity;
-	
+
 	if (TimeOfDay == ETimeOfDay::DayToNight)
 	{
 		PositionAlpha = UKismetMathLibrary::Lerp(0, 1, Value);
 		NightAlpha = UKismetMathLibrary::Lerp(0, 1, Value);
-		MoonlightIntensity = UKismetMathLibrary::Lerp(0, NightDirectionalLightIntensity, MoonlightCurve->GetFloatValue(Value));
-		SkylightIntensity = bUsingLowGISettings ? LowGISettingSkyLightIntensity : UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity, SkyLightCurve->GetFloatValue(Value));
-		SpotlightIntensity = bUseSpotlight ? UKismetMathLibrary::Lerp(DaySpotlightIntensity, NightSpotlightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
-		RectLightIntensity = bUseRectLight ? UKismetMathLibrary::Lerp(DayRectLightIntensity, NightRectLightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
+		MoonlightIntensity = UKismetMathLibrary::Lerp(0, NightDirectionalLightIntensity,
+			MoonlightCurve->GetFloatValue(Value));
+		SkylightIntensity = bUsingLowGISettings
+			? LowGISettingSkyLightIntensity
+			: UKismetMathLibrary::Lerp(DaySkylightIntensity, NightSkylightIntensity,
+				SkyLightCurve->GetFloatValue(Value));
+		SpotlightIntensity = bUseSpotlight
+			? UKismetMathLibrary::Lerp(DaySpotlightIntensity, NightSpotlightIntensity,
+				SecondaryLightCurve->GetFloatValue(Value))
+			: 0.f;
+		RectLightIntensity = bUseRectLight
+			? UKismetMathLibrary::Lerp(DayRectLightIntensity, NightRectLightIntensity,
+				SecondaryLightCurve->GetFloatValue(Value))
+			: 0.f;
 	}
 	else
 	{
 		PositionAlpha = UKismetMathLibrary::Lerp(1, 0, Value);
 		NightAlpha = UKismetMathLibrary::Lerp(1, 0, Value);
-		MoonlightIntensity = UKismetMathLibrary::Lerp(NightDirectionalLightIntensity, 0, MoonlightCurve->GetFloatValue(Value));
-		SkylightIntensity = bUsingLowGISettings ? LowGISettingSkyLightIntensity : UKismetMathLibrary::Lerp(NightSkylightIntensity, DaySkylightIntensity, SkyLightCurve->GetFloatValue(Value));
-		SpotlightIntensity = bUseSpotlight ? UKismetMathLibrary::Lerp(NightSpotlightIntensity, DaySpotlightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
-		RectLightIntensity = bUseRectLight ? UKismetMathLibrary::Lerp(NightRectLightIntensity, DayRectLightIntensity, SecondaryLightCurve->GetFloatValue(Value)) : 0.f;
+		MoonlightIntensity = UKismetMathLibrary::Lerp(NightDirectionalLightIntensity, 0,
+			MoonlightCurve->GetFloatValue(Value));
+		SkylightIntensity = bUsingLowGISettings
+			? LowGISettingSkyLightIntensity
+			: UKismetMathLibrary::Lerp(NightSkylightIntensity, DaySkylightIntensity,
+				SkyLightCurve->GetFloatValue(Value));
+		SpotlightIntensity = bUseSpotlight
+			? UKismetMathLibrary::Lerp(NightSpotlightIntensity, DaySpotlightIntensity,
+				SecondaryLightCurve->GetFloatValue(Value))
+			: 0.f;
+		RectLightIntensity = bUseRectLight
+			? UKismetMathLibrary::Lerp(NightRectLightIntensity, DayRectLightIntensity,
+				SecondaryLightCurve->GetFloatValue(Value))
+			: 0.f;
 	}
-	
+
 	if (PositionAlpha <= 0.2f)
 	{
-		const float CurrentRoofZTravelDistance = UKismetMathLibrary::Lerp(0, DayToNightRoofZTravelDistance, PositionAlpha / 0.2f);
-		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeLeftRoofLocation + FVector(0, 0, CurrentRoofZTravelDistance));
-		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeRightRoofLocation + FVector(0, 0, CurrentRoofZTravelDistance));
+		const float CurrentRoofZTravelDistance = UKismetMathLibrary::Lerp(0, DayToNightRoofZTravelDistance,
+			PositionAlpha / 0.2f);
+		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
+			DaytimeLeftRoofLocation + FVector(0, 0, CurrentRoofZTravelDistance));
+		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
+			DaytimeRightRoofLocation + FVector(0, 0, CurrentRoofZTravelDistance));
 	}
 	else
 	{
-		const float CurrentRoofXTravelDistance = UKismetMathLibrary::Lerp(0, DayToNightRoofXTravelDistance, (PositionAlpha - 0.2f) / (0.8f));
-		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeLeftRoofLocation + FVector(CurrentRoofXTravelDistance, 0, DayToNightRoofZTravelDistance));
-		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(DaytimeRightRoofLocation + FVector(CurrentRoofXTravelDistance, 0, DayToNightRoofZTravelDistance));
+		const float CurrentRoofXTravelDistance = UKismetMathLibrary::Lerp(0, DayToNightRoofXTravelDistance,
+			(PositionAlpha - 0.2f) / (0.8f));
+		LeftWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
+			DaytimeLeftRoofLocation + FVector(CurrentRoofXTravelDistance, 0, DayToNightRoofZTravelDistance));
+		RightWindowCover->GetStaticMeshComponent()->SetRelativeLocation(
+			DaytimeRightRoofLocation + FVector(CurrentRoofXTravelDistance, 0, DayToNightRoofZTravelDistance));
 	}
 
 	const float CurrentLerpRotation = UKismetMathLibrary::Lerp(0, 180, Value);
 	DayDirectionalLight->GetLightComponent()->AddWorldRotation(FRotator(0, 0, CurrentLerpRotation - LastLerpRotation));
 	LastLerpRotation = CurrentLerpRotation;
-	
+
 	Moon->MoonLight->SetIntensity(MoonlightIntensity);
 	Moon->MoonMaterialInstance->SetScalarParameterValue("Opacity", PositionAlpha);
 	Moon->MoonGlowMaterialInstance->SetScalarParameterValue("Opacity", PositionAlpha);
@@ -356,4 +404,3 @@ void ATimeOfDayManager::TransitionTimeOfDay(const float Value)
 
 	RefreshSkySphereMaterial();
 }
-

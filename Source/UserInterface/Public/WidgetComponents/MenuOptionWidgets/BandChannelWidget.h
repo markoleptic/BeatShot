@@ -8,7 +8,8 @@
 #include "BandChannelWidget.generated.h"
 
 class UBandChannelWidget;
-DECLARE_DELEGATE_FourParams(FOnChannelValueCommitted, const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
+DECLARE_DELEGATE_FourParams(FOnChannelValueCommitted, const UBandChannelWidget* BandChannel, const int32 Index,
+	const float NewValue, const bool bIsMinValue);
 class UBorder;
 class UEditableTextBox;
 class UTextBlock;
@@ -35,17 +36,17 @@ public:
 
 	/** The index of this BandChannelWidget inside a collection of them */
 	int32 Index;
-	
+
 	UFUNCTION()
 	void OnValueCommitted_Min(const FText& NewValue, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnValueCommitted_Max(const FText& NewValue, ETextCommit::Type CommitType);
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UEditableTextBox* Value_BandChannelMin;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UEditableTextBox* Value_BandChannelMax;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* TextBlock_Lower;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))

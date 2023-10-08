@@ -32,7 +32,8 @@ void USliderTextBoxOptionWidget::OnSliderChanged_Slider(const float Value)
 
 void USliderTextBoxOptionWidget::OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType)
 {
-	const float ClampedValue = IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(), Slider->GetMaxValue());
+	const float ClampedValue = IBSWidgetInterface::OnEditableTextBoxChanged(Text, EditableTextBox, Slider, GridSnapSize,
+		Slider->GetMinValue(), Slider->GetMaxValue());
 	OnSliderTextBoxValueChanged.Broadcast(this, ClampedValue);
 }
 
@@ -46,7 +47,8 @@ void USliderTextBoxOptionWidget::SetValues(const float Min, const float Max, con
 
 void USliderTextBoxOptionWidget::SetValue(const float Value) const
 {
-	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox, Slider, GridSnapSize, Slider->GetMinValue(), Slider->GetMaxValue());
+	IBSWidgetInterface::SetSliderAndEditableTextBoxValues(Value, EditableTextBox, Slider, GridSnapSize,
+		Slider->GetMinValue(), Slider->GetMaxValue());
 }
 
 float USliderTextBoxOptionWidget::GetSliderValue() const
@@ -56,8 +58,10 @@ float USliderTextBoxOptionWidget::GetSliderValue() const
 
 float USliderTextBoxOptionWidget::GetEditableTextBoxValue() const
 {
-	const FString StringTextValue = EditableTextBox->GetText().ToString().Replace(*FString(","), *FString(), ESearchCase::IgnoreCase);
-	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider->GetMinValue(), Slider->GetMaxValue());
+	const FString StringTextValue = EditableTextBox->GetText().ToString().Replace(*FString(","), *FString(),
+		ESearchCase::IgnoreCase);
+	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Slider->GetMinValue(),
+		Slider->GetMaxValue());
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
 	return SnappedValue;
 }
@@ -72,5 +76,3 @@ void USliderTextBoxOptionWidget::SetSliderAndTextBoxEnabledStates(const bool bEn
 	Slider->SetLocked(!bEnabled);
 	EditableTextBox->SetIsReadOnly(!bEnabled);
 }
-
-

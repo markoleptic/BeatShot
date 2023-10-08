@@ -16,7 +16,8 @@ class UTooltipImage;
 class UBSHorizontalBox;
 class USliderTextBoxOptionWidget;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnSliderTextBoxValueChanged, USliderTextBoxOptionWidget* Widget, const float Value);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnSliderTextBoxValueChanged, USliderTextBoxOptionWidget* Widget,
+	const float Value);
 
 UCLASS()
 class USERINTERFACE_API USliderTextBoxOptionWidget : public UMenuOptionWidget
@@ -26,7 +27,7 @@ class USERINTERFACE_API USliderTextBoxOptionWidget : public UMenuOptionWidget
 public:
 	/** Sets the Min and Max values of the slider and sets the grid snap size */
 	void SetValues(const float Min, const float Max, const float SnapSize);
-	
+
 	/** Sets the value for the slider and EditableTextBox */
 	void SetValue(const float Value) const;
 
@@ -38,7 +39,7 @@ public:
 
 	/** Returns the slider value snapped to the grid snap size */
 	float GetSliderValueSnapped() const;
-	
+
 	/** Locks or unlocks the slider and sets the EditableTextBox to read-only or not */
 	void SetSliderAndTextBoxEnabledStates(const bool bEnabled) const;
 
@@ -53,11 +54,11 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void SetStyling() override;
-	
+
 	UFUNCTION()
 	void OnSliderChanged_Slider(const float Value);
 	UFUNCTION()
 	void OnTextCommitted_EditableTextBox(const FText& Text, ETextCommit::Type CommitType);
-	
+
 	float GridSnapSize = 1.f;
 };

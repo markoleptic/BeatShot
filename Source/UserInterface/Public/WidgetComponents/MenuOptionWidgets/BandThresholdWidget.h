@@ -7,7 +7,8 @@
 #include "BandThresholdWidget.generated.h"
 
 class UBandThresholdWidget;
-DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
+DECLARE_DELEGATE_ThreeParams(FOnThresholdValueCommitted, const UBandThresholdWidget* BandThreshold, const int32 Index,
+	const float NewValue);
 
 class UBorder;
 class USlider;
@@ -36,5 +37,6 @@ public:
 	/** The index of this widget inside a collection of them */
 	int32 Index;
 
-	void OnSliderTextBoxValueChanged_Threshold(USliderTextBoxOptionWidget* SliderTextBoxOptionWidget, const float Value);
+	void OnSliderTextBoxValueChanged_Threshold(USliderTextBoxOptionWidget* SliderTextBoxOptionWidget,
+		const float Value);
 };

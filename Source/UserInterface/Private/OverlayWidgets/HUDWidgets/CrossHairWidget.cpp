@@ -11,12 +11,12 @@ void UCrossHairWidget::InitializeCrossHair(const FPlayerSettings_CrossHair& Cros
 	SetLineSize(FVector2d(CrossHairSettings.LineWidth, CrossHairSettings.LineLength));
 	SetInnerOffset(CrossHairSettings.InnerOffset);
 	SetOutlineSize(CrossHairSettings.OutlineSize, FVector2d(CrossHairSettings.LineWidth, CrossHairSettings.LineLength));
-	
+
 	SetLineColor(CrossHairSettings.CrossHairColor);
 	SetOutlineColor(CrossHairSettings.OutlineColor);
 	SetCrossHairDotColor(CrossHairSettings.CrossHairDotColor);
 	SetCrossHairDotOutlineColor(CrossHairSettings.OutlineColor);
-	
+
 	SetCrossHairDotSize(CrossHairSettings.CrossHairDotSize, CrossHairSettings.OutlineSize);
 	SetShowCrossHairDot(CrossHairSettings.bShowCrossHairDot);
 }
@@ -24,13 +24,13 @@ void UCrossHairWidget::InitializeCrossHair(const FPlayerSettings_CrossHair& Cros
 void UCrossHairWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	Slot_Left = Cast<UCanvasPanelSlot>(Overlay_Left->Slot);
 	Slot_Right = Cast<UCanvasPanelSlot>(Overlay_Right->Slot);
-	Slot_Top= Cast<UCanvasPanelSlot>(Overlay_Top->Slot);
+	Slot_Top = Cast<UCanvasPanelSlot>(Overlay_Top->Slot);
 	Slot_Bottom = Cast<UCanvasPanelSlot>(Overlay_Bottom->Slot);
 	Slot_Dot = Cast<UCanvasPanelSlot>(Overlay_Dot->Slot);
-	
+
 	InitializeCrossHair(LoadPlayerSettings().CrossHair);
 }
 
@@ -72,7 +72,7 @@ void UCrossHairWidget::SetInnerOffset(const int32 NewOffsetValue)
 	{
 		return;
 	}
-	
+
 	Slot_Top->SetPosition(FVector2d(0, -NewOffsetValue));
 	Slot_Bottom->SetPosition(FVector2d(0, NewOffsetValue));
 	Slot_Left->SetPosition(FVector2d(-NewOffsetValue, 0));
@@ -99,7 +99,8 @@ void UCrossHairWidget::SetCrossHairDotSize(const int32 NewSize, const int32 Outl
 	UMaterialInstanceDynamic* MaterialInstance = Cast<UMaterialInstanceDynamic>(Image_Dot->GetDynamicMaterial());
 	if (MaterialInstance)
 	{
-		MaterialInstance->SetScalarParameterValue("FillOutlineRatio", static_cast<float>(NewSize) / static_cast<float>(NewSize + OutlineSize));
+		MaterialInstance->SetScalarParameterValue("FillOutlineRatio",
+			static_cast<float>(NewSize) / static_cast<float>(NewSize + OutlineSize));
 	}
 }
 

@@ -29,7 +29,8 @@ void ABSGun::BeginPlay()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
 	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGun::OnPlayerSettingsChanged_Game);
 
-	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())); !OnShotFired.IsBoundToObject(GameMode))
+	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())); !OnShotFired.
+		IsBoundToObject(GameMode))
 	{
 		GameMode->RegisterWeapon(OnShotFired);
 	}
@@ -41,7 +42,8 @@ void ABSGun::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettin
 	SetFireRate(GameSettings.bAutomaticFire);
 	SetShowDecals(GameSettings.bShowBulletDecals);
 	SetShowTracers(GameSettings.bShowBulletTracers && GameSettings.bShowWeaponMesh && GameSettings.bShowCharacterMesh);
-	SetShowMuzzleFlash(GameSettings.bShowMuzzleFlash && GameSettings.bShowWeaponMesh && GameSettings.bShowCharacterMesh);
+	SetShowMuzzleFlash(
+		GameSettings.bShowMuzzleFlash && GameSettings.bShowWeaponMesh && GameSettings.bShowCharacterMesh);
 	SetShowWeaponMesh(GameSettings.bShowWeaponMesh);
 }
 
@@ -71,7 +73,7 @@ FVector ABSGun::GetMuzzleLocation() const
 void ABSGun::SetFireRate(const bool bAutomatic)
 {
 	StopFire();
-	
+
 	if (bAutomatic)
 	{
 		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_AutomaticFire);
@@ -83,7 +85,7 @@ void ABSGun::SetFireRate(const bool bAutomatic)
 void ABSGun::SetShouldRecoil(const bool bRecoil)
 {
 	StopFire();
-	
+
 	if (bRecoil)
 	{
 		AddGameplayTag(FBSGameplayTags().Get().State_Weapon_Recoil);

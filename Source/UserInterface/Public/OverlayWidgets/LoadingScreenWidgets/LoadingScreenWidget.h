@@ -17,21 +17,23 @@ class USERINTERFACE_API ULoadingScreenWidget : public UUserWidget, public ILoadi
 public:
 	/** ~ILoadingProcessInterface begin */
 	virtual bool ShouldShowLoadingScreen(FString& OutReason) const override;
-	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
+	virtual void BindToLoadingScreenDelegates(
+		FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
+		FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
 	/** ~ILoadingProcessInterface end */
-	
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-	
+
 	UFUNCTION()
 	void FadeOut(float AnimPlaybackLength);
-	
+
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
-	
+
 	const FString Reason = "LoadScreenAnimation";
 	bool bShowLoadingScreen = false;
 };

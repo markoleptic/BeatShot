@@ -52,9 +52,9 @@ void URLAgentWidget::InitQTable(const int32 Rows, const int32 Columns, const TAr
 	{
 		for (int i = 0; i < Rows; i++)
 		{
-			UOverlay* Overlay =  WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass());
-			UImage* Image =  WidgetTree->ConstructWidget<UImage>(DefaultImage);
-			UTextBlock* Text =  WidgetTree->ConstructWidget<UTextBlock>(DefaultText);
+			UOverlay* Overlay = WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass());
+			UImage* Image = WidgetTree->ConstructWidget<UImage>(DefaultImage);
+			UTextBlock* Text = WidgetTree->ConstructWidget<UTextBlock>(DefaultText);
 			Text->SetColorAndOpacity(FSlateColor(FLinearColor(FColor::Black)));
 			Overlay->AddChildToOverlay(Image);
 			UOverlaySlot* TextSlot = Overlay->AddChildToOverlay(Text);
@@ -73,9 +73,9 @@ void URLAgentWidget::InitQTable2(const int32 Rows, const int32 Columns, const TA
 	{
 		for (int i = 0; i < Rows; i++)
 		{
-			UOverlay* Overlay =  WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass());
-			UImage* Image =  WidgetTree->ConstructWidget<UImage>(DefaultImage);
-			UTextBlock* Text =  WidgetTree->ConstructWidget<UTextBlock>(DefaultText);
+			UOverlay* Overlay = WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass());
+			UImage* Image = WidgetTree->ConstructWidget<UImage>(DefaultImage);
+			UTextBlock* Text = WidgetTree->ConstructWidget<UTextBlock>(DefaultText);
 			Text->SetColorAndOpacity(FSlateColor(FLinearColor(FColor::Black)));
 			Overlay->AddChildToOverlay(Image);
 			Overlay->AddChildToOverlay(Text);

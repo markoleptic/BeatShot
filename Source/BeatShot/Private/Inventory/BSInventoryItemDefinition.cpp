@@ -3,12 +3,13 @@
 
 #include "Inventory/BSInventoryItemDefinition.h"
 
-UBSInventoryItemDefinition::UBSInventoryItemDefinition(const FObjectInitializer& ObjectInitializer)
-: Super(ObjectInitializer)
+UBSInventoryItemDefinition::UBSInventoryItemDefinition(const FObjectInitializer& ObjectInitializer): Super(
+	ObjectInitializer)
 {
 }
 
-const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindFragmentByClass(TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
+const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindFragmentByClass(
+	TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
 {
 	if (FragmentClass != nullptr)
 	{
@@ -24,7 +25,8 @@ const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindFragmentByClass(
 	return nullptr;
 }
 
-const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindItemDefinitionFragment(TSubclassOf<UBSInventoryItemDefinition> ItemDef, TSubclassOf<UBSInventoryItemFragment> FragmentClass)
+const UBSInventoryItemFragment* UBSInventoryItemDefinition::FindItemDefinitionFragment(
+	TSubclassOf<UBSInventoryItemDefinition> ItemDef, TSubclassOf<UBSInventoryItemFragment> FragmentClass)
 {
 	if ((ItemDef != nullptr) && (FragmentClass != nullptr))
 	{

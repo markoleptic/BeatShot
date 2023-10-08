@@ -16,7 +16,7 @@ void UInputMappingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	SetStyles();
-	
+
 	InputKeySelectorSlot1->OnIsSelectingKeyChanged.AddDynamic(this, &ThisClass::OnIsSelectingKeyChanged_Slot1);
 	InputKeySelectorSlot2->OnIsSelectingKeyChanged.AddDynamic(this, &ThisClass::OnIsSelectingKeyChanged_Slot2);
 

@@ -23,15 +23,15 @@ UBSGA_AimBot::UBSGA_AimBot()
 	bZZero = true;
 }
 
-void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-                                   const FGameplayEventData* TriggerEventData)
+void UBSGA_AimBot::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
 {
 	SetIgnoreStartLocation(IgnoreStartLocation);
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-	bool bWasCancelled)
+void UBSGA_AimBot::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -71,7 +71,7 @@ void UBSGA_AimBot::SetIgnoreStartLocation(const FVector& In)
 	bYPositive = IgnoreStartLocation.Y > 0.f;
 	bYNegative = IgnoreStartLocation.Y < 0.f;
 	bYZero = IgnoreStartLocation.Y == 0.f;
-	
+
 	bZPositive = IgnoreStartLocation.Z > 0.f;
 	bZNegative = IgnoreStartLocation.Z < 0.f;
 	bZZero = IgnoreStartLocation.Z == 0.f;
@@ -89,8 +89,9 @@ void UBSGA_AimBot::CheckTargetQueue()
 		PopActiveTargets();
 		return;
 	}
-	
-	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget, 1.f / ActiveTarget->GetSpawnBeatDelay());
+
+	UBSAT_AimToTarget* AimToTarget = UBSAT_AimToTarget::AimToTarget(this, FName(), SmoothingCurve, ActiveTarget,
+		1.f / ActiveTarget->GetSpawnBeatDelay());
 	AimToTarget->OnCancelled.AddDynamic(this, &ThisClass::OnAimToTargetCancelled);
 	AimToTarget->OnCompleted.AddDynamic(this, &ThisClass::OnAimToTargetCompleted);
 	AimToTarget->ReadyForActivation();
@@ -103,7 +104,7 @@ void UBSGA_AimBot::OnAimToTargetCancelled()
 	{
 		return;
 	}
-	
+
 	PopActiveTargets();
 	ASC->TryActivateAbilityByClass(GA_FireGun);
 	CheckTargetQueue();
@@ -116,7 +117,7 @@ void UBSGA_AimBot::OnAimToTargetCompleted()
 	{
 		return;
 	}
-	
+
 	PopActiveTargets();
 	ASC->TryActivateAbilityByClass(GA_FireGun);
 	CheckTargetQueue();

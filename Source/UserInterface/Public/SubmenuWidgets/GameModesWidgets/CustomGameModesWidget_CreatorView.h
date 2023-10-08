@@ -19,7 +19,7 @@ class USERINTERFACE_API UCustomGameModesWidget_CreatorView : public UCustomGameM
 
 public:
 	virtual void Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset) override;
-	
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -36,7 +36,7 @@ public:
 	USavedTextWidget* SavedTextWidget_CreatorView;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UScrollBox* ScrollBox;
-	
+
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCommonWidgetCarousel* Carousel;

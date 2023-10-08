@@ -117,7 +117,8 @@ void FBSInventoryList::RemoveEntry(UBSInventoryItemInstance* Instance)
 }
 
 
-UBSInventoryManagerComponent::UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer): Super(ObjectInitializer), InventoryList(this)
+UBSInventoryManagerComponent::UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer):
+	Super(ObjectInitializer), InventoryList(this)
 {
 	SetIsReplicatedByDefault(true);
 }
@@ -129,13 +130,15 @@ void UBSInventoryManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimePr
 	DOREPLIFETIME(ThisClass, InventoryList);
 }
 
-bool UBSInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount)
+bool UBSInventoryManagerComponent::CanAddItemDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef,
+	int32 StackCount)
 {
 	//@TODO: Add support for stack limit / uniqueness checks / etc...
 	return true;
 }
 
-UBSInventoryItemInstance* UBSInventoryManagerComponent::AddItemDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount)
+UBSInventoryItemInstance* UBSInventoryManagerComponent::AddItemDefinition(
+	TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 StackCount)
 {
 	UBSInventoryItemInstance* Result = nullptr;
 	if (ItemDef != nullptr)
@@ -174,7 +177,8 @@ TArray<UBSInventoryItemInstance*> UBSInventoryManagerComponent::GetAllItems() co
 	return InventoryList.GetAllItems();
 }
 
-UBSInventoryItemInstance* UBSInventoryManagerComponent::FindFirstItemStackByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef) const
+UBSInventoryItemInstance* UBSInventoryManagerComponent::FindFirstItemStackByDefinition(
+	TSubclassOf<UBSInventoryItemDefinition> ItemDef) const
 {
 	for (const FBSInventoryEntry& Entry : InventoryList.Entries)
 	{
@@ -211,7 +215,8 @@ int32 UBSInventoryManagerComponent::GetTotalItemCountByDefinition(TSubclassOf<UB
 	return TotalCount;
 }
 
-bool UBSInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 NumToConsume)
+bool UBSInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef,
+	int32 NumToConsume)
 {
 	AActor* OwningActor = GetOwner();
 	if (!OwningActor || !OwningActor->HasAuthority())
@@ -237,7 +242,8 @@ bool UBSInventoryManagerComponent::ConsumeItemsByDefinition(TSubclassOf<UBSInven
 	return TotalConsumed == NumToConsume;
 }
 
-bool UBSInventoryManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+bool UBSInventoryManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch,
+	FReplicationFlags* RepFlags)
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 
@@ -466,7 +472,8 @@ void UBSInventoryManagerComponent::EquipItemInSlot()
 
 	if (UBSInventoryItemInstance* SlotItem = Slots[ActiveSlotIndex])
 	{
-		if (const UInventoryFragment_Equippable* EquipInfo = SlotItem->FindFragmentByClass<UInventoryFragment_Equippable>())
+		if (const UInventoryFragment_Equippable* EquipInfo = SlotItem->FindFragmentByClass<
+			UInventoryFragment_Equippable>())
 		{
 			const TSubclassOf<UBSEquipmentDefinition> EquipDef = EquipInfo->EquipmentDefinition;
 			if (EquipDef != nullptr)

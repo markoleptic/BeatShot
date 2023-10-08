@@ -13,13 +13,14 @@ AVisualizerManager::AVisualizerManager()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings, const FPlayerSettings_AudioAnalyzer& InAASettings)
+void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings,
+	const FPlayerSettings_AudioAnalyzer& InAASettings)
 {
 	AvgSpectrumValues.Init(0, InAASettings.NumBandChannels);
 	CurrentSpectrumValues.Init(0, InAASettings.NumBandChannels);
 	MaxSpectrumValues.Init(1.f, InAASettings.NumBandChannels);
 	CurrentCubeSpectrumValues.Init(0, InAASettings.NumBandChannels);
-	
+
 	/* Initialize visualizers already placed in level that may or not have spawned lights already */
 	for (const TSoftObjectPtr<AVisualizerBase>& Visualizer : LevelVisualizers)
 	{
@@ -27,17 +28,17 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 		{
 			switch (Visualizer->GetVisualizerDefinition()->VisualizerLightSpawningMethod)
 			{
-				case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
+			case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Invalid Spawning Method for a Visualizer in LevelVisualizers"));
 					continue;
 				}
-				case EVisualizerLightSpawningMethod::SpawnUsingSpline:
+			case EVisualizerLightSpawningMethod::SpawnUsingSpline:
 				{
 					Visualizer->InitializeVisualizer(InAASettings);
 					break;
 				}
-				case EVisualizerLightSpawningMethod::AddExistingLightsFromLevel:
+			case EVisualizerLightSpawningMethod::AddExistingLightsFromLevel:
 				{
 					Visualizer->InitializeVisualizerFromWorld(InAASettings, INDEX_NONE);
 					break;
@@ -57,7 +58,8 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 			{
 				continue;
 			}
-			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation, CDO->GetVisualizerDefinition()->Location, CDO->GetVisualizerDefinition()->Scale);
+			FTransform Transform(CDO->GetVisualizerDefinition()->Rotation, CDO->GetVisualizerDefinition()->Location,
+				CDO->GetVisualizerDefinition()->Scale);
 			AVisualizerBase* SpawnedVisualizer = GetWorld()->SpawnActorDeferred<AVisualizerBase>(Visualizer, Transform);
 			SpawnedVisualizer->InitializeVisualizer(InAASettings);
 			SpawnedVisualizer->FinishSpawning(Transform, true);
@@ -67,7 +69,7 @@ void AVisualizerManager::InitializeVisualizers(const FPlayerSettings_Game& Playe
 
 	/* Split visualizer types into their own containers so that UpdateVisualizers can be as efficient as possible */
 	SplitVisualizers();
-	
+
 	UpdateVisualizerSettings(PlayerSettings);
 }
 
@@ -77,7 +79,8 @@ float AVisualizerManager::GetNormalizedSpectrumValue(const int32 Index, const bo
 	{
 		return UKismetMathLibrary::MapRangeClamped(CurrentSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
 	}
-	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0, MaxSpectrumValues[Index], 0, 1);
+	return UKismetMathLibrary::MapRangeClamped(CurrentCubeSpectrumValues[Index] - AvgSpectrumValues[Index], 0,
+		MaxSpectrumValues[Index], 0, 1);
 }
 
 void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
@@ -86,7 +89,7 @@ void AVisualizerManager::UpdateVisualizers(const TArray<float>& SpectrumValues)
 	{
 		return;
 	}
-	
+
 	for (int i = 0; i < SpectrumValues.Num(); i++)
 	{
 		if (SpectrumValues[i] > MaxSpectrumValues[i])
@@ -179,8 +182,8 @@ void AVisualizerManager::UpdateVisualizerSettings(const FPlayerSettings_Game& Pl
 	SetActivationState_CubeVisualizer(1, PlayerSettings.bShow_LVRightCube);
 
 	bUpdateCubeVisualizers = PlayerSettings.bShow_LVLeftCube || PlayerSettings.bShow_LVRightCube;
-	bUpdateBeamVisualizers = PlayerSettings.bShow_LVFrontBeam || PlayerSettings.bShow_LVTopBeam ||
-		PlayerSettings.bShow_LVLeftBeam || PlayerSettings.bShow_LVRightBeam;
+	bUpdateBeamVisualizers = PlayerSettings.bShow_LVFrontBeam || PlayerSettings.bShow_LVTopBeam || PlayerSettings.
+		bShow_LVLeftBeam || PlayerSettings.bShow_LVRightBeam;
 }
 
 void AVisualizerManager::UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings)

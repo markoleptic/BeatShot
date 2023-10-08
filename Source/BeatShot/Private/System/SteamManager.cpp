@@ -6,54 +6,41 @@
 #include "BSGameInstance.h"
 
 // Stats array which will hold data about the stats and their state
-TArray<FSteamStat> g_Stats =
-{
+TArray<FSteamStat> g_Stats = {
 	// Number of games played Multi-Beat
-	_STAT_ID( 1, Stat_Int, "NumGamesPlayed_GM1"),
+	_STAT_ID(1, Stat_Int, "NumGamesPlayed_GM1"),
 	// Number of games played Single-Beat
-	_STAT_ID( 2, Stat_Int, "NumGamesPlayed_GM2"),
+	_STAT_ID(2, Stat_Int, "NumGamesPlayed_GM2"),
 	// Number of games played Beat-Track
-	_STAT_ID( 3, Stat_Int, "NumGamesPlayed_GM3"),
+	_STAT_ID(3, Stat_Int, "NumGamesPlayed_GM3"),
 	// Number of games played Beat-Grid
-	_STAT_ID( 4, Stat_Int, "NumGamesPlayed_GM4"),
+	_STAT_ID(4, Stat_Int, "NumGamesPlayed_GM4"),
 	// Number of games played Cluster-Beat
-	_STAT_ID( 5, Stat_Int, "NumGamesPlayed_GM5"),
+	_STAT_ID(5, Stat_Int, "NumGamesPlayed_GM5"),
 	// Number of games played Charged Beat-Track
-	_STAT_ID( 6, Stat_Int, "NumGamesPlayed_GM6"),
+	_STAT_ID(6, Stat_Int, "NumGamesPlayed_GM6"),
 	// Number of games played Custom Game Mode
-	_STAT_ID( 8, Stat_Int, "NumGamesPlayed_Custom"),
+	_STAT_ID(8, Stat_Int, "NumGamesPlayed_Custom"),
 };
 
 // Achievement array which will hold data about the achievements and their state
-TArray<FSteamAchievement> g_Achievements =
-{
-	_ACH_ID(ACH_PlayAnyGM, "PlayAnyGM"),
-	_ACH_ID(ACH_Participant_GM1, "Participant_GM1"),
-	_ACH_ID(ACH_Participant_GM2, "Participant_GM2"),
-	_ACH_ID(ACH_Participant_GM3, "Participant_GM3"),
-	_ACH_ID(ACH_Participant_GM4, "Participant_GM4"),
-	_ACH_ID(ACH_Participant_GM5, "Participant_GM5"),
-	_ACH_ID(ACH_Participant_GM6, "Participant_GM6"),
-	_ACH_ID(ACH_Enthusiast_GM1, "Enthusiast_GM1"),
-	_ACH_ID(ACH_Enthusiast_GM2, "Enthusiast_GM2"),
-	_ACH_ID(ACH_Enthusiast_GM3, "Enthusiast_GM3"),
-	_ACH_ID(ACH_Enthusiast_GM4, "Enthusiast_GM4"),
-	_ACH_ID(ACH_Enthusiast_GM5, "Enthusiast_GM5"),
-	_ACH_ID(ACH_Enthusiast_GM6, "Enthusiast_GM6"),
-	_ACH_ID(ACH_Enjoyer_GM1, "Enjoyer_GM1"),
-	_ACH_ID(ACH_Enjoyer_GM2, "Enjoyer_GM2"),
-	_ACH_ID(ACH_Enjoyer_GM3, "Enjoyer_GM3"),
-	_ACH_ID(ACH_Enjoyer_GM4, "Enjoyer_GM4"),
-	_ACH_ID(ACH_Enjoyer_GM5, "Enjoyer_GM5"),
-	_ACH_ID(ACH_Enjoyer_GM6, "Enjoyer_GM6"),
-	_ACH_ID(ACH_Participant_Custom, "Participant_Custom"),
-	_ACH_ID(ACH_Enthusiast_Custom, "Enthusiast_Custom"),
-	_ACH_ID(ACH_Enjoyer_Custom, "Enjoyer_Custom"),
+TArray<FSteamAchievement> g_Achievements = {
+	_ACH_ID(ACH_PlayAnyGM, "PlayAnyGM"), _ACH_ID(ACH_Participant_GM1, "Participant_GM1"),
+	_ACH_ID(ACH_Participant_GM2, "Participant_GM2"), _ACH_ID(ACH_Participant_GM3, "Participant_GM3"),
+	_ACH_ID(ACH_Participant_GM4, "Participant_GM4"), _ACH_ID(ACH_Participant_GM5, "Participant_GM5"),
+	_ACH_ID(ACH_Participant_GM6, "Participant_GM6"), _ACH_ID(ACH_Enthusiast_GM1, "Enthusiast_GM1"),
+	_ACH_ID(ACH_Enthusiast_GM2, "Enthusiast_GM2"), _ACH_ID(ACH_Enthusiast_GM3, "Enthusiast_GM3"),
+	_ACH_ID(ACH_Enthusiast_GM4, "Enthusiast_GM4"), _ACH_ID(ACH_Enthusiast_GM5, "Enthusiast_GM5"),
+	_ACH_ID(ACH_Enthusiast_GM6, "Enthusiast_GM6"), _ACH_ID(ACH_Enjoyer_GM1, "Enjoyer_GM1"),
+	_ACH_ID(ACH_Enjoyer_GM2, "Enjoyer_GM2"), _ACH_ID(ACH_Enjoyer_GM3, "Enjoyer_GM3"),
+	_ACH_ID(ACH_Enjoyer_GM4, "Enjoyer_GM4"), _ACH_ID(ACH_Enjoyer_GM5, "Enjoyer_GM5"),
+	_ACH_ID(ACH_Enjoyer_GM6, "Enjoyer_GM6"), _ACH_ID(ACH_Participant_Custom, "Participant_Custom"),
+	_ACH_ID(ACH_Enthusiast_Custom, "Enthusiast_Custom"), _ACH_ID(ACH_Enjoyer_Custom, "Enjoyer_Custom"),
 };
 
 USteamManager::USteamManager()
 {
-    WebApiTicket = FString();
+	WebApiTicket = FString();
 	AppId = 0;
 	StatsData = TArray<FSteamStat>();
 	AchievementData = TArray<FSteamAchievement>();
@@ -69,10 +56,10 @@ void USteamManager::InitializeSteamManager()
 	OnAchievementStoredCallback.Register(this, &ThisClass::OnAchievementStored);
 
 	AppId = SteamUtils()->GetAppID();
-	
+
 	StatsData = g_Stats;
 	AchievementData = g_Achievements;
-	
+
 	bInitializedStats = RequestStats();
 
 	// TODO: Find place to call this
@@ -100,7 +87,7 @@ void USteamManager::UpdateStat(const char* StatAPIName, ESteamStatType StatType,
 	{
 		if (StatsData[i].APIName == StatAPIName)
 		{
-			FSteamStat &Stat = StatsData[i];
+			FSteamStat& Stat = StatsData[i];
 			switch (StatType)
 			{
 			case Stat_Int:
@@ -136,7 +123,7 @@ void USteamManager::UpdateStat_NumGamesPlayed(const EBaseGameMode GameMode, int 
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to find FSteamStat for GameMode"));
 	}
-	
+
 	/*for (int i = 0; i < StatsData.Num(); ++i)
 	{
 		if (StatsData[i].APIName == StatAPIName)
@@ -214,7 +201,7 @@ void USteamManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
 			// load achievements
 			for (int i = 0; i < AchievementData.Num(); ++i)
 			{
-				FSteamAchievement &Ach = AchievementData[i];
+				FSteamAchievement& Ach = AchievementData[i];
 				SteamUserStats()->GetAchievement(Ach.APIName, &Ach.bAchieved);
 				//const char* AchieveName = SteamUserStats()->GetAchievementDisplayAttribute(Ach.APIName, "name");
 				//const char* AchieveDesc = SteamUserStats()->GetAchievementDisplayAttribute(Ach.APIName, "desc");
@@ -223,7 +210,7 @@ void USteamManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
 			// load stats
 			for (int i = 0; i < StatsData.Num(); ++i)
 			{
-				FSteamStat &Stat = StatsData[i];
+				FSteamStat& Stat = StatsData[i];
 				switch (Stat.StatType)
 				{
 				case Stat_Int:
@@ -238,7 +225,7 @@ void USteamManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
 				}
 				//UE_LOG(LogTemp, Warning, TEXT("Stat.APIName %hs IntValue: %d FloatDesc: %f"), Stat.APIName, Stat.IntValue, Stat.FloatValue);
 			}
-			
+
 			UE_LOG(LogTemp, Warning, TEXT("Received stats from Steam"));
 			bInitializedStats = true;
 		}
@@ -272,7 +259,7 @@ void USteamManager::OnUserStatsStored(UserStatsStored_t* pCallback)
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("StatsStored - failed, %d" ), pCallback->m_eResult );
+			UE_LOG(LogTemp, Warning, TEXT("StatsStored - failed, %d" ), pCallback->m_eResult);
 		}
 	}
 }
@@ -305,7 +292,7 @@ bool USteamManager::RequestStats()
 
 bool USteamManager::StoreStats()
 {
-	if ( bInitializedStats )
+	if (bInitializedStats)
 	{
 		// load stats
 		for (int i = 0; i < StatsData.Num(); ++i)
@@ -320,8 +307,9 @@ bool USteamManager::StoreStats()
 				SteamUserStats()->SetStat(CurrentStat.APIName, CurrentStat.FloatValue);
 				break;
 			case Stat_AvgRate:
-				SteamUserStats()->UpdateAvgRateStat(CurrentStat.APIName, CurrentStat.FloatAvgNumerator, CurrentStat.FloatAvgDenominator);
-				// The averaged result is calculated for us
+				SteamUserStats()->UpdateAvgRateStat(CurrentStat.APIName, CurrentStat.FloatAvgNumerator,
+					CurrentStat.FloatAvgDenominator);
+			// The averaged result is calculated for us
 				SteamUserStats()->GetStat(CurrentStat.APIName, &CurrentStat.FloatValue);
 				break;
 			default:
@@ -362,7 +350,7 @@ bool USteamManager::SetAchievement(const ESteamAchievement InSteamAchievement) c
 
 const char* USteamManager::GetAchievementIDFromESteamAchievement(const ESteamAchievement InSteamAchievement) const
 {
-	const FSteamAchievement* Found = AchievementData.FindByPredicate([&] (const FSteamAchievement& SteamAchStruct)
+	const FSteamAchievement* Found = AchievementData.FindByPredicate([&](const FSteamAchievement& SteamAchStruct)
 	{
 		return SteamAchStruct.ID == InSteamAchievement;
 	});
@@ -392,11 +380,11 @@ FSteamStat* USteamManager::GetStat_NumGamesPlayed(const EBaseGameMode GameMode)
 	case EBaseGameMode::ChargedBeatTrack:
 		ID = 6;
 		break;
-	default: 
+	default:
 		ID = 8;
 		break;
 	}
-	return StatsData.FindByPredicate([&] (const FSteamStat& SteamStat)
+	return StatsData.FindByPredicate([&](const FSteamStat& SteamStat)
 	{
 		return SteamStat.ID == ID;
 	});

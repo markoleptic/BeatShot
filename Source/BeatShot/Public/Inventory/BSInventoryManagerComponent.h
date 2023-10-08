@@ -39,7 +39,8 @@ struct FBSInventoryEntry : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	FBSInventoryEntry()
-	{}
+	{
+	}
 
 	FString GetDebugString() const;
 
@@ -66,18 +67,16 @@ struct FBSInventoryList : public FFastArraySerializer
 {
 	GENERATED_BODY()
 
-	FBSInventoryList()
-		: OwnerComponent(nullptr)
+	FBSInventoryList() : OwnerComponent(nullptr)
 	{
 	}
 
-	FBSInventoryList(UActorComponent* InOwnerComponent)
-		: OwnerComponent(InOwnerComponent)
+	FBSInventoryList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent)
 	{
 	}
 
 	TArray<UBSInventoryItemInstance*> GetAllItems() const;
-	
+
 	//~FFastArraySerializer contract
 	void PreReplicatedRemove(const TArrayView<int32> RemovedIndices, int32 FinalSize);
 	void PostReplicatedAdd(const TArrayView<int32> AddedIndices, int32 FinalSize);
@@ -93,9 +92,8 @@ struct FBSInventoryList : public FFastArraySerializer
 	void RemoveEntry(UBSInventoryItemInstance* Instance);
 
 private:
-	
 	friend UBSInventoryManagerComponent;
-	
+
 	// Replicated list of items
 	UPROPERTY()
 	TArray<FBSInventoryEntry> Entries;
@@ -104,7 +102,7 @@ private:
 	TObjectPtr<UActorComponent> OwnerComponent;
 };
 
-template<>
+template <>
 struct TStructOpsTypeTraits<FBSInventoryList> : public TStructOpsTypeTraitsBase2<FBSInventoryList>
 {
 	enum { WithNetDeltaSerializer = true };
@@ -146,7 +144,8 @@ public:
 	bool ConsumeItemsByDefinition(TSubclassOf<UBSInventoryItemDefinition> ItemDef, int32 NumToConsume);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
+		FReplicationFlags* RepFlags) override;
 	virtual void ReadyForReplication() override;
 	//~End of UObject interface
 
@@ -155,7 +154,7 @@ private:
 	FBSInventoryList InventoryList;
 
 public:
-	UFUNCTION(BlueprintCallable,  Category = "Inventory | Slots")
+	UFUNCTION(BlueprintCallable, Category = "Inventory | Slots")
 	void CycleActiveSlotForward();
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory | Slots")
@@ -165,7 +164,7 @@ public:
 	void SetActiveSlotIndex(int32 NewIndex);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category= "Inventory | Slots")
-	TArray<UBSInventoryItemInstance*> GetSlots() const{ return Slots; }
+	TArray<UBSInventoryItemInstance*> GetSlots() const { return Slots; }
 
 	UFUNCTION(BlueprintCallable, BlueprintPure=false, Category= "Inventory | Slots")
 	int32 GetActiveSlotIndex() const { return ActiveSlotIndex; }
@@ -175,7 +174,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure = false, Category= "Inventory | Slots")
 	UBSInventoryItemInstance* GetActiveSlotItem() const;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Slots")
 	UBSInventoryItemInstance* GetLastSlotItem() const;
 
@@ -187,19 +186,19 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Slots")
 	UBSInventoryItemInstance* RemoveItemFromSlot(int32 SlotIndex);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Equipment")
 	UBSEquipmentInstance* GetEquippedItem() const;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Equipment")
 	AActor* GetEquippedItemFirstSpawnedActor() const;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Tags")
 	bool EquippedContainsTag(const FGameplayTag& Tag) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category= "Inventory | Tags")
 	bool SlotIndexContainsTag(const int32 SlotIndex, const FGameplayTag& Tag) const;
-	
+
 	virtual void BeginPlay() override;
 
 private:

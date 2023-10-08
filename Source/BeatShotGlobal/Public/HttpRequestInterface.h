@@ -15,6 +15,7 @@ enum class EPostScoresResponse : uint8
 	HttpError UMETA(DisplayName="HttpError"),
 	HttpSuccess UMETA(DisplayName="HttpSuccess"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore, EPostScoresResponse::HttpSuccess);
 
 /** Simple login payload */
@@ -110,10 +111,14 @@ struct FSteamAuthTicketResponse
 DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString& AccessToken);
 
 /** Broadcast when a login response is received from BeatShot website */
-DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FLoginResponse& LoginResponse, const FString& ResponseMsg, const int32 ResponseCode);
+DECLARE_DELEGATE_ThreeParams(FOnLoginResponse, const FLoginResponse& LoginResponse, const FString& ResponseMsg,
+	const int32 ResponseCode);
 
 /** Broadcast when a response is received from posting player scores to database */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostScoresResponse, const EPostScoresResponse& Response);
+
+/** Broadcast when a response is received from deleting player scores to database */
+DECLARE_DELEGATE_TwoParams(FOnDeleteScoresResponse, const int32 NumRemoved, const int32 ResponseCode);
 
 /** Broadcast when a response is received from posting player feedback to database */
 DECLARE_DELEGATE_OneParam(FOnPostFeedbackResponse, const bool bSuccess);
@@ -154,7 +159,26 @@ struct FJsonFeedback
 		Title = InTitle;
 		Content = InContent;
 	}
-	
+};
+
+/** Used to pass the json body containing the CustomGameModeName to delete */
+USTRUCT(BlueprintType)
+struct FJsonDeleteScores
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FString CustomGameModeName;
+
+	FJsonDeleteScores()
+	{
+		CustomGameModeName = "";
+	}
+
+	FJsonDeleteScores(const FString& InCustomGameModeName)
+	{
+		CustomGameModeName = InCustomGameModeName;
+	}
 };
 
 /** Interface to allow all other classes in this game to use HTTP request functions */
@@ -176,21 +200,26 @@ public:
 	/** Requests a short lived access token given a valid login cookie. Executes supplied OnAccessTokenResponse
 	 *  with an access token */
 	static void RequestAccessToken(const FString& RefreshToken, FOnAccessTokenResponse& OnAccessTokenResponse);
-	
+
 	/** Sends an http post login request to BeatShot website given a LoginPayload. Executes supplied OnLoginResponse
 	 *  with a login cookie */
 	static void LoginUser(const FLoginPayload& LoginPayload, FOnLoginResponse& OnLoginResponse);
-	
+
 	/* Converts ScoresToPost to a JSON string and sends an http post request to BeatShot website given a valid
 	 * access token. Executes supplied OnPostResponse */
-	static void PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& Username, const FString& AccessToken, FOnPostScoresResponse& OnPostResponse);
+	static void PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& Username,
+		const FString& AccessToken, FOnPostScoresResponse& OnPostResponse);
 
 	/** Makes a POST request to BeatShot website which emails the feedback. Executes supplied OnPostFeedbackResponse */
 	static void PostFeedback(const FJsonFeedback& InFeedback, FOnPostFeedbackResponse& OnPostFeedbackResponse);
-	
-	// Can't be static since Game Instance calls on Async thread
-	
-	/** Makes a GET request to BeatShot website that uses the AuthenticateUserTicket request from the ISteamUserAuthInterface. Executes supplied OnTicketWebApiResponse */
-	void AuthenticateSteamUser(const FString& AuthTicket, FOnTicketWebApiResponse& OnTicketWebApiResponse) const;
 
+	/** Makes a DELETE request to BeatShot website which deletes all scores matching the CustomGameModeName and userID */
+	static void DeleteScores(const FString CustomGameModeName, const FString& Username, const FString& AccessToken,
+		FOnDeleteScoresResponse& OnDeleteScoresResponse);
+
+	// Can't be static since Game Instance calls on Async thread
+
+	/** Makes a GET request to BeatShot website that uses the AuthenticateUserTicket request from the
+	 *  ISteamUserAuthInterface. Executes supplied OnTicketWebApiResponse */
+	void AuthenticateSteamUser(const FString& AuthTicket, FOnTicketWebApiResponse& OnTicketWebApiResponse) const;
 };

@@ -21,10 +21,10 @@ public:
 
 	/** Sets the vertical padding of the BoxBounds */
 	void SetBoxBoundsPosition(const float VerticalOffset) const;
-	
+
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
 	USizeBox* BoxBounds;
 	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))

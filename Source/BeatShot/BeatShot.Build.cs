@@ -14,13 +14,15 @@ public class BeatShot : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "UMG", "BeatShotGlobal", "NumCpp", "OnlineSubsystem", "OnlineSubsystemUtils", 
-			"Steamworks", "GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "PhysicsCore", "ModularGameplay", "CommonLoadingScreen", "Text3D", "DLSSBlueprint", "NISBlueprint", 
+			"Core", "CoreUObject", "Engine", "InputCore", "Niagara", "EnhancedInput", "UserInterface", "UMG",
+			"BeatShotGlobal", "NumCpp", "OnlineSubsystem", "OnlineSubsystemUtils",
+			"Steamworks", "GameplayAbilities", "GameplayTags", "GameplayTasks", "NetCore", "PhysicsCore",
+			"ModularGameplay", "CommonLoadingScreen", "Text3D", "DLSSBlueprint", "NISBlueprint",
 			"StreamlineBlueprint"
 		});
-		
+
 		PrivateDependencyModuleNames.AddRange(new[]
-		{ 
+		{
 			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib"
 		});
 
@@ -33,9 +35,10 @@ public class BeatShot : ModuleRules
 			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio",
 			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb"
 		});
-		
+
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
-		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
+		PublicIncludePaths.Add(Path.Combine(EngineDirectory,
+			"Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
 
 		DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
 	}

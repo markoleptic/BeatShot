@@ -48,13 +48,13 @@ protected:
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Audio Select Widget | Classes")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	
+
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UTooltipImage* QMark_PlaybackAudio;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSButton* Button_AudioFromFile;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
@@ -74,14 +74,14 @@ protected:
 	UHorizontalBox* Box_SongLength;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UVerticalBox* Box_SongTitle;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UComboBoxString* ComboBox_InAudioDevices;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UComboBoxString* ComboBox_OutAudioDevices;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UComboBoxString* ComboBox_SongTitle;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UCheckBox* Checkbox_PlaybackAudio;
 
@@ -91,12 +91,12 @@ protected:
 	UEditableTextBox* Value_Minutes;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UEditableTextBox* Value_Seconds;
-	
+
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
-	
+
 	/** Opens file dialog for song selection */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void OpenSongFileDialog(TArray<FString>& OutFileNames);
@@ -107,7 +107,7 @@ private:
 
 	UFUNCTION()
 	void OnButtonPressed_BSButton(const UBSButton* Button);
-	
+
 	UFUNCTION()
 	void OnButtonClicked_AudioFromFile();
 	UFUNCTION()
@@ -130,15 +130,17 @@ private:
 	void OnSelectionChanged_SongTitle(const FString SelectedSongTitle, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnCheckStateChanged_PlaybackAudio(const bool bIsChecked);
-	
+
 	/** Displays an error message upon failed AudioAnalyzer initialization */
 	UFUNCTION()
 	void ShowSongPathErrorMessage();
 
 	/** Opens file dialog for song selection */
 	bool OpenFileDialog(TArray<FString>& OutFileNames);
-	
-	bool FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle, const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags, TArray<FString>& OutFilenames, int32& OutFilterIndex);
+
+	bool FileDialogShared(bool bSave, const void* ParentWindowHandle, const FString& DialogTitle,
+		const FString& DefaultPath, const FString& DefaultFile, const FString& FileTypes, uint32 Flags,
+		TArray<FString>& OutFilenames, int32& OutFilterIndex);
 
 	/** Hides the error message */
 	UFUNCTION()
@@ -150,7 +152,7 @@ private:
 
 	/** Number formatting options for song length text boxes */
 	FNumberFormattingOptions NumberFormattingOptions;
-	
+
 	/** Contains information relating to the audio format the user has selected. Passed to GameModesWidget
 	 *  using OnStartButtonClickedDelegate */
 	FBS_AudioConfig AudioConfig;

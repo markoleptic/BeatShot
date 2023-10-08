@@ -38,7 +38,8 @@ void ATargetPreview::Destroyed()
 	Super::Destroyed();
 }
 
-void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin, const FVector& InStartLocation, const float BoundsHeight)
+void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin,
+	const FVector& InStartLocation, const float BoundsHeight)
 {
 	BoxBoundsHeight = BoundsHeight;
 	TargetWidget = InTargetWidget;
@@ -79,7 +80,8 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 		{
 			const float DestroyTime = FMath::FRandRange(Lifespan * 0.25f, Lifespan * 0.75f);
 			GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
-			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this, &ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
+			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this,
+				&ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
 		}
 	}
 	return bWasActivated;
@@ -107,8 +109,9 @@ void ATargetPreview::OnHealthChanged(AActor* ActorInstigator, const float OldVal
 		TimeAlive = -1.f;
 	}
 	TimerManager.ClearTimer(DamageableWindow);
-	
-	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(), abs(OldValue - NewValue));
+
+	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(),
+		abs(OldValue - NewValue));
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
 	HandleDeactivation(TimeAlive < 0.f, NewValue);
 	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);
@@ -125,7 +128,7 @@ void ATargetPreview::OnTargetMaxLifeSpanExpired()
 void ATargetPreview::HandleDeactivationResponses(const bool bExpired)
 {
 	Super::HandleDeactivationResponses(bExpired);
-	
+
 	// Hide target
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::HideTarget))
 	{
@@ -177,4 +180,3 @@ void ATargetPreview::SetTargetWidgetLocation(const FVector& NewLocation) const
 		TargetWidget->SetTargetPosition(GetWidgetPositionFromWorldPosition(NewLocation));
 	}
 }
-

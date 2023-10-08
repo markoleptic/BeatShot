@@ -24,11 +24,10 @@ struct FGameplayTagStack : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	FGameplayTagStack()
-	{}
+	{
+	}
 
-	FGameplayTagStack(const FGameplayTag InTag, const int32 InStackCount)
-		: Tag(InTag)
-		, StackCount(InStackCount)
+	FGameplayTagStack(const FGameplayTag InTag, const int32 InStackCount) : Tag(InTag), StackCount(InStackCount)
 	{
 	}
 
@@ -54,7 +53,7 @@ struct FGameplayTagStackContainer : public FFastArraySerializer
 	//	: Owner(nullptr)
 	{
 	}
-	
+
 	// Adds a specified number of stacks to the tag (does nothing if StackCount is below 1)
 	void AddStack(FGameplayTag Tag, int32 StackCount);
 
@@ -81,19 +80,20 @@ struct FGameplayTagStackContainer : public FFastArraySerializer
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize<FGameplayTagStack, FGameplayTagStackContainer>(Stacks, DeltaParms, *this);
+		return FFastArraySerializer::FastArrayDeltaSerialize<FGameplayTagStack, FGameplayTagStackContainer>(Stacks,
+			DeltaParms, *this);
 	}
 
 private:
 	// Replicated list of gameplay tag stacks
 	UPROPERTY()
 	TArray<FGameplayTagStack> Stacks;
-	
+
 	// Accelerated list of tag stacks for queries
 	TMap<FGameplayTag, int32> TagToCountMap;
 };
 
-template<>
+template <>
 struct TStructOpsTypeTraits<FGameplayTagStackContainer> : public TStructOpsTypeTraitsBase2<FGameplayTagStackContainer>
 {
 	enum

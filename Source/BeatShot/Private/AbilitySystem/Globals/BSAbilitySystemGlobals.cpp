@@ -4,7 +4,8 @@
 #include "AbilitySystem/Globals/BSAbilitySystemGlobals.h"
 #include "GameplayEffect.h"
 
-void UBSAbilitySystemGlobals::PushCurrentAppliedGE(const FGameplayEffectSpec* Spec, UAbilitySystemComponent* AbilitySystemComponent)
+void UBSAbilitySystemGlobals::PushCurrentAppliedGE(const FGameplayEffectSpec* Spec,
+	UAbilitySystemComponent* AbilitySystemComponent)
 {
 	check(IsInGameThread());
 	CurrentGameplayEffectSpecStack.Push(*Spec);

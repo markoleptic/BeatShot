@@ -33,7 +33,7 @@ protected:
 	UOverlay* Overlay_Bottom;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_Dot;
-	
+
 	UPROPERTY()
 	UCanvasPanelSlot* Slot_Left;
 	UPROPERTY()
@@ -62,23 +62,23 @@ protected:
 	UImage* Image_Right;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_Bottom;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_Dot;
 
 public:
 	/** Sets the size of lines */
 	void SetLineSize(const FVector2d VerticalLineSize);
-	
+
 	/** Sets the size of the outlines */
 	void SetOutlineSize(const int32 NewSize, const FVector2d VerticalLineSize);
-	
+
 	/** Sets the color of the Outline Images */
 	void SetOutlineColor(const FLinearColor NewColor);
-	
+
 	/** Sets the color of the lines */
 	void SetLineColor(const FLinearColor NewColor);
-	
+
 	/** Sets the offset between the middle of the screen and the start of the lines */
 	void SetInnerOffset(const int32 NewOffset);
 
@@ -93,7 +93,7 @@ public:
 
 	/** Sets the color of the CrossHair Dot Outline */
 	void SetCrossHairDotOutlineColor(const FLinearColor NewColor);
-	
+
 	/** Reinitialize CrossHair if Player Settings change */
 	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;
 };

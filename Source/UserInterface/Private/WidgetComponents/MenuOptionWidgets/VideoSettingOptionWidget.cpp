@@ -46,7 +46,7 @@ void UVideoSettingOptionWidget::NativeConstruct()
 	Button_1->SetButtonText(Button_1_Text);
 	Button_2->SetButtonText(Button_2_Text);
 	Button_3->SetButtonText(Button_3_Text);
-	
+
 	Button_0->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnBSButtonPressed_VideoQuality);
 	Button_1->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnBSButtonPressed_VideoQuality);
 	Button_2->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnBSButtonPressed_VideoQuality);
@@ -72,5 +72,6 @@ void UVideoSettingOptionWidget::OnBSButtonPressed_VideoQuality(const UBSButton* 
 	{
 		return;
 	}
-	OnVideoSettingQualityButtonPressed.Broadcast(VideoSettingButton->GetVideoSettingType(), VideoSettingButton->GetVideoSettingQuality());
+	OnVideoSettingQualityButtonPressed.Broadcast(VideoSettingButton->GetVideoSettingType(),
+		VideoSettingButton->GetVideoSettingQuality());
 }

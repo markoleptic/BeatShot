@@ -31,8 +31,9 @@ void UColorSelectOptionWidget::SetStyling()
 	Super::SetStyling();
 	if (MenuOptionStyle)
 	{
-		const FMargin NewMargin(0.f, MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftHorizontalBox.Top,
-		                        0.f, MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftHorizontalBox.Bottom);
+		const FMargin NewMargin(0.f,
+			MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftHorizontalBox.Top, 0.f,
+			MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftHorizontalBox.Bottom);
 		if (ColorAValue)
 		{
 			ColorAValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);
@@ -95,7 +96,6 @@ void UColorSelectOptionWidget::SetStyling()
 			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(HexText->Slot);
 			if (HorizontalBoxSlot)
 			{
-
 				HorizontalBoxSlot->SetPadding(NewMargin);
 			}
 		}
@@ -122,7 +122,8 @@ void UColorSelectOptionWidget::InitializeColor(const FLinearColor& NewColor)
 
 void UColorSelectOptionWidget::OnColorAValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorAValue, ColorASlider, 1, 0, 100);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorAValue, ColorASlider, 1, 0,
+		100);
 	Color.A = FMath::GridSnap(SnappedValue / 100, 0.01);
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -134,7 +135,8 @@ void UColorSelectOptionWidget::OnColorAValueChange(const FText& NewValue, ETextC
 
 void UColorSelectOptionWidget::OnColorRValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorRValue, ColorRSlider, 1, 0, 255);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorRValue, ColorRSlider, 1, 0,
+		255);
 	Color.R = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -146,7 +148,8 @@ void UColorSelectOptionWidget::OnColorRValueChange(const FText& NewValue, ETextC
 
 void UColorSelectOptionWidget::OnColorGValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorGValue, ColorGSlider, 1, 0, 255);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorGValue, ColorGSlider, 1, 0,
+		255);
 	Color.G = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));
@@ -158,7 +161,8 @@ void UColorSelectOptionWidget::OnColorGValueChange(const FText& NewValue, ETextC
 
 void UColorSelectOptionWidget::OnColorBValueChange(const FText& NewValue, ETextCommit::Type CommitType)
 {
-	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorBValue, ColorBSlider, 1, 0, 255);
+	const float SnappedValue = IBSWidgetInterface::OnEditableTextBoxChanged(NewValue, ColorBValue, ColorBSlider, 1, 0,
+		255);
 	Color.B = SnappedValue / 255;
 	ColorPreview->SetColorAndOpacity(Color);
 	HexValue->SetText(FText::FromString(Color.ToFColor(false).ToHex()));

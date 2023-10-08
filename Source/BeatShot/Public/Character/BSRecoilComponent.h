@@ -22,7 +22,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+		FActorComponentTickFunction* ThisTickFunction) override;
 
 	/** Returns the current spread rotation (Pitch and Yaw at the current time). Used by FireGun ability */
 	UFUNCTION(BlueprintPure, Category = "Recoil")
@@ -36,7 +37,6 @@ public:
 	void StopRecoil();
 
 protected:
-
 	/** Vector curve that implements vertical and horizontal recoil */
 	UPROPERTY(EditDefaultsOnly, Category = "Recoil")
 	UCurveVector* RecoilCurve;
@@ -51,7 +51,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	float CameraRecoilInterpSpeed = 4.f;
-	
+
 	/** Interpolates the current gun recoil, camera recoil, and kickback inside of OnTick
 	 *  based on CurrentShotRecoilRotation, CurrentShotCameraRecoilRotation, and KickbackAngle */
 	virtual void UpdateKickbackAndRecoil(float DeltaTime);
@@ -65,7 +65,7 @@ protected:
 
 	/** The timeline corresponding to RecoilCurve */
 	FTimeline RecoilTimeline;
-	
+
 	/** The current rotation representing the spread for the bullet, used when the gun is fired */
 	FRotator CurrentShotRecoilRotation;
 
@@ -78,10 +78,10 @@ protected:
 	/** Whether or not the player is holding down left click */
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsFiring;
-	
+
 	/** Whether or not to increment KickbackAngle, which is applied to the owning character's CameraRecoilComponent */
 	bool bShouldKickback;
-	
+
 	/** The accumulated delta seconds since the last camera kickback duration */
 	float KickbackAlpha;
 

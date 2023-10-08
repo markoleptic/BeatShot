@@ -13,7 +13,8 @@ class UCustomGameModesWidgetComponent;
 class UCustomGameModesWidget_Start;
 
 DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FRequestGameModeTemplateUpdate, const FString& GameMode, const EGameModeDifficulty& Difficulty);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FRequestGameModeTemplateUpdate, const FString& GameMode,
+	const EGameModeDifficulty& Difficulty);
 DECLARE_MULTICAST_DELEGATE(FRequestGameModePreviewUpdate);
 
 /** Contains data about the state of a CustomGameModesWidgetComponent */
@@ -24,7 +25,7 @@ struct FCustomGameModeCategoryInfo
 
 	uint32 NumCautions;
 	uint32 NumWarnings;
-	
+
 	FCustomGameModeCategoryInfo()
 	{
 		NumCautions = 0;
@@ -56,10 +57,10 @@ struct FCustomGameModeCategoryInfo
 		}
 		return true;
 	}
-	
+
 	friend FORCEINLINE uint32 GetTypeHash(const FCustomGameModeCategoryInfo& Value)
 	{
-		return HashCombine(GetTypeHash(Value.NumWarnings), GetTypeHash(Value. NumCautions));
+		return HashCombine(GetTypeHash(Value.NumWarnings), GetTypeHash(Value.NumCautions));
 	}
 };
 
@@ -76,10 +77,10 @@ public:
 	/** Calls UpdateOptionsFromConfig on all widgets in ChildWidgets array and calls UpdateAllChildWidgetOptionsValid */
 	UFUNCTION()
 	void UpdateOptionsFromConfig();
-	
+
 	/** Returns the NewCustomGameModeName from Widget_Start */
 	FString GetNewCustomGameModeName() const;
-	
+
 	/** Sets the value of NewCustomGameModeName in Widget_Start */
 	void SetNewCustomGameModeName(const FString& InCustomGameModeName) const;
 
@@ -94,7 +95,7 @@ public:
 
 	/** Clears all GameModeTemplate ComboBox options and repopulates */
 	void RefreshGameModeTemplateComboBoxOptions() const;
-	
+
 	/** Broadcast any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
 
@@ -119,16 +120,16 @@ protected:
 
 	/** Called any time Widget_Start broadcasts their RequestGameModeTemplateUpdate delegate */
 	virtual void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
-	
+
 	/** Called any time Widget_Start broadcasts their OnCustomGameModeNameChanged delegate */
 	void OnStartWidget_CustomGameModeNameChanged();
-	
+
 	/** Bound to all child widget's RequestComponentUpdate delegates */
 	void OnRequestComponentUpdate();
 
 	/** Bound to all child widget's OnRequestGameModePreview delegates */
 	void OnRequestGameModePreviewUpdate();
-	
+
 	/** Adds a widget to ChildWidgets array. Binds to its RequestComponentUpdate delegate */
 	void AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component);
 
@@ -137,7 +138,7 @@ protected:
 
 	/** Calls UpdateAllOptionsValid for each child widget. */
 	virtual void UpdateAllChildWidgetOptionsValid();
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_Start> Widget_Start;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

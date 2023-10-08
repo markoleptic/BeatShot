@@ -11,6 +11,7 @@ class ABSCharacter;
 
 /** Delegate type used in the AimToTarget ability task */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTickTraceDelegate, FGameplayTag, EventTag, FGameplayEventData, EventData);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTickTraceHit, const FHitResult&, HitResult);
 
 /** Task used to trace a line from the gun to where the owner is facing on tick */
@@ -18,11 +19,11 @@ UCLASS()
 class BEATSHOT_API UBSAT_TickTrace : public UAbilityTask
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Constructor and overrides
 	UBSAT_TickTrace();
-	
+
 	virtual void Activate() override;
 	virtual void ExternalCancel() override;
 	virtual FString GetDebugString() const override;
@@ -31,7 +32,7 @@ public:
 
 	/** How far to trace forward from Character camera */
 	float TraceDistance = 100000.f;
-	
+
 	UPROPERTY(BlueprintAssignable)
 	FOnTickTraceHit OnTickTraceHit;
 
@@ -50,19 +51,20 @@ public:
 	/** Broadcast when a triggering gameplay events occurred */
 	UPROPERTY(BlueprintAssignable)
 	FTickTraceDelegate EventReceived;
-	
-	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAT_TickTrace* SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName, ABSCharacter* Character, const FGameplayTagContainer EventTags,
-		const float TraceDistance, const bool bStopWhenAbilityEnds);
+
+	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
+		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+	static UBSAT_TickTrace* SingleWeaponTrace(UGameplayAbility* OwningAbility, const FName TaskInstanceName,
+		ABSCharacter* Character, const FGameplayTagContainer EventTags, const float TraceDistance,
+		const bool bStopWhenAbilityEnds);
 
 private:
-
 	UPROPERTY()
 	ABSCharacter* Character;
-	
+
 	UPROPERTY()
 	FGameplayTagContainer EventTags;
-	
+
 	UPROPERTY()
 	bool bStopWhenAbilityEnds;
 
@@ -71,7 +73,7 @@ private:
 	void OnGameplayEvent(FGameplayTag EventTag, const FGameplayEventData* Payload) const;
 
 	void OnAbilityCancelled();
-	
+
 	FDelegateHandle CancelledHandle;
 	FDelegateHandle EventHandle;
 };

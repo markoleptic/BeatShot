@@ -15,18 +15,18 @@ THIRD_PARTY_INCLUDES_START
 THIRD_PARTY_INCLUDES_END
 
 /** Converts an NdArray of floats to a TArray of floats */
-template<typename T>
+template <typename T>
 static TArray<T> GetTArrayFromNdArray(const nc::NdArray<T>& InArray)
 {
 	const int32 RowSize = InArray.numRows();
 	const int32 ColSize = InArray.numCols();
-	
+
 	TArray<T> Out;
 	Out.Init(0.f, InArray.size());
-	
-	for(int j = 0; j < ColSize; j++)
+
+	for (int j = 0; j < ColSize; j++)
 	{
-		for(int i = 0; i < RowSize; i++)
+		for (int i = 0; i < RowSize; i++)
 		{
 			Out[RowSize * j + i] = InArray(i, j);
 		}
@@ -35,11 +35,11 @@ static TArray<T> GetTArrayFromNdArray(const nc::NdArray<T>& InArray)
 }
 
 /** Converts a TArray of floats to an NdArray of floats */
-template<typename T>
+template <typename T>
 static nc::NdArray<T> GetNdArrayFromTArray(const TArray<T>& InTArray, const int32 InRows, const int32 InCols)
 {
 	nc::NdArray<T> Out = nc::zeros<T>(InRows, InCols);
-	
+
 	for (int j = 0; j < InCols; j++)
 	{
 		for (int i = 0; i < InRows; i++)
@@ -54,10 +54,8 @@ static nc::NdArray<T> GetNdArrayFromTArray(const TArray<T>& InTArray, const int3
 static nc::NdArray<int> Get5X5OverflowArray(const int32 Overflow)
 {
 	return nc::NdArray<int>({
-		Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0,
-		Overflow == 4 ? 1 : 0,
-		Overflow == 1 || Overflow == 3 ? 1 : 0,
-		Overflow == 4 ? 1 : 0,
+		Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0, Overflow == 4 ? 1 : 0,
+		Overflow == 1 || Overflow == 3 ? 1 : 0, Overflow == 4 ? 1 : 0,
 		Overflow == 2 || Overflow == 3 || Overflow == 4 ? 1 : 0
 	});
 }
@@ -80,7 +78,7 @@ nc::NdArray<T> GetAveraged5X5NdArray(const TArray<T>& In, const int32 InRows, co
 	// Define which columns/rows will avg extra values if not divisible by 5
 	nc::NdArray<int> MPad = Get5X5OverflowArray(InRows % SmallM);
 	nc::NdArray<int> NPad = Get5X5OverflowArray(InCols % SmallN);
-	
+
 	int MPadSum = 0;
 	for (int i = 0; i < SmallM; ++i)
 	{
@@ -95,7 +93,7 @@ nc::NdArray<T> GetAveraged5X5NdArray(const TArray<T>& In, const int32 InRows, co
 
 			const int StartN = j * NFloor + NPadSum;
 			const int EndN = StartN + NFloor + NPad(0, j) - 1;
-			
+
 			for (int x = StartM; x <= EndM; ++x)
 			{
 				for (int y = StartN; y <= EndN; ++y)
@@ -154,7 +152,7 @@ TArray<T> GetAveraged5X5TArray(const TArray<T>& In, const int32 InRows, const in
 
 			const int StartN = j * NFloor + NPadSum;
 			const int EndN = StartN + NFloor + NPad(0, j) - 1;
-			
+
 			for (int x = StartM; x <= EndM; ++x)
 			{
 				for (int y = StartN; y <= EndN; ++y)
@@ -182,7 +180,8 @@ TArray<T> GetAveraged5X5TArray(const TArray<T>& In, const int32 InRows, const in
 /** Returns an FAccuracyData struct with 5 rows and 5 columns. Distributes the TotalSpawns and TotalHits into smaller blocks,
  *  where each block is an element in the 5x5 AccuracyRows matrix. Sums using the smallest amount of surrounding values
  *  as possible. Does not re-use any values from the input array */
-inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns, const TArray<int32>& InTotalHits, const int32 InRows, const int32 InCols)
+inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns, const TArray<int32>& InTotalHits,
+	const int32 InRows, const int32 InCols)
 {
 	// Define the output size of the array (m x n)
 	constexpr int SmallM = 5;
@@ -206,7 +205,7 @@ inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns,
 		{
 			auto TotalSpawnsSum = 0;
 			auto TotalSpawnsCount = 0;
-			
+
 			auto TotalHitsSum = 0;
 			auto TotalHitsCount = 0;
 
@@ -215,14 +214,14 @@ inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns,
 
 			const int StartN = j * NFloor + NPadSum;
 			const int EndN = StartN + NFloor + NPad(0, j) - 1;
-			
+
 			for (int x = StartM; x <= EndM; ++x)
 			{
 				for (int y = StartN; y <= EndN; ++y)
 				{
 					const int32 CurrentTotalSpawns = InTotalSpawns[x * InCols + y];
 					const int32 CurrentTotalHits = InTotalHits[x * InCols + y];
-					
+
 					if (CurrentTotalSpawns > 0.f)
 					{
 						TotalSpawnsSum += CurrentTotalSpawns;
@@ -269,7 +268,7 @@ inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 InRows, cons
 	// Define which columns/rows will avg extra values if not divisible by 5
 	nc::NdArray<int> MPad = Get5X5OverflowArray(InRows % SmallM);
 	nc::NdArray<int> NPad = Get5X5OverflowArray(InCols % SmallN);
-	
+
 	int MPadSum = 0;
 	for (int i = 0; i < SmallM; ++i)
 	{
@@ -283,7 +282,7 @@ inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 InRows, cons
 
 			const int StartN = j * NFloor + NPadSum;
 			const int EndN = StartN + NFloor + NPad(0, j) - 1;
-			
+
 			for (int x = StartM; x <= EndM; ++x)
 			{
 				for (int y = StartN; y <= EndN; ++y)
@@ -292,25 +291,26 @@ inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 InRows, cons
 					MappingInst.MappedIndices.Add(Index);
 				}
 			}
-			
+
 			MappingInst.Index = i * SmallN + j;
 			IndexMappings.Add(MappingInst.Index, MappingInst);
-			
+
 			NPadSum += NPad(0, j);
 		}
 		MPadSum += MPad(0, i);
 	}
-	
+
 	TArray<int32> UniqueIndices = TArray<int32>();
-	for (const TPair<int32, FGenericIndexMapping>& IndexMapping :  IndexMappings)
+	for (const TPair<int32, FGenericIndexMapping>& IndexMapping : IndexMappings)
 	{
 		for (const int32 Value : IndexMapping.Value.MappedIndices)
 		{
 			UniqueIndices.AddUnique(Value);
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"), UniqueIndices.Num(), InRows * InCols);
-	
+	UE_LOG(LogTemp, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"), UniqueIndices.Num(),
+		InRows * InCols);
+
 	return IndexMappings;
 }
 

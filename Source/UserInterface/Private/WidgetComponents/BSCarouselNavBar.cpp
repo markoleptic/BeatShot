@@ -65,7 +65,7 @@ void UBSCarouselNavBar::HandleButtonClicked(const UBSButton* AssociatedButton)
 TSharedRef<SWidget> UBSCarouselNavBar::RebuildWidget()
 {
 	MyContainer = SNew(SHorizontalBox);
-	
+
 	return MyContainer.ToSharedRef();
 }
 
@@ -79,7 +79,8 @@ void UBSCarouselNavBar::RebuildButtons()
 		for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 		{
 			UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
-			UButtonNotificationWidget* NotificationWidget = Cast<UButtonNotificationWidget>(CreateWidget(GetOwningPlayer(), NotificationWidgetType));
+			UButtonNotificationWidget* NotificationWidget = Cast<UButtonNotificationWidget>(
+				CreateWidget(GetOwningPlayer(), NotificationWidgetType));
 			if (ensure(ButtonUserWidget) && ensure(NotificationWidget))
 			{
 				if (ButtonText.IsValidIndex(CurPage))
@@ -90,29 +91,11 @@ void UBSCarouselNavBar::RebuildButtons()
 				Notifications.Add(NotificationWidget);
 				TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
 				TSharedRef<SWidget> NotificationSWidget = NotificationWidget->TakeWidget();
-				MyContainer->AddSlot()
-				.VAlign(VAlign_Center)
-				.HAlign(HAlign_Fill)
-				.FillWidth(1.f)
-				[
-					SNew(SVerticalBox)
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.HAlign(HAlign_Center)
-					.VAlign(VAlign_Bottom)
-					.Padding(NotificationWidgetContainerPadding)
-					[
-						NotificationSWidget
-					]
-					+ SVerticalBox::Slot()
-					.AutoHeight()
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Center)
-					.Padding(ButtonPadding)
-					[
-						ButtonSWidget
-					]
-				];
+				MyContainer->AddSlot().VAlign(VAlign_Center).HAlign(HAlign_Fill).FillWidth(1.f)[SNew(SVerticalBox) +
+					SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center).VAlign(VAlign_Bottom).
+					                     Padding(NotificationWidgetContainerPadding)[NotificationSWidget] +
+					SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Fill).VAlign(VAlign_Center).Padding(ButtonPadding)[
+						ButtonSWidget]];
 			}
 		}
 		if (NumPages > 0)
@@ -126,7 +109,7 @@ void UBSCarouselNavBar::RebuildButtons()
 					Notifications[CurPage]->SetNumCautions(0);
 					Notifications[CurPage]->SetNumWarnings(0);
 				}
-				
+
 				if (Buttons.IsValidIndex(CurPage))
 				{
 					Buttons[CurPage]->OnBSButtonPressed.AddDynamic(this, &UBSCarouselNavBar::HandleButtonClicked);
@@ -136,7 +119,7 @@ void UBSCarouselNavBar::RebuildButtons()
 					}
 				}
 			}
-			
+
 			Buttons.Last()->SetDefaults(static_cast<uint8>(Buttons.Num() - 1), Buttons[0]);
 			Buttons[LinkedCarousel->GetActiveWidgetIndex()]->SetActive();
 		}

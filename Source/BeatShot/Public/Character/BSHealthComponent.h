@@ -10,7 +10,8 @@
 class UBSAbilitySystemComponent;
 class UBSAttributeSetBase;
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor* Instigator, const float OldValue, const float NewValue);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnHealthChanged, AActor* Instigator, const float OldValue,
+	const float NewValue);
 
 /** Base HealthComponent for this game */
 UCLASS(ClassGroup=(Custom), meta= (BlueprintSpawnableComponent))
@@ -25,14 +26,15 @@ public:
 protected:
 	/** Called when the game starts */
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY()
 	TObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
 
 	UPROPERTY()
 	TObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 
-	void OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue);
+	void OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec,
+		float EffectMagnitude, float OldValue, float NewValue);
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:

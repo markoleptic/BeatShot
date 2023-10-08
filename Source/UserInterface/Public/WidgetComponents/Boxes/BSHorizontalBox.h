@@ -15,11 +15,11 @@ class USERINTERFACE_API UBSHorizontalBox : public UHorizontalBox
 	GENERATED_BODY()
 
 	virtual TSharedRef<SWidget> RebuildWidget() override;
-	
+
 public:
 	/** Sets the Brush tint for the Left Border */
 	void SetLeftBorderBrushTint(const FLinearColor& Color);
-	
+
 	/** Sets the Brush tint for the Right Border */
 	void SetRightBorderBrushTint(const FLinearColor& Color);
 

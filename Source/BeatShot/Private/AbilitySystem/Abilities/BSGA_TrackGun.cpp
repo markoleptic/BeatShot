@@ -10,32 +10,35 @@ UBSGA_TrackGun::UBSGA_TrackGun()
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
 
-void UBSGA_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-                                                  const FGameplayEventData* TriggerEventData)
+void UBSGA_TrackGun::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+	const FGameplayEventData* TriggerEventData)
 {
 	UAbilitySystemComponent* Component = CurrentActorInfo->AbilitySystemComponent.Get();
-	
+
 	// Bind AbilityTargetDataSetDelegate to OnTargetDataReadyCallback, and and assign it to OnTargetDataReadyCallbackDelegateHandle;
-	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(
-		this, &ThisClass::OnTargetDataReadyCallback);
+	OnTargetDataReadyCallbackDelegateHandle = Component->AbilityTargetDataSetDelegate(CurrentSpecHandle,
+		CurrentActivationInfo.GetActivationPredictionKey()).AddUObject(this, &ThisClass::OnTargetDataReadyCallback);
 
 
-	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(), FGameplayTagContainer(), TraceDistance, false);
+	TickTraceTask = UBSAT_TickTrace::SingleWeaponTrace(this, NAME_None, GetBSCharacterFromActorInfo(),
+		FGameplayTagContainer(), TraceDistance, false);
 	TickTraceTask->OnTickTraceHit.AddDynamic(this, &UBSGA_TrackGun::OnTickTraceHitResultHit);
 	TickTraceTask->ReadyForActivation();
-	
-	
+
+
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGA_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-	bool bReplicateEndAbility, bool bWasCancelled)
+void UBSGA_TrackGun::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	if (IsEndAbilityValid(Handle, ActorInfo))
 	{
 		if (ScopeLockCount > 0)
 		{
-			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled));
+			WaitingToExecute.Add(FPostLockDelegate::CreateUObject(this, &ThisClass::EndAbility, Handle, ActorInfo,
+				ActivationInfo, bReplicateEndAbility, bWasCancelled));
 			return;
 		}
 
@@ -60,7 +63,8 @@ void UBSGA_TrackGun::OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo,
 	Super::OnRemoveAbility(ActorInfo, Spec);
 }
 
-void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag)
+void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData,
+	FGameplayTag ApplicationTag)
 {
 	UAbilitySystemComponent* MyAbilityComponent = CurrentActorInfo->AbilitySystemComponent.Get();
 	if (MyAbilityComponent->FindAbilitySpecFromHandle(CurrentSpecHandle))
@@ -68,13 +72,15 @@ void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataH
 		FScopedPredictionWindow ScopedPrediction(MyAbilityComponent);
 
 		// Take ownership of the target data to make sure no callbacks into game code invalidate it out from under us
-		const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
+		const FGameplayAbilityTargetDataHandle LocalTargetDataHandle(
+			MoveTemp(const_cast<FGameplayAbilityTargetDataHandle&>(InData)));
 
 		const bool bShouldNotifyServer = CurrentActorInfo->IsLocallyControlled() && !CurrentActorInfo->IsNetAuthority();
 		if (bShouldNotifyServer)
 		{
-			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag,
-																  MyAbilityComponent->ScopedPredictionKey);
+			MyAbilityComponent->CallServerSetReplicatedTargetData(CurrentSpecHandle,
+				CurrentActivationInfo.GetActivationPredictionKey(), LocalTargetDataHandle, ApplicationTag,
+				MyAbilityComponent->ScopedPredictionKey);
 		}
 
 		if (CommitAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo))
@@ -89,7 +95,8 @@ void UBSGA_TrackGun::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataH
 	}
 
 	// We've processed the data
-	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle, CurrentActivationInfo.GetActivationPredictionKey());
+	MyAbilityComponent->ConsumeClientReplicatedTargetData(CurrentSpecHandle,
+		CurrentActivationInfo.GetActivationPredictionKey());
 }
 
 void UBSGA_TrackGun::OnTickTraceHitResultHit(const FHitResult& HitResult)

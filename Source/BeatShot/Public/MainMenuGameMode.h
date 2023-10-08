@@ -31,10 +31,10 @@ public:
 
 	/** Starts timers, binds timer delegates, restarts TargetManager */
 	void StartSimulation();
-	
+
 	/** Manually calls OnAudioAnalyzerTick in TargetManager at fixed intervals */
 	void OnSimulationInterval();
-	
+
 	/** Clears the timers and calls FinishSimulation on TargetManager */
 	void FinishSimulation();
 
@@ -55,11 +55,11 @@ protected:
 	UAudioComponent* MainMenuMusicComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Classes")
 	TSubclassOf<ATargetManagerPreview> TargetManagerClass;
-	
+
 	/** The spawned TargetManager that provides preview logic for CustomGameModesWidget_Preview */
-    UPROPERTY()
-    TObjectPtr<ATargetManagerPreview> TargetManager;
-	
+	UPROPERTY()
+	TObjectPtr<ATargetManagerPreview> TargetManager;
+
 	FTimerDelegate SimulationIntervalDelegate;
 	FTimerHandle SimulationIntervalTimer;
 

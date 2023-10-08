@@ -15,10 +15,12 @@ class ATarget;
 class UReinforcementLearningComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBeatTrackTargetDamaged, const float DamageDelta, const float TotalPossibleDamage);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBeatTrackTargetDamaged, const float DamageDelta,
+	const float TotalPossibleDamage);
 DECLARE_MULTICAST_DELEGATE(FOnTargetActivated);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak, const FTransform& Transform);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak,
+	const FTransform& Transform);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
 
@@ -30,16 +32,17 @@ class BEATSHOT_API ATargetManager : public AActor, public ISaveLoadInterface
 
 	friend class ABSGameMode;
 	friend class UBSCheatManager;
+
 public:
 	ATargetManager();
 	virtual void Tick(float DeltaTime) override;
-	
+
 	/** Delegate that is executed every time a target has been activated */
 	FOnTargetActivated OnTargetActivated;
 
 	/** Delegate that is executed every time a target has been spawned, and passes a pointer to that target. Used for AimBot */
 	FOnTargetActivated_AimBot OnTargetActivated_AimBot;
-	
+
 	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
 	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
 
@@ -52,7 +55,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Destroyed() override;
-	
+
 	/** The 2D spawn area */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UBoxComponent> SpawnBox;
@@ -82,7 +85,7 @@ protected:
 	/** Manages spawn points */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	TObjectPtr<USpawnAreaManagerComponent> SpawnAreaManager;
-	
+
 	/** The target actor to spawn */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
 	TSubclassOf<ATarget> TargetToSpawn;
@@ -108,7 +111,7 @@ protected:
 
 	/** Initializes the Composite Curve Tables */
 	void Init_Tables();
-	
+
 public:
 	/** Called from BSGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn);
@@ -131,7 +134,7 @@ protected:
 	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags associated SpawnArea as recent, fires OnActivation delegate,
 	 *  and adds to ReinforcementLearningComponent ActiveTargetPairs if active */
 	bool ActivateTarget(ATarget* InTarget) const;
-	
+
 	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce. Also activates the target */
 	void HandleRuntimeSpawning();
 
@@ -149,7 +152,7 @@ protected:
 
 	/** Returns the number of targets that are allowed to be activated at once. Will only return values >= 0 */
 	int32 GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const;
-	
+
 	/** Calls functions to get the next target's location and scale */
 	void FindNextTargetProperties();
 
@@ -161,7 +164,7 @@ protected:
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
 	USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
-	
+
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates, target flags, target removal */
 	UFUNCTION()
 	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
@@ -173,10 +176,12 @@ protected:
 	void UpdateDynamicLookUpValues(const float TimeAlive);
 
 	/** Broadcasts the appropriate delegate based on the damage type */
-	void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType, const FTargetDamageEvent& TargetDamageEvent) const;
+	void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType,
+		const FTargetDamageEvent& TargetDamageEvent) const;
 
 	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
-	void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions, const FTargetDamageEvent& TargetDamageEvent);
+	void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions,
+		const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
@@ -186,37 +191,37 @@ protected:
 
 	/** Returns the actual BoxBounds that the TargetManager sets its 2D BoxBounds to */
 	FVector GenerateSpawnBoxExtents() const;
-	
+
 	/** Creates the box extrema */
 	FExtrema GenerateBoxExtrema() const;
-	
+
 	/** Returns SpawnBox's origin. This location never changes */
 	FVector GetBoxOrigin() const;
-	
+
 	/** Returns SpawnBox's BoxExtents */
 	FVector Get3DBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
 
 	/** Returns SpawnBox's BoxExtents */
 	FVector Get2DBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
-	
+
 	/** Returns a FExtrema struct containing both the min extrema and max extrema */
 	FExtrema GetBoxExtrema(const bool bDynamic, const bool bAbsoluteMax = false) const;
-	
+
 	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
 	void UpdateSpawnBox() const;
 
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
 	virtual void UpdateSpawnVolume() const;
-	
+
 	/** Calls GetNewTargetDirection and sets the new direction of the target. Spawn = 0, Activation  = 1, Deactivation = 2 */
 	void ChangeTargetDirection(ATarget* InTarget, const uint8 InSpawnActivationDeactivation) const;
-	
+
 	/** Returns a new unit vector direction for a target */
 	FVector GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const;
 
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
 	void UpdateTotalPossibleDamage();
-	
+
 	/** Returns true if a target exists that is vulnerable to tracking damage */
 	bool TrackingTargetIsDamageable() const;
 
@@ -228,23 +233,23 @@ protected:
 
 	/** Returns the SphereTarget that has the matching Guid, or nullptr if not found in ManagedTargets */
 	ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
-	
+
 	/** Evaluates the specified curve at InTime */
 	float GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const;
-	
+
 	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
-	
+
 public:
 	/** Called from DefaultGameMode, returns the player accuracy matrix */
 	FAccuracyData GetLocationAccuracy() const;
-	
+
 	/** Saves the QTable inside InCommonScoreInfo */
 	void SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
 	/** Prints the number of activated, recent, and managed targets to log */
 	void PrintDebug_NumRecentNumActive();
-	
+
 protected:
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfigLocal;
@@ -275,7 +280,7 @@ protected:
 
 	/** The scale to apply to the next/current target */
 	FVector CurrentTargetScale;
-	
+
 	/** The min and max extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
 	FExtrema StaticExtrema;
 

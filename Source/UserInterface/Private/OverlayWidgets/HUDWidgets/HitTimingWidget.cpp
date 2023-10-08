@@ -9,12 +9,12 @@
 void UHitTimingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	if (Image_LogoTick->GetDynamicMaterial())
 	{
 		DynamicImageMaterial = Image_LogoTick->GetDynamicMaterial();
 	}
-	
+
 	OnTickTransition.BindDynamic(this, &ThisClass::TickTransition);
 	Tick_Transition_Timeline.AddInterpFloat(Tick_Current_Curve, OnTickTransition);
 	Tick_Transition_Timeline.SetPlayRate(4.f);
@@ -39,7 +39,7 @@ void UHitTimingWidget::UpdateHitTiming(const float TimeOffsetNormalized, const f
 	{
 		DynamicImageMaterial->SetScalarParameterValue(FName("LastTimeOffset"), LastTimeOffset);
 		DynamicImageMaterial->SetScalarParameterValue(FName("TimeOffset"), TimeOffsetNormalized);
-		
+
 		Tick_Current->SetText(MakeCurrentTickText(TimeOffsetRaw));
 		Tick_Current_Offset_Start = Tick_Current_Offset_End;
 		Tick_Current_Offset_End = -300.f + TimeOffsetNormalized * (300.f - -300.f);
@@ -60,7 +60,3 @@ void UHitTimingWidget::TickTransition(const float Value)
 	const float LerpValue = Tick_Current_Offset_Start + Value * (Tick_Current_Offset_End - Tick_Current_Offset_Start);
 	Cast<UHorizontalBoxSlot>(Tick_Current->Slot)->SetPadding(FMargin(LerpValue, 0.f, 0.f, 0.f));
 }
-
-
-
-

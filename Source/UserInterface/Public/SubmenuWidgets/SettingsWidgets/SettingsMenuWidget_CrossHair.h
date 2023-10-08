@@ -29,7 +29,10 @@ class USERINTERFACE_API USettingsMenuWidget_CrossHair : public UBSSettingCategor
 
 public:
 	/** Returns OnPlayerSettingsChangedDelegate_CrossHair, the delegate that is broadcast when this class saves CrossHair settings */
-	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_CrossHair; }
+	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_CrossHair;
+	}
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
@@ -43,7 +46,7 @@ protected:
 	UColorSelectOptionWidget* MenuOption_OutlineColorSelect;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UColorSelectOptionWidget* MenuOption_CrossHairDotColorSelect;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_InnerOffset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -58,7 +61,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_CrossHairDotSize;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Reset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -68,7 +71,7 @@ protected:
 
 private:
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-	
+
 	UFUNCTION()
 	void OnColorChanged_CrossHair(const FLinearColor& NewColor);
 	UFUNCTION()
@@ -89,10 +92,10 @@ private:
 
 	/** Fills out all CrossHair Settings given PlayerSettings */
 	void SetCrossHairOptions(const FPlayerSettings_CrossHair& CrossHairSettings);
-	
+
 	/** The PlayerSettings that were initially loaded */
 	FPlayerSettings_CrossHair InitialCrossHairSettings;
-	
+
 	/** The PlayerSettings that are changed when interacting with the CrossHairSettingsWidget */
 	FPlayerSettings_CrossHair NewCrossHairSettings;
 };

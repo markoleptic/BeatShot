@@ -9,8 +9,10 @@ public class UserInterface : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget", "WebBrowser", "BeatShotGlobal",
-			"EasyFileDialog", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "CommonLoadingScreen", "GameplayTags", "InputCore", "CommonUI"
+			"Core", "ApplicationCore", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "WebBrowserWidget",
+			"WebBrowser", "BeatShotGlobal",
+			"EasyFileDialog", "DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "CommonLoadingScreen",
+			"GameplayTags", "InputCore", "CommonUI"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new[]
@@ -28,6 +30,7 @@ public class UserInterface : ModuleRules
 		});
 
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));
-		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
+		PublicIncludePaths.Add(Path.Combine(EngineDirectory,
+			"Plugins/Marketplace/Streamline/Source/ThirdParty/Streamline/include"));
 	}
 }

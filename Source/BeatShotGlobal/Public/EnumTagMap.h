@@ -31,7 +31,7 @@ struct FEnumTagPair
 	/** Gameplay Tags associated with the Enum Value */
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, meta = (Categories="GameModeCategory"))
 	FGameplayTagContainer Tags;
-	
+
 	FEnumTagPair()
 	{
 		DisplayName = "";
@@ -59,7 +59,7 @@ struct FEnumTagPair
 	void AddParentTags(const FGameplayTagContainer& InParentTags)
 	{
 		ParentTags = InParentTags;
-		
+
 		for (const FGameplayTag& Tag : InParentTags)
 		{
 			if (Tags.HasTagExact(Tag))
@@ -127,6 +127,7 @@ struct FEnumTagMapping
 	{
 		return Enum == Other.Enum;
 	}
+
 	FORCEINLINE bool operator<(const FEnumTagMapping& Other) const
 	{
 		return EnumClass < Other.EnumClass;
@@ -149,19 +150,19 @@ public:
 	virtual void PostLoad() override;
 
 	/** Returns the GameplayTags associated with a specific full enum name */
-	template<typename T>
+	template <typename T>
 	FGameplayTagContainer GetTagsForEnum(const T& InEnum);
 
 	/** Returns the EnumTagMapping associated with a specific enum class,
 	 *  which contains an array of FEnumTagPairs for each enum value in the class */
-	template<typename T>
+	template <typename T>
 	const FEnumTagMapping* GetEnumTagMapping();
 
 	/** Returns a pointer to the entire EnumTagMappings array */
 	const TArray<FEnumTagMapping>* GetEnumTagMappings() const;
 
 	/** Returns the string associated with a specific full enum name */
-	template<typename T>
+	template <typename T>
 	FString GetStringFromEnumTagPair(const T& InEnum);
 
 protected:
@@ -169,20 +170,13 @@ protected:
 	TArray<FEnumTagMapping> EnumTagMappings;
 
 	TArray<UEnum*> EnumsToInclude = {
-		StaticEnum<EBoundsScalingPolicy>(),
-		StaticEnum<EMovingTargetDirectionMode>(),
-		StaticEnum<EConsecutiveTargetScalePolicy>(),
-		StaticEnum<ETargetDamageType>(),
-		StaticEnum<ETargetActivationSelectionPolicy>(),
-		StaticEnum<ERecentTargetMemoryPolicy>(),
-		StaticEnum<ETargetDeactivationCondition>(),
-		StaticEnum<ETargetDestructionCondition>(),
-		StaticEnum<ETargetActivationResponse>(),
-		StaticEnum<ETargetDeactivationResponse>(),
-		StaticEnum<EDynamicBoundsScalingPolicy>(),
-		StaticEnum<ETargetSpawningPolicy>(),
-		StaticEnum<ETargetDistributionPolicy>(),
-		StaticEnum<EReinforcementLearningMode>(),
+		StaticEnum<EBoundsScalingPolicy>(), StaticEnum<EMovingTargetDirectionMode>(),
+		StaticEnum<EConsecutiveTargetScalePolicy>(), StaticEnum<ETargetDamageType>(),
+		StaticEnum<ETargetActivationSelectionPolicy>(), StaticEnum<ERecentTargetMemoryPolicy>(),
+		StaticEnum<ETargetDeactivationCondition>(), StaticEnum<ETargetDestructionCondition>(),
+		StaticEnum<ETargetActivationResponse>(), StaticEnum<ETargetDeactivationResponse>(),
+		StaticEnum<EDynamicBoundsScalingPolicy>(), StaticEnum<ETargetSpawningPolicy>(),
+		StaticEnum<ETargetDistributionPolicy>(), StaticEnum<EReinforcementLearningMode>(),
 		StaticEnum<EReinforcementLearningHyperParameterMode>()
 	};
 };
@@ -195,14 +189,14 @@ FGameplayTagContainer UEnumTagMap::GetTagsForEnum(const T& InEnum)
 	{
 		return FGameplayTagContainer();
 	}
-	
+
 	const int32 Index = EnumTagMapping->EnumTagPairs.Find(FEnumTagPair(static_cast<int64>(InEnum)));
 
 	if (!EnumTagMapping->EnumTagPairs.IsValidIndex(Index))
 	{
 		return FGameplayTagContainer();
 	}
-	
+
 	return EnumTagMapping->EnumTagPairs[Index].Tags;
 }
 
@@ -239,6 +233,6 @@ FString UEnumTagMap::GetStringFromEnumTagPair(const T& InEnum)
 		UE_LOG(LogTemp, Display, TEXT("Didn't find mapping for %llu"), static_cast<int64>(InEnum));
 		return FString();
 	}
-	
+
 	return EnumTagMapping->EnumTagPairs[Index].DisplayName;
 }

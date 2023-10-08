@@ -16,13 +16,11 @@ class UBSAnimInstance : public UAnimInstance
 	GENERATED_BODY()
 
 public:
-
 	UBSAnimInstance(const FObjectInitializer& ObjectInitializer);
 
 	virtual void InitializeWithAbilitySystem(UAbilitySystemComponent* ASC);
 
 protected:
-
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 

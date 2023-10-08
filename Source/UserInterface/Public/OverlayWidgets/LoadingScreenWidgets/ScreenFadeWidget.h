@@ -35,15 +35,15 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UImage* BlackScreen;
-	
+
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBlackScreen;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInBlackScreen;
-	
+
 	FWidgetAnimationDynamicEvent FadeFromBlackFinishDelegate;
 	FWidgetAnimationDynamicEvent FadeToBlackFinishDelegate;
-	
+
 	UFUNCTION()
 	void FadeFromBlackAnimFinished();
 	UFUNCTION()

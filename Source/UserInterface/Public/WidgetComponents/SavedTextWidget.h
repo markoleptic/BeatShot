@@ -24,7 +24,7 @@ protected:
 
 public:
 	UFUNCTION()
-	void PlayFadeInFadeOut() { PlayAnimationForward(FadeInFadeOut); }
+	void PlayFadeInFadeOut();
 
 	/** Sets the text that should appear when PlayFadeInFadeOut is called */
 	void SetSavedText(const FText& Text) { SavedText->SetText(Text); }

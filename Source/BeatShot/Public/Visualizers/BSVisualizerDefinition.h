@@ -18,11 +18,13 @@ enum class EVisualizerLightSpawningMethod : uint8
 
 	/** Spawn the lights at runtime, using the spline component of the visualizer */
 	SpawnUsingSpline UMETA(DisplayName="Spawn Using Spline"),
-	
+
 	/** Add existing lights already placed inside a level */
 	AddExistingLightsFromLevel UMETA(DisplayName="Add Existing Lights From Level"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EVisualizerLightSpawningMethod, EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets, EVisualizerLightSpawningMethod::AddExistingLightsFromLevel);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EVisualizerLightSpawningMethod, EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets,
+	EVisualizerLightSpawningMethod::AddExistingLightsFromLevel);
 
 /** How to assign AudioAnalyzer channels to lights if there is an uneven number between the two */
 UENUM(BlueprintType)
@@ -30,20 +32,21 @@ enum class ELightVisualizerAssignmentMethod : uint8
 {
 	/** Don't assign channels to any lights (not implemented) */
 	None UMETA(DisplayName="None"),
-	
+
 	/** Assign a channel to every light, or assign a light to every channel, depending on which has more */
 	Auto UMETA(DisplayName="Auto"),
 
 	/** Assign a channel to every light, but don't assign more than one light to any channel */
 	MultiChannelPerLightOnly UMETA(DisplayName="Multi Channel Per Light Only"),
-	
+
 	/** Assign a light to every channel, but don't assign more than one channel to any light */
 	MultiLightPerChannelOnly UMETA(DisplayName="Multi Light Per Channel Only"),
 
 	/** Only assign one channel to any light, and vice versa */
-	SinglePairsOnly UMETA(DisplayName="Single Pairs Only")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerAssignmentMethod, ELightVisualizerAssignmentMethod::None, ELightVisualizerAssignmentMethod::SinglePairsOnly);
+	SinglePairsOnly UMETA(DisplayName="Single Pairs Only")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerAssignmentMethod, ELightVisualizerAssignmentMethod::None,
+	ELightVisualizerAssignmentMethod::SinglePairsOnly);
 
 /** How to group AudioAnalyzer channels and lights together if there is an uneven number between the two */
 UENUM(BlueprintType)
@@ -54,9 +57,10 @@ enum class ELightVisualizerGroupingMethod : uint8
 	CombineByProximity UMETA(DisplayName="Combine By Proximity"),
 
 	/** Assign in order. If there is an unequal amount of lights and channels, repeat from the start */
-	Repeat UMETA(DisplayName="Repeat")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerGroupingMethod, ELightVisualizerGroupingMethod::CombineByProximity, ELightVisualizerGroupingMethod::Repeat);
+	Repeat UMETA(DisplayName="Repeat")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ELightVisualizerGroupingMethod, ELightVisualizerGroupingMethod::CombineByProximity,
+	ELightVisualizerGroupingMethod::Repeat);
 
 /** Each instance of this struct represents an AudioAnalyzer channel index, containing 0-multiple visualizer indices */
 USTRUCT(BlueprintType)
@@ -66,7 +70,7 @@ struct BEATSHOT_API FChannelToVisualizerMap
 
 	/** An array of visualizer indices that are assigned to this AudioAnalyzer channel index */
 	TArray<int32> VisualizerIndices;
-	
+
 	FChannelToVisualizerMap()
 	{
 		VisualizerIndices = TArray<int32>();
@@ -87,50 +91,63 @@ class BEATSHOT_API UBSVisualizerDefinition : public UDataAsset
 
 public:
 	/** Whether or not to spawn visualizer lights, or add already placed lights */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(FullyExpand="true",DisplayPriority=-1300))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(FullyExpand="true", DisplayPriority=-1300))
 	EVisualizerLightSpawningMethod VisualizerLightSpawningMethod;
 
 	/** Number of visualizer lights to spawn */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning", meta=(FullyExpand="true", DisplayPriority=-1299, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning",
+		meta=(FullyExpand="true", DisplayPriority=-1299, EditCondition=
+			"VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
 	int32 NumVisualizerLightsToSpawn;
 
-	
 
-
-	
 	/** World location to place this visualizer. Will affect the location of spawned lights if not using AddExistingLightsFromLevel spawning method */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Position", meta=(DisplayPriority=-1100, EditCondition="VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Position",
+		meta=(DisplayPriority=-1100, EditCondition=
+			"VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
 	FVector Location;
 
 	/** World rotation to apply to this visualizer. Will affect the rotation of spawned lights if not using AddExistingLightsFromLevel spawning method */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Position", meta=(ForceUnits="Degrees", DisplayPriority=-1000, EditCondition="VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Position",
+		meta=(ForceUnits="Degrees", DisplayPriority=-1000, EditCondition=
+			"VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
 	FRotator Rotation;
 
 	/** World scale to apply to this actor. Will affect the scale of spawned lights if not using AddExistingLightsFromLevel spawning method */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Position", meta=(DisplayPriority=-900, EditCondition="VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Position",
+		meta=(DisplayPriority=-900, EditCondition=
+			"VisualizerLightSpawningMethod != EVisualizerLightSpawningMethod::AddExistingLightsFromLevel"))
 	FVector Scale;
 
 
-
-	
 	/** Rotation offset to apply to the lights spawned along a spline path */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(ForceUnits="Degrees", DisplayPriority=-850, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingSpline"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset",
+		meta=(ForceUnits="Degrees", DisplayPriority=-850, EditCondition=
+			"VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingSpline"))
 	FRotator SplineActorRotationOffset;
-	
+
 	/** Whether or not to make the StartTransform the center of the spawned lights when using position offset spawning method */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-800, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset",
+		meta=(DisplayPriority=-800, EditCondition=
+			"VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
 	bool bGrowFromCenter;
-	
+
 	/** Relative offset location to apply between lights when using position offset spawning method */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-700, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset",
+		meta=(DisplayPriority=-700, EditCondition=
+			"VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
 	FVector OffsetLocation;
 
 	/** Relative offset rotation to apply between lights when using position offset spawning method  */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(Units="Degrees", DisplayPriority=-600, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset",
+		meta=(Units="Degrees", DisplayPriority=-600, EditCondition=
+			"VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
 	FRotator OffsetRotation;
 
 	/** Relative offset scale to apply between lights when using position offset spawning method  */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-500, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset",
+		meta=(DisplayPriority=-500, EditCondition=
+			"VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets"))
 	FVector OffsetScale;
 
 	/*/** Whether or not to scale the visualizers to fit between OffsetExtreme1 and OffsetExtreme2 #1#
@@ -144,8 +161,8 @@ public:
 	/** Relative offset scale to apply between lights when using position offset spawning method  #1#
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Spawning|Offset", meta=(DisplayPriority=-401, EditCondition="VisualizerLightSpawningMethod == EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets && bScaleToFitWithinOffsetExtreme == true"))
 	FVector OffsetExtreme2;*/
-	
-	
+
+
 	/** How to assign AudioAnalyzer channels to lights */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Audio Analyzer", meta=(DisplayPriority=-400))
 	ELightVisualizerAssignmentMethod AssignmentMethod;

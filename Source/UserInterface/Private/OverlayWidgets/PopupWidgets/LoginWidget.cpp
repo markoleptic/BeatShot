@@ -11,29 +11,32 @@
 void ULoginWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
+
 	Button_RetrySteamLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_FromSteam_ToLegacyLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_NoSteamLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	
+
 	Button_Login->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_NoLogin->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Register->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_FromLogin_ToSteam->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	
+
 	Button_NoLoginCancel->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_NoLoginConfirm->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	
+
 	Value_UsernameEmail->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 	Value_Password->OnTextChanged.AddDynamic(this, &ULoginWidget::ClearErrorText);
 }
 
 void ULoginWidget::ShowLoginScreen(const FString& Key)
 {
-	TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutTitleTextLogin"));
-	TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutBodyTextLogin"));
-	Button_NoLoginCancel->SetButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "Login_ContinueWithoutCancelButtonTextLogin"));
-	
+	TextBlock_ContinueWithoutTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+		"Login_ContinueWithoutTitleTextLogin"));
+	TextBlock_ContinueWithoutBody->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+		"Login_ContinueWithoutBodyTextLogin"));
+	Button_NoLoginCancel->SetButtonText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+		"Login_ContinueWithoutCancelButtonTextLogin"));
+
 	if (!Key.IsEmpty())
 	{
 		Box_Error->SetVisibility(ESlateVisibility::Visible);
@@ -170,17 +173,20 @@ void ULoginWidget::LoginButtonClicked()
 		SetErrorText("MissingInfoErrorText");
 		return;
 	}
-	
-	const FRegexPattern EmailPattern("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+
+	const FRegexPattern EmailPattern(
+		"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
 	if (FRegexMatcher EmailMatch(EmailPattern, Value_UsernameEmail->GetText().ToString()); EmailMatch.FindNext())
 	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(), Value_Password->GetText().ToString()));
+		OnLoginButtonClicked.Broadcast(FLoginPayload("", Value_UsernameEmail->GetText().ToString(),
+			Value_Password->GetText().ToString()));
 	}
 	else
 	{
-		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "", Value_Password->GetText().ToString()));
+		OnLoginButtonClicked.Broadcast(FLoginPayload(Value_UsernameEmail->GetText().ToString(), "",
+			Value_Password->GetText().ToString()));
 	}
-	
+
 	PlayFadeOutLogin();
 	InitializeExit();
 }

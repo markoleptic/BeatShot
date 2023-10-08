@@ -84,7 +84,8 @@ bool FBSAbilitySet_GrantedHandles::IsEmpty() const
 	return AbilitySpecHandles.IsEmpty() && GameplayEffectHandles.IsEmpty() && GrantedAttributeSets.IsEmpty();
 }
 
-void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles, UObject* SourceObject) const
+void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbilitySet_GrantedHandles* OutGrantedHandles,
+	UObject* SourceObject) const
 {
 	check(ASC);
 
@@ -101,7 +102,8 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 
 		if (!IsValid(AbilityToGrant.Ability))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex, *GetNameSafe(this));
+			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayAbilities[%d] on ability set [%s] is not valid."), AbilityIndex,
+				*GetNameSafe(this));
 			continue;
 		}
 
@@ -125,12 +127,14 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 
 		if (!IsValid(EffectToGrant.GameplayEffect))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"), EffectIndex, *GetNameSafe(this));
+			UE_LOG(LogTemp, Error, TEXT("GrantedGameplayEffects[%d] on ability set [%s] is not valid"), EffectIndex,
+				*GetNameSafe(this));
 			continue;
 		}
 
 		const UGameplayEffect* GameplayEffect = EffectToGrant.GameplayEffect->GetDefaultObject<UGameplayEffect>();
-		const FActiveGameplayEffectHandle GameplayEffectHandle = ASC->ApplyGameplayEffectToSelf(GameplayEffect, EffectToGrant.EffectLevel, ASC->MakeEffectContext());
+		const FActiveGameplayEffectHandle GameplayEffectHandle = ASC->ApplyGameplayEffectToSelf(GameplayEffect,
+			EffectToGrant.EffectLevel, ASC->MakeEffectContext());
 		if (OutGrantedHandles && GameplayEffectHandle.IsValid())
 		{
 			OutGrantedHandles->AddGameplayEffectHandle(GameplayEffectHandle);
@@ -144,7 +148,8 @@ void UBSAbilitySet::GiveToAbilitySystem(UBSAbilitySystemComponent* ASC, FBSAbili
 
 		if (!IsValid(SetToGrant.AttributeSet))
 		{
-			UE_LOG(LogTemp, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex, *GetNameSafe(this));
+			UE_LOG(LogTemp, Error, TEXT("GrantedAttributes[%d] on ability set [%s] is not valid"), SetIndex,
+				*GetNameSafe(this));
 			continue;
 		}
 

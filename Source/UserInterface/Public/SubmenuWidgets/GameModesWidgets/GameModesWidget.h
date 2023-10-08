@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSWidgetInterface.h"
+#include "HttpRequestInterface.h"
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
+#include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
 #include "GameModesWidget.generated.h"
 
 class UCustomGameModesWidgetBase;
@@ -73,15 +76,17 @@ struct FStartWidgetProperties
 DECLARE_MULTICAST_DELEGATE_OneParam(FRequestSimulateTargetManagerStateChange, const bool bSimulate)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGameModeBreaking);
 
-/** The base widget for selecting or customizing a game mode. The custom portion is split into multiple SettingsCategoryWidgets. Includes a default game modes section */
+/** The base widget for selecting or customizing a game mode. The custom portion is split into multiple
+ *  SettingsCategoryWidgets. Includes a default game modes section */
 UCLASS()
-class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadInterface, public IBSWidgetInterface, public IHttpRequestInterface
 {
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override { return GameModeDataAsset.Get(); }
+	virtual UTooltipWidget* ConstructTooltipWidget() override { return nullptr; }
 
 public:
 	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
@@ -94,7 +99,8 @@ public:
 	/** Returns BSConfig */
 	FBSConfig* GetConfigPointer() const { return BSConfig; }
 
-	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true. Only Broadcasts if different than the previous */
+	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true.
+	 *  Only Broadcasts if different than the previous */
 	FOnGameModeBreakingChange OnGameModeBreakingChange;
 
 	/** Called to request the start or stop of a game mode preview */
@@ -114,6 +120,8 @@ protected:
 	TSubclassOf<UTooltipImage> WarningEMarkClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Custom Game Modes")
 	TSubclassOf<UGameModeSharingWidget> GameModeSharingClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
+	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
 
 	UPROPERTY()
 	TObjectPtr<UTooltipImage> TooltipWarningImage_EnableAI;
@@ -131,7 +139,7 @@ public:
 	TObjectPtr<UCustomGameModesWidget_PropertyView> CustomGameModesWidget_PropertyView;
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidgetBase> CustomGameModesWidget_Current;
-	
+
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget_PropertyView;
@@ -143,7 +151,7 @@ protected:
 	UVerticalBox* Box_PropertyView;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UVerticalBox* Box_CreatorView;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -155,22 +163,20 @@ protected:
 	UMenuButton* MenuButton_CreatorView;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_PropertyView;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_SaveCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_StartWithoutSaving;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_SaveCustomAndStart;
+	UBSButton* Button_StartFromCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_RemoveSelectedCustom;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_RemoveAllCustom;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_CustomizeFromStandard;
+	UBSButton* Button_CustomizeFromPreset;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_PlayFromStandard;
+	UBSButton* Button_StartFromPreset;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ImportCustom;
@@ -201,12 +207,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_ChargedBeatTrack;
 
-	UPROPERTY(BlueprintReadOnly,Transient , meta = (BindWidgetAnim))
+	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* TransitionCustomGameModeView;
 
 	FWidgetAnimationDynamicEvent OnTransitionComplete_ToPropertyView;
 	FWidgetAnimationDynamicEvent OnTransitionComplete_ToCreatorView;
-	
+
 private:
 	/** Binds all widget delegates to functions */
 	void BindAllDelegates();
@@ -214,37 +220,37 @@ private:
 	/** Sets button defaults and default enabled states */
 	void SetupButtons();
 
-	/** Finds the associated default game mode, sets the StartWidgetProperties for both CustomGameModesWidgets, and calls PopulateGameModeOptions */
+	/** Finds the associated default game mode, sets the StartWidgetProperties for both CustomGameModesWidgets, and
+	 *  calls PopulateGameModeOptions */
 	void InitCustomGameModesWidgetOptions(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty);
-	
+
 	/** Initializes all Custom game mode options based on the BSConfig */
 	void PopulateGameModeOptions(const FBSConfig& InBSConfig);
 
 	/** Retrieves all Custom game mode options and returns a BSConfig with those options */
 	FBSConfig GetCustomGameModeOptions() const;
 
-	/** Saves a CustomGameMode to save slot using GetCustomGameModeOptions(), displays the saved text, refreshes game mode template combo box and selects it */
+	/** Saves a CustomGameMode to save slot using GetCustomGameModeOptions(), displays the saved text,
+	 *  refreshes game mode template combo box and selects it */
 	bool SaveCustomAndReselect(const FText& SuccessMessage = FText());
 
-	/** Changes the Save and Start Button states depending on what is selected in ComboBox_GameModeName and TextBox_CustomGameModeName */
+	/** Changes the Save and Start Button states depending on what is selected in ComboBox_GameModeName and
+	 *  TextBox_CustomGameModeName */
 	UFUNCTION()
 	void UpdateSaveStartButtonStates();
-	
+
 	/** Checks to see if SelectedGameMode is valid, Binds to ScreenFadeToBlackFinish, and ends the game mode */
 	void ShowAudioFormatSelect(const bool bStartFromDefaultGameMode);
 
 	/** Returns whether or not BSConfig is identical to the currently selected template option */
 	bool IsCurrentConfigIdenticalToSelectedCustom();
 
-	/** Checks to see if the GameModeName ComboBox or the CustomGameModeName text box has a matching custom game mode that is already saved,
-	 *  and calls ShowConfirmOverwriteMessage and returning true if so */
-	bool CheckForExistingAndDisplayOverwriteMessage(const bool bStartGameAfter);
-	
-	/** Only called by CheckForExistingAndDisplayOverwriteMessage. Initializes a PopupMessage and binds to the buttons,
-	 *  calling SaveCustomAndReselect if they choose to override. Optionally starts the game afterwards */
-	void ShowConfirmOverwriteMessage(const bool bStartGameAfter);
+	/** Checks to see if the GameModeName ComboBox or the CustomGameModeName text box has a matching custom game mode
+	 *  that is already saved */
+	bool DoesCustomGameModeExist();
 
-	/** Initializes a PopupMessage asking the player if they want to overwrite an existing custom game mode, calling SaveCustomAndReselect if they choose to override */
+	/** Initializes a PopupMessage asking the player if they want to overwrite an existing custom game mode, calling
+	 *  SaveCustomAndReselect if they choose to override */
 	void ShowConfirmOverwriteMessage_Import(const FBSConfig& ImportedConfig);
 
 	/** Changes the SelectedGameMode depending on input button */
@@ -255,7 +261,7 @@ private:
 	UFUNCTION()
 	void OnButtonClicked_SelectedDifficulty(const UBSButton* Button);
 
-	/** The Button_CustomizeFromStandard and Button_PlayFromStandard bind to this function */
+	/** The Button_CustomizeFromPreset and Button_StartFromPreset bind to this function */
 	UFUNCTION()
 	void OnButtonClicked_DefaultGameMode(const UBSButton* Button);
 
@@ -270,8 +276,8 @@ private:
 	/** Saves the custom game mode to slot, repopulates ComboBox_GameModeName, and selects the new custom game mode */
 	void OnButtonClicked_SaveCustom();
 
-	/** Calls CheckForExistingAndDisplayOverwriteMessage, and calls ShowAudioFormatSelect if no existing found */
-	void OnButtonClicked_SaveCustomAndStart();
+	/** Calls DoesCustomGameModeExist, and calls ShowAudioFormatSelect if no existing found */
+	void OnButtonClicked_StartFromCustom();
 
 	/** Creates a confirm pop up widget and binds to its buttons, removing the selected custom if confirmed */
 	void OnButtonClicked_RemoveSelectedCustom();
@@ -285,22 +291,30 @@ private:
 	/** Copies the game mode to clipboard and updates Text */
 	void OnButtonClicked_ExportCustom();
 
-	/**  */
+	/** Creates a confirm pop up widget and binds to its buttons, clearing the RL history of a game mode if confirmed */
 	void OnButtonClicked_ClearRLHistory();
 
 	/** Plays TransitionCustomGameModeView */
 	void TransitionGameModeViewToCreator();
-	
+
 	/** Plays TransitionCustomGameModeView */
 	void TransitionGameModeViewToProperty();
 
-	/** Collapses Box_CreatorView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnRequestSimulationStateChange */
+	/** Collapses Box_CreatorView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes
+	 *  OnRequestSimulationStateChange */
 	UFUNCTION()
 	void OnTransitionCompleted_ToPropertyView();
-	
-	/** Collapses Box_PropertyView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes OnRequestSimulationStateChange */
+
+	/** Collapses Box_PropertyView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes
+	 *  OnRequestSimulationStateChange */
 	UFUNCTION()
 	void OnTransitionCompleted_ToCreatorView();
+
+	/** Callback function for receiving an access token response */
+	void OnAccessTokenResponseReceived(const FString& AccessToken, FString GameModeNameToRemove);
+
+	/** Callback function for receiving a delete scores response */
+	void OnDeleteScoresResponseReceived(const int32 NumScoresRemoved, const int32 ResponseCode, FString GameModeNameToRemove);
 
 	/** Called when the GameModeTemplate selected option changes in either CustomGameModeWidget */
 	void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
@@ -308,23 +322,20 @@ private:
 	/** Synchronizes properties like CustomGameModeName between CreatorView and PropertyView */
 	void SynchronizeStartWidgets();
 
-	/** Returns a TooltipImage widget created and placed inside the BoxToPlaceIn */
-	UTooltipImage* ConstructWarningEMarkWidget(UHorizontalBox* BoxToPlaceIn);
-
 	/** Sets the SavedText and plays FadeInFadeOut for the SavedTextWidget corresponding to the CustomGameModesWidget_Current */
 	void SetAndPlaySavedText(const FText& InText);
 
-	/** Called when one of the custom game modes widgets has at least one breaking game mode option, or none. Updates the value of bGameModeBreakingOptionPresent
-	 *  and Broadcasts OnGameModeBreakingChange if the value is different */
+	/** Called when one of the custom game modes widgets has at least one breaking game mode option, or none.
+	 *  Updates the value of bGameModeBreakingOptionPresent and Broadcasts OnGameModeBreakingChange if the value is different */
 	void OnGameModeBreakingOptionPresentStateChanged(const bool bIsPresent);
-	
+
 	void RefreshGameModePreview();
 
 	void StopGameModePreview();
-	
+
 	/** The BaseGameMode for a selected Preset Game Mode */
 	EBaseGameMode PresetSelection_PresetGameMode;
-	
+
 	/** The difficulty for a selected Preset Game Mode */
 	EGameModeDifficulty PresetSelection_Difficulty;
 
@@ -336,4 +347,7 @@ private:
 
 	/** Whether or not one of the custom game modes widgets has at least one breaking game mode option, or none */
 	bool bGameModeBreakingOptionPresent = false;
+
+	FOnAccessTokenResponse OnAccessTokenResponse;
+	FOnDeleteScoresResponse OnDeleteScoresResponse;
 };

@@ -18,14 +18,13 @@ UCLASS(Abstract)
 class BEATSHOT_API AVisualizerBase : public AActor
 {
 	GENERATED_BODY()
-	
+
 	friend class AVisualizerManager;
 
 public:
 	AVisualizerBase();
 
 protected:
-
 	virtual void Destroyed() override;
 
 	UPROPERTY(EditInstanceOnly, Category="Spline")
@@ -36,8 +35,9 @@ public:
 	virtual void InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings);
 
 	/** Initializes a visualizer already in the level */
-	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers);
-	
+	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings,
+		const int32 NumSpawnedVisualizers);
+
 	/** Sets whether or not the visualizer should receive input from the Audio Analyzer */
 	virtual void SetActivationState(const bool bActivate);
 
@@ -46,13 +46,17 @@ public:
 
 	/** Updates a visualizer state at Index inside Visualizers array. SpectrumAlpha should be a value between
 	 *  0 and 1, with 1 being the maximum visualizer state and 0 being the minimum */
-	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) {}
+	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha)
+	{
+	}
 
 	/** Called by the VisualizerManager when AudioAnalyzer settings are changed. Calls InitializeVisualizer */
 	virtual void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& InAASettings);
 
 	/** If the visualizer is using an instanced static mesh, use this function to rerender the meshes. Should be called by VisualizerManager */
-	virtual void MarkRenderStateDirty() {}
+	virtual void MarkRenderStateDirty()
+	{
+	}
 
 	/** Returns the definition for this visualizer */
 	virtual UBSVisualizerDefinition* GetVisualizerDefinition() const { return VisualizerDefinition; }
@@ -90,11 +94,11 @@ public:
 	/** Spawns a visualizer specified in TestVisualizerToSpawn to determine what location and rotation is needed for alignment */
 	UFUNCTION(CallInEditor, Category="Spline")
 	void AddTestVisualizer();
-	
-protected:
 
+protected:
 	/** Maps AudioAnalyzer channels to individual visualizer lights */
-	virtual void MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels, const int32 NumVisualizers = INDEX_NONE);
+	virtual void MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels,
+		const int32 NumVisualizers = INDEX_NONE);
 
 	/** Returns the visualizer light indices that correspond to AudioAnalyzer ChannelIndex */
 	virtual TArray<int32>& GetLightIndices(const int32 ChannelIndex);
@@ -103,7 +107,8 @@ protected:
 	TArray<FVector> GetSplinePointLocations() const;
 
 	/** The data asset that specifies the configuration for this visualizer */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Visualizer Definition", meta=(DisplayPriority=-20000))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Instanced, Category = "Visualizer Definition",
+		meta=(DisplayPriority=-20000))
 	UBSVisualizerDefinition* VisualizerDefinition;
 
 	bool bIsActivated;

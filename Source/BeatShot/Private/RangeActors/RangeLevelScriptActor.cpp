@@ -19,11 +19,13 @@ void ARangeLevelScriptActor::BeginPlay()
 	}
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ThisClass::OnPlayerSettingsChanged_VideoAndSound);
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this,
+		&ThisClass::OnPlayerSettingsChanged_VideoAndSound);
 	OnPlayerSettingsChanged_VideoAndSound(LoadPlayerSettings().VideoAndSound);
 }
 
-void ARangeLevelScriptActor::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+void ARangeLevelScriptActor::OnPlayerSettingsChanged_VideoAndSound(
+	const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	if (PostProcessVolume)
 	{

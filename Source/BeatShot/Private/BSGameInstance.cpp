@@ -14,10 +14,10 @@
 void UBSGameInstance::Init()
 {
 	Super::Init();
-	
+
 	OnPCFinishedUsingAuthTicket.BindUObject(this, &ThisClass::OnLoginToScoreBrowserAsyncTaskComplete);
 	bSteamManagerInitialized = InitializeSteamManager();
-	
+
 	//IOnlineSubsystem* Ion = IOnlineSubsystem::Get(FName("Steam"));
 }
 
@@ -58,8 +58,9 @@ void UBSGameInstance::Shutdown()
 
 void UBSGameInstance::StartGameMode(const bool bIsRestart) const
 {
-	ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	
+	ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+		UGameplayStatics::GetPlayerController(GetWorld(), 0));
+
 	if (PlayerController->IsPaused())
 	{
 		PlayerController->HandlePause();
@@ -68,7 +69,8 @@ void UBSGameInstance::StartGameMode(const bool bIsRestart) const
 	/** Hide all widgets and show the countdown after the screen fades to black */
 	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this, bIsRestart]
 	{
-		ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		ABSPlayerController* Controller = Cast<ABSPlayerController>(
+			UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		Controller->HideMainMenu();
 		Controller->HidePostGameMenu();
 		Controller->HidePauseMenu();
@@ -103,19 +105,23 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		}
 	case ETransitionState::Restart:
 		{
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
+				NewGameModeTransitionState.bSaveCurrentScores, false);
 			StartGameMode(true);
 			break;
 		}
 	case ETransitionState::QuitToMainMenu:
 		{
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
-			ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
+				NewGameModeTransitionState.bSaveCurrentScores, false);
+			ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+				UGameplayStatics::GetPlayerController(GetWorld(), 0));
 
 			/** Hide all widgets and open MainMenu after the screen fades to black */
 			PlayerController->OnScreenFadeToBlackFinish.BindLambda([this]
 			{
-				ABSPlayerController* Controller = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+				ABSPlayerController* Controller = Cast<ABSPlayerController>(
+					UGameplayStatics::GetPlayerController(GetWorld(), 0));
 				Controller->HidePostGameMenu();
 				Controller->HidePauseMenu();
 				UGameplayStatics::OpenLevel(GetWorld(), "MainMenuLevel");
@@ -125,8 +131,10 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		}
 	case ETransitionState::QuitToDesktop:
 		{
-			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
-			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0), EQuitPreference::Quit, false);
+			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
+				NewGameModeTransitionState.bSaveCurrentScores, false);
+			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+				EQuitPreference::Quit, false);
 			break;
 		}
 	case ETransitionState::PlayAgain:
@@ -143,7 +151,7 @@ bool UBSGameInstance::InitializeSteamManager()
 {
 	SteamManager = NewObject<USteamManager>(this);
 	SteamManager->AssignGameInstance(this);
-	
+
 	if (!SteamAPI_Init())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("SteamAPI_Init Failed"));
@@ -175,7 +183,8 @@ void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
 {
 	if (bIsOverlayActive)
 	{
-		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+			UGameplayStatics::GetPlayerController(GetWorld(), 0));
 		PlayerController->HandlePause();
 	}
 }
@@ -192,8 +201,8 @@ void UBSGameInstance::OnPlayerControllerReadyForSteamLogin(ABSPlayerController* 
 		UE_LOG(LogTemp, Warning, TEXT("SteamManager not initialized"));
 		return;
 	}
-	
-	SteamManager->OnAuthTicketForWebApiReady.BindLambda([this, PlayerController] (const bool bSuccess)
+
+	SteamManager->OnAuthTicketForWebApiReady.BindLambda([this, PlayerController](const bool bSuccess)
 	{
 		if (bSuccess)
 		{
@@ -205,7 +214,8 @@ void UBSGameInstance::OnPlayerControllerReadyForSteamLogin(ABSPlayerController* 
 			{
 				// TEMP AUTO FAIL LOGIN
 				//PlayerController->LoginToScoreBrowserWithSteam("", OnPCFinishedUsingAuthTicket);
-				PlayerController->LoginToScoreBrowserWithSteam(SteamManager->GetWebApiTicket(), OnPCFinishedUsingAuthTicket);
+				PlayerController->LoginToScoreBrowserWithSteam(SteamManager->GetWebApiTicket(),
+					OnPCFinishedUsingAuthTicket);
 			});
 		}
 		else
@@ -224,7 +234,7 @@ void UBSGameInstance::OnAuthTicketForWebApiResponse(const FSteamAuthTicketRespon
 	{
 		const uint64 LocalSteamID = SteamUser()->GetSteamID().ConvertToUint64();
 		const uint64 ResponseSteamID = FCString::Atoi64(*Response.SteamID);
-		
+
 		if (LocalSteamID == ResponseSteamID)
 		{
 			FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;

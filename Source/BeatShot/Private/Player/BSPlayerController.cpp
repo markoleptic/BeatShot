@@ -31,7 +31,7 @@
 void ABSPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	/*if (HasAuthority())
 	{
 		if (IsLocalController())
@@ -62,8 +62,9 @@ void ABSPlayerController::BeginPlay()
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this, &ABSPlayerController::ABSPlayerController::OnPlayerSettingsChanged);
-	
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this,
+		&ABSPlayerController::ABSPlayerController::OnPlayerSettingsChanged);
+
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
 	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
@@ -111,12 +112,12 @@ void ABSPlayerController::ShowMainMenu()
 	}
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	
+
 	MainMenu = CreateWidget<UMainMenuWidget>(this, MainMenuClass);
 	MainMenu->AddToViewport();
 	MainMenu->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	MainMenu->OnSteamLoginRequest.BindUObject(this, &ThisClass::InitiateSteamLogin);
-	
+
 	if (GameMode)
 	{
 		GameMode->BindGameModesWidgetToTargetManager(MainMenu->GameModesWidget);
@@ -128,7 +129,7 @@ void ABSPlayerController::ShowMainMenu()
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->SettingsMenuWidget->GetUserDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(MainMenu->GetUserDelegate());
-	
+
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 
@@ -157,7 +158,7 @@ void ABSPlayerController::ShowPauseMenu()
 		HandlePause();
 		HidePauseMenu();
 	});
-	
+
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
 	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetGameDelegate());
@@ -165,10 +166,10 @@ void ABSPlayerController::ShowPauseMenu()
 	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetCrossHairDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PauseMenu->SettingsMenuWidget->GetUserDelegate());
-	
+
 	PauseMenu->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
 	PauseMenu->AddToViewport();
-	
+
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -183,7 +184,8 @@ void ABSPlayerController::HidePauseMenu()
 	{
 		PauseMenu->RemoveFromParent();
 		PauseMenu = nullptr;
-		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
+		UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(
+			LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
 		UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	}
 }
@@ -195,10 +197,11 @@ void ABSPlayerController::ShowCrossHair()
 		return;
 	}
 	CrossHair = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
-	
+
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->GetPublicCrossHairSettingsChangedDelegate().AddUniqueDynamic(CrossHair, &UCrossHairWidget::OnPlayerSettingsChanged_CrossHair);
-	
+	GI->GetPublicCrossHairSettingsChangedDelegate().AddUniqueDynamic(CrossHair,
+		&UCrossHairWidget::OnPlayerSettingsChanged_CrossHair);
+
 	CrossHair->AddToViewport();
 }
 
@@ -217,18 +220,18 @@ void ABSPlayerController::ShowPlayerHUD()
 	{
 		return;
 	}
-	
+
 	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
 	PlayerHUD->Init(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig());
-	
+
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(PlayerHUD->GetGameDelegate());
 	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(PlayerHUD, &UPlayerHUD::OnPlayerSettingsChanged_Game);
-	
+
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
-	
+
 	PlayerHUD->AddToViewport();
 	PlayerHUDActive = true;
 }
@@ -260,7 +263,8 @@ void ABSPlayerController::ShowCountdown(const bool bIsRestart)
 		FadeScreenFromBlack();
 	}
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
-	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig().AudioConfig.PlayerDelay;
+	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig().
+		AudioConfig.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	Countdown->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
 	Countdown->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);
@@ -290,26 +294,28 @@ void ABSPlayerController::ShowPostGameMenu()
 	{
 		return;
 	}
-	
+
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	
+
 	PostGameMenuWidget = CreateWidget<UPostGameMenuWidget>(this, PostGameMenuWidgetClass);
-	PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
-	PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI, &UBSGameInstance::HandleGameModeTransition);
+	PostGameMenuWidget->GameModesWidget->OnGameModeStateChanged.AddUObject(GI,
+		&UBSGameInstance::HandleGameModeTransition);
+	PostGameMenuWidget->QuitMenuWidget->OnGameModeStateChanged.AddUObject(GI,
+		&UBSGameInstance::HandleGameModeTransition);
 
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetGameDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetVideoAndSoundDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetUserDelegate());
-	
+
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
-	
+
 	SetInputMode(FInputModeUIOnly());
 	SetShowMouseCursor(true);
 	SetPlayerEnabledState(false);
-	
+
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -340,7 +346,7 @@ void ABSPlayerController::HandlePause()
 	{
 		return;
 	}
-	
+
 	const UWorld* World = GetWorld();
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(World));
 
@@ -348,7 +354,7 @@ void ABSPlayerController::HandlePause()
 	{
 		return;
 	}
-	
+
 	if (UGameplayStatics::IsGamePaused(World))
 	{
 		HidePauseMenu();
@@ -389,10 +395,11 @@ ABSCharacter* ABSPlayerController::GetBSCharacter() const
 	return Cast<ABSCharacter>(GetPawn());
 }
 
-void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket)
+void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket,
+	FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket)
 {
 	if (!MainMenu) return;
-	
+
 	if (AuthTicket.IsEmpty())
 	{
 		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
@@ -401,11 +408,12 @@ void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket,
 	}
 	else
 	{
-		FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda([&OnFinishedUsingAuthTicket, &Handle] (const bool bSuccess)
-		{
-			if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
-			Handle.Reset();
-		});
+		FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda(
+			[&OnFinishedUsingAuthTicket, &Handle](const bool bSuccess)
+			{
+				if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
+				Handle.Reset();
+			});
 		MainMenu->LoginScoresWidgetWithSteam(FString(AuthTicket));
 	}
 }
@@ -434,7 +442,9 @@ void ABSPlayerController::PostProcessInput(const float DeltaTime, const bool bGa
 	GetBSAbilitySystemComponent()->ProcessAbilityInput(DeltaTime, IsPaused());
 }
 
-void ABSPlayerController::BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
+void ABSPlayerController::BindToLoadingScreenDelegates(
+	FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
+	FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
 {
 	if (!OnLoadingScreenVisibilityChanged.IsBoundToObject(this))
 	{
@@ -559,7 +569,8 @@ void ABSPlayerController::HideInteractInfo()
 	}
 }
 
-void ABSPlayerController::ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns, const TArray<float>& QTable)
+void ABSPlayerController::ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns,
+	const TArray<float>& QTable)
 {
 	if (!IsLocalController())
 	{
@@ -585,7 +596,8 @@ void ABSPlayerController::HideRLAgentWidget()
 
 void ABSPlayerController::ShowCombatText(const int32 Streak, const FTransform& Transform)
 {
-	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass, FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass,
+		FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	CombatText->SetText(FText::FromString(FString::FromInt(Streak)));
 	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, true), false);
 }
@@ -605,7 +617,8 @@ void ABSPlayerController::ShowAccuracyText(const float TimeOffset, const FTransf
 	{
 		AccuracyString = "Oof";
 	}
-	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass, FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	AFloatingTextActor* CombatText = GetWorld()->SpawnActorDeferred<AFloatingTextActor>(FloatingTextActorClass,
+		FTransform(), this, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	CombatText->SetText(FText::FromString(AccuracyString));
 	CombatText->FinishSpawning(CombatText->GetTextTransform(Transform, false), false);
 }

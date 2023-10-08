@@ -9,7 +9,7 @@
 TSharedRef<SWidget> UBSHorizontalBox::RebuildWidget()
 {
 	MyHorizontalBox = SNew(SHorizontalBox);
-	
+
 	for (const TObjectPtr<UPanelSlot>& PanelSlot : Slots)
 	{
 		if (UHorizontalBoxSlot* TypedSlot = Cast<UHorizontalBoxSlot>(PanelSlot))

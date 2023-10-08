@@ -58,11 +58,12 @@ FTooltipData::FTooltipData(const FText& InTooltipText, const bool InbAllowTextWr
 	LastMaxAllowed = -1.f;
 	bIsDirty = false;
 	bIsDynamic = false;
-	
+
 	bHasBeenInitialized = true;
 }
 
-FTooltipData::FTooltipData(const FString& InStringTableKey, const ETooltipImageType& InType, const FText& InAdditionalTooltipText)
+FTooltipData::FTooltipData(const FString& InStringTableKey, const ETooltipImageType& InType,
+	const FText& InAdditionalTooltipText)
 {
 	TooltipImage = TWeakObjectPtr<UTooltipImage>(nullptr);
 	TooltipText = FText();
@@ -77,7 +78,7 @@ FTooltipData::FTooltipData(const FString& InStringTableKey, const ETooltipImageT
 	LastMaxAllowed = -1.f;
 	bIsDirty = false;
 	bIsDynamic = false;
-	
+
 	bHasBeenInitialized = true;
 }
 
@@ -90,7 +91,8 @@ void FTooltipData::InitTooltipText()
 	}
 	if (!AdditionalTooltipText.IsEmpty())
 	{
-		TooltipText = FText::Join(FText::FromString(" "), IBSWidgetInterface::GetTooltipTextFromKey(TooltipStringTableKey), AdditionalTooltipText);
+		TooltipText = FText::Join(FText::FromString(" "),
+			IBSWidgetInterface::GetTooltipTextFromKey(TooltipStringTableKey), AdditionalTooltipText);
 	}
 	else
 	{
@@ -114,7 +116,9 @@ void FTooltipData::UpdateTooltipData(const FTooltipData& InUpdateData)
 	}
 	if (!InUpdateData.AdditionalTooltipText.IsEmpty())
 	{
-		TooltipText = FText::Join(FText::FromString(" "), IBSWidgetInterface::GetTooltipTextFromKey(InUpdateData.TooltipStringTableKey), InUpdateData.AdditionalTooltipText);
+		TooltipText = FText::Join(FText::FromString(" "),
+			IBSWidgetInterface::GetTooltipTextFromKey(InUpdateData.TooltipStringTableKey),
+			InUpdateData.AdditionalTooltipText);
 	}
 	else
 	{
@@ -137,7 +141,8 @@ void FTooltipData::UpdateDynamicTooltipText(const float InActual, const float In
 	{
 		return;
 	}
-	if (InActual > InMaxAllowed && (!FMath::IsNearlyEqual(LastActual, InActual) || !FMath::IsNearlyEqual(LastMaxAllowed, InMaxAllowed)))
+	if (InActual > InMaxAllowed && (!FMath::IsNearlyEqual(LastActual, InActual) || !FMath::IsNearlyEqual(LastMaxAllowed,
+		InMaxAllowed)))
 	{
 		if (InMaxAllowed < DynamicTooltipData.MinAllowed)
 		{
@@ -155,14 +160,15 @@ void FTooltipData::UpdateDynamicTooltipText(const float InActual, const float In
 				const float Multiplier = FMath::Pow(10.f, DynamicTooltipData.Precision);
 				NewValue = roundf(InMaxAllowed * Multiplier) / Multiplier;
 			}
-			TooltipText = FText::FromString(DynamicTooltipData.TryChangeString + FString::SanitizeFloat(NewValue, 0) + ".");
+			TooltipText = FText::FromString(
+				DynamicTooltipData.TryChangeString + FString::SanitizeFloat(NewValue, 0) + ".");
 		}
 		bIsDirty = true;
 	}
-	
+
 	LastActual = InActual;
 	LastMaxAllowed = InMaxAllowed;
-	
+
 	SetShouldShowTooltipImage(InActual > InMaxAllowed);
 }
 

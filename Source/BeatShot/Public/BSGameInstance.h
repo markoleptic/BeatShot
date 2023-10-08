@@ -31,9 +31,8 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 	virtual void Shutdown() override;
 
 public:
-
 	TObjectPtr<ATimeOfDayManager> TimeOfDayManager;
-	
+
 	UFUNCTION()
 	void HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState);
 
@@ -70,28 +69,43 @@ public:
 
 	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_Game, which can be used to add a function to the delegate's call list.
 	 *  The function is then called any time a Game Setting is changed */
-	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
+	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_Game;
+	}
 
 	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_AudioAnalyzer, which can be used to add a function to the delegate's call list.
 	 *  The function is then called any time an Audio Analyzer Setting is changed */
-	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_AudioAnalyzer; }
+	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_AudioAnalyzer;
+	}
 
 	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_User, which can be used to add a function to the delegate's call list.
 	 *  The function is then called any time a User Setting is changed */
-	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_User; }
+	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_User;
+	}
 
 	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_CrossHair, which can be used to add a function to the delegate's call list.
 	 *  The function is then called any time a CrossHair Setting is changed */
-	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_CrossHair; }
+	FOnPlayerSettingsChanged_CrossHair& GetPublicCrossHairSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_CrossHair;
+	}
 
 	/** Returns the Game Instance's OnPlayerSettingsChangedDelegate_VideoAndSound, which can be used to add a function to the delegate's call list.
 	 *  The function is then called any time a Video And Sound Setting is changed */
-	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_VideoAndSound; }
+	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_VideoAndSound;
+	}
 
 protected:
 	UFUNCTION()
 	void StartGameMode(const bool bIsRestart) const;
-	
+
 	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions */
 	bool InitializeSteamManager();
 
@@ -109,10 +123,12 @@ protected:
 	void OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
 
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
+	virtual void
+	OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
 	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void
+	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	/** Delegate passed to AuthenticateSteamUser Http request which is executed when it receives a response */
 	FOnTicketWebApiResponse TicketWebApiResponse;

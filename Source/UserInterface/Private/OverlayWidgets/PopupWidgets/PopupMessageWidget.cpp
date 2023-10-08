@@ -2,18 +2,21 @@
 
 
 #include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
+
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
 #include "Components/TextBlock.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 
 void UPopupMessageWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	Button_1->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	Button_2->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 }
 
-void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput, const FText& Button1TextInput, const FText& Button2TextInput) const
+TArray<UBSButton*> UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& MessageInput,
+	const int32 NumButtons)
 {
+	TArray<UBSButton*> Buttons;
 	TextBlock_Title->SetText(TitleInput);
 	if (MessageInput.IsEmpty())
 	{
@@ -25,18 +28,15 @@ void UPopupMessageWidget::InitPopup(const FText& TitleInput, const FText& Messag
 		TextBlock_Message->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 
-	Button_1->SetButtonText(Button1TextInput);
-	
-	if (Button2TextInput.IsEmpty())
+	for (int i = 0; i < NumButtons; i++)
 	{
-		Button_2->SetVisibility(ESlateVisibility::Collapsed);
+		UBSButton* Button = CreateWidget<UBSButton>(this, ButtonClass);
+		UGridSlot* GridSlot = GridPanel->AddChildToGrid(Button, 0, i);
+		GridSlot->SetHorizontalAlignment(HorizontalAlignment);
+		GridSlot->SetVerticalAlignment(VerticalAlignment);
+		Buttons.Add(Button);
 	}
-	else
-	{
-		Button_2->SetButtonText(Button2TextInput);
-		Button_2->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	
+	return Buttons;
 }
 
 void UPopupMessageWidget::FadeIn()
@@ -61,33 +61,6 @@ void UPopupMessageWidget::ChangeMessageText(const FText& MessageInput)
 	{
 		TextBlock_Message->SetText(MessageInput);
 		TextBlock_Message->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-}
-
-void UPopupMessageWidget::OnButtonClicked_BSButton(const UBSButton* Button)
-{
-	if (Button == Button_1)
-	{
-		if (OnButton1Pressed.IsBound())
-		{
-			OnButton1Pressed.Broadcast();
-		}
-		if (OnButton1Pressed_NonDynamic.IsBound())
-		{
-			OnButton1Pressed_NonDynamic.Broadcast();
-		}
-		return;
-	}
-	if (Button == Button_2)
-	{
-		if (OnButton2Pressed.IsBound())
-		{
-			OnButton2Pressed.Broadcast();
-		}
-		if (OnButton2Pressed_NonDynamic.IsBound())
-		{
-			OnButton2Pressed_NonDynamic.Broadcast();
-		}
 	}
 }
 

@@ -9,11 +9,12 @@
 
 class UTextBlock;
 class UImage;
+
 UCLASS()
 class USERINTERFACE_API UHitTimingWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
 	void UpdateHitTiming(const float TimeOffsetNormalized, const float TimeOffsetRaw);
 
@@ -24,12 +25,12 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	FText MakeCurrentTickText(const float TimeOffsetRaw) const;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_LogoTick;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_Background;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* Tick_Min;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -38,7 +39,7 @@ protected:
 	UTextBlock* Tick_Max;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* Tick_Current;
-	
+
 	UPROPERTY()
 	TObjectPtr<UMaterialInstanceDynamic> DynamicImageMaterial;
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
@@ -54,5 +55,4 @@ protected:
 	float Tick_Current_Offset_Start = 0.f;
 	float Tick_Current_Offset_End = 0.f;
 	float LastTimeOffset = 0.5f;
-	
 };

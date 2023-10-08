@@ -31,7 +31,7 @@ public:
 	ATimeOfDayManager();
 
 	virtual void PostInitializeComponents() override;
-	
+
 	virtual void Tick(float DeltaTime) override;
 
 	/** Changes TimeOfDay and plays TransitionTimeline */
@@ -43,7 +43,7 @@ public:
 	/** Changes TimeOfDay based on the value of TimeOfDay_Editor */
 	UFUNCTION(CallInEditor)
 	void UpdateTimeOfDay_Editor();
-	
+
 	UFUNCTION(CallInEditor)
 	void BeginTransitionToNight_Editor();
 
@@ -59,7 +59,6 @@ public:
 	void SetSpotLightFrontEnabledState(const bool bEnable);
 
 protected:
-
 	/** Changes TimeOfDay */
 	UFUNCTION()
 	void OnStreakThresholdPassed();
@@ -68,7 +67,8 @@ protected:
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 
 	/** Callback function to respond to NightMode change from WallMenu */
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void
+	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	/** Calls RefreshMaterial function in SkySphere */
 	UFUNCTION(BlueprintImplementableEvent)
@@ -97,7 +97,7 @@ protected:
 	/** Reference to right roof mesh to move */
 	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
 	TSoftObjectPtr<AStaticMeshActor> RightWindowCover;
-	
+
 	UPROPERTY(EditInstanceOnly, Category = "Lighting|References")
 	TSoftObjectPtr<ASpawnAreaSpotLight> SpawnAreaSpotLight;
 
@@ -106,7 +106,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
 	UCurveFloat* TransitionCurve;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "Lighting")
 	UCurveFloat* SkyMaterialCurve;
 
@@ -121,7 +121,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	ETimeOfDay TimeOfDay_Editor;
-	
+
 	/** Distance along the x-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	float DayToNightRoofXTravelDistance = -1000.f;
@@ -132,7 +132,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	bool bUseRectLight = true;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	bool bUseSpotlight = true;
 
@@ -148,7 +148,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
 	float DayRectLightIntensity = 0.f;
-	
+
 	UPROPERTY(EditAnywhere, Category = "Lighting|Day")
 	float DaySpotlightIntensity = 0.f;
 
@@ -164,7 +164,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Lighting|Night")
 	float NightSpotlightIntensity = 2000.f;
-	
+
 	/** Reference to SkySphere dynamic material instance */
 	UPROPERTY()
 	TSoftObjectPtr<UMaterialInstanceDynamic> SkySphereMaterial;
@@ -188,12 +188,12 @@ protected:
 	/** Executes on every tick of TransitionTimeline, reads from TransitionCurve */
 	UFUNCTION()
 	void TransitionTimeOfDay(const float Value);
-	
+
 	FVector DaytimeLeftRoofLocation = {2980, 0, 3371};
 	FVector DaytimeRightRoofLocation = {2020, 0, 3371};
 	FVector NighttimeLeftRoofLocation;
 	FVector NighttimeRightRoofLocation;
-	
+
 	float LastLerpRotation;
 
 	bool bUsingLowGISettings = false;

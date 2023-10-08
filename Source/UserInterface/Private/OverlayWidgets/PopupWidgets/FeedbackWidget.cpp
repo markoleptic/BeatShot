@@ -20,15 +20,15 @@ void UFeedbackWidget::NativeConstruct()
 	Button_SubmitFeedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Back->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Okay->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	
+
 	Button_BugReport->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_BugReport->SetDefaults(0, Button_Feedback);
 	Button_Feedback->SetDefaults(1, Button_BugReport);
-	
+
 	Value_Title->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Title);
 	Value_Content->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Content);
-	
+
 	OnPostFeedbackResponseDelegate.BindUObject(this, &ThisClass::OnPostFeedbackResponse);
 
 	Button_SubmitFeedback->SetIsEnabled(false);
@@ -52,7 +52,8 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	}
 	else if (Button == Button_SubmitFeedback)
 	{
-		const FJsonFeedback Feedback(TitlePrefix.ToString() + Value_Title->GetText().ToString(), Value_Content->GetText().ToString());
+		const FJsonFeedback Feedback(TitlePrefix.ToString() + Value_Title->GetText().ToString(),
+			Value_Content->GetText().ToString());
 		PostFeedback(Feedback, OnPostFeedbackResponseDelegate);
 		PlayFadeOut();
 	}
@@ -77,13 +78,17 @@ void UFeedbackWidget::OnPostFeedbackResponse(const bool bSuccess)
 {
 	if (bSuccess)
 	{
-		TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseSuccessTitle"));
-		TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseSuccessInfo"));
+		TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+			"FeedbackResponseSuccessTitle"));
+		TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+			"FeedbackResponseSuccessInfo"));
 	}
 	else
 	{
-		TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseFailureTitle"));
-		TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "FeedbackResponseFailureInfo"));
+		TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+			"FeedbackResponseFailureTitle"));
+		TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+			"FeedbackResponseFailureInfo"));
 	}
 	PlayFadeInResponse();
 }

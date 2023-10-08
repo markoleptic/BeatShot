@@ -20,9 +20,12 @@ UBSGameplayAbility::UBSGameplayAbility()
 	// Default to Instance Per Actor
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 }
+
 UBSAbilitySystemComponent* UBSGameplayAbility::GetBSAbilitySystemComponentFromActorInfo() const
 {
-	return (CurrentActorInfo ? Cast<UBSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get()) : nullptr);
+	return (CurrentActorInfo
+		? Cast<UBSAbilitySystemComponent>(CurrentActorInfo->AbilitySystemComponent.Get())
+		: nullptr);
 }
 
 ABSPlayerController* UBSGameplayAbility::GetBSPlayerControllerFromActorInfo() const
@@ -75,14 +78,15 @@ void UBSGameplayAbility::OnAvatarSet(const FGameplayAbilityActorInfo* ActorInfo,
 	}
 }
 
-void UBSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
+void UBSGameplayAbility::ActivateAbility(const FGameplayAbilitySpecHandle Handle,
+	const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
 	const FGameplayEventData* TriggerEventData)
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 }
 
-void UBSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-	bool bWasCancelled)
+void UBSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+	const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

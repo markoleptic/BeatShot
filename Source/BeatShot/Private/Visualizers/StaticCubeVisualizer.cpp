@@ -10,7 +10,8 @@ AStaticCubeVisualizer::AStaticCubeVisualizer()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	InstancedBaseMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("InstancedBaseMesh"));
-	InstancedVerticalOutlineMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("InstancedVerticalOutlineMesh"));
+	InstancedVerticalOutlineMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(
+		FName("InstancedVerticalOutlineMesh"));
 	InstancedTopMesh = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName("InstancedTopMesh"));
 	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(FName("RootSceneComponent"));
 	RootComponent = RootSceneComponent;
@@ -33,30 +34,33 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 	InstancedBaseMesh->ClearInstances();
 	InstancedVerticalOutlineMesh->ClearInstances();
 	InstancedTopMesh->ClearInstances();
-	
+
 	TArray<FTransform> SpawnTransforms;
-	
-	switch(CubeVisualizerDefinition->VisualizerLightSpawningMethod)
+
+	switch (CubeVisualizerDefinition->VisualizerLightSpawningMethod)
 	{
 	case EVisualizerLightSpawningMethod::SpawnUsingPositionOffsets:
 		{
 			// Default Start Location
-			FTransform CurrentOffsetTransform(FRotator::ZeroRotator, FVector(0), GetFastDef().OffsetScale * GetFastDef().MeshScale);
+			FTransform CurrentOffsetTransform(FRotator::ZeroRotator, FVector(0),
+				GetFastDef().OffsetScale * GetFastDef().MeshScale);
 
 			// If growing from center, start location will be offset by half the total length, growing in the positive direction
 			if (GetFastDef().bGrowFromCenter)
 			{
-				FVector LocationOffset = - GetFastDef().OffsetLocation * FVector(static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
-				CurrentOffsetTransform = FTransform(FRotator::ZeroRotator, LocationOffset, CurrentOffsetTransform.GetScale3D());
+				FVector LocationOffset = -GetFastDef().OffsetLocation * FVector(
+					static_cast<float>(GetFastDef().NumVisualizerLightsToSpawn - 1) / 2);
+				CurrentOffsetTransform = FTransform(FRotator::ZeroRotator, LocationOffset,
+					CurrentOffsetTransform.GetScale3D());
 			}
-		
+
 			SpawnTransforms.Add(CurrentOffsetTransform);
-		
+
 			for (int i = 0; i < GetFastDef().NumVisualizerLightsToSpawn - 1; i++)
 			{
 				CurrentOffsetTransform = FTransform(CurrentOffsetTransform.Rotator() + GetFastDef().OffsetRotation,
-				CurrentOffsetTransform.GetLocation() + GetFastDef().OffsetLocation, 
-				GetFastDef().OffsetScale * GetFastDef().MeshScale);
+					CurrentOffsetTransform.GetLocation() + GetFastDef().OffsetLocation,
+					GetFastDef().OffsetScale * GetFastDef().MeshScale);
 				SpawnTransforms.Add(CurrentOffsetTransform);
 			}
 			break;
@@ -66,7 +70,8 @@ void AStaticCubeVisualizer::CreateCubeInstances()
 			const TArray<FVector> SplineLocations = GetSplinePointLocations();
 			for (int i = 0; i < SplineLocations.Num(); i++)
 			{
-				SpawnTransforms.Emplace(GetFastDef().SplineActorRotationOffset, SplineLocations[i], GetFastDef().OffsetScale * GetFastDef().MeshScale);
+				SpawnTransforms.Emplace(GetFastDef().SplineActorRotationOffset, SplineLocations[i],
+					GetFastDef().OffsetScale * GetFastDef().MeshScale);
 			}
 			break;
 		}
@@ -86,13 +91,14 @@ void AStaticCubeVisualizer::UpdateVisualizer(const int32 Index, const float Spec
 	if (!bIsActivated) return;
 	for (const int32 LightIndex : GetLightIndices(Index))
 	{
-		const float CustomDataValue = (GetScaledHeight(SpectrumAlpha) - GetFastDef().MinCubeVisualizerHeightScale) /
-			(GetFastDef().MaxCubeVisualizerHeightScale - GetFastDef().MinCubeVisualizerHeightScale);
-	
+		const float CustomDataValue = (GetScaledHeight(SpectrumAlpha) - GetFastDef().MinCubeVisualizerHeightScale) / (
+			GetFastDef().MaxCubeVisualizerHeightScale - GetFastDef().MinCubeVisualizerHeightScale);
+
 		InstancedBaseMesh->UpdateInstanceTransform(LightIndex, GetSideAndBaseTransform(LightIndex, SpectrumAlpha));
-		InstancedVerticalOutlineMesh->UpdateInstanceTransform(LightIndex, GetSideAndBaseTransform(LightIndex, SpectrumAlpha));
+		InstancedVerticalOutlineMesh->UpdateInstanceTransform(LightIndex,
+			GetSideAndBaseTransform(LightIndex, SpectrumAlpha));
 		InstancedTopMesh->UpdateInstanceTransform(LightIndex, GetTopMeshTransform(LightIndex, SpectrumAlpha));
-		
+
 		InstancedBaseMesh->SetCustomDataValue(LightIndex, 0, CustomDataValue, false);
 		InstancedVerticalOutlineMesh->SetCustomDataValue(LightIndex, 0, CustomDataValue, false);
 		InstancedTopMesh->SetCustomDataValue(LightIndex, 0, CustomDataValue, false);
@@ -127,7 +133,8 @@ void AStaticCubeVisualizer::SetActivationState(const bool bActivate)
 
 float AStaticCubeVisualizer::GetScaledHeight(const float SpectrumValue) const
 {
-	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, GetFastDef().MinCubeVisualizerHeightScale, GetFastDef().MaxCubeVisualizerHeightScale);
+	return UKismetMathLibrary::MapRangeClamped(SpectrumValue, 0, 1, GetFastDef().MinCubeVisualizerHeightScale,
+		GetFastDef().MaxCubeVisualizerHeightScale);
 }
 
 FVector AStaticCubeVisualizer::GetScale3D(const float ScaledHeight)

@@ -33,11 +33,19 @@ enum class ESelectionModeType : uint8
 class UBSComboBoxEntry;
 class UTooltipWidget;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent, FString, SelectedItem, ESelectInfo::Type, SelectionType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSelectionChangedEvent, FString, SelectedItem, ESelectInfo::Type,
+	SelectionType);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnOpeningEvent);
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForSingleItem, const UBSComboBoxString*, BSComboBoxString, FString, Item);
-DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelection, const UBSComboBoxString*, BSComboBoxString, const TArray<FString>&, Items);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections, const ESelectInfo::Type, SelectionType);
+
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForSingleItem, const UBSComboBoxString*,
+	BSComboBoxString, FString, Item);
+
+DECLARE_DYNAMIC_DELEGATE_RetVal_TwoParams(UWidget*, FGenerateWidgetForMultiSelection, const UBSComboBoxString*,
+	BSComboBoxString, const TArray<FString>&, Items);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSelectionChangedEvent, const TArray<FString>&, ActiveSelections,
+	const ESelectInfo::Type, SelectionType);
 
 UCLASS(meta=( DisplayName="BSComboBox (String) C++"))
 class USERINTERFACE_API UBSComboBoxString : public UWidget, public IBSWidgetInterface
@@ -54,13 +62,13 @@ class USERINTERFACE_API UBSComboBoxString : public UWidget, public IBSWidgetInte
 
 	UPROPERTY(EditDefaultsOnly, Category = "BSComboBoxString|Classes")
 	TSubclassOf<UBSComboBoxEntry> ComboboxEntryWidget;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "BSComboBoxString|Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	
+
 public:
 	TSubclassOf<UBSComboBoxEntry> GetComboboxEntryWidget() const { return ComboboxEntryWidget; }
-	
+
 	/** The style. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Style, meta=( DisplayName="Style" ))
 	FComboBoxStyle WidgetStyle;
@@ -78,7 +86,7 @@ public:
 	/** Should the user be able to select no options */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Content)
 	bool bCanSelectNone = false;
-	
+
 	/** Should the combo box automatically close when a selection is made */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Content)
 	bool bCloseComboBoxOnSelectionChanged = false;
@@ -91,7 +99,7 @@ public:
 	 *  must be activated and will only capture arrow input while activated. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content, AdvancedDisplay)
 	bool EnableGamepadNavigationMode;
-	
+
 	/** The max height of the combobox list that opens */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Content, AdvancedDisplay)
 	float MaxListHeight;
@@ -112,7 +120,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Interaction)
 	bool bIsFocusable;
-	
+
 	/** Called when the widget is needed for the item. */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
 	FGenerateWidgetForString OnGenerateWidgetEvent;
@@ -184,11 +192,11 @@ public:
 	/** Returns whether or not the combo box is open */
 	UFUNCTION(BlueprintPure, Category="ComboBox", Meta = (ReturnDisplayName = "bOpen"))
 	bool IsOpen() const;
-	
+
 	/** Refreshes the list of options. If you added new ones, and want to update the list even if it's currently being displayed use this */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void RefreshOptions();
-	
+
 	/** Clears all options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void ClearOptions();
@@ -196,7 +204,7 @@ public:
 	/** Clears all selected options */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void ClearSelection();
-	
+
 	/** Executed to allow other widgets to create a combo box row */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
 	FGenerateWidgetForSingleItem OnGenerateWidgetEventDelegate;
@@ -208,7 +216,7 @@ public:
 	/** Executed to allow other widgets to create selected (top) combo box row */
 	UPROPERTY(EditAnywhere, Category=Events, meta=( IsBindableEvent="True" ))
 	FGenerateWidgetForMultiSelection OnSelectionChanged_GenerateWidgetForMultiSelection;
-	
+
 	//~ Begin UVisual Interface
 	virtual void ReleaseSlateResources(bool bReleaseChildren) override;
 	//~ End UVisual Interface
@@ -221,11 +229,12 @@ public:
 
 	/** Sets the text for the Entry and tooltip text, and binds to the OnHovered event in the TooltipImage. This can be called by
 	 *  classes that bind to OnGenerateWidgetEvent to customize the entry text and tooltip text, and if needed further modify the Entry */
-	void InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText, const bool bShowTooltipImage, const FText& TooltipText = FText()) const;
+	void InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText, const bool bShowTooltipImage,
+		const FText& TooltipText = FText()) const;
 
-#if WITH_EDITOR
+	#if WITH_EDITOR
 	virtual const FText GetPaletteCategory() override;
-#endif
+	#endif
 
 protected:
 	UBSComboBoxString();
@@ -234,7 +243,7 @@ protected:
 	virtual UTooltipWidget* ConstructTooltipWidget() override;
 	virtual UTooltipWidget* GetTooltipWidget() const override;
 	//~ End ITooltip Interface
-	
+
 	/** Refresh ComboBoxContent with the correct widget/data when the selected option changes */
 	void UpdateOrGenerateWidget(TSharedPtr<FString> Item);
 
@@ -242,21 +251,24 @@ protected:
 	virtual TSharedRef<SWidget> HandleGenerateWidget(TSharedPtr<FString> Item) const;
 
 	/** Called by slate when the underlying combobox selection changes. Handles both single select and multi-select */
-	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType);
+	virtual void HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items,
+		const ESelectInfo::Type SelectionType);
 
 	/** Generates a widget for the combobox content that is selected */
-	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const;
+	virtual TSharedRef<SWidget> HandleSelectionChangedGenerateWidget(
+		TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const;
 
 	/** Called by slate when the underlying combobox is opening */
 	virtual void HandleOpening();
-	
+
 	//~ Begin UWidget Interface
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	//~ End UWidget Interface
-	
+
 	static TAttribute<ESelectionMode::Type> GetSelectionModeType(const ESelectionModeType& SelectionModeType)
 	{
-		switch (SelectionModeType) {
+		switch (SelectionModeType)
+		{
 		case ESelectionModeType::None:
 			return ESelectionMode::Type::None;
 		case ESelectionModeType::Single:

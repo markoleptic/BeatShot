@@ -131,7 +131,8 @@ class BEATSHOT_API USpawnArea : public UObject
 public:
 	USpawnArea();
 
-	void Init(const int32 InIndex, const FVector& InBottomLeft, const float IncY, const float IncZ, const int32 InNumVerticalTargets, const int32 InNumHorizontalTargets);
+	void Init(const int32 InIndex, const FVector& InBottomLeft, const float IncY, const float IncZ,
+		const int32 InNumVerticalTargets, const int32 InNumHorizontalTargets);
 
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
@@ -139,8 +140,9 @@ public:
 		{
 			return true;
 		}
-		if ((Other.Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other.Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) && (Other.Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other.
-			Vertex_BottomLeft.Z < Vertex_TopRight.Z - 0.01))
+		if ((Other.Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other.Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) &&
+			(Other.Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other.Vertex_BottomLeft.Z < Vertex_TopRight.Z -
+				0.01))
 		{
 			return true;
 		}
@@ -166,8 +168,9 @@ public:
 		{
 			return true;
 		}
-		if ((Other->Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other->Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z) && (Other->Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other->
-			Vertex_BottomLeft.Z < Vertex_TopRight.Z - 0.01))
+		if ((Other->Vertex_BottomLeft.Y >= Vertex_BottomLeft.Y) && (Other->Vertex_BottomLeft.Z >= Vertex_BottomLeft.Z)
+			&& (Other->Vertex_BottomLeft.Y < Vertex_TopRight.Y - 0.01) && (Other->Vertex_BottomLeft.Z < Vertex_TopRight.
+				Z - 0.01))
 		{
 			return true;
 		}
@@ -222,7 +225,8 @@ public:
 
 private:
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
-	static TArray<int32> FindAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
+	static TArray<int32> FindAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex,
+		const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
@@ -249,8 +253,8 @@ private:
 	void SetOverlappingVertices(const TArray<FVector>& InOverlappingVertices);
 
 	/** Finds and returns the OverlappingVertices, based on the parameters, Width, & Height */
-	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const float InMinOverlapRadius, const FVector& InScale, TArray<FVector>& DebugVertices,
-	                                            const bool bAddDebugVertices = false) const;
+	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const float InMinOverlapRadius,
+		const FVector& InScale, TArray<FVector>& DebugVertices, const bool bAddDebugVertices = false) const;
 
 	/** Empties the OverlappingVertices array */
 	void EmptyOverlappingVertices() { OverlappingVertices.Empty(); }
@@ -273,7 +277,8 @@ public:
 	virtual void DestroyComponent(bool bPromoteChildren) override;
 
 	/** Initializes basic variables in SpawnAreaManagerComponent */
-	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents, const FExtrema& InStaticExtrema);
+	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents,
+		const FExtrema& InStaticExtrema);
 
 	/** Finds a SpawnArea with the matching InIndex */
 	USpawnArea* FindSpawnAreaFromIndex(const int32 InIndex) const;
@@ -343,7 +348,8 @@ public:
 	void FlagSpawnAreaAsRecent(const FGuid TargetGuid) const;
 
 	/** Calls RemoveActivatedFlagFromSpawnArea, calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
-	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy, const FTargetDamageEvent& TargetDamageEvent);
+	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy,
+		const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Removes the Managed flag, meaning the target that the SpawnArea represents is not longer actively managed by TargetManager */
 	void RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid) const;
@@ -357,7 +363,8 @@ public:
 
 	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
 	*   TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
-	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const FExtrema& InCurrentExtrema, const USpawnArea* CurrentSpawnArea) const;
+	TArray<FVector> GetValidSpawnLocations(const FVector& Scale, const FExtrema& InCurrentExtrema,
+		const USpawnArea* CurrentSpawnArea) const;
 
 	/** Adds valid spawn locations for an edge-only TargetDistributionPolicy */
 	void HandleEdgeOnlySpawnLocations(TArray<FVector>& ValidSpawnLocations, const FExtrema& Extrema) const;
@@ -391,7 +398,8 @@ public:
 	void ClearDebug_AllSpawnAreas();
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
-	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness, const int32 InDepthPriority, float Time = 0) const;
+	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness,
+		const int32 InDepthPriority, float Time = 0) const;
 
 	/** Prints debug info about a SpawnArea */
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
@@ -478,7 +486,9 @@ private:
 	FExtrema StaticExtrema;
 
 	/** Preferred SpawnMemory increments */
-	const TArray<int32> PreferredScales = {/*100, 95, 90, 85, 80, 75, 70, 65, 60, 55,*/ 50, 45, 40, 30, 25, 20, 15, 10, 5};
+	const TArray<int32> PreferredScales = {
+		/*100, 95, 90, 85, 80, 75, 70, 65, 60, 55,*/ 50, 45, 40, 30, 25, 20, 15, 10, 5
+	};
 
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() inside of OnTargetHealthChangedOrExpired() */
 	FTimerDelegate RemoveFromRecentDelegate;

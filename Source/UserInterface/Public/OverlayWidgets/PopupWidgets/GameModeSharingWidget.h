@@ -15,13 +15,18 @@ class USERINTERFACE_API UGameModeSharingWidget : public UPopupMessageWidget
 
 public:
 	FString GetImportString() const;
-	
+
+	void SetImportButton(TObjectPtr<UBSButton> InImportButton);
+
 protected:
 	virtual void NativeConstruct() override;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMultiLineEditableTextBox* MultilineTextBox;
 
 	UFUNCTION()
 	void OnTextChanged_MultilineTextBox(const FText& NewText);
+
+	UPROPERTY()
+	TObjectPtr<UBSButton> ImportButton;
 };

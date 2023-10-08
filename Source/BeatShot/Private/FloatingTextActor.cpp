@@ -21,7 +21,7 @@ AFloatingTextActor::AFloatingTextActor()
 void AFloatingTextActor::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (UCombatTextWidget* CombatTextWidget = GetCombatTextWidget())
 	{
 		if (bDisplayBelow)
@@ -69,16 +69,11 @@ FTransform AFloatingTextActor::GetTextTransform(const FTransform& InTargetTransf
 	bDisplayBelow = !bDisplayAbove;
 	if (bDisplayAbove)
 	{
-		return FTransform(FVector(
-			InTargetTransform.GetLocation().X,
-			InTargetTransform.GetLocation().Y,
+		return FTransform(FVector(InTargetTransform.GetLocation().X, InTargetTransform.GetLocation().Y,
 			InTargetTransform.GetLocation().Z + Constants::SphereTargetRadius * InTargetTransform.GetScale3D().Z));
 	}
-	return FTransform(FVector(
-		InTargetTransform.GetLocation().X,
-		InTargetTransform.GetLocation().Y,
+	return FTransform(FVector(InTargetTransform.GetLocation().X, InTargetTransform.GetLocation().Y,
 		InTargetTransform.GetLocation().Z - Constants::SphereTargetRadius * InTargetTransform.GetScale3D().Z));
-
 }
 
 void AFloatingTextActor::OnCombatTextFadeOutCompleted()
@@ -94,5 +89,3 @@ UCombatTextWidget* AFloatingTextActor::GetCombatTextWidget() const
 	}
 	return nullptr;
 }
-
-

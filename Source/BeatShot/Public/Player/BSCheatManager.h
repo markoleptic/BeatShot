@@ -16,9 +16,9 @@ class BEATSHOT_API UBSCheatManager : public UCheatManager
 
 public:
 	virtual void InitCheatManager() override;
-	
+
 	void CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable);
-	
+
 	void CVarOnChanged_PrintDebug_NumRecentNumActive(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable);
@@ -37,14 +37,14 @@ public:
 	void CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable);
-	
+
 	void CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable);
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;
 
 	bool bAimBotEnabled = false;
-	
+
 	UPROPERTY()
 	FGameplayAbilitySpecHandle AimBotSpecHandle;
 };

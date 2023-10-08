@@ -32,6 +32,7 @@ enum class ELoginMethod : uint8
 	Steam UMETA(DisplayName="Steam"),
 	Legacy UMETA(DisplayName="Legacy"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ELoginMethod, ELoginMethod::None, ELoginMethod::Legacy);
 
 DECLARE_DELEGATE(FOnSteamLoginRequest);
@@ -49,7 +50,7 @@ public:
 	USettingsMenuWidget* SettingsMenuWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UScoreBrowserWidget* ScoresWidget;
-	
+
 	UFUNCTION()
 	void UpdateLoginState(const bool bSuccessfulLogin, const FString OptionalStringTableKey = "");
 
@@ -77,7 +78,7 @@ protected:
 	const UMenuStyle* MenuStyle;
 
 	void SetStyles();
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MainMenuSwitcher;
 
@@ -118,7 +119,7 @@ protected:
 	UMenuButton* MenuButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Quit;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_SignInState;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))

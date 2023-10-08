@@ -29,7 +29,6 @@ public:
 	FWidgetAnimationDynamicEvent& GetFadeOutDelegate() { return FadeOutDelegate; }
 
 protected:
-
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UTextBlock* TextBlock;
 
@@ -41,6 +40,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutBottom;
-	
+
 	FWidgetAnimationDynamicEvent FadeOutDelegate;
 };

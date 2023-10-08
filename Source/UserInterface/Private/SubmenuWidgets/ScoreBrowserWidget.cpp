@@ -27,7 +27,8 @@ void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 	}
 }
 
-void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowserType, const EPostScoresResponse& Response)
+void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowserType,
+	const EPostScoresResponse& Response)
 {
 	ScoreBrowserType = InScoreBrowserType;
 	switch (InScoreBrowserType)

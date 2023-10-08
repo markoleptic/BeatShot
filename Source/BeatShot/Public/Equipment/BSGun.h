@@ -28,7 +28,6 @@ class BEATSHOT_API ABSGun : public ABSEquipmentActor, public ISaveLoadInterface
 	/** ~ISaveLoadInterface end */
 
 public:
-
 	/** Increments ShotsFired, executes OnShotFired */
 	UFUNCTION(BlueprintCallable)
 	virtual void Fire();
@@ -79,7 +78,7 @@ public:
 	/** Sets whether or not the muzzle flash is shown, updating its GameplayTags */
 	UFUNCTION(BlueprintCallable)
 	void SetShowMuzzleFlash(const bool bShow);
-	
+
 	/** GameMode binds to this delegate to keep track of number of shots fired */
 	FOnShotFired OnShotFired;
 
@@ -95,7 +94,7 @@ protected:
 	/** Whether or not the player is holding down left click */
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon|State")
 	bool bIsFiring;
-	
+
 	/** Determines if the player can fire */
 	UPROPERTY(BlueprintReadWrite, Category = "Weapon|State")
 	bool bCanFire;

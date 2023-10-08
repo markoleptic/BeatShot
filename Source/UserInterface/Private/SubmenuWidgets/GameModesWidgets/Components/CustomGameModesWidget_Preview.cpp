@@ -6,7 +6,8 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 
-void UCustomGameModesWidget_Preview::InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext)
+void UCustomGameModesWidget_Preview::InitComponent(FBSConfig* InConfigPtr,
+	TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	Super::InitComponent(InConfigPtr, InNext);
 }

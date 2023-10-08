@@ -57,7 +57,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 	check(EquipmentDefinition != nullptr);
 	check(OwnerComponent);
 	check(OwnerComponent->GetOwner()->HasAuthority());
-	
+
 	const UBSEquipmentDefinition* EquipmentCDO = GetDefault<UBSEquipmentDefinition>(EquipmentDefinition);
 
 	TSubclassOf<UBSEquipmentInstance> InstanceType = EquipmentCDO->InstanceType;
@@ -65,7 +65,7 @@ UBSEquipmentInstance* FBSEquipmentList::AddEntry(TSubclassOf<UBSEquipmentDefinit
 	{
 		InstanceType = UBSEquipmentInstance::StaticClass();
 	}
-	
+
 	FBSAppliedEquipmentEntry& NewEntry = Entries.AddDefaulted_GetRef();
 	NewEntry.EquipmentDefinition = EquipmentDefinition;
 	NewEntry.Instance = NewObject<UBSEquipmentInstance>(OwnerComponent->GetOwner(), InstanceType);
@@ -116,19 +116,15 @@ UBSAbilitySystemComponent* FBSEquipmentList::GetAbilitySystemComponent() const
 }
 
 
-
-
-
-UBSEquipmentManagerComponent::UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-	, EquipmentList(this)
+UBSEquipmentManagerComponent::UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer) :
+	Super(ObjectInitializer), EquipmentList(this)
 {
 	//PrimaryComponentTick.bCanEverTick = false;
 	SetIsReplicatedByDefault(true);
 	bWantsInitializeComponent = true;
 }
 
-void UBSEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray< FLifetimeProperty >& OutLifetimeProps) const
+void UBSEquipmentManagerComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -168,7 +164,8 @@ void UBSEquipmentManagerComponent::UnequipItem(UBSEquipmentInstance* ItemInstanc
 	}
 }
 
-bool UBSEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch, FReplicationFlags* RepFlags)
+bool UBSEquipmentManagerComponent::ReplicateSubobjects(UActorChannel* Channel, FOutBunch* Bunch,
+	FReplicationFlags* RepFlags)
 {
 	bool WroteSomething = Super::ReplicateSubobjects(Channel, Bunch, RepFlags);
 
@@ -204,7 +201,7 @@ void UBSEquipmentManagerComponent::UninitializeComponent()
 	{
 		UnequipItem(EquipInstance);
 	}
-	
+
 	Super::UninitializeComponent();
 }
 
@@ -227,7 +224,8 @@ void UBSEquipmentManagerComponent::ReadyForReplication()
 	}
 }
 
-UBSEquipmentInstance* UBSEquipmentManagerComponent::GetFirstInstanceOfType(TSubclassOf<UBSEquipmentInstance> InstanceType)
+UBSEquipmentInstance* UBSEquipmentManagerComponent::GetFirstInstanceOfType(
+	TSubclassOf<UBSEquipmentInstance> InstanceType)
 {
 	for (FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
 	{
@@ -243,7 +241,8 @@ UBSEquipmentInstance* UBSEquipmentManagerComponent::GetFirstInstanceOfType(TSubc
 	return nullptr;
 }
 
-TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstancesOfType(TSubclassOf<UBSEquipmentInstance> InstanceType) const
+TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstancesOfType(
+	TSubclassOf<UBSEquipmentInstance> InstanceType) const
 {
 	TArray<UBSEquipmentInstance*> Results;
 	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)

@@ -60,7 +60,7 @@ public:
 
 	/** The vertical alignment used when placing a new GameModeCategoryTagWidget */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MenuOptionStyle|GameModeCategoryTags")
-	TEnumAsByte<EVerticalAlignment>  VerticalAlignment_TagWidget = VAlign_Center;
+	TEnumAsByte<EVerticalAlignment> VerticalAlignment_TagWidget = VAlign_Center;
 
 	/** The horizontal alignment used when placing a new GameModeCategoryTagWidget */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="MenuOptionStyle|GameModeCategoryTags")

@@ -23,16 +23,18 @@ enum class EScoreBrowserType : uint8
 	PostGameModeMenuScores UMETA(DisplayName="PostGameModeMenuScores"),
 	PatchNotes UMETA(DisplayName="PatchNotes"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EScoreBrowserType, EScoreBrowserType::MainMenuScores, EScoreBrowserType::PatchNotes);
 
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnURLChangedResult, const bool bSuccess);
 
 /** Container that wraps around WebBrowserWidget providing additional functionality */
 UCLASS()
-class USERINTERFACE_API UScoreBrowserWidget : public UUserWidget, public ISaveLoadInterface, public IHttpRequestInterface
+class USERINTERFACE_API UScoreBrowserWidget : public UUserWidget, public ISaveLoadInterface,
+                                              public IHttpRequestInterface
 {
 	GENERATED_BODY()
-	
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -73,8 +75,9 @@ public:
 	FOnURLChangedResult OnURLChangedResult;
 
 	/** Initializes a score browser based on the type */
-	void InitScoreBrowser(const EScoreBrowserType InScoreBrowserType, const EPostScoresResponse& Response = EPostScoresResponse::NoAccount);
-	
+	void InitScoreBrowser(const EScoreBrowserType InScoreBrowserType,
+		const EPostScoresResponse& Response = EPostScoresResponse::NoAccount);
+
 	/** Logs in to BeatShot website using the LoginPayload and UserID */
 	void LoginUserBrowser(const FLoginPayload LoginPayload, const FString UserID);
 
@@ -101,7 +104,7 @@ private:
 	/** Handles the response from LoginWidget LoginUserToBeatShotWebsite */
 	UFUNCTION()
 	void OnURLLoaded(const bool bLoadedSuccessfully);
-	
+
 	/** Delegate used to remove the overlay from WebBrowserOverlay after FadeOut */
 	UPROPERTY()
 	FWidgetAnimationDynamicEvent FadeOutDelegate;

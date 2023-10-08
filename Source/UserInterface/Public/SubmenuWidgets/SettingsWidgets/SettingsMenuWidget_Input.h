@@ -26,8 +26,11 @@ class USERINTERFACE_API USettingsMenuWidget_Input : public UBSSettingCategoryWid
 
 public:
 	/** Returns OnPlayerSettingsChangedDelegate_User, the delegate that is broadcast when this class saves User settings */
-	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_User; }
-	
+	FOnPlayerSettingsChanged_User& GetPublicUserSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_User;
+	}
+
 	virtual void NativeConstruct() override;
 
 	/** Populates the settings menu */
@@ -42,7 +45,7 @@ protected:
 	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	TArray<UInputMappingWidget*> FindInputMappingWidgetsByKey(const FKey InKey) const;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UInputMappingWidget> InputMappingWidgetClass;
 	UPROPERTY(EditDefaultsOnly)
@@ -64,7 +67,7 @@ protected:
 	USliderTextBoxOptionWidget* MenuOption_NewSensitivity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* MenuOption_NewSensitivityCsgo;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
 	UBSButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget), Category = "Saving")
@@ -79,17 +82,17 @@ protected:
 	FPlayerSettings_User InitialPlayerSettings;
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-	
+
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	void OnButtonClicked_Save();
 	void OnButtonClicked_Reset();
 	void OnButtonClicked_Revert();
-	
+
 	TArray<UInputMappingWidget*> InputMappingWidgets;
 
 	bool bIsSelectingKey = false;
-	
+
 	UPROPERTY()
 	UInputKeySelector* CurrentKeySelector;
 };

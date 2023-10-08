@@ -79,26 +79,27 @@ FCommonScoreInfo USaveGamePlayerScore::FindCommonScoreInfo(const FBS_DefiningCon
 	return Found ? *Found : FCommonScoreInfo();
 }
 
-void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo)
+void USaveGamePlayerScore::FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
+	const FCommonScoreInfo& InCommonScoreInfo)
 {
 	CommonScoreInfo.FindOrAdd(InDefiningConfig) = InCommonScoreInfo;
 
-#if !UE_BUILD_SHIPPING
+	#if !UE_BUILD_SHIPPING
 	if (InCommonScoreInfo.NumQTableRows != 0 && InCommonScoreInfo.QTable.Num() > 0)
 	{
 		PrintAccuracy(InDefiningConfig, InCommonScoreInfo, PercentFormat);
 		PrintQTable(InDefiningConfig, InCommonScoreInfo, QTableFormat);
 		PrintTrainingSamples(InDefiningConfig, InCommonScoreInfo, TrainingSamplesFormat);
 	}
-#endif
+	#endif
 }
 
 int32 USaveGamePlayerScore::ResetQTable(const FBS_DefiningConfig& InDefiningConfig)
 {
 	FCommonScoreInfo* Found = CommonScoreInfo.Find(InDefiningConfig);
-	
+
 	if (!Found) return 0;
-	
+
 	Found->ResetQTable();
 	return 1;
 }
@@ -108,13 +109,30 @@ int32 USaveGamePlayerScore::RemoveCommonScoreInfo(const FBS_DefiningConfig& InDe
 	return CommonScoreInfo.Remove(InDefiningConfig);
 }
 
-void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
+int32 USaveGamePlayerScore::RemoveAllCustomGameModeCommonScoreInfo()
+{
+	int32 NumRemoved = 0;
+	TMap<FBS_DefiningConfig, FCommonScoreInfo> FilteredMap = CommonScoreInfo.FilterByPredicate(
+		[](const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair)
+		{
+			return Pair.Key.GameModeType == EGameModeType::Custom;
+		});
+	for (const TPair<FBS_DefiningConfig, FCommonScoreInfo>& Pair : FilteredMap)
+	{
+		NumRemoved += CommonScoreInfo.Remove(Pair.Key);
+	}
+	return NumRemoved;
+}
+
+void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfig,
+	const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
 {
 	FString GameModeString;
 
 	if (InDefiningConfig.CustomGameModeName.IsEmpty())
 	{
-		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " + UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
+		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " +
+			UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
 	}
 	else
 	{
@@ -147,7 +165,8 @@ void USaveGamePlayerScore::PrintQTable(const FBS_DefiningConfig& InDefiningConfi
 	}
 }
 
-void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
+void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig,
+	const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
 {
 	int32 TotalSpawns = 0;
 	int32 TotalHits = 0;
@@ -156,13 +175,14 @@ void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningCon
 
 	if (InDefiningConfig.CustomGameModeName.IsEmpty())
 	{
-		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " + UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
+		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " +
+			UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
 	}
 	else
 	{
 		GameModeString = InDefiningConfig.CustomGameModeName;
 	}
-	
+
 	UE_LOG(LogTemp, Display, TEXT("Cumulative Accuracy for %s:"), *GameModeString);
 
 	for (const FAccuracyRow& AccuracyRow : InCommonScoreInfo.AccuracyData.AccuracyRows)
@@ -193,15 +213,16 @@ void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningCon
 	UE_LOG(LogTemp, Display, TEXT("Total Hits: %d Total Spawns: %d"), TotalHits, TotalSpawns);
 }
 
-void USaveGamePlayerScore::PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
+void USaveGamePlayerScore::PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
+	const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options)
 {
-	
 	FString GameModeString;
 	FString Line;
-	
+
 	if (InDefiningConfig.CustomGameModeName.IsEmpty())
 	{
-		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " + UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
+		GameModeString = UEnum::GetDisplayValueAsText(InDefiningConfig.BaseGameMode).ToString() + " " +
+			UEnum::GetDisplayValueAsText(InDefiningConfig.Difficulty).ToString();
 	}
 	else
 	{

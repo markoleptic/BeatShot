@@ -60,131 +60,111 @@
  * }
  */
 template <typename ItemType>
-class SBSListView : public STableViewBase, TListTypeTraits<ItemType>::SerializerType, public ITypedTableView< ItemType >
+class SBSListView : public STableViewBase, TListTypeTraits<ItemType>::SerializerType, public ITypedTableView<ItemType>
 {
 public:
-	using NullableItemType  = typename TListTypeTraits< ItemType >::NullableType;
-	using MapKeyFuncs       = typename TListTypeTraits<ItemType>::MapKeyFuncs;
+	using NullableItemType = typename TListTypeTraits<ItemType>::NullableType;
+	using MapKeyFuncs = typename TListTypeTraits<ItemType>::MapKeyFuncs;
 	using MapKeyFuncsSparse = typename TListTypeTraits<ItemType>::MapKeyFuncsSparse;
-	
-	using TItemSet          = TSet< ItemType, typename TListTypeTraits< ItemType >::SetKeyFuncs >;
 
-	using FOnGenerateRow            = typename TSlateDelegates< ItemType >::FOnGenerateRow;
-	using FOnItemScrolledIntoView   = typename TSlateDelegates< ItemType >::FOnItemScrolledIntoView;
-	using FOnSelectionChanged       = typename TSlateDelegates< NullableItemType >::FOnSelectionChanged;
-	using FIsSelectableOrNavigable	= typename TSlateDelegates< ItemType >::FIsSelectableOrNavigable;
-	using FOnMouseButtonClick       = typename TSlateDelegates< ItemType >::FOnMouseButtonClick;
-	using FOnMouseButtonDoubleClick = typename TSlateDelegates< ItemType >::FOnMouseButtonDoubleClick;
+	using TItemSet = TSet<ItemType, typename TListTypeTraits<ItemType>::SetKeyFuncs>;
 
-	typedef typename TSlateDelegates< ItemType >::FOnItemToString_Debug FOnItemToString_Debug;
+	using FOnGenerateRow = typename TSlateDelegates<ItemType>::FOnGenerateRow;
+	using FOnItemScrolledIntoView = typename TSlateDelegates<ItemType>::FOnItemScrolledIntoView;
+	using FOnSelectionChanged = typename TSlateDelegates<NullableItemType>::FOnSelectionChanged;
+	using FIsSelectableOrNavigable = typename TSlateDelegates<ItemType>::FIsSelectableOrNavigable;
+	using FOnMouseButtonClick = typename TSlateDelegates<ItemType>::FOnMouseButtonClick;
+	using FOnMouseButtonDoubleClick = typename TSlateDelegates<ItemType>::FOnMouseButtonDoubleClick;
 
-	DECLARE_DELEGATE_OneParam( FOnWidgetToBeRemoved, const TSharedRef<ITableRow>& );
+	typedef typename TSlateDelegates<ItemType>::FOnItemToString_Debug FOnItemToString_Debug;
 
-	DECLARE_DELEGATE_TwoParams( FOnEntryInitialized, ItemType, const TSharedRef<ITableRow>& );
+	DECLARE_DELEGATE_OneParam(FOnWidgetToBeRemoved, const TSharedRef<ITableRow>&);
+
+	DECLARE_DELEGATE_TwoParams(FOnEntryInitialized, ItemType, const TSharedRef<ITableRow>&);
 
 public:
-	SLATE_BEGIN_ARGS(SBSListView<ItemType>)
-		: _ListViewStyle(&FAppStyle::Get().GetWidgetStyle<FTableViewStyle>("ListView"))
-		, _OnGenerateRow()
-		, _OnGeneratePinnedRow()
-		, _OnEntryInitialized()
-		, _OnRowReleased()
-		, _ListItemsSource()
-		, _ItemHeight(16)
-		, _MaxPinnedItems(6)
-		, _OnContextMenuOpening()
-		, _OnMouseButtonClick()
-		, _OnMouseButtonDoubleClick()
-		, _OnSelectionChanged()
-		, _OnIsSelectableOrNavigable()
-		, _SelectionMode(ESelectionMode::Multi)
-		, _ClearSelectionOnClick(true)
-		, _ExternalScrollbar()
-		, _Orientation(Orient_Vertical)
-		, _EnableAnimatedScrolling(false)
-		, _ScrollbarDragFocusCause(EFocusCause::Mouse)
-		, _AllowOverscroll(EAllowOverscroll::Yes)
-		, _ScrollBarStyle(&FAppStyle::Get().GetWidgetStyle<FScrollBarStyle>("ScrollBar"))
-		, _PreventThrottling(false)
-		, _ConsumeMouseWheel(EConsumeMouseWheel::WhenScrollingPossible)
-		, _WheelScrollMultiplier(GetGlobalScrollAmount())
-		, _NavigationScrollOffset(0.5f)
-		, _HandleGamepadEvents( true )
-		, _HandleDirectionalNavigation( true )
-		, _HandleSpacebarSelection(false)
-		, _IsFocusable(true)
-		, _ReturnFocusToSelection()
-		, _OnItemToString_Debug()
-		, _OnEnteredBadState()
+	SLATE_BEGIN_ARGS(SBSListView<ItemType>) :
+			_ListViewStyle(&FAppStyle::Get().GetWidgetStyle<FTableViewStyle>("ListView")), _OnGenerateRow(),
+			_OnGeneratePinnedRow(), _OnEntryInitialized(), _OnRowReleased(), _ListItemsSource(), _ItemHeight(16),
+			_MaxPinnedItems(6), _OnContextMenuOpening(), _OnMouseButtonClick(), _OnMouseButtonDoubleClick(),
+			_OnSelectionChanged(), _OnIsSelectableOrNavigable(), _SelectionMode(ESelectionMode::Multi),
+			_ClearSelectionOnClick(true), _ExternalScrollbar(), _Orientation(Orient_Vertical),
+			_EnableAnimatedScrolling(false), _ScrollbarDragFocusCause(EFocusCause::Mouse),
+			_AllowOverscroll(EAllowOverscroll::Yes),
+			_ScrollBarStyle(&FAppStyle::Get().GetWidgetStyle<FScrollBarStyle>("ScrollBar")), _PreventThrottling(false),
+			_ConsumeMouseWheel(EConsumeMouseWheel::WhenScrollingPossible),
+			_WheelScrollMultiplier(GetGlobalScrollAmount()), _NavigationScrollOffset(0.5f), _HandleGamepadEvents(true),
+			_HandleDirectionalNavigation(true), _HandleSpacebarSelection(false), _IsFocusable(true),
+			_ReturnFocusToSelection(), _OnItemToString_Debug(), _OnEnteredBadState()
 		{
 			this->_Clipping = EWidgetClipping::ClipToBounds;
 		}
 
-		SLATE_STYLE_ARGUMENT( FTableViewStyle, ListViewStyle )
+		SLATE_STYLE_ARGUMENT(FTableViewStyle, ListViewStyle)
 
-		SLATE_EVENT( FOnGenerateRow, OnGenerateRow )
+		SLATE_EVENT(FOnGenerateRow, OnGenerateRow)
 
-		SLATE_EVENT( FOnGenerateRow, OnGeneratePinnedRow )
-		
-		SLATE_EVENT( FOnEntryInitialized, OnEntryInitialized )
+		SLATE_EVENT(FOnGenerateRow, OnGeneratePinnedRow)
 
-		SLATE_EVENT( FOnWidgetToBeRemoved, OnRowReleased )
+		SLATE_EVENT(FOnEntryInitialized, OnEntryInitialized)
 
-		SLATE_EVENT( FOnTableViewScrolled, OnListViewScrolled )
+		SLATE_EVENT(FOnWidgetToBeRemoved, OnRowReleased)
 
-		SLATE_EVENT( FOnItemScrolledIntoView, OnItemScrolledIntoView )
-		
-		SLATE_EVENT( FOnFinishedScrolling, OnFinishedScrolling )
+		SLATE_EVENT(FOnTableViewScrolled, OnListViewScrolled)
 
-		SLATE_ARGUMENT( const TArray<ItemType>* , ListItemsSource )
+		SLATE_EVENT(FOnItemScrolledIntoView, OnItemScrolledIntoView)
 
-		SLATE_ATTRIBUTE( float, ItemHeight )
+		SLATE_EVENT(FOnFinishedScrolling, OnFinishedScrolling)
+
+		SLATE_ARGUMENT(const TArray<ItemType>*, ListItemsSource)
+
+		SLATE_ATTRIBUTE(float, ItemHeight)
 
 		SLATE_ATTRIBUTE(int32, MaxPinnedItems)
 
-		SLATE_EVENT( FOnContextMenuOpening, OnContextMenuOpening )
+		SLATE_EVENT(FOnContextMenuOpening, OnContextMenuOpening)
 
 		SLATE_EVENT(FOnMouseButtonClick, OnMouseButtonClick)
 
-		SLATE_EVENT( FOnMouseButtonDoubleClick, OnMouseButtonDoubleClick )
+		SLATE_EVENT(FOnMouseButtonDoubleClick, OnMouseButtonDoubleClick)
 
-		SLATE_EVENT( FOnSelectionChanged, OnSelectionChanged )
+		SLATE_EVENT(FOnSelectionChanged, OnSelectionChanged)
 
-		SLATE_EVENT( FIsSelectableOrNavigable, OnIsSelectableOrNavigable)
+		SLATE_EVENT(FIsSelectableOrNavigable, OnIsSelectableOrNavigable)
 
-		SLATE_ATTRIBUTE( ESelectionMode::Type, SelectionMode )
+		SLATE_ATTRIBUTE(ESelectionMode::Type, SelectionMode)
 
-		SLATE_ARGUMENT( TSharedPtr<SHeaderRow>, HeaderRow )
+		SLATE_ARGUMENT(TSharedPtr<SHeaderRow>, HeaderRow)
 
-		SLATE_ARGUMENT ( bool, ClearSelectionOnClick )
+		SLATE_ARGUMENT(bool, ClearSelectionOnClick)
 
-		SLATE_ARGUMENT( TSharedPtr<SScrollBar>, ExternalScrollbar )
+		SLATE_ARGUMENT(TSharedPtr<SScrollBar>, ExternalScrollbar)
 
-		SLATE_ARGUMENT( EOrientation, Orientation )
+		SLATE_ARGUMENT(EOrientation, Orientation)
 
-		SLATE_ARGUMENT( bool, EnableAnimatedScrolling)
+		SLATE_ARGUMENT(bool, EnableAnimatedScrolling)
 
-		SLATE_ARGUMENT( TOptional<double>, FixedLineScrollOffset )
+		SLATE_ARGUMENT(TOptional<double>, FixedLineScrollOffset)
 
-		SLATE_ATTRIBUTE( EVisibility, ScrollbarVisibility)
-		
-		SLATE_ARGUMENT( EFocusCause, ScrollbarDragFocusCause )
+		SLATE_ATTRIBUTE(EVisibility, ScrollbarVisibility)
 
-		SLATE_ARGUMENT( EAllowOverscroll, AllowOverscroll );
-		
-		SLATE_STYLE_ARGUMENT( FScrollBarStyle, ScrollBarStyle );
+		SLATE_ARGUMENT(EFocusCause, ScrollbarDragFocusCause)
+
+		SLATE_ARGUMENT(EAllowOverscroll, AllowOverscroll);
+
+		SLATE_STYLE_ARGUMENT(FScrollBarStyle, ScrollBarStyle);
 
 		SLATE_ARGUMENT(bool, PreventThrottling);
 
-		SLATE_ARGUMENT( EConsumeMouseWheel, ConsumeMouseWheel );
+		SLATE_ARGUMENT(EConsumeMouseWheel, ConsumeMouseWheel);
 
-		SLATE_ARGUMENT( float, WheelScrollMultiplier );
+		SLATE_ARGUMENT(float, WheelScrollMultiplier);
 
-		SLATE_ARGUMENT( float, NavigationScrollOffset );
+		SLATE_ARGUMENT(float, NavigationScrollOffset);
 
-		SLATE_ARGUMENT( bool, HandleGamepadEvents );
+		SLATE_ARGUMENT(bool, HandleGamepadEvents);
 
-		SLATE_ARGUMENT( bool, HandleDirectionalNavigation );
+		SLATE_ARGUMENT(bool, HandleDirectionalNavigation);
 
 		SLATE_ARGUMENT(bool, HandleSpacebarSelection);
 
@@ -242,8 +222,7 @@ public:
 		this->bEnableAnimatedScrolling = InArgs._EnableAnimatedScrolling;
 		this->FixedLineScrollOffset = InArgs._FixedLineScrollOffset;
 
-		this->OnItemToString_Debug =
-			InArgs._OnItemToString_Debug.IsBound()
+		this->OnItemToString_Debug = InArgs._OnItemToString_Debug.IsBound()
 			? InArgs._OnItemToString_Debug
 			: GetDefaultDebugDelegate();
 		OnEnteredBadState = InArgs._OnEnteredBadState;
@@ -258,12 +237,12 @@ public:
 		// Check for any parameters that the coder forgot to specify.
 		FString ErrorString;
 		{
-			if ( !this->OnGenerateRow.IsBound() )
+			if (!this->OnGenerateRow.IsBound())
 			{
 				ErrorString += TEXT("Please specify an OnGenerateRow. \n");
 			}
 
-			if ( this->ItemsSource == nullptr )
+			if (this->ItemsSource == nullptr)
 			{
 				ErrorString += TEXT("Please specify a ListItemsSource. \n");
 			}
@@ -272,19 +251,16 @@ public:
 		if (ErrorString.Len() > 0)
 		{
 			// Let the coder know what they forgot
-			this->ChildSlot
-				.HAlign(HAlign_Center)
-				.VAlign(VAlign_Center)
-				[
-					SNew(STextBlock)
-					.Text(FText::FromString(ErrorString))
-				];
+			this->ChildSlot.HAlign(HAlign_Center).VAlign(VAlign_Center)[SNew(STextBlock).Text(
+				FText::FromString(ErrorString))];
 		}
 		else
 		{
 			// Make the TableView
-			ConstructChildren( 0, InArgs._ItemHeight, EListItemAlignment::LeftAligned, InArgs._HeaderRow, InArgs._ExternalScrollbar, InArgs._Orientation, InArgs._OnListViewScrolled, InArgs._ScrollBarStyle, InArgs._PreventThrottling );
-			if(ScrollBar.IsValid())
+			ConstructChildren(0, InArgs._ItemHeight, EListItemAlignment::LeftAligned, InArgs._HeaderRow,
+				InArgs._ExternalScrollbar, InArgs._Orientation, InArgs._OnListViewScrolled, InArgs._ScrollBarStyle,
+				InArgs._PreventThrottling);
+			if (ScrollBar.IsValid())
 			{
 				ScrollBar->SetDragFocusCause(InArgs._ScrollbarDragFocusCause);
 				ScrollBar->SetUserVisibility(InArgs._ScrollbarVisibility);
@@ -293,26 +269,28 @@ public:
 		}
 	}
 
-	SBSListView(ETableViewMode::Type InListMode = ETableViewMode::List)
-		: STableViewBase(InListMode)
-		, WidgetGenerator(this)
-		, PinnedWidgetGenerator(this)
-		, SelectorItem(TListTypeTraits<ItemType>::MakeNullPtr())
-		, RangeSelectionStart(TListTypeTraits<ItemType>::MakeNullPtr())
-		, ItemsSource(nullptr)
-		, ItemToScrollIntoView(TListTypeTraits<ItemType>::MakeNullPtr())
-		, UserRequestingScrollIntoView(0)
-		, ItemToNotifyWhenInView(TListTypeTraits<ItemType>::MakeNullPtr())
-		, IsFocusable(true)
-	{ 
-#if WITH_ACCESSIBILITY
+	SBSListView(ETableViewMode::Type InListMode = ETableViewMode::List) : STableViewBase(InListMode),
+	                                                                      WidgetGenerator(this),
+	                                                                      PinnedWidgetGenerator(this),
+	                                                                      SelectorItem(
+		                                                                      TListTypeTraits<ItemType>::MakeNullPtr()),
+	                                                                      RangeSelectionStart(
+		                                                                      TListTypeTraits<ItemType>::MakeNullPtr()),
+	                                                                      ItemsSource(nullptr),
+	                                                                      ItemToScrollIntoView(
+		                                                                      TListTypeTraits<ItemType>::MakeNullPtr()),
+	                                                                      UserRequestingScrollIntoView(0),
+	                                                                      ItemToNotifyWhenInView(
+		                                                                      TListTypeTraits<ItemType>::MakeNullPtr()),
+	                                                                      IsFocusable(true)
+	{
+		#if WITH_ACCESSIBILITY
 		AccessibleBehavior = EAccessibleBehavior::Auto;
 		bCanChildrenBeAccessible = true;
-#endif
+		#endif
 	}
 
 public:
-
 	// SWidget overrides
 
 	virtual bool SupportsKeyboardFocus() const override
@@ -320,7 +298,7 @@ public:
 		return IsFocusable.Get();
 	}
 
-	virtual FReply OnKeyDown( const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent ) override
+	virtual FReply OnKeyDown(const FGeometry& MyGeometry, const FKeyEvent& InKeyEvent) override
 	{
 		if (OnKeyDownHandler.IsBound())
 		{
@@ -334,37 +312,38 @@ public:
 		const TArray<ItemType>& ItemsSourceRef = (*this->ItemsSource);
 
 		// Don't respond to key-presses containing "Alt" as a modifier
-		if ( ItemsSourceRef.Num() > 0 && !InKeyEvent.IsAltDown() )
+		if (ItemsSourceRef.Num() > 0 && !InKeyEvent.IsAltDown())
 		{
 			bool bWasHandled = false;
 			NullableItemType ItemNavigatedTo = TListTypeTraits<ItemType>::MakeNullPtr();
 
 			// Check for selection manipulation keys (Up, Down, Home, End, PageUp, PageDown)
-			if ( InKeyEvent.GetKey() == EKeys::Home )
+			if (InKeyEvent.GetKey() == EKeys::Home)
 			{
 				// Select the first item
 				ItemNavigatedTo = ItemsSourceRef[0];
 				bWasHandled = true;
 			}
-			else if ( InKeyEvent.GetKey() == EKeys::End )
+			else if (InKeyEvent.GetKey() == EKeys::End)
 			{
 				// Select the last item
 				ItemNavigatedTo = ItemsSourceRef.Last();
 				bWasHandled = true;
 			}
-			else if ( InKeyEvent.GetKey() == EKeys::PageUp )
+			else if (InKeyEvent.GetKey() == EKeys::PageUp)
 			{
 				int32 SelectionIndex = 0;
-				if( TListTypeTraits<ItemType>::IsPtrValid(SelectorItem) )
+				if (TListTypeTraits<ItemType>::IsPtrValid(SelectorItem))
 				{
-					SelectionIndex = ItemsSourceRef.Find( TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType( SelectorItem ) );
+					SelectionIndex = ItemsSourceRef.Find(
+						TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(SelectorItem));
 				}
 
 				int32 NumItemsInAPage = FMath::TruncToInt(GetNumLiveWidgets());
 				int32 Remainder = NumItemsInAPage % GetNumItemsPerLine();
 				NumItemsInAPage -= Remainder;
 
-				if ( SelectionIndex >= NumItemsInAPage )
+				if (SelectionIndex >= NumItemsInAPage)
 				{
 					// Select an item on the previous page
 					ItemNavigatedTo = ItemsSourceRef[SelectionIndex - NumItemsInAPage];
@@ -376,19 +355,20 @@ public:
 
 				bWasHandled = true;
 			}
-			else if ( InKeyEvent.GetKey() == EKeys::PageDown )
+			else if (InKeyEvent.GetKey() == EKeys::PageDown)
 			{
 				int32 SelectionIndex = 0;
-				if( TListTypeTraits<ItemType>::IsPtrValid(SelectorItem) )
+				if (TListTypeTraits<ItemType>::IsPtrValid(SelectorItem))
 				{
-					SelectionIndex = ItemsSourceRef.Find( TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType( SelectorItem ) );
+					SelectionIndex = ItemsSourceRef.Find(
+						TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(SelectorItem));
 				}
 
 				int32 NumItemsInAPage = FMath::TruncToInt(GetNumLiveWidgets());
 				int32 Remainder = NumItemsInAPage % GetNumItemsPerLine();
 				NumItemsInAPage -= Remainder;
 
-				if ( SelectionIndex < ItemsSourceRef.Num() - NumItemsInAPage )
+				if (SelectionIndex < ItemsSourceRef.Num() - NumItemsInAPage)
 				{
 					// Select an item on the next page
 					ItemNavigatedTo = ItemsSourceRef[SelectionIndex + NumItemsInAPage];
@@ -401,22 +381,25 @@ public:
 				bWasHandled = true;
 			}
 
-			if( TListTypeTraits<ItemType>::IsPtrValid(ItemNavigatedTo) )
+			if (TListTypeTraits<ItemType>::IsPtrValid(ItemNavigatedTo))
 			{
-				ItemType ItemToSelect( TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType( ItemNavigatedTo ) );
-				NavigationSelect( ItemToSelect, InKeyEvent );
+				ItemType ItemToSelect(TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(ItemNavigatedTo));
+				NavigationSelect(ItemToSelect, InKeyEvent);
 			}
 			else
 			{
 				// Change selected status of item.
-				if (bHandleSpacebarSelection && TListTypeTraits<ItemType>::IsPtrValid(SelectorItem) && InKeyEvent.GetKey() == EKeys::SpaceBar)
+				if (bHandleSpacebarSelection && TListTypeTraits<ItemType>::IsPtrValid(SelectorItem) && InKeyEvent.
+					GetKey() == EKeys::SpaceBar)
 				{
-					ItemType SelectorItemDereference(TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(SelectorItem));
+					ItemType SelectorItemDereference(
+						TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(SelectorItem));
 
 					// Deselect.
 					if (InKeyEvent.IsControlDown() || SelectionMode.Get() == ESelectionMode::SingleToggle)
 					{
-						this->Private_SetItemSelection(SelectorItemDereference, !(this->Private_IsItemSelected(SelectorItemDereference)), true);
+						this->Private_SetItemSelection(SelectorItemDereference,
+							!(this->Private_IsItemSelected(SelectorItemDereference)), true);
 						this->Private_SignalSelectionChanged(ESelectInfo::OnKeyPress);
 						bWasHandled = true;
 					}
@@ -439,20 +422,22 @@ public:
 					RangeSelectionStart = SelectorItem;
 
 					// If the selector is not in the view, scroll it into view.
-					TSharedPtr<ITableRow> WidgetForItem = this->WidgetGenerator.GetWidgetForItem(SelectorItemDereference);
+					TSharedPtr<ITableRow> WidgetForItem = this->WidgetGenerator.GetWidgetForItem(
+						SelectorItemDereference);
 					if (!WidgetForItem.IsValid())
 					{
 						this->RequestScrollIntoView(SelectorItemDereference, InKeyEvent.GetUserIndex());
 					}
 				}
 				// Select all items
-				else if ( (!InKeyEvent.IsShiftDown() && !InKeyEvent.IsAltDown() && InKeyEvent.IsControlDown() && InKeyEvent.GetKey() == EKeys::A) && SelectionMode.Get() == ESelectionMode::Multi )
+				else if ((!InKeyEvent.IsShiftDown() && !InKeyEvent.IsAltDown() && InKeyEvent.IsControlDown() &&
+					InKeyEvent.GetKey() == EKeys::A) && SelectionMode.Get() == ESelectionMode::Multi)
 				{
 					this->Private_ClearSelection();
 
-					for ( int32 ItemIdx = 0; ItemIdx < ItemsSourceRef.Num(); ++ItemIdx )
+					for (int32 ItemIdx = 0; ItemIdx < ItemsSourceRef.Num(); ++ItemIdx)
 					{
-						this->Private_SetItemSelection( ItemsSourceRef[ItemIdx], true );
+						this->Private_SetItemSelection(ItemsSourceRef[ItemIdx], true);
 					}
 
 					this->Private_SignalSelectionChanged(ESelectInfo::OnKeyPress);
@@ -471,30 +456,32 @@ public:
 	}
 
 private:
-
 	FOnKeyDown OnKeyDownHandler;
 
 public:
-
-	virtual FNavigationReply OnNavigation(const FGeometry& MyGeometry, const FNavigationEvent& InNavigationEvent) override
+	virtual FNavigationReply
+	OnNavigation(const FGeometry& MyGeometry, const FNavigationEvent& InNavigationEvent) override
 	{
-		if (this->ItemsSource && this->bHandleDirectionalNavigation && (this->bHandleGamepadEvents || InNavigationEvent.GetNavigationGenesis() != ENavigationGenesis::Controller))
+		if (this->ItemsSource && this->bHandleDirectionalNavigation && (this->bHandleGamepadEvents || InNavigationEvent.
+			GetNavigationGenesis() != ENavigationGenesis::Controller))
 		{
 			const TArray<ItemType>& ItemsSourceRef = (*this->ItemsSource);
 
 			const int32 NumItemsPerLine = GetNumItemsPerLine();
-			const int32 CurSelectionIndex = (!TListTypeTraits<ItemType>::IsPtrValid(SelectorItem)) ? -1 : ItemsSourceRef.Find(TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(SelectorItem));
+			const int32 CurSelectionIndex = (!TListTypeTraits<ItemType>::IsPtrValid(SelectorItem))
+				? -1
+				: ItemsSourceRef.Find(TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(SelectorItem));
 			int32 AttemptSelectIndex = -1;
 
 			const EUINavigation NavType = InNavigationEvent.GetNavigationType();
-			if ((Orientation == Orient_Vertical && NavType == EUINavigation::Up) ||
-				(Orientation == Orient_Horizontal && NavType == EUINavigation::Left))
+			if ((Orientation == Orient_Vertical && NavType == EUINavigation::Up) || (Orientation == Orient_Horizontal &&
+				NavType == EUINavigation::Left))
 			{
 				// Nav backward by a line
 				AttemptSelectIndex = CurSelectionIndex - NumItemsPerLine;
 			}
-			else if ((Orientation == Orient_Vertical && NavType == EUINavigation::Down) ||
-					 (Orientation == Orient_Horizontal && NavType == EUINavigation::Right))
+			else if ((Orientation == Orient_Vertical && NavType == EUINavigation::Down) || (Orientation ==
+				Orient_Horizontal && NavType == EUINavigation::Right))
 			{
 				AttemptSelectIndex = CurSelectionIndex + NumItemsPerLine;
 
@@ -523,7 +510,8 @@ public:
 			// If it's valid we'll scroll it into view and return an explicit widget in the FNavigationReply
 			if (ItemsSourceRef.IsValidIndex(AttemptSelectIndex))
 			{
-				TOptional<ItemType> ItemToSelect = Private_FindNextSelectableOrNavigableWithIndexAndDirection(ItemsSourceRef[AttemptSelectIndex], AttemptSelectIndex, AttemptSelectIndex >= CurSelectionIndex);
+				TOptional<ItemType> ItemToSelect = Private_FindNextSelectableOrNavigableWithIndexAndDirection(
+					ItemsSourceRef[AttemptSelectIndex], AttemptSelectIndex, AttemptSelectIndex >= CurSelectionIndex);
 				if (ItemToSelect.IsSet())
 				{
 					NavigationSelect(ItemToSelect.GetValue(), InNavigationEvent);
@@ -535,18 +523,14 @@ public:
 		return STableViewBase::OnNavigation(MyGeometry, InNavigationEvent);
 	}
 
-	virtual FReply OnMouseButtonDown( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent ) override
+	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
 	{
-		if ( bClearSelectionOnClick
-			&& SelectionMode.Get() != ESelectionMode::None
-			&& MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton
-			&& !MouseEvent.IsControlDown()
-			&& !MouseEvent.IsShiftDown()
-			)
+		if (bClearSelectionOnClick && SelectionMode.Get() != ESelectionMode::None && MouseEvent.GetEffectingButton() ==
+			EKeys::LeftMouseButton && !MouseEvent.IsControlDown() && !MouseEvent.IsShiftDown())
 		{
 			// Left clicking on a list (but not an item) will clear the selection on mouse button down.
 			// Right clicking is handled on mouse up.
-			if ( this->Private_GetNumSelectedItems() > 0 )
+			if (this->Private_GetNumSelectedItems() > 0)
 			{
 				this->Private_ClearSelection();
 				this->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
@@ -558,19 +542,15 @@ public:
 		return STableViewBase::OnMouseButtonDown(MyGeometry, MouseEvent);
 	}
 
-	virtual FReply OnMouseButtonUp( const FGeometry& MyGeometry, const FPointerEvent& MouseEvent ) override
+	virtual FReply OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
 	{
-		if ( bClearSelectionOnClick
-			&& SelectionMode.Get() != ESelectionMode::None
-			&& MouseEvent.GetEffectingButton() == EKeys::RightMouseButton
-			&& !MouseEvent.IsControlDown()
-			&& !MouseEvent.IsShiftDown()
-			&& !this->IsRightClickScrolling()
-			)
+		if (bClearSelectionOnClick && SelectionMode.Get() != ESelectionMode::None && MouseEvent.GetEffectingButton() ==
+			EKeys::RightMouseButton && !MouseEvent.IsControlDown() && !MouseEvent.IsShiftDown() && !this->
+			IsRightClickScrolling())
 		{
 			// Right clicking on a list (but not an item) will clear the selection on mouse button up.
 			// Left clicking is handled on mouse down
-			if ( this->Private_GetNumSelectedItems() > 0 )
+			if (this->Private_GetNumSelectedItems() > 0)
 			{
 				this->Private_ClearSelection();
 				this->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
@@ -580,49 +560,50 @@ public:
 		return STableViewBase::OnMouseButtonUp(MyGeometry, MouseEvent);
 	}
 
-#if WITH_ACCESSIBILITY
-	protected:
+	#if WITH_ACCESSIBILITY
+
+protected:
 	friend class FSlateAccessibleListView;
 	/**
 	* An accessible implementation for SBSListView to be exposed to platform accessibility APIs.
 	* For subclasses of SBSListView, inherit from this class and override and functions to 
 	* give desired behavior. 
 	*/
-	class FSlateAccessibleListView
-		: public FSlateAccessibleWidget
-		, public IAccessibleTable
+	class FSlateAccessibleListView : public FSlateAccessibleWidget, public IAccessibleTable
 	{
 	public:
-		FSlateAccessibleListView(TWeakPtr<SWidget> InWidget, EAccessibleWidgetType InWidgetType)
-			: FSlateAccessibleWidget(InWidget, InWidgetType)
+		FSlateAccessibleListView(TWeakPtr<SWidget> InWidget, EAccessibleWidgetType InWidgetType) :
+			FSlateAccessibleWidget(InWidget, InWidgetType)
 		{
-
 		}
 
 		// IAccessibleWidget
-		virtual IAccessibleTable* AsTable() 
-		{ 
-			return this; 
+		virtual IAccessibleTable* AsTable()
+		{
+			return this;
 		}
+
 		// ~
 
 		// IAccessibleTable
-		virtual TArray<TSharedPtr<IAccessibleWidget>> GetSelectedItems() const 
-		{ 
+		virtual TArray<TSharedPtr<IAccessibleWidget>> GetSelectedItems() const
+		{
 			TArray<TSharedPtr<IAccessibleWidget>> SelectedItemsArray;
 			if (Widget.IsValid())
 			{
 				TSharedPtr<SBSListView<ItemType>> ListView = StaticCastSharedPtr<SBSListView<ItemType>>(Widget.Pin());
-				SelectedItemsArray.Empty(ListView ->SelectedItems.Num());
-				for (typename TItemSet::TConstIterator SelectedItemIt(ListView ->SelectedItems); SelectedItemIt; ++SelectedItemIt)
+				SelectedItemsArray.Empty(ListView->SelectedItems.Num());
+				for (typename TItemSet::TConstIterator SelectedItemIt(ListView->SelectedItems); SelectedItemIt; ++
+				     SelectedItemIt)
 				{
 					const ItemType& CurrentItem = *SelectedItemIt;
 					// This is only valid if the item is visible
-					TSharedPtr < ITableRow> TableRow = ListView->WidgetGenerator.GetWidgetForItem(CurrentItem);
+					TSharedPtr<ITableRow> TableRow = ListView->WidgetGenerator.GetWidgetForItem(CurrentItem);
 					if (TableRow.IsValid())
 					{
 						TSharedPtr<SWidget> TableRowWidget = TableRow->AsWidget();
-						TSharedPtr<IAccessibleWidget> AccessibleTableRow = FSlateAccessibleWidgetCache::GetAccessibleWidgetChecked(TableRowWidget);
+						TSharedPtr<IAccessibleWidget> AccessibleTableRow =
+							FSlateAccessibleWidgetCache::GetAccessibleWidgetChecked(TableRowWidget);
 						// it's possible for the accessible widget to still be in the process of generating 
 						// in the slate accessibility tree 
 						if (AccessibleTableRow.IsValid())
@@ -635,29 +616,32 @@ public:
 			return SelectedItemsArray;
 		}
 
-		virtual bool CanSupportMultiSelection() const 
-		{ 
+		virtual bool CanSupportMultiSelection() const
+		{
 			if (Widget.IsValid())
 			{
 				TSharedPtr<SBSListView<ItemType>> ListView = StaticCastSharedPtr<SBSListView<ItemType>>(Widget.Pin());
 				return ListView->SelectionMode.Get() == ESelectionMode::Multi;
 			}
-			return false; 
+			return false;
 		}
 
-		virtual bool IsSelectionRequired() const 
-		{ 
-			return false; 
+		virtual bool IsSelectionRequired() const
+		{
+			return false;
 		}
+
 		// ~
 	};
-	public:
+
+public:
 	virtual TSharedRef<FSlateAccessibleWidget> CreateAccessibleWidget() override
 	{
 		// @TODOAccessibility: Add support for the different types of tables e.g tree and tile 
 		// We hardcode to list for now 
 		EAccessibleWidgetType WidgetType = EAccessibleWidgetType::List;
-		return MakeShareable<FSlateAccessibleWidget>(new SBSListView<ItemType>::FSlateAccessibleListView(SharedThis(this), WidgetType));
+		return MakeShareable<FSlateAccessibleWidget>(
+			new SBSListView<ItemType>::FSlateAccessibleListView(SharedThis(this), WidgetType));
 	}
 
 	virtual TOptional<FText> GetDefaultAccessibleText(EAccessibleType AccessibleType) const
@@ -668,9 +652,9 @@ public:
 		static FString Name(TEXT("List"));
 		return FText::FromString(Name);
 	}
-#endif
-private:
+	#endif
 
+private:
 	friend class FWidgetGenerator;
 	/**
 	 * A WidgetGenerator is a component responsible for creating widgets from data items.
@@ -680,8 +664,7 @@ private:
 	class FWidgetGenerator
 	{
 	public:
-		FWidgetGenerator(SBSListView<ItemType>* InOwnerList)
-			: OwnerList(InOwnerList)
+		FWidgetGenerator(SBSListView<ItemType>* InOwnerList) : OwnerList(InOwnerList)
 		{
 		}
 
@@ -691,7 +674,7 @@ private:
 		 * @param Item  The item for which to find the widget.
 		 * @return A pointer to the corresponding widget if it exists; otherwise nullptr.
 		 */
-		TSharedPtr<ITableRow> GetWidgetForItem( const ItemType& Item ) const
+		TSharedPtr<ITableRow> GetWidgetForItem(const ItemType& Item) const
 		{
 			const TSharedRef<ITableRow>* LookupResult = ItemToWidgetMap.Find(Item);
 			return LookupResult ? TSharedPtr<ITableRow>(*LookupResult) : TSharedPtr<ITableRow>(nullptr);
@@ -703,16 +686,16 @@ private:
 		 * @param InItem             The DataItem which is in view.
 		 * @param InGeneratedWidget  The widget generated for this item; it may have been newly generated.
 		 */
-		void OnItemSeen( ItemType InItem, TSharedRef<ITableRow> InGeneratedWidget)
+		void OnItemSeen(ItemType InItem, TSharedRef<ITableRow> InGeneratedWidget)
 		{
 			ensure(TListTypeTraits<ItemType>::IsPtrValid(InItem));
-			TSharedRef<ITableRow>* LookupResult = ItemToWidgetMap.Find( InItem );
+			TSharedRef<ITableRow>* LookupResult = ItemToWidgetMap.Find(InItem);
 			const bool bWidgetIsNewlyGenerated = (LookupResult == nullptr);
-			if ( bWidgetIsNewlyGenerated )
+			if (bWidgetIsNewlyGenerated)
 			{
 				// It's a newly generated item!
-				ItemToWidgetMap.Add( InItem, InGeneratedWidget );
-				WidgetMapToItem.Add( &InGeneratedWidget.Get(), InItem );
+				ItemToWidgetMap.Add(InItem, InGeneratedWidget);
+				WidgetMapToItem.Add(&InGeneratedWidget.Get(), InItem);
 
 				// Now that the item-widget association is established, the generated row can fully initialize itself
 				InGeneratedWidget->InitializeRow();
@@ -757,7 +740,6 @@ private:
 
 		void ProcessItemCleanUp()
 		{
-
 			for (int32 ItemIndex = 0; ItemIndex < ItemsToBeCleanedUp.Num(); ++ItemIndex)
 			{
 				ItemType ItemToBeCleanedUp = ItemsToBeCleanedUp[ItemIndex];
@@ -774,7 +756,7 @@ private:
 						OwnerList->OnRowReleased.ExecuteIfBound(WidgetToCleanUp);
 					}
 				}
-				else if(!TListTypeTraits<ItemType>::IsPtrValid(ItemToBeCleanedUp))
+				else if (!TListTypeTraits<ItemType>::IsPtrValid(ItemToBeCleanedUp))
 				{
 					// If we get here, it means we have an invalid object. We will need to remove that object from both maps.
 					// This may happen for example when ItemType is a UObject* and the object is garbage collected.
@@ -805,18 +787,18 @@ private:
 			const bool bGeneratedWidgetsSizeMismatch = WidgetMapToItem.Num() != ItemsWithGeneratedWidgets.Num();
 			if (bMapsMismatch)
 			{
-				UE_LOG(LogSlate, Warning, TEXT("ItemToWidgetMap length (%d) does not match WidgetMapToItem length (%d) in %s. Diagnostics follow. "),
-					ItemToWidgetMap.Num(),
-					WidgetMapToItem.Num(),
-					OwnerList ? *OwnerList->ToString() : TEXT("null"));
+				UE_LOG(LogSlate, Warning,
+					TEXT(
+						"ItemToWidgetMap length (%d) does not match WidgetMapToItem length (%d) in %s. Diagnostics follow. "
+					), ItemToWidgetMap.Num(), WidgetMapToItem.Num(), OwnerList ? *OwnerList->ToString() : TEXT("null"));
 			}
-			
+
 			if (bGeneratedWidgetsSizeMismatch)
 			{
 				UE_LOG(LogSlate, Warning,
-					TEXT("WidgetMapToItem length (%d) does not match ItemsWithGeneratedWidgets length (%d). This is often because the same item is in the list more than once in %s. Diagnostics follow."),
-					WidgetMapToItem.Num(),
-					ItemsWithGeneratedWidgets.Num(),
+					TEXT(
+						"WidgetMapToItem length (%d) does not match ItemsWithGeneratedWidgets length (%d). This is often because the same item is in the list more than once in %s. Diagnostics follow."
+					), WidgetMapToItem.Num(), ItemsWithGeneratedWidgets.Num(),
 					OwnerList ? *OwnerList->ToString() : TEXT("null"));
 			}
 
@@ -829,21 +811,25 @@ private:
 					for (auto ItemWidgetPair = ItemToWidgetMap.CreateConstIterator(); ItemWidgetPair; ++ItemWidgetPair)
 					{
 						const TSharedRef<SWidget> RowAsWidget = ItemWidgetPair.Value()->AsWidget();
-						UE_LOG(LogSlate, Warning, TEXT("%s -> 0x%08x @ %s"), *OwnerList->OnItemToString_Debug.Execute(ItemWidgetPair.Key()), &RowAsWidget.Get(), *RowAsWidget->ToString() );
+						UE_LOG(LogSlate, Warning, TEXT("%s -> 0x%08x @ %s"),
+							*OwnerList->OnItemToString_Debug.Execute(ItemWidgetPair.Key()), &RowAsWidget.Get(),
+							*RowAsWidget->ToString());
 					}
 
 					UE_LOG(LogSlate, Warning, TEXT(""));
 					UE_LOG(LogSlate, Warning, TEXT("WidgetMapToItem:"))
 					for (auto WidgetItemPair = WidgetMapToItem.CreateConstIterator(); WidgetItemPair; ++WidgetItemPair)
 					{
-						UE_LOG(LogSlate, Warning, TEXT("0x%08x -> %s"), WidgetItemPair.Key(), *OwnerList->OnItemToString_Debug.Execute(WidgetItemPair.Value()) );
+						UE_LOG(LogSlate, Warning, TEXT("0x%08x -> %s"), WidgetItemPair.Key(),
+							*OwnerList->OnItemToString_Debug.Execute(WidgetItemPair.Value()));
 					}
 
 					UE_LOG(LogSlate, Warning, TEXT(""));
 					UE_LOG(LogSlate, Warning, TEXT("ItemsWithGeneratedWidgets:"));
 					for (int i = 0; i < ItemsWithGeneratedWidgets.Num(); ++i)
 					{
-						UE_LOG(LogSlate, Warning, TEXT("[%d] %s"),i, *OwnerList->OnItemToString_Debug.Execute(ItemsWithGeneratedWidgets[i]));
+						UE_LOG(LogSlate, Warning, TEXT("[%d] %s"), i,
+							*OwnerList->OnItemToString_Debug.Execute(ItemsWithGeneratedWidgets[i]));
 					}
 				}
 				else
@@ -853,21 +839,24 @@ private:
 
 				OwnerList->OnEnteredBadState.ExecuteIfBound();
 
-				checkf( false, TEXT("%s detected a critical error. See diagnostic dump above. Provide a custom 'OnItemToString_Debug' for more detailed diagnostics."), *OwnerList->ToString() );
-			}			
+				checkf(false,
+					TEXT(
+						"%s detected a critical error. See diagnostic dump above. Provide a custom 'OnItemToString_Debug' for more detailed diagnostics."
+					), *OwnerList->ToString());
+			}
 		}
 
 		/** We store a pointer to the owner list for error purposes, so when asserts occur we can report which list it happened for. */
 		SBSListView<ItemType>* OwnerList;
 
 		/** Map of DataItems to corresponding SWidgets */
-		TMap< ItemType, TSharedRef<ITableRow>, FDefaultSetAllocator, MapKeyFuncs > ItemToWidgetMap;
+		TMap<ItemType, TSharedRef<ITableRow>, FDefaultSetAllocator, MapKeyFuncs> ItemToWidgetMap;
 
 		/** Map of SWidgets to DataItems from which they were generated */
-		TMap< const ITableRow*, ItemType > WidgetMapToItem;
+		TMap<const ITableRow*, ItemType> WidgetMapToItem;
 
 		/** A set of Items that currently have a generated widget */
-		TArray< ItemType > ItemsWithGeneratedWidgets;
+		TArray<ItemType> ItemsWithGeneratedWidgets;
 
 		/** Total number of DataItems the last time we performed a generation pass. */
 		int32 TotalItemsLastGeneration;
@@ -877,7 +866,6 @@ private:
 	};
 
 public:
-
 	// A low-level interface for use various widgets generated by ItemsWidgets(Lists, Trees, etc).
 	// These handle selection, expansion, and other such properties common to ItemsWidgets.
 	//
@@ -887,31 +875,33 @@ public:
 		OnEntryInitialized.ExecuteIfBound(TheItem, TableRow);
 	}
 
-	virtual void Private_SetItemSelection( ItemType TheItem, bool bShouldBeSelected, bool bWasUserDirected = false ) override
+	virtual void
+	Private_SetItemSelection(ItemType TheItem, bool bShouldBeSelected, bool bWasUserDirected = false) override
 	{
-		if ( SelectionMode.Get() == ESelectionMode::None )
+		if (SelectionMode.Get() == ESelectionMode::None)
 		{
 			return;
 		}
 
-		if ( bShouldBeSelected )
+		if (bShouldBeSelected)
 		{
-			SelectedItems.Add( TheItem );
+			SelectedItems.Add(TheItem);
 		}
 		else
 		{
-			SelectedItems.Remove( TheItem );
+			SelectedItems.Remove(TheItem);
 		}
 
 		// Move the selector item and range selection start if the user directed this change in selection or if the list view is single selection
-		if( bWasUserDirected || SelectionMode.Get() == ESelectionMode::Single || SelectionMode.Get() == ESelectionMode::SingleToggle )
+		if (bWasUserDirected || SelectionMode.Get() == ESelectionMode::Single || SelectionMode.Get() ==
+			ESelectionMode::SingleToggle)
 		{
 			SelectorItem = TheItem;
 			RangeSelectionStart = TheItem;
 		}
 
 		this->InertialScrollManager.ClearScrollVelocity();
-#if WITH_ACCESSIBILITY
+		#if WITH_ACCESSIBILITY
 		// On certain platforms, we need to pass accessibility focus to a widget for screen readers to announce 
 		// accessibility information. SBSTableRows cannot accept keyboard focus, 
 		// so we have to manually raise a focus change event for the selected table row 
@@ -925,10 +915,12 @@ public:
 				// widget with accessibility focus  as FSlateAccessibleMessageHandler will take care of signalling a focus lost event
 				// @TODOAccessibility: Technically we need to pass in the user Id that selected the row so the event can be routed to the correct user.
 				// But we don't want to change the Slate API drastically right now
-				FSlateApplicationBase::Get().GetAccessibleMessageHandler()->OnWidgetEventRaised(FSlateAccessibleMessageHandler::FSlateWidgetAccessibleEventArgs(TableRowWidget, EAccessibleEvent::FocusChange, false, true));
+				FSlateApplicationBase::Get().GetAccessibleMessageHandler()->OnWidgetEventRaised(
+					FSlateAccessibleMessageHandler::FSlateWidgetAccessibleEventArgs(TableRowWidget,
+						EAccessibleEvent::FocusChange, false, true));
 			}
 		}
-#endif
+		#endif
 	}
 
 	virtual void Private_ClearSelection() override
@@ -938,9 +930,9 @@ public:
 		this->InertialScrollManager.ClearScrollVelocity();
 	}
 
-	virtual void Private_SelectRangeFromCurrentTo( ItemType InRangeSelectionEnd ) override
+	virtual void Private_SelectRangeFromCurrentTo(ItemType InRangeSelectionEnd) override
 	{
-		if ( SelectionMode.Get() == ESelectionMode::None )
+		if (SelectionMode.Get() == ESelectionMode::None)
 		{
 			return;
 		}
@@ -948,24 +940,25 @@ public:
 		const TArray<ItemType>& ItemsSourceRef = (*ItemsSource);
 
 		int32 RangeStartIndex = 0;
-		if( TListTypeTraits<ItemType>::IsPtrValid(RangeSelectionStart) )
+		if (TListTypeTraits<ItemType>::IsPtrValid(RangeSelectionStart))
 		{
-			RangeStartIndex = ItemsSourceRef.Find( TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType( RangeSelectionStart ) );
+			RangeStartIndex = ItemsSourceRef.Find(
+				TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(RangeSelectionStart));
 		}
 
-		int32 RangeEndIndex = ItemsSourceRef.Find( InRangeSelectionEnd );
+		int32 RangeEndIndex = ItemsSourceRef.Find(InRangeSelectionEnd);
 
 		RangeStartIndex = FMath::Clamp(RangeStartIndex, 0, ItemsSourceRef.Num());
 		RangeEndIndex = FMath::Clamp(RangeEndIndex, 0, ItemsSourceRef.Num());
 
 		if (RangeEndIndex < RangeStartIndex)
 		{
-			Swap( RangeStartIndex, RangeEndIndex );
+			Swap(RangeStartIndex, RangeEndIndex);
 		}
 
-		for( int32 ItemIndex = RangeStartIndex; ItemIndex <= RangeEndIndex; ++ItemIndex )
+		for (int32 ItemIndex = RangeStartIndex; ItemIndex <= RangeEndIndex; ++ItemIndex)
 		{
-			SelectedItems.Add( ItemsSourceRef[ItemIndex] );
+			SelectedItems.Add(ItemsSourceRef[ItemIndex]);
 		}
 
 		this->InertialScrollManager.ClearScrollVelocity();
@@ -973,24 +966,24 @@ public:
 
 	virtual void Private_SignalSelectionChanged(ESelectInfo::Type SelectInfo) override
 	{
-		if ( SelectionMode.Get() == ESelectionMode::None )
+		if (SelectionMode.Get() == ESelectionMode::None)
 		{
 			return;
 		}
 
-		if( OnSelectionChanged.IsBound() )
+		if (OnSelectionChanged.IsBound())
 		{
 			NullableItemType SelectedItem = (SelectedItems.Num() > 0)
 				? (*typename TItemSet::TIterator(SelectedItems))
-				: TListTypeTraits< ItemType >::MakeNullPtr();
+				: TListTypeTraits<ItemType>::MakeNullPtr();
 
-			OnSelectionChanged.ExecuteIfBound(SelectedItem, SelectInfo );
+			OnSelectionChanged.ExecuteIfBound(SelectedItem, SelectInfo);
 		}
 	}
 
-	virtual const ItemType* Private_ItemFromWidget( const ITableRow* TheWidget ) const override
+	virtual const ItemType* Private_ItemFromWidget(const ITableRow* TheWidget) const override
 	{
-		ItemType const * LookupResult = WidgetGenerator.WidgetMapToItem.Find( TheWidget );
+		ItemType const* LookupResult = WidgetGenerator.WidgetMapToItem.Find(TheWidget);
 		return LookupResult == nullptr ? PinnedWidgetGenerator.WidgetMapToItem.Find(TheWidget) : LookupResult;
 	}
 
@@ -999,12 +992,12 @@ public:
 		return true;
 	}
 
-	virtual bool Private_HasSelectorFocus( const ItemType& TheItem ) const override
+	virtual bool Private_HasSelectorFocus(const ItemType& TheItem) const override
 	{
 		return SelectorItem == TheItem;
 	}
 
-	virtual bool Private_IsItemSelected( const ItemType& TheItem ) const override
+	virtual bool Private_IsItemSelected(const ItemType& TheItem) const override
 	{
 		return nullptr != SelectedItems.Find(TheItem);
 	}
@@ -1014,10 +1007,10 @@ public:
 		return nullptr != HighlightedItems.Find(TheItem);
 	}
 
-	virtual bool Private_IsItemExpanded( const ItemType& TheItem ) const override
+	virtual bool Private_IsItemExpanded(const ItemType& TheItem) const override
 	{
 		// List View does not support item expansion.
-		return false;	
+		return false;
 	}
 
 	virtual bool Private_IsItemSelectableOrNavigable(const ItemType& TheItem) const override
@@ -1025,17 +1018,17 @@ public:
 		return OnIsSelectableOrNavigable.IsBound() ? OnIsSelectableOrNavigable.Execute(TheItem) : true;
 	}
 
-	virtual void Private_SetItemExpansion( ItemType TheItem, bool bShouldBeExpanded ) override
+	virtual void Private_SetItemExpansion(ItemType TheItem, bool bShouldBeExpanded) override
 	{
 		// Do nothing; you cannot expand an item in a list!
 	}
 
-	virtual void Private_OnExpanderArrowShiftClicked( ItemType TheItem, bool bShouldBeExpanded ) override
+	virtual void Private_OnExpanderArrowShiftClicked(ItemType TheItem, bool bShouldBeExpanded) override
 	{
 		// Do nothing; you cannot expand an item in a list!
 	}
 
-	virtual bool Private_DoesItemHaveChildren( int32 ItemIndexInList ) const override
+	virtual bool Private_DoesItemHaveChildren(int32 ItemIndexInList) const override
 	{
 		// List View items cannot have children
 		return false;
@@ -1063,13 +1056,13 @@ public:
 		HighlightedItems.Empty();
 	}
 
-	virtual int32 Private_GetNestingDepth( int32 ItemIndexInList ) const override
+	virtual int32 Private_GetNestingDepth(int32 ItemIndexInList) const override
 	{
 		// List View items are not indented
 		return 0;
 	}
 
-	virtual const TBitArray<>& Private_GetWiresNeededByDepth( int32 ItemIndexInList ) const override
+	virtual const TBitArray<>& Private_GetWiresNeededByDepth(int32 ItemIndexInList) const override
 	{
 		return TableViewHelpers::GetEmptyBitArray();
 	}
@@ -1094,29 +1087,29 @@ public:
 		return IsPendingRefresh();
 	}
 
-	virtual void Private_OnItemRightClicked( ItemType TheItem, const FPointerEvent& MouseEvent ) override
+	virtual void Private_OnItemRightClicked(ItemType TheItem, const FPointerEvent& MouseEvent) override
 	{
-		this->OnRightMouseButtonUp( MouseEvent );
+		this->OnRightMouseButtonUp(MouseEvent);
 	}
 
 	virtual bool Private_OnItemClicked(ItemType TheItem) override
 	{
 		if (OnClick.ExecuteIfBound(TheItem))
 		{
-			return true;	// Handled
+			return true; // Handled
 		}
 
-		return false;	// Not handled
+		return false; // Not handled
 	}
-	
-	virtual bool Private_OnItemDoubleClicked( ItemType TheItem ) override
+
+	virtual bool Private_OnItemDoubleClicked(ItemType TheItem) override
 	{
-		if( OnDoubleClick.ExecuteIfBound( TheItem ) )
+		if (OnDoubleClick.ExecuteIfBound(TheItem))
 		{
-			return true;	// Handled
+			return true; // Handled
 		}
 
-		return false;	// Not handled
+		return false; // Not handled
 	}
 
 	virtual ETableViewMode::Type GetTableViewMode() const override
@@ -1130,18 +1123,20 @@ public:
 	}
 
 private:
-
 	friend class SBSListViewPinnedRowWidget;
 
 	// Private class that acts as a wrapper around PinnedRows, to allow for customized styling
 	class SBSListViewPinnedRowWidget : public SCompoundWidget
 	{
 	public:
-		SLATE_BEGIN_ARGS(SBSListViewPinnedRowWidget) {}
+		SLATE_BEGIN_ARGS(SBSListViewPinnedRowWidget)
+			{
+			}
 
 		SLATE_END_ARGS()
 
-		void Construct(const FArguments& InArgs, TSharedPtr<ITableRow> InPinnedItemRow, TSharedRef<SBSListView> InOwnerListView, const int32 ItemIndex, const int32 NumPinnedItems)
+		void Construct(const FArguments& InArgs, TSharedPtr<ITableRow> InPinnedItemRow,
+			TSharedRef<SBSListView> InOwnerListView, const int32 ItemIndex, const int32 NumPinnedItems)
 		{
 			PinnedItemRow = InPinnedItemRow;
 			OwnerListView = InOwnerListView;
@@ -1159,54 +1154,26 @@ private:
 			TSharedRef<SWidget> InPinnedItemRowWidget = InPinnedItemRow->AsWidget();
 			InPinnedItemRowWidget->SetVisibility(EVisibility::HitTestInvisible);
 
-			ChildSlot
-				[
-					SNew(SOverlay)
-					.Visibility(TAttribute<EVisibility>::CreateSP(this, &SBSListViewPinnedRowWidget::SetPinnedItemVisibility, ItemIndex, NumPinnedItems))
-
-					+ SOverlay::Slot()
-					.Padding(FMargin(0.0f, 0.0f, 0.0f, 0.0f))
-					[
-						SNew(SBorder)
-						.BorderImage_Lambda([this]()
-							{
-								return this->IsHovered() ? FAppStyle::Get().GetBrush("Brushes.Hover") : FAppStyle::Get().GetBrush("Brushes.Header");
-							})
-						.Padding(0.f)
-						.Content()
-						[
-							SNew(SHorizontalBox)
-							+ SHorizontalBox::Slot()
-							.AutoWidth()
-							[
-								InPinnedItemRowWidget
-							]
-							+ SHorizontalBox::Slot()
-							.FillWidth(1.0f)
-							.Padding(2.0f, 2.0f, 0.0f, 0.0f)
-							[
-								// Text Block for ellipses, shows up when some items in the pinned list are collapsed when the number of items > MaxPinnedItems
-								SNew(STextBlock).Text(NSLOCTEXT("SBSListView", "Ellipses", "..."))
-								.Visibility(this, &SBSListViewPinnedRowWidget::SetPinnedItemEllipsesVisibility, ItemIndex)
-							]
-						]
-					]
-					+ SOverlay::Slot()
-					.HAlign(HAlign_Fill)
-					.VAlign(VAlign_Top)
-					[
-						// A shadow to indicate parent/child relationship
-						SNew(SImage)
-						.Visibility(EVisibility::HitTestInvisible)
-						.Image(FAppStyle::Get().GetBrush("ListView.PinnedItemShadow"))
-					]
-					
-				];
-
+			ChildSlot[SNew(SOverlay).Visibility(TAttribute<EVisibility>::CreateSP(this,
+				&SBSListViewPinnedRowWidget::SetPinnedItemVisibility, ItemIndex,
+				NumPinnedItems)) + SOverlay::Slot().Padding(FMargin(0.0f, 0.0f, 0.0f, 0.0f))[SNew(SBorder).
+				BorderImage_Lambda([this]()
+				{
+					return this->IsHovered()
+						? FAppStyle::Get().GetBrush("Brushes.Hover")
+						: FAppStyle::Get().GetBrush("Brushes.Header");
+				}).Padding(0.f).Content()[SNew(SHorizontalBox) + SHorizontalBox::Slot().AutoWidth()[
+					InPinnedItemRowWidget] + SHorizontalBox::Slot().FillWidth(1.0f).Padding(2.0f, 2.0f, 0.0f, 0.0f)[
+					// Text Block for ellipses, shows up when some items in the pinned list are collapsed when the number of items > MaxPinnedItems
+					SNew(STextBlock).Text(NSLOCTEXT("SBSListView", "Ellipses", "...")).Visibility(this,
+						&SBSListViewPinnedRowWidget::SetPinnedItemEllipsesVisibility,
+						ItemIndex)]]] + SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Top)[
+				// A shadow to indicate parent/child relationship
+				SNew(SImage).Visibility(EVisibility::HitTestInvisible).Image(
+					FAppStyle::Get().GetBrush("ListView.PinnedItemShadow"))]];
 		}
 
 	protected:
-
 		virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
 		{
 			if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
@@ -1225,7 +1192,6 @@ private:
 		}
 
 	private:
-
 		EVisibility SetPinnedItemVisibility(const int32 IndexInList, const int32 NumPinnedItems) const
 		{
 			// If the hierarchy is not collapsed (i.e all items are visible)
@@ -1269,15 +1235,14 @@ private:
 		TSharedPtr<SBSListView> OwnerListView;
 
 		// A pointer to the row contained by this widget
- 		TSharedPtr<ITableRow> PinnedItemRow;
+		TSharedPtr<ITableRow> PinnedItemRow;
 	};
 
-public:	
-
+public:
 	void SetStyle(const FTableViewStyle* InStyle)
 	{
 		Style = InStyle;
-		SetBackgroundBrush( Style != nullptr ? &Style->BackgroundBrush : FStyleDefaults::GetNoBrush() );
+		SetBackgroundBrush(Style != nullptr ? &Style->BackgroundBrush : FStyleDefaults::GetNoBrush());
 	}
 
 	/** Sets the OnEntryInitializer delegate. This delegate is invoked after initializing an entry being generated, before it may be added to the actual widget hierarchy. */
@@ -1292,10 +1257,10 @@ public:
 	virtual void UpdateSelectionSet() override
 	{
 		// Trees take care of this update in a different way.
-		if ( TableViewMode != ETableViewMode::Tree )
+		if (TableViewMode != ETableViewMode::Tree)
 		{
 			bool bSelectionChanged = false;
-			if ( ItemsSource == nullptr )
+			if (ItemsSource == nullptr)
 			{
 				// We are no longer observing items so there is no more selection.
 				this->Private_ClearSelection();
@@ -1306,18 +1271,18 @@ public:
 				// We are observing some items; they are potentially different.
 				// Unselect any that are no longer being observed.
 				TItemSet NewSelectedItems;
-				for ( int32 ItemIndex = 0; ItemIndex < ItemsSource->Num(); ++ItemIndex )
+				for (int32 ItemIndex = 0; ItemIndex < ItemsSource->Num(); ++ItemIndex)
 				{
 					ItemType CurItem = (*ItemsSource)[ItemIndex];
-					const bool bItemIsSelected = ( nullptr != SelectedItems.Find( CurItem ) );
-					if ( bItemIsSelected )
+					const bool bItemIsSelected = (nullptr != SelectedItems.Find(CurItem));
+					if (bItemIsSelected)
 					{
-						NewSelectedItems.Add( CurItem );
+						NewSelectedItems.Add(CurItem);
 					}
 				}
 
 				// Look for items that were removed from the selection.
-				TItemSet SetDifference = SelectedItems.Difference( NewSelectedItems );
+				TItemSet SetDifference = SelectedItems.Difference(NewSelectedItems);
 				bSelectionChanged = (SetDifference.Num()) > 0;
 
 				// Update the selection to reflect the removal of any items from the ItemsSource.
@@ -1335,7 +1300,7 @@ public:
 	 * Update generate Widgets for Items as needed and clean up any Widgets that are no longer needed.
 	 * Re-arrange the visible widget order as necessary.
 	 */
-	virtual FReGenerateResults ReGenerateItems( const FGeometry& MyGeometry ) override
+	virtual FReGenerateResults ReGenerateItems(const FGeometry& MyGeometry) override
 	{
 		auto DoubleFractional = [](double Value) -> double
 		{
@@ -1361,7 +1326,8 @@ public:
 
 			// Index of the item at which we start generating based on how far scrolled down we are
 			// Note that we must generate at LEAST one item.
-			int32 StartIndex = FMath::Clamp( (int32)(FMath::FloorToDouble(CurrentScrollOffset)), 0, ItemsSource->Num() - 1 );
+			int32 StartIndex = FMath::Clamp((int32)(FMath::FloorToDouble(CurrentScrollOffset)), 0,
+				ItemsSource->Num() - 1);
 
 			// Length of the first item that is generated. This item is at the location where the user requested we scroll
 			float FirstItemLength = 0.0f;
@@ -1372,8 +1338,8 @@ public:
 
 			const float LayoutScaleMultiplier = MyGeometry.GetAccumulatedLayoutTransform().GetScale();
 			FTableViewDimensions MyDimensions(this->Orientation, MyGeometry.GetLocalSize());
-			
-			for( int32 ItemIndex = StartIndex; !bHasFilledAvailableArea && ItemIndex < ItemsSource->Num(); ++ItemIndex )
+
+			for (int32 ItemIndex = StartIndex; !bHasFilledAvailableArea && ItemIndex < ItemsSource->Num(); ++ItemIndex)
 			{
 				const ItemType& CurItem = (*ItemsSource)[ItemIndex];
 
@@ -1397,14 +1363,16 @@ public:
 				{
 					// The first item may not be fully visible (but cannot exceed 1)
 					// FirstItemFractionScrolledIntoView is the fraction of the item that is visible after taking into account anything that may be scrolled off the top/left of the list view
-					const float FirstItemFractionScrolledIntoView = 1.0f - (float)FMath::Max(DoubleFractional(CurrentScrollOffset), 0.0);
-					
+					const float FirstItemFractionScrolledIntoView = 1.0f - (float)FMath::Max(
+						DoubleFractional(CurrentScrollOffset), 0.0);
+
 					// FirstItemLengthScrolledIntoView is the length of the item, ignoring anything that is scrolled off the top/left of the list view
 					const float FirstItemLengthScrolledIntoView = ItemLength * FirstItemFractionScrolledIntoView;
-					
+
 					// FirstItemVisibleFraction is either: The visible item length as a fraction of the available list view length (if the item size is larger than the available size, otherwise this will be >1), or just FirstItemFractionScrolledIntoView (which can never be >1)
-					const float FirstItemVisibleFraction = FMath::Min(MyDimensions.ScrollAxis / FirstItemLengthScrolledIntoView, FirstItemFractionScrolledIntoView);
-					
+					const float FirstItemVisibleFraction = FMath::Min(
+						MyDimensions.ScrollAxis / FirstItemLengthScrolledIntoView, FirstItemFractionScrolledIntoView);
+
 					ItemsInView += FirstItemVisibleFraction;
 				}
 				else if (ViewLengthUsedSoFar + ItemLength > MyDimensions.ScrollAxis)
@@ -1420,7 +1388,7 @@ public:
 				LengthGeneratedSoFar += ItemLength;
 
 				ViewLengthUsedSoFar += (bIsFirstItem)
-					? ItemLength * ItemsInView	// For the first item, ItemsInView <= 1.0f
+					? ItemLength * ItemsInView // For the first item, ItemsInView <= 1.0f
 					: ItemLength;
 
 				bAtEndOfList = ItemIndex >= ItemsSource->Num() - 1;
@@ -1444,20 +1412,24 @@ public:
 			// We may have stopped because we got to the end of the items, but we may still have space to fill!
 			if (bAtEndOfList && !bHasFilledAvailableArea)
 			{
-				double NewScrollOffsetForBackfill = static_cast<double>(StartIndex) + (LengthGeneratedSoFar - MyDimensions.ScrollAxis) / FirstItemLength;
+				double NewScrollOffsetForBackfill = static_cast<double>(StartIndex) + (LengthGeneratedSoFar -
+					MyDimensions.ScrollAxis) / FirstItemLength;
 
-				for (int32 ItemIndex = StartIndex - 1; LengthGeneratedSoFar < MyDimensions.ScrollAxis && ItemIndex >= 0; --ItemIndex)
+				for (int32 ItemIndex = StartIndex - 1; LengthGeneratedSoFar < MyDimensions.ScrollAxis && ItemIndex >= 0;
+				     --ItemIndex)
 				{
 					const ItemType& CurItem = (*ItemsSource)[ItemIndex];
 					if (TListTypeTraits<ItemType>::IsPtrValid(CurItem))
 					{
-						const float ItemLength = GenerateWidgetForItem(CurItem, ItemIndex, StartIndex, LayoutScaleMultiplier);
+						const float ItemLength = GenerateWidgetForItem(CurItem, ItemIndex, StartIndex,
+							LayoutScaleMultiplier);
 
 						if (LengthGeneratedSoFar + ItemLength > MyDimensions.ScrollAxis && ItemLength > 0.f)
 						{
 							// Generated the item that puts us over the top.
 							// Count the fraction of this item that will stick out beyond the list
-							NewScrollOffsetForBackfill = static_cast<double>(ItemIndex) + (LengthGeneratedSoFar + ItemLength - MyDimensions.ScrollAxis) / ItemLength;
+							NewScrollOffsetForBackfill = static_cast<double>(ItemIndex) + (LengthGeneratedSoFar +
+								ItemLength - MyDimensions.ScrollAxis) / ItemLength;
 						}
 
 						// The widget used up some of the available vertical space.
@@ -1465,7 +1437,8 @@ public:
 					}
 				}
 
-				return FReGenerateResults(NewScrollOffsetForBackfill, LengthGeneratedSoFar, ItemsSource->Num() - NewScrollOffsetForBackfill, true);
+				return FReGenerateResults(NewScrollOffsetForBackfill, LengthGeneratedSoFar,
+					ItemsSource->Num() - NewScrollOffsetForBackfill, true);
 			}
 
 			return FReGenerateResults(CurrentScrollOffset, LengthGeneratedSoFar, ItemsInView, false);
@@ -1474,12 +1447,12 @@ public:
 		return FReGenerateResults(0.0f, 0.0f, 0.0f, false);
 	}
 
-	float GenerateWidgetForItem( const ItemType& CurItem, int32 ItemIndex, int32 StartIndex, float LayoutScaleMultiplier )
+	float GenerateWidgetForItem(const ItemType& CurItem, int32 ItemIndex, int32 StartIndex, float LayoutScaleMultiplier)
 	{
 		ensure(TListTypeTraits<ItemType>::IsPtrValid(CurItem));
 		// Find a previously generated Widget for this item, if one exists.
-		TSharedPtr<ITableRow> WidgetForItem = WidgetGenerator.GetWidgetForItem( CurItem );
-		if ( !WidgetForItem.IsValid() )
+		TSharedPtr<ITableRow> WidgetForItem = WidgetGenerator.GetWidgetForItem(CurItem);
+		if (!WidgetForItem.IsValid())
 		{
 			// We couldn't find an existing widgets, meaning that this data item was not visible before.
 			// Make a new widget for it.
@@ -1491,7 +1464,7 @@ public:
 		WidgetForItem->SetIndexInList(ItemIndex);
 
 		// Let the item generator know that we encountered the current Item and associated Widget.
-		WidgetGenerator.OnItemSeen( CurItem, WidgetForItem.ToSharedRef() );
+		WidgetGenerator.OnItemSeen(CurItem, WidgetForItem.ToSharedRef());
 
 		// We rely on the widgets desired size in order to determine how many will fit on screen.
 		const TSharedRef<SWidget> NewlyGeneratedWidget = WidgetForItem->AsWidget();
@@ -1502,20 +1475,22 @@ public:
 		if (ItemIndex >= StartIndex)
 		{
 			// Generating widgets downward
-			this->AppendWidget( WidgetForItem.ToSharedRef() );
+			this->AppendWidget(WidgetForItem.ToSharedRef());
 		}
 		else
 		{
 			// Backfilling widgets; going upward
-			this->InsertWidget( WidgetForItem.ToSharedRef() );
+			this->InsertWidget(WidgetForItem.ToSharedRef());
 		}
 
 		const bool bIsVisible = NewlyGeneratedWidget->GetVisibility().IsVisible();
-		FTableViewDimensions GeneratedWidgetDimensions(this->Orientation, bIsVisible ? NewlyGeneratedWidget->GetDesiredSize() : FVector2D::ZeroVector);
+		FTableViewDimensions GeneratedWidgetDimensions(this->Orientation,
+			bIsVisible ? NewlyGeneratedWidget->GetDesiredSize() : FVector2D::ZeroVector);
 		return GeneratedWidgetDimensions.ScrollAxis;
 	}
 
-	void ReGeneratePinnedItems(const TArray<ItemType>& InItems, const FGeometry& MyGeometry, int32 MaxPinnedItemsOverride = -1)
+	void ReGeneratePinnedItems(const TArray<ItemType>& InItems, const FGeometry& MyGeometry,
+		int32 MaxPinnedItemsOverride = -1)
 	{
 		const float LayoutScaleMultiplier = MyGeometry.GetAccumulatedLayoutTransform().GetScale();
 
@@ -1545,7 +1520,7 @@ public:
 		{
 			bIsHierarchyCollapsed = false;
 		}
-		
+
 
 		const TArray<ItemType>& ItemsSourceRef = (*this->ItemsSource);
 
@@ -1561,12 +1536,11 @@ public:
 					TListTypeTraits<ItemType>::ResetPtr(SelectorItem);
 				}
 			}
-
 		}
-		
 	}
 
-	void GeneratePinnedWidgetForItem(const ItemType& CurItem, int32 ItemIndex, int32 NumPinnedItems, float LayoutScaleMultiplier)
+	void GeneratePinnedWidgetForItem(const ItemType& CurItem, int32 ItemIndex, int32 NumPinnedItems,
+		float LayoutScaleMultiplier)
 	{
 		ensure(TListTypeTraits<ItemType>::IsPtrValid(CurItem));
 		// Find a previously generated Widget for this item, if one exists.
@@ -1586,7 +1560,8 @@ public:
 		PinnedWidgetGenerator.OnItemSeen(CurItem, WidgetForItem.ToSharedRef());
 
 		// We wrap the row widget around an SBSListViewPinnedRowWidget for custom styling
-		TSharedRef< SWidget > NewListItemWidget = SNew(SBSListViewPinnedRowWidget, WidgetForItem, SharedThis(this), ItemIndex, NumPinnedItems);
+		TSharedRef<SWidget> NewListItemWidget = SNew(SBSListViewPinnedRowWidget, WidgetForItem, SharedThis(this),
+			ItemIndex, NumPinnedItems);
 		NewListItemWidget->MarkPrepassAsDirty();
 		NewListItemWidget->SlatePrepass(LayoutScaleMultiplier);
 
@@ -1600,7 +1575,8 @@ public:
 		return ItemsSource == nullptr ? 0 : ItemsSource->Num();
 	}
 
-	virtual TSharedRef<ITableRow> GenerateNewPinnedWidget(ItemType InItem, const int32 ItemIndex, const int32 NumPinnedItems)
+	virtual TSharedRef<ITableRow> GenerateNewPinnedWidget(ItemType InItem, const int32 ItemIndex,
+		const int32 NumPinnedItems)
 	{
 		if (OnGeneratePinnedRow.IsBound())
 		{
@@ -1609,16 +1585,12 @@ public:
 		else
 		{
 			// The programmer did not provide an OnGeneratePinnedRow() handler; let them know.
-			TSharedRef< SBSTableRow<ItemType> > NewListItemWidget =
-				SNew(SBSTableRow<ItemType>, SharedThis(this))
-				.Content()
-				[
-					SNew(STextBlock).Text(NSLOCTEXT("SBSListView", "OnGeneratePinnedRowNotAssignedMessage", "OnGeneratePinnedRow() not assigned."))
-				];
+			TSharedRef<SBSTableRow<ItemType>> NewListItemWidget = SNew(SBSTableRow<ItemType>, SharedThis(this)).
+				Content()[SNew(STextBlock).Text(NSLOCTEXT("SBSListView", "OnGeneratePinnedRowNotAssignedMessage",
+					"OnGeneratePinnedRow() not assigned."))];
 
 			return NewListItemWidget;
 		}
-
 	}
 
 	/**
@@ -1630,23 +1602,19 @@ public:
 	 */
 	virtual TSharedRef<ITableRow> GenerateNewWidget(ItemType InItem)
 	{
-		if ( OnGenerateRow.IsBound() )
+		if (OnGenerateRow.IsBound())
 		{
-			return OnGenerateRow.Execute( InItem, SharedThis(this) );
+			return OnGenerateRow.Execute(InItem, SharedThis(this));
 		}
 		else
 		{
 			// The programmer did not provide an OnGenerateRow() handler; let them know.
-			TSharedRef< SBSTableRow<ItemType> > NewListItemWidget = 
-				SNew( SBSTableRow<ItemType>, SharedThis(this) )
-				.Content()
-				[
-					SNew(STextBlock) .Text( NSLOCTEXT("SBSListView", "OnGenerateWidgetNotAssignedMessage", "OnGenerateWidget() not assigned.") )
-				];
+			TSharedRef<SBSTableRow<ItemType>> NewListItemWidget = SNew(SBSTableRow<ItemType>, SharedThis(this)).
+				Content()[SNew(STextBlock).Text(NSLOCTEXT("SBSListView", "OnGenerateWidgetNotAssignedMessage",
+					"OnGenerateWidget() not assigned."))];
 
 			return NewListItemWidget;
 		}
-
 	}
 
 	/**
@@ -1672,9 +1640,9 @@ public:
 	 *
 	 * @return the data item from which the WidgetToFind was generated
 	 */
-	const ItemType* ItemFromWidget( const ITableRow* WidgetToFind ) const
+	const ItemType* ItemFromWidget(const ITableRow* WidgetToFind) const
 	{
-		return Private_ItemFromWidget( WidgetToFind );
+		return Private_ItemFromWidget(WidgetToFind);
 	}
 
 	/**
@@ -1684,14 +1652,14 @@ public:
 	 *
 	 * @return true if the item is selected in this list; false otherwise.
 	 */
-	bool IsItemSelected( const ItemType& InItem ) const
+	bool IsItemSelected(const ItemType& InItem) const
 	{
-		if ( SelectionMode.Get() == ESelectionMode::None )
+		if (SelectionMode.Get() == ESelectionMode::None)
 		{
 			return false;
 		}
 
-		return Private_IsItemSelected( InItem );
+		return Private_IsItemSelected(InItem);
 	}
 
 	/**
@@ -1701,9 +1669,9 @@ public:
 	 * @param bSelected   true to select the item; false to unselect
 	 * @param SelectInfo  Provides context on how the selection changed
 	 */
-	void SetItemSelection( const ItemType& InItem, bool bSelected, ESelectInfo::Type SelectInfo = ESelectInfo::Direct )
+	void SetItemSelection(const ItemType& InItem, bool bSelected, ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
 	{
-		if ( SelectionMode.Get() == ESelectionMode::None )
+		if (SelectionMode.Get() == ESelectionMode::None)
 		{
 			return;
 		}
@@ -1719,14 +1687,15 @@ public:
 	 * @param bSelected   true to select the items; false to unselect
 	 * @param SelectInfo  Provides context on how the selection changed
 	 */
-	void SetItemSelection(TConstArrayView<ItemType> InItems, bool bSelected, ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
+	void SetItemSelection(TConstArrayView<ItemType> InItems, bool bSelected,
+		ESelectInfo::Type SelectInfo = ESelectInfo::Direct)
 	{
-		if ( InItems.Num() == 0 || SelectionMode.Get() == ESelectionMode::None )
+		if (InItems.Num() == 0 || SelectionMode.Get() == ESelectionMode::None)
 		{
 			return;
 		}
 
-		for (const ItemType & Item : InItems)
+		for (const ItemType& Item : InItems)
 		{
 			Private_SetItemSelection(Item, bSelected, SelectInfo != ESelectInfo::Direct);
 
@@ -1741,12 +1710,12 @@ public:
 	 */
 	void ClearSelection()
 	{
-		if ( SelectionMode.Get() == ESelectionMode::None )
+		if (SelectionMode.Get() == ESelectionMode::None)
 		{
 			return;
 		}
 
-		if ( SelectedItems.Num() == 0 )
+		if (SelectedItems.Num() == 0)
 		{
 			return;
 		}
@@ -1754,7 +1723,6 @@ public:
 		Private_ClearSelection();
 		Private_SignalSelectionChanged(ESelectInfo::Direct);
 	}
-
 
 
 	/**
@@ -1798,18 +1766,18 @@ public:
 	 *
 	 * @return	List of selected item indices (in no particular order)
 	 */
-	virtual TArray< ItemType > GetSelectedItems() const override
+	virtual TArray<ItemType> GetSelectedItems() const override
 	{
-		TArray< ItemType > SelectedItemArray;
-		SelectedItemArray.Empty( SelectedItems.Num() );
-		for( typename TItemSet::TConstIterator SelectedItemIt( SelectedItems ); SelectedItemIt; ++SelectedItemIt )
+		TArray<ItemType> SelectedItemArray;
+		SelectedItemArray.Empty(SelectedItems.Num());
+		for (typename TItemSet::TConstIterator SelectedItemIt(SelectedItems); SelectedItemIt; ++SelectedItemIt)
 		{
-			SelectedItemArray.Add( *SelectedItemIt );
+			SelectedItemArray.Add(*SelectedItemIt);
 		}
 		return SelectedItemArray;
 	}
 
-	int32 GetSelectedItems(TArray< ItemType >& SelectedItemArray) const
+	int32 GetSelectedItems(TArray<ItemType>& SelectedItemArray) const
 	{
 		SelectedItemArray.Empty(SelectedItems.Num());
 		for (typename TItemSet::TConstIterator SelectedItemIt(SelectedItems); SelectedItemIt; ++SelectedItemIt)
@@ -1826,7 +1794,7 @@ public:
 	 *
 	 * @return true if the item is visible, false otherwise.
 	 */
-	bool IsItemVisible( ItemType Item ) const
+	bool IsItemVisible(ItemType Item) const
 	{
 		return WidgetGenerator.GetWidgetForItem(Item).IsValid();
 	}
@@ -1836,14 +1804,15 @@ public:
 	 *
 	 * @param ItemToView  The item to scroll into view on next tick.
 	 */
-	void RequestScrollIntoView( ItemType ItemToView, const uint32 UserIndex = 0)
+	void RequestScrollIntoView(ItemType ItemToView, const uint32 UserIndex = 0)
 	{
-		ItemToScrollIntoView = ItemToView; 
+		ItemToScrollIntoView = ItemToView;
 		UserRequestingScrollIntoView = UserIndex;
 		RequestLayoutRefresh();
 	}
 
-	UE_DEPRECATED(4.20, "RequestScrollIntoView no longer takes parameter bNavigateOnScrollIntoView. Call RequestNavigateToItem instead of RequestScrollIntoView if navigation is required.")
+	UE_DEPRECATED(4.20,
+		"RequestScrollIntoView no longer takes parameter bNavigateOnScrollIntoView. Call RequestNavigateToItem instead of RequestScrollIntoView if navigation is required.")
 	void RequestScrollIntoView(ItemType ItemToView, const uint32 UserIndex, const bool NavigateOnScrollIntoView)
 	{
 		if (bNavigateOnScrollIntoView)
@@ -1878,7 +1847,6 @@ private:
 	}
 
 public:
-
 	/**
 	 * Cancels a previous request to scroll an item into view (cancels navigation requests as well).
 	 */
@@ -1908,11 +1876,10 @@ private:
 	void Private_SetSelection(ItemType SoleSelectedItem, ESelectInfo::Type SelectInfo)
 	{
 		SelectedItems.Empty();
-		SetItemSelection( SoleSelectedItem, true, SelectInfo );
+		SetItemSelection(SoleSelectedItem, true, SelectInfo);
 	}
 
 public:
-
 	/** 
 	 * Set the current selection mode of the list.
 	 * If going from multi-select to a type of single-select and one item is selected, it will be maintained (otherwise all will be cleared).
@@ -1953,7 +1920,7 @@ public:
 	 *
 	 * @return A pointer to the corresponding widget if it exists; otherwise nullptr.
 	*/
-	virtual TSharedPtr<ITableRow> WidgetFromItem( const ItemType& InItem ) const override
+	virtual TSharedPtr<ITableRow> WidgetFromItem(const ItemType& InItem) const override
 	{
 		TSharedPtr<ITableRow> ItemWidget = WidgetGenerator.GetWidgetForItem(InItem);
 
@@ -1966,11 +1933,12 @@ public:
 	 *
 	 * @param Ar The archive to serialize with
 	 */
-	virtual void AddReferencedObjects( FReferenceCollector& Collector )
+	virtual void AddReferencedObjects(FReferenceCollector& Collector)
 	{
-		TListTypeTraits<ItemType>::AddReferencedObjects( Collector, WidgetGenerator.ItemsWithGeneratedWidgets, SelectedItems, WidgetGenerator.WidgetMapToItem );
+		TListTypeTraits<ItemType>::AddReferencedObjects(Collector, WidgetGenerator.ItemsWithGeneratedWidgets,
+			SelectedItems, WidgetGenerator.WidgetMapToItem);
 	}
-	
+
 	virtual FString GetReferencerName() const
 	{
 		return TEXT("SBSListView");
@@ -2004,7 +1972,6 @@ public:
 	}
 
 protected:
-
 	static FOnItemToString_Debug GetDefaultDebugDelegate()
 	{
 		return FOnItemToString_Debug::CreateStatic(TListTypeTraits<ItemType>::DebugDump);
@@ -2015,11 +1982,12 @@ protected:
 	 * 
 	 * @param ListViewGeometry  The geometry of the listView; can be useful for centering the item.
 	 */
-	virtual EScrollIntoViewResult ScrollIntoView( const FGeometry& ListViewGeometry ) override
+	virtual EScrollIntoViewResult ScrollIntoView(const FGeometry& ListViewGeometry) override
 	{
 		if (ItemsSource && TListTypeTraits<ItemType>::IsPtrValid(ItemToScrollIntoView))
 		{
-			const int32 IndexOfItem = ItemsSource->Find( TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType( ItemToScrollIntoView ) );
+			const int32 IndexOfItem = ItemsSource->Find(
+				TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(ItemToScrollIntoView));
 			if (IndexOfItem != INDEX_NONE)
 			{
 				double NumLiveWidgets = GetNumLiveWidgets();
@@ -2037,13 +2005,18 @@ protected:
 				}
 
 				EndInertialScrolling();
-				
-				const int32 NumFullEntriesInView = (int32)(FMath::FloorToDouble(CurrentScrollOffset + NumLiveWidgets) - FMath::CeilToDouble(CurrentScrollOffset));
+
+				const int32 NumFullEntriesInView = (int32)(FMath::FloorToDouble(CurrentScrollOffset + NumLiveWidgets) -
+					FMath::CeilToDouble(CurrentScrollOffset));
 
 				// Only scroll the item into view if it's not already in the visible range
 				// When navigating, we don't want to scroll partially visible existing rows all the way to the center, so we count partially displayed indices in the displayed range
-				const double MinDisplayedIndex = bNavigateOnScrollIntoView ? FMath::FloorToDouble(CurrentScrollOffset) : FMath::CeilToDouble(CurrentScrollOffset);
-				const double MaxDisplayedIndex = bNavigateOnScrollIntoView ? FMath::CeilToDouble(CurrentScrollOffset + NumFullEntriesInView) : FMath::FloorToDouble(CurrentScrollOffset + NumFullEntriesInView);
+				const double MinDisplayedIndex = bNavigateOnScrollIntoView
+					? FMath::FloorToDouble(CurrentScrollOffset)
+					: FMath::CeilToDouble(CurrentScrollOffset);
+				const double MaxDisplayedIndex = bNavigateOnScrollIntoView
+					? FMath::CeilToDouble(CurrentScrollOffset + NumFullEntriesInView)
+					: FMath::FloorToDouble(CurrentScrollOffset + NumFullEntriesInView);
 				if (IndexOfItem < MinDisplayedIndex || IndexOfItem > MaxDisplayedIndex)
 				{
 					// Scroll the top of the listview to the item in question
@@ -2053,7 +2026,8 @@ protected:
 					NewScrollOffset -= (NumLiveWidgets / 2.0);
 
 					// Limit offset to top and bottom of the list.
-					const double MaxScrollOffset = FMath::Max(0.0, static_cast<double>(ItemsSource->Num()) - NumLiveWidgets);
+					const double MaxScrollOffset = FMath::Max(0.0,
+						static_cast<double>(ItemsSource->Num()) - NumLiveWidgets);
 					NewScrollOffset = FMath::Clamp<double>(NewScrollOffset, 0.0, MaxScrollOffset);
 
 					SetScrollOffset((float)NewScrollOffset);
@@ -2063,8 +2037,10 @@ protected:
 					if (TSharedPtr<ITableRow> TableRow = WidgetFromItem((*ItemsSource)[IndexOfItem]))
 					{
 						const FGeometry& WidgetGeometry = TableRow->AsWidget()->GetCachedGeometry();
-						const FTableViewDimensions WidgetTopLeft(this->Orientation, WidgetGeometry.GetAbsolutePositionAtCoordinates(FVector2D::ZeroVector));
-						const FTableViewDimensions ListViewTopLeft(this->Orientation, ListViewGeometry.GetAbsolutePositionAtCoordinates(FVector2D::ZeroVector));
+						const FTableViewDimensions WidgetTopLeft(this->Orientation,
+							WidgetGeometry.GetAbsolutePositionAtCoordinates(FVector2D::ZeroVector));
+						const FTableViewDimensions ListViewTopLeft(this->Orientation,
+							ListViewGeometry.GetAbsolutePositionAtCoordinates(FVector2D::ZeroVector));
 
 						double NewScrollOffset = DesiredScrollOffset;
 						// Make sure the existing entry for this item is fully in view
@@ -2076,9 +2052,11 @@ protected:
 						else
 						{
 							const FVector2D BottomRight(1.f, 1.f);
-							const FTableViewDimensions WidgetBottomRight(this->Orientation, WidgetGeometry.GetAbsolutePositionAtCoordinates(BottomRight));
-							const FTableViewDimensions ListViewBottomRight(this->Orientation, ListViewGeometry.GetAbsolutePositionAtCoordinates(BottomRight));
-							
+							const FTableViewDimensions WidgetBottomRight(this->Orientation,
+								WidgetGeometry.GetAbsolutePositionAtCoordinates(BottomRight));
+							const FTableViewDimensions ListViewBottomRight(this->Orientation,
+								ListViewGeometry.GetAbsolutePositionAtCoordinates(BottomRight));
+
 							if (WidgetBottomRight.ScrollAxis > ListViewBottomRight.ScrollAxis)
 							{
 								// This entry is clipped at the end, so we need to determine the exact item offset required to get it fully into view
@@ -2087,7 +2065,9 @@ protected:
 								float AdditionalOffset = 0.f;
 								for (const ItemType& ItemWithWidget : WidgetGenerator.ItemsWithGeneratedWidgets)
 								{
-									FTableViewDimensions WidgetAbsoluteDimensions(this->Orientation, WidgetGenerator.GetWidgetForItem(ItemWithWidget)->AsWidget()->GetCachedGeometry().GetAbsoluteSize());
+									FTableViewDimensions WidgetAbsoluteDimensions(this->Orientation,
+										WidgetGenerator.GetWidgetForItem(ItemWithWidget)->AsWidget()->
+										                GetCachedGeometry().GetAbsoluteSize());
 									if (WidgetAbsoluteDimensions.ScrollAxis < DistanceRemaining)
 									{
 										DistanceRemaining -= WidgetAbsoluteDimensions.ScrollAxis;
@@ -2101,7 +2081,8 @@ protected:
 									}
 								}
 
-								NewScrollOffset = DesiredScrollOffset + AdditionalOffset + (FixedLineScrollOffset.IsSet() ? 0.f : NavigationScrollOffset);
+								NewScrollOffset = DesiredScrollOffset + AdditionalOffset + (
+									FixedLineScrollOffset.IsSet() ? 0.f : NavigationScrollOffset);
 							}
 						}
 
@@ -2122,7 +2103,8 @@ protected:
 			if (this->bEnableAnimatedScrolling)
 			{
 				// When we have a target item we're shooting for, we haven't succeeded with the scroll until a widget for it exists
-				const bool bHasWidgetForItem = WidgetFromItem(TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(ItemToNotifyWhenInView)).IsValid();
+				const bool bHasWidgetForItem = WidgetFromItem(
+					TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(ItemToNotifyWhenInView)).IsValid();
 				return bHasWidgetForItem ? EScrollIntoViewResult::Success : EScrollIntoViewResult::Deferred;
 			}
 		}
@@ -2136,11 +2118,12 @@ protected:
 	virtual void NotifyItemScrolledIntoView() override
 	{
 		// Notify that an item that came into view
-		if ( TListTypeTraits<ItemType>::IsPtrValid( ItemToNotifyWhenInView ) )
+		if (TListTypeTraits<ItemType>::IsPtrValid(ItemToNotifyWhenInView))
 		{
-			ItemType NonNullItemToNotifyWhenInView = TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType( ItemToNotifyWhenInView );
+			ItemType NonNullItemToNotifyWhenInView = TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(
+				ItemToNotifyWhenInView);
 			TSharedPtr<ITableRow> Widget = WidgetGenerator.GetWidgetForItem(NonNullItemToNotifyWhenInView);
-			
+
 			if (Widget.IsValid())
 			{
 				if (bNavigateOnScrollIntoView)
@@ -2148,7 +2131,7 @@ protected:
 					SelectorItem = NonNullItemToNotifyWhenInView;
 					NavigateToWidget(UserRequestingScrollIntoView, Widget->AsWidget());
 				}
-			
+
 				OnItemScrolledIntoView.ExecuteIfBound(NonNullItemToNotifyWhenInView, Widget);
 			}
 
@@ -2163,7 +2146,8 @@ protected:
 		OnFinishedScrolling.ExecuteIfBound();
 	}
 
-	virtual float ScrollBy( const FGeometry& MyGeometry, float ScrollByAmountInSlateUnits, EAllowOverscroll InAllowOverscroll ) override
+	virtual float ScrollBy(const FGeometry& MyGeometry, float ScrollByAmountInSlateUnits,
+		EAllowOverscroll InAllowOverscroll) override
 	{
 		auto DoubleFractional = [](double Value) -> double
 		{
@@ -2185,14 +2169,15 @@ protected:
 			}
 		}
 
-		float AbsScrollByAmount = FMath::Abs( ScrollByAmountInSlateUnits );
+		float AbsScrollByAmount = FMath::Abs(ScrollByAmountInSlateUnits);
 		int32 StartingItemIndex = (int32)CurrentScrollOffset;
 		double NewScrollOffset = DesiredScrollOffset;
 
 		const bool bWholeListVisible = DesiredScrollOffset == 0.0 && bWasAtEndOfList;
-		if ( InAllowOverscroll == EAllowOverscroll::Yes && Overscroll.ShouldApplyOverscroll(DesiredScrollOffset == 0.0, bWasAtEndOfList, ScrollByAmountInSlateUnits ) )
+		if (InAllowOverscroll == EAllowOverscroll::Yes && Overscroll.ShouldApplyOverscroll(DesiredScrollOffset == 0.0,
+			bWasAtEndOfList, ScrollByAmountInSlateUnits))
 		{
-			const float UnclampedScrollDelta = FMath::Sign(ScrollByAmountInSlateUnits) * AbsScrollByAmount;				
+			const float UnclampedScrollDelta = FMath::Sign(ScrollByAmountInSlateUnits) * AbsScrollByAmount;
 			const float ActuallyScrolledBy = Overscroll.ScrollBy(MyGeometry, UnclampedScrollDelta);
 			if (ActuallyScrolledBy != 0.0f)
 			{
@@ -2212,7 +2197,7 @@ protected:
 			{
 				int32 ItemIndex = StartingItemIndex;
 				const float LayoutScaleMultiplier = MyGeometry.GetAccumulatedLayoutTransform().GetScale();
-				while( AbsScrollByAmount != 0 && ItemIndex < ItemsSource->Num() && ItemIndex >= 0 )
+				while (AbsScrollByAmount != 0 && ItemIndex < ItemsSource->Num() && ItemIndex >= 0)
 				{
 					const ItemType& CurItem = (*ItemsSource)[ItemIndex];
 					if (!TListTypeTraits<ItemType>::IsPtrValid(CurItem))
@@ -2222,27 +2207,29 @@ protected:
 						continue;
 					}
 
-					TSharedPtr<ITableRow> RowWidget = WidgetGenerator.GetWidgetForItem( CurItem );
+					TSharedPtr<ITableRow> RowWidget = WidgetGenerator.GetWidgetForItem(CurItem);
 					if (!RowWidget.IsValid())
 					{
 						// We couldn't find an existing widgets, meaning that this data item was not visible before.
 						// Make a new widget for it.
-						RowWidget = this->GenerateNewWidget( CurItem );
+						RowWidget = this->GenerateNewWidget(CurItem);
 
 						// It is useful to know the item's index that the widget was generated from.
 						// Helps with even/odd coloring
 						RowWidget->SetIndexInList(ItemIndex);
 
 						// Let the item generator know that we encountered the current Item and associated Widget.
-						WidgetGenerator.OnItemSeen( CurItem, RowWidget.ToSharedRef() );
+						WidgetGenerator.OnItemSeen(CurItem, RowWidget.ToSharedRef());
 
 						RowWidget->AsWidget()->SlatePrepass(LayoutScaleMultiplier);
 					}
 
-					const FTableViewDimensions WidgetDimensions(this->Orientation, RowWidget->AsWidget()->GetDesiredSize());
+					const FTableViewDimensions WidgetDimensions(this->Orientation,
+						RowWidget->AsWidget()->GetDesiredSize());
 					if (ScrollByAmountInSlateUnits > 0)
 					{
-						const float RemainingDistance = WidgetDimensions.ScrollAxis * (float)(1.0 - DoubleFractional(NewScrollOffset));
+						const float RemainingDistance = WidgetDimensions.ScrollAxis * (float)(1.0 - DoubleFractional(
+							NewScrollOffset));
 
 						if (AbsScrollByAmount > RemainingDistance)
 						{
@@ -2257,22 +2244,23 @@ protected:
 								NewScrollOffset = ItemsSource->Num();
 								break;
 							}
-						} 
-						else if ( AbsScrollByAmount == RemainingDistance)
+						}
+						else if (AbsScrollByAmount == RemainingDistance)
 						{
 							NewScrollOffset = 1.0 + (int32)NewScrollOffset;
 							break;
 						}
 						else
 						{
-							NewScrollOffset = (int32)NewScrollOffset + (1.0 - ((RemainingDistance - AbsScrollByAmount) / WidgetDimensions.ScrollAxis));
+							NewScrollOffset = (int32)NewScrollOffset + (1.0 - ((RemainingDistance - AbsScrollByAmount) /
+								WidgetDimensions.ScrollAxis));
 							break;
 						}
 					}
 					else
 					{
-						float Fractional = FMath::Fractional( (float)NewScrollOffset );
-						if ( FMath::IsNearlyEqual(Fractional, 0.f) )
+						float Fractional = FMath::Fractional((float)NewScrollOffset);
+						if (FMath::IsNearlyEqual(Fractional, 0.f))
 						{
 							Fractional = 1.0f;
 							--NewScrollOffset;
@@ -2280,12 +2268,12 @@ protected:
 
 						const float PrecedingDistance = WidgetDimensions.ScrollAxis * Fractional;
 
-						if ( AbsScrollByAmount > PrecedingDistance)
+						if (AbsScrollByAmount > PrecedingDistance)
 						{
-							if ( ItemIndex != 0 )
+							if (ItemIndex != 0)
 							{
 								AbsScrollByAmount -= PrecedingDistance;
-								NewScrollOffset -= DoubleFractional( NewScrollOffset );
+								NewScrollOffset -= DoubleFractional(NewScrollOffset);
 								--ItemIndex;
 							}
 							else
@@ -2293,15 +2281,16 @@ protected:
 								NewScrollOffset = 0.0;
 								break;
 							}
-						} 
-						else if ( AbsScrollByAmount == PrecedingDistance)
+						}
+						else if (AbsScrollByAmount == PrecedingDistance)
 						{
-							NewScrollOffset -= DoubleFractional( NewScrollOffset );
+							NewScrollOffset -= DoubleFractional(NewScrollOffset);
 							break;
 						}
 						else
 						{
-							NewScrollOffset = (int32)NewScrollOffset + ((PrecedingDistance - AbsScrollByAmount) / WidgetDimensions.ScrollAxis);
+							NewScrollOffset = (int32)NewScrollOffset + ((PrecedingDistance - AbsScrollByAmount) /
+								WidgetDimensions.ScrollAxis);
 							break;
 						}
 					}
@@ -2309,15 +2298,15 @@ protected:
 			}
 
 
-			return ScrollTo( (float)NewScrollOffset );
+			return ScrollTo((float)NewScrollOffset);
 		}
 
 		return 0;
 	}
 
 protected:
-
-	TOptional<ItemType> Private_FindNextSelectableOrNavigableWithIndexAndDirection(const ItemType& InItemToSelect, int32 SelectionIdx, bool bSelectForward)
+	TOptional<ItemType> Private_FindNextSelectableOrNavigableWithIndexAndDirection(const ItemType& InItemToSelect,
+		int32 SelectionIdx, bool bSelectForward)
 	{
 		ItemType ItemToSelect = InItemToSelect;
 
@@ -2360,7 +2349,8 @@ protected:
 					NullableItemType LastSelectedItem = *SelectedItems.CreateIterator();
 					if (TListTypeTraits<ItemType>::IsPtrValid(LastSelectedItem))
 					{
-						ItemType NonNullLastSelectedItem = TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(LastSelectedItem);
+						ItemType NonNullLastSelectedItem = TListTypeTraits<ItemType>::NullableItemTypeConvertToItemType(
+							LastSelectedItem);
 						const int32 LastSelectedItemIdx = ItemsSource->Find(NonNullLastSelectedItem);
 
 						bSelectNextItem = LastSelectedItemIdx < NewSelectionIdx;
@@ -2380,7 +2370,8 @@ protected:
 						// Failed to find a valid item to select
 						return TOptional<ItemType>();
 					}
-				} while (!OnIsSelectableOrNavigable.Execute(ItemToSelect));
+				}
+				while (!OnIsSelectableOrNavigable.Execute(ItemToSelect));
 			}
 		}
 
@@ -2411,7 +2402,8 @@ protected:
 			// Always request scroll into view, otherwise partially visible items will be selected - also do this before signaling selection for similar stomp-allowing reasons
 			Private_RequestNavigateToItem(ItemToSelect.GetValue(), InInputEvent.GetUserIndex());
 
-			if (CurrentSelectionMode == ESelectionMode::Multi && (InInputEvent.IsShiftDown() || InInputEvent.IsControlDown()))
+			if (CurrentSelectionMode == ESelectionMode::Multi && (InInputEvent.IsShiftDown() || InInputEvent.
+				IsControlDown()))
 			{
 				// Range select.
 				if (InInputEvent.IsShiftDown())
@@ -2534,7 +2526,7 @@ protected:
 
 	/** The initial value of MaxPinnedItems (used to restore it back if overriden) */
 	TAttribute<int32> DefaultMaxPinnedItems;
-	
+
 	/** If true, number of pinned items > MaxPinnedItems so some items are collapsed in the hierarchy */
 	bool bIsHierarchyCollapsed = false;
 
@@ -2542,8 +2534,8 @@ private:
 	struct FGenerationPassGuard
 	{
 		FWidgetGenerator& Generator;
-		FGenerationPassGuard( FWidgetGenerator& InGenerator )
-			: Generator(InGenerator)
+
+		FGenerationPassGuard(FWidgetGenerator& InGenerator) : Generator(InGenerator)
 		{
 			// Let the WidgetGenerator that we are starting a pass so that it can keep track of data items and widgets.
 			Generator.OnBeginGenerationPass();
@@ -2556,4 +2548,3 @@ private:
 		}
 	};
 };
-

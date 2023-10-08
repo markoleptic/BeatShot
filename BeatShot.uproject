@@ -1,139 +1,139 @@
 {
-	"FileVersion": 3,
-	"EngineAssociation": "{B9A36A20-4E86-EB0C-54B6-0CB5F5C1EA99}",
-	"Category": "",
-	"Description": "",
-	"Modules": [
-		{
-			"Name": "BeatShot",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		},
-		{
-			"Name": "UserInterface",
-			"Type": "Runtime",
-			"LoadingPhase": "PreDefault",
-			"AdditionalDependencies": [
-				"UMG"
-			]
-		},
-		{
-			"Name": "BeatShotGlobal",
-			"Type": "Runtime",
-			"LoadingPhase": "Default"
-		}
-	],
-	"Plugins": [
-		{
-			"Name": "ModelingToolsEditorMode",
-			"Enabled": true,
-			"TargetAllowList": [
-				"Editor"
-			]
-		},
-		{
-			"Name": "EnhancedInput",
-			"Enabled": true
-		},
-		{
-			"Name": "BeatShotAudioAnalyzer",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/c04ca3c256584bc1a7b94555e9ca0332"
-		},
-		{
-			"Name": "Text3D",
-			"Enabled": true
-		},
-		{
-			"Name": "CommonUI",
-			"Enabled": true
-		},
-		{
-			"Name": "EasyFileDialog",
-			"Enabled": true,
-			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/bcf64fe2e00c48189d8385a9c39b6e61"
-		},
-		{
-			"Name": "HDRIBackdrop",
-			"Enabled": true
-		},
-		{
-			"Name": "WebBrowserWidget",
-			"Enabled": true
-		},
-		{
-			"Name": "HttpLibrary",
-			"Enabled": true
-		},
-		{
-			"Name": "JsonLibrary",
-			"Enabled": true
-		},
-		{
-			"Name": "WebAuth",
-			"Enabled": true
-		},
-		{
-			"Name": "OnlineSubsystemSteam",
-			"Enabled": true
-		},
-		{
-			"Name": "DLSS",
-			"Enabled": true,
-			"MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/nvidia-dlss"
-		},
-		{
-			"Name": "NIS",
-			"Enabled": true,
-			"MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/nvidia-dlss"
-		},
-		{
-			"Name": "SteamFix",
-			"Enabled": false
-		},
-		{
-			"Name": "GameplayAbilities",
-			"Enabled": true
-		},
-		{
-			"Name": "AnimationLocomotionLibrary",
-			"Enabled": true
-		},
-		{
-			"Name": "AnimationWarping",
-			"Enabled": true
-		},
-		{
-			"Name": "GameplayInsights",
-			"Enabled": true
-		},
-		{
-			"Name": "StructUtils",
-			"Enabled": true
-		},
-		{
-			"Name": "ModularGameplay",
-			"Enabled": true
-		},
-		{
-			"Name": "CommonLoadingScreen",
-			"Enabled": true
-		},
-		{
-			"Name": "Streamline",
-			"Enabled": true
-		},
-		{
-			"Name": "Bridge",
-			"Enabled": true,
-			"SupportedTargetPlatforms": [
-				"Win64",
-				"Mac",
-				"Linux"
-			]
-		}
-	],
-	"TargetPlatforms": [
-		"Windows"
-	]
+  "FileVersion": 3,
+  "EngineAssociation": "{B9A36A20-4E86-EB0C-54B6-0CB5F5C1EA99}",
+  "Category": "",
+  "Description": "",
+  "Modules": [
+    {
+      "Name": "BeatShot",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    },
+    {
+      "Name": "UserInterface",
+      "Type": "Runtime",
+      "LoadingPhase": "PreDefault",
+      "AdditionalDependencies": [
+        "UMG"
+      ]
+    },
+    {
+      "Name": "BeatShotGlobal",
+      "Type": "Runtime",
+      "LoadingPhase": "Default"
+    }
+  ],
+  "Plugins": [
+    {
+      "Name": "ModelingToolsEditorMode",
+      "Enabled": true,
+      "TargetAllowList": [
+        "Editor"
+      ]
+    },
+    {
+      "Name": "EnhancedInput",
+      "Enabled": true
+    },
+    {
+      "Name": "BeatShotAudioAnalyzer",
+      "Enabled": true,
+      "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/c04ca3c256584bc1a7b94555e9ca0332"
+    },
+    {
+      "Name": "Text3D",
+      "Enabled": true
+    },
+    {
+      "Name": "CommonUI",
+      "Enabled": true
+    },
+    {
+      "Name": "EasyFileDialog",
+      "Enabled": true,
+      "MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/bcf64fe2e00c48189d8385a9c39b6e61"
+    },
+    {
+      "Name": "HDRIBackdrop",
+      "Enabled": true
+    },
+    {
+      "Name": "WebBrowserWidget",
+      "Enabled": true
+    },
+    {
+      "Name": "HttpLibrary",
+      "Enabled": true
+    },
+    {
+      "Name": "JsonLibrary",
+      "Enabled": true
+    },
+    {
+      "Name": "WebAuth",
+      "Enabled": true
+    },
+    {
+      "Name": "OnlineSubsystemSteam",
+      "Enabled": true
+    },
+    {
+      "Name": "DLSS",
+      "Enabled": true,
+      "MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/nvidia-dlss"
+    },
+    {
+      "Name": "NIS",
+      "Enabled": true,
+      "MarketplaceURL": "https://www.unrealengine.com/marketplace/en-US/product/nvidia-dlss"
+    },
+    {
+      "Name": "SteamFix",
+      "Enabled": false
+    },
+    {
+      "Name": "GameplayAbilities",
+      "Enabled": true
+    },
+    {
+      "Name": "AnimationLocomotionLibrary",
+      "Enabled": true
+    },
+    {
+      "Name": "AnimationWarping",
+      "Enabled": true
+    },
+    {
+      "Name": "GameplayInsights",
+      "Enabled": true
+    },
+    {
+      "Name": "StructUtils",
+      "Enabled": true
+    },
+    {
+      "Name": "ModularGameplay",
+      "Enabled": true
+    },
+    {
+      "Name": "CommonLoadingScreen",
+      "Enabled": true
+    },
+    {
+      "Name": "Streamline",
+      "Enabled": true
+    },
+    {
+      "Name": "Bridge",
+      "Enabled": true,
+      "SupportedTargetPlatforms": [
+        "Win64",
+        "Mac",
+        "Linux"
+      ]
+    }
+  ],
+  "TargetPlatforms": [
+    "Windows"
+  ]
 }

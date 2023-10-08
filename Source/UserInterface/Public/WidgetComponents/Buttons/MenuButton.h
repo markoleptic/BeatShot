@@ -16,7 +16,7 @@ class USERINTERFACE_API UMenuButton : public UBSButton
 
 public:
 	virtual UMenuButton* GetNext() const override { return Cast<UMenuButton>(Next); }
-	
+
 	/** Sets the vertical box to associate with this button */
 	void SetDefaults(UVerticalBox* BoxToShow, UMenuButton* NextButton);
 

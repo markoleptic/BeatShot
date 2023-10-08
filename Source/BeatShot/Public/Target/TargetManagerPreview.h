@@ -29,7 +29,8 @@ public:
 	float GetSimulation_TargetSpawnCD() const;
 
 	/** Sets the values of bSimulatePlayerDestroying and DestroyChance */
-	void SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets, const float InDestroyChance = 0.f);
+	void SetSimulatePlayerDestroyingTargets(const bool bInSimulatePlayerDestroyingTargets,
+		const float InDestroyChance = 0.f);
 
 	/** Broadcast when a target is spawned so that a TargetWidget can also be spawned */
 	FCreateTargetWidget CreateTargetWidget;
@@ -58,7 +59,7 @@ protected:
 	FText FloorDistanceExceededText = FText::FromString("Floor Distance (Clamped due to overflow)");
 
 	mutable bool bIsExceedingMaxFloorDistance = false;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TargetManagerPreview")
 	float MaxAllowedFloorDistance = 600.f;
 

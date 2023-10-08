@@ -15,7 +15,7 @@ class USERINTERFACE_API UTargetWidget : public UUserWidget
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
-	
+
 public:
 	/** Sets the desired size override of the TargetImage */
 	void SetTargetScale(const FVector& NewScale) const;
@@ -25,7 +25,7 @@ public:
 
 	/** Sets the OverlaySlot padding of the TargetImage */
 	void SetTargetPosition(const FVector2d& InPosition) const;
-	
+
 protected:
 	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
 	UImage* TargetImage;

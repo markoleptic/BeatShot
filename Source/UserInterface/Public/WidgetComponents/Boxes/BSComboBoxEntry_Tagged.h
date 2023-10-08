@@ -17,8 +17,9 @@ class USERINTERFACE_API UBSComboBoxEntry_Tagged : public UBSComboBoxEntry
 
 public:
 	/** Adds widgets to Box_TagWidgets */
-	void AddGameModeCategoryTagWidget(TArray<UGameModeCategoryTagWidget*>& InParentTagWidgets, TArray<UGameModeCategoryTagWidget*>& InTagWidgets,
-		const FMargin InMargin, const EVerticalAlignment InVAlign, const EHorizontalAlignment InHAlign);
+	void AddGameModeCategoryTagWidget(TArray<UGameModeCategoryTagWidget*>& InParentTagWidgets,
+		TArray<UGameModeCategoryTagWidget*>& InTagWidgets, const FMargin InMargin, const EVerticalAlignment InVAlign,
+		const EHorizontalAlignment InHAlign);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))

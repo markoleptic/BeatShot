@@ -32,20 +32,35 @@ public:
 	FOnRestartButtonClicked OnRestartButtonClicked;
 
 	/** Returns the UGameSettings widget's OnPlayerSettingsChangedDelegate_Game, which is broadcast when the widget changes Game Settings */
-	FOnPlayerSettingsChanged_Game& GetGameDelegate() const { return Game_Widget->GetPublicGameSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_Game& GetGameDelegate() const
+	{
+		return Game_Widget->GetPublicGameSettingsChangedDelegate();
+	}
 
 	/** Returns the UCrossHairSettings widget's OnPlayerSettingsChangedDelegate_Game, which is broadcast when the widget changes Game Settings */
-	FOnPlayerSettingsChanged_CrossHair& GetCrossHairDelegate() const { return CrossHair_Widget->GetPublicCrossHairSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_CrossHair& GetCrossHairDelegate() const
+	{
+		return CrossHair_Widget->GetPublicCrossHairSettingsChangedDelegate();
+	}
 
 	/** Returns the UVideoAndSoundSettings widget's OnPlayerSettingsChangedDelegate_Game, which is broadcast when the widget changes Game Settings */
-	FOnPlayerSettingsChanged_VideoAndSound& GetVideoAndSoundDelegate() const { return VideoAndSound_Widget->GetPublicVideoAndSoundSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_VideoAndSound& GetVideoAndSoundDelegate() const
+	{
+		return VideoAndSound_Widget->GetPublicVideoAndSoundSettingsChangedDelegate();
+	}
 
 	/** Returns the UAASettings widget's OnPlayerSettingsChangedDelegate_AudioAnalyzer, which is broadcast when the widget changes Audio Analyzer Settings */
-	FOnPlayerSettingsChanged_AudioAnalyzer& GetAudioAnalyzerDelegate() const { return AudioAnalyzer_Widget->GetPublicAudioAnalyzerSettingsChangedDelegate(); }
+	FOnPlayerSettingsChanged_AudioAnalyzer& GetAudioAnalyzerDelegate() const
+	{
+		return AudioAnalyzer_Widget->GetPublicAudioAnalyzerSettingsChangedDelegate();
+	}
 
 	/** Returns the UInputSettings widget's OnPlayerSettingsChangedDelegate_User, which is broadcast when the widget changes User Settings */
-	FOnPlayerSettingsChanged_User& GetUserDelegate() const { return Input_Widget->GetPublicUserSettingsChangedDelegate();}
-	
+	FOnPlayerSettingsChanged_User& GetUserDelegate() const
+	{
+		return Input_Widget->GetPublicUserSettingsChangedDelegate();
+	}
+
 protected:
 	virtual void NativeConstruct() override;
 

@@ -53,7 +53,7 @@ void UQuitMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		}
 		return;
 	}
-	
+
 	if (Button == Button_QuitMainMenu)
 	{
 		PlayFadeOutMenu();

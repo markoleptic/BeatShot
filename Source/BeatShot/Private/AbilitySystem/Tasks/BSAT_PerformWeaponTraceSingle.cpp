@@ -15,7 +15,7 @@ UBSAT_PerformWeaponTraceSingle::UBSAT_PerformWeaponTraceSingle()
 void UBSAT_PerformWeaponTraceSingle::Activate()
 {
 	Super::Activate();
-	
+
 	if (const UBSGameplayAbility* GameplayAbility = Cast<UBSGameplayAbility>(Ability))
 	{
 		FHitResult HitResult;
@@ -28,24 +28,30 @@ void UBSAT_PerformWeaponTraceSingle::Activate()
 	EndTask();
 }
 
-UBSAT_PerformWeaponTraceSingle* UBSAT_PerformWeaponTraceSingle::PerformWeaponTraceSingle(UBSGameplayAbility* OwningAbility, const FName TaskInstanceName, const float TraceDistance)
+UBSAT_PerformWeaponTraceSingle* UBSAT_PerformWeaponTraceSingle::PerformWeaponTraceSingle(
+	UBSGameplayAbility* OwningAbility, const FName TaskInstanceName, const float TraceDistance)
 {
-	UBSAT_PerformWeaponTraceSingle* MyObj = NewAbilityTask<UBSAT_PerformWeaponTraceSingle>(OwningAbility, TaskInstanceName);
+	UBSAT_PerformWeaponTraceSingle* MyObj = NewAbilityTask<UBSAT_PerformWeaponTraceSingle>(OwningAbility,
+		TaskInstanceName);
 	MyObj->TraceDistance = TraceDistance;
 	return MyObj;
 }
 
-void UBSAT_PerformWeaponTraceSingle::LineTraceSingle(const UBSRecoilComponent* RecoilComponent, FHitResult& HitResult) const
+void UBSAT_PerformWeaponTraceSingle::LineTraceSingle(const UBSRecoilComponent* RecoilComponent,
+	FHitResult& HitResult) const
 {
 	if (!RecoilComponent)
 	{
 		return;
 	}
-	
+
 	const FRotator CurrentRecoilRotation = RecoilComponent->GetCurrentRecoilRotation();
-	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(), CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
-	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw, RecoilComponent->GetUpVector());
+	const FVector RotatedVector1 = UKismetMathLibrary::RotateAngleAxis(RecoilComponent->GetForwardVector(),
+		CurrentRecoilRotation.Pitch, RecoilComponent->GetRightVector());
+	const FVector RotatedVector2 = UKismetMathLibrary::RotateAngleAxis(RotatedVector1, CurrentRecoilRotation.Yaw,
+		RecoilComponent->GetUpVector());
 	const FVector EndTrace = RecoilComponent->GetComponentLocation() + RotatedVector2 * TraceDistance;
-	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true /*IgnoreActor=*/ );
-	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace, BS_TraceChannel_Weapon, TraceParams);
+	const FCollisionQueryParams TraceParams(SCENE_QUERY_STAT(WeaponTrace), /*bTraceComplex=*/ true /*IgnoreActor=*/);
+	GetWorld()->LineTraceSingleByChannel(HitResult, RecoilComponent->GetComponentLocation(), EndTrace,
+		BS_TraceChannel_Weapon, TraceParams);
 }

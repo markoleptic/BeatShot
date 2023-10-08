@@ -21,7 +21,6 @@ class USERINTERFACE_API UFAQWidget : public UUserWidget
 	virtual void NativeConstruct() override;
 
 protected:
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_GameModes;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

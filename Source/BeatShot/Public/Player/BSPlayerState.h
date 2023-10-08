@@ -20,7 +20,7 @@ class BEATSHOT_API ABSPlayerState : public APlayerState, public IAbilitySystemIn
 
 public:
 	ABSPlayerState();
-	
+
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|PlayerState")

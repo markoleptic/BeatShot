@@ -23,12 +23,15 @@ class UBSAttributeSetBase;
 class ATarget;
 
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget, const uint8 InSpawnActivationDeactivation);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent)
+;
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget,
+	const uint8 InSpawnActivationDeactivation);
 
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
-class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface 
+class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
 
@@ -37,7 +40,7 @@ class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, publ
 protected:
 	UPROPERTY()
 	UBSAbilitySystemComponent* AbilitySystemComponent;
-	
+
 	UPROPERTY()
 	const UBSAttributeSetBase* AttributeSetBase;
 
@@ -46,7 +49,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UStaticMeshComponent* SphereMesh;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	UBSHealthComponent* HealthComponent;
 
@@ -70,7 +73,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Target Properties")
 	TSubclassOf<UGameplayEffect> GE_ResetHealth;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "Target Properties")
 	UCurveFloat* StartToPeakCurve;
 
@@ -85,11 +88,11 @@ protected:
 
 public:
 	ATarget();
-	
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void PostInitializeComponents() override;
-	
+
 public:
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -101,20 +104,20 @@ public:
 
 	/** Called by TargetManager if settings were changed that could affect the target */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
-	
+
 	/* ~Begin IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
-	
+
 	/** Applies the GE_TargetImmunity gameplay effect to the target */
 	void ApplyImmunityEffect();
 
 	/** Applies the GE_TargetImmunity gameplay effect to the target */
 	void RemoveImmunityEffect();
-	
+
 	/** Called when a gameplay effect is blocked because of immunity */
 	void OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, const FActiveGameplayEffect* Effect);
-	
+
 	/* ~Begin IGameplayTagAssetInterface */
 	virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override;
 	virtual bool HasMatchingGameplayTag(FGameplayTag TagToCheck) const override;
@@ -127,7 +130,7 @@ public:
 
 	/** Broadcast when the target needs a new direction because of a deactivation response */
 	FOnDeactivationResponse_ChangeDirection OnDeactivationResponse_ChangeDirection;
-	
+
 protected:
 	/** Called from HealthComponent when a target receives damage. Calls HandleDeactivation, HandleDestruction,
 	 *  and broadcasts OnTargetDamageEventOrTimeout before finally calling HandleDestruction*/
@@ -138,7 +141,7 @@ protected:
 	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
 	UFUNCTION()
 	virtual void OnTargetMaxLifeSpanExpired();
-	
+
 	/** Apply damage to self using a GE, for example when the DamageableWindow timer expires */
 	void DamageSelf();
 
@@ -155,16 +158,16 @@ protected:
 
 	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
 	virtual bool ShouldDeactivate(const bool bExpired, const float CurrentHealth) const;
-	
+
 	/** Performs any responses to the target being deactivated */
 	virtual void HandleDeactivationResponses(const bool bExpired);
-	
+
 	/** Finds if target should be destroyed, and calls Destroy if so */
 	virtual void HandleDestruction(const bool bExpired, const float CurrentHealth);
-	
+
 	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
 	bool ShouldDestroy(const bool bExpired, const float CurrentHealth) const;
-	
+
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
 	void PlayStartToPeakTimeline();
@@ -203,25 +206,29 @@ public:
 
 	/** Toggles between using the BaseColor or a separate OutlineColor in the Sphere Material */
 	virtual void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
-	
+
 	/** Set the color to BeatGrid color */
 	UFUNCTION()
 	virtual void SetTargetColorToInactiveColor();
-	
+
 	/** Sets the velocity of the ProjectileMovementComponent by multiplying the InitialSpeed and the new direction */
 	void SetTargetDirection(const FVector& NewDirection) const;
 
 	/** Finds the direction by dividing the velocity by the initial speed. Sets initial speed equal to NewMovingTargetSpeed and calls SetTargetDirection */
 	void SetTargetSpeed(const float NewMovingTargetSpeed) const;
-	
+
 	/** Changes the current scale of the target */
 	virtual void SetTargetScale(const FVector& NewScale) const;
 
 	/** Sets whether or not the last direction change was horizontally */
-	void SetLastDirectionChangeHorizontal(const bool bLastHorizontal) { bLastDirectionChangeHorizontal = bLastHorizontal; }
+	void SetLastDirectionChangeHorizontal(const bool bLastHorizontal)
+	{
+		bLastDirectionChangeHorizontal = bLastHorizontal;
+	}
 
 	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
-	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const;
+	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius,
+		const FLinearColor& InColorWhenDestroyed) const;
 
 	/** Returns the color the target be after SpawnBeatDelay seconds have passed */
 	UFUNCTION(BlueprintPure)
@@ -283,7 +290,7 @@ public:
 
 	/** Mainly used so BSAT_AimBot can access SpawnBeatDelay easily */
 	float GetSpawnBeatDelay() const;
-	
+
 	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
 	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
 

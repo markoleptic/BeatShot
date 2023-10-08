@@ -22,11 +22,11 @@ public:
 	void SetBoxBounds_Current(const FVector2d& InBounds, const float VerticalOffset);
 
 	void SetBoxBounds_Max(const FVector2d& InBounds, const float VerticalOffset);
-	
+
 	void SetBoxBounds_Min(const FVector2d& InBounds, const float VerticalOffset);
-	
+
 	void SetBoxBoundsVisibility_Max(const ESlateVisibility& InVisibility);
-	
+
 	void SetBoxBoundsVisibility_Min(const ESlateVisibility& InVisibility);
 
 	void SetStaticBoundsHeight(const float InHeight);
@@ -49,10 +49,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	USizeBox* StaticBounds;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	USizeBox* FloorDistance;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UTextBlock* TextBlock_FloorDistance;
 
@@ -65,10 +65,9 @@ public:
 	UBSButton* Button_Create;
 
 protected:
-	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UTargetWidget> TargetWidgetClass;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UOverlay* Overlay;
 

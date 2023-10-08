@@ -21,7 +21,8 @@ public:
 	virtual void InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& InAASettings) override;
 
 	/** Initializes a visualizer already in the level */
-	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers = INDEX_NONE) override;
+	virtual void InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings,
+		const int32 NumSpawnedVisualizers = INDEX_NONE) override;
 
 	/** Activates the matching visualizer from the given index if it isn't already */
 	virtual void UpdateVisualizer(const int32 Index, const float SpectrumAlpha) override;
@@ -36,7 +37,6 @@ public:
 	void OnBeamLightLifetimeCompleted(const int32 IndexToRemove);
 
 protected:
-
 	UPROPERTY()
 	UBeamVisualizerDefinition* BeamVisualizerDefinition;
 
@@ -46,11 +46,14 @@ protected:
 	/** Returns the Beam Visualizer Definition */
 	UBeamVisualizerDefinition& GetFastDef() const { return *BeamVisualizerDefinition; }
 
-	virtual UBeamVisualizerDefinition* GetVisualizerDefinition() const override { return Cast<UBeamVisualizerDefinition>(VisualizerDefinition); } 
+	virtual UBeamVisualizerDefinition* GetVisualizerDefinition() const override
+	{
+		return Cast<UBeamVisualizerDefinition>(VisualizerDefinition);
+	}
 
 	/** Returns the array of simple beam lights */
 	TArray<TObjectPtr<ASimpleBeamLight>>& GetSimpleBeamLights() { return BeamLights; }
-	
+
 	/** Array of beam light indices that are currently active (Niagara particles are active) */
 	TArray<int32> ActiveLightIndices;
 };

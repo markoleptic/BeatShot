@@ -36,7 +36,8 @@ ATarget::ATarget()
 
 	if (!ProjectileMovementComponent)
 	{
-		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
+		ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
+			TEXT("Projectile Movement Component"));
 		ProjectileMovementComponent->SetUpdatedComponent(CapsuleComponent);
 		ProjectileMovementComponent->InitialSpeed = 0.0f;
 		ProjectileMovementComponent->MaxSpeed = 0.0f;
@@ -59,7 +60,7 @@ ATarget::ATarget()
 		// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
 		AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	}
-	
+
 	// Create the attribute set, this replicates by default
 	// Adding it as a sub object of the owning actor of an AbilitySystemComponent
 	// automatically registers the AttributeSet with the AbilitySystemComponent
@@ -68,7 +69,7 @@ ATarget::ATarget()
 		AttributeSetBase = CreateDefaultSubobject<UBSAttributeSetBase>("Attribute Set Base");
 		AbilitySystemComponent->SetIsReplicated(true);
 	}
-	
+
 	InitialLifeSpan = 0.f;
 	Guid = FGuid::NewGuid();
 	TargetLocation_Spawn = FVector::ZeroVector;
@@ -87,7 +88,7 @@ ATarget::ATarget()
 void ATarget::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	/* Use Color Changing Material, this is required in order to change color using C++ */
 	TargetColorChangeMaterial = UMaterialInstanceDynamic::Create(SphereMesh->GetMaterial(0), this);
 	SphereMesh->SetMaterial(0, TargetColorChangeMaterial);
@@ -106,18 +107,18 @@ void ATarget::BeginPlay()
 
 	/* Set the playback rates based on TargetMaxLifeSpan */
 	StartToPeakTimelinePlayRate = 1 / Config.SpawnBeatDelay;
-	PeakToEndTimelinePlayRate = 1 / (Config.TargetMaxLifeSpan -  Config.SpawnBeatDelay);
+	PeakToEndTimelinePlayRate = 1 / (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay);
 	StartToPeakTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
 	PeakToEndTimeline.SetPlayRate(PeakToEndTimelinePlayRate);
 	ShrinkQuickAndGrowSlowTimeline.SetPlayRate(StartToPeakTimelinePlayRate);
 
 	SetTargetColor(Config.OnSpawnColor);
-	
+
 	if (Config.bUseSeparateOutlineColor)
 	{
 		SetUseSeparateOutlineColor(true);
 	}
-	
+
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ShrinkQuickGrowSlow))
 	{
 		/* Fade the target from ColorWhenDestroyed to BeatGridInactiveColor */
@@ -149,24 +150,26 @@ void ATarget::PostInitializeComponents()
 			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), Config.BasePlayerHitDamage);
 			ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), Config.BasePlayerTrackingDamage);
 		}
-		
+
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
 		HealthComponent->OnHealthChanged.AddUObject(this, &ATarget::OnHealthChanged);
 		ASC->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
-		
+
 		switch (Config.TargetDamageType)
 		{
 		case ETargetDamageType::None:
 		case ETargetDamageType::Hit:
-			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+			ActiveGE_TrackingImmunity = ASC->ApplyGameplayEffectToSelf(GE_TrackingImmunity.GetDefaultObject(), 1.f,
+				GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Tracking:
-			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(), 1.f, GetAbilitySystemComponent()->MakeEffectContext());
+			ActiveGE_HitImmunity = ASC->ApplyGameplayEffectToSelf(GE_HitImmunity.GetDefaultObject(), 1.f,
+				GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Combined:
 			break;
 		}
-		
+
 		if (Config.bApplyImmunityOnSpawn)
 		{
 			ApplyImmunityEffect();
@@ -175,7 +178,7 @@ void ATarget::PostInitializeComponents()
 
 	TargetScale_Spawn = GetActorScale();
 	TargetLocation_Spawn = GetActorLocation();
-	
+
 	if (Config.TargetActivationResponses.Contains(ETargetActivationResponse::ApplyLifetimeTargetScaling))
 	{
 		bApplyLifetimeTargetScaling = true;
@@ -194,9 +197,9 @@ void ATarget::PostInitializeComponents()
 		else
 		{
 			ProjectileMovementComponent->OnProjectileBounce.AddDynamic(this, &ATarget::OnProjectileBounce);
-			if (Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly ||
-				Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly ||
-				Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::AlternateHorizontalVertical)
+			if (Config.MovingTargetDirectionMode == EMovingTargetDirectionMode::HorizontalOnly || Config.
+				MovingTargetDirectionMode == EMovingTargetDirectionMode::VerticalOnly || Config.
+				MovingTargetDirectionMode == EMovingTargetDirectionMode::AlternateHorizontalVertical)
 			{
 				ProjectileMovementComponent->bConstrainToPlane = true;
 				ProjectileMovementComponent->SetPlaneConstraintNormal(FVector(1.f, 0.f, 0.f));
@@ -222,7 +225,7 @@ void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& 
 {
 	const FVector Normal = ProjectileMovementComponent->Velocity.GetSafeNormal();
 	FVector RoundedNormal = FVector::ZeroVector;
-	switch(Config.MovingTargetDirectionMode)
+	switch (Config.MovingTargetDirectionMode)
 	{
 	case EMovingTargetDirectionMode::None:
 		break;
@@ -274,8 +277,7 @@ void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& 
 			}
 		}
 		break;
-	case EMovingTargetDirectionMode::Any:
-	default:
+	case EMovingTargetDirectionMode::Any: default:
 		RoundedNormal = Normal;
 		break;
 	}
@@ -304,7 +306,8 @@ void ATarget::ApplyImmunityEffect()
 		return;
 	}
 
-	const FActiveGameplayEffectHandle Handle = Comp->ApplyGameplayEffectToSelf(GE_TargetImmunity.GetDefaultObject(), 1.f, Comp->MakeEffectContext());
+	const FActiveGameplayEffectHandle Handle = Comp->ApplyGameplayEffectToSelf(GE_TargetImmunity.GetDefaultObject(),
+		1.f, Comp->MakeEffectContext());
 	if (Handle.WasSuccessfullyApplied())
 	{
 		ActiveGE_TargetImmunity = Handle;
@@ -318,7 +321,7 @@ void ATarget::RemoveImmunityEffect()
 	{
 		return;
 	}
-	
+
 	Comp->RemoveActiveGameplayEffect(ActiveGE_TargetImmunity);
 	ActiveGE_TargetImmunity.Invalidate();
 }
@@ -368,7 +371,8 @@ void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, con
 	}
 	const float TimeAlive = ActorInstigator == this ? -1.f : GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
 	GetWorldTimerManager().ClearTimer(DamageableWindow);
-	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(), abs(OldValue - NewValue));
+	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(),
+		abs(OldValue - NewValue));
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
 	HandleDeactivation(ActorInstigator == this, NewValue);
 	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);
@@ -387,7 +391,8 @@ void ATarget::DamageSelf()
 	{
 		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
 		EffectContextHandle.Get()->AddInstigator(this, this);
-		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f, EffectContextHandle);
+		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f,
+			EffectContextHandle);
 		FGameplayEffectSpec* Spec = Handle.Data.Get();
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
@@ -449,7 +454,8 @@ bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) c
 	{
 		return true;
 	}
-	if (!bExpired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnAnyExternalDamageTaken))
+	if (!bExpired && Config.TargetDeactivationConditions.Contains(
+		ETargetDeactivationCondition::OnAnyExternalDamageTaken))
 	{
 		return true;
 	}
@@ -485,7 +491,7 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	{
 		SetTargetScale(GetTargetScale_Current() * Config.ConsecutiveChargeScaleMultiplier);
 	}
-	
+
 	// Position
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ResetPositionToSpawnedPosition))
 	{
@@ -500,8 +506,8 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 	{
 		SetTargetSpeed(FMath::FRandRange(Config.MinDeactivatedTargetSpeed, Config.MaxDeactivatedTargetSpeed));
-		if (!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) &&
-			Config.MovingTargetDirectionMode != EMovingTargetDirectionMode::None)
+		if (!Config.TargetActivationResponses.Contains(ETargetActivationResponse::ChangeDirection) && Config.
+			MovingTargetDirectionMode != EMovingTargetDirectionMode::None)
 		{
 			OnDeactivationResponse_ChangeDirection.Broadcast(this, 2);
 		}
@@ -523,7 +529,8 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	}
 	if (Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::PlayExplosionEffect) && !bExpired)
 	{
-		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetTargetScale_Current().X, ColorWhenDestroyed);
+		PlayExplosionEffect(SphereMesh->GetComponentLocation(), SphereTargetRadius * GetTargetScale_Current().X,
+			ColorWhenDestroyed);
 	}
 
 	// Hide target
@@ -545,7 +552,8 @@ void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
 	{
 		Destroy();
 	}
-	else if ((Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) || Config.MaxHealth <= 0.f) && CurrentHealth <= 0.f)
+	else if ((Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) || Config.MaxHealth
+		<= 0.f) && CurrentHealth <= 0.f)
 	{
 		ResetHealth();
 	}
@@ -569,7 +577,8 @@ bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) cons
 	{
 		return true;
 	}
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && CurrentHealth <= 0.f)
+	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && CurrentHealth
+		<= 0.f)
 	{
 		return true;
 	}
@@ -623,8 +632,9 @@ void ATarget::InterpStartToPeak(const float Alpha)
 	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.StartColor, Config.PeakColor, Alpha));
 	if (bApplyLifetimeTargetScaling)
 	{
-		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X, GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
-		                                                StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X,
+			GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
+			StartToPeakTimeline.GetPlaybackPosition() * Config.SpawnBeatDelay / Config.TargetMaxLifeSpan)));
 	}
 }
 
@@ -633,15 +643,18 @@ void ATarget::InterpPeakToEnd(const float Alpha)
 	SetTargetColor(UKismetMathLibrary::LinearColorLerp(Config.PeakColor, Config.EndColor, Alpha));
 	if (bApplyLifetimeTargetScaling)
 	{
-		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X, GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
-		                                                (PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
+		SetTargetScale(FVector(UKismetMathLibrary::Lerp(GetTargetScale_Deactivation().X,
+			GetTargetScale_Deactivation().X * Config.LifetimeTargetScaleMultiplier,
+			(PeakToEndTimeline.GetPlaybackPosition() * (Config.TargetMaxLifeSpan - Config.SpawnBeatDelay) + Config.
+				SpawnBeatDelay) / Config.TargetMaxLifeSpan)));
 	}
 }
 
 void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 {
 	SetTargetScale(FVector(UKismetMathLibrary::Lerp(MinShrinkTargetScale, GetTargetScale_Activation().X, Alpha)));
-	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, Config.InactiveTargetColor, ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
+	const FLinearColor Color = UKismetMathLibrary::LinearColorLerp(ColorWhenDestroyed, Config.InactiveTargetColor,
+		ShrinkQuickAndGrowSlowTimeline.GetPlaybackPosition());
 	SetTargetColor(Color);
 }
 
@@ -682,13 +695,14 @@ void ATarget::SetTargetDirection(const FVector& NewDirection) const
 }
 
 void ATarget::SetTargetSpeed(const float NewMovingTargetSpeed) const
- {
+{
 	if (ProjectileMovementComponent->IsActive())
 	{
 		FVector DirectionUnitVector;
-		if (ProjectileMovementComponent->Velocity.IsNearlyZero() || FMath::IsNearlyZero(ProjectileMovementComponent->InitialSpeed))
+		if (ProjectileMovementComponent->Velocity.IsNearlyZero() || FMath::IsNearlyZero(
+			ProjectileMovementComponent->InitialSpeed))
 		{
-			DirectionUnitVector = FVector::ZeroVector; 
+			DirectionUnitVector = FVector::ZeroVector;
 		}
 		else
 		{
@@ -705,11 +719,13 @@ void ATarget::SetTargetScale(const FVector& NewScale) const
 	CapsuleComponent->SetRelativeScale3D(NewScale.X < MaxValue_TargetScale ? NewScale : FVector(MaxValue_TargetScale));
 }
 
-void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius, const FLinearColor& InColorWhenDestroyed) const
+void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius,
+	const FLinearColor& InColorWhenDestroyed) const
 {
 	if (TargetExplosion && Config.TargetDamageType == ETargetDamageType::Hit)
 	{
-		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion, ExplosionLocation);
+		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion,
+			ExplosionLocation);
 		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
 	}
@@ -825,5 +841,3 @@ float ATarget::GetSpawnBeatDelay() const
 {
 	return Config.SpawnBeatDelay;
 }
-
-

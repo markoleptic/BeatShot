@@ -50,7 +50,7 @@ void UWebBrowserWidget::LoginUserToBeatShotWebsite(const FLoginPayload LoginPayl
 	{
 		return;
 	}
-	
+
 	IntendedDestinationURL = Segment_Profile + UserID;
 
 	// This happens second
@@ -59,7 +59,7 @@ void UWebBrowserWidget::LoginUserToBeatShotWebsite(const FLoginPayload LoginPayl
 		Browser->ExecuteJavascript(CheckPersistScript);
 		GetWorld()->GetTimerManager().SetTimer(ClickLoginDelay, ClickLoginDelegate, 0.1f, false);
 	});
-	
+
 	// This happens third
 	ClickLoginDelegate.BindLambda([this]
 	{
@@ -80,13 +80,15 @@ bool UWebBrowserWidget::ExecuteJS_LoginFormEntries(const FLoginPayload LoginPayl
 	Browser->ExecuteJavascript(InitialInputEventScript);
 	if (!LoginPayload.Username.IsEmpty())
 	{
-		Browser->ExecuteJavascript(SetElementUsernameScript + LoginPayload.Username + "');" + DispatchUsernameChangeEventScript);
+		Browser->ExecuteJavascript(
+			SetElementUsernameScript + LoginPayload.Username + "');" + DispatchUsernameChangeEventScript);
 	}
 	else
 	{
 		Browser->ExecuteJavascript(SetElementEmailScript + LoginPayload.Email + "');" + DispatchEmailChangeEventScript);
 	}
-	Browser->ExecuteJavascript(SetElementPasswordScript + LoginPayload.Password + "');" + DispatchPasswordChangeEventScript);
+	Browser->ExecuteJavascript(
+		SetElementPasswordScript + LoginPayload.Password + "');" + DispatchPasswordChangeEventScript);
 	return true;
 }
 

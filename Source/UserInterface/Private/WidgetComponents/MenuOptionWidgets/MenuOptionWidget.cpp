@@ -19,7 +19,7 @@
 void UMenuOptionWidget::NativePreConstruct()
 {
 	Super::NativePreConstruct();
-	
+
 	SetIndentLevel(IndentLevel);
 	SetShowTooltipImage(bShowTooltipImage);
 	SetShowCheckBoxLock(bShowCheckBoxLock);
@@ -53,7 +53,7 @@ void UMenuOptionWidget::SetStyling()
 	{
 		return;
 	}
-	
+
 	if (Box_Left)
 	{
 		UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot);
@@ -98,7 +98,7 @@ void UMenuOptionWidget::SetShowTooltipImage(const bool bShow)
 	{
 		return;
 	}
-	
+
 	if (bShow)
 	{
 		DescriptionTooltip->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -181,7 +181,8 @@ FUpdateTooltipState& UMenuOptionWidget::AddWarningTooltipData(const FTooltipData
 	return WarningTooltipData[Index].UpdateTooltipState;
 }
 
-FUpdateDynamicTooltipState& UMenuOptionWidget::AddDynamicWarningTooltipData(const FTooltipData& InTooltipData, const FString& FallbackStringTableKey, const float InMin, const int32 InPrecision)
+FUpdateDynamicTooltipState& UMenuOptionWidget::AddDynamicWarningTooltipData(const FTooltipData& InTooltipData,
+	const FString& FallbackStringTableKey, const float InMin, const int32 InPrecision)
 {
 	const int32 Index = WarningTooltipData.Add(InTooltipData);
 	WarningTooltipData[Index].SetDynamicData(InMin, FallbackStringTableKey, InPrecision);
@@ -196,15 +197,15 @@ void UMenuOptionWidget::ConstructTooltipWarningImageIfNeeded(FTooltipData& InToo
 	}
 
 	UTooltipImage* NewTooltipImage;
-	switch (InTooltipData.TooltipType) {
+	switch (InTooltipData.TooltipType)
+	{
 	case ETooltipImageType::Caution:
 		NewTooltipImage = CreateWidget<UTooltipImage>(this, MenuOptionStyle->TooltipCautionImageClass);
 		break;
 	case ETooltipImageType::Warning:
 		NewTooltipImage = CreateWidget<UTooltipImage>(this, MenuOptionStyle->TooltipWarningImageClass);
 		break;
-	case ETooltipImageType::Default:
-	default:
+	case ETooltipImageType::Default: default:
 		NewTooltipImage = CreateWidget<UTooltipImage>(this, MenuOptionStyle->TooltipWarningImageClass);
 		break;
 	}
@@ -212,7 +213,7 @@ void UMenuOptionWidget::ConstructTooltipWarningImageIfNeeded(FTooltipData& InToo
 	HorizontalBoxSlot->SetHorizontalAlignment(HAlign_Right);
 	HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_TooltipWarning);
 	HorizontalBoxSlot->SetSize(FSlateChildSize(ESlateSizeRule::Automatic));
-	
+
 	InTooltipData.TooltipImage = NewTooltipImage;
 }
 
@@ -254,7 +255,8 @@ int32 UMenuOptionWidget::GetNumberOfWarnings()
 	int32 Num = 0;
 	for (FTooltipData& Data : WarningTooltipData)
 	{
-		if (Data.TooltipType == ETooltipImageType::Warning && Data.TooltipImage.IsValid() && Data.TooltipImage->IsVisible())
+		if (Data.TooltipType == ETooltipImageType::Warning && Data.TooltipImage.IsValid() && Data.TooltipImage->
+			IsVisible())
 		{
 			Num++;
 		}
@@ -267,7 +269,8 @@ int32 UMenuOptionWidget::GetNumberOfCautions()
 	int32 Num = 0;
 	for (FTooltipData& Data : WarningTooltipData)
 	{
-		if (Data.TooltipType == ETooltipImageType::Caution && Data.TooltipImage.IsValid() && Data.TooltipImage->IsVisible())
+		if (Data.TooltipType == ETooltipImageType::Caution && Data.TooltipImage.IsValid() && Data.TooltipImage->
+			IsVisible())
 		{
 			Num++;
 		}
@@ -277,10 +280,11 @@ int32 UMenuOptionWidget::GetNumberOfCautions()
 
 void UMenuOptionWidget::AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTagWidget*>& InGameModeCategoryTagWidgets)
 {
-	InGameModeCategoryTagWidgets.Sort([&] (const UGameModeCategoryTagWidget& Widget, const UGameModeCategoryTagWidget& Widget2)
-	{
-		return Widget.GetGameModeCategoryText().ToString() < Widget2.GetGameModeCategoryText().ToString();
-	});
+	InGameModeCategoryTagWidgets.Sort(
+		[&](const UGameModeCategoryTagWidget& Widget, const UGameModeCategoryTagWidget& Widget2)
+		{
+			return Widget.GetGameModeCategoryText().ToString() < Widget2.GetGameModeCategoryText().ToString();
+		});
 	for (UGameModeCategoryTagWidget* Widget : InGameModeCategoryTagWidgets)
 	{
 		UHorizontalBoxSlot* BoxSlot = Box_TagWidgets->AddChildToHorizontalBox(Cast<UWidget>(Widget));

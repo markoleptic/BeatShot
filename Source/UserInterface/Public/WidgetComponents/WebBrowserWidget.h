@@ -25,7 +25,7 @@ protected:
 	/** The WebBrowser widget */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UWebBrowser* Browser;
-	
+
 	/** Load the steam authenticate URL to receive refresh token as cookie and get redirected to profile */
 	UFUNCTION()
 	void LoadAuthenticateSteamUserURL(const FString& AuthTicket);
@@ -45,7 +45,7 @@ protected:
 	/** Load Patch Notes for any user */
 	UFUNCTION()
 	void LoadPatchNotesURL() const;
-	
+
 	/** Executes a series of Javascript scripts to login a user */
 	UFUNCTION()
 	void LoginUserToBeatShotWebsite(const FLoginPayload LoginPayload, const FString UserID);
@@ -80,14 +80,15 @@ private:
 	/** The number of CheckNewURL function calls, or number of profile URL checks */
 	int32 URLCheckAttempts = 0;
 
-#pragma region SCRIPTS
+	#pragma region SCRIPTS
 
 	/* Sets up the nativeInputValueSetter so the browser recognizes the changes */
 	const FString InitialInputEventScript =
 		"var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set; var event = new Event('input', { bubbles: true});";
 
 	/* Javascript to check the persist checkbox */
-	const FString CheckPersistScript = "document.getElementById('persist').checked=true; document.getElementById('persist').click();";
+	const FString CheckPersistScript =
+		"document.getElementById('persist').checked=true; document.getElementById('persist').click();";
 
 	/* Javascript to click the login button */
 	const FString ClickLoginScript = "document.getElementById('login-button').click()";
@@ -110,5 +111,5 @@ private:
 	/* Dispatches the password so the browser recognizes the change */
 	const FString DispatchPasswordChangeEventScript = "password.dispatchEvent(event);";
 
-#pragma endregion
+	#pragma endregion
 };

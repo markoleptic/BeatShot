@@ -27,7 +27,7 @@ protected:
 
 	UPROPERTY()
 	const UMenuOptionStyle* MenuOptionStyle;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FLinearColor NotSelectedColor;
 
@@ -48,7 +48,7 @@ protected:
 
 	/** Whether or not to always hide the tooltip image */
 	mutable bool bAlwaysHideTooltipImage = false;
-	
+
 public:
 	/** Sets the main text of the entry */
 	void SetEntryText(const FText& InText) const;
@@ -65,7 +65,10 @@ public:
 	void SetTooltipImageVisibility(const bool bIsVisible) const;
 
 	/** Sets whether or not to always hide the tooltip image */
-	void SetAlwaysHideTooltipImage(const bool bShouldAlwaysHideTooltipImage) const { bAlwaysHideTooltipImage = bShouldAlwaysHideTooltipImage; }
+	void SetAlwaysHideTooltipImage(const bool bShouldAlwaysHideTooltipImage) const
+	{
+		bAlwaysHideTooltipImage = bShouldAlwaysHideTooltipImage;
+	}
 
 	/** Sets the Brush tint for the Border */
 	void SetBackgroundBrushTint(const FLinearColor& Color) const;

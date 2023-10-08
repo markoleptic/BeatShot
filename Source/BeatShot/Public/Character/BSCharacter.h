@@ -43,10 +43,11 @@ inline float SimpleSpline(const float Value)
 
 /** Base Character for this game */
 UCLASS()
-class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface, public IGameplayTagAssetInterface
+class BEATSHOT_API ABSCharacter : public ACharacter, public ISaveLoadInterface, public IAbilitySystemInterface,
+                                  public IGameplayTagAssetInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	ABSCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
@@ -94,29 +95,28 @@ protected:
 	/** Move step sounds by physical surface */
 	UPROPERTY(EditDefaultsOnly, meta = (AllowPrivateAccess = "true"), Category = "BeatShot|Sounds")
 	TMap<TEnumAsByte<EPhysicalSurface>, TSubclassOf<UBSMoveStepSound>> MoveStepSounds;
-	
+
 	TWeakObjectPtr<UBSAbilitySystemComponent> AbilitySystemComponent;
 	TWeakObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 	FBSAbilitySet_GrantedHandles AbilitySet_GrantedHandles;
 
 public:
-	
-#pragma region Getters
+	#pragma region Getters
 	/** Implement IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	ABSPlayerController* GetBSPlayerController() const;
-	
+
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	ABSPlayerState* GetBSPlayerState() const;
-	
+
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const;
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	UBSRecoilComponent* GetRecoilComponent() const;
-	
+
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	USkeletalMeshComponent* GetHandsMesh() const;
 
@@ -140,7 +140,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	float GetLastJumpTime() const { return LastJumpTime; }
-	
+
 	UFUNCTION(BlueprintPure, Category = "BeatShot|Character")
 	FORCEINLINE bool GetAutoBunnyHop() const { return bAutoBunnyHop; }
 
@@ -149,7 +149,7 @@ public:
 		return MoveStepSounds.Find(Surface);
 	}
 
-#pragma endregion
+	#pragma endregion
 
 public:
 	/** Implement IGameplayTagAssetInterface */
@@ -168,9 +168,8 @@ public:
 
 	UFUNCTION(Category = "BeatShot|Character", BlueprintCallable)
 	void SetAutoBunnyHop(bool Value) { bAutoBunnyHop = Value; }
-	
+
 protected:
-	
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void PawnClientRestart() override;
@@ -180,7 +179,8 @@ protected:
 	virtual void UnPossessed() override;
 	virtual void OnRep_PlayerState() override;
 	virtual void InitializePlayerInput(UInputComponent* PlayerInputComponent);
-	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser) override;
+	virtual void ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator,
+		AActor* DamageCauser) override;
 	virtual void ClearJumpInput(float DeltaTime) override;
 	virtual void Jump() override;
 	virtual void StopJumping() override;
@@ -191,7 +191,7 @@ protected:
 	virtual void OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual void OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust) override;
 	virtual bool CanCrouch() const override;
-	
+
 	/** Grant abilities on the Server. The Ability Specs will be replicated to the owning client. Called from inside PossessedBy(). */
 	virtual void AddCharacterAbilities();
 
@@ -204,7 +204,7 @@ protected:
 	/** Removes all equipment on the Server. Called from inside PossessedBy() */
 	virtual void RemoveCharacterInventoryItems();
 
-#pragma region Input
+	#pragma region Input
 
 public:
 	/** Executed when interact is pressed */
@@ -212,7 +212,7 @@ public:
 
 	/** Executed when shift interact is pressed */
 	FOnShiftInteractDelegate OnShiftInteractDelegate;
-	
+
 private:
 	/** Move the character left/right and forward/back */
 	void Input_Move(const FInputActionValue& Value);
@@ -266,7 +266,7 @@ private:
 	UFUNCTION(BlueprintCallable)
 	/** Let ASC know an ability bound to an input was released. */
 	void Input_AbilityInputTagReleased(FGameplayTag InputTag);
-	
+
 	/** Multiplier to controller pitch and yaw */
 	float Sensitivity;
 
@@ -278,7 +278,7 @@ private:
 	int32 BaseMappingPriority = 0;
 
 	const float SensitivityMultiplier = 14.2789148024750118991f;
-#pragma endregion
+	#pragma endregion
 
 protected:
 	/** Automatic bunny-hopping */

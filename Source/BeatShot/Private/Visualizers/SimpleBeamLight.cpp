@@ -71,7 +71,7 @@ void ASimpleBeamLight::Tick(float DeltaTime)
 void ASimpleBeamLight::InitSimpleBeamLight(const FSimpleBeamLightConfig& InConfig)
 {
 	SimpleBeamLightConfig = InConfig;
-	
+
 	if (SimpleBeamComponent)
 	{
 		if (SimpleBeamLightConfig.NiagaraSystem)
@@ -80,7 +80,7 @@ void ASimpleBeamLight::InitSimpleBeamLight(const FSimpleBeamLightConfig& InConfi
 		}
 		SimpleBeamComponent->InitializeSystem();
 		SimpleBeamLightConfig.NiagaraColorParameters.FindOrAdd("User.BeamColor") = SimpleBeamLightConfig.LightColor;
-		
+
 		for (TTuple<FString, float>& Elem : SimpleBeamLightConfig.NiagaraFloatParameters)
 		{
 			SimpleBeamComponent->SetFloatParameter(FName(Elem.Key), Elem.Value);
@@ -91,7 +91,7 @@ void ASimpleBeamLight::InitSimpleBeamLight(const FSimpleBeamLightConfig& InConfi
 		}
 		SimpleBeamComponent->OnSystemFinished.AddUniqueDynamic(this, &ASimpleBeamLight::OnNiagaraBeamFinished);
 	}
-	
+
 	Spotlight->SetIntensity(0.f);
 	BeamEndLight->SetIntensity(0.f);
 	Spotlight->SetLightColor(SimpleBeamLightConfig.LightColor);
@@ -129,7 +129,7 @@ void ASimpleBeamLight::ActivateLightComponents()
 	{
 		return;
 	}
-	
+
 	if (SimpleBeamComponent)
 	{
 		SimpleBeamComponent->Activate();
@@ -163,7 +163,7 @@ void ASimpleBeamLight::DeactivateLightComponents()
 	{
 		LightPositionTimeline.Stop();
 	}
-	
+
 	if (EmissiveLightBulb)
 	{
 		EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), 0.f);
@@ -179,7 +179,7 @@ void ASimpleBeamLight::DeactivateLightComponents()
 		SpotlightLimb->SetRelativeRotation(FRotator(0));
 		SpotlightHead->SetRelativeRotation(FRotator(0));
 	}
-	
+
 	if (SimpleBeamComponent)
 	{
 		SimpleBeamComponent->Deactivate();
@@ -205,26 +205,27 @@ void ASimpleBeamLight::OnNiagaraBeamFinished(UNiagaraComponent* NiagaraComponent
 void ASimpleBeamLight::LineTraceFromSpotlightHead(const FVector& EndLocation, FHitResult& OutHitResult) const
 {
 	GetWorld()->LineTraceSingleByChannel(OutHitResult, SpotlightHead->GetComponentLocation(),
-		EndLocation * FVector(999999999),
-		ECC_Camera,
-		FCollisionQueryParams::DefaultQueryParam);
+		EndLocation * FVector(999999999), ECC_Camera, FCollisionQueryParams::DefaultQueryParam);
 }
 
 void ASimpleBeamLight::UpdateBeamEndLightTransform(const FHitResult& HitResult) const
 {
 	BeamEndLight->SetWorldLocation(HitResult.Location + SpotlightHead->GetComponentRotation().Vector() * 5);
 	const FVector SpotlightHeadFV = SpotlightHead->GetForwardVector() * FVector(999999999);
-	BeamEndLight->SetWorldRotation((SpotlightHeadFV - HitResult.Normal.Dot(SpotlightHeadFV) * 2 * HitResult.Normal).Rotation());
+	BeamEndLight->SetWorldRotation(
+		(SpotlightHeadFV - HitResult.Normal.Dot(SpotlightHeadFV) * 2 * HitResult.Normal).Rotation());
 }
 
-void ASimpleBeamLight::UpdateSpotlightHeadAndLimbRotation(const FVector& HitLocation, const FVector& SpotlightHeadLocation) const
+void ASimpleBeamLight::UpdateSpotlightHeadAndLimbRotation(const FVector& HitLocation,
+	const FVector& SpotlightHeadLocation) const
 {
 	//SpotlightLimb->SetRelativeRotation(FRotator(0, 0, 0));
 	SpotlightHead->SetWorldRotation((HitLocation - SpotlightHeadLocation).Rotation());
 	//SpotlightHead->SetRelativeRotation((HitLocation - SpotlightHeadLocation).Rotation());
 }
 
-void ASimpleBeamLight::UpdateSpotlightIntensityAndAttRadius(const float InPlaybackPosition, const float HitResultDistance) const
+void ASimpleBeamLight::UpdateSpotlightIntensityAndAttRadius(const float InPlaybackPosition,
+	const float HitResultDistance) const
 {
 	Spotlight->SetAttenuationRadius(HitResultDistance + 2000);
 	Spotlight->SetIntensity(InPlaybackPosition * SimpleBeamLightConfig.MaxSpotlightIntensity);
@@ -232,7 +233,8 @@ void ASimpleBeamLight::UpdateSpotlightIntensityAndAttRadius(const float InPlayba
 
 void ASimpleBeamLight::UpdateEmissiveLightBulbIntensity(const float Intensity) const
 {
-	EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"), Intensity *  SimpleBeamLightConfig.MaxEmissiveLightBulbLightIntensity);
+	EmissiveLightBulb->SetScalarParameterValue(TEXT("Intensity"),
+		Intensity * SimpleBeamLightConfig.MaxEmissiveLightBulbLightIntensity);
 }
 
 void ASimpleBeamLight::UpdateBeamEndLightIntensity(const float InPlaybackPosition) const
@@ -250,7 +252,7 @@ void ASimpleBeamLight::LightMovementCurveCallback(const FVector& Position)
 {
 	FHitResult Hit;
 	float PlaybackPosition;
-	
+
 	if (LightPositionTimeline.IsReversing())
 	{
 		PlaybackPosition = LightPositionTimeline.GetPlaybackPosition();
@@ -259,11 +261,11 @@ void ASimpleBeamLight::LightMovementCurveCallback(const FVector& Position)
 	{
 		PlaybackPosition = 1 - LightPositionTimeline.GetPlaybackPosition();
 	}
-	
+
 	LineTraceFromSpotlightHead(Position, Hit);
 	LightPositionComponent->SetWorldLocation(Hit.Location);
 	UpdateSpotlightHeadAndLimbRotation(Hit.Location, SpotlightHead->GetComponentLocation());
-	
+
 	if (SimpleBeamLightConfig.bAutoCalculateBeamLength)
 	{
 		UpdateNiagaraBeamLength(Hit.Distance);

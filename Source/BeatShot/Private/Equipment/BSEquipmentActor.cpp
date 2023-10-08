@@ -43,4 +43,3 @@ void ABSEquipmentActor::RemoveGameplayTag(const FGameplayTag& Tag)
 {
 	GameplayTags.RemoveTag(Tag);
 }
-

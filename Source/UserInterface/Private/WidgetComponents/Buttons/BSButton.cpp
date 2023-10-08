@@ -2,6 +2,8 @@
 
 
 #include "WidgetComponents/Buttons/BSButton.h"
+
+#include "CommonTextBlock.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
@@ -14,6 +16,7 @@ void UBSButton::NativePreConstruct()
 	{
 		SetButtonText(ButtonText);
 		SetButtonFont(DefaultFontInfo);
+		SetWrapTextAt(WrapTextAt);
 	}
 	if (ImageMaterial)
 	{
@@ -31,6 +34,7 @@ void UBSButton::NativeConstruct()
 	{
 		SetButtonText(ButtonText);
 		SetButtonFont(DefaultFontInfo);
+		SetWrapTextAt(WrapTextAt);
 	}
 	if (ImageMaterial)
 	{
@@ -95,6 +99,12 @@ void UBSButton::SetButtonFont(const FSlateFontInfo& InSlateFontInfo)
 	}
 }
 
+void UBSButton::SetWrapTextAt(const int32 InWrapTextAt)
+{
+	WrapTextAt = InWrapTextAt;
+	TextBlock->SetWrapTextWidth(WrapTextAt);
+}
+
 void UBSButton::OnPressed_Button()
 {
 	bIsClicked = true;
@@ -102,9 +112,13 @@ void UBSButton::OnPressed_Button()
 	{
 		OnBSButtonPressed.Broadcast(this);
 	}
-	if (OnBSButtonButtonClicked_NoParams.IsBound())
+	if (OnBSButtonButtonPressed_NoParams.IsBound())
 	{
-		OnBSButtonButtonClicked_NoParams.Broadcast();
+		OnBSButtonButtonPressed_NoParams.Broadcast();
+	}
+	if (OnBSButtonButtonPressed_NonDynamic.IsBound())
+	{
+		OnBSButtonButtonPressed_NonDynamic.Broadcast();
 	}
 	PlayAnim_OnPressed();
 	UBSButton* Head = GetNext();

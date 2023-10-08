@@ -22,7 +22,9 @@ class ABSPlayerController;
 class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FUpdateScoresToHUD, const FPlayerScore& PlayerScore, const float TimeOffsetNormalized, const float TimeOffsetRaw);
+
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FUpdateScoresToHUD, const FPlayerScore& PlayerScore,
+	const float TimeOffsetNormalized, const float TimeOffsetRaw);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector& Position);
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
@@ -51,7 +53,7 @@ class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, pu
 	UPROPERTY()
 	TArray<ABSPlayerController*> Controllers;
 
-#pragma region Classes
+	#pragma region Classes
 
 protected:
 	/* The TargetManager class to spawn */
@@ -92,9 +94,9 @@ protected:
 public:
 	ATargetManager* GetTargetManager() const { return TargetManager.Get(); }
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region StartStopGameMode
+	#pragma region StartStopGameMode
 
 public:
 	/** Entry point into starting game. Spawn TargetManager, Visualizers 
@@ -130,9 +132,9 @@ private:
 	UFUNCTION()
 	void OnGameModeLengthTimerComplete();
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region AudioAnalyzer
+	#pragma region AudioAnalyzer
 
 public:
 	/** Called from Countdown widget when user clicks to start game mode. If player delay is > 0.05, the function
@@ -189,9 +191,9 @@ private:
 	TArray<int32> BpmCurrent;
 	TArray<int32> BpmTotal;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region PublicDelegates
+	#pragma region PublicDelegates
 
 public:
 	/** Delegate that is executed every second to update the progress into song on PlayerHUD.
@@ -204,7 +206,7 @@ public:
 
 	/** Broadcasts when the countdown has completed and the actual game has began. */
 	FOnGameModeStarted OnGameModeStarted;
-	
+
 	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
 	 *  It can also be called early inside this class if it does not make it to calling PostPlayerScores(). 
 	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
@@ -213,9 +215,9 @@ public:
 	/** Called if the streak threshold is passed and user has not unlocked night mode */
 	FOnStreakThresholdPassed OnStreakThresholdPassed;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region Scoring
+	#pragma region Scoring
 
 private:
 	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget */
@@ -241,7 +243,7 @@ private:
 
 	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
 	FOnAccessTokenResponse OnAccessTokenResponse;
-	
+
 	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
 	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Score")
 	FPlayerScore CurrentPlayerScore;
@@ -252,15 +254,17 @@ private:
 
 	float TimePlayedGameMode = 0.f;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region Settings
+	#pragma region Settings
 
 public:
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
+	virtual void
+	OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
 	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void
+	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 private:
 	/** Whether or not to run tick functions */
@@ -285,9 +289,9 @@ private:
 
 	const FActorSpawnParameters SpawnParameters;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region HUDUpdate
+	#pragma region HUDUpdate
 
 	/** Function bound to TargetManager's OnTargetDeactivated delegate, passes the time that the target was alive for */
 	UFUNCTION()
@@ -324,9 +328,9 @@ private:
 	UFUNCTION()
 	void OnSecondPassedCallback() const;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region Utility
+	#pragma region Utility
 
 	static float FloatDivide(const float Num, const float Denom);
 
@@ -338,9 +342,9 @@ private:
 
 	/** Returns the length of time away from a perfect shot, based on the time the target was alive for */
 	float GetAbsHitTimingError(const float InTimeAlive) const;
-	
+
 	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the time the target was alive for */
 	float GetNormalizedHitTimingError(const float InTimeAlive) const;
-	
-#pragma endregion
+
+	#pragma endregion
 };

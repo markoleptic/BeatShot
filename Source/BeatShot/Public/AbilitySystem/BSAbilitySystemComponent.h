@@ -23,7 +23,8 @@ public:
 	UFUNCTION(BlueprintPure)
 	virtual bool HasExactMatchingGameplayTag(const FGameplayTag& TagToCheck) const;
 
-	typedef TFunctionRef<bool(const UBSGameplayAbility* Ability, FGameplayAbilitySpecHandle Handle)> TShouldCancelAbilityFunc;
+	typedef TFunctionRef<bool(const UBSGameplayAbility* Ability, FGameplayAbilitySpecHandle Handle)>
+	TShouldCancelAbilityFunc;
 	void CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility);
 
 	void CancelInputActivatedAbilities(bool bReplicateCancelAbility);
@@ -37,10 +38,12 @@ public:
 	bool IsActivationGroupBlocked(EBSAbilityActivationGroup Group) const;
 	void AddAbilityToActivationGroup(EBSAbilityActivationGroup Group, UBSGameplayAbility* Ability);
 	void RemoveAbilityFromActivationGroup(EBSAbilityActivationGroup Group, UBSGameplayAbility* Ability);
-	void CancelActivationGroupAbilities(EBSAbilityActivationGroup Group, UBSGameplayAbility* IgnoreAbility, bool bReplicateCancelAbility);
+	void CancelActivationGroupAbilities(EBSAbilityActivationGroup Group, UBSGameplayAbility* IgnoreAbility,
+		bool bReplicateCancelAbility);
 
 	/** Gets the ability target data associated with the given ability handle and activation info */
-	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle, FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
+	void GetAbilityTargetData(const FGameplayAbilitySpecHandle AbilityHandle,
+		FGameplayAbilityActivationInfo ActivationInfo, FGameplayAbilityTargetDataHandle& OutTargetDataHandle);
 
 	/** Wrapper around GetActivatableGameplayAbilitySpecsByAllMatchingTags to shorten code */
 	TArray<FGameplayAbilitySpec*> GetAbilitySpecsFromGameplayTag(const FGameplayTag& InputTag) const;

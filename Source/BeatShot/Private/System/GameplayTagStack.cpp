@@ -48,7 +48,7 @@ void FGameplayTagStackContainer::RemoveStack(FGameplayTag Tag, int32 StackCount)
 		UE_LOG(LogTemp, Display, TEXT("Invalid tag trying to remove stack"));
 		return;
 	}
-	
+
 	if (StackCount > 0)
 	{
 		for (auto It = Stacks.CreateIterator(); It; ++It)
@@ -101,4 +101,3 @@ void FGameplayTagStackContainer::PostReplicatedChange(const TArrayView<int32> Ch
 		TagToCountMap[Stack.Tag] = Stack.StackCount;
 	}
 }
-

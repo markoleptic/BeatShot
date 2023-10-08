@@ -11,15 +11,13 @@ UCLASS()
 class BEATSHOT_API UBSAssetManager : public UAssetManager
 {
 	GENERATED_BODY()
-public:
 
+public:
 	UBSAssetManager();
 
 	// Returns the AssetManager singleton object.
 	static UBSAssetManager& Get();
 
 protected:
-
 	virtual void StartInitialLoading() override;
 };
-

@@ -37,7 +37,7 @@ public:
 	UQuitMenuWidget* QuitMenuWidget;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget* SettingsMenuWidget;
-	
+
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="PostGameMenuWidget")
 	TSubclassOf<UMenuStyle> MenuStyleClass;
@@ -45,12 +45,12 @@ protected:
 	TSubclassOf<UAudioSelectWidget> AudioSelectClass;
 	UPROPERTY()
 	TObjectPtr<UAudioSelectWidget> AudioSelectWidget;
-	
+
 	UPROPERTY()
 	const UMenuStyle* MenuStyle;
 
 	void SetStyles();
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
 
@@ -62,7 +62,7 @@ protected:
 	UVerticalBox* Box_Settings;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_FAQ;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UFAQWidget* FAQWidget;
 
@@ -78,18 +78,18 @@ protected:
 	UMenuButton* MenuButton_FAQ;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UMenuButton* MenuButton_Quit;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInWidget;
-	
+
 	UFUNCTION()
 	void PlayFadeInWidget() { PlayAnimationForward(FadeInWidget); }
-	
+
 	/** Delegate used to bind CollapseWidget to FadeOutBackgroundBlur */
 	FWidgetAnimationDynamicEvent FadeInWidgetDelegate;
 
 	void ShowAudioFormatSelect();
-	
+
 	UFUNCTION()
 	void SetScoresWidgetVisibility();
 	UFUNCTION()

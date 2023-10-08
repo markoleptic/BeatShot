@@ -21,7 +21,7 @@ public:
 
 	/** Returns the BSVerticalBox, the MainContainer for this widget */
 	UBSVerticalBox* GetMainContainer() const { return MainContainer; }
-	
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -41,13 +41,13 @@ protected:
 	/** Add another container separate from MainContainer that will also be called to update background colors,
 	 *	but will sync with MainContainers, or with each other */
 	void AddContainer(const TObjectPtr<UBSVerticalBox>& InContainer);
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* MainContainer;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category = "Setting Category Widget | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	
+
 	UPROPERTY()
 	UTooltipWidget* ActiveTooltipWidget;
 

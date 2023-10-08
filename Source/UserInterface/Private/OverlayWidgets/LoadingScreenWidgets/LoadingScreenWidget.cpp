@@ -20,7 +20,8 @@ void ULoadingScreenWidget::NativeTick(const FGeometry& MyGeometry, float InDelta
 	Super::NativeTick(MyGeometry, InDeltaTime);
 }
 
-void ULoadingScreenWidget::BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenShown, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
+void ULoadingScreenWidget::BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenShown,
+	FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
 {
 	OnReadyToHideLoadingScreen.AddUObject(this, &ULoadingScreenWidget::FadeOut);
 }
@@ -28,7 +29,7 @@ void ULoadingScreenWidget::BindToLoadingScreenDelegates(FOnLoadingScreenVisibili
 void ULoadingScreenWidget::FadeOut(float AnimPlaybackLength)
 {
 	bShowLoadingScreen = true;
-	
+
 	UE_LOG(LogTemp, Display, TEXT("Fading OUT LoadingScreenWidget"));
 
 	if (IsAnimationPlaying(FadeInAnim))

@@ -20,7 +20,9 @@ class BEATSHOT_API UBSInventoryItemFragment : public UObject
 
 public:
 	/** Called when a BSInventoryItem is created and added to a FBSInventoryList */
-	virtual void OnInstanceCreated(UBSInventoryItemInstance* Instance) const {}
+	virtual void OnInstanceCreated(UBSInventoryItemInstance* Instance) const
+	{
+	}
 };
 
 
@@ -43,9 +45,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category=Display)
 	FGameplayTagContainer ItemTags;
-	
+
 	const UBSInventoryItemFragment* FindFragmentByClass(TSubclassOf<UBSInventoryItemFragment> FragmentClass) const;
 
 	UFUNCTION(BlueprintCallable, meta=(DeterminesOutputType=FragmentClass))
-	static const UBSInventoryItemFragment* FindItemDefinitionFragment(TSubclassOf<UBSInventoryItemDefinition> ItemDef, TSubclassOf<UBSInventoryItemFragment> FragmentClass);
+	static const UBSInventoryItemFragment* FindItemDefinitionFragment(TSubclassOf<UBSInventoryItemDefinition> ItemDef,
+		TSubclassOf<UBSInventoryItemFragment> FragmentClass);
 };

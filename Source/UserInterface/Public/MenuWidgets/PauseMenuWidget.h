@@ -27,7 +27,7 @@ class USERINTERFACE_API UPauseMenuWidget : public UUserWidget
 public:
 	/** Delegate that gets bound to lambda function in DefaultPlayerController */
 	FResumeGame ResumeGame;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UQuitMenuWidget> QuitMenuWidget;
 
@@ -43,7 +43,7 @@ protected:
 
 	void SetStyles();
 
-#pragma region MenuWidgets
+	#pragma region MenuWidgets
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UVerticalBox* Box_PauseScreen;
@@ -77,11 +77,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInPauseMenu;
 
-#pragma	endregion
+	#pragma	endregion
 
 private:
 	UFUNCTION()
 	void FadeInWidget() { PlayAnimationForward(FadeInPauseMenu); }
+
 	UFUNCTION()
 	void SetQuitMenuButtonsInActive();
 	UFUNCTION()

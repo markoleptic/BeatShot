@@ -17,13 +17,13 @@ void USettingsMenuWidget::NativeConstruct()
 	MenuButton_AudioAnalyzer->SetDefaults(AudioAnalyzer, MenuButton_Input);
 	MenuButton_Input->SetDefaults(Input, MenuButton_CrossHair);
 	MenuButton_CrossHair->SetDefaults(CrossHair, MenuButton_Game);
-	
+
 	MenuButton_Game->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_VideoAndSound->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_AudioAnalyzer->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_Input->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_CrossHair->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	
+
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
 
 	MenuButton_Game->SetActive();

@@ -24,7 +24,8 @@ void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute
 	Super::PreAttributeChange(Attribute, NewValue);
 
 	// If a Max value changes, adjust current to keep Current % of Current to Max
-	if (Attribute == GetMaxHealthAttribute()) // GetMaxHealthAttribute comes from the Macros defined at the top of the header
+	if (Attribute == GetMaxHealthAttribute())
+	// GetMaxHealthAttribute comes from the Macros defined at the top of the header
 	{
 		AdjustAttributeForMaxChange(Health, MaxHealth, NewValue, GetHealthAttribute());
 	}
@@ -53,7 +54,7 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 
 	FGameplayTagContainer Container;
 	Data.EffectSpec.GetAllAssetTags(Container);
-	
+
 	if (Data.EvaluatedData.Attribute == GetTotalDamageAttribute())
 	{
 		// Convert into -Health and then clamp
@@ -67,19 +68,22 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 	else if (Data.EvaluatedData.Attribute == GetMaxHealthAttribute())
 	{
 		// Notify any requested max health changes
-		OnMaxHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, MaxHealthBeforeAttributeChange, GetMaxHealth());
+		OnMaxHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+			MaxHealthBeforeAttributeChange, GetMaxHealth());
 	}
-	
+
 	// If health has actually changed activate callbacks. Also check that it isn't resetting health, in which case we don't want the target to be notified
 
 	if (GetHealth() != HealthBeforeAttributeChange && !Container.HasTag(FBSGameplayTags().Get().Target_ResetHealth))
 	{
-		OnHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, HealthBeforeAttributeChange, GetHealth());
+		OnHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+			HealthBeforeAttributeChange, GetHealth());
 	}
 
 	if (GetHealth() <= 0.0f && !bOutOfHealth)
 	{
-		OnOutOfHealth.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude, HealthBeforeAttributeChange, GetHealth());
+		OnOutOfHealth.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
+			HealthBeforeAttributeChange, GetHealth());
 	}
 
 	// Check health again in case an event above changed it.
@@ -96,8 +100,8 @@ void UBSAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME_CONDITION_NOTIFY(UBSAttributeSetBase, TrackingDamage, COND_None, REPNOTIFY_OnChanged);
 }
 
-void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue,
-                                                      const FGameplayAttribute& AffectedAttributeProperty)
+void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute,
+	const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty)
 {
 	UAbilitySystemComponent* AbilityComp = GetOwningAbilitySystemComponent();
 	const float CurrentMaxValue = MaxAttribute.GetCurrentValue();
@@ -105,11 +109,13 @@ void UBSAttributeSetBase::AdjustAttributeForMaxChange(FGameplayAttributeData& Af
 	{
 		// Change current value to maintain the current Val / Max percent
 		const float CurrentValue = AffectedAttribute.GetCurrentValue();
-		float NewDelta = (CurrentMaxValue > 0.f) ? (CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue : NewMaxValue;
-		
+		float NewDelta = (CurrentMaxValue > 0.f)
+			? (CurrentValue * NewMaxValue / CurrentMaxValue) - CurrentValue
+			: NewMaxValue;
+
 		// Clamp the max to be less than Max - Current since it gets added
 		NewDelta = FMath::Clamp(NewDelta, 0.f, 10000000 - CurrentValue);
-		
+
 		AbilityComp->ApplyModToAttribute(AffectedAttributeProperty, EGameplayModOp::Additive, NewDelta);
 	}
 }

@@ -12,5 +12,4 @@ void UCheckBoxOptionWidget::NativeConstruct()
 
 void UCheckBoxOptionWidget::OnCheckStateChanged_CheckBox(const bool bChecked)
 {
-	
 }

@@ -17,12 +17,16 @@ void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 Channe
 {
 	EditableTextBox->SetText(FText::AsNumber(Value));
 	Slider->SetValue(Value);
-	const TArray ChannelNumber = {FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"), FText::FromString(FString::FromInt(ChannelIndex + 1))};
+	const TArray ChannelNumber = {
+		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"),
+		FText::FromString(FString::FromInt(ChannelIndex + 1))
+	};
 	TextBlock_Description->SetText(FText::Join(FText::FromString(" "), ChannelNumber));
 	Index = ChannelIndex;
 }
 
-void UBandThresholdWidget::OnSliderTextBoxValueChanged_Threshold(USliderTextBoxOptionWidget* SliderTextBoxOptionWidget, const float Value)
+void UBandThresholdWidget::OnSliderTextBoxValueChanged_Threshold(USliderTextBoxOptionWidget* SliderTextBoxOptionWidget,
+	const float Value)
 {
 	if (!OnThresholdValueCommitted.ExecuteIfBound(this, Index, Value))
 	{

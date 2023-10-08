@@ -26,7 +26,7 @@ struct FMenuOptionTooltipHandle
 	/** Weak pointer to the widget this data is for */
 	UPROPERTY()
 	TWeakObjectPtr<UMenuOptionWidget> Widget;
-	
+
 	/** The text to display on the TooltipImage */
 	TArray<FTooltipData>* TooltipData;
 
@@ -47,6 +47,7 @@ UCLASS(Abstract)
 class USERINTERFACE_API UCustomGameModesWidgetComponent : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -103,19 +104,19 @@ protected:
 
 	/** Height of spawn area, which is StaticVerticalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
 	float GetVerticalSpread() const;
-	
+
 	float GetMinRequiredHorizontalSpread() const;
 	float GetMinRequiredVerticalSpread() const;
-	
+
 	/** MaxSpawnedTargetScale * SphereTargetDiameter */
 	float GetMaxTargetDiameter() const;
-	
+
 	int32 GetMaxAllowedNumHorizontalTargets() const;
 	int32 GetMaxAllowedNumVerticalTargets() const;
 	float GetMaxAllowedHorizontalSpacing() const;
 	float GetMaxAllowedVerticalSpacing() const;
 	float GetMaxAllowedTargetScale() const;
-	
+
 	/** Pointer to the game mode config inside GameModesWidget */
 	FBSConfig* BSConfig;
 
@@ -128,22 +129,22 @@ protected:
 
 	/** Struct containing info about NumWarning & NumCaution tooltips */
 	FCustomGameModeCategoryInfo CustomGameModeCategoryInfo;
-	
+
 	UPROPERTY()
 	TArray<TObjectPtr<UMenuOptionWidget>> MenuOptionWidgets;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
 	TObjectPtr<UEnumTagMap> EnumTagMap;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
 	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>> GameplayTagWidgetMap;
 
-	
+
 	/** Returns the string display name of the enum, or empty string if not found */
-	template<typename T>
+	template <typename T>
 	FString GetStringFromEnum_FromTagMap(const T& InEnum);
 
-	template<typename T>
+	template <typename T>
 	TArray<FString> GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray);
 };
 
@@ -164,7 +165,6 @@ FString UCustomGameModesWidgetComponent::GetStringFromEnum_FromTagMap(const T& I
 template <typename T>
 TArray<FString> UCustomGameModesWidgetComponent::GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray)
 {
-
 	TArray<FString> OutArray;
 	for (const T& InEnum : InEnumArray)
 	{
@@ -172,4 +172,3 @@ TArray<FString> UCustomGameModesWidgetComponent::GetStringArrayFromEnumArray_Fro
 	}
 	return OutArray;
 }
-

@@ -201,3 +201,6 @@ DynamicBoundsScaling_DecrementAmount,"Instead of resetting consecutively hit tar
 DynamicTargetScaling_StartThreshold,The number of consecutively destroyed targets required to begin decreasing the Max Target Scale to the Min Target Scale.
 DynamicTargetScaling_EndThreshold,The number of consecutively destroyed targets required to reach the Min Target Scale.
 DynamicTargetScaling_DecrementAmount,"Instead of resetting consecutively hit targets to zero each time a target is missed, this value is subtracted from it."
+ReinforcementLearningHyperParameterMode_Custom,Tune the hyper-parameters of the reinforcment learning agent yourself.
+ReinforcementLearningHyperParameterMode_Auto,The game will automatically adjust the hyper-parameters of the reinforcment learning agent as data is gathered.
+Video_ResolutionScale,Requires Fullscreen and DLSS & NIS must be off. You might need to restart your game for the changes to apply.

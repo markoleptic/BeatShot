@@ -14,7 +14,7 @@ class USERINTERFACE_API UEditableTextBoxOptionWidget : public UMenuOptionWidget
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* EditableTextBox;
-	
+
 protected:
 	virtual void SetStyling() override;
 };

@@ -19,7 +19,8 @@ void UBSHealthComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
-void UBSHealthComponent::OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue)
+void UBSHealthComponent::OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser,
+	const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue)
 {
 	OnHealthChanged.Broadcast(EffectInstigator, OldValue, NewValue);
 }
@@ -36,21 +37,29 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 
 	if (AbilitySystemComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BSHealthComponent: Health component for owner [%s] has already been initialized with an ability system."), *GetNameSafe(Owner));
+		UE_LOG(LogTemp, Error,
+			TEXT(
+				"BSHealthComponent: Health component for owner [%s] has already been initialized with an ability system."
+			), *GetNameSafe(Owner));
 		return;
 	}
 
 	AbilitySystemComponent = InASC;
 	if (!AbilitySystemComponent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BSHealthComponent: Cannot initialize health component for owner [%s] with NULL ability system."), *GetNameSafe(Owner));
+		UE_LOG(LogTemp, Error,
+			TEXT("BSHealthComponent: Cannot initialize health component for owner [%s] with NULL ability system."),
+			*GetNameSafe(Owner));
 		return;
 	}
 
 	AttributeSetBase = AbilitySystemComponent->GetSet<UBSAttributeSetBase>();
 	if (!AttributeSetBase)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BSHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."), *GetNameSafe(Owner));
+		UE_LOG(LogTemp, Error,
+			TEXT(
+				"BSHealthComponent: Cannot initialize health component for owner [%s] with NULL health set on the ability system."
+			), *GetNameSafe(Owner));
 		return;
 	}
 	AttributeSetBase->OnHealthChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);

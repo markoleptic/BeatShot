@@ -193,24 +193,36 @@ void ISaveLoadInterface::SaveCustomGameMode(const FBSConfig& ConfigToSave)
 
 int32 ISaveLoadInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove)
 {
+	int32 NumCustomGameModesRemoved = 0;
 	if (USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
 	{
-		const int32 NumRemoved = SaveGameCustomGameMode->RemoveCustomGameMode(ConfigToRemove);
+		NumCustomGameModesRemoved = SaveGameCustomGameMode->RemoveCustomGameMode(ConfigToRemove);
 		SaveToSlot(SaveGameCustomGameMode);
-		return NumRemoved;
 	}
-	return 0;
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveCommonScoreInfo(ConfigToRemove.DefiningConfig);
+		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."), NumCommonScoreInfosRemoved);
+		SaveToSlot(SaveGamePlayerScore);
+	}
+	return NumCustomGameModesRemoved;
 }
 
 int32 ISaveLoadInterface::RemoveAllCustomGameModes()
 {
+	int32 NumCustomGameModesRemoved = 0;
 	if (USaveGameCustomGameMode* SaveGameCustomGameMode = LoadFromSlot_SaveGameCustomGameMode())
 	{
-		const int32 NumRemoved = SaveGameCustomGameMode->RemoveAll();
+		NumCustomGameModesRemoved = SaveGameCustomGameMode->RemoveAll();
 		SaveToSlot(SaveGameCustomGameMode);
-		return NumRemoved;
 	}
-	return 0;
+	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
+	{
+		const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveAllCustomGameModeCommonScoreInfo();
+		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing all custom game modes."), NumCommonScoreInfosRemoved);
+		SaveToSlot(SaveGamePlayerScore);
+	}
+	return NumCustomGameModesRemoved;
 }
 
 bool ISaveLoadInterface::IsCustomGameMode(const FString& GameModeName)
@@ -233,7 +245,9 @@ bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGame
 	{
 		return false;
 	}
-	if (CustomMode.AIConfig == InConfig.AIConfig && CustomMode.GridConfig == InConfig.GridConfig && CustomMode.TargetConfig == InConfig.TargetConfig)
+	if (CustomMode.AIConfig == InConfig.AIConfig && CustomMode.GridConfig == InConfig.GridConfig && CustomMode.
+		TargetConfig == InConfig.TargetConfig && CustomMode.DynamicTargetScaling == InConfig.DynamicTargetScaling &&
+		CustomMode.DynamicSpawnAreaScaling == InConfig.DynamicSpawnAreaScaling)
 	{
 		return true;
 	}
@@ -251,7 +265,8 @@ FBSConfig ISaveLoadInterface::ImportCustomGameMode(const FString& InImportString
 
 	UScriptStruct* Struct = FBSConfig::StaticStruct();
 	const FString StringCopy = FString(InImportString);
-	const TCHAR* Result = Struct->ImportText(*StringCopy, &OutConfig, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
+	const TCHAR* Result = Struct->ImportText(*StringCopy, &OutConfig, nullptr,
+		(PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
 	if (!Result)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to import custom game mode"));
@@ -263,7 +278,8 @@ FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InGameMode)
 {
 	UScriptStruct* Struct = FBSConfig::StaticStruct();
 	FString Output = TEXT("");
-	Struct->ExportText(Output, &InGameMode, nullptr, nullptr, (PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr);
+	Struct->ExportText(Output, &InGameMode, nullptr, nullptr,
+		(PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr);
 	return Output;
 }
 
@@ -271,7 +287,8 @@ FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InGameMode)
 /* ---- Preset Game Modes ---- */
 /* --------------------------- */
 
-FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName,
+	const EGameModeDifficulty& Difficulty) const
 {
 	EBaseGameMode BaseGameMode = EBaseGameMode::None;
 
@@ -297,7 +314,8 @@ FBSConfig ISaveLoadInterface::FindPresetGameMode(const FString& GameModeName, co
 	return FBSConfig();
 }
 
-FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const
+FBSConfig ISaveLoadInterface::FindPresetGameMode(const EBaseGameMode& BaseGameMode,
+	const EGameModeDifficulty& Difficulty) const
 {
 	if (BaseGameMode != EBaseGameMode::None)
 	{
@@ -399,7 +417,8 @@ FCommonScoreInfo ISaveLoadInterface::FindCommonScoreInfo(const FBS_DefiningConfi
 	return FCommonScoreInfo();
 }
 
-void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave)
+void ISaveLoadInterface::SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig,
+	const FCommonScoreInfo& CommonScoreInfoToSave)
 {
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{

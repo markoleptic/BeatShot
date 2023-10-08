@@ -21,8 +21,8 @@ enum class EAudioFormat : uint8
 	None UMETA(DisplayName="None"),
 	File UMETA(DisplayName="File"),
 	Capture UMETA(DisplayName="Capture"),
-	Loopback UMETA(DisplayName="Loopback")
-};
+	Loopback UMETA(DisplayName="Loopback")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
 
@@ -32,8 +32,8 @@ enum class EGameModeType : uint8
 {
 	None UMETA(DisplayName="None"),
 	Preset UMETA(DisplayName="Preset"),
-	Custom UMETA(DisplayName="Custom")
-};
+	Custom UMETA(DisplayName="Custom")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeType, EGameModeType::Preset, EGameModeType::Custom);
 
 
@@ -49,6 +49,7 @@ enum class EBaseGameMode : uint8
 	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
 	ClusterBeat UMETA(DisplayName="ClusterBeat"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::ClusterBeat);
 
 
@@ -59,8 +60,8 @@ enum class EGameModeDifficulty : uint8
 	None UMETA(DisplayName="None"),
 	Normal UMETA(DisplayName="Normal"),
 	Hard UMETA(DisplayName="Hard"),
-	Death UMETA(DisplayName="Death")
-};
+	Death UMETA(DisplayName="Death")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
 
@@ -74,8 +75,13 @@ enum class EBoundsScalingPolicy : uint8
 	/** The bounding box bounds size will gradually increase from half the Box Bounds up to the full size of BoxBounds, based on consecutive targets hit */
 	Dynamic UMETA(DisplayName="Dynamic"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBoundsScalingPolicy, EBoundsScalingPolicy::Static, EBoundsScalingPolicy::Dynamic);
-inline bool IsDynamicBoundsScalingPolicy(const EBoundsScalingPolicy SpreadType) { return SpreadType == EBoundsScalingPolicy::Dynamic; }
+
+inline bool IsDynamicBoundsScalingPolicy(const EBoundsScalingPolicy SpreadType)
+{
+	return SpreadType == EBoundsScalingPolicy::Dynamic;
+}
 
 
 /** Where to spawn/activate targets in the bounding box bounds (spawn area) */
@@ -92,7 +98,9 @@ enum class ETargetDistributionPolicy : uint8
 	/** Spawns targets in an evenly-spaced grid. Able to fit more targets */
 	Grid UMETA(DisplayName="Grid"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly, ETargetDistributionPolicy::Grid);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly,
+	ETargetDistributionPolicy::Grid);
 
 
 /** Which direction to move a target in */
@@ -111,7 +119,9 @@ enum class EMovingTargetDirectionMode : uint8
 	/** Only move targets forward */
 	ForwardOnly UMETA(DisplayName="Forward Only"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None, EMovingTargetDirectionMode::ForwardOnly);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None,
+	EMovingTargetDirectionMode::ForwardOnly);
 
 
 /** How to handle changing the target scale between consecutively activated targets */
@@ -124,9 +134,10 @@ enum class EConsecutiveTargetScalePolicy : uint8
 	/** The starting scale/size of the target will be chosen randomly between min and max target scale */
 	Random UMETA(DisplayName="Random"),
 	/** The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit */
-	SkillBased UMETA(DisplayName="Skill-Based")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static, EConsecutiveTargetScalePolicy::SkillBased);
+	SkillBased UMETA(DisplayName="Skill-Based")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static,
+	EConsecutiveTargetScalePolicy::SkillBased);
 
 
 /** How the player damages the target and receives score */
@@ -141,6 +152,7 @@ enum class ETargetDamageType : uint8
 	/** Having the CrossHair over the target and hitting the target both damage the target and award score */
 	Combined UMETA(DisplayName="Combined"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDamageType, ETargetDamageType::Tracking, ETargetDamageType::Hit);
 
 
@@ -154,7 +166,9 @@ enum class ETargetSpawningPolicy : uint8
 	/** Spawn targets when the TargetManager receives the signal from AudioAnalyzer */
 	RuntimeOnly UMETA(DisplayName="Runtime Only"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly, ETargetSpawningPolicy::RuntimeOnly);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly,
+	ETargetSpawningPolicy::RuntimeOnly);
 
 
 /** How to choose the target(s) to activate */
@@ -167,7 +181,9 @@ enum class ETargetActivationSelectionPolicy : uint8
 	/** Randomly chooses a target within the available spawn points */
 	Random UMETA(DisplayName="Random"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering, ETargetActivationSelectionPolicy::Random);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering,
+	ETargetActivationSelectionPolicy::Random);
 
 
 /** Specifies the method to remove targets from recent memory, allowing targets to spawn in that location again */
@@ -183,7 +199,9 @@ enum class ERecentTargetMemoryPolicy : uint8
 	/** Removes recent targets only when the number of recent targets exceeds specified capacity */
 	NumTargetsBased UMETA(DisplayName="Num Targets Based"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None, ERecentTargetMemoryPolicy::NumTargetsBased);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None,
+	ERecentTargetMemoryPolicy::NumTargetsBased);
 
 
 /** Each represents one way that a target can be deactivated */
@@ -200,7 +218,9 @@ enum class ETargetDeactivationCondition : uint8
 	/** DEPRECATED */
 	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant, ETargetDeactivationCondition::OnExpiration);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant,
+	ETargetDeactivationCondition::OnExpiration);
 
 
 /** Each represents one way that a target can be destroyed */
@@ -217,9 +237,10 @@ enum class ETargetDestructionCondition : uint8
 	/** Target is destroyed when its health reaches zero */
 	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
 	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
-	OnDeactivation UMETA(DisplayName="On Deactivation")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant, ETargetDestructionCondition::OnDeactivation);
+	OnDeactivation UMETA(DisplayName="On Deactivation")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant,
+	ETargetDestructionCondition::OnDeactivation);
 
 
 /** What does the target do when its activated: change directions, make damageable, etc */
@@ -244,7 +265,9 @@ enum class ETargetActivationResponse : uint8
 	/** Lifetime Target Scaling is applied throughout the target's lifetime */
 	ApplyLifetimeTargetScaling UMETA(DisplayName="Apply Lifetime Target Scaling"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity, ETargetActivationResponse::ApplyLifetimeTargetScaling);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity,
+	ETargetActivationResponse::ApplyLifetimeTargetScaling);
 
 
 /** What does the target do when its deactivated */
@@ -283,7 +306,9 @@ enum class ETargetDeactivationResponse : uint8
 	/** Reset the position of the target to the position it was activated with */
 	ResetPositionToActivatedPosition UMETA(DisplayName="Reset Position To Activated Position"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity, ETargetDeactivationResponse::ResetPositionToActivatedPosition);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity,
+	ETargetDeactivationResponse::ResetPositionToActivatedPosition);
 
 /** Defines in which directions the box bounds will grow */
 UENUM(BlueprintType)
@@ -295,9 +320,10 @@ enum class EDynamicBoundsScalingPolicy : uint8
 	/** Allow the bounds to grow vertically */
 	Vertical UMETA(DisplayName="Vertical"),
 	/** Allow the bounds to grow forward  */
-	Forward UMETA(DisplayName="Forward")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EDynamicBoundsScalingPolicy, EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Forward);
+	Forward UMETA(DisplayName="Forward")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EDynamicBoundsScalingPolicy, EDynamicBoundsScalingPolicy::Horizontal,
+	EDynamicBoundsScalingPolicy::Forward);
 
 /** Enum representing the modes in which the Reinforcement Learning Component operates */
 UENUM(BlueprintType)
@@ -306,9 +332,10 @@ enum class EReinforcementLearningMode : uint8
 	None UMETA(DisplayName="None"),
 	Training UMETA(DisplayName="Training"),
 	Exploration UMETA(DisplayName="Exploration"),
-	ActiveAgent UMETA(DisplayName="ActiveAgent")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningMode, EReinforcementLearningMode::None, EReinforcementLearningMode::ActiveAgent);
+	ActiveAgent UMETA(DisplayName="ActiveAgent")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningMode, EReinforcementLearningMode::None,
+	EReinforcementLearningMode::ActiveAgent);
 
 /** Enum representing auto or custom hyper-parameters */
 UENUM(BlueprintType)
@@ -316,9 +343,10 @@ enum class EReinforcementLearningHyperParameterMode: uint8
 {
 	None UMETA(DisplayName="None"),
 	Auto UMETA(DisplayName="Auto"),
-	Custom UMETA(DisplayName="Custom")
-};
-ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode, EReinforcementLearningHyperParameterMode::Auto, EReinforcementLearningHyperParameterMode::Custom);
+	Custom UMETA(DisplayName="Custom")};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode, EReinforcementLearningHyperParameterMode::Auto,
+	EReinforcementLearningHyperParameterMode::Custom);
 
 
 /* --------------------- */
@@ -357,7 +385,8 @@ struct FBS_DefiningConfig
 		Difficulty = EGameModeDifficulty::None;
 	}
 
-	FBS_DefiningConfig(const EGameModeType& InGameModeType, const EBaseGameMode& InBaseGameMode, const FString& InCustomGameModeName, const EGameModeDifficulty& InGameModeDifficulty)
+	FBS_DefiningConfig(const EGameModeType& InGameModeType, const EBaseGameMode& InBaseGameMode,
+		const FString& InCustomGameModeName, const EGameModeDifficulty& InGameModeDifficulty)
 	{
 		GameModeType = InGameModeType;
 		BaseGameMode = InBaseGameMode;
@@ -394,7 +423,8 @@ struct FBS_DefiningConfig
 
 	friend FORCEINLINE uint32 GetTypeHash(const FBS_DefiningConfig& Config)
 	{
-		return HashCombine(GetTypeHash(Config.GameModeType), HashCombine(GetTypeHash(Config.BaseGameMode), HashCombine(GetTypeHash(Config.CustomGameModeName), GetTypeHash(Config.Difficulty))));
+		return HashCombine(GetTypeHash(Config.GameModeType), HashCombine(GetTypeHash(Config.BaseGameMode),
+			HashCombine(GetTypeHash(Config.CustomGameModeName), GetTypeHash(Config.Difficulty))));
 		//return FCrc::MemCrc32(&Config, sizeof(FBS_DefiningConfig));
 	}
 };
@@ -420,7 +450,7 @@ struct FBS_AIConfig
 	/** Discount factor, or how much to value future rewards vs immediate rewards */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float Gamma;
-	
+
 	/** The mode to operate the Reinforcement Learning Component */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EReinforcementLearningMode ReinforcementLearningMode;
@@ -597,13 +627,34 @@ struct FBS_Dynamic
 	/** The amount to decrement from consecutively destroyed targets after a miss */
 	UPROPERTY(EditDefaultsOnly)
 	int32 DecrementAmount;
-	
+
 	FBS_Dynamic()
 	{
 		StartThreshold = 5;
 		EndThreshold = 100;
 		bIsCubicInterpolation = false;
 		DecrementAmount = 5;
+	}
+
+	FORCEINLINE bool operator==(const FBS_Dynamic& Other) const
+	{
+		if (StartThreshold != Other.StartThreshold)
+		{
+			return false;
+		}
+		if (EndThreshold != Other.EndThreshold)
+		{
+			return false;
+		}
+		if (bIsCubicInterpolation != Other.bIsCubicInterpolation)
+		{
+			return false;
+		}
+		if (DecrementAmount != Other.DecrementAmount)
+		{
+			return false;
+		}
+		return true;
 	}
 };
 
@@ -628,15 +679,46 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 	{
 		return FVector(MinSize.X * 0.5f, MinSize.Y * 0.5f, MinSize.Z * 0.5f);
 	}
-	
+
 	FBS_Dynamic_SpawnArea()
 	{
 		StartThreshold = 5;
 		EndThreshold = 100;
 		bIsCubicInterpolation = false;
 		DecrementAmount = 5;
-		DynamicBoundsScalingPolicy = TArray({EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Vertical});
+		DynamicBoundsScalingPolicy = TArray({
+			EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Vertical
+		});
 		MinSize = FVector(0, 200.f, 200.f);
+	}
+
+	FORCEINLINE bool operator==(const FBS_Dynamic_SpawnArea& Other) const
+	{
+		if (StartThreshold != Other.StartThreshold)
+		{
+			return false;
+		}
+		if (EndThreshold != Other.EndThreshold)
+		{
+			return false;
+		}
+		if (bIsCubicInterpolation != Other.bIsCubicInterpolation)
+		{
+			return false;
+		}
+		if (DecrementAmount != Other.DecrementAmount)
+		{
+			return false;
+		}
+		if (DynamicBoundsScalingPolicy != Other.DynamicBoundsScalingPolicy)
+		{
+			return false;
+		}
+		if (!MinSize.Equals(Other.MinSize, 0.1f))
+		{
+			return false;
+		}
+		return true;
 	}
 };
 
@@ -660,7 +742,7 @@ struct FBS_TargetConfig
 	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bSpawnAtOriginWheneverPossible;
-	
+
 	/** If true, alternate every target spawn in the very center */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bSpawnEveryOtherTargetInCenter;
@@ -668,11 +750,11 @@ struct FBS_TargetConfig
 	/** If true, postpones spawning target(s) until the previous target(s) have all been activated and deactivated. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseBatchSpawning;
-	
+
 	/** If true, use separate outline color */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bUseSeparateOutlineColor;
-	
+
 	/** How to scale the bounding box bounds (spawn area where targets are spawned), at runtime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	EBoundsScalingPolicy BoundsScalingPolicy;
@@ -700,7 +782,7 @@ struct FBS_TargetConfig
 	/** Where to spawn/activate targets in the bounding box bounds (spawn area) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ETargetDistributionPolicy TargetDistributionPolicy;
-	
+
 	/** When to spawn targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	ETargetSpawningPolicy TargetSpawningPolicy;
@@ -716,7 +798,7 @@ struct FBS_TargetConfig
 	/** Anything the target should do when it deactivates */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<ETargetDeactivationResponse> TargetDeactivationResponses;
-	
+
 	/** Any condition that should permanently destroy a the target */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<ETargetDestructionCondition> TargetDestructionConditions;
@@ -728,7 +810,7 @@ struct FBS_TargetConfig
 	/** The base damage to set the player's HitDamage Attribute to for Tracking-Based damage */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float BasePlayerTrackingDamage;
-	
+
 	/** How much to shrink the target each time a charge is consumed, if the target is charged. This is multiplied
 	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -741,7 +823,7 @@ struct FBS_TargetConfig
 	/** Distance from bottom of TargetManager BoxBounds to the floor */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float FloorDistance;
-	
+
 	/** Sets the minimum distance between recent target spawns */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MinDistanceBetweenTargets;
@@ -769,7 +851,7 @@ struct FBS_TargetConfig
 	/** Max velocity to apply to a target when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MaxSpawnedTargetSpeed;
-	
+
 	/** Min velocity to apply to a target when activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float MinActivatedTargetSpeed;
@@ -797,11 +879,11 @@ struct FBS_TargetConfig
 	/** Maximum time in which target will stay on screen */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float TargetMaxLifeSpan;
-	
+
 	/** Sets the minimum time between target spawns */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float TargetSpawnCD;
-	
+
 	/** Gameplay tags applied to the target ASC when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FGameplayTagContainer OnSpawn_ApplyTags;
@@ -809,13 +891,13 @@ struct FBS_TargetConfig
 	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FVector BoxBounds;
-	
+
 	/** Maximum number of activated targets allowed at one time */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumActivatedTargetsAtOnce;
 
 	// TODO: Constrain MaxNumActivatedTargetsAtOnce to be less than MaxNumTargetsAtOnce
-	
+
 	/** How many recent targets to keep in memory, if not using RecentTargetTimeLength */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumRecentTargets;
@@ -823,23 +905,23 @@ struct FBS_TargetConfig
 	/** Maximum number of visible targets allowed at one time, regardless of activation state */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumTargetsAtOnce;
-	
+
 	/** Minimum number of targets to activate at one time, if there's more than one target available to activate */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MinNumTargetsToActivateAtOnce;
-	
+
 	/** Maximum number of targets to activate at one time, if there's more than one target available to activate */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumTargetsToActivateAtOnce;
-	
+
 	/** How many targets to spawn at runtime */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumRuntimeTargetsToSpawn;
-	
+
 	/** How many targets to spawn before the game mode begins */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 NumUpfrontTargetsToSpawn;
-	
+
 	/** Color to applied to the actor if inactive */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor InactiveTargetColor;
@@ -852,7 +934,7 @@ struct FBS_TargetConfig
 	/** Color interpolated from at start of DamageableWindow timer */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor StartColor;
-	
+
 	/** Color interpolated to from StartColor */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor PeakColor;
@@ -1190,9 +1272,10 @@ struct FBSConfig
 		GridConfig = FBS_GridConfig();
 		TargetConfig = FBS_TargetConfig();
 	}
-	
+
 	/** Returns the defining config for a preset base game mode and difficulty */
-	static FBS_DefiningConfig GetConfigForPreset(const EBaseGameMode& InBaseGameMode, const EGameModeDifficulty& InDifficulty)
+	static FBS_DefiningConfig GetConfigForPreset(const EBaseGameMode& InBaseGameMode,
+		const EGameModeDifficulty& InDifficulty)
 	{
 		FBS_DefiningConfig Config;
 		Config.BaseGameMode = InBaseGameMode;
@@ -1216,7 +1299,9 @@ struct FBSConfig
 		// Set the Reinforcement Learning Mode
 		if (IsCompatibleWithReinforcementLearning())
 		{
-			AIConfig.ReinforcementLearningMode = AIConfig.bEnableReinforcementLearning ? EReinforcementLearningMode::ActiveAgent : EReinforcementLearningMode::Training;
+			AIConfig.ReinforcementLearningMode = AIConfig.bEnableReinforcementLearning
+				? EReinforcementLearningMode::ActiveAgent
+				: EReinforcementLearningMode::Training;
 		}
 		else
 		{
@@ -1252,7 +1337,8 @@ struct FBSConfig
 	}
 
 	/** Sets the target colors from user settings */
-	void InitColors(const bool bUseSeparateOutlineColor, const FLinearColor Inactive, const FLinearColor Outline, const FLinearColor Start, const FLinearColor Peak, const FLinearColor End)
+	void InitColors(const bool bUseSeparateOutlineColor, const FLinearColor Inactive, const FLinearColor Outline,
+		const FLinearColor Start, const FLinearColor Peak, const FLinearColor End)
 	{
 		TargetConfig.bUseSeparateOutlineColor = bUseSeparateOutlineColor;
 		TargetConfig.OutlineColor = Outline;
@@ -1275,7 +1361,7 @@ UCLASS(Blueprintable, BlueprintType)
 class BEATSHOTGLOBAL_API UBSGameModeDataAsset : public UDataAsset
 {
 	GENERATED_BODY()
-	
+
 public:
 	UBSGameModeDataAsset()
 	{
@@ -1291,7 +1377,8 @@ public:
 				{
 					continue;
 				}
-				DefaultGameModes.Add(FBSConfig::GetConfigForPreset(GameMode, Difficulty), FBSConfig(GameMode, Difficulty));
+				DefaultGameModes.Add(FBSConfig::GetConfigForPreset(GameMode, Difficulty),
+					FBSConfig(GameMode, Difficulty));
 			}
 		}
 	}
@@ -1316,4 +1403,3 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
 	TMap<FBS_DefiningConfig, FBSConfig> DefaultGameModes;
 };
-

@@ -35,8 +35,9 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 {
 	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
-	
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity : ChildWidgetValidityMap)
+
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	     ChildWidgetValidityMap)
 	{
 		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
 		{
@@ -47,7 +48,8 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 
 void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
 {
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity : ChildWidgetValidityMap)
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	     ChildWidgetValidityMap)
 	{
 		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
 		{
@@ -65,7 +67,8 @@ void UCustomGameModesWidgetBase::UpdateAllChildWidgetOptionsValid()
 	bool bAtLeastOneWarningPresent = false;
 	uint8 TotalWarnings = 0;
 	uint8 TotalCautions = 0;
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity : ChildWidgetValidityMap)
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	     ChildWidgetValidityMap)
 	{
 		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
 		{
@@ -80,7 +83,8 @@ void UCustomGameModesWidgetBase::UpdateAllChildWidgetOptionsValid()
 				}
 				if (ChildWidgetValidity.Value->NumWarnings > 0 || ChildWidgetValidity.Value->NumCautions)
 				{
-					UE_LOG(LogTemp, Display, TEXT("%s has %d cautions and %d warnings"), *Component->GetName(), ChildWidgetValidity.Value->NumCautions, ChildWidgetValidity.Value->NumWarnings);
+					UE_LOG(LogTemp, Display, TEXT("%s has %d cautions and %d warnings"), *Component->GetName(),
+						ChildWidgetValidity.Value->NumCautions, ChildWidgetValidity.Value->NumWarnings);
 				}
 			}
 		}
@@ -112,7 +116,8 @@ void UCustomGameModesWidgetBase::SetStartWidgetProperties(const FStartWidgetProp
 
 bool UCustomGameModesWidgetBase::GetAllNonStartChildWidgetOptionsValid() const
 {
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity : ChildWidgetValidityMap)
+	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	     ChildWidgetValidityMap)
 	{
 		if (ChildWidgetValidity.Key == Widget_Start)
 		{
@@ -131,7 +136,8 @@ void UCustomGameModesWidgetBase::RefreshGameModeTemplateComboBoxOptions() const
 	Widget_Start->RefreshGameModeTemplateComboBoxOptions();
 }
 
-void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)
+void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode,
+	const EGameModeDifficulty& Difficulty)
 {
 	RequestGameModeTemplateUpdate.Broadcast(InGameMode, Difficulty);
 }
@@ -171,11 +177,13 @@ void UCustomGameModesWidgetBase::UpdateContainsGameModeBreakingOption(const bool
 	}
 	if (bGameModeBreakingOptionPresent)
 	{
-		UE_LOG(LogTemp, Display, TEXT("bContainsGameModeBreakingOption changed from false to true inside UCustomGameModesWidgetBase"));
+		UE_LOG(LogTemp, Display,
+			TEXT("bContainsGameModeBreakingOption changed from false to true inside UCustomGameModesWidgetBase"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("bContainsGameModeBreakingOption changed from true to false inside UCustomGameModesWidgetBase"));
+		UE_LOG(LogTemp, Display,
+			TEXT("bContainsGameModeBreakingOption changed from true to false inside UCustomGameModesWidgetBase"));
 	}
 	bContainsGameModeBreakingOption = bGameModeBreakingOptionPresent;
 	OnGameModeBreakingChange.Broadcast(bContainsGameModeBreakingOption);

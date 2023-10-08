@@ -28,9 +28,12 @@ void UBSAT_MontageEventWait::Activate()
 		if (AnimInstance != nullptr)
 		{
 			// Bind to event callback
-			EventHandle = BSAbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags, FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this, &UBSAT_MontageEventWait::OnGameplayEvent));
+			EventHandle = BSAbilitySystemComponent->AddGameplayEventTagContainerDelegate(EventTags,
+				FGameplayEventTagMulticastDelegate::FDelegate::CreateUObject(this,
+					&UBSAT_MontageEventWait::OnGameplayEvent));
 
-			if (BSAbilitySystemComponent->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate, StartSection) > 0.f)
+			if (BSAbilitySystemComponent->PlayMontage(Ability, Ability->GetCurrentActivationInfo(), MontageToPlay, Rate,
+				StartSection) > 0.f)
 			{
 				// Playing a montage could potentially fire off a callback into game code which could kill this ability! Early out if we are  pending kill.
 				if (ShouldBroadcastAbilityTaskDelegates() == false)
@@ -38,7 +41,8 @@ void UBSAT_MontageEventWait::Activate()
 					return;
 				}
 
-				CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this, &UBSAT_MontageEventWait::OnAbilityCancelled);
+				CancelledHandle = Ability->OnGameplayAbilityCancelled.AddUObject(this,
+					&UBSAT_MontageEventWait::OnAbilityCancelled);
 
 				BlendingOutDelegate.BindUObject(this, &UBSAT_MontageEventWait::OnMontageBlendingOut);
 				AnimInstance->Montage_SetBlendingOutDelegate(BlendingOutDelegate, MontageToPlay);
@@ -47,8 +51,9 @@ void UBSAT_MontageEventWait::Activate()
 				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MontageToPlay);
 
 				ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-				if (Character && (Character->GetLocalRole() == ROLE_Authority ||
-					(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+				if (Character && (Character->GetLocalRole() == ROLE_Authority || (Character->GetLocalRole() ==
+					ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() ==
+					EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
 				{
 					Character->SetAnimRootMotionTranslationScale(AnimRootMotionTranslationScale);
 				}
@@ -62,12 +67,16 @@ void UBSAT_MontageEventWait::Activate()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent called on invalid AbilitySystemComponent"));
+		UE_LOG(LogTemp, Warning,
+			TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent called on invalid AbilitySystemComponent"));
 	}
 
 	if (!bPlayedMontage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("UGDAbilityTask_PlayMontageAndWaitForEvent called in Ability %s failed to play montage %s; Task Instance Name %s."), *Ability->GetName(), *GetNameSafe(MontageToPlay), *InstanceName.ToString());
+		UE_LOG(LogTemp, Warning,
+			TEXT(
+				"UGDAbilityTask_PlayMontageAndWaitForEvent called in Ability %s failed to play montage %s; Task Instance Name %s."
+			), *Ability->GetName(), *GetNameSafe(MontageToPlay), *InstanceName.ToString());
 		if (ShouldBroadcastAbilityTaskDelegates())
 		{
 			OnCancelled.Broadcast(FGameplayTag(), FGameplayEventData());
@@ -92,10 +101,13 @@ FString UBSAT_MontageEventWait::GetDebugString() const
 
 		if (const UAnimInstance* AnimInstance = ActorInfo->GetAnimInstance(); AnimInstance != nullptr)
 		{
-			PlayingMontage = AnimInstance->Montage_IsActive(MontageToPlay) ? MontageToPlay : AnimInstance->GetCurrentActiveMontage();
+			PlayingMontage = AnimInstance->Montage_IsActive(MontageToPlay)
+				? MontageToPlay
+				: AnimInstance->GetCurrentActiveMontage();
 		}
 	}
-	return FString::Printf(TEXT("PlayMontageAndWaitForEvent. MontageToPlay: %s  (Currently Playing): %s"), *GetNameSafe(MontageToPlay), *GetNameSafe(PlayingMontage));
+	return FString::Printf(TEXT("PlayMontageAndWaitForEvent. MontageToPlay: %s  (Currently Playing): %s"),
+		*GetNameSafe(MontageToPlay), *GetNameSafe(PlayingMontage));
 }
 
 void UBSAT_MontageEventWait::OnDestroy(bool AbilityEnded)
@@ -122,8 +134,9 @@ void UBSAT_MontageEventWait::OnDestroy(bool AbilityEnded)
 	Super::OnDestroy(AbilityEnded);
 }
 
-UBSAT_MontageEventWait* UBSAT_MontageEventWait::PlayMontageAndWaitForEvent(UGameplayAbility* OwningAbility, FName TaskInstanceName, UAnimMontage* MontageToPlay,
-	FGameplayTagContainer EventTags, float Rate, FName StartSection, bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale)
+UBSAT_MontageEventWait* UBSAT_MontageEventWait::PlayMontageAndWaitForEvent(UGameplayAbility* OwningAbility,
+	FName TaskInstanceName, UAnimMontage* MontageToPlay, FGameplayTagContainer EventTags, float Rate,
+	FName StartSection, bool bStopWhenAbilityEnds, float AnimRootMotionTranslationScale)
 {
 	UAbilitySystemGlobals::NonShipping_ApplyGlobalAbilityScaler_Rate(Rate);
 
@@ -156,8 +169,8 @@ bool UBSAT_MontageEventWait::StopPlayingMontage() const
 	// The ability would have been interrupted, in which case we should automatically stop the montage
 	if (AbilitySystemComponent.IsValid() && Ability)
 	{
-		if (AbilitySystemComponent->GetAnimatingAbility() == Ability
-			&& AbilitySystemComponent->GetCurrentMontage() == MontageToPlay)
+		if (AbilitySystemComponent->GetAnimatingAbility() == Ability && AbilitySystemComponent->GetCurrentMontage() ==
+			MontageToPlay)
 		{
 			// Unbind delegates so they don't get called as well
 			if (FAnimMontageInstance* MontageInstance = AnimInstance->GetActiveInstanceForMontage(MontageToPlay))
@@ -188,8 +201,9 @@ void UBSAT_MontageEventWait::OnMontageBlendingOut(UAnimMontage* Montage, bool bI
 				AbilitySystemComponent->ClearAnimatingAbility(Ability);
 				// Reset AnimRootMotionTranslationScale
 				ACharacter* Character = Cast<ACharacter>(GetAvatarActor());
-				if (Character && (Character->GetLocalRole() == ROLE_Authority ||
-					(Character->GetLocalRole() == ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() == EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
+				if (Character && (Character->GetLocalRole() == ROLE_Authority || (Character->GetLocalRole() ==
+					ROLE_AutonomousProxy && Ability->GetNetExecutionPolicy() ==
+					EGameplayAbilityNetExecutionPolicy::LocalPredicted)))
 				{
 					Character->SetAnimRootMotionTranslationScale(1.f);
 				}

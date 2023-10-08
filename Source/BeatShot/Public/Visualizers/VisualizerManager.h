@@ -24,8 +24,9 @@ public:
 	/** Checks for any visualizers already in the level that have been placed in Visualizers and calls InitializeVisualizer on each.
 	 *  Spawns all default visualizers in Default Spawn Through Code Visualizers array, calls InitializeVisualizer on each, and adds them to Visualizers array.
 	 *  Calls SplitVisualizers at the end */
-	void InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings, const FPlayerSettings_AudioAnalyzer& InAASettings);
-	
+	void InitializeVisualizers(const FPlayerSettings_Game& PlayerSettings,
+		const FPlayerSettings_AudioAnalyzer& InAASettings);
+
 	/** Main function to update all visualizers, called on tick in GameMode */
 	void UpdateVisualizers(const TArray<float>& SpectrumValues);
 
@@ -43,7 +44,7 @@ public:
 
 	/** Updates visualizers based on player AudioAnalyzer settings */
 	void UpdateAASettings(const FPlayerSettings_AudioAnalyzer& NewAASettings);
-	
+
 	UPROPERTY(VisibleAnywhere, Category = "VisualizerManager | Update")
 	TArray<float> AvgSpectrumValues;
 
@@ -72,11 +73,11 @@ protected:
 	/** An array of visualizers that have already been placed in the level editor */
 	UPROPERTY(EditDefaultsOnly, Category = "VisualizerManager | References")
 	TArray<TSoftObjectPtr<AVisualizerBase>> LevelVisualizers;
-	
+
 	/** All visualizers being managed */
 	UPROPERTY()
 	TArray<TObjectPtr<AVisualizerBase>> Visualizers;
-	
+
 	UPROPERTY()
 	bool bUpdateBeamVisualizers;
 
@@ -86,11 +87,11 @@ protected:
 private:
 	TArray<TObjectPtr<ABeamVisualizer>> BeamVisualizers;
 	TArray<TObjectPtr<AStaticCubeVisualizer>> CubeVisualizers;
-	
+
 	TArray<TObjectPtr<ABeamVisualizer>>& GetBeamVisualizers() { return BeamVisualizers; }
 	TArray<TObjectPtr<AStaticCubeVisualizer>>& GetCubeVisualizers() { return CubeVisualizers; }
 	TArray<TObjectPtr<AVisualizerBase>>& GetVisualizers() { return Visualizers; }
-	
+
 	/** Splits Visualizers into smaller subclass groups */
 	void SplitVisualizers();
 

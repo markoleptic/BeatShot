@@ -10,22 +10,22 @@ FString UGameModeSharingWidget::GetImportString() const
 	return MultilineTextBox->GetText().ToString();
 }
 
+void UGameModeSharingWidget::SetImportButton(TObjectPtr<UBSButton> InImportButton)
+{
+	ImportButton = InImportButton;
+}
+
 void UGameModeSharingWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	MultilineTextBox->SetHintText(FText::FromString("Paste an exported game mode here."));
 	MultilineTextBox->OnTextChanged.AddDynamic(this, &ThisClass::OnTextChanged_MultilineTextBox);
-	Button_1->SetIsEnabled(false);
 }
 
 void UGameModeSharingWidget::OnTextChanged_MultilineTextBox(const FText& NewText)
 {
-	if (!NewText.IsEmpty())
+	if (ImportButton)
 	{
-		Button_1->SetIsEnabled(true);
-	}
-	else
-	{
-		Button_1->SetIsEnabled(false);
+		ImportButton->SetIsEnabled(!NewText.IsEmpty());
 	}
 }

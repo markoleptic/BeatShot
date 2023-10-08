@@ -42,7 +42,7 @@ public:
 
 	/** Updates the Difficulty ComboBox visibility based on the type of game mode. Returns true if the visibility was changed */
 	bool UpdateDifficultyVisibility() const;
-	
+
 	/** Updates the GameModeTemplate ComboBox visibility based on the type of game mode and the checkbox. Returns true if the visibility was changed */
 	bool UpdateGameModeTemplateVisibility() const;
 
@@ -53,7 +53,7 @@ protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_UseTemplate;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -62,7 +62,7 @@ protected:
 	UComboBoxOptionWidget* ComboBoxOption_GameModeDifficulty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBoxOptionWidget* EditableTextBoxOption_CustomGameModeName;
-	
+
 	UFUNCTION()
 	void OnCheckStateChanged_UseTemplate(const bool bChecked);
 	UFUNCTION()

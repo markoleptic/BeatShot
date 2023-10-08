@@ -15,7 +15,7 @@ UCLASS()
 class USERINTERFACE_API UCustomGameModesWidget_Activation : public UCustomGameModesWidgetComponent
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
 
@@ -24,15 +24,17 @@ protected:
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 	void SetupWarningTooltipCallbacks();
-	
+
 	/** Updates options that depend on the value selection of ConstantNumTargetsToActivateAtOnce */
 	void UpdateDependentOptions_ConstantNumTargetsToActivateAtOnce(const bool bInConstant);
 
 	/** Updates options that depend on the value selection of TargetActivationResponses */
-	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
+	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses,
+		const bool bUseConstantTargetSpeed);
 
 	/** Updates options that depend on the value selection of TargetActivationResponses and ConstantTargetSpeed */
-	void UpdateDependentOptions_ConstantTargetSpeed(const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed);
+	void UpdateDependentOptions_ConstantTargetSpeed(const TArray<ETargetActivationResponse>& InResponses,
+		const bool bUseConstantTargetSpeed);
 
 	/** Updates options that depend on the value selection of TargetDistributionPolicy */
 	void UpdateDependentOptions_TargetDistributionPolicy(const ETargetDistributionPolicy& Policy);
@@ -50,7 +52,7 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationSelectionPolicy;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationResponses;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -71,12 +73,14 @@ protected:
 	void OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-	
+
 	UFUNCTION()
-	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	void OnSelectionChanged_TargetActivationSelectionPolicy(const TArray<FString>& Selected,
+		const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-	
+	void OnSelectionChanged_TargetActivationResponses(const TArray<FString>& Selected,
+		const ESelectInfo::Type SelectionType);
+
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses(const FString& EnumString);
 };

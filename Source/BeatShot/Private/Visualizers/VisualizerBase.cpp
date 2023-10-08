@@ -23,10 +23,12 @@ void AVisualizerBase::InitializeVisualizer(const FPlayerSettings_AudioAnalyzer& 
 	SetActorLocation(GetVisualizerDefinition()->Location);
 	SetActorRotation(GetVisualizerDefinition()->Rotation);
 	SetActorScale3D(GetVisualizerDefinition()->Scale);
-	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, GetVisualizerDefinition()->NumVisualizerLightsToSpawn);
+	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels,
+		GetVisualizerDefinition()->NumVisualizerLightsToSpawn);
 }
 
-void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings, const int32 NumSpawnedVisualizers)
+void AVisualizerBase::InitializeVisualizerFromWorld(const FPlayerSettings_AudioAnalyzer& InAASettings,
+	const int32 NumSpawnedVisualizers)
 {
 	MapAudioAnalyzerChannelsToVisualizerLights(InAASettings.NumBandChannels, NumSpawnedVisualizers);
 }
@@ -47,9 +49,9 @@ void AVisualizerBase::AddVisualizerPointsToSpline()
 	if (bDistributeFromCenter)
 	{
 		const float TotalLength = static_cast<float>(NumberOfPointsToAdd - 1) * Offset;
-		Start = - PointAddDirection * TotalLength / 2.f;
+		Start = -PointAddDirection * TotalLength / 2.f;
 	}
-	
+
 	VisualizerPositioning->ClearSplinePoints(true);
 	TArray<FSplinePoint> Points;
 	for (int i = 0; i < NumberOfPointsToAdd; i++)
@@ -74,10 +76,11 @@ void AVisualizerBase::AddTestVisualizer()
 	SpawnedTestVisualizer = GetWorld()->SpawnActor(TestVisualizerToSpawn, &Position, &TestVisualizerRotation);
 }
 
-void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels, const int32 NumVisualizers)
+void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 NumBandChannels,
+	const int32 NumVisualizers)
 {
 	UBSVisualizerDefinition* BaseConfig = GetVisualizerDefinition();
-	
+
 	BaseConfig->MappedIndices.Init(FChannelToVisualizerMap(), NumBandChannels);
 
 	if (NumVisualizers == NumBandChannels)
@@ -89,9 +92,9 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		return;
 	}
 
-	if ((NumVisualizers > NumBandChannels) &&
-		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) &&
-		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+	if ((NumVisualizers > NumBandChannels) && (BaseConfig->AssignmentMethod !=
+		ELightVisualizerAssignmentMethod::MultiLightPerChannelOnly) && (BaseConfig->AssignmentMethod !=
+		ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumBandChannels; i++)
 		{
@@ -100,9 +103,9 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		return;
 	}
 
-	if ((NumBandChannels > NumVisualizers) &&
-		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly)&&
-		(BaseConfig->AssignmentMethod != ELightVisualizerAssignmentMethod::Auto))
+	if ((NumBandChannels > NumVisualizers) && (BaseConfig->AssignmentMethod !=
+		ELightVisualizerAssignmentMethod::MultiChannelPerLightOnly) && (BaseConfig->AssignmentMethod !=
+		ELightVisualizerAssignmentMethod::Auto))
 	{
 		for (int i = 0; i < NumVisualizers; i++)
 		{
@@ -110,7 +113,7 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		}
 		return;
 	}
-	
+
 	switch (BaseConfig->GroupingMethod)
 	{
 	case ELightVisualizerGroupingMethod::CombineByProximity:
@@ -157,9 +160,9 @@ void AVisualizerBase::MapAudioAnalyzerChannelsToVisualizerLights(const int32 Num
 		}
 		break;
 	}
-	
+
 	int Total = 0;
-	for (int i = 0; i<  BaseConfig->MappedIndices.Num(); i++)
+	for (int i = 0; i < BaseConfig->MappedIndices.Num(); i++)
 	{
 		int Current = 0;
 		for (int j = 0; j < BaseConfig->MappedIndices[i].VisualizerIndices.Num(); j++)

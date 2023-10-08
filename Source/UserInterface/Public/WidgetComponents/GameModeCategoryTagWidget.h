@@ -20,16 +20,16 @@ public:
 	void SetColor(const FLinearColor& InColor);
 	FGameplayTag GetGameModeCategoryTag() const { return GameModeCategoryTag; }
 	FText GetGameModeCategoryText() const { return CategoryText; }
-	
+
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Category;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UImage* Image_Material;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="GameModeCategoryTagWidget")
 	FText CategoryText = FText();
 

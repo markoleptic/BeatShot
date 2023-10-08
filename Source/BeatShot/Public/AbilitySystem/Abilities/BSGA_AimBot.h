@@ -13,14 +13,14 @@ UCLASS()
 class BEATSHOT_API UBSGA_AimBot : public UBSGameplayAbility
 {
 	GENERATED_BODY()
-	
+
 public:
 	UBSGA_AimBot();
 
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-								 const FGameplayEventData* TriggerEventData) override;
-	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-							bool bWasCancelled) override;
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 
 	/** Bound to TargetSpawner's OnTargetActivated delegate */
 	UFUNCTION()
@@ -51,7 +51,7 @@ public:
 private:
 	/** A queue of target locations that have not yet been destroyed */
 	TQueue<ATarget*> ActiveTargets_AimBot;
-	
+
 	/** Checks if there are any targets available in the Character's target queue, and if so creates a task to destroy it */
 	void CheckTargetQueue();
 
@@ -65,11 +65,11 @@ private:
 
 	/** Checks if the location is within the range of ignorable locations */
 	bool TargetLocationIsInIgnoreRange(const FVector& Loc) const;
-	
+
 	bool bYPositive;
 	bool bYNegative;
 	bool bYZero;
-	
+
 	bool bZPositive;
 	bool bZNegative;
 	bool bZZero;

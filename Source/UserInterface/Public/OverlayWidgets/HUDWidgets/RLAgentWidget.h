@@ -11,10 +11,10 @@ USTRUCT()
 struct FAgentPoint
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY()
 	UImage* Image;
-	
+
 	UPROPERTY()
 	UTextBlock* Text;
 
@@ -23,7 +23,7 @@ struct FAgentPoint
 		Image = nullptr;
 		Text = nullptr;
 	}
-	
+
 	FAgentPoint(UImage* InImage, UTextBlock* InText)
 	{
 		Image = InImage;
@@ -50,13 +50,12 @@ protected:
 	TSubclassOf<UTextBlock> DefaultText;
 
 public:
-
 	UFUNCTION()
 	void UpdatePanel(const TArray<float>& QTable);
 
 	UFUNCTION()
 	void UpdatePanel2(const TArray<float>& QTable);
-	
+
 	void InitQTable(const int32 Rows, const int32 Columns, const TArray<float>& QTable);
 
 	void InitQTable2(const int32 Rows, const int32 Columns, const TArray<float>& QTable);
@@ -64,13 +63,13 @@ public:
 	FLinearColor InterpColor(const float Value) const;
 
 	void UpdateExtrema(const TArray<float>& QTable);
-	
+
 	float MinValue = -1.0f;
-	
+
 	float MaxValue = 1.0f;
 
 	float MinValue2 = -0.5f;
-	
+
 	float MaxValue2 = 0.5f;
 
 	TArray<FAgentPoint> Points;
@@ -86,5 +85,3 @@ private:
 
 	FNumberFormattingOptions NumberFormattingOptions;
 };
-
-

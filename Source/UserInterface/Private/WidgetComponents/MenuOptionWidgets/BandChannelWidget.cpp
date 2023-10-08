@@ -28,7 +28,8 @@ void UBandChannelWidget::SetStyling()
 			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Lower->Slot);
 			if (HorizontalBoxSlot)
 			{
-				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_LeftHorizontalBox + MenuOptionStyle->Padding_DescriptionText);
+				HorizontalBoxSlot->SetPadding(
+					MenuOptionStyle->Padding_LeftHorizontalBox + MenuOptionStyle->Padding_DescriptionText);
 			}
 		}
 		if (TextBlock_Upper)
@@ -37,7 +38,8 @@ void UBandChannelWidget::SetStyling()
 			UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(TextBlock_Upper->Slot);
 			if (HorizontalBoxSlot)
 			{
-				HorizontalBoxSlot->SetPadding(MenuOptionStyle->Padding_LeftHorizontalBox + MenuOptionStyle->Padding_DescriptionText);
+				HorizontalBoxSlot->SetPadding(
+					MenuOptionStyle->Padding_LeftHorizontalBox + MenuOptionStyle->Padding_DescriptionText);
 			}
 		}
 		if (Value_BandChannelMin)
@@ -56,7 +58,8 @@ void UBandChannelWidget::SetDefaultValues(const FVector2d Values, const int32 Ch
 	Value_BandChannelMin->SetText(FText::AsNumber(Values.X));
 	Value_BandChannelMax->SetText(FText::AsNumber(Values.Y));
 	const TArray ChannelNumber = {
-		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"), FText::FromString(FString::FromInt(ChannelIndex + 1)),
+		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"),
+		FText::FromString(FString::FromInt(ChannelIndex + 1)),
 		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelUnit")
 	};
 	TextBlock_Description->SetText(FText::Join(FText::FromString(" "), ChannelNumber));

@@ -53,23 +53,17 @@ namespace Constants
 	inline constexpr int32 DefaultQTableSize = 625;
 
 	inline constexpr int32 DefaultNumberOfAccuracyDataRows = 5;
-	
+
 	inline constexpr int32 DefaultNumberOfAccuracyDataColumns = 5;
 
-#pragma region DefaultSettings
+	#pragma region DefaultSettings
 
 	/** The default Band Limit Thresholds for the AudioAnalyzer */
 	inline const TArray DefaultBandLimits = {
-		FVector2d(0, 44),
-		FVector2d(45, 88),
-		FVector2d(89, 177),
-		FVector2d(178, 355),
-		FVector2d(356, 710),
-		FVector2d(711, 1420),
-		FVector2d(1421, 2840),
-		FVector2d(2841, 5680),
-		FVector2d(5681, 11360),
-		FVector2d(11361, 22720)};
+		FVector2d(0, 44), FVector2d(45, 88), FVector2d(89, 177), FVector2d(178, 355), FVector2d(356, 710),
+		FVector2d(711, 1420), FVector2d(1421, 2840), FVector2d(2841, 5680), FVector2d(5681, 11360),
+		FVector2d(11361, 22720)
+	};
 
 	inline constexpr float DefaultSensitivity = 0.3f;
 
@@ -89,13 +83,13 @@ namespace Constants
 	inline constexpr float DefaultMusicVolume = 10.f;
 	inline constexpr int32 DefaultFrameRateLimitMenu = 60.f;
 	inline constexpr int32 DefaultFrameRateLimitGame = 0.f;
-	
+
 	inline constexpr float DefaultBandLimitThreshold = 2.1f;
 	inline constexpr int32 DefaultNumBandChannels = 10;
 	inline constexpr float DefaultTimeWindow = 0.02f;
 	inline constexpr int32 DefaultHistorySize = 30;
 	inline constexpr int32 DefaultMaxNumBandChannels = 32;
-	
+
 	inline constexpr int32 DefaultLineWidth = 4;
 	inline constexpr int32 DefaultLineLength = 10;
 	inline constexpr int32 DefaultInnerOffset = 6;
@@ -103,11 +97,11 @@ namespace Constants
 	inline constexpr FLinearColor DefaultCrossHairOutlineColor(0.f, 0.f, 0.f, 1.f);
 	inline constexpr int32 DefaultOutlineSize = 2;
 	inline constexpr int32 DefaultCrossHairDotSize = 4;
-	
+
 	inline constexpr float MaxValue_TimeWindow = 0.01f;
 	inline constexpr float MinValue_TimeWindow = 1.00f;
 	inline constexpr float SnapSize_TimeWindow = 0.01f;
-	
+
 	inline constexpr float MaxValue_FrameRateLimit = 1000.f;
 	inline constexpr float MinValue_FrameRateLimit = 0.f;
 	inline constexpr int32 SnapSize_FrameRateLimit = 1;
@@ -127,9 +121,9 @@ namespace Constants
 	inline constexpr float MaxValue_ResolutionScale = 100;
 	inline constexpr float SnapSize_ResolutionScale = 0.001;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region DefaultGameModes
+	#pragma region DefaultGameModes
 
 	inline constexpr float DefaultPlayerDelay = 0.3f;
 	inline constexpr float DefaultSpawnBeatDelay = 0.3f;
@@ -152,14 +146,14 @@ namespace Constants
 	/* BeatTrack is the only case where PlayerDelay is different from TargetSpawnCD */
 	inline constexpr float SpawnBeatDelay_BeatTrack = 0.f;
 	inline constexpr float TargetMaxLifeSpan_BeatTrack = 0.f;
-	
+
 	// Normal Difficulty
 
 	inline constexpr int32 NumHorizontalBeatGridTargets_Normal = 5;
 	inline constexpr int32 NumVerticalBeatGridTargets_Normal = 5;
 	inline constexpr int32 NumTargetsAtOnceBeatGrid_Normal = -1;
 	inline const FVector2D BeatGridSpacing_Normal(75, 50);
-	
+
 	inline constexpr float SpawnBeatDelay_SingleBeat_Normal = 0.3f;
 	inline constexpr float TargetSpawnCD_SingleBeat_Normal = SpawnBeatDelay_SingleBeat_Normal;
 	inline constexpr float TargetMaxLifeSpan_SingleBeat_Normal = 0.8f;
@@ -177,7 +171,7 @@ namespace Constants
 	inline constexpr float TargetMaxLifeSpan_BeatGrid_Normal = 1.f;
 	inline constexpr float MinTargetScale_BeatGrid_Normal = 0.80f;
 	inline constexpr float MaxTargetScale_BeatGrid_Normal = 0.80f;
-	
+
 	inline constexpr float TargetSpawnCD_BeatTrack_Normal = 0.75f;
 	inline constexpr float MinTargetScale_BeatTrack_Normal = 1.3f;
 	inline constexpr float MaxTargetScale_BeatTrack_Normal = 1.3f;
@@ -192,14 +186,14 @@ namespace Constants
 	inline constexpr float ChargeScaleMultiplier_ChargedBeatTrack_Normal = 0.50f;
 	inline constexpr float MinTrackingSpeed_ChargedBeatTrack_Normal = 400.f;
 	inline constexpr float MaxTrackingSpeed_ChargedBeatTrack_Normal = 500.f;
-	
+
 	// Hard Difficulty
-	
+
 	inline constexpr int32 NumHorizontalBeatGridTargets_Hard = 8;
 	inline constexpr int32 NumVerticalBeatGridTargets_Hard = 8;
 	inline constexpr int32 NumTargetsAtOnceBeatGrid_Hard = -1;
 	inline const FVector2D BeatGridSpacing_Hard(75, 50);
-	
+
 	inline constexpr float SpawnBeatDelay_SingleBeat_Hard = 0.25f;
 	inline constexpr float TargetSpawnCD_SingleBeat_Hard = SpawnBeatDelay_SingleBeat_Hard;
 	inline constexpr float TargetMaxLifeSpan_SingleBeat_Hard = 0.65f;
@@ -217,7 +211,7 @@ namespace Constants
 	inline constexpr float TargetMaxLifeSpan_BeatGrid_Hard = 0.8f;
 	inline constexpr float MinTargetScale_BeatGrid_Hard = 0.65f;
 	inline constexpr float MaxTargetScale_BeatGrid_Hard = 0.65f;
-	
+
 	inline constexpr float TargetSpawnCD_BeatTrack_Hard = 0.6f;
 	inline constexpr float MinTargetScale_BeatTrack_Hard = 1.f;
 	inline constexpr float MaxTargetScale_BeatTrack_Hard = 1.f;
@@ -232,19 +226,19 @@ namespace Constants
 	inline constexpr float ChargeScaleMultiplier_ChargedBeatTrack_Hard = 0.70f;
 	inline constexpr float MinTrackingSpeed_ChargedBeatTrack_Hard = 500.f;
 	inline constexpr float MaxTrackingSpeed_ChargedBeatTrack_Hard = 600.f;
-	
+
 	// Death Difficulty
-	
+
 	inline constexpr int32 NumHorizontalBeatGridTargets_Death = 15;
 	inline constexpr int32 NumVerticalBeatGridTargets_Death = 10;
 	inline constexpr int32 NumTargetsAtOnceBeatGrid_Death = -1;
 	inline const FVector2D BeatGridSpacing_Death(75, 50);
-	
+
 	inline constexpr float SpawnBeatDelay_SingleBeat_Death = 0.2f;
 	inline constexpr float TargetSpawnCD_SingleBeat_Death = SpawnBeatDelay_SingleBeat_Death;
 	inline constexpr float TargetMaxLifeSpan_SingleBeat_Death = 0.45f;
 	inline constexpr float MinTargetScale_SingleBeat_Death = 0.4f;
-	inline constexpr float MaxTargetScale_SingleBeat_Death= 1.5f;
+	inline constexpr float MaxTargetScale_SingleBeat_Death = 1.5f;
 
 	inline constexpr float SpawnBeatDelay_MultiBeat_Death = 0.25f;
 	inline constexpr float TargetSpawnCD_MultiBeat_Death = SpawnBeatDelay_MultiBeat_Death;
@@ -257,7 +251,7 @@ namespace Constants
 	inline constexpr float TargetMaxLifeSpan_BeatGrid_Death = 0.65f;
 	inline constexpr float MinTargetScale_BeatGrid_Death = 0.5f;
 	inline constexpr float MaxTargetScale_BeatGrid_Death = 0.5f;
-	
+
 	inline constexpr float TargetSpawnCD_BeatTrack_Death = 0.45f;
 	inline constexpr float MinTargetScale_BeatTrack_Death = 0.75;
 	inline constexpr float MaxTargetScale_BeatTrack_Death = 0.75;
@@ -268,15 +262,15 @@ namespace Constants
 	inline constexpr float MinTargetScale_ChargedBeatTrack_Death = 0.75;
 	inline constexpr float MaxTargetScale_ChargedBeatTrack_Death = 0.75;
 	inline constexpr float TargetMaxLifeSpan_ChargedBeatTrack_Death = 0.5f;
-	inline constexpr int32 NumCharges_ChargedBeatTrack_Death= 4;
+	inline constexpr int32 NumCharges_ChargedBeatTrack_Death = 4;
 	inline constexpr float ChargeScaleMultiplier_ChargedBeatTrack_Death = 0.70f;
 	inline constexpr float MinTrackingSpeed_ChargedBeatTrack_Death = 600.f;
 	inline constexpr float MaxTrackingSpeed_ChargedBeatTrack_Death = 700.f;
 
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region Moon
+	#pragma region Moon
 
 	/** Offset of the moon from world origin */
 	inline const FVector MoonMeshOffset(250000, 0, 250000);
@@ -293,13 +287,13 @@ namespace Constants
 	/** Radius of the Moon's SphereComponent, originally used to rotate the moon around the world, but no longer used  */
 	inline constexpr float MoonOrbitRadius = 400000;
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region Target
+	#pragma region Target
 
 	/** The default location to spawn the SpawnBox */
 	inline const FVector DefaultTargetManagerLocation(3700.f, 0.f, 0.f);
-	
+
 	/** The default BoxBounds multiplied by two for the user interface. The real box bounds are 1600 x 500, which creates a box with size 3200 x 1000 */
 	inline const FVector DefaultSpawnBoxBounds(0.f, 3200.f, 1000.f);
 
@@ -321,11 +315,11 @@ namespace Constants
 	inline constexpr float BaseTargetHealth = 100.f;
 
 	inline constexpr float BaseTrackingTargetHealth = 1000000.f;
-	
-#pragma endregion
 
-#pragma region MinMaxSnapSize
-	
+	#pragma endregion
+
+	#pragma region MinMaxSnapSize
+
 	inline constexpr float MinValue_PlayerDelay = 0.f;
 	inline constexpr float MaxValue_PlayerDelay = 0.5f;
 	inline constexpr float SnapSize_PlayerDelay = 0.01f;
@@ -345,15 +339,15 @@ namespace Constants
 	inline constexpr float MinValue_HorizontalSpread = 200.f;
 	inline constexpr float MaxValue_HorizontalSpread = 3200.f;
 	inline constexpr float SnapSize_HorizontalSpread = 100.f;
-	
+
 	inline constexpr float MinValue_VerticalSpread = 200.f;
 	inline constexpr float MaxValue_VerticalSpread = 1000.f;
 	inline constexpr float SnapSize_VerticalSpread = 100.f;
-	
+
 	inline constexpr float MinValue_ForwardSpread = 0.f;
 	inline constexpr float MaxValue_ForwardSpread = 2000.f;
 	inline constexpr float SnapSize_ForwardSpread = 100.f;
-	
+
 	inline constexpr float MinValue_TargetScale = 0.25f;
 	inline constexpr float MaxValue_TargetScale = 2.f;
 	inline constexpr float SnapSize_TargetScale = 0.01f;
@@ -409,23 +403,23 @@ namespace Constants
 	inline constexpr int32 MinValue_MaxNumTargetsToActivateAtOnce = -1;
 	inline constexpr int32 MaxValue_MaxNumTargetsToActivateAtOnce = 25;
 	inline constexpr int32 SnapSize_MaxNumTargetsToActivateAtOnce = 1;
-	
+
 	// AI
-	
+
 	inline constexpr float MinValue_Alpha = 0.1;
 	inline constexpr float MaxValue_Alpha = 1;
 	inline constexpr float SnapSize_Alpha = 0.01;
-	
+
 	inline constexpr float MinValue_Epsilon = 0;
 	inline constexpr float MaxValue_Epsilon = 1;
 	inline constexpr float SnapSize_Epsilon = 0.01;
-	
+
 	inline constexpr float MinValue_Gamma = 0.1;
 	inline constexpr float MaxValue_Gamma = 1;
 	inline constexpr float SnapSize_Gamma = 0.01;
-	
+
 	// BeatGrid
-	
+
 	inline constexpr float MinValue_HorizontalGridSpacing = 10;
 	inline constexpr float MaxValue_HorizontalGridSpacing = 3200;
 	inline constexpr float SnapSize_HorizontalGridSpacing = 10;
@@ -433,7 +427,7 @@ namespace Constants
 	inline constexpr float MinValue_VerticalGridSpacing = 10;
 	inline constexpr float MaxValue_VerticalGridSpacing = 1000;
 	inline constexpr float SnapSize_VerticalGridSpacing = 10;
-	
+
 	inline constexpr int32 MinValue_NumHorizontalGridTargets = 2;
 	inline constexpr int32 MaxValue_NumHorizontalGridTargets = 35;
 	inline constexpr int32 SnapSize_NumHorizontalGridTargets = 1;
@@ -447,7 +441,7 @@ namespace Constants
 
 	/** The max Exposure Compensation for the Post Process Volume */
 	inline constexpr float MaxValue_ExposureCompensation = 5.f;
-	
+
 	inline constexpr float MinValue_Brightness = 0.f;
 	inline constexpr float MaxValue_Brightness = 100.f;
 	inline constexpr float SnapSize_Brightness = 1.f;
@@ -468,10 +462,10 @@ namespace Constants
 	inline const FVector MaxValue_DynamicSpread(2000.f, 3200.f, 1000.f);
 	inline const FVector SnapSize_DynamicSpread(100.f, 100.f, 100.f);
 
-#pragma endregion
+	#pragma endregion
 
-#pragma region LightVisualizers
-	
+	#pragma region LightVisualizers
+
 	/** Location of the StaticCubeVisualizer to the left of the TargetManager */
 	inline const FVector LeftStaticCubeVisualizerLocation(4000, -1935, 210);
 
@@ -491,7 +485,7 @@ namespace Constants
 	inline constexpr float DefaultMaxCubeVisualizerHeightScale = 4;
 
 	// Beam Visualizers
-	
+
 	/** Location of the BeamVisualizer in middle of room */
 	inline const FVector DefaultMiddleRoomBeamVisualizerLocation(0, 1920, 1340);
 
@@ -501,7 +495,7 @@ namespace Constants
 	/** Default spacing between BeamVisualizers in middle of room */
 	inline const FVector DefaultMiddleRoomBeamLightOffset(0, 100, 0);
 
-	inline constexpr int32 DefaultNumVisualizerLightsToSpawn = 10; 
+	inline constexpr int32 DefaultNumVisualizerLightsToSpawn = 10;
 
 	/** Relative offset of the Spotlight light component from the Spotlight head */
 	inline const FRotator DefaultBeamLightRotation(0, 0, 0);
@@ -529,7 +523,7 @@ namespace Constants
 
 	/** Relative offset of the Spotlight limb from the SpotlightBase */
 	inline const FVector DefaultSpotlightLimbOffset(18, 0, 0);
-	
+
 	/** Relative offset of the Spotlight head from the Spotlight limb */
 	inline const FVector DefaultSpotlightHeadOffset(40, 0, 0);
 
@@ -538,31 +532,15 @@ namespace Constants
 
 	/** Default Spectrum of colors to use with BeamVisualizer */
 	inline const TArray DefaultBeamLightColors = {
-		FLinearColor(255 / 255.f, 0 / 255.f, 0 / 255.f),
-		FLinearColor(255 / 255.f, 127 / 255.f, 0 / 255.f),
-		FLinearColor(255 / 255.f, 255 / 255.f, 0 / 255.f),
-		FLinearColor(127 / 255.f, 255 / 255.f, 0 / 255.f),
-		FLinearColor(0 / 255.f, 255 / 255.f, 0 / 255.f),
-		FLinearColor(0 / 255.f, 255 / 255.f, 127 / 255.f),
-		FLinearColor(0 / 255.f, 255 / 255.f, 255 / 255.f),
-		FLinearColor(0 / 255.f, 127 / 255.f, 255 / 255.f),
-		FLinearColor(0 / 255.f, 0 / 255.f, 255 / 255.f),
-		FLinearColor(127 / 255.f, 0 / 255.f, 255 / 255.f)
+		FLinearColor(255 / 255.f, 0 / 255.f, 0 / 255.f), FLinearColor(255 / 255.f, 127 / 255.f, 0 / 255.f),
+		FLinearColor(255 / 255.f, 255 / 255.f, 0 / 255.f), FLinearColor(127 / 255.f, 255 / 255.f, 0 / 255.f),
+		FLinearColor(0 / 255.f, 255 / 255.f, 0 / 255.f), FLinearColor(0 / 255.f, 255 / 255.f, 127 / 255.f),
+		FLinearColor(0 / 255.f, 255 / 255.f, 255 / 255.f), FLinearColor(0 / 255.f, 127 / 255.f, 255 / 255.f),
+		FLinearColor(0 / 255.f, 0 / 255.f, 255 / 255.f), FLinearColor(127 / 255.f, 0 / 255.f, 255 / 255.f)
 	};
 
 	/** Default lifetimes for the BeamVisualizer lights */
-	inline const TArray DefaultBeamLightLifetimes = {
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-		2.f,
-	};
+	inline const TArray DefaultBeamLightLifetimes = {2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f, 2.f,};
 
 	/** Value to divide the Average spectrum value by, and then subtract from the current spectrum value */
 	inline constexpr float CurrentSpectrumValueDecrementDivide = 120.f;
@@ -572,14 +550,14 @@ namespace Constants
 
 	/** Value to divide the Average spectrum value by, and then subtract from the max spectrum value */
 	inline constexpr float MaxSpectrumValueDecrementDivide = 500.f;
-	
-#pragma endregion
 
-#pragma region URLs
+	#pragma endregion
+
+	#pragma region URLs
 
 	/** base url */
 	const FString OriginURL = "https://beatshot.gg";
-	
+
 	/** endpoint, safe to use as standalone URL */
 	const FString Endpoint_PatchNotes = OriginURL + "/patchnotes";
 	/** endpoint, safe to use as standalone URL */
@@ -597,13 +575,12 @@ namespace Constants
 	/** Segment only containing origin+profile+/ , NOT standalone URL*/
 	const FString Segment_Profile = OriginURL + "/profile/";
 	/** Segment only containing origin+api+profile+/ NOT standalone URL, needs a suffix to be used, like (Segment_ApiProfile + userID + Segment_SaveScores) */
-	const FString Segment_ApiProfile =  OriginURL + "/api/profile/";
+	const FString Segment_ApiProfile = OriginURL + "/api/profile/";
 	/** Segment, NOT standalone URL, needs a prefix to be used */
 	const FString Segment_SaveScores = "/savescores";
 	/** Segment, NOT standalone URL, needs a prefix to be used, like (Segment_Profile+userID+Segment_DefaultModes) */
 	const FString Segment_DefaultModes = "/stats/defaultmodes";
 	/** Segment, NOT standalone URL, needs a prefix to be used, like (Segment_Profile+userID+Segment_CustomModes) */
 	const FString Segment_CustomModes = "/stats/custommodes";
-#pragma endregion
-	
+	#pragma endregion
 }

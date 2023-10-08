@@ -24,16 +24,15 @@ public:
 
 	/** Broadcast when the widget is hidden after animations have completed */
 	FOnExitAnimationCompleted OnExitAnimationCompletedDelegate;
-	
-protected:
 
+protected:
 	virtual void NativeConstruct() override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_FeedbackResponseTitle;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_FeedbackResponseInfo;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UEditableTextBox* Value_Title;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
@@ -50,7 +49,7 @@ protected:
 	UBSButton* Button_Back;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSButton* Button_Okay;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOut;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
@@ -65,10 +64,13 @@ private:
 	void OnTextCommitted_Content(const FText& NewContent, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void PlayFadeIn() { PlayAnimationReverse(FadeOut); }
+
 	UFUNCTION()
 	void PlayFadeOut() { PlayAnimationForward(FadeOut); }
+
 	UFUNCTION()
 	void PlayFadeInResponse() { PlayAnimationReverse(FadeOutResponse); }
+
 	UFUNCTION()
 	void PlayFadeOutResponse() { PlayAnimationForward(FadeOutResponse); }
 

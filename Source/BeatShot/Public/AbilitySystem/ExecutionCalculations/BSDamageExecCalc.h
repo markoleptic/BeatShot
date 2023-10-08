@@ -11,9 +11,10 @@ UCLASS()
 class BEATSHOT_API UBSDamageExecCalc : public UGameplayEffectExecutionCalculation
 {
 	GENERATED_BODY()
-	
+
 public:
 	UBSDamageExecCalc();
 
-	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
+	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+		OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 };

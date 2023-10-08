@@ -8,13 +8,13 @@
 #include "VideoSettingOptionWidget.generated.h"
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnVideoSettingQualityButtonPressed, const EVideoSettingType, const uint8)
+
 UCLASS()
 class USERINTERFACE_API UVideoSettingOptionWidget : public UMenuOptionWidget
 {
 	GENERATED_BODY()
 
 public:
-
 	void Init(const EVideoSettingType InVideoSettingType);
 	void SetActiveButton(const int32 InQuality);
 	FOnVideoSettingQualityButtonPressed OnVideoSettingQualityButtonPressed;

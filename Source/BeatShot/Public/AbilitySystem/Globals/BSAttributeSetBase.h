@@ -8,8 +8,8 @@
 #include "BSAttributeSetBase.generated.h"
 
 // Delegate used to broadcast attribute events.
-DECLARE_MULTICAST_DELEGATE_SixParams(FBSAttributeEvent, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/, const FGameplayEffectSpec* /*EffectSpec*/, float /*EffectMagnitude*/,
-                                     float /*OldValue*/, float /*NewValue*/);
+DECLARE_MULTICAST_DELEGATE_SixParams(FBSAttributeEvent, AActor* /*EffectInstigator*/, AActor* /*EffectCauser*/,
+	const FGameplayEffectSpec* /*EffectSpec*/, float /*EffectMagnitude*/, float /*OldValue*/, float /*NewValue*/);
 
 /** The base AttributeSet used for this game */
 UCLASS()
@@ -82,7 +82,7 @@ protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** These OnRep functions exist to make sure that the ability system internal representations are synchronized properly during replication */
-	
+
 	UFUNCTION()
 	virtual void OnRep_Health(const FGameplayAttributeData& OldHealth);
 	UFUNCTION()
@@ -95,19 +95,23 @@ protected:
 private:
 	/** Second Health, when 0 we expect owner to die unless prevented by an ability. Capped by MaxHealth. Positive changes can directly use this.
 	 *  Negative changes to Health should go through HitDamage meta attribute. */
-	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_Health, Meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_Health,
+		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData Health;
 
 	/** MaxHealth is its own attribute since GameplayEffects may modify it */
-	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxHealth, Meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category = "Health", ReplicatedUsing = OnRep_MaxHealth,
+		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData MaxHealth;
 
 	/* HitDamage is is the amount of Hit-Based damage a player can deal in a single damage execution */
-	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_HitDamage, Meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_HitDamage,
+		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData HitDamage;
 
 	/* TrackingDamage is is the amount of Tracking-Based damage a player can deal in a single damage execution  */
-	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_TrackingDamage, Meta = (AllowPrivateAccess = true))
+	UPROPERTY(BlueprintReadOnly, Category = "Damage", ReplicatedUsing = OnRep_TrackingDamage,
+		Meta = (AllowPrivateAccess = true))
 	FGameplayAttributeData TrackingDamage;
 
 	/* TotalDamage is a meta attribute used by the DamageExecution to calculate final damage, which then turns into -Health. Temporary value that only exists on the Server. Not replicated. */
@@ -116,7 +120,9 @@ private:
 
 	/* Helper function to proportionally adjust the value of an attribute when it's associated max attribute changes.
 	 * (i.e. When MaxHealth increases, Health increases by an amount that maintains the same percentage as before) */
-	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute, const FGameplayAttributeData& MaxAttribute, float NewMaxValue, const FGameplayAttribute& AffectedAttributeProperty);
+	void AdjustAttributeForMaxChange(FGameplayAttributeData& AffectedAttribute,
+		const FGameplayAttributeData& MaxAttribute, float NewMaxValue,
+		const FGameplayAttribute& AffectedAttributeProperty);
 
 	// Store the health before any changes 
 	float MaxHealthBeforeAttributeChange;

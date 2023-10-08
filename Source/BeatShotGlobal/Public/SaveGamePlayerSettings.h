@@ -21,6 +21,7 @@ enum class EDLSSEnabledMode : uint8
 	Off UMETA(DisplayName = "Off"),
 	On UMETA(DisplayName = "On"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EDLSSEnabledMode, EDLSSEnabledMode::Off, EDLSSEnabledMode::On);
 
 
@@ -31,6 +32,7 @@ enum class ENISEnabledMode : uint8
 	Off UMETA(DisplayName = "Off"),
 	On UMETA(DisplayName = "On"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ENISEnabledMode, ENISEnabledMode::Off, ENISEnabledMode::On);
 
 /** Game settings */
@@ -62,7 +64,7 @@ struct FPlayerSettings_Game
 
 	UPROPERTY(BlueprintReadOnly)
 	int32 CombatTextFrequency;
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bShouldRecoil;
 
@@ -80,7 +82,7 @@ struct FPlayerSettings_Game
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowCharacterMesh;
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bShowWeaponMesh;
 
@@ -88,7 +90,7 @@ struct FPlayerSettings_Game
 	bool bShowHitTimingWidget;
 
 	/* Wall Menu settings */
-	
+
 	UPROPERTY(BlueprintReadWrite)
 	bool bNightModeSelected;
 
@@ -213,7 +215,7 @@ struct FPlayerSettings_VideoAndSound
 	// Reflex Mode
 	UPROPERTY(BlueprintReadOnly)
 	UStreamlineReflexMode StreamlineReflexMode;
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	float DLSSSharpness;
 
@@ -222,7 +224,7 @@ struct FPlayerSettings_VideoAndSound
 
 	UPROPERTY(BlueprintReadOnly)
 	float Brightness;
-	
+
 	FPlayerSettings_VideoAndSound()
 	{
 		GlobalVolume = DefaultGlobalVolume;
@@ -250,7 +252,8 @@ struct FPlayerSettings_VideoAndSound
 
 	static float GetBrightnessFromPostProcessBias(const float InBias)
 	{
-		return FMath::GetMappedRangeValueClamped(FVector2D(MinValue_ExposureCompensation, MaxValue_ExposureCompensation),
+		return FMath::GetMappedRangeValueClamped(
+			FVector2D(MinValue_ExposureCompensation, MaxValue_ExposureCompensation),
 			FVector2D(MinValue_Brightness, MaxValue_Brightness), InBias);
 	}
 };
@@ -301,7 +304,7 @@ struct FPlayerSettings_CrossHair
 	GENERATED_USTRUCT_BODY()
 
 	// Lines
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	int32 LineWidth;
 
@@ -339,10 +342,10 @@ struct FPlayerSettings_CrossHair
 		LineLength = DefaultLineLength;
 		InnerOffset = DefaultInnerOffset;
 		CrossHairColor = DefaultCrossHairColor;
-		
+
 		OutlineColor = DefaultCrossHairOutlineColor;
 		OutlineSize = DefaultOutlineSize;
-		
+
 		bShowCrossHairDot = false;
 		CrossHairDotColor = DefaultCrossHairColor;
 		CrossHairDotSize = DefaultCrossHairDotSize;
@@ -463,7 +466,7 @@ struct FPlayerSettings
 
 UCLASS()
 class BEATSHOTGLOBAL_API USaveGamePlayerSettings : public USaveGame
-{     
+{
 	GENERATED_BODY()
 
 public:
@@ -484,7 +487,7 @@ public:
 
 	/** Saves VideoAndSound settings, preserving all other settings */
 	void SavePlayerSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings);
-	
+
 private:
 	UPROPERTY()
 	FPlayerSettings PlayerSettings;

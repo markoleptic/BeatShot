@@ -26,7 +26,7 @@ UCLASS()
 class USERINTERFACE_API UMenuOptionWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 protected:
 	virtual void NativePreConstruct() override;
 	virtual void NativeConstruct() override;
@@ -47,7 +47,7 @@ public:
 
 	/** Sets the TooltipImage Text */
 	void SetTooltipText(const FText& InText);
-	
+
 	/** Returns the TooltipImage */
 	UTooltipImage* GetTooltipImage() const;
 
@@ -62,15 +62,16 @@ public:
 
 	/** Returns value of bShowTooltipImage */
 	bool ShouldShowTooltip() const { return bShowTooltipImage; }
-	
+
 	/** Broadcasts the new state of the lock and the index */
 	FOnLockStateChanged OnLockStateChanged;
-	
+
 	/** Adds a Warning Tooltip to TooltipData array. Returns update delegate */
 	FUpdateTooltipState& AddWarningTooltipData(const FTooltipData& InTooltipData);
 
 	/** Adds a Dynamic Warning Tooltip to TooltipData array. Returns update delegate */
-	FUpdateDynamicTooltipState& AddDynamicWarningTooltipData(const FTooltipData& InTooltipData, const FString& FallbackStringTableKey, const float InMin, const int32 InPrecision = 0);
+	FUpdateDynamicTooltipState& AddDynamicWarningTooltipData(const FTooltipData& InTooltipData,
+		const FString& FallbackStringTableKey, const float InMin, const int32 InPrecision = 0);
 
 	/** Calls UpdateWarningTooltips and UpdateDynamicWarningTooltips, which update the TooltipData by executing delegates on each FTooltipData struct */
 	void UpdateAllWarningTooltips();
@@ -80,15 +81,18 @@ public:
 
 	/** Returns by reference TooltipData array. This contains tooltip info for all Caution or Warning Tooltips */
 	TArray<FTooltipData>& GetTooltipWarningData() { return WarningTooltipData; }
-	
+
 	/** Returns number of visible Warning Tooltips */
 	int32 GetNumberOfWarnings();
-	
+
 	/** Returns number of visible Caution Tooltips */
 	int32 GetNumberOfCautions();
 
 	/** Returns Game mode category tags associated with this menu option */
-	void GetGameModeCategoryTags(FGameplayTagContainer& OutTags) const { return OutTags.AppendTags(GameModeCategoryTags); }
+	void GetGameModeCategoryTags(FGameplayTagContainer& OutTags) const
+	{
+		return OutTags.AppendTags(GameModeCategoryTags);
+	}
 
 	/** Adds the widget to Box_TagWidgets */
 	void AddGameModeCategoryTagWidgets(TArray<UGameModeCategoryTagWidget*>& InGameModeCategoryTagWidgets);
@@ -96,37 +100,37 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UHorizontalBox* Box_TagWidgets;
-	
+
 	/** Executes UpdateTooltipState on each Warning Tooltip in TooltipData array. Calls SetShouldShowTooltipImage on result */
 	void UpdateWarningTooltips();
-	
+
 	/** Executes UpdateDynamicTooltipState on each Warning Tooltip in TooltipData array. Calls SetShouldShowTooltipImage on result */
 	void UpdateDynamicWarningTooltips();
-	
+
 	UFUNCTION()
 	void OnCheckBox_LockStateChanged(const bool bChecked);
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSHorizontalBox* BSBox;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTooltipImage* DescriptionTooltip;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* TooltipBox;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_Left;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_TagsAndTooltips;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USpacer* Indent_Left;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Description;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidgetOptional))
 	UCheckBox* CheckBox_Lock;
 
@@ -142,13 +146,13 @@ protected:
 
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget")
 	int32 IndentLevel = 0;
-	
+
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget")
 	bool bShowCheckBoxLock = false;
 
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget|Tooltip")
 	bool bShowTooltipImage = true;
-	
+
 	/** Text to show on the tooltip */
 	UPROPERTY(EditInstanceOnly, Category="MenuOptionWidget|Tooltip")
 	FText DescriptionTooltipText = FText();

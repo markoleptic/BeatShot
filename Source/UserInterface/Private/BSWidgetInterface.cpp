@@ -11,7 +11,8 @@
 #include "WidgetComponents/Tooltips/TooltipImage.h"
 #include "WidgetComponents/Tooltips/TooltipWidget.h"
 
-float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
+	USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {
 	const FString StringTextValue = UKismetStringLibrary::Replace(NewTextValue.ToString(), ",", "");
 	const float ClampedValue = FMath::Clamp(FCString::Atof(*StringTextValue), Min, Max);
@@ -21,14 +22,16 @@ float IBSWidgetInterface::OnEditableTextBoxChanged(const FText& NewTextValue, UE
 	return SnappedValue;
 }
 
-float IBSWidgetInterface::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize)
+float IBSWidgetInterface::OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange,
+	const float GridSnapSize)
 {
 	const float ReturnValue = FMath::GridSnap(NewValue, GridSnapSize);
 	TextBoxToChange->SetText(FText::AsNumber(ReturnValue));
 	return ReturnValue;
 }
 
-void IBSWidgetInterface::SetSliderAndEditableTextBoxValues(const float NewValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
+void IBSWidgetInterface::SetSliderAndEditableTextBoxValues(const float NewValue, UEditableTextBox* TextBoxToChange,
+	USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max)
 {
 	const float ClampedValue = FMath::Clamp(NewValue, Min, Max);
 	const float SnappedValue = FMath::GridSnap(ClampedValue, GridSnapSize);
@@ -119,7 +122,8 @@ FString IBSWidgetInterface::GetStringTableKeyFromComboBox(const UBSComboBoxStrin
 	return FString();
 }
 
-void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap)
+void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText,
+	const bool bInAllowTextWrap)
 {
 	if (!TooltipImage)
 	{
@@ -127,9 +131,10 @@ void IBSWidgetInterface::SetupTooltip(UTooltipImage* TooltipImage, const FText& 
 	}
 	if (TooltipText.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *TooltipImage->GetParent()->GetParent()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."),
+			*TooltipImage->GetParent()->GetParent()->GetName());
 	}
-	
+
 	TooltipImage->SetupTooltipImage(TooltipText, bInAllowTextWrap);
 	if (!TooltipImage->GetTooltipHoveredDelegate().IsBound())
 	{
@@ -146,17 +151,19 @@ void IBSWidgetInterface::SetupTooltip(const FTooltipData& InTooltipData)
 	}
 	if (InTooltipData.TooltipStringTableKey.IsEmpty() && InTooltipData.TooltipText.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."), *InTooltipData.TooltipImage->GetParent()->GetParent()->GetName());
+		UE_LOG(LogTemp, Warning, TEXT("Empty Tooltip Text for %s."),
+			*InTooltipData.TooltipImage->GetParent()->GetParent()->GetName());
 	}
-	
+
 	//if (!InTooltipData.HasBeenInitialized())
 	//{
-		// Pass Tooltip Data to Tooltip Image
-		InTooltipData.TooltipImage->SetTooltipData(InTooltipData);
+	// Pass Tooltip Data to Tooltip Image
+	InTooltipData.TooltipImage->SetTooltipData(InTooltipData);
 	//}
-	
+
 	if (!InTooltipData.TooltipImage->GetTooltipHoveredDelegate().IsBound())
 	{
-		InTooltipData.TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this, &IBSWidgetInterface::OnTooltipImageHovered);
+		InTooltipData.TooltipImage->GetTooltipHoveredDelegate().AddDynamic(this,
+			&IBSWidgetInterface::OnTooltipImageHovered);
 	}
 }

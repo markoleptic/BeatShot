@@ -20,7 +20,7 @@ static FTableRowStyle* DefaultComboBoxRowStyle = nullptr;
 #if WITH_EDITOR
 static FComboBoxStyle* EditorComboBoxStyle = nullptr;
 static FTableRowStyle* EditorComboBoxRowStyle = nullptr;
-#endif 
+#endif
 
 void UBSComboBoxString::ReleaseSlateResources(bool bReleaseChildren)
 {
@@ -67,7 +67,8 @@ void UBSComboBoxString::PostLoad()
 	}
 }
 
-void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText, const bool bShowTooltipImage, const FText& TooltipText) const
+void UBSComboBoxString::InitializeComboBoxEntry(const UBSComboBoxEntry* Entry, const FText& EntryText,
+	const bool bShowTooltipImage, const FText& TooltipText) const
 {
 	Entry->SetEntryText(EntryText);
 	Entry->SetAlwaysHideTooltipImage(!bShowTooltipImage);
@@ -98,7 +99,8 @@ UBSComboBoxString::UBSComboBoxString()
 
 	if (DefaultComboBoxRowStyle == nullptr)
 	{
-		DefaultComboBoxRowStyle = new FTableRowStyle(FUMGCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row"));
+		DefaultComboBoxRowStyle = new FTableRowStyle(
+			FUMGCoreStyle::Get().GetWidgetStyle<FTableRowStyle>("TableView.Row"));
 
 		// Unlink UMG default colors.
 		DefaultComboBoxRowStyle->UnlinkColors();
@@ -107,10 +109,11 @@ UBSComboBoxString::UBSComboBoxString()
 	WidgetStyle = *DefaultComboBoxStyle;
 	ItemStyle = *DefaultComboBoxRowStyle;
 
-#if WITH_EDITOR 
+	#if WITH_EDITOR
 	if (EditorComboBoxStyle == nullptr)
 	{
-		EditorComboBoxStyle = new FComboBoxStyle(FCoreStyle::Get().GetWidgetStyle<FComboBoxStyle>("EditorUtilityComboBox"));
+		EditorComboBoxStyle = new FComboBoxStyle(
+			FCoreStyle::Get().GetWidgetStyle<FComboBoxStyle>("EditorUtilityComboBox"));
 
 		// Unlink UMG Editor colors from the editor settings colors.
 		EditorComboBoxStyle->UnlinkColors();
@@ -132,7 +135,7 @@ UBSComboBoxString::UBSComboBoxString()
 		// The CDO isn't an editor widget and thus won't use the editor style, call post edit change to mark difference from CDO
 		PostEditChange();
 	}
-#endif // WITH_EDITOR
+	#endif // WITH_EDITOR
 
 	WidgetStyle.UnlinkColors();
 	ItemStyle.UnlinkColors();
@@ -145,7 +148,7 @@ UBSComboBoxString::UBSComboBoxString()
 	HasDownArrow = true;
 	EnableGamepadNavigationMode = true;
 	// We don't want to try and load fonts on the server.
-	if ( !IsRunningDedicatedServer() )
+	if (!IsRunningDedicatedServer())
 	{
 		static ConstructorHelpers::FObjectFinder<UFont> RobotoFontObj(*UWidget::GetDefaultFontName());
 		Font = FSlateFontInfo(RobotoFontObj.Object, 16, FName("Bold"));
@@ -170,7 +173,7 @@ void UBSComboBoxString::UpdateOrGenerateWidget(TSharedPtr<FString> Item)
 TSharedRef<SWidget> UBSComboBoxString::HandleGenerateWidget(TSharedPtr<FString> Item) const
 {
 	const FString StringItem = Item.IsValid() ? *Item : FString();
-	
+
 	// Call the user's delegate to see if they want to generate a custom widget bound to the data source.
 	if (!IsDesignTime() && OnGenerateWidgetEventDelegate.IsBound())
 	{
@@ -184,14 +187,13 @@ TSharedRef<SWidget> UBSComboBoxString::HandleGenerateWidget(TSharedPtr<FString> 
 			return Widget->TakeWidget();
 		}
 	}
-	
+
 	// If a row wasn't generated just create the default one, a simple text block of the item's name.
-	return SNew(STextBlock)
-		.Text(FText::FromString(StringItem))
-		.Font(Font);
+	return SNew(STextBlock).Text(FText::FromString(StringItem)).Font(Font);
 }
 
-void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items, const ESelectInfo::Type SelectionType)
+void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>& Items,
+	const ESelectInfo::Type SelectionType)
 {
 	CurrentlySelectedOptionPointers = Items;
 
@@ -200,7 +202,7 @@ void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>
 	{
 		ComboBoxContent->SetContent(HandleSelectionChangedGenerateWidget(CurrentlySelectedOptionPointers));
 	}
-	
+
 	if (!IsDesignTime())
 	{
 		TArray<FString> Temp;
@@ -218,7 +220,8 @@ void UBSComboBoxString::HandleSelectionChanged(const TArray<TSharedPtr<FString>>
 	// UE_LOG(LogTemp, Display, TEXT("GetSelectedOptionCount %d"), GetSelectedOptionCount());
 }
 
-TSharedRef<SWidget> UBSComboBoxString::HandleSelectionChangedGenerateWidget(TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const
+TSharedRef<SWidget> UBSComboBoxString::HandleSelectionChangedGenerateWidget(
+	TConstArrayView<SBSComboBox<TSharedPtr<FString>>::NullableOptionType> Items) const
 {
 	// Call the user's delegate to see if they want to generate a custom widget bound to the data source.
 	if (!IsDesignTime() && OnSelectionChanged_GenerateWidgetForMultiSelection.IsBound())
@@ -254,9 +257,7 @@ TSharedRef<SWidget> UBSComboBoxString::HandleSelectionChangedGenerateWidget(TCon
 		}
 	}
 	// If a row wasn't generated just create the default one, a simple text block of the item's name.
-	return SNew(STextBlock)
-		.Text(FText::FromString(DefaultListOfItems))
-		.Font(Font);
+	return SNew(STextBlock).Text(FText::FromString(DefaultListOfItems)).Font(Font);
 }
 
 void UBSComboBoxString::HandleOpening()
@@ -267,40 +268,37 @@ void UBSComboBoxString::HandleOpening()
 TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 {
 	ActiveTooltipWidget = ConstructTooltipWidget();
-	
+
 	int32 InitialIndex = GetIndexOfOption(GetSelectedOption());
-	
+
 	TSharedPtr<FString> CurrentOptionPtr;
-	
-	if ( InitialIndex != -1 )
+
+	if (InitialIndex != -1)
 	{
 		CurrentOptionPtr = Options[InitialIndex];
 	}
-	
-	SlateComboBox =
-		SNew(SBSComboBox<TSharedPtr<FString>>)
-		.ComboBoxStyle(&WidgetStyle)
-		.ItemStyle(&ItemStyle)
-		.ForegroundColor(ForegroundColor)
-		.OptionsSource(&Options)
-		.InitiallySelectedItems(CurrentlySelectedOptionPointers)
-		.ContentPadding(ContentPadding)
-		.MaxListHeight(MaxListHeight)
-		.HasDownArrow(HasDownArrow)
-		.EnableGamepadNavigationMode(EnableGamepadNavigationMode)
-		.OnGenerateWidget(BIND_UOBJECT_DELEGATE(SBSComboBox<TSharedPtr<FString>>::FOnGenerateWidget, HandleGenerateWidget))
-		.OnMultiSelectionChanged(BIND_UOBJECT_DELEGATE(FOnMultiSelectionChanged, HandleSelectionChanged))
-		.OnComboBoxOpening(BIND_UOBJECT_DELEGATE(FOnComboBoxOpening, HandleOpening))
-		.IsFocusable(bIsFocusable)
-		.CloseComboBoxOnSelectionChanged(bCloseComboBoxOnSelectionChanged)
-		.SelectionMode(GetSelectionModeType(SelectionMode))
-		.MaxNumSelectedItems(MaxNumberOfSelections)
-		.CanSelectNone(bCanSelectNone)
-		[
-			SAssignNew(ComboBoxContent, SBox)
-		];
 
-	if ( InitialIndex != -1 )
+	SlateComboBox = SNew(SBSComboBox<TSharedPtr<FString>>).ComboBoxStyle(&WidgetStyle).ItemStyle(&ItemStyle).
+	                                                       ForegroundColor(ForegroundColor).OptionsSource(&Options).
+	                                                       InitiallySelectedItems(CurrentlySelectedOptionPointers).
+	                                                       ContentPadding(ContentPadding).MaxListHeight(MaxListHeight).
+	                                                       HasDownArrow(HasDownArrow).
+	                                                       EnableGamepadNavigationMode(EnableGamepadNavigationMode).
+	                                                       OnGenerateWidget(BIND_UOBJECT_DELEGATE(
+		                                                       SBSComboBox<TSharedPtr<FString>>::FOnGenerateWidget,
+		                                                       HandleGenerateWidget)).
+	                                                       OnMultiSelectionChanged(
+		                                                       BIND_UOBJECT_DELEGATE(FOnMultiSelectionChanged,
+			                                                       HandleSelectionChanged)).
+	                                                       OnComboBoxOpening(BIND_UOBJECT_DELEGATE(FOnComboBoxOpening,
+		                                                       HandleOpening)).IsFocusable(bIsFocusable).
+	                                                       CloseComboBoxOnSelectionChanged(
+		                                                       bCloseComboBoxOnSelectionChanged).SelectionMode(
+		                                                       GetSelectionModeType(SelectionMode)).MaxNumSelectedItems(
+		                                                       MaxNumberOfSelections).CanSelectNone(bCanSelectNone)[
+		SAssignNew(ComboBoxContent, SBox)];
+
+	if (InitialIndex != -1)
 	{
 		// Generate the widget for the initially selected widget if needed
 		UpdateOrGenerateWidget(CurrentOptionPtr);
@@ -318,9 +316,9 @@ void UBSComboBoxString::AddOption(const FString& Option)
 bool UBSComboBoxString::RemoveOption(const FString& Option)
 {
 	const int32 OptionIndex = GetIndexOfOption(Option);
-	if ( OptionIndex != -1 )
+	if (OptionIndex != -1)
 	{
-		if ( CurrentlySelectedOptionPointers.Contains(Options[OptionIndex]))
+		if (CurrentlySelectedOptionPointers.Contains(Options[OptionIndex]))
 		{
 			ClearSelection();
 		}
@@ -364,7 +362,7 @@ int32 UBSComboBoxString::GetSelectedIndex() const
 			}
 		}
 	}
-	
+
 	return -1;
 }
 
@@ -458,7 +456,7 @@ void UBSComboBoxString::SetSelectedIndices(const TArray<int32> InIndices)
 {
 	// Clear all current selections
 	ClearSelection();
-	
+
 	if (ComboBoxContent.IsValid())
 	{
 		// Repopulate CurrentlySelectedOptionPointers, so that SetContent and SetItemSelection is only called once
@@ -468,7 +466,7 @@ void UBSComboBoxString::SetSelectedIndices(const TArray<int32> InIndices)
 			{
 				continue;
 			}
-			
+
 			// Add selection to local option pointers if not present
 			if (!CurrentlySelectedOptionPointers.Contains(Options[Index]))
 			{
@@ -520,13 +518,13 @@ void UBSComboBoxString::RefreshOptions()
 void UBSComboBoxString::ClearOptions()
 {
 	ClearSelection();
-	
+
 	for (TSharedPtr<FString> String : Options)
 	{
 		String.Reset();
 	}
 	Options.Empty();
-	
+
 	if (SlateComboBox.IsValid())
 	{
 		SlateComboBox->RefreshOptions();
@@ -540,7 +538,7 @@ void UBSComboBoxString::ClearSelection()
 		String.Reset();
 	}
 	CurrentlySelectedOptionPointers.Empty();
-	
+
 	if (SlateComboBox.IsValid())
 	{
 		SlateComboBox->ClearSelection();

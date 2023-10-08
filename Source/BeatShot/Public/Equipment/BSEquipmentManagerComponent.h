@@ -38,7 +38,8 @@ struct FBSAppliedEquipmentEntry : public FFastArraySerializerItem
 	GENERATED_BODY()
 
 	FBSAppliedEquipmentEntry()
-	{}
+	{
+	}
 
 	FString GetDebugString() const;
 
@@ -59,9 +60,6 @@ private:
 };
 
 
-
-
-
 /** An array of FBSAppliedEquipmentEntries, which each contain a pointer to EquipmentInstance and the EquipmentDefinition */
 USTRUCT(BlueprintType)
 struct FBSEquipmentList : public FFastArraySerializer
@@ -72,8 +70,7 @@ struct FBSEquipmentList : public FFastArraySerializer
 	{
 	}
 
-	FBSEquipmentList(UActorComponent* InOwnerComponent)
-		: OwnerComponent(InOwnerComponent)
+	FBSEquipmentList(UActorComponent* InOwnerComponent) : OwnerComponent(InOwnerComponent)
 	{
 	}
 
@@ -86,12 +83,13 @@ public:
 
 	bool NetDeltaSerialize(FNetDeltaSerializeInfo& DeltaParms)
 	{
-		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(Entries, DeltaParms, *this);
+		return FFastArraySerializer::FastArrayDeltaSerialize<FBSAppliedEquipmentEntry, FBSEquipmentList>(Entries,
+			DeltaParms, *this);
 	}
 
 	/** Creates and adds a new FBSAppliedEquipmentEntry, also granting any associated abilities */
 	UBSEquipmentInstance* AddEntry(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition);
-	
+
 	/** Removes an existing FBSAppliedEquipmentEntry, also removing any associated abilities */
 	void RemoveEntry(UBSEquipmentInstance* Instance);
 
@@ -99,7 +97,7 @@ private:
 	UBSAbilitySystemComponent* GetAbilitySystemComponent() const;
 
 	friend UBSEquipmentManagerComponent;
-	
+
 	// Replicated list of equipment entries
 	UPROPERTY()
 	TArray<FBSAppliedEquipmentEntry> Entries;
@@ -107,14 +105,12 @@ private:
 	UPROPERTY(NotReplicated)
 	TObjectPtr<UActorComponent> OwnerComponent;
 };
-template<>
+
+template <>
 struct TStructOpsTypeTraits<FBSEquipmentList> : public TStructOpsTypeTraitsBase2<FBSEquipmentList>
 {
 	enum { WithNetDeltaSerializer = true };
 };
-
-
-
 
 
 /** The component responsible for equipment management. Contains an FBSEquipmentList, which holds an array of FBSAppliedEquipmentEntries.
@@ -127,7 +123,7 @@ class BEATSHOT_API UBSEquipmentManagerComponent : public UPawnComponent
 
 public:
 	UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
 	UBSEquipmentInstance* EquipItem(TSubclassOf<UBSEquipmentDefinition> EquipmentDefinition);
 
@@ -135,7 +131,8 @@ public:
 	void UnequipItem(UBSEquipmentInstance* ItemInstance);
 
 	//~UObject interface
-	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch,
+		FReplicationFlags* RepFlags) override;
 	//~End of UObject interface
 
 	//~UActorComponent interface

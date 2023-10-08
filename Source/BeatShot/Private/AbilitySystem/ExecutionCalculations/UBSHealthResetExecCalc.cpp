@@ -11,11 +11,13 @@ struct BSHealthStatics
 {
 	FGameplayEffectAttributeCaptureDefinition HealthDef;
 	FGameplayEffectAttributeCaptureDefinition MaxHealthDef;
-	
+
 	BSHealthStatics()
 	{
-		HealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHealthAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
-		MaxHealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetMaxHealthAttribute(), EGameplayEffectAttributeCaptureSource::Target, false);
+		HealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetHealthAttribute(),
+			EGameplayEffectAttributeCaptureSource::Target, false);
+		MaxHealthDef = FGameplayEffectAttributeCaptureDefinition(UBSAttributeSetBase::GetMaxHealthAttribute(),
+			EGameplayEffectAttributeCaptureSource::Target, false);
 	}
 };
 
@@ -31,7 +33,8 @@ UUBSHealthResetExecCalc::UUBSHealthResetExecCalc()
 	RelevantAttributesToCapture.Add(HealthStatics().MaxHealthDef);
 }
 
-void UUBSHealthResetExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
+void UUBSHealthResetExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 	Super::Execute_Implementation(ExecutionParams, OutExecutionOutput);
 
@@ -48,11 +51,14 @@ void UUBSHealthResetExecCalc::Execute_Implementation(const FGameplayEffectCustom
 	float CurrentHealth = 0.f;
 	float NewHealth = 0.f;
 
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().HealthDef, EvaluationParameters, CurrentHealth);
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().MaxHealthDef, EvaluationParameters, NewHealth);
-	
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().HealthDef, EvaluationParameters,
+		CurrentHealth);
+	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(HealthStatics().MaxHealthDef, EvaluationParameters,
+		NewHealth);
+
 	if (NewHealth > CurrentHealth)
 	{
-		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UBSAttributeSetBase::GetHealthAttribute(), EGameplayModOp::Additive, NewHealth - CurrentHealth));
+		OutExecutionOutput.AddOutputModifier(FGameplayModifierEvaluatedData(UBSAttributeSetBase::GetHealthAttribute(),
+			EGameplayModOp::Additive, NewHealth - CurrentHealth));
 	}
 }

@@ -22,7 +22,7 @@ void UPostGameMenuWidget::NativeConstruct()
 	MenuButton_Settings->SetDefaults(Box_Settings, MenuButton_FAQ);
 	MenuButton_FAQ->SetDefaults(Box_FAQ, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(nullptr, MenuButton_Scores);
-	
+
 	MenuButton_Scores->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_PlayAgain->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	MenuButton_GameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
@@ -32,7 +32,7 @@ void UPostGameMenuWidget::NativeConstruct()
 
 	QuitMenuWidget->OnExitQuitMenu.BindDynamic(this, &ThisClass::UPostGameMenuWidget::SetQuitMenuButtonsInActive);
 	FadeInWidgetDelegate.BindDynamic(this, &UPostGameMenuWidget::SetScoresWidgetVisibility);
-	
+
 	BindToAnimationFinished(FadeInWidget, FadeInWidgetDelegate);
 	PlayFadeInWidget();
 }
@@ -51,11 +51,11 @@ void UPostGameMenuWidget::SetStyles()
 void UPostGameMenuWidget::ShowAudioFormatSelect()
 {
 	AudioSelectWidget = CreateWidget<UAudioSelectWidget>(this, AudioSelectClass);
-	
-	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this] (const FBS_AudioConfig& AudioConfig)
+
+	AudioSelectWidget->OnStartButtonClickedDelegate.BindLambda([this](const FBS_AudioConfig& AudioConfig)
 	{
 		FGameModeTransitionState GameModeTransitionState;
-		
+
 		GameModeTransitionState.TransitionState = ETransitionState::PlayAgain;
 		GameModeTransitionState.BSConfig.AudioConfig.SongTitle = AudioConfig.SongTitle;
 		GameModeTransitionState.BSConfig.AudioConfig.SongLength = AudioConfig.SongLength;
@@ -64,11 +64,11 @@ void UPostGameMenuWidget::ShowAudioFormatSelect()
 		GameModeTransitionState.BSConfig.AudioConfig.SongPath = AudioConfig.SongPath;
 		GameModeTransitionState.BSConfig.AudioConfig.bPlaybackAudio = AudioConfig.bPlaybackAudio;
 		GameModeTransitionState.BSConfig.AudioConfig.AudioFormat = AudioConfig.AudioFormat;
-		
+
 		GameModesWidget->OnGameModeStateChanged.Broadcast(GameModeTransitionState);
 		AudioSelectWidget->FadeOut();
 	});
-	
+
 	AudioSelectWidget->AddToViewport();
 	AudioSelectWidget->FadeIn();
 }

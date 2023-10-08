@@ -30,7 +30,7 @@ public:
 
 	/** Returns true if there is a CustomGameMode matching the GameModeName */
 	bool IsCustomGameMode(const FString& GameModeName) const;
-	
+
 private:
 	UPROPERTY()
 	TArray<FBSConfig> CustomGameModes;

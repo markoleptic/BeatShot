@@ -18,8 +18,8 @@ enum class EVideoSettingType : uint8
 	Shading UMETA(DisplayName="Shading"),
 	Texture UMETA(DisplayName="Texture"),
 	ViewDistance UMETA(DisplayName="ViewDistance"),
-	VisualEffect UMETA(DisplayName="VisualEffect")
-};
+	VisualEffect UMETA(DisplayName="VisualEffect")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EVideoSettingType, EVideoSettingType::AntiAliasing, EVideoSettingType::VisualEffect);
 
 /** Button representing a video setting designed to be stored in a linked list. Contains a pointer to the next one */
@@ -27,17 +27,18 @@ UCLASS()
 class USERINTERFACE_API UVideoSettingButton : public UBSButton
 {
 	GENERATED_BODY()
-	
+
 public:
 	/** Create functions like this with additional parameters to store info about the button being pressed. Remember to call SetHasSetDefaults in any child implementations */
-	void SetDefaults(const EVideoSettingType InVideoSettingType, const uint8 VideoSettingQuality, UBSButton* NextButton = nullptr);
+	void SetDefaults(const EVideoSettingType InVideoSettingType, const uint8 VideoSettingQuality,
+		UBSButton* NextButton = nullptr);
 
 	/** Returns the video setting type for this button widget */
 	EVideoSettingType GetVideoSettingType() const { return SettingType; }
 
 	/** Returns the video setting quality for this button widget */
 	uint8 GetVideoSettingQuality() const { return Quality; }
-	
+
 	virtual UVideoSettingButton* GetNext() const override { return Cast<UVideoSettingButton>(Next); }
 
 private:

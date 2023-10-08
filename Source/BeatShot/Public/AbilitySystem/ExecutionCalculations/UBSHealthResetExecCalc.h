@@ -12,9 +12,9 @@ class BEATSHOT_API UUBSHealthResetExecCalc : public UGameplayEffectExecutionCalc
 {
 	GENERATED_BODY()
 
-		
 public:
 	UUBSHealthResetExecCalc();
 
-	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
+	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+		OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 };

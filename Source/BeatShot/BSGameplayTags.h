@@ -72,7 +72,7 @@ struct FBSGameplayTags
 	FGameplayTag State_Moving;
 	FGameplayTag State_Sprinting;
 	FGameplayTag State_PlayingBSGameMode;
-	
+
 	FGameplayTag State_Weapon_AutomaticFire;
 	FGameplayTag State_Weapon_ShowDecals;
 	FGameplayTag State_Weapon_ShowTracers;

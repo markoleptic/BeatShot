@@ -3,7 +3,8 @@
 
 #include "WidgetComponents/Buttons/VideoSettingButton.h"
 
-void UVideoSettingButton::SetDefaults(const EVideoSettingType InVideoSettingType, const uint8 VideoSettingQuality, UBSButton* NextButton)
+void UVideoSettingButton::SetDefaults(const EVideoSettingType InVideoSettingType, const uint8 VideoSettingQuality,
+	UBSButton* NextButton)
 {
 	SettingType = InVideoSettingType;
 	Quality = VideoSettingQuality;

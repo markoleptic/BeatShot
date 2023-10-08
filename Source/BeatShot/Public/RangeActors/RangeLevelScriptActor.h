@@ -15,7 +15,7 @@ UCLASS()
 class BEATSHOT_API ARangeLevelScriptActor : public ALevelScriptActor, public ISaveLoadInterface
 {
 	GENERATED_BODY()
-	
+
 protected:
 	ARangeLevelScriptActor();
 
@@ -23,7 +23,8 @@ protected:
 
 	/** Callback function to respond to video setting changes */
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
+	virtual void
+	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Lighting|References")
 	TSoftObjectPtr<APostProcessVolume> PostProcessVolume;

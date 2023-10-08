@@ -6,13 +6,17 @@
 #include "Blueprint/UserWidget.h"
 #include "BSButton.generated.h"
 
+class UCommonTextBlock;
 class UTextBlock;
 class UImage;
 class UButton;
 class UMaterialInstanceDynamic;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBSButtonButtonPressed, const UBSButton*, BSButton);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBSButtonButtonPressed_NoParams);
+
+DECLARE_MULTICAST_DELEGATE(FOnBSButtonButtonPressed_NonDynamic);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPressedAnimFinished);
 
 /** The base button used for BeatShot user interface. \n \n \b- Supports mutually exclusive buttons being "active" at once using pointers to other buttons and the SetActive and SetInActive functions, but can also
@@ -51,22 +55,28 @@ public:
 	/** Change the button text font */
 	void SetButtonFont(const FSlateFontInfo& InSlateFontInfo);
 
+	/** Sets the text wrapping for the button text */
+	void SetWrapTextAt(const int32 InWrapTextAt);
+
 	/** Broadcast when the button is pressed */
 	FOnBSButtonButtonPressed OnBSButtonPressed;
 
 	/** Broadcast when the button is pressed */
-	FOnBSButtonButtonPressed_NoParams OnBSButtonButtonClicked_NoParams;
-	
+	FOnBSButtonButtonPressed_NoParams OnBSButtonButtonPressed_NoParams;
+
+	/** Broadcast when the button is pressed */
+	FOnBSButtonButtonPressed_NonDynamic OnBSButtonButtonPressed_NonDynamic;
+
 	/** Broadcast when the pressed animation is finished */
 	FOnPressedAnimFinished OnPressedAnimFinished;
 
 protected:
 	/** Sets the value of bHasSetDefaults */
 	void SetHasSetDefaults(const bool bHasSet) { bHasSetDefaults = bHasSet; }
-	
+
 	/** TextBlock to show on top of the ImageMaterial */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Widgets",  meta = (BindWidget))
-	UTextBlock* TextBlock;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Widgets", meta = (BindWidget))
+	UCommonTextBlock* TextBlock;
 
 	/** Invisible button used to access hovered/pressed events */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Widgets", meta = (BindWidget))
@@ -83,7 +93,7 @@ protected:
 	/** Name of the Pressed scalar material parameter for the ImageMaterial */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "BSButton|Widgets|Image")
 	FName PressedScalarParameterName = "Pressed";
-
+	
 	/** Dynamic material instance of the ImageMaterial */
 	UPROPERTY(BlueprintReadOnly, Category = "BSButton|Widgets|Image")
 	UMaterialInstanceDynamic* DynamicImageMaterial;
@@ -96,6 +106,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	FText ButtonText;
 
+	/** Text to display on top of ImageMaterial; Sets the TextBlock text */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
+	int32 WrapTextAt = 0;
+
 	/** Playback speed used for all animations */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	float PlaybackSpeed = 3.f;
@@ -103,7 +117,7 @@ protected:
 	/** Whether or not to restore the pre-pressed state of the button after pressing. This just sets the PressedScalarParameter value to 0 after the animation finishes */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	bool bRestoreClickedButtonState = false;
-	
+
 	/** Animation to play when the button is pressed */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "BSButton|Animation", Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* Anim_OnPressed;
@@ -120,7 +134,7 @@ protected:
 
 	/** The uint8 version of the Enum Value initialized during SetDefaults */
 	uint8 EnumValue = 255;
-	
+
 	UFUNCTION()
 	virtual void OnPressed_Button();
 	UFUNCTION()
@@ -132,15 +146,15 @@ protected:
 	virtual void PlayAnim_OnPressed();
 	UFUNCTION()
 	virtual void PlayAnim_OnHovered();
-	
+
 	UFUNCTION()
 	virtual void PlayAnimReverse_OnPressed();
 	UFUNCTION()
 	virtual void PlayAnimReverse_OnHovered();
-	
+
 	UFUNCTION()
 	virtual void OnAnimFinished_OnPressed();
-	
+
 	bool bIsClicked = false;
 	bool bHasSetDefaults = false;
 };

@@ -31,7 +31,7 @@ class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCat
 	GENERATED_BODY()
 
 	friend class USettingsMenuWidget;
-	
+
 	virtual void NativeConstruct() override;
 
 	/** Populates the settings menu with InVideoAndSoundSettings */
@@ -39,9 +39,12 @@ class USERINTERFACE_API USettingsMenuWidget_VideoAndSound : public UBSSettingCat
 
 	/** Returns the video and sound settings that are currently populated in the menu */
 	FPlayerSettings_VideoAndSound GetVideoAndSoundSettings() const;
-	
+
 	/** Returns OnPlayerSettingsChangedDelegate_VideoAndSound, the delegate that is broadcast when this class saves Video and Sound settings */
-	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate() {return OnPlayerSettingsChangedDelegate_VideoAndSound;}
+	FOnPlayerSettingsChanged_VideoAndSound& GetPublicVideoAndSoundSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_VideoAndSound;
+	}
 
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | PopUp")
@@ -52,12 +55,12 @@ protected:
 	USoundClass* MenuSound;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Classes | Sound")
 	USoundMix* GlobalSoundMix;
-	
+
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Save;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -109,7 +112,7 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_ResolutionScale;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_VSync;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVideoSettingOptionWidget* VideoSettingOptionWidget_AA;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -128,7 +131,7 @@ protected:
 	UVideoSettingOptionWidget* VideoSettingOptionWidget_VD;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UVideoSettingOptionWidget* VideoSettingOptionWidget_VEQ;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_FPSCounter;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -159,12 +162,12 @@ private:
 
 	UFUNCTION()
 	void OnBSButtonPressed_SaveReset(const UBSButton* Button);
-	
+
 	UFUNCTION()
 	void OnVideoSettingOptionWidget_ButtonPressed(const EVideoSettingType VideoSettingType, const uint8 Quality);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-	
+
 	UFUNCTION()
 	void OnSelectionChanged_WindowMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
@@ -181,7 +184,7 @@ private:
 	void OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
-	
+
 	UFUNCTION()
 	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
 	UFUNCTION()
@@ -192,23 +195,23 @@ private:
 	void OnTextCommitted_FPSLimitMenu(const FText& Text, ETextCommit::Type CommitType);
 	UFUNCTION()
 	void OnTextCommitted_FPSLimitGame(const FText& Text, ETextCommit::Type CommitType);
-	
+
 	/** Function bound to RevertVideoSettingsTimer_UpdateSecond */
 	UFUNCTION()
 	void RevertVideoSettingsTimerCallback();
-	
+
 	/** Clears and repopulates the ComboBox_Resolution based on the resolutions from GetSupportedFullscreenResolutions or GetConvenientWindowedResolutions */
 	void PopulateResolutionComboBox();
-	
+
 	/** Sets enabled/disabled states for any NVIDIA DLSS related settings */
 	void HandleDLSSEnabledChanged(const EDLSSEnabledMode DLSSEnabledMode);
 
 	/** Forces certain DLSS/NIS settings depending on if DLSS is enabled, and changes those selected options. Only called when a user changes the DLSS Enabled Mode selection */
 	void HandleDLSSDependencies(const EDLSSEnabledMode DLSSEnabledMode);
-	
+
 	/** Returns the selected DLSS enabled mode */
 	EDLSSEnabledMode GetSelectedDLSSEnabledMode() const;
-	
+
 	/** Returns the selected Frame Generation mode */
 	UStreamlineDLSSGMode GetSelectedFrameGenerationMode() const;
 
@@ -227,7 +230,7 @@ private:
 	FString GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_DLSS_SuperResolution(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_Reflex(const FString& EnumString);
-	
+
 	/** Holds the last confirmed resolution */
 	FIntPoint LastConfirmedResolution;
 
@@ -236,7 +239,7 @@ private:
 
 	/** Timer that starts when window mode or resolution is changed. If it expires, it reverts those changes. Not bound to any function, but checked every second in RevertVideoSettingsTimerCallback */
 	FTimerHandle RevertVideoSettingsTimer;
-	
+
 	/** Timer that starts when window mode or resolution is changed, and calls RevertVideoSettingsTimerCallback every second */
 	FTimerHandle RevertVideoSettingsTimer_UpdateSecond;
 };

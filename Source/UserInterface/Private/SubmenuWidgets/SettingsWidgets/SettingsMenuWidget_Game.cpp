@@ -18,20 +18,28 @@ void USettingsMenuWidget_Game::NativeConstruct()
 	MenuOption_PeakTargetColor->OnColorChanged.BindUFunction(this, "OnOnColorChanged_PeakTarget");
 	MenuOption_EndTargetColor->OnColorChanged.BindUFunction(this, "OnOnColorChanged_EndTarget");
 	MenuOption_InactiveColor->OnColorChanged.BindUFunction(this, "OnColorChanged_BeatGridInactive");
-	MenuOption_UseSeparateOutlineColor->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_UseSeparateOutlineColor);
+	MenuOption_UseSeparateOutlineColor->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_UseSeparateOutlineColor);
 	MenuOption_TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnColorChanged_TargetOutline");
-	MenuOption_CombatTextFrequency->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	
+	MenuOption_CombatTextFrequency->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
+
 	MenuOption_CombatTextFrequency->SetValues(0, 100, 1);
-	MenuOption_ShowStreakCombatText->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowCombatText);
+	MenuOption_ShowStreakCombatText->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_ShowCombatText);
 
 	MenuOption_Recoil->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_Recoil);
-	MenuOption_AutomaticFire->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_AutomaticFire);
-	MenuOption_ShowBulletDecals->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowBulletDecals);
-	MenuOption_ShowBulletTracers->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowBulletTracers);
-	MenuOption_ShowMuzzleFlash->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowMuzzleFlash);
+	MenuOption_AutomaticFire->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_AutomaticFire);
+	MenuOption_ShowBulletDecals->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_ShowBulletDecals);
+	MenuOption_ShowBulletTracers->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_ShowBulletTracers);
+	MenuOption_ShowMuzzleFlash->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_ShowMuzzleFlash);
 	MenuOption_ShowMesh->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowMesh);
-	MenuOption_ShowHitTimingWidget->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_ShowHitTimingWidget);
+	MenuOption_ShowHitTimingWidget->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_ShowHitTimingWidget);
 
 	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
 	Button_Revert->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
@@ -53,9 +61,9 @@ void USettingsMenuWidget_Game::InitializeGameSettings(const FPlayerSettings_Game
 	MenuOption_EndTargetColor->InitializeColor(PlayerSettings_Game.EndTargetColor);
 	MenuOption_InactiveColor->InitializeColor(PlayerSettings_Game.InactiveTargetColor);
 	MenuOption_TargetOutlineColor->InitializeColor(PlayerSettings_Game.TargetOutlineColor);
-	
+
 	MenuOption_CombatTextFrequency->SetValue(PlayerSettings_Game.CombatTextFrequency);
-	
+
 	MenuOption_UseSeparateOutlineColor->CheckBox->SetIsChecked(PlayerSettings_Game.bUseSeparateOutlineColor);
 	MenuOption_ShowStreakCombatText->CheckBox->SetIsChecked(PlayerSettings_Game.bShowStreakCombatText);
 	MenuOption_Recoil->CheckBox->SetIsChecked(PlayerSettings_Game.bShouldRecoil);
@@ -63,7 +71,8 @@ void USettingsMenuWidget_Game::InitializeGameSettings(const FPlayerSettings_Game
 	MenuOption_ShowBulletDecals->CheckBox->SetIsChecked(PlayerSettings_Game.bShowBulletDecals);
 	MenuOption_ShowBulletTracers->CheckBox->SetIsChecked(PlayerSettings_Game.bShowBulletTracers);
 	MenuOption_ShowMuzzleFlash->CheckBox->SetIsChecked(PlayerSettings_Game.bShowMuzzleFlash);
-	MenuOption_ShowMesh->CheckBox->SetIsChecked(PlayerSettings_Game.bShowCharacterMesh && PlayerSettings_Game.bShowWeaponMesh);
+	MenuOption_ShowMesh->CheckBox->SetIsChecked(
+		PlayerSettings_Game.bShowCharacterMesh && PlayerSettings_Game.bShowWeaponMesh);
 	MenuOption_ShowHitTimingWidget->CheckBox->SetIsChecked(PlayerSettings_Game.bShowHitTimingWidget);
 
 	if (PlayerSettings_Game.bShowStreakCombatText)
@@ -74,7 +83,7 @@ void USettingsMenuWidget_Game::InitializeGameSettings(const FPlayerSettings_Game
 	{
 		MenuOption_CombatTextFrequency->SetVisibility(ESlateVisibility::Collapsed);
 	}
-	
+
 	if (PlayerSettings_Game.bUseSeparateOutlineColor)
 	{
 		MenuOption_TargetOutlineColor->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -204,7 +213,7 @@ void USettingsMenuWidget_Game::OnButtonClicked_BSButton(const UBSButton* Button)
 void USettingsMenuWidget_Game::OnButtonClicked_Save()
 {
 	SavePlayerSettings(NewGameSettings);
-	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_Game"));
+	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_Game"));
 	SavedTextWidget->PlayFadeInFadeOut();
 	InitialGameSettings = NewGameSettings;
 }

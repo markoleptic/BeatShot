@@ -10,10 +10,11 @@ UBSAT_AimToTarget::UBSAT_AimToTarget()
 	bTickingTask = true;
 }
 
-UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbility, FName TaskInstanceName, UCurveFloat* RotationCurve, ATarget* TargetToDestroy, float TimelinePlaybackRate)
+UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbility, FName TaskInstanceName,
+	UCurveFloat* RotationCurve, ATarget* TargetToDestroy, float TimelinePlaybackRate)
 {
 	UBSAT_AimToTarget* MyObj = NewAbilityTask<UBSAT_AimToTarget>(OwningAbility, TaskInstanceName);
-	
+
 	MyObj->Controller = OwningAbility->GetControllerFromActorInfo();
 	MyObj->Target = TargetToDestroy;
 	MyObj->RotationCurve = RotationCurve;
@@ -24,9 +25,10 @@ UBSAT_AimToTarget* UBSAT_AimToTarget::AimToTarget(UBSGameplayAbility* OwningAbil
 	MyObj->AimBotTimeline.AddInterpFloat(RotationCurve, MyObj->OnTimelineFloat);
 	MyObj->AimBotTimeline.SetTimelineFinishedFunc(MyObj->OnTimelineEvent);
 	MyObj->AimBotTimeline.SetPlayRate(TimelinePlaybackRate);
-	
-	MyObj->CancelledHandle = OwningAbility->OnGameplayAbilityCancelled.AddUObject(MyObj, &UBSAT_AimToTarget::OnAbilityCancelled);
-	
+
+	MyObj->CancelledHandle = OwningAbility->OnGameplayAbilityCancelled.AddUObject(MyObj,
+		&UBSAT_AimToTarget::OnAbilityCancelled);
+
 	return MyObj;
 }
 
@@ -84,7 +86,8 @@ void UBSAT_AimToTarget::OnTimelineTick(const float Alpha) const
 	FVector Loc;
 	FRotator Rot;
 	Controller->GetActorEyesViewPoint(Loc, Rot);
-	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot, UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, false));
+	Controller->SetControlRotation(UKismetMathLibrary::RLerp(Rot,
+		UKismetMathLibrary::FindLookAtRotation(Loc, Target->GetActorLocation()), Alpha, false));
 }
 
 void UBSAT_AimToTarget::OnTimelineCompleted()

@@ -19,20 +19,25 @@ void AMainMenuGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	UGameplayStatics::SetBaseSoundMix(GetWorld(), GlobalSoundMix);
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound, LoadPlayerSettings().VideoAndSound.GlobalVolume / 100, 1, 0.0f, true);
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound, LoadPlayerSettings().VideoAndSound.MenuVolume / 100, 1, 0.0f, true);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound,
+		LoadPlayerSettings().VideoAndSound.GlobalVolume / 100, 1, 0.0f, true);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound,
+		LoadPlayerSettings().VideoAndSound.MenuVolume / 100, 1, 0.0f, true);
 
 	MainMenuMusicComp->FadeIn(2.f, 1.f, 0.f);
 }
 
 void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)
 {
-	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator);
+	TargetManager = GetWorld()->SpawnActor<ATargetManagerPreview>(TargetManagerClass, FVector::Zero(),
+		FRotator::ZeroRotator);
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
 	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
-	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview, &UCustomGameModesWidget_Preview::ConstructTargetWidget);
-	
-	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this, &ThisClass::OnRequestSimulationStateChange);
+	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview,
+		&UCustomGameModesWidget_Preview::ConstructTargetWidget);
+
+	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this,
+		&ThisClass::OnRequestSimulationStateChange);
 	GameModesWidget->OnGameModeBreakingChange.AddUObject(this, &ThisClass::OnGameModeBreakingChange);
 }
 
@@ -64,11 +69,11 @@ void AMainMenuGameMode::StartSimulation()
 	{
 		return;
 	}
-	
+
 	TargetManager->RestartSimulation();
 	TargetManager->SetSimulatePlayerDestroyingTargets(true, 1.1f);
 	TargetManager->SetShouldSpawn(true);
-	
+
 	// Bind the simulation timer
 	SimulationTimerDelegate.BindUObject(this, &ThisClass::FinishSimulation);
 	SimulationIntervalDelegate.BindUObject(this, &ThisClass::OnSimulationInterval);
@@ -76,7 +81,8 @@ void AMainMenuGameMode::StartSimulation()
 	// Start timers
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.SetTimer(SimulationTimer, SimulationTimerDelegate, 15.f, false);
-	TimerManager.SetTimer(SimulationIntervalTimer, SimulationIntervalDelegate, TargetManager->GetSimulation_TargetSpawnCD(), true, 1.f);
+	TimerManager.SetTimer(SimulationIntervalTimer, SimulationIntervalDelegate,
+		TargetManager->GetSimulation_TargetSpawnCD(), true, 1.f);
 }
 
 void AMainMenuGameMode::OnSimulationInterval()
@@ -98,7 +104,7 @@ void AMainMenuGameMode::FinishSimulation()
 	{
 		SimulationIntervalDelegate.Unbind();
 	}
-	
+
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 
 	// Clear Timers

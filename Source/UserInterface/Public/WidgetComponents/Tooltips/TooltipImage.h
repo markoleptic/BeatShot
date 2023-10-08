@@ -17,6 +17,7 @@ enum class ETooltipImageType : uint8
 	Caution UMETA(DisplayName="Caution"),
 	Warning UMETA(DisplayName="Warning"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETooltipImageType, ETooltipImageType::Default, ETooltipImageType::Warning);
 
 /** Data structure to pass the actual value and the max allowed value */
@@ -27,12 +28,13 @@ struct FDynamicTooltipState
 
 	float Actual;
 	float MaxAllowed;
-	
+
 	FDynamicTooltipState()
 	{
 		Actual = -1.f;
 		MaxAllowed = -1.f;
 	}
+
 	FDynamicTooltipState(const float InActual, const float InMax)
 	{
 		Actual = InActual;
@@ -67,7 +69,7 @@ struct FTooltipData
 	/** Weak pointer to the tooltip this data is for */
 	UPROPERTY()
 	TWeakObjectPtr<UTooltipImage> TooltipImage;
-	
+
 	/** The text to display on the TooltipImage */
 	FText TooltipText;
 
@@ -88,14 +90,15 @@ struct FTooltipData
 
 	/** Optional delegate that can be used to call UpdateDynamicTooltipText by executing it */
 	FUpdateDynamicTooltipState UpdateDynamicTooltipState;
-	
+
 	FTooltipData();
 	FTooltipData(const FText& InTooltipText, const bool InbAllowTextWrap);
-	FTooltipData(const FString& InStringTableKey, const ETooltipImageType& InType, const FText& InAdditionalTooltipText = FText());
+	FTooltipData(const FString& InStringTableKey, const ETooltipImageType& InType,
+		const FText& InAdditionalTooltipText = FText());
 
 	/** Returns true if SetDynamicData was called */
 	bool IsDynamic() const { return bIsDynamic; }
-	
+
 	/** Returns true if the TooltipImage should be shown */
 	bool ShouldShowTooltipImage() const { return bShouldShowTooltipImage; }
 
@@ -110,7 +113,7 @@ struct FTooltipData
 
 	/** Sets up the DynamicTooltipData struct. Used for tooltips that should display a single float value */
 	void SetDynamicData(const float InMin, const FString& InFallbackStringTableKey, const int32 InPrecision = 0);
-	
+
 	/** Updates TooltipText by getting the TooltipText from a string table using TooltipStringTableKey and appending any AdditionalTooltipText */
 	void UpdateTooltipData(const FTooltipData& InUpdateData);
 
@@ -119,7 +122,7 @@ struct FTooltipData
 
 	/** Updates TooltipText if Actual > MaxAllowed. Sets bIsDirty to true if changed */
 	void UpdateDynamicTooltipText(const float InActual, const float InMaxAllowed);
-	
+
 	/** Returns true if SetShouldShowTooltipImage changed the value of bShouldShowTooltipImage, or if UpdateDynamicTooltipText changed the TooltipText */
 	bool IsDirty() const;
 
@@ -132,13 +135,13 @@ struct FTooltipData
 private:
 	/** Internal initialize */
 	void InitTooltipText();
-	
+
 	/** Optional Data structure for dynamic tooltip text */
 	FDynamicTooltipData DynamicTooltipData;
-	
+
 	/** Whether or not the tooltip has been initialized */
 	bool bHasBeenInitialized;
-	
+
 	/** Whether or not SetDynamicData was called */
 	bool bIsDynamic;
 
@@ -167,14 +170,15 @@ public:
 		}
 		return true;
 	}
-	
+
 	friend FORCEINLINE uint32 GetTypeHash(const FTooltipData& Value)
 	{
 		return HashCombine(GetTypeHash(Value.TooltipStringTableKey), GetTypeHash(Value.TooltipType));
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTooltipHovered, UTooltipImage*, TooltipImage, const FTooltipData&, TooltipData);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTooltipHovered, UTooltipImage*, TooltipImage, const FTooltipData&,
+	TooltipData);
 
 /** The image to draw on a TooltipWidget */
 UCLASS()
@@ -203,7 +207,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UButton* Button;
-	
+
 	/** Info about what this Tooltip image should display */
 	UPROPERTY()
 	FTooltipData TooltipData;

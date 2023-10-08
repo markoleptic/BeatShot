@@ -23,11 +23,18 @@
 #include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
 
 
-ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport, UDLSSSupport::Supported, UDLSSSupport::NotSupportedIncompatibleAPICaptureToolActive);
+ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSSupport, UDLSSSupport::Supported,
+	UDLSSSupport::NotSupportedIncompatibleAPICaptureToolActive);
+
 ENUM_RANGE_BY_FIRST_AND_LAST(UDLSSMode, UDLSSMode::Off, UDLSSMode::UltraPerformance);
+
 ENUM_RANGE_BY_FIRST_AND_LAST(UNISMode, UNISMode::Off, UNISMode::Custom);
-ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineReflexMode, UStreamlineReflexMode::Disabled, UStreamlineReflexMode::EnabledPlusBoost);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineReflexMode, UStreamlineReflexMode::Disabled,
+	UStreamlineReflexMode::EnabledPlusBoost);
+
 ENUM_RANGE_BY_FIRST_AND_LAST(UStreamlineDLSSGMode, UStreamlineDLSSGMode::Off, UStreamlineDLSSGMode::On);
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EWindowMode::Type, EWindowMode::Type::Fullscreen, EWindowMode::Type::WindowedFullscreen);
 
 void USettingsMenuWidget_VideoAndSound::NativeConstruct()
@@ -47,75 +54,116 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	SliderTextBoxOption_GlobalSound->SetValues(MinValue_Volume, MaxValue_Volume, SnapSize_Volume);
 	SliderTextBoxOption_MenuSound->SetValues(MinValue_Volume, MaxValue_Volume, SnapSize_Volume);
 	SliderTextBoxOption_MusicSound->SetValues(MinValue_Volume, MaxValue_Volume, SnapSize_Volume);
-	SliderTextBoxOption_DLSS_Sharpness->SetValues(MinValue_DLSSSharpness, MaxValue_DLSSSharpness, SnapSize_DLSSSharpness);
+	SliderTextBoxOption_DLSS_Sharpness->SetValues(MinValue_DLSSSharpness, MaxValue_DLSSSharpness,
+		SnapSize_DLSSSharpness);
 	SliderTextBoxOption_NIS_Sharpness->SetValues(MinValue_NISSharpness, MaxValue_NISSharpness, SnapSize_NISSharpness);
 	SliderTextBoxOption_ResolutionScale->SetValues(0.f, 1.f, 0.001f);
 	SliderTextBoxOption_HDRNits->SetValues(1000.f, 2000.f, 1.f);
 	SliderTextBoxOption_Brightness->SetValues(MinValue_Brightness, MaxValue_Brightness, SnapSize_Brightness);
 
-	VideoSettingOptionWidget_AA->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_GI->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_PP->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_RQ->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_TQ->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_SGQ->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_SWQ->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_VD->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	VideoSettingOptionWidget_VEQ->OnVideoSettingQualityButtonPressed.AddUObject(this, &ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
-	
-	SliderTextBoxOption_GlobalSound->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MenuSound->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MusicSound->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_DLSS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_NIS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_ResolutionScale->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	VideoSettingOptionWidget_AA->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_GI->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_PP->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_RQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_TQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_SGQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_SWQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_VD->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+	VideoSettingOptionWidget_VEQ->OnVideoSettingQualityButtonPressed.AddUObject(this,
+		&ThisClass::OnVideoSettingOptionWidget_ButtonPressed);
+
+	SliderTextBoxOption_GlobalSound->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MenuSound->OnSliderTextBoxValueChanged.
+	                               AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_MusicSound->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_DLSS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_NIS_Sharpness->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
+	SliderTextBoxOption_ResolutionScale->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_HDRNits->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_Brightness->OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
-	
+	SliderTextBoxOption_Brightness->OnSliderTextBoxValueChanged.AddUObject(this,
+		&ThisClass::OnSliderTextBoxValueChanged);
+
 	ComboBoxOption_WindowMode->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_WindowMode);
 	ComboBoxOption_Resolution->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_Resolution);
 	ComboBoxOption_DLSS->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_DLSS_EnabledMode);
-	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_FrameGeneration);
-	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_SuperResolution);
+	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnSelectionChanged.AddDynamic(this,
+		&ThisClass::OnSelectionChanged_FrameGeneration);
+	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnSelectionChanged.AddDynamic(this,
+		&ThisClass::OnSelectionChanged_SuperResolution);
 	ComboBoxOption_NIS->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_EnabledMode);
 	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_Mode);
 	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_Reflex);
 
-	ComboBoxOption_WindowMode->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
-	ComboBoxOption_Resolution->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_WindowMode->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
+		&ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_Resolution->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
+		&ThisClass::OnGenerateWidgetEvent);
 	ComboBoxOption_DLSS->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
-	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
-	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
+		&ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
+		&ThisClass::OnGenerateWidgetEvent);
 	ComboBoxOption_NIS->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
-	ComboBoxOption_NIS_Mode->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_NIS_Mode->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
+		&ThisClass::OnGenerateWidgetEvent);
 	ComboBoxOption_Reflex->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
 
-	ComboBoxOption_WindowMode->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_Resolution->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_DLSS->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_NIS->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
-	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this, &ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_WindowMode->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_Resolution->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_DLSS->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_DLSS_FrameGeneration->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_DLSS_SuperResolution->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_NIS->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 
 	SetupTooltip(ComboBoxOption_DLSS->GetTooltipImage(), ComboBoxOption_DLSS->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_DLSS_FrameGeneration->GetTooltipImage(), ComboBoxOption_DLSS_FrameGeneration->GetTooltipImageText());
-	SetupTooltip(ComboBoxOption_DLSS_SuperResolution->GetTooltipImage(), ComboBoxOption_DLSS_SuperResolution->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_DLSS_FrameGeneration->GetTooltipImage(),
+		ComboBoxOption_DLSS_FrameGeneration->GetTooltipImageText());
+	SetupTooltip(ComboBoxOption_DLSS_SuperResolution->GetTooltipImage(),
+		ComboBoxOption_DLSS_SuperResolution->GetTooltipImageText());
 	SetupTooltip(ComboBoxOption_NIS->GetTooltipImage(), ComboBoxOption_NIS->GetTooltipImageText());
 	SetupTooltip(ComboBoxOption_Reflex->GetTooltipImage(), ComboBoxOption_Reflex->GetTooltipImageText());
-	SetupTooltip(SliderTextBoxOption_Brightness->GetTooltipImage(), SliderTextBoxOption_Brightness->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_Brightness->GetTooltipImage(),
+		SliderTextBoxOption_Brightness->GetTooltipImageText());
 	SetupTooltip(CheckBoxOption_HDREnabled->GetTooltipImage(), CheckBoxOption_HDREnabled->GetTooltipImageText());
+	SetupTooltip(SliderTextBoxOption_ResolutionScale->GetTooltipImage(),
+		SliderTextBoxOption_ResolutionScale->GetTooltipImageText());
 
-	CheckBoxOption_HDREnabled->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_HDREnabled);
-	CheckBoxOption_FPSCounter->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_FPSCounter);
+	CheckBoxOption_HDREnabled->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_HDREnabled);
+	CheckBoxOption_FPSCounter->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_FPSCounter);
 	CheckBoxOption_VSync->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_VSyncEnabled);
 
-	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_FPSLimitMenu);
-	EditableTextBoxOption_FPSLimitGame->EditableTextBox->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_FPSLimitGame);
+	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->OnTextCommitted.AddDynamic(this,
+		&ThisClass::OnTextCommitted_FPSLimitMenu);
+	EditableTextBoxOption_FPSLimitGame->EditableTextBox->OnTextCommitted.AddDynamic(this,
+		&ThisClass::OnTextCommitted_FPSLimitGame);
 	EditableTextBoxOption_FPSLimitGame->EditableTextBox->SetJustification(ETextJustify::Type::Center);
 	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->SetJustification(ETextJustify::Type::Center);
-	
+
 	Button_Reset->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnBSButtonPressed_SaveReset);
 	Button_Save->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnBSButtonPressed_SaveReset);
 
@@ -129,7 +177,7 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	Options.Add("Windowed Fullscreen");
 	ComboBoxOption_WindowMode->SortAndAddOptions(Options);
 	Options.Empty();
-	
+
 	// DLSS On/Off
 	Options.Add(GetStringFromEnum(EDLSSEnabledMode::Off));
 	if (UDLSSLibrary::IsDLSSSupported())
@@ -146,7 +194,7 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	}
 	ComboBoxOption_DLSS_FrameGeneration->SortAndAddOptions(Options);
 	Options.Empty();
-	
+
 	// Super Resolution (DLSS Modes)
 	Options.Add(GetStringFromEnum(UDLSSMode::Off));
 	Options.Add(GetStringFromEnum(UDLSSMode::Auto));
@@ -159,13 +207,14 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	}
 	ComboBoxOption_DLSS_SuperResolution->SortAndAddOptions(Options);
 	// Make DLAA the last option
-	if (ComboBoxOption_DLSS_SuperResolution->ComboBox->GetIndexOfOption(GetStringFromEnum(UDLSSMode::DLAA)) != INDEX_NONE)
+	if (ComboBoxOption_DLSS_SuperResolution->ComboBox->GetIndexOfOption(GetStringFromEnum(UDLSSMode::DLAA)) !=
+		INDEX_NONE)
 	{
 		ComboBoxOption_DLSS_SuperResolution->ComboBox->RemoveOption(GetStringFromEnum(UDLSSMode::DLAA));
 		ComboBoxOption_DLSS_SuperResolution->ComboBox->AddOption(GetStringFromEnum(UDLSSMode::DLAA));
 	}
 	Options.Empty();
-	
+
 	// NIS On/Off
 	Options.Add(GetStringFromEnum(ENISEnabledMode::Off));
 	if (UNISLibrary::IsNISSupported())
@@ -174,7 +223,7 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	}
 	ComboBoxOption_NIS->SortAndAddOptions(Options);
 	Options.Empty();
-	
+
 	// NIS Modes
 	for (const UNISMode Mode : UNISLibrary::GetSupportedNISModes())
 	{
@@ -185,7 +234,7 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	}
 	ComboBoxOption_NIS_Mode->SortAndAddOptions(Options);
 	Options.Empty();
-	
+
 	// Reflex
 	Options.Add(GetStringFromEnum(UStreamlineReflexMode::Disabled));
 	if (UStreamlineLibraryReflex::IsReflexSupported())
@@ -195,19 +244,20 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	}
 	ComboBoxOption_Reflex->SortAndAddOptions(Options);
 	Options.Empty();
-	
+
 	UpdateBrushColors();
 	InitializeVideoAndSoundSettings(LoadPlayerSettings().VideoAndSound);
 }
 
-void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
+void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(
+	const FPlayerSettings_VideoAndSound& InVideoAndSoundSettings)
 {
 	UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
 	float CurrentScaleNormalized;
 	float CurrentScale;
 	float MinScale;
 	float MaxScale;
-	
+
 	GameUserSettings->GetResolutionScaleInformationEx(CurrentScaleNormalized, CurrentScale, MinScale, MaxScale);
 	SliderTextBoxOption_ResolutionScale->SetValues(MinScale / 100.f, MaxScale / 100.f, 0.001f);
 	SliderTextBoxOption_GlobalSound->SetValue(InVideoAndSoundSettings.GlobalVolume);
@@ -217,11 +267,13 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	SliderTextBoxOption_NIS_Sharpness->SetValue(InVideoAndSoundSettings.NISSharpness);
 	SliderTextBoxOption_ResolutionScale->SetValue(CurrentScale / 100.f);
 
-	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->SetText(FText::AsNumber(InVideoAndSoundSettings.FrameRateLimitMenu));
-	EditableTextBoxOption_FPSLimitGame->EditableTextBox->SetText(FText::AsNumber(InVideoAndSoundSettings.FrameRateLimitGame));
+	EditableTextBoxOption_FPSLimitMenu->EditableTextBox->SetText(
+		FText::AsNumber(InVideoAndSoundSettings.FrameRateLimitMenu));
+	EditableTextBoxOption_FPSLimitGame->EditableTextBox->SetText(
+		FText::AsNumber(InVideoAndSoundSettings.FrameRateLimitGame));
 
 	CheckBoxOption_FPSCounter->CheckBox->SetIsChecked(InVideoAndSoundSettings.bShowFPSCounter);
-	
+
 	VideoSettingOptionWidget_AA->SetActiveButton(GameUserSettings->GetAntiAliasingQuality());
 	VideoSettingOptionWidget_GI->SetActiveButton(GameUserSettings->GetGlobalIlluminationQuality());
 	VideoSettingOptionWidget_PP->SetActiveButton(GameUserSettings->GetPostProcessingQuality());
@@ -232,11 +284,14 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 	VideoSettingOptionWidget_VD->SetActiveButton(GameUserSettings->GetViewDistanceQuality());
 	VideoSettingOptionWidget_VEQ->SetActiveButton(GameUserSettings->GetVisualEffectQuality());
 
-	ComboBoxOption_WindowMode->ComboBox->SetSelectedOption(GetStringFromEnum(UGameUserSettings::GetGameUserSettings()->GetFullscreenMode()));
+	ComboBoxOption_WindowMode->ComboBox->SetSelectedOption(
+		GetStringFromEnum(UGameUserSettings::GetGameUserSettings()->GetFullscreenMode()));
 	PopulateResolutionComboBox();
 	ComboBoxOption_DLSS->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.DLSSEnabledMode));
-	ComboBoxOption_DLSS_FrameGeneration->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.FrameGenerationEnabledMode));
-	ComboBoxOption_DLSS_SuperResolution->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.DLSSMode));
+	ComboBoxOption_DLSS_FrameGeneration->ComboBox->SetSelectedOption(
+		GetStringFromEnum(InVideoAndSoundSettings.FrameGenerationEnabledMode));
+	ComboBoxOption_DLSS_SuperResolution->ComboBox->SetSelectedOption(
+		GetStringFromEnum(InVideoAndSoundSettings.DLSSMode));
 	ComboBoxOption_NIS->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.NISEnabledMode));
 	ComboBoxOption_NIS_Mode->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.NISMode));
 	ComboBoxOption_Reflex->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.StreamlineReflexMode));
@@ -246,12 +301,12 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(const FP
 
 	CheckBoxOption_HDREnabled->CheckBox->SetIsChecked(bSupportsHDR && bHDREnabled);
 	SliderTextBoxOption_HDRNits->SetValue(GameUserSettings->GetCurrentHDRDisplayNits());
-	
+
 	CheckBoxOption_HDREnabled->CheckBox->SetIsEnabled(bSupportsHDR);
 	SliderTextBoxOption_HDRNits->SetSliderAndTextBoxEnabledStates(bSupportsHDR && bHDREnabled);
 
 	SliderTextBoxOption_Brightness->SetValue(InVideoAndSoundSettings.Brightness);
-	
+
 	HandleDLSSEnabledChanged(InVideoAndSoundSettings.DLSSEnabledMode);
 }
 
@@ -262,19 +317,26 @@ FPlayerSettings_VideoAndSound USettingsMenuWidget_VideoAndSound::GetVideoAndSoun
 	ReturnSettings.GlobalVolume = SliderTextBoxOption_GlobalSound->GetSliderValueSnapped();
 	ReturnSettings.MenuVolume = SliderTextBoxOption_MenuSound->GetSliderValueSnapped();
 	ReturnSettings.MusicVolume = SliderTextBoxOption_MusicSound->GetSliderValueSnapped();
-	ReturnSettings.DLSSEnabledMode = GetEnumFromString<EDLSSEnabledMode>(ComboBoxOption_DLSS->ComboBox->GetSelectedOption());
-	ReturnSettings.FrameGenerationEnabledMode = GetEnumFromString<UStreamlineDLSSGMode>(ComboBoxOption_DLSS_FrameGeneration->ComboBox->GetSelectedOption());
-	ReturnSettings.DLSSMode = GetEnumFromString<UDLSSMode>(ComboBoxOption_DLSS_SuperResolution->ComboBox->GetSelectedOption());
+	ReturnSettings.DLSSEnabledMode = GetEnumFromString<EDLSSEnabledMode>(
+		ComboBoxOption_DLSS->ComboBox->GetSelectedOption());
+	ReturnSettings.FrameGenerationEnabledMode = GetEnumFromString<UStreamlineDLSSGMode>(
+		ComboBoxOption_DLSS_FrameGeneration->ComboBox->GetSelectedOption());
+	ReturnSettings.DLSSMode = GetEnumFromString<UDLSSMode>(
+		ComboBoxOption_DLSS_SuperResolution->ComboBox->GetSelectedOption());
 	ReturnSettings.DLSSSharpness = SliderTextBoxOption_DLSS_Sharpness->GetSliderValueSnapped();
-	ReturnSettings.NISEnabledMode = GetEnumFromString<ENISEnabledMode>(ComboBoxOption_NIS->ComboBox->GetSelectedOption());
+	ReturnSettings.NISEnabledMode = GetEnumFromString<ENISEnabledMode>(
+		ComboBoxOption_NIS->ComboBox->GetSelectedOption());
 	ReturnSettings.NISMode = GetEnumFromString<UNISMode>(ComboBoxOption_NIS_Mode->ComboBox->GetSelectedOption());
 	ReturnSettings.NISSharpness = SliderTextBoxOption_NIS_Sharpness->GetSliderValueSnapped();
-	ReturnSettings.StreamlineReflexMode = GetEnumFromString<UStreamlineReflexMode>(ComboBoxOption_Reflex->ComboBox->GetSelectedOption());
+	ReturnSettings.StreamlineReflexMode = GetEnumFromString<UStreamlineReflexMode>(
+		ComboBoxOption_Reflex->ComboBox->GetSelectedOption());
 	ReturnSettings.bShowFPSCounter = CheckBoxOption_FPSCounter->CheckBox->IsChecked();
-	ReturnSettings.FrameRateLimitGame = FMath::GridSnap<int32>(FMath::Clamp(FCString::Atof(*EditableTextBoxOption_FPSLimitGame->EditableTextBox->GetText().ToString()), MinValue_FrameRateLimit, MaxValue_FrameRateLimit),
-	                                                           SnapSize_FrameRateLimit);
-	ReturnSettings.FrameRateLimitMenu = FMath::GridSnap<int32>(FMath::Clamp(FCString::Atof(*EditableTextBoxOption_FPSLimitMenu->EditableTextBox->GetText().ToString()), MinValue_FrameRateLimit, MaxValue_FrameRateLimit),
-	                                                           SnapSize_FrameRateLimit);
+	ReturnSettings.FrameRateLimitGame = FMath::GridSnap<int32>(
+		FMath::Clamp(FCString::Atof(*EditableTextBoxOption_FPSLimitGame->EditableTextBox->GetText().ToString()),
+			MinValue_FrameRateLimit, MaxValue_FrameRateLimit), SnapSize_FrameRateLimit);
+	ReturnSettings.FrameRateLimitMenu = FMath::GridSnap<int32>(
+		FMath::Clamp(FCString::Atof(*EditableTextBoxOption_FPSLimitMenu->EditableTextBox->GetText().ToString()),
+			MinValue_FrameRateLimit, MaxValue_FrameRateLimit), SnapSize_FrameRateLimit);
 	ReturnSettings.Brightness = SliderTextBoxOption_Brightness->GetSliderValueSnapped();
 	return ReturnSettings;
 }
@@ -295,7 +357,8 @@ void USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_HDREnabled(const boo
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || SelectedOptions.Num() != 1)
 	{
@@ -305,7 +368,7 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const TArr
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	LastConfirmedResolution = Settings->GetLastConfirmedScreenResolution();
 	LastConfirmedWindowMode = Settings->GetLastConfirmedFullscreenMode();
-	
+
 	if (SelectedOption.Equals("Fullscreen"))
 	{
 		Settings->SetFullscreenMode(EWindowMode::Type::Fullscreen);
@@ -323,7 +386,8 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const TArr
 	ShowConfirmVideoSettingsMessage();
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Resolution(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Resolution(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || SelectedOptions.Num() != 1)
 	{
@@ -335,32 +399,34 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Resolution(const TArr
 	SelectedOption.Split("x", &LeftS, &RightS);
 	LeftS = UKismetStringLibrary::Replace(LeftS, ",", "");
 	RightS = UKismetStringLibrary::Replace(RightS, ",", "");
-	
+
 	const FIntPoint NewResolution = FIntPoint(FCString::Atoi(*LeftS), FCString::Atoi(*RightS));
-	
+
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
 	LastConfirmedResolution = Settings->GetLastConfirmedScreenResolution();
 	LastConfirmedWindowMode = Settings->GetLastConfirmedFullscreenMode();
-	
+
 	Settings->SetScreenResolution(NewResolution);
 	Settings->ApplyResolutionSettings(false);
-	
+
 	ShowConfirmVideoSettingsMessage();
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS_EnabledMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_DLSS_EnabledMode(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
 		return;
 	}
-	
+
 	const EDLSSEnabledMode Mode = GetSelectedDLSSEnabledMode();
 	HandleDLSSEnabledChanged(Mode);
 	HandleDLSSDependencies(Mode);
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_FrameGeneration(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_FrameGeneration(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -368,14 +434,15 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_FrameGeneration(const
 	}
 
 	const UStreamlineDLSSGMode Mode = GetEnumFromString<UStreamlineDLSSGMode>(SelectedOptions.Top());
-	
+
 	if (UStreamlineLibraryDLSSG::IsDLSSGSupported() && UStreamlineLibraryDLSSG::IsDLSSGModeSupported(Mode))
 	{
 		UStreamlineLibraryDLSSG::SetDLSSGMode(Mode);
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_SuperResolution(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_SuperResolution(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -387,7 +454,8 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_SuperResolution(const
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_EnabledMode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_EnabledMode(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -407,7 +475,7 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_EnabledMode(const
 		ComboBoxOption_NIS_Mode->SetIsEnabled(false);
 		SliderTextBoxOption_NIS_Sharpness->SetSliderAndTextBoxEnabledStates(false);
 	}
-	
+
 	if (NISEnabledMode == ENISEnabledMode::On || DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
 		SliderTextBoxOption_ResolutionScale->SetSliderAndTextBoxEnabledStates(false);
@@ -418,7 +486,8 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_EnabledMode(const
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -427,14 +496,16 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_NIS_Mode(const TArray
 
 	const UNISMode SelectedNISMode = GetSelectedNISMode();
 	const EDLSSEnabledMode DLSSEnabledMode = GetSelectedDLSSEnabledMode();
-	
-	if (UNISLibrary::IsNISSupported() && DLSSEnabledMode == EDLSSEnabledMode::Off && UNISLibrary::IsNISModeSupported(SelectedNISMode))
+
+	if (UNISLibrary::IsNISSupported() && DLSSEnabledMode == EDLSSEnabledMode::Off && UNISLibrary::IsNISModeSupported(
+		SelectedNISMode))
 	{
 		UNISLibrary::SetNISMode(SelectedNISMode);
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType)
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
 {
 	if (SelectedOptions.Num() != 1 || SelectionType == ESelectInfo::Type::Direct)
 	{
@@ -446,31 +517,33 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<F
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
+void USettingsMenuWidget_VideoAndSound::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget,
+	const float Value)
 {
 	if (Widget == SliderTextBoxOption_HDRNits)
 	{
 		UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings();
 		if (GameUserSettings->SupportsHDRDisplayOutput())
 		{
-			GameUserSettings->EnableHDRDisplayOutput(CheckBoxOption_HDREnabled->CheckBox->IsChecked(), SliderTextBoxOption_HDRNits->GetSliderValueSnapped());
+			GameUserSettings->EnableHDRDisplayOutput(CheckBoxOption_HDREnabled->CheckBox->IsChecked(),
+				SliderTextBoxOption_HDRNits->GetSliderValueSnapped());
 		}
 	}
 	else if (Widget == SliderTextBoxOption_Brightness)
 	{
-		
 	}
 	else if (Widget == SliderTextBoxOption_GlobalSound)
 	{
-		UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound, Value / static_cast<float>(MaxValue_Volume), 1, 0.1f);
+		UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound,
+			Value / static_cast<float>(MaxValue_Volume), 1, 0.1f);
 	}
 	else if (Widget == SliderTextBoxOption_MenuSound)
 	{
-		UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound, Value / static_cast<float>(MaxValue_Volume), 1, 0.1f);
+		UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound,
+			Value / static_cast<float>(MaxValue_Volume), 1, 0.1f);
 	}
 	else if (Widget == SliderTextBoxOption_MusicSound)
 	{
-		
 	}
 	else if (Widget == SliderTextBoxOption_DLSS_Sharpness)
 	{
@@ -490,7 +563,7 @@ void USettingsMenuWidget_VideoAndSound::OnSliderTextBoxValueChanged(USliderTextB
 	{
 		if (!UDLSSLibrary::IsDLSSEnabled())
 		{
-			UGameUserSettings::GetGameUserSettings()->SetResolutionScaleValueEx(Value  * 100.f);
+			UGameUserSettings::GetGameUserSettings()->SetResolutionScaleValueEx(Value * 100.f);
 		}
 	}
 }
@@ -502,7 +575,7 @@ void USettingsMenuWidget_VideoAndSound::PopulateResolutionComboBox()
 	TArray<FIntPoint> Resolutions;
 	FIntPoint MaxResolution = FIntPoint(0, 0);
 	bool bIsWindowedFullscreen = false;
-	
+
 	switch (Settings->GetFullscreenMode())
 	{
 	case EWindowMode::Type::Fullscreen:
@@ -530,7 +603,7 @@ void USettingsMenuWidget_VideoAndSound::PopulateResolutionComboBox()
 
 	TArray<FString> Options;
 	FString SelectedOption = "";
-	
+
 	for (const FIntPoint Resolution : Resolutions)
 	{
 		if (!bIsWindowedFullscreen)
@@ -556,10 +629,10 @@ void USettingsMenuWidget_VideoAndSound::PopulateResolutionComboBox()
 	{
 		Options.AddUnique(ResString);
 	}
-	
+
 	ComboBoxOption_Resolution->ComboBox->ClearOptions();
 	ComboBoxOption_Resolution->SortAndAddOptions(Options);
-	
+
 	if (bIsWindowedFullscreen)
 	{
 		ComboBoxOption_Resolution->ComboBox->SetSelectedOption(ResString);
@@ -580,7 +653,7 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSEnabledChanged(const EDLSSEnab
 		ComboBoxOption_DLSS_SuperResolution->ComboBox->SetIsEnabled(true);
 
 		SliderTextBoxOption_DLSS_Sharpness->SetSliderAndTextBoxEnabledStates(true);
-		
+
 		// Disable Settings that require DLSS to be off, or are forced to be on
 		ComboBoxOption_NIS->ComboBox->SetIsEnabled(false);
 		ComboBoxOption_NIS_Mode->ComboBox->SetIsEnabled(false);
@@ -603,7 +676,7 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSEnabledChanged(const EDLSSEnab
 
 		SliderTextBoxOption_DLSS_Sharpness->SetValue(0.f);
 		SliderTextBoxOption_DLSS_Sharpness->SetSliderAndTextBoxEnabledStates(false);
-		
+
 		// Enable Settings that are don't require DLSS to be on
 		ComboBoxOption_NIS->ComboBox->SetIsEnabled(true);
 		ComboBoxOption_Reflex->ComboBox->SetIsEnabled(true);
@@ -626,13 +699,13 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const EDLSSEnable
 {
 	const float DLSSSharpness = SliderTextBoxOption_DLSS_Sharpness->GetSliderValueSnapped();
 	const float NISSharpness = SliderTextBoxOption_NIS_Sharpness->GetSliderValueSnapped();
-	
+
 	UStreamlineDLSSGMode FrameGenMode = GetSelectedFrameGenerationMode();
 	UDLSSMode DLSSMode = GetSelectedDLSSMode();
 	ENISEnabledMode NISEnabledMode = GetSelectedNISEnabledMode();
 	UNISMode NISMode = GetSelectedNISMode();
 	UStreamlineReflexMode ReflexMode = GetSelectedReflexMode();
-	
+
 	if (DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
 		// Force disable NIS
@@ -642,7 +715,8 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const EDLSSEnable
 		// Force Reflex enabled
 		ReflexMode = UStreamlineReflexMode::Enabled;
 		// Enable Frame Generation if supported
-		if (FrameGenMode == UStreamlineDLSSGMode::Off && UStreamlineLibraryDLSSG::IsDLSSGSupported() && UStreamlineLibraryDLSSG::IsDLSSGModeSupported(UStreamlineDLSSGMode::On))
+		if (FrameGenMode == UStreamlineDLSSGMode::Off && UStreamlineLibraryDLSSG::IsDLSSGSupported() &&
+			UStreamlineLibraryDLSSG::IsDLSSGModeSupported(UStreamlineDLSSGMode::On))
 		{
 			FrameGenMode = UStreamlineDLSSGMode::On;
 		}
@@ -665,14 +739,14 @@ void USettingsMenuWidget_VideoAndSound::HandleDLSSDependencies(const EDLSSEnable
 	ComboBoxOption_NIS->ComboBox->SetSelectedOption(GetStringFromEnum(NISEnabledMode));
 	ComboBoxOption_NIS_Mode->ComboBox->SetSelectedOption(GetStringFromEnum(NISMode));
 	ComboBoxOption_Reflex->ComboBox->SetSelectedOption(GetStringFromEnum(ReflexMode));
-	
+
 	SetDLSSMode(DLSSMode);
 	UStreamlineLibraryDLSSG::SetDLSSGMode(FrameGenMode);
 	UNISLibrary::SetNISMode(NISMode);
 	UStreamlineLibraryReflex::SetReflexMode(ReflexMode);
 	UDLSSLibrary::SetDLSSSharpness(DLSSSharpness);
 	UNISLibrary::SetNISSharpness(NISSharpness);
-	
+
 	// V-Sync
 	if (DLSSEnabledMode == EDLSSEnabledMode::On)
 	{
@@ -698,7 +772,7 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_Save()
 {
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 	SavePlayerSettings(GetVideoAndSoundSettings());
-	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_VideoAndSound"));
+	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_VideoAndSound"));
 	SavedTextWidget->PlayFadeInFadeOut();
 }
 
@@ -724,10 +798,11 @@ void USettingsMenuWidget_VideoAndSound::OnBSButtonPressed_SaveReset(const UBSBut
 	}
 }
 
-void USettingsMenuWidget_VideoAndSound::OnVideoSettingOptionWidget_ButtonPressed(const EVideoSettingType VideoSettingType, const uint8 Quality)
+void USettingsMenuWidget_VideoAndSound::OnVideoSettingOptionWidget_ButtonPressed(
+	const EVideoSettingType VideoSettingType, const uint8 Quality)
 {
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
-	switch(VideoSettingType)
+	switch (VideoSettingType)
 	{
 	case EVideoSettingType::AntiAliasing:
 		Settings->SetAntiAliasingQuality(Quality);
@@ -766,7 +841,8 @@ void USettingsMenuWidget_VideoAndSound::OnCheckStateChanged_FPSCounter(const boo
 
 void USettingsMenuWidget_VideoAndSound::OnTextCommitted_FPSLimitMenu(const FText& Text, ETextCommit::Type CommitType)
 {
-	const float FrameLimit = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*Text.ToString()), SnapSize_FrameRateLimit);
+	const float FrameLimit = UKismetMathLibrary::GridSnap_Float(FCString::Atof(*Text.ToString()),
+		SnapSize_FrameRateLimit);
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(FrameLimit);
 }
 
@@ -779,13 +855,23 @@ void USettingsMenuWidget_VideoAndSound::ShowConfirmVideoSettingsMessage()
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	if (PopupMessageWidget)
 	{
-		PopupMessageWidget->InitPopup(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupTitle"),
-		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage"),
-		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton1"),
-		                              FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupButton2"));
-		PopupMessageWidget->OnButton1Pressed.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings);
-		PopupMessageWidget->OnButton2Pressed.AddDynamic(this, &USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings);
-		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond, this, &USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback, 1.f, true);
+		TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(
+			GetWidgetTextFromKey("ConfirmVideoSettingsPopupTitle"),
+			GetWidgetTextFromKey("ConfirmVideoSettingsPopupMessage"), 2);
+		if (Buttons[0])
+		{
+			Buttons[0]->SetButtonText(GetWidgetTextFromKey("ConfirmVideoSettingsPopupButton2"));
+			Buttons[0]->OnBSButtonButtonPressed_NoParams.AddDynamic(this,
+				&USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings);
+		}
+		if (Buttons[1])
+		{
+			Buttons[1]->SetButtonText(GetWidgetTextFromKey("ConfirmVideoSettingsPopupButton1"));
+			Buttons[1]->OnBSButtonButtonPressed_NoParams.AddDynamic(this,
+				&USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings);
+		}
+		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer_UpdateSecond, this,
+			&USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback, 1.f, true);
 		GetWorld()->GetTimerManager().SetTimer(RevertVideoSettingsTimer, VideoSettingsTimeoutLength, false);
 	}
 	PopupMessageWidget->AddToViewport();
@@ -798,7 +884,7 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings()
 	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
 
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
-	
+
 	Settings->ConfirmVideoMode();
 
 	// ???
@@ -810,11 +896,9 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_ConfirmVideoSettings()
 	PopulateResolutionComboBox();
 
 	PopupMessageWidget->FadeOut();
-	
-	SavedTextWidget->SetSavedText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "SM_Saved_VideoAndSound"));
-	SavedTextWidget->PlayFadeInFadeOut();
 
-	UE_LOG(LogTemp, Display, TEXT("ResolutionScale: %f %f"), Settings->GetDefaultResolutionScale(), Settings->GetRecommendedResolutionScale());
+	SavedTextWidget->SetSavedText(GetWidgetTextFromKey("SM_Saved_VideoAndSound"));
+	SavedTextWidget->PlayFadeInFadeOut();
 }
 
 void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
@@ -823,14 +907,14 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
 	GetWorld()->GetTimerManager().ClearTimer(RevertVideoSettingsTimer);
 
 	UGameUserSettings* Settings = UGameUserSettings::GetGameUserSettings();
-	
+
 	Settings->RevertVideoMode();
 	Settings->SetScreenResolution(LastConfirmedResolution);
 	Settings->SetFullscreenMode(LastConfirmedWindowMode);
 	Settings->SetResolutionScaleValueEx(100.f);
-	
+
 	SliderTextBoxOption_ResolutionScale->SetValue(1.f);
-	
+
 	Settings->ApplyResolutionSettings(false);
 	Settings->ConfirmVideoMode();
 	Settings->SaveSettings();
@@ -847,10 +931,11 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
 	{
 		ComboBoxOption_WindowMode->ComboBox->SetSelectedOption("Windowed");
 	}
-	ComboBoxOption_Resolution->ComboBox->SetSelectedOption(FString::FormatAsNumber(LastConfirmedResolution.X) + "x" + FString::FormatAsNumber(LastConfirmedResolution.Y));
+	ComboBoxOption_Resolution->ComboBox->SetSelectedOption(
+		FString::FormatAsNumber(LastConfirmedResolution.X) + "x" + FString::FormatAsNumber(LastConfirmedResolution.Y));
 
 	PopupMessageWidget->FadeOut();
-	
+
 	SavedTextWidget->SetSavedText(FText::FromString("Fullscreen Mode and Resolution Reset"));
 	SavedTextWidget->PlayFadeInFadeOut();
 }
@@ -864,7 +949,7 @@ void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
 		return;
 	}
 	TArray<FString> Out;
-	FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "ConfirmVideoSettingsPopupMessage").ToString().ParseIntoArray(Out, TEXT(" "));
+	GetWidgetTextFromKey("ConfirmVideoSettingsPopupMessage").ToString().ParseIntoArray(Out, TEXT(" "));
 	int32 Index = INDEX_NONE;
 	for (int i = 0; i < Out.Num(); i++)
 	{
@@ -881,13 +966,15 @@ void USettingsMenuWidget_VideoAndSound::RevertVideoSettingsTimerCallback()
 	}
 }
 
-FString USettingsMenuWidget_VideoAndSound::GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration(const FString& EnumString)
+FString USettingsMenuWidget_VideoAndSound::GetComboBoxEntryTooltipStringTableKey_DLSS_FrameGeneration(
+	const FString& EnumString)
 {
 	const UStreamlineDLSSGMode EnumValue = GetEnumFromString<UStreamlineDLSSGMode>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
-FString USettingsMenuWidget_VideoAndSound::GetComboBoxEntryTooltipStringTableKey_DLSS_SuperResolution(const FString& EnumString)
+FString USettingsMenuWidget_VideoAndSound::GetComboBoxEntryTooltipStringTableKey_DLSS_SuperResolution(
+	const FString& EnumString)
 {
 	const UDLSSMode EnumValue = GetEnumFromString<UDLSSMode>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);

@@ -21,7 +21,7 @@ UCLASS()
 class BEATSHOT_API UBSAT_MontageEventWait : public UAbilityTask
 {
 	GENERATED_BODY()
-	
+
 public:
 	// Constructor and overrides
 	UBSAT_MontageEventWait();
@@ -70,16 +70,11 @@ public:
 	 * @param bStopWhenAbilityEnds If true, this montage will be aborted if the ability ends normally. It is always stopped when the ability is explicitly cancelled
 	 * @param AnimRootMotionTranslationScale Change to modify size of root motion or set to 0 to block it entirely
 	 */
-	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks", meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
-	static UBSAT_MontageEventWait* PlayMontageAndWaitForEvent(
-			UGameplayAbility* OwningAbility,
-			FName TaskInstanceName,
-			UAnimMontage* MontageToPlay,
-			FGameplayTagContainer EventTags,
-			float Rate = 1.f,
-			FName StartSection = NAME_None,
-			bool bStopWhenAbilityEnds = true,
-			float AnimRootMotionTranslationScale = 1.f);
+	UFUNCTION(BlueprintCallable, Category = "Ability|Tasks",
+		meta = (HidePin = "OwningAbility", DefaultToSelf = "OwningAbility", BlueprintInternalUseOnly = "TRUE"))
+	static UBSAT_MontageEventWait* PlayMontageAndWaitForEvent(UGameplayAbility* OwningAbility, FName TaskInstanceName,
+		UAnimMontage* MontageToPlay, FGameplayTagContainer EventTags, float Rate = 1.f, FName StartSection = NAME_None,
+		bool bStopWhenAbilityEnds = true, float AnimRootMotionTranslationScale = 1.f);
 
 private:
 	/** Montage that is playing */
@@ -121,5 +116,4 @@ private:
 	FOnMontageEnded MontageEndedDelegate;
 	FDelegateHandle CancelledHandle;
 	FDelegateHandle EventHandle;
-	
 };

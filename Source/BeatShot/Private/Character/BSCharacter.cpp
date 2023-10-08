@@ -29,13 +29,17 @@
 #include "Inventory/BSInventoryItemInstance.h"
 #include "Inventory/BSInventoryManagerComponent.h"
 
-static TAutoConsoleVariable CVarAutoBHop(TEXT("move.Pogo"), 0, TEXT("If holding spacebar should make the player jump whenever possible.\n"), ECVF_Default);
-static TAutoConsoleVariable CVarJumpBoost(TEXT("move.JumpBoost"), 1, TEXT("If the player should boost in a movement direction while jumping.\n0 - disables jump boosting entirely\n1 - boosts in the direction of input, even when moving in another direction\n2 - boosts in the direction of input when moving in the same direction\n"), ECVF_Default);
-static TAutoConsoleVariable CVarBunnyHop(TEXT("move.BunnyHopping"), 0, TEXT("Enable normal bunnyhopping.\n"), ECVF_Default);
+static TAutoConsoleVariable CVarAutoBHop(TEXT("move.Pogo"), 0,
+	TEXT("If holding spacebar should make the player jump whenever possible.\n"), ECVF_Default);
+static TAutoConsoleVariable CVarJumpBoost(TEXT("move.JumpBoost"), 1, TEXT(
+		"If the player should boost in a movement direction while jumping.\n0 - disables jump boosting entirely\n1 - boosts in the direction of input, even when moving in another direction\n2 - boosts in the direction of input when moving in the same direction\n"),
+	ECVF_Default);
+static TAutoConsoleVariable CVarBunnyHop(TEXT("move.BunnyHopping"), 0, TEXT("Enable normal bunnyhopping.\n"),
+	ECVF_Default);
 
-ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) :
-Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(CharacterMovementComponentName).
-	DoNotCreateDefaultSubobject(MeshComponentName))
+ABSCharacter::ABSCharacter(const FObjectInitializer& ObjectInitializer) : Super(
+	ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(CharacterMovementComponentName).
+	                  DoNotCreateDefaultSubobject(MeshComponentName))
 {
 	PrimaryActorTick.bCanEverTick = true;
 	bAlwaysRelevant = true;
@@ -49,7 +53,7 @@ Super(ObjectInitializer.SetDefaultSubobjectClass<UBSCharacterMovementComponent>(
 
 	RecoilComponent = CreateDefaultSubobject<UBSRecoilComponent>("Recoil Component");
 	RecoilComponent->SetupAttachment(SpringArmComponent);
-	
+
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera Component");
 	CameraComponent->SetupAttachment(RecoilComponent);
 	CameraComponent->SetFieldOfView(103);
@@ -148,7 +152,7 @@ void ABSCharacter::BeginPlay()
 void ABSCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	if (bDeferJumpStop)
 	{
 		bDeferJumpStop = false;
@@ -164,7 +168,8 @@ void ABSCharacter::PawnClientRestart()
 	if (const ABSPlayerController* PlayerController = Cast<ABSPlayerController>(GetController()))
 	{
 		/* Get the Enhanced Input Local Player Subsystem from the Local Player related to our Player Controller */
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
 			Subsystem->ClearAllMappings();
@@ -193,7 +198,7 @@ void ABSCharacter::PossessedBy(AController* NewController)
 		//MoveSpeedChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMoveSpeedAttribute()).AddUObject(this, &ThisClass::MoveSpeedChanged);
 		//Tag change callbacks
 		//AbilitySystemComponent->RegisterGameplayTagEvent(FBSGameplayTags::Get().Input_Sprint, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::TagChange_State_Sprint);
-		
+
 		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
 		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 
@@ -224,7 +229,8 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 	const APlayerController* PC = GetController<APlayerController>();
 	check(PC);
 
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+		PC->GetLocalPlayer());
 	check(Subsystem);
 
 	/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
@@ -236,42 +242,63 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(PlayerInputComponent);
 		const FBSGameplayTags& GameplayTags = FBSGameplayTags::Get();
 		TArray<uint32> BindHandles;
-		
-		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed, &ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
-		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Forward, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Backward, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Left, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, this, &ThisClass::Input_Move, /*bLogIfNotFound=*/ true);
 
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, this, &ThisClass::Input_Look, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, this, &ThisClass::Jump, /*bLogIfNotFound=*/ true);
-		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Started, this, &ThisClass::Input_WalkStart, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Completed, this, &ThisClass::Input_WalkEnd, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindAbilityActions(LoadedConfig, this, &ThisClass::Input_AbilityInputTagPressed,
+			&ThisClass::Input_AbilityInputTagReleased, /*out*/ BindHandles);
 
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
-		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Started, this, &ThisClass::Input_OnInteractStarted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this, &ThisClass::Input_OnInteractCompleted, /*bLogIfNotFound=*/ true);
-		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this, &ThisClass::Input_OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed, this, &ThisClass::Input_OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
-		
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_1, this, &ThisClass::Input_OnEquipmentSlot1Started, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_2, this, &ThisClass::Input_OnEquipmentSlot2Started, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_3, this, &ThisClass::Input_OnEquipmentSlot3Started, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_LastEquipped, this, &ThisClass::Input_OnEquipmentSlotLastEquippedStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Forward, this, &ThisClass::Input_Move,
+			/*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Backward, this, &ThisClass::Input_Move,
+			/*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Left, this, &ThisClass::Input_Move,
+			/*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, this, &ThisClass::Input_Move,
+			/*bLogIfNotFound=*/ true);
 
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Pause, this, &ThisClass::Input_OnPause, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, this, &ThisClass::Input_Look,
+			/*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, this, &ThisClass::Jump,
+			/*bLogIfNotFound=*/ true);
+
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Started, this,
+			&ThisClass::Input_WalkStart, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Completed, this,
+			&ThisClass::Input_WalkEnd, /*bLogIfNotFound=*/ true);
+
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this,
+			&ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this,
+			&ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
+
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Started, this,
+			&ThisClass::Input_OnInteractStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this,
+			&ThisClass::Input_OnInteractCompleted, /*bLogIfNotFound=*/ true);
+
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this,
+			&ThisClass::Input_OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed,
+			this, &ThisClass::Input_OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
+
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_1, this,
+			&ThisClass::Input_OnEquipmentSlot1Started, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_2, this,
+			&ThisClass::Input_OnEquipmentSlot2Started, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_3, this,
+			&ThisClass::Input_OnEquipmentSlot3Started, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_LastEquipped, this,
+			&ThisClass::Input_OnEquipmentSlotLastEquippedStarted, /*bLogIfNotFound=*/ true);
+
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Pause, this, &ThisClass::Input_OnPause,
+			/*bLogIfNotFound=*/ true);
 	}
 }
 
 void ABSCharacter::AddCharacterAbilities()
 {
 	// Grant abilities, but only on the server	
-	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || AbilitySystemComponent->bCharacterAbilitiesGiven)
+	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || AbilitySystemComponent->
+		bCharacterAbilitiesGiven)
 	{
 		return;
 	}
@@ -280,7 +307,8 @@ void ABSCharacter::AddCharacterAbilities()
 	{
 		if (AbilitySet)
 		{
-			AbilitySet->GiveToAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()), &AbilitySet_GrantedHandles);
+			AbilitySet->GiveToAbilitySystem(Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()),
+				&AbilitySet_GrantedHandles);
 		}
 	}
 	AbilitySystemComponent->bCharacterAbilitiesGiven = true;
@@ -288,7 +316,8 @@ void ABSCharacter::AddCharacterAbilities()
 
 void ABSCharacter::RemoveCharacterAbilities()
 {
-	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || !AbilitySystemComponent->bCharacterAbilitiesGiven)
+	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent.IsValid() || !AbilitySystemComponent->
+		bCharacterAbilitiesGiven)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Something wrong with RemoveCharacterAbilities()"));
 		return;
@@ -305,7 +334,7 @@ void ABSCharacter::AddCharacterInventoryItems()
 		UE_LOG(LogTemp, Display, TEXT("Something wrong with AddCharacterInventoryItems()"));
 		return;
 	}
-	
+
 	int32 Index = 0;
 	for (TSubclassOf<UBSInventoryItemDefinition> Definition : InitialInventoryItems)
 	{
@@ -429,7 +458,7 @@ void ABSCharacter::ToggleCrouch()
 	{
 		UnCrouch();
 	}
-	else 
+	else
 	{
 		Crouch();
 	}
@@ -448,7 +477,8 @@ bool ABSCharacter::IsSprinting() const
 	return true;
 }
 
-void ABSCharacter::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator, AActor* DamageCauser)
+void ABSCharacter::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator,
+	AActor* DamageCauser)
 {
 	Super::ApplyDamageMomentum(DamageTaken, DamageEvent, PawnInstigator, DamageCauser);
 	UDamageType const* const DmgTypeCDO = DamageEvent.DamageTypeClass->GetDefaultObject<UDamageType>();
@@ -466,7 +496,9 @@ void ABSCharacter::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& Da
 			DamageEvent.GetBestHitInfo(this, DamageCauser, HitInfo, ImpulseDir);
 		}
 
-		const float SizeFactor = (60.96f * 60.96f * 137.16f) / (FMath::Square(GetCapsuleComponent()->GetScaledCapsuleRadius() * 2.0f) * GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.0f);
+		const float SizeFactor = (60.96f * 60.96f * 137.16f) / (FMath::Square(
+				GetCapsuleComponent()->GetScaledCapsuleRadius() * 2.0f) * GetCapsuleComponent()->
+			GetScaledCapsuleHalfHeight() * 2.0f);
 
 		float Magnitude = 1.905f * DamageTaken * SizeFactor * 5.0f;
 		Magnitude = FMath::Min(Magnitude, 1905.0f);
@@ -490,7 +522,8 @@ void ABSCharacter::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& Da
 void ABSCharacter::ClearJumpInput(float DeltaTime)
 {
 	// Don't clear jump input right away if we're auto hopping or no-clipping (holding to go up), or if we are deferring a jump stop
-	if (CVarAutoBHop.GetValueOnGameThread() != 0 || bAutoBunnyHop || GetCharacterMovement()->bCheatFlying || bDeferJumpStop)
+	if (CVarAutoBHop.GetValueOnGameThread() != 0 || bAutoBunnyHop || GetCharacterMovement()->bCheatFlying ||
+		bDeferJumpStop)
 	{
 		return;
 	}
@@ -516,7 +549,7 @@ void ABSCharacter::StopJumping()
 
 void ABSCharacter::OnJumped_Implementation()
 {
-		const int32 JumpBoost = CVarJumpBoost->GetInt();
+	const int32 JumpBoost = CVarJumpBoost->GetInt();
 	if (GetBSCharacterMovement()->IsOnLadder())
 	{
 		return;
@@ -540,7 +573,8 @@ void ABSCharacter::OnJumped_Implementation()
 		// How much we are boosting by
 		float SpeedAddition = FMath::Abs(ForwardSpeed * SpeedBoostPerc);
 		// We can only boost up to this much
-		const float MaxBoostedSpeed = GetCharacterMovement()->GetMaxSpeed() + GetCharacterMovement()->GetMaxSpeed() * SpeedBoostPerc;
+		const float MaxBoostedSpeed = GetCharacterMovement()->GetMaxSpeed() + GetCharacterMovement()->GetMaxSpeed() *
+			SpeedBoostPerc;
 		// Calculate new speed
 		const float NewSpeed = SpeedAddition + GetMovementComponent()->Velocity.Size2D();
 		float SpeedAdditionNoClamp = SpeedAddition;
@@ -551,7 +585,7 @@ void ABSCharacter::OnJumped_Implementation()
 			SpeedAddition -= NewSpeed - MaxBoostedSpeed;
 		}
 
-		if (ForwardSpeed < - GetBSCharacterMovement()->GetMaxAcceleration() * FMath::Sin(0.6981f))
+		if (ForwardSpeed < -GetBSCharacterMovement()->GetMaxAcceleration() * FMath::Sin(0.6981f))
 		{
 			// Boost backwards if we're going backwards
 			SpeedAddition *= -1.0f;
@@ -602,12 +636,13 @@ bool ABSCharacter::CanJumpInternal_Implementation() const
 			// B) The jump limit hasn't been met OR
 			// C) The jump limit has been met AND we were already jumping
 			const bool bJumpKeyHeld = (bPressedJump && JumpKeyHoldTime < GetJumpMaxHoldTime());
-			bCanJump = bJumpKeyHeld &&
-					   (GetCharacterMovement()->IsMovingOnGround() || (JumpCurrentCount < JumpMaxCount) || (bWasJumping && JumpCurrentCount == JumpMaxCount));
+			bCanJump = bJumpKeyHeld && (GetCharacterMovement()->IsMovingOnGround() || (JumpCurrentCount < JumpMaxCount)
+				|| (bWasJumping && JumpCurrentCount == JumpMaxCount));
 		}
 		if (GetCharacterMovement()->IsMovingOnGround())
 		{
-			const float FloorZ = FVector(0.0f, 0.0f, 1.0f) | GetCharacterMovement()->CurrentFloor.HitResult.ImpactNormal;
+			const float FloorZ = FVector(0.0f, 0.0f, 1.0f) | GetCharacterMovement()->CurrentFloor.HitResult.
+				ImpactNormal;
 			const float WalkableFloor = GetCharacterMovement()->GetWalkableFloorZ();
 			bCanJump &= (FloorZ >= WalkableFloor || FMath::IsNearlyEqual(FloorZ, WalkableFloor));
 		}
@@ -651,7 +686,8 @@ void ABSCharacter::OnMovementModeChanged(EMovementMode PrevMovementMode, uint8 P
 		bWasJumping = false;
 	}
 
-	K2_OnMovementModeChanged(PrevMovementMode, GetCharacterMovement()->MovementMode, PrevCustomMode, GetCharacterMovement()->CustomMovementMode);
+	K2_OnMovementModeChanged(PrevMovementMode, GetCharacterMovement()->MovementMode, PrevCustomMode,
+		GetCharacterMovement()->CustomMovementMode);
 	MovementModeChangedDelegate.Broadcast(this, PrevMovementMode, PrevCustomMode);
 }
 
@@ -660,7 +696,7 @@ bool ABSCharacter::CanCrouch() const
 	return !GetCharacterMovement()->bCheatFlying && Super::CanCrouch() && !GetBSCharacterMovement()->IsOnLadder();
 }
 
-void ABSCharacter::Input_OnInteractStarted(const FInputActionValue& Value) 
+void ABSCharacter::Input_OnInteractStarted(const FInputActionValue& Value)
 {
 	if (!OnInteractDelegate.ExecuteIfBound(0))
 	{
@@ -668,7 +704,7 @@ void ABSCharacter::Input_OnInteractStarted(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacter::Input_OnInteractCompleted(const FInputActionValue& Value) 
+void ABSCharacter::Input_OnInteractCompleted(const FInputActionValue& Value)
 {
 	if (!OnInteractDelegate.ExecuteIfBound(1))
 	{
@@ -676,7 +712,7 @@ void ABSCharacter::Input_OnInteractCompleted(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacter::Input_OnShiftInteractStarted(const FInputActionValue& Value) 
+void ABSCharacter::Input_OnShiftInteractStarted(const FInputActionValue& Value)
 {
 	if (!OnShiftInteractDelegate.ExecuteIfBound(0))
 	{
@@ -684,7 +720,7 @@ void ABSCharacter::Input_OnShiftInteractStarted(const FInputActionValue& Value)
 	}
 }
 
-void ABSCharacter::Input_OnShiftInteractCompleted(const FInputActionValue& Value) 
+void ABSCharacter::Input_OnShiftInteractCompleted(const FInputActionValue& Value)
 {
 	if (!OnShiftInteractDelegate.ExecuteIfBound(1))
 	{
@@ -737,7 +773,7 @@ void ABSCharacter::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionVa
 void ABSCharacter::Input_OnPause(const FInputActionValue& Value)
 {
 	ABSPlayerController* BSPlayerController = GetBSPlayerController();
-	
+
 	if (!BSPlayerController || BSPlayerController->IsPostGameMenuActive())
 	{
 		return;
@@ -757,7 +793,8 @@ void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 
 void ABSCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
-	if (const UBSAbilitySystemComponent* ASC = CastChecked<UBSAbilitySystemComponent, UAbilitySystemComponent>(GetAbilitySystemComponent()))
+	if (const UBSAbilitySystemComponent* ASC = CastChecked<UBSAbilitySystemComponent, UAbilitySystemComponent>(
+		GetAbilitySystemComponent()))
 	{
 		ASC->GetOwnedGameplayTags(TagContainer);
 	}
@@ -781,7 +818,8 @@ bool ABSCharacter::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagCo
 void ABSCharacter::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
 	/* Changing activation policy for FireGun ability based on automatic fire bool */
-	if(TArray<FGameplayAbilitySpec*> Specs = GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Input_Fire); !Specs.IsEmpty())
+	if (TArray<FGameplayAbilitySpec*> Specs = GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(
+		FBSGameplayTags::Get().Input_Fire); !Specs.IsEmpty())
 	{
 		if (GameSettings.bAutomaticFire)
 		{

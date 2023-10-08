@@ -14,8 +14,8 @@ UCLASS()
 class USERINTERFACE_API UBSCarouselNavBar : public UWidget
 {
 	GENERATED_BODY()
-public:
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
 	TSubclassOf<UBSButton> ButtonWidgetType;
 
@@ -53,11 +53,11 @@ protected:
 	// UWidget interface
 	virtual TSharedRef<SWidget> RebuildWidget() override;
 	// End of UWidget interface
-	
+
 	void RebuildButtons();
-	
+
 	TSharedPtr<SHorizontalBox> MyContainer;
-	
+
 	UPROPERTY()
 	TObjectPtr<UCommonWidgetCarousel> LinkedCarousel;
 

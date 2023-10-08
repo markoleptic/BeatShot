@@ -35,11 +35,12 @@ bool UBSVerticalBox::UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& I
 		{
 			if (UserWidget->GetVisibility() != ESlateVisibility::Collapsed)
 			{
-				UserWidget->WidgetTree->ForEachWidget([this, &bLastLeftBorderDark] (UWidget* Widget)
+				UserWidget->WidgetTree->ForEachWidget([this, &bLastLeftBorderDark](UWidget* Widget)
 				{
 					if (UBSVerticalBox* VerticalBox = Cast<UBSVerticalBox>(Widget))
 					{
-						bLastLeftBorderDark = VerticalBox->UpdateBrushColors_Private(Cast<UBSVerticalBox>(Widget)->Slots, bLastLeftBorderDark);
+						bLastLeftBorderDark = VerticalBox->UpdateBrushColors_Private(
+							Cast<UBSVerticalBox>(Widget)->Slots, bLastLeftBorderDark);
 					}
 					// UUserWidget contains a HorizontalBox
 					else if (UBSHorizontalBox* HorizontalBox = Cast<UBSHorizontalBox>(Widget))
@@ -50,11 +51,12 @@ bool UBSVerticalBox::UpdateBrushColors_Private(TArray<TObjectPtr<UPanelSlot>>& I
 			}
 			continue;
 		}
-		
+
 		// Slot is a subclass of PanelWidget
 		if (UPanelWidget* PanelWidget = Cast<UPanelWidget>(BoxSlot->Content))
 		{
-			if (TArray<UBSVerticalBox*> Boxes = IBSWidgetInterface::DescendWidget<UBSVerticalBox>(PanelWidget); !Boxes.IsEmpty())
+			if (TArray<UBSVerticalBox*> Boxes = IBSWidgetInterface::DescendWidget<UBSVerticalBox>(PanelWidget); !Boxes.
+				IsEmpty())
 			{
 				for (UBSVerticalBox* Box : Boxes)
 				{

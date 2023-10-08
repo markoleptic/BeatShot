@@ -19,23 +19,23 @@ UCLASS()
 class USERINTERFACE_API UComboBoxOptionWidget : public UMenuOptionWidget, public IBSWidgetInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UBSComboBoxString* ComboBox;
 
 	/** Executed when a ComboBoxEntry requests a tooltip description. If an empty string is returned, no tooltip image is shown */
 	FGetComboBoxEntryTooltipStringTableKey GetComboBoxEntryTooltipStringTableKey;
-	
+
 	/** Sorts the array alphabetically and adds each option to the ComboBox */
 	void SortAndAddOptions(TArray<FString>& InOptions);
-	
+
 	/** Sets the correct EnumTagMapping from the EnumTagMap depending on the enum class */
-	template<typename T>
+	template <typename T>
 	void SetEnumType();
 
 	/** Combines SetEnumType and SortAndAddOptions */
-	template<typename T>
+	template <typename T>
 	void SortAddOptionsAndSetEnumType(TArray<FString>& InOptions);
 
 	/** Sets the GameplayTagWidgetMap */
@@ -43,14 +43,16 @@ public:
 
 	/** Sets the EnumTagMap */
 	void SetEnumTagMap(const TObjectPtr<UEnumTagMap> InEnumTagMap);
-	
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual UTooltipWidget* IBSWidgetInterface::ConstructTooltipWidget() override { return nullptr; }
 	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
 	virtual UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method) override;
-	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions) override;
-	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
+	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString,
+		const TArray<FString>& SelectedOptions) override;
+	virtual FString
+	GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString) override;
 
 	/** Adds GameModeCategoryTagWidgets to the ComboBox entry if matching tags are found */
 	UWidget* AddGameModeCategoryTagWidgets(UBSComboBoxEntry_Tagged* ComboBoxEntry);

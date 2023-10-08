@@ -26,7 +26,8 @@ void UBSRecoilComponent::BeginPlay()
 	FireRateDelegate.BindUObject(this, &UBSRecoilComponent::StopRecoil);
 }
 
-void UBSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UBSRecoilComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	RecoilTimeline.TickTimeline(DeltaTime);
@@ -65,7 +66,8 @@ void UBSRecoilComponent::UpdateKickbackAndRecoil(float DeltaTime)
 {
 	UpdateKickback(DeltaTime);
 	const FRotator Current = GetRelativeRotation();
-	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime, CameraRecoilInterpSpeed);
+	const FRotator UpdatedRotation = UKismetMathLibrary::RInterpTo(Current, CurrentShotCameraRecoilRotation, DeltaTime,
+		CameraRecoilInterpSpeed);
 	SetRelativeRotation(UpdatedRotation + FRotator(KickbackAngle, 0, 0));
 }
 
@@ -87,8 +89,9 @@ void UBSRecoilComponent::UpdateKickback(float DeltaTime)
 	{
 		KickbackAngle = 0.f;
 	}
-	
-	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration) * KickbackIntensityCurve->GetFloatValue(FMath::Min(ShotsFired, 30.f) / 30.f);
+
+	KickbackAngle = KickbackCurve->GetFloatValue(KickbackAlpha / KickbackDuration) * KickbackIntensityCurve->
+		GetFloatValue(FMath::Min(ShotsFired, 30.f) / 30.f);
 }
 
 void UBSRecoilComponent::UpdateRecoil(FVector Output)
@@ -97,7 +100,7 @@ void UBSRecoilComponent::UpdateRecoil(FVector Output)
 	{
 		return;
 	}
-	
+
 	/* Apply a lighter recoil penalty if its the first bullet */
 	if (ShotsFired < 1)
 	{
@@ -119,9 +122,8 @@ void UBSRecoilComponent::StopRecoil()
 	bIsFiring = false;
 	CurrentShotRecoilRotation = FRotator(0, 0, 0);
 	CurrentShotCameraRecoilRotation = FRotator(0, 0, 0);
-	
+
 	/* Reverse the timeline so that it takes time to recover to the beginning */
 	RecoilTimeline.SetPlayRate(5.454545f);
 	RecoilTimeline.Reverse();
 }
-

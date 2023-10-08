@@ -31,11 +31,12 @@ public:
 
 	/** Called when another class saves Game settings */
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	
+
 	/** Takes in a PlayerScore struct and updates all elements of the PlayerHUD */
 	UFUNCTION()
-	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError, const float HitTimingError);
-	
+	void UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError,
+		const float HitTimingError);
+
 	/** Callback function for OnSecondPassed to update the current song progress. Called every second by DefaultGameMode */
 	UFUNCTION()
 	void UpdateSongProgress(const float PlaybackTime);
@@ -45,7 +46,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UProgressBar* ProgressBar_Accuracy;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Accuracy;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -68,7 +69,7 @@ public:
 	UTextBlock* TextBlock_TotalSongLength;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_CurrentStreakBest;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_TargetsSpawned;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -77,6 +78,6 @@ public:
 	UHorizontalBox* Box_TargetsHit;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_ShotsFired;
-	
+
 	FBSConfig Config;
 };

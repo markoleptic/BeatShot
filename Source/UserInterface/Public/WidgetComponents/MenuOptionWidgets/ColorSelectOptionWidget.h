@@ -50,7 +50,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* ColorAText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-    UTextBlock* HexText;
+	UTextBlock* HexText;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USlider* ColorASlider;

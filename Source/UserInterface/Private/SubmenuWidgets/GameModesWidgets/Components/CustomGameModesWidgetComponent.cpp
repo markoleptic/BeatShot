@@ -15,17 +15,17 @@
 void UCustomGameModesWidgetComponent::NativeConstruct()
 {
 	Super::NativeConstruct();
-	
-	WidgetTree->ForEachWidget([this] (UWidget* Widget)
+
+	WidgetTree->ForEachWidget([this](UWidget* Widget)
 	{
 		if (UMenuOptionWidget* MenuOption = Cast<UMenuOptionWidget>(Widget))
 		{
-			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
-			SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
+			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty()) SetupTooltip(
+				MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
 			MenuOptionWidgets.Add(MenuOption);
 
 			AddGameModeCategoryTagWidgets(MenuOption);
-			
+
 			if (UComboBoxOptionWidget* ComboBoxOptionWidget = Cast<UComboBoxOptionWidget>(MenuOption))
 			{
 				ComboBoxOptionWidget->SetGameplayTagWidgetMap(GameplayTagWidgetMap);
@@ -49,7 +49,8 @@ void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
 	}
 }
 
-void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
+void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr,
+	const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
 {
 	BSConfig = InConfigPtr;
 	SetNext(InNext);
@@ -76,7 +77,7 @@ void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionW
 	FGameplayTagContainer Container;
 	MenuOptionWidget->GetGameModeCategoryTags(Container);
 	TArray<UGameModeCategoryTagWidget*> GameModeCategoryTagWidgets;
-			
+
 	for (const FGameplayTag& Tag : Container)
 	{
 		const TSubclassOf<UGameModeCategoryTagWidget>* SubClass = GameplayTagWidgetMap.Find(Tag);
@@ -93,9 +94,11 @@ void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionW
 	}
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget, const float Value)
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget,
+	const float Value)
 {
-	if (!FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(Widget->GetEditableTextBoxValue(), Value))
+	if (!FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(
+		Widget->GetEditableTextBoxValue(), Value))
 	{
 		Widget->SetValue(Value);
 		return true;
@@ -103,7 +106,8 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBo
 	return false;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption)
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget,
+	const FString& NewOption)
 {
 	if (NewOption.IsEmpty())
 	{
@@ -122,10 +126,11 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOpti
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions)
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget,
+	const TArray<FString>& NewOptions)
 {
 	const TArray<FString> SelectedOptions = Widget->ComboBox->GetSelectedOptions();
-	
+
 	if (NewOptions.IsEmpty())
 	{
 		if (SelectedOptions.IsEmpty())
@@ -135,12 +140,12 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOpti
 		Widget->ComboBox->ClearSelection();
 		return true;
 	}
-	
+
 	if (SelectedOptions == NewOptions && SelectedOptions.Num() == NewOptions.Num())
 	{
 		return false;
 	}
-	
+
 	Widget->ComboBox->SetSelectedOptions(NewOptions);
 	return true;
 }
@@ -155,7 +160,8 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UCheckBoxOpti
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText)
+bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget,
+	const FText& NewText)
 {
 	if (Widget->EditableTextBox->GetText().EqualTo(NewText))
 	{
@@ -236,12 +242,14 @@ float UCustomGameModesWidgetComponent::GetMaxTargetDiameter() const
 int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumHorizontalTargets() const
 {
 	// HorizontalSpread = MaxTargetSize * NumHorizontalTargets + HorizontalSpacing * (NumHorizontalTargets - 1)
-	return (GetHorizontalSpread() + BSConfig->GridConfig.GridSpacing.X) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.X);
+	return (GetHorizontalSpread() + BSConfig->GridConfig.GridSpacing.X) / (GetMaxTargetDiameter() + BSConfig->GridConfig
+		.GridSpacing.X);
 }
 
 int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumVerticalTargets() const
 {
-	return (GetVerticalSpread() + BSConfig->GridConfig.GridSpacing.Y) / (GetMaxTargetDiameter() + BSConfig->GridConfig.GridSpacing.Y);
+	return (GetVerticalSpread() + BSConfig->GridConfig.GridSpacing.Y) / (GetMaxTargetDiameter() + BSConfig->GridConfig.
+		GridSpacing.Y);
 }
 
 float UCustomGameModesWidgetComponent::GetMaxAllowedHorizontalSpacing() const
@@ -258,21 +266,18 @@ float UCustomGameModesWidgetComponent::GetMaxAllowedVerticalSpacing() const
 
 float UCustomGameModesWidgetComponent::GetMaxAllowedTargetScale() const
 {
-	const float MaxAllowedHorizontal = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.GridSpacing.X * BSConfig->GridConfig.NumHorizontalGridTargets + BSConfig->GridConfig.GridSpacing.X) /
-		(SphereTargetDiameter * BSConfig->GridConfig.NumHorizontalGridTargets);
-	
-	const float MaxAllowedVertical = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.GridSpacing.Y * BSConfig->GridConfig.NumVerticalGridTargets + BSConfig->GridConfig.GridSpacing.Y) /
-		(SphereTargetDiameter * BSConfig->GridConfig.NumVerticalGridTargets);
-	
-	
+	const float MaxAllowedHorizontal = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.
+		GridSpacing.X * BSConfig->GridConfig.NumHorizontalGridTargets + BSConfig->GridConfig.GridSpacing.X) / (
+		SphereTargetDiameter * BSConfig->GridConfig.NumHorizontalGridTargets);
+
+	const float MaxAllowedVertical = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.
+		GridSpacing.Y * BSConfig->GridConfig.NumVerticalGridTargets + BSConfig->GridConfig.GridSpacing.Y) / (
+		SphereTargetDiameter * BSConfig->GridConfig.NumVerticalGridTargets);
+
+
 	if (MaxAllowedVertical < MaxAllowedHorizontal)
 	{
 		return MaxAllowedVertical;
 	}
 	return MaxAllowedHorizontal;
 }
-
-
-
-
-

@@ -29,7 +29,8 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
 /** Base PlayerController class for this game */
 UCLASS()
-class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface, public IHttpRequestInterface, public ILoadingProcessInterface
+class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface,
+                                         public IHttpRequestInterface, public ILoadingProcessInterface
 {
 	GENERATED_BODY()
 
@@ -63,10 +64,10 @@ public:
 
 	void ShowCountdown(const bool bIsRestart);
 	void HideCountdown();
-	
+
 	void ShowPostGameMenu();
 	void HidePostGameMenu();
-	
+
 	void ShowFPSCounter();
 	void HideFPSCounter();
 
@@ -75,19 +76,20 @@ public:
 
 	/** Called when entering a new level and the loading screen is finished, or when a game mode has been restarted inside a level */
 	void FadeScreenFromBlack();
-	
+
 	void ShowInteractInfo();
 	void HideInteractInfo();
-	
-	void ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns, const TArray<float>& QTable);
+
+	void ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns,
+		const TArray<float>& QTable);
 	void HideRLAgentWidget();
-	
+
 	void ShowCombatText(const int32 Streak, const FTransform& Transform);
 	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
 	UFUNCTION()
 	void OnPostScoresResponseReceived(const EPostScoresResponse& Response);
-	
+
 	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
 
 	/** Called by Character when receiving input from IA_Pause, or by exiting the PostGameMenu */
@@ -108,12 +110,15 @@ public:
 	ABSCharacter* GetBSCharacter() const;
 
 	/** Attempts to use the provided AuthTicket to log in to BeatShot website, and executes OnPCFinishedUsingAuthTicket when done */
-	void LoginToScoreBrowserWithSteam(const FString AuthTicket, FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket);
+	void LoginToScoreBrowserWithSteam(const FString AuthTicket,
+		FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket);
 
 	void InitiateSteamLogin();
-	
+
 	/** ~ILoadingProcessInterface begin */
-	virtual void BindToLoadingScreenDelegates(FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged, FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
+	virtual void BindToLoadingScreenDelegates(
+		FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
+		FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
 	/** ~ILoadingProcessInterface end */
 
 protected:

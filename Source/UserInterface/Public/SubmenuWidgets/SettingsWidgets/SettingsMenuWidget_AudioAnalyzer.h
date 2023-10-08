@@ -19,7 +19,7 @@ DECLARE_DELEGATE(FOnRestartButtonClicked);
 
 /** Settings category widget holding AudioAnalyzer settings */
 UCLASS()
-class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UBSSettingCategoryWidget,  public ISaveLoadInterface
+class USERINTERFACE_API USettingsMenuWidget_AudioAnalyzer : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -33,7 +33,10 @@ public:
 	void InitPauseMenuChild();
 
 	/** Returns OnPlayerSettingsChangedDelegate_AudioAnalyzer, the delegate that is broadcast when this class saves Audio Analyzer settings */
-	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_AudioAnalyzer; }
+	FOnPlayerSettingsChanged_AudioAnalyzer& GetPublicAudioAnalyzerSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_AudioAnalyzer;
+	}
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AudioAnalyzer | Classes")
@@ -49,7 +52,7 @@ protected:
 	UBandThresholdWidget* BandThresholdWidget;
 	UPROPERTY()
 	UPopupMessageWidget* PopupMessageWidget;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 
@@ -57,7 +60,7 @@ protected:
 	UComboBoxOptionWidget* ComboBoxOption_NumBandChannels;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_TimeWindow;
-	
+
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSVerticalBox* Box_BandChannelBounds;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
@@ -69,24 +72,25 @@ protected:
 	UBSButton* Button_Save;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UBSButton* Button_SaveAndRestart;
-	
+
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer AASettings;
 	UPROPERTY()
 	FPlayerSettings_AudioAnalyzer NewAASettings;
-	
+
 	UFUNCTION()
-	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue, const bool bIsMinValue);
+	void OnChannelValueCommitted(const UBandChannelWidget* BandChannel, const int32 Index, const float NewValue,
+		const bool bIsMinValue);
 	UFUNCTION()
 	void OnBandThresholdChanged(const UBandThresholdWidget* BandThreshold, const int32 Index, const float NewValue);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-	
+
 	UFUNCTION()
 	void OnSelectionChanged_NumBandChannels(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
-	
+
 	/** Update values in Settings Menu to match AASettings */
 	UFUNCTION()
 	void PopulateAASettings();

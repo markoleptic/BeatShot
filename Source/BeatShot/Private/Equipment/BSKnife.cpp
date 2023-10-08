@@ -16,7 +16,7 @@ ABSKnife::ABSKnife()
 void ABSKnife::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
@@ -32,4 +32,3 @@ void ABSKnife::SetShowKnifeMesh(const bool bShow)
 {
 	SetActorHiddenInGame(!bShow);
 }
-

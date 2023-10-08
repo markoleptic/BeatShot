@@ -8,8 +8,7 @@
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(BSAnimInstance)
 
-UBSAnimInstance::UBSAnimInstance(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UBSAnimInstance::UBSAnimInstance(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
 
@@ -43,7 +42,8 @@ void UBSAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		return;
 	}
 
-	UBSCharacterMovementComponent* CharMoveComp = CastChecked<UBSCharacterMovementComponent>(Character->GetCharacterMovement());
+	UBSCharacterMovementComponent* CharMoveComp = CastChecked<UBSCharacterMovementComponent>(
+		Character->GetCharacterMovement());
 	const FCharacterGroundInfo& GroundInfo = CharMoveComp->GetGroundInfo();
 	GroundDistance = GroundInfo.GroundDistance;
 }

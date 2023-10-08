@@ -34,8 +34,11 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 		break;
 	case ETargetDamageType::Hit:
 		{
-			const FString MinTick = FString::FromInt(-static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f)) + "ms";
-			const FString MaxTick = FString::FromInt(static_cast<int32>((InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) * 100.f)) + "ms";
+			const FString MinTick = FString::FromInt(-static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f))
+				+ "ms";
+			const FString MaxTick = FString::FromInt(
+				static_cast<int32>((InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) *
+					100.f)) + "ms";
 			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
 		}
 		break;
@@ -52,11 +55,13 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 	// Display custom game mode if not a default game mode
 	else
 	{
-		TextBlock_GameModeName->SetText(UKismetTextLibrary::Conv_StringToText(InConfig.DefiningConfig.CustomGameModeName));
+		TextBlock_GameModeName->SetText(
+			UKismetTextLibrary::Conv_StringToText(InConfig.DefiningConfig.CustomGameModeName));
 	}
 
 	TextBlock_SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(InConfig.AudioConfig.SongTitle));
-	TextBlock_TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(InConfig.AudioConfig.SongLength), 3)));
+	TextBlock_TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(
+		UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(InConfig.AudioConfig.SongLength), 3)));
 
 	Config = InConfig;
 }
@@ -81,7 +86,8 @@ void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSe
 	}
 }
 
-void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError, const float HitTimingError)
+void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError,
+	const float HitTimingError)
 {
 	switch (Config.TargetConfig.TargetDamageType)
 	{
@@ -151,10 +157,10 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, con
 	{
 		HitTimingWidget->UpdateHitTiming(NormalizedHitTimingError, HitTimingError);
 	}
-	
 }
 
 void UPlayerHUD::UpdateSongProgress(const float PlaybackTime)
 {
-	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(PlaybackTime).LeftChop(3)));
+	TextBlock_SongTimeElapsed->SetText(
+		FText::FromString(UKismetStringLibrary::TimeSecondsToString(PlaybackTime).LeftChop(3)));
 }

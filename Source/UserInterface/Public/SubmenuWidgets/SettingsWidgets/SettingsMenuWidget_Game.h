@@ -26,7 +26,10 @@ class USERINTERFACE_API USettingsMenuWidget_Game : public UBSSettingCategoryWidg
 
 public:
 	/** Returns OnPlayerSettingsChangedDelegate_Game, the delegate that is broadcast when this class saves Game settings */
-	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
+	FOnPlayerSettingsChanged_Game& GetPublicGameSettingsChangedDelegate()
+	{
+		return OnPlayerSettingsChangedDelegate_Game;
+	}
 
 protected:
 	/** Fills all widgets with values from NewSettings */
@@ -44,7 +47,7 @@ protected:
 	UColorSelectOptionWidget* MenuOption_TargetOutlineColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UColorSelectOptionWidget* MenuOption_InactiveColor;
-	
+
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* MenuOption_ShowStreakCombatText;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -83,7 +86,7 @@ protected:
 	void OnColorChanged_TargetOutline(const FLinearColor& NewColor);
 	UFUNCTION()
 	void OnColorChanged_BeatGridInactive(const FLinearColor& NewColor);
-	
+
 	UFUNCTION()
 	void OnCheckStateChanged_UseSeparateOutlineColor(const bool bIsChecked);
 	UFUNCTION()
@@ -102,9 +105,9 @@ protected:
 	void OnCheckStateChanged_ShowMesh(const bool bIsChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ShowHitTimingWidget(const bool bIsChecked);
-	
+
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-	
+
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 
@@ -114,7 +117,7 @@ protected:
 
 	/** The Player Settings at the time of opening the menu */
 	FPlayerSettings_Game InitialGameSettings;
-	
+
 	/** The Player Settings that are changed during setting menu interaction */
 	FPlayerSettings_Game NewGameSettings;
 };

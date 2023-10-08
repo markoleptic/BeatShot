@@ -72,10 +72,12 @@ void UBSEquipmentInstance::SpawnEquipmentActors(const TArray<FBSEquipmentActorTo
 
 		for (const FBSEquipmentActorToSpawn& SpawnInfo : ActorsToSpawn)
 		{
-			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity, OwningPawn);
+			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity,
+				OwningPawn);
 			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
 			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
-			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform, SpawnInfo.AttachSocket);
+			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform,
+				SpawnInfo.AttachSocket);
 			SpawnedActors.Add(NewActor);
 		}
 	}

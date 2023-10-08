@@ -17,7 +17,7 @@ struct FAccuracyRow
 
 	UPROPERTY()
 	int32 Size;
-	
+
 	UPROPERTY()
 	TArray<float> Accuracy;
 
@@ -119,7 +119,7 @@ struct FAccuracyData
 
 	UPROPERTY()
 	TArray<FAccuracyRow> AccuracyRows;
-	
+
 	FAccuracyData()
 	{
 		AccuracyRows.Init(FAccuracyRow(5), 5);
@@ -129,7 +129,7 @@ struct FAccuracyData
 	{
 		AccuracyRows.Init(FAccuracyRow(InNumCols), InNumRows);
 	}
-	
+
 	/** Adds the InUpdate AccuracyRows to this struct's Accuracy rows, and recalculates the accuracy */
 	void UpdateAccuracyRows(const FAccuracyData& InUpdateData)
 	{
@@ -140,7 +140,6 @@ struct FAccuracyData
 				AccuracyRows[i] += InUpdateData.AccuracyRows[i];
 				AccuracyRows[i].CalculateAccuracy();
 			}
-
 		}
 	}
 
@@ -171,10 +170,10 @@ struct FCommonScoreInfo
 
 	UPROPERTY()
 	int32 NumQTableColumns;
-	
+
 	UPROPERTY()
 	TArray<int32> TrainingSamples;
-	
+
 	UPROPERTY()
 	int64 TotalTrainingSamples;
 
@@ -190,15 +189,16 @@ struct FCommonScoreInfo
 		NumQTableColumns = DefaultNumberOfQTableColumns;
 		TotalTrainingSamples = 0;
 	}
-	
+
 	/** Calls UpdateAccuracyRows on AccuracyData which recalculates the accuracy for each entry */
 	void UpdateAccuracy(const FAccuracyData& InAccuracyData)
 	{
 		AccuracyData.UpdateAccuracyRows(InAccuracyData);
 	}
-	
+
 	/** Sets the value of the QTable with InQTable */
-	void UpdateQTable(const TArray<float>& InQTable, const int32 InNumQTableRows, const int32 InNumQTableColumns, const TArray<int32>& InUpdatedTrainingSamples, const int32 InUpdatedTotalTrainingSamples)
+	void UpdateQTable(const TArray<float>& InQTable, const int32 InNumQTableRows, const int32 InNumQTableColumns,
+		const TArray<int32>& InUpdatedTrainingSamples, const int32 InUpdatedTotalTrainingSamples)
 	{
 		QTable = InQTable;
 		NumQTableRows = InNumQTableRows;
@@ -362,10 +362,10 @@ USTRUCT()
 struct FGenericIndexMapping
 {
 	GENERATED_BODY()
-	
+
 	UPROPERTY()
 	int32 Index;
-	
+
 	UPROPERTY()
 	TArray<int32> MappedIndices;
 
@@ -374,6 +374,7 @@ struct FGenericIndexMapping
 		Index = INDEX_NONE;
 		MappedIndices = TArray<int32>();
 	}
+
 	FGenericIndexMapping(const int32 InIndex)
 	{
 		Index = InIndex;
@@ -388,7 +389,7 @@ struct FGenericIndexMapping
 		}
 		return false;
 	}
-	
+
 	friend FORCEINLINE uint32 GetTypeHash(const FGenericIndexMapping& Struct)
 	{
 		return GetTypeHash(Struct.Index);
@@ -403,7 +404,7 @@ class BEATSHOTGLOBAL_API USaveGamePlayerScore : public USaveGame
 
 public:
 	USaveGamePlayerScore();
-	
+
 	/** Returns a copy of PlayerScoreArray */
 	TArray<FPlayerScore> GetPlayerScores() const;
 
@@ -423,7 +424,8 @@ public:
 	FCommonScoreInfo FindCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig);
 
 	/** Finds or Adds the CommonScoreInfo for the given Defining Config */
-	void FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo);
+	void FindOrAddCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig,
+		const FCommonScoreInfo& InCommonScoreInfo);
 
 	/** Clears the QTable for an FCommonScoreInfo instance that matches the Defining Config. Returns 1 if successfully found and cleared */
 	int32 ResetQTable(const FBS_DefiningConfig& InDefiningConfig);
@@ -431,19 +433,25 @@ public:
 	/** Removes an FCommonScoreInfo instance that matches the Defining Config. Returns the number of removed instances (should only be 1) */
 	int32 RemoveCommonScoreInfo(const FBS_DefiningConfig& InDefiningConfig);
 
+	/** Removes all FCommonScoreInfo instances for custom game modes. Returns the number of removed instances */
+	int32 RemoveAllCustomGameModeCommonScoreInfo();
+
 	/** Prints full QTable array to log/console */
-    static void PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+	static void PrintQTable(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo,
+		const FNumberFormattingOptions& Options);
 
-    /** Prints 5x5 accuracy to log/console */
-    static void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+	/** Prints 5x5 accuracy to log/console */
+	static void PrintAccuracy(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo,
+		const FNumberFormattingOptions& Options);
 
-    /** Prints full TrainingSamples array to log/console */
-    static void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig, const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
+	/** Prints full TrainingSamples array to log/console */
+	static void PrintTrainingSamples(const FBS_DefiningConfig& InDefiningConfig,
+		const FCommonScoreInfo& InCommonScoreInfo, const FNumberFormattingOptions& Options);
 
 private:
 	/** Returns whether or not there exists a score with the same time */
 	bool ContainsExistingTime(const FPlayerScore& InPlayerScore);
-	
+
 	/** Array containing all saved score instances */
 	UPROPERTY()
 	TArray<FPlayerScore> PlayerScoreArray;

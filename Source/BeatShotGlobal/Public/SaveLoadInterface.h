@@ -22,8 +22,8 @@ enum class ETransitionState : uint8
 	Restart UMETA(DisplayName="Restart"),
 	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
 	QuitToDesktop UMETA(DisplayName="QuitToDesktop"),
-	PlayAgain UMETA(DisplayName="PlayAgain")
-};
+	PlayAgain UMETA(DisplayName="PlayAgain")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::PlayAgain);
 
 /** Information about the transition state of the game */
@@ -46,16 +46,19 @@ struct FGameModeTransitionState
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayerSettings_Game&, GameSettings);
 
 /** Broadcast when Audio Analyzer specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_AudioAnalyzer, const FPlayerSettings_AudioAnalyzer&, AudioAnalyzerSettings);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_AudioAnalyzer,
+	const FPlayerSettings_AudioAnalyzer&, AudioAnalyzerSettings);
 
 /** Broadcast when User specific settings are changed and saved */
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_User, const FPlayerSettings_User&, UserSettings);
 
 /** Broadcast when CrossHair specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_CrossHair, const FPlayerSettings_CrossHair&, CrossHairSettings);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_CrossHair, const FPlayerSettings_CrossHair&,
+	CrossHairSettings);
 
 /** Broadcast when VideoAndSound specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_VideoAndSound, const FPlayerSettings_VideoAndSound&, VideoAndSoundSettings);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_VideoAndSound,
+	const FPlayerSettings_VideoAndSound&, VideoAndSoundSettings);
 
 /** Broadcast from GameModesWidget, SettingsMenuWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should start, restart, or stop */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);
@@ -73,13 +76,13 @@ class BEATSHOTGLOBAL_API ISaveLoadInterface
 	GENERATED_BODY()
 
 private:
-	template<typename T>
+	template <typename T>
 	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
 	static T* LoadFromSlot(const FString& InSlotName, const int32 InSlotIndex);
-	
+
 	/** Performs the loading from SaveGame slot and returns the USaveGamePlayerScore object */
 	static USaveGamePlayerScore* LoadFromSlot_SaveGamePlayerScore();
-	
+
 	/** Performs the loading from SaveGame slot and returns the USaveGameCustomGameMode object */
 	static USaveGameCustomGameMode* LoadFromSlot_SaveGameCustomGameMode();
 
@@ -94,12 +97,11 @@ private:
 
 	/** Performs the saving to SaveGame slot and returns true if successful */
 	static bool SaveToSlot(USaveGamePlayerSettings* SaveGamePlayerSettings);
-	
-public:
 
+public:
 	/** Returns the GameModeDataAsset that contains all default/preset game modes. Expected to be overriden */
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const { return nullptr; }
-	
+
 	/** Loads all player settings from slot */
 	static FPlayerSettings LoadPlayerSettings();
 
@@ -127,10 +129,12 @@ public:
 	/** Saves a custom game mode to slot, checking if any matching exist and overriding if they do */
 	static void SaveCustomGameMode(const FBSConfig& ConfigToSave);
 
-	/** Removes a custom game mode and saves to slot */
+	/** Removes a custom game mode from SaveGameCustomGameMode and saves to slot. Also removes the FCommonScoreInfo
+	 *  from SaveGamePlayerScore. */
 	static int32 RemoveCustomGameMode(const FBSConfig& ConfigToRemove);
 
-	/** Removes all custom game modes and saves to slot */
+	/** Removes all custom game modes and saves to slot. Also removes the FCommonScoreInfos for all custom game modes
+	 *  from SaveGamePlayerScore. */
 	static int32 RemoveAllCustomGameModes();
 
 	/** Returns whether or not the GameModeName is already a custom game mode name */
@@ -150,10 +154,10 @@ public:
 
 	/** Returns the FBSConfig corresponding to the input BaseGameMode and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty) const;
-	
+
 	/** Returns whether or not the GameModeName is part of the game's default game modes */
 	static bool IsPresetGameMode(const FString& GameModeName);
-	
+
 	/** Loads all player scores from slot */
 	static TArray<FPlayerScore> LoadPlayerScores();
 
@@ -165,7 +169,7 @@ public:
 
 	/** Finds any PlayerScores that match the input PlayerScore based on DefaultMode, CustomGameModeName, Difficulty, and SongTitle */
 	static TArray<FPlayerScore> GetMatchingPlayerScores(const FPlayerScore& PlayerScore);
-	
+
 	/** Saves an instance of an FPlayerScore to slot */
 	static void SavePlayerScoreInstance(const FPlayerScore& PlayerScoreToSave);
 
@@ -176,35 +180,49 @@ public:
 	static FCommonScoreInfo FindCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig);
 
 	/** Finds or Adds a DefiningConfig CommonScoreInfo pair and saves to slot */
-	static void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig, const FCommonScoreInfo& CommonScoreInfoToSave);
+	static void SaveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig,
+		const FCommonScoreInfo& CommonScoreInfoToSave);
 
 	/** Removes a DefiningConfig CommonScoreInfo pair and saves to slot. Returns the number of successfully removed entries */
 	static int32 RemoveCommonScoreInfo(const FBS_DefiningConfig& DefiningConfig);
 
 	/** Resets the QTable for a DefiningConfig CommonScoreInfo pair and saves to slot. Returns the number of successful resets */
 	static int32 ResetQTable(const FBS_DefiningConfig& DefiningConfig);
-	
+
 	// These functions should be overriden when a class wants to receive updates about settings changes
 	// Example:
 	// GameInstance->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ThisClass::OnPlayerSettingsChanged_Game);
-	
+
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) {}
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
+	{
+	}
+
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) {}
+	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings)
+	{
+	}
+
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) {}
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
+	{
+	}
+
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) {}
+	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings)
+	{
+	}
+
 	UFUNCTION()
-	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) {}
+	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
+	{
+	}
 
 protected:
-
 	// These delegates are executed when their respective settings categories are changed, allowing other classes to receive updates
 	// Example:
 	// GameInstance->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
-	
+
 	/** The delegate that is broadcast when this class saves Game settings */
 	FOnPlayerSettingsChanged_Game OnPlayerSettingsChangedDelegate_Game;
 	/** The delegate that is broadcast when this class saves AudioAnalyzer settings */

@@ -32,7 +32,7 @@ public:
 	/** The padding applied to buttons */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="OverlayStyle|Buttons")
 	FMargin Padding_Buttons;
-	
+
 	/** The font applied to buttons */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="OverlayStyle|Buttons")
 	FSlateFontInfo Font_Button;

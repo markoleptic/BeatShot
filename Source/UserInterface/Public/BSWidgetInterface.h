@@ -29,6 +29,7 @@ enum class ESettingButtonType : uint8
 	Revert UMETA(DisplayName="Revert"),
 	SaveAndRestart UMETA(DisplayName="Save And Restart"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ESettingButtonType, ESettingButtonType::Save, ESettingButtonType::SaveAndRestart);
 
 /** Interface for commonly used objects and functions such as adding tooltips and syncing Sliders & TextBoxes */
@@ -42,15 +43,17 @@ class UBSWidgetInterface : public UInterface
 class USERINTERFACE_API IBSWidgetInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	/** Clamps NewTextValue, updates associated Slider value while rounding to the GridSnapSize */
-	static float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
+	static float OnEditableTextBoxChanged(const FText& NewTextValue, UEditableTextBox* TextBoxToChange,
+		USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
 
 	/** Updates associated TextBoxToChange with result of rounding to the GridSnapSize */
 	static float OnSliderChanged(const float NewValue, UEditableTextBox* TextBoxToChange, const float GridSnapSize);
-	
-	static void SetSliderAndEditableTextBoxValues(const float NewValue, UEditableTextBox* TextBoxToChange, USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
+
+	static void SetSliderAndEditableTextBoxValues(const float NewValue, UEditableTextBox* TextBoxToChange,
+		USlider* SliderToChange, const float GridSnapSize, const float Min, const float Max);
 
 	/** Override this function and then call SetTooltipWidget */
 	virtual UTooltipWidget* ConstructTooltipWidget() = 0;
@@ -58,8 +61,6 @@ public:
 	/** Returns TooltipWidget */
 	virtual UTooltipWidget* GetTooltipWidget() const { return nullptr; }
 
-	virtual UEnumTagMap* GetEnumTagMap() const { return nullptr; }
-	
 	/** Add tooltip text and bind the OnTooltipImageHovered function to a given TooltipImage */
 	void SetupTooltip(UTooltipImage* TooltipImage, const FText& TooltipText, const bool bInAllowTextWrap = false);
 
@@ -76,16 +77,17 @@ public:
 	/** Returns the widget used for a ComboBox entry. Must override ConstructComboBoxEntryWidget */
 	UFUNCTION()
 	virtual UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method);
-	
+
 	/** Returns the widget used for a selected ComboBox entry. Must override ConstructComboBoxEntryWidget */
 	UFUNCTION()
-	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString, const TArray<FString>& SelectedOptions);
+	virtual UWidget* OnSelectionChanged_GenerateMultiSelectionItem(const UBSComboBoxString* ComboBoxString,
+		const TArray<FString>& SelectedOptions);
 
 	/** Returns the String Table key for a specific ComboBox, not the cleanest code but it works */
 	virtual FString GetStringTableKeyFromComboBox(const UBSComboBoxString* ComboBoxString, const FString& EnumString);
-	
+
 	/** Simple template function to get default class object from subclass */
-	template<typename T>
+	template <typename T>
 	static const T* GetStyleCDO(const TSubclassOf<T> InSubclass)
 	{
 		if (InSubclass)
@@ -97,9 +99,9 @@ public:
 		}
 		return nullptr;
 	}
-	
+
 	/** Returns the enum value corresponding to the string, or if not found, the the enum byte value of 0 for T */
-	template<typename T>
+	template <typename T>
 	static T GetEnumFromString(const FString& InString)
 	{
 		const FString NewString = InString.Replace(*FString(" "), *FString("")).Replace(*FString("-"), *FString(""));
@@ -117,7 +119,7 @@ public:
 	}
 
 	/** Returns the string display name of the enum, or empty string if not found */
-	template<typename T>
+	template <typename T>
 	static FString GetStringFromEnum(const T& InEnum)
 	{
 		const UEnum* const EnumClass = StaticEnum<T>();
@@ -129,7 +131,7 @@ public:
 	}
 
 	/** Returns an array of strings corresponding to each enum value using GetStringFromEnum */
-	template<typename T>
+	template <typename T>
 	static TArray<FString> GetStringArrayFromEnumArray(const TArray<T>& InEnumArray)
 	{
 		TArray<FString> OutArray;
@@ -141,7 +143,7 @@ public:
 	}
 
 	/** Returns an array of enums corresponding to each string using GetEnumFromString */
-	template<typename T>
+	template <typename T>
 	static TArray<T> GetEnumArrayFromStringArray(const TArray<FString>& InStringArray)
 	{
 		TArray<T> OutArray;
@@ -157,7 +159,7 @@ public:
 	}
 
 	/** Returns the String table key for an enum provided that the string table key format is EnumName_EnumValue */
-	template<typename T>
+	template <typename T>
 	static FString GetStringTableKeyNameFromEnum(const T& InEnum)
 	{
 		FString EnumName;
@@ -194,7 +196,7 @@ public:
 	}
 
 	/** Returns an array of pointers of type T, recursively searching for all instances of T inside the PanelWidget */
-	template<typename T>
+	template <typename T>
 	static TArray<T*> DescendWidget(UPanelWidget* PanelWidget)
 	{
 		TArray<T*> Boxes;
@@ -203,7 +205,7 @@ public:
 		{
 			Boxes.Add(Cast<T>(PanelWidget));
 		}
-	
+
 		// Search through children
 		for (UWidget* Child : PanelWidget->GetAllChildren())
 		{
@@ -218,7 +220,7 @@ public:
 	}
 
 	/** Returns a pointer of type T, recursively searching only until it finds the first instances of T inside the PanelWidget */
-	template<typename T>
+	template <typename T>
 	static T* DescendWidgetReturnFirst(UPanelWidget* PanelWidget)
 	{
 		// Check the top level panel widget first
@@ -226,7 +228,7 @@ public:
 		{
 			return Cast<T>(PanelWidget);
 		}
-	
+
 		// Search through children
 		for (UWidget* Child : PanelWidget->GetAllChildren())
 		{

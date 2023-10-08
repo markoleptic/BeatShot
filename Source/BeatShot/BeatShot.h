@@ -18,6 +18,7 @@ enum class ETimeOfDay : uint8
 	DayToNight UMETA(DisplayName="DayToNight"),
 	NightToDay UMETA(DisplayName="NightToDay"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETimeOfDay, ETimeOfDay::Day, ETimeOfDay::NightToDay);
 
 /** Enum representing the ways in which the MovablePlatform can move */
@@ -28,7 +29,9 @@ enum class EPlatformTransitionType : uint8
 	MoveUpByInteract UMETA(DisplayName="MoveUpByInteract"),
 	MoveDownByInteract UMETA(DisplayName="MoveDownByInteract"),
 	MoveDownByStepOff UMETA(DisplayName="MoveDownByStepOff")};
-ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None, EPlatformTransitionType::MoveDownByStepOff);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None,
+	EPlatformTransitionType::MoveDownByStepOff);
 
 DECLARE_DELEGATE(FOnShotFired);
 
@@ -53,10 +56,10 @@ struct FTargetDamageEvent
 
 	/** The transform of the target */
 	FTransform Transform;
-	
+
 	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
 	FGuid Guid;
-	
+
 	FTargetDamageEvent()
 	{
 		TimeAlive = INDEX_NONE;
@@ -66,7 +69,8 @@ struct FTargetDamageEvent
 		Transform = FTransform();
 	}
 
-	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FTransform& InTransform, const FGuid& InGuid, const float InDamageDelta = 0.f)
+	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FTransform& InTransform,
+		const FGuid& InGuid, const float InDamageDelta = 0.f)
 	{
 		TimeAlive = InTimeAlive;
 		DamageDelta = InDamageDelta;

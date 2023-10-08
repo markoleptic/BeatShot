@@ -29,11 +29,10 @@ class USERINTERFACE_API ULoginWidget : public UUserWidget, public ISaveLoadInter
 	virtual void NativeConstruct() override;
 
 public:
-
 	/** Shows the login screen */
 	UFUNCTION()
 	void ShowLoginScreen(const FString& Key);
-	
+
 	void ShowSteamLoginScreen();
 
 	/** Sets the Text in the Box_Error given a key for the ST_Login string table */
@@ -50,7 +49,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBackgroundBlur* BackgroundBlur;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_Steam;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -61,7 +60,7 @@ protected:
 	UBSButton* Button_FromSteam_ToLegacyLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_NoSteamLogin;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_ContinueWithout;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -72,7 +71,7 @@ protected:
 	UBSButton* Button_NoLoginConfirm;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_NoLoginCancel;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UOverlay* Overlay_Login;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
@@ -91,7 +90,7 @@ protected:
 	UBSButton* Button_FromLogin_ToSteam;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_NoLogin;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutLogin;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
@@ -100,31 +99,36 @@ protected:
 	UWidgetAnimation* FadeOutSteam;
 
 	FWidgetAnimationDynamicEvent FadeOutDelegate;
-	
+
 	UFUNCTION()
 	void ClearErrorText(const FText& Text);
 	UFUNCTION()
 	void InitializeExit();
 	UFUNCTION()
 	void OnExitAnimationCompleted();
-	
+
 	static void LaunchRegisterURL() { UKismetSystemLibrary::LaunchURL("https://beatshot.gg/register"); }
 
 	UFUNCTION()
 	void OnButtonClicked_BSButton(const UBSButton* Button);
 	UFUNCTION()
 	void LoginButtonClicked();
-	
+
 	UFUNCTION()
 	void PlayFadeInLogin() { PlayAnimationReverse(FadeOutLogin); }
+
 	UFUNCTION()
 	void PlayFadeOutLogin() { PlayAnimationForward(FadeOutLogin); }
+
 	UFUNCTION()
 	void PlayFadeInContinueWithout() { PlayAnimationReverse(FadeOutContinueWithout); }
+
 	UFUNCTION()
 	void PlayFadeOutContinueWithout() { PlayAnimationForward(FadeOutContinueWithout); }
+
 	UFUNCTION()
 	void PlayFadeInSteamLogin() { PlayAnimationReverse(FadeOutSteam); }
+
 	UFUNCTION()
 	void PlayFadeOutSteamLogin() { PlayAnimationForward(FadeOutSteam); }
 

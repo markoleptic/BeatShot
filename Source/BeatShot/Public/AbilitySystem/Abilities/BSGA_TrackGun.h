@@ -19,15 +19,15 @@ class BEATSHOT_API UBSGA_TrackGun : public UBSGameplayAbility
 
 public:
 	UBSGA_TrackGun();
-	
+
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnPlayerStopTrackingTarget OnPlayerStopTrackingTarget;
 
 protected:
-	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo,
-							 const FGameplayEventData* TriggerEventData) override;
-	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility,
-							bool bWasCancelled) override;
+	virtual void ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData) override;
+	virtual void EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
+		const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 	virtual void OnRemoveAbility(const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilitySpec& Spec) override;
 
 	/** Performs non-gameplay related tasks like muzzle flash, camera recoil, and decal spawning */
@@ -36,7 +36,7 @@ protected:
 
 	/** Calls OnTargetDataReady */
 	void OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& InData, FGameplayTag ApplicationTag);
-	
+
 	UFUNCTION()
 	void OnTickTraceHitResultHit(const FHitResult& HitResult);
 
@@ -46,6 +46,6 @@ protected:
 
 private:
 	TObjectPtr<UBSAT_TickTrace> TickTraceTask;
-	
+
 	FDelegateHandle OnTargetDataReadyCallbackDelegateHandle;
 };

@@ -10,8 +10,8 @@
 
 class FLifetimeProperty;
 
-UBSInventoryItemInstance::UBSInventoryItemInstance(const FObjectInitializer& ObjectInitializer)
-: Super(ObjectInitializer)
+UBSInventoryItemInstance::UBSInventoryItemInstance(const FObjectInitializer& ObjectInitializer): Super(
+	ObjectInitializer)
 {
 }
 
@@ -58,7 +58,8 @@ bool UBSInventoryItemInstance::HasStatTag(FGameplayTag Tag) const
 	return (StatTags.GetStackCount(Tag) == 0) ? false : true;
 }
 
-const UBSInventoryItemFragment* UBSInventoryItemInstance::FindFragmentByClass(TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
+const UBSInventoryItemFragment* UBSInventoryItemInstance::FindFragmentByClass(
+	TSubclassOf<UBSInventoryItemFragment> FragmentClass) const
 {
 	if ((ItemDef != nullptr) && (FragmentClass != nullptr))
 	{

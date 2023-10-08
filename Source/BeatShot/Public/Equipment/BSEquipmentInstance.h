@@ -19,7 +19,7 @@ class BEATSHOT_API UBSEquipmentInstance : public UObject
 
 public:
 	UBSEquipmentInstance();
-	
+
 	//~UObject interface
 	virtual bool IsSupportedForNetworking() const override { return true; }
 	virtual UWorld* GetWorld() const override final;
@@ -56,7 +56,7 @@ public:
 private:
 	UFUNCTION()
 	void OnRep_Instigator();
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_Instigator)
 	TObjectPtr<UObject> Instigator;
 

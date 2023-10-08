@@ -8,7 +8,8 @@ UBSInputComponent::UBSInputComponent(const FObjectInitializer& ObjectInitializer
 {
 }
 
-void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
+	UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
@@ -18,9 +19,9 @@ void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig, UEnh
 
 	// Add any registered input mappings from the settings!
 	FPlayerSettings_User Settings = LoadPlayerSettings().User;
-	
+
 	InputSubsystem->AddPlayerMappableConfig(InputConfig->PlayerMappableInputConfig);
-	
+
 	// Tell enhanced input about any custom keymappings that the player may have customized
 	for (const TPair<FName, FKey>& Pair : Settings.Keybindings)
 	{
@@ -31,7 +32,8 @@ void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig, UEnh
 	}
 }
 
-void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig, UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
+void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig,
+	UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const
 {
 	check(InputConfig);
 	check(InputSubsystem);
