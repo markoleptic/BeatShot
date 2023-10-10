@@ -47,7 +47,7 @@ protected:
 	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea) override;
 
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
-	virtual void UpdateSpawnVolume() const override;
+	virtual void UpdateSpawnVolume(const float Factor) const override;
 
 	UPROPERTY()
 	TObjectPtr<UCustomGameModesWidget_Preview> GameModePreviewWidget;

@@ -249,31 +249,35 @@ inline FAccuracyData GetAveragedAccuracyData(const TArray<int32>& InTotalSpawns,
 	return OutData;
 }
 
-/** Returns an array of FGenericIndexMapping that maps all indices of a larger matrix to
- *  a smaller 5X5 matrix. Each element of the output array is an index of the smaller
- *  matrix which contains an array of indices that it represents in the larger matrix.
- *  No two indices of the larger are represented more than once */
+/**
+ *	Returns a 25 element map that maps all indices of the input matrix to a 5X5 matrix. Each map element is an index of
+ *  the 5X5 matrix which contains an array of indices that it represents. \n\n No two indices of the larger are
+ *  represented more than once.
+ *  
+ *  @param InRows Number of rows in original matrix
+ *  @param InCols Number of columns in original matrix
+ */
 inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 InRows, const int32 InCols)
 {
 	// Define the output size of the array (m x n)
-	constexpr int SmallM = 5;
-	constexpr int SmallN = 5;
+	constexpr int OutM = 5;
+	constexpr int OutN = 5;
 
 	TMap<int32, FGenericIndexMapping> IndexMappings = TMap<int32, FGenericIndexMapping>();
 
-	// Define the minimum number of elements that are averaged from input array
-	const int MFloor = FMath::Floor(InRows / SmallM);
-	const int NFloor = FMath::Floor(InCols / SmallN);
+	// Define the minimum number of elements that are combined from input array
+	const int MFloor = FMath::Floor(InRows / OutM);
+	const int NFloor = FMath::Floor(InCols / OutN);
 
-	// Define which columns/rows will avg extra values if not divisible by 5
-	nc::NdArray<int> MPad = Get5X5OverflowArray(InRows % SmallM);
-	nc::NdArray<int> NPad = Get5X5OverflowArray(InCols % SmallN);
+	// Define which columns/rows will get extra values if not divisible by 5
+	nc::NdArray<int> MPad = Get5X5OverflowArray(InRows % OutM);
+	nc::NdArray<int> NPad = Get5X5OverflowArray(InCols % OutN);
 
 	int MPadSum = 0;
-	for (int i = 0; i < SmallM; ++i)
+	for (int i = 0; i < OutM; ++i)
 	{
 		int NPadSum = 0;
-		for (int j = 0; j < SmallN; ++j)
+		for (int j = 0; j < OutN; ++j)
 		{
 			FGenericIndexMapping MappingInst;
 
@@ -292,7 +296,7 @@ inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 InRows, cons
 				}
 			}
 
-			MappingInst.Index = i * SmallN + j;
+			MappingInst.Index = i * OutN + j;
 			IndexMappings.Add(MappingInst.Index, MappingInst);
 
 			NPadSum += NPad(0, j);
@@ -313,48 +317,3 @@ inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 InRows, cons
 
 	return IndexMappings;
 }
-
-/* nc::NdArray<int32> ShrunkTotalSpawns = GetAveraged5X5NdArray<int32>(TotalSpawns, Height, Width, false);
-   nc::NdArray<int32> ShrunkTotalHits = GetAveraged5X5NdArray<int32>(TotalHits, Height, Width, false);
-	
-for (int i = 0; i < 5; i++)
-{
-	for (int j = 0; j < 5; j++)
-	{
-		const int32 TotalSpawnsValue = ShrunkTotalSpawns(i, j);
-		const int32 TotalHitsValue = ShrunkTotalHits(i, j);
-		
-		if (TotalSpawnsValue > 0)
-		{
-			TotalSpawnsValueTest += TotalSpawnsValue;
-			OutData.AccuracyRows[i].TotalSpawns[j] = static_cast<int64>(TotalSpawnsValue);
-		}
-		if (TotalHitsValue > 0)
-		{
-			TotalHitsValueTest += TotalHitsValue;
-			OutData.AccuracyRows[i].TotalHits[j] = static_cast<int64>(TotalHitsValueTest);
-		}
-	}
-}
-
-UE_LOG(LogTemp, Display, TEXT("Total Spawns:"));
-for (int i = 0; i < 5; i++)
-{
-	FString Line;
-	for (int j = 0; j < 5; j++)
-	{
-		Line.Append(FString::FromInt(ShrunkTotalSpawns(i, j)) + " ");
-	}
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Line);
-}
-
-UE_LOG(LogTemp, Display, TEXT("Total Hits:"));
-for (int i = 0; i < 5; i++)
-{
-	FString Line;
-	for (int j = 0; j < 5; j++)
-	{
-		Line.Append(FString::FromInt(ShrunkTotalHits(i, j)) + " ");
-	}
-	UE_LOG(LogTemp, Display, TEXT("%s"), *Line);
-}*/

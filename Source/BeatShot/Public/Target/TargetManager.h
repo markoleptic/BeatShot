@@ -40,13 +40,15 @@ public:
 	/** Delegate that is executed every time a target has been activated */
 	FOnTargetActivated OnTargetActivated;
 
-	/** Delegate that is executed every time a target has been spawned, and passes a pointer to that target. Used for AimBot */
+	/** Delegate that is executed every time a target has been spawned, and passes a pointer to that target.
+	 *  Used for AimBot */
 	FOnTargetActivated_AimBot OnTargetActivated_AimBot;
 
 	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
 	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
 
-	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as payload data. */
+	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as
+	 *  payload data. */
 	FOnTargetDestroyed OnTargetDeactivated;
 
 	/** Delegate that is executed when a player damages a BeatTrack target. */
@@ -80,7 +82,7 @@ protected:
 
 	/** Reinforcement learning agent component */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
-	TObjectPtr<UReinforcementLearningComponent> ReinforcementLearningComponent;
+	TObjectPtr<UReinforcementLearningComponent> RLComponent;
 
 	/** Manages spawn points */
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
@@ -92,11 +94,11 @@ protected:
 
 	/** Curves to look up values for Dynamic SpawnArea scaling */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UCompositeCurveTable* CompositeCurveTable_SpawnArea;
+	UCompositeCurveTable* CCT_SpawnArea;
 
 	/** Curves to look up values for Dynamic target scaling */
 	UPROPERTY(EditDefaultsOnly, Category = "Spawn Properties")
-	UCompositeCurveTable* CompositeCurveTable_TargetScale;
+	UCompositeCurveTable* CCT_TargetScale;
 
 public:
 	/** Called from BSGameMode */
@@ -116,35 +118,38 @@ public:
 	/** Called from BSGameMode */
 	void SetShouldSpawn(const bool bShouldSpawn);
 
-	/** Called when a player moves the CrossHair off a target. Updates target colors if they are vulnerable to tracking damage */
+	/** Called when a player moves the CrossHair off a target. Updates target colors if they are vulnerable
+	 *  to tracking damage */
 	UFUNCTION()
 	void OnPlayerStopTrackingTarget();
 
-	/** Called from GameMode when it's an appropriate time to spawn or activate a target. This is the main loop that drives this class */
+	/** Called from GameMode when it's an appropriate time to spawn or activate a target. This is the main loop
+	 *  that drives this class */
 	void OnAudioAnalyzerBeat();
 
 protected:
-	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its delegates,
-	 *  sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
+	/** Generic spawn function that all game modes use to spawn a target. Initializes the target, binds to its
+	 *  delegates, sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
 	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea);
 
 	/** Adds a Target to the ManagedTargets array, and updates the associated SpawnArea IsCurrentlyManaged flag */
 	int32 AddToManagedTargets(ATarget* SpawnTarget);
 
-	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget. Flags associated SpawnArea as recent, fires OnActivation delegate,
-	 *  and adds to ReinforcementLearningComponent ActiveTargetPairs if active */
+	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget */
 	bool ActivateTarget(ATarget* InTarget) const;
 
-	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce. Also activates the target */
+	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce */
 	void HandleRuntimeSpawning();
 
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
 	void HandleUpfrontSpawning();
 
-	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent and temporary targets */
+	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent
+	 *  and temporary targets */
 	void HandleTargetActivation();
 
-	/** Handles permanently activated targets so they can still receive activation responses, called in HandleTargetActivation */
+	/** Handles permanently activated targets so they can still receive activation responses, called in
+	 *  HandleTargetActivation */
 	void HandlePermanentlyActiveTargetActivation() const;
 
 	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
@@ -160,19 +165,22 @@ protected:
 	FVector FindNextTargetScale() const;
 
 	/** Find the next spawn location for a target */
-	USpawnArea* FindNextSpawnArea(EBoundsScalingPolicy BoundsScalingPolicy, const FVector& NewTargetScale) const;
+	USpawnArea* FindNextSpawnArea(const FVector& NewTargetScale) const;
 
-	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing the next target location based on the index that the RLAgent returned */
+	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing
+	 *  the next target location based on the index that the RLAgent returned */
 	USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
 
-	/** The expiration or destruction of any target is bound to this function, which handles firing delegates, target flags, target removal */
+	/** The expiration or destruction of any target is bound to this function, which handles firing delegates,
+	 *  target flags, target removal */
 	UFUNCTION()
 	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Updates ConsecutiveTargetsHit, based on if the target expired or not */
 	void UpdateConsecutiveTargetsHit(const float TimeAlive);
 
-	/** Updates DynamicLookUpValue_TargetScale and DynamicLookUpValue_SpawnAreaScale, based on if the target expired or not */
+	/** Updates DynamicLookUpValue_TargetScale and DynamicLookUpValue_SpawnAreaScale,
+	 *  based on if the target expired or not */
 	void UpdateDynamicLookUpValues(const float TimeAlive);
 
 	/** Broadcasts the appropriate delegate based on the damage type */
@@ -186,34 +194,51 @@ protected:
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 
-	/** Returns the location to spawn the SpawnBox at */
-	FVector GenerateSpawnBoxLocation() const;
+	/** Returns the static location to place the SpawnBox */
+	FVector GenerateStaticLocation() const;
+	
+	/** Returns the ending extents for a game mode. If dynamic, this is the extents that the curves lerp towards from
+	 *  StartExtents */
+	FVector GenerateStaticExtents() const;
+	
+	/** Returns the absolute minimum and maximum corners of the spawn volume, based on the Static Extents and SpawnBox
+	 *  origin. */
+	FExtrema GenerateStaticExtrema() const;
 
-	/** Returns the actual BoxBounds that the TargetManager sets its 2D BoxBounds to */
-	FVector GenerateSpawnBoxExtents() const;
+	/** Returns the location to place the SpawnVolume based on the Factor if dynamic or the StaticExtents otherwise.
+	 *  X and Y will be the same as the SpawnBox's location */
+	FVector GenerateSpawnVolumeLocation(const float Factor = 1.f) const;
 
-	/** Creates the box extrema */
-	FExtrema GenerateBoxExtrema() const;
+	/** Returns the extents to apply to the SpawnVolume based on the Factor if dynamic or the StaticExtents otherwise.
+	 *  X and Y will be the same as the SpawnBox's extents */
+	FVector GenerateSpawnVolumeExtents(const float Factor = 1.f) const;
 
-	/** Returns SpawnBox's origin. This location never changes */
-	FVector GetBoxOrigin() const;
+	/** Returns SpawnVolume's Location */
+	FVector GetSpawnVolumeLocation() const;
+	
+	/** Returns SpawnVolume's BoxExtents */
+	FVector GetSpawnVolumeExtents() const;
+	
+	/** Returns a FExtrema struct containing both the min extrema and max extrema of the SpawnVolume */
+	FExtrema GetSpawnVolumeExtrema() const;
 
-	/** Returns SpawnBox's BoxExtents */
-	FVector Get3DBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
-
-	/** Returns SpawnBox's BoxExtents */
-	FVector Get2DBoxExtents(const bool bDynamic = false, const bool bAbsoluteMax = false) const;
-
-	/** Returns a FExtrema struct containing both the min extrema and max extrema */
-	FExtrema GetBoxExtrema(const bool bDynamic, const bool bAbsoluteMax = false) const;
-
-	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor. This value is snapped to the values of SpawnMemoryScale Y & Z */
-	void UpdateSpawnBox() const;
+	/** Returns SpawnBox's origin. X will always be 3700 */
+	FVector GetSpawnBoxOrigin() const;
+	
+	/** Returns SpawnBox's current BoxExtents. X will always be 0 */
+	FVector GetSpawnBoxExtents() const;
+	
+	/** Returns the current min and max extrema for the SpawnBox. X will always be 0 */
+	FExtrema GetSpawnBoxExtrema() const;
+	
+	/** Sets the SpawnBox's BoxExtents based on the current value of DynamicScaleFactor */
+	void UpdateSpawnBoxExtents(const float Factor) const;
 
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
-	virtual void UpdateSpawnVolume() const;
+	virtual void UpdateSpawnVolume(const float Factor) const;
 
-	/** Calls GetNewTargetDirection and sets the new direction of the target. Spawn = 0, Activation  = 1, Deactivation = 2 */
+	/** Calls GetNewTargetDirection and sets the new direction of the target.
+	 *  Spawn = 0, Activation  = 1, Deactivation = 2 */
 	void ChangeTargetDirection(ATarget* InTarget, const uint8 InSpawnActivationDeactivation) const;
 
 	/** Returns a new unit vector direction for a target */
@@ -235,9 +260,10 @@ protected:
 	ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
 
 	/** Evaluates the specified curve at InTime */
-	float GetDynamicValueFromCurveTable(const bool bIsSpawnArea, const int32 InTime) const;
+	float GetCurveTableValue(const bool bIsSpawnArea, const int32 InTime) const;
 
-	/** Function called from BSGameMode any time a player changes settings. Propagates to all targets currently active */
+	/** Function called from BSGameMode any time a player changes settings.
+	 *  Propagates to all targets currently active */
 	void UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings);
 
 public:
@@ -281,7 +307,8 @@ protected:
 	/** The scale to apply to the next/current target */
 	FVector CurrentTargetScale;
 
-	/** The min and max extrema, set during initialization. This value can be different than current BoxBounds extrema if DynamicSpreadType */
+	/** The min and max extrema, set during initialization. This value can be different than current
+	 *  BoxBounds extrema if DynamicSpreadType */
 	FExtrema StaticExtrema;
 
 	/** The static extents for the spawn box. This is half the value that was passed in with the FBSConfig */
@@ -290,13 +317,16 @@ protected:
 	/** Consecutively destroyed targets */
 	int32 ConsecutiveTargetsHit;
 
-	/** The time to use when looking up values from CompositeCurveTable_TargetScale. Incremented by for each consecutive target hit, decremented by setting value */
+	/** The time to use when looking up values from CCT_TargetScale. Incremented by for each consecutive target hit,
+	 *  decremented by setting value */
 	int32 DynamicLookUpValue_TargetScale;
 
-	/** The time to use when looking up values from CompositeCurveTable_SpawnArea. Incremented by for each consecutive target hit, decremented by setting value  */
+	/** The time to use when looking up values from CCT_SpawnArea. Incremented by for each consecutive target hit,
+	 *  decremented by setting value  */
 	int32 DynamicLookUpValue_SpawnAreaScale;
 
-	/** An array of spawned Targets that are being actively managed by this class. This is the only place where references to spawned targets are stored */
+	/** An array of spawned Targets that are being actively managed by this class. This is the only place where
+	 *  references to spawned targets are stored */
 	UPROPERTY()
 	TArray<TObjectPtr<ATarget>> ManagedTargets;
 

@@ -65,9 +65,6 @@ protected:
 	/** Finds if target should be destroyed, and calls Destroy if so */
 	virtual void HandleDestruction(const bool bExpired, const float CurrentHealth) override;
 
-	/** Returns the position that the TargetWidget should be placed based on world position */
-	FVector2d GetWidgetPositionFromWorldPosition(const FVector& InPosition) const;
-
 	/** Reference to the target widget in CustomGameModesWidget_Preview */
 	TObjectPtr<UTargetWidget> TargetWidget;
 

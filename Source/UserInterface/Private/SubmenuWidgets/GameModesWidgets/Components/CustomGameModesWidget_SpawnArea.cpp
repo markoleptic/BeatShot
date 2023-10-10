@@ -165,9 +165,9 @@ void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_MinDistanceBetweenTargets,
 		BSConfig->TargetConfig.MinDistanceBetweenTargets);
 
-	UpdateValueIfDifferent(SliderTextBoxOption_MinHorizontalSpread, BSConfig->DynamicSpawnAreaScaling.MinSize.Y);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread, BSConfig->DynamicSpawnAreaScaling.MinSize.Z);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinForwardSpread, BSConfig->DynamicSpawnAreaScaling.MinSize.X);
+	UpdateValueIfDifferent(SliderTextBoxOption_MinHorizontalSpread, BSConfig->DynamicSpawnAreaScaling.StartBounds.Y);
+	UpdateValueIfDifferent(SliderTextBoxOption_MinVerticalSpread, BSConfig->DynamicSpawnAreaScaling.StartBounds.Z);
+	UpdateValueIfDifferent(SliderTextBoxOption_MinForwardSpread, BSConfig->DynamicSpawnAreaScaling.StartBounds.X);
 
 	UpdateValueIfDifferent(SliderTextBoxOption_StartThreshold, BSConfig->DynamicSpawnAreaScaling.StartThreshold);
 	UpdateValueIfDifferent(SliderTextBoxOption_EndThreshold, BSConfig->DynamicSpawnAreaScaling.EndThreshold);
@@ -332,15 +332,15 @@ void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBo
 	}
 	else if (Widget == SliderTextBoxOption_MinHorizontalSpread)
 	{
-		BSConfig->DynamicSpawnAreaScaling.MinSize.Y = Value;
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Y = Value;
 	}
 	else if (Widget == SliderTextBoxOption_MinVerticalSpread)
 	{
-		BSConfig->DynamicSpawnAreaScaling.MinSize.Z = Value;
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.Z = Value;
 	}
 	else if (Widget == SliderTextBoxOption_MinForwardSpread)
 	{
-		BSConfig->DynamicSpawnAreaScaling.MinSize.X = Value;
+		BSConfig->DynamicSpawnAreaScaling.StartBounds.X = Value;
 	}
 	else if (Widget == SliderTextBoxOption_StartThreshold)
 	{

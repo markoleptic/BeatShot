@@ -23,27 +23,28 @@ public:
 	void CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Variable);
-
-
+	
 	void CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_SpawnBox(IConsoleVariable* Variable);
+	void CVarOnChanged_ShowDebug_DirectionalBoxes(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable);
+	
 	void CVarOnChanged_ShowDebug_AllSpawnAreas(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_ValidSpawnAreas(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_RemovedSpawnAreas(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_FilteredRecent(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_FilteredActivated(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_FilteredManaged(IConsoleVariable* Variable);
+	
 	void CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(IConsoleVariable* Variable);
+	
 	void CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable);
 
 	void CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable);
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "BeatShot|Abilities")
 	TSubclassOf<UGameplayAbility> AimBotAbility;
-
-	bool bAimBotEnabled = false;
 
 	UPROPERTY()
 	FGameplayAbilitySpecHandle AimBotSpecHandle;

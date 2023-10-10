@@ -54,9 +54,9 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	Epsilon = AgentParams.AIConfig.Epsilon;
 	ReinforcementLearningMode = AgentParams.AIConfig.ReinforcementLearningMode;
 	HyperParameterMode = AgentParams.AIConfig.HyperParameterMode;
-	TotalTrainingSamples = AgentParams.TotalTrainingSamples;
+	TotalTrainingSamples = AgentParams.ScoreInfo.TotalTrainingSamples;
 
-	QTableToSpawnAreaIndexMap = MapMatrixTo5X5(AgentParams.SpawnAreasHeight, AgentParams.SpawnAreasWidth);
+	QTableToSpawnAreaIndexMap = MapMatrixTo5X5(AgentParams.SpawnAreaSize.Z, AgentParams.SpawnAreaSize.Y);
 
 	// Each row in QTable has size equal to ScaledSize, and so does each column
 	QTable = nc::zeros<float>(nc::Shape(M, N));
@@ -74,27 +74,27 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	}
 
 	// Use existing QTable if possible
-	if (AgentParams.NumQTableRows == QTable.numRows() && AgentParams.NumQTableColumns == QTable.numCols())
+	if (AgentParams.ScoreInfo.NumQTableRows == QTable.numRows() && AgentParams.ScoreInfo.NumQTableColumns == QTable.numCols())
 	{
-		if (QTable.size() == AgentParams.QTable.Num())
+		if (QTable.size() == AgentParams.ScoreInfo.QTable.Num())
 		{
-			QTable = GetNdArrayFromTArray<float>(AgentParams.QTable, AgentParams.NumQTableRows,
-				AgentParams.NumQTableColumns);
+			QTable = GetNdArrayFromTArray<float>(AgentParams.ScoreInfo.QTable, AgentParams.ScoreInfo.NumQTableRows,
+				AgentParams.ScoreInfo.NumQTableColumns);
 		}
-		if (TrainingSamples.size() == AgentParams.TrainingSamples.Num())
+		if (TrainingSamples.size() == AgentParams.ScoreInfo.TrainingSamples.Num())
 		{
-			TrainingSamples = GetNdArrayFromTArray<int32>(AgentParams.TrainingSamples, AgentParams.NumQTableRows,
-				AgentParams.NumQTableColumns);
+			TrainingSamples = GetNdArrayFromTArray<int32>(AgentParams.ScoreInfo.TrainingSamples, AgentParams.ScoreInfo.NumQTableRows,
+				AgentParams.ScoreInfo.NumQTableColumns);
 		}
 	}
 
 	// Check NaNs
 	QTable = nc::nan_to_num<float>(QTable, 0.f);
 
-	UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"), AgentParams.QTable.Num(),
-		QTable.size());
-	UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %.2f SpawnAreasColumns: %.2f"),
-		AgentParams.SpawnAreasHeight, AgentParams.SpawnAreasWidth);
+	UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"),
+		AgentParams.ScoreInfo.QTable.Num(), QTable.size());
+	UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"),
+		AgentParams.SpawnAreaSize.Z, AgentParams.SpawnAreaSize.Y);
 	UE_LOG(LogTargetManager, Display, TEXT("QTableRows: %d QTableColumns: %d"), M, N);
 	UE_LOG(LogTargetManager, Display, TEXT("QTable Training Samples: %lld"), TotalTrainingSamples);
 }

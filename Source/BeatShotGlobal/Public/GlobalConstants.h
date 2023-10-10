@@ -46,6 +46,8 @@ namespace Constants
 	/** The min time required to receive credit for playing a game mode */
 	inline constexpr float MinStatRequirement_Duration_NumGamesPlayed = 60.f;
 
+	inline constexpr float DirBoxPadding = 5.f;
+
 	inline constexpr int32 DefaultNumberOfQTableRows = 25;
 
 	inline constexpr int32 DefaultNumberOfQTableColumns = 25;

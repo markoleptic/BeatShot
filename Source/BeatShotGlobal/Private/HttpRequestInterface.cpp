@@ -242,7 +242,7 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 			if (ResponseCode != 200)
 			{
 				if (OnDeleteScoresResponse.IsBound()) OnDeleteScoresResponse.Execute(0, ResponseCode);
-				UE_LOG(LogTemp, Display, TEXT("Failed to delete scores: %s"), *ResponseString);
+				UE_LOG(LogTemp, Display, TEXT("Failed to delete scores: Error Code: %d"), ResponseCode);
 				return;
 			}
 

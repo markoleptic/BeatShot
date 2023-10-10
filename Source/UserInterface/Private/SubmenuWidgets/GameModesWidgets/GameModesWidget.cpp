@@ -523,7 +523,7 @@ void UGameModesWidget::OnButtonClicked_StartFromCustom()
 			PopupMessageWidget->FadeOut();
 		});
 
-		Buttons[0]->SetButtonText(GetWidgetTextFromKey("GM_OverwriteConfirm"));
+		Buttons[1]->SetButtonText(GetWidgetTextFromKey("GM_OverwriteConfirm"));
 		Buttons[1]->OnBSButtonButtonPressed_NonDynamic.AddLambda([this]
 		{
 			PopupMessageWidget->FadeOut();
@@ -907,8 +907,9 @@ void UGameModesWidget::OnDeleteScoresResponseReceived(const int32 NumScoresRemov
 		const int32 NumGameModesRemoved = RemoveCustomGameMode(FindCustomGameMode(GameModeNameToRemove));
 		if (NumGameModesRemoved >= 1)
 		{
-			FString String = GameModeNameToRemove + " removed and " + FString::FromInt(NumScoresRemoved) + " scores removed";
-			SetAndPlaySavedText(FText::FromString(GameModeNameToRemove));
+			const FString String = GameModeNameToRemove + " removed and "
+				+ FString::FromInt(NumScoresRemoved) + " scores removed";
+			SetAndPlaySavedText(FText::FromString(String));
 			CustomGameModesWidget_CreatorView->SetNewCustomGameModeName("");
 			CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
 			CustomGameModesWidget_CreatorView->RefreshGameModeTemplateComboBoxOptions();

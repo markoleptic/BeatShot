@@ -667,17 +667,19 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 {
 	GENERATED_BODY()
 
-	/** Which direction(s) to change the SpawnArea/BoxBounds. If a direction is not included, it will always stay at MinSize */
+	/** Which direction(s) to change the SpawnArea/BoxBounds. If a direction is not included,
+	 *  it will always stay at StartBounds */
 	UPROPERTY(EditDefaultsOnly)
 	TArray<EDynamicBoundsScalingPolicy> DynamicBoundsScalingPolicy;
 
-	/** The size of the SpawnArea/BoxBounds when zero consecutively destroyed targets. X is forward, Y is horizontal, Z is vertical */
+	/** The size of the SpawnArea/BoxBounds when zero consecutively destroyed targets.
+	 *  X is forward, Y is horizontal, Z is vertical */
 	UPROPERTY(EditDefaultsOnly)
-	FVector MinSize;
+	FVector StartBounds;
 
-	FVector GetMinExtent() const
+	FVector GetStartExtents() const
 	{
-		return FVector(MinSize.X * 0.5f, MinSize.Y * 0.5f, MinSize.Z * 0.5f);
+		return FVector(StartBounds.X, StartBounds.Y, StartBounds.Z) * 0.5f;
 	}
 
 	FBS_Dynamic_SpawnArea()
@@ -687,9 +689,10 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 		bIsCubicInterpolation = false;
 		DecrementAmount = 5;
 		DynamicBoundsScalingPolicy = TArray({
-			EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Vertical
+			EDynamicBoundsScalingPolicy::Horizontal,
+			EDynamicBoundsScalingPolicy::Vertical
 		});
-		MinSize = FVector(0, 200.f, 200.f);
+		StartBounds = FVector(0, 200.f, 200.f);
 	}
 
 	FORCEINLINE bool operator==(const FBS_Dynamic_SpawnArea& Other) const
@@ -714,7 +717,7 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 		{
 			return false;
 		}
-		if (!MinSize.Equals(Other.MinSize, 0.1f))
+		if (!StartBounds.Equals(Other.StartBounds, 0.1f))
 		{
 			return false;
 		}
@@ -895,8 +898,6 @@ struct FBS_TargetConfig
 	/** Maximum number of activated targets allowed at one time */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	int32 MaxNumActivatedTargetsAtOnce;
-
-	// TODO: Constrain MaxNumActivatedTargetsAtOnce to be less than MaxNumTargetsAtOnce
 
 	/** How many recent targets to keep in memory, if not using RecentTargetTimeLength */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -1322,13 +1323,6 @@ struct FBSConfig
 	/** Returns whether or not the config is able to be used for reinforcement learning */
 	bool IsCompatibleWithReinforcementLearning() const
 	{
-		if (TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
-		{
-			if (GridConfig.NumHorizontalGridTargets % 5 != 0 || GridConfig.NumVerticalGridTargets % 5 != 0)
-			{
-				return false;
-			}
-		}
 		if (TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
 			return false;

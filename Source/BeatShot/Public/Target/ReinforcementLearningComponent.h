@@ -152,38 +152,21 @@ struct FRLAgentParams
 	GENERATED_BODY()
 
 	FBS_AIConfig AIConfig;
-	float SpawnAreasHeight;
-	float SpawnAreasWidth;
-	int32 NumQTableRows;
-	int32 NumQTableColumns;
-	TArray<float> QTable;
-	TArray<int32> TrainingSamples;
-	int64 TotalTrainingSamples;
+	FCommonScoreInfo ScoreInfo;
+	FIntVector3 SpawnAreaSize;
 
 	FRLAgentParams()
 	{
 		AIConfig = FBS_AIConfig();
-		QTable = TArray<float>();
-		TrainingSamples = TArray<int32>();
-		SpawnAreasHeight = 0.f;
-		SpawnAreasWidth = 0.f;
-		TotalTrainingSamples = 0;
-		NumQTableRows = 0;
-		NumQTableColumns = 0;
+		ScoreInfo = FCommonScoreInfo();
+		SpawnAreaSize = FIntVector3();
 	}
 
-	FRLAgentParams(const FBS_AIConfig& InAIConfig, const float InSpawnAreaHeight, const float InSpawnAreaWidth,
-		const TArray<float>& InQTable, const int32 InNumQTableRows, const int32 InNumQTableColumns,
-		const TArray<int32>& InTrainingSamples, const int32 InTotalTrainingSamples)
+	FRLAgentParams(const FBS_AIConfig& InAIConfig, const FCommonScoreInfo& InScoreInfo, const FIntVector3& InSpawnAreaSize)
 	{
 		AIConfig = InAIConfig;
-		SpawnAreasHeight = InSpawnAreaHeight;
-		SpawnAreasWidth = InSpawnAreaWidth;
-		QTable = InQTable;
-		NumQTableRows = InNumQTableRows;
-		NumQTableColumns = InNumQTableColumns;
-		TrainingSamples = InTrainingSamples;
-		TotalTrainingSamples = InTotalTrainingSamples;
+		ScoreInfo = InScoreInfo;
+		SpawnAreaSize = InSpawnAreaSize;
 	}
 };
 

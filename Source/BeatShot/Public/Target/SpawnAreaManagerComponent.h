@@ -63,7 +63,39 @@ struct FExtrema
 	}
 };
 
-/** A small piece of the total spawn area containing info about its state in relation to targets, including points that represents where targets have spawned */
+USTRUCT()
+struct FSpawnAreaParams
+{
+	GENERATED_BODY()
+	int32 Index;
+	FVector BottomLeft;
+	int32 IncY;
+	int32 IncZ;
+	int32 NumVerticalTargets;
+	int32 NumHorizontalTargets;
+	bool bGrid;
+
+	FSpawnAreaParams()
+	{
+		Index = -1;
+		BottomLeft = FVector();
+		IncY = -1;
+		IncZ = -1;
+		NumVerticalTargets = -1;
+		NumHorizontalTargets = -1;
+		bGrid = false;
+	}
+
+	FSpawnAreaParams& NextIndex(const int32 InIndex, const FVector& InLoc)
+	{
+		Index = InIndex;
+		BottomLeft = InLoc;
+		return *this;
+	}
+};
+
+/** A small piece of the total spawn area containing info about its state in relation to targets,
+ *  including points that represents where targets have spawned */
 UCLASS()
 class BEATSHOT_API USpawnArea : public UObject
 {
@@ -86,7 +118,8 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** The index for this SpawnArea inside an array of SpawnAreas */
 	int32 Index;
 
-	/** Bottom left vertex of the box, used for comparison between SpawnAreas. This Vertex corresponds to a location in AllSpawnLocations (in TargetManager) */
+	/** Bottom left vertex of the box, used for comparison between SpawnAreas. This Vertex corresponds to a location
+	 *  in AllSpawnLocations (in TargetManager) */
 	FVector Vertex_BottomLeft;
 	FVector Vertex_TopRight;
 	FVector Vertex_BottomRight;
@@ -107,7 +140,8 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** The type of SpawnArea (corner, border, etc.) */
 	EGridIndexType IndexType;
 
-	/** A unique ID for the target, used to find the target when it comes time to free the blocked SpawnAreas of a target */
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked SpawnAreas
+	 *  of a target */
 	FGuid TargetGuid;
 
 	/** The scale associated with the target if the SpawnArea is currently representing one */
@@ -131,8 +165,7 @@ class BEATSHOT_API USpawnArea : public UObject
 public:
 	USpawnArea();
 
-	void Init(const int32 InIndex, const FVector& InBottomLeft, const float IncY, const float IncZ,
-		const int32 InNumVerticalTargets, const int32 InNumHorizontalTargets);
+	void Init(const FSpawnAreaParams& InParams);
 
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
@@ -220,9 +253,6 @@ public:
 	/** Sets the value of ChosenPoint to the output of GenerateRandomPointInSpawnArea */
 	void SetRandomChosenPoint();
 
-	/** Returns an array of directions that contain all directions where the location point does not have an adjacent point in that direction. */
-	/*TArray<EBorderingDirection> GetBorderingEdges(const TArray<FVector>& ValidLocations, const FExtrema& InExtrema) const;*/
-
 private:
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
 	static TArray<int32> FindAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex,
@@ -246,7 +276,8 @@ private:
 		bIsActivated = bSetIsActivated;
 	}
 
-	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and clears OverlappingVertices */
+	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and
+	 *  clears OverlappingVertices */
 	void SetIsRecent(const bool bSetIsRecent);
 
 	/** Sets the value of OverlappingVertices */
@@ -259,7 +290,8 @@ private:
 	/** Empties the OverlappingVertices array */
 	void EmptyOverlappingVertices() { OverlappingVertices.Empty(); }
 
-	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not spawned there yet */
+	/** Increments the total amount of spawns in this SpawnArea, including handling special case where it has not
+	 *  spawned there yet */
 	void IncrementTotalSpawns();
 
 	/** Increments the total amount of hits in this SpawnArea */
@@ -279,6 +311,8 @@ public:
 	/** Initializes basic variables in SpawnAreaManagerComponent */
 	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents,
 		const FExtrema& InStaticExtrema);
+
+	void Clear();
 
 	/** Finds a SpawnArea with the matching InIndex */
 	USpawnArea* FindSpawnAreaFromIndex(const int32 InIndex) const;
@@ -333,28 +367,34 @@ public:
 
 	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
 	TArray<USpawnArea*> GetSpawnAreas() const { return SpawnAreas; }
-	int32 GetSpawnMemoryIncY() const { return SpawnMemoryIncY; }
-	int32 GetSpawnMemoryIncZ() const { return SpawnMemoryIncZ; }
-	int32 GetSpawnAreasWidth() const { return Width; }
-	int32 GetSpawnAreasHeight() const { return Height; }
+
+	/** Returns the (Height, Width) of all SpawnAreas */
+	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaInc; }
+
+	/** Returns (x, NumHorizontal, NumVertical) total spawn areas */
+	FIntVector3 GetSpawnAreaSize() const { return Size; }
 
 	/** Flags the SpawnArea as being actively managed by TargetManager. Calls SetOverlappingVertices if needed */
 	void FlagSpawnAreaAsManaged(const FGuid TargetGuid) const;
 
-	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices if needed */
+	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices
+	 *  if needed */
 	void FlagSpawnAreaAsActivated(const FGuid TargetGuid) const;
 
 	/** Flags the SpawnArea as recent */
 	void FlagSpawnAreaAsRecent(const FGuid TargetGuid) const;
 
-	/** Calls RemoveActivatedFlagFromSpawnArea, calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
+	/** Calls RemoveActivatedFlagFromSpawnArea, calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag
+	 *  should be removed */
 	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy,
 		const FTargetDamageEvent& TargetDamageEvent);
 
-	/** Removes the Managed flag, meaning the target that the SpawnArea represents is not longer actively managed by TargetManager */
+	/** Removes the Managed flag, meaning the target that the SpawnArea represents is not longer actively managed by
+	 *  TargetManager */
 	void RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid) const;
 
-	/** Called after deactivation of a target. Increments TotalsSpawns and TotalHits if necessary, and removes activated flag */
+	/** Called after deactivation of a target. Increments TotalsSpawns and TotalHits if necessary,
+	 *  and removes activated flag */
 	void RemoveActivatedFlagFromSpawnArea(const FTargetDamageEvent& TargetDamageEvent) const;
 
 	/** Removes the Recent flag, meaning the SpawnArea is not longer being considered as a blocked SpawnArea.
@@ -399,7 +439,7 @@ public:
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness,
-		const int32 InDepthPriority, float Time = 0) const;
+		const int32 InDepthPriority, bool bPersistantLines = false) const;
 
 	/** Prints debug info about a SpawnArea */
 	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
@@ -413,13 +453,13 @@ public:
 	/** Toggles showing red debug boxes for removed spawn locations */
 	bool bShowDebug_RemovedSpawnLocations;
 
-	/** Toggles showing turquoise debug boxes for filtered recent SpawnAreas at the end of the FilterRecentIndices function */
+	/** Toggles showing turquoise debug boxes for filtered recent SpawnAreas */
 	bool bShowDebug_FilteredRecentIndices;
 
-	/** Toggles showing cyan debug boxes for filtered activated SpawnAreas at the end of the FilterActivatedIndices function */
+	/** Toggles showing cyan debug boxes for filtered activated SpawnAreas */
 	bool bShowDebug_FilteredActivatedIndices;
 
-	/** Toggles showing blue debug boxes for filtered managed SpawnAreas at the end of the FilterManagedIndices function */
+	/** Toggles showing blue debug boxes for filtered managed SpawnAreas */
 	bool bShowDebug_FilteredManagedIndices;
 
 	/** Shows the overlapping vertices generated when SpawnArea was flagged as Managed as red DebugPoints.
@@ -448,30 +488,22 @@ private:
 	/** Pointer to TargetManager's BSConfig */
 	FBSConfig* BSConfig;
 
-	/** The total amount of horizontal SpawnAreas in SpawnAreas */
-	int32 Width;
+	/** The total amount of (-, horizontal, vertical) SpawnAreas in SpawnAreas */
+	FIntVector3 Size;
 
-	/** The total amount of vertical SpawnAreas in SpawnAreas */
-	int32 Height;
-
-	/** Stores all possible spawn locations and the total spawns & player hits at each location. Array is filled bottom-up, left,right */
+	/** Stores all possible spawn locations and the total spawns & player hits at each location. Array is filled
+	 *  bottom-up, left-to-right */
 	UPROPERTY()
 	TArray<USpawnArea*> SpawnAreas;
 
 	/** An array containing the BottomLeftVertex of all SpawnAreas */
 	TArray<FVector> AllBottomLeftVertices;
-
-	/** Incremental step value used to iterate through SpawnAreas locations */
-	int32 SpawnMemoryIncY;
-
-	/** Incremental step value used to iterate through SpawnAreas locations */
-	int32 SpawnMemoryIncZ;
-
-	/** Scale the 2D representation of the spawn area down by this factor, Y-axis */
-	float SpawnMemoryScaleY;
-
-	/** Scale the 2D representation of the spawn area down by this factor, Z-axis */
-	float SpawnMemoryScaleZ;
+	
+	/** Incremental (horizontal, vertical) step values used to iterate through SpawnAreas locations */
+	FIntVector3 SpawnAreaInc;
+	
+	/** Scale the representation of the spawn area down by this factor */
+	FVector SpawnAreaScale;
 
 	/** Radius used when finding overlapping SpawnAreas */
 	float MinOverlapRadius;
@@ -486,10 +518,8 @@ private:
 	FExtrema StaticExtrema;
 
 	/** Preferred SpawnMemory increments */
-	const TArray<int32> PreferredScales = {
-		/*100, 95, 90, 85, 80, 75, 70, 65, 60, 55,*/ 50, 45, 40, 30, 25, 20, 15, 10, 5
-	};
+	const TArray<int32> PreferredScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
-	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() inside of OnTargetHealthChangedOrExpired() */
+	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() */
 	FTimerDelegate RemoveFromRecentDelegate;
 };

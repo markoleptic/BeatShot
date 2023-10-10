@@ -41,8 +41,8 @@ void ATargetPreview::Destroyed()
 void ATargetPreview::InitTargetWidget(const TObjectPtr<UTargetWidget> InTargetWidget, const FVector& InBoxBoundsOrigin,
 	const FVector& InStartLocation, const float BoundsHeight)
 {
-	BoxBoundsHeight = BoundsHeight;
 	TargetWidget = InTargetWidget;
+	BoxBoundsHeight = BoundsHeight;
 	BoxBoundsOrigin = InBoxBoundsOrigin;
 	SetTargetWidgetLocation(InStartLocation);
 	TargetWidget->SetTargetScale(CapsuleComponent->GetRelativeScale3D());
@@ -148,13 +148,6 @@ void ATargetPreview::HandleDestruction(const bool bExpired, const float CurrentH
 	Super::HandleDestruction(bExpired, CurrentHealth);
 }
 
-FVector2d ATargetPreview::GetWidgetPositionFromWorldPosition(const FVector& InPosition) const
-{
-	const float X = InPosition.Y;
-	const float Y = InPosition.Z - (BoxBoundsHeight + Config.FloorDistance) / 2.f;
-	return FVector2d(X, Y);
-}
-
 void ATargetPreview::SetTargetColor(const FLinearColor& Color)
 {
 	Super::SetTargetColor(Color);
@@ -177,6 +170,8 @@ void ATargetPreview::SetTargetWidgetLocation(const FVector& NewLocation) const
 {
 	if (TargetWidget)
 	{
-		TargetWidget->SetTargetPosition(GetWidgetPositionFromWorldPosition(NewLocation));
+		const float X = NewLocation.Y;
+		const float Y = NewLocation.Z - BoxBoundsHeight;
+		TargetWidget->SetTargetPosition(FVector2d(X, Y));
 	}
 }
