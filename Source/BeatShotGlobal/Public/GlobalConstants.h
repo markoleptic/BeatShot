@@ -327,7 +327,7 @@ namespace Constants
 	inline constexpr float SnapSize_PlayerDelay = 0.01f;
 
 	inline constexpr float MinValue_Lifespan = 0.25f;
-	inline constexpr float MaxValue_Lifespan = 2.f;
+	inline constexpr float MaxValue_Lifespan = 10.f;
 	inline constexpr float SnapSize_Lifespan = 0.01f;
 
 	inline constexpr float MinValue_TargetSpawnCD = 0.05f;

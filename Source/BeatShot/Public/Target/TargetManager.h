@@ -177,15 +177,14 @@ protected:
 	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
 
 	/** Updates ConsecutiveTargetsHit, based on if the target expired or not */
-	void UpdateConsecutiveTargetsHit(const float TimeAlive);
+	void UpdateConsecutiveTargetsHit(const bool bExpired);
 
 	/** Updates DynamicLookUpValue_TargetScale and DynamicLookUpValue_SpawnAreaScale,
 	 *  based on if the target expired or not */
-	void UpdateDynamicLookUpValues(const float TimeAlive);
+	void UpdateDynamicLookUpValues(const bool bExpired);
 
 	/** Broadcasts the appropriate delegate based on the damage type */
-	void HandleTargetExpirationDelegate(const ETargetDamageType& DamageType,
-		const FTargetDamageEvent& TargetDamageEvent) const;
+	void HandleTargetExpirationDelegate(const FTargetDamageEvent& TargetDamageEvent) const;
 
 	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
 	void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions,

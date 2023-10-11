@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BSGameModeDataAsset.h"
 #include "SaveGamePlayerScore.h"
+#include "Target.h"
 #include "BeatShot/BeatShot.h"
 #include "UObject/Object.h"
 #include "SpawnAreaManagerComponent.generated.h"
@@ -128,6 +129,9 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** Whether or not this SpawnArea has a target active */
 	bool bIsActivated;
 
+	/** Whether or not this SpawnArea has a target persistently active */
+	bool bIsPersistentlyActivated;
+
 	/** Whether or not this SpawnArea still corresponds to a managed target */
 	bool bIsCurrentlyManaged;
 
@@ -152,6 +156,12 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** The total number of target hits by player in this SpawnArea */
 	int32 TotalHits;
+
+	/** The total amount of tracking damage that was possible at this SpawnArea */
+	int32 TotalTrackingDamagePossible;
+
+	/** The total amount of tracking damage that was dealt at this SpawnArea */
+	int32 TotalTrackingDamage;
 
 	/** The indices of the SpawnAreas adjacent to this SpawnArea */
 	TArray<int32> AdjacentIndices;
@@ -227,6 +237,7 @@ public:
 	FVector GetChosenPoint() const { return ChosenPoint; }
 	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
 	bool IsActivated() const { return bIsActivated; }
+	bool IsPersistentlyActivated() const { return bIsPersistentlyActivated; }
 	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
 	double GetTimeSetRecent() const { return TimeSetRecent; }
@@ -236,6 +247,8 @@ public:
 	EGridIndexType GetIndexType() const { return IndexType; }
 	int32 GetTotalSpawns() const { return TotalSpawns; }
 	int32 GetTotalHits() const { return TotalHits; }
+	int32 GetTotalTrackingDamage() const { return TotalTrackingDamage; }
+	int32 GetTotalTrackingDamagePossible() const { return TotalTrackingDamagePossible; }
 	FVector GetTargetScale() const { return TargetScale; }
 
 	/** Sets the TargetScale */
@@ -270,10 +283,11 @@ private:
 		bIsCurrentlyManaged = bSetIsCurrentlyManaged;
 	}
 
-	/** Sets the activated state for this SpawnArea */
-	void SetIsActivated(const bool bSetIsActivated)
+	/** Sets the activated state and the persistently activated state for this SpawnArea */
+	void SetIsActivated(const bool bActivated, const bool bIsPersistent = false)
 	{
-		bIsActivated = bSetIsActivated;
+		bIsActivated = bActivated;
+		bIsPersistentlyActivated = bIsPersistent;
 	}
 
 	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and
@@ -296,6 +310,12 @@ private:
 
 	/** Increments the total amount of hits in this SpawnArea */
 	void IncrementTotalHits();
+
+	/** Increments TotalTrackingDamagePossible */
+	void IncrementTotalTrackingDamagePossible();
+
+	/** Increments TotalTrackingDamage */
+	void IncrementTotalTrackingDamage();
 };
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -313,6 +333,9 @@ public:
 		const FExtrema& InStaticExtrema);
 
 	void Clear();
+
+	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible */
+	void UpdateTotalTrackingDamagePossible(const FVector& InLocation) const;
 
 	/** Finds a SpawnArea with the matching InIndex */
 	USpawnArea* FindSpawnAreaFromIndex(const int32 InIndex) const;
@@ -379,27 +402,28 @@ public:
 
 	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices
 	 *  if needed */
-	void FlagSpawnAreaAsActivated(const FGuid TargetGuid) const;
+	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bPersistant) const;
 
 	/** Flags the SpawnArea as recent */
-	void FlagSpawnAreaAsRecent(const FGuid TargetGuid) const;
+	static void FlagSpawnAreaAsRecent(USpawnArea* SpawnArea);
 
+	/** Handles dealing with SpawnAreas that correspond to Damage Events */
+	void HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent);
+	
 	/** Calls RemoveActivatedFlagFromSpawnArea, calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag
 	 *  should be removed */
-	void HandleRecentTargetRemoval(const ERecentTargetMemoryPolicy& RecentTargetMemoryPolicy,
-		const FTargetDamageEvent& TargetDamageEvent);
+	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
 
 	/** Removes the Managed flag, meaning the target that the SpawnArea represents is not longer actively managed by
 	 *  TargetManager */
 	void RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid) const;
 
-	/** Called after deactivation of a target. Increments TotalsSpawns and TotalHits if necessary,
-	 *  and removes activated flag */
-	void RemoveActivatedFlagFromSpawnArea(const FTargetDamageEvent& TargetDamageEvent) const;
+	/** Called after deactivation of a target to remove the activated flag */
+	void RemoveActivatedFlagFromSpawnArea(USpawnArea* SpawnArea) const;
 
 	/** Removes the Recent flag, meaning the SpawnArea is not longer being considered as a blocked SpawnArea.
 	 *  SpawnAreas empty their OverlappingVertices when their Recent Flag is removed */
-	void RemoveRecentFlagFromSpawnArea(const FGuid TargetGuid) const;
+	void RemoveRecentFlagFromSpawnArea(USpawnArea* SpawnArea) const;
 
 	/** Returns an array of valid spawn points, filtering locations from AllSpawnLocations based on the
 	*   TargetDistributionPolicy, BoundsScalingPolicy and if needed, the TargetActivationSelectionPolicy */
@@ -427,22 +451,25 @@ public:
 	/** Filters out any locations that correspond to areas flagged as managed */
 	void FilterManagedIndices(TArray<FVector>& ValidSpawnLocations) const;
 
+	void FilterIndices(TArray<FVector>& ValidSpawnLocations, bool (USpawnArea::*FilterFunc)() const,
+			const bool bShowDebug, const FColor& DebugColor) const;
+
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
 	FAccuracyData GetLocationAccuracy();
 
 	/** Shows the grid of spawn areas drawn as debug boxes */
-	void DrawDebug_AllSpawnAreas();
+	void DrawDebug_AllSpawnAreas() const;
 
 	/** Removes the grid of spawn areas drawn as debug boxes */
-	void ClearDebug_AllSpawnAreas();
+	void ClearDebug_AllSpawnAreas() const;
 
 	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness,
 		const int32 InDepthPriority, bool bPersistantLines = false) const;
 
 	/** Prints debug info about a SpawnArea */
-	void PrintDebug_SpawnArea(const USpawnArea* SpawnArea) const;
+	static void PrintDebug_SpawnArea(const USpawnArea* SpawnArea);
 
 	/** Prints debug info about SpawnArea distance */
 	void PrintDebug_SpawnAreaDist(const USpawnArea* SpawnArea) const;
@@ -466,6 +493,11 @@ public:
 	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
 	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
 	bool bShowDebug_OverlappingVertices_OnFlaggedManaged;
+
+	/** Shows the overlapping vertices generated when SpawnArea was flagged as Activated as red DebugPoints.
+	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
+	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
+	bool bShowDebug_OverlappingVertices_OnFlaggedActivated;
 
 	/** Shows the overlapping vertices generated during RemoveOverlappingSpawnLocations as red DebugPoints.
 	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.

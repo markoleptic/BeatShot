@@ -35,66 +35,6 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::N
 
 DECLARE_DELEGATE(FOnShotFired);
 
-
-/** Struct containing info about a target that is broadcast when a target takes damage or the the DamageableWindow timer expires */
-USTRUCT()
-struct FTargetDamageEvent
-{
-	GENERATED_BODY()
-
-	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
-	float TimeAlive;
-
-	/** The health attribute's NewValue */
-	float CurrentHealth;
-
-	/** The absolute value between the health attribute's NewValue and OldValue */
-	float DamageDelta;
-
-	/** The total possible damage if tracking */
-	float TotalPossibleDamage;
-
-	/** The transform of the target */
-	FTransform Transform;
-
-	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
-	FGuid Guid;
-
-	FTargetDamageEvent()
-	{
-		TimeAlive = INDEX_NONE;
-		DamageDelta = 0.f;
-		CurrentHealth = 0.f;
-		TotalPossibleDamage = 0.f;
-		Transform = FTransform();
-	}
-
-	FTargetDamageEvent(const float InTimeAlive, const float InCurrentHealth, const FTransform& InTransform,
-		const FGuid& InGuid, const float InDamageDelta = 0.f)
-	{
-		TimeAlive = InTimeAlive;
-		DamageDelta = InDamageDelta;
-		CurrentHealth = InCurrentHealth;
-		TotalPossibleDamage = 0.f;
-		Transform = InTransform;
-		Guid = InGuid;
-	}
-
-	float GetDamageDelta(const float OldValue, const float NewValue) const
-	{
-		return abs(OldValue - NewValue);
-	}
-
-	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
-	{
-		if (Guid == Other.Guid)
-		{
-			return true;
-		}
-		return false;
-	}
-};
-
 class FBeatShot : public FDefaultGameModuleImpl
 {
 public:

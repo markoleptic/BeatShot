@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
 #include "BSGameModeDataAsset.h"
-#include "BeatShot/BeatShot.h"
 #include "Components/TimelineComponent.h"
 #include "GameFramework/Actor.h"
 #include "SaveGamePlayerSettings.h"
 #include "AbilitySystem/BSAbilitySystemComponent.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "Target.generated.h"
 
 class UProjectileMovementComponent;
@@ -19,17 +19,97 @@ class UCapsuleComponent;
 class UTimelineComponent;
 class UNiagaraSystem;
 class UCurveFloat;
-class UBSAttributeSetBase;
 class ATarget;
 
+/** Struct containing info about a target that is broadcast when a target takes damage
+ *  or the the DamageableWindow timer expires */
+USTRUCT()
+struct FTargetDamageEvent
+{
+	GENERATED_BODY()
+
+	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
+	float TimeAlive;
+
+	/** The health attribute's NewValue */
+	float CurrentHealth;
+
+	/** The absolute value between the health attribute's NewValue and OldValue */
+	float DamageDelta;
+
+	/** The transform of the target */
+	FTransform Transform;
+
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
+	FGuid Guid;
+
+	/** The type of damage that was used to cause damage */
+	ETargetDamageType DamageType;
+
+	/** Any array of DamageTypes that the target was vulnerable to when the damage event occured */
+	TArray<ETargetDamageType> VulnerableToDamageTypes;
+
+	/** Whether or not the target's lifetime expired, causing it to damage itself */
+	bool bDamagedSelf;
+
+	/** Whether or not the target had zero health as a result of the damage event */
+	bool bOutOfHealth;
+
+	FTargetDamageEvent()
+	{
+		TimeAlive = INDEX_NONE;
+		DamageDelta = 0.f;
+		CurrentHealth = 0.f;
+		Transform = FTransform();
+		DamageType = ETargetDamageType::None;
+		bDamagedSelf = false;
+		VulnerableToDamageTypes = TArray<ETargetDamageType>();
+		bOutOfHealth = false;
+	}
+
+	FTargetDamageEvent(const float InTimeAlive, const FTransform& InTransform,
+		const FGuid& InGuid, const ETargetDamageType InDamageType)
+	{
+		TimeAlive = InTimeAlive;
+		Transform = InTransform;
+		Guid = InGuid;
+		DamageType = InDamageType;
+		bDamagedSelf = InDamageType == ETargetDamageType::Self;
+		DamageDelta = 0.f;
+		CurrentHealth = 0.f;
+		bOutOfHealth = false;
+	}
+
+	void SetDamageDeltaAndHealth(const float OldValue, const float NewValue)
+	{
+		CurrentHealth = NewValue;
+		DamageDelta = abs(OldValue - NewValue);
+		bOutOfHealth = NewValue <= 0.f;
+	}
+
+	void SetVulnerabilities(const TArray<ETargetDamageType>& InVulnerableToDamageTypes)
+	{
+		VulnerableToDamageTypes = InVulnerableToDamageTypes;
+	}
+
+	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
+	{
+		if (Guid == Other.Guid)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
 /** Broadcast when a target takes damage or the the DamageableWindow timer expires */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent)
-;
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget,
 	const uint8 InSpawnActivationDeactivation);
 
-/** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning, but the lifetime is mostly controlled by parameters passed to it */
+/** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning,
+ *  but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
 class BEATSHOT_API ATarget : public AActor, public IAbilitySystemInterface, public IGameplayTagAssetInterface
 {
@@ -132,15 +212,12 @@ public:
 	FOnDeactivationResponse_ChangeDirection OnDeactivationResponse_ChangeDirection;
 
 protected:
-	/** Called from HealthComponent when a target receives damage. Calls HandleDeactivation, HandleDestruction,
-	 *  and broadcasts OnTargetDamageEventOrTimeout before finally calling HandleDestruction*/
-	UFUNCTION()
-	virtual void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue);
+	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
+	virtual void OnIncomingDamageTaken(const FDamageEventData& InData);
 
-	/** Unlike other modes which use LifeSpanExpired to notify TargetManager of their expiration, BeatGrid modes use
-	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
+	/** Callback function for when DamageableWindow timer expires */
 	UFUNCTION()
-	virtual void OnTargetMaxLifeSpanExpired();
+	virtual void OnLifeSpanExpired();
 
 	/** Apply damage to self using a GE, for example when the DamageableWindow timer expires */
 	void DamageSelf();
@@ -149,24 +226,25 @@ protected:
 	void ResetHealth();
 
 public:
-	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */
+	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the
+	 *  StartToPeakTimeline */
 	virtual bool ActivateTarget(const float Lifespan);
 
 protected:
 	/** Finds if target should be deactivated, and calls StopAllTimelines and HandleDeactivationResponses if so */
-	void HandleDeactivation(const bool bExpired, const float CurrentHealth);
+	void HandleDeactivation(const bool bExpired, const bool bOutOfHealth);
 
 	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
-	virtual bool ShouldDeactivate(const bool bExpired, const float CurrentHealth) const;
+	virtual bool ShouldDeactivate(const bool bExpired, const bool bOutOfHealth) const;
 
 	/** Performs any responses to the target being deactivated */
 	virtual void HandleDeactivationResponses(const bool bExpired);
 
 	/** Finds if target should be destroyed, and calls Destroy if so */
-	virtual void HandleDestruction(const bool bExpired, const float CurrentHealth);
+	virtual void HandleDestruction(const bool bExpired, const bool bOutOfHealth);
 
 	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
-	bool ShouldDestroy(const bool bExpired, const float CurrentHealth) const;
+	bool ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const;
 
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
@@ -183,15 +261,18 @@ protected:
 	/** Stops playing all timelines if any are playing */
 	void StopAllTimelines();
 
-	/** Interpolates between StartTargetColor and PeakTargetColor. This occurs between initial spawning of target, up to SpawnBeatDelay seconds */
+	/** Interpolates between StartTargetColor and PeakTargetColor. This occurs between initial spawning of target,
+	 *  up to SpawnBeatDelay seconds */
 	UFUNCTION()
 	void InterpStartToPeak(const float Alpha);
 
-	/** Interpolates between PeakTargetColor and EndTargetColor. This occurs between SpawnBeatDelay seconds, up to TargetMaxLifeSpan seconds */
+	/** Interpolates between PeakTargetColor and EndTargetColor. This occurs between SpawnBeatDelay seconds,
+	 *  up to TargetMaxLifeSpan seconds */
 	UFUNCTION()
 	void InterpPeakToEnd(const float Alpha);
 
-	/** Used to shrink the target quickly, and more slowly return it to it's BeatGrid size and color. Interpolates both sphere scale and sphere color */
+	/** Used to shrink the target quickly, and more slowly return it to it's BeatGrid size and color.
+	 *  Interpolates both sphere scale and sphere color */
 	UFUNCTION()
 	void InterpShrinkQuickAndGrowSlow(const float Alpha);
 
@@ -214,7 +295,8 @@ public:
 	/** Sets the velocity of the ProjectileMovementComponent by multiplying the InitialSpeed and the new direction */
 	void SetTargetDirection(const FVector& NewDirection) const;
 
-	/** Finds the direction by dividing the velocity by the initial speed. Sets initial speed equal to NewMovingTargetSpeed and calls SetTargetDirection */
+	/** Finds the direction by dividing the velocity by the initial speed. Sets initial speed equal to
+	 *  NewMovingTargetSpeed and calls SetTargetDirection */
 	void SetTargetSpeed(const float NewMovingTargetSpeed) const;
 
 	/** Changes the current scale of the target */
@@ -226,7 +308,8 @@ public:
 		bLastDirectionChangeHorizontal = bLastHorizontal;
 	}
 
-	/** Play the explosion effect at the location of target, scaled to size with the color of the target when it was destroyed. */
+	/** Play the explosion effect at the location of target, scaled to size with the color of the target when
+	 *  it was destroyed. */
 	void PlayExplosionEffect(const FVector& ExplosionLocation, const float SphereRadius,
 		const FLinearColor& InColorWhenDestroyed) const;
 
@@ -257,6 +340,8 @@ public:
 	/** Whether or not the target is immune to tracking damage */
 	UFUNCTION(BlueprintPure)
 	bool IsImmuneToTrackingDamage() const;
+
+	TArray<ETargetDamageType> GetVulnerableDamageTypes() const;
 
 	/** Returns the velocity / speed of the ProjectileMovementComponent (unit direction vector) */
 	FVector GetTargetDirection() const;

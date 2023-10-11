@@ -19,6 +19,11 @@ namespace BeatShotConsoleVariables
 		"X={} Y={} Z={}: Only destroy targets at locations that are >= the value if all positive, \n"
 		"or <= if negative. If either Y or Z is left blank, only the other value is considered."));
 
+	
+	static TAutoConsoleVariable CVarClearDebug(TEXT("bs_cleardebug"),
+		0,
+		TEXT("Clears all visual and print debug options."));
+	
 
 	static TAutoConsoleVariable CVarPrintDebug_NumRecentNumActive(TEXT("bs_printdebug.numrecentnumactive"),
 		0,
@@ -134,6 +139,10 @@ void UBSCheatManager::InitCheatManager()
 	FConsoleVariableDelegate EnableAimBotDelegate;
 	EnableAimBotDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_Cheat_AimBot);
 	BeatShotConsoleVariables::CVarCheat_AimBot.AsVariable()->SetOnChangedCallback(EnableAimBotDelegate);
+
+	FConsoleVariableDelegate CVarClearDebugDelegate;
+	CVarClearDebugDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ClearDebug);
+	BeatShotConsoleVariables::CVarClearDebug.AsVariable()->SetOnChangedCallback(CVarClearDebugDelegate);
 
 	FConsoleVariableDelegate NumRecentNumActiveDelegate;
 	NumRecentNumActiveDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_NumRecentNumActive);
@@ -270,6 +279,26 @@ void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 	ASC->MarkAbilitySpecDirty(*Spec);
 
 	UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
+}
+
+void UBSCheatManager::CVarOnChanged_ClearDebug(IConsoleVariable* Variable)
+{
+	Variable->Set(false, ECVF_SetByCode);
+	CVarOnChanged_PrintDebug_NumRecentNumActive(Variable);
+	CVarOnChanged_PrintDebug_ChooseBestActionIndex(Variable);
+	CVarOnChanged_PrintDebug_GetMaxIndex(Variable);
+	CVarOnChanged_PrintDebug_QTableUpdate(Variable);
+	CVarOnChanged_ShowDebug_ReinforcementLearningWidget(Variable);
+	CVarOnChanged_ShowDebug_SpawnBox(Variable);
+	CVarOnChanged_ShowDebug_DirectionalBoxes(Variable);
+	CVarOnChanged_ShowDebug_AllSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_ValidSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_RemovedSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_FilteredRecent(Variable);
+	CVarOnChanged_ShowDebug_FilteredActivated(Variable);
+	CVarOnChanged_ShowDebug_FilteredManaged(Variable);
+	CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(Variable);
+	CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(Variable);
 }
 
 void UBSCheatManager::CVarOnChanged_PrintDebug_NumRecentNumActive(IConsoleVariable* Variable)

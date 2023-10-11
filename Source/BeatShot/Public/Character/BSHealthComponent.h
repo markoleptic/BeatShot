@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameplayEffectTypes.h"
+#include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "BSHealthComponent.generated.h"
 
 class UBSAbilitySystemComponent;
@@ -35,6 +36,9 @@ protected:
 
 	void OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec,
 		float EffectMagnitude, float OldValue, float NewValue);
+
+	void OnIncomingDamageTaken(const FDamageEventData& DamageEvent);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -43,5 +47,8 @@ public:
 	void InitializeWithAbilitySystem(UBSAbilitySystemComponent* InASC);
 
 	/** Broadcasts when the health attribute changes */
-	FOnHealthChanged OnHealthChanged;
+	FBSAttributeEvent OnHealthChangedDelegate;
+
+	/** Broadcasts when Tracking Damage or Hit Damage is taken */
+	FBSDamageEvent OnIncomingDamageTakenDelegate;
 };

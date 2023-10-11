@@ -92,37 +92,39 @@ void ATargetPreview::OnSimulatePlayerDestroyingTimerExpired()
 	DamageSelf();
 }
 
-void ATargetPreview::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
+void ATargetPreview::OnIncomingDamageTaken(const FDamageEventData& InData)
 {
-	if (NewValue > OldValue)
+	if (InData.NewValue > InData.OldValue)
 	{
-		UE_LOG(LogTemp, Display, TEXT("NewHelath grather"));
+		return;
 	}
+	
 	FTimerManager& TimerManager = GetWorldTimerManager();
-	float TimeAlive;
-	if (TimerManager.IsTimerActive(DamageableWindow))
-	{
-		TimeAlive = TimerManager.GetTimerElapsed(DamageableWindow);
-	}
-	else
-	{
-		TimeAlive = -1.f;
-	}
-	TimerManager.ClearTimer(DamageableWindow);
+	const float ElapsedTime = TimerManager.GetTimerElapsed(DamageableWindow);
 
-	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(),
-		abs(OldValue - NewValue));
+	// Always damaging self in Preview Class, so use different comparison than base class
+	const bool bExpired = !TimerManager.IsTimerActive(DamageableWindow);
+	TimerManager.ClearTimer(DamageableWindow);
+	const float TimeAlive = bExpired ? -1.f : ElapsedTime;
+	const bool bOutOfHealth = InData.NewValue <= 0.f;
+	
+	// Replace self damage with game mode damage type
+	FTargetDamageEvent Event(TimeAlive, GetActorTransform(), GetGuid(), Config.TargetDamageType);
+	Event.SetDamageDeltaAndHealth(InData.OldValue, InData.NewValue);
+
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	HandleDeactivation(TimeAlive < 0.f, NewValue);
-	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);
+
+	HandleDeactivation(bExpired, bOutOfHealth);
+	OnTargetDamageEventOrTimeout.Broadcast(Event);
+	HandleDestruction(bExpired, bOutOfHealth);
+	
 	bCanBeReactivated = true;
-	HandleDestruction(TimeAlive < 0.f, NewValue);
 }
 
-void ATargetPreview::OnTargetMaxLifeSpanExpired()
+void ATargetPreview::OnLifeSpanExpired()
 {
 	GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
-	Super::OnTargetMaxLifeSpanExpired();
+	Super::OnLifeSpanExpired();
 }
 
 void ATargetPreview::HandleDeactivationResponses(const bool bExpired)
@@ -139,13 +141,13 @@ void ATargetPreview::HandleDeactivationResponses(const bool bExpired)
 	}
 }
 
-void ATargetPreview::HandleDestruction(const bool bExpired, const float CurrentHealth)
+void ATargetPreview::HandleDestruction(const bool bExpired, const bool bOutOfHealth)
 {
-	if (ShouldDestroy(bExpired, CurrentHealth))
+	if (ShouldDestroy(bExpired, bOutOfHealth))
 	{
 		TargetWidget->RemoveFromParent();
 	}
-	Super::HandleDestruction(bExpired, CurrentHealth);
+	Super::HandleDestruction(bExpired, bOutOfHealth);
 }
 
 void ATargetPreview::SetTargetColor(const FLinearColor& Color)

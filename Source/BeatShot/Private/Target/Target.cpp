@@ -130,14 +130,11 @@ void ATarget::BeginPlay()
 void ATarget::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
-	UAbilitySystemComponent* ASC = GetAbilitySystemComponent();
-	if (ensure(ASC))
+	
+	if (UAbilitySystemComponent* ASC = GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, this);
-
-		const UBSAttributeSetBase* Set = GetAbilitySystemComponent()->GetSet<UBSAttributeSetBase>();
-		if (ensure(Set))
+		if (const UBSAttributeSetBase* Set = GetAbilitySystemComponent()->GetSet<UBSAttributeSetBase>())
 		{
 			if (Config.MaxHealth <= 0.f)
 			{
@@ -147,12 +144,13 @@ void ATarget::PostInitializeComponents()
 			{
 				ASC->SetNumericAttributeBase(Set->GetMaxHealthAttribute(), Config.MaxHealth);
 			}
-			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), Config.BasePlayerHitDamage);
-			ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), Config.BasePlayerTrackingDamage);
+			ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), 0.f);
+			ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), 0.f);
+			ASC->SetNumericAttributeBase(Set->GetSelfDamageAttribute(), Config.ExpirationHealthPenalty);
 		}
 
 		HealthComponent->InitializeWithAbilitySystem(AbilitySystemComponent);
-		HealthComponent->OnHealthChanged.AddUObject(this, &ATarget::OnHealthChanged);
+		HealthComponent->OnIncomingDamageTakenDelegate.AddUObject(this, &ATarget::OnIncomingDamageTaken);
 		ASC->OnImmunityBlockGameplayEffectDelegate.AddUObject(this, &ATarget::OnImmunityBlockGameplayEffect);
 
 		switch (Config.TargetDamageType)
@@ -167,6 +165,7 @@ void ATarget::PostInitializeComponents()
 				GetAbilitySystemComponent()->MakeEffectContext());
 			break;
 		case ETargetDamageType::Combined:
+		case ETargetDamageType::Self:
 			break;
 		}
 
@@ -291,7 +290,9 @@ void ATarget::UpdatePlayerSettings(const FPlayerSettings_Game& InPlayerSettings)
 	SetUseSeparateOutlineColor(InPlayerSettings.bUseSeparateOutlineColor);
 }
 
-// AbilitySystem functions
+/* ----------------------------- */
+/* -- AbilitySystem functions -- */
+/* ----------------------------- */
 
 UAbilitySystemComponent* ATarget::GetAbilitySystemComponent() const
 {
@@ -331,7 +332,9 @@ void ATarget::OnImmunityBlockGameplayEffect(const FGameplayEffectSpec& Spec, con
 	UE_LOG(LogTemp, Display, TEXT("Blocked tag"));
 }
 
-// GameplayTags functions
+/* ---------------------------- */
+/* -- GameplayTags functions -- */
+/* ---------------------------- */
 
 void ATarget::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
@@ -361,26 +364,35 @@ void ATarget::RemoveGameplayTag(const FGameplayTag TagToRemove) const
 	}
 }
 
-// Health functions
+/* ----------------------------- */
+/* -- Damage/Health functions -- */
+/* ----------------------------- */
 
-void ATarget::OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue)
+void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
 {
-	if (NewValue > OldValue)
+	if (InData.NewValue > InData.OldValue)
 	{
 		return;
 	}
-	const float TimeAlive = ActorInstigator == this ? -1.f : GetWorldTimerManager().GetTimerElapsed(DamageableWindow);
-	GetWorldTimerManager().ClearTimer(DamageableWindow);
-	const FTargetDamageEvent TargetDamageEvent(TimeAlive, NewValue, GetActorTransform(), GetGuid(),
-		abs(OldValue - NewValue));
+	
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	const float ElapsedTime = TimerManager.GetTimerElapsed(DamageableWindow);
+	TimerManager.ClearTimer(DamageableWindow);
+	
+	FTargetDamageEvent Event = FTargetDamageEvent(ElapsedTime, GetActorTransform(), GetGuid(), InData.DamageType);
+	Event.SetDamageDeltaAndHealth(InData.OldValue, InData.NewValue);
+	Event.SetVulnerabilities(GetVulnerableDamageTypes());
+
 	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	HandleDeactivation(ActorInstigator == this, NewValue);
-	OnTargetDamageEventOrTimeout.Broadcast(TargetDamageEvent);
-	HandleDestruction(ActorInstigator == this, NewValue);
+	
+	HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth);
+	OnTargetDamageEventOrTimeout.Broadcast(Event);
+	HandleDestruction(Event.bDamagedSelf, Event.bOutOfHealth);
+	
 	bCanBeReactivated = true;
 }
 
-void ATarget::OnTargetMaxLifeSpanExpired()
+void ATarget::OnLifeSpanExpired()
 {
 	DamageSelf();
 }
@@ -393,7 +405,7 @@ void ATarget::DamageSelf()
 		EffectContextHandle.Get()->AddInstigator(this, this);
 		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ExpirationHealthPenalty, 1.f,
 			EffectContextHandle);
-		FGameplayEffectSpec* Spec = Handle.Data.Get();
+		const FGameplayEffectSpec* Spec = Handle.Data.Get();
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
 }
@@ -405,12 +417,14 @@ void ATarget::ResetHealth()
 		FGameplayEffectContextHandle EffectContextHandle = Comp->MakeEffectContext();
 		EffectContextHandle.Get()->AddInstigator(this, this);
 		const FGameplayEffectSpecHandle Handle = Comp->MakeOutgoingSpec(GE_ResetHealth, 1.f, EffectContextHandle);
-		FGameplayEffectSpec* Spec = Handle.Data.Get();
+		const FGameplayEffectSpec* Spec = Handle.Data.Get();
 		Comp->ApplyGameplayEffectSpecToSelf(*Spec);
 	}
 }
 
-// Activation, Deactivation, Destruction
+/* ------------------------------------------- */
+/* -- Activation, Deactivation, Destruction -- */
+/* ------------------------------------------- */
 
 bool ATarget::ActivateTarget(const float Lifespan)
 {
@@ -418,25 +432,26 @@ bool ATarget::ActivateTarget(const float Lifespan)
 	{
 		return false;
 	}
-	if (GetWorldTimerManager().GetTimerRemaining(DamageableWindow) > 0.f)
+	FTimerManager& TimerManager = GetWorldTimerManager();
+	if (TimerManager.GetTimerRemaining(DamageableWindow) > 0.f)
 	{
 		return false;
 	}
+	TargetScale_Activation = GetTargetScale_Current();
 	if (Lifespan > 0)
 	{
-		GetWorldTimerManager().ClearTimer(DamageableWindow);
-		bHasBeenActivated = true;
-		TargetScale_Activation = GetTargetScale_Current();
-		GetWorldTimerManager().SetTimer(DamageableWindow, this, &ATarget::OnTargetMaxLifeSpanExpired, Lifespan, false);
+		TimerManager.ClearTimer(DamageableWindow);
+		TimerManager.SetTimer(DamageableWindow, this, &ATarget::OnLifeSpanExpired, Lifespan, false);
+		bCanBeReactivated = false;
 		PlayStartToPeakTimeline();
 	}
-	bCanBeReactivated = false;
+	bHasBeenActivated = true;
 	return true;
 }
 
-void ATarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
+void ATarget::HandleDeactivation(const bool bExpired, const bool bOutOfHealth)
 {
-	if (ShouldDeactivate(bExpired, CurrentHealth))
+	if (ShouldDeactivate(bExpired, bOutOfHealth))
 	{
 		StopAllTimelines();
 		TargetScale_Deactivation = GetTargetScale_Current();
@@ -444,13 +459,18 @@ void ATarget::HandleDeactivation(const bool bExpired, const float CurrentHealth)
 	}
 }
 
-bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
+bool ATarget::ShouldDeactivate(const bool bExpired, const bool bOutOfHealth) const
 {
 	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
 	{
 		return false;
 	}
 	if (bExpired && Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnExpiration))
+	{
+		return true;
+	}
+	if (bOutOfHealth &&
+		Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::OnHealthReachedZero))
 	{
 		return true;
 	}
@@ -546,20 +566,20 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 	}
 }
 
-void ATarget::HandleDestruction(const bool bExpired, const float CurrentHealth)
+void ATarget::HandleDestruction(const bool bExpired, const bool bOutOfHealth)
 {
-	if (ShouldDestroy(bExpired, CurrentHealth))
+	if (ShouldDestroy(bExpired, bOutOfHealth))
 	{
 		Destroy();
 	}
-	else if ((Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) || Config.MaxHealth
-		<= 0.f) && CurrentHealth <= 0.f)
+	else if ((Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant) ||
+		Config.MaxHealth <= 0.f) && bOutOfHealth)
 	{
 		ResetHealth();
 	}
 }
 
-bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) const
+bool ATarget::ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const
 {
 	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
 	{
@@ -577,8 +597,7 @@ bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) cons
 	{
 		return true;
 	}
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && CurrentHealth
-		<= 0.f)
+	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && bOutOfHealth)
 	{
 		return true;
 	}
@@ -589,7 +608,9 @@ bool ATarget::ShouldDestroy(const bool bExpired, const float CurrentHealth) cons
 	return false;
 }
 
-// Timelines
+/* ------------------------ */
+/* -- Timeline Functions -- */
+/* ------------------------ */
 
 void ATarget::PlayStartToPeakTimeline()
 {
@@ -625,7 +646,9 @@ void ATarget::StopAllTimelines()
 	}
 }
 
-// Timeline-bound functions
+/* ------------------------ */
+/* -- Timeline Callbacks -- */
+/* ------------------------ */
 
 void ATarget::InterpStartToPeak(const float Alpha)
 {
@@ -658,7 +681,9 @@ void ATarget::InterpShrinkQuickAndGrowSlow(const float Alpha)
 	SetTargetColor(Color);
 }
 
-// Setter functions
+/* ---------------------- */
+/* -- Setter functions -- */
+/* ---------------------- */
 
 void ATarget::SetTargetColor(const FLinearColor& Color)
 {
@@ -731,7 +756,9 @@ void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float 
 	}
 }
 
-// Getter functions
+/* ---------------------- */
+/* -- Getter functions -- */
+/* ---------------------- */
 
 FLinearColor ATarget::GetPeakTargetColor() const
 {
@@ -766,6 +793,16 @@ bool ATarget::IsImmuneToHitDamage() const
 bool ATarget::IsImmuneToTrackingDamage() const
 {
 	return ActiveGE_TargetImmunity.IsValid() || ActiveGE_TrackingImmunity.IsValid();
+}
+
+TArray<ETargetDamageType> ATarget::GetVulnerableDamageTypes() const
+{
+	TArray<ETargetDamageType> Out;
+	Out.Add(ETargetDamageType::Self);
+	if (!IsImmuneToHitDamage()) Out.Add(ETargetDamageType::Hit);
+	if (!IsImmuneToTrackingDamage()) Out.Add(ETargetDamageType::Tracking);
+	if (!IsImmuneToHitDamage() && !IsImmuneToTrackingDamage()) Out.Add(ETargetDamageType::Combined);
+	return Out;
 }
 
 FVector ATarget::GetTargetDirection() const

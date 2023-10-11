@@ -22,7 +22,12 @@ void UBSHealthComponent::BeginPlay()
 void UBSHealthComponent::OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser,
 	const FGameplayEffectSpec* EffectSpec, float EffectMagnitude, float OldValue, float NewValue)
 {
-	OnHealthChanged.Broadcast(EffectInstigator, OldValue, NewValue);
+	OnHealthChangedDelegate.Broadcast(EffectInstigator, EffectCauser, EffectSpec, EffectMagnitude, OldValue, NewValue);
+}
+
+void UBSHealthComponent::OnIncomingDamageTaken(const FDamageEventData& DamageEvent)
+{
+	OnIncomingDamageTakenDelegate.Broadcast(DamageEvent);
 }
 
 void UBSHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -63,4 +68,5 @@ void UBSHealthComponent::InitializeWithAbilitySystem(UBSAbilitySystemComponent* 
 		return;
 	}
 	AttributeSetBase->OnHealthChanged.AddUObject(this, &ThisClass::OnHealthAttributeChanged);
+	AttributeSetBase->OnDamageTaken.AddUObject(this, &ThisClass::OnIncomingDamageTaken);
 }

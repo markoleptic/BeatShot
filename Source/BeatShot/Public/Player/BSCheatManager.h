@@ -19,6 +19,8 @@ public:
 
 	void CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable);
 
+	void CVarOnChanged_ClearDebug(IConsoleVariable* Variable);
+
 	void CVarOnChanged_PrintDebug_NumRecentNumActive(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable);

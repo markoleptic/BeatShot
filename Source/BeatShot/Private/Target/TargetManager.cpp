@@ -289,8 +289,14 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	{
 		return nullptr;
 	}
-	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(TargetToSpawn,
-		FTransform(FRotator::ZeroRotator, InSpawnArea->GetChosenPoint(), InSpawnArea->GetTargetScale()), this, nullptr,
+	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(
+		TargetToSpawn,
+		FTransform(
+			FRotator::ZeroRotator,
+			InSpawnArea->GetChosenPoint(),
+			InSpawnArea->GetTargetScale()),
+		this,
+		nullptr,
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 	Target->Init(GetBSConfig()->TargetConfig);
 	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
@@ -303,8 +309,9 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	AddToManagedTargets(Target);
 	if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned)
 	{
-		Target->SetTargetSpeed(FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetSpeed,
-			GetBSConfig()->TargetConfig.MaxSpawnedTargetSpeed));
+		const float SpawnVelocity = FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetSpeed,
+			GetBSConfig()->TargetConfig.MaxSpawnedTargetSpeed);
+		Target->SetTargetSpeed(SpawnVelocity);
 		ChangeTargetDirection(Target, 0);
 	}
 	return Target;
@@ -370,7 +377,9 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 
 	if (InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan))
 	{
-		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid());
+		const bool bPersistant = GetBSConfig()->TargetConfig.TargetDeactivationConditions.
+			Contains(ETargetDeactivationCondition::Persistant);
+		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid(), bPersistant);
 		OnTargetActivated.Broadcast();
 		OnTargetActivated_AimBot.Broadcast(InTarget);
 		if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
@@ -615,8 +624,7 @@ USpawnArea* ATargetManager::FindNextSpawnArea(const FVector& NewTargetScale) con
 		UpdateSpawnBoxExtents(Factor);
 		UpdateSpawnVolume(Factor);
 	}
-
-
+	
 	// Can skip GetValidSpawnLocations if forcing every other target in center
 	if (CurrentSpawnArea && GetBSConfig()->TargetConfig.bSpawnEveryOtherTargetInCenter && CurrentSpawnArea !=
 		SpawnAreaManager->FindSpawnAreaFromLocation(GetSpawnBoxOrigin()))
@@ -704,27 +712,25 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(
 
 void ATargetManager::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent)
 {
-	UpdateConsecutiveTargetsHit(TargetDamageEvent.TimeAlive);
-	UpdateDynamicLookUpValues(TargetDamageEvent.TimeAlive);
-	HandleTargetExpirationDelegate(GetBSConfig()->TargetConfig.TargetDamageType, TargetDamageEvent);
+	UpdateConsecutiveTargetsHit(TargetDamageEvent.bDamagedSelf);
+	UpdateDynamicLookUpValues(TargetDamageEvent.bDamagedSelf);
+	HandleTargetExpirationDelegate(TargetDamageEvent);
 	HandleManagedTargetRemoval(GetBSConfig()->TargetConfig.TargetDestructionConditions, TargetDamageEvent);
 
 	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
 	{
 		if (const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(TargetDamageEvent.Guid))
 		{
-			RLComponent->SetActiveTargetPairReward(Found->GetIndex(),
-				TargetDamageEvent.TimeAlive != -1);
+			RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !TargetDamageEvent.bDamagedSelf);
 		}
 	}
 
-	SpawnAreaManager->HandleRecentTargetRemoval(GetBSConfig()->TargetConfig.RecentTargetMemoryPolicy,
-		TargetDamageEvent);
+	SpawnAreaManager->HandleTargetDamageEvent(TargetDamageEvent);
 }
 
-void ATargetManager::UpdateConsecutiveTargetsHit(const float TimeAlive)
+void ATargetManager::UpdateConsecutiveTargetsHit(const bool bExpired)
 {
-	if (TimeAlive == -1)
+	if (bExpired)
 	{
 		ConsecutiveTargetsHit = 0;
 	}
@@ -734,9 +740,9 @@ void ATargetManager::UpdateConsecutiveTargetsHit(const float TimeAlive)
 	}
 }
 
-void ATargetManager::UpdateDynamicLookUpValues(const float TimeAlive)
+void ATargetManager::UpdateDynamicLookUpValues(const bool bExpired)
 {
-	if (TimeAlive < 0.f)
+	if (bExpired)
 	{
 		DynamicLookUpValue_TargetScale = FMath::Clamp(
 			DynamicLookUpValue_TargetScale - GetBSConfig()->DynamicTargetScaling.DecrementAmount, 0,
@@ -754,16 +760,16 @@ void ATargetManager::UpdateDynamicLookUpValues(const float TimeAlive)
 	}
 }
 
-void ATargetManager::HandleTargetExpirationDelegate(const ETargetDamageType& DamageType,
-	const FTargetDamageEvent& TargetDamageEvent) const
+void ATargetManager::HandleTargetExpirationDelegate(const FTargetDamageEvent& TargetDamageEvent) const
 {
-	if (DamageType == ETargetDamageType::Tracking)
+	if (TargetDamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Tracking))
 	{
 		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TotalPossibleDamage);
 	}
-	else
+	if (TargetDamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Hit))
 	{
-		OnTargetDeactivated.Broadcast(TargetDamageEvent.TimeAlive, ConsecutiveTargetsHit, TargetDamageEvent.Transform);
+		const float TimeAlive = TargetDamageEvent.bDamagedSelf ? -1.f : TargetDamageEvent.TimeAlive;
+		OnTargetDeactivated.Broadcast(TimeAlive, ConsecutiveTargetsHit, TargetDamageEvent.Transform);
 	}
 }
 
@@ -779,17 +785,15 @@ void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionC
 	{
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
-	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration))
+	else if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration) && TargetDamageEvent.bDamagedSelf)
 	{
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
-	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && TargetDamageEvent.
-		CurrentHealth <= 0.f)
+	else if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && TargetDamageEvent.bOutOfHealth)
 	{
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
-	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) && TargetDamageEvent
-		.TimeAlive != -1)
+	else if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) && !TargetDamageEvent.bDamagedSelf)
 	{
 		RemoveFromManagedTargets(TargetDamageEvent.Guid);
 	}
@@ -1129,6 +1133,10 @@ FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChang
 void ATargetManager::UpdateTotalPossibleDamage()
 {
 	TotalPossibleDamage++;
+	for (const TObjectPtr<ATarget> Target : GetManagedTargets())
+	{
+		SpawnAreaManager->UpdateTotalTrackingDamagePossible(Target->GetActorLocation());
+	}
 }
 
 bool ATargetManager::TrackingTargetIsDamageable() const

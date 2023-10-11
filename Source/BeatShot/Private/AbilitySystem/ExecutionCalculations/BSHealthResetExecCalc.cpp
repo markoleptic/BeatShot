@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "AbilitySystem/ExecutionCalculations/UBSHealthResetExecCalc.h"
+#include "AbilitySystem/ExecutionCalculations/BSHealthResetExecCalc.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
 #include "BeatShot/BSGameplayTags.h"
 
@@ -27,13 +27,13 @@ static const BSHealthStatics& HealthStatics()
 	return HStatics;
 }
 
-UUBSHealthResetExecCalc::UUBSHealthResetExecCalc()
+UBSHealthResetExecCalc::UBSHealthResetExecCalc()
 {
 	RelevantAttributesToCapture.Add(HealthStatics().HealthDef);
 	RelevantAttributesToCapture.Add(HealthStatics().MaxHealthDef);
 }
 
-void UUBSHealthResetExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
+void UBSHealthResetExecCalc::Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 	FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const
 {
 	Super::Execute_Implementation(ExecutionParams, OutExecutionOutput);

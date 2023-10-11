@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameplayEffectExecutionCalculation.h"
-#include "UBSHealthResetExecCalc.generated.h"
+#include "BSHealthResetExecCalc.generated.h"
 
 
 UCLASS()
-class BEATSHOT_API UUBSHealthResetExecCalc : public UGameplayEffectExecutionCalculation
+class BEATSHOT_API UBSHealthResetExecCalc : public UGameplayEffectExecutionCalculation
 {
 	GENERATED_BODY()
 
 public:
-	UUBSHealthResetExecCalc();
+	UBSHealthResetExecCalc();
 
 	virtual void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams,
 		OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;

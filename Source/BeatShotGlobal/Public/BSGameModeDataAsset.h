@@ -78,11 +78,6 @@ enum class EBoundsScalingPolicy : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EBoundsScalingPolicy, EBoundsScalingPolicy::Static, EBoundsScalingPolicy::Dynamic);
 
-inline bool IsDynamicBoundsScalingPolicy(const EBoundsScalingPolicy SpreadType)
-{
-	return SpreadType == EBoundsScalingPolicy::Dynamic;
-}
-
 
 /** Where to spawn/activate targets in the bounding box bounds (spawn area) */
 UENUM(BlueprintType)
@@ -151,6 +146,8 @@ enum class ETargetDamageType : uint8
 	Hit UMETA(DisplayName="Hit"),
 	/** Having the CrossHair over the target and hitting the target both damage the target and award score */
 	Combined UMETA(DisplayName="Combined"),
+	/** The target damages itself */
+	Self UMETA(DisplayName="Self"),
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDamageType, ETargetDamageType::Tracking, ETargetDamageType::Hit);
@@ -215,12 +212,12 @@ enum class ETargetDeactivationCondition : uint8
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
 	/** Target is deactivated after its damageable window closes */
 	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** DEPRECATED */
+	/** Target is destroyed when its health reaches zero */
 	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant,
-	ETargetDeactivationCondition::OnExpiration);
+	ETargetDeactivationCondition::OnHealthReachedZero);
 
 
 /** Each represents one way that a target can be destroyed */

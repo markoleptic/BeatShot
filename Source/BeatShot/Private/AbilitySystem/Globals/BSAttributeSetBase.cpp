@@ -13,9 +13,15 @@ UBSAttributeSetBase::UBSAttributeSetBase()
 	bOutOfHealth = false;
 	Health = 100.f;
 	MaxHealth = 100.f;
+	
 	HitDamage = 100.f;
 	TrackingDamage = 1.f;
-	TotalDamage = 0.f;
+	SelfDamage = 0.f;
+	
+	IncomingHitDamage = 0.f;
+	IncomingTrackingDamage = 0.f;
+	IncomingTotalDamage = 0.f;
+	IncomingSelfDamage = 0.f;
 }
 
 void UBSAttributeSetBase::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)
@@ -55,11 +61,32 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 	FGameplayTagContainer Container;
 	Data.EffectSpec.GetAllAssetTags(Container);
 
-	if (Data.EvaluatedData.Attribute == GetTotalDamageAttribute())
+	ETargetDamageType DamageType = ETargetDamageType::None;
+
+	// Convert into -Health and then clamp
+	if (Data.EvaluatedData.Attribute == GetIncomingHitDamageAttribute())
 	{
-		// Convert into -Health and then clamp
-		SetHealth(FMath::Clamp(GetHealth() - GetTotalDamage(), MinPossibleHealth, GetMaxHealth()));
-		SetTotalDamage(0.0f);
+		SetHealth(FMath::Clamp(GetHealth() - GetIncomingHitDamage(), MinPossibleHealth, GetMaxHealth()));
+		SetIncomingHitDamage(0.0f);
+		DamageType = ETargetDamageType::Hit;
+	}
+	else if (Data.EvaluatedData.Attribute == GetIncomingTrackingDamageAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth() - GetIncomingTrackingDamage(), MinPossibleHealth, GetMaxHealth()));
+		SetIncomingTrackingDamage(0.0f);
+		DamageType = ETargetDamageType::Tracking;
+	}
+	else if (Data.EvaluatedData.Attribute == GetIncomingTotalDamageAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth() - GetIncomingTotalDamage(), MinPossibleHealth, GetMaxHealth()));
+		SetIncomingTotalDamage(0.0f);
+		DamageType = ETargetDamageType::Combined;
+	}
+	else if (Data.EvaluatedData.Attribute == GetIncomingSelfDamageAttribute())
+	{
+		SetHealth(FMath::Clamp(GetHealth() - GetIncomingSelfDamage(), MinPossibleHealth, GetMaxHealth()));
+		SetIncomingSelfDamage(0.0f);
+		DamageType = ETargetDamageType::Self;
 	}
 	else if (Data.EvaluatedData.Attribute == GetHealthAttribute())
 	{
@@ -72,10 +99,22 @@ void UBSAttributeSetBase::PostGameplayEffectExecute(const FGameplayEffectModCall
 			MaxHealthBeforeAttributeChange, GetMaxHealth());
 	}
 
-	// If health has actually changed activate callbacks. Also check that it isn't resetting health, in which case we don't want the target to be notified
-
+	// If health has actually changed activate callbacks. Also check that it isn't resetting health, in which case we
+	// don't want the target to be notified
 	if (GetHealth() != HealthBeforeAttributeChange && !Container.HasTag(FBSGameplayTags().Get().Target_ResetHealth))
 	{
+		if (DamageType != ETargetDamageType::None)
+		{
+			const FDamageEventData DamageEvent(
+				Instigator,
+				Causer,
+				&Data.EffectSpec,
+				Data.EvaluatedData.Magnitude,
+				HealthBeforeAttributeChange,
+				GetHealth(),
+				DamageType);
+			OnDamageTaken.Broadcast(DamageEvent);
+		}
 		OnHealthChanged.Broadcast(Instigator, Causer, &Data.EffectSpec, Data.EvaluatedData.Magnitude,
 			HealthBeforeAttributeChange, GetHealth());
 	}

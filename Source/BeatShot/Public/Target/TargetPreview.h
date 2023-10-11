@@ -33,7 +33,8 @@ public:
 	/** Override to change the target widget opacity */
 	virtual void SetActorHiddenInGame(bool bNewHidden) override;
 
-	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the StartToPeakTimeline */
+	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the
+	 *  StartToPeakTimeline */
 	virtual bool ActivateTarget(const float Lifespan) override;
 
 	/** Called when SimulatePlayerDestroyingTimer expires */
@@ -51,19 +52,17 @@ public:
 	float DestroyChance = 0.f;
 
 protected:
-	/** Called from HealthComponent when a target receives damage. Calls HandleDeactivation, HandleDestruction,
-	 *  and broadcasts OnTargetDamageEventOrTimeout before finally calling HandleDestruction*/
-	virtual void OnHealthChanged(AActor* ActorInstigator, const float OldValue, const float NewValue) override;
+	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
+	virtual void OnIncomingDamageTaken(const FDamageEventData& InData) override;
 
-	/** Unlike other modes which use LifeSpanExpired to notify TargetManager of their expiration, BeatGrid modes use
-	 *  this function since the the targets aren't going to be destroyed, but instead just deactivated */
-	virtual void OnTargetMaxLifeSpanExpired() override;
+	/** Callback function for when DamageableWindow timer expires */
+	virtual void OnLifeSpanExpired() override;
 
 	/** Performs any responses to the target being deactivated */
 	virtual void HandleDeactivationResponses(const bool bExpired) override;
 
 	/** Finds if target should be destroyed, and calls Destroy if so */
-	virtual void HandleDestruction(const bool bExpired, const float CurrentHealth) override;
+	virtual void HandleDestruction(const bool bExpired, const bool bOutOfHealth) override;
 
 	/** Reference to the target widget in CustomGameModesWidget_Preview */
 	TObjectPtr<UTargetWidget> TargetWidget;
