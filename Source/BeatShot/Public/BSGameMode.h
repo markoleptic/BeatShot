@@ -8,6 +8,7 @@
 #include "SaveLoadInterface.h"
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "GameFramework/GameMode.h"
+#include "Target/Target.h"
 #include "BSGameMode.generated.h"
 
 struct FBSAbilitySet_GrantedHandles;
@@ -39,21 +40,14 @@ class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, pu
 	ABSGameMode();
 
 	virtual void BeginPlay() override;
-
 	virtual void Tick(float DeltaSeconds) override;
-
 	virtual void PostLogin(APlayerController* NewPlayer) override;
-
 	virtual void PostLoad() override;
-
 	virtual void Logout(AController* Exiting) override;
-
 	ABSCharacter* SpawnPlayer(ABSPlayerController* PlayerController);
 
 	UPROPERTY()
 	TArray<ABSPlayerController*> Controllers;
-
-	#pragma region Classes
 
 protected:
 	/* The TargetManager class to spawn */
@@ -92,20 +86,15 @@ protected:
 	FBSAbilitySet_GrantedHandles TrackGunAbilityGrantedHandles;
 
 public:
-	ATargetManager* GetTargetManager() const { return TargetManager.Get(); }
-
-	#pragma endregion
-
-	#pragma region StartStopGameMode
-
-public:
+	/** Returns pointer to TargetManager */
+	ATargetManager* GetTargetManager() const { return TargetManager; }
+	
 	/** Entry point into starting game. Spawn TargetManager, Visualizers 
 	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
 	void InitializeGameMode();
 
 	/** Allows TargetManager to start spawning targets, starts timers, shows PlayerHUD, CrossHair, and hides the
 	 *  countdown widget. Called from Countdown widget when the countdown has completed */
-	UFUNCTION()
 	void StartGameMode();
 
 	/** Destroys all actors involved in a game mode and saves scores if applicable */
@@ -114,88 +103,19 @@ public:
 	/** Called in BeginPlay from a weapon to bind to UpdateShotsFired */
 	void RegisterWeapon(FOnShotFired& OnShotFiredDelegate);
 
-private:
-	/** Starts all DefaultGameMode timers */
-	void StartGameModeTimers();
-
-	/** Binds all delegates associated with DefaultGameMode */
-	void BindGameModeDelegates();
-
-	/** Function to tell TargetManager to spawn a new target */
-	void SpawnNewTarget(bool bNewTargetState);
-
-	/** Timer that spans the length of the song */
-	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Timer")
-	FTimerHandle GameModeLengthTimer;
-
-	/** Calls EndGameMode after finding parameters for it */
-	UFUNCTION()
-	void OnGameModeLengthTimerComplete();
-
-	#pragma endregion
-
-	#pragma region AudioAnalyzer
-
-public:
 	/** Called from Countdown widget when user clicks to start game mode. If player delay is > 0.05, the function
 	 *  begins playback for AATracker and sets a timer of length player delay to then begin playback of AAPlayer.
 	 *  If player delay isn't long enough to justify two separate players, only AATracker begins playback. */
-	UFUNCTION()
 	void StartAAManagerPlayback();
 
-	/** Called from DefaultPlayerController when the game is paused */
-	UFUNCTION(BlueprintCallable, Category = "BeatShot|AudioAnalyzer")
+	/** Called from PlayerController when the game is paused */
 	void PauseAAManager(bool ShouldPause);
 
-private:
-	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
-	bool InitializeAudioManagers();
+	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
+	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
+	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
+	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
-	/** Retrieves all AudioAnalyzer data on tick */
-	void OnTick_AudioAnalyzers(const float DeltaSeconds);
-
-	/** play AAPlayer, used as callback function to set delay from AATracker */
-	UFUNCTION()
-	void PlayAAPlayer() const;
-
-	/** Change volume of given AAManager, or if none provided change Player/Tracker volume */
-	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr) const;
-
-	void OnAAManagerError()
-	{
-		bShouldTick = false;
-		UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));
-	}
-
-	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
-	UPROPERTY()
-	FPlayerSettings_AudioAnalyzer AASettings;
-
-	/** A timer used to set the difference in start times between AATracker and AAPlayer */
-	UPROPERTY()
-	FTimerHandle PlayerDelayTimer;
-
-	/** A timer used to track every passing second of the song */
-	UPROPERTY()
-	FTimerHandle OnSecondPassedTimer;
-
-	/** Honestly idk what this does, but it was used in the AudioAnalyzer example so I'm sticking with it >.> */
-	bool LastTargetOnSet;
-
-	/** The time elapsed since last target spawn */
-	float Elapsed;
-
-	TArray<bool> Beats;
-	TArray<float> SpectrumValues;
-	TArray<float> SpectrumVariance;
-	TArray<int32> BpmCurrent;
-	TArray<int32> BpmTotal;
-
-	#pragma endregion
-
-	#pragma region PublicDelegates
-
-public:
 	/** Delegate that is executed every second to update the progress into song on PlayerHUD.
 	 *  PlayerHUD binds to it, while DefaultGameMode (this) executes it */
 	FOnAAManagerSecondPassed OnSecondPassed;
@@ -215,11 +135,39 @@ public:
 	/** Called if the streak threshold is passed and user has not unlocked night mode */
 	FOnStreakThresholdPassed OnStreakThresholdPassed;
 
-	#pragma endregion
-
-	#pragma region Scoring
-
 private:
+	/** Starts all DefaultGameMode timers */
+	void StartGameModeTimers();
+
+	/** Binds all delegates associated with DefaultGameMode */
+	void BindGameModeDelegates();
+
+	/** Function to tell TargetManager to spawn a new target */
+	void SpawnNewTarget(bool bNewTargetState);
+
+	/** Calls EndGameMode after finding parameters for it */
+	UFUNCTION()
+	void OnGameModeLengthTimerComplete();
+
+	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
+	bool InitializeAudioManagers();
+
+	/** Retrieves all AudioAnalyzer data on tick */
+	void OnTick_AudioAnalyzers(const float DeltaSeconds);
+
+	/** play AAPlayer, used as callback function to set delay from AATracker */
+	UFUNCTION()
+	void PlayAAPlayer() const;
+
+	/** Change volume of given AAManager, or if none provided change Player/Tracker volume */
+	void SetAAManagerVolume(float GlobalVolume, float MusicVolume, UAudioAnalyzerManager* AAManager = nullptr) const;
+
+	void OnAAManagerError()
+	{
+		bShouldTick = false;
+		UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));
+	}
+	
 	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget */
 	void LoadMatchingPlayerScores();
 
@@ -241,72 +189,13 @@ private:
 	/** Calls RequestAccessToken if player has logged in before */
 	void SaveScoresToDatabase();
 
-	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
-	FOnAccessTokenResponse OnAccessTokenResponse;
-
-	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
-	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Score")
-	FPlayerScore CurrentPlayerScore;
-
-	/** Max score per target based on total amount of targets that could spawn */
-	UPROPERTY(VisibleAnywhere)
-	float MaxScorePerTarget;
-
-	float TimePlayedGameMode = 0.f;
-
-	#pragma endregion
-
-	#pragma region Settings
-
-public:
-	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
-	virtual void
-	OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
-	virtual void
-	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
-
-private:
-	/** Whether or not to run tick functions */
-	bool bShouldTick;
-
-	/** Whether or not to show the Streak Combat Text */
-	bool bShowStreakCombatText;
-
-	/** The frequency at which to show Streak Combat Text */
-	int32 CombatTextFrequency;
-
-	/** The game mode defining properties */
-	UPROPERTY(VisibleAnywhere, Category = "BeatShot|General")
-	FBSConfig BSConfig;
-
-	/** The threshold to activate night mode if not yet unlocked */
-	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|General")
-	int32 StreakThreshold = 50;
-
-	/** Whether or not night mode has been unlocked */
-	bool bNightModeUnlocked;
-
-	const FActorSpawnParameters SpawnParameters;
-
-	#pragma endregion
-
-	#pragma region HUDUpdate
-
-	/** Function bound to TargetManager's OnTargetDeactivated delegate, passes the time that the target was alive for */
-	UFUNCTION()
-	void UpdatePlayerScores(const float TimeAlive, const int32 NewStreak, const FTransform& Transform);
-
-	/** Function bound to the tracking target's health component's OnBeatTrackTick delegate,
-	 *  which passes the current damage taken, and the total possible damage. Executed on tick
-	 *  by SphereTarget */
-	UFUNCTION()
-	void UpdateTrackingScore(const float DamageDelta, const float TotalPossibleDamage);
+	/** Function bound to TargetManager's PostTargetDamageEvent delegate */
+	void OnPostTargetDamageEvent(const FTargetDamageEvent& Event);
 
 	/** Function bound to DefaultGameMode's OnTargetActivated delegate to keep track of number of targets spawned.
 	 *  Executed by TargetManager */
 	UFUNCTION()
-	void UpdateTargetsSpawned();
+	void UpdateTargetsSpawned(const ETargetDamageType& DamageType);
 
 	/** Function bound to Gun_AK47's FOnShotFired delegate to keep track of number of targets spawned.
 	 *  Executed by Gun_AK47 */
@@ -316,6 +205,7 @@ private:
 	/** Called by UpdatePlayerScores to update the streak */
 	void UpdateStreak(const int32 Streak, const FTransform& Transform);
 
+	/** Not currently used */
 	void UpdateTimeOffset(const float TimeOffset, const FTransform& Transform);
 
 	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
@@ -327,10 +217,6 @@ private:
 	/** Callback function for OnSecondPassedTimer, executes OnSecondPassed */
 	UFUNCTION()
 	void OnSecondPassedCallback() const;
-
-	#pragma endregion
-
-	#pragma region Utility
 
 	static float FloatDivide(const float Num, const float Denom);
 
@@ -346,5 +232,66 @@ private:
 	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the time the target was alive for */
 	float GetNormalizedHitTimingError(const float InTimeAlive) const;
 
-	#pragma endregion
+	/** Honestly idk what this does, but it was used in the AudioAnalyzer example so I'm sticking with it >.> */
+	bool bLastTargetOnSet;
+
+	/** Whether or not night mode has been unlocked */
+	bool bNightModeUnlocked;
+	
+	/** Whether or not to run tick functions */
+	bool bShouldTick;
+
+	/** Whether or not to show the Streak Combat Text */
+	bool bShowStreakCombatText;
+
+	const FActorSpawnParameters SpawnParameters;
+
+	/** The game mode defining properties */
+	UPROPERTY(VisibleAnywhere, Category = "BeatShot|General")
+	FBSConfig BSConfig;
+
+	/** The time elapsed since last target spawn */
+	float Elapsed;
+
+	/** Max score per target based on total amount of targets that could spawn */
+	float MaxScorePerTarget;
+
+	/** The time played for the current game mode, used to update Steam achievements */
+	float TimePlayedGameMode = 0.f;
+
+	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
+	FOnAccessTokenResponse OnAccessTokenResponse;
+
+	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
+	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Score")
+	FPlayerScore CurrentPlayerScore;
+	
+	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
+	UPROPERTY()
+	FPlayerSettings_AudioAnalyzer AASettings;
+	
+	/** Timer that spans the length of the song */
+	UPROPERTY()
+	FTimerHandle GameModeLengthTimer;
+
+	/** A timer used to set the difference in start times between AATracker and AAPlayer */
+	UPROPERTY()
+	FTimerHandle PlayerDelayTimer;
+
+	/** A timer used to track every passing second of the song */
+	UPROPERTY()
+	FTimerHandle OnSecondPassedTimer;
+
+	/** The frequency at which to show Streak Combat Text */
+	int32 CombatTextFrequency;
+
+	/** The threshold to activate night mode if not yet unlocked */
+	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|General")
+	int32 StreakThreshold = 50;
+	
+	TArray<bool> Beats;
+	TArray<float> SpectrumValues;
+	TArray<float> SpectrumVariance;
+	TArray<int32> BpmCurrent;
+	TArray<int32> BpmTotal;
 };

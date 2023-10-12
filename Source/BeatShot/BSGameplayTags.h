@@ -15,6 +15,8 @@ struct FBSGameplayTags
 	FGameplayTag GameplayCue_Sprint;
 	FGameplayTag GameplayCue_MuzzleFlash;
 	FGameplayTag GameplayCue_FireGun_Impact;
+	FGameplayTag GameplayCue_TrackGun_Hit;
+	FGameplayTag GameplayCue_TrackGun_Miss;
 
 	FGameplayTag Data;
 	FGameplayTag Data_Damage;

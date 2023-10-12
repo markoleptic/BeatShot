@@ -60,6 +60,12 @@ struct FPlayerSettings_Game
 	FLinearColor InactiveTargetColor;
 
 	UPROPERTY(BlueprintReadOnly)
+	FLinearColor TakingTrackingDamageColor;
+
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor NotTakingTrackingDamageColor;
+
+	UPROPERTY(BlueprintReadOnly)
 	bool bShowStreakCombatText;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -124,7 +130,9 @@ struct FPlayerSettings_Game
 		EndTargetColor = DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = DefaultTargetOutlineColor;
-		InactiveTargetColor = DefaultBeatGridInactiveTargetColor;
+		InactiveTargetColor = DefaultInactiveTargetColor;
+		TakingTrackingDamageColor = DefaultTakingTrackingDamageColor;
+		NotTakingTrackingDamageColor = DefaultNotTakingTrackingDamageColor;
 		bShouldRecoil = false;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;
@@ -153,7 +161,9 @@ struct FPlayerSettings_Game
 		EndTargetColor = DefaultEndTargetColor;
 		bUseSeparateOutlineColor = false;
 		TargetOutlineColor = DefaultTargetOutlineColor;
-		InactiveTargetColor = DefaultBeatGridInactiveTargetColor;
+		InactiveTargetColor = DefaultInactiveTargetColor;
+		TakingTrackingDamageColor = DefaultTakingTrackingDamageColor;
+		NotTakingTrackingDamageColor = DefaultNotTakingTrackingDamageColor;
 		bShouldRecoil = false;
 		bAutomaticFire = true;
 		bShowBulletDecals = true;

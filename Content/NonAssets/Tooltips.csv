@@ -30,7 +30,8 @@ Grid_VerticalSpacingSuggest,Vertical Spacing to <=
 BeatGridAdjacentOnly,"By default, adjacent-only will only activate a target that was adjacent/beside a previously activated target. Completely random will choose a target in the grid at random."
 BeatGridEvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
 GridNumTargets,The number of targets that are spawned at the beginning.
-Lifespan,"How long the target will live, even if not shot."
+InfiniteLifespan,The target will remain activated until a Target Deactivation Condition is met.
+Lifespan,The length of time that a target is activated.
 MaxHealth,"Max health of the target. Hit targets take 100 damage, so increase this value if you want targets to survive more than one hit."
 MaxNumRecentTargets,"How many recent targets to keep in memory, if using Num Targets Based RecentMemoryPolicy."
 MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
@@ -67,6 +68,7 @@ TargetDeactivationConditions,Each represents one way that a target can be deacti
 TargetDeactivationCondition_None,
 TargetDeactivationCondition_OnAnyExternalDamageTaken,Target is deactivated when it receives any damage from the player.
 TargetDeactivationCondition_OnExpiration,Target is deactivated after its lifetime expires.
+TargetDeactivationCondition_OnSpecificHealthLost,Target is deactivated after it loses a specific amount of health.
 TargetDeactivationCondition_OnHealthReachedZero,Target is deactivated after its health reaches zero.
 TargetDeactivationCondition_Persistant,"Targets are never deactivated, even if their health reaches zero."
 TargetDeactivationResponses,What does the target do when its deactivated?
@@ -95,7 +97,7 @@ TargetDestructionCondition_OnAnyExternalDamageTaken,Target is destroyed when it 
 TargetDestructionCondition_OnDeactivation,Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition.
 TargetDestructionCondition_OnExpiration,Target is deactivated after its lifetime ends.
 TargetDestructionCondition_OnHealthReachedZero,Target is destroyed when its health reaches zero.
-TargetDestructionCondition_Persistant,"Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated."
+TargetDestructionCondition_Persistant,Targets are never destroyed. Can still be reactivated/deactivated. Their health is reset to Max Target Health when it reaches zero. 
 TargetDistributionPolicy,How Targets are distributed in the spawn box.
 TargetDistributionPolicy_EdgeOnly,Only spawn targets on the edges of the current spawn area.
 TargetDistributionPolicy_FullRange,Spawn targets anywhere in the current spawn area.
@@ -204,3 +206,14 @@ DynamicTargetScaling_DecrementAmount,"Instead of resetting consecutively hit tar
 ReinforcementLearningHyperParameterMode_Custom,Tune the hyper-parameters of the reinforcment learning agent yourself.
 ReinforcementLearningHyperParameterMode_Auto,The game will automatically adjust the hyper-parameters of the reinforcment learning agent as data is gathered.
 Video_ResolutionScale,Requires Fullscreen and DLSS & NIS must be off. You might need to restart your game for the changes to apply.
+HealthLossForDeactivation,"The amount of health loss required to trigger a deactivation. If the Target Max Health is 300 and this value is set to 100, it will deactivate when it reaches 200, 100, and 0 health."
+HyperParameterMode,The mode that defines the hyper parameters for the reinforcement learning agent. Auto will automatically adjust the values as training data is accumulated.
+AllowActivationWhileActivated,Allows some Target Activation Responses (Velocity/Direction) to trigger even while a target is already activated.
+SM_StartTargetColor,The color of a target directly after being activated with a non-infinite lifespan.
+SM_PeakTargetColor,"The color of a target at SpawnBeatDelay time, after being activated with a non-infinite lifespan."
+SM_EndTargetColor,"The color of a target at the end of its lifespan, after being activated with a non-infinite lifespan."
+SM_TakingTrackingDamageColor,The color of an activated tracking target while taking tracking damage.
+SM_NotTakingTrackingDamageColor,The color of an activated tracking target while not actively taking tracking damage. This is also the default color of targets with infinite lifespans.
+SM_InactiveColor,The color of a deactivated target.
+SM_UseSeparateOutlineColor,"Whether or not to use a separate outline color. If false, a slightly darker version of main target color is used."
+SM_OutlineColor,The color to apply to the outline of any target.

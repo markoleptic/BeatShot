@@ -7,7 +7,6 @@
 #include "Components/TextBlock.h"
 #include "Components/HorizontalBox.h"
 #include "OverlayWidgets/HUDWidgets/HitTimingWidget.h"
-#include "Kismet/KismetTextLibrary.h"
 #include "Kismet/KismetStringLibrary.h"
 
 void UPlayerHUD::NativeConstruct()
@@ -22,28 +21,41 @@ void UPlayerHUD::NativeConstruct()
 
 void UPlayerHUD::Init(const FBSConfig& InConfig)
 {
+	Config = InConfig;
 	switch (InConfig.TargetConfig.TargetDamageType)
 	{
 	case ETargetDamageType::Tracking:
-		Box_TargetsSpawned->SetVisibility(ESlateVisibility::Collapsed);
-		Box_Streak->SetVisibility(ESlateVisibility::Collapsed);
-		Box_TargetsHit->SetVisibility(ESlateVisibility::Collapsed);
-		Box_ShotsFired->SetVisibility(ESlateVisibility::Collapsed);
-		HitTimingWidget->SetIsEnabled(false);
-		HitTimingWidget->SetVisibility(ESlateVisibility::Collapsed);
-		break;
-	case ETargetDamageType::Hit:
 		{
-			const FString MinTick = FString::FromInt(-static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f))
-				+ "ms";
-			const FString MaxTick = FString::FromInt(
-				static_cast<int32>((InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) *
-					100.f)) + "ms";
-			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
+			Box_Accuracy->SetVisibility(ESlateVisibility::Collapsed);
+			Box_TrackingAccuracy->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			Box_TargetsSpawned->SetVisibility(ESlateVisibility::Collapsed);
+			Box_Streak->SetVisibility(ESlateVisibility::Collapsed);
+			Box_TargetsHit->SetVisibility(ESlateVisibility::Collapsed);
+			Box_ShotsFired->SetVisibility(ESlateVisibility::Collapsed);
+			HitTimingWidget->SetIsEnabled(false);
+			HitTimingWidget->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		break;
 	case ETargetDamageType::Combined:
+		{
+			const int32 Min = -static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f);
+			const FString MinTick = FString::FromInt(Min) + "ms";
+			const int32 Max = (InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) * 100.f;
+			const FString MaxTick = FString::FromInt(Max) + "ms";
+			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
+		}
+	case ETargetDamageType::Hit:
+		{
+			Box_TrackingAccuracy->SetVisibility(ESlateVisibility::Collapsed);
+			const int32 Min = -static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f);
+			const FString MinTick = FString::FromInt(Min) + "ms";
+			const int32 Max = (InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) * 100.f;
+			const FString MaxTick = FString::FromInt(Max) + "ms";
+			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
+		}
+		break;
 	case ETargetDamageType::None:
+	case ETargetDamageType::Self:
 		break;
 	}
 
@@ -55,20 +67,18 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 	// Display custom game mode if not a default game mode
 	else
 	{
-		TextBlock_GameModeName->SetText(
-			UKismetTextLibrary::Conv_StringToText(InConfig.DefiningConfig.CustomGameModeName));
+		TextBlock_GameModeName->SetText(FText::FromString(InConfig.DefiningConfig.CustomGameModeName));
 	}
 
-	TextBlock_SongTitle->SetText(UKismetTextLibrary::Conv_StringToText(InConfig.AudioConfig.SongTitle));
-	TextBlock_TotalSongLength->SetText(UKismetTextLibrary::Conv_StringToText(
-		UKismetStringLibrary::LeftChop(UKismetStringLibrary::TimeSecondsToString(InConfig.AudioConfig.SongLength), 3)));
-
-	Config = InConfig;
+	TextBlock_SongTitle->SetText(FText::FromString(InConfig.AudioConfig.SongTitle));
+	const FString Time = UKismetStringLibrary::TimeSecondsToString(InConfig.AudioConfig.SongLength).LeftChop(3);
+	TextBlock_TotalSongLength->SetText(FText::FromString(Time));
 }
 
 void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	if (GameSettings.bShowHitTimingWidget && Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit)
+	if (GameSettings.bShowHitTimingWidget && (Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
+		Config.TargetConfig.TargetDamageType == ETargetDamageType::Combined))
 	{
 		if (!HitTimingWidget->GetIsEnabled())
 		{
@@ -76,7 +86,8 @@ void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSe
 			HitTimingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
-	else if (!GameSettings.bShowHitTimingWidget && Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit)
+	else if (!GameSettings.bShowHitTimingWidget && (Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
+		Config.TargetConfig.TargetDamageType == ETargetDamageType::Combined))
 	{
 		if (HitTimingWidget->GetIsEnabled())
 		{
@@ -86,81 +97,78 @@ void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSe
 	}
 }
 
-void UPlayerHUD::UpdateAllElements(const FPlayerScore& NewPlayerScoreStruct, const float NormalizedHitTimingError,
-	const float HitTimingError)
+void UPlayerHUD::UpdateAllElements(const FPlayerScore& Scores, const float NormError, const float Error)
 {
+	const float Score = round(Scores.Score);
+	const float HighScore = round(Scores.HighScore);
+	
+	TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
+	TextBlock_HighScore->SetText(FText::AsNumber(HighScore < Score ? Score : HighScore));
+	
 	switch (Config.TargetConfig.TargetDamageType)
 	{
 	case ETargetDamageType::Tracking:
 		{
-			const float Score = roundf(NewPlayerScoreStruct.Score);
-			const float TotalPossibleDamage = NewPlayerScoreStruct.TotalPossibleDamage;
-			const float HighScore = roundf(NewPlayerScoreStruct.HighScore);
-			/** Update Accuracy progress bar and Accuracy percentage text */
-			if (!isnan(Score / TotalPossibleDamage))
+			if (!isnan(Score / Scores.TotalPossibleDamage))
 			{
-				ProgressBar_Accuracy->SetPercent(Score / TotalPossibleDamage);
-				TextBlock_Accuracy->SetText(FText::AsPercent(Score / TotalPossibleDamage));
-			}
-			/** Update current score */
-			TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
-			/** Update high score */
-			if (HighScore < Score)
-			{
-				TextBlock_HighScore->SetText(FText::AsNumber(Score));
-			}
-			else
-			{
-				TextBlock_HighScore->SetText(FText::AsNumber(HighScore));
+				ProgressBar_TrackingAccuracy->SetPercent(Score / Scores.TotalPossibleDamage);
+				TextBlock_TrackingAccuracy->SetText(FText::AsPercent(Score / Scores.TotalPossibleDamage));
 			}
 		}
 		break;
 	case ETargetDamageType::Hit:
 		{
-			const float TargetsHit = NewPlayerScoreStruct.TargetsHit;
-			const float Score = round(NewPlayerScoreStruct.Score);
-			const float ShotsFired = NewPlayerScoreStruct.ShotsFired;
-			const float TargetsSpawned = NewPlayerScoreStruct.TargetsSpawned;
-			const float HighScore = round(NewPlayerScoreStruct.HighScore);
-			/** Update Accuracy progress bar and Accuracy percentage text */
-			if (!isnan(TargetsHit / ShotsFired))
+			const float TargetsHit = Scores.TargetsHit;
+			const float ShotsFired = Scores.ShotsFired;
+			const float TargetsSpawned = Scores.TargetsSpawned;
+			const float Percent = static_cast<float>(Scores.TargetsHit) / Scores.ShotsFired;
+			if (!isnan(Percent))
 			{
-				ProgressBar_Accuracy->SetPercent(TargetsHit / ShotsFired);
-				TextBlock_Accuracy->SetText(FText::AsPercent(TargetsHit / ShotsFired));
+				ProgressBar_Accuracy->SetPercent(Percent);
+				TextBlock_Accuracy->SetText(FText::AsPercent(Percent));
 			}
-			/* Update number of targets hit */
 			TextBlock_TargetsHit->SetText(FText::AsNumber(TargetsHit));
-			/* Update number of shots fired */
 			TextBlock_ShotsFired->SetText(FText::AsNumber(ShotsFired));
-			/* Update number of targets spawned */
 			TextBlock_TargetsSpawned->SetText(FText::AsNumber(TargetsSpawned));
-			/* update the current player score */
 			TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
-			/* update the high score */
-			if (HighScore < Score)
-			{
-				TextBlock_HighScore->SetText(FText::AsNumber(Score));
-			}
-			else
-			{
-				TextBlock_HighScore->SetText(FText::AsNumber(HighScore));
-			}
-			/* update streak */
-			TextBlock_CurrentStreakBest->SetText(FText::AsNumber(NewPlayerScoreStruct.Streak));
+			TextBlock_CurrentStreakBest->SetText(FText::AsNumber(Scores.Streak));
 		}
 		break;
 	case ETargetDamageType::Combined:
+		{
+			if (!isnan(Score / Scores.TotalPossibleDamage))
+			{
+				ProgressBar_TrackingAccuracy->SetPercent(Score / Scores.TotalPossibleDamage);
+				TextBlock_TrackingAccuracy->SetText(FText::AsPercent(Score / Scores.TotalPossibleDamage));
+			}
+			const float TargetsHit = Scores.TargetsHit;
+			const float ShotsFired = Scores.ShotsFired;
+			const float TargetsSpawned = Scores.TargetsSpawned;
+			const float Percent = static_cast<float>(Scores.TargetsHit) / Scores.ShotsFired;
+			if (!isnan(Percent))
+			{
+				ProgressBar_Accuracy->SetPercent(Percent);
+				TextBlock_Accuracy->SetText(FText::AsPercent(Percent));
+			}
+			TextBlock_TargetsHit->SetText(FText::AsNumber(TargetsHit));
+			TextBlock_ShotsFired->SetText(FText::AsNumber(ShotsFired));
+			TextBlock_TargetsSpawned->SetText(FText::AsNumber(TargetsSpawned));
+			TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
+			TextBlock_CurrentStreakBest->SetText(FText::AsNumber(Scores.Streak));
+		}
+		break;
 	case ETargetDamageType::None:
+	case ETargetDamageType::Self:
 		break;
 	}
 	if (HitTimingWidget->GetIsEnabled())
 	{
-		HitTimingWidget->UpdateHitTiming(NormalizedHitTimingError, HitTimingError);
+		HitTimingWidget->UpdateHitTiming(NormError, Error);
 	}
 }
 
 void UPlayerHUD::UpdateSongProgress(const float PlaybackTime)
 {
-	TextBlock_SongTimeElapsed->SetText(
-		FText::FromString(UKismetStringLibrary::TimeSecondsToString(PlaybackTime).LeftChop(3)));
+	const FString Time = UKismetStringLibrary::TimeSecondsToString(PlaybackTime).LeftChop(3);
+	TextBlock_SongTimeElapsed->SetText(FText::FromString(Time));
 }

@@ -36,7 +36,10 @@ protected:
 		const EReinforcementLearningHyperParameterMode HyperParameterMode);
 
 	/** Updates options that depend on the value selection of UnlimitedTargetHealth */
-	void UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth);
+	void UpdateDependentOptions_InfiniteTargetHealth(const bool bInUnlimitedTargetHealth);
+	
+	/** Updates options that depend on the value selection of InfiniteTargetLifespan */
+	void UpdateDependentOptions_InfiniteTargetLifespan(const bool bInfiniteTargetLifespan);
 
 	/** Updates options that depend on the value selection of ConsecutiveTargetScalePolicy */
 	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(
@@ -67,11 +70,15 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_Gamma;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetMaxLifeSpan;
+	UCheckBoxOptionWidget* CheckBoxOption_InfiniteTargetLifespan;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_UnlimitedTargetHealth;
+	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetLifespan;
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_InfiniteTargetHealth;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxHealth;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_ExpirationHealthPenalty;
 
@@ -100,7 +107,9 @@ protected:
 	UFUNCTION()
 	void OnCheckStateChanged_EnableAI(const bool bChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked);
+	void OnCheckStateChanged_InfiniteTargetHealth(const bool bChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_InfiniteTargetLifespan(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 

@@ -21,7 +21,7 @@ ABSGameMode::ABSGameMode()
 	PrimaryActorTick.bCanEverTick = true;
 	bShouldTick = false;
 	Elapsed = 0.f;
-	LastTargetOnSet = false;
+	bLastTargetOnSet = false;
 	TimePlayedGameMode = 0.f;
 	AATracker = nullptr;
 	AAPlayer = nullptr;
@@ -101,7 +101,7 @@ ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
 void ABSGameMode::InitializeGameMode()
 {
 	Elapsed = 0.f;
-	LastTargetOnSet = false;
+	bLastTargetOnSet = false;
 	TimePlayedGameMode = 0.f;
 	bShouldTick = false;
 
@@ -205,13 +205,9 @@ void ABSGameMode::BindGameModeDelegates()
 	{
 		GetTargetManager()->OnTargetActivated.AddUObject(this, &ABSGameMode::UpdateTargetsSpawned);
 	}
-	if (!GetTargetManager()->OnTargetDeactivated.IsBoundToObject(this))
+	if (!GetTargetManager()->PostTargetDamageEvent.IsBoundToObject(this))
 	{
-		GetTargetManager()->OnTargetDeactivated.AddUObject(this, &ABSGameMode::UpdatePlayerScores);
-	}
-	if (!GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
-	{
-		GetTargetManager()->OnBeatTrackTargetDamaged.AddUObject(this, &ABSGameMode::UpdateTrackingScore);
+		GetTargetManager()->PostTargetDamageEvent.AddUObject(this, &ABSGameMode::OnPostTargetDamageEvent);
 	}
 }
 
@@ -242,13 +238,9 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 		{
 			GetTargetManager()->OnTargetActivated.RemoveAll(this);
 		}
-		if (GetTargetManager()->OnTargetDeactivated.IsBoundToObject(this))
+		if (GetTargetManager()->PostTargetDamageEvent.IsBoundToObject(this))
 		{
-			GetTargetManager()->OnTargetDeactivated.RemoveAll(this);
-		}
-		if (GetTargetManager()->OnBeatTrackTargetDamaged.IsBoundToObject(this))
-		{
-			GetTargetManager()->OnBeatTrackTargetDamaged.RemoveAll(this);
+			GetTargetManager()->PostTargetDamageEvent.RemoveAll(this);
 		}
 
 		TargetManager->Destroy();
@@ -311,18 +303,18 @@ void ABSGameMode::RegisterWeapon(FOnShotFired& OnShotFiredDelegate)
 
 void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 {
-	if (bNewTargetState && !LastTargetOnSet)
+	if (bNewTargetState && !bLastTargetOnSet)
 	{
-		LastTargetOnSet = true;
+		bLastTargetOnSet = true;
 		if (Elapsed > BSConfig.TargetConfig.TargetSpawnCD)
 		{
 			Elapsed = 0.f;
 			TargetManager->OnAudioAnalyzerBeat();
 		}
 	}
-	else if (!bNewTargetState && LastTargetOnSet)
+	else if (!bNewTargetState && bLastTargetOnSet)
 	{
-		LastTargetOnSet = false;
+		bLastTargetOnSet = false;
 	}
 }
 
@@ -643,7 +635,7 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
-	if (BSConfig.DefiningConfig.BaseGameMode == EBaseGameMode::BeatTrack)
+	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{
 		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
 		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
@@ -719,37 +711,50 @@ void ABSGameMode::OnPostScoresResponseReceived(const EPostScoresResponse& LoginS
 	CurrentPlayerScore.ResetStruct();
 }
 
-void ABSGameMode::UpdatePlayerScores(const float TimeAlive, const int32 NewStreak, const FTransform& Transform)
+void ABSGameMode::OnPostTargetDamageEvent(const FTargetDamageEvent& Event)
 {
-	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking || TimeAlive < 0.f)
-	{
+	float NormalizedError = -1.f;
+	float Error = -1.f;
+	
+	switch (Event.DamageType) {
+	case ETargetDamageType::Tracking:
+		{
+			CurrentPlayerScore.TotalPossibleDamage = Event.TotalPossibleTrackingDamage;
+			CurrentPlayerScore.Score += Event.DamageDelta;
+		}
+		break;
+	case ETargetDamageType::Hit:
+		{
+			CurrentPlayerScore.Score += GetScoreFromTimeAlive(Event.TimeAlive);
+			CurrentPlayerScore.TotalTimeOffset += GetAbsHitTimingError(Event.TimeAlive);
+			UpdateTargetsHit();
+			UpdateStreak(Event.Streak, Event.Transform);
+			//UpdateTimeOffset(TimeOffset, Transform);
+			NormalizedError = GetNormalizedHitTimingError(Event.TimeAlive);
+			Error = GetHitTimingError(Event.TimeAlive);
+		}
+		break;
+	case ETargetDamageType::Combined:
+	case ETargetDamageType::None:
+		{
+			UE_LOG(LogTemp, Warning, TEXT("TargetDamageType of Combined/None received in OnPostTargetDamageEvent."));
+		}
+		return;
+	case ETargetDamageType::Self:
 		return;
 	}
-
-	CurrentPlayerScore.Score += GetScoreFromTimeAlive(TimeAlive);
-	CurrentPlayerScore.TotalTimeOffset += GetAbsHitTimingError(TimeAlive);
-
-	UpdateTargetsHit();
-	UpdateStreak(NewStreak, Transform);
+	
 	UpdateHighScore();
-	//UpdateTimeOffset(TimeOffset, Transform);
-
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, GetNormalizedHitTimingError(TimeAlive),
-		GetHitTimingError(TimeAlive));
+	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, NormalizedError, Error);
 }
 
-void ABSGameMode::UpdateTrackingScore(const float DamageDelta, const float TotalPossibleDamage)
+void ABSGameMode::UpdateTargetsSpawned(const ETargetDamageType& DamageType)
 {
-	CurrentPlayerScore.TotalPossibleDamage = TotalPossibleDamage;
-	CurrentPlayerScore.Score += DamageDelta;
-	UpdateHighScore();
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
-}
-
-void ABSGameMode::UpdateTargetsSpawned()
-{
-	CurrentPlayerScore.TargetsSpawned++;
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
+	if (DamageType == ETargetDamageType::Hit)
+	{
+		CurrentPlayerScore.TargetsSpawned++;
+		UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
+	}
 }
 
 void ABSGameMode::UpdateShotsFired()

@@ -22,32 +22,11 @@ class UCurveFloat;
 class ATarget;
 
 /** Struct containing info about a target that is broadcast when a target takes damage
- *  or the the DamageableWindow timer expires */
+ *  or the the ExpirationTimer timer expires */
 USTRUCT()
 struct FTargetDamageEvent
 {
 	GENERATED_BODY()
-
-	/** The time the target was alive for before the damage event, or INDEX_NONE if expired */
-	float TimeAlive;
-
-	/** The health attribute's NewValue */
-	float CurrentHealth;
-
-	/** The absolute value between the health attribute's NewValue and OldValue */
-	float DamageDelta;
-
-	/** The transform of the target */
-	FTransform Transform;
-
-	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
-	FGuid Guid;
-
-	/** The type of damage that was used to cause damage */
-	ETargetDamageType DamageType;
-
-	/** Any array of DamageTypes that the target was vulnerable to when the damage event occured */
-	TArray<ETargetDamageType> VulnerableToDamageTypes;
 
 	/** Whether or not the target's lifetime expired, causing it to damage itself */
 	bool bDamagedSelf;
@@ -55,41 +34,93 @@ struct FTargetDamageEvent
 	/** Whether or not the target had zero health as a result of the damage event */
 	bool bOutOfHealth;
 
+	/** Whether or not the target will deactivate itself and handle deactivation responses shortly after the damage
+	 *  event is broadcast */
+	bool bWillDeactivate;
+
+	/** Whether or not the target will destroy itself shortly after the damage event is broadcast */
+	bool bWillDestroy;
+
+	/** The type of damage that was used to cause damage */
+	ETargetDamageType DamageType;
+
+	/** Any array of DamageTypes that the target was vulnerable to when the damage event occured */
+	TArray<ETargetDamageType> VulnerableToDamageTypes;
+
+	/** A unique ID for the target, used to find the target when it comes time to free the blocked points of a target */
+	FGuid Guid;
+
+	/** The health attribute's NewValue */
+	float CurrentHealth;
+
+	/** The absolute value between the health attribute's NewValue and OldValue */
+	float DamageDelta;
+	
+	/** The time the target was alive for before the damage event, or -1 if expired/damaged self */
+	float TimeAlive;
+
+	/** The total amount of tracking damage possible at the time of the damage event. Updated in SetTargetManagerData */
+	double TotalPossibleTrackingDamage;
+	
+	/** The transform of the target */
+	FTransform Transform;
+
+	/** The amount of targets damaged in a row without missing. Updated in SetTargetManagerData */
+	int32 Streak;
+
 	FTargetDamageEvent()
 	{
-		TimeAlive = INDEX_NONE;
-		DamageDelta = 0.f;
-		CurrentHealth = 0.f;
-		Transform = FTransform();
-		DamageType = ETargetDamageType::None;
 		bDamagedSelf = false;
-		VulnerableToDamageTypes = TArray<ETargetDamageType>();
 		bOutOfHealth = false;
+		bWillDeactivate = false;
+		bWillDestroy = false;
+
+		DamageType = ETargetDamageType::None;
+		VulnerableToDamageTypes = TArray<ETargetDamageType>();
+
+		CurrentHealth = 0.f;
+		DamageDelta = 0.f;
+		TimeAlive = -1.f;
+		TotalPossibleTrackingDamage = 0.f;
+		
+		Transform = FTransform();
+		
+		Streak = -1;
 	}
 
-	FTargetDamageEvent(const float InTimeAlive, const FTransform& InTransform,
+	FTargetDamageEvent(const float InTimeAlive, const float OldValue, const float NewValue, const FTransform& InTransform,
 		const FGuid& InGuid, const ETargetDamageType InDamageType)
 	{
-		TimeAlive = InTimeAlive;
-		Transform = InTransform;
-		Guid = InGuid;
-		DamageType = InDamageType;
 		bDamagedSelf = InDamageType == ETargetDamageType::Self;
-		DamageDelta = 0.f;
-		CurrentHealth = 0.f;
-		bOutOfHealth = false;
-	}
-
-	void SetDamageDeltaAndHealth(const float OldValue, const float NewValue)
-	{
+		bOutOfHealth = NewValue <= 0.f;
+		DamageType = InDamageType;
+		Guid = InGuid;
 		CurrentHealth = NewValue;
 		DamageDelta = abs(OldValue - NewValue);
-		bOutOfHealth = NewValue <= 0.f;
+		TimeAlive = InDamageType == ETargetDamageType::Self ? -1.f : InTimeAlive; // Override to -1 if damaged self
+		Transform = InTransform;
+
+		// Variables not changed on construction
+		bWillDeactivate = false;
+		bWillDestroy = false;
+		VulnerableToDamageTypes = TArray<ETargetDamageType>();
+		TotalPossibleTrackingDamage = 0.f;
+		Streak = -1;
 	}
 
-	void SetVulnerabilities(const TArray<ETargetDamageType>& InVulnerableToDamageTypes)
+	/** Called by the Target to set data that only it will have access to */
+	void SetTargetData(const bool bDeactivate, const bool bDestroy, const TArray<ETargetDamageType>& InTypes)
 	{
-		VulnerableToDamageTypes = InVulnerableToDamageTypes;
+		bWillDeactivate = bDeactivate;
+		bWillDestroy = bDestroy;
+		VulnerableToDamageTypes = InTypes;
+	}
+
+	/** Called by the TargetManager to set data that only it will have access to */
+	void SetTargetManagerData(const int32 InStreak, const float InTotalPossibleTrackingDamage)
+	{
+		TotalPossibleTrackingDamage = InTotalPossibleTrackingDamage;
+		Streak = InStreak;
 	}
 
 	FORCEINLINE bool operator ==(const FTargetDamageEvent& Other) const
@@ -102,8 +133,8 @@ struct FTargetDamageEvent
 	}
 };
 
-/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEventOrTimeout, const FTargetDamageEvent&, TargetDamageEvent);
+/** Broadcast when a target takes damage or the the ExpirationTimer timer expires */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEvent, FTargetDamageEvent, TargetDamageEvent);
 
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget,
 	const uint8 InSpawnActivationDeactivation);
@@ -215,36 +246,36 @@ protected:
 	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
 	virtual void OnIncomingDamageTaken(const FDamageEventData& InData);
 
-	/** Callback function for when DamageableWindow timer expires */
+	/** Callback function for when ExpirationTimer timer expires */
 	UFUNCTION()
 	virtual void OnLifeSpanExpired();
 
-	/** Apply damage to self using a GE, for example when the DamageableWindow timer expires */
+	/** Apply damage to self using a GE, for example when the ExpirationTimer timer expires */
 	void DamageSelf();
 
 	/** Reset the health of the target using a GE */
 	void ResetHealth();
 
 public:
-	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the
-	 *  StartToPeakTimeline */
+	/** Starts the ExpirationTimer timer and starts playing StartToPeakTimeline if Lifespan > 0 */
 	virtual bool ActivateTarget(const float Lifespan);
 
 protected:
-	/** Finds if target should be deactivated, and calls StopAllTimelines and HandleDeactivationResponses if so */
-	void HandleDeactivation(const bool bExpired, const bool bOutOfHealth);
+	/** Calls StopAllTimelines, sets TargetScale_Deactivation, and calls HandleDeactivationResponses */
+	virtual void HandleDeactivation(const bool bExpired, const bool bOutOfHealth);
 
 	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
-	virtual bool ShouldDeactivate(const bool bExpired, const bool bOutOfHealth) const;
+	virtual bool ShouldDeactivate(const bool bExpired, const float CurrentHealth) const;
 
 	/** Performs any responses to the target being deactivated */
 	virtual void HandleDeactivationResponses(const bool bExpired);
 
-	/** Finds if target should be destroyed, and calls Destroy if so */
-	virtual void HandleDestruction(const bool bExpired, const bool bOutOfHealth);
-
 	/** Returns true if the target should be destroyed based on TargetDestructionConditions */
-	bool ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const;
+	virtual bool ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const;
+
+	/** Checks to see if ResetHealth should be called based on TargetDestructionConditions, UnlimitedHealth, and
+	 *  if the target is out of health */
+	void CheckForHealthReset(const bool bOutOfHealth);
 
 	/** Play the StartToPeakTimeline, which corresponds to the StartToPeakCurve */
 	UFUNCTION()
@@ -288,7 +319,7 @@ public:
 	/** Toggles between using the BaseColor or a separate OutlineColor in the Sphere Material */
 	virtual void SetUseSeparateOutlineColor(const bool bUseSeparateOutlineColor);
 
-	/** Set the color to BeatGrid color */
+	/** Set the color to inactive target color */
 	UFUNCTION()
 	virtual void SetTargetColorToInactiveColor();
 
@@ -301,6 +332,8 @@ public:
 
 	/** Changes the current scale of the target */
 	virtual void SetTargetScale(const FVector& NewScale) const;
+
+	void SetTargetDamageType(const ETargetDamageType& InType);
 
 	/** Sets whether or not the last direction change was horizontally */
 	void SetLastDirectionChangeHorizontal(const bool bLastHorizontal)
@@ -321,15 +354,29 @@ public:
 	UFUNCTION(BlueprintPure)
 	FLinearColor GetEndTargetColor() const;
 
-	/** Returns the color that the target should change to at the end of it's life */
+	/** Returns the color inactive target color */
 	UFUNCTION(BlueprintPure)
 	FLinearColor GetInActiveTargetColor() const;
+	
+	/** Returns the color for when the target is actively taking tracking damage */
+	UFUNCTION(BlueprintPure)
+	FLinearColor GetTakingTrackingDamageColor() const;
+
+	/** Returns the color for when the target is not actively taking tracking damage */
+	UFUNCTION(BlueprintPure)
+	FLinearColor GetNotTakingTrackingDamageColor() const;
 
 	/** Returns the generated Guid for this target */
 	FGuid GetGuid() const { return Guid; }
 
 	/** Returns whether or not the target has been activated before */
-	bool HasTargetBeenActivatedBefore() const;
+	bool HasBeenActivatedBefore() const;
+
+	/** Returns whether or not the target is currently activated */
+	bool IsActivated() const;
+
+	/** Returns whether or not the target can be reactivated */
+	bool CanBeReactivated() const;
 
 	/** Whether or not the target is immune to all damage */
 	bool IsImmuneToDamage() const;
@@ -340,8 +387,8 @@ public:
 	/** Whether or not the target is immune to tracking damage */
 	UFUNCTION(BlueprintPure)
 	bool IsImmuneToTrackingDamage() const;
-
-	TArray<ETargetDamageType> GetVulnerableDamageTypes() const;
+	
+	ETargetDamageType GetTargetDamageType() const;
 
 	/** Returns the velocity / speed of the ProjectileMovementComponent (unit direction vector) */
 	FVector GetTargetDirection() const;
@@ -376,8 +423,8 @@ public:
 	/** Mainly used so BSAT_AimBot can access SpawnBeatDelay easily */
 	float GetSpawnBeatDelay() const;
 
-	/** Broadcast when a target takes damage or the the DamageableWindow timer expires */
-	FOnTargetDamageEventOrTimeout OnTargetDamageEventOrTimeout;
+	/** Broadcast when a target takes damage or the the ExpirationTimer timer expires */
+	FOnTargetDamageEvent OnTargetDamageEvent;
 
 protected:
 	/** Guid to keep track of a target's properties after it has been destroyed */
@@ -390,7 +437,7 @@ protected:
 
 	/** Timer to track the length of time the target has been damageable for */
 	UPROPERTY()
-	FTimerHandle DamageableWindow;
+	FTimerHandle ExpirationTimer;
 
 	FTimeline StartToPeakTimeline;
 	FTimeline PeakToEndTimeline;
@@ -418,7 +465,13 @@ protected:
 	FVector TargetLocation_Activation;
 
 	/** The color of the target when it was destroyed */
-	FLinearColor ColorWhenDestroyed;
+	FLinearColor ColorWhenDamageTaken;
+	
+	/** The type of damage this target is vulnerable to */
+	ETargetDamageType TargetDamageType;
+
+	/** The amount of health required to deactivate if a Deactivation Condition is Specific Health Amount */
+	float CurrentDeactivationHealthThreshold;
 
 	/** Playback rate for StartToPeak timeline */
 	float StartToPeakTimelinePlayRate;
@@ -428,15 +481,18 @@ protected:
 
 	/** Whether or not the last direction change was horizontally */
 	bool bLastDirectionChangeHorizontal;
+	
+	/** Whether or not to apply the LifetimeTargetScaling Method */
+	bool bApplyLifetimeTargetScaling;
 
 	/** False if the target is currently activated */
 	bool bCanBeReactivated;
 
-	/** Whether or not to apply the LifetimeTargetScaling Method */
-	bool bApplyLifetimeTargetScaling;
-
 	/** Whether or not the target has ever been activated */
 	bool bHasBeenActivated;
+
+	/** Whether or not the target is currently activated */
+	bool bIsCurrentlyActivated;
 
 	FActiveGameplayEffectHandle ActiveGE_TargetImmunity;
 	FActiveGameplayEffectHandle ActiveGE_HitImmunity;

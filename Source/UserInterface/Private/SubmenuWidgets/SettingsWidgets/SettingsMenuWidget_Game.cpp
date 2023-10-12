@@ -14,20 +14,31 @@ void USettingsMenuWidget_Game::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	MenuOption_StartTargetColor->OnColorChanged.BindUFunction(this, "OnColorChanged_StartTarget");
-	MenuOption_PeakTargetColor->OnColorChanged.BindUFunction(this, "OnOnColorChanged_PeakTarget");
-	MenuOption_EndTargetColor->OnColorChanged.BindUFunction(this, "OnOnColorChanged_EndTarget");
-	MenuOption_InactiveColor->OnColorChanged.BindUFunction(this, "OnColorChanged_BeatGridInactive");
-	MenuOption_UseSeparateOutlineColor->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_UseSeparateOutlineColor);
-	MenuOption_TargetOutlineColor->OnColorChanged.BindUFunction(this, "OnColorChanged_TargetOutline");
+	MenuOption_StartTargetColor->OnColorChanged.BindUObject(this, &ThisClass::OnColorChanged_StartTarget);
+	MenuOption_PeakTargetColor->OnColorChanged.BindUObject(this, &ThisClass::OnOnColorChanged_PeakTarget);
+	MenuOption_EndTargetColor->OnColorChanged.BindUObject(this, &ThisClass::OnOnColorChanged_EndTarget);
+	MenuOption_InactiveColor->OnColorChanged.BindUObject(this, &ThisClass::OnColorChanged_BeatGridInactive);
+	MenuOption_TakingTrackingDamageColor->OnColorChanged.BindUObject(this, &ThisClass::OnColorChanged_TakingTrackingDamageColor);
+	MenuOption_NotTakingTrackingDamageColor->OnColorChanged.BindUObject(this, &ThisClass::OnColorChanged_NotTakingTrackingDamageColor);
+	MenuOption_TargetOutlineColor->OnColorChanged.BindUObject(this, &ThisClass::OnColorChanged_TargetOutline);
+
+	SetupTooltip(MenuOption_StartTargetColor->GetTooltipImage(), MenuOption_StartTargetColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_PeakTargetColor->GetTooltipImage(), MenuOption_PeakTargetColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_EndTargetColor->GetTooltipImage(), MenuOption_EndTargetColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_InactiveColor->GetTooltipImage(), MenuOption_InactiveColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_TakingTrackingDamageColor->GetTooltipImage(), MenuOption_TakingTrackingDamageColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_NotTakingTrackingDamageColor->GetTooltipImage(), MenuOption_NotTakingTrackingDamageColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_TargetOutlineColor->GetTooltipImage(), MenuOption_TargetOutlineColor->GetTooltipImageText());
+	SetupTooltip(MenuOption_UseSeparateOutlineColor->GetTooltipImage(), MenuOption_UseSeparateOutlineColor->GetTooltipImageText());
+	
 	MenuOption_CombatTextFrequency->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
-
 	MenuOption_CombatTextFrequency->SetValues(0, 100, 1);
+
+	MenuOption_UseSeparateOutlineColor->CheckBox->OnCheckStateChanged.AddDynamic(this,
+		&ThisClass::OnCheckStateChanged_UseSeparateOutlineColor);
 	MenuOption_ShowStreakCombatText->CheckBox->OnCheckStateChanged.AddDynamic(this,
 		&ThisClass::OnCheckStateChanged_ShowCombatText);
-
 	MenuOption_Recoil->CheckBox->OnCheckStateChanged.AddDynamic(this, &ThisClass::OnCheckStateChanged_Recoil);
 	MenuOption_AutomaticFire->CheckBox->OnCheckStateChanged.AddDynamic(this,
 		&ThisClass::OnCheckStateChanged_AutomaticFire);
@@ -60,6 +71,9 @@ void USettingsMenuWidget_Game::InitializeGameSettings(const FPlayerSettings_Game
 	MenuOption_PeakTargetColor->InitializeColor(PlayerSettings_Game.PeakTargetColor);
 	MenuOption_EndTargetColor->InitializeColor(PlayerSettings_Game.EndTargetColor);
 	MenuOption_InactiveColor->InitializeColor(PlayerSettings_Game.InactiveTargetColor);
+	MenuOption_TargetOutlineColor->InitializeColor(PlayerSettings_Game.TargetOutlineColor);
+	MenuOption_TakingTrackingDamageColor->InitializeColor(PlayerSettings_Game.TakingTrackingDamageColor);
+	MenuOption_NotTakingTrackingDamageColor->InitializeColor(PlayerSettings_Game.NotTakingTrackingDamageColor);
 	MenuOption_TargetOutlineColor->InitializeColor(PlayerSettings_Game.TargetOutlineColor);
 
 	MenuOption_CombatTextFrequency->SetValue(PlayerSettings_Game.CombatTextFrequency);
@@ -132,6 +146,16 @@ void USettingsMenuWidget_Game::OnColorChanged_TargetOutline(const FLinearColor& 
 void USettingsMenuWidget_Game::OnColorChanged_BeatGridInactive(const FLinearColor& NewColor)
 {
 	NewGameSettings.InactiveTargetColor = NewColor;
+}
+
+void USettingsMenuWidget_Game::OnColorChanged_TakingTrackingDamageColor(const FLinearColor& NewColor)
+{
+	NewGameSettings.TakingTrackingDamageColor = NewColor;
+}
+
+void USettingsMenuWidget_Game::OnColorChanged_NotTakingTrackingDamageColor(const FLinearColor& NewColor)
+{
+	NewGameSettings.NotTakingTrackingDamageColor = NewColor;
 }
 
 void USettingsMenuWidget_Game::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)

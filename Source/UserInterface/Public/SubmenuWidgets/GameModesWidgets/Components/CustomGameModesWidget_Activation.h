@@ -51,6 +51,9 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumTargetsToActivateAtOnce;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_AllowActivationWhileActivated;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationSelectionPolicy;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -71,6 +74,8 @@ protected:
 	void OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked);
+	UFUNCTION()
+	void OnCheckStateChanged_AllowActivationWhileActivated(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 

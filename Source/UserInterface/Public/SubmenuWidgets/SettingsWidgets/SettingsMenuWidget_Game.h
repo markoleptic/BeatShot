@@ -47,6 +47,10 @@ protected:
 	UColorSelectOptionWidget* MenuOption_TargetOutlineColor;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UColorSelectOptionWidget* MenuOption_InactiveColor;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UColorSelectOptionWidget* MenuOption_TakingTrackingDamageColor;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UColorSelectOptionWidget* MenuOption_NotTakingTrackingDamageColor;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* MenuOption_ShowStreakCombatText;
@@ -86,6 +90,10 @@ protected:
 	void OnColorChanged_TargetOutline(const FLinearColor& NewColor);
 	UFUNCTION()
 	void OnColorChanged_BeatGridInactive(const FLinearColor& NewColor);
+	UFUNCTION()
+	void OnColorChanged_TakingTrackingDamageColor(const FLinearColor& NewColor);
+	UFUNCTION()
+	void OnColorChanged_NotTakingTrackingDamageColor(const FLinearColor& NewColor);
 
 	UFUNCTION()
 	void OnCheckStateChanged_UseSeparateOutlineColor(const bool bIsChecked);

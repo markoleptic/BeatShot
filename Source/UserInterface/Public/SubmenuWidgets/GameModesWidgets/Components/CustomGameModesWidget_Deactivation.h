@@ -51,6 +51,8 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_MinDeactivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxDeactivatedTargetVelocity;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivationHealthLostThreshold;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDestructionConditions;

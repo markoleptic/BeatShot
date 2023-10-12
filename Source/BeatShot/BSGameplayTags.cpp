@@ -17,6 +17,8 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(GameplayCue_Sprint, "GameplayCue.Sprint", "");
 	AddTag(GameplayCue_MuzzleFlash, "GameplayCue.MuzzleFlash", "");
 	AddTag(GameplayCue_FireGun_Impact, "GameplayCue.FireGun.Impact", "");
+	AddTag(GameplayCue_TrackGun_Hit, "GameplayCue.TrackGun.Hit", "");
+	AddTag(GameplayCue_TrackGun_Miss, "GameplayCue.TrackGun.Miss", "");
 
 	AddTag(Data, "Data", "");
 	AddTag(Data_Cooldown, "Data.Cooldown", "");

@@ -212,12 +212,14 @@ enum class ETargetDeactivationCondition : uint8
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
 	/** Target is deactivated after its damageable window closes */
 	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** Target is destroyed when its health reaches zero */
+	/** Target is deactivated when its health reaches zero */
 	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
+	/** Target is deactivated after it has lost a specific amount of health */
+	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
 };
 
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant,
-	ETargetDeactivationCondition::OnHealthReachedZero);
+	ETargetDeactivationCondition::OnSpecificHealthLost);
 
 
 /** Each represents one way that a target can be destroyed */
@@ -727,6 +729,10 @@ struct FBS_TargetConfig
 {
 	GENERATED_BODY()
 
+	/** Whether or not targets can receive Activation Responses if they're already activated */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bAllowActivationWhileActivated;
+	
 	/** If true, targets can be spawned without being activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bAllowSpawnWithoutActivation;
@@ -738,7 +744,7 @@ struct FBS_TargetConfig
 	/** Whether or not the targets should have a velocity when spawned */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bApplyVelocityWhenSpawned;
-
+	
 	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bSpawnAtOriginWheneverPossible;
@@ -816,7 +822,12 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float ConsecutiveChargeScaleMultiplier;
 
-	/** Amount of health to take away from the target if the DamageableWindow timer expires */
+	/** The amount of health loss required for a target to deactivate if using
+	 *  OnSpecificHealthLost Target Deactivation Condition */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	float DeactivationHealthLostThreshold;
+
+	/** Amount of health to take away from the target if the ExpirationTimer timer expires */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	float ExpirationHealthPenalty;
 
@@ -923,16 +934,15 @@ struct FBS_TargetConfig
 	/** Color to applied to the actor if inactive */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor InactiveTargetColor;
-
-	// TODO: might need to have a bool variable to set spawn color to inactive color
+	
 	/** Color applied to target on spawn */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor OnSpawnColor;
 
-	/** Color interpolated from at start of DamageableWindow timer */
+	/** Color interpolated from at start of ExpirationTimer timer */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor StartColor;
-
+	
 	/** Color interpolated to from StartColor */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor PeakColor;
@@ -945,11 +955,21 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FLinearColor OutlineColor;
 
+	/** Color applied to targets that are vulnerable to tracking damage when taking tracking damage */
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor TakingTrackingDamageColor;
+
+	/** Color applied to targets that are vulnerable to tracking damage when not taking tracking damage, OR
+	 *  if the target lifespan is infinite */
+	UPROPERTY(BlueprintReadOnly)
+	FLinearColor NotTakingTrackingDamageColor;
+
 	FBS_TargetConfig()
 	{
 		bAllowSpawnWithoutActivation = false;
 		bApplyImmunityOnSpawn = false;
 		bApplyVelocityWhenSpawned = false;
+		bAllowActivationWhileActivated = false;
 		bSpawnAtOriginWheneverPossible = false;
 		bSpawnEveryOtherTargetInCenter = false;
 		bUseBatchSpawning = false;
@@ -970,6 +990,7 @@ struct FBS_TargetConfig
 
 		ConsecutiveChargeScaleMultiplier = DefaultChargeScaleMultiplier;
 		LifetimeTargetScaleMultiplier = DefaultChargeScaleMultiplier;
+		DeactivationHealthLostThreshold = 100.f;
 		ExpirationHealthPenalty = BaseTargetHealth;
 		FloorDistance = DistanceFromFloor;
 		MinDistanceBetweenTargets = DefaultMinDistanceBetweenTargets;
@@ -1007,10 +1028,16 @@ struct FBS_TargetConfig
 		PeakColor = FLinearColor();
 		EndColor = FLinearColor();
 		OutlineColor = FLinearColor();
+		TakingTrackingDamageColor = FLinearColor();
+		NotTakingTrackingDamageColor = FLinearColor();
 	}
 
 	FORCEINLINE bool operator==(const FBS_TargetConfig& Other) const
 	{
+		if (bAllowActivationWhileActivated != Other.bAllowActivationWhileActivated)
+		{
+			return false;
+		}
 		if (bAllowSpawnWithoutActivation != Other.bAllowSpawnWithoutActivation)
 		{
 			return false;
@@ -1084,6 +1111,10 @@ struct FBS_TargetConfig
 			return false;
 		}
 		if (!FMath::IsNearlyEqual(ConsecutiveChargeScaleMultiplier, Other.ConsecutiveChargeScaleMultiplier))
+		{
+			return false;
+		}
+		if (!FMath::IsNearlyEqual(DeactivationHealthLostThreshold, Other.DeactivationHealthLostThreshold))
 		{
 			return false;
 		}
@@ -1329,22 +1360,39 @@ struct FBSConfig
 
 	/** Sets the target colors from user settings */
 	void InitColors(const bool bUseSeparateOutlineColor, const FLinearColor Inactive, const FLinearColor Outline,
-		const FLinearColor Start, const FLinearColor Peak, const FLinearColor End)
+		const FLinearColor Start, const FLinearColor Peak, const FLinearColor End, const FLinearColor TrackingDam,
+		const FLinearColor NotTrackingDam)
 	{
 		TargetConfig.bUseSeparateOutlineColor = bUseSeparateOutlineColor;
 		TargetConfig.OutlineColor = Outline;
+		
 		if (TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
 		{
-			TargetConfig.OnSpawnColor = Inactive;
+			if (TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+			{
+				TargetConfig.OnSpawnColor = NotTrackingDam;
+			}
+			else TargetConfig.OnSpawnColor = Inactive;
 		}
-		else
+		else if (TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 		{
-			TargetConfig.OnSpawnColor = Start;
+			if (TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+			{
+				TargetConfig.OnSpawnColor = NotTrackingDam;
+			}
+			else if (TargetConfig.bAllowSpawnWithoutActivation)
+			{
+				TargetConfig.OnSpawnColor = Inactive;
+			}
+			else TargetConfig.OnSpawnColor = Start;
 		}
+		
 		TargetConfig.InactiveTargetColor = Inactive;
 		TargetConfig.StartColor = Start;
 		TargetConfig.PeakColor = Peak;
 		TargetConfig.EndColor = End;
+		TargetConfig.TakingTrackingDamageColor = TrackingDam;
+		TargetConfig.NotTakingTrackingDamageColor = NotTrackingDam;
 	}
 };
 

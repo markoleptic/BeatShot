@@ -15,12 +15,9 @@ class ATarget;
 class UReinforcementLearningComponent;
 
 DECLARE_DELEGATE_OneParam(FOnBeatTrackDirectionChanged, const FVector& Vector);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnBeatTrackTargetDamaged, const float DamageDelta,
-	const float TotalPossibleDamage);
-DECLARE_MULTICAST_DELEGATE(FOnTargetActivated);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated, const ETargetDamageType& DamageType);
+DECLARE_MULTICAST_DELEGATE_OneParam(FPostTargetDamageEvent, const FTargetDamageEvent& Event);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnTargetActivated_AimBot, ATarget* Target);
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnTargetDestroyed, const float TimeAlive, const int32 NewStreak,
-	const FTransform& Transform);
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTargetManager, Log, All);
 
@@ -47,12 +44,8 @@ public:
 	/** Used to notify DefaultCharacter when a BeatTrack target has changed directions */
 	FOnBeatTrackDirectionChanged OnBeatTrackDirectionChanged;
 
-	/** Delegate that is executed when a player destroys a target. Passes the time the target was alive as
-	 *  payload data. */
-	FOnTargetDestroyed OnTargetDeactivated;
-
-	/** Delegate that is executed when a player damages a BeatTrack target. */
-	FOnBeatTrackTargetDamaged OnBeatTrackTargetDamaged;
+	/** Delegate that is broadcast when a target takes any type of damage */
+	FPostTargetDamageEvent PostTargetDamageEvent;
 
 protected:
 	virtual void BeginPlay() override;
@@ -167,6 +160,8 @@ protected:
 	/** Find the next spawn location for a target */
 	USpawnArea* FindNextSpawnArea(const FVector& NewTargetScale) const;
 
+	ETargetDamageType FindNextTargetDamageType();
+
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing
 	 *  the next target location based on the index that the RLAgent returned */
 	USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
@@ -174,21 +169,17 @@ protected:
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates,
 	 *  target flags, target removal */
 	UFUNCTION()
-	void OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent);
+	void OnTargetDamageEvent(FTargetDamageEvent Event);
 
-	/** Updates ConsecutiveTargetsHit, based on if the target expired or not */
-	void UpdateConsecutiveTargetsHit(const bool bExpired);
+	/** Updates CurrentStreak, based on if the target expired or not */
+	void UpdateCurrentStreak(const FTargetDamageEvent& Event);
 
 	/** Updates DynamicLookUpValue_TargetScale and DynamicLookUpValue_SpawnAreaScale,
 	 *  based on if the target expired or not */
-	void UpdateDynamicLookUpValues(const bool bExpired);
-
-	/** Broadcasts the appropriate delegate based on the damage type */
-	void HandleTargetExpirationDelegate(const FTargetDamageEvent& TargetDamageEvent) const;
+	void UpdateDynamicLookUpValues(const FTargetDamageEvent& Event);
 
 	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
-	void HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions,
-		const FTargetDamageEvent& TargetDamageEvent);
+	void HandleManagedTargetRemoval(const FTargetDamageEvent& Event);
 
 	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
@@ -284,16 +275,16 @@ protected:
 	FPlayerSettings_Game PlayerSettings;
 
 	/** Whether or not the TargetManager is allowed to spawn a target at a given time */
-	bool ShouldSpawn = false;
+	bool ShouldSpawn;
 
 	/** Whether or not to print NumRecent NumActive */
-	bool bPrintDebug_NumRecentNumActive = false;
+	bool bPrintDebug_NumRecentNumActive;
 
 	/** Whether or not to print information about each activated Spawn Area */
-	bool bPrintDebug_SpawnAreaInfo = false;
+	bool bPrintDebug_SpawnAreaInfo;
 
 	/** Whether or not to print information about Spawn Areas spawning targets too close together */
-	bool bPrintDebug_SpawnAreaDistance = false;
+	bool bPrintDebug_SpawnAreaDistance;
 
 	/** SpawnArea for the next/current target */
 	UPROPERTY()
@@ -302,6 +293,11 @@ protected:
 	/** SpawnArea for the previous target. Used for RLC */
 	UPROPERTY()
 	mutable USpawnArea* PreviousSpawnArea;
+
+	/** The type of damage that the last target was vulnerable to */
+	ETargetDamageType LastTargetDamageType;
+
+	mutable FGuid PreviousTargetGuid;
 
 	/** The scale to apply to the next/current target */
 	FVector CurrentTargetScale;
@@ -314,7 +310,7 @@ protected:
 	FVector StaticExtents;
 
 	/** Consecutively destroyed targets */
-	int32 ConsecutiveTargetsHit;
+	int32 CurrentStreak;
 
 	/** The time to use when looking up values from CCT_TargetScale. Incremented by for each consecutive target hit,
 	 *  decremented by setting value */

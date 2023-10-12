@@ -39,6 +39,8 @@ namespace Constants
 
 	/** The color used to change the GameModeButton color to when selected */
 	inline constexpr FLinearColor BeatShotBlue(0.049707, 0.571125, 0.83077, 1.0);
+	inline constexpr FLinearColor DefaultTakingTrackingDamageColor(0.049707, 0.571125, 0.83077, 1.0);
+	inline constexpr FLinearColor DefaultNotTakingTrackingDamageColor(1.f, 0.25f, 0.f, 1.0);
 
 	/** The time threshold required to receive full score for hitting a target */
 	inline constexpr float PerfectScoreTimeThreshold = 0.1f;
@@ -78,7 +80,7 @@ namespace Constants
 	const FLinearColor DefaultPeakTargetColor = FLinearColor::Green;
 	const FLinearColor DefaultEndTargetColor = FLinearColor::Red;
 	const FLinearColor DefaultTargetOutlineColor = FLinearColor::White;
-	inline constexpr FLinearColor DefaultBeatGridInactiveTargetColor(83.f / 255.f, 0.f, 245.f / 255.f, 1.f);
+	inline constexpr FLinearColor DefaultInactiveTargetColor(83.f / 255.f, 0.f, 245.f / 255.f, 1.f);
 
 	inline constexpr float DefaultGlobalVolume = 50.f;
 	inline constexpr float DefaultMenuVolume = 50.f;
@@ -377,6 +379,10 @@ namespace Constants
 	inline constexpr int32 MinValue_NumUpfrontTargetsToSpawn = 0;
 	inline constexpr int32 MaxValue_NumUpfrontTargetsToSpawn = 100;
 	inline constexpr int32 SnapSize_NumUpfrontTargetsToSpawn = 1;
+
+	inline constexpr int32 MinValue_SpecificHealthLost = 0;
+	inline constexpr int32 MaxValue_SpecificHealthLost = 1000;
+	inline constexpr int32 SnapSize_SpecificHealthLost = 10;
 
 	inline constexpr int32 MinValue_ExpirationHealthPenalty = 0;
 	inline constexpr int32 MaxValue_ExpirationHealthPenalty = 1000;

@@ -25,7 +25,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 		SnapSize_MaxNumRecentTargets);
 	SliderTextBoxOption_RecentTargetTimeLength->SetValues(MinValue_RecentTargetTimeLength,
 		MaxValue_RecentTargetTimeLength, SnapSize_RecentTargetTimeLength);
-	SliderTextBoxOption_TargetMaxLifeSpan->SetValues(MinValue_Lifespan, MaxValue_Lifespan, SnapSize_Lifespan);
+	SliderTextBoxOption_TargetLifespan->SetValues(MinValue_Lifespan, MaxValue_Lifespan, SnapSize_Lifespan);
 	SliderTextBoxOption_MaxHealth->SetValues(MinValue_MaxHealth, MaxValue_MaxHealth, SnapSize_MaxHealth);
 	SliderTextBoxOption_ExpirationHealthPenalty->SetValues(MinValue_ExpirationHealthPenalty,
 		MaxValue_ExpirationHealthPenalty, SnapSize_ExpirationHealthPenalty);
@@ -59,7 +59,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_MaxTargetScale->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_TargetMaxLifeSpan->OnSliderTextBoxValueChanged.AddUObject(this,
+	SliderTextBoxOption_TargetLifespan->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_MaxHealth->OnSliderTextBoxValueChanged.
 	                               AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged);
@@ -74,6 +74,10 @@ void UCustomGameModesWidget_General::NativeConstruct()
 
 	CheckBoxOption_EnableAI->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
 		&ThisClass::OnCheckStateChanged_EnableAI);
+	CheckBoxOption_InfiniteTargetHealth->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
+		&ThisClass::OnCheckStateChanged_InfiniteTargetHealth);
+	CheckBoxOption_InfiniteTargetLifespan->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
+		&ThisClass::OnCheckStateChanged_InfiniteTargetLifespan);
 
 	ComboBoxOption_RecentTargetMemoryPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_RecentTargetMemoryPolicy);
@@ -85,8 +89,7 @@ void UCustomGameModesWidget_General::NativeConstruct()
 		&ThisClass::OnSelectionChanged_DamageType);
 	ComboBoxOption_DamageType->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_DamageType);
-	CheckBoxOption_UnlimitedTargetHealth->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
-		&ThisClass::OnCheckStateChanged_UnlimitedTargetHealth);
+
 	ComboBoxOption_ConsecutiveTargetScalePolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy);
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
@@ -170,38 +173,36 @@ void UCustomGameModesWidget_General::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_TargetSpawnCD, BSConfig->TargetConfig.TargetSpawnCD);
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumRecentTargets, BSConfig->TargetConfig.MaxNumRecentTargets);
 	UpdateValueIfDifferent(SliderTextBoxOption_RecentTargetTimeLength, BSConfig->TargetConfig.RecentTargetTimeLength);
-
-	UpdateValueIfDifferent(CheckBoxOption_EnableAI, BSConfig->AIConfig.bEnableReinforcementLearning);
-	UpdateValueIfDifferent(ComboBoxOption_HyperParameterMode,
-		GetStringFromEnum_FromTagMap(BSConfig->AIConfig.HyperParameterMode));
 	UpdateValueIfDifferent(SliderTextBoxOption_Alpha, BSConfig->AIConfig.Alpha);
 	UpdateValueIfDifferent(SliderTextBoxOption_Epsilon, BSConfig->AIConfig.Epsilon);
 	UpdateValueIfDifferent(SliderTextBoxOption_Gamma, BSConfig->AIConfig.Gamma);
-
+	UpdateValueIfDifferent(SliderTextBoxOption_TargetLifespan, BSConfig->TargetConfig.TargetMaxLifeSpan);
+	UpdateValueIfDifferent(SliderTextBoxOption_MaxHealth, BSConfig->TargetConfig.MaxHealth);
+	UpdateValueIfDifferent(SliderTextBoxOption_ExpirationHealthPenalty, BSConfig->TargetConfig.ExpirationHealthPenalty);
+	UpdateValueIfDifferent(SliderTextBoxOption_TargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
+	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
+	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale);
+	UpdateValueIfDifferent(SliderTextBoxOption_StartThreshold, BSConfig->DynamicTargetScaling.StartThreshold);
+	UpdateValueIfDifferent(SliderTextBoxOption_EndThreshold, BSConfig->DynamicTargetScaling.EndThreshold);
+	UpdateValueIfDifferent(SliderTextBoxOption_DecrementAmount, BSConfig->DynamicTargetScaling.DecrementAmount);
+	
+	UpdateValueIfDifferent(ComboBoxOption_HyperParameterMode,
+		GetStringFromEnum_FromTagMap(BSConfig->AIConfig.HyperParameterMode));
 	UpdateValueIfDifferent(ComboBoxOption_RecentTargetMemoryPolicy,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RecentTargetMemoryPolicy));
 	UpdateValueIfDifferent(ComboBoxOption_ConsecutiveTargetScalePolicy,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy));
-
-	UpdateValueIfDifferent(SliderTextBoxOption_TargetMaxLifeSpan, BSConfig->TargetConfig.TargetMaxLifeSpan);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxHealth, BSConfig->TargetConfig.MaxHealth);
-	UpdateValueIfDifferent(SliderTextBoxOption_ExpirationHealthPenalty, BSConfig->TargetConfig.ExpirationHealthPenalty);
-
 	UpdateValueIfDifferent(ComboBoxOption_DamageType,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.TargetDamageType));
-	UpdateValueIfDifferent(CheckBoxOption_UnlimitedTargetHealth, BSConfig->TargetConfig.MaxHealth == -1);
 	UpdateValueIfDifferent(ComboBoxOption_MovingTargetDirectionMode,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.MovingTargetDirectionMode));
+	
+	UpdateValueIfDifferent(CheckBoxOption_EnableAI, BSConfig->AIConfig.bEnableReinforcementLearning);
+	UpdateValueIfDifferent(CheckBoxOption_InfiniteTargetHealth, BSConfig->TargetConfig.MaxHealth <= 0.f);
+	UpdateValueIfDifferent(CheckBoxOption_InfiniteTargetLifespan, BSConfig->TargetConfig.TargetMaxLifeSpan <= 0.f);
 
-	UpdateValueIfDifferent(SliderTextBoxOption_TargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinTargetScale, BSConfig->TargetConfig.MinSpawnedTargetScale);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_StartThreshold, BSConfig->DynamicTargetScaling.StartThreshold);
-	UpdateValueIfDifferent(SliderTextBoxOption_EndThreshold, BSConfig->DynamicTargetScaling.EndThreshold);
-	UpdateValueIfDifferent(SliderTextBoxOption_DecrementAmount, BSConfig->DynamicTargetScaling.DecrementAmount);
-
-	UpdateDependentOptions_UnlimitedTargetHealth(BSConfig->TargetConfig.MaxHealth == -1);
+	UpdateDependentOptions_InfiniteTargetHealth(BSConfig->TargetConfig.MaxHealth <= 0.f);
+	UpdateDependentOptions_InfiniteTargetLifespan(BSConfig->TargetConfig.TargetMaxLifeSpan <= 0.f);
 	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
 	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning,
 		BSConfig->AIConfig.HyperParameterMode);
@@ -336,7 +337,7 @@ void UCustomGameModesWidget_General::UpdateDependentOptions_HyperParameterMode(
 	}
 }
 
-void UCustomGameModesWidget_General::UpdateDependentOptions_UnlimitedTargetHealth(const bool bInUnlimitedTargetHealth)
+void UCustomGameModesWidget_General::UpdateDependentOptions_InfiniteTargetHealth(const bool bInUnlimitedTargetHealth)
 {
 	if (bInUnlimitedTargetHealth)
 	{
@@ -345,6 +346,18 @@ void UCustomGameModesWidget_General::UpdateDependentOptions_UnlimitedTargetHealt
 	else
 	{
 		SliderTextBoxOption_MaxHealth->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	}
+}
+
+void UCustomGameModesWidget_General::UpdateDependentOptions_InfiniteTargetLifespan(const bool bInfiniteTargetLifespan)
+{
+	if (bInfiniteTargetLifespan)
+	{
+		SliderTextBoxOption_TargetLifespan->SetVisibility(ESlateVisibility::Collapsed);
+	}
+	else
+	{
+		SliderTextBoxOption_TargetLifespan->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 	}
 }
 
@@ -388,10 +401,19 @@ void UCustomGameModesWidget_General::OnCheckStateChanged_EnableAI(const bool bCh
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_General::OnCheckStateChanged_UnlimitedTargetHealth(const bool bChecked)
+void UCustomGameModesWidget_General::OnCheckStateChanged_InfiniteTargetHealth(const bool bChecked)
 {
-	BSConfig->TargetConfig.MaxHealth = bChecked ? -1 : SliderTextBoxOption_MaxHealth->GetSliderValue();
-	UpdateDependentOptions_UnlimitedTargetHealth(bChecked);
+	BSConfig->TargetConfig.MaxHealth = bChecked ? -1.f : SliderTextBoxOption_MaxHealth->GetSliderValue();
+	UpdateDependentOptions_InfiniteTargetHealth(bChecked);
+
+	UpdateBrushColors();
+	UpdateAllOptionsValid();
+}
+
+void UCustomGameModesWidget_General::OnCheckStateChanged_InfiniteTargetLifespan(const bool bChecked)
+{
+	BSConfig->TargetConfig.TargetMaxLifeSpan = bChecked ? -1.f : SliderTextBoxOption_TargetLifespan->GetSliderValue();
+	UpdateDependentOptions_InfiniteTargetLifespan(bChecked);
 
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
@@ -427,7 +449,7 @@ void UCustomGameModesWidget_General::OnSliderTextBoxValueChanged(USliderTextBoxO
 	{
 		BSConfig->AIConfig.Gamma = Value;
 	}
-	else if (Widget == SliderTextBoxOption_TargetMaxLifeSpan)
+	else if (Widget == SliderTextBoxOption_TargetLifespan)
 	{
 		BSConfig->TargetConfig.TargetMaxLifeSpan = Value;
 	}

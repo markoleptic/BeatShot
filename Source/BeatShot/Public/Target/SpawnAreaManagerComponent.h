@@ -129,8 +129,8 @@ class BEATSHOT_API USpawnArea : public UObject
 	/** Whether or not this SpawnArea has a target active */
 	bool bIsActivated;
 
-	/** Whether or not this SpawnArea has a target persistently active */
-	bool bIsPersistentlyActivated;
+	/** Whether or not this SpawnArea can be reactivated while activated */
+	bool bAllowActivationWhileActivated;
 
 	/** Whether or not this SpawnArea still corresponds to a managed target */
 	bool bIsCurrentlyManaged;
@@ -237,7 +237,7 @@ public:
 	FVector GetChosenPoint() const { return ChosenPoint; }
 	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
 	bool IsActivated() const { return bIsActivated; }
-	bool IsPersistentlyActivated() const { return bIsPersistentlyActivated; }
+	bool CanActivateWhileActivated() const { return bAllowActivationWhileActivated; }
 	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
 	double GetTimeSetRecent() const { return TimeSetRecent; }
@@ -284,10 +284,10 @@ private:
 	}
 
 	/** Sets the activated state and the persistently activated state for this SpawnArea */
-	void SetIsActivated(const bool bActivated, const bool bIsPersistent = false)
+	void SetIsActivated(const bool bActivated, const bool bAllow = false)
 	{
 		bIsActivated = bActivated;
-		bIsPersistentlyActivated = bIsPersistent;
+		bAllowActivationWhileActivated = bAllow;
 	}
 
 	/** Flags this SpawnArea as recent, and records the time it was set as recent. If false, removes flag and
@@ -332,10 +332,17 @@ public:
 	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents,
 		const FExtrema& InStaticExtrema);
 
+	/** Resets all variables */
 	void Clear();
 
 	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible */
 	void UpdateTotalTrackingDamagePossible(const FVector& InLocation) const;
+	
+	/** Handles dealing with SpawnAreas that correspond to Damage Events */
+	void HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent);
+	
+	/** Calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
+	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
 
 	/** Finds a SpawnArea with the matching InIndex */
 	USpawnArea* FindSpawnAreaFromIndex(const int32 InIndex) const;
@@ -402,17 +409,10 @@ public:
 
 	/** Flags the SpawnArea as activated and removes the recent flag if present. Calls SetOverlappingVertices
 	 *  if needed */
-	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bPersistant) const;
+	void FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bCanActivateWhileActivated) const;
 
 	/** Flags the SpawnArea as recent */
 	static void FlagSpawnAreaAsRecent(USpawnArea* SpawnArea);
-
-	/** Handles dealing with SpawnAreas that correspond to Damage Events */
-	void HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent);
-	
-	/** Calls RemoveActivatedFlagFromSpawnArea, calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag
-	 *  should be removed */
-	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
 
 	/** Removes the Managed flag, meaning the target that the SpawnArea represents is not longer actively managed by
 	 *  TargetManager */
@@ -451,6 +451,7 @@ public:
 	/** Filters out any locations that correspond to areas flagged as managed */
 	void FilterManagedIndices(TArray<FVector>& ValidSpawnLocations) const;
 
+	/** General location filter function that takes in a filter function to apply */
 	void FilterIndices(TArray<FVector>& ValidSpawnLocations, bool (USpawnArea::*FilterFunc)() const,
 			const bool bShowDebug, const FColor& DebugColor) const;
 

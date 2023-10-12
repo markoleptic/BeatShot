@@ -84,6 +84,16 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 				&ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
 		}
 	}
+	else if (bSimulatePlayerDestroying && bWasActivated)
+	{
+		if (DestroyChance > FMath::FRandRange(0.f, 1.f))
+		{
+			const float DestroyTime = FMath::FRandRange(0.25f, 0.75f);
+			GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
+			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this,
+				&ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
+		}
+	}
 	return bWasActivated;
 }
 
@@ -100,25 +110,36 @@ void ATargetPreview::OnIncomingDamageTaken(const FDamageEventData& InData)
 	}
 	
 	FTimerManager& TimerManager = GetWorldTimerManager();
-	const float ElapsedTime = TimerManager.GetTimerElapsed(DamageableWindow);
+	const float ElapsedTime = TimerManager.GetTimerElapsed(ExpirationTimer);
 
 	// Always damaging self in Preview Class, so use different comparison than base class
-	const bool bExpired = !TimerManager.IsTimerActive(DamageableWindow);
-	TimerManager.ClearTimer(DamageableWindow);
+	const bool bExpired = !TimerManager.IsTimerActive(ExpirationTimer);
+	TimerManager.ClearTimer(ExpirationTimer);
+	
 	const float TimeAlive = bExpired ? -1.f : ElapsedTime;
 	const bool bOutOfHealth = InData.NewValue <= 0.f;
 	
 	// Replace self damage with game mode damage type
-	FTargetDamageEvent Event(TimeAlive, GetActorTransform(), GetGuid(), Config.TargetDamageType);
-	Event.SetDamageDeltaAndHealth(InData.OldValue, InData.NewValue);
+	FTargetDamageEvent Event = FTargetDamageEvent(TimeAlive, InData.OldValue, InData.NewValue, GetActorTransform(),
+		GetGuid(), Config.TargetDamageType);
 
-	ColorWhenDestroyed = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-
-	HandleDeactivation(bExpired, bOutOfHealth);
-	OnTargetDamageEventOrTimeout.Broadcast(Event);
-	HandleDestruction(bExpired, bOutOfHealth);
+	const bool bDeactivate = ShouldDeactivate(bExpired, Event.CurrentHealth);
+	const bool bDestroy = ShouldDestroy(bExpired, bOutOfHealth);
 	
-	bCanBeReactivated = true;
+	TArray<ETargetDamageType> DamageTypes;
+	DamageTypes.Add(ETargetDamageType::Self);
+	DamageTypes.Add(GetTargetDamageType());
+	Event.SetTargetData(bDeactivate, bDestroy, DamageTypes);
+	OnTargetDamageEvent.Broadcast(Event);
+	
+	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
+	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth);
+	if (bDestroy) Destroy();
+	else
+	{
+		CheckForHealthReset(Event.bOutOfHealth);
+		bCanBeReactivated = true;
+	}
 }
 
 void ATargetPreview::OnLifeSpanExpired()
@@ -139,15 +160,6 @@ void ATargetPreview::HandleDeactivationResponses(const bool bExpired)
 			TargetWidget->SetRenderOpacity(0.2f);
 		}
 	}
-}
-
-void ATargetPreview::HandleDestruction(const bool bExpired, const bool bOutOfHealth)
-{
-	if (ShouldDestroy(bExpired, bOutOfHealth))
-	{
-		TargetWidget->RemoveFromParent();
-	}
-	Super::HandleDestruction(bExpired, bOutOfHealth);
 }
 
 void ATargetPreview::SetTargetColor(const FLinearColor& Color)

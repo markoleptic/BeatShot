@@ -112,6 +112,7 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 SpawnAr
 		return;
 	}
 	ActiveTargetPairs.Emplace(SpawnAreaIndex_First, SpawnAreaIndex_Second);
+	//UE_LOG(LogTemp, Display, TEXT("Added [%d, %d] to Active Target Pairs"), SpawnAreaIndex_First, SpawnAreaIndex_Second);
 }
 
 void UReinforcementLearningComponent::SetActiveTargetPairReward(const int32 SpawnAreaIndex, const bool bHit)
@@ -119,7 +120,7 @@ void UReinforcementLearningComponent::SetActiveTargetPairReward(const int32 Spaw
 	FTargetPair FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex);
 	if (FoundPair.First == -1 || FoundPair.Second == -1)
 	{
-		UE_LOG(LogTargetManager, Warning, TEXT("Location not found in ActiveTargetPairs %d"), SpawnAreaIndex);
+		UE_LOG(LogTargetManager, Warning, TEXT("SpawnAreaIndex not found in ActiveTargetPairs %d"), SpawnAreaIndex);
 		ActiveTargetPairs.Remove(FoundPair);
 		return;
 	}

@@ -42,7 +42,7 @@ ATargetManager::ATargetManager()
 	RLComponent = CreateDefaultSubobject<UReinforcementLearningComponent>(
 		TEXT("Reinforcement Learning Component"));
 
-	ConsecutiveTargetsHit = 0;
+	CurrentStreak = 0;
 	BSConfigLocal = FBSConfig();
 	BSConfig = nullptr;
 	PlayerSettings = FPlayerSettings_Game();
@@ -50,18 +50,20 @@ ATargetManager::ATargetManager()
 	bPrintDebug_NumRecentNumActive = false;
 	bPrintDebug_SpawnAreaInfo = false;
 	bPrintDebug_SpawnAreaDistance = false;
+	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentSpawnArea = nullptr;
 	PreviousSpawnArea = nullptr;
 	CurrentTargetScale = FVector(1.f);
 	StaticExtrema = FExtrema();
 	StaticExtents = FVector();
-	ConsecutiveTargetsHit = 0;
+	CurrentStreak = 0;
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	ManagedTargets = TArray<ATarget*>();
 	TotalPossibleDamage = 0.f;
 	bLastSpawnedTargetDirectionChangeHorizontal = false;
 	bLastActivatedTargetDirectionChangeHorizontal = false;
+	PreviousTargetGuid.Invalidate();
 }
 
 void ATargetManager::BeginPlay()
@@ -145,22 +147,24 @@ void ATargetManager::Init_Internal()
 		}
 		ManagedTargets.Empty();
 	}
-	ConsecutiveTargetsHit = 0;
+	CurrentStreak = 0;
+	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentSpawnArea = nullptr;
 	PreviousSpawnArea = nullptr;
 	CurrentTargetScale = FVector(1.f);
 	StaticExtrema = FExtrema();
 	StaticExtents = FVector();
-	ConsecutiveTargetsHit = 0;
+	CurrentStreak = 0;
 	DynamicLookUpValue_TargetScale = 0;
 	DynamicLookUpValue_SpawnAreaScale = 0;
 	TotalPossibleDamage = 0.f;
+	PreviousTargetGuid.Invalidate();
 	SpawnAreaManager->Clear();
 
 	// Initialize target colors
 	GetBSConfig()->InitColors(PlayerSettings.bUseSeparateOutlineColor, PlayerSettings.InactiveTargetColor,
 		PlayerSettings.TargetOutlineColor, PlayerSettings.StartTargetColor, PlayerSettings.PeakTargetColor,
-		PlayerSettings.EndTargetColor);
+		PlayerSettings.EndTargetColor, PlayerSettings.TakingTrackingDamageColor, PlayerSettings.NotTakingTrackingDamageColor);
 
 	// Set SpawnBox location & BoxExtent, StaticExtents, and StaticExtrema
 	SpawnBox->SetRelativeLocation(GenerateStaticLocation());
@@ -250,15 +254,11 @@ void ATargetManager::SetShouldSpawn(const bool bShouldSpawn)
 
 void ATargetManager::OnPlayerStopTrackingTarget()
 {
-	if (GetBSConfig()->TargetConfig.TargetDamageType != ETargetDamageType::Tracking)
-	{
-		return;
-	}
 	for (const TObjectPtr<ATarget> Target : GetManagedTargets())
 	{
 		if (Target && !Target->IsImmuneToTrackingDamage())
 		{
-			Target->SetTargetColor(GetBSConfig()->TargetConfig.EndColor);
+			Target->SetTargetColor(GetBSConfig()->TargetConfig.NotTakingTrackingDamageColor);
 		}
 	}
 }
@@ -285,28 +285,24 @@ void ATargetManager::OnAudioAnalyzerBeat()
 
 ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 {
-	if (!InSpawnArea)
-	{
-		return nullptr;
-	}
-	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(
-		TargetToSpawn,
-		FTransform(
-			FRotator::ZeroRotator,
-			InSpawnArea->GetChosenPoint(),
-			InSpawnArea->GetTargetScale()),
-		this,
-		nullptr,
+	if (!InSpawnArea) return nullptr;
+
+	const FVector Loc = InSpawnArea->GetChosenPoint();
+	const FVector Scale = InSpawnArea->GetTargetScale();
+	const FTransform TForm = FTransform(FRotator(0), Loc, Scale);
+	ATarget* Target = GetWorld()->SpawnActorDeferred<ATarget>(TargetToSpawn,TForm, this,nullptr,
 		ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
+	
 	Target->Init(GetBSConfig()->TargetConfig);
-	Target->OnTargetDamageEventOrTimeout.AddDynamic(this, &ATargetManager::OnTargetHealthChangedOrExpired);
-	if (BSConfig->TargetConfig.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::ChangeDirection))
-	{
-		Target->OnDeactivationResponse_ChangeDirection.AddUObject(this, &ATargetManager::ChangeTargetDirection);
-	}
+	Target->SetTargetDamageType(FindNextTargetDamageType());
+	Target->OnTargetDamageEvent.AddDynamic(this, &ATargetManager::OnTargetDamageEvent);
+	Target->OnDeactivationResponse_ChangeDirection.AddUObject(this, &ATargetManager::ChangeTargetDirection);
+	
 	InSpawnArea->SetTargetGuid(Target->GetGuid());
 	Target->FinishSpawning(FTransform(), true);
+	
 	AddToManagedTargets(Target);
+	
 	if (BSConfig->TargetConfig.bApplyVelocityWhenSpawned)
 	{
 		const float SpawnVelocity = FMath::FRandRange(GetBSConfig()->TargetConfig.MinSpawnedTargetSpeed,
@@ -336,21 +332,23 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 		return false;
 	}
 
+	// Only perform some Activation Responses if already activated
+	const bool bPreTargetActivationState = InTarget->IsActivated();
+
 	// Make sure it isn't hidden
-	if (InTarget->IsHidden())
+	if (!bPreTargetActivationState && InTarget->IsHidden())
 	{
 		InTarget->SetActorHiddenInGame(false);
 	}
-
-	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::AddImmunity))
+	if (!bPreTargetActivationState && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::AddImmunity))
 	{
 		InTarget->ApplyImmunityEffect();
 	}
-	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
+	if (!bPreTargetActivationState && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::RemoveImmunity))
 	{
 		InTarget->RemoveImmunityEffect();
 	}
-	if (GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ToggleImmunity))
+	if (!bPreTargetActivationState && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(ETargetActivationResponse::ToggleImmunity))
 	{
 		InTarget->IsImmuneToDamage() ? InTarget->RemoveImmunityEffect() : InTarget->ApplyImmunityEffect();
 	}
@@ -369,31 +367,50 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 		ChangeTargetDirection(InTarget, 1);
 	}
 
-	if (InTarget->HasTargetBeenActivatedBefore() && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
+	if (!bPreTargetActivationState && InTarget->HasBeenActivatedBefore() && GetBSConfig()->TargetConfig.TargetActivationResponses.Contains(
 		ETargetActivationResponse::ApplyConsecutiveTargetScale))
 	{
 		InTarget->SetTargetScale(FindNextTargetScale());
 	}
+	
+	const bool bPostTargetActivationState = InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan);
+	const bool bIsReactivation = bPreTargetActivationState && bPostTargetActivationState;
 
-	if (InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan))
+	// Don't continue if failed to activate
+	if (!bPostTargetActivationState) return false;
+	
+	SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid(), GetBSConfig()->TargetConfig.bAllowActivationWhileActivated);
+
+	if (bIsReactivation)
 	{
-		const bool bPersistant = GetBSConfig()->TargetConfig.TargetDeactivationConditions.
-			Contains(ETargetDeactivationCondition::Persistant);
-		SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid(), bPersistant);
-		OnTargetActivated.Broadcast();
-		OnTargetActivated_AimBot.Broadcast(InTarget);
-		if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
-		{
-			if (SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
-			{
-				RLComponent->AddToActiveTargetPairs(PreviousSpawnArea->GetIndex(),
-					CurrentSpawnArea->GetIndex());
-			}
-			PreviousSpawnArea = CurrentSpawnArea;
-		}
-		return true;
+		UE_LOG(LogTemp, Display, TEXT("Reactivated Target"));
 	}
-	return false;
+
+	// Don't continue if the target was already activated and succeeded the reactivation
+	if (bIsReactivation) return true;
+	
+	OnTargetActivated.Broadcast(InTarget->GetTargetDamageType());
+	OnTargetActivated_AimBot.Broadcast(InTarget);
+	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
+	{
+		if (PreviousTargetGuid.IsValid())
+		{
+			const USpawnArea* Previous = SpawnAreaManager->FindSpawnAreaFromGuid(PreviousTargetGuid);
+			const USpawnArea* Current = SpawnAreaManager->FindSpawnAreaFromGuid(InTarget->GetGuid());
+			if (Previous && Current)
+			{
+				RLComponent->AddToActiveTargetPairs(Previous->GetIndex(), Current->GetIndex());
+			}
+		}
+		/*if (SpawnAreaManager->IsSpawnAreaValid(PreviousSpawnArea))
+		{
+			RLComponent->AddToActiveTargetPairs(PreviousSpawnArea->GetIndex(),
+				CurrentSpawnArea->GetIndex());
+		}
+		PreviousSpawnArea = CurrentSpawnArea;*/
+		PreviousTargetGuid = InTarget->GetGuid();
+	}
+	return true;
 }
 
 void ATargetManager::HandleUpfrontSpawning()
@@ -671,6 +688,18 @@ USpawnArea* ATargetManager::FindNextSpawnArea(const FVector& NewTargetScale) con
 	return nullptr;
 }
 
+ETargetDamageType ATargetManager::FindNextTargetDamageType()
+{
+	if (GetBSConfig()->TargetConfig.TargetDamageType == ETargetDamageType::Combined)
+	{
+		LastTargetDamageType = (LastTargetDamageType == ETargetDamageType::Hit)
+			? ETargetDamageType::Tracking
+			: ETargetDamageType::Hit;
+		return LastTargetDamageType;
+	}
+	return GetBSConfig()->TargetConfig.TargetDamageType;
+}
+
 USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(
 	const TArray<FVector>& OpenLocations) const
 {
@@ -710,39 +739,41 @@ USpawnArea* ATargetManager::TryGetSpawnAreaFromReinforcementLearningComponent(
 /* -- Deactivation and Destruction -- */
 /* ---------------------------------- */
 
-void ATargetManager::OnTargetHealthChangedOrExpired(const FTargetDamageEvent& TargetDamageEvent)
+void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
 {
-	UpdateConsecutiveTargetsHit(TargetDamageEvent.bDamagedSelf);
-	UpdateDynamicLookUpValues(TargetDamageEvent.bDamagedSelf);
-	HandleTargetExpirationDelegate(TargetDamageEvent);
-	HandleManagedTargetRemoval(GetBSConfig()->TargetConfig.TargetDestructionConditions, TargetDamageEvent);
+	// Needs to be called first so that CurrentStreak is up to date
+	UpdateCurrentStreak(Event);
+	UpdateDynamicLookUpValues(Event);
 
-	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None)
-	{
-		if (const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(TargetDamageEvent.Guid))
-		{
-			RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !TargetDamageEvent.bDamagedSelf);
-		}
-	}
+	// Set TargetManagerData and broadcast to GameMode
+	Event.SetTargetManagerData(CurrentStreak, TotalPossibleDamage);
+	PostTargetDamageEvent.Broadcast(Event);
+	
+	HandleManagedTargetRemoval(Event);
+	SpawnAreaManager->HandleTargetDamageEvent(Event);
 
-	SpawnAreaManager->HandleTargetDamageEvent(TargetDamageEvent);
+	// Update RLC
+	if (RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::None) return;
+	const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(Event.Guid);
+	if (!Found) return;
+	RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !Event.bDamagedSelf);
 }
 
-void ATargetManager::UpdateConsecutiveTargetsHit(const bool bExpired)
+void ATargetManager::UpdateCurrentStreak(const FTargetDamageEvent& Event)
 {
-	if (bExpired)
+	if (Event.DamageType == ETargetDamageType::Self)
 	{
-		ConsecutiveTargetsHit = 0;
+		CurrentStreak = 0;
 	}
-	else
+	else if (Event.DamageType == ETargetDamageType::Hit)
 	{
-		ConsecutiveTargetsHit++;
+		CurrentStreak++;
 	}
 }
 
-void ATargetManager::UpdateDynamicLookUpValues(const bool bExpired)
+void ATargetManager::UpdateDynamicLookUpValues(const FTargetDamageEvent& Event)
 {
-	if (bExpired)
+	if (Event.DamageType == ETargetDamageType::Self)
 	{
 		DynamicLookUpValue_TargetScale = FMath::Clamp(
 			DynamicLookUpValue_TargetScale - GetBSConfig()->DynamicTargetScaling.DecrementAmount, 0,
@@ -751,7 +782,7 @@ void ATargetManager::UpdateDynamicLookUpValues(const bool bExpired)
 			DynamicLookUpValue_SpawnAreaScale - GetBSConfig()->DynamicSpawnAreaScaling.DecrementAmount, 0,
 			GetBSConfig()->DynamicSpawnAreaScaling.EndThreshold);
 	}
-	else
+	else if (Event.DamageType == ETargetDamageType::Hit)
 	{
 		DynamicLookUpValue_TargetScale = FMath::Clamp(DynamicLookUpValue_TargetScale + 1, 0,
 			GetBSConfig()->DynamicTargetScaling.EndThreshold);
@@ -760,50 +791,15 @@ void ATargetManager::UpdateDynamicLookUpValues(const bool bExpired)
 	}
 }
 
-void ATargetManager::HandleTargetExpirationDelegate(const FTargetDamageEvent& TargetDamageEvent) const
+void ATargetManager::HandleManagedTargetRemoval(const FTargetDamageEvent& Event)
 {
-	if (TargetDamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Tracking))
-	{
-		OnBeatTrackTargetDamaged.Broadcast(TargetDamageEvent.DamageDelta, TotalPossibleDamage);
-	}
-	if (TargetDamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Hit))
-	{
-		const float TimeAlive = TargetDamageEvent.bDamagedSelf ? -1.f : TargetDamageEvent.TimeAlive;
-		OnTargetDeactivated.Broadcast(TimeAlive, ConsecutiveTargetsHit, TargetDamageEvent.Transform);
-	}
-}
-
-void ATargetManager::HandleManagedTargetRemoval(const TArray<ETargetDestructionCondition>& TargetDestructionConditions,
-	const FTargetDamageEvent& TargetDamageEvent)
-{
-	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
-	{
-		return;
-	}
-
-	if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnDeactivation))
-	{
-		RemoveFromManagedTargets(TargetDamageEvent.Guid);
-	}
-	else if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnExpiration) && TargetDamageEvent.bDamagedSelf)
-	{
-		RemoveFromManagedTargets(TargetDamageEvent.Guid);
-	}
-	else if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnHealthReachedZero) && TargetDamageEvent.bOutOfHealth)
-	{
-		RemoveFromManagedTargets(TargetDamageEvent.Guid);
-	}
-	else if (TargetDestructionConditions.Contains(ETargetDestructionCondition::OnAnyExternalDamageTaken) && !TargetDamageEvent.bDamagedSelf)
-	{
-		RemoveFromManagedTargets(TargetDamageEvent.Guid);
-	}
+	if (Event.bWillDestroy) RemoveFromManagedTargets(Event.Guid);
 }
 
 void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
 	SpawnAreaManager->RemoveManagedFlagFromSpawnArea(GuidToRemove);
-	const TArray<TObjectPtr<ATarget>> Targets = GetManagedTargets().FilterByPredicate(
-		[&](const TObjectPtr<ATarget>& OtherTarget)
+	const TArray<TObjectPtr<ATarget>> Targets = GetManagedTargets().FilterByPredicate([&](const TObjectPtr<ATarget>& OtherTarget)
 		{
 			if (!OtherTarget)
 			{

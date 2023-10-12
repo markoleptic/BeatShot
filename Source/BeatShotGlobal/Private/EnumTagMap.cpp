@@ -27,13 +27,29 @@ void UEnumTagMap::PreSave(FObjectPreSaveContext ObjectSaveContext)
 
 void UEnumTagMap::PostLoad()
 {
+	// Add any Enum Types not present in EnumTagMappings
 	for (const UEnum* Enum : EnumsToInclude)
 	{
 		FEnumTagMapping TagMapping(Enum);
-		if (!EnumTagMappings.Contains(TagMapping))
+		const int32 Index = EnumTagMappings.Find(TagMapping);
+		if (Index == INDEX_NONE)
 		{
 			EnumTagMappings.Add(TagMapping);
 		}
+		else
+		{
+			// Add any Enum Values not present in EnumTagPairs
+			TArray<FEnumTagPair>& EnumTagPairs = EnumTagMappings[Index].EnumTagPairs;
+			for (int64 i = 0; i < Enum->GetMaxEnumValue(); i++)
+			{
+				if (EnumTagPairs.Find(FEnumTagPair(i)) == INDEX_NONE)
+				{
+					const FText EnumValueText = Enum->GetDisplayNameTextByValue(i);
+					EnumTagPairs.Emplace(EnumValueText.ToString(), i);
+				}
+			}
+		}
+			
 	}
 	EnumTagMappings.Sort();
 	Super::PostLoad();

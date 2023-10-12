@@ -56,6 +56,8 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 		&ThisClass::OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce);
 	CheckBoxOption_ConstantActivatedTargetVelocity->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
 		&ThisClass::OnCheckStateChanged_ConstantActivatedTargetVelocity);
+	CheckBoxOption_AllowActivationWhileActivated->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
+		&ThisClass::OnCheckStateChanged_AllowActivationWhileActivated);
 
 	ComboBoxOption_TargetActivationSelectionPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_TargetActivationSelectionPolicy);
@@ -117,6 +119,7 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 
 	UpdateValueIfDifferent(CheckBoxOption_ConstantNumTargetsToActivateAtOnce, bConstantNumTargetsToActivateAtOnce);
 	UpdateValueIfDifferent(CheckBoxOption_ConstantActivatedTargetVelocity, bConstantTargetSpeed);
+	UpdateValueIfDifferent(CheckBoxOption_AllowActivationWhileActivated, BSConfig->TargetConfig.bAllowActivationWhileActivated);
 
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumActivatedTargetsAtOnce,
 		BSConfig->TargetConfig.MaxNumActivatedTargetsAtOnce);
@@ -293,6 +296,12 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantActivatedTar
 
 	UpdateDependentOptions_ConstantTargetSpeed(BSConfig->TargetConfig.TargetActivationResponses, bChecked);
 	UpdateBrushColors();
+	UpdateAllOptionsValid();
+}
+
+void UCustomGameModesWidget_Activation::OnCheckStateChanged_AllowActivationWhileActivated(const bool bChecked)
+{
+	BSConfig->TargetConfig.bAllowActivationWhileActivated = bChecked;
 	UpdateAllOptionsValid();
 }
 

@@ -21,6 +21,7 @@ public:
 	/** Called in TargetManager to initialize the target */
 	virtual void Init(const FBS_TargetConfig& InTargetConfig) override;
 
+	/** Removes the target widget from parent */
 	virtual void Destroyed() override;
 
 	/** Sets the values of TargetWidget and its position in the viewport */
@@ -33,7 +34,7 @@ public:
 	/** Override to change the target widget opacity */
 	virtual void SetActorHiddenInGame(bool bNewHidden) override;
 
-	/** Activates a target, removes any immunity, starts the DamageableWindow timer, and starts playing the
+	/** Activates a target, removes any immunity, starts the ExpirationTimer timer, and starts playing the
 	 *  StartToPeakTimeline */
 	virtual bool ActivateTarget(const float Lifespan) override;
 
@@ -55,14 +56,11 @@ protected:
 	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
 	virtual void OnIncomingDamageTaken(const FDamageEventData& InData) override;
 
-	/** Callback function for when DamageableWindow timer expires */
+	/** Callback function for when ExpirationTimer timer expires */
 	virtual void OnLifeSpanExpired() override;
 
 	/** Performs any responses to the target being deactivated */
 	virtual void HandleDeactivationResponses(const bool bExpired) override;
-
-	/** Finds if target should be destroyed, and calls Destroy if so */
-	virtual void HandleDestruction(const bool bExpired, const bool bOutOfHealth) override;
 
 	/** Reference to the target widget in CustomGameModesWidget_Preview */
 	TObjectPtr<UTargetWidget> TargetWidget;

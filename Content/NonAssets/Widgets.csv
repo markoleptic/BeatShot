@@ -65,10 +65,10 @@ Game_Target,Target Settings
 GameTitle,BeatShot
 GitHubButtonText,Create Github Issue here
 GM_AI,AI
-GM_AI_Alpha,Learning Rate
-GM_AI_EnableAI,Enable AI
-GM_AI_Epsilon,Discount Factor
-GM_AI_Gamma,Exploration/Exploitation Ratio
+GM_AI_Alpha,Learning Rate (Alpha)
+GM_AI_EnableAI,Enable AI (Reinforcement Learning)
+GM_AI_Epsilon,Exploration Factor (Epsilon)
+GM_AI_Gamma,Discount Factor (Gamma)
 GM_AllGameModesRemovedText,All custom game modes removed
 GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
@@ -109,7 +109,7 @@ GM_General_Info,"Select a template to see default values for different game mode
 GM_HorizontalGridSpacing,Horizontal Spacing
 GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
 GM_MaxHealth,Max Target Health
-GM_MaximumTargetLifespan,Maximum Target Lifespan
+GM_MaximumTargetLifespan,Target Lifespan
 GM_MaxNumActivatedTargetsAtOnce,Maximum Allowed Activated Targets at Once
 GM_MaxNumRecentTargets,Max Number of Recent Targets
 GM_MaxNumTargetsAtOnce,Maximum Allowed Spawned Targets at Once
@@ -238,11 +238,11 @@ SBW_NoAccount,Your scores were saved locally but were not uploaded to the databa
 SBW_SavedScoresButNotLoggedIn,Your scores were saved to the database but there was a problem loading your profile in the web browser. Go to the main menu to sign in again.
 SBW_FailedToLoadURL,There was a problem loading your scores on the BeatShot website.
 SBW_SavedScoresLocallyOnly,Your scores were saved locally but there was a problem posting your scores to the database. Your scores will be uploaded to the database the next time there is a successful connection to it. Go to the main menu to sign in again.
-Sensitivity_CSGO,New Sensitivity (CS:GO):
-Sensitivity_Current,Current Sensitivity:
+Sensitivity_CSGO,New Sensitivity (CS2)
+Sensitivity_Current,Current Sensitivity
 Sensitivity_HintText,Enter here
 Sensitivity_Info,"BeatShot uses Valorant sensitivity by default, but you can also enter your CSGO sensitivity. If you don't have either of those values, you can use an online converter to get your Valorant sensitivity."
-Sensitivity_Valorant,New Sensitivity (Valorant/Beatshot):
+Sensitivity_Valorant,New Sensitivity (Valorant/Beatshot)
 SettingsSavedText,Settings Saved
 SM_Save_AudioAnalyzer,Save Audio Analyzer Settings
 SM_Save_CrossHair,Save Crosshair Settings
@@ -358,3 +358,25 @@ GM_Dynamic_MinHorizontalSpread,Minimum Horizontal Spread
 GM_Dynamic_MinVerticalSpread,Minimum Vertical Spread
 GM_Dynamic_MinForwardSpread,Minimum Forward Spread
 GM_DynamicBoundsScalingPolicy,Directions To Change
+GM_HealthLossForDeactivation,Health Loss Required for Deactivation
+GM_AllowActivationWhileActivated,Allow Activation While Activated
+GM_InfiniteTargetLifespan,Infinite Target Lifespan
+GM_HyperParameterMode,Reinforcement Learning Mode
+SM_TakingTrackingDamageColor,Tracking Target Color While Taking Damage
+SM_NotTakingTrackingDamageColor,Tracking Target Color
+SM_Recoil,Recoil
+SM_AutomaticFire,Automatic Fire
+SM_ShowBulletDecals,Show Bullet Decals
+SM_ShowBulletTracers,Show Bullet Tracers
+SM_ShowMuzzleFlash,Show Muzzle Flash
+SM_ShowMesh,Show Character and Weapon
+SM_ShowHitTimingWidget,Show Hit Timing Overlay
+SM_ShowStreakCombatText,Show Combat Text
+SM_CombatTextFrequency,Combat Text Frequency
+SM_InactiveColor,Inactive Target Color
+CH_Color,Line Color
+CH_OutlineSize,Outline Size
+CH_OutlineColor,Outline Color
+CH_ShowCrossHairDot,Show CrossHair Dot
+CH_CrossHairDotSize,Dot Size
+CH_DotColor,Dot Color

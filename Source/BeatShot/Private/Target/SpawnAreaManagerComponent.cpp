@@ -24,7 +24,7 @@ USpawnArea::USpawnArea()
 	TotalTrackingDamagePossible = INDEX_NONE;
 	Index = INDEX_NONE;
 	bIsActivated = false;
-	bIsPersistentlyActivated = false;
+	bAllowActivationWhileActivated = false;
 	bIsCurrentlyManaged = false;
 	bIsRecent = false;
 	TimeSetRecent = DBL_MAX;
@@ -520,6 +520,99 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 	MinOverlapRadius = FMath::Max(SpawnAreaInc.Y, SpawnAreaInc.Z) / 2.f;
 }
 
+void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent)
+{
+	USpawnArea* SpawnArea = FindSpawnAreaFromGuid(DamageEvent.Guid);
+	if (!SpawnArea)
+	{
+		UE_LOG(LogTargetManager, Warning, TEXT("Could not find SpawnArea from DamageEvent Guid."));
+		return;
+	}
+	
+	switch (DamageEvent.DamageType) {
+	case ETargetDamageType::Tracking:
+		{
+			// Instead of using the spawn area where the target started, use the current location
+			USpawnArea* SpawnAreaByLoc = FindSpawnAreaFromLocation(DamageEvent.Transform.GetLocation());
+			if (!SpawnAreaByLoc) return;
+
+			// Total Tracking Damage Possible is done on tick in UpdateTotalTrackingDamagePossible
+			
+			// Only increment total tracking damage if damage came from player
+			if (!DamageEvent.bDamagedSelf && DamageEvent.DamageDelta > 0.f) SpawnAreaByLoc->IncrementTotalTrackingDamage();
+		}
+		break;
+	case ETargetDamageType::Hit:
+		{
+			// Always increment total spawns for Hit Damage Events
+			SpawnArea->IncrementTotalSpawns();
+
+			// Only increment total hits if damage came from player
+			if (!DamageEvent.bDamagedSelf && DamageEvent.DamageDelta > 0.f) SpawnArea->IncrementTotalHits();
+		}
+		break;
+	case ETargetDamageType::Self:
+		{
+			if (DamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Hit))
+			{
+				// Always increment total spawns for Hit Damage Events
+				SpawnArea->IncrementTotalSpawns();
+			}
+			if (DamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Tracking))
+			{
+				// Nothing to do
+			}
+		}
+		break;
+	case ETargetDamageType::None:
+	case ETargetDamageType::Combined:
+		UE_LOG(LogTargetManager, Warning, TEXT("DamageEvent with DamageType None or Combined."));
+		break;
+	}
+
+	// Applies to any damage type
+	if (DamageEvent.bWillDeactivate || DamageEvent.bWillDestroy)
+	{
+		RemoveActivatedFlagFromSpawnArea(SpawnArea);
+		HandleRecentTargetRemoval(SpawnArea);
+	}
+}
+
+void USpawnAreaManagerComponent::HandleRecentTargetRemoval(USpawnArea* SpawnArea)
+{
+	FlagSpawnAreaAsRecent(SpawnArea);
+	FTimerHandle TimerHandle;
+
+	/* Handle removing recent flag from SpawnArea */
+	switch (GetBSConfig()->TargetConfig.RecentTargetMemoryPolicy)
+	{
+	case ERecentTargetMemoryPolicy::None:
+		RemoveRecentFlagFromSpawnArea(SpawnArea);
+		break;
+	case ERecentTargetMemoryPolicy::CustomTimeBased:
+		{
+			RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea,
+				SpawnArea);
+			const float Time = GetBSConfig()->TargetConfig.RecentTargetTimeLength;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
+		}
+		break;
+	case ERecentTargetMemoryPolicy::NumTargetsBased:
+		{
+			RefreshRecentFlags();
+		}
+		break;
+	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
+		{
+			RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea,
+				SpawnArea);
+			const float Time = GetBSConfig()->TargetConfig.TargetSpawnCD;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
+		}
+		break;
+	}
+}
+
 /* ------------------------------- */
 /* -- SpawnArea finders/getters -- */
 /* ------------------------------- */
@@ -779,16 +872,16 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(const FGuid TargetGuid) 
 	#endif
 }
 
-void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bPersistant) const
+void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bCanActivateWhileActivated) const
 {
 	USpawnArea* SpawnArea = FindSpawnAreaFromGuid(TargetGuid);
 	if (!SpawnArea) return;
-
-	if (SpawnArea->IsPersistentlyActivated()) return;
+	
+	if (SpawnArea->CanActivateWhileActivated() && SpawnArea->IsActivated()) return;
 
 	if (SpawnArea->IsRecent()) RemoveRecentFlagFromSpawnArea(SpawnArea);
 	
-	if (!SpawnArea->IsActivated()) SpawnArea->SetIsActivated(true, bPersistant);
+	if (!SpawnArea->IsActivated()) SpawnArea->SetIsActivated(true, bCanActivateWhileActivated);
 	else UE_LOG(LogTargetManager, Warning, TEXT("Tried to flag as Activated when already Activated."));
 
 	// Don't generate new OverlappingVertices if they're already generated
@@ -809,84 +902,6 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsRecent(USpawnArea* SpawnArea)
 	if (!SpawnArea) return;
 	if (!SpawnArea->IsRecent()) SpawnArea->SetIsRecent(true);
 	else UE_LOG(LogTargetManager, Warning, TEXT("Tried to flag as Recent when already Recent."));
-}
-
-void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent)
-{
-	switch (DamageEvent.DamageType) {
-	case ETargetDamageType::Tracking:
-		{
-			USpawnArea* SpawnArea = FindSpawnAreaFromLocation(DamageEvent.Transform.GetLocation());
-			if (!SpawnArea) return;
-
-			// Do not increment Total Tracking Damage Possible since that is done in UpdateTotalTrackingDamagePossible
-			if (!DamageEvent.bDamagedSelf && DamageEvent.DamageDelta > 0.f) SpawnArea->IncrementTotalTrackingDamage();
-		}
-		break;
-	case ETargetDamageType::Hit:
-		{
-			USpawnArea* SpawnArea = FindSpawnAreaFromGuid(DamageEvent.Guid);
-			if (!SpawnArea) return;
-			
-			SpawnArea->IncrementTotalSpawns();
-			if (!DamageEvent.bDamagedSelf && DamageEvent.DamageDelta > 0.f) SpawnArea->IncrementTotalHits();
-			
-			HandleRecentTargetRemoval(SpawnArea);
-		}
-		break;
-	case ETargetDamageType::Self:
-		{
-			USpawnArea* SpawnArea = FindSpawnAreaFromGuid(DamageEvent.Guid);
-			if (!SpawnArea) return;
-			
-			if (DamageEvent.VulnerableToDamageTypes.Contains(ETargetDamageType::Hit))
-			{
-				SpawnArea->IncrementTotalSpawns();
-				HandleRecentTargetRemoval(SpawnArea);
-			}
-		}
-		break;
-	case ETargetDamageType::None:
-	case ETargetDamageType::Combined:
-		break;
-	}
-}
-
-void USpawnAreaManagerComponent::HandleRecentTargetRemoval(USpawnArea* SpawnArea)
-{
-	RemoveActivatedFlagFromSpawnArea(SpawnArea);
-	FlagSpawnAreaAsRecent(SpawnArea);
-
-	FTimerHandle TimerHandle;
-
-	/* Handle removing recent flag from SpawnArea */
-	switch (GetBSConfig()->TargetConfig.RecentTargetMemoryPolicy)
-	{
-	case ERecentTargetMemoryPolicy::None:
-		RemoveRecentFlagFromSpawnArea(SpawnArea);
-		break;
-	case ERecentTargetMemoryPolicy::CustomTimeBased:
-		{
-			RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea,
-				SpawnArea);
-			const float Time = GetBSConfig()->TargetConfig.RecentTargetTimeLength;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
-		}
-		break;
-	case ERecentTargetMemoryPolicy::NumTargetsBased:
-		{
-			RefreshRecentFlags();
-		}
-		break;
-	case ERecentTargetMemoryPolicy::UseTargetSpawnCD:
-		{
-			RemoveFromRecentDelegate.BindUObject(this, &USpawnAreaManagerComponent::RemoveRecentFlagFromSpawnArea,
-				SpawnArea);
-			const float Time = GetBSConfig()->TargetConfig.TargetSpawnCD;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, RemoveFromRecentDelegate, Time, false);
-		}
-		break;
-	}
 }
 
 void USpawnAreaManagerComponent::RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid) const

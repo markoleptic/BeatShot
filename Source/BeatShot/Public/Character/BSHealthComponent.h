@@ -34,10 +34,12 @@ protected:
 	UPROPERTY()
 	TObjectPtr<const UBSAttributeSetBase> AttributeSetBase;
 
+	/** Callback function for when the owner's AttributeSetBase OnHealthChanged delegate is broadcast */
 	void OnHealthAttributeChanged(AActor* EffectInstigator, AActor* EffectCauser, const FGameplayEffectSpec* EffectSpec,
 		float EffectMagnitude, float OldValue, float NewValue);
 
-	void OnIncomingDamageTaken(const FDamageEventData& DamageEvent);
+	/** Callback function for when the owner's AttributeSetBase OnDamageTaken delegate is broadcast */
+	void OnDamageTaken(const FDamageEventData& DamageEvent);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -49,6 +51,6 @@ public:
 	/** Broadcasts when the health attribute changes */
 	FBSAttributeEvent OnHealthChangedDelegate;
 
-	/** Broadcasts when Tracking Damage or Hit Damage is taken */
-	FBSDamageEvent OnIncomingDamageTakenDelegate;
+	/** Broadcast any time the owner's AttributeSetBase takes damage */
+	FBSDamageEvent OnDamageTakenDelegate;
 };
