@@ -129,7 +129,7 @@ MaxTargetScale,The maximum scale/size that a target is spawned with.
 MinTargetSpeed,"The minimum velocity of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
 MaxTargetSpeed,"The maximum velocity of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
 UseBatchSpawning,"If checked, targets will not be spawned until the previous batch of targets have all been activated and deactivated."
-AllowSpawnWithoutActivation,"If checked, allows targets to be spawned without immediate activation. If used in combination with Batch Spawning, this can allow multiple targets to spawn at once while each is activated according to Target Activation settings."
+AllowSpawnWithoutActivation,"If checked, allows targets to be spawned without immediate activation. Usually when finding the next location to activate a target, only activated or recent targets are considered invalid places. Enabling this setting also considers deactivated targets as invalid places. If used in combination with Batch Spawning, this can allow multiple targets to spawn at once while each is activated according to Target Activation settings."
 StreamlineReflexMode_Disabled,Low Latency mode is disabled.
 StreamlineReflexMode_Enabled,Low Latency mode is enabled and optimizing system latency.
 StreamlineReflexMode_EnabledPlusBoost,"Low Latency mode is enabled and optimizing system latency. In Boost mode, NVIDIA Reflex will attempt to optimize latency in CPU bound cases as well. This can slightly increase GPU power draw."

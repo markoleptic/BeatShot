@@ -144,7 +144,9 @@ protected:
 	/** Handles permanently activated targets so they can still receive activation responses, called in
 	 *  HandleTargetActivation */
 	void HandlePermanentlyActiveTargetActivation() const;
-
+	
+	void HandleActivateAlreadyActivated();
+	
 	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
 	int32 GetNumberOfRuntimeTargetsToSpawn() const;
 
@@ -152,7 +154,7 @@ protected:
 	int32 GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const;
 
 	/** Calls functions to get the next target's location and scale */
-	void FindNextTargetProperties();
+	USpawnArea* FindNextTargetProperties();
 
 	/** Returns the scale for next target */
 	FVector FindNextTargetScale() const;
@@ -164,8 +166,8 @@ protected:
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing
 	 *  the next target location based on the index that the RLAgent returned */
-	USpawnArea* TryGetSpawnAreaFromReinforcementLearningComponent(const TArray<FVector>& OpenLocations) const;
-
+	USpawnArea* GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas) const;
+	
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates,
 	 *  target flags, target removal */
 	UFUNCTION()
@@ -286,18 +288,8 @@ protected:
 	/** Whether or not to print information about Spawn Areas spawning targets too close together */
 	bool bPrintDebug_SpawnAreaDistance;
 
-	/** SpawnArea for the next/current target */
-	UPROPERTY()
-	USpawnArea* CurrentSpawnArea;
-
-	/** SpawnArea for the previous target. Used for RLC */
-	UPROPERTY()
-	mutable USpawnArea* PreviousSpawnArea;
-
 	/** The type of damage that the last target was vulnerable to */
 	ETargetDamageType LastTargetDamageType;
-
-	mutable FGuid PreviousTargetGuid;
 
 	/** The scale to apply to the next/current target */
 	FVector CurrentTargetScale;

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "BSWidgetInterface.h"
 #include "EnumTagMap.h"
-#include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
+#include "MenuOptionWidget.h"
 #include "ComboBoxOptionWidget.generated.h"
 
 class UBSComboBoxEntry_Tagged;

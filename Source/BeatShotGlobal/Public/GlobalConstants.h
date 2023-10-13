@@ -388,9 +388,9 @@ namespace Constants
 	inline constexpr int32 MaxValue_ExpirationHealthPenalty = 1000;
 	inline constexpr int32 SnapSize_ExpirationHealthPenalty = 10;
 
-	inline constexpr int32 MinValue_MaxHealth = 100;
+	inline constexpr int32 MinValue_MaxHealth = 10;
 	inline constexpr int32 MaxValue_MaxHealth = 1000;
-	inline constexpr int32 SnapSize_MaxHealth = 100;
+	inline constexpr int32 SnapSize_MaxHealth = 10;
 
 	inline constexpr int32 MinValue_NumRuntimeTargetsToSpawn = -1;
 	inline constexpr int32 MaxValue_NumRuntimeTargetsToSpawn = 100;

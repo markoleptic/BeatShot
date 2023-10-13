@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameplayTagContainer.h"
 #include "GlobalConstants.h"
 #include "Engine/DataAsset.h"
 #include "BSGameModeDataAsset.generated.h"
@@ -48,9 +47,11 @@ enum class EBaseGameMode : uint8
 	BeatTrack UMETA(DisplayName="BeatTrack"),
 	ChargedBeatTrack UMETA(DisplayName="ChargedBeatTrack"),
 	ClusterBeat UMETA(DisplayName="ClusterBeat"),
+	MultiBeatPrecision UMETA(DisplayName="MultiBeatPrecision"),
+	MultiBeatSpeed UMETA(DisplayName="MultiBeatSpeed"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::ClusterBeat);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::MultiBeatSpeed);
 
 
 /** Enum representing the default game mode difficulties */
@@ -355,7 +356,7 @@ ENUM_RANGE_BY_FIRST_AND_LAST(EReinforcementLearningHyperParameterMode, EReinforc
 
 /** Small Struct containing the information needed to distinguish between unique default game modes and unique custom game modes.
  *  This info persists across different songs, which is why it is separate from FPlayerScore */
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_DefiningConfig
 {
 	GENERATED_BODY()
@@ -428,7 +429,7 @@ struct FBS_DefiningConfig
 	}
 };
 
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_AIConfig
 {
 	GENERATED_BODY()
@@ -498,7 +499,7 @@ struct FBS_AIConfig
 	}
 };
 
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_GridConfig
 {
 	GENERATED_BODY()
@@ -553,7 +554,7 @@ struct FBS_GridConfig
 	}
 };
 
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_AudioConfig
 {
 	GENERATED_BODY()
@@ -606,7 +607,7 @@ struct FBS_AudioConfig
  *  Requires using an external counter that increments each time a target
  *  is consecutively destroyed and decrements by DecrementAmount each time
  *  a target was not destroyed. */
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_Dynamic
 {
 	GENERATED_BODY()
@@ -661,7 +662,7 @@ struct FBS_Dynamic
  *  Requires using an external counter that increments each time a target
  *  is consecutively destroyed and decrements by DecrementAmount each time
  *  a target was not destroyed. */
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 {
 	GENERATED_BODY()
@@ -724,244 +725,240 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 	}
 };
 
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBS_TargetConfig
 {
 	GENERATED_BODY()
 
 	/** Whether or not targets can receive Activation Responses if they're already activated */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	bool bAllowActivationWhileActivated;
 	
 	/** If true, targets can be spawned without being activated */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	bool bAllowSpawnWithoutActivation;
 
 	/** Should the target be immune to damage when spawned? */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	bool bApplyImmunityOnSpawn;
 
 	/** Whether or not the targets should have a velocity when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	bool bApplyVelocityWhenSpawned;
 	
 	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	bool bSpawnAtOriginWheneverPossible;
 
 	/** If true, alternate every target spawn in the very center */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	bool bSpawnEveryOtherTargetInCenter;
 
 	/** If true, postpones spawning target(s) until the previous target(s) have all been activated and deactivated. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	bool bUseBatchSpawning;
 
 	/** If true, use separate outline color */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	bool bUseSeparateOutlineColor;
 
 	/** How to scale the bounding box bounds (spawn area where targets are spawned), at runtime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	EBoundsScalingPolicy BoundsScalingPolicy;
 
 	/** Whether or not to dynamically change the size of targets as consecutive targets are hit */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	EConsecutiveTargetScalePolicy ConsecutiveTargetScalePolicy;
 
 	/** Which direction(s) to move targets. Separate from moving a target forward */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	EMovingTargetDirectionMode MovingTargetDirectionMode;
 
 	/** Specifies the method to remove targets from recent memory, allowing targets to spawn in that location again */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	ERecentTargetMemoryPolicy RecentTargetMemoryPolicy;
 
 	/** How to choose the target(s) to activate */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	ETargetActivationSelectionPolicy TargetActivationSelectionPolicy;
 
 	/** How the player damages the target and receives score */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	ETargetDamageType TargetDamageType;
 
 	/** Where to spawn/activate targets in the bounding box bounds (spawn area) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	ETargetDistributionPolicy TargetDistributionPolicy;
 
 	/** When to spawn targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	ETargetSpawningPolicy TargetSpawningPolicy;
 
 	/** The possible outcomes that a target can do when its activated: change directions, make damageable, etc */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	TArray<ETargetActivationResponse> TargetActivationResponses;
 
 	/** Any condition that should deactivate the target (make it immune to damage) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	TArray<ETargetDeactivationCondition> TargetDeactivationConditions;
 
 	/** Anything the target should do when it deactivates */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	TArray<ETargetDeactivationResponse> TargetDeactivationResponses;
 
 	/** Any condition that should permanently destroy a the target */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Destruction")
 	TArray<ETargetDestructionCondition> TargetDestructionConditions;
 
 	/** The base damage to set the player's HitDamage Attribute to for Hit-Based damage */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float BasePlayerHitDamage;
 
 	/** The base damage to set the player's HitDamage Attribute to for Tracking-Based damage */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float BasePlayerTrackingDamage;
 
 	/** How much to shrink the target each time a charge is consumed, if the target is charged. This is multiplied
 	 *  against the last charged target scale. A fully charged target does not receive any multiplier */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	float ConsecutiveChargeScaleMultiplier;
 
 	/** The amount of health loss required for a target to deactivate if using
 	 *  OnSpecificHealthLost Target Deactivation Condition */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	float DeactivationHealthLostThreshold;
 
 	/** Amount of health to take away from the target if the ExpirationTimer timer expires */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	float ExpirationHealthPenalty;
 
 	/** Distance from bottom of TargetManager BoxBounds to the floor */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	float FloorDistance;
 
 	/** Sets the minimum distance between recent target spawns */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	float MinDistanceBetweenTargets;
 
 	/** Value to set the MaxHealth attribute value to */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float MaxHealth;
 
 	/** The multiplier to apply to the scale of the target if using LifetimeTargetScalePolicy */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	float LifetimeTargetScaleMultiplier;
 
 	/** Min target scale to apply to the target when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float MinSpawnedTargetScale;
 
 	/** Max target scale to apply to the target when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float MaxSpawnedTargetScale;
 
 	/** Min velocity to apply to a target when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float MinSpawnedTargetSpeed;
 
 	/** Max velocity to apply to a target when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float MaxSpawnedTargetSpeed;
 
 	/** Min velocity to apply to a target when activated */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	float MinActivatedTargetSpeed;
 
 	/** Max velocity to apply to a target when activated */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	float MaxActivatedTargetSpeed;
 
 	/** Min velocity to apply to a target when deactivated */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	float MinDeactivatedTargetSpeed;
 
 	/** Max velocity to apply to a target when deactivated */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Deactivation")
 	float MaxDeactivatedTargetSpeed;
 
 	/** Length of time to keep targets flags as recent, if not using MaxNumRecentTargets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float RecentTargetTimeLength;
 
 	/** Delay between time between target spawn and peak green target color. Same as PlayerDelay in FBS_AudioConfig */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float SpawnBeatDelay;
 
 	/** Maximum time in which target will stay on screen */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float TargetMaxLifeSpan;
 
 	/** Sets the minimum time between target spawns */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	float TargetSpawnCD;
 
-	/** Gameplay tags applied to the target ASC when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	FGameplayTagContainer OnSpawn_ApplyTags;
-
 	/** The size of the target spawn BoundingBox. Dimensions are half of the the total length/width */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	FVector BoxBounds;
 
 	/** Maximum number of activated targets allowed at one time */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	int32 MaxNumActivatedTargetsAtOnce;
 
 	/** How many recent targets to keep in memory, if not using RecentTargetTimeLength */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	int32 MaxNumRecentTargets;
 
 	/** Maximum number of visible targets allowed at one time, regardless of activation state */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	int32 MaxNumTargetsAtOnce;
 
 	/** Minimum number of targets to activate at one time, if there's more than one target available to activate */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	int32 MinNumTargetsToActivateAtOnce;
 
 	/** Maximum number of targets to activate at one time, if there's more than one target available to activate */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	int32 MaxNumTargetsToActivateAtOnce;
 
 	/** How many targets to spawn at runtime */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	int32 NumRuntimeTargetsToSpawn;
 
 	/** How many targets to spawn before the game mode begins */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	int32 NumUpfrontTargetsToSpawn;
 
 	/** Color to applied to the actor if inactive */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor InactiveTargetColor;
 	
 	/** Color applied to target on spawn */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor OnSpawnColor;
 
 	/** Color interpolated from at start of ExpirationTimer timer */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor StartColor;
 	
 	/** Color interpolated to from StartColor */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor PeakColor;
 
 	/** Color interpolated to from PeakColor */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor EndColor;
 
 	/** Separate outline color if specified */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor OutlineColor;
 
 	/** Color applied to targets that are vulnerable to tracking damage when taking tracking damage */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor TakingTrackingDamageColor;
 
 	/** Color applied to targets that are vulnerable to tracking damage when not taking tracking damage, OR
 	 *  if the target lifespan is infinite */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Transient)
 	FLinearColor NotTakingTrackingDamageColor;
 
 	FBS_TargetConfig()
@@ -1007,8 +1004,7 @@ struct FBS_TargetConfig
 		RecentTargetTimeLength = 0.f;
 		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
 		TargetSpawnCD = DefaultTargetSpawnCD;
-
-		OnSpawn_ApplyTags = FGameplayTagContainer();
+		
 		BoxBounds = DefaultSpawnBoxBounds;
 
 		BasePlayerHitDamage = 100.f;
@@ -1239,37 +1235,37 @@ struct FBS_TargetConfig
 };
 
 /** Struct representing a game mode */
-USTRUCT(BlueprintType, meta=(ShowOnlyInnerProperties))
+USTRUCT(BlueprintType)
 struct FBSConfig
 {
 	GENERATED_BODY()
 
 	/** The defining config for a game mode, containing the names, base, difficulty */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_DefiningConfig DefiningConfig;
 
 	/** Contains info for the target spawner about how to handle the RLAgent */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_AIConfig AIConfig;
 
 	/** Contains info for the AudioAnalyzer and PlayerHUD */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(BlueprintReadOnly)
 	FBS_AudioConfig AudioConfig;
 
 	/** Contains info for the target spawner for BeatGrid specific game modes */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_GridConfig GridConfig;
 
 	/** Contains info for the target spawner about how to spawn the targets, as well as info to give the targets */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_TargetConfig TargetConfig;
 
 	/** Contains info for dynamic SpawnArea scaling */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_Dynamic_SpawnArea DynamicSpawnAreaScaling;
 
 	/** Contains info for dynamic target scaling */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FBS_Dynamic DynamicTargetScaling;
 
 	FORCEINLINE bool operator==(const FBSConfig& Other) const
@@ -1439,6 +1435,6 @@ public:
 	}
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ShowOnlyInnerProperties))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(ForceInlineRow))
 	TMap<FBS_DefiningConfig, FBSConfig> DefaultGameModes;
 };

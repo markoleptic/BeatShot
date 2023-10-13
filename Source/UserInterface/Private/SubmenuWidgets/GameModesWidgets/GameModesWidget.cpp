@@ -18,12 +18,40 @@
 #include "WidgetComponents/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
 #include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Preview.h"
+#include "WidgetComponents/MenuOptionWidgets/DefaultGameModeOptionWidget.h"
 
 using namespace Constants;
 
 void UGameModesWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	TArray<UDefaultGameModeOptionWidget*> Temp;
+	Box_DefaultGameModesOptions->ClearChildren();
+	DefaultGameModesParams.ValueSort([&] (const FDefaultGameModeParams& Params, const FDefaultGameModeParams& Params2)
+	{
+		return Params < Params2;
+	});
+	for (TPair<EBaseGameMode, FDefaultGameModeParams>& Pair : DefaultGameModesParams)
+	{
+		UDefaultGameModeOptionWidget* Widget = CreateWidget<UDefaultGameModeOptionWidget>(this, DefaultGameModesWidgetClass);
+		Widget->SetBaseGameMode(Pair.Key);
+		Widget->SetDescriptionText(Pair.Value.GameModeName);
+		Widget->SetAltDescriptionText(Pair.Value.AltDescriptionText);
+		Widget->SetShowTooltipImage(false);
+		Temp.Add(Widget);
+		Box_DefaultGameModesOptions->AddChildToVerticalBox(Widget);
+	}
+
+	for (int i = 0; i < Temp.Num(); i++)
+	{
+		if (!Temp.IsValidIndex(i)) continue;
+		const UDefaultGameModeOptionWidget* Widget = Temp[i];
+		const int NextIndex = i == Temp.Num() - 1 ? 0 : i + 1;
+		Widget->Button->SetDefaults(static_cast<uint8>(Widget->GetBaseGameMode()), Temp[NextIndex]->Button);
+		Widget->Button->OnBSButtonPressed.AddUniqueDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
+	}
+	Box_DefaultGameModesOptions->UpdateBrushColors();
 
 	SetupButtons();
 	BindAllDelegates();
@@ -49,6 +77,28 @@ void UGameModesWidget::NativeConstruct()
 	{
 		CustomGameModesWidget_CreatorView->Widget_Preview->ToggleGameModePreview(bIsMainMenuChild);
 	}
+}
+
+void UGameModesWidget::NativePreConstruct()
+{
+	Super::NativePreConstruct();
+	
+	Box_DefaultGameModesOptions->ClearChildren();
+	DefaultGameModesParams.ValueSort([&] (const FDefaultGameModeParams& Params, const FDefaultGameModeParams& Params2)
+	{
+		return Params < Params2;
+	});
+	for (TPair<EBaseGameMode, FDefaultGameModeParams>& Pair : DefaultGameModesParams)
+	{
+		if (!DefaultGameModesWidgetClass) return;
+		UDefaultGameModeOptionWidget* Widget = CreateWidget<UDefaultGameModeOptionWidget>(this, DefaultGameModesWidgetClass);
+		Widget->SetBaseGameMode(Pair.Key);
+		Widget->SetDescriptionText(Pair.Value.GameModeName);
+		Widget->SetAltDescriptionText(Pair.Value.AltDescriptionText);
+		Widget->SetShowTooltipImage(false);
+		Box_DefaultGameModesOptions->AddChildToVerticalBox(Widget);
+	}
+	Box_DefaultGameModesOptions->UpdateBrushColors();
 }
 
 void UGameModesWidget::NativeDestruct()
@@ -86,14 +136,6 @@ void UGameModesWidget::SetupButtons()
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
 	Button_HardDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Hard), Button_DeathDifficulty);
 	Button_DeathDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Death), Button_NormalDifficulty);
-
-	// Preset Game Mode Buttons
-	Button_BeatGrid->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatGrid), Button_BeatTrack);
-	Button_BeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::BeatTrack), Button_MultiBeat);
-	Button_MultiBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::MultiBeat), Button_SingleBeat);
-	Button_SingleBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::SingleBeat), Button_ClusterBeat);
-	Button_ClusterBeat->SetDefaults(static_cast<uint8>(EBaseGameMode::ClusterBeat), Button_ChargedBeatTrack);
-	Button_ChargedBeatTrack->SetDefaults(static_cast<uint8>(EBaseGameMode::ChargedBeatTrack), Button_BeatGrid);
 
 	// Menu Buttons
 	MenuButton_DefaultGameModes->SetDefaults(Box_DefaultGameModes, MenuButton_CustomGameModes);
@@ -137,15 +179,6 @@ void UGameModesWidget::BindAllDelegates()
 	Button_NormalDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDifficulty);
 	Button_HardDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDifficulty);
 	Button_DeathDifficulty->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDifficulty);
-
-	// Default Game Modes Buttons
-	Button_BeatGrid->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
-	Button_BeatTrack->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
-	Button_MultiBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
-	Button_SingleBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
-	Button_ClusterBeat->OnBSButtonPressed.AddDynamic(this, &UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
-	Button_ChargedBeatTrack->OnBSButtonPressed.AddDynamic(this,
-		&UGameModesWidget::OnButtonClicked_SelectedDefaultGameMode);
 
 	// Custom Game Modes Widgets
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->OnBSButtonPressed.AddDynamic(this,

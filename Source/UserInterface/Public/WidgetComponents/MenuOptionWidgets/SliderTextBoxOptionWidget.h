@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
+#include "MenuOptionWidget.h"
 #include "SliderTextBoxOptionWidget.generated.h"
 
 class UCheckBox;

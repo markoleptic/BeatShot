@@ -10,6 +10,8 @@
 #include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
 #include "GameModesWidget.generated.h"
 
+class UBSVerticalBox;
+class UDefaultGameModeOptionWidget;
 class UCustomGameModesWidgetBase;
 class UCustomGameModesWidget_PropertyView;
 class UCustomGameModesWidget_CreatorView;
@@ -73,6 +75,32 @@ struct FStartWidgetProperties
 	}
 };
 
+USTRUCT(BlueprintType)
+struct FDefaultGameModeParams
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText GameModeName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FText AltDescriptionText;
+
+	FDefaultGameModeParams()
+	{
+		GameModeName = FText();
+		AltDescriptionText = FText();
+	}
+	FORCEINLINE bool operator==(const FDefaultGameModeParams& Other) const
+	{
+		return GameModeName.EqualTo(Other.GameModeName);
+	}
+	FORCEINLINE bool operator<(const FDefaultGameModeParams& Other) const
+	{
+		return GameModeName.ToString() < Other.GameModeName.ToString();
+	}
+};
+
 DECLARE_MULTICAST_DELEGATE_OneParam(FRequestSimulateTargetManagerStateChange, const bool bSimulate)
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeBreakingChange, const bool bIsGameModeBreaking);
 
@@ -84,6 +112,7 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 	GENERATED_BODY()
 
 	virtual void NativeConstruct() override;
+	virtual void NativePreConstruct() override;
 	virtual void NativeDestruct() override;
 	virtual UBSGameModeDataAsset* GetGameModeDataAsset() const override { return GameModeDataAsset.Get(); }
 	virtual UTooltipWidget* ConstructTooltipWidget() override { return nullptr; }
@@ -122,7 +151,11 @@ protected:
 	TSubclassOf<UGameModeSharingWidget> GameModeSharingClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-
+	UPROPERTY(EditDefaultsOnly, Category = "Default Game Modes")
+	TSubclassOf<UDefaultGameModeOptionWidget> DefaultGameModesWidgetClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Default Game Modes", meta=(ForceInlineRow))
+	TMap<EBaseGameMode, FDefaultGameModeParams> DefaultGameModesParams;
+	
 	UPROPERTY()
 	TObjectPtr<UTooltipImage> TooltipWarningImage_EnableAI;
 	UPROPERTY()
@@ -151,6 +184,8 @@ protected:
 	UVerticalBox* Box_PropertyView;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UVerticalBox* Box_CreatorView;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSVerticalBox* Box_DefaultGameModesOptions;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UWidgetSwitcher* MenuSwitcher;
@@ -193,19 +228,6 @@ protected:
 	UBSButton* Button_HardDifficulty;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_DeathDifficulty;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_BeatGrid;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_BeatTrack;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_MultiBeat;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_SingleBeat;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_ClusterBeat;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UBSButton* Button_ChargedBeatTrack;
 
 	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* TransitionCustomGameModeView;
