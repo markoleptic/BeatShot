@@ -20,8 +20,8 @@ enum class EAudioFormat : uint8
 	None UMETA(DisplayName="None"),
 	File UMETA(DisplayName="File"),
 	Capture UMETA(DisplayName="Capture"),
-	Loopback UMETA(DisplayName="Loopback")};
-
+	Loopback UMETA(DisplayName="Loopback")
+};
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
 
@@ -31,8 +31,8 @@ enum class EGameModeType : uint8
 {
 	None UMETA(DisplayName="None"),
 	Preset UMETA(DisplayName="Preset"),
-	Custom UMETA(DisplayName="Custom")};
-
+	Custom UMETA(DisplayName="Custom")
+};
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeType, EGameModeType::Preset, EGameModeType::Custom);
 
 
@@ -50,7 +50,6 @@ enum class EBaseGameMode : uint8
 	MultiBeatPrecision UMETA(DisplayName="MultiBeatPrecision"),
 	MultiBeatSpeed UMETA(DisplayName="MultiBeatSpeed"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::MultiBeatSpeed);
 
 
@@ -61,8 +60,8 @@ enum class EGameModeDifficulty : uint8
 	None UMETA(DisplayName="None"),
 	Normal UMETA(DisplayName="Normal"),
 	Hard UMETA(DisplayName="Hard"),
-	Death UMETA(DisplayName="Death")};
-
+	Death UMETA(DisplayName="Death")
+};
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
 
@@ -76,11 +75,10 @@ enum class EBoundsScalingPolicy : uint8
 	/** The bounding box bounds size will gradually increase from half the Box Bounds up to the full size of BoxBounds, based on consecutive targets hit */
 	Dynamic UMETA(DisplayName="Dynamic"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(EBoundsScalingPolicy, EBoundsScalingPolicy::Static, EBoundsScalingPolicy::Dynamic);
 
 
-/** Where to spawn/activate targets in the bounding box bounds (spawn area) */
+/** The type of SpawnArea distribution to use (spawn area) */
 UENUM(BlueprintType)
 enum class ETargetDistributionPolicy : uint8
 {
@@ -94,7 +92,6 @@ enum class ETargetDistributionPolicy : uint8
 	/** Spawns targets in an evenly-spaced grid. Able to fit more targets */
 	Grid UMETA(DisplayName="Grid"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly,
 	ETargetDistributionPolicy::Grid);
 
@@ -115,7 +112,6 @@ enum class EMovingTargetDirectionMode : uint8
 	/** Only move targets forward */
 	ForwardOnly UMETA(DisplayName="Forward Only"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None,
 	EMovingTargetDirectionMode::ForwardOnly);
 
@@ -130,8 +126,8 @@ enum class EConsecutiveTargetScalePolicy : uint8
 	/** The starting scale/size of the target will be chosen randomly between min and max target scale */
 	Random UMETA(DisplayName="Random"),
 	/** The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit */
-	SkillBased UMETA(DisplayName="Skill-Based")};
-
+	SkillBased UMETA(DisplayName="Skill-Based")
+};
 ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static,
 	EConsecutiveTargetScalePolicy::SkillBased);
 
@@ -150,7 +146,6 @@ enum class ETargetDamageType : uint8
 	/** The target damages itself */
 	Self UMETA(DisplayName="Self"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDamageType, ETargetDamageType::Tracking, ETargetDamageType::Hit);
 
 
@@ -164,9 +159,30 @@ enum class ETargetSpawningPolicy : uint8
 	/** Spawn targets when the TargetManager receives the signal from AudioAnalyzer */
 	RuntimeOnly UMETA(DisplayName="Runtime Only"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly,
 	ETargetSpawningPolicy::RuntimeOnly);
+
+
+/** Where to spawn targets if Runtime Spawning */
+UENUM(BlueprintType)
+enum class ERuntimeTargetSpawningLocationSelectionMode : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Randomly choose an available SpawnArea */
+	Random UMETA(DisplayName="Random"),
+	/** Chooses a random bordering SpawnArea based on the last SPAWNED target */
+	Bordering UMETA(DisplayName="Bordering"),
+	/** Chooses a random block of targets */
+	RandomGridBlock UMETA(DisplayName="RandomGridBlock"),
+	/** Chooses a nearby block of targets based on the last SPAWNED target */
+	NearbyGridBlock UMETA(DisplayName="NearbyGridBlock"),
+	/** Randomly choose the horizontal location, but evenly distribute vertically */
+	RandomVertical UMETA(DisplayName="RandomVertical"),
+	/** Randomly choose the vertical location, but evenly distribute horizontally */
+	RandomHorizontal UMETA(DisplayName="RandomHorizontal"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ERuntimeTargetSpawningLocationSelectionMode, ERuntimeTargetSpawningLocationSelectionMode::Random,
+	ERuntimeTargetSpawningLocationSelectionMode::NearbyGridBlock);
 
 
 /** How to choose the target(s) to activate */
@@ -179,7 +195,6 @@ enum class ETargetActivationSelectionPolicy : uint8
 	/** Randomly chooses a target within the available spawn points */
 	Random UMETA(DisplayName="Random"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering,
 	ETargetActivationSelectionPolicy::Random);
 
@@ -197,53 +212,27 @@ enum class ERecentTargetMemoryPolicy : uint8
 	/** Removes recent targets only when the number of recent targets exceeds specified capacity */
 	NumTargetsBased UMETA(DisplayName="Num Targets Based"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None,
 	ERecentTargetMemoryPolicy::NumTargetsBased);
 
 
-/** Each represents one way that a target can be deactivated */
+/** What does the target do when its spawned */
 UENUM(BlueprintType)
-enum class ETargetDeactivationCondition : uint8
+enum class ETargetSpawnResponse : uint8
 {
 	None UMETA(DisplayName="None"),
-	/** Targets are never deactivated, even if their health reaches zero */
-	Persistant UMETA(DisplayName="Persistant"),
-	/** Target is deactivated when it receives any damage from the player */
-	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
-	/** Target is deactivated after its damageable window closes */
-	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** Target is deactivated when its health reaches zero */
-	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
-	/** Target is deactivated after it has lost a specific amount of health */
-	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
+	/** Change the direction of the target */
+	ChangeDirection UMETA(DisplayName="Change Direction"),
+	/** Change the velocity of the target according to DeactivationVelocity */
+	ChangeVelocity UMETA(DisplayName="Change Velocity"),
+	/** Immunity is granted to the target */
+	AddImmunity UMETA(DisplayName="Add Immunity"),
 };
-
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant,
-	ETargetDeactivationCondition::OnSpecificHealthLost);
-
-
-/** Each represents one way that a target can be destroyed */
-UENUM(BlueprintType)
-enum class ETargetDestructionCondition : uint8
-{
-	None UMETA(DisplayName="None"),
-	/** Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated */
-	Persistant UMETA(DisplayName="Persistant"),
-	/** Target is deactivated after its damageable window closes */
-	OnExpiration UMETA(DisplayName="On Expiration"),
-	/** Target is destroyed when it receives any damage from the player */
-	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
-	/** Target is destroyed when its health reaches zero */
-	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
-	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
-	OnDeactivation UMETA(DisplayName="On Deactivation")};
-
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant,
-	ETargetDestructionCondition::OnDeactivation);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawnResponse, ETargetSpawnResponse::ChangeDirection,
+	ETargetSpawnResponse::AddImmunity);
 
 
-/** What does the target do when its activated: change directions, make damageable, etc */
+/** What does the target do when its activated */
 UENUM(BlueprintType)
 enum class ETargetActivationResponse : uint8
 {
@@ -265,9 +254,29 @@ enum class ETargetActivationResponse : uint8
 	/** Lifetime Target Scaling is applied throughout the target's lifetime */
 	ApplyLifetimeTargetScaling UMETA(DisplayName="Apply Lifetime Target Scaling"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity,
 	ETargetActivationResponse::ApplyLifetimeTargetScaling);
+
+
+/** Each represents one way that a target can be deactivated */
+UENUM(BlueprintType)
+enum class ETargetDeactivationCondition : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Targets are never deactivated, even if their health reaches zero */
+	Persistant UMETA(DisplayName="Persistant"),
+	/** Target is deactivated when it receives any damage from the player */
+	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
+	/** Target is deactivated after its damageable window closes */
+	OnExpiration UMETA(DisplayName="On Expiration"),
+	/** Target is deactivated when its health reaches zero */
+	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
+	/** Target is deactivated after it has lost a specific amount of health */
+	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
+};
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant,
+	ETargetDeactivationCondition::OnSpecificHealthLost);
 
 
 /** What does the target do when its deactivated */
@@ -306,9 +315,29 @@ enum class ETargetDeactivationResponse : uint8
 	/** Reset the position of the target to the position it was activated with */
 	ResetPositionToActivatedPosition UMETA(DisplayName="Reset Position To Activated Position"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity,
 	ETargetDeactivationResponse::ResetPositionToActivatedPosition);
+
+
+/** Each represents one way that a target can be destroyed */
+UENUM(BlueprintType)
+enum class ETargetDestructionCondition : uint8
+{
+	None UMETA(DisplayName="None"),
+	/** Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated */
+	Persistant UMETA(DisplayName="Persistant"),
+	/** Target is deactivated after its damageable window closes */
+	OnExpiration UMETA(DisplayName="On Expiration"),
+	/** Target is destroyed when it receives any damage from the player */
+	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
+	/** Target is destroyed when its health reaches zero */
+	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
+	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
+	OnDeactivation UMETA(DisplayName="On Deactivation")
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant,
+	ETargetDestructionCondition::OnDeactivation);
+
 
 /** Defines in which directions the box bounds will grow */
 UENUM(BlueprintType)
@@ -321,9 +350,9 @@ enum class EDynamicBoundsScalingPolicy : uint8
 	Vertical UMETA(DisplayName="Vertical"),
 	/** Allow the bounds to grow forward  */
 	Forward UMETA(DisplayName="Forward")};
-
 ENUM_RANGE_BY_FIRST_AND_LAST(EDynamicBoundsScalingPolicy, EDynamicBoundsScalingPolicy::Horizontal,
 	EDynamicBoundsScalingPolicy::Forward);
+
 
 /** Enum representing the modes in which the Reinforcement Learning Component operates */
 UENUM(BlueprintType)
@@ -737,14 +766,6 @@ struct FBS_TargetConfig
 	/** If true, targets can be spawned without being activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	bool bAllowSpawnWithoutActivation;
-
-	/** Should the target be immune to damage when spawned? */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
-	bool bApplyImmunityOnSpawn;
-
-	/** Whether or not the targets should have a velocity when spawned */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
-	bool bApplyVelocityWhenSpawned;
 	
 	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
@@ -786,13 +807,21 @@ struct FBS_TargetConfig
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	ETargetDamageType TargetDamageType;
 
-	/** Where to spawn/activate targets in the bounding box bounds (spawn area) */
+	/** The type of SpawnArea distribution to use (spawn area) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SpawnArea")
 	ETargetDistributionPolicy TargetDistributionPolicy;
 
 	/** When to spawn targets */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	ETargetSpawningPolicy TargetSpawningPolicy;
+
+	/** Where to spawn targets if Runtime Spawning */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")	
+	ERuntimeTargetSpawningLocationSelectionMode RuntimeTargetSpawningLocationSelectionMode;
+	
+	/** Things a target can do when it is activated */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
+	TArray<ETargetSpawnResponse> TargetSpawnResponses;
 
 	/** The possible outcomes that a target can do when its activated: change directions, make damageable, etc */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
@@ -964,8 +993,6 @@ struct FBS_TargetConfig
 	FBS_TargetConfig()
 	{
 		bAllowSpawnWithoutActivation = false;
-		bApplyImmunityOnSpawn = false;
-		bApplyVelocityWhenSpawned = false;
 		bAllowActivationWhileActivated = false;
 		bSpawnAtOriginWheneverPossible = false;
 		bSpawnEveryOtherTargetInCenter = false;
@@ -979,7 +1006,9 @@ struct FBS_TargetConfig
 		TargetDamageType = ETargetDamageType::None;
 		TargetDistributionPolicy = ETargetDistributionPolicy::None;
 		TargetSpawningPolicy = ETargetSpawningPolicy::None;
+		RuntimeTargetSpawningLocationSelectionMode = ERuntimeTargetSpawningLocationSelectionMode::None;
 
+		TargetSpawnResponses = TArray<ETargetSpawnResponse>();
 		TargetActivationResponses = TArray<ETargetActivationResponse>();
 		TargetDeactivationConditions = TArray<ETargetDeactivationCondition>();
 		TargetDeactivationResponses = TArray<ETargetDeactivationResponse>();
@@ -1038,14 +1067,6 @@ struct FBS_TargetConfig
 		{
 			return false;
 		}
-		if (bApplyImmunityOnSpawn != Other.bApplyImmunityOnSpawn)
-		{
-			return false;
-		}
-		if (bApplyVelocityWhenSpawned != Other.bApplyVelocityWhenSpawned)
-		{
-			return false;
-		}
 		if (bSpawnAtOriginWheneverPossible != Other.bSpawnAtOriginWheneverPossible)
 		{
 			return false;
@@ -1059,6 +1080,10 @@ struct FBS_TargetConfig
 			return false;
 		}
 		if (BoundsScalingPolicy != Other.BoundsScalingPolicy)
+		{
+			return false;
+		}
+		if (RuntimeTargetSpawningLocationSelectionMode != Other.RuntimeTargetSpawningLocationSelectionMode)
 		{
 			return false;
 		}
@@ -1087,6 +1112,10 @@ struct FBS_TargetConfig
 			return false;
 		}
 		if (TargetSpawningPolicy != Other.TargetSpawningPolicy)
+		{
+			return false;
+		}
+		if (TargetSpawnResponses != Other.TargetSpawnResponses)
 		{
 			return false;
 		}

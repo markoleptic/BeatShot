@@ -125,7 +125,7 @@ protected:
 	 *  delegates, sets the InSpawnArea's Guid, and adds the target to ManagedTargets */
 	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea);
 
-	/** Adds a Target to the ManagedTargets array, and updates the associated SpawnArea IsCurrentlyManaged flag */
+	/** Adds a Target to the ManagedTargets array, and updates the associated SpawnArea IsManaged flag */
 	int32 AddToManagedTargets(ATarget* SpawnTarget);
 
 	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget */
@@ -153,15 +153,17 @@ protected:
 	/** Returns the number of targets that are allowed to be activated at once. Will only return values >= 0 */
 	int32 GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const;
 
-	/** Calls functions to get the next target's location and scale */
-	USpawnArea* FindNextTargetProperties();
-
 	/** Returns the scale for next target */
 	FVector FindNextTargetScale() const;
 
-	/** Find the next spawn location for a target */
-	USpawnArea* FindNextSpawnArea(const FVector& NewTargetScale) const;
+	/** Finds suitable SpawnArea(s) to spawn NumToSpawn targets given the mode */
+	TArray<USpawnArea*> FindNextSpawnAreasForSpawn(int32 NumToSpawn,
+		const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
 
+	/** Finds suitable SpawnArea(s) to activate NumToActivate targets */
+	TArray<USpawnArea*> FindNextSpawnAreasForActivation(int32 NumToActivate) const;
+
+	/** Finds the correct damage type for the next target spawn */
 	ETargetDamageType FindNextTargetDamageType();
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing
@@ -183,7 +185,7 @@ protected:
 	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
 	void HandleManagedTargetRemoval(const FTargetDamageEvent& Event);
 
-	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsCurrentlyManaged flag */
+	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsManaged flag */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 
 	/** Returns the static location to place the SpawnBox */

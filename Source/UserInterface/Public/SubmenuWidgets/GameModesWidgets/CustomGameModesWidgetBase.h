@@ -141,16 +141,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	TObjectPtr<UCustomGameModesWidget_Start> Widget_Start;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidgetComponent> Widget_SpawnArea;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidgetComponent> Widget_Activation;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidgetComponent> Widget_Deactivation;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidgetComponent> Widget_General;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidgetComponent> Widget_Spawning;
 
 	UPROPERTY()
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;

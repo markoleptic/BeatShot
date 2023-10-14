@@ -2,6 +2,7 @@
 
 
 #include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidgetBase.h"
+#include "Blueprint/WidgetTree.h"
 #include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidgetComponent.h"
 #include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Start.h"
 
@@ -9,12 +10,13 @@ void UCustomGameModesWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Start));
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_General));
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_SpawnArea));
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Spawning));
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Activation));
-	AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Widget_Deactivation));
+	WidgetTree->ForEachWidget([this](UWidget* Widget)
+	{
+		if (UCustomGameModesWidgetComponent* Component = Cast<UCustomGameModesWidgetComponent>(Widget))
+		{
+			AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Component));
+		}
+	});
 
 	Widget_Start->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	Widget_Start->OnCustomGameModeNameChanged.AddUObject(this, &ThisClass::OnStartWidget_CustomGameModeNameChanged);
@@ -41,7 +43,7 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 	{
 		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
 		{
-			Component->InitComponent(InConfig, nullptr);
+			Component->InitComponent(InConfig);
 		}
 	}
 }

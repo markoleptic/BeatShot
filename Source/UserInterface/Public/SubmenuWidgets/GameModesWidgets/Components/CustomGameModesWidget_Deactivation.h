@@ -14,9 +14,6 @@ class USERINTERFACE_API UCustomGameModesWidget_Deactivation : public UCustomGame
 {
 	GENERATED_BODY()
 
-public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
@@ -31,26 +28,12 @@ protected:
 	void UpdateDependentOptions_TargetDeactivationResponses(const TArray<ETargetDeactivationCondition>& Conditions,
 		const TArray<ETargetDeactivationResponse>& Responses);
 
-	/** Updates options that depend on the value selection of ConstantDeactivatedTargetVelocity */
-	void UpdateDependentOptions_ConstantDeactivatedTargetVelocity(const TArray<ETargetDeactivationResponse>& Responses,
-		const bool bInConstant);
-
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationConditions;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetDeactivationResponses;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantDeactivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinDeactivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxDeactivatedTargetVelocity;
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivationHealthLostThreshold;
 
@@ -58,9 +41,6 @@ protected:
 	UComboBoxOptionWidget* ComboBoxOption_TargetDestructionConditions;
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantDeactivatedTargetVelocity(const bool bChecked);
 
 	UFUNCTION()
 	void OnSelectionChanged_TargetDeactivationConditions(const TArray<FString>& Selected,

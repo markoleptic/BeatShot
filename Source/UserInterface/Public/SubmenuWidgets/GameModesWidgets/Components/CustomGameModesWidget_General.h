@@ -15,9 +15,6 @@ class USERINTERFACE_API UCustomGameModesWidget_General : public UCustomGameModes
 {
 	GENERATED_BODY()
 
-public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
@@ -40,10 +37,6 @@ protected:
 	
 	/** Updates options that depend on the value selection of InfiniteTargetLifespan */
 	void UpdateDependentOptions_InfiniteTargetLifespan(const bool bInfiniteTargetLifespan);
-
-	/** Updates options that depend on the value selection of ConsecutiveTargetScalePolicy */
-	void UpdateDependentOptions_ConsecutiveTargetScalePolicy(
-		const EConsecutiveTargetScalePolicy InConsecutiveTargetScalePolicy);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_SpawnBeatDelay;
@@ -83,26 +76,7 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_ExpirationHealthPenalty;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_ConsecutiveTargetScalePolicy;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetScale;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinTargetScale;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxTargetScale;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_StartThreshold;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_EndThreshold;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_DecrementAmount;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_DamageType;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_MovingTargetDirectionMode;
 
 	UFUNCTION()
 	void OnCheckStateChanged_EnableAI(const bool bChecked);
@@ -119,17 +93,9 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_DamageType(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
-	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
-	UFUNCTION()
 	void OnSelectionChanged_HyperParameterMode(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString);
-	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
-	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_HyperParameterMode(const FString& EnumString);
 };

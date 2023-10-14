@@ -38,12 +38,6 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_Start::InitComponent(FBSConfig* InConfigPtr,
-	TObjectPtr<UCustomGameModesWidgetComponent> InNext)
-{
-	Super::InitComponent(InConfigPtr, InNext);
-}
-
 FString UCustomGameModesWidget_Start::GetNewCustomGameModeName() const
 {
 	return EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText().ToString();

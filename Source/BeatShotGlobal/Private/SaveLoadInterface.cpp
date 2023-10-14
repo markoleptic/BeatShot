@@ -10,61 +10,16 @@
 USaveGamePlayerScore* ISaveLoadInterface::LoadFromSlot_SaveGamePlayerScore()
 {
 	return LoadFromSlot<USaveGamePlayerScore>("ScoreSlot", 1);
-	/*if (UGameplayStatics::DoesSaveGameExist(TEXT("ScoreSlot"), 1))
-	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::LoadGameFromSlot(TEXT("ScoreSlot"), 1)))
-		{
-			return SaveGamePlayerScore;
-		}
-	}
-	else
-	{
-		if (USaveGamePlayerScore* SaveGamePlayerScore = Cast<USaveGamePlayerScore>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerScore::StaticClass())))
-		{
-			return SaveGamePlayerScore;
-		}
-	}
-	return nullptr;*/
 }
 
 USaveGameCustomGameMode* ISaveLoadInterface::LoadFromSlot_SaveGameCustomGameMode()
 {
 	return LoadFromSlot<USaveGameCustomGameMode>("CustomGameModesSlot", 3);
-	/*if (UGameplayStatics::DoesSaveGameExist(TEXT("CustomGameModesSlot"), 3))
-	{
-		if (USaveGameCustomGameMode* SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::LoadGameFromSlot(TEXT("CustomGameModesSlot"), 3)))
-		{
-			return SaveGameCustomGameMode;
-		}
-	}
-	else
-	{
-		if (USaveGameCustomGameMode* SaveGameCustomGameMode = Cast<USaveGameCustomGameMode>(UGameplayStatics::CreateSaveGameObject(USaveGameCustomGameMode::StaticClass())))
-		{
-			return SaveGameCustomGameMode;
-		}
-	}
-	return nullptr;*/
 }
 
 USaveGamePlayerSettings* ISaveLoadInterface::LoadFromSlot_SaveGamePlayerSettings()
 {
 	return LoadFromSlot<USaveGamePlayerSettings>("SettingsSlot", 0);
-	/*if (UGameplayStatics::DoesSaveGameExist(TEXT("SettingsSlot"), 0))
-	{
-		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::LoadGameFromSlot(TEXT("SettingsSlot"), 0)))
-		{
-			return SaveGamePlayerSettings;
-		}
-	}
-	else
-	{
-		if (USaveGamePlayerSettings* SaveGamePlayerSettings = Cast<USaveGamePlayerSettings>(UGameplayStatics::CreateSaveGameObject(USaveGamePlayerSettings::StaticClass())))
-		{
-			return SaveGamePlayerSettings;
-		}
-	}
-	return nullptr;*/
 }
 
 bool ISaveLoadInterface::SaveToSlot(USaveGamePlayerSettings* SaveGamePlayerSettings)

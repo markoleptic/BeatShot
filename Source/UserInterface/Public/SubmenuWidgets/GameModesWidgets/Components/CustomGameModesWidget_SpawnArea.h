@@ -16,9 +16,6 @@ class USERINTERFACE_API UCustomGameModesWidget_SpawnArea : public UCustomGameMod
 {
 	GENERATED_BODY()
 
-public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;

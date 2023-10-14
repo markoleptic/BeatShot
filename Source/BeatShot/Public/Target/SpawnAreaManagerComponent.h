@@ -237,9 +237,9 @@ public:
 	FVector GetChosenPoint() const { return ChosenPoint; }
 	FVector GetBottomLeftVertex() const { return Vertex_BottomLeft; }
 	bool IsActivated() const { return bIsActivated; }
-	bool CanActivateWhileActivated() const { return bAllowActivationWhileActivated; }
-	bool IsCurrentlyManaged() const { return bIsCurrentlyManaged; }
+	bool IsManaged() const { return bIsCurrentlyManaged; }
 	bool IsRecent() const { return bIsRecent; }
+	bool CanActivateWhileActivated() const { return bAllowActivationWhileActivated; }
 	double GetTimeSetRecent() const { return TimeSetRecent; }
 	TArray<int32> GetBorderingIndices() const { return AdjacentIndices; }
 	TArray<FVector> GetOverlappingVertices() const { return OverlappingVertices; }
@@ -250,6 +250,7 @@ public:
 	int32 GetTotalTrackingDamage() const { return TotalTrackingDamage; }
 	int32 GetTotalTrackingDamagePossible() const { return TotalTrackingDamagePossible; }
 	FVector GetTargetScale() const { return TargetScale; }
+	float GetMinOverlapRadius() const;
 
 	/** Sets the TargetScale */
 	void SetTargetScale(const FVector& InScale)
@@ -298,8 +299,8 @@ private:
 	void SetOverlappingVertices(const TArray<FVector>& InOverlappingVertices);
 
 	/** Finds and returns the OverlappingVertices, based on the parameters, Width, & Height */
-	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const float InMinOverlapRadius,
-		const FVector& InScale, TArray<FVector>& DebugVertices, const bool bAddDebugVertices = false) const;
+	TArray<FVector> GenerateOverlappingVertices(const float InMinTargetDistance, const FVector& InScale,
+		TArray<FVector>& DebugVertices, const bool bAddDebugVertices = false) const;
 
 	/** Empties the OverlappingVertices array */
 	void EmptyOverlappingVertices() { OverlappingVertices.Empty(); }
@@ -347,10 +348,10 @@ public:
 	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
 	bool ShouldForceSpawnAtOrigin() const;
 
-	/** Sets the most recently activated SpawnArea */
+	/** Sets the most recently activated SpawnArea. Should be called from TargetManager at end of ActivateTarget */
 	void SetMostRecentSpawnArea(USpawnArea* SpawnArea);
 
-	/** Returns the most recently activated SpawnArea */
+	/** Returns the most recent SpawnArea that was set at the end of ATargetManager::ActivateTarget */
 	USpawnArea* GetMostRecentSpawnArea() const;
 
 	/** Returns the SpawnArea containing the origin */
@@ -400,11 +401,9 @@ public:
 
 	/** Returns a filtered array containing SpawnAreas flagged as managed, activated, or recent */
 	TArray<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
-
-	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
-	void RefreshRecentFlags() const;
-
-	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed */
+	
+	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
+	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
 	void RemoveOverlappingSpawnAreas(TArray<USpawnArea*>& ValidSpawnAreas, const FVector& Scale) const;
 
 	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
@@ -437,21 +436,34 @@ public:
 	 *  SpawnAreas empty their OverlappingVertices when their Recent Flag is removed */
 	void RemoveRecentFlagFromSpawnArea(USpawnArea* SpawnArea) const;
 
-	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array based on the
-	*   TargetDistributionPolicy, BoundsScalingPolicy, and if needed, the TargetActivationSelectionPolicy */
-	TArray<USpawnArea*> GetValidSpawnAreas(const FVector& Scale, const FExtrema& InCurrentExtrema) const;
+	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
+	void RefreshRecentFlags() const;
 
-	/** Adds valid SpawnAreas for an edge-only TargetDistributionPolicy */
-	void HandleEdgeOnlySpawnLocations(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
+	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
+	 *  are linked to a managed target since activatable requires being managed. Also considers the
+	 *  Target Activation Selection Policy */
+	TArray<USpawnArea*> GetActivatableSpawnAreas(const int32 NumToActivate) const;
 
-	/** Adds valid SpawnAreas for a full range TargetDistributionPolicy */
-	void HandleFullRangeSpawnLocations(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
-
+	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
+	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
+	 *  and Bounds Scaling Policy */
+	TArray<USpawnArea*> GetSpawnableSpawnAreas(const FVector& Scale, const FExtrema& Extrema,
+		const int32 NumToSpawn, const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
+	
 	/** Adds valid SpawnAreas for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
-	void HandleGridSpawnLocations(TArray<USpawnArea*>& ValidSpawnAreas) const;
+	void HandleGridSpawnLocations(TArray<USpawnArea*>& ValidSpawnAreas, const int32 NumToSpawn, const bool bConsiderManagedInvalid) const;
+
+	/** Filters the SpawnAreas array directly using FilterByPredicate and removing SpawnAreas outside of the Extrema */
+	void FilterByExtrema(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
+
+	/** Filters out any SpawnAreas that aren't along the edge of the current Extrema */
+	void FilterByEdgeOnly(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
 
 	/** Filters out any SpawnAreas that aren't bordering the CurrentSpawnArea */
 	void FilterBorderingIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
+
+	/** Filters out any SpawnAreas that aren't bordering the CurrentSpawnArea */
+	void FilterBorderingIndices(TArray<USpawnArea*>& ValidSpawnAreas, USpawnArea* Current) const;
 
 	/** Filters out any SpawnAreas that are flagged as recent */
 	void FilterRecentIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
@@ -543,6 +555,8 @@ private:
 	/** Returns pointer to TargetManager's BSConfig */
 	FBSConfig* GetBSConfig() const { return BSConfig; }
 
+	const FBS_TargetConfig& GetTc() const { return BSConfig->TargetConfig; }
+
 	/** Pointer to TargetManager's BSConfig */
 	FBSConfig* BSConfig;
 
@@ -568,9 +582,6 @@ private:
 	
 	/** Scale the representation of the spawn area down by this factor */
 	FVector SpawnAreaScale;
-
-	/** Radius used when finding overlapping SpawnAreas */
-	float MinOverlapRadius;
 
 	/** BoxBounds origin */
 	FVector Origin;

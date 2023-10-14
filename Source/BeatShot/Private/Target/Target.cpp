@@ -171,11 +171,6 @@ void ATarget::PostInitializeComponents()
 		case ETargetDamageType::Self:
 			break;
 		}
-
-		if (Config.bApplyImmunityOnSpawn)
-		{
-			ApplyImmunityEffect();
-		}
 	}
 
 	TargetScale_Spawn = GetActorScale();

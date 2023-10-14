@@ -177,7 +177,8 @@ protected:
 		StaticEnum<ETargetActivationResponse>(), StaticEnum<ETargetDeactivationResponse>(),
 		StaticEnum<EDynamicBoundsScalingPolicy>(), StaticEnum<ETargetSpawningPolicy>(),
 		StaticEnum<ETargetDistributionPolicy>(), StaticEnum<EReinforcementLearningMode>(),
-		StaticEnum<EReinforcementLearningHyperParameterMode>()
+		StaticEnum<EReinforcementLearningHyperParameterMode>(), StaticEnum<ETargetSpawnResponse>(),
+		StaticEnum<ERuntimeTargetSpawningLocationSelectionMode>()
 	};
 };
 

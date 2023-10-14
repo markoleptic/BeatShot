@@ -6,11 +6,6 @@
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
 
-void UCustomGameModesWidget_Preview::InitComponent(FBSConfig* InConfigPtr,
-	TObjectPtr<UCustomGameModesWidgetComponent> InNext)
-{
-	Super::InitComponent(InConfigPtr, InNext);
-}
 
 void UCustomGameModesWidget_Preview::SetBoxBounds_Current(const FVector2d& InBounds, const float VerticalOffset)
 {

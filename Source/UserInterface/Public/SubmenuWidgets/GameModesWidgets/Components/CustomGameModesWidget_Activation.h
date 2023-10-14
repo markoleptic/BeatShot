@@ -16,9 +16,6 @@ class USERINTERFACE_API UCustomGameModesWidget_Activation : public UCustomGameMo
 {
 	GENERATED_BODY()
 
-public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
@@ -30,10 +27,6 @@ protected:
 
 	/** Updates options that depend on the value selection of TargetActivationResponses */
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses,
-		const bool bUseConstantTargetSpeed);
-
-	/** Updates options that depend on the value selection of TargetActivationResponses and ConstantTargetSpeed */
-	void UpdateDependentOptions_ConstantTargetSpeed(const TArray<ETargetActivationResponse>& InResponses,
 		const bool bUseConstantTargetSpeed);
 
 	/** Updates options that depend on the value selection of TargetDistributionPolicy */
@@ -58,22 +51,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetActivationResponses;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_LifetimeTargetScaleMultiplier;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantActivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_ActivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinActivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxActivatedTargetVelocity;
 
 	UFUNCTION()
 	void OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce(const bool bChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_AllowActivationWhileActivated(const bool bChecked);
 

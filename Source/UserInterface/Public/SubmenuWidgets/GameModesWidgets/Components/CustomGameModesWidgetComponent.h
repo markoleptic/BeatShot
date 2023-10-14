@@ -54,13 +54,10 @@ protected:
 
 public:
 	/** Sets BSConfig, sets the pointer to next widget in linked list, and calls UpdateOptionsFromConfig */
-	virtual void InitComponent(FBSConfig* InConfigPtr, const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
+	virtual void InitComponent(FBSConfig* InConfigPtr);
 
 	/** Sets all custom game mode option values using the BSConfig pointer. Only changes the values if different. Only called during transitions */
 	virtual void UpdateOptionsFromConfig();
-
-	/** Returns the next CustomGameModesWidgetComponent to transition to */
-	TObjectPtr<UCustomGameModesWidgetComponent> GetNext() const;
 
 	/** Broadcast when a caution/warning tooltip needed to be added, removed, or updated. Helps synchronize caution/warnings across different components */
 	FRequestComponentUpdate RequestComponentUpdate;
@@ -79,8 +76,6 @@ public:
 	FCustomGameModeCategoryInfo* GetCustomGameModeCategoryInfo() { return &CustomGameModeCategoryInfo; }
 
 protected:
-	/** Sets value of Next */
-	void SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext);
 
 	/** Adds a GameModeCategoryTagWidget for each matching GameplayTag on the Menu Option widget*/
 	void AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget);
@@ -126,6 +121,8 @@ protected:
 
 	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
+
+	
 
 	/** Struct containing info about NumWarning & NumCaution tooltips */
 	FCustomGameModeCategoryInfo CustomGameModeCategoryInfo;

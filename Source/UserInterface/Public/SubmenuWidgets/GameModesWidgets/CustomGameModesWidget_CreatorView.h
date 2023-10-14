@@ -17,9 +17,6 @@ class USERINTERFACE_API UCustomGameModesWidget_CreatorView : public UCustomGameM
 {
 	GENERATED_BODY()
 
-public:
-	virtual void Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset) override;
-
 protected:
 	virtual void NativeConstruct() override;
 

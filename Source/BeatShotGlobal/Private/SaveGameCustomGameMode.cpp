@@ -3,6 +3,16 @@
 
 #include "SaveGameCustomGameMode.h"
 
+void USaveGameCustomGameMode::Serialize(FArchive& Ar)
+{
+	Super::Serialize(Ar);
+}
+
+void USaveGameCustomGameMode::Serialize(FStructuredArchive::FRecord Record)
+{
+	Super::Serialize(Record);
+}
+
 TArray<FBSConfig> USaveGameCustomGameMode::GetCustomGameModes() const
 {
 	return CustomGameModes;

@@ -17,8 +17,6 @@ class USERINTERFACE_API UCustomGameModesWidget_Preview : public UCustomGameModes
 	GENERATED_BODY()
 
 public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 	void SetBoxBounds_Current(const FVector2d& InBounds, const float VerticalOffset);
 
 	void SetBoxBounds_Max(const FVector2d& InBounds, const float VerticalOffset);

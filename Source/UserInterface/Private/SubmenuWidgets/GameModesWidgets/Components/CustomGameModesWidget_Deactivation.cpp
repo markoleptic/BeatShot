@@ -2,41 +2,19 @@
 
 
 #include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Deactivation.h"
-#include "Components/CheckBox.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
-void UCustomGameModesWidget_Deactivation::InitComponent(FBSConfig* InConfigPtr,
-	TObjectPtr<UCustomGameModesWidgetComponent> InNext)
-{
-	Super::InitComponent(InConfigPtr, InNext);
-}
 
 void UCustomGameModesWidget_Deactivation::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetValues(MinValue_ConsecutiveChargeScaleMultiplier,
-		MaxValue_ConsecutiveChargeScaleMultiplier, SnapSize_ConsecutiveChargeScaleMultiplier);
-	SliderTextBoxOption_DeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MinDeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
+	
 	SliderTextBoxOption_DeactivationHealthLostThreshold->SetValues(MinValue_SpecificHealthLost, MaxValue_SpecificHealthLost,
 		SnapSize_SpecificHealthLost);
 	
-	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_DeactivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinDeactivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MaxDeactivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_DeactivationHealthLostThreshold->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
 
@@ -53,10 +31,7 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses);
 	ComboBoxOption_TargetDestructionConditions->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetDestructionConditions);
-
-	CheckBoxOption_ConstantDeactivatedTargetVelocity->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_ConstantDeactivatedTargetVelocity);
-
+	
 	ComboBoxOption_TargetDeactivationConditions->ComboBox->ClearOptions();
 	ComboBoxOption_TargetDeactivationResponses->ComboBox->ClearOptions();
 	ComboBoxOption_TargetDestructionConditions->ComboBox->ClearOptions();
@@ -82,12 +57,7 @@ void UCustomGameModesWidget_Deactivation::NativeConstruct()
 	}
 	ComboBoxOption_TargetDestructionConditions->SortAddOptionsAndSetEnumType<ETargetDestructionCondition>(Options);
 	Options.Empty();
-
-	CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
+	
 	SliderTextBoxOption_DeactivationHealthLostThreshold->SetVisibility(ESlateVisibility::Collapsed);
 
 	SetupWarningTooltipCallbacks();
@@ -105,21 +75,10 @@ void UCustomGameModesWidget_Deactivation::UpdateOptionsFromConfig()
 		GetStringArrayFromEnumArray_FromTagMap(BSConfig->TargetConfig.TargetDeactivationConditions));
 	UpdateValueIfDifferent(ComboBoxOption_TargetDeactivationResponses,
 		GetStringArrayFromEnumArray_FromTagMap(BSConfig->TargetConfig.TargetDeactivationResponses));
-	UpdateValueIfDifferent(SliderTextBoxOption_DeactivatedTargetScaleMultiplier,
-		BSConfig->TargetConfig.ConsecutiveChargeScaleMultiplier);
 	UpdateValueIfDifferent(ComboBoxOption_TargetDestructionConditions,
 		GetStringArrayFromEnumArray_FromTagMap(BSConfig->TargetConfig.TargetDestructionConditions));
 	UpdateValueIfDifferent(SliderTextBoxOption_DeactivationHealthLostThreshold,
 		BSConfig->TargetConfig.DeactivationHealthLostThreshold);
-
-	UpdateValueIfDifferent(CheckBoxOption_ConstantDeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed == BSConfig->TargetConfig.MaxDeactivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_DeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinDeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxDeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed);
 
 	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions,
 		BSConfig->TargetConfig.TargetDeactivationResponses);
@@ -176,111 +135,12 @@ void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_TargetDeactivat
 void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_TargetDeactivationResponses(
 	const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses)
 {
-	// Collapse any Responses dependent upon Conditions
-	if (Conditions.Contains(ETargetDeactivationCondition::Persistant))
-	{
-		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	// Show any Responses dependent upon Conditions
-	if (!Conditions.Contains(ETargetDeactivationCondition::Persistant))
-	{
-		if (Responses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
-		{
-			SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-		}
-	}
-
-	// Change Velocity
-	if (Responses.Contains(ETargetDeactivationResponse::ChangeVelocity))
-	{
-		CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	UpdateDependentOptions_ConstantDeactivatedTargetVelocity(Responses,
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed == BSConfig->TargetConfig.MaxDeactivatedTargetSpeed);
-}
-
-void UCustomGameModesWidget_Deactivation::UpdateDependentOptions_ConstantDeactivatedTargetVelocity(
-	const TArray<ETargetDeactivationResponse>& Responses, const bool bInConstant)
-{
-	// Hide all speed options if Change Velocity not selected as a TargetDeactivationResponse
-	if (!Responses.Contains(ETargetDeactivationResponse::ChangeVelocity))
-	{
-		SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		return;
-	}
-
-	// Change Velocity is selected as a TargetDeactivationResponse
-	if (bInConstant)
-	{
-		SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	else
-	{
-		SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-}
-
-void UCustomGameModesWidget_Deactivation::OnCheckStateChanged_ConstantDeactivatedTargetVelocity(const bool bChecked)
-{
-	if (bChecked)
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = SliderTextBoxOption_DeactivatedTargetVelocity->
-			GetSliderValue();
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = SliderTextBoxOption_DeactivatedTargetVelocity->
-			GetSliderValue();
-	}
-	else
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = SliderTextBoxOption_MinDeactivatedTargetVelocity->
-			GetSliderValue();
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = SliderTextBoxOption_MaxDeactivatedTargetVelocity->
-			GetSliderValue();
-	}
-
-	UpdateDependentOptions_ConstantDeactivatedTargetVelocity(BSConfig->TargetConfig.TargetDeactivationResponses,
-		bChecked);
-	UpdateBrushColors();
-	UpdateAllOptionsValid();
 }
 
 void UCustomGameModesWidget_Deactivation::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget,
 	const float Value)
 {
-	if (Widget == SliderTextBoxOption_DeactivatedTargetScaleMultiplier)
-	{
-		BSConfig->TargetConfig.ConsecutiveChargeScaleMultiplier = Value;
-	}
-	else if (Widget == SliderTextBoxOption_DeactivatedTargetVelocity && SliderTextBoxOption_DeactivatedTargetVelocity->
-		GetVisibility() != ESlateVisibility::Collapsed)
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = Value;
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinDeactivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxDeactivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_DeactivationHealthLostThreshold)
+	if (Widget == SliderTextBoxOption_DeactivationHealthLostThreshold)
 	{
 		BSConfig->TargetConfig.DeactivationHealthLostThreshold = Value;
 	}

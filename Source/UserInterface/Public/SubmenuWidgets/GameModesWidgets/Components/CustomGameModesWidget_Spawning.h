@@ -15,36 +15,30 @@ class USERINTERFACE_API UCustomGameModesWidget_Spawning : public UCustomGameMode
 {
 	GENERATED_BODY()
 
-public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 protected:
 	virtual void NativeConstruct() override;
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 	void SetupWarningTooltipCallbacks();
 
-	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy);
-
-	void UpdateDependentOptions_ApplyVelocityWhenSpawned(const bool bApplyVelocityWhenSpawned,
-		const bool bConstantSpawnedTargetVelocity);
-
-	/** Updates options that depend on the value selection of ConstantSpawnedTargetVelocity */
-	void UpdateDependentOptions_ConstantSpawnedTargetVelocity(const bool bApplyVelocityWhenSpawned,
-		const bool bInConstant);
-
+	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy,
+		const bool bUseBatchSpawning, const bool bAllowSpawnWithoutActivation);
+	void UpdateDependentOptions_TargetSpawnResponses(const TArray<ETargetSpawnResponse>& InTargetSpawnResponses);
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_TargetSpawnResponses;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_AllowSpawnWithoutActivation;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_BatchSpawning;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ApplyImmunityOnSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UCheckBoxOptionWidget* CheckBoxOption_SpawnAtOriginWheneverPossible;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -54,38 +48,29 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_NumUpfrontTargetsToSpawn;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_NumRuntimeTargetsToSpawn;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ApplyVelocityWhenSpawned;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantSpawnedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_SpawnedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinSpawnedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxSpawnedTargetVelocity;
-
+	
 	UFUNCTION()
 	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_BatchSpawning(const bool bChecked);
 	UFUNCTION()
-	void OnCheckStateChanged_ApplyImmunityOnSpawn(const bool bChecked);
-	UFUNCTION()
 	void OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bChecked);
 	UFUNCTION()
 	void OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ApplyVelocityWhenSpawned(const bool bChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked);
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 
 	UFUNCTION()
+	void OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode(const TArray<FString>& Selected,
+		const ESelectInfo::Type SelectionType);
+	UFUNCTION()
 	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected,
+		const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetSpawnResponses(const TArray<FString>& Selected,
 		const ESelectInfo::Type SelectionType);
 
 	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode(const FString& EnumString);
 };

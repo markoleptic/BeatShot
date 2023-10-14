@@ -49,27 +49,15 @@ void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
 	}
 }
 
-void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr,
-	const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
+void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr)
 {
 	BSConfig = InConfigPtr;
-	SetNext(InNext);
 	UpdateOptionsFromConfig();
 	bIsInitialized = true;
 }
 
 void UCustomGameModesWidgetComponent::UpdateOptionsFromConfig()
 {
-}
-
-TObjectPtr<UCustomGameModesWidgetComponent> UCustomGameModesWidgetComponent::GetNext() const
-{
-	return Next;
-}
-
-void UCustomGameModesWidgetComponent::SetNext(const TObjectPtr<UCustomGameModesWidgetComponent> InNext)
-{
-	Next = InNext;
 }
 
 void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget)

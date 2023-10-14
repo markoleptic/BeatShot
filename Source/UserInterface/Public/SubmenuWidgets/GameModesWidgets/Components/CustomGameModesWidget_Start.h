@@ -17,8 +17,6 @@ class USERINTERFACE_API UCustomGameModesWidget_Start : public UCustomGameModesWi
 	GENERATED_BODY()
 
 public:
-	virtual void InitComponent(FBSConfig* InConfigPtr, TObjectPtr<UCustomGameModesWidgetComponent> InNext) override;
-
 	/** Broadcast when the user changes the template checkbox, template combo box, or difficulty combo box */
 	FRequestGameModeTemplateUpdate RequestGameModeTemplateUpdate;
 

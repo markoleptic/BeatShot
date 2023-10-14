@@ -9,11 +9,6 @@
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
-void UCustomGameModesWidget_Activation::InitComponent(FBSConfig* InConfigPtr,
-	TObjectPtr<UCustomGameModesWidgetComponent> InNext)
-{
-	Super::InitComponent(InConfigPtr, InNext);
-}
 
 void UCustomGameModesWidget_Activation::NativeConstruct()
 {
@@ -27,14 +22,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 		MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
 	SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetValues(MinValue_MaxNumActivatedTargetsAtOnce,
 		MaxValue_MaxNumActivatedTargetsAtOnce, SnapSize_MaxNumActivatedTargetsAtOnce);
-	SliderTextBoxOption_ActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MinActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MaxActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetValues(MinValue_TargetScale, MaxValue_TargetScale,
-		SnapSize_TargetScale);
+
 	SliderTextBoxOption_MaxNumActivatedTargetsAtOnce->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_NumTargetsToActivateAtOnce->OnSliderTextBoxValueChanged.AddUObject(this,
@@ -43,19 +31,9 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 		&ThisClass::OnSliderTextBoxValueChanged);
 	SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->OnSliderTextBoxValueChanged.AddUObject(this,
 		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_ActivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinActivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MaxActivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_LifetimeTargetScaleMultiplier->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-
+	
 	CheckBoxOption_ConstantNumTargetsToActivateAtOnce->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
 		&ThisClass::OnCheckStateChanged_ConstantNumTargetsToActivateAtOnce);
-	CheckBoxOption_ConstantActivatedTargetVelocity->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
-		&ThisClass::OnCheckStateChanged_ConstantActivatedTargetVelocity);
 	CheckBoxOption_AllowActivationWhileActivated->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
 		&ThisClass::OnCheckStateChanged_AllowActivationWhileActivated);
 
@@ -63,7 +41,6 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 		&ThisClass::OnSelectionChanged_TargetActivationSelectionPolicy);
 	ComboBoxOption_TargetActivationResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_TargetActivationResponses);
-
 	ComboBoxOption_TargetActivationSelectionPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy);
 	ComboBoxOption_TargetActivationResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
@@ -95,12 +72,7 @@ void UCustomGameModesWidget_Activation::NativeConstruct()
 
 	SliderTextBoxOption_MinNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_MaxNumTargetsToActivateAtOnce->SetVisibility(ESlateVisibility::Collapsed);
-	CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-
+	
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
 }
@@ -118,7 +90,6 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 		MaxActivatedTargetSpeed;
 
 	UpdateValueIfDifferent(CheckBoxOption_ConstantNumTargetsToActivateAtOnce, bConstantNumTargetsToActivateAtOnce);
-	UpdateValueIfDifferent(CheckBoxOption_ConstantActivatedTargetVelocity, bConstantTargetSpeed);
 	UpdateValueIfDifferent(CheckBoxOption_AllowActivationWhileActivated, BSConfig->TargetConfig.bAllowActivationWhileActivated);
 
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumActivatedTargetsAtOnce,
@@ -130,15 +101,6 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumTargetsToActivateAtOnce,
 		BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce);
 
-	UpdateValueIfDifferent(SliderTextBoxOption_ActivatedTargetVelocity, BSConfig->TargetConfig.MinActivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinActivatedTargetVelocity,
-		BSConfig->TargetConfig.MinActivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxActivatedTargetVelocity,
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_LifetimeTargetScaleMultiplier,
-		BSConfig->TargetConfig.LifetimeTargetScaleMultiplier);
-
 	UpdateValueIfDifferent(ComboBoxOption_TargetActivationResponses,
 		GetStringArrayFromEnumArray_FromTagMap(BSConfig->TargetConfig.TargetActivationResponses));
 	UpdateValueIfDifferent(ComboBoxOption_TargetActivationSelectionPolicy,
@@ -149,7 +111,7 @@ void UCustomGameModesWidget_Activation::UpdateOptionsFromConfig()
 		bConstantTargetSpeed);
 
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
-
+	
 	UpdateBrushColors();
 }
 
@@ -189,52 +151,6 @@ void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantNumTarget
 void UCustomGameModesWidget_Activation::UpdateDependentOptions_TargetActivationResponses(
 	const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed)
 {
-	if (InResponses.Contains(ETargetActivationResponse::ApplyLifetimeTargetScaling))
-	{
-		SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
-	else
-	{
-		SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-	}
-
-	if (InResponses.Contains(ETargetActivationResponse::ChangeVelocity))
-	{
-		CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		UpdateDependentOptions_ConstantTargetSpeed(InResponses, bUseConstantTargetSpeed);
-	}
-	else
-	{
-		CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		UpdateDependentOptions_ConstantTargetSpeed(InResponses, bUseConstantTargetSpeed);
-	}
-}
-
-void UCustomGameModesWidget_Activation::UpdateDependentOptions_ConstantTargetSpeed(
-	const TArray<ETargetActivationResponse>& InResponses, const bool bUseConstantTargetSpeed)
-{
-	// Hide all speed options if Change Velocity not selected as a TargetActivationResponse
-	if (!InResponses.Contains(ETargetActivationResponse::ChangeVelocity))
-	{
-		SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		return;
-	}
-
-	// Change Velocity is selected as a TargetActivationResponse
-	if (bUseConstantTargetSpeed)
-	{
-		SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	}
-	else
-	{
-		SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	}
 }
 
 void UCustomGameModesWidget_Activation::UpdateDependentOptions_TargetDistributionPolicy(
@@ -279,26 +195,6 @@ void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantNumTargetsTo
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Activation::OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked)
-{
-	if (bChecked)
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = SliderTextBoxOption_ActivatedTargetVelocity->GetSliderValue();
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = SliderTextBoxOption_ActivatedTargetVelocity->GetSliderValue();
-	}
-	else
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = SliderTextBoxOption_MinActivatedTargetVelocity->
-			GetSliderValue();
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = SliderTextBoxOption_MaxActivatedTargetVelocity->
-			GetSliderValue();
-	}
-
-	UpdateDependentOptions_ConstantTargetSpeed(BSConfig->TargetConfig.TargetActivationResponses, bChecked);
-	UpdateBrushColors();
-	UpdateAllOptionsValid();
-}
-
 void UCustomGameModesWidget_Activation::OnCheckStateChanged_AllowActivationWhileActivated(const bool bChecked)
 {
 	BSConfig->TargetConfig.bAllowActivationWhileActivated = bChecked;
@@ -325,24 +221,6 @@ void UCustomGameModesWidget_Activation::OnSliderTextBoxValueChanged(USliderTextB
 	else if (Widget == SliderTextBoxOption_MaxNumTargetsToActivateAtOnce)
 	{
 		BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce = Value;
-	}
-	else if (Widget == SliderTextBoxOption_ActivatedTargetVelocity && SliderTextBoxOption_ActivatedTargetVelocity->
-		GetVisibility() != ESlateVisibility::Collapsed)
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = Value;
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinActivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxActivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_LifetimeTargetScaleMultiplier)
-	{
-		BSConfig->TargetConfig.LifetimeTargetScaleMultiplier = Value;
 	}
 	UpdateAllOptionsValid();
 }

@@ -8,11 +8,6 @@
 
 using namespace Constants;
 
-void UCustomGameModesWidget_SpawnArea::InitComponent(FBSConfig* InConfigPtr,
-	TObjectPtr<UCustomGameModesWidgetComponent> InNext)
-{
-	Super::InitComponent(InConfigPtr, InNext);
-}
 
 void UCustomGameModesWidget_SpawnArea::NativeConstruct()
 {
