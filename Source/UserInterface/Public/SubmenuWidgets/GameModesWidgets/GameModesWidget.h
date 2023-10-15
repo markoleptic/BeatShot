@@ -8,8 +8,10 @@
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
+#include "WidgetComponents/BSCarouselNavBar.h"
 #include "GameModesWidget.generated.h"
 
+class UCommonWidgetCarousel;
 class UBSVerticalBox;
 class UDefaultGameModeOptionWidget;
 class UCustomGameModesWidgetBase;
@@ -29,7 +31,6 @@ class UPopupMessageWidget;
 class UVerticalBox;
 class UBorder;
 class UEditableTextBox;
-class UWidgetSwitcher;
 class UComboBoxString;
 class USlider;
 class UCheckBox;
@@ -118,16 +119,19 @@ class USERINTERFACE_API UGameModesWidget : public UUserWidget, public ISaveLoadI
 	virtual UTooltipWidget* ConstructTooltipWidget() override { return nullptr; }
 
 public:
+	/** Returns BSConfig */
+	FBSConfig* GetConfigPointer() const { return BSConfig; }
+
+	/** Ends the game mode preview */
+	void StopGameModePreview();
+	
 	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsMainMenuChild;
 
 	/** Executes when the user is exiting the GameModesWidget, broadcast to GameInstance to handle transition */
 	FOnGameModeStateChanged OnGameModeStateChanged;
-
-	/** Returns BSConfig */
-	FBSConfig* GetConfigPointer() const { return BSConfig; }
-
+	
 	/** Broadcast false when any non-defining config option is false. Broadcasts true only if all are true.
 	 *  Only Broadcasts if different than the previous */
 	FOnGameModeBreakingChange OnGameModeBreakingChange;
@@ -135,25 +139,26 @@ public:
 	/** Called to request the start or stop of a game mode preview */
 	FRequestSimulateTargetManagerStateChange RequestSimulateTargetManagerStateChange;
 
-	/** Returns whether or not CustomGameModesWidget_CreatorView is visible */
-	bool GetCreatorViewVisible() const;
-
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "Custom Game Modes")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget")
+	TArray<FText> NavBarButtonText_DefaultCustom;
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget")
+	TArray<FText> NavBarButtonText_CreatorProperty;
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|CustomGameModes")
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | AudioSelect")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|Classes|AudioSelect")
 	TSubclassOf<UPopupMessageWidget> PopupMessageClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | AudioSelect")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|Classes|AudioSelect")
 	TSubclassOf<UAudioSelectWidget> AudioSelectClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|Classes|Tooltip")
 	TSubclassOf<UTooltipImage> WarningEMarkClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Custom Game Modes")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|Classes|Custom Game Modes")
 	TSubclassOf<UGameModeSharingWidget> GameModeSharingClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Classes | Tooltip")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|Classes|Tooltip")
 	TSubclassOf<UTooltipWidget> TooltipWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Default Game Modes")
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|DefaultGameModes")
 	TSubclassOf<UDefaultGameModeOptionWidget> DefaultGameModesWidgetClass;
-	UPROPERTY(EditDefaultsOnly, Category = "Default Game Modes", meta=(ForceInlineRow))
+	UPROPERTY(EditDefaultsOnly, Category = "GameModesWidget|DefaultGameModes", meta=(ForceInlineRow))
 	TMap<EBaseGameMode, FDefaultGameModeParams> DefaultGameModesParams;
 	
 	UPROPERTY()
@@ -182,22 +187,8 @@ protected:
 	UVerticalBox* Box_CustomGameModes;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
 	UVerticalBox* Box_PropertyView;
-	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	UVerticalBox* Box_CreatorView;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* Box_DefaultGameModesOptions;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UWidgetSwitcher* MenuSwitcher;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_DefaultGameModes;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_CustomGameModes;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_CreatorView;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_PropertyView;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_SaveCustom;
@@ -229,11 +220,15 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_DeathDifficulty;
 
-	UPROPERTY(BlueprintReadOnly, Transient, meta = (BindWidgetAnim))
-	UWidgetAnimation* TransitionCustomGameModeView;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCommonWidgetCarousel* Carousel_DefaultCustom;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSCarouselNavBar* CarouselNavBar_DefaultCustom;
 
-	FWidgetAnimationDynamicEvent OnTransitionComplete_ToPropertyView;
-	FWidgetAnimationDynamicEvent OnTransitionComplete_ToCreatorView;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCommonWidgetCarousel* Carousel_CreatorProperty;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSCarouselNavBar* CarouselNavBar_CreatorProperty;
 
 private:
 	/** Binds all widget delegates to functions */
@@ -245,6 +240,15 @@ private:
 	/** Finds the associated default game mode, sets the StartWidgetProperties for both CustomGameModesWidgets, and
 	 *  calls PopulateGameModeOptions */
 	void InitCustomGameModesWidgetOptions(const EBaseGameMode& BaseGameMode, const EGameModeDifficulty& Difficulty);
+
+	/** Initializes all Default Game Mode Menu Options found in Box_DefaultGameModesOptions */
+	void InitDefaultGameModesWidgets();
+
+	UFUNCTION()
+	void OnCarouselWidgetIndexChanged_DefaultCustom(UCommonWidgetCarousel* InCarousel, const int32 NewIndex);
+
+	UFUNCTION()
+	void OnCarouselWidgetIndexChanged_CreatorProperty(UCommonWidgetCarousel* InCarousel, const int32 NewIndex);
 
 	/** Initializes all Custom game mode options based on the BSConfig */
 	void PopulateGameModeOptions(const FBSConfig& InBSConfig);
@@ -291,10 +295,6 @@ private:
 	UFUNCTION()
 	void OnButtonClicked_CustomGameModeButton(const UBSButton* Button);
 
-	/** Any Menu Button binds to this function */
-	UFUNCTION()
-	void OnButtonClicked_MenuButton(const UBSButton* Button);
-
 	/** Saves the custom game mode to slot, repopulates ComboBox_GameModeName, and selects the new custom game mode */
 	void OnButtonClicked_SaveCustom();
 
@@ -316,22 +316,6 @@ private:
 	/** Creates a confirm pop up widget and binds to its buttons, clearing the RL history of a game mode if confirmed */
 	void OnButtonClicked_ClearRLHistory();
 
-	/** Plays TransitionCustomGameModeView */
-	void TransitionGameModeViewToCreator();
-
-	/** Plays TransitionCustomGameModeView */
-	void TransitionGameModeViewToProperty();
-
-	/** Collapses Box_CreatorView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes
-	 *  OnRequestSimulationStateChange */
-	UFUNCTION()
-	void OnTransitionCompleted_ToPropertyView();
-
-	/** Collapses Box_PropertyView, unbinds TransitionCustomGameModeView, changes CustomGameModesWidget_Current, executes
-	 *  OnRequestSimulationStateChange */
-	UFUNCTION()
-	void OnTransitionCompleted_ToCreatorView();
-
 	/** Callback function for receiving an access token response */
 	void OnAccessTokenResponseReceived(const FString& AccessToken, FString GameModeNameToRemove);
 
@@ -351,9 +335,8 @@ private:
 	 *  Updates the value of bGameModeBreakingOptionPresent and Broadcasts OnGameModeBreakingChange if the value is different */
 	void OnGameModeBreakingOptionPresentStateChanged(const bool bIsPresent);
 
+	/** Restarts the game mode preview */
 	void RefreshGameModePreview();
-
-	void StopGameModePreview();
 
 	/** The BaseGameMode for a selected Preset Game Mode */
 	EBaseGameMode PresetSelection_PresetGameMode;

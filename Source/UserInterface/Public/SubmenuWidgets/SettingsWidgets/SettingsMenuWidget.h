@@ -12,10 +12,11 @@
 #include "Blueprint/UserWidget.h"
 #include "SettingsMenuWidget.generated.h"
 
+class UBSCarouselNavBar;
+class UCommonWidgetCarousel;
 class UBSButton;
 class UMenuButton;
 class UVerticalBox;
-class UWidgetSwitcher;
 
 /** Widget that holds all settings category widgets */
 UCLASS()
@@ -25,8 +26,11 @@ class USERINTERFACE_API USettingsMenuWidget : public UUserWidget
 
 public:
 	/** Whether or not this instance of SettingsMenuWidget belongs to Pause Menu or not */
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "SettingsMenuWidget", meta = (ExposeOnSpawn="true"))
 	bool bIsPauseMenuChild;
+
+	UPROPERTY(EditDefaultsOnly, Category = "SettingsMenuWidget")
+	TArray<FText> NavBarButtonText;
 
 	/** Broadcast to owning widget that user has clicked restart button */
 	FOnRestartButtonClicked OnRestartButtonClicked;
@@ -66,28 +70,14 @@ protected:
 
 	UFUNCTION()
 	void OnRestartButtonClicked_AudioAnalyzer() const;
-
-	/** A map to store buttons and the widgets they associate with */
-	UPROPERTY()
-	TMap<UMenuButton*, UVerticalBox*> MenuWidgets;
+	
+	UFUNCTION()
+	void OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex);
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UWidgetSwitcher* MenuSwitcher;
-
-	/** Containers for each widget in SettingsMenu */
+	UCommonWidgetCarousel* Carousel;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Game;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* VideoAndSound;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* AudioAnalyzer;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* CrossHair;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UVerticalBox* Input;
-
-	/* --------------- */
-	/* SubMenu Widgets */
-	/* --------------- */
+	UBSCarouselNavBar* CarouselNavBar;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget_Game* Game_Widget;
@@ -99,22 +89,4 @@ protected:
 	USettingsMenuWidget_AudioAnalyzer* AudioAnalyzer_Widget;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USettingsMenuWidget_Input* Input_Widget;
-
-	/* ------------------ */
-	/* Navigation Buttons */
-	/* ------------------ */
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_Game;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_VideoAndSound;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_AudioAnalyzer;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_Input;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UMenuButton* MenuButton_CrossHair;
-
-	UFUNCTION()
-	void OnButtonClicked_BSButton(const UBSButton* Button);
 };

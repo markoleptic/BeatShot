@@ -748,16 +748,19 @@ TArray<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(int32 NumToSpawn,
 	for (int i = 0; i < NumToSpawn; i++)
 	{
 		const int32 Index = FMath::RandRange(0, Valid.Num() - 1);
-		if (USpawnArea* NextSpawnArea = Valid[Index])
+		if (Valid.IsValidIndex(Index))
 		{
-			if (GetBSConfig()->TargetConfig.TargetDistributionPolicy != ETargetDistributionPolicy::Grid)
+			if (USpawnArea* NextSpawnArea = Valid[Index])
 			{
-				NextSpawnArea->SetRandomChosenPoint();
+				if (GetBSConfig()->TargetConfig.TargetDistributionPolicy != ETargetDistributionPolicy::Grid)
+				{
+					NextSpawnArea->SetRandomChosenPoint();
+				}
+				NextSpawnArea->SetTargetScale(FirstScale);
+				Out.Add(NextSpawnArea);
+				Valid.Remove(NextSpawnArea);
+				Valid.Shrink();
 			}
-			NextSpawnArea->SetTargetScale(FirstScale);
-			Out.Add(NextSpawnArea);
-			Valid.Remove(NextSpawnArea);
-			Valid.Shrink();
 		}
 	}
 	return Out;
@@ -796,10 +799,6 @@ TArray<USpawnArea*> ATargetManager::FindNextSpawnAreasForActivation(const int32 
 		const int32 Index = FMath::RandRange(0, Valid.Num() - 1);
 		if (USpawnArea* NextSpawnArea = Valid[Index])
 		{
-			if (GetBSConfig()->TargetConfig.TargetDistributionPolicy != ETargetDistributionPolicy::Grid)
-			{
-				NextSpawnArea->SetRandomChosenPoint();
-			}
 			Out.Add(NextSpawnArea);
 			Valid.Remove(NextSpawnArea);
 			Valid.Shrink();

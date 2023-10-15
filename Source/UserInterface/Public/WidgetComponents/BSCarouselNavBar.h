@@ -17,17 +17,22 @@ class USERINTERFACE_API UBSCarouselNavBar : public UWidget
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
+	bool bShowNotificationWidgets = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
 	TSubclassOf<UBSButton> ButtonWidgetType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
+	FMargin ButtonPadding;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Notifications",
+		meta=(EditCondition="bShowNotificationWidgets==true", EditConditionHides))
 	TSubclassOf<UButtonNotificationWidget> NotificationWidgetType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
-	FMargin ButtonPadding;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Notifications",
+		meta=(EditCondition="bShowNotificationWidgets==true", EditConditionHides))
 	FMargin NotificationWidgetContainerPadding;
-
+	
 	/**
 	 * Establishes the Widget Carousel instance that this Nav Bar should interact with
 	 * @param CommonCarousel The carousel that this nav bar should be associated with and manipulate

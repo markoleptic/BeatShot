@@ -7,7 +7,6 @@
 #include "OverlayWidgets/PopupWidgets/AudioSelectWidget.h"
 #include "OverlayWidgets/PopupWidgets/QuitMenuWidget.h"
 #include "Styles/MenuStyle.h"
-#include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
@@ -82,6 +81,15 @@ void UPostGameMenuWidget::SetScoresWidgetVisibility()
 
 void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 {
+	const UMenuButton* MenuButton = Cast<UMenuButton>(Button);
+	if (!MenuButton) return;
+	
+	// Always stop the game mode preview if game modes widget is not visible
+	if (MenuButton != MenuButton_GameModes)
+	{
+		GameModesWidget->StopGameModePreview();
+	}
+	
 	if (Button == MenuButton_Quit)
 	{
 		QuitMenuWidget->SetVisibility(ESlateVisibility::Visible);
@@ -91,12 +99,10 @@ void UPostGameMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	{
 		ShowAudioFormatSelect();
 	}
-	if (const UMenuButton* MenuButton = Cast<UMenuButton>(Button))
+
+	if (MenuButton->GetBox())
 	{
-		if (MenuButton->GetBox())
-		{
-			MenuSwitcher->SetActiveWidget(MenuButton->GetBox());
-		}
+		MenuSwitcher->SetActiveWidget(MenuButton->GetBox());
 	}
 }
 

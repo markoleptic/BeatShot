@@ -18,9 +18,13 @@ enum class EBorderingDirection : uint8
 	Right UMETA(DisplayName="Right"),
 	Up UMETA(DisplayName="Up"),
 	Down UMETA(DisplayName="Down"),
+	UpLeft UMETA(DisplayName="UpLeft"),
+	UpRight UMETA(DisplayName="UpRight"),
+	DownLeft UMETA(DisplayName="DownLeft"),
+	DownRight UMETA(DisplayName="DownRight"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::Down);
+ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::DownRight);
 
 /** Enum representing the types of BeatGrid Indices */
 UENUM(BlueprintType)
@@ -61,6 +65,123 @@ struct FExtrema
 	{
 		Min = InMin;
 		Max = InMax;
+	}
+};
+
+/** A block of SpawnArea indices that are all connected. Hashed so that only unique combinations are considered and not
+ *  all permutations */
+USTRUCT()
+struct FBlock
+{
+	GENERATED_BODY()
+
+	int32 BlockSize;
+	TArray<int32> Indices;
+
+	FBlock()
+	{
+		BlockSize = 0;
+		Indices = TArray<int32>();
+	}
+
+	void AddBlockIndex(const int32 InIndex)
+	{
+		Indices.Add(InIndex);
+		BlockSize++;
+	}
+
+	void RemoveBlockIndex(const int32 InIndex)
+	{
+		const int32 NumRemoved = Indices.Remove(InIndex);
+		if (NumRemoved > 0)
+		{
+			BlockSize--;
+		}
+	}
+
+	void Reset()
+	{
+		BlockSize = 0;
+		Indices.Empty();
+	}
+
+	FORCEINLINE bool operator==(const FBlock& Other) const
+	{
+		if (BlockSize != Other.BlockSize) return false;
+		
+		for (const int32 Index : Other.Indices)
+		{
+			if (Indices.Contains(Index)) continue;
+			return false;
+		}
+		
+		return true;
+	}
+	friend FORCEINLINE uint32 GetTypeHash(const FBlock& Block)
+	{
+		uint32 Hash = 0;
+
+		// Sort the Indices array to ensure a consistent order
+		TArray<int32> SortedIndices = Block.Indices;
+		Algo::Sort(SortedIndices);
+
+		for (const int32 Index : SortedIndices)
+		{
+			Hash = HashCombine(Hash, GetTypeHash(Index));
+		}
+
+		return Hash;
+	}
+};
+
+/** Parameters for FindValidIndexCombinationsDFS */
+USTRUCT()
+struct FDFSLoopParams
+{
+	GENERATED_BODY()
+
+	TArray<int32> Valid;
+	int32 BlockSize;
+	TSet<FBlock> Blocks;
+	int32 CurrentDepth;
+	FBlock CurrentBlock;
+	TSet<int32> Visited;
+	TSet<int32> InitialVisited;
+	TSet<EBorderingDirection> IndexTypes;
+
+	FDFSLoopParams()
+	{
+		Valid = TArray<int32>();
+		BlockSize = 0;
+		Blocks = TSet<FBlock>();
+		CurrentDepth = 1;
+		CurrentBlock = FBlock();
+		Visited = TSet<int32>();
+		InitialVisited = TSet<int32>();
+		IndexTypes = TSet<EBorderingDirection>();
+	}
+
+	FDFSLoopParams(const TArray<int32>& InValid, const TSet<EBorderingDirection>& InGridIndexTypes, const int32 InBlockSize)
+	{
+		Valid = InValid;
+		BlockSize = InBlockSize;
+		Blocks = TSet<FBlock>();
+		CurrentDepth = 1;
+		CurrentBlock = FBlock();
+		Visited = TSet<int32>();
+		InitialVisited = TSet<int32>();
+		IndexTypes = InGridIndexTypes;
+	}
+
+	/** Resets CurrentBlock, Visited, and InitialVisited. Sets CurrentDepth to 1 */
+	void NextIter(const int32 InNewIndex)
+	{
+		CurrentBlock.Reset();
+		CurrentBlock.AddBlockIndex(InNewIndex);
+		Visited.Empty();
+		InitialVisited.Empty();
+		InitialVisited.Add(InNewIndex);
+		CurrentDepth = 1;
 	}
 };
 
@@ -162,9 +283,9 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** The total amount of tracking damage that was dealt at this SpawnArea */
 	int32 TotalTrackingDamage;
-
-	/** The indices of the SpawnAreas adjacent to this SpawnArea */
-	TArray<int32> AdjacentIndices;
+	
+	/** The indices of the SpawnAreas adjacent to this SpawnArea, including their direction from this SpawnArea */
+	TMap<EBorderingDirection, int32> AdjacentIndexMap;
 
 	/** The SpawnAreas that the target overlapped with */
 	TArray<FVector> OverlappingVertices;
@@ -241,7 +362,8 @@ public:
 	bool IsRecent() const { return bIsRecent; }
 	bool CanActivateWhileActivated() const { return bAllowActivationWhileActivated; }
 	double GetTimeSetRecent() const { return TimeSetRecent; }
-	TArray<int32> GetBorderingIndices() const { return AdjacentIndices; }
+	
+	TMap<EBorderingDirection, int32> GetAdjacentIndexMap() const { return AdjacentIndexMap; }
 	TArray<FVector> GetOverlappingVertices() const { return OverlappingVertices; }
 	FGuid GetTargetGuid() const { return TargetGuid; }
 	EGridIndexType GetIndexType() const { return IndexType; }
@@ -250,6 +372,9 @@ public:
 	int32 GetTotalTrackingDamage() const { return TotalTrackingDamage; }
 	int32 GetTotalTrackingDamagePossible() const { return TotalTrackingDamagePossible; }
 	FVector GetTargetScale() const { return TargetScale; }
+	
+	TArray<int32> GetBorderingIndices() const;
+	
 	float GetMinOverlapRadius() const;
 
 	/** Sets the TargetScale */
@@ -269,7 +394,7 @@ public:
 
 private:
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
-	static TArray<int32> FindAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex,
+	void SetAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex,
 		const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
@@ -338,13 +463,13 @@ public:
 
 	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible */
 	void UpdateTotalTrackingDamagePossible(const FVector& InLocation) const;
-	
+
 	/** Handles dealing with SpawnAreas that correspond to Damage Events */
 	void HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent);
-	
+
 	/** Calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
 	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
-	
+
 	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
 	bool ShouldForceSpawnAtOrigin() const;
 
@@ -401,7 +526,7 @@ public:
 
 	/** Returns a filtered array containing SpawnAreas flagged as managed, activated, or recent */
 	TArray<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
-	
+
 	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
 	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
 	void RemoveOverlappingSpawnAreas(TArray<USpawnArea*>& ValidSpawnAreas, const FVector& Scale) const;
@@ -447,11 +572,17 @@ public:
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
 	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
 	 *  and Bounds Scaling Policy */
-	TArray<USpawnArea*> GetSpawnableSpawnAreas(const FVector& Scale, const FExtrema& Extrema,
-		const int32 NumToSpawn, const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
+	TArray<USpawnArea*> GetSpawnableSpawnAreas(const FVector& Scale, const FExtrema& Extrema, const int32 NumToSpawn,
+		const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
 	
-	/** Adds valid SpawnAreas for a grid TargetDistributionPolicy, using TargetActivationSelectionPolicy */
-	void HandleGridSpawnLocations(TArray<USpawnArea*>& ValidSpawnAreas, const int32 NumToSpawn, const bool bConsiderManagedInvalid) const;
+	/** Calls FindValidIndexCombinationsDFS for each SpawnArea in ValidSpawnAreas. If at least one valid block was
+	 *  found, ValidSpawnAreas is emptied, a random block of indices is chosen, and the SpawnAreas corresponding
+	 *  to the indices are added to ValidSpawnAreas */
+	void FindRandomGridBlock(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity, const int32 BlockSize) const;
+
+	/** Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
+	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
+	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
 
 	/** Filters the SpawnAreas array directly using FilterByPredicate and removing SpawnAreas outside of the Extrema */
 	void FilterByExtrema(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
@@ -459,25 +590,26 @@ public:
 	/** Filters out any SpawnAreas that aren't along the edge of the current Extrema */
 	void FilterByEdgeOnly(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
 
-	/** Filters out any SpawnAreas that aren't bordering the CurrentSpawnArea */
-	void FilterBorderingIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
-
-	/** Filters out any SpawnAreas that aren't bordering the CurrentSpawnArea */
-	void FilterBorderingIndices(TArray<USpawnArea*>& ValidSpawnAreas, USpawnArea* Current) const;
-
-	/** Filters out any SpawnAreas that are flagged as recent */
-	void FilterRecentIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
+	/** Filters out any locations that are flagged as managed */
+	TArray<int32> FilterManagedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
 
 	/** Filters out any SpawnAreas that are flagged as activated */
-	void FilterActivatedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
+	TArray<int32> FilterActivatedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
+	
+	/** Filters out any SpawnAreas that aren't bordering Current */
+	TArray<int32> FilterBorderingIndices(TArray<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Current) const;
 
-	/** Filters out any locations that are flagged as managed */
-	void FilterManagedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
-
+	/** Filters out any SpawnAreas that are flagged as recent */
+	TArray<int32> FilterRecentIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
+	
 	/** General SpawnAreas filter function that takes in a filter function to apply */
-	void FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
-			const bool bShowDebug, const FColor& DebugColor) const;
-
+	TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
+		const bool bShowDebug, const FColor& DebugColor) const;
+	
+	/** Creates an array with size equal to the number of SpawnAreas, where each index represents whether or not the
+	 *  SpawnArea should be consider valid */
+	TArray<int32> CreateIndexValidityArray(const TArray<int32>& RemovedIndices) const;
+	
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
 	FAccuracyData GetLocationAccuracy();
@@ -488,7 +620,11 @@ public:
 	/** Removes the grid of spawn areas drawn as debug boxes */
 	void ClearDebug_AllSpawnAreas() const;
 
-	/** Draws debug boxes, converting the open locations to center points using SpawnMemory values */
+	/** Draws debug boxes using SpawnAreas Indices */
+	void DrawDebug_Boxes(const TArray<int32>& InIndices, const FColor& InColor, const int32 InThickness,
+		const int32 InDepthPriority, bool bPersistantLines = false) const;
+
+	/** Draws debug boxes using locations */
 	void DrawDebug_Boxes(const TArray<FVector>& InLocations, const FColor& InColor, const int32 InThickness,
 		const int32 InDepthPriority, bool bPersistantLines = false) const;
 
@@ -502,7 +638,8 @@ public:
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
-	void DrawOverlappingVertices(const USpawnArea* SpawnArea, const FVector& Scale, const TArray<FVector>& DebugVertices = TArray<FVector>()) const;
+	void DrawOverlappingVertices(const USpawnArea* SpawnArea, const FVector& Scale,
+		const TArray<FVector>& DebugVertices = TArray<FVector>()) const;
 
 	/** Prints debug info about a SpawnArea */
 	static void PrintDebug_SpawnArea(const USpawnArea* SpawnArea);
@@ -542,7 +679,7 @@ public:
 
 private:
 	bool ShouldConsiderManagedAsInvalid() const;
-	
+
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
 	void SetAppropriateSpawnMemoryValues();
 
@@ -576,10 +713,10 @@ private:
 
 	/** An array containing the BottomLeftVertex of all SpawnAreas */
 	TArray<FVector> AllBottomLeftVertices;
-	
+
 	/** Incremental (horizontal, vertical) step values used to iterate through SpawnAreas locations */
 	FIntVector3 SpawnAreaInc;
-	
+
 	/** Scale the representation of the spawn area down by this factor */
 	FVector SpawnAreaScale;
 

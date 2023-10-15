@@ -11,6 +11,7 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "Styles/MenuStyle.h"
 #include "BSWidgetInterface.h"
+#include "SubmenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 
 void UMainMenuWidget::NativeConstruct()
@@ -85,10 +86,12 @@ void UMainMenuWidget::TryFallbackLogin()
 void UMainMenuWidget::OnMenuButtonClicked_BSButton(const UBSButton* Button)
 {
 	const UMenuButton* MenuButton = Cast<UMenuButton>(Button);
+	if (!MenuButton) return;
 
-	if (!MenuButton)
+	// Always stop the game mode preview if game modes widget is not visible
+	if (MenuButton != MenuButton_GameModes)
 	{
-		return;
+		GameModesWidget->StopGameModePreview();
 	}
 
 	// Manually fade out browser overlay to avoid abrupt change

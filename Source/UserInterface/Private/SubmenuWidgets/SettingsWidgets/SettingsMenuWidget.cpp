@@ -2,31 +2,20 @@
 
 
 #include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
-#include "Components/WidgetSwitcher.h"
-#include "Components/VerticalBox.h"
-#include "Components/Slider.h"
+#include "CommonWidgetCarousel.h"
 #include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget_AudioAnalyzer.h"
-#include "WidgetComponents/Buttons/MenuButton.h"
+#include "WidgetComponents/BSCarouselNavBar.h"
 
 void USettingsMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	MenuButton_Game->SetDefaults(Game, MenuButton_VideoAndSound);
-	MenuButton_VideoAndSound->SetDefaults(VideoAndSound, MenuButton_AudioAnalyzer);
-	MenuButton_AudioAnalyzer->SetDefaults(AudioAnalyzer, MenuButton_Input);
-	MenuButton_Input->SetDefaults(Input, MenuButton_CrossHair);
-	MenuButton_CrossHair->SetDefaults(CrossHair, MenuButton_Game);
-
-	MenuButton_Game->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	MenuButton_VideoAndSound->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	MenuButton_AudioAnalyzer->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	MenuButton_Input->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-	MenuButton_CrossHair->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnButtonClicked_BSButton);
-
 	AudioAnalyzer_Widget->OnRestartButtonClicked.BindUFunction(this, "OnRestartButtonClicked_AudioAnalyzer");
 
-	MenuButton_Game->SetActive();
+	Carousel->OnCurrentPageIndexChanged.AddUniqueDynamic(this, &ThisClass::OnCarouselWidgetIndexChanged);
+	Carousel->SetActiveWidgetIndex(0);
+	CarouselNavBar->SetNavButtonText(NavBarButtonText);
+	CarouselNavBar->SetLinkedCarousel(Carousel);
 
 	if (bIsPauseMenuChild)
 	{
@@ -42,7 +31,6 @@ void USettingsMenuWidget::OnRestartButtonClicked_AudioAnalyzer() const
 	}
 }
 
-void USettingsMenuWidget::OnButtonClicked_BSButton(const UBSButton* Button)
+void USettingsMenuWidget::OnCarouselWidgetIndexChanged(UCommonWidgetCarousel* InCarousel, const int32 NewIndex)
 {
-	MenuSwitcher->SetActiveWidget(Cast<UMenuButton>(Button)->GetBox());
 }
