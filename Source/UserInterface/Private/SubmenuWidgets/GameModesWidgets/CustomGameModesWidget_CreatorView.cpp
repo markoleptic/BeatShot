@@ -26,17 +26,12 @@ void UCustomGameModesWidget_CreatorView::OnCarouselWidgetIndexChanged(UCommonWid
 void UCustomGameModesWidget_CreatorView::UpdateAllChildWidgetOptionsValid()
 {
 	Super::UpdateAllChildWidgetOptionsValid();
-	int Index = 0;
 	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
 	     ChildWidgetValidityMap)
 	{
-		if (ChildWidgetValidity.Key == Widget_Start)
-		{
-			Index++;
-			continue;
-		}
-		CarouselNavBar->UpdateNotifications(Index, ChildWidgetValidity.Value->NumCautions,
+		// Widget_Start has a separate validity check
+		if (ChildWidgetValidity.Key == Widget_Start) continue;
+		CarouselNavBar->UpdateNotifications(ChildWidgetValidity.Key->GetIndex(), ChildWidgetValidity.Value->NumCautions,
 			ChildWidgetValidity.Value->NumWarnings);
-		Index++;
 	}
 }

@@ -25,11 +25,11 @@ void ATargetManagerPreview::FinishSimulation()
 {
 	if (!GetManagedTargets().IsEmpty())
 	{
-		for (TObjectPtr<ATarget> Target : GetManagedTargets())
+		for (const TPair<FGuid, ATarget*> Pair : GetManagedTargets())
 		{
-			if (Target)
+			if (Pair.Value)
 			{
-				Target->Destroy();
+				Pair.Value->Destroy();
 			}
 		}
 		ManagedTargets.Empty();

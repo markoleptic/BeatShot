@@ -76,39 +76,49 @@ void UBSCarouselNavBar::RebuildButtons()
 		const int32 NumPages = LinkedCarousel->GetChildrenCount();
 		for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 		{
-			UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
-			if (ButtonUserWidget)
+			TSharedRef<SVerticalBox> MainVerticalBox = SNew(SVerticalBox);
+
+			if (NotificationWidgetType && bShowNotificationWidgets)
 			{
-				if (ButtonText.IsValidIndex(CurPage))
-				{
-					ButtonUserWidget->SetButtonText(ButtonText[CurPage]);
-				}
-				Buttons.Add(ButtonUserWidget);
-				TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
-				MyContainer->AddSlot().VAlign(VAlign_Center).HAlign(HAlign_Fill).FillWidth(1.f)
-					[SNew(SVerticalBox)
-						+ SVerticalBox::Slot()
-						.AutoHeight().HAlign(HAlign_Fill).VAlign(VAlign_Center).Padding(ButtonPadding)
-						[ButtonSWidget]
-					];
-			}
-			if (bShowNotificationWidgets && NotificationWidgetType)
-			{
-				UButtonNotificationWidget* NotificationWidget = Cast<UButtonNotificationWidget>(
-				CreateWidget(GetOwningPlayer(), NotificationWidgetType));
+				UButtonNotificationWidget* NotificationWidget =
+					Cast<UButtonNotificationWidget>(CreateWidget(GetOwningPlayer(), NotificationWidgetType));
 				if (NotificationWidget)
 				{
 					Notifications.Add(NotificationWidget);
 					TSharedRef<SWidget> NotificationSWidget = NotificationWidget->TakeWidget();
-					MyContainer->GetSlot(MyContainer->NumSlots() - 1)
-						[SNew(SVerticalBox)
-							+ SVerticalBox::Slot()
-							.AutoHeight().HAlign(HAlign_Center).VAlign(VAlign_Bottom)
-							.Padding(NotificationWidgetContainerPadding)
-							[NotificationSWidget]
-						];
+					
+					MainVerticalBox->AddSlot()
+						.HAlign(HAlign_Center).VAlign(VAlign_Fill)
+						.AutoHeight().Padding(NotificationWidgetContainerPadding)
+						[NotificationSWidget];
 				}
 			}
+			
+			if (ButtonWidgetType)
+			{
+				UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
+				if (ButtonUserWidget)
+				{
+					Buttons.Add(ButtonUserWidget);
+					TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
+					
+					if (ButtonText.IsValidIndex(CurPage))
+					{
+						ButtonUserWidget->SetButtonText(ButtonText[CurPage]);
+					}
+					
+					MainVerticalBox->AddSlot()
+						.HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+						.AutoHeight().Padding(ButtonPadding)
+						[ButtonSWidget];
+				}
+			}
+			
+			MyContainer->AddSlot()
+				.HAlign(HAlign_Fill).VAlign(VAlign_Center)
+				.FillWidth(1.f).Padding(0)
+				[MainVerticalBox];
+			
 		}
 		if (NumPages > 0)
 		{

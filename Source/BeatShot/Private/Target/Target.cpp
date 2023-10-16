@@ -72,7 +72,6 @@ ATarget::ATarget()
 
 	InitialLifeSpan = 0.f;
 	CurrentDeactivationHealthThreshold = 0.f;
-	Guid = FGuid::NewGuid();
 	TargetLocation_Spawn = FVector::ZeroVector;
 	TargetLocation_Activation = FVector::ZeroVector;
 	TargetScale_Spawn = FVector::ZeroVector;
@@ -216,6 +215,7 @@ void ATarget::Tick(float DeltaSeconds)
 void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 {
 	Config = InTargetConfig;
+	Guid = FGuid::NewGuid();
 }
 
 void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)

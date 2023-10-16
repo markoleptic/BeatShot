@@ -239,7 +239,7 @@ void UMenuOptionWidget::UpdateDynamicWarningTooltips()
 		if (Data.IsDynamic() && Data.UpdateDynamicTooltipState.IsBound())
 		{
 			const FDynamicTooltipState State = Data.UpdateDynamicTooltipState.Execute();
-			Data.UpdateDynamicTooltipText(State.Actual, State.MaxAllowed);
+			Data.UpdateDynamicTooltipText(State);
 		}
 	}
 }

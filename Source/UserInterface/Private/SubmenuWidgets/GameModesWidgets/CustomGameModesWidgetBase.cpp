@@ -9,15 +9,7 @@
 void UCustomGameModesWidgetBase::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	WidgetTree->ForEachWidget([this](UWidget* Widget)
-	{
-		if (UCustomGameModesWidgetComponent* Component = Cast<UCustomGameModesWidgetComponent>(Widget))
-		{
-			AddChildWidget(Cast<UCustomGameModesWidgetComponent>(Component));
-		}
-	});
-
+	
 	Widget_Start->RequestGameModeTemplateUpdate.AddUObject(this, &ThisClass::OnRequestGameModeTemplateUpdate);
 	Widget_Start->OnCustomGameModeNameChanged.AddUObject(this, &ThisClass::OnStartWidget_CustomGameModeNameChanged);
 }
@@ -37,15 +29,20 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 {
 	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
+	int32 Index = 0;
 
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
-	     ChildWidgetValidityMap)
+	WidgetTree->ForEachWidget([&](UWidget* Widget)
 	{
-		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
+		if (UCustomGameModesWidgetComponent* Component = Cast<UCustomGameModesWidgetComponent>(Widget))
 		{
-			Component->InitComponent(InConfig);
+			const bool bIndexOnCarousel = Component->ShouldIndexOnCarousel();
+			Component->InitComponent(InConfig, bIndexOnCarousel ? Index : -1);
+			Component->RequestComponentUpdate.AddUObject(this, &ThisClass::OnRequestComponentUpdate);
+			Component->RequestGameModePreviewUpdate.AddUObject(this, &ThisClass::OnRequestGameModePreviewUpdate);
+			ChildWidgetValidityMap.FindOrAdd(Component) = Component->GetCustomGameModeCategoryInfo();
+			if (bIndexOnCarousel) Index++;
 		}
-	}
+	});
 }
 
 void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
@@ -162,13 +159,6 @@ void UCustomGameModesWidgetBase::OnRequestComponentUpdate()
 void UCustomGameModesWidgetBase::OnRequestGameModePreviewUpdate()
 {
 	RequestGameModePreviewUpdate.Broadcast();
-}
-
-void UCustomGameModesWidgetBase::AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component)
-{
-	ChildWidgetValidityMap.FindOrAdd(Component) = Component->GetCustomGameModeCategoryInfo();
-	Component->RequestComponentUpdate.AddUObject(this, &ThisClass::OnRequestComponentUpdate);
-	Component->RequestGameModePreviewUpdate.AddUObject(this, &ThisClass::OnRequestGameModePreviewUpdate);
 }
 
 void UCustomGameModesWidgetBase::UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent)

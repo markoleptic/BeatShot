@@ -130,9 +130,6 @@ protected:
 	/** Bound to all child widget's OnRequestGameModePreview delegates */
 	void OnRequestGameModePreviewUpdate();
 
-	/** Adds a widget to ChildWidgets array. Binds to its RequestComponentUpdate delegate */
-	void AddChildWidget(const TObjectPtr<UCustomGameModesWidgetComponent> Component);
-
 	/** Updates the value of bContainsGameModeBreakingOption and broadcasts OnGameModeBreakingChange only if its different than the current value */
 	void UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent);
 

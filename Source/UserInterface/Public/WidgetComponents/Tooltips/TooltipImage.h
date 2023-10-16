@@ -28,17 +28,20 @@ struct FDynamicTooltipState
 
 	float Actual;
 	float MaxAllowed;
+	bool bOverride;
 
 	FDynamicTooltipState()
 	{
 		Actual = -1.f;
 		MaxAllowed = -1.f;
+		bOverride = false;
 	}
 
-	FDynamicTooltipState(const float InActual, const float InMax)
+	FDynamicTooltipState(const float InActual, const float InMax, const bool bInOverride = false)
 	{
 		Actual = InActual;
 		MaxAllowed = InMax;
+		bOverride = bInOverride;
 	}
 };
 
@@ -121,7 +124,7 @@ struct FTooltipData
 	void SetShouldShowTooltipImage(const bool bShow);
 
 	/** Updates TooltipText if Actual > MaxAllowed. Sets bIsDirty to true if changed */
-	void UpdateDynamicTooltipText(const float InActual, const float InMaxAllowed);
+	void UpdateDynamicTooltipText(const FDynamicTooltipState& InUpdateData);
 
 	/** Returns true if SetShouldShowTooltipImage changed the value of bShouldShowTooltipImage, or if UpdateDynamicTooltipText changed the TooltipText */
 	bool IsDirty() const;

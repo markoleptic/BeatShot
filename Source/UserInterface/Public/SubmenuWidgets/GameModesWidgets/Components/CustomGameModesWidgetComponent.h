@@ -54,7 +54,7 @@ protected:
 
 public:
 	/** Sets BSConfig, sets the pointer to next widget in linked list, and calls UpdateOptionsFromConfig */
-	virtual void InitComponent(FBSConfig* InConfigPtr);
+	virtual void InitComponent(FBSConfig* InConfigPtr, const int32 InIndex);
 
 	/** Sets all custom game mode option values using the BSConfig pointer. Only changes the values if different. Only called during transitions */
 	virtual void UpdateOptionsFromConfig();
@@ -75,6 +75,12 @@ public:
 	/** Returns the struct containing info about the number of caution and warnings current present */
 	FCustomGameModeCategoryInfo* GetCustomGameModeCategoryInfo() { return &CustomGameModeCategoryInfo; }
 
+	/** Returns the index set during initialization */
+	int32 GetIndex() const { return Index; }
+
+	/** Returns true if the widget should be indexed on the carousel */
+	bool ShouldIndexOnCarousel() const { return bIndexOnCarousel; }
+
 protected:
 
 	/** Adds a GameModeCategoryTagWidget for each matching GameplayTag on the Menu Option widget*/
@@ -94,18 +100,9 @@ protected:
 	/** Iterates through all MenuOptionWidgets to sum the total of Warning and Caution tooltips visible. Updates CustomGameModeCategoryInfo struct */
 	void UpdateCustomGameModeCategoryInfo();
 
-	/** Width of spawn area, which is StaticHorizontalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
-	float GetHorizontalSpread() const;
-
-	/** Height of spawn area, which is StaticVerticalSpread - MaxTargetSize since targets are allowed to spawn with their center on the edge */
-	float GetVerticalSpread() const;
-
 	float GetMinRequiredHorizontalSpread() const;
 	float GetMinRequiredVerticalSpread() const;
-
-	/** MaxSpawnedTargetScale * SphereTargetDiameter */
 	float GetMaxTargetDiameter() const;
-
 	int32 GetMaxAllowedNumHorizontalTargets() const;
 	int32 GetMaxAllowedNumVerticalTargets() const;
 	float GetMaxAllowedHorizontalSpacing() const;
@@ -122,13 +119,18 @@ protected:
 	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
 
-	
+	/** Index used for parent widgets */
+	int32 Index = -1;
 
 	/** Struct containing info about NumWarning & NumCaution tooltips */
 	FCustomGameModeCategoryInfo CustomGameModeCategoryInfo;
 
 	UPROPERTY()
 	TArray<TObjectPtr<UMenuOptionWidget>> MenuOptionWidgets;
+
+	/** Whether or not to index this widget as part of the carousel */
+	UPROPERTY(EditAnywhere, Category="CustomGameModesWidgetComponent")
+	bool bIndexOnCarousel = true;
 
 	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
 	TObjectPtr<UEnumTagMap> EnumTagMap;

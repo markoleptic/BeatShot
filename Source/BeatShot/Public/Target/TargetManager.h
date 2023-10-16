@@ -126,7 +126,7 @@ protected:
 	virtual ATarget* SpawnTarget(USpawnArea* InSpawnArea);
 
 	/** Adds a Target to the ManagedTargets array, and updates the associated SpawnArea IsManaged flag */
-	int32 AddToManagedTargets(ATarget* SpawnTarget);
+	void AddToManagedTargets(ATarget* SpawnTarget, USpawnArea* SpawnArea);
 
 	/** Executes any Target Activation Responses and calls ActivateTarget on InTarget */
 	bool ActivateTarget(ATarget* InTarget) const;
@@ -248,7 +248,7 @@ protected:
 	FBSConfig* GetBSConfig() const { return BSConfig; }
 
 	/** Returns a copy of ManagedTargets */
-	TArray<TObjectPtr<ATarget>> GetManagedTargets() const { return ManagedTargets; }
+	TMap<FGuid, ATarget*> GetManagedTargets() const { return ManagedTargets; }
 
 	/** Returns the SphereTarget that has the matching Guid, or nullptr if not found in ManagedTargets */
 	ATarget* FindManagedTargetByGuid(const FGuid Guid) const;
@@ -314,10 +314,10 @@ protected:
 	 *  decremented by setting value  */
 	int32 DynamicLookUpValue_SpawnAreaScale;
 
-	/** An array of spawned Targets that are being actively managed by this class. This is the only place where
+	/** A map of spawned Targets that are being actively managed by this class. This is the only place where
 	 *  references to spawned targets are stored */
 	UPROPERTY()
-	TArray<TObjectPtr<ATarget>> ManagedTargets;
+	TMap<FGuid, ATarget*> ManagedTargets;
 
 	/** The total amount of ticks while at least one tracking target was damageable */
 	double TotalPossibleDamage;

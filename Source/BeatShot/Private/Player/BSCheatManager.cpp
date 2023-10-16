@@ -529,7 +529,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_ValidSpawnAreas(IConsoleVariable* 
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_ValidSpawnLocations = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_Valid = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_RemovedSpawnAreas(IConsoleVariable* Variable)
@@ -540,7 +540,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_RemovedSpawnAreas(IConsoleVariable
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_RemovedSpawnLocations = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_Removed = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredRecent(IConsoleVariable* Variable)
@@ -551,7 +551,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredRecent(IConsoleVariable* V
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_FilteredRecentIndices = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_FilterRecent = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredActivated(IConsoleVariable* Variable)
@@ -562,7 +562,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredActivated(IConsoleVariable
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_FilteredActivatedIndices = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_FilterActivated = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredManaged(IConsoleVariable* Variable)
@@ -573,7 +573,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredManaged(IConsoleVariable* 
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_FilteredManagedIndices = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_FilterManaged = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(IConsoleVariable* Variable)
@@ -584,7 +584,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManag
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_OverlappingVertices_OnFlaggedManaged = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_ManagedVerts = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConsoleVariable* Variable)
@@ -595,7 +595,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConso
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bShowDebug_OverlappingVertices_Dynamic = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_AllVerts = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable)

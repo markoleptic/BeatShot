@@ -20,8 +20,8 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 	{
 		if (UMenuOptionWidget* MenuOption = Cast<UMenuOptionWidget>(Widget))
 		{
-			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty()) SetupTooltip(
-				MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
+			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
+				SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
 			MenuOptionWidgets.Add(MenuOption);
 
 			AddGameModeCategoryTagWidgets(MenuOption);
@@ -49,11 +49,12 @@ void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
 	}
 }
 
-void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr)
+void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const int32 InIndex)
 {
 	BSConfig = InConfigPtr;
 	UpdateOptionsFromConfig();
 	bIsInitialized = true;
+	Index = InIndex;
 }
 
 void UCustomGameModesWidgetComponent::UpdateOptionsFromConfig()
@@ -200,72 +201,72 @@ void UCustomGameModesWidgetComponent::UpdateCustomGameModeCategoryInfo()
 	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
 }
 
-float UCustomGameModesWidgetComponent::GetHorizontalSpread() const
-{
-	return MaxValue_HorizontalSpread + BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
-}
-
-float UCustomGameModesWidgetComponent::GetVerticalSpread() const
-{
-	return MaxValue_VerticalSpread + BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
-}
-
 float UCustomGameModesWidgetComponent::GetMinRequiredHorizontalSpread() const
 {
-	const float TotalTargetWidth = GetMaxTargetDiameter() * BSConfig->GridConfig.NumHorizontalGridTargets;
-	return BSConfig->GridConfig.GridSpacing.X * (BSConfig->GridConfig.NumHorizontalGridTargets - 1) + TotalTargetWidth;
+	return (BSConfig->GridConfig.GridSpacing.X + GetMaxTargetDiameter()) * (BSConfig->GridConfig.
+		NumHorizontalGridTargets - 1);
 }
 
 float UCustomGameModesWidgetComponent::GetMinRequiredVerticalSpread() const
 {
-	const float TotalTargetHeight = GetMaxTargetDiameter() * BSConfig->GridConfig.NumVerticalGridTargets;
-	return BSConfig->GridConfig.GridSpacing.Y * (BSConfig->GridConfig.NumVerticalGridTargets - 1) + TotalTargetHeight;
+	return (BSConfig->GridConfig.GridSpacing.Y + GetMaxTargetDiameter()) * (BSConfig->GridConfig.NumVerticalGridTargets
+		- 1);
 }
 
 float UCustomGameModesWidgetComponent::GetMaxTargetDiameter() const
 {
-	return BSConfig->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+	return FMath::Max(BSConfig->TargetConfig.MinSpawnedTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale) *
+		SphereTargetDiameter;
 }
 
 int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumHorizontalTargets() const
 {
-	// HorizontalSpread = MaxTargetSize * NumHorizontalTargets + HorizontalSpacing * (NumHorizontalTargets - 1)
-	return (GetHorizontalSpread() + BSConfig->GridConfig.GridSpacing.X) / (GetMaxTargetDiameter() + BSConfig->GridConfig
-		.GridSpacing.X);
+	// Total = GridSpacing.X * (NumHorizontalGridTargets - 1) + (NumHorizontalGridTargets - 1) * MaxTargetDiameter;
+	// Total = (NumHorizontalGridTargets - 1) * (GridSpacing.X + MaxTargetDiameter);
+	// Total / (GridSpacing.X + MaxTargetDiameter) = NumHorizontalGridTargets - 1
+	// NumHorizontalGridTargets = Total / (GridSpacing.X + MaxTargetDiameter) + 1
+	return MaxValue_HorizontalSpread / (BSConfig->GridConfig.GridSpacing.X + GetMaxTargetDiameter()) + 1;
 }
 
 int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumVerticalTargets() const
 {
-	return (GetVerticalSpread() + BSConfig->GridConfig.GridSpacing.Y) / (GetMaxTargetDiameter() + BSConfig->GridConfig.
-		GridSpacing.Y);
+	// Total = GridSpacing.Y * (NumVerticalGridTargets - 1) + (NumVerticalGridTargets - 1) * MaxTargetDiameter;
+	// Total = (NumVerticalGridTargets - 1) * (GridSpacing.Y + MaxTargetDiameter);
+	// Total / (GridSpacing.Y + MaxTargetDiameter) = NumVerticalGridTargets - 1
+	// NumVerticalGridTargets = Total / (GridSpacing.Y * MaxTargetDiameter) + 1
+	return MaxValue_VerticalSpread / (BSConfig->GridConfig.GridSpacing.Y + GetMaxTargetDiameter()) + 1;
 }
 
 float UCustomGameModesWidgetComponent::GetMaxAllowedHorizontalSpacing() const
 {
-	const float TotalTargetWidth = GetMaxTargetDiameter() * BSConfig->GridConfig.NumHorizontalGridTargets;
-	return (GetHorizontalSpread() - TotalTargetWidth) / (BSConfig->GridConfig.NumHorizontalGridTargets - 1);
+	// Total = GridSpacing.X * (NumHorizontalGridTargets - 1) + (NumHorizontalGridTargets - 1) * MaxTargetDiameter;
+	// Total = (NumHorizontalGridTargets - 1) * (GridSpacing.X + MaxTargetDiameter);
+	// Total / (NumHorizontalGridTargets - 1) = GridSpacing.X + MaxTargetDiameter;
+	// Total / (NumHorizontalGridTargets - 1) - MaxTargetDiameter = GridSpacing.X;
+	return MaxValue_HorizontalSpread / (BSConfig->GridConfig.NumHorizontalGridTargets - 1) - GetMaxTargetDiameter();
 }
 
 float UCustomGameModesWidgetComponent::GetMaxAllowedVerticalSpacing() const
 {
-	const float TotalTargetHeight = GetMaxTargetDiameter() * BSConfig->GridConfig.NumVerticalGridTargets;
-	return (GetVerticalSpread() - TotalTargetHeight) / (BSConfig->GridConfig.NumVerticalGridTargets - 1);
+	// Total = GridSpacing.Y * (NumVerticalGridTargets - 1) + (NumVerticalGridTargets - 1) * MaxTargetDiameter;
+	// Total = (NumVerticalGridTargets - 1) * (GridSpacing.Y + MaxTargetDiameter);
+	// Total / (NumVerticalGridTargets - 1) = GridSpacing.Y + MaxTargetDiameter;
+	// Total / (NumVerticalGridTargets - 1) - MaxTargetDiameter = GridSpacing.Y;
+	return MaxValue_VerticalSpread / (BSConfig->GridConfig.NumVerticalGridTargets - 1) - GetMaxTargetDiameter();
 }
 
 float UCustomGameModesWidgetComponent::GetMaxAllowedTargetScale() const
 {
-	const float MaxAllowedHorizontal = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.
-		GridSpacing.X * BSConfig->GridConfig.NumHorizontalGridTargets + BSConfig->GridConfig.GridSpacing.X) / (
-		SphereTargetDiameter * BSConfig->GridConfig.NumHorizontalGridTargets);
+	// Total = GridSpacing.X * (NumHorizontalGridTargets - 1) + (NumHorizontalGridTargets - 1) * SphereTargetDiameter * Scale;
+	// Total - (GridSpacing.X * (NumHorizontalGridTargets - 1)) = (NumHorizontalGridTargets - 1) * SphereTargetDiameter * Scale;
+	// Total - (GridSpacing.X * (NumHorizontalGridTargets - 1)) = (NumHorizontalGridTargets - 1) * SphereTargetDiameter * Scale;
+	// (Total - (GridSpacing.X * (NumHorizontalGridTargets - 1))) / ((NumHorizontalGridTargets - 1) * SphereTargetDiameter) = Scale;
+	// Scale = (Total - (GridSpacing.X * (NumHorizontalGridTargets - 1))) / ((NumHorizontalGridTargets - 1) * SphereTargetDiameter)
 
-	const float MaxAllowedVertical = (MaxValue_HorizontalSpread + SphereTargetDiameter - BSConfig->GridConfig.
-		GridSpacing.Y * BSConfig->GridConfig.NumVerticalGridTargets + BSConfig->GridConfig.GridSpacing.Y) / (
-		SphereTargetDiameter * BSConfig->GridConfig.NumVerticalGridTargets);
+	const float Horizontal = (MaxValue_HorizontalSpread - (BSConfig->GridConfig.GridSpacing.X * (BSConfig->GridConfig.
+		NumHorizontalGridTargets - 1))) / ((BSConfig->GridConfig.NumHorizontalGridTargets - 1) * SphereTargetDiameter);
 
-
-	if (MaxAllowedVertical < MaxAllowedHorizontal)
-	{
-		return MaxAllowedVertical;
-	}
-	return MaxAllowedHorizontal;
+	const float Vertical = (MaxValue_VerticalSpread - (BSConfig->GridConfig.GridSpacing.Y * (BSConfig->GridConfig.
+		NumVerticalGridTargets - 1))) / ((BSConfig->GridConfig.NumVerticalGridTargets - 1) * SphereTargetDiameter);
+	return FMath::Min(Horizontal, Vertical);
 }

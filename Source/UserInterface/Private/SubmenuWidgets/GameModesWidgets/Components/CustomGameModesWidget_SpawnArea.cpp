@@ -182,27 +182,27 @@ void UCustomGameModesWidget_SpawnArea::SetupWarningTooltipCallbacks()
 		FTooltipData("Invalid_Grid_NumHorizontalTargets", ETooltipImageType::Warning),
 		"Invalid_Grid_NumHorizontalTargets_Fallback", MinValue_NumHorizontalGridTargets).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.NumHorizontalGridTargets, GetMaxAllowedNumHorizontalTargets());
+		return FDynamicTooltipState(BSConfig->GridConfig.NumHorizontalGridTargets, GetMaxAllowedNumHorizontalTargets(), !SliderTextBoxOption_NumHorizontalGridTargets->IsVisible());
 	});
 	SliderTextBoxOption_NumVerticalGridTargets->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_NumVerticalTargets", ETooltipImageType::Warning),
 		"Invalid_Grid_NumVerticalTargets_Fallback", MinValue_NumVerticalGridTargets).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.NumVerticalGridTargets, GetMaxAllowedNumVerticalTargets());
+		return FDynamicTooltipState(BSConfig->GridConfig.NumVerticalGridTargets, GetMaxAllowedNumVerticalTargets(), !SliderTextBoxOption_NumVerticalGridTargets->IsVisible());
 	});
 
 	SliderTextBoxOption_HorizontalSpacing->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_HorizontalSpacing", ETooltipImageType::Warning),
 		"Invalid_Grid_HorizontalSpacing_Fallback", MinValue_HorizontalGridSpacing).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.X, GetMaxAllowedHorizontalSpacing());
+		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.X, GetMaxAllowedHorizontalSpacing(), !SliderTextBoxOption_HorizontalSpacing->IsVisible());
 	});
 
 	SliderTextBoxOption_VerticalSpacing->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_VerticalSpacing", ETooltipImageType::Warning),
 		"Invalid_Grid_VerticalSpacing_Fallback", MinValue_VerticalGridSpacing).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.Y, GetMaxAllowedVerticalSpacing());
+		return FDynamicTooltipState(BSConfig->GridConfig.GridSpacing.Y, GetMaxAllowedVerticalSpacing(), !SliderTextBoxOption_VerticalSpacing->IsVisible());
 	});
 
 	ComboBoxOption_TargetDistributionPolicy->AddWarningTooltipData(FTooltipData("Invalid_HeadshotHeightOnly_AI",

@@ -107,19 +107,19 @@ void UCGMWC_TargetScaling::SetupWarningTooltipCallbacks()
 	{
 		const float Max = FMath::Max(BSConfig->TargetConfig.MaxSpawnedTargetScale,
 			BSConfig->TargetConfig.MinSpawnedTargetScale);
-		return FDynamicTooltipState(Max, GetMaxAllowedTargetScale());
+		return FDynamicTooltipState(Max, GetMaxAllowedTargetScale(), !SliderTextBoxOption_TargetScale->IsVisible());
 	});
 	SliderTextBoxOption_MinTargetScale->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_MaxSpawnedTargetScale", ETooltipImageType::Warning),
 		"Invalid_Grid_MaxSpawnedTargetScale_Fallback", MinValue_TargetScale, 2).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->TargetConfig.MinSpawnedTargetScale, GetMaxAllowedTargetScale());
+		return FDynamicTooltipState(BSConfig->TargetConfig.MinSpawnedTargetScale, GetMaxAllowedTargetScale(), !SliderTextBoxOption_MinTargetScale->IsVisible());
 	});
 	SliderTextBoxOption_MaxTargetScale->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_MaxSpawnedTargetScale", ETooltipImageType::Warning),
 		"Invalid_Grid_MaxSpawnedTargetScale_Fallback", MinValue_TargetScale, 2).BindLambda([this]()
 	{
-		return FDynamicTooltipState(BSConfig->TargetConfig.MaxSpawnedTargetScale, GetMaxAllowedTargetScale());
+		return FDynamicTooltipState(BSConfig->TargetConfig.MaxSpawnedTargetScale, GetMaxAllowedTargetScale(), !SliderTextBoxOption_MaxTargetScale->IsVisible());
 	});
 }
 
