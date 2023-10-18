@@ -47,6 +47,11 @@ namespace BeatShotConsoleVariables
 		"makes an update to the QTable."));
 
 
+	static TAutoConsoleVariable CVarPrintDebug_Grid(TEXT("bs_printdebug.grid"),
+	0,
+	TEXT("Toggles printing various grid-distribution related info."));
+
+
 	static TAutoConsoleVariable CVarShowDebug_TargetManager(TEXT("bs_showdebug.targetmanager"),
 		0,
 		TEXT("Toggles showing the SpawnBox, SpawnVolume, Valid Spawn Areas, and Removed Spawn Areas.\n"
@@ -74,14 +79,12 @@ namespace BeatShotConsoleVariables
 
 	static TAutoConsoleVariable CVarShowDebug_AllSpawnAreas(TEXT("bs_showdebug.allspawnareas"),
 		0,
-		TEXT("Toggles showing Cyan debug boxes for all Spawn Areas at the end of the GetValidSpawnLocations "
-			"function. Persistant boxes."));
+		TEXT("Toggles showing Cyan debug boxes for all Spawn Areas."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_ValidSpawnAreas(TEXT("bs_showdebug.validspawnareas"),
 		0,
-		TEXT("Toggles showing Green debug boxes for valid Spawn Areas at the end of the GetValidSpawnLocations "
-			"function."));
+		TEXT("Toggles showing Green debug boxes for valid Spawn Areas."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_RemovedSpawnAreas(TEXT("bs_showdebug.removedspawnareas"),
@@ -91,22 +94,24 @@ namespace BeatShotConsoleVariables
 
 	static TAutoConsoleVariable CVarShowDebug_FilteredRecent(TEXT("bs_showdebug.filteredrecent"),
 		0,
-		TEXT("Toggles showing Turquoise debug boxes for filtered recent Spawn Areas at the end of the "
-			"FilterRecentIndices function."));
+		TEXT("Toggles showing Turquoise debug boxes for filtered recent Spawn Areas."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_FilteredActivated(TEXT("bs_showdebug.filteredactivated"),
 		0,
-		TEXT("Toggles showing Cyan debug boxes for filtered activated Spawn Areas at the end of the "
-			"FilterActivatedIndices function."));
+		TEXT("Toggles showing Cyan debug boxes for filtered activated Spawn Areas."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_FilteredManaged(TEXT("bs_showdebug.filtermanaged"),
 		0,
-		TEXT("Toggles showing Blue debug boxes for filtered managed Spawn Areas at the end of the "
-			"FilterManagedIndices function."));
+		TEXT("Toggles showing Blue debug boxes for filtered managed Spawn Areas."));
 
 
+	static TAutoConsoleVariable CVarShowDebug_FilteredBordering(TEXT("bs_showdebug.filterbordering"),
+	0,
+	TEXT("Toggles showing Yellow debug boxes for filtered bordering Spawn Areas."));
+	
+	
 	static TAutoConsoleVariable CVarShowDebug_OverlappingVertices_Dynamic(TEXT("bs_showdebug.overlappingverts_dynamic"),
 		0,
 		TEXT("Shows the overlapping vertices generated during RemoveOverlappingSpawnLocations function.\n"
@@ -162,6 +167,10 @@ void UBSCheatManager::InitCheatManager()
 	QTableUpdateDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_QTableUpdate);
 	BeatShotConsoleVariables::CVarPrintDebug_QTableUpdate.AsVariable()->SetOnChangedCallback(QTableUpdateDelegate);
 
+	FConsoleVariableDelegate GridDelegate;
+	GridDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_Grid);
+	BeatShotConsoleVariables::CVarPrintDebug_Grid.AsVariable()->SetOnChangedCallback(GridDelegate);
+
 	FConsoleVariableDelegate RLWidgetDelegate;
 	RLWidgetDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_ReinforcementLearningWidget);
 	BeatShotConsoleVariables::CVarShowDebug_ReinforcementLearningWidget.AsVariable()->SetOnChangedCallback(
@@ -201,6 +210,10 @@ void UBSCheatManager::InitCheatManager()
 	FConsoleVariableDelegate FilteredManagedDelegate;
 	FilteredManagedDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredManaged);
 	BeatShotConsoleVariables::CVarShowDebug_FilteredManaged.AsVariable()->SetOnChangedCallback(FilteredManagedDelegate);
+
+	FConsoleVariableDelegate FilteredBorderingDelegate;
+	FilteredBorderingDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering);
+	BeatShotConsoleVariables::CVarShowDebug_FilteredBordering.AsVariable()->SetOnChangedCallback(FilteredBorderingDelegate);
 
 	FConsoleVariableDelegate OverlappingVertices_DynamicDelegate;
 	OverlappingVertices_DynamicDelegate.BindUObject(this,
@@ -321,6 +334,17 @@ void UBSCheatManager::CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVar
 	if (!TargetManager || !TargetManager->RLComponent) return;
 
 	TargetManager->RLComponent->bPrintDebug_ChooseBestActionIndex = Variable->GetBool();
+}
+
+void UBSCheatManager::CVarOnChanged_PrintDebug_Grid(IConsoleVariable* Variable)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
+
+	TargetManager->SpawnAreaManager->bDebug_Grid = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable)
@@ -574,6 +598,17 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredManaged(IConsoleVariable* 
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
 	TargetManager->SpawnAreaManager->bDebug_FilterManaged = Variable->GetBool();
+}
+
+void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering(IConsoleVariable* Variable)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
+
+	TargetManager->SpawnAreaManager->bDebug_FilterBordering = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(IConsoleVariable* Variable)

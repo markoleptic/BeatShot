@@ -14,6 +14,7 @@
 UENUM(BlueprintType)
 enum class EBorderingDirection : uint8
 {
+	None UMETA(DisplayName="None"),
 	Left UMETA(DisplayName="Left"),
 	Right UMETA(DisplayName="Right"),
 	Up UMETA(DisplayName="Up"),
@@ -23,7 +24,6 @@ enum class EBorderingDirection : uint8
 	DownLeft UMETA(DisplayName="DownLeft"),
 	DownRight UMETA(DisplayName="DownRight"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::DownRight);
 
 /** Enum representing the types of Grid Indices */
@@ -41,7 +41,6 @@ enum class EGridIndexType : uint8
 	Border_Left UMETA(DisplayName="Border_Left"),
 	Middle UMETA(DisplayName="Middle"),
 };
-
 ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::Corner_TopLeft, EGridIndexType::Middle);
 
 /** Contains the minimum and maximum of a Box */
@@ -75,40 +74,37 @@ USTRUCT()
 struct FBlock
 {
 	GENERATED_BODY()
-
-	int32 BlockSize;
+	
 	TArray<int32> Indices;
-
+	
 	FBlock()
 	{
-		BlockSize = 0;
 		Indices = TArray<int32>();
 	}
 
 	void AddBlockIndex(const int32 InIndex)
 	{
 		Indices.Add(InIndex);
-		BlockSize++;
 	}
 
 	void RemoveBlockIndex(const int32 InIndex)
 	{
-		const int32 NumRemoved = Indices.Remove(InIndex);
-		if (NumRemoved > 0)
-		{
-			BlockSize--;
-		}
+		Indices.Remove(InIndex);
+	}
+
+	int32 Num() const
+	{
+		return Indices.Num();
 	}
 
 	void Reset()
 	{
-		BlockSize = 0;
 		Indices.Empty();
 	}
 
 	FORCEINLINE bool operator==(const FBlock& Other) const
 	{
-		if (BlockSize != Other.BlockSize) return false;
+		if (Indices.Num() != Other.Indices.Num()) return false;
 		
 		for (const int32 Index : Other.Indices)
 		{
@@ -135,43 +131,134 @@ struct FBlock
 	}
 };
 
+/** Contains the size, start index, & end index of the largest rectangle in a grid */
+USTRUCT()
+struct FLargestRect
+{
+	GENERATED_BODY()
+
+	int32 MaxArea;
+	int32 StartIndex;
+	int32 EndIndex;
+
+	FLargestRect() : MaxArea(0), StartIndex(-1), EndIndex(-1) {}
+
+	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd)
+	{
+		MaxArea = InMaxArea;
+		StartIndex = InStart;
+		EndIndex = InEnd;
+	}
+
+	/** Test the NewMaxArea against MaxArea. If larger, takes on all parameter values */
+	void TestNewMaxArea(const int32 InNewMaxArea, const int32 InStart, const int32 InEnd)
+	{
+		if (InNewMaxArea > MaxArea)
+		{
+			MaxArea = InNewMaxArea;
+			StartIndex = InStart;
+			EndIndex = InEnd;
+		}
+	}
+
+	/** Test the NewMaxArea against MaxArea. If larger, takes on all parameter values */
+	void TestNewMaxArea(const FLargestRect& InNewLargestRect)
+	{
+		if (InNewLargestRect.MaxArea > MaxArea)
+		{
+			MaxArea = InNewLargestRect.MaxArea;
+			StartIndex = InNewLargestRect.StartIndex;
+			EndIndex = InNewLargestRect.EndIndex;
+		}
+	}
+};
+
 /** Parameters for FindValidIndexCombinationsDFS */
 USTRUCT()
 struct FDFSLoopParams
 {
 	GENERATED_BODY()
+	
+	/** Whether or not a suitable block has been found */
+	bool bFound;
+	
+	/** The minimum among a completed block's maximum distance between any two indices in the block */
+	int32 BestMaxDistance;
 
-	TArray<int32> Valid;
+	/** The minimum among a completed block's total distance between all indices in the block */
+	int32 BestTotalDistance;
+	
+	/** The size of the block to create */
 	int32 BlockSize;
-	TSet<FBlock> Blocks;
-	int32 CurrentDepth;
+
+	/** Number of columns in the SpawnArea grid */
+	int32 NumCols;
+	
+	/** Recursions skipped */
+	int32 SkippedRecursions;
+	
+	/** Total iterations performed */
+	int32 TotalIterations;
+
+	/** Total recursions performed */
+	int32 TotalRecursions;
+	
+	/** The current block of indices */
 	FBlock CurrentBlock;
-	TSet<int32> Visited;
-	TSet<int32> InitialVisited;
+
+	/** A set of suitable blocks, usually just one since often exit after first found */
+	TSet<FBlock> Blocks;
+
+	/** Types of indexes that should be allowed to link SpawnAreas */
 	TSet<EBorderingDirection> IndexTypes;
 
+	/** An array with size equal to number of SpawnAreas, where each index corresponds to a SpawnArea index. A value
+	 *  of 1 indicates the index can be spawned at, while an index of 0 indicates it cannot be spawned at */
+	TArray<int32> Valid;
+
+	/** A set of indices already visited, after the first index of a block */
+	TSet<int32> Visited;
+
+	/** A set of first block indices already visited. Added before entering the recursion */
+	TSet<int32> InitialVisited;
+	
 	FDFSLoopParams()
 	{
-		Valid = TArray<int32>();
+		bFound = false;
+		BestMaxDistance = 99999;
+		BestTotalDistance = 99999;
 		BlockSize = 0;
-		Blocks = TSet<FBlock>();
-		CurrentDepth = 1;
+		NumCols = 0;
+		SkippedRecursions = 0;
+		TotalIterations = 0;
+		TotalRecursions = 0;
+		
 		CurrentBlock = FBlock();
+		Blocks = TSet<FBlock>();
+		IndexTypes = TSet<EBorderingDirection>();
+		Valid = TArray<int32>();
 		Visited = TSet<int32>();
 		InitialVisited = TSet<int32>();
-		IndexTypes = TSet<EBorderingDirection>();
 	}
 
-	FDFSLoopParams(const TArray<int32>& InValid, const TSet<EBorderingDirection>& InGridIndexTypes, const int32 InBlockSize)
+	FDFSLoopParams(const TArray<int32>& InValid, const TSet<EBorderingDirection>& InGridIndexTypes,
+		const int32 InBlockSize, const int32 InNumCols)
 	{
-		Valid = InValid;
+		bFound = false;
+		BestMaxDistance = 99999;
+		BestTotalDistance = 99999;
 		BlockSize = InBlockSize;
-		Blocks = TSet<FBlock>();
-		CurrentDepth = 1;
+		NumCols = InNumCols;
+		SkippedRecursions = 0;
+		TotalIterations = 0;
+		TotalRecursions = 0;
+		
 		CurrentBlock = FBlock();
+		Blocks = TSet<FBlock>();
+		IndexTypes = InGridIndexTypes;
+		Valid = InValid;
 		Visited = TSet<int32>();
 		InitialVisited = TSet<int32>();
-		IndexTypes = InGridIndexTypes;
 	}
 
 	/** Resets CurrentBlock, Visited, and InitialVisited. Sets CurrentDepth to 1 */
@@ -182,7 +269,6 @@ struct FDFSLoopParams
 		Visited.Empty();
 		InitialVisited.Empty();
 		InitialVisited.Add(InNewIndex);
-		CurrentDepth = 1;
 	}
 };
 
@@ -220,7 +306,7 @@ struct FSpawnAreaParams
 
 class USpawnArea;
 
-DECLARE_DELEGATE_RetVal_OneParam(USpawnArea*, FRequestRLCSpawnArea, const TArray<USpawnArea*>&)
+DECLARE_DELEGATE_RetVal_TwoParams(USpawnArea*, FRequestRLCSpawnArea, const TArray<USpawnArea*>&, const USpawnArea*)
 
 /** Key used for location-based indexing */
 USTRUCT()
@@ -500,9 +586,52 @@ public:
 	/** Initializes basic variables in SpawnAreaManagerComponent */
 	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents,
 		const FExtrema& InStaticExtrema);
-
+	
 	/** Resets all variables */
 	void Clear();
+	
+private:
+	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
+	void SetAppropriateSpawnMemoryValues();
+
+	/** Initializes the SpawnCounter array */
+	void InitializeSpawnAreas();
+	
+	/** Returns whether or not to consider Managed SpawnAreas as invalid choices for activation */
+	bool ShouldConsiderManagedAsInvalid() const;
+
+	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
+	bool ShouldForceSpawnAtOrigin() const;
+	
+public:
+	/** Returns reference to SpawnAreas */
+	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
+
+	/** Returns the (Height, Width) of all SpawnAreas */
+	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaInc; }
+
+	/** Returns (x, NumHorizontal, NumVertical) total spawn areas */
+	FIntVector3 GetSpawnAreaSize() const { return Size; }
+
+	/** Returns delegate used to request a SpawnArea selection from the RLC */
+	FRequestRLCSpawnArea& GetSpawnAreaRequestDelegate() { return RequestRLCSpawnArea; }
+
+private:
+	/** Returns pointer to TargetManager's BSConfig */
+	FBSConfig* GetBSConfig() const { return BSConfig; }
+
+	/** Returns pointer to TargetManager's BSConfig.TargetConfig */
+	const FBS_TargetConfig& GetTargetCfg() const { return BSConfig->TargetConfig; }
+
+	/** Returns the minimum distance between targets, used just to shorten length of call */
+	float GetMinDist() const { return BSConfig->TargetConfig.MinDistanceBetweenTargets; }
+	
+public:
+	/** Sets whether or not to request a SpawnArea selection from the RLC */
+	void SetShouldAskRLCForSpawnAreas(const bool bShould) { bShouldAskRLCForSpawnAreas = bShould; }
+
+	/** Sets the most recently activated SpawnArea. Should be called from TargetManager at end of ActivateTarget */
+	void SetMostRecentSpawnArea(USpawnArea* SpawnArea) { MostRecentSpawnArea = SpawnArea; }
 
 	/** Finds a SpawnArea with the matching location and increments TotalTrackingDamagePossible */
 	void UpdateTotalTrackingDamagePossible(const FVector& InLocation) const;
@@ -513,18 +642,16 @@ public:
 	/** Calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
 	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
 
-	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
-	bool ShouldForceSpawnAtOrigin() const;
-
-	/** Sets the most recently activated SpawnArea. Should be called from TargetManager at end of ActivateTarget */
-	void SetMostRecentSpawnArea(USpawnArea* SpawnArea);
+	/* ------------------------------- */
+	/* -- SpawnArea finders/getters -- */
+	/* ------------------------------- */
 
 	/** Returns the most recent SpawnArea that was set at the end of ATargetManager::ActivateTarget */
-	USpawnArea* GetMostRecentSpawnArea() const;
+	USpawnArea* GetMostRecentSpawnArea() const { return MostRecentSpawnArea; }
 
 	/** Returns the SpawnArea containing the origin */
-	USpawnArea* GetOriginSpawnArea() const;
-
+	USpawnArea* GetOriginSpawnArea() const {return OriginSpawnArea; }
+	
 	/** Finds a SpawnArea with the matching InLocation using the AreaKeyMap for lookup */
 	USpawnArea* FindSpawnAreaFromLocation(const FVector& InLocation) const;
 
@@ -543,6 +670,10 @@ public:
 	/** Returns true if the SpawnArea is contained in SpawnAreas */
 	bool IsSpawnAreaValid(const int32 InIndex) const;
 
+	/* ------------------------------------ */
+	/* -- TSet SpawnArea finders/getters -- */
+	/* ------------------------------------ */
+	
 	/** Returns an array of SpawnAreas that are flagged as currently managed */
 	TSet<USpawnArea*> GetManagedSpawnAreas() const;
 
@@ -561,18 +692,10 @@ public:
 	/** Returns a filtered array containing SpawnAreas flagged as managed, activated, or recent */
 	TSet<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
 
-	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
-	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
-	void RemoveOverlappingSpawnAreas(TArray<USpawnArea*>& ValidSpawnAreas, const FVector& Scale) const;
-
-	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
-
-	/** Returns the (Height, Width) of all SpawnAreas */
-	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaInc; }
-
-	/** Returns (x, NumHorizontal, NumVertical) total spawn areas */
-	FIntVector3 GetSpawnAreaSize() const { return Size; }
-
+	/* ------------------------ */
+	/* -- SpawnArea flagging -- */
+	/* ------------------------ */
+	
 	/** Adds to Managed and Deactivated cache, adds to GuidMap, and flags the SpawnArea as being actively managed by
 	 *  TargetManager. Calls SetInvalidVerts if needed */
 	void FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, const FGuid TargetGuid);
@@ -598,6 +721,10 @@ public:
 	/** Removes the oldest SpawnArea recent flags if the max number of recent targets has been exceeded */
 	void RefreshRecentFlags();
 
+	/* ----------------------------------- */
+	/* -- Finding Valid Spawn Locations -- */
+	/* ----------------------------------- */
+	
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
 	 *  are linked to a managed target since activatable requires being managed. Also considers the
 	 *  Target Activation Selection Policy */
@@ -606,26 +733,37 @@ public:
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Broadest search since SpawnAreas
 	 *  do not have to be linked to a managed target to be considered. Also considers the Target Distribution Policy
 	 *  and Bounds Scaling Policy */
-	TArray<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, const FExtrema& Extrema, int32 NumToSpawn,
-		const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
+	TArray<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, int32 NumToSpawn) const;
 
-	TArray<USpawnArea*> GetSpawnableSpawnAreas_Grid(const TArray<FVector>& Scales, int32 NumToSpawn,
-		const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
+	/** Handles selecting SpawnAreas for runtime Grid distributions, based on the
+	 *  RuntimeTargetSpawningLocationSelectionMode. Can call FindRandomBorderingGrid, FindRandomGridBlock, or none
+	 *  if random */
+	TArray<USpawnArea*> GetSpawnableSpawnAreas_Grid(const TArray<FVector>& Scales, int32 NumToSpawn) const;
 	
+	/** Handles selecting SpawnAreas for runtime target distribution that are not Grid. Similar loop to
+	 *  GetActivatableSpawnAreas */
+	TArray<USpawnArea*> GetSpawnableSpawnAreas_NonGrid(const TArray<FVector>& Scales, int32 NumToSpawn) const;
+	
+	/** Kinda scuffed method that finds a random chain of bordering targets from the most recent SpawnArea */
+	void FindRandomBorderingGrid(TArray<USpawnArea*>& ValidSpawnAreas, int32 NumToSpawn) const;
+
 	/** Calls FindValidIndexCombinationsDFS for each SpawnArea in ValidSpawnAreas. If at least one valid block was
 	 *  found, ValidSpawnAreas is emptied, a random block of indices is chosen, and the SpawnAreas corresponding
 	 *  to the indices are added to ValidSpawnAreas */
-	void FindRandomGridBlock(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity, const int32 BlockSize) const;
-
+	void FindRandomGridBlock(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
+		const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
+	
 	/** Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
 	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
 	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
-
-	/** Filters the SpawnAreas array directly using FilterByPredicate and removing SpawnAreas outside of the Extrema */
-	void FilterByExtrema(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
-
-	/** Filters out any SpawnAreas that aren't along the edge of the current Extrema */
-	void FilterByEdgeOnly(TArray<USpawnArea*>& ValidSpawnAreas, const FExtrema& Extrema) const;
+	
+	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets */
+	void OnExtremaChanged(const FExtrema& Extrema);
+	
+private:
+	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
+	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
+	void RemoveOverlappingSpawnAreas(TArray<USpawnArea*>& ValidSpawnAreas, TArray<USpawnArea*>& ChosenSpawnAreas, const FVector& Scale) const;
 
 	/** Filters out any locations that are flagged as managed */
 	TArray<int32> FilterManagedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
@@ -642,15 +780,38 @@ public:
 	/** General SpawnAreas filter function that takes in a filter function to apply */
 	TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
 		const bool bShowDebug, const FColor& DebugColor) const;
-	
+
+	/* ------------- */
+	/* -- Utility -- */
+	/* ------------- */
+
 	/** Creates an array with size equal to the number of SpawnAreas, where each index represents whether or not the
 	 *  SpawnArea should be consider valid */
 	TArray<int32> CreateIndexValidityArray(const TArray<int32>& RemovedIndices) const;
+
+	/** Calculates the Manhattan distance between to indices given the number of columns */
+	static int32 CalcManhattanDist(const int32 Index1, const int32 Index2, const int32 NumCols);
+
+	/** Estimates the BestTotalDistance and MaxTotalDistance of an FDFSLoopParams struct by simulating an index block */
+	static void EstimateDistances(FDFSLoopParams& Params);
 	
+	/** Finds the maximum rectangle of valid indices in the matrix. Returns a struct containing the area, start index,
+	 *  and end index that correspond to SpawnAreas */
+	static FLargestRect FindLargestValidRectangle(const TArray<int32>& IndexValidity, const int32 NumRows, const int32 NumCols);
+
+	/** Called for every row inside FindLargestValidRectangle. Iterates through the number of columns
+	 *  both forward and backward, updating the values if a new maximum rectangle is found */
+	static FLargestRect UpdateLargestRectangle(TArray<int32>& Heights);
+	
+public:
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
 	FAccuracyData GetLocationAccuracy();
 
+	/* ----------- */
+	/* -- Debug -- */
+	/* ----------- */
+	
 	/** Shows the grid of spawn areas drawn as debug boxes */
 	void DrawDebug_AllSpawnAreas() const;
 
@@ -673,7 +834,9 @@ public:
 	 *  the vertices if they were recalculated */
 	void DrawVerticesOverlap(const USpawnArea* SpawnArea, const FVector& Scale,
 		const TSet<FVector>& Valid, const TSet<FVector>& Invalid) const;
-
+	
+	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
+	 *  the vertices if they were recalculated */
 	void DrawVerticesOverlap(const TSet<USpawnArea*>& InSpawnAreas, const FVector& Scale,
 	const TSet<FVector>& Valid, const TSet<FVector>& Invalid) const;
 
@@ -683,12 +846,16 @@ public:
 	/** Prints debug info about SpawnArea distance */
 	void PrintDebug_SpawnAreaDist(const USpawnArea* SpawnArea) const;
 
-	FRequestRLCSpawnArea RequestRLCSpawnArea;
+	/** Prints debug info about GridBlocks */
+	static void PrintDebug_Grid(const FDFSLoopParams& LoopParams);
+
+	/** Prints debug info about Largest Rectangular area found */
+	static void PrintDebug_Grid(const FLargestRect& LargestRect);
 
 	/** Toggles showing green debug boxes for valid spawn locations at the end of the GetValidSpawnAreas function */
 	bool bDebug_Valid;
 
-	/** Toggles showing red debug boxes for removed spawn locations */
+	/** Toggles showing red debug boxes for removed spawn due to the BoxBounds */
 	bool bDebug_Removed;
 
 	/** Toggles showing turquoise debug boxes for filtered recent SpawnAreas */
@@ -699,6 +866,9 @@ public:
 
 	/** Toggles showing blue debug boxes for filtered managed SpawnAreas */
 	bool bDebug_FilterManaged;
+
+	/** Toggles showing yellow debug boxes for filtered bordering SpawnAreas */
+	bool bDebug_FilterBordering;
 
 	/** Shows the overlapping vertices generated when SpawnArea was flagged as Managed as red DebugPoints.
 	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
@@ -715,25 +885,10 @@ public:
 	 *  Draws red Debug Boxes for the removed overlapping vertices */
 	bool bDebug_AllVerts;
 
-		
-	bool bShouldAskRLCForSpawnAreas = false;
+	/** Prints various grid-distribution related info to log */
+	bool bDebug_Grid;
 
 private:
-	bool ShouldConsiderManagedAsInvalid() const;
-
-	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
-	void SetAppropriateSpawnMemoryValues();
-
-	/** Initializes the SpawnCounter array */
-	void InitializeSpawnAreas();
-
-	/** Returns pointer to TargetManager's BSConfig */
-	FBSConfig* GetBSConfig() const { return BSConfig; }
-
-	const FBS_TargetConfig& GetTc() const { return BSConfig->TargetConfig; }
-
-	float GetMinDist() const { return BSConfig->TargetConfig.MinDistanceBetweenTargets; }
-
 	/** Pointer to TargetManager's BSConfig */
 	FBSConfig* BSConfig;
 
@@ -751,6 +906,14 @@ private:
 	/** Maps each Target Guid to a unique SpawnArea. Requires SpawnArea to be managed */
 	UPROPERTY()
 	TMap<FGuid, USpawnArea*> GuidMap;
+
+	/** A set of SpawnAreas that fall within the current BoxBounds */
+	UPROPERTY()
+	TSet<USpawnArea*> CachedExtrema;
+
+	/** A set of SpawnAreas that fall within the current BoxBounds */
+	UPROPERTY()
+	TSet<USpawnArea*> CachedEdgeOnly;
 
 	/** A set of the currently managed SpawnAreas */
 	UPROPERTY()
@@ -794,6 +957,23 @@ private:
 	/** Preferred SpawnMemory increments */
 	const TArray<int32> PreferredScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
+	/** Index types that are valid to use when searching for GridBlocks */
+	const TSet<EBorderingDirection> GridBlockIndexTypes = {
+		EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up, EBorderingDirection::Down
+	};
+
+	/** Index types that are valid to use when searching for GridBlocks */
+	const TSet<EBorderingDirection> VerticalIndexTypes = { EBorderingDirection::Up, EBorderingDirection::Down };
+
+	/** Index types that are valid to use when searching for GridBlocks */
+	const TSet<EBorderingDirection> HorizontalIndexTypes = { EBorderingDirection::Left, EBorderingDirection::Right };
+
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() */
 	FTimerDelegate RemoveFromRecentDelegate;
+
+	/** Delegate used to request a SpawnArea selection from the RLC */
+	FRequestRLCSpawnArea RequestRLCSpawnArea;
+	
+	/** Whether or not to broadcast the RequestRLCSpawnArea when finding SpawnAreas */
+	bool bShouldAskRLCForSpawnAreas;
 };

@@ -171,13 +171,14 @@ void ATargetManager::Init_Internal()
 
 	// Initialize the SpawnAreaManager
 	SpawnAreaManager->Init(GetBSConfig(), GetSpawnBoxOrigin(), StaticExtents, StaticExtrema);
-	SpawnAreaManager->RequestRLCSpawnArea.BindUObject(this, &ThisClass::GetNextSpawnAreaFromRLC);
+	SpawnAreaManager->GetSpawnAreaRequestDelegate().BindUObject(this, &ThisClass::GetNextSpawnAreaFromRLC);
 
 	// Initialize SpawnBox extents and the SpawnVolume extents & location
 	const bool bDynamic = GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic;
 	const float Factor = bDynamic ? GetCurveTableValue(true, DynamicLookUpValue_SpawnAreaScale) : 1.f;
 	UpdateSpawnBoxExtents(Factor);
 	UpdateSpawnVolume(Factor);
+	SpawnAreaManager->OnExtremaChanged(GetSpawnBoxExtrema());
 
 	// Init RLC
 	if (GetBSConfig()->IsCompatibleWithReinforcementLearning())
@@ -198,8 +199,8 @@ void ATargetManager::Init_Internal()
 		#endif
 	}
 
-	SpawnAreaManager->bShouldAskRLCForSpawnAreas = RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::Exploration || RLComponent->
-		GetReinforcementLearningMode() == EReinforcementLearningMode::ActiveAgent;
+	SpawnAreaManager->SetShouldAskRLCForSpawnAreas(RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::Exploration || RLComponent->
+		GetReinforcementLearningMode() == EReinforcementLearningMode::ActiveAgent);
 
 	// Spawn any targets if needed
 	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
@@ -383,7 +384,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	if (!bPreTargetActivationState && InTarget->HasBeenActivatedBefore() && GetBSConfig()->TargetConfig.
 		TargetActivationResponses.Contains(ETargetActivationResponse::ApplyConsecutiveTargetScale))
 	{
-		InTarget->SetTargetScale(FindNextTargetScale());
+		InTarget->SetTargetScale(FindNextSpawnedTargetScale());
 	}
 
 	const bool bPostTargetActivationState = InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan);
@@ -422,16 +423,14 @@ void ATargetManager::HandleUpfrontSpawning()
 	{
 		for (int i = 0; i < SpawnAreaManager->GetSpawnAreaSize().Y * SpawnAreaManager->GetSpawnAreaSize().Z; i++)
 		{
-			SpawnAreaManager->GetSpawnAreasRef()[i]->SetTargetScale(FindNextTargetScale());
+			SpawnAreaManager->GetSpawnAreasRef()[i]->SetTargetScale(FindNextSpawnedTargetScale());
 			SpawnTarget(SpawnAreaManager->GetSpawnAreasRef()[i]);
 		}
 	}
 	else
 	{
-		TArray<USpawnArea*> SpawnAreas = FindNextSpawnAreasForSpawn(GetBSConfig()->TargetConfig.NumUpfrontTargetsToSpawn,
-			ERuntimeTargetSpawningLocationSelectionMode::None);
-		
-		for (USpawnArea* SpawnArea : SpawnAreas)
+		const int32 NumToSpawn = GetBSConfig()->TargetConfig.NumUpfrontTargetsToSpawn;
+		for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(NumToSpawn))
 		{
 			if (SpawnArea) SpawnTarget(SpawnArea);
 		}
@@ -455,14 +454,9 @@ void ATargetManager::HandleRuntimeSpawning()
 	}
 
 	int32 NumSpawned = 0;
-	TArray<USpawnArea*> SpawnAreas = FindNextSpawnAreasForSpawn(NumberToSpawn,
-		GetBSConfig()->TargetConfig.RuntimeTargetSpawningLocationSelectionMode);
-	for (USpawnArea* SpawnArea : SpawnAreas)
+	for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(NumberToSpawn))
 	{
-		if (SpawnArea)
-		{
-			if (SpawnTarget(SpawnArea)) NumSpawned++;
-		}
+		if (SpawnArea) if (SpawnTarget(SpawnArea)) NumSpawned++;
 	}
 	if (bPrintDebug_NumRecentNumActive)
 	{
@@ -628,7 +622,7 @@ int32 ATargetManager::GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossible
 	return FMath::RandRange(MinToActivate, MaxToActivate);
 }
 
-FVector ATargetManager::FindNextTargetScale() const
+FVector ATargetManager::FindNextSpawnedTargetScale() const
 {
 	if (GetBSConfig()->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::SkillBased)
 	{
@@ -640,9 +634,10 @@ FVector ATargetManager::FindNextTargetScale() const
 		GetBSConfig()->TargetConfig.MaxSpawnedTargetScale));
 }
 
-TArray<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(int32 NumToSpawn,
-	const ERuntimeTargetSpawningLocationSelectionMode Mode) const
+TArray<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(int32 NumToSpawn) const
 {
+	if (NumToSpawn == 0) return TArray<USpawnArea*>();
+	
 	// Change the BoxExtent of the SpawnBox if dynamic
 	const bool bDynamic = GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic;
 	if (bDynamic)
@@ -653,12 +648,9 @@ TArray<USpawnArea*> ATargetManager::FindNextSpawnAreasForSpawn(int32 NumToSpawn,
 	}
 	
 	TArray<FVector> Scales;
-	for (int i = 0; i < NumToSpawn; i++)
-	{
-		Scales.Add(FindNextTargetScale());
-	}
+	for (int i = 0; i < NumToSpawn; i++) Scales.Add(FindNextSpawnedTargetScale());
 	
-	TArray<USpawnArea*> Out = SpawnAreaManager->GetSpawnableSpawnAreas(Scales, GetSpawnBoxExtrema(), NumToSpawn, Mode);
+	TArray<USpawnArea*> Out = SpawnAreaManager->GetSpawnableSpawnAreas(Scales, NumToSpawn);
 	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Warning, TEXT("ValidSpawnableSpawnAreas is empty."));
 	
 	return Out;
@@ -670,38 +662,10 @@ TArray<USpawnArea*> ATargetManager::FindNextSpawnAreasForActivation(const int32 
 
 	if (NumToActivate <= 0) return Out;
 
-	TArray<USpawnArea*> Valid = SpawnAreaManager->GetActivatableSpawnAreas(NumToActivate);
+	Out = SpawnAreaManager->GetActivatableSpawnAreas(NumToActivate);
 	
-	if (Valid.IsEmpty())
-	{
-		UE_LOG(LogTargetManager, Warning, TEXT("ValidActivatableSpawnAreas is empty."));
-		return Out;
-	}
-
-	if (NumToActivate == 1 && RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::Exploration || RLComponent->
-		GetReinforcementLearningMode() == EReinforcementLearningMode::ActiveAgent)
-	{
-		if (USpawnArea* NextSpawnArea = GetNextSpawnAreaFromRLC(Valid))
-		{
-			if (GetBSConfig()->TargetConfig.TargetDistributionPolicy != ETargetDistributionPolicy::Grid)
-			{
-				NextSpawnArea->SetRandomChosenPoint();
-			}
-			Out.Add(NextSpawnArea);
-			return Out;
-		}
-		UE_LOG(LogTargetManager, Warning, TEXT("Unable to activate at SpawnArea suggested by RLAgent."));
-	}
-	for (int i = 0; i < NumToActivate; i++)
-	{
-		const int32 Index = FMath::RandRange(0, Valid.Num() - 1);
-		if (USpawnArea* NextSpawnArea = Valid[Index])
-		{
-			Out.Add(NextSpawnArea);
-			Valid.Remove(NextSpawnArea);
-			Valid.Shrink();
-		}
-	}
+	if (Out.IsEmpty()) UE_LOG(LogTargetManager, Warning, TEXT("ValidActivatableSpawnAreas is empty."));
+	
 	return Out;
 }
 
@@ -717,9 +681,8 @@ ETargetDamageType ATargetManager::FindNextTargetDamageType()
 	return GetBSConfig()->TargetConfig.TargetDamageType;
 }
 
-USpawnArea* ATargetManager::GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas) const
+USpawnArea* ATargetManager::GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Previous) const
 {
-	/* Converting all OpenLocations to indices */
 	TArray<int32> Indices;
 	for (const USpawnArea* SpawnArea : ValidSpawnAreas)
 	{
@@ -730,8 +693,7 @@ USpawnArea* ATargetManager::GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& V
 		UE_LOG(LogTargetManager, Warning, TEXT("No targets in OpenLocations or No targets in TargetPairs"));
 		return nullptr;
 	}
-
-	const USpawnArea* Previous = SpawnAreaManager->GetMostRecentSpawnArea();
+	
 	if (!Previous) return nullptr;
 
 	const int32 ChosenIndex = RLComponent->ChooseNextActionIndex(Indices, Previous->GetIndex());
@@ -765,7 +727,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
 	if (!Found) return;
 	RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !Event.bDamagedSelf);
 
-	// TODO Immediately spawn targets if 
+	// TODO Immediately spawn targets if ...?
 }
 
 void ATargetManager::UpdateCurrentStreak(const FTargetDamageEvent& Event)
@@ -1005,19 +967,23 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 {
 	const FVector Start = GetBSConfig()->DynamicSpawnAreaScaling.GetStartExtents();
 
+	const FVector LastExtents = GetSpawnBoxExtents();
+
 	const float LerpY = UKismetMathLibrary::Lerp(Start.Y, StaticExtents.Y, Factor);
 	const float LerpZ = UKismetMathLibrary::Lerp(Start.Z, StaticExtents.Z, Factor);
+	
+	const int32 IncY = SpawnAreaManager->GetSpawnAreaInc().Y;
+	const int32 IncZ = SpawnAreaManager->GetSpawnAreaInc().Z;
 
-	if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::EdgeOnly)
-	{
-		const float SnapY = FMath::GridSnap(LerpY, static_cast<float>(SpawnAreaManager->GetSpawnAreaInc().Y));
-		const float SnapZ = FMath::GridSnap(LerpZ, static_cast<float>(SpawnAreaManager->GetSpawnAreaInc().Z));
-		SpawnBox->SetBoxExtent(FVector(0, SnapY, SnapZ));
-	}
-	else
-	{
-		SpawnBox->SetBoxExtent(FVector(0, LerpY, LerpZ));
-	}
+	const int32 SnapY = IncY * FMath::FloorToInt(LerpY / IncY);
+	const int32 SnapZ = IncZ * FMath::FloorToInt(LerpZ / IncZ);
+
+	const FVector NewExtents = FVector(0, SnapY, SnapZ);
+
+	if (LastExtents == NewExtents) return;
+	
+	SpawnBox->SetBoxExtent(NewExtents);
+	SpawnAreaManager->OnExtremaChanged(GetSpawnBoxExtrema());
 }
 
 void ATargetManager::UpdateSpawnVolume(const float Factor) const

@@ -154,11 +154,10 @@ protected:
 	int32 GetNumberOfTargetsToActivateAtOnce(const int32 MaxPossibleToActivate) const;
 
 	/** Returns the scale for next target */
-	FVector FindNextTargetScale() const;
+	FVector FindNextSpawnedTargetScale() const;
 
 	/** Finds suitable SpawnArea(s) to spawn NumToSpawn targets given the mode */
-	TArray<USpawnArea*> FindNextSpawnAreasForSpawn(int32 NumToSpawn,
-		const ERuntimeTargetSpawningLocationSelectionMode Mode) const;
+	TArray<USpawnArea*> FindNextSpawnAreasForSpawn(int32 NumToSpawn) const;
 
 	/** Finds suitable SpawnArea(s) to activate NumToActivate targets */
 	TArray<USpawnArea*> FindNextSpawnAreasForActivation(int32 NumToActivate) const;
@@ -168,7 +167,7 @@ protected:
 
 	/** Peeks & Pops TargetPairs and updates the QTable of the RLAgent if not empty. Returns the SpawnArea containing
 	 *  the next target location based on the index that the RLAgent returned */
-	USpawnArea* GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas) const;
+	USpawnArea* GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Previous) const;
 	
 	/** The expiration or destruction of any target is bound to this function, which handles firing delegates,
 	 *  target flags, target removal */

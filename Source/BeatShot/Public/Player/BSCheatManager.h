@@ -24,6 +24,7 @@ public:
 	void CVarOnChanged_PrintDebug_NumRecentNumActive(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable);
+	void CVarOnChanged_PrintDebug_Grid(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Variable);
 	
 	void CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable);
@@ -37,6 +38,7 @@ public:
 	void CVarOnChanged_ShowDebug_FilteredRecent(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_FilteredActivated(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_FilteredManaged(IConsoleVariable* Variable);
+	void CVarOnChanged_ShowDebug_FilteredBordering(IConsoleVariable* Variable);
 	
 	void CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(IConsoleVariable* Variable);
