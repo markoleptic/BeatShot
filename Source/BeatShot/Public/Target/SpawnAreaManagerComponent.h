@@ -114,6 +114,7 @@ struct FBlock
 		
 		return true;
 	}
+	
 	friend FORCEINLINE uint32 GetTypeHash(const FBlock& Block)
 	{
 		uint32 Hash = 0;
@@ -131,7 +132,27 @@ struct FBlock
 	}
 };
 
-/** Contains the size, start index, & end index of the largest rectangle in a grid */
+/** Used as the stack inside UpdateLargestRectangle */
+struct FRectInfo {
+	
+	/** Index of the element in IndexValidity */
+	int32 Index;
+	/** Column index */
+	int32 ColIndex;
+	/** Column height */
+	int32 Height;
+
+	FRectInfo() : Index(0), ColIndex(0), Height(0) {}
+
+	FRectInfo(const int32 InIndex, const int32 InColIndex, const int32 InHeight)
+	{
+		Index = InIndex;
+		ColIndex = InColIndex;
+		Height = InHeight;
+	}
+};
+
+/** Contains info about the largest valid rectangle in a grid */
 USTRUCT()
 struct FLargestRect
 {
@@ -140,10 +161,38 @@ struct FLargestRect
 	int32 MaxArea;
 	int32 StartIndex;
 	int32 EndIndex;
+	
+	int32 StartRowIndex;
+	int32 StartColumnIndex;
+	int32 EndRowIndex;
+	int32 EndColumnIndex;
+	
+	int32 NumRowsAvailable;
+	int32 NumColsAvailable;
+	
+	int32 NumToAdd;
+	int32 MainBlockSize;
+	int32 Remainder;
+	
+	int32 MainBlockDim1;
+	int32 MainBlockDim2;
 
-	FLargestRect() : MaxArea(0), StartIndex(-1), EndIndex(-1) {}
+	int32 ChosenStartRowIndex;
+	int32 ChosenStartColumnIndex;
+	int32 ChosenEndRowIndex;
+	int32 ChosenEndColumnIndex;
 
-	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd)
+	FLargestRect() : MaxArea(0), StartIndex(-1), EndIndex(-1), StartRowIndex(0), StartColumnIndex(0), EndRowIndex(0),
+	                 EndColumnIndex(0), NumRowsAvailable(0), NumColsAvailable(0), NumToAdd(0), MainBlockSize(0),
+	                 Remainder(0), MainBlockDim1(0), MainBlockDim2(0), ChosenStartRowIndex(-1),
+	                 ChosenStartColumnIndex(-1), ChosenEndRowIndex(-1), ChosenEndColumnIndex(-1)
+	{
+	}
+
+	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd): StartRowIndex(0), StartColumnIndex(0),
+		EndRowIndex(0), EndColumnIndex(0), NumRowsAvailable(0), NumColsAvailable(0), NumToAdd(0), MainBlockSize(0),
+		Remainder(0), MainBlockDim1(0), MainBlockDim2(0), ChosenStartRowIndex(-1), ChosenStartColumnIndex(-1),
+		ChosenEndRowIndex(-1), ChosenEndColumnIndex(-1)
 	{
 		MaxArea = InMaxArea;
 		StartIndex = InStart;
@@ -161,15 +210,62 @@ struct FLargestRect
 		}
 	}
 
-	/** Test the NewMaxArea against MaxArea. If larger, takes on all parameter values */
-	void TestNewMaxArea(const FLargestRect& InNewLargestRect)
+	void UpdateData(const int32 NumCols)
 	{
-		if (InNewLargestRect.MaxArea > MaxArea)
+		StartRowIndex = StartIndex / NumCols;
+		StartColumnIndex = StartIndex % NumCols;
+		EndRowIndex = EndIndex / NumCols;
+		EndColumnIndex = EndIndex % NumCols;
+		NumRowsAvailable = EndRowIndex - StartRowIndex + 1;
+		NumColsAvailable = EndColumnIndex - StartColumnIndex + 1;
+	}
+};
+
+/** A unique pair of factors for a number */
+USTRUCT()
+struct FFactor
+{
+	GENERATED_BODY()
+
+	int32 Factor1;
+	int32 Factor2;
+
+	FFactor(): Factor1(-1), Factor2(-1) {}
+
+	FFactor(const int32 F1, const int32 F2)
+	{
+		Factor1 = F1;
+		Factor2 = F2;
+	}
+
+	bool IsValid() const
+	{
+		return Factor1 != -1 && Factor2 != -1;
+	}
+
+	FORCEINLINE bool operator==(const FFactor& Other) const
+	{
+		if (Factor1 == Other.Factor1 && Factor2 == Other.Factor2)
 		{
-			MaxArea = InNewLargestRect.MaxArea;
-			StartIndex = InNewLargestRect.StartIndex;
-			EndIndex = InNewLargestRect.EndIndex;
+			return true;
 		}
+		if (Factor1 == Other.Factor2 && Factor2 == Other.Factor1)
+		{
+			return true;
+		}
+		return false;
+	}
+	friend FORCEINLINE uint32 GetTypeHash(const FFactor& Factor)
+	{
+		uint32 Hash = 0;
+
+		const int32 Min = Factor.Factor1 < Factor.Factor2 ? Factor.Factor1 : Factor.Factor2;
+		const int32 Max = Factor.Factor1 < Factor.Factor2 ? Factor.Factor2 : Factor.Factor1 ;
+		
+		Hash = HashCombine(Hash, GetTypeHash(Min));
+		Hash = HashCombine(Hash, GetTypeHash(Max));
+
+		return Hash;
 	}
 };
 
@@ -362,6 +458,7 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	friend class USpawnAreaManagerComponent;
 
+	/** Guid associated with a managed target */
 	FGuid Guid;
 
 	/** The center point of the box */
@@ -736,8 +833,8 @@ public:
 	TArray<USpawnArea*> GetSpawnableSpawnAreas(const TArray<FVector>& Scales, int32 NumToSpawn) const;
 
 	/** Handles selecting SpawnAreas for runtime Grid distributions, based on the
-	 *  RuntimeTargetSpawningLocationSelectionMode. Can call FindRandomBorderingGrid, FindRandomGridBlock, or none
-	 *  if random */
+	 *  RuntimeTargetSpawningLocationSelectionMode. Can call FindRandomBorderingGrid, FindGridBlockUsingLargestRect,
+	 *  or none if random */
 	TArray<USpawnArea*> GetSpawnableSpawnAreas_Grid(const TArray<FVector>& Scales, int32 NumToSpawn) const;
 	
 	/** Handles selecting SpawnAreas for runtime target distribution that are not Grid. Similar loop to
@@ -746,16 +843,20 @@ public:
 	
 	/** Kinda scuffed method that finds a random chain of bordering targets from the most recent SpawnArea */
 	void FindRandomBorderingGrid(TArray<USpawnArea*>& ValidSpawnAreas, int32 NumToSpawn) const;
+	
+	/** Chooses the start and end indices of a sub-block within a rectangle using FindBestFittingFactors*/
+	void FindGridBlockUsingLargestRect(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
+		const int32 BlockSize, const bool bBordering = false) const;
+
+	/** Returns all SpawnAreas that bordered the previous grid block. So if the block had 4 SpawnAreas,
+	 *  a maximum of 12 SpawnAreas may be returned */
+	TSet<USpawnArea*> GetBorderingGridBlockSpawnAreas() const;
 
 	/** Calls FindValidIndexCombinationsDFS for each SpawnArea in ValidSpawnAreas. If at least one valid block was
 	 *  found, ValidSpawnAreas is emptied, a random block of indices is chosen, and the SpawnAreas corresponding
 	 *  to the indices are added to ValidSpawnAreas */
-	void FindRandomGridBlock(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
-		const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
-	
-	/** Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
-	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
-	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
+	void FindGridBlockUsingDFS(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
+	const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
 	
 	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets */
 	void OnExtremaChanged(const FExtrema& Extrema);
@@ -763,7 +864,8 @@ public:
 private:
 	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
 	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
-	void RemoveOverlappingSpawnAreas(TArray<USpawnArea*>& ValidSpawnAreas, TArray<USpawnArea*>& ChosenSpawnAreas, const FVector& Scale) const;
+	void RemoveOverlappingSpawnAreas(TArray<USpawnArea*>& ValidSpawnAreas, TArray<USpawnArea*>& ChosenSpawnAreas,
+		const FVector& Scale) const;
 
 	/** Filters out any locations that are flagged as managed */
 	TArray<int32> FilterManagedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
@@ -788,12 +890,6 @@ private:
 	/** Creates an array with size equal to the number of SpawnAreas, where each index represents whether or not the
 	 *  SpawnArea should be consider valid */
 	TArray<int32> CreateIndexValidityArray(const TArray<int32>& RemovedIndices) const;
-
-	/** Calculates the Manhattan distance between to indices given the number of columns */
-	static int32 CalcManhattanDist(const int32 Index1, const int32 Index2, const int32 NumCols);
-
-	/** Estimates the BestTotalDistance and MaxTotalDistance of an FDFSLoopParams struct by simulating an index block */
-	static void EstimateDistances(FDFSLoopParams& Params);
 	
 	/** Finds the maximum rectangle of valid indices in the matrix. Returns a struct containing the area, start index,
 	 *  and end index that correspond to SpawnAreas */
@@ -801,7 +897,30 @@ private:
 
 	/** Called for every row inside FindLargestValidRectangle. Iterates through the number of columns
 	 *  both forward and backward, updating the values if a new maximum rectangle is found */
-	static FLargestRect UpdateLargestRectangle(TArray<int32>& Heights);
+	static void UpdateLargestRectangle(TArray<int32>& Heights, FLargestRect& LargestRect, const int32 CurrentRow);
+
+	/** Returns a set of all unique factors for a number */
+	static TSet<FFactor> FindAllFactors(const int32 Number);
+	
+	/** Finds the two factors for a number with the smallest difference between factors. If the number has no factors
+	 *  greater than 1, an invalid FFactor is returned. */
+	static FFactor FindLargestFactors(const int32 Number);
+
+	/** Tries to find pairs of factors for a number that fit within the two constraints. Initially tries
+	 *  FindLargestFactors and falls back to FindAllFactors if it returned invalid. It then iterates through all
+	 *  factors that meet the constraints, and chooses the ones with the smallest difference between factors */
+	static TSet<FFactor> FindBestFittingFactors(const int32 Number, const int32 Constraint1, const int32 Constraint2);
+
+	/** Calculates the Manhattan distance between to indices given the number of columns */
+	static int32 CalcManhattanDist(const int32 Index1, const int32 Index2, const int32 NumCols);
+
+	/** Estimates the BestTotalDistance and MaxTotalDistance of an FDFSLoopParams struct by simulating an index block */
+	static void EstimateDistances(FDFSLoopParams& Params);
+
+	/** Deprecated since it just takes way too many iterations and using the largest rectangle is much more efficient.
+	 *  Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
+	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
+	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
 	
 public:
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
@@ -820,10 +939,6 @@ public:
 
 	/** Draws debug boxes using SpawnAreas Indices */
 	void DrawDebug_Boxes(const TArray<int32>& InIndices, const FColor& InColor, const int32 InThickness,
-		const int32 InDepthPriority, bool bPersistantLines = false) const;
-
-	/** Draws debug boxes using SpawnAreas */
-	void DrawDebug_Boxes(const TArray<const USpawnArea*>& InSpawnAreas, const FColor& InColor, const int32 InThickness,
 		const int32 InDepthPriority, bool bPersistantLines = false) const;
 
 	/** Draws debug boxes using SpawnAreas */
@@ -847,10 +962,13 @@ public:
 	void PrintDebug_SpawnAreaDist(const USpawnArea* SpawnArea) const;
 
 	/** Prints debug info about GridBlocks */
-	static void PrintDebug_Grid(const FDFSLoopParams& LoopParams);
+	static void PrintDebug_GridDFS(const FDFSLoopParams& LoopParams);
 
 	/** Prints debug info about Largest Rectangular area found */
-	static void PrintDebug_Grid(const FLargestRect& LargestRect);
+	static void PrintDebug_GridLargestRect(const FLargestRect& LargestRect, const int32 NumCols);
+
+	/** Prints a formatted matrix (upside down from how indexes appear in SpawnAreas so that it matches in game)  */
+	static void PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows, const int32 NumCols);
 
 	/** Toggles showing green debug boxes for valid spawn locations at the end of the GetValidSpawnAreas function */
 	bool bDebug_Valid;
@@ -931,6 +1049,10 @@ private:
 	UPROPERTY()
 	TSet<USpawnArea*> CachedRecent;
 
+	/** A set of the most recently spawned grid block of SpawnAreas */
+	UPROPERTY()
+	mutable TSet<USpawnArea*> MostRecentGridBlock;
+	
 	/** The most recently activated SpawnArea */
 	UPROPERTY()
 	USpawnArea* MostRecentSpawnArea;
