@@ -977,8 +977,9 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 
 	const int32 SnapY = IncY * FMath::FloorToInt(LerpY / IncY);
 	const int32 SnapZ = IncZ * FMath::FloorToInt(LerpZ / IncZ);
-
-	const FVector NewExtents = FVector(0, SnapY, SnapZ);
+	
+	const bool bGrid = GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid;
+	const FVector NewExtents = FVector(0, bGrid ? LerpY : SnapY, bGrid ? LerpZ : SnapZ);
 
 	if (LastExtents == NewExtents) return;
 	

@@ -24,6 +24,7 @@ enum class EBorderingDirection : uint8
 	DownLeft UMETA(DisplayName="DownLeft"),
 	DownRight UMETA(DisplayName="DownRight"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBorderingDirection, EBorderingDirection::Left, EBorderingDirection::DownRight);
 
 /** Enum representing the types of Grid Indices */
@@ -41,6 +42,7 @@ enum class EGridIndexType : uint8
 	Border_Left UMETA(DisplayName="Border_Left"),
 	Middle UMETA(DisplayName="Middle"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGridIndexType, EGridIndexType::Corner_TopLeft, EGridIndexType::Middle);
 
 /** Contains the minimum and maximum of a Box */
@@ -74,9 +76,9 @@ USTRUCT()
 struct FBlock
 {
 	GENERATED_BODY()
-	
+
 	TArray<int32> Indices;
-	
+
 	FBlock()
 	{
 		Indices = TArray<int32>();
@@ -105,16 +107,16 @@ struct FBlock
 	FORCEINLINE bool operator==(const FBlock& Other) const
 	{
 		if (Indices.Num() != Other.Indices.Num()) return false;
-		
+
 		for (const int32 Index : Other.Indices)
 		{
 			if (Indices.Contains(Index)) continue;
 			return false;
 		}
-		
+
 		return true;
 	}
-	
+
 	friend FORCEINLINE uint32 GetTypeHash(const FBlock& Block)
 	{
 		uint32 Hash = 0;
@@ -133,8 +135,8 @@ struct FBlock
 };
 
 /** Used as the stack inside UpdateLargestRectangle */
-struct FRectInfo {
-	
+struct FRectInfo
+{
 	/** Index of the element in IndexValidity */
 	int32 Index;
 	/** Column index */
@@ -142,7 +144,9 @@ struct FRectInfo {
 	/** Column height */
 	int32 Height;
 
-	FRectInfo() : Index(0), ColIndex(0), Height(0) {}
+	FRectInfo() : Index(0), ColIndex(0), Height(0)
+	{
+	}
 
 	FRectInfo(const int32 InIndex, const int32 InColIndex, const int32 InHeight)
 	{
@@ -158,41 +162,66 @@ struct FLargestRect
 {
 	GENERATED_BODY()
 
+	/** True if the ActualBlockSize was greater than the product of the factors chosen for the block,
+	 *  like when ActualBlockSize is prime number and a smaller grid is chosen */
+	bool bNeedsRemainderIndex;
+
+	/** The max area of the largest rectangle found */
 	int32 MaxArea;
+
+	/** The start index of the largest rectangle found */
 	int32 StartIndex;
+
+	/** The end index of the largest rectangle found */
 	int32 EndIndex;
-	
+
+	/** The start row index of the largest rectangle found */
 	int32 StartRowIndex;
-	int32 StartColumnIndex;
+
+	/** The start col index of the largest rectangle found */
+	int32 StartColIndex;
+
+	/** The end row index of the largest rectangle found */
 	int32 EndRowIndex;
-	int32 EndColumnIndex;
-	
+
+	/** The end col index of the largest rectangle found */
+	int32 EndColIndex;
+
+	/** The number of rows in the largest rectangle found */
 	int32 NumRowsAvailable;
+
+	/** The number of cols in the largest rectangle found */
 	int32 NumColsAvailable;
-	
-	int32 NumToAdd;
-	int32 MainBlockSize;
-	int32 Remainder;
-	
-	int32 MainBlockDim1;
-	int32 MainBlockDim2;
 
+	/** The true size of the block. Set to the min(MaxArea, input BlockSize) */
+	int32 ActualBlockSize;
+
+	/** If an AdjustedLowerBlockSize is used, this holds the index of the remainder */
+	int32 RemainderIndex;
+
+	/** The chosen start row index */
 	int32 ChosenStartRowIndex;
-	int32 ChosenStartColumnIndex;
-	int32 ChosenEndRowIndex;
-	int32 ChosenEndColumnIndex;
 
-	FLargestRect() : MaxArea(0), StartIndex(-1), EndIndex(-1), StartRowIndex(0), StartColumnIndex(0), EndRowIndex(0),
-	                 EndColumnIndex(0), NumRowsAvailable(0), NumColsAvailable(0), NumToAdd(0), MainBlockSize(0),
-	                 Remainder(0), MainBlockDim1(0), MainBlockDim2(0), ChosenStartRowIndex(-1),
-	                 ChosenStartColumnIndex(-1), ChosenEndRowIndex(-1), ChosenEndColumnIndex(-1)
+	/** The chosen start col index */
+	int32 ChosenStartColIndex;
+
+	/** The chosen end row index */
+	int32 ChosenEndRowIndex;
+
+	/** The chosen end col index */
+	int32 ChosenEndColIndex;
+
+	FLargestRect() : bNeedsRemainderIndex(false), MaxArea(0), StartIndex(-1), EndIndex(-1), StartRowIndex(0),
+	                 StartColIndex(0), EndRowIndex(0), EndColIndex(0), NumRowsAvailable(0), NumColsAvailable(0),
+	                 ActualBlockSize(0), RemainderIndex(-1), ChosenStartRowIndex(-1), ChosenStartColIndex(-1),
+	                 ChosenEndRowIndex(-1), ChosenEndColIndex(-1)
 	{
 	}
 
-	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd): StartRowIndex(0), StartColumnIndex(0),
-		EndRowIndex(0), EndColumnIndex(0), NumRowsAvailable(0), NumColsAvailable(0), NumToAdd(0), MainBlockSize(0),
-		Remainder(0), MainBlockDim1(0), MainBlockDim2(0), ChosenStartRowIndex(-1), ChosenStartColumnIndex(-1),
-		ChosenEndRowIndex(-1), ChosenEndColumnIndex(-1)
+	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd): bNeedsRemainderIndex(false),
+		StartRowIndex(0), StartColIndex(0), EndRowIndex(0), EndColIndex(0), NumRowsAvailable(0), NumColsAvailable(0),
+		ActualBlockSize(0), RemainderIndex(-1), ChosenStartRowIndex(-1), ChosenStartColIndex(-1), ChosenEndRowIndex(-1),
+		ChosenEndColIndex(-1)
 	{
 		MaxArea = InMaxArea;
 		StartIndex = InStart;
@@ -210,14 +239,21 @@ struct FLargestRect
 		}
 	}
 
-	void UpdateData(const int32 NumCols)
+	/** Updates StartRowIndex, StartColIndex, EndRowIndex, EndColIndex, NumRowsAvailable, and NumColsAvailable
+	 *  provided that the StartIndex and EndIndex has been found */
+	void UpdateIndices(const int32 NumCols)
 	{
 		StartRowIndex = StartIndex / NumCols;
-		StartColumnIndex = StartIndex % NumCols;
+		StartColIndex = StartIndex % NumCols;
 		EndRowIndex = EndIndex / NumCols;
-		EndColumnIndex = EndIndex % NumCols;
+		EndColIndex = EndIndex % NumCols;
 		NumRowsAvailable = EndRowIndex - StartRowIndex + 1;
-		NumColsAvailable = EndColumnIndex - StartColumnIndex + 1;
+		NumColsAvailable = EndColIndex - StartColIndex + 1;
+	}
+
+	void SetBlockSize(const int32 InBlockSize)
+	{
+		ActualBlockSize = FMath::Min(InBlockSize, MaxArea);
 	}
 };
 
@@ -229,13 +265,24 @@ struct FFactor
 
 	int32 Factor1;
 	int32 Factor2;
+	int32 Distance;
 
-	FFactor(): Factor1(-1), Factor2(-1) {}
+	FFactor(): Factor1(-1), Factor2(-1), Distance(-1)
+	{
+	}
 
 	FFactor(const int32 F1, const int32 F2)
 	{
 		Factor1 = F1;
 		Factor2 = F2;
+		Distance = abs(F1 - F2);
+	}
+
+	explicit FFactor(const int32 InDistance)
+	{
+		Factor1 = -1;
+		Factor2 = -1;
+		Distance = InDistance;
 	}
 
 	bool IsValid() const
@@ -255,13 +302,14 @@ struct FFactor
 		}
 		return false;
 	}
+
 	friend FORCEINLINE uint32 GetTypeHash(const FFactor& Factor)
 	{
 		uint32 Hash = 0;
 
 		const int32 Min = Factor.Factor1 < Factor.Factor2 ? Factor.Factor1 : Factor.Factor2;
-		const int32 Max = Factor.Factor1 < Factor.Factor2 ? Factor.Factor2 : Factor.Factor1 ;
-		
+		const int32 Max = Factor.Factor1 < Factor.Factor2 ? Factor.Factor2 : Factor.Factor1;
+
 		Hash = HashCombine(Hash, GetTypeHash(Min));
 		Hash = HashCombine(Hash, GetTypeHash(Max));
 
@@ -274,31 +322,31 @@ USTRUCT()
 struct FDFSLoopParams
 {
 	GENERATED_BODY()
-	
+
 	/** Whether or not a suitable block has been found */
 	bool bFound;
-	
+
 	/** The minimum among a completed block's maximum distance between any two indices in the block */
 	int32 BestMaxDistance;
 
 	/** The minimum among a completed block's total distance between all indices in the block */
 	int32 BestTotalDistance;
-	
+
 	/** The size of the block to create */
 	int32 BlockSize;
 
 	/** Number of columns in the SpawnArea grid */
 	int32 NumCols;
-	
+
 	/** Recursions skipped */
 	int32 SkippedRecursions;
-	
+
 	/** Total iterations performed */
 	int32 TotalIterations;
 
 	/** Total recursions performed */
 	int32 TotalRecursions;
-	
+
 	/** The current block of indices */
 	FBlock CurrentBlock;
 
@@ -317,7 +365,7 @@ struct FDFSLoopParams
 
 	/** A set of first block indices already visited. Added before entering the recursion */
 	TSet<int32> InitialVisited;
-	
+
 	FDFSLoopParams()
 	{
 		bFound = false;
@@ -328,7 +376,7 @@ struct FDFSLoopParams
 		SkippedRecursions = 0;
 		TotalIterations = 0;
 		TotalRecursions = 0;
-		
+
 		CurrentBlock = FBlock();
 		Blocks = TSet<FBlock>();
 		IndexTypes = TSet<EBorderingDirection>();
@@ -348,7 +396,7 @@ struct FDFSLoopParams
 		SkippedRecursions = 0;
 		TotalIterations = 0;
 		TotalRecursions = 0;
-		
+
 		CurrentBlock = FBlock();
 		Blocks = TSet<FBlock>();
 		IndexTypes = InGridIndexTypes;
@@ -430,15 +478,15 @@ struct FAreaKey
 		Vertex_BottomLeft = InBotLeft;
 		Vertex_TopRight = InBotLeft + FVector(0.f, InInc.Y, InInc.Z);
 	}
-	
+
 	bool operator==(const FAreaKey& Other) const
 	{
 		return FMath::IsNearlyEqual(Vertex_BottomLeft.Y, Other.Vertex_BottomLeft.Y, 0.1f) &&
-			   FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.1f) &&
-			   FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.1f) &&
-			   FMath::IsNearlyEqual(Vertex_TopRight.Z, Other.Vertex_TopRight.Z, 0.1f);
+			FMath::IsNearlyEqual(Vertex_BottomLeft.Z, Other.Vertex_BottomLeft.Z, 0.1f) &&
+			FMath::IsNearlyEqual(Vertex_TopRight.Y, Other.Vertex_TopRight.Y, 0.1f) && FMath::IsNearlyEqual(
+				Vertex_TopRight.Z, Other.Vertex_TopRight.Z, 0.1f);
 	}
-	
+
 	friend FORCEINLINE uint32 GetTypeHash(const FAreaKey& AreaKey)
 	{
 		uint32 Hash = GetTypeHash(AreaKey.Vertex_BottomLeft.Y);
@@ -515,7 +563,7 @@ class BEATSHOT_API USpawnArea : public UObject
 
 	/** The total amount of tracking damage that was dealt at this SpawnArea */
 	int32 TotalTrackingDamage;
-	
+
 	/** The indices of the SpawnAreas adjacent to this SpawnArea, including their direction from this SpawnArea */
 	TMap<EBorderingDirection, int32> AdjacentIndexMap;
 
@@ -552,7 +600,7 @@ public:
 	void SetGuid(const FGuid InGuid) { Guid = InGuid; }
 	void ResetGuid() { Guid.Invalidate(); }
 	TArray<int32> GetBorderingIndices() const;
-	
+
 	float GetMinOverlapRadius() const;
 
 	/** Sets the TargetScale */
@@ -563,8 +611,7 @@ public:
 
 private:
 	/** Returns an array of indices that border the index when looking at the array like a 2D grid */
-	void SetAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex,
-		const int32 InWidth);
+	void SetAdjacentIndices(const EGridIndexType InGridIndexType, const int32 InIndex, const int32 InWidth);
 
 	/** Returns the corresponding index type depending on the InIndex, InSize, and InWidth */
 	static EGridIndexType FindIndexType(const int32 InIndex, const int32 InSize, const int32 InWidth);
@@ -574,7 +621,7 @@ private:
 
 	/** Flags this SpawnArea as corresponding to a target being managed by TargetManager */
 	void SetIsCurrentlyManaged(const bool bSetIsCurrentlyManaged);
-	
+
 	/** Sets the activated state and the persistently activated state for this SpawnArea */
 	void SetIsActivated(const bool bActivated, const bool bAllow = false);
 
@@ -587,8 +634,8 @@ private:
 
 	/** Finds and returns the vertices that overlap with SpawnArea by tracing a circle around the SpawnArea based on
 	 *  the target scale, minimum distance between targets, minimum overlap radius, and size of the SpawnArea */
-	TSet<FVector> MakeInvalidVerts(const float InMinDist, const FVector& InScale,
-		TSet<FVector>& OutValid, const bool bAddValidVertices = false) const;
+	TSet<FVector> MakeInvalidVerts(const float InMinDist, const FVector& InScale, TSet<FVector>& OutValid,
+		const bool bAddValidVertices = false) const;
 
 	/** Empties the OverlappingVertices array */
 	void EmptyOverlappingVertices();
@@ -607,7 +654,6 @@ private:
 	void IncrementTotalTrackingDamage();
 
 public:
-	
 	FORCEINLINE bool operator ==(const USpawnArea& Other) const
 	{
 		if (Index != INDEX_NONE && Index == Other.Index)
@@ -683,23 +729,23 @@ public:
 	/** Initializes basic variables in SpawnAreaManagerComponent */
 	void Init(FBSConfig* InBSConfig, const FVector& InOrigin, const FVector& InStaticExtents,
 		const FExtrema& InStaticExtrema);
-	
+
 	/** Resets all variables */
 	void Clear();
-	
+
 private:
 	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
 	void SetAppropriateSpawnMemoryValues();
 
 	/** Initializes the SpawnCounter array */
 	void InitializeSpawnAreas();
-	
+
 	/** Returns whether or not to consider Managed SpawnAreas as invalid choices for activation */
 	bool ShouldConsiderManagedAsInvalid() const;
 
 	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
 	bool ShouldForceSpawnAtOrigin() const;
-	
+
 public:
 	/** Returns reference to SpawnAreas */
 	TArray<USpawnArea*>& GetSpawnAreasRef() { return SpawnAreas; }
@@ -722,7 +768,7 @@ private:
 
 	/** Returns the minimum distance between targets, used just to shorten length of call */
 	float GetMinDist() const { return BSConfig->TargetConfig.MinDistanceBetweenTargets; }
-	
+
 public:
 	/** Sets whether or not to request a SpawnArea selection from the RLC */
 	void SetShouldAskRLCForSpawnAreas(const bool bShould) { bShouldAskRLCForSpawnAreas = bShould; }
@@ -747,8 +793,8 @@ public:
 	USpawnArea* GetMostRecentSpawnArea() const { return MostRecentSpawnArea; }
 
 	/** Returns the SpawnArea containing the origin */
-	USpawnArea* GetOriginSpawnArea() const {return OriginSpawnArea; }
-	
+	USpawnArea* GetOriginSpawnArea() const { return OriginSpawnArea; }
+
 	/** Finds a SpawnArea with the matching InLocation using the AreaKeyMap for lookup */
 	USpawnArea* FindSpawnAreaFromLocation(const FVector& InLocation) const;
 
@@ -770,29 +816,35 @@ public:
 	/* ------------------------------------ */
 	/* -- TSet SpawnArea finders/getters -- */
 	/* ------------------------------------ */
-	
-	/** Returns an array of SpawnAreas that are flagged as currently managed */
+
+	/** Returns a set of SpawnAreas that are flagged as currently managed */
 	TSet<USpawnArea*> GetManagedSpawnAreas() const;
 
-	/** Returns an array of SpawnAreas that are flagged as currently managed and not flagged as activated */
+	/** Returns a set of SpawnAreas that are flagged as currently managed and not flagged as activated */
 	TSet<USpawnArea*> GetDeactivatedManagedSpawnAreas() const;
 
-	/** Returns a filtered array containing only SpawnAreas flagged as recent */
+	/** Returns a filtered set containing only SpawnAreas flagged as recent */
 	TSet<USpawnArea*> GetRecentSpawnAreas() const;
 
-	/** Returns a filtered array containing only SpawnAreas flagged as activated */
+	/** Returns a filtered set containing only SpawnAreas flagged as activated */
 	TSet<USpawnArea*> GetActivatedSpawnAreas() const;
 
-	/** Returns a filtered array containing only SpawnAreas flagged as activated or recent */
+	/** Returns a filtered set containing only SpawnAreas flagged as activated or recent */
 	TSet<USpawnArea*> GetActivatedOrRecentSpawnAreas() const;
 
-	/** Returns a filtered array containing SpawnAreas flagged as managed, activated, or recent */
+	/** Returns a filtered set containing SpawnAreas flagged as managed, activated, or recent */
 	TSet<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
+
+	/** Returns a filtered set containing SpawnAreas flagged as managed, not activated, and not recent */
+	TSet<USpawnArea*> GetManagedDeactivatedNotRecentSpawnAreas() const;
+
+	/** Returns a set containing SpawnAreas not flagged with anything */
+	TSet<USpawnArea*> GetNotManagedNotActivatedNotRecentSpawnAreas() const;
 
 	/* ------------------------ */
 	/* -- SpawnArea flagging -- */
 	/* ------------------------ */
-	
+
 	/** Adds to Managed and Deactivated cache, adds to GuidMap, and flags the SpawnArea as being actively managed by
 	 *  TargetManager. Calls SetInvalidVerts if needed */
 	void FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, const FGuid TargetGuid);
@@ -821,7 +873,7 @@ public:
 	/* ----------------------------------- */
 	/* -- Finding Valid Spawn Locations -- */
 	/* ----------------------------------- */
-	
+
 	/** Returns an array of valid SpawnAreas filtered from the SpawnAreas array. Only considers SpawnAreas that
 	 *  are linked to a managed target since activatable requires being managed. Also considers the
 	 *  Target Activation Selection Policy */
@@ -836,31 +888,43 @@ public:
 	 *  RuntimeTargetSpawningLocationSelectionMode. Can call FindRandomBorderingGrid, FindGridBlockUsingLargestRect,
 	 *  or none if random */
 	TArray<USpawnArea*> GetSpawnableSpawnAreas_Grid(const TArray<FVector>& Scales, int32 NumToSpawn) const;
-	
+
 	/** Handles selecting SpawnAreas for runtime target distribution that are not Grid. Similar loop to
 	 *  GetActivatableSpawnAreas */
 	TArray<USpawnArea*> GetSpawnableSpawnAreas_NonGrid(const TArray<FVector>& Scales, int32 NumToSpawn) const;
-	
-	/** Kinda scuffed method that finds a random chain of bordering targets from the most recent SpawnArea */
+
+	/** DOESNT WORK Kinda scuffed method that finds a random chain of bordering targets from the most recent SpawnArea */
 	void FindRandomBorderingGrid(TArray<USpawnArea*>& ValidSpawnAreas, int32 NumToSpawn) const;
-	
-	/** Chooses the start and end indices of a sub-block within a rectangle using FindBestFittingFactors*/
+
+	/** Performs the actual ValidSpawnAreas editing by calling FindLargestValidRectangle and ChooseRectIndices.
+	 *  Always empties ValidSpawnAreas before looping through the rectangle. Updates MostRecentGridBlock */
 	void FindGridBlockUsingLargestRect(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
 		const int32 BlockSize, const bool bBordering = false) const;
 
-	/** Returns all SpawnAreas that bordered the previous grid block. So if the block had 4 SpawnAreas,
-	 *  a maximum of 12 SpawnAreas may be returned */
-	TSet<USpawnArea*> GetBorderingGridBlockSpawnAreas() const;
+	/** Attempts to set the start and end indices of a sub-block within the largest rectangle. Finds the best factors
+	 *  for the block size as uses them to guide the arrangement of SpawnAreas in the rectangle. Calls
+	 *  FindBorderingRectIndices if bBordering is true, but continues on if it failed to set the indices */
+	void ChooseRectIndices(FLargestRect& Rect, const bool bBordering) const;
+
+	/** Attempts to set the start and end indices of a sub-block within the largest rectangle by considering indices
+	 *  in MostRecentGridBlock that are also within the current largest rectangle. Returns true if successful, and
+	 *  false otherwise */
+	bool FindBorderingRectIndices(FLargestRect& Rect, const int32 SubRowSize, const int32 SubColSize) const;
+
+	/** Returns all SpawnAreas that can border the input grid block. If the block had 4 SpawnAreas, a maximum of 12
+	 *  SpawnAreas may be returned Only considers input directions */
+	TSet<USpawnArea*> GetBorderingGridBlockSpawnAreas(const TSet<USpawnArea*>& GridBlock,
+		const TSet<EBorderingDirection>& Directions) const;
 
 	/** Calls FindValidIndexCombinationsDFS for each SpawnArea in ValidSpawnAreas. If at least one valid block was
 	 *  found, ValidSpawnAreas is emptied, a random block of indices is chosen, and the SpawnAreas corresponding
 	 *  to the indices are added to ValidSpawnAreas */
 	void FindGridBlockUsingDFS(TArray<USpawnArea*>& ValidSpawnAreas, const TArray<int32>& IndexValidity,
-	const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
-	
+		const TSet<EBorderingDirection>& Directions, const int32 BlockSize) const;
+
 	/** Called when the BoxBounds of the TargetManager are changed to update CachedExtrema or CachedEdgeOnly sets */
 	void OnExtremaChanged(const FExtrema& Extrema);
-	
+
 private:
 	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
 	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
@@ -872,13 +936,13 @@ private:
 
 	/** Filters out any SpawnAreas that are flagged as activated */
 	TArray<int32> FilterActivatedIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
-	
+
 	/** Filters out any SpawnAreas that aren't bordering Current */
 	TArray<int32> FilterBorderingIndices(TArray<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Current) const;
 
 	/** Filters out any SpawnAreas that are flagged as recent */
 	TArray<int32> FilterRecentIndices(TArray<USpawnArea*>& ValidSpawnAreas) const;
-	
+
 	/** General SpawnAreas filter function that takes in a filter function to apply */
 	TArray<int32> FilterIndices(TArray<USpawnArea*>& ValidSpawnAreas, bool (USpawnArea::*FilterFunc)() const,
 		const bool bShowDebug, const FColor& DebugColor) const;
@@ -888,12 +952,17 @@ private:
 	/* ------------- */
 
 	/** Creates an array with size equal to the number of SpawnAreas, where each index represents whether or not the
-	 *  SpawnArea should be consider valid */
+	 *  SpawnArea should be consider valid. Takes an array of invalid SpawnArea indices */
 	TArray<int32> CreateIndexValidityArray(const TArray<int32>& RemovedIndices) const;
-	
+
+	/** Creates an array with size equal to the number of SpawnAreas, where each index represents whether or not the
+	 *  SpawnArea should be consider valid. Takes a set of valid spawn areas */
+	TArray<int32> CreateIndexValidityArray(const TSet<USpawnArea*>& ValidSpawnAreas) const;
+
 	/** Finds the maximum rectangle of valid indices in the matrix. Returns a struct containing the area, start index,
 	 *  and end index that correspond to SpawnAreas */
-	static FLargestRect FindLargestValidRectangle(const TArray<int32>& IndexValidity, const int32 NumRows, const int32 NumCols);
+	static FLargestRect FindLargestValidRectangle(const TArray<int32>& IndexValidity, const int32 NumRows,
+		const int32 NumCols);
 
 	/** Called for every row inside FindLargestValidRectangle. Iterates through the number of columns
 	 *  both forward and backward, updating the values if a new maximum rectangle is found */
@@ -901,7 +970,7 @@ private:
 
 	/** Returns a set of all unique factors for a number */
 	static TSet<FFactor> FindAllFactors(const int32 Number);
-	
+
 	/** Finds the two factors for a number with the smallest difference between factors. If the number has no factors
 	 *  greater than 1, an invalid FFactor is returned. */
 	static FFactor FindLargestFactors(const int32 Number);
@@ -910,6 +979,17 @@ private:
 	 *  FindLargestFactors and falls back to FindAllFactors if it returned invalid. It then iterates through all
 	 *  factors that meet the constraints, and chooses the ones with the smallest difference between factors */
 	static TSet<FFactor> FindBestFittingFactors(const int32 Number, const int32 Constraint1, const int32 Constraint2);
+
+	/** Wrapper around FindBestFittingFactors, uses Rect.NumRowsAvailable and Rect.NumColsAvailable as constraints */
+	static TSet<FFactor> FindBestFittingFactors(const int32 Number, const FLargestRect& Rect);
+
+	/** Returns an array of (Row, Column) pairs where each is a member of the Bordering set and falls within the
+	 *  min and max indices of the rectangle */
+	static TArray<std::pair<int32, int32>> FindBorderingIndicesInRect(const TSet<USpawnArea*>& Bordering,
+		const FLargestRect& Rect, const int32 NumCols);
+
+	/** Returns whether or not a number is prime */
+	static bool IsPrime(const int32 Number);
 
 	/** Calculates the Manhattan distance between to indices given the number of columns */
 	static int32 CalcManhattanDist(const int32 Index1, const int32 Index2, const int32 NumCols);
@@ -921,7 +1001,7 @@ private:
 	 *  Performs a depth-first search to find unique combinations of SpawnArea indices (Params.Blocks) of a
 	 *  specific size. Checks to see if the SpawnArea is a valid index using Params.Valid. */
 	void FindValidIndexCombinationsDFS(const int32 StartIndex, FDFSLoopParams& Params) const;
-	
+
 public:
 	/** Gathers all total hits and total spawns for the game mode session and converts them into a 5X5 matrix using
 	 *  GetAveragedAccuracyData. Calls UpdateAccuracy once the values are copied over, and returns the struct */
@@ -930,7 +1010,7 @@ public:
 	/* ----------- */
 	/* -- Debug -- */
 	/* ----------- */
-	
+
 	/** Shows the grid of spawn areas drawn as debug boxes */
 	void DrawDebug_AllSpawnAreas() const;
 
@@ -947,13 +1027,13 @@ public:
 
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(const USpawnArea* SpawnArea, const FVector& Scale,
-		const TSet<FVector>& Valid, const TSet<FVector>& Invalid) const;
-	
+	void DrawVerticesOverlap(const USpawnArea* SpawnArea, const FVector& Scale, const TSet<FVector>& Valid,
+		const TSet<FVector>& Invalid) const;
+
 	/** Draws a debug sphere where the overlapping vertices were traced from, and draws debug points for
 	 *  the vertices if they were recalculated */
-	void DrawVerticesOverlap(const TSet<USpawnArea*>& InSpawnAreas, const FVector& Scale,
-	const TSet<FVector>& Valid, const TSet<FVector>& Invalid) const;
+	void DrawVerticesOverlap(const TSet<USpawnArea*>& InSpawnAreas, const FVector& Scale, const TSet<FVector>& Valid,
+		const TSet<FVector>& Invalid) const;
 
 	/** Prints debug info about a SpawnArea */
 	static void PrintDebug_SpawnArea(const USpawnArea* SpawnArea);
@@ -1025,13 +1105,13 @@ private:
 	UPROPERTY()
 	TMap<FGuid, USpawnArea*> GuidMap;
 
-	/** A set of SpawnAreas that fall within the current BoxBounds */
+	/** All SpawnArea objects inside the larger total spawn area. Set is filled bottom-up, left-to-right */
 	UPROPERTY()
-	TSet<USpawnArea*> CachedExtrema;
+	TSet<USpawnArea*> AllSpawnAreas;
 
 	/** A set of SpawnAreas that fall within the current BoxBounds */
 	UPROPERTY()
-	TSet<USpawnArea*> CachedEdgeOnly;
+	TSet<USpawnArea*> CachedExtrema;
 
 	/** A set of the currently managed SpawnAreas */
 	UPROPERTY()
@@ -1052,7 +1132,7 @@ private:
 	/** A set of the most recently spawned grid block of SpawnAreas */
 	UPROPERTY()
 	mutable TSet<USpawnArea*> MostRecentGridBlock;
-	
+
 	/** The most recently activated SpawnArea */
 	UPROPERTY()
 	USpawnArea* MostRecentSpawnArea;
@@ -1079,23 +1159,35 @@ private:
 	/** Preferred SpawnMemory increments */
 	const TArray<int32> PreferredScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
-	/** Index types that are valid to use when searching for GridBlocks */
+	/** Cardinal direction Index types that are valid to use when searching for GridBlocks */
 	const TSet<EBorderingDirection> GridBlockIndexTypes = {
 		EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up, EBorderingDirection::Down
 	};
 
-	/** Index types that are valid to use when searching for GridBlocks */
-	const TSet<EBorderingDirection> VerticalIndexTypes = { EBorderingDirection::Up, EBorderingDirection::Down };
+	/** Up-Down only index types */
+	const TSet<EBorderingDirection> VerticalIndexTypes = {EBorderingDirection::Up, EBorderingDirection::Down};
 
-	/** Index types that are valid to use when searching for GridBlocks */
-	const TSet<EBorderingDirection> HorizontalIndexTypes = { EBorderingDirection::Left, EBorderingDirection::Right };
+	/** Left-right only index types */
+	const TSet<EBorderingDirection> HorizontalIndexTypes = {EBorderingDirection::Left, EBorderingDirection::Right};
+
+	/** All index types */
+	const TSet<EBorderingDirection> AllIndexTypes = {
+		EBorderingDirection::UpLeft, EBorderingDirection::UpRight, EBorderingDirection::DownLeft,
+		EBorderingDirection::DownRight, EBorderingDirection::Left, EBorderingDirection::Right, EBorderingDirection::Up,
+		EBorderingDirection::Down
+	};
 
 	/** Delegate used to bind a timer handle to RemoveRecentFlagFromSpawnArea() */
 	FTimerDelegate RemoveFromRecentDelegate;
 
 	/** Delegate used to request a SpawnArea selection from the RLC */
 	FRequestRLCSpawnArea RequestRLCSpawnArea;
-	
+
 	/** Whether or not to broadcast the RequestRLCSpawnArea when finding SpawnAreas */
 	bool bShouldAskRLCForSpawnAreas;
 };
+
+inline TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Number, const FLargestRect& Rect)
+{
+	return FindBestFittingFactors(Number, Rect.NumRowsAvailable, Rect.NumColsAvailable);
+}

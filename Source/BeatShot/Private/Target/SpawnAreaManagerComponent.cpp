@@ -362,8 +362,8 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	CachedDeactivated = TSet<USpawnArea*>();
 	CachedRecent = TSet<USpawnArea*>();
 	CachedExtrema = TSet<USpawnArea*>();
-	CachedEdgeOnly = TSet<USpawnArea*>();
 	MostRecentGridBlock = TSet<USpawnArea*>();
+	AllSpawnAreas = TSet<USpawnArea*>();
 	MostRecentSpawnArea = nullptr;
 	OriginSpawnArea = nullptr;
 	Size = FIntVector3();
@@ -521,6 +521,7 @@ void USpawnAreaManagerComponent::InitializeSpawnAreas()
 
 			AreaKeyMap.Emplace(FAreaKey(Loc, SpawnAreaInc), SpawnArea);
 			SpawnAreas.Add(SpawnArea);
+			AllSpawnAreas.Add(SpawnArea);
 			CachedExtrema.Add(SpawnArea);
 			Index++;
 			SizeY++;
@@ -553,8 +554,8 @@ void USpawnAreaManagerComponent::Clear()
 	CachedDeactivated.Empty();
 	CachedRecent.Empty();
 	CachedExtrema.Empty();
-	CachedEdgeOnly.Empty();
 	MostRecentGridBlock.Empty();
+	AllSpawnAreas.Empty();
 
 	MostRecentSpawnArea = nullptr;
 	OriginSpawnArea = nullptr;
@@ -606,8 +607,8 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 			// Total Tracking Damage Possible is done on tick in UpdateTotalTrackingDamagePossible
 
 			// Only increment total tracking damage if damage came from player
-			if (!DamageEvent.bDamagedSelf && DamageEvent.DamageDelta > 0.f)
-				SpawnAreaByLoc->IncrementTotalTrackingDamage();
+			if (!DamageEvent.bDamagedSelf && DamageEvent.DamageDelta > 0.f) SpawnAreaByLoc->
+				IncrementTotalTrackingDamage();
 		}
 		break;
 	case ETargetDamageType::Hit:
@@ -732,8 +733,6 @@ USpawnArea* USpawnAreaManagerComponent::FindOldestRecentSpawnArea() const
 
 USpawnArea* USpawnAreaManagerComponent::FindOldestDeactivatedManagedSpawnArea() const
 {
-	TSet<USpawnArea*> Areas = GetDeactivatedManagedSpawnAreas();
-
 	USpawnArea* MostRecent = nullptr;
 
 	for (USpawnArea* SpawnArea : GetDeactivatedManagedSpawnAreas())
@@ -791,17 +790,22 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatedSpawnAreas() const
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatedOrRecentSpawnAreas() const
 {
-	TSet<USpawnArea*> Out = CachedActivated;
-	Out.Append(CachedRecent);
-	return Out;
+	return CachedActivated.Union(CachedRecent);
 }
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedActivatedOrRecentSpawnAreas() const
 {
-	TSet<USpawnArea*> Out = CachedManaged;
-	Out.Append(CachedActivated);
-	Out.Append(CachedRecent);
-	return Out;
+	return CachedManaged.Union(CachedActivated).Union(CachedRecent);
+}
+
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedDeactivatedNotRecentSpawnAreas() const
+{
+	return CachedDeactivated.Difference(CachedRecent);
+}
+
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetNotManagedNotActivatedNotRecentSpawnAreas() const
+{
+	return AllSpawnAreas.Difference(CachedManaged).Difference(CachedActivated).Difference(CachedRecent);
 }
 
 /* ------------------------ */
@@ -966,7 +970,7 @@ void USpawnAreaManagerComponent::RefreshRecentFlags()
 {
 	if (GetTargetCfg().RecentTargetMemoryPolicy != ERecentTargetMemoryPolicy::NumTargetsBased) return;
 
-	const int32 NumToRemove = GetRecentSpawnAreas().Num() - GetTargetCfg().MaxNumRecentTargets;
+	const int32 NumToRemove = CachedRecent.Num() - GetTargetCfg().MaxNumRecentTargets;
 	if (NumToRemove <= 0) return;
 
 	for (int32 CurrentRemoveNum = 0; CurrentRemoveNum < NumToRemove; CurrentRemoveNum++)
@@ -986,7 +990,7 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const i
 {
 	// Assumes that we cannot activate an already activated target
 	TArray<USpawnArea*> ChosenSpawnAreas;
-	TArray<USpawnArea*> ValidSpawnAreas = GetDeactivatedManagedSpawnAreas().Array();
+	TArray<USpawnArea*> ValidSpawnAreas = GetManagedDeactivatedNotRecentSpawnAreas().Array();
 	TArray<USpawnArea*> Filtered = ValidSpawnAreas;
 	USpawnArea* PreviousSpawnArea = GetMostRecentSpawnArea();
 
@@ -1010,10 +1014,6 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const i
 	case ETargetActivationSelectionPolicy::Random:
 		break;
 	}
-
-	// Always try to filter recent indices
-	FilterRecentIndices(Filtered);
-	if (Filtered.Num() > NumToActivate) ValidSpawnAreas = Filtered;
 
 	// Main loop for choosing spawn areas
 	for (int i = 0; i < NumToActivate; i++)
@@ -1075,87 +1075,66 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas(const TAr
 	}
 }
 
-// TODO Implement RLC
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(const TArray<FVector>& Scales,
 	const int32 NumToSpawn) const
 {
-	TArray<USpawnArea*> ValidSpawnAreas = SpawnAreas;
-
-	// Always filter managed
-	TArray<int32> Filtered = FilterManagedIndices(ValidSpawnAreas);
-	const int32 NumManaged = Filtered.Num();
-
-	// Always filter activated
-	Filtered.Append(FilterActivatedIndices(ValidSpawnAreas));
-	const int32 NumActivated = Filtered.Num();
-
-	// Filter recent if possible
-	TArray<USpawnArea*> FilteredRecent = ValidSpawnAreas;
-	const TArray<int32> FilteredRecentIndices = FilterRecentIndices(FilteredRecent);
-	int32 NumRecent = 0;
-	if (FilteredRecent.Num() >= NumToSpawn)
-	{
-		Filtered.Append(FilteredRecentIndices);
-		NumRecent = Filtered.Num();
-		ValidSpawnAreas = FilteredRecent;
-	}
+	// Get all SpawnAreas that are managed, deactivated, and not recent
+	const TSet<USpawnArea*> ValidSet = GetNotManagedNotActivatedNotRecentSpawnAreas();
+	TArray<USpawnArea*> OutArray = ValidSet.Array();
 
 	// Always shuffle the SpawnAreas
-	Algo::RandomShuffle(ValidSpawnAreas);
+	Algo::RandomShuffle(OutArray);
 
 	switch (GetTargetCfg().RuntimeTargetSpawningLocationSelectionMode)
 	{
 	case ERuntimeTargetSpawningLocationSelectionMode::None:
 	case ERuntimeTargetSpawningLocationSelectionMode::Random:
 		{
-			const int32 Num = FMath::Min(ValidSpawnAreas.Num(), NumToSpawn);
-			ValidSpawnAreas.SetNum(Num);
+			const int32 Num = FMath::Min(OutArray.Num(), NumToSpawn);
+			OutArray.SetNum(Num);
 		}
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::Bordering:
 		{
-			FindRandomBorderingGrid(ValidSpawnAreas, NumToSpawn);
+			FindRandomBorderingGrid(OutArray, NumToSpawn);
 		}
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::RandomGridBlock:
 		{
-			FindGridBlockUsingLargestRect(ValidSpawnAreas, CreateIndexValidityArray(Filtered), NumToSpawn);
+			FindGridBlockUsingLargestRect(OutArray, CreateIndexValidityArray(ValidSet), NumToSpawn);
 		}
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::NearbyGridBlock:
 		{
-			FindGridBlockUsingLargestRect(ValidSpawnAreas, CreateIndexValidityArray(Filtered), NumToSpawn, true);
+			FindGridBlockUsingLargestRect(OutArray, CreateIndexValidityArray(ValidSet), NumToSpawn, true);
 		}
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::RandomVertical:
 		{
-			FindGridBlockUsingDFS(ValidSpawnAreas, CreateIndexValidityArray(Filtered), VerticalIndexTypes, NumToSpawn);
+			FindGridBlockUsingDFS(OutArray, CreateIndexValidityArray(ValidSet), VerticalIndexTypes, NumToSpawn);
 		}
 		break;
 	case ERuntimeTargetSpawningLocationSelectionMode::RandomHorizontal:
 		{
-			FindGridBlockUsingDFS(ValidSpawnAreas, CreateIndexValidityArray(Filtered), HorizontalIndexTypes,
-				NumToSpawn);
+			FindGridBlockUsingDFS(OutArray, CreateIndexValidityArray(ValidSet), HorizontalIndexTypes, NumToSpawn);
 		}
 		break;
 	}
 
-	#if !UE_BUILD_SHIPPING
-	if (bDebug_Grid) UE_LOG(LogTargetManager, Display, TEXT("Filtered: Managed: %d Activated: %d Recent: %d"),
-		NumManaged, NumActivated, NumRecent);
-	#endif
+	// Make sure number of elements is no more than number to spawn
+	if (OutArray.Num() > NumToSpawn) OutArray.SetNum(NumToSpawn);
 
-	for (int i = 0; i < ValidSpawnAreas.Num(); ++i)
+	// Set the target scales
+	for (int i = 0; i < OutArray.Num(); i++)
 	{
-		if (Scales.IsValidIndex(i)) ValidSpawnAreas[i]->SetTargetScale(Scales[i]);
+		if (OutArray.IsValidIndex(i)) OutArray[i]->SetTargetScale(Scales[i]);
 	}
-	return ValidSpawnAreas;
+	return OutArray;
 }
 
 TArray<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_NonGrid(const TArray<FVector>& Scales,
 	const int32 NumToSpawn) const
 {
-	TArray<USpawnArea*> ValidSpawnAreas;
 	TArray<USpawnArea*> ChosenSpawnAreas;
 
 	// Can skip a lot if forcing every other target in center
@@ -1168,15 +1147,7 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_NonGrid(c
 	}
 
 	// Get the cached SpawnAreas within the current BoxBounds
-	if (GetTargetCfg().TargetDistributionPolicy == ETargetDistributionPolicy::FullRange || GetTargetCfg().
-		TargetDistributionPolicy == ETargetDistributionPolicy::HeadshotHeightOnly)
-	{
-		ValidSpawnAreas = CachedExtrema.Array();
-	}
-	else if (GetTargetCfg().TargetDistributionPolicy == ETargetDistributionPolicy::EdgeOnly)
-	{
-		ValidSpawnAreas = CachedEdgeOnly.Array();
-	}
+	TArray<USpawnArea*> ValidSpawnAreas = CachedExtrema.Array();
 
 	USpawnArea* PreviousSpawnArea = GetMostRecentSpawnArea();
 
@@ -1282,102 +1253,212 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRect(TArray<USpawnArea
 	const TArray<int32>& IndexValidity, const int32 BlockSize, const bool bBordering) const
 {
 	FLargestRect Rect = FindLargestValidRectangle(IndexValidity, Size.Z, Size.Y);
-	Rect.UpdateData(Size.Y);
 
-	Rect.NumToAdd = FMath::Min(BlockSize, Rect.MaxArea);
-	Rect.MainBlockSize = Rect.NumToAdd;
-	Rect.Remainder = 0;
+	Rect.UpdateIndices(Size.Y);
+	Rect.SetBlockSize(BlockSize);
+	ChooseRectIndices(Rect, bBordering);
 
-	// TODO: Implement something for prime numbers so they don't all spawn in a line
-	
-	const TSet<FFactor> FittingFactors = FindBestFittingFactors(Rect.NumToAdd, Rect.NumRowsAvailable,
-		Rect.NumColsAvailable);
-	if (FittingFactors.IsEmpty())
-	{
-		Rect.ChosenStartRowIndex = Rect.StartRowIndex;
-		Rect.ChosenStartColumnIndex = Rect.StartColumnIndex;
-		Rect.ChosenEndRowIndex = Rect.EndRowIndex;
-		Rect.ChosenEndColumnIndex = Rect.EndColumnIndex;
-	}
-	else
-	{
-		TArray<FFactor> Factors = FittingFactors.Array();
-		const FFactor RandomFactor = Factors[FMath::RandRange(0, Factors.Num() - 1)];
-		UE_LOG(LogTemp, Display, TEXT("RandomFactor: [%d, %d]"), RandomFactor.Factor1, RandomFactor.Factor2);
-		int32 SubRowSize;
-		int32 SubColSize;
-
-		if (RandomFactor.Factor1 > Rect.NumRowsAvailable)
-		{
-			SubRowSize = RandomFactor.Factor2;
-			SubColSize = RandomFactor.Factor1;
-		}
-		else if (RandomFactor.Factor2 > Rect.NumRowsAvailable)
-		{
-			SubRowSize = RandomFactor.Factor1;
-			SubColSize = RandomFactor.Factor2;
-		}
-		else
-		{
-			const bool bRandom = FMath::RandBool();
-			SubRowSize = bRandom ? RandomFactor.Factor1 : RandomFactor.Factor2;
-			SubColSize = bRandom ? RandomFactor.Factor2 : RandomFactor.Factor1;
-		}
-
-		TArray<std::pair<int32, int32>> RowColBorders;
-		if (bBordering)
-		{
-			for (const auto SpawnArea : GetBorderingGridBlockSpawnAreas())
-			{
-				const int32 RowIndex = SpawnArea->GetIndex() / Size.Y;
-				const int32 ColumnIndex = SpawnArea->GetIndex() % Size.Y;
-				if (RowIndex >= Rect.StartRowIndex && ColumnIndex >= Rect.StartColumnIndex && RowIndex <= Rect.
-					EndRowIndex - SubRowSize && ColumnIndex <= Rect.EndColumnIndex - SubColSize)
-				{
-					RowColBorders.Add({RowIndex, ColumnIndex});
-				}
-			}
-		}
-		if (!RowColBorders.IsEmpty())
-		{
-			const int32 RandomBorderingIndex = FMath::RandRange(0, RowColBorders.Num() - 1);
-			const auto [Row, Col] = RowColBorders[RandomBorderingIndex];
-			Rect.ChosenStartRowIndex = Row;
-			Rect.ChosenStartColumnIndex = Col;
-			Rect.ChosenEndRowIndex = Rect.ChosenStartRowIndex + SubRowSize;
-			Rect.ChosenEndColumnIndex = Rect.ChosenStartColumnIndex + SubColSize;
-		}
-		else
-		{
-			Rect.ChosenStartRowIndex = FMath::RandRange(Rect.StartRowIndex, Rect.EndRowIndex - SubRowSize);
-			Rect.ChosenStartColumnIndex = FMath::RandRange(Rect.StartColumnIndex, Rect.EndColumnIndex - SubColSize);
-			Rect.ChosenEndRowIndex = Rect.ChosenStartRowIndex + SubRowSize;
-			Rect.ChosenEndColumnIndex = Rect.ChosenStartColumnIndex + SubColSize;
-		}
-	}
+	#if !UE_BUILD_SHIPPING
+	PrintDebug_Matrix(IndexValidity, Size.Z, Size.Y);
+	PrintDebug_GridLargestRect(Rect, Size.Y);
+	#endif
 
 	// Empty the array since we have all the indices now
 	ValidSpawnAreas.Empty();
 	MostRecentGridBlock.Empty();
-	for (int32 i = Rect.ChosenStartRowIndex; i < Rect.ChosenEndRowIndex; ++i)
-	{
-		for (int32 j = Rect.ChosenStartColumnIndex; j < Rect.ChosenEndColumnIndex; ++j)
-		{
-			if (ValidSpawnAreas.Num() >= Rect.NumToAdd) return;
 
+	// Iterate through the chosen block, adding the SpawnAreas to the array
+	for (int32 i = Rect.ChosenStartRowIndex; i <= Rect.ChosenEndRowIndex; ++i)
+	{
+		for (int32 j = Rect.ChosenStartColIndex; j <= Rect.ChosenEndColIndex; ++j)
+		{
 			const int32 Index = i * Size.Y + j;
 			if (SpawnAreas.IsValidIndex(Index))
 			{
-				ValidSpawnAreas.Add(SpawnAreas[i * Size.Y + j]);
-				MostRecentGridBlock.Add(SpawnAreas[i * Size.Y + j]);
+				ValidSpawnAreas.Add(SpawnAreas[Index]);
+				// Also update MostRecentGridBlock set
+				MostRecentGridBlock.Add(SpawnAreas[Index]);
 			}
 			else UE_LOG(LogTemp, Display, TEXT("Invalid Index: %d"), Index);
+			if (ValidSpawnAreas.Num() >= Rect.ActualBlockSize) break;
 		}
+		if (ValidSpawnAreas.Num() >= Rect.ActualBlockSize) break;
 	}
-	PrintDebug_GridLargestRect(Rect, Size.Y);
+
+	// Choose a remainder index if ActualBlockSize is prime and a smaller grid is chosen
+	if (!Rect.bNeedsRemainderIndex) return;
+
+	const TSet<USpawnArea*> Bordering = GetBorderingGridBlockSpawnAreas(MostRecentGridBlock, GridBlockIndexTypes);
+	TArray<std::pair<int32, int32>> BorderingInRect = FindBorderingIndicesInRect(Bordering, Rect, Size.Y);
+	if (BorderingInRect.IsEmpty()) return;
+
+	const auto [Row, Col] = BorderingInRect[FMath::RandRange(0, BorderingInRect.Num() - 1)];
+	const int32 Index = Row * Size.Y + Col;
+	if (!SpawnAreas.IsValidIndex(Index)) return;
+
+	ValidSpawnAreas.Add(SpawnAreas[Index]);
+	MostRecentGridBlock.Add(SpawnAreas[Index]);
 }
 
-TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas() const
+void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const bool bBordering) const
+{
+	// Set defaults for early returns
+	Rect.ChosenStartRowIndex = Rect.StartRowIndex;
+	Rect.ChosenStartColIndex = Rect.StartColIndex;
+	Rect.ChosenEndRowIndex = Rect.EndRowIndex;
+	Rect.ChosenEndColIndex = Rect.EndColIndex;
+
+	// The of size of the sub block within the rectangle
+	FFactor RandomFactor;
+
+	if (IsPrime(Rect.ActualBlockSize))
+	{
+		const TSet<FFactor> OneLessBlockSize = FindBestFittingFactors(Rect.ActualBlockSize - 1, Rect);
+		const TSet<FFactor> OneGreaterBlockSize = FindBestFittingFactors(Rect.ActualBlockSize + 1, Rect);
+		
+		if (OneLessBlockSize.IsEmpty() && OneGreaterBlockSize.IsEmpty()) return;
+
+		FFactor MinDifferenceFactor = FFactor(Rect.ActualBlockSize);
+		TSet<FFactor> MinFactors;
+		
+		for (const FFactor Factor : OneLessBlockSize.Union(OneGreaterBlockSize))
+		{
+			if (Factor.Distance <= MinDifferenceFactor.Distance) MinDifferenceFactor = Factor;
+		}
+		for (const FFactor Factor : OneLessBlockSize.Union(OneGreaterBlockSize))
+		{
+			if (Factor.Distance <= MinDifferenceFactor.Distance) MinFactors.Add(Factor);
+		}
+
+		TArray<FFactor> Factors = MinFactors.Array();
+		RandomFactor = Factors[FMath::RandRange(0, Factors.Num() - 1)];
+
+		// Mark the rect as needing a remainder index, will be found later in FindGridBlockUsingLargestRect
+		if (RandomFactor.Factor1 * RandomFactor.Factor2 < Rect.ActualBlockSize) Rect.bNeedsRemainderIndex = true;
+	}
+	else
+	{
+		TArray<FFactor> Factors = FindBestFittingFactors(Rect.ActualBlockSize, Rect).Array();
+		if (Factors.IsEmpty()) return;
+
+		RandomFactor = Factors[FMath::RandRange(0, Factors.Num() - 1)];
+	}
+
+	const bool bF1FitsRows = RandomFactor.Factor1 <= Rect.NumRowsAvailable;
+	const bool bF2FitsRows = RandomFactor.Factor2 <= Rect.NumRowsAvailable;
+
+	const bool bF1FitsCols = RandomFactor.Factor1 <= Rect.NumColsAvailable;
+	const bool bF2FitsCols = RandomFactor.Factor2 <= Rect.NumColsAvailable;
+
+	int32 SubRowSize;
+	int32 SubColSize;
+
+	// All fit, choose random
+	if (bF1FitsRows && bF2FitsRows && bF1FitsCols && bF2FitsCols)
+	{
+		const bool bRandom = FMath::RandBool();
+		SubRowSize = bRandom ? RandomFactor.Factor1 : RandomFactor.Factor2;
+		SubColSize = bRandom ? RandomFactor.Factor2 : RandomFactor.Factor1;
+	}
+	else if (bF1FitsRows && bF2FitsCols)
+	{
+		SubRowSize = RandomFactor.Factor1;
+		SubColSize = RandomFactor.Factor2;
+	}
+	else if (bF2FitsRows && bF1FitsCols)
+	{
+		SubRowSize = RandomFactor.Factor2;
+		SubColSize = RandomFactor.Factor1;
+	}
+	else
+	{
+		UE_LOG(LogTargetManager, Warning, TEXT("BOTH FACTORS > ROWS OR COLS AVAILABLE SOMETHING WRONG"));
+		return;
+	}
+
+	const int32 MaxAllowedStartRowIndex = Rect.EndRowIndex - SubRowSize + 1;
+	const int32 MaxAllowedStartColIndex = Rect.EndColIndex - SubColSize + 1;
+
+	// See if a recent bordering index can be included in the next grid block
+	if (bBordering && FindBorderingRectIndices(Rect, SubRowSize, SubColSize)) return;
+
+	// To choose a random sub-block within the largest rectangle, choose a random start index
+	const int32 RandomRowStartIndex = FMath::RandRange(Rect.StartRowIndex, MaxAllowedStartRowIndex);
+	const int32 RandomColStartIndex = FMath::RandRange(Rect.StartColIndex, MaxAllowedStartColIndex);
+
+	Rect.ChosenStartRowIndex = RandomRowStartIndex;
+	Rect.ChosenStartColIndex = RandomColStartIndex;
+	Rect.ChosenEndRowIndex = Rect.ChosenStartRowIndex + SubRowSize - 1;
+	Rect.ChosenEndColIndex = Rect.ChosenStartColIndex + SubColSize - 1;
+
+	#if !UE_BUILD_SHIPPING
+	if (bDebug_Grid)
+	{
+		UE_LOG(LogTargetManager, Display, TEXT("NumRowsAvail: %d NumColsAvail: %d F1: %d F2: %d"),
+			Rect.NumRowsAvailable, Rect.NumColsAvailable, RandomFactor.Factor1, RandomFactor.Factor2);
+		UE_LOG(LogTargetManager, Display, TEXT("MaxAllowedStartIndex: %d"),
+			MaxAllowedStartRowIndex * Size.Y + MaxAllowedStartColIndex);
+	}
+	#endif
+
+	if (Rect.ChosenStartRowIndex < Rect.StartRowIndex || Rect.ChosenStartColIndex < Rect.StartColIndex)
+	{
+		UE_LOG(LogTargetManager, Warning, TEXT("ChosenStartIndex < Start!!!"));
+	}
+	if (Rect.ChosenEndRowIndex > Rect.EndRowIndex || Rect.ChosenEndColIndex > Rect.EndColIndex)
+	{
+		UE_LOG(LogTargetManager, Warning, TEXT("ChosenEndIndex > End!!!"));
+	}
+}
+
+bool USpawnAreaManagerComponent::FindBorderingRectIndices(FLargestRect& Rect, const int32 SubRowSize,
+	const int32 SubColSize) const
+{
+	// An array of indices that were in the previous grid block and are within the current largest rectangle
+	const TSet<USpawnArea*> Bordering = GetBorderingGridBlockSpawnAreas(MostRecentGridBlock, AllIndexTypes);
+	TArray<std::pair<int32, int32>> BorderingInRect = FindBorderingIndicesInRect(Bordering, Rect, Size.Y);
+
+	if (BorderingInRect.IsEmpty()) return false;
+
+	// Choose a random bordering index to include in the block
+	const auto [Row, Col] = BorderingInRect[FMath::RandRange(0, BorderingInRect.Num() - 1)];
+
+	// Array of indices that include the bordering index and fit in the largest rectangle
+	TArray<std::pair<int32, int32>> ValidIndices;
+
+	// Iterate through all possible sub-block configurations
+	for (int i = Rect.StartRowIndex; i <= Rect.EndRowIndex; ++i)
+	{
+		for (int j = Rect.StartColIndex; j <= Rect.EndColIndex; ++j)
+		{
+			const int32 BlockRowEnd = i + SubRowSize - 1;
+			const int32 BlockColEnd = j + SubColSize - 1;
+
+			if (BlockRowEnd <= Rect.EndRowIndex && BlockColEnd <= Rect.EndColIndex)
+			{
+				if (Row >= i && Col >= j && Row <= BlockRowEnd && Col <= BlockColEnd)
+				{
+					ValidIndices.Add({i, j});
+				}
+			}
+		}
+	}
+
+	if (ValidIndices.IsEmpty()) return false;
+
+	// Choose a random valid index
+	const auto [ChosenRow, ChosenCol] = ValidIndices[FMath::RandRange(0, ValidIndices.Num() - 1)];
+
+	Rect.ChosenStartRowIndex = ChosenRow;
+	Rect.ChosenStartColIndex = ChosenCol;
+	Rect.ChosenEndRowIndex = Rect.ChosenStartRowIndex + SubRowSize - 1;
+	Rect.ChosenEndColIndex = Rect.ChosenStartColIndex + SubColSize - 1;
+
+	return true;
+}
+
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas(const TSet<USpawnArea*>& GridBlock,
+	const TSet<EBorderingDirection>& Directions) const
 {
 	TArray<std::pair<int32, int32>> RowColBorders;
 	TSet<USpawnArea*> Out;
@@ -1386,91 +1467,102 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetBorderingGridBlockSpawnAreas() 
 	int32 MaxRow = 0;
 	int32 MaxCol = 0;
 
-	for (const auto SpawnArea : MostRecentGridBlock)
+	for (const USpawnArea* SpawnArea : GridBlock)
 	{
 		std::pair Pair = {SpawnArea->GetIndex() / Size.Y, SpawnArea->GetIndex() % Size.Y};
 
-		if (Pair.first < MinRow) MinRow = Pair.first;
-		else if (Pair.first > MaxRow) MaxRow = Pair.first;
-
-		if (Pair.second < MinCol) MinCol = Pair.second;
-		else if (Pair.second > MaxCol) MaxCol = Pair.second;
+		// Update min and max values
+		MinRow = FMath::Min(MinRow, Pair.first);
+		MaxRow = FMath::Max(MaxRow, Pair.first);
+		MinCol = FMath::Min(MinCol, Pair.second);
+		MaxCol = FMath::Max(MaxCol, Pair.second);
 
 		RowColBorders.Add(Pair);
 	}
 	for (auto [Row, Col] : RowColBorders)
 	{
 		const int32 TestIndex = Row * Size.Y + Col;
-		// Bordering bottom left of block
-		if (Row == MinRow && Col == MinCol && (TestIndex - Size.Y - 1) >= 0)
-		{
-			const int32 MinLowerRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y - Size.Y;
-			if (TestIndex - Size.Y - 1 >= MinLowerRowIndex)
-			{
-				Out.Add(SpawnAreas[TestIndex - Size.Y - 1]);
-			}
-		}
-		// Bordering top left of block
-		if (Row == MaxRow && Col == MinCol && (TestIndex + Size.Y - 1) < SpawnAreas.Num())
-		{
-			const int32 MinUpperRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y;
 
-			if (TestIndex + Size.Y - 1 >= MinUpperRowIndex)
+		if (Row == MaxRow && Col == MinCol && Directions.Contains(EBorderingDirection::UpLeft))
+		{
+			const int32 UpLeftIndex = TestIndex + Size.Y - 1;
+			if (UpLeftIndex < SpawnAreas.Num())
 			{
-				Out.Add(SpawnAreas[TestIndex + Size.Y - 1]);
+				const int32 MinUpRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y;
+				if (UpLeftIndex >= MinUpRowIndex)
+				{
+					Out.Add(SpawnAreas[UpLeftIndex]);
+				}
 			}
 		}
-		// Bordering top right of block
-		if (Row == MaxRow && Col == MaxCol && (TestIndex + Size.Y + 1) < SpawnAreas.Num())
+		if (Row == MaxRow && Col == MaxCol && Directions.Contains(EBorderingDirection::UpRight))
 		{
-			const int32 MaxUpperRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y + Size.Y - 1;
-			if (MaxUpperRowIndex < SpawnAreas.Num() && TestIndex + Size.Y + 1 <= MaxUpperRowIndex)
+			const int32 UpRightIndex = TestIndex + Size.Y + 1;
+			if (UpRightIndex < SpawnAreas.Num())
 			{
-				Out.Add(SpawnAreas[TestIndex + Size.Y + 1]);
+				const int32 MaxUpRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y + Size.Y - 1;
+				if (UpRightIndex <= MaxUpRowIndex)
+				{
+					Out.Add(SpawnAreas[UpRightIndex]);
+				}
 			}
 		}
-		// Bordering bottom right of block
-		if (Row == MinRow && Col == MaxCol && (TestIndex - Size.Y + 1) >= 0)
+		if (Row == MinRow && Col == MinCol && Directions.Contains(EBorderingDirection::DownLeft))
 		{
-			const int32 MaxLowerRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y - 1;
-
-			if (TestIndex - Size.Y + 1 <= MaxLowerRowIndex)
+			const int32 DownLeftIndex = TestIndex - Size.Y - 1;
+			if (DownLeftIndex >= 0)
 			{
-				Out.Add(SpawnAreas[TestIndex - Size.Y + 1]);
+				const int32 MinDownRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y - Size.Y;
+				if (DownLeftIndex >= MinDownRowIndex)
+				{
+					Out.Add(SpawnAreas[DownLeftIndex]);
+				}
 			}
 		}
-		// Bordering bottom of block
-		if (Row == MinRow)
+		if (Row == MinRow && Col == MaxCol && Directions.Contains(EBorderingDirection::DownRight))
 		{
-			if (TestIndex - Size.Y >= 0)
+			const int32 DownRightIndex = TestIndex - Size.Y + 1;
+			if (DownRightIndex >= 0)
 			{
-				Out.Add(SpawnAreas[TestIndex - Size.Y]);
+				const int32 MaxDownRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y - 1;
+				if (DownRightIndex <= MaxDownRowIndex)
+				{
+					Out.Add(SpawnAreas[DownRightIndex]);
+				}
 			}
 		}
-		// Bordering top of block
-		if (Row == MaxRow)
+		if (Row == MinRow && Directions.Contains(EBorderingDirection::Down))
 		{
-			if (TestIndex + Size.Y < SpawnAreas.Num())
+			const int32 DownIndex = TestIndex - Size.Y;
+			if (DownIndex >= 0)
 			{
-				Out.Add(SpawnAreas[TestIndex + Size.Y]);
+				Out.Add(SpawnAreas[DownIndex]);
 			}
 		}
-		// Bordering left of block
-		if (Col == MinCol)
+		if (Row == MaxRow && Directions.Contains(EBorderingDirection::Up))
 		{
+			const int32 UpIndex = TestIndex + Size.Y;
+			if (UpIndex < SpawnAreas.Num())
+			{
+				Out.Add(SpawnAreas[UpIndex]);
+			}
+		}
+		if (Col == MinCol && Directions.Contains(EBorderingDirection::Left))
+		{
+			const int32 LeftIndex = TestIndex - 1;
 			const int32 MinRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y;
-			if (TestIndex - 1 >= MinRowIndex)
+			if (LeftIndex >= MinRowIndex)
 			{
-				Out.Add(SpawnAreas[TestIndex - 1]);
+				Out.Add(SpawnAreas[LeftIndex]);
 			}
 		}
-		// Bordering right of block
-		if (Col == MaxCol)
+		if (Col == MaxCol && Directions.Contains(EBorderingDirection::Right))
 		{
+			const int32 RightIndex = TestIndex + 1;
 			const int32 MaxRowIndex = FMath::Floor(TestIndex / Size.Y) * Size.Y + Size.Y - 1;
-			if (TestIndex + 1 <= MaxRowIndex)
+			if (RightIndex <= MaxRowIndex)
 			{
-				Out.Add(SpawnAreas[TestIndex + 1]);
+				Out.Add(SpawnAreas[RightIndex]);
 			}
 		}
 	}
@@ -1570,19 +1662,19 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 
 			for (float Y = MinY; Y <= MaxY; Y += SpawnAreaInc.Y)
 			{
-				if (USpawnArea* SpawnArea_MinZ = FindSpawnAreaFromLocation(FVector(0, Y, MinZ))) Temp.Add(
-					SpawnArea_MinZ);
+				if (USpawnArea* SpawnArea_MinZ = FindSpawnAreaFromLocation(FVector(0, Y, MinZ)))
+					Temp.Add(SpawnArea_MinZ);
 
-				if (USpawnArea* SpawnArea_MaxZ = FindSpawnAreaFromLocation(FVector(0, Y, MaxZ))) Temp.Add(
-					SpawnArea_MaxZ);
+				if (USpawnArea* SpawnArea_MaxZ = FindSpawnAreaFromLocation(FVector(0, Y, MaxZ)))
+					Temp.Add(SpawnArea_MaxZ);
 			}
 
 			for (float Z = MinZ; Z <= MaxZ; Z += SpawnAreaInc.Z)
 			{
-				if (USpawnArea* SpawnArea_MinY = FindSpawnAreaFromLocation(FVector(0, MinY, Z))) Temp.Add(
-					SpawnArea_MinY);
-				if (USpawnArea* SpawnArea_MaxY = FindSpawnAreaFromLocation(FVector(0, MaxY, Z))) Temp.Add(
-					SpawnArea_MaxY);
+				if (USpawnArea* SpawnArea_MinY = FindSpawnAreaFromLocation(FVector(0, MinY, Z)))
+					Temp.Add(SpawnArea_MinY);
+				if (USpawnArea* SpawnArea_MaxY = FindSpawnAreaFromLocation(FVector(0, MaxY, Z)))
+					Temp.Add(SpawnArea_MaxY);
 			}
 
 			#if !UE_BUILD_SHIPPING
@@ -1593,7 +1685,7 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 			}
 			#endif
 
-			CachedEdgeOnly = Temp;
+			CachedExtrema = Temp;
 		}
 		break;
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
@@ -1693,6 +1785,22 @@ TArray<int32> USpawnAreaManagerComponent::CreateIndexValidityArray(const TArray<
 	TArray<int32> IndexValidity;
 	IndexValidity.Init(1, SpawnAreas.Num());
 	for (const int32 RemovedIndex : RemovedIndices) IndexValidity[RemovedIndex] = 0;
+
+	#if !UE_BUILD_SHIPPING
+	if (bDebug_Grid)
+	{
+		PrintDebug_Matrix(IndexValidity, Size.Z, Size.Y);
+	}
+	#endif
+
+	return IndexValidity;
+}
+
+TArray<int32> USpawnAreaManagerComponent::CreateIndexValidityArray(const TSet<USpawnArea*>& ValidSpawnAreas) const
+{
+	TArray<int32> IndexValidity;
+	IndexValidity.Init(0, SpawnAreas.Num());
+	for (const USpawnArea* SpawnArea : ValidSpawnAreas) IndexValidity[SpawnArea->GetIndex()] = 1;
 
 	#if !UE_BUILD_SHIPPING
 	if (bDebug_Grid)
@@ -1823,19 +1931,8 @@ TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Num
 	const int32 Constraint2)
 {
 	TSet<FFactor> FittingFactors;
-	TSet<FFactor> BestFactors;
-
-	// Try best at first
-	const FFactor LargestFactor = FindLargestFactors(Number);
-	if (LargestFactor.IsValid() && (LargestFactor.Factor1 <= Constraint1 && LargestFactor.Factor2 <= Constraint2) || (
-		LargestFactor.Factor2 <= Constraint1 && LargestFactor.Factor1 <= Constraint2))
-	{
-		BestFactors.Add(LargestFactor);
-		return BestFactors;
-	}
-
 	float MinDistance = Number;
-	// Add any factors that that fit within constraints
+	// Add any factors that that fit within constraints, and record the minimum distance between them
 	for (const FFactor& Factor : FindAllFactors(Number))
 	{
 		const float Dist = abs(Factor.Factor1 - Factor.Factor2);
@@ -1850,7 +1947,8 @@ TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Num
 		}
 	}
 
-	// Add the factors with the minimum distance between factors
+	TSet<FFactor> BestFactors;
+	// Add the factors with the minimum distance, since there might be more than one
 	for (const FFactor& Factor : FittingFactors)
 	{
 		if (abs(Factor.Factor1 - Factor.Factor2) == MinDistance)
@@ -1859,7 +1957,50 @@ TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Num
 		}
 	}
 
+	UE_LOG(LogTemp, Display, TEXT("MinDistance between factors of %d: %.2f"), Number, MinDistance);
+
 	return BestFactors;
+}
+
+TArray<std::pair<int32, int32>> USpawnAreaManagerComponent::FindBorderingIndicesInRect(
+	const TSet<USpawnArea*>& Bordering, const FLargestRect& Rect, const int32 NumCols)
+{
+	TArray<std::pair<int32, int32>> BorderingInRect;
+
+	for (const USpawnArea* SpawnArea : Bordering)
+	{
+		const int32 RowIndex = SpawnArea->GetIndex() / NumCols;
+		const int32 ColIndex = SpawnArea->GetIndex() % NumCols;
+
+		const bool bGrEqualToStart = RowIndex >= Rect.StartRowIndex && ColIndex >= Rect.StartColIndex;
+		const bool bLeEqualToEnd = RowIndex <= Rect.EndRowIndex && ColIndex <= Rect.EndColIndex;
+
+		// Don't consider any indices not within the largest rectangle
+		if (!bGrEqualToStart || !bLeEqualToEnd) continue;
+
+		BorderingInRect.Add({RowIndex, ColIndex});
+	}
+
+	return BorderingInRect;
+}
+
+bool USpawnAreaManagerComponent::IsPrime(const int32 Number)
+{
+	if (Number <= 1) return false;
+	if (Number == 3) return false;
+	if (Number % 2 == 0 || Number % 3 == 0) return false;
+
+	// All prime numbers > 3 can be expressed by 6k ± 1, where k is a positive integer
+	int i = 5;
+
+	while (i * i <= Number)
+	{
+		// Check divisibility from (5, sqrt(number)), or by an integer that is 2 greater
+		if (Number % i == 0 || Number % (i + 2) == 0) return false;
+		i += 6;
+	}
+
+	return true;
 }
 
 FAccuracyData USpawnAreaManagerComponent::GetLocationAccuracy()
@@ -2204,20 +2345,18 @@ void USpawnAreaManagerComponent::PrintDebug_GridDFS(const FDFSLoopParams& LoopPa
 
 void USpawnAreaManagerComponent::PrintDebug_GridLargestRect(const FLargestRect& LargestRect, const int32 NumCols)
 {
-	UE_LOG(LogTargetManager, Display, TEXT("LargestRect MaxArea: %d"), LargestRect.MaxArea);
-	UE_LOG(LogTargetManager, Display, TEXT("LargestRect StartIndex: %d EndIndex: %d"), LargestRect.StartIndex,
-		LargestRect.EndIndex);
-
 	const int32 StartRowIndex = LargestRect.StartIndex / NumCols;
 	const int32 StartColumnIndex = LargestRect.StartIndex % NumCols;
 	const int32 EndRowIndex = LargestRect.EndIndex / NumCols;
 	const int32 EndColumnIndex = LargestRect.EndIndex % NumCols;
 
-	UE_LOG(LogTargetManager, Display, TEXT("LargestRect StartIndices: [%d, %d], EndIndices: [%d, %d]"), StartRowIndex,
-		StartColumnIndex, EndRowIndex, EndColumnIndex);
-	UE_LOG(LogTargetManager, Display, TEXT("LargestRect ChosenStart: [%d, %d], ChosenEnd: [%d, %d]"),
-		LargestRect.ChosenStartRowIndex, LargestRect.ChosenStartColumnIndex, LargestRect.ChosenEndRowIndex,
-		LargestRect.ChosenEndColumnIndex);
+	UE_LOG(LogTargetManager, Display, TEXT("LargestRect MaxArea: %d"), LargestRect.MaxArea);
+	UE_LOG(LogTargetManager, Display, TEXT("LargestRect StartIndices: [%d, %d](%d), EndIndices: [%d, %d](%d)"),
+		StartRowIndex, StartColumnIndex, LargestRect.StartIndex, EndRowIndex, EndColumnIndex, LargestRect.EndIndex);
+	UE_LOG(LogTargetManager, Display, TEXT("LargestRect ChosenStart: [%d, %d](%d), ChosenEnd: [%d, %d](%d)"),
+		LargestRect.ChosenStartRowIndex, LargestRect.ChosenStartColIndex,
+		LargestRect.ChosenStartRowIndex * NumCols + LargestRect.ChosenStartColIndex, LargestRect.ChosenEndRowIndex,
+		LargestRect.ChosenEndColIndex, LargestRect.ChosenEndRowIndex * NumCols + LargestRect.ChosenEndColIndex);
 }
 
 void USpawnAreaManagerComponent::PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows,
