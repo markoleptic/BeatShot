@@ -3,14 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetComponent.h"
+#include "CGMWC_Base.h"
 #include "CGMWC_Movement.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class USERINTERFACE_API UCGMWC_Movement : public UCustomGameModesWidgetComponent
+class USERINTERFACE_API UCGMWC_Movement : public UCGMWC_Base
 {
 	GENERATED_BODY()
 
@@ -34,44 +31,19 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected,
 		const ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked);
-	UFUNCTION()
-	void OnCheckStateChanged_ConstantDeactivatedTargetVelocity(const bool bChecked);
 
-	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-
+	void OnMinMaxMenuOptionChanged(UConstantMinMaxMenuOptionWidget* Widget,
+		const bool bChecked, const float MinOrConstant, const float Max);
+	
+	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
+	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantActivatedTargetVelocity;
+	UConstantMinMaxMenuOptionWidget* MenuOption_ActivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_ActivatedTargetVelocity;
+	UConstantMinMaxMenuOptionWidget* MenuOption_DeactivatedTargetVelocity;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinActivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxActivatedTargetVelocity;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantDeactivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinDeactivatedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxDeactivatedTargetVelocity;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_ConstantSpawnedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_SpawnedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinSpawnedTargetVelocity;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxSpawnedTargetVelocity;
+	UConstantMinMaxMenuOptionWidget* MenuOption_SpawnedTargetVelocity;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_MovingTargetDirectionMode;
-
-	FString GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString);
 };

@@ -5,7 +5,7 @@
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidget_CreatorView.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
 #include "Target/TargetManagerPreview.h"
 
 AMainMenuGameMode::AMainMenuGameMode()
@@ -34,7 +34,7 @@ void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* Gam
 	TargetManager->InitBoxBoundsWidget(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview);
 	TargetManager->Init(GameModesWidget->GetConfigPointer(), LoadPlayerSettings().Game);
 	TargetManager->CreateTargetWidget.BindUObject(GameModesWidget->CustomGameModesWidget_CreatorView->Widget_Preview,
-		&UCustomGameModesWidget_Preview::ConstructTargetWidget);
+		&UCGMWC_Preview::ConstructTargetWidget);
 
 	GameModesWidget->RequestSimulateTargetManagerStateChange.AddUObject(this,
 		&ThisClass::OnRequestSimulationStateChange);

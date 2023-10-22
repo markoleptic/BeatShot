@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Spawning.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Spawning.h"
 #include "Components/CheckBox.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
@@ -9,7 +9,7 @@
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 
-void UCustomGameModesWidget_Spawning::NativeConstruct()
+void UCGMWC_Spawning::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -29,15 +29,11 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_TargetSpawningPolicy);
-	ComboBoxOption_TargetSpawnResponses->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
-		&ThisClass::OnSelectionChanged_TargetSpawnResponses);
 	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode);
 
 	ComboBoxOption_TargetSpawningPolicy->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy);
-	ComboBoxOption_TargetSpawnResponses->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
-		&ThisClass::GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses);
 	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode);
 
@@ -51,25 +47,14 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 		&ThisClass::OnCheckStateChanged_SpawnEveryOtherTargetInCenter);
 
 	ComboBoxOption_TargetSpawningPolicy->ComboBox->ClearOptions();
-	ComboBoxOption_TargetSpawnResponses->ComboBox->ClearOptions();
 	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->ClearOptions();
 
 	TArray<FString> Options;
-
 	for (const ETargetSpawningPolicy& Method : TEnumRange<ETargetSpawningPolicy>())
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));
 	}
-	ComboBoxOption_TargetSpawningPolicy->SortAndAddOptions(Options);
-	ComboBoxOption_TargetSpawningPolicy->SetEnumType<ETargetSpawningPolicy>();
-	Options.Empty();
-
-	for (const ETargetSpawnResponse& Method : TEnumRange<ETargetSpawnResponse>())
-	{
-		Options.Add(GetStringFromEnum_FromTagMap(Method));
-	}
-	ComboBoxOption_TargetSpawnResponses->SortAndAddOptions(Options);
-	ComboBoxOption_TargetSpawnResponses->SetEnumType<ETargetSpawnResponse>();
+	ComboBoxOption_TargetSpawningPolicy->SortAddOptionsAndSetEnumType<ETargetSpawningPolicy>(Options);
 	Options.Empty();
 
 	for (const ERuntimeTargetSpawningLocationSelectionMode& Method : TEnumRange<
@@ -77,9 +62,8 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	{
 		Options.Add(GetStringFromEnum_FromTagMap(Method));
 	}
-	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SortAndAddOptions(Options);
-	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SetEnumType<
-		ERuntimeTargetSpawningLocationSelectionMode>();
+	ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SortAddOptionsAndSetEnumType<
+		ERuntimeTargetSpawningLocationSelectionMode>(Options);
 	Options.Empty();
 
 	SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
@@ -89,19 +73,17 @@ void UCustomGameModesWidget_Spawning::NativeConstruct()
 	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_Spawning::UpdateAllOptionsValid()
+void UCGMWC_Spawning::UpdateAllOptionsValid()
 {
 	Super::UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
+void UCGMWC_Spawning::UpdateOptionsFromConfig()
 {
 	UpdateValueIfDifferent(ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode));
 	UpdateValueIfDifferent(ComboBoxOption_TargetSpawningPolicy,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.TargetSpawningPolicy));
-	UpdateValueIfDifferent(ComboBoxOption_TargetSpawnResponses,
-		GetStringArrayFromEnumArray_FromTagMap(BSConfig->TargetConfig.TargetSpawnResponses));
 
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumTargetsAtOnce, BSConfig->TargetConfig.MaxNumTargetsAtOnce);
 	UpdateValueIfDifferent(SliderTextBoxOption_NumUpfrontTargetsToSpawn,
@@ -118,31 +100,43 @@ void UCustomGameModesWidget_Spawning::UpdateOptionsFromConfig()
 		BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter);
 
 	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy,
-		BSConfig->TargetConfig.bUseBatchSpawning,
-		BSConfig->TargetConfig.bAllowSpawnWithoutActivation);
-	UpdateDependentOptions_TargetSpawnResponses(BSConfig->TargetConfig.TargetSpawnResponses);
+		BSConfig->TargetConfig.bUseBatchSpawning, BSConfig->TargetConfig.bAllowSpawnWithoutActivation);
+
 	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_Spawning::SetupWarningTooltipCallbacks()
+void UCGMWC_Spawning::SetupWarningTooltipCallbacks()
 {
-	ComboBoxOption_TargetSpawnResponses->AddWarningTooltipData(FTooltipData("Invalid_Velocity_MTDM_None",
-		ETooltipImageType::Caution)).BindLambda([this]()
+	CheckBoxOption_SpawnEveryOtherTargetInCenter->AddWarningTooltipData(
+		FTooltipData("Invalid_SpawnEveryOtherTargetInCenter_BatchSpawning", ETooltipImageType::Warning)).BindLambda(
+		[this]()
+		{
+			return BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter && BSConfig->TargetConfig.bUseBatchSpawning;
+		});
+	CheckBoxOption_SpawnEveryOtherTargetInCenter->AddWarningTooltipData(
+		FTooltipData("Invalid_SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation",
+			ETooltipImageType::Warning)).BindLambda([this]()
 	{
-		return BSConfig->TargetConfig.TargetSpawnResponses.Contains(ETargetSpawnResponse::ChangeVelocity) &&
-			BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None;
+		return BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter && BSConfig->TargetConfig.
+			bAllowSpawnWithoutActivation;
 	});
-	ComboBoxOption_TargetSpawnResponses->AddWarningTooltipData(FTooltipData("Invalid_Direction_MTDM_None",
-	ETooltipImageType::Caution)).BindLambda([this]()
+	CheckBoxOption_BatchSpawning->AddWarningTooltipData(
+		FTooltipData("Invalid_SpawnEveryOtherTargetInCenter_BatchSpawning2", ETooltipImageType::Warning)).BindLambda(
+		[this]()
+		{
+			return BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter && BSConfig->TargetConfig.bUseBatchSpawning;
+		});
+	CheckBoxOption_AllowSpawnWithoutActivation->AddWarningTooltipData(
+		FTooltipData("Invalid_SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation2",
+			ETooltipImageType::Warning)).BindLambda([this]()
 	{
-		return BSConfig->TargetConfig.MovingTargetDirectionMode == EMovingTargetDirectionMode::None && BSConfig->
-			TargetConfig.TargetSpawnResponses.Contains(ETargetSpawnResponse::ChangeDirection);
+		return BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter && BSConfig->TargetConfig.
+			bAllowSpawnWithoutActivation;
 	});
 }
 
-void UCustomGameModesWidget_Spawning::UpdateDependentOptions_TargetSpawningPolicy(
-const ETargetSpawningPolicy& InTargetSpawningPolicy, const bool bUseBatchSpawning,
-const bool bAllowSpawnWithoutActivation)
+void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy,
+	const bool bUseBatchSpawning, const bool bAllowSpawnWithoutActivation)
 {
 	if (InTargetSpawningPolicy == ETargetSpawningPolicy::RuntimeOnly)
 	{
@@ -158,9 +152,22 @@ const bool bAllowSpawnWithoutActivation)
 		{
 			CheckBoxOption_SpawnEveryOtherTargetInCenter->SetVisibility(ESlateVisibility::Collapsed);
 		}
-		
+
 		SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+
+		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+		{
+			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetIsEnabled(true);
+		}
+		else
+		{
+			BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode =
+				ERuntimeTargetSpawningLocationSelectionMode::Random;
+			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetSelectedOption(
+				GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode));
+			ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->ComboBox->SetIsEnabled(false);
+		}
 
 		ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->
 			SetVisibility(ESlateVisibility::SelfHitTestInvisible);
@@ -186,36 +193,31 @@ const bool bAllowSpawnWithoutActivation)
 	}
 }
 
-void UCustomGameModesWidget_Spawning::UpdateDependentOptions_TargetSpawnResponses(
-	const TArray<ETargetSpawnResponse>& InTargetSpawnResponses)
-{
-}
-
-void UCustomGameModesWidget_Spawning::OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked)
+void UCGMWC_Spawning::OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked)
 {
 	BSConfig->TargetConfig.bAllowSpawnWithoutActivation = bChecked;
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnCheckStateChanged_BatchSpawning(const bool bChecked)
+void UCGMWC_Spawning::OnCheckStateChanged_BatchSpawning(const bool bChecked)
 {
 	BSConfig->TargetConfig.bUseBatchSpawning = bChecked;
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bChecked)
+void UCGMWC_Spawning::OnCheckStateChanged_SpawnAtOriginWheneverPossible(const bool bChecked)
 {
 	BSConfig->TargetConfig.bSpawnAtOriginWheneverPossible = bChecked;
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bChecked)
+void UCGMWC_Spawning::OnCheckStateChanged_SpawnEveryOtherTargetInCenter(const bool bChecked)
 {
 	BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter = bChecked;
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
+void UCGMWC_Spawning::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
 {
 	if (Widget == SliderTextBoxOption_MaxNumTargetsAtOnce)
 	{
@@ -233,8 +235,8 @@ void UCustomGameModesWidget_Spawning::OnSliderTextBoxValueChanged(USliderTextBox
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode(
-	const TArray<FString>& Selected, const ESelectInfo::Type SelectionType)
+void UCGMWC_Spawning::OnSelectionChanged_RuntimeTargetSpawningLocationSelectionMode(const TArray<FString>& Selected,
+	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 
@@ -245,11 +247,10 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_RuntimeTargetSpawningLo
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected,
+void UCGMWC_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
-
 
 	BSConfig->TargetConfig.TargetSpawningPolicy = GetEnumFromString<ETargetSpawningPolicy>(Selected[0]);
 
@@ -259,19 +260,7 @@ void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawningPolicy(co
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_Spawning::OnSelectionChanged_TargetSpawnResponses(const TArray<FString>& Selected,
-	const ESelectInfo::Type SelectionType)
-{
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() < 1) return;
-
-	BSConfig->TargetConfig.TargetSpawnResponses = GetEnumArrayFromStringArray<ETargetSpawnResponse>(Selected);
-	UpdateDependentOptions_TargetSpawnResponses(BSConfig->TargetConfig.TargetSpawnResponses);
-	UpdateBrushColors();
-	UpdateAllOptionsValid();
-}
-
-FString
-UCustomGameModesWidget_Spawning::GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode(
+FString UCGMWC_Spawning::GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode(
 	const FString& EnumString)
 {
 	const ERuntimeTargetSpawningLocationSelectionMode EnumValue = GetEnumFromString<
@@ -279,16 +268,8 @@ UCustomGameModesWidget_Spawning::GetComboBoxEntryTooltipStringTableKey_RuntimeTa
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
-FString UCustomGameModesWidget_Spawning::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(
-	const FString& EnumString)
+FString UCGMWC_Spawning::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString)
 {
 	const ETargetSpawningPolicy EnumValue = GetEnumFromString<ETargetSpawningPolicy>(EnumString);
-	return GetStringTableKeyNameFromEnum(EnumValue);
-}
-
-FString UCustomGameModesWidget_Spawning::GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses(
-	const FString& EnumString)
-{
-	const ETargetSpawnResponse EnumValue = GetEnumFromString<ETargetSpawnResponse>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

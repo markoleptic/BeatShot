@@ -19,6 +19,21 @@ class USlider;
 class UBSHorizontalBox;
 class UMenuOptionWidget;
 
+/** The custom enabled state of a menu option */
+UENUM(BlueprintType)
+enum class EMenuOptionEnabledState : uint8
+{
+	/** All features enabled */
+	Enabled UMETA(DisplayName="Enabled"),
+	/** The option is not interactable because it depends on another menu option selection, but does show a tooltip
+	 *  showing why it is not interactable */
+	DependentMissing UMETA(DisplayName="DependentMissing"),
+	/** The option is not interactable and displays no tooltip. Same as regular disabled */
+	Disabled UMETA(DisplayName="Disabled"),
+};
+ENUM_RANGE_BY_FIRST_AND_LAST(EMenuOptionEnabledState, EMenuOptionEnabledState::Enabled,
+	EMenuOptionEnabledState::Disabled);
+
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnLockStateChanged, UMenuOptionWidget*, const bool);
 
 /** Base class for a Menu Option Widget, which is basically just a description, tooltip, and some value(s) that can be changed */
@@ -33,6 +48,12 @@ protected:
 	virtual void SetStyling();
 
 public:
+	/** Sets the custom enabled state of the menu option */
+	virtual void SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState);
+
+	/** Returns the custom enabled state of the menu option */
+	EMenuOptionEnabledState GetMenuOptionEnabledState() const { return MenuOptionEnabledState; }
+	
 	/** Sets the left hand side indent, with each level increasing by 50 */
 	void SetIndentLevel(const int32 Value);
 
@@ -123,6 +144,9 @@ protected:
 	UHorizontalBox* Box_Left;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UHorizontalBox* Box_Right;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_TagsAndTooltips;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -163,4 +187,7 @@ protected:
 
 	/** Contains tooltip info for all Caution or Warning Tooltips. Size of array never changes after NativeConstruct has been called. */
 	TArray<FTooltipData> WarningTooltipData;
+
+	/** The custom enabled state of the menu option */
+	EMenuOptionEnabledState MenuOptionEnabledState;
 };

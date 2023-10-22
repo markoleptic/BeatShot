@@ -868,7 +868,7 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid
 
 	// Remove from deactivated cache
 	const int32 NumRemoved = CachedDeactivated.Remove(SpawnArea);
-	if (NumRemoved == 0) UE_LOG(LogTemp, Display, TEXT("Failed to remove from CachedDeactivated."));
+	if (NumRemoved == 0) UE_LOG(LogTargetManager, Display, TEXT("Failed to remove from CachedDeactivated."));
 
 	SpawnArea->SetIsActivated(true, bCanActivateWhileActivated);
 
@@ -1266,25 +1266,54 @@ void USpawnAreaManagerComponent::FindGridBlockUsingLargestRect(TArray<USpawnArea
 	// Empty the array since we have all the indices now
 	ValidSpawnAreas.Empty();
 	MostRecentGridBlock.Empty();
+	
+	int32 StartI = Rect.ChosenStartRowIndex;
+	int32 StartJ = Rect.ChosenStartColIndex;
+	int32 EndI = Rect.ChosenEndRowIndex;
+	int32 EndJ = Rect.ChosenEndColIndex;
 
-	// Iterate through the chosen block, adding the SpawnAreas to the array
-	for (int32 i = Rect.ChosenStartRowIndex; i <= Rect.ChosenEndRowIndex; ++i)
+	bool bIAsRow = true;
+	bool bIncrement = true;
+
+	// Randomize the start indices if it will get chopped off
+	if (Rect.ChosenBlockSize > Rect.ActualBlockSize)
 	{
-		for (int32 j = Rect.ChosenStartColIndex; j <= Rect.ChosenEndColIndex; ++j)
+		bIAsRow = FMath::RandBool();
+		bIncrement = FMath::RandBool();
+
+		// Swap rows and columns
+		if (!bIAsRow)
 		{
-			const int32 Index = i * Size.Y + j;
+			Swap(StartI, StartJ);
+			Swap(EndI, EndJ);
+		}
+		
+		// Swap start and end
+		if (!bIncrement)
+		{
+			Swap(StartI, EndI);
+			Swap(StartJ, EndJ);
+		}
+	}
+	
+	// Iterate through the chosen block, adding the SpawnAreas to the array
+	for (int32 i = StartI; (bIncrement && i <= EndI) || (!bIncrement && i >= EndI); (bIncrement ? ++i : --i))
+	{
+		for (int32 j = StartJ; (bIncrement && j <= EndJ) || (!bIncrement && j >= EndJ); (bIncrement ? ++j : --j))
+		{
+			const int32 Index = bIAsRow ? i * Size.Y + j : j * Size.Y + i;
 			if (SpawnAreas.IsValidIndex(Index))
 			{
 				ValidSpawnAreas.Add(SpawnAreas[Index]);
-				// Also update MostRecentGridBlock set
+				// Update MostRecentGridBlock set
 				MostRecentGridBlock.Add(SpawnAreas[Index]);
 			}
-			else UE_LOG(LogTemp, Display, TEXT("Invalid Index: %d"), Index);
+			else UE_LOG(LogTargetManager, Warning, TEXT("Invalid Index: %d"), Index);
 			if (ValidSpawnAreas.Num() >= Rect.ActualBlockSize) break;
 		}
 		if (ValidSpawnAreas.Num() >= Rect.ActualBlockSize) break;
 	}
-
+	
 	// Choose a remainder index if ActualBlockSize is prime and a smaller grid is chosen
 	if (!Rect.bNeedsRemainderIndex) return;
 
@@ -1313,11 +1342,11 @@ void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const boo
 
 	if (IsPrime(Rect.ActualBlockSize))
 	{
-		const TSet<FFactor> OneLessBlockSize = FindBestFittingFactors(Rect.ActualBlockSize - 1, Rect);
+		TSet<FFactor> OneLessBlockSize = FindBestFittingFactors(Rect.ActualBlockSize - 1, Rect);
 		const TSet<FFactor> OneGreaterBlockSize = FindBestFittingFactors(Rect.ActualBlockSize + 1, Rect);
 		
 		if (OneLessBlockSize.IsEmpty() && OneGreaterBlockSize.IsEmpty()) return;
-
+		
 		FFactor MinDifferenceFactor = FFactor(Rect.ActualBlockSize);
 		TSet<FFactor> MinFactors;
 		
@@ -1346,7 +1375,6 @@ void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const boo
 
 	const bool bF1FitsRows = RandomFactor.Factor1 <= Rect.NumRowsAvailable;
 	const bool bF2FitsRows = RandomFactor.Factor2 <= Rect.NumRowsAvailable;
-
 	const bool bF1FitsCols = RandomFactor.Factor1 <= Rect.NumColsAvailable;
 	const bool bF2FitsCols = RandomFactor.Factor2 <= Rect.NumColsAvailable;
 
@@ -1375,7 +1403,7 @@ void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const boo
 		UE_LOG(LogTargetManager, Warning, TEXT("BOTH FACTORS > ROWS OR COLS AVAILABLE SOMETHING WRONG"));
 		return;
 	}
-
+	
 	const int32 MaxAllowedStartRowIndex = Rect.EndRowIndex - SubRowSize + 1;
 	const int32 MaxAllowedStartColIndex = Rect.EndColIndex - SubColSize + 1;
 
@@ -1385,7 +1413,8 @@ void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const boo
 	// To choose a random sub-block within the largest rectangle, choose a random start index
 	const int32 RandomRowStartIndex = FMath::RandRange(Rect.StartRowIndex, MaxAllowedStartRowIndex);
 	const int32 RandomColStartIndex = FMath::RandRange(Rect.StartColIndex, MaxAllowedStartColIndex);
-
+	
+	Rect.ChosenBlockSize = SubRowSize * SubColSize;
 	Rect.ChosenStartRowIndex = RandomRowStartIndex;
 	Rect.ChosenStartColIndex = RandomColStartIndex;
 	Rect.ChosenEndRowIndex = Rect.ChosenStartRowIndex + SubRowSize - 1;
@@ -1399,7 +1428,6 @@ void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const boo
 		UE_LOG(LogTargetManager, Display, TEXT("MaxAllowedStartIndex: %d"),
 			MaxAllowedStartRowIndex * Size.Y + MaxAllowedStartColIndex);
 	}
-	#endif
 
 	if (Rect.ChosenStartRowIndex < Rect.StartRowIndex || Rect.ChosenStartColIndex < Rect.StartColIndex)
 	{
@@ -1409,6 +1437,7 @@ void USpawnAreaManagerComponent::ChooseRectIndices(FLargestRect& Rect, const boo
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("ChosenEndIndex > End!!!"));
 	}
+	#endif
 }
 
 bool USpawnAreaManagerComponent::FindBorderingRectIndices(FLargestRect& Rect, const int32 SubRowSize,
@@ -1957,7 +1986,7 @@ TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Num
 		}
 	}
 
-	UE_LOG(LogTemp, Display, TEXT("MinDistance between factors of %d: %.2f"), Number, MinDistance);
+	UE_LOG(LogTargetManager, Display, TEXT("MinDistance between factors of %d: %.2f"), Number, MinDistance);
 
 	return BestFactors;
 }
@@ -1987,7 +2016,7 @@ TArray<std::pair<int32, int32>> USpawnAreaManagerComponent::FindBorderingIndices
 bool USpawnAreaManagerComponent::IsPrime(const int32 Number)
 {
 	if (Number <= 1) return false;
-	if (Number == 3) return false;
+	if (Number == 2 || Number == 3) return true;
 	if (Number % 2 == 0 || Number % 3 == 0) return false;
 
 	// All prime numbers > 3 can be expressed by 6k ± 1, where k is a positive integer

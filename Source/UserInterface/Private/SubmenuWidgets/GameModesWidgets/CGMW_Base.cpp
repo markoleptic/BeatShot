@@ -1,12 +1,12 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidgetBase.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_Base.h"
 #include "Blueprint/WidgetTree.h"
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidgetComponent.h"
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Start.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Base.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Start.h"
 
-void UCustomGameModesWidgetBase::NativeConstruct()
+void UCGMW_Base::NativeConstruct()
 {
 	Super::NativeConstruct();
 	
@@ -14,18 +14,18 @@ void UCustomGameModesWidgetBase::NativeConstruct()
 	Widget_Start->OnCustomGameModeNameChanged.AddUObject(this, &ThisClass::OnStartWidget_CustomGameModeNameChanged);
 }
 
-void UCustomGameModesWidgetBase::NativeDestruct()
+void UCGMW_Base::NativeDestruct()
 {
 	Super::NativeDestruct();
 	BSConfig = nullptr;
 }
 
-UBSGameModeDataAsset* UCustomGameModesWidgetBase::GetGameModeDataAsset() const
+UBSGameModeDataAsset* UCGMW_Base::GetGameModeDataAsset() const
 {
 	return GameModeDataAsset ? GameModeDataAsset.Get() : nullptr;
 }
 
-void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
+void UCGMW_Base::Init(FBSConfig* InConfig, const TObjectPtr<UBSGameModeDataAsset> InGameModeDataAsset)
 {
 	BSConfig = InConfig;
 	GameModeDataAsset = InGameModeDataAsset;
@@ -33,7 +33,7 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 
 	WidgetTree->ForEachWidget([&](UWidget* Widget)
 	{
-		if (UCustomGameModesWidgetComponent* Component = Cast<UCustomGameModesWidgetComponent>(Widget))
+		if (UCGMWC_Base* Component = Cast<UCGMWC_Base>(Widget))
 		{
 			const bool bIndexOnCarousel = Component->ShouldIndexOnCarousel();
 			Component->InitComponent(InConfig, bIndexOnCarousel ? Index : -1);
@@ -45,12 +45,12 @@ void UCustomGameModesWidgetBase::Init(FBSConfig* InConfig, const TObjectPtr<UBSG
 	});
 }
 
-void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
+void UCGMW_Base::UpdateOptionsFromConfig()
 {
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	for (const TPair<TObjectPtr<UCGMWC_Base>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
 	     ChildWidgetValidityMap)
 	{
-		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
+		if (const TObjectPtr<UCGMWC_Base> Component = ChildWidgetValidity.Key)
 		{
 			if (Component->IsInitialized())
 			{
@@ -61,15 +61,15 @@ void UCustomGameModesWidgetBase::UpdateOptionsFromConfig()
 	UpdateAllChildWidgetOptionsValid();
 }
 
-void UCustomGameModesWidgetBase::UpdateAllChildWidgetOptionsValid()
+void UCGMW_Base::UpdateAllChildWidgetOptionsValid()
 {
 	bool bAtLeastOneWarningPresent = false;
 	uint8 TotalWarnings = 0;
 	uint8 TotalCautions = 0;
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	for (const TPair<TObjectPtr<UCGMWC_Base>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
 	     ChildWidgetValidityMap)
 	{
-		if (const TObjectPtr<UCustomGameModesWidgetComponent> Component = ChildWidgetValidity.Key)
+		if (const TObjectPtr<UCGMWC_Base> Component = ChildWidgetValidity.Key)
 		{
 			if (Component->IsInitialized() && Component != Widget_Start)
 			{
@@ -93,29 +93,29 @@ void UCustomGameModesWidgetBase::UpdateAllChildWidgetOptionsValid()
 	RequestButtonStateUpdate.Broadcast();
 }
 
-FString UCustomGameModesWidgetBase::GetNewCustomGameModeName() const
+FString UCGMW_Base::GetNewCustomGameModeName() const
 {
 	return Widget_Start->GetNewCustomGameModeName();
 }
 
-void UCustomGameModesWidgetBase::SetNewCustomGameModeName(const FString& InCustomGameModeName) const
+void UCGMW_Base::SetNewCustomGameModeName(const FString& InCustomGameModeName) const
 {
 	Widget_Start->SetNewCustomGameModeName(InCustomGameModeName);
 }
 
-FStartWidgetProperties UCustomGameModesWidgetBase::GetStartWidgetProperties() const
+FStartWidgetProperties UCGMW_Base::GetStartWidgetProperties() const
 {
 	return Widget_Start->GetStartWidgetProperties();
 }
 
-void UCustomGameModesWidgetBase::SetStartWidgetProperties(const FStartWidgetProperties& InProperties)
+void UCGMW_Base::SetStartWidgetProperties(const FStartWidgetProperties& InProperties)
 {
 	Widget_Start->SetStartWidgetProperties(InProperties);
 }
 
-bool UCustomGameModesWidgetBase::GetAllNonStartChildWidgetOptionsValid() const
+bool UCGMW_Base::GetAllNonStartChildWidgetOptionsValid() const
 {
-	for (const TPair<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
+	for (const TPair<TObjectPtr<UCGMWC_Base>, FCustomGameModeCategoryInfo*>& ChildWidgetValidity :
 	     ChildWidgetValidityMap)
 	{
 		if (ChildWidgetValidity.Key == Widget_Start)
@@ -130,23 +130,23 @@ bool UCustomGameModesWidgetBase::GetAllNonStartChildWidgetOptionsValid() const
 	return true;
 }
 
-void UCustomGameModesWidgetBase::RefreshGameModeTemplateComboBoxOptions() const
+void UCGMW_Base::RefreshGameModeTemplateComboBoxOptions() const
 {
 	Widget_Start->RefreshGameModeTemplateComboBoxOptions();
 }
 
-void UCustomGameModesWidgetBase::OnRequestGameModeTemplateUpdate(const FString& InGameMode,
+void UCGMW_Base::OnRequestGameModeTemplateUpdate(const FString& InGameMode,
 	const EGameModeDifficulty& Difficulty)
 {
 	RequestGameModeTemplateUpdate.Broadcast(InGameMode, Difficulty);
 }
 
-void UCustomGameModesWidgetBase::OnStartWidget_CustomGameModeNameChanged()
+void UCGMW_Base::OnStartWidget_CustomGameModeNameChanged()
 {
 	RequestButtonStateUpdate.Broadcast();
 }
 
-void UCustomGameModesWidgetBase::OnRequestComponentUpdate()
+void UCGMW_Base::OnRequestComponentUpdate()
 {
 	if (!bIsUpdatingFromComponentRequest)
 	{
@@ -156,12 +156,12 @@ void UCustomGameModesWidgetBase::OnRequestComponentUpdate()
 	}
 }
 
-void UCustomGameModesWidgetBase::OnRequestGameModePreviewUpdate()
+void UCGMW_Base::OnRequestGameModePreviewUpdate()
 {
 	RequestGameModePreviewUpdate.Broadcast();
 }
 
-void UCustomGameModesWidgetBase::UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent)
+void UCGMW_Base::UpdateContainsGameModeBreakingOption(const bool bGameModeBreakingOptionPresent)
 {
 	if (bGameModeBreakingOptionPresent == bContainsGameModeBreakingOption)
 	{
@@ -170,12 +170,12 @@ void UCustomGameModesWidgetBase::UpdateContainsGameModeBreakingOption(const bool
 	if (bGameModeBreakingOptionPresent)
 	{
 		UE_LOG(LogTemp, Display,
-			TEXT("bContainsGameModeBreakingOption changed from false to true inside UCustomGameModesWidgetBase"));
+			TEXT("bContainsGameModeBreakingOption changed from false to true inside UCGMW_Base"));
 	}
 	else
 	{
 		UE_LOG(LogTemp, Display,
-			TEXT("bContainsGameModeBreakingOption changed from true to false inside UCustomGameModesWidgetBase"));
+			TEXT("bContainsGameModeBreakingOption changed from true to false inside UCGMW_Base"));
 	}
 	bContainsGameModeBreakingOption = bGameModeBreakingOptionPresent;
 	OnGameModeBreakingChange.Broadcast(bContainsGameModeBreakingOption);

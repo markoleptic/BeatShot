@@ -49,7 +49,7 @@ void UInputMappingWidget::SetStyles()
 			UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot);
 			if (BorderSlot)
 			{
-				BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftHorizontalBox);
+				BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftBox);
 			}
 		}
 		FTextBlockStyle TextBlockStyle = InputKeySelectorSlot1->GetTextStyle();

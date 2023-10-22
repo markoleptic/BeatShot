@@ -10,6 +10,11 @@ void UEditableTextBoxOptionWidget::SetStyling()
 	Super::SetStyling();
 	if (MenuOptionStyle)
 	{
-		EditableTextBox->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableText);
+		if (EditableTextBox)
+		{
+			EditableTextBox->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableText);
+			EditableTextBox->WidgetStyle.SetPadding(MenuOptionStyle->Padding_EditableText);
+			EditableTextBox->SetJustification(TextJustify_EditableTextBox);
+		}
 	}
 }

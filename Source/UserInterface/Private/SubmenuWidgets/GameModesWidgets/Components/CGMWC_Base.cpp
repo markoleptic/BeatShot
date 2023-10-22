@@ -1,7 +1,8 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidgetComponent.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Base.h"
+#include "GameModeCategoryTagMap.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
@@ -9,10 +10,12 @@
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
+#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxCheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
-void UCustomGameModesWidgetComponent::NativeConstruct()
+void UCGMWC_Base::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -20,28 +23,28 @@ void UCustomGameModesWidgetComponent::NativeConstruct()
 	{
 		if (UMenuOptionWidget* MenuOption = Cast<UMenuOptionWidget>(Widget))
 		{
-			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty())
-				SetupTooltip(MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
+			if (MenuOption->ShouldShowTooltip() && !MenuOption->GetTooltipImageText().IsEmpty()) SetupTooltip(
+				MenuOption->GetTooltipImage(), MenuOption->GetTooltipImageText());
 			MenuOptionWidgets.Add(MenuOption);
 
 			AddGameModeCategoryTagWidgets(MenuOption);
 
 			if (UComboBoxOptionWidget* ComboBoxOptionWidget = Cast<UComboBoxOptionWidget>(MenuOption))
 			{
-				ComboBoxOptionWidget->SetGameplayTagWidgetMap(GameplayTagWidgetMap);
+				ComboBoxOptionWidget->SetGameplayTagWidgetMap(GameModeCategoryTagMap);
 				ComboBoxOptionWidget->SetEnumTagMap(EnumTagMap);
 			}
 		}
 	});
 }
 
-void UCustomGameModesWidgetComponent::NativeDestruct()
+void UCGMWC_Base::NativeDestruct()
 {
 	Super::NativeDestruct();
 	BSConfig = nullptr;
 }
 
-void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
+void UCGMWC_Base::UpdateAllOptionsValid()
 {
 	if (!UpdateWarningTooltips())
 	{
@@ -49,7 +52,7 @@ void UCustomGameModesWidgetComponent::UpdateAllOptionsValid()
 	}
 }
 
-void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, const int32 InIndex)
+void UCGMWC_Base::InitComponent(FBSConfig* InConfigPtr, const int32 InIndex)
 {
 	BSConfig = InConfigPtr;
 	UpdateOptionsFromConfig();
@@ -57,24 +60,25 @@ void UCustomGameModesWidgetComponent::InitComponent(FBSConfig* InConfigPtr, cons
 	Index = InIndex;
 }
 
-void UCustomGameModesWidgetComponent::UpdateOptionsFromConfig()
+void UCGMWC_Base::UpdateOptionsFromConfig()
 {
 }
 
-void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget)
+void UCGMWC_Base::AddGameModeCategoryTagWidgets(UMenuOptionWidget* MenuOptionWidget)
 {
+	if (!GameModeCategoryTagMap) return;
 	FGameplayTagContainer Container;
 	MenuOptionWidget->GetGameModeCategoryTags(Container);
 	TArray<UGameModeCategoryTagWidget*> GameModeCategoryTagWidgets;
 
 	for (const FGameplayTag& Tag : Container)
 	{
-		const TSubclassOf<UGameModeCategoryTagWidget>* SubClass = GameplayTagWidgetMap.Find(Tag);
+		const TSubclassOf<UUserWidget> SubClass = GameModeCategoryTagMap->GetWidgetByGameModeCategoryTag(Tag);
 		if (!SubClass)
 		{
 			continue;
 		}
-		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, *SubClass);
+		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, SubClass);
 		GameModeCategoryTagWidgets.Add(TagWidget);
 	}
 	if (GameModeCategoryTagWidgets.Num() > 0)
@@ -83,20 +87,19 @@ void UCustomGameModesWidgetComponent::AddGameModeCategoryTagWidgets(UMenuOptionW
 	}
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget,
-	const float Value)
+bool UCGMWC_Base::UpdateValueIfDifferent(const USliderTextBoxOptionWidget* Widget, const float Value)
 {
-	if (!FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(
-		Widget->GetEditableTextBoxValue(), Value))
+	if (FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) && FMath::IsNearlyEqual(Widget->GetEditableTextBoxValue(),
+		Value))
 	{
-		Widget->SetValue(Value);
-		return true;
+		return false;
 	}
-	return false;
+
+	Widget->SetValue(Value);
+	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget,
-	const FString& NewOption)
+bool UCGMWC_Base::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const FString& NewOption)
 {
 	if (NewOption.IsEmpty())
 	{
@@ -115,8 +118,7 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOpti
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget,
-	const TArray<FString>& NewOptions)
+bool UCGMWC_Base::UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions)
 {
 	const TArray<FString> SelectedOptions = Widget->ComboBox->GetSelectedOptions();
 
@@ -139,7 +141,7 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UComboBoxOpti
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked)
+bool UCGMWC_Base::UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked)
 {
 	if (Widget->CheckBox->IsChecked() == bIsChecked)
 	{
@@ -149,8 +151,7 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UCheckBoxOpti
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget,
-	const FText& NewText)
+bool UCGMWC_Base::UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText)
 {
 	if (Widget->EditableTextBox->GetText().EqualTo(NewText))
 	{
@@ -160,7 +161,55 @@ bool UCustomGameModesWidgetComponent::UpdateValueIfDifferent(const UEditableText
 	return true;
 }
 
-bool UCustomGameModesWidgetComponent::UpdateWarningTooltips()
+bool UCGMWC_Base::UpdateValuesIfDifferent(const UConstantMinMaxMenuOptionWidget* Widget, const bool bIsChecked,
+	const float Min, const float Max)
+{
+	bool bDifferent = Widget->GetIsChecked() != bIsChecked;
+	if (bDifferent) Widget->SetIsChecked(bIsChecked);
+
+	const bool bMinDifferent = !FMath::IsNearlyEqual(Widget->GetMinOrConstantSliderValue(), Min) || !
+		FMath::IsNearlyEqual(Widget->GetMinOrConstantEditableTextBoxValue(), Min);
+	if (bMinDifferent) Widget->SetValue_ConstantOrMin(Min);
+	bDifferent = bMinDifferent || bDifferent;
+
+	const bool bMaxDifferent = !FMath::IsNearlyEqual(Widget->GetMaxSliderValue(), Max) || !FMath::IsNearlyEqual(
+		Widget->GetMaxEditableTextBoxValue(), Max);
+	if (bMaxDifferent) Widget->SetValue_Max(Max);
+	bDifferent = bMaxDifferent || bDifferent;
+
+	return bDifferent;
+}
+
+bool UCGMWC_Base::UpdateValuesIfDifferent(const USliderTextBoxCheckBoxOptionWidget* Widget, const bool bIsChecked,
+	const float Value)
+{
+	// Don't consider the slider/text box value if checked
+	if (bIsChecked)
+	{
+		if (Widget->GetIsChecked() != bIsChecked)
+		{
+			Widget->SetIsChecked(bIsChecked);
+			return true;
+		}
+		return false;
+	}
+
+	bool bDifferent = Widget->GetIsChecked() != bIsChecked;
+	if (bDifferent)
+	{
+		Widget->SetIsChecked(bIsChecked);
+	}
+
+	const bool bValueDiff = !FMath::IsNearlyEqual(Widget->GetSliderValue(), Value) || !FMath::IsNearlyEqual(
+		Widget->GetEditableTextBoxValue(), Value);
+
+	if (bValueDiff) Widget->SetValue(Value);
+	bDifferent = bValueDiff || bDifferent;
+
+	return bDifferent;
+}
+
+bool UCGMWC_Base::UpdateWarningTooltips()
 {
 	bool bAllClean = true;
 	for (const TObjectPtr<UMenuOptionWidget> Widget : MenuOptionWidgets)
@@ -189,7 +238,7 @@ bool UCustomGameModesWidgetComponent::UpdateWarningTooltips()
 	return bAllClean;
 }
 
-void UCustomGameModesWidgetComponent::UpdateCustomGameModeCategoryInfo()
+void UCGMWC_Base::UpdateCustomGameModeCategoryInfo()
 {
 	int32 NumWarnings = 0;
 	int32 NumCautions = 0;
@@ -201,25 +250,25 @@ void UCustomGameModesWidgetComponent::UpdateCustomGameModeCategoryInfo()
 	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
 }
 
-float UCustomGameModesWidgetComponent::GetMinRequiredHorizontalSpread() const
+float UCGMWC_Base::GetMinRequiredHorizontalSpread() const
 {
 	return (BSConfig->GridConfig.GridSpacing.X + GetMaxTargetDiameter()) * (BSConfig->GridConfig.
 		NumHorizontalGridTargets - 1);
 }
 
-float UCustomGameModesWidgetComponent::GetMinRequiredVerticalSpread() const
+float UCGMWC_Base::GetMinRequiredVerticalSpread() const
 {
 	return (BSConfig->GridConfig.GridSpacing.Y + GetMaxTargetDiameter()) * (BSConfig->GridConfig.NumVerticalGridTargets
 		- 1);
 }
 
-float UCustomGameModesWidgetComponent::GetMaxTargetDiameter() const
+float UCGMWC_Base::GetMaxTargetDiameter() const
 {
 	return FMath::Max(BSConfig->TargetConfig.MinSpawnedTargetScale, BSConfig->TargetConfig.MaxSpawnedTargetScale) *
 		SphereTargetDiameter;
 }
 
-int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumHorizontalTargets() const
+int32 UCGMWC_Base::GetMaxAllowedNumHorizontalTargets() const
 {
 	// Total = GridSpacing.X * (NumHorizontalGridTargets - 1) + (NumHorizontalGridTargets - 1) * MaxTargetDiameter;
 	// Total = (NumHorizontalGridTargets - 1) * (GridSpacing.X + MaxTargetDiameter);
@@ -228,7 +277,7 @@ int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumHorizontalTargets() const
 	return MaxValue_HorizontalSpread / (BSConfig->GridConfig.GridSpacing.X + GetMaxTargetDiameter()) + 1;
 }
 
-int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumVerticalTargets() const
+int32 UCGMWC_Base::GetMaxAllowedNumVerticalTargets() const
 {
 	// Total = GridSpacing.Y * (NumVerticalGridTargets - 1) + (NumVerticalGridTargets - 1) * MaxTargetDiameter;
 	// Total = (NumVerticalGridTargets - 1) * (GridSpacing.Y + MaxTargetDiameter);
@@ -237,7 +286,7 @@ int32 UCustomGameModesWidgetComponent::GetMaxAllowedNumVerticalTargets() const
 	return MaxValue_VerticalSpread / (BSConfig->GridConfig.GridSpacing.Y + GetMaxTargetDiameter()) + 1;
 }
 
-float UCustomGameModesWidgetComponent::GetMaxAllowedHorizontalSpacing() const
+float UCGMWC_Base::GetMaxAllowedHorizontalSpacing() const
 {
 	// Total = GridSpacing.X * (NumHorizontalGridTargets - 1) + (NumHorizontalGridTargets - 1) * MaxTargetDiameter;
 	// Total = (NumHorizontalGridTargets - 1) * (GridSpacing.X + MaxTargetDiameter);
@@ -246,7 +295,7 @@ float UCustomGameModesWidgetComponent::GetMaxAllowedHorizontalSpacing() const
 	return MaxValue_HorizontalSpread / (BSConfig->GridConfig.NumHorizontalGridTargets - 1) - GetMaxTargetDiameter();
 }
 
-float UCustomGameModesWidgetComponent::GetMaxAllowedVerticalSpacing() const
+float UCGMWC_Base::GetMaxAllowedVerticalSpacing() const
 {
 	// Total = GridSpacing.Y * (NumVerticalGridTargets - 1) + (NumVerticalGridTargets - 1) * MaxTargetDiameter;
 	// Total = (NumVerticalGridTargets - 1) * (GridSpacing.Y + MaxTargetDiameter);
@@ -255,7 +304,7 @@ float UCustomGameModesWidgetComponent::GetMaxAllowedVerticalSpacing() const
 	return MaxValue_VerticalSpread / (BSConfig->GridConfig.NumVerticalGridTargets - 1) - GetMaxTargetDiameter();
 }
 
-float UCustomGameModesWidgetComponent::GetMaxAllowedTargetScale() const
+float UCGMWC_Base::GetMaxAllowedTargetScale() const
 {
 	// Total = GridSpacing.X * (NumHorizontalGridTargets - 1) + (NumHorizontalGridTargets - 1) * SphereTargetDiameter * Scale;
 	// Total - (GridSpacing.X * (NumHorizontalGridTargets - 1)) = (NumHorizontalGridTargets - 1) * SphereTargetDiameter * Scale;

@@ -14,9 +14,9 @@
 class UCommonWidgetCarousel;
 class UBSVerticalBox;
 class UDefaultGameModeOptionWidget;
-class UCustomGameModesWidgetBase;
-class UCustomGameModesWidget_PropertyView;
-class UCustomGameModesWidget_CreatorView;
+class UCGMW_Base;
+class UCGMW_PropertyView;
+class UCGMW_CreatorView;
 class UGameModeSharingWidget;
 class UTooltipImage;
 class UGameModesWidget_DefiningConfig;
@@ -172,11 +172,11 @@ protected:
 
 public:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidget_CreatorView> CustomGameModesWidget_CreatorView;
+	TObjectPtr<UCGMW_CreatorView> CustomGameModesWidget_CreatorView;
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidget_PropertyView> CustomGameModesWidget_PropertyView;
+	TObjectPtr<UCGMW_PropertyView> CustomGameModesWidget_PropertyView;
 	UPROPERTY()
-	TObjectPtr<UCustomGameModesWidgetBase> CustomGameModesWidget_Current;
+	TObjectPtr<UCGMW_Base> CustomGameModesWidget_Current;
 
 protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

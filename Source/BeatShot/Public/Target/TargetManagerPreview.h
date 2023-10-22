@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "TargetManager.h"
 #include "GameFramework/Actor.h"
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Preview.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Preview.h"
 #include "TargetManagerPreview.generated.h"
 
 UCLASS()
@@ -17,7 +17,7 @@ public:
 	ATargetManagerPreview();
 
 	/** Initializes the BoxBounds widget */
-	void InitBoxBoundsWidget(const TObjectPtr<UCustomGameModesWidget_Preview> InGameModePreviewWidget);
+	void InitBoxBoundsWidget(const TObjectPtr<UCGMWC_Preview> InGameModePreviewWidget);
 
 	/** Reinitialize the TargetManager by calling Init */
 	void RestartSimulation();
@@ -50,7 +50,7 @@ protected:
 	virtual void UpdateSpawnVolume(const float Factor) const override;
 
 	UPROPERTY()
-	TObjectPtr<UCustomGameModesWidget_Preview> GameModePreviewWidget;
+	TObjectPtr<UCGMWC_Preview> GameModePreviewWidget;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="TargetManagerPreview")
 	FText FloorDistanceText = FText::FromString("Floor Distance");

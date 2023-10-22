@@ -209,6 +209,7 @@ const FEnumTagMapping* UEnumTagMap::GetEnumTagMapping()
 	{
 		return nullptr;
 	}
+	
 	const int32 Index = EnumTagMappings.Find(FEnumTagMapping(EnumClass, true));
 
 	if (!EnumTagMappings.IsValidIndex(Index))

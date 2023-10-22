@@ -5,18 +5,21 @@
 #include "CoreMinimal.h"
 #include "SaveLoadInterface.h"
 #include "EnumTagMap.h"
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidgetBase.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_Base.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/MenuOptionWidget.h"
-#include "CustomGameModesWidgetComponent.generated.h"
+#include "CGMWC_Base.generated.h"
 
+class USliderTextBoxCheckBoxOptionWidget;
+class UConstantMinMaxMenuOptionWidget;
+class UGameModeCategoryTagMap;
 class UMenuOptionWidget;
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
 class USliderTextBoxOptionWidget;
-class UCustomGameModesWidgetComponent;
+class UCGMWC_Base;
 
 USTRUCT(BlueprintType)
 struct FMenuOptionTooltipHandle
@@ -42,9 +45,9 @@ struct FMenuOptionTooltipHandle
 
 DECLARE_MULTICAST_DELEGATE(FRequestComponentUpdate);
 
-/** Base class for child widgets of UCustomGameModesWidgetBase */
+/** Base class for child widgets (components) of Custom Game Modes Widgets (UCGMW) */
 UCLASS(Abstract)
-class USERINTERFACE_API UCustomGameModesWidgetComponent : public UBSSettingCategoryWidget, public ISaveLoadInterface
+class USERINTERFACE_API UCGMWC_Base : public UBSSettingCategoryWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -91,6 +94,10 @@ protected:
 	static bool UpdateValueIfDifferent(const UComboBoxOptionWidget* Widget, const TArray<FString>& NewOptions);
 	static bool UpdateValueIfDifferent(const UCheckBoxOptionWidget* Widget, const bool bIsChecked);
 	static bool UpdateValueIfDifferent(const UEditableTextBoxOptionWidget* Widget, const FText& NewText);
+	static bool UpdateValuesIfDifferent(const UConstantMinMaxMenuOptionWidget* Widget, const bool bIsChecked,
+		const float Min, const float Max);
+	static bool UpdateValuesIfDifferent(const USliderTextBoxCheckBoxOptionWidget* Widget, const bool bIsChecked,
+		const float Value);
 
 	/** Iterates through all MenuOptionWidgets, calling UpdateAllWarningTooltips on each. Iterates through each
 	 *  widget's TooltipWarningData, checking if any changed from the update. If so, the tooltip is updated.
@@ -114,7 +121,7 @@ protected:
 
 	/** Pointer to next widget in linked list. Used for CreatorView */
 	UPROPERTY()
-	TObjectPtr<UCustomGameModesWidgetComponent> Next;
+	TObjectPtr<UCGMWC_Base> Next;
 
 	/** Whether or not Init has been called */
 	bool bIsInitialized = false;
@@ -136,9 +143,8 @@ protected:
 	TObjectPtr<UEnumTagMap> EnumTagMap;
 
 	UPROPERTY(EditDefaultsOnly, Category="CustomGameModesWidgetComponent")
-	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>> GameplayTagWidgetMap;
-
-
+	TObjectPtr<UGameModeCategoryTagMap> GameModeCategoryTagMap;
+	
 	/** Returns the string display name of the enum, or empty string if not found */
 	template <typename T>
 	FString GetStringFromEnum_FromTagMap(const T& InEnum);
@@ -148,7 +154,7 @@ protected:
 };
 
 template <typename T>
-FString UCustomGameModesWidgetComponent::GetStringFromEnum_FromTagMap(const T& InEnum)
+FString UCGMWC_Base::GetStringFromEnum_FromTagMap(const T& InEnum)
 {
 	if (EnumTagMap)
 	{
@@ -162,7 +168,7 @@ FString UCustomGameModesWidgetComponent::GetStringFromEnum_FromTagMap(const T& I
 }
 
 template <typename T>
-TArray<FString> UCustomGameModesWidgetComponent::GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray)
+TArray<FString> UCGMWC_Base::GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray)
 {
 	TArray<FString> OutArray;
 	for (const T& InEnum : InEnumArray)

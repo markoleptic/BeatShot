@@ -6,8 +6,10 @@
 #include "BSWidgetInterface.h"
 #include "EnumTagMap.h"
 #include "MenuOptionWidget.h"
+#include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "ComboBoxOptionWidget.generated.h"
 
+class UGameModeCategoryTagMap;
 class UBSComboBoxEntry_Tagged;
 class UEnumTagMap;
 class UGameModeCategoryTagWidget;
@@ -39,10 +41,10 @@ public:
 	void SortAddOptionsAndSetEnumType(TArray<FString>& InOptions);
 
 	/** Sets the GameplayTagWidgetMap */
-	void SetGameplayTagWidgetMap(const TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>>& InMap);
+	void SetGameplayTagWidgetMap(const TObjectPtr<UGameModeCategoryTagMap> InMap);
 
 	/** Sets the EnumTagMap */
-	void SetEnumTagMap(const TObjectPtr<UEnumTagMap> InEnumTagMap);
+	void SetEnumTagMap(const TObjectPtr<UEnumTagMap> InMap);
 
 protected:
 	virtual void NativeConstruct() override;
@@ -58,7 +60,8 @@ protected:
 	UWidget* AddGameModeCategoryTagWidgets(UBSComboBoxEntry_Tagged* ComboBoxEntry);
 
 	/** Pointer to CustomGameModesWidgetComponent's GameplayTagWidgetMap */
-	TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>> GameplayTagWidgetMap;;
+	UPROPERTY()
+	TObjectPtr<UGameModeCategoryTagMap> GameModeCategoryTagMap;;
 
 	/** Pointer to CustomGameModesWidgetComponent's EnumTagMap */
 	UPROPERTY()
@@ -66,11 +69,28 @@ protected:
 
 	/** The enum to gameplay tag mapping for this combo box option widget */
 	FEnumTagMapping EnumTagMapping;
+
+	/** The type of selection for the combo box */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="MenuOptionWidget|ComboBox")
+	ESelectionModeType SelectionMode = ESelectionModeType::Single;
+
+	/** Should the user be able to select no options */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="MenuOptionWidget|ComboBox")
+	bool bCanSelectNone = false;
+
+	/** Should the combo box automatically close when a selection is made */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="MenuOptionWidget|ComboBox")
+	bool bCloseComboBoxOnSelectionChanged = true;
 };
 
 template <typename T>
 void UComboBoxOptionWidget::SetEnumType()
 {
+	if (!EnumTagMap)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No EnumTagMap found."));
+		return;
+	}
 	if (const FEnumTagMapping* FoundEnumTagMapping = EnumTagMap->GetEnumTagMapping<T>())
 	{
 		EnumTagMapping = *FoundEnumTagMapping;
@@ -80,6 +100,11 @@ void UComboBoxOptionWidget::SetEnumType()
 template <typename T>
 void UComboBoxOptionWidget::SortAddOptionsAndSetEnumType(TArray<FString>& InOptions)
 {
+	if (!EnumTagMap)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No EnumTagMap found."));
+		return;
+	}
 	if (const FEnumTagMapping* FoundEnumTagMapping = EnumTagMap->GetEnumTagMapping<T>())
 	{
 		EnumTagMapping = *FoundEnumTagMapping;

@@ -99,7 +99,7 @@ protected:
 	UMaterialInstanceDynamic* DynamicImageMaterial;
 
 	/** Font information for the Button text */
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	FSlateFontInfo DefaultFontInfo;
 
 	/** Text to display on top of ImageMaterial; Sets the TextBlock text */
@@ -111,11 +111,11 @@ protected:
 	int32 WrapTextAt = 0;
 
 	/** Playback speed used for all animations */
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	float PlaybackSpeed = 3.f;
 
 	/** Whether or not to restore the pre-pressed state of the button after pressing. This just sets the PressedScalarParameter value to 0 after the animation finishes */
-	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "BSButton|Defaults", meta = (ExposeOnSpawn="true"))
 	bool bRestoreClickedButtonState = false;
 
 	/** Animation to play when the button is pressed */

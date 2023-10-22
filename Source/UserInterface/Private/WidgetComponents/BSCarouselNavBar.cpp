@@ -77,7 +77,6 @@ void UBSCarouselNavBar::RebuildButtons()
 		for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 		{
 			TSharedRef<SVerticalBox> MainVerticalBox = SNew(SVerticalBox);
-
 			if (NotificationWidgetType && bShowNotificationWidgets)
 			{
 				UButtonNotificationWidget* NotificationWidget =
@@ -86,9 +85,8 @@ void UBSCarouselNavBar::RebuildButtons()
 				{
 					Notifications.Add(NotificationWidget);
 					TSharedRef<SWidget> NotificationSWidget = NotificationWidget->TakeWidget();
-					
 					MainVerticalBox->AddSlot()
-						.HAlign(HAlign_Center).VAlign(VAlign_Fill)
+						.HAlign(HAlign_Fill).VAlign(VAlign_Fill)
 						.AutoHeight().Padding(NotificationWidgetContainerPadding)
 						[NotificationSWidget];
 				}
@@ -109,7 +107,7 @@ void UBSCarouselNavBar::RebuildButtons()
 					
 					MainVerticalBox->AddSlot()
 						.HAlign(HAlign_Fill).VAlign(VAlign_Fill)
-						.AutoHeight().Padding(ButtonPadding)
+						.FillHeight(1.f).Padding(ButtonPadding)
 						[ButtonSWidget];
 				}
 			}

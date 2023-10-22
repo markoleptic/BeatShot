@@ -26,7 +26,7 @@
 #include "OverlayWidgets/PopupWidgets/QuitMenuWidget.h"
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidget_CreatorView.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
 
 void ABSPlayerController::BeginPlay()
 {

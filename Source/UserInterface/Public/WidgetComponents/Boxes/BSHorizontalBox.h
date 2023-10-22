@@ -23,10 +23,20 @@ public:
 	/** Sets the Brush tint for the Right Border */
 	void SetRightBorderBrushTint(const FLinearColor& Color);
 
+	/** Forces the same border colors as the last BSBox and does not update bLastLeftBorderDark */
+	void SetForceSameBorderBrushTintAsPrevious(const bool bCond) { bForceSameBorderBrushTintAsPrevious = bCond; }
+
+	/** Returns whether or not t force the same border colors as the last BSBox
+	 *  and does not update bLastLeftBorderDark */
+	bool ShouldForceSameBorderBrushTintAsPrevious() const { return bForceSameBorderBrushTintAsPrevious; }
+
 	/** Searches for the first Border it finds for each slot in Slots, adding to Borders if it finds one */
 	void RefreshBorders();
 
 protected:
 	/* Array of Borders where each points to the first border found in every slot */
 	TArray<TObjectPtr<UBorder>> Borders;
+
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="BSHorizontalBox")
+	bool bForceSameBorderBrushTintAsPrevious = false;
 };

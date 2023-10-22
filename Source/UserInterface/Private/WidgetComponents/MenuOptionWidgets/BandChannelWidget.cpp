@@ -29,7 +29,7 @@ void UBandChannelWidget::SetStyling()
 			if (HorizontalBoxSlot)
 			{
 				HorizontalBoxSlot->SetPadding(
-					MenuOptionStyle->Padding_LeftHorizontalBox + MenuOptionStyle->Padding_DescriptionText);
+					MenuOptionStyle->Padding_LeftBox + MenuOptionStyle->Padding_DescriptionText);
 			}
 		}
 		if (TextBlock_Upper)
@@ -39,7 +39,7 @@ void UBandChannelWidget::SetStyling()
 			if (HorizontalBoxSlot)
 			{
 				HorizontalBoxSlot->SetPadding(
-					MenuOptionStyle->Padding_LeftHorizontalBox + MenuOptionStyle->Padding_DescriptionText);
+					MenuOptionStyle->Padding_LeftBox + MenuOptionStyle->Padding_DescriptionText);
 			}
 		}
 		if (Value_BandChannelMin)

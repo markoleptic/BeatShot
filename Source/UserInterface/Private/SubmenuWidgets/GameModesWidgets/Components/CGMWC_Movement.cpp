@@ -2,66 +2,31 @@
 
 
 #include "SubmenuWidgets/GameModesWidgets/Components/CGMWC_Movement.h"
-
-#include "Components/CheckBox.h"
+#include "WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
-#include "WidgetComponents/MenuOptionWidgets/CheckBoxOptionWidget.h"
-#include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
 
 void UCGMWC_Movement::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	SliderTextBoxOption_SpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
+	
+	MenuOption_SpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
 		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MinSpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
+	MenuOption_ActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
 		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MaxSpawnedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_ActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MinActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MaxActivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_DeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MinDeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
-		SnapSize_TargetSpeed);
-	SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
+	MenuOption_DeactivatedTargetVelocity->SetValues(MinValue_TargetSpeed, MaxValue_TargetSpeed,
 		SnapSize_TargetSpeed);
 
-	SliderTextBoxOption_SpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinSpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MaxSpawnedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_ActivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinActivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MaxActivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_DeactivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MinDeactivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
-	SliderTextBoxOption_MaxDeactivatedTargetVelocity->OnSliderTextBoxValueChanged.AddUObject(this,
-		&ThisClass::OnSliderTextBoxValueChanged);
+	MenuOption_SpawnedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this,
+		&ThisClass::OnMinMaxMenuOptionChanged);
+	MenuOption_ActivatedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this,
+		&ThisClass::OnMinMaxMenuOptionChanged);
+	MenuOption_DeactivatedTargetVelocity->OnMinMaxMenuOptionChanged.AddUObject(this,
+		&ThisClass::OnMinMaxMenuOptionChanged);
 
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->OnSelectionChanged.AddUniqueDynamic(this,
 		&ThisClass::OnSelectionChanged_MovingTargetDirectionMode);
 	ComboBoxOption_MovingTargetDirectionMode->GetComboBoxEntryTooltipStringTableKey.BindUObject(this,
 		&ThisClass::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode);
-
-	CheckBoxOption_ConstantSpawnedTargetVelocity->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_ConstantSpawnedTargetVelocity);
-	CheckBoxOption_ConstantActivatedTargetVelocity->CheckBox->OnCheckStateChanged.AddUniqueDynamic(this,
-		&ThisClass::OnCheckStateChanged_ConstantActivatedTargetVelocity);
-	CheckBoxOption_ConstantDeactivatedTargetVelocity->CheckBox->OnCheckStateChanged.AddDynamic(this,
-		&ThisClass::OnCheckStateChanged_ConstantDeactivatedTargetVelocity);
-
 	ComboBoxOption_MovingTargetDirectionMode->ComboBox->ClearOptions();
 
 	TArray<FString> Options;
@@ -71,21 +36,6 @@ void UCGMWC_Movement::NativeConstruct()
 	}
 	ComboBoxOption_MovingTargetDirectionMode->SortAddOptionsAndSetEnumType<EMovingTargetDirectionMode>(Options);
 	Options.Empty();
-
-	CheckBoxOption_ConstantSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-
-	CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-
-	CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
@@ -105,26 +55,12 @@ void UCGMWC_Movement::UpdateOptionsFromConfig()
 	const bool bConstantDeactivatedSpeed = BSConfig->TargetConfig.MinDeactivatedTargetSpeed == BSConfig->TargetConfig.
 		MaxDeactivatedTargetSpeed;
 
-	UpdateValueIfDifferent(CheckBoxOption_ConstantSpawnedTargetVelocity, bConstantSpawnedSpeed);
-	UpdateValueIfDifferent(CheckBoxOption_ConstantActivatedTargetVelocity, bConstantActivatedSpeed);
-	UpdateValueIfDifferent(CheckBoxOption_ConstantDeactivatedTargetVelocity, bConstantDeactivatedSpeed);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_SpawnedTargetVelocity, BSConfig->TargetConfig.MinSpawnedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinSpawnedTargetVelocity, BSConfig->TargetConfig.MinSpawnedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxSpawnedTargetVelocity, BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_ActivatedTargetVelocity, BSConfig->TargetConfig.MinActivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinActivatedTargetVelocity,
-		BSConfig->TargetConfig.MinActivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxActivatedTargetVelocity,
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed);
-
-	UpdateValueIfDifferent(SliderTextBoxOption_DeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MinDeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed);
-	UpdateValueIfDifferent(SliderTextBoxOption_MaxDeactivatedTargetVelocity,
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed);
+	UpdateValuesIfDifferent(MenuOption_SpawnedTargetVelocity, bConstantSpawnedSpeed,
+		BSConfig->TargetConfig.MinSpawnedTargetSpeed, BSConfig->TargetConfig.MaxSpawnedTargetSpeed);
+	UpdateValuesIfDifferent(MenuOption_ActivatedTargetVelocity, bConstantActivatedSpeed,
+		BSConfig->TargetConfig.MinActivatedTargetSpeed, BSConfig->TargetConfig.MaxActivatedTargetSpeed);
+	UpdateValuesIfDifferent(MenuOption_DeactivatedTargetVelocity, bConstantDeactivatedSpeed,
+		BSConfig->TargetConfig.MinDeactivatedTargetSpeed, BSConfig->TargetConfig.MaxDeactivatedTargetSpeed);
 
 	UpdateValueIfDifferent(ComboBoxOption_MovingTargetDirectionMode,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.MovingTargetDirectionMode));
@@ -169,26 +105,15 @@ void UCGMWC_Movement::UpdateDependentOptions_SpawnResponses(const TArray<ETarget
 {
 	if (Responses.Contains(ETargetSpawnResponse::ChangeVelocity))
 	{
-		CheckBoxOption_ConstantSpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		if (bConstant)
 		{
-			SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		else
 		{
-			SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
 	else
 	{
-		CheckBoxOption_ConstantSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_SpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxSpawnedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -197,26 +122,15 @@ void UCGMWC_Movement::UpdateDependentOptions_ActivationResponses(const TArray<ET
 {
 	if (Responses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
-		CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		if (bConstant)
 		{
-			SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		else
 		{
-			SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
 	else
 	{
-		CheckBoxOption_ConstantActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_ActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxActivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
@@ -225,141 +139,46 @@ void UCGMWC_Movement::UpdateDependentOptions_DeactivationResponses(const TArray<
 {
 	if (Responses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 	{
-		CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		if (bConstant)
 		{
-			SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 		}
 		else
 		{
-			SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-			SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-			SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
 	else
 	{
-		CheckBoxOption_ConstantDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_DeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MinDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
-		SliderTextBoxOption_MaxDeactivatedTargetVelocity->SetVisibility(ESlateVisibility::Collapsed);
 	}
 }
 
 void UCGMWC_Movement::OnSelectionChanged_MovingTargetDirectionMode(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
-	{
-		return;
-	}
-
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
+	
 	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(Selected[0]);
 	UpdateAllOptionsValid();
 }
 
-void UCGMWC_Movement::OnCheckStateChanged_ConstantSpawnedTargetVelocity(const bool bChecked)
+void UCGMWC_Movement::OnMinMaxMenuOptionChanged(UConstantMinMaxMenuOptionWidget* Widget,
+		const bool bChecked, const float MinOrConstant, const float Max)
 {
-	if (bChecked)
+	if (Widget == MenuOption_SpawnedTargetVelocity)
 	{
-		BSConfig->TargetConfig.MinSpawnedTargetSpeed = SliderTextBoxOption_SpawnedTargetVelocity->GetSliderValue();
-		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = SliderTextBoxOption_SpawnedTargetVelocity->GetSliderValue();
+		BSConfig->TargetConfig.MinSpawnedTargetSpeed = MinOrConstant;
+		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = bChecked ? MinOrConstant : Max;
 	}
-	else
+	else if (Widget == MenuOption_ActivatedTargetVelocity)
 	{
-		BSConfig->TargetConfig.MinSpawnedTargetSpeed = SliderTextBoxOption_MinSpawnedTargetVelocity->GetSliderValue();
-		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = SliderTextBoxOption_MaxSpawnedTargetVelocity->GetSliderValue();
+		BSConfig->TargetConfig.MinActivatedTargetSpeed = MinOrConstant;
+		BSConfig->TargetConfig.MaxActivatedTargetSpeed = bChecked ? MinOrConstant : Max;
 	}
-
-	UpdateDependentOptions_SpawnResponses(BSConfig->TargetConfig.TargetSpawnResponses, bChecked);
+	else if (Widget == MenuOption_DeactivatedTargetVelocity)
+	{
+		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = MinOrConstant;
+		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = bChecked ? MinOrConstant : Max;
+	}
 	UpdateBrushColors();
-	UpdateAllOptionsValid();
-}
-
-void UCGMWC_Movement::OnCheckStateChanged_ConstantActivatedTargetVelocity(const bool bChecked)
-{
-	if (bChecked)
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = SliderTextBoxOption_ActivatedTargetVelocity->GetSliderValue();
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = SliderTextBoxOption_ActivatedTargetVelocity->GetSliderValue();
-	}
-	else
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = SliderTextBoxOption_MinActivatedTargetVelocity->
-			GetSliderValue();
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = SliderTextBoxOption_MaxActivatedTargetVelocity->
-			GetSliderValue();
-	}
-	UpdateDependentOptions_ActivationResponses(BSConfig->TargetConfig.TargetActivationResponses, bChecked);
-	UpdateBrushColors();
-	UpdateAllOptionsValid();
-}
-
-void UCGMWC_Movement::OnCheckStateChanged_ConstantDeactivatedTargetVelocity(const bool bChecked)
-{
-	if (bChecked)
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = SliderTextBoxOption_DeactivatedTargetVelocity->
-			GetSliderValue();
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = SliderTextBoxOption_DeactivatedTargetVelocity->
-			GetSliderValue();
-	}
-	else
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = SliderTextBoxOption_MinDeactivatedTargetVelocity->
-			GetSliderValue();
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = SliderTextBoxOption_MaxDeactivatedTargetVelocity->
-			GetSliderValue();
-	}
-
-	UpdateDependentOptions_DeactivationResponses(BSConfig->TargetConfig.TargetDeactivationResponses, bChecked);
-	UpdateBrushColors();
-	UpdateAllOptionsValid();
-}
-
-void UCGMWC_Movement::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value)
-{
-	if (Widget == SliderTextBoxOption_SpawnedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinSpawnedTargetSpeed = Value;
-		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinSpawnedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinSpawnedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxSpawnedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MaxSpawnedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_ActivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = Value;
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinActivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinActivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxActivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MaxActivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_DeactivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = Value;
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MinDeactivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MinDeactivatedTargetSpeed = Value;
-	}
-	else if (Widget == SliderTextBoxOption_MaxDeactivatedTargetVelocity)
-	{
-		BSConfig->TargetConfig.MaxDeactivatedTargetSpeed = Value;
-	}
 	UpdateAllOptionsValid();
 }
 

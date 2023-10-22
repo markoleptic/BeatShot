@@ -196,8 +196,8 @@ struct FLargestRect
 	/** The true size of the block. Set to the min(MaxArea, input BlockSize) */
 	int32 ActualBlockSize;
 
-	/** If an AdjustedLowerBlockSize is used, this holds the index of the remainder */
-	int32 RemainderIndex;
+	/** The size of the block used to set the Chosen Start/End Row/Col Indices */
+	int32 ChosenBlockSize;
 
 	/** The chosen start row index */
 	int32 ChosenStartRowIndex;
@@ -213,14 +213,14 @@ struct FLargestRect
 
 	FLargestRect() : bNeedsRemainderIndex(false), MaxArea(0), StartIndex(-1), EndIndex(-1), StartRowIndex(0),
 	                 StartColIndex(0), EndRowIndex(0), EndColIndex(0), NumRowsAvailable(0), NumColsAvailable(0),
-	                 ActualBlockSize(0), RemainderIndex(-1), ChosenStartRowIndex(-1), ChosenStartColIndex(-1),
+	                 ActualBlockSize(0), ChosenBlockSize(0), ChosenStartRowIndex(-1), ChosenStartColIndex(-1),
 	                 ChosenEndRowIndex(-1), ChosenEndColIndex(-1)
 	{
 	}
 
 	FLargestRect(const int32 InMaxArea, const int32 InStart, const int32 InEnd): bNeedsRemainderIndex(false),
 		StartRowIndex(0), StartColIndex(0), EndRowIndex(0), EndColIndex(0), NumRowsAvailable(0), NumColsAvailable(0),
-		ActualBlockSize(0), RemainderIndex(-1), ChosenStartRowIndex(-1), ChosenStartColIndex(-1), ChosenEndRowIndex(-1),
+		ActualBlockSize(0), ChosenBlockSize(0), ChosenStartRowIndex(-1), ChosenStartColIndex(-1), ChosenEndRowIndex(-1),
 		ChosenEndColIndex(-1)
 	{
 		MaxArea = InMaxArea;

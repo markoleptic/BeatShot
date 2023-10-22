@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetComponent.h"
-#include "CustomGameModesWidget_SpawnArea.generated.h"
+#include "CGMWC_Base.h"
+#include "CGMWC_SpawnArea.generated.h"
 
 class USliderTextBoxOptionWidget;
 class UEditableTextBoxOptionWidget;
@@ -12,7 +12,7 @@ class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
 
 UCLASS()
-class USERINTERFACE_API UCustomGameModesWidget_SpawnArea : public UCustomGameModesWidgetComponent
+class USERINTERFACE_API UCGMWC_SpawnArea : public UCGMWC_Base
 {
 	GENERATED_BODY()
 
@@ -27,6 +27,21 @@ protected:
 
 	/** Updates options that depend on the value selection of InBoundsScalingPolicy */
 	void UpdateDependentOptions_BoundsScalingPolicy(const EBoundsScalingPolicy& InBoundsScalingPolicy);
+	
+	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
+
+	UFUNCTION()
+	void OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
+		const ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_DynamicBoundsScalingPolicy(const TArray<FString>& Selected,
+		const ESelectInfo::Type SelectionType);
+
+	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
+	FString GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy(const FString& EnumString);
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_BoundsScalingPolicy;
@@ -70,19 +85,4 @@ protected:
 	USliderTextBoxOptionWidget* SliderTextBoxOption_FloorDistance;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_MinDistanceBetweenTargets;
-
-	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
-
-	UFUNCTION()
-	void OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_DynamicBoundsScalingPolicy(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
-
-	FString GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(const FString& EnumString);
-	FString GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(const FString& EnumString);
-	FString GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy(const FString& EnumString);
 };

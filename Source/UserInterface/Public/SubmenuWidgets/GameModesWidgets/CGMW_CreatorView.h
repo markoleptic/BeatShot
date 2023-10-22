@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetBase.h"
-#include "CustomGameModesWidget_CreatorView.generated.h"
+#include "CGMW_Base.h"
+#include "CGMW_CreatorView.generated.h"
 
 class UScrollBox;
 class UBSCarouselNavBar;
-class UCustomGameModesWidgetComponent;
-class UCustomGameModesWidget_Preview;
+class UCGMWC_Base;
+class UCGMWC_Preview;
 class UCommonWidgetCarousel;
 
 UCLASS()
-class USERINTERFACE_API UCustomGameModesWidget_CreatorView : public UCustomGameModesWidgetBase
+class USERINTERFACE_API UCGMW_CreatorView : public UCGMW_Base
 {
 	GENERATED_BODY()
 
@@ -28,7 +28,7 @@ protected:
 
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCustomGameModesWidget_Preview* Widget_Preview;
+	UCGMWC_Preview* Widget_Preview;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget_CreatorView;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))

@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetComponent.h"
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidgetBase.h"
-#include "CustomGameModesWidget_Start.generated.h"
+#include "CGMWC_Base.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_Base.h"
+#include "CGMWC_Start.generated.h"
 
 class UEditableTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
 
 UCLASS()
-class USERINTERFACE_API UCustomGameModesWidget_Start : public UCustomGameModesWidgetComponent
+class USERINTERFACE_API UCGMWC_Start : public UCGMWC_Base
 {
 	GENERATED_BODY()
 
@@ -35,13 +35,16 @@ public:
 	/** Sets the options for a start widget since they're not all shared with BSConfig pointer */
 	void SetStartWidgetProperties(const FStartWidgetProperties& InProperties);
 
-	/** Updates the Difficulty ComboBox selection if different from BSConfig, or if none selected with Preset. Returns true if the selection was changed */
+	/** Updates the Difficulty ComboBox selection if different from BSConfig, or if none selected with Preset.
+	 *  Returns true if the selection was changed */
 	bool UpdateDifficultySelection(const EGameModeDifficulty& Difficulty) const;
 
-	/** Updates the Difficulty ComboBox visibility based on the type of game mode. Returns true if the visibility was changed */
+	/** Updates the Difficulty ComboBox visibility based on the type of game mode. Returns true if the visibility
+	 *  was changed */
 	bool UpdateDifficultyVisibility() const;
 
-	/** Updates the GameModeTemplate ComboBox visibility based on the type of game mode and the checkbox. Returns true if the visibility was changed */
+	/** Updates the GameModeTemplate ComboBox visibility based on the type of game mode and the checkbox.
+	 *  Returns true if the visibility was changed */
 	bool UpdateGameModeTemplateVisibility() const;
 
 	/** Clears all GameModeTemplate options and repopulates */
@@ -52,15 +55,6 @@ protected:
 	virtual void UpdateAllOptionsValid() override;
 	virtual void UpdateOptionsFromConfig() override;
 
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_UseTemplate;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_GameModeTemplates;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_GameModeDifficulty;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UEditableTextBoxOptionWidget* EditableTextBoxOption_CustomGameModeName;
-
 	UFUNCTION()
 	void OnCheckStateChanged_UseTemplate(const bool bChecked);
 	UFUNCTION()
@@ -69,4 +63,13 @@ protected:
 	void OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected, const ESelectInfo::Type SelectionType);
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_UseTemplate;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_GameModeTemplates;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_GameModeDifficulty;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UEditableTextBoxOptionWidget* EditableTextBoxOption_CustomGameModeName;
 };

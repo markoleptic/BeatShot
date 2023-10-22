@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_SpawnArea.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_SpawnArea.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
@@ -9,7 +9,7 @@
 using namespace Constants;
 
 
-void UCustomGameModesWidget_SpawnArea::NativeConstruct()
+void UCGMWC_SpawnArea::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -136,12 +136,12 @@ void UCustomGameModesWidget_SpawnArea::NativeConstruct()
 	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_SpawnArea::UpdateAllOptionsValid()
+void UCGMWC_SpawnArea::UpdateAllOptionsValid()
 {
 	Super::UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
+void UCGMWC_SpawnArea::UpdateOptionsFromConfig()
 {
 	UpdateValueIfDifferent(ComboBoxOption_BoundsScalingPolicy,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.BoundsScalingPolicy));
@@ -176,7 +176,7 @@ void UCustomGameModesWidget_SpawnArea::UpdateOptionsFromConfig()
 	UpdateBrushColors();
 }
 
-void UCustomGameModesWidget_SpawnArea::SetupWarningTooltipCallbacks()
+void UCGMWC_SpawnArea::SetupWarningTooltipCallbacks()
 {
 	SliderTextBoxOption_NumHorizontalGridTargets->AddDynamicWarningTooltipData(
 		FTooltipData("Invalid_Grid_NumHorizontalTargets", ETooltipImageType::Warning),
@@ -220,7 +220,7 @@ void UCustomGameModesWidget_SpawnArea::SetupWarningTooltipCallbacks()
 	});
 }
 
-void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
+void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
 	const ETargetDistributionPolicy& InTargetDistributionPolicy)
 {
 	if (InTargetDistributionPolicy == ETargetDistributionPolicy::Grid)
@@ -260,7 +260,7 @@ void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_TargetDistribution
 	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
 }
 
-void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_BoundsScalingPolicy(
+void UCGMWC_SpawnArea::UpdateDependentOptions_BoundsScalingPolicy(
 	const EBoundsScalingPolicy& InBoundsScalingPolicy)
 {
 	if (InBoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
@@ -285,7 +285,7 @@ void UCustomGameModesWidget_SpawnArea::UpdateDependentOptions_BoundsScalingPolic
 	}
 }
 
-void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget,
+void UCGMWC_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget,
 	const float Value)
 {
 	if (Widget == SliderTextBoxOption_NumHorizontalGridTargets)
@@ -353,62 +353,53 @@ void UCustomGameModesWidget_SpawnArea::OnSliderTextBoxValueChanged(USliderTextBo
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected,
+void UCGMWC_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
-	{
-		return;
-	}
-
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
+	
 	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0]);
 	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
+void UCGMWC_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
-	{
-		return;
-	}
-
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
+	
 	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(Selected[0]);
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
 }
 
-void UCustomGameModesWidget_SpawnArea::OnSelectionChanged_DynamicBoundsScalingPolicy(const TArray<FString>& Selected,
+void UCGMWC_SpawnArea::OnSelectionChanged_DynamicBoundsScalingPolicy(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
-	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() < 1)
-	{
-		return;
-	}
-
+	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() < 1) return;
+	
 	BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy = GetEnumArrayFromStringArray<
 		EDynamicBoundsScalingPolicy>(Selected);
 	UpdateAllOptionsValid();
 }
 
-FString UCustomGameModesWidget_SpawnArea::GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(
+FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(
 	const FString& EnumString)
 {
 	const EBoundsScalingPolicy EnumValue = GetEnumFromString<EBoundsScalingPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
-FString UCustomGameModesWidget_SpawnArea::GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(
+FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(
 	const FString& EnumString)
 {
 	const ETargetDistributionPolicy EnumValue = GetEnumFromString<ETargetDistributionPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
-FString UCustomGameModesWidget_SpawnArea::GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy(
+FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy(
 	const FString& EnumString)
 {
 	const EDynamicBoundsScalingPolicy EnumValue = GetEnumFromString<EDynamicBoundsScalingPolicy>(EnumString);

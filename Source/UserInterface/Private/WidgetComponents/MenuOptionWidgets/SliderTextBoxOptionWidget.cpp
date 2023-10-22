@@ -24,6 +24,11 @@ void USliderTextBoxOptionWidget::SetStyling()
 	}
 }
 
+void USliderTextBoxOptionWidget::SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState)
+{
+	Super::SetMenuOptionEnabledState(EnabledState);
+}
+
 void USliderTextBoxOptionWidget::OnSliderChanged_Slider(const float Value)
 {
 	const float ClampedValue = IBSWidgetInterface::OnSliderChanged(Value, EditableTextBox, GridSnapSize);

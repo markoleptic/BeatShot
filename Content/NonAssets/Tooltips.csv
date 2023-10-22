@@ -5,18 +5,17 @@ BaseGameMode,"The gamemode to base the custom game mode off of. For example, if 
 BoundsScalingPolicy,"How to change the vertical and horizontal spread of the spawn area, or not at all."
 BoundsScalingPolicy_Dynamic,The vertical and horizontal spread of the spawn area grow larget based on consecutive targets hit.
 BoundsScalingPolicy_Static,The vertical and horizontal spread of the spawn area will not change.
-ConsecutiveChargeScaleMultiplier,How much to shrink the target after being deactivated. This number is multiplied by the target's scale prior to the target deactivating.
-ConsecutiveTargetScalePolicy,How to change the target scale between consecutively spawned targets.
-ConsecutiveTargetScalePolicy_Random,The starting scale/size of the target will be chosen randomly between min and max target scale.
-ConsecutiveTargetScalePolicy_SkillBased,"The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit."
-ConsecutiveTargetScalePolicy_Static,The starting scale/size of the target will remain constant throughout the game mode.
+ConsecutiveChargeScaleMultiplier,How much to shrink the target after being deactivated. This number is multiplied by the target's size prior to the target deactivating.
+ConsecutiveTargetScalePolicy,How to change the target size between consecutively spawned targets.
+ConsecutiveTargetScalePolicy_Random,The starting size of the target will be chosen randomly between min and max target size.
+ConsecutiveTargetScalePolicy_SkillBased,"The starting size of the target will gradually shrink from max to min target size, based on consecutive targets hit."
+ConsecutiveTargetScalePolicy_Static,The starting size of the target will remain constant throughout the game mode.
 NewCustomGameModeName,"The name to save a new custom game mode as. If it already exists, you will be asked if you want to overwrite it."
 CustomGameModeName,"The name to save a new custom game mode as. If it is the same as an existing, you will be asked if you want to overwrite it."
 EnableAI,"If checked, the game will spawn targets according to reinforcment learning algorithms. This should expose you to your weaknesses more often."
 Epsilon,"The exploration factor represents how willing the game mode is to introduce targets in unfamiliar places. Boosting the exploration factor increases the chances of selecting random locations, while lowering it prefers choosing spots where your accuracy tends to be lower."
 ExpirationHealthPenalty,Amount of health to take away from the target if its lifetime expires. A hit target takes 100 damage by default.
 FloorDistance,Distance from floor to bottom of the spawn area.
-MoveTargetsForward,"If checked, the targets will move forward towards the player by ForwardDistance over the maximum target lifespan."
 ForwardSpread,The distance targets are allowed to move forward. This only has an effect if the Moving Target Direction Mode is set to Any or Forward Only.
 GameModeDifficulty,"Useful for seeing what settings the default game modes use, but custom game modes have no difficulty by default."
 GameModeTemplate,Select a preset or custom game mode to populate all options. You can edit custom game modes after selecting them.
@@ -24,36 +23,34 @@ Gamma,"The discount factor influences how much your past performance matters. Wh
 Grid_HorizontalSpacingSuggest,Horizontal Spacing to <=
 Grid_NumHorizontalSuggest,Number of Horizontal Targets <=
 Grid_NumVerticalSuggest,Number of Vertical Targets to <=
-Grid_ScaleSuggest,Maximum Target Scale to <=
+Grid_ScaleSuggest,Maximum Target Size to <=
 Grid_SuggestStart,Not enough space! Change one or more of the following:
 Grid_VerticalSpacingSuggest,Vertical Spacing to <=
 BeatGridAdjacentOnly,"By default, adjacent-only will only activate a target that was adjacent/beside a previously activated target. Completely random will choose a target in the grid at random."
 BeatGridEvenSpacing,Evenly distributes the targets so that the horizontal and vertical distance between targets is the same.
 GridNumTargets,The number of targets that are spawned at the beginning.
-InfiniteLifespan,The target will remain activated until a Target Deactivation Condition is met.
+InfiniteLifespan,The target will remain activated until a Deactivation Condition is met.
 Lifespan,The length of time that a target is activated.
 MaxHealth,"Max health of the target. Hit targets take 100 damage, so increase this value if you want targets to survive more than one hit."
-MaxNumRecentTargets,"How many recent targets to keep in memory, if using Num Targets Based RecentMemoryPolicy."
+MaxNumRecentTargets,How many recent targets to keep in memory.
 MinDistance,The minimum distance between the edges of targets. Choosing a high value can cause the game to skip target spawns if it doesn't find room for it.
-MoveTargets,Whether or not the targets ever move.
-NumCharges,How many charges or lives each target has before fully dissipating.
 NumUpfrontTargetsToSpawn,How many targets to spawn before the game mode begins.
 PlaybackAudio,"If checked, the audio from the Input Audio Device will playback to the Output Audio Device. Check  this box if you aren't routing your Input Audio Device to your desktop sound."
-RecentTargetMemoryPolicy,"Determines when to remove targets from recent memory, allowing targets to spawn in that location again."
+RecentTargetMemoryPolicy,"Determines how many or how long to remember targets, preventing spawning and activation in these locations."
 RecentTargetMemoryPolicy_CustomTimeBased,"Uses a specified time to remove recent targets, starting after the target has been destroyed or deactivated."
 RecentTargetMemoryPolicy_None,Does not remember any recent targets.
 RecentTargetMemoryPolicy_NumTargetsBased,Removes recent targets only when the number of recent targets exceeds specified capacity.
 RecentTargetMemoryPolicy_UseTargetSpawnCD,Removes a recent target after TargetSpawnCD length of time has passed since the target has been destroyed or deactivated.
-RecentTargetTimeLength,"Length of time to keep targets flags as recent, if using Custom Time Based RecentMemoryPolicy."
+RecentTargetTimeLength,Length of time to remember a target.
 SpawnAtOriginWheneverPossible,Whether or not to spawn at the origin (center) if it isn't blocked by a recent target whenever possible.
 SpawnBeatDelay,Time between initial activation of the target (white) and the beat (bright green). This is basically anticipated reaction time.
-SpawnEveryOtherTargetInCenter,Whether or not spawn every other target at the origin (center).
+SpawnEveryOtherTargetInCenter,Whether or not to force spawn every other target at the origin (center).
 TargetActivationResponses,"What does the target do when its activated: apply immunity, change direction, etc."
 TargetActivationResponse_AddImmunity,Immunity is granted to the target.
 TargetActivationResponse_ChangeDirection,The direction of the target is changed when activated. Has no effect if the target has no velocity.
-TargetActivationResponse_ApplyConsecutiveTargetScale,"Does the same thing as the Consecutive Target Scale, but instead applies when the target is activated."
-TargetActivationResponse_ApplyLifetimeTargetScaling,Changes the target scale over its lifetime. It starts with the scale it was activated with and ends with that scale multiplied by the Lifetime Target Scaling Multiplier.
-TargetActivationResponse_ChangeVelocity,The velocity of the target is changed to Activated Target Velocity.
+TargetActivationResponse_ApplyConsecutiveTargetScale,"Does the same thing as the Consecutive Target Size, but instead applies when the target is activated."
+TargetActivationResponse_ApplyLifetimeTargetScaling,Changes the target size over its lifetime. It starts with the size it was activated with and ends with that size multiplied by the Lifetime Sizing Multiplier.
+TargetActivationResponse_ChangeVelocity,The velocity of the target is changed to Activated Velocity.
 TargetActivationResponse_None,
 TargetActivationResponse_RemoveImmunity,Immunity is removed from the target and the target becomes damageable if not already.
 TargetActivationResponse_ToggleImmunity,"Immunity is added or removed from the target, depending on its existing state."
@@ -74,7 +71,7 @@ TargetDeactivationCondition_Persistant,"Targets are never deactivated, even if t
 TargetDeactivationResponses,What does the target do when its deactivated?
 TargetDeactivationResponse_AddImmunity,Immunity is granted to the target.
 TargetDeactivationResponse_ChangeDirection,"If a moving target, the direction is changed."
-TargetDeactivationResponse_ApplyDeactivatedTargetScaleMultiplier,Changes the target scale upon deactivation. It multiplies the Deactivated Target Scale Multiplier by the scale it was activated with.
+TargetDeactivationResponse_ApplyDeactivatedTargetScaleMultiplier,Changes the target size upon deactivation. It multiplies the Deactivated Size Multiplier by the size it was activated with.
 TargetDeactivationResponse_ChangeVelocity,"If a moving target, the velocity of the target is changed."
 TargetDeactivationResponse_Destroy,Destroy the target permanently.
 TargetDeactivationResponse_HideTarget,Temporarily hide the target until reactivated. Useful for hiding targets in modes that spawn targets upfront.
@@ -84,11 +81,11 @@ TargetDeactivationResponse_RemoveImmunity,Immunity is removed from the target. T
 TargetDeactivationResponse_ResetColorToInactiveColor,Resets the color of the target to the inactive color.
 TargetDeactivationResponse_ResetColorToStartColor,Resets the color of the target to the inactive color.
 TargetDeactivationResponse_ResetPositionToSpawnedPosition,Resets the target position to the position it was spawned at.
-TargetDeactivationResponse_ResetScaleToActivatedScale,Resets the scale of the target to the scale it was activated with.
+TargetDeactivationResponse_ResetScaleToActivatedScale,Resets the size of the target to the size it was activated with.
 TargetDeactivationResponse_ResetPositionToActivatedPosition,Resets the position of the target to the position it was activated with.
-TargetDeactivationResponse_ResetScaleToSpawnedScale,Resets the scale of the target to the scale it was spawned with.
-TargetDeactivationResponse_ShrinkQuickGrowSlow,Shrinks the target and slowly returns it to the scale it was activated with. Used in BeatGrid.
-TargetDeactivationResponse_ChangeVelocity,The velocity of the target is changed to Deactivated Target Velocity.
+TargetDeactivationResponse_ResetScaleToSpawnedScale,Resets the size of the target to the size it was spawned with.
+TargetDeactivationResponse_ShrinkQuickGrowSlow,Shrinks the target and slowly returns it to the size it was activated with. Used in BeatGrid.
+TargetDeactivationResponse_ChangeVelocity,The velocity of the target is changed to Deactivated Velocity.
 TargetDeactivationResponse_ChangeDirection,The direction of the target is changed when deactivated. Has no effect if the target has no velocity.
 TargetDeactivationResponse_ToggleImmunity,"Immunity is added or removed from the target, depending on its existing state."
 TargetDestructionConditions,Each represents one way that a target can be destroyed.
@@ -122,14 +119,14 @@ MovingTargetDirectionMode_ForwardOnly,"Restrict target movement to only forward,
 MovingTargetDirectionMode_Any,Move targets in any direction.
 HorizontalGridSpacing,The horizontal spacing between targets (from edge to edge)
 VerticalGridSpacing,The vertical spacing between targets (from edge to edge)
-HorizontalSpread,The width of the area where targets can spawn. Maximum width if using Dynamic Bounds Scaling.
-VerticalSpread,The height of the area where targets can spawn. Maximum height if using Dynamic Bounds Scaling.
-MinTargetScale,The minimum scale/size that a target is spawned with.
-MaxTargetScale,The maximum scale/size that a target is spawned with.
-MinTargetSpeed,"The minimum velocity of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
-MaxTargetSpeed,"The maximum velocity of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as a Target Activation or Deactivation Response to actually move."
+HorizontalSpread,The width of the area where targets can spawn. Maximum width if using Dynamic Spread Scaling.
+VerticalSpread,The height of the area where targets can spawn. Maximum height if using Dynamic Spread Scaling.
+MinTargetScale,The minimum size that a target is spawned with.
+MaxTargetScale,The maximum size that a target is spawned with.
+MinTargetSpeed,"The minimum velocity of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as an Activation or Deactivation Response to actually move."
+MaxTargetSpeed,"The maximum velocity of a moving target. Targets must have ""Change Direction"" or ""Change Velocity"" set as an Activation or Deactivation Response to actually move."
 UseBatchSpawning,"If checked, targets will not be spawned until the previous batch of targets have all been activated and deactivated."
-AllowSpawnWithoutActivation,"If checked, allows targets to be spawned without immediate activation. Usually when finding the next location to activate a target, only activated or recent targets are considered invalid places. Enabling this setting also considers deactivated targets as invalid places. If used in combination with Batch Spawning, this can allow multiple targets to spawn at once while each is activated according to Target Activation settings."
+AllowSpawnWithoutActivation,"If checked, allows targets to be spawned without immediate activation. Usually when finding the next location to activate a target, only activated or recent targets are considered invalid places. Enabling this setting also considers deactivated targets as invalid places. If used in combination with Batch Spawning, this can allow multiple targets to spawn at once while each is activated according to Activation settings."
 StreamlineReflexMode_Disabled,Low Latency mode is disabled.
 StreamlineReflexMode_Enabled,Low Latency mode is enabled and optimizing system latency.
 StreamlineReflexMode_EnabledPlusBoost,"Low Latency mode is enabled and optimizing system latency. In Boost mode, NVIDIA Reflex will attempt to optimize latency in CPU bound cases as well. This can slightly increase GPU power draw."
@@ -150,35 +147,34 @@ Reflex,NVIDIA Reflex reduces system latency and increases PC responsiveness.
 NIS,NVIDIA Image Scaling boosts frame rates using GPU scaling and sharpening.
 UseGameModeTemplate,Start from an existing preset or custom game mode. You can edit custom game modes by selecting them.
 ConstantNumTargetsToActivateAtOnce,"If checked, the same number of targets will activate at one time."
-LifetimeTargetScaleMultiplier,The number to multiply the activated target scale by. The target begins with the scale it was activated with and ends with the product.
-DeactivatedTargetScaleMultiplier,"The number to multiply the activated target scale with, upon deactivation."
+LifetimeTargetScaleMultiplier,The number to multiply the activated target size by. The target begins with the size it was activated with and ends with the product.
+DeactivatedTargetScaleMultiplier,"The number to multiply the activated target size with, upon deactivation."
 InfiniteTargetHealth,"If checked, the targets will have unlimited health."
-TargetScale,The scale/size targets are spawned with.
-ApplyVelocityWhenSpawned,"If checked, the Spawned Target Velocity is applied to targets when spawned."
-ConstantSpawnedTargetVelocity,"If checked, the Spawned Target Velocity will always be the same."
+TargetScale,The size targets are spawned with.
+ConstantSpawnedTargetVelocity,"If checked, the Spawned Velocity will always be the same."
 SpawnedTargetVelocity,The velocity/speed that is applied to targets when spawned.
 MinSpawnedTargetVelocity,The minimum velocity/speed that is applied to targets when spawned.
 MaxSpawnedTargetVelocity,The maximum velocity/speed that is applied to targets when spawned.
-ConstantActivatedTargetVelocity,"If checked, the Activated Target Velocity will always be the same."
+ConstantActivatedTargetVelocity,"If checked, the Activated Velocity will always be the same."
 ActivatedTargetVelocity,The velocity/speed that is applied to targets when activated.
 MinActivatedTargetVelocity,The minimum velocity/speed that is applied to targets when activated.
 MaxActivatedTargetVelocity,The maximum velocity/speed that is applied to targets when activated.
-ConstantDeactivatedTargetVelocity,"If checked, the Deactivated Target Velocity will always be the same."
+ConstantDeactivatedTargetVelocity,"If checked, the Deactivated Velocity will always be the same."
 DeactivatedTargetVelocity,The velocity/speed that is applied to targets when deactivated.
 MinDeactivatedTargetVelocity,The minimum velocity/speed that is applied to targets when deactivated.
 MaxDeactivatedTargetVelocity,The maximum velocity/speed that is applied to targets when deactivated.
 Invalid_Grid_AI_NumTargets,The number of horizontal and vertical grid targets must be in increments of 5 for AI to properly function.
 Invalid_Grid_NumHorizontalTargets,The number of horizontal targets is too large to fit all targets within the spawn area.
 Invalid_Grid_NumVerticalTargets,The number of vertical targets is too large to fit all targets within the spawn area.
-Invalid_Grid_MaxSpawnedTargetScale,The max target spawned scale is too large too fit all targets within the spawn area.
+Invalid_Grid_MaxSpawnedTargetScale,The max target spawned size is too large too fit all targets within the spawn area.
 Invalid_Grid_HorizontalSpacing,The horizontal spacing is too large to fit all targets within the spawn area.
 Invalid_Grid_VerticalSpacing,The vertical spacing is too large to fit all targets within the spawn area.
-Invalid_Grid_NumHorizontalTargets_Fallback,"Try lowering this value, the horizontal spacing, or the max spawned target scale."
-Invalid_Grid_NumVerticalTargets_Fallback,"Try lowering this value, the vertical spacing, or the max spawned target scale."
+Invalid_Grid_NumHorizontalTargets_Fallback,"Try lowering this value, the horizontal spacing, or the max spawned target size."
+Invalid_Grid_NumVerticalTargets_Fallback,"Try lowering this value, the vertical spacing, or the max spawned target size."
 Invalid_Grid_MaxSpawnedTargetScale_Fallback,Try lowering this value or any grid settings with a warning beside them.
-Invalid_Grid_HorizontalSpacing_Fallback,"Try lowering this value, the number of horizontal grid targets, or the max spawned target scale."
-Invalid_Grid_VerticalSpacing_Fallback,"Try lowering this value, the number of vertical grid targets, or the max spawned target scale."
-Invalid_HeadshotHeightOnly_AI,AI cannot be used with the Target Distribution Policy Headshot Height Only.
+Invalid_Grid_HorizontalSpacing_Fallback,"Try lowering this value, the number of horizontal grid targets, or the max spawned target size."
+Invalid_Grid_VerticalSpacing_Fallback,"Try lowering this value, the number of vertical grid targets, or the max spawned target size."
+Invalid_HeadshotHeightOnly_AI,AI cannot be used with the Target Distribution Headshot Height Only.
 NumHorizontalGridTargets,The number of horizontal targets in the grid.
 NumVerticalGridTargets,The number of vertical targets in the grid.
 Invalid_Velocity_MTDM_None,Change the Moving Target Direction Mode to something other than None for velocity changing to have an effect. Moving Target Direction Mode is in the General section.
@@ -198,17 +194,17 @@ DynamicBoundsScaling_MinForwardSpread,The minimum distance targets are allowed t
 DynamicBoundsScalingPolicy_Horizontal,"If selected, the horizontal spread of the spawn area will grow from minimum horizontal spread (starting at StartThreshold) to horizontal spread (at EndThreshold)."
 DynamicBoundsScalingPolicy_Vertical,"If selected, the vertical spread will grow from min vertical spread (starting at StartThreshold) to vertical spread (at EndThreshold)."
 DynamicBoundsScalingPolicy_Forward,"If selected, the forward spread of the spawn area will grow from minimum forward spread (starting at StartThreshold) to forward spread (at EndThreshold)."
-DynamicBoundsScalingPolicy,"Which direction(s) to dynamically change for Dynamic Bounds Scaling. If a direction is not selected, it will remain at its minimum spread."
+DynamicBoundsScalingPolicy,"Which direction(s) to dynamically change for Dynamic Spread. If a direction is not selected, it will remain at its minimum spread."
 DynamicBoundsScaling_DecrementAmount,"Instead of resetting consecutively hit targets to zero each time a target is missed, this value is subtracted from it."
-DynamicTargetScaling_StartThreshold,The number of consecutively destroyed targets required to begin decreasing the Max Target Scale to the Min Target Scale.
-DynamicTargetScaling_EndThreshold,The number of consecutively destroyed targets required to reach the Min Target Scale.
+DynamicTargetScaling_StartThreshold,The number of consecutively destroyed targets required to begin decreasing the Max Target Size to the Min Target Size.
+DynamicTargetScaling_EndThreshold,The number of consecutively destroyed targets required to reach the Min Target Size.
 DynamicTargetScaling_DecrementAmount,"Instead of resetting consecutively hit targets to zero each time a target is missed, this value is subtracted from it."
 ReinforcementLearningHyperParameterMode_Custom,Tune the hyper-parameters of the reinforcment learning agent yourself.
 ReinforcementLearningHyperParameterMode_Auto,The game will automatically adjust the hyper-parameters of the reinforcment learning agent as data is gathered.
 Video_ResolutionScale,Requires Fullscreen and DLSS & NIS must be off. You might need to restart your game for the changes to apply.
 HealthLossForDeactivation,"The amount of health loss required to trigger a deactivation. If the Target Max Health is 300 and this value is set to 100, it will deactivate when it reaches 200, 100, and 0 health."
 HyperParameterMode,The mode that defines the hyper parameters for the reinforcement learning agent. Auto will automatically adjust the values as training data is accumulated.
-AllowActivationWhileActivated,Allows some Target Activation Responses (Velocity/Direction) to trigger even while a target is already activated.
+AllowActivationWhileActivated,Allows some Activation Responses (Velocity/Direction) to trigger even while a target is already activated.
 SM_StartTargetColor,The color of a target directly after being activated with a non-infinite lifespan.
 SM_PeakTargetColor,"The color of a target at SpawnBeatDelay time, after being activated with a non-infinite lifespan."
 SM_EndTargetColor,"The color of a target at the end of its lifespan, after being activated with a non-infinite lifespan."
@@ -217,3 +213,18 @@ SM_NotTakingTrackingDamageColor,The color of an activated tracking target while 
 SM_InactiveColor,The color of a deactivated target.
 SM_UseSeparateOutlineColor,"Whether or not to use a separate outline color. If false, a slightly darker version of main target color is used."
 SM_OutlineColor,The color to apply to the outline of any target.
+RuntimeTargetSpawningLocationSelectionMode_Random,Randomly distributes targets in the grid.
+RuntimeTargetSpawningLocationSelectionMode_Bordering,Arrange targets beside previously activated targets.
+RuntimeTargetSpawningLocationSelectionMode_RandomGridBlock,Randomly arrange the targets in a block as tightly as possible.
+RuntimeTargetSpawningLocationSelectionMode_NearbyGridBlock,"Randomly arrange the targets in a block as tightly as possible, beside the previous block if possible."
+RuntimeTargetSpawningLocationSelectionMode_RandomVertical,Arrange the targets in a random vertical line.
+RuntimeTargetSpawningLocationSelectionMode_RandomHorizontal,Arrange the targets in a random horizontal line.
+Invalid_SpawnEveryOtherTargetInCenter_BatchSpawning,This option is not available when Batch Spawning is enabled.
+Invalid_SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation,This option is not available when Allow Spawn Without Activation is enabled.
+Invalid_SpawnEveryOtherTargetInCenter_BatchSpawning2,This option is not available when Force Every Other Target In Center is enabled.
+Invalid_SpawnEveryOtherTargetInCenter_AllowSpawnWithoutActivation2,This option is not available when Force Every Other Target In Center is enabled.
+RuntimeTargetSpawningLocationSelectionMode,How to choose locations to spawn targets.
+TargetSpawnResponse_ChangeDirection,The direction of the target is changed when activated. Has no effect if the target has no velocity.
+TargetSpawnResponse_ChangeVelocity,The velocity of the target is set to the Spawned Velocity.
+TargetSpawnResponse_AddImmunity,Immunity is granted to the target.
+TargetSpawnResponses,What does the target do when it is spawned?

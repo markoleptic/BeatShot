@@ -81,14 +81,11 @@ GM_BeatGridSpecific,BeatGrid specific
 GM_BeatTrack,Beat Track
 GM_BeatTrack_Info,"Only one target is spawned, tracking style."
 GM_BeatTrackSpecific,BeatTrack specific
-GM_BoundsScalingPolicy,Bounds Scaling Policy
+GM_BoundsScalingPolicy,Spread Scaling
 GM_CompletelyRandomTargets,Completely Random Targets (vs Only Adjacent Targets)
-GM_ConsecutiveChargeScaleMultiplier,Deactivated Target Scale Multiplier
-GM_ConsecutiveTargetScalePolicy,Consecutive Target Scale Policy
-GM_ConstantTargetSize,Constant Target Scale
-GM_ConstantTrackingSpeed,Constant Tracking Speed
-GM_ContinuouslyActivate,Continuously Activate
-GM_ContinuouslySpawn,Continuously Spawn
+GM_ConsecutiveChargeScaleMultiplier,Deactivated Size Multiplier
+GM_ConsecutiveTargetScalePolicy,Consecutive Target Sizing
+GM_ConstantTargetSize,Constant Target Size
 GM_CustomGameModeName,New Custom Game Mode Name
 GM_CustomizeSelected,Customize Selected
 GM_Difficulty_Death,Death
@@ -96,10 +93,9 @@ GM_Difficulty_Hard,Hard
 GM_Difficulty_Normal,Normal
 GM_DifficultySelectTitle,Select a Difficulty
 GM_DynamicSpread,Dynamic
-GM_EvenSpacing,Even Vertical/Horizontal Spacing
 GM_ExpirationHealthPenalty,Expiration Health Penalty
-GM_FloorDistance,Floor Distance
-GM_ForwardSpread,Forward Spread (Max if Dynamic)
+GM_FloorDistance,Vertical Offset
+GM_ForwardSpread,Forward Spread
 GM_GameModeDifficulty,Game Mode Difficulty
 GM_GameModeRemovedText,Game mode removed
 GM_GameModeSavedText,saved
@@ -107,59 +103,55 @@ GM_GameModeTemplate,Game Mode Template
 GM_General,General
 GM_General_Info,"Select a template to see default values for different game modes. You can save custom game modes based on any game mode templates, and everything can be customized."
 GM_HorizontalGridSpacing,Horizontal Spacing
-GM_HorizontalSpread,Horizontal Spread (Max if Dynamic)
+GM_HorizontalSpread,Horizontal Spread
 GM_MaxHealth,Max Target Health
 GM_MaximumTargetLifespan,Target Lifespan
-GM_MaxNumActivatedTargetsAtOnce,Maximum Allowed Activated Targets at Once
+GM_MaxNumActivatedTargetsAtOnce,Max Activated Targets
 GM_MaxNumRecentTargets,Max Number of Recent Targets
-GM_MaxNumTargetsAtOnce,Maximum Allowed Spawned Targets at Once
-GM_MaxNumTargetsToActivateAtOnce,Max Number of Targets to Activate at Once
-GM_MaxTargetScale,Max Target Scale
-GM_MaxTrackingSpeed,Max Tracking Speed
-GM_MinDistanceBetweenTargets,Minimum Distance Between Targets
-GM_MinNumTargetsToActivateAtOnce,Min Number of Targets to Activate at Once
-GM_MinTargetScale,Min Target Scale
-GM_MoveTargetsForward,Move Targets Forward
+GM_MaxNumTargetsAtOnce,Max Spawned Targets
+GM_MaxNumTargetsToActivateAtOnce,Max to Activate
+GM_MaxTargetScale,Max Target Size
+GM_MinDistanceBetweenTargets,Min Target Distance
+GM_MinNumTargetsToActivateAtOnce,Min to Activate
+GM_MinTargetScale,Min Target Size
 GM_MovingTargetDirectionMode,Moving Target Direction Mode
 GM_MultiBeat,Multi Beat
 GM_MultiBeat_Info,Spawns targets continuously.
 GM_NarrowSpread,Narrow
 GM_NumberOfTargets,Number of Targets
-GM_NumCharges,Number of Charges per Target
-GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn at Runtime
-GM_NumUpfrontTargetsToSpawn,Number of Targets to Spawn Upfront
+GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn
+GM_NumUpfrontTargetsToSpawn,Number of Targets to Spawn
 GM_OverwriteCancel,Cancel
 GM_OverwriteConfirm,Confirm
 GM_OverwritePopupTitle,Overwrite Existing Game Mode?
 GM_PlayFromDefault,Play
-GM_RecentTargetMemoryPolicy,Recent Target Memory Policy
+GM_RecentTargetMemoryPolicy,Recent Target Memory
 GM_RecentTargetTimeLength,Recent Target Time Length
 GM_RemoveAllCustom,Remove All Custom
 GM_RemoveCustom,Remove Custom
-GM_ResetPositionOnDeactivation,Reset Position On Deactivation
 GM_SaveAndStartGame,Save and Start Game
 GM_SaveCustom,Save Custom
 GM_SingleBeat,Single Beat
 GM_SingleBeat_Info,One target at a time.
 GM_Sizing,Target Sizing
-GM_SpawnAtOriginWheneverPossible,Spawn In Center Whenever Possible
+GM_SpawnAtOriginWheneverPossible,Spawn In Center When Possible
 GM_SpawnBeatDelay,Spawn Beat Delay
-GM_SpawnEveryOtherTargetInCenter,Spawn Every Other Target In Center
+GM_SpawnEveryOtherTargetInCenter,Force Every Other Target In Center
 GM_Spread,Target Spread
 GM_Standard_Info,Hop right into a session by selecting a game mode and and difficulty.
 GM_StartCustom,Start Custom
 GM_StartWithoutSaving,Start Without Saving
-GM_TargetActivationResponses,Target Activation Responses
-GM_TargetActivationSelectionPolicy,Target Activation Selection Policy
+GM_TargetActivationResponses,Activation Responses
+GM_TargetActivationSelectionPolicy,Activation Selection
 GM_TargetDamageType,Damage Type
-GM_TargetDeactivationConditions,Target Deactivation Conditions
-GM_TargetDeactivationResponses,Target Deactivation Responses
-GM_TargetDestructionConditions,Target Destruction Conditions
-GM_TargetDistributionPolicy,Target Distribution Policy
+GM_TargetDeactivationConditions,Deactivation Conditions
+GM_TargetDeactivationResponses,Deactivation Responses
+GM_TargetDestructionConditions,Destruction Conditions
+GM_TargetDistributionPolicy,Target Distribution
 GM_TargetSpawnCooldown,Target Activation/Spawn Cooldown
-GM_TargetSpawningPolicy,Target Spawning Policy
+GM_TargetSpawningPolicy,Target Spawning Mode
 GM_VerticalGridSpacing,Vertical Spacing
-GM_VerticalSpread,Vertical Spread (Max if Dynamic)
+GM_VerticalSpread,Vertical Spread
 HUD_Accuracy,Accuracy:
 HUD_HighScore,High Score:
 HUD_Score,Score:
@@ -330,33 +322,33 @@ Video_Sharpness,Sharpness
 Video_NISEnabled,NVIDIA Image Scaling
 Video_ResolutionScale,Resolution Scale
 GM_UseGameModeTemplate,Use Game Mode Template
-GM_LifetimeTargetScaleMultiplier,Lifetime Target Scaling Multiplier
-GM_ConstantNumTargetsToActivateAtOnce,Constant Number of Targets to Activate
-GM_NumTargetsToActivateAtOnce,Number of Targets to Activate At Once
+GM_LifetimeTargetScaleMultiplier,Lifetime Size Multiplier
+GM_ConstantNumTargetsToActivateAtOnce,Constant Number to Activate
+GM_NumTargetsToActivateAtOnce,Number to Activate
 GM_InfiniteTargetHealth,Infinite Target Health
-GM_TargetScale,Target Scale
+GM_TargetScale,Target Size
 GM_ApplyVelocityWhenSpawned,Apply Velocity On Spawn
-GM_ConstantSpawnedTargetVelocity,Constant Spawned Target Velocity
-GM_SpawnedTargetVelocity,Spawned Target Velocity
-GM_MinSpawnedTargetVelocity,Min Spawned Target Velocity
-GM_MaxSpawnedTargetVelocity,Max Spawned Target Velocity
-GM_ConstantActivatedTargetVelocity,Constant Activated Target Velocity
-GM_ActivatedTargetVelocity,Activated Target Velocity
-GM_MinActivatedTargetVelocity,Min Activated Target Velocity
-GM_MaxActivatedTargetVelocity,Max Activated Target Velocity
-GM_ConstantDeactivatedTargetVelocity,Constant Deactivated Target Velocity
-GM_DeactivatedTargetVelocity,Deactivated Target Velocity
-GM_MinDeactivatedTargetVelocity,Min Deactivated Target Velocity
-GM_MaxDeactivatedTargetVelocity,Max Deactivated Target Velocity
+GM_ConstantSpawnedTargetVelocity,Constant Spawned Velocity
+GM_SpawnedTargetVelocity,Spawned Velocity
+GM_MinSpawnedTargetVelocity,Min Spawned Velocity
+GM_MaxSpawnedTargetVelocity,Max Spawned Velocity
+GM_ConstantActivatedTargetVelocity,Constant Activated Velocity
+GM_ActivatedTargetVelocity,Activated Velocity
+GM_MinActivatedTargetVelocity,Min Activated Velocity
+GM_MaxActivatedTargetVelocity,Max Activated Velocity
+GM_ConstantDeactivatedTargetVelocity,Constant Deactivated Velocity
+GM_DeactivatedTargetVelocity,Deactivated Velocity
+GM_MinDeactivatedTargetVelocity,Min Deactivated Velocity
+GM_MaxDeactivatedTargetVelocity,Max Deactivated Velocity
 Video_EnableHDR,High Dynamic Range (HDR)
 Video_HDRNits,Display Nits
 Video_Brightness,Brightness
 GM_Dynamic_StartThreshold,Start Threshold
 GM_Dynamic_EndThreshold,End Threshold
 GM_Dynamic_DecrementAmount,Decrement Amount
-GM_Dynamic_MinHorizontalSpread,Minimum Horizontal Spread
-GM_Dynamic_MinVerticalSpread,Minimum Vertical Spread
-GM_Dynamic_MinForwardSpread,Minimum Forward Spread
+GM_Dynamic_MinHorizontalSpread,Min Horizontal Spread
+GM_Dynamic_MinVerticalSpread,Min Vertical Spread
+GM_Dynamic_MinForwardSpread,Min Forward Spread
 GM_DynamicBoundsScalingPolicy,Directions To Change
 GM_HealthLossForDeactivation,Health Loss Required for Deactivation
 GM_AllowActivationWhileActivated,Allow Activation While Activated
@@ -380,3 +372,5 @@ CH_OutlineColor,Outline Color
 CH_ShowCrossHairDot,Show CrossHair Dot
 CH_CrossHairDotSize,Dot Size
 CH_DotColor,Dot Color
+GM_RuntimeTargetSpawningLocationSelectionMode,Spawn Selection
+GM_TargetSpawnResponses,Spawn Responses

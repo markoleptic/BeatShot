@@ -56,10 +56,16 @@ void UMenuOptionWidget::SetStyling()
 
 	if (Box_Left)
 	{
-		UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot);
-		if (BorderSlot)
+		if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Left->Slot))
 		{
-			BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftHorizontalBox);
+			BorderSlot->SetPadding(MenuOptionStyle->Padding_LeftBox);
+		}
+	}
+	if (Box_Right)
+	{
+		if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Box_Right->Slot))
+		{
+			BorderSlot->SetPadding(MenuOptionStyle->Padding_RightBox);
 		}
 	}
 	if (Box_TagsAndTooltips)
@@ -82,6 +88,21 @@ void UMenuOptionWidget::SetStyling()
 	if (Indent_Left)
 	{
 		Indent_Left->SetSize(FVector2d(IndentLevel * MenuOptionStyle->IndentAmount, 0.f));
+	}
+}
+
+void UMenuOptionWidget::SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState)
+{
+	switch (EnabledState) {
+	case EMenuOptionEnabledState::Enabled:
+		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		break;
+	case EMenuOptionEnabledState::DependentMissing:
+		SetVisibility(ESlateVisibility::Collapsed);
+		break;
+	case EMenuOptionEnabledState::Disabled:
+		SetVisibility(ESlateVisibility::Collapsed);
+		break;
 	}
 }
 

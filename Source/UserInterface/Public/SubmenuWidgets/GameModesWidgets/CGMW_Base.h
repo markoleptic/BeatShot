@@ -7,10 +7,10 @@
 #include "SaveLoadInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
-#include "CustomGameModesWidgetBase.generated.h"
+#include "CGMW_Base.generated.h"
 
-class UCustomGameModesWidgetComponent;
-class UCustomGameModesWidget_Start;
+class UCGMWC_Base;
+class UCGMWC_Start;
 
 DECLARE_MULTICAST_DELEGATE(FRequestButtonStateUpdate);
 DECLARE_MULTICAST_DELEGATE_TwoParams(FRequestGameModeTemplateUpdate, const FString& GameMode,
@@ -66,7 +66,7 @@ struct FCustomGameModeCategoryInfo
 
 /** Base class for the two types of CustomGameModesWidgets */
 UCLASS()
-class USERINTERFACE_API UCustomGameModesWidgetBase : public UUserWidget, public ISaveLoadInterface
+class USERINTERFACE_API UCGMW_Base : public UUserWidget, public ISaveLoadInterface
 {
 	GENERATED_BODY()
 
@@ -137,7 +137,7 @@ protected:
 	virtual void UpdateAllChildWidgetOptionsValid();
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	TObjectPtr<UCustomGameModesWidget_Start> Widget_Start;
+	TObjectPtr<UCGMWC_Start> Widget_Start;
 
 	UPROPERTY()
 	TObjectPtr<UBSGameModeDataAsset> GameModeDataAsset;
@@ -146,7 +146,7 @@ protected:
 	FBSConfig* BSConfig;
 
 	/** Maps each child widget to struct representing if all its custom game mode options are valid */
-	TMap<TObjectPtr<UCustomGameModesWidgetComponent>, FCustomGameModeCategoryInfo*> ChildWidgetValidityMap;
+	TMap<TObjectPtr<UCGMWC_Base>, FCustomGameModeCategoryInfo*> ChildWidgetValidityMap;
 
 	bool bIsUpdatingFromComponentRequest = false;
 	bool bContainsGameModeBreakingOption = false;

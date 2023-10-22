@@ -4,14 +4,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetComponent.h"
+#include "CGMWC_Base.h"
 #include "CGMWC_TargetScaling.generated.h"
 
-/**
- * 
- */
 UCLASS()
-class USERINTERFACE_API UCGMWC_TargetScaling : public UCustomGameModesWidgetComponent
+class USERINTERFACE_API UCGMWC_TargetScaling : public UCGMWC_Base
 {
 	GENERATED_BODY()
 	
@@ -34,19 +31,20 @@ protected:
 
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 
+	void OnMinMaxMenuOptionChanged(UConstantMinMaxMenuOptionWidget* Widget,
+		const bool bChecked, const float MinOrConstant, const float Max);
+	
 	UFUNCTION()
 	void OnSelectionChanged_ConsecutiveTargetScalePolicy(const TArray<FString>& Selected,
 		const ESelectInfo::Type SelectionType);
+	
+	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
 	
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_DeactivatedTargetScaleMultiplier;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_TargetScale;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MinTargetScale;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxTargetScale;
+	UConstantMinMaxMenuOptionWidget* MenuOption_TargetScale;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USliderTextBoxOptionWidget* SliderTextBoxOption_StartThreshold;
@@ -61,7 +59,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_ConsecutiveTargetScalePolicy;
 
-	FString GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(const FString& EnumString);
+	EConsecutiveTargetScalePolicy LastSelectedConsecutiveTargetScalePolicy = EConsecutiveTargetScalePolicy::None;
 };
 
 

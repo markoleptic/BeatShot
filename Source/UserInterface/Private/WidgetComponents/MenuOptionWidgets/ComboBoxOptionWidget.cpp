@@ -3,6 +3,7 @@
 
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "EnumTagMap.h"
+#include "GameModeCategoryTagMap.h"
 #include "WidgetComponents/Boxes/BSComboBoxEntry.h"
 #include "WidgetComponents/Boxes/BSComboBoxEntry_Tagged.h"
 #include "WidgetComponents/GameModeCategoryTagWidget.h"
@@ -15,6 +16,9 @@ void UComboBoxOptionWidget::NativeConstruct()
 	ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
 	ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
 		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBox->SetSelectionMode(SelectionMode);
+	ComboBox->SetCanSelectNone(bCanSelectNone);
+	ComboBox->SetCloseComboBoxOnSelectionChanged(bCloseComboBoxOnSelectionChanged);
 }
 
 UBSComboBoxEntry* UComboBoxOptionWidget::ConstructComboBoxEntryWidget()
@@ -53,7 +57,7 @@ FString UComboBoxOptionWidget::GetStringTableKeyFromComboBox(const UBSComboBoxSt
 
 UWidget* UComboBoxOptionWidget::AddGameModeCategoryTagWidgets(UBSComboBoxEntry_Tagged* ComboBoxEntry)
 {
-	if (GameplayTagWidgetMap.IsEmpty())
+	if (!GameModeCategoryTagMap)
 	{
 		return ComboBoxEntry;
 	}
@@ -76,23 +80,19 @@ UWidget* UComboBoxOptionWidget::AddGameModeCategoryTagWidgets(UBSComboBoxEntry_T
 
 	for (const FGameplayTag& Tag : EnumTagPair.ParentTags)
 	{
-		const TSubclassOf<UGameModeCategoryTagWidget>* SubClass = GameplayTagWidgetMap.Find(Tag);
-		if (!SubClass)
-		{
-			continue;
-		}
-		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, *SubClass);
+		const TSubclassOf<UUserWidget> SubClass = GameModeCategoryTagMap->GetWidgetByGameModeCategoryTag(Tag);
+		if (!SubClass) continue;
+		
+		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, SubClass);
 		ParentTagWidgetsToAdd.Add(TagWidget);
 	}
 
 	for (const FGameplayTag& Tag : EnumTagPair.Tags)
 	{
-		const TSubclassOf<UGameModeCategoryTagWidget>* SubClass = GameplayTagWidgetMap.Find(Tag);
-		if (!SubClass)
-		{
-			continue;
-		}
-		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, *SubClass);
+		const TSubclassOf<UUserWidget> SubClass = GameModeCategoryTagMap->GetWidgetByGameModeCategoryTag(Tag);
+		if (!SubClass) continue;
+		
+		UGameModeCategoryTagWidget* TagWidget = CreateWidget<UGameModeCategoryTagWidget>(this, SubClass);
 		TagWidgetsToAdd.Add(TagWidget);
 	}
 
@@ -114,13 +114,12 @@ void UComboBoxOptionWidget::SortAndAddOptions(TArray<FString>& InOptions)
 	}
 }
 
-void UComboBoxOptionWidget::SetGameplayTagWidgetMap(
-	const TMap<FGameplayTag, TSubclassOf<UGameModeCategoryTagWidget>>& InMap)
+void UComboBoxOptionWidget::SetGameplayTagWidgetMap(const TObjectPtr<UGameModeCategoryTagMap> InMap)
 {
-	GameplayTagWidgetMap = InMap;
+	GameModeCategoryTagMap = InMap;
 }
 
-void UComboBoxOptionWidget::SetEnumTagMap(const TObjectPtr<UEnumTagMap> InEnumTagMap)
+void UComboBoxOptionWidget::SetEnumTagMap(const TObjectPtr<UEnumTagMap> InMap)
 {
-	EnumTagMap = InEnumTagMap;
+	EnumTagMap = InMap;
 }

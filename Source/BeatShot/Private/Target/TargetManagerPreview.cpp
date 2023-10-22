@@ -11,7 +11,7 @@ ATargetManagerPreview::ATargetManagerPreview()
 }
 
 void ATargetManagerPreview::InitBoxBoundsWidget(
-	const TObjectPtr<UCustomGameModesWidget_Preview> InGameModePreviewWidget)
+	const TObjectPtr<UCGMWC_Preview> InGameModePreviewWidget)
 {
 	GameModePreviewWidget = InGameModePreviewWidget;
 }

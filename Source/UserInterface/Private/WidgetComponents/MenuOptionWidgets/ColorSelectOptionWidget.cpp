@@ -32,8 +32,8 @@ void UColorSelectOptionWidget::SetStyling()
 	if (MenuOptionStyle)
 	{
 		const FMargin NewMargin(0.f,
-			MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftHorizontalBox.Top, 0.f,
-			MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftHorizontalBox.Bottom);
+			MenuOptionStyle->Padding_DescriptionText.Top + MenuOptionStyle->Padding_LeftBox.Top, 0.f,
+			MenuOptionStyle->Padding_DescriptionText.Bottom + MenuOptionStyle->Padding_LeftBox.Bottom);
 		if (ColorAValue)
 		{
 			ColorAValue->WidgetStyle.SetFont(MenuOptionStyle->Font_EditableTextBesideSlider);

@@ -3,16 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetComponent.h"
+#include "CGMWC_Base.h"
 #include "Components/Overlay.h"
 #include "WidgetComponents/GameModePreviewWidgets/BoxBoundsWidget.h"
 #include "WidgetComponents/GameModePreviewWidgets/TargetWidget.h"
-#include "CustomGameModesWidget_Preview.generated.h"
+#include "CGMWC_Preview.generated.h"
 
 DECLARE_DELEGATE_RetVal(UTargetWidget*, FCreateTargetWidget);
 
 UCLASS()
-class USERINTERFACE_API UCustomGameModesWidget_Preview : public UCustomGameModesWidgetComponent
+class USERINTERFACE_API UCGMWC_Preview : public UCGMWC_Base
 {
 	GENERATED_BODY()
 

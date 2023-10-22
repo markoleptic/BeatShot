@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CustomGameModesWidgetComponent.h"
-#include "CustomGameModesWidget_Spawning.generated.h"
+#include "CGMWC_Base.h"
+#include "CGMWC_Spawning.generated.h"
 
 class USliderTextBoxOptionWidget;
 class UCheckBoxOptionWidget;
 class UComboBoxOptionWidget;
 
 UCLASS()
-class USERINTERFACE_API UCustomGameModesWidget_Spawning : public UCustomGameModesWidgetComponent
+class USERINTERFACE_API UCGMWC_Spawning : public UCGMWC_Base
 {
 	GENERATED_BODY()
 
@@ -23,31 +23,6 @@ protected:
 
 	void UpdateDependentOptions_TargetSpawningPolicy(const ETargetSpawningPolicy& InTargetSpawningPolicy,
 		const bool bUseBatchSpawning, const bool bAllowSpawnWithoutActivation);
-	void UpdateDependentOptions_TargetSpawnResponses(const TArray<ETargetSpawnResponse>& InTargetSpawnResponses);
-	
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UComboBoxOptionWidget* ComboBoxOption_TargetSpawnResponses;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_AllowSpawnWithoutActivation;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_BatchSpawning;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_SpawnAtOriginWheneverPossible;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	UCheckBoxOptionWidget* CheckBoxOption_SpawnEveryOtherTargetInCenter;
-
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_NumUpfrontTargetsToSpawn;
-	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
-	USliderTextBoxOptionWidget* SliderTextBoxOption_NumRuntimeTargetsToSpawn;
 	
 	UFUNCTION()
 	void OnCheckStateChanged_AllowSpawnWithoutActivation(const bool bChecked);
@@ -66,11 +41,29 @@ protected:
 	UFUNCTION()
 	void OnSelectionChanged_TargetSpawningPolicy(const TArray<FString>& Selected,
 		const ESelectInfo::Type SelectionType);
-	UFUNCTION()
-	void OnSelectionChanged_TargetSpawnResponses(const TArray<FString>& Selected,
-		const ESelectInfo::Type SelectionType);
-
+	
 	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString);
-	FString GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses(const FString& EnumString);
 	FString GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode(const FString& EnumString);
+	
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_MaxNumTargetsAtOnce;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_TargetSpawningPolicy;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_AllowSpawnWithoutActivation;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_BatchSpawning;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_SpawnAtOriginWheneverPossible;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UCheckBoxOptionWidget* CheckBoxOption_SpawnEveryOtherTargetInCenter;
+
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumUpfrontTargetsToSpawn;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	USliderTextBoxOptionWidget* SliderTextBoxOption_NumRuntimeTargetsToSpawn;
 };

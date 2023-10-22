@@ -81,6 +81,20 @@ void UBSVerticalBox::UpdateHorizontalBoxBorderColors(UBSHorizontalBox* Horizonta
 {
 	if (HorizontalBox->GetVisibility() != ESlateVisibility::Collapsed)
 	{
+		if (HorizontalBox->ShouldForceSameBorderBrushTintAsPrevious())
+		{
+			if (bLastLeftBorderDark)
+			{
+				HorizontalBox->SetLeftBorderBrushTint(Constants::DarkMenuBrushColor);
+				HorizontalBox->SetRightBorderBrushTint(Constants::LightMenuBrushColor);
+			}
+			else
+			{
+				HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);
+				HorizontalBox->SetRightBorderBrushTint(Constants::DarkMenuBrushColor);
+			}
+			return;
+		}
 		if (bLastLeftBorderDark)
 		{
 			HorizontalBox->SetLeftBorderBrushTint(Constants::LightMenuBrushColor);

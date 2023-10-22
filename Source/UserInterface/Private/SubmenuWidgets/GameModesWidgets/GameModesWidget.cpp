@@ -13,11 +13,11 @@
 #include "OverlayWidgets/PopupWidgets/AudioSelectWidget.h"
 #include "OverlayWidgets/PopupWidgets/GameModeSharingWidget.h"
 #include "WidgetComponents/SavedTextWidget.h"
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidget_CreatorView.h"
-#include "SubMenuWidgets/GameModesWidgets/CustomGameModesWidget_PropertyView.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
+#include "SubMenuWidgets/GameModesWidgets/CGMW_PropertyView.h"
 #include "WidgetComponents/Buttons/MenuButton.h"
 #include "Windows/WindowsPlatformApplicationMisc.h"
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Preview.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Preview.h"
 #include "WidgetComponents/MenuOptionWidgets/DefaultGameModeOptionWidget.h"
 
 using namespace Constants;
@@ -908,17 +908,17 @@ void UGameModesWidget::OnRequestGameModeTemplateUpdate(const FString& InGameMode
 
 void UGameModesWidget::SynchronizeStartWidgets()
 {
-	UCustomGameModesWidgetBase* From;
-	UCustomGameModesWidgetBase* To;
+	UCGMW_Base* From;
+	UCGMW_Base* To;
 	if (CustomGameModesWidget_Current == CustomGameModesWidget_CreatorView)
 	{
-		From = Cast<UCustomGameModesWidgetBase>(CustomGameModesWidget_CreatorView.Get());
-		To = Cast<UCustomGameModesWidgetBase>(CustomGameModesWidget_PropertyView.Get());
+		From = Cast<UCGMW_Base>(CustomGameModesWidget_CreatorView.Get());
+		To = Cast<UCGMW_Base>(CustomGameModesWidget_PropertyView.Get());
 	}
 	else
 	{
-		From = Cast<UCustomGameModesWidgetBase>(CustomGameModesWidget_PropertyView.Get());
-		To = Cast<UCustomGameModesWidgetBase>(CustomGameModesWidget_CreatorView.Get());
+		From = Cast<UCGMW_Base>(CustomGameModesWidget_PropertyView.Get());
+		To = Cast<UCGMW_Base>(CustomGameModesWidget_CreatorView.Get());
 	}
 
 	const FStartWidgetProperties FromProperties = From->GetStartWidgetProperties();

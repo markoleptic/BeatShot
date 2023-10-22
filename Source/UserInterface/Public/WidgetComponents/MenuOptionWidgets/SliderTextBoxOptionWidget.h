@@ -25,6 +25,8 @@ class USERINTERFACE_API USliderTextBoxOptionWidget : public UMenuOptionWidget
 	GENERATED_BODY()
 
 public:
+	virtual void SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState) override;
+	
 	/** Sets the Min and Max values of the slider and sets the grid snap size */
 	void SetValues(const float Min, const float Max, const float SnapSize);
 
@@ -54,7 +56,7 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 	virtual void SetStyling() override;
-
+	
 	UFUNCTION()
 	void OnSliderChanged_Slider(const float Value);
 	UFUNCTION()

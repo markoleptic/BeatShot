@@ -14,6 +14,10 @@ class USERINTERFACE_API UEditableTextBoxOptionWidget : public UMenuOptionWidget
 public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UEditableTextBox* EditableTextBox;
+	
+	/** The text alignment for the EditableTextBox */
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly, Category="EditableTextBoxOptionWidget")
+	TEnumAsByte<ETextJustify::Type> TextJustify_EditableTextBox = ETextJustify::Type::Left;
 
 protected:
 	virtual void SetStyling() override;

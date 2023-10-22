@@ -42,15 +42,6 @@ void UBSHorizontalBox::SetRightBorderBrushTint(const FLinearColor& Color)
 	{
 		Borders[1]->SetBrushColor(Color);
 	}
-	/*if (!RightBorder)
-	{
-		SetBorders();
-		if (!RightBorder)
-		{
-			return;
-		}
-	}
-	RightBorder->SetBrushColor(Color);*/
 }
 
 void UBSHorizontalBox::RefreshBorders()

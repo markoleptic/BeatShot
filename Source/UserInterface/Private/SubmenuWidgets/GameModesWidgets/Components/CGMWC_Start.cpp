@@ -1,7 +1,7 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
-#include "SubMenuWidgets/GameModesWidgets/Components/CustomGameModesWidget_Start.h"
+#include "SubMenuWidgets/GameModesWidgets/Components/CGMWC_Start.h"
 #include "Components/CheckBox.h"
 #include "Components/EditableTextBox.h"
 #include "WidgetComponents/Boxes/BSComboBoxString.h"
@@ -9,7 +9,7 @@
 #include "WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
 
-void UCustomGameModesWidget_Start::NativeConstruct()
+void UCGMWC_Start::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -38,12 +38,12 @@ void UCustomGameModesWidget_Start::NativeConstruct()
 	UpdateBrushColors();
 }
 
-FString UCustomGameModesWidget_Start::GetNewCustomGameModeName() const
+FString UCGMWC_Start::GetNewCustomGameModeName() const
 {
 	return EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText().ToString();
 }
 
-FStartWidgetProperties UCustomGameModesWidget_Start::GetStartWidgetProperties() const
+FStartWidgetProperties UCGMWC_Start::GetStartWidgetProperties() const
 {
 	FStartWidgetProperties Properties = FStartWidgetProperties();
 
@@ -79,12 +79,12 @@ FStartWidgetProperties UCustomGameModesWidget_Start::GetStartWidgetProperties() 
 	return Properties;
 }
 
-void UCustomGameModesWidget_Start::SetNewCustomGameModeName(const FString& InCustomGameModeName) const
+void UCGMWC_Start::SetNewCustomGameModeName(const FString& InCustomGameModeName) const
 {
 	EditableTextBoxOption_CustomGameModeName->EditableTextBox->SetText(FText::FromString(InCustomGameModeName));
 }
 
-void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetProperties& InProperties)
+void UCGMWC_Start::SetStartWidgetProperties(const FStartWidgetProperties& InProperties)
 {
 	// Always update NewCustomGameModeName and Checkbox
 	UpdateValueIfDifferent(EditableTextBoxOption_CustomGameModeName,
@@ -134,7 +134,7 @@ void UCustomGameModesWidget_Start::SetStartWidgetProperties(const FStartWidgetPr
 	UpdateAllOptionsValid();
 }
 
-bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficulty) const
+bool UCGMWC_Start::UpdateDifficultySelection(const EGameModeDifficulty& Difficulty) const
 {
 	const int32 SelectedOptionCount = ComboBoxOption_GameModeDifficulty->ComboBox->GetSelectedOptionCount();
 	const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
@@ -174,7 +174,7 @@ bool UCustomGameModesWidget_Start::UpdateDifficultySelection(const EGameModeDiff
 	return false;
 }
 
-bool UCustomGameModesWidget_Start::UpdateDifficultyVisibility() const
+bool UCGMWC_Start::UpdateDifficultyVisibility() const
 {
 	const FString TemplateOptionString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
 	const ESlateVisibility NewVisibility = IsPresetGameMode(TemplateOptionString)
@@ -190,7 +190,7 @@ bool UCustomGameModesWidget_Start::UpdateDifficultyVisibility() const
 	return true;
 }
 
-bool UCustomGameModesWidget_Start::UpdateGameModeTemplateVisibility() const
+bool UCGMWC_Start::UpdateGameModeTemplateVisibility() const
 {
 	const FString TemplateOptionString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
 	const bool bShouldShow = IsPresetGameMode(TemplateOptionString) || IsCustomGameMode(TemplateOptionString) ||
@@ -208,7 +208,7 @@ bool UCustomGameModesWidget_Start::UpdateGameModeTemplateVisibility() const
 	return true;
 }
 
-void UCustomGameModesWidget_Start::RefreshGameModeTemplateComboBoxOptions() const
+void UCGMWC_Start::RefreshGameModeTemplateComboBoxOptions() const
 {
 	ComboBoxOption_GameModeTemplates->ComboBox->ClearOptions();
 	TArray<FString> Options;
@@ -241,7 +241,7 @@ void UCustomGameModesWidget_Start::RefreshGameModeTemplateComboBoxOptions() cons
 	Options.Empty();
 }
 
-void UCustomGameModesWidget_Start::UpdateAllOptionsValid()
+void UCGMWC_Start::UpdateAllOptionsValid()
 {
 	const FString GameModeTemplateString = ComboBoxOption_GameModeTemplates->ComboBox->GetSelectedOption();
 	const FText CustomGameModeNameText = EditableTextBoxOption_CustomGameModeName->EditableTextBox->GetText();
@@ -283,7 +283,7 @@ void UCustomGameModesWidget_Start::UpdateAllOptionsValid()
 	CustomGameModeCategoryInfo.Update(0, NumWarnings);
 }
 
-void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
+void UCGMWC_Start::UpdateOptionsFromConfig()
 {
 	const bool bUpdatedTemplateVisibility = UpdateGameModeTemplateVisibility();
 	const bool bUpdatedDifficultyVisibility = UpdateDifficultyVisibility();
@@ -311,7 +311,7 @@ void UCustomGameModesWidget_Start::UpdateOptionsFromConfig()
 	}
 }
 
-void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bChecked)
+void UCGMWC_Start::OnCheckStateChanged_UseTemplate(const bool bChecked)
 {
 	// Hide Templates and Difficulty if not checked
 	if (!bChecked)
@@ -336,13 +336,13 @@ void UCustomGameModesWidget_Start::OnCheckStateChanged_UseTemplate(const bool bC
 		Difficulty);
 }
 
-void UCustomGameModesWidget_Start::OnTextChanged_CustomGameModeName(const FText& Text)
+void UCGMWC_Start::OnTextChanged_CustomGameModeName(const FText& Text)
 {
 	UpdateAllOptionsValid();
 	OnCustomGameModeNameChanged.Broadcast();
 }
 
-void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected,
+void UCGMWC_Start::OnSelectionChanged_GameModeTemplates(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)
@@ -356,7 +356,7 @@ void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeTemplates(const TA
 	RequestGameModeTemplateUpdate.Broadcast(Selected[0], Difficulty);
 }
 
-void UCustomGameModesWidget_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected,
+void UCGMWC_Start::OnSelectionChanged_GameModeDifficulty(const TArray<FString>& Selected,
 	const ESelectInfo::Type SelectionType)
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1)

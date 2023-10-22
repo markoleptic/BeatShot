@@ -133,6 +133,15 @@ public:
 	UPROPERTY(BlueprintAssignable, Category=Events)
 	FOnOpeningEvent OnOpening;
 
+	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	void SetSelectionMode(const ESelectionModeType InSelectionMode) { SelectionMode = InSelectionMode; }
+
+	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	void SetCloseComboBoxOnSelectionChanged(const bool bClose) { bCloseComboBoxOnSelectionChanged = bClose; }
+
+	UFUNCTION(BlueprintCallable, Category="ComboBox")
+	void SetCanSelectNone(const bool bCan) { bCanSelectNone = bCan; }
+	
 	/** Adds a new option to the combo box */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
 	void AddOption(const FString& Option);
