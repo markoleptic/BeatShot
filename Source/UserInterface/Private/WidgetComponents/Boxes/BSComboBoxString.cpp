@@ -307,6 +307,11 @@ TSharedRef<SWidget> UBSComboBoxString::RebuildWidget()
 	return SlateComboBox.ToSharedRef();
 }
 
+void UBSComboBoxString::SetCanSelectNone(const bool bCan)
+{
+	bCanSelectNone = bCan;
+}
+
 void UBSComboBoxString::AddOption(const FString& Option)
 {
 	Options.Add(MakeShareable(new FString(Option)));

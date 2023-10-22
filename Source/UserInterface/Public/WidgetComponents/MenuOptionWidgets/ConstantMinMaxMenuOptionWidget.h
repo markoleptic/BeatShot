@@ -28,6 +28,8 @@ class USERINTERFACE_API UConstantMinMaxMenuOptionWidget : public UMenuOptionWidg
 	GENERATED_BODY()
 
 public:
+	virtual void SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState) override;
+	
 	/** Returns the value for the MinOrConstant slider */
 	float GetMinOrConstantSliderValue() const;
 

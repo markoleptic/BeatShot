@@ -228,3 +228,9 @@ TargetSpawnResponse_ChangeDirection,The direction of the target is changed when 
 TargetSpawnResponse_ChangeVelocity,The velocity of the target is set to the Spawned Velocity.
 TargetSpawnResponse_AddImmunity,Immunity is granted to the target.
 TargetSpawnResponses,What does the target do when it is spawned?
+DM_ActivatedTargetVelocity,Add Change Velocity as an Activation Response (located in Responses) to enable this option.
+DM_SpawnedTargetVelocity,Add Change Velocity as a Spawn Response (located in Responses) to enable this option.
+DM_DeactivatedTargetVelocity,Add Change Velocity as a Deactivation Response (located in Responses) to enable this option.
+DM_LifetimeTargetScaleMultiplier,"Add ""Apply Lifetime Target Sizing"" as an Activation Response (located in Responses) to enable this option."
+DM_DeactivatedTargetScaleMultiplier,"Add ""Apply Deactivated Target Sizing"" as a Deactivation Response (located in Responses) to enable this option."
+DM_DeactivationHealthLostThreshold,"Add ""On Specific Health Lost"" as a Deactivation Condition (located in Responses) to enable this option."

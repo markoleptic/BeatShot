@@ -14,6 +14,7 @@
 #include "WidgetComponents/MenuOptionWidgets/EditableTextBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxCheckBoxOptionWidget.h"
 #include "WidgetComponents/MenuOptionWidgets/SliderTextBoxOptionWidget.h"
+#include "WidgetComponents/Tooltips/TooltipWidget.h"
 
 void UCGMWC_Base::NativeConstruct()
 {
@@ -248,6 +249,22 @@ void UCGMWC_Base::UpdateCustomGameModeCategoryInfo()
 		NumCautions += Widget->GetNumberOfCautions();
 	}
 	CustomGameModeCategoryInfo.Update(NumCautions, NumWarnings);
+}
+
+void UCGMWC_Base::SetMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget, const EMenuOptionEnabledState State,
+	const FString& Key)
+{
+	Widget->SetMenuOptionEnabledState(State);
+	if (State == EMenuOptionEnabledState::DependentMissing && !Key.IsEmpty())
+	{
+		UTooltipWidget* TooltipWidget = ConstructTooltipWidget();
+		TooltipWidget->TooltipDescriptor->SetText(GetTooltipTextFromKey(Key));
+		Widget->SetToolTip(TooltipWidget);
+	}
+	else
+	{
+		Widget->SetToolTip(nullptr);
+	}
 }
 
 float UCGMWC_Base::GetMinRequiredHorizontalSpread() const

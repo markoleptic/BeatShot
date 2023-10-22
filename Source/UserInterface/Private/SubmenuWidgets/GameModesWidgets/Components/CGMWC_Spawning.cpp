@@ -240,7 +240,7 @@ void UCGMWC_Spawning::OnSelectionChanged_RuntimeTargetSpawningLocationSelectionM
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 
-	BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode = GetEnumFromString<
+	BSConfig->TargetConfig.RuntimeTargetSpawningLocationSelectionMode = GetEnumFromString_FromTagMap<
 		ERuntimeTargetSpawningLocationSelectionMode>(Selected[0]);
 
 	UpdateBrushColors();
@@ -252,7 +252,7 @@ void UCGMWC_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FStri
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 
-	BSConfig->TargetConfig.TargetSpawningPolicy = GetEnumFromString<ETargetSpawningPolicy>(Selected[0]);
+	BSConfig->TargetConfig.TargetSpawningPolicy = GetEnumFromString_FromTagMap<ETargetSpawningPolicy>(Selected[0]);
 
 	UpdateDependentOptions_TargetSpawningPolicy(BSConfig->TargetConfig.TargetSpawningPolicy,
 		BSConfig->TargetConfig.bUseBatchSpawning, BSConfig->TargetConfig.bSpawnEveryOtherTargetInCenter);
@@ -263,13 +263,13 @@ void UCGMWC_Spawning::OnSelectionChanged_TargetSpawningPolicy(const TArray<FStri
 FString UCGMWC_Spawning::GetComboBoxEntryTooltipStringTableKey_RuntimeTargetSpawningLocationSelectionMode(
 	const FString& EnumString)
 {
-	const ERuntimeTargetSpawningLocationSelectionMode EnumValue = GetEnumFromString<
+	const ERuntimeTargetSpawningLocationSelectionMode EnumValue = GetEnumFromString_FromTagMap<
 		ERuntimeTargetSpawningLocationSelectionMode>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCGMWC_Spawning::GetComboBoxEntryTooltipStringTableKey_TargetSpawningPolicy(const FString& EnumString)
 {
-	const ETargetSpawningPolicy EnumValue = GetEnumFromString<ETargetSpawningPolicy>(EnumString);
+	const ETargetSpawningPolicy EnumValue = GetEnumFromString_FromTagMap<ETargetSpawningPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

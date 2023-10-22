@@ -358,7 +358,7 @@ void UCGMWC_SpawnArea::OnSelectionChanged_BoundsScalingPolicy(const TArray<FStri
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 	
-	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString<EBoundsScalingPolicy>(Selected[0]);
+	BSConfig->TargetConfig.BoundsScalingPolicy = GetEnumFromString_FromTagMap<EBoundsScalingPolicy>(Selected[0]);
 	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
@@ -369,7 +369,7 @@ void UCGMWC_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 	
-	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString<ETargetDistributionPolicy>(Selected[0]);
+	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString_FromTagMap<ETargetDistributionPolicy>(Selected[0]);
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
@@ -388,20 +388,20 @@ void UCGMWC_SpawnArea::OnSelectionChanged_DynamicBoundsScalingPolicy(const TArra
 FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_BoundsScalingPolicy(
 	const FString& EnumString)
 {
-	const EBoundsScalingPolicy EnumValue = GetEnumFromString<EBoundsScalingPolicy>(EnumString);
+	const EBoundsScalingPolicy EnumValue = GetEnumFromString_FromTagMap<EBoundsScalingPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_TargetDistributionPolicy(
 	const FString& EnumString)
 {
-	const ETargetDistributionPolicy EnumValue = GetEnumFromString<ETargetDistributionPolicy>(EnumString);
+	const ETargetDistributionPolicy EnumValue = GetEnumFromString_FromTagMap<ETargetDistributionPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCGMWC_SpawnArea::GetComboBoxEntryTooltipStringTableKey_DynamicBoundsScalingPolicy(
 	const FString& EnumString)
 {
-	const EDynamicBoundsScalingPolicy EnumValue = GetEnumFromString<EDynamicBoundsScalingPolicy>(EnumString);
+	const EDynamicBoundsScalingPolicy EnumValue = GetEnumFromString_FromTagMap<EDynamicBoundsScalingPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

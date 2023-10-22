@@ -95,15 +95,14 @@ void UCGMWC_General::NativeConstruct()
 	ComboBoxOption_HyperParameterMode->SortAddOptionsAndSetEnumType<EReinforcementLearningHyperParameterMode>(Options);
 	Options.Empty();
 
-	SliderTextBoxOption_RecentTargetTimeLength->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-	SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-	SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-	SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-	SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-	ComboBoxOption_HyperParameterMode->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-	SliderTextBoxOption_DeactivationHealthLostThreshold->SetMenuOptionEnabledState(
-		EMenuOptionEnabledState::DependentMissing);
-
+	SliderTextBoxOption_RecentTargetTimeLength->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	ComboBoxOption_HyperParameterMode->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_DeactivationHealthLostThreshold, EMenuOptionEnabledState::Enabled);
+	
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
 }
@@ -178,18 +177,18 @@ void UCGMWC_General::UpdateDependentOptions_RecentTargetMemoryPolicy(
 	{
 	case ERecentTargetMemoryPolicy::CustomTimeBased:
 		SliderTextBoxOption_RecentTargetTimeLength->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
-		SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
+		SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 		break;
 	case ERecentTargetMemoryPolicy::NumTargetsBased:
 		SliderTextBoxOption_RecentTargetTimeLength->
-			SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
+			SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 		SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
 		break;
 	case ERecentTargetMemoryPolicy::None:
 	case ERecentTargetMemoryPolicy::UseTargetSpawnCD: default:
 		SliderTextBoxOption_RecentTargetTimeLength->
-			SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-		SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
+			SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_MaxNumRecentTargets->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 		break;
 	}
 }
@@ -199,13 +198,13 @@ void UCGMWC_General::UpdateDependentOptions_DeactivationConditions(
 {
 	if (Conditions.Contains(ETargetDeactivationCondition::OnSpecificHealthLost))
 	{
-		SliderTextBoxOption_DeactivationHealthLostThreshold->
-			SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_DeactivationHealthLostThreshold,
+			EMenuOptionEnabledState::Enabled);
 	}
 	else
 	{
-		SliderTextBoxOption_DeactivationHealthLostThreshold->SetMenuOptionEnabledState(
-			EMenuOptionEnabledState::DependentMissing);
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_DeactivationHealthLostThreshold,
+			EMenuOptionEnabledState::DependentMissing, "DM_DeactivationHealthLostThreshold");
 	}
 }
 
@@ -218,7 +217,7 @@ void UCGMWC_General::UpdateDependentOptions_EnableAI(const bool bInEnableReinfor
 	}
 	else
 	{
-		ComboBoxOption_HyperParameterMode->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
+		ComboBoxOption_HyperParameterMode->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 	}
 	UpdateDependentOptions_HyperParameterMode(bInEnableReinforcementLearning, HyperParameterMode);
 }
@@ -228,18 +227,18 @@ void UCGMWC_General::UpdateDependentOptions_HyperParameterMode(const bool bInEna
 {
 	if (!bInEnableReinforcementLearning)
 	{
-		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
+		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 		return;
 	}
 	switch (HyperParameterMode)
 	{
 	case EReinforcementLearningHyperParameterMode::None:
 	case EReinforcementLearningHyperParameterMode::Auto:
-		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
-		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::DependentMissing);
+		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 		break;
 	case EReinforcementLearningHyperParameterMode::Custom:
 		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
@@ -319,7 +318,7 @@ void UCGMWC_General::OnSelectionChanged_RecentTargetMemoryPolicy(const TArray<FS
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 
-	BSConfig->TargetConfig.RecentTargetMemoryPolicy = GetEnumFromString<ERecentTargetMemoryPolicy>(Selected[0]);
+	BSConfig->TargetConfig.RecentTargetMemoryPolicy = GetEnumFromString_FromTagMap<ERecentTargetMemoryPolicy>(Selected[0]);
 	UpdateDependentOptions_RecentTargetMemoryPolicy(BSConfig->TargetConfig.RecentTargetMemoryPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
@@ -330,7 +329,7 @@ void UCGMWC_General::OnSelectionChanged_DamageType(const TArray<FString>& Select
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 
-	BSConfig->TargetConfig.TargetDamageType = GetEnumFromString<ETargetDamageType>(Selected[0]);
+	BSConfig->TargetConfig.TargetDamageType = GetEnumFromString_FromTagMap<ETargetDamageType>(Selected[0]);
 	UpdateAllOptionsValid();
 }
 
@@ -339,7 +338,7 @@ void UCGMWC_General::OnSelectionChanged_HyperParameterMode(const TArray<FString>
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 
-	BSConfig->AIConfig.HyperParameterMode = GetEnumFromString<EReinforcementLearningHyperParameterMode>(Selected[0]);
+	BSConfig->AIConfig.HyperParameterMode = GetEnumFromString_FromTagMap<EReinforcementLearningHyperParameterMode>(Selected[0]);
 	UpdateDependentOptions_EnableAI(BSConfig->AIConfig.bEnableReinforcementLearning,
 		BSConfig->AIConfig.HyperParameterMode);
 
@@ -349,18 +348,18 @@ void UCGMWC_General::OnSelectionChanged_HyperParameterMode(const TArray<FString>
 
 FString UCGMWC_General::GetComboBoxEntryTooltipStringTableKey_HyperParameterMode(const FString& EnumString)
 {
-	const EReinforcementLearningHyperParameterMode EnumValue = GetEnumFromString<
+	const EReinforcementLearningHyperParameterMode EnumValue = GetEnumFromString_FromTagMap<
 		EReinforcementLearningHyperParameterMode>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }
 
 FString UCGMWC_General::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(const FString& EnumString)
 {
-	return GetStringTableKeyNameFromEnum(GetEnumFromString<ERecentTargetMemoryPolicy>(EnumString));
+	return GetStringTableKeyNameFromEnum(GetEnumFromString_FromTagMap<ERecentTargetMemoryPolicy>(EnumString));
 }
 
 FString UCGMWC_General::GetComboBoxEntryTooltipStringTableKey_DamageType(const FString& EnumString)
 {
-	const ETargetDamageType EnumValue = GetEnumFromString<ETargetDamageType>(EnumString);
+	const ETargetDamageType EnumValue = GetEnumFromString_FromTagMap<ETargetDamageType>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

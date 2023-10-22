@@ -37,6 +37,10 @@ void UCGMWC_Movement::NativeConstruct()
 	ComboBoxOption_MovingTargetDirectionMode->SortAddOptionsAndSetEnumType<EMovingTargetDirectionMode>(Options);
 	Options.Empty();
 
+	SetMenuOptionEnabledStateAndAddTooltip(MenuOption_SpawnedTargetVelocity, EMenuOptionEnabledState::Enabled);
+	SetMenuOptionEnabledStateAndAddTooltip(MenuOption_ActivatedTargetVelocity, EMenuOptionEnabledState::Enabled);
+	SetMenuOptionEnabledStateAndAddTooltip(MenuOption_DeactivatedTargetVelocity, EMenuOptionEnabledState::Enabled);
+
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
 }
@@ -105,15 +109,12 @@ void UCGMWC_Movement::UpdateDependentOptions_SpawnResponses(const TArray<ETarget
 {
 	if (Responses.Contains(ETargetSpawnResponse::ChangeVelocity))
 	{
-		if (bConstant)
-		{
-		}
-		else
-		{
-		}
+		SetMenuOptionEnabledStateAndAddTooltip(MenuOption_SpawnedTargetVelocity, EMenuOptionEnabledState::Enabled);
 	}
 	else
 	{
+		SetMenuOptionEnabledStateAndAddTooltip(MenuOption_SpawnedTargetVelocity,
+			EMenuOptionEnabledState::DependentMissing, "DM_SpawnedTargetVelocity");
 	}
 }
 
@@ -122,15 +123,12 @@ void UCGMWC_Movement::UpdateDependentOptions_ActivationResponses(const TArray<ET
 {
 	if (Responses.Contains(ETargetActivationResponse::ChangeVelocity))
 	{
-		if (bConstant)
-		{
-		}
-		else
-		{
-		}
+		SetMenuOptionEnabledStateAndAddTooltip(MenuOption_ActivatedTargetVelocity, EMenuOptionEnabledState::Enabled);
 	}
 	else
 	{
+		SetMenuOptionEnabledStateAndAddTooltip(MenuOption_ActivatedTargetVelocity,
+			EMenuOptionEnabledState::DependentMissing, "DM_ActivatedTargetVelocity");
 	}
 }
 
@@ -139,15 +137,12 @@ void UCGMWC_Movement::UpdateDependentOptions_DeactivationResponses(const TArray<
 {
 	if (Responses.Contains(ETargetDeactivationResponse::ChangeVelocity))
 	{
-		if (bConstant)
-		{
-		}
-		else
-		{
-		}
+		SetMenuOptionEnabledStateAndAddTooltip(MenuOption_DeactivatedTargetVelocity, EMenuOptionEnabledState::Enabled);
 	}
 	else
 	{
+		SetMenuOptionEnabledStateAndAddTooltip(MenuOption_DeactivatedTargetVelocity,
+			EMenuOptionEnabledState::DependentMissing, "DM_DeactivatedTargetVelocity");
 	}
 }
 
@@ -156,7 +151,7 @@ void UCGMWC_Movement::OnSelectionChanged_MovingTargetDirectionMode(const TArray<
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() != 1) return;
 	
-	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString<EMovingTargetDirectionMode>(Selected[0]);
+	BSConfig->TargetConfig.MovingTargetDirectionMode = GetEnumFromString_FromTagMap<EMovingTargetDirectionMode>(Selected[0]);
 	UpdateAllOptionsValid();
 }
 
@@ -184,6 +179,6 @@ void UCGMWC_Movement::OnMinMaxMenuOptionChanged(UConstantMinMaxMenuOptionWidget*
 
 FString UCGMWC_Movement::GetComboBoxEntryTooltipStringTableKey_MovingTargetDirectionMode(const FString& EnumString)
 {
-	const EMovingTargetDirectionMode EnumValue = GetEnumFromString<EMovingTargetDirectionMode>(EnumString);
+	const EMovingTargetDirectionMode EnumValue = GetEnumFromString_FromTagMap<EMovingTargetDirectionMode>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

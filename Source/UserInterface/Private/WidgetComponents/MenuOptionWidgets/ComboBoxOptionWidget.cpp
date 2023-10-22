@@ -21,6 +21,17 @@ void UComboBoxOptionWidget::NativeConstruct()
 	ComboBox->SetCloseComboBoxOnSelectionChanged(bCloseComboBoxOnSelectionChanged);
 }
 
+TSharedRef<SWidget> UComboBoxOptionWidget::RebuildWidget()
+{
+	if (ComboBox)
+	{
+		ComboBox->SetSelectionMode(SelectionMode);
+		ComboBox->SetCanSelectNone(bCanSelectNone);
+		ComboBox->SetCloseComboBoxOnSelectionChanged(bCloseComboBoxOnSelectionChanged);
+	}
+	return Super::RebuildWidget();
+}
+
 UBSComboBoxEntry* UComboBoxOptionWidget::ConstructComboBoxEntryWidget()
 {
 	return CreateWidget<UBSComboBoxEntry>(this, ComboBox->GetComboboxEntryWidget());

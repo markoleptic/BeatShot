@@ -165,6 +165,10 @@ public:
 	template <typename T>
 	FString GetStringFromEnumTagPair(const T& InEnum);
 
+	/** Finds the full enum type from the Display Name */
+	template <typename T>
+	T FindEnumFromString(const FString& EnumString);
+
 protected:
 	UPROPERTY(EditDefaultsOnly, meta = (TitleProperty="{EnumClass}"))
 	TArray<FEnumTagMapping> EnumTagMappings;
@@ -237,4 +241,22 @@ FString UEnumTagMap::GetStringFromEnumTagPair(const T& InEnum)
 	}
 
 	return EnumTagMapping->EnumTagPairs[Index].DisplayName;
+}
+
+template <typename T>
+T UEnumTagMap::FindEnumFromString(const FString& EnumString)
+{
+	const FEnumTagMapping* EnumTagMapping = GetEnumTagMapping<T>();
+
+	if (EnumTagMapping)
+	{
+		for (const auto& Pair : EnumTagMapping->EnumTagPairs)
+		{
+			if (Pair.DisplayName.Equals(EnumString))
+			{
+				return static_cast<T>(Pair.Index);
+			}
+		}
+	}
+	return static_cast<T>(0);
 }

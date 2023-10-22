@@ -141,7 +141,7 @@ void UCGMWC_Activation::OnSelectionChanged_TargetActivationSelectionPolicy(const
 		return;
 	}
 
-	BSConfig->TargetConfig.TargetActivationSelectionPolicy = GetEnumFromString<
+	BSConfig->TargetConfig.TargetActivationSelectionPolicy = GetEnumFromString_FromTagMap<
 		ETargetActivationSelectionPolicy>(Selected[0]);
 	UpdateAllOptionsValid();
 }
@@ -149,6 +149,6 @@ void UCGMWC_Activation::OnSelectionChanged_TargetActivationSelectionPolicy(const
 FString UCGMWC_Activation::GetComboBoxEntryTooltipStringTableKey_TargetActivationSelectionPolicy(
 	const FString& EnumString)
 {
-	const ETargetActivationSelectionPolicy EnumValue = GetEnumFromString<ETargetActivationSelectionPolicy>(EnumString);
+	const ETargetActivationSelectionPolicy EnumValue = GetEnumFromString_FromTagMap<ETargetActivationSelectionPolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

@@ -48,6 +48,7 @@ public:
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual TSharedRef<SWidget> RebuildWidget() override;
 	virtual UTooltipWidget* IBSWidgetInterface::ConstructTooltipWidget() override { return nullptr; }
 	virtual UBSComboBoxEntry* ConstructComboBoxEntryWidget() override;
 	virtual UWidget* OnGenerateWidgetEvent(const UBSComboBoxString* ComboBoxString, FString Method) override;

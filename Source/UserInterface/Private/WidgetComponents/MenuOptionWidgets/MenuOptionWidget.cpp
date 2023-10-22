@@ -96,9 +96,13 @@ void UMenuOptionWidget::SetMenuOptionEnabledState(const EMenuOptionEnabledState 
 	switch (EnabledState) {
 	case EMenuOptionEnabledState::Enabled:
 		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		Box_Right->SetIsEnabled(true);
+		Box_Left->SetIsEnabled(true);
 		break;
 	case EMenuOptionEnabledState::DependentMissing:
-		SetVisibility(ESlateVisibility::Collapsed);
+		SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		Box_Right->SetIsEnabled(false);
+		Box_Left->SetIsEnabled(false);
 		break;
 	case EMenuOptionEnabledState::Disabled:
 		SetVisibility(ESlateVisibility::Collapsed);

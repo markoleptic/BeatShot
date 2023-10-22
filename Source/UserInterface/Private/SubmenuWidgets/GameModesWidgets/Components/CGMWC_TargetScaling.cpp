@@ -55,8 +55,9 @@ void UCGMWC_TargetScaling::NativeConstruct()
 	SliderTextBoxOption_StartThreshold->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
 	SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-	SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+
+	SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_LifetimeTargetScaleMultiplier, EMenuOptionEnabledState::Enabled);
+	SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_DeactivatedTargetScaleMultiplier, EMenuOptionEnabledState::Enabled);
 
 	SetupWarningTooltipCallbacks();
 	UpdateBrushColors();
@@ -108,34 +109,25 @@ void UCGMWC_TargetScaling::UpdateDependentOptions_TargetActivationResponses(
 {
 	if (InResponses.Contains(ETargetActivationResponse::ApplyLifetimeTargetScaling))
 	{
-		SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_LifetimeTargetScaleMultiplier, EMenuOptionEnabledState::Enabled);
 	}
 	else
 	{
-		SliderTextBoxOption_LifetimeTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_LifetimeTargetScaleMultiplier, EMenuOptionEnabledState::DependentMissing, "DM_LifetimeTargetScaleMultiplier");
 	}
 }
 
 void UCGMWC_TargetScaling::UpdateDependentOptions_TargetDeactivationResponses(
 	const TArray<ETargetDeactivationCondition>& Conditions, const TArray<ETargetDeactivationResponse>& Responses)
 {
-	// Collapse any Responses dependent upon Conditions
-	if (Conditions.Contains(ETargetDeactivationCondition::Persistant))
-	{
-		SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-	}
 
-	// Show any Responses dependent upon Conditions
-	if (!Conditions.Contains(ETargetDeactivationCondition::Persistant))
+	if (Responses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
 	{
-		if (Responses.Contains(ETargetDeactivationResponse::ApplyDeactivatedTargetScaleMultiplier))
-		{
-			SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-		}
-		else
-		{
-			SliderTextBoxOption_DeactivatedTargetScaleMultiplier->SetVisibility(ESlateVisibility::Collapsed);
-		}
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_DeactivatedTargetScaleMultiplier, EMenuOptionEnabledState::Enabled);
+	}
+	else
+	{
+		SetMenuOptionEnabledStateAndAddTooltip(SliderTextBoxOption_DeactivatedTargetScaleMultiplier, EMenuOptionEnabledState::DependentMissing, "DM_DeactivatedTargetScaleMultiplier");
 	}
 }
 
@@ -236,7 +228,7 @@ void UCGMWC_TargetScaling::OnSelectionChanged_ConsecutiveTargetScalePolicy(const
 		return;
 	}
 
-	BSConfig->TargetConfig.ConsecutiveTargetScalePolicy = GetEnumFromString<EConsecutiveTargetScalePolicy>(Selected[0]);
+	BSConfig->TargetConfig.ConsecutiveTargetScalePolicy = GetEnumFromString_FromTagMap<EConsecutiveTargetScalePolicy>(Selected[0]);
 	UpdateDependentOptions_ConsecutiveTargetScalePolicy(BSConfig->TargetConfig.ConsecutiveTargetScalePolicy);
 
 	if (BSConfig->TargetConfig.ConsecutiveTargetScalePolicy == EConsecutiveTargetScalePolicy::Static)
@@ -256,6 +248,6 @@ void UCGMWC_TargetScaling::OnSelectionChanged_ConsecutiveTargetScalePolicy(const
 FString UCGMWC_TargetScaling::GetComboBoxEntryTooltipStringTableKey_ConsecutiveTargetScalePolicy(
 	const FString& EnumString)
 {
-	const EConsecutiveTargetScalePolicy EnumValue = GetEnumFromString<EConsecutiveTargetScalePolicy>(EnumString);
+	const EConsecutiveTargetScalePolicy EnumValue = GetEnumFromString_FromTagMap<EConsecutiveTargetScalePolicy>(EnumString);
 	return GetStringTableKeyNameFromEnum(EnumValue);
 }

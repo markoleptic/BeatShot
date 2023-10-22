@@ -253,29 +253,29 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetDestructionConditio
 FString UCGMWC_ConditionsAndResponses::GetComboBoxEntryTooltipStringTableKey_TargetSpawnResponses(
 	const FString& EnumString)
 {
-	return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetSpawnResponse>(EnumString));
+	return GetStringTableKeyNameFromEnum(GetEnumFromString_FromTagMap<ETargetSpawnResponse>(EnumString));
 }
 
 FString UCGMWC_ConditionsAndResponses::GetComboBoxEntryTooltipStringTableKey_TargetActivationResponses(
 	const FString& EnumString)
 {
-	return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetActivationResponse>(EnumString));
+	return GetStringTableKeyNameFromEnum(GetEnumFromString_FromTagMap<ETargetActivationResponse>(EnumString));
 }
 
 FString UCGMWC_ConditionsAndResponses::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationConditions(
 	const FString& EnumString)
 {
-	return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDeactivationCondition>(EnumString));
+	return GetStringTableKeyNameFromEnum(GetEnumFromString_FromTagMap<ETargetDeactivationCondition>(EnumString));
 }
 
 FString UCGMWC_ConditionsAndResponses::GetComboBoxEntryTooltipStringTableKey_TargetDeactivationResponses(
 	const FString& EnumString)
 {
-	return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDeactivationResponse>(EnumString));
+	return GetStringTableKeyNameFromEnum(GetEnumFromString_FromTagMap<ETargetDeactivationResponse>(EnumString));
 }
 
 FString UCGMWC_ConditionsAndResponses::GetComboBoxEntryTooltipStringTableKey_TargetDestructionConditions(
 	const FString& EnumString)
 {
-	return GetStringTableKeyNameFromEnum(GetEnumFromString<ETargetDestructionCondition>(EnumString));
+	return GetStringTableKeyNameFromEnum(GetEnumFromString_FromTagMap<ETargetDestructionCondition>(EnumString));
 }

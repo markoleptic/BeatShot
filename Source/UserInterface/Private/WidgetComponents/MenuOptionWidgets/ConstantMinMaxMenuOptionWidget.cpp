@@ -140,6 +140,24 @@ void UConstantMinMaxMenuOptionWidget::SetIsChecked(const bool bIsChecked) const
 	UpdateMinMaxDependencies(bIsChecked);
 }
 
+void UConstantMinMaxMenuOptionWidget::SetMenuOptionEnabledState(const EMenuOptionEnabledState EnabledState)
+{
+	Super::SetMenuOptionEnabledState(EnabledState);
+	
+	switch (EnabledState) {
+	case EMenuOptionEnabledState::Enabled:
+		Box_Right_ConstantOrMin->SetIsEnabled(true);
+		Box_Right_Max->SetIsEnabled(true);
+		break;
+	case EMenuOptionEnabledState::DependentMissing:
+		Box_Right_ConstantOrMin->SetIsEnabled(false);
+		Box_Right_Max->SetIsEnabled(false);
+		break;
+	case EMenuOptionEnabledState::Disabled:
+		break;
+	}
+}
+
 float UConstantMinMaxMenuOptionWidget::GetMinOrConstantSliderValue() const
 {
 	return Slider_ConstantOrMin->GetValue();

@@ -140,7 +140,7 @@ public:
 	void SetCloseComboBoxOnSelectionChanged(const bool bClose) { bCloseComboBoxOnSelectionChanged = bClose; }
 
 	UFUNCTION(BlueprintCallable, Category="ComboBox")
-	void SetCanSelectNone(const bool bCan) { bCanSelectNone = bCan; }
+	void SetCanSelectNone(const bool bCan);
 	
 	/** Adds a new option to the combo box */
 	UFUNCTION(BlueprintCallable, Category="ComboBox")

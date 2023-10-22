@@ -116,6 +116,8 @@ protected:
 	float GetMaxAllowedVerticalSpacing() const;
 	float GetMaxAllowedTargetScale() const;
 
+	void SetMenuOptionEnabledStateAndAddTooltip(UMenuOptionWidget* Widget, const EMenuOptionEnabledState State, const FString& Key = FString());
+
 	/** Pointer to the game mode config inside GameModesWidget */
 	FBSConfig* BSConfig;
 
@@ -151,6 +153,12 @@ protected:
 
 	template <typename T>
 	TArray<FString> GetStringArrayFromEnumArray_FromTagMap(const TArray<T>& InEnumArray);
+
+	template <typename T>
+	T GetEnumFromString_FromTagMap(const FString& InString);
+
+	template <typename T>
+	TArray<T> GetEnumArrayFromStringArray_FromTagMap(const TArray<FString>& InStringArray);
 };
 
 template <typename T>
@@ -174,6 +182,31 @@ TArray<FString> UCGMWC_Base::GetStringArrayFromEnumArray_FromTagMap(const TArray
 	for (const T& InEnum : InEnumArray)
 	{
 		OutArray.Add(GetStringFromEnum_FromTagMap<T>(InEnum));
+	}
+	return OutArray;
+}
+
+template <typename T>
+T UCGMWC_Base::GetEnumFromString_FromTagMap(const FString& InString)
+{
+	if (EnumTagMap)
+	{
+		return EnumTagMap->FindEnumFromString<T>(InString);
+	}
+	return GetEnumFromString<T>(InString);
+}
+
+template <typename T>
+TArray<T> UCGMWC_Base::GetEnumArrayFromStringArray_FromTagMap(const TArray<FString>& InStringArray)
+{
+	TArray<T> OutArray;
+	if (InStringArray.IsEmpty())
+	{
+		return OutArray;
+	}
+	for (const FString& InString : InStringArray)
+	{
+		OutArray.Add(GetEnumFromString_FromTagMap<T>(InString));
 	}
 	return OutArray;
 }
