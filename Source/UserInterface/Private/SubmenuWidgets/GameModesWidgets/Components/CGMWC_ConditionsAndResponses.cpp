@@ -185,7 +185,7 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetActivationResponses
 	if (SelectionType == ESelectInfo::Type::Direct) return;
 
 	if (Selected.IsEmpty()) BSConfig->TargetConfig.TargetActivationResponses.Empty();
-	else BSConfig->TargetConfig.TargetActivationResponses = GetEnumArrayFromStringArray<
+	else BSConfig->TargetConfig.TargetActivationResponses = GetEnumArrayFromStringArray_FromTagMap<
 		ETargetActivationResponse>(Selected);
 
 	UpdateDependentOptions_TargetActivationResponses(BSConfig->TargetConfig.TargetActivationResponses);
@@ -199,7 +199,7 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetSpawnResponses(cons
 	if (SelectionType == ESelectInfo::Type::Direct) return;
 
 	if (Selected.IsEmpty()) BSConfig->TargetConfig.TargetSpawnResponses.Empty();
-	else BSConfig->TargetConfig.TargetSpawnResponses = GetEnumArrayFromStringArray<ETargetSpawnResponse>(Selected);
+	else BSConfig->TargetConfig.TargetSpawnResponses = GetEnumArrayFromStringArray_FromTagMap<ETargetSpawnResponse>(Selected);
 
 	UpdateDependentOptions_TargetSpawnResponses(BSConfig->TargetConfig.TargetSpawnResponses);
 	UpdateBrushColors();
@@ -213,7 +213,7 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetDeactivationConditi
 
 	if (Selected.IsEmpty()) BSConfig->TargetConfig.TargetDeactivationConditions.Empty();
 	else
-		BSConfig->TargetConfig.TargetDeactivationConditions = GetEnumArrayFromStringArray<
+		BSConfig->TargetConfig.TargetDeactivationConditions = GetEnumArrayFromStringArray_FromTagMap<
 			ETargetDeactivationCondition>(Selected);
 
 	UpdateDependentOptions_TargetDeactivationConditions(BSConfig->TargetConfig.TargetDeactivationConditions);
@@ -228,7 +228,7 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetDeactivationRespons
 
 	if (Selected.IsEmpty()) BSConfig->TargetConfig.TargetDeactivationResponses.Empty();
 	else
-		BSConfig->TargetConfig.TargetDeactivationResponses = GetEnumArrayFromStringArray<
+		BSConfig->TargetConfig.TargetDeactivationResponses = GetEnumArrayFromStringArray_FromTagMap<
 			ETargetDeactivationResponse>(Selected);
 
 	UpdateDependentOptions_TargetDeactivationResponses(BSConfig->TargetConfig.TargetDeactivationResponses);
@@ -243,7 +243,7 @@ void UCGMWC_ConditionsAndResponses::OnSelectionChanged_TargetDestructionConditio
 
 	if (Selected.IsEmpty()) BSConfig->TargetConfig.TargetDestructionConditions.Empty();
 	else
-		BSConfig->TargetConfig.TargetDestructionConditions = GetEnumArrayFromStringArray<
+		BSConfig->TargetConfig.TargetDestructionConditions = GetEnumArrayFromStringArray_FromTagMap<
 			ETargetDestructionCondition>(Selected);
 
 	UpdateBrushColors();

@@ -314,9 +314,11 @@ enum class ETargetDeactivationResponse : uint8
 	ResetScaleToActivatedScale UMETA(DisplayName="Reset Scale To Activated Scale"),
 	/** Reset the position of the target to the position it was activated with */
 	ResetPositionToActivatedPosition UMETA(DisplayName="Reset Position To Activated Position"),
+	/** Immediately reactivate the target */
+	Reactivate UMETA(DisplayName="Reactivate"),
 };
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity,
-	ETargetDeactivationResponse::ResetPositionToActivatedPosition);
+	ETargetDeactivationResponse::Reactivate);
 
 
 /** Each represents one way that a target can be destroyed */
@@ -706,6 +708,7 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 	UPROPERTY(EditDefaultsOnly)
 	FVector StartBounds;
 
+	/** Returns the StartBounds multiplied by 0.5 */
 	FVector GetStartExtents() const
 	{
 		return FVector(StartBounds.X, StartBounds.Y, StartBounds.Z) * 0.5f;

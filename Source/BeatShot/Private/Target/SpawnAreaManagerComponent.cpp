@@ -13,6 +13,9 @@
 /* ---------------- */
 
 
+/** Preferred SpawnMemory increments */
+const TArray PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
+
 USpawnArea::USpawnArea()
 {
 	Width = 0.f;
@@ -359,7 +362,6 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	GuidMap = TMap<FGuid, USpawnArea*>();
 	CachedManaged = TSet<USpawnArea*>();
 	CachedActivated = TSet<USpawnArea*>();
-	CachedDeactivated = TSet<USpawnArea*>();
 	CachedRecent = TSet<USpawnArea*>();
 	CachedExtrema = TSet<USpawnArea*>();
 	MostRecentGridBlock = TSet<USpawnArea*>();
@@ -388,7 +390,7 @@ void USpawnAreaManagerComponent::Init(FBSConfig* InBSConfig, const FVector& InOr
 	StaticExtents = InStaticExtents;
 	StaticExtrema = InStaticExtrema;
 
-	SetAppropriateSpawnMemoryValues();
+	SetAppropriateSpawnMemoryValues(SpawnAreaInc, SpawnAreaScale, BSConfig, StaticExtents);
 	InitializeSpawnAreas();
 
 	OriginSpawnArea = FindSpawnAreaFromLocation(Origin);
@@ -404,27 +406,28 @@ void USpawnAreaManagerComponent::Init(FBSConfig* InBSConfig, const FVector& InOr
 		SpawnAreas.GetAllocatedSize());
 }
 
-void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
+void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
+	const FBSConfig* InCfg, const FVector& InStaticExtents)
 {
-	const int32 HalfWidth = StaticExtents.Y;
-	const int32 HalfHeight = StaticExtents.Z;
+	const int32 HalfWidth = InStaticExtents.Y;
+	const int32 HalfHeight = InStaticExtents.Z;
 	bool bWidthScaleSelected = false;
 	bool bHeightScaleSelected = false;
 
-	switch (GetTargetCfg().TargetDistributionPolicy)
+	switch (InCfg->TargetConfig.TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
 		{
-			SpawnAreaScale.Z = 1.f;
-			SpawnAreaInc.Z = 1;
-			for (const int32 Scale : PreferredScales)
+			InSpawnAreaScale.Z = 1.f;
+			InSpawnAreaInc.Z = 1;
+			for (const int32 Scale : PreferredSpawnAreaIncScales)
 			{
 				if (!bWidthScaleSelected)
 				{
 					if (HalfWidth % Scale == 0)
 					{
-						SpawnAreaInc.Y = Scale;
-						SpawnAreaScale.Y = 1.f / Scale;
+						InSpawnAreaInc.Y = Scale;
+						InSpawnAreaScale.Y = 1.f / Scale;
 						bWidthScaleSelected = true;
 					}
 				}
@@ -436,7 +439,7 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 			if (!bWidthScaleSelected)
 			{
 				UE_LOG(LogTargetManager, Warning, TEXT("Couldn't Find Width for StaticExtents: Y:%f Z:%f"),
-					StaticExtents.Y, StaticExtents.Z);
+					InStaticExtents.Y, InStaticExtents.Z);
 			}
 		}
 		break;
@@ -444,14 +447,14 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 	case ETargetDistributionPolicy::EdgeOnly:
 	case ETargetDistributionPolicy::FullRange:
 		{
-			for (const int32 Scale : PreferredScales)
+			for (const int32 Scale : PreferredSpawnAreaIncScales)
 			{
 				if (!bWidthScaleSelected)
 				{
 					if (HalfWidth % Scale == 0)
 					{
-						SpawnAreaInc.Y = Scale;
-						SpawnAreaScale.Y = 1.f / Scale;
+						InSpawnAreaInc.Y = Scale;
+						InSpawnAreaScale.Y = 1.f / Scale;
 						bWidthScaleSelected = true;
 					}
 				}
@@ -459,8 +462,8 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 				{
 					if (HalfHeight % Scale == 0)
 					{
-						SpawnAreaInc.Z = Scale;
-						SpawnAreaScale.Z = 1.f / Scale;
+						InSpawnAreaInc.Z = Scale;
+						InSpawnAreaScale.Z = 1.f / Scale;
 						bHeightScaleSelected = true;
 					}
 				}
@@ -472,17 +475,17 @@ void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues()
 			if (!bWidthScaleSelected || !bHeightScaleSelected)
 			{
 				UE_LOG(LogTargetManager, Warning, TEXT("Couldn't Find Height/Width for StaticExtents: Y:%f Z:%f"),
-					StaticExtents.Y, StaticExtents.Z);
+					InStaticExtents.Y, InStaticExtents.Z);
 			}
 		}
 		break;
 	case ETargetDistributionPolicy::Grid:
 		{
-			const float MaxTargetSize = GetTargetCfg().MaxSpawnedTargetScale * SphereTargetDiameter;
-			SpawnAreaInc.Y = GetBSConfig()->GridConfig.GridSpacing.X + MaxTargetSize;
-			SpawnAreaInc.Z = GetBSConfig()->GridConfig.GridSpacing.Y + MaxTargetSize;
-			SpawnAreaScale.Y = 1.f / SpawnAreaInc.Y;
-			SpawnAreaScale.Z = 1.f / SpawnAreaInc.Z;
+			const float MaxTargetSize = InCfg->TargetConfig.MaxSpawnedTargetScale * SphereTargetDiameter;
+			InSpawnAreaInc.Y = InCfg->GridConfig.GridSpacing.X + MaxTargetSize;
+			InSpawnAreaInc.Z = InCfg->GridConfig.GridSpacing.Y + MaxTargetSize;
+			InSpawnAreaScale.Y = 1.f / InSpawnAreaInc.Y;
+			InSpawnAreaScale.Z = 1.f / InSpawnAreaInc.Z;
 		}
 		break;
 	}
@@ -551,7 +554,6 @@ void USpawnAreaManagerComponent::Clear()
 	GuidMap.Empty();
 	CachedManaged.Empty();
 	CachedActivated.Empty();
-	CachedDeactivated.Empty();
 	CachedRecent.Empty();
 	CachedExtrema.Empty();
 	MostRecentGridBlock.Empty();
@@ -602,7 +604,11 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 		{
 			// Instead of using the spawn area where the target started, use the current location
 			USpawnArea* SpawnAreaByLoc = FindSpawnAreaFromLocation(DamageEvent.Transform.GetLocation());
-			if (!SpawnAreaByLoc) return;
+			if (!SpawnAreaByLoc)
+			{
+				UE_LOG(LogTargetManager, Warning, TEXT("Could not find SpawnArea from Transform: %s."),*DamageEvent.Transform.GetLocation().ToString());
+				return;
+			}
 
 			// Total Tracking Damage Possible is done on tick in UpdateTotalTrackingDamagePossible
 
@@ -644,6 +650,11 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 	{
 		RemoveActivatedFlagFromSpawnArea(SpawnArea);
 		HandleRecentTargetRemoval(SpawnArea);
+
+		if (DamageEvent.bWillDestroy)
+		{
+			RemoveManagedFlagFromSpawnArea(DamageEvent.Guid);
+		}
 	}
 }
 
@@ -692,9 +703,12 @@ USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromLocation(const FVector&
 	const FVector RelativeLocation = InLocation - Origin;
 
 	// Snap to lowest SpawnAreaInc (49.9 -> 0 if SpawnAreaInc value is 50)
-	const int32 GridY = Origin.Y + SpawnAreaInc.Y * FMath::FloorToInt(RelativeLocation.Y / SpawnAreaInc.Y);
-	const int32 GridZ = Origin.Z + SpawnAreaInc.Z * FMath::FloorToInt(RelativeLocation.Z / SpawnAreaInc.Z);
+	int32 GridY = Origin.Y + SpawnAreaInc.Y * FMath::FloorToInt(RelativeLocation.Y / SpawnAreaInc.Y);
+	int32 GridZ = Origin.Z + SpawnAreaInc.Z * FMath::FloorToInt(RelativeLocation.Z / SpawnAreaInc.Z);
 
+	GridY = FMath::Clamp(GridY, StaticExtrema.Min.Y, StaticExtrema.Max.Y - SpawnAreaInc.Y);
+	GridZ = FMath::Clamp(GridZ, StaticExtrema.Min.Z, StaticExtrema.Max.Z - SpawnAreaInc.Z);
+	
 	const auto Found = AreaKeyMap.Find(FAreaKey(FVector(0, GridY, GridZ), SpawnAreaInc));
 	return Found ? *Found : nullptr;
 }
@@ -775,7 +789,7 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedSpawnAreas() const
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetDeactivatedManagedSpawnAreas() const
 {
-	return CachedDeactivated;
+	return CachedManaged.Difference(CachedActivated);
 }
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetRecentSpawnAreas() const
@@ -795,17 +809,17 @@ TSet<USpawnArea*> USpawnAreaManagerComponent::GetActivatedOrRecentSpawnAreas() c
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedActivatedOrRecentSpawnAreas() const
 {
-	return CachedManaged.Union(CachedActivated).Union(CachedRecent);
+	return CachedManaged.Union(GetActivatedOrRecentSpawnAreas());
 }
 
 TSet<USpawnArea*> USpawnAreaManagerComponent::GetManagedDeactivatedNotRecentSpawnAreas() const
 {
-	return CachedDeactivated.Difference(CachedRecent);
+	return CachedManaged.Difference(GetActivatedOrRecentSpawnAreas());
 }
 
-TSet<USpawnArea*> USpawnAreaManagerComponent::GetNotManagedNotActivatedNotRecentSpawnAreas() const
+TSet<USpawnArea*> USpawnAreaManagerComponent::GetUnflaggedSpawnAreas() const
 {
-	return AllSpawnAreas.Difference(CachedManaged).Difference(CachedActivated).Difference(CachedRecent);
+	return AllSpawnAreas.Difference(GetManagedActivatedOrRecentSpawnAreas());
 }
 
 /* ------------------------ */
@@ -825,7 +839,6 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, c
 	// Add to caches and GuidMap
 	GuidMap.Add(TargetGuid, SpawnArea);
 	CachedManaged.Add(SpawnArea);
-	CachedDeactivated.Add(SpawnArea);
 	SpawnArea->SetGuid(TargetGuid);
 	SpawnArea->SetIsCurrentlyManaged(true);
 
@@ -865,10 +878,6 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid
 
 	// Add to activated cache
 	CachedActivated.Add(SpawnArea);
-
-	// Remove from deactivated cache
-	const int32 NumRemoved = CachedDeactivated.Remove(SpawnArea);
-	if (NumRemoved == 0) UE_LOG(LogTargetManager, Display, TEXT("Failed to remove from CachedDeactivated."));
 
 	SpawnArea->SetIsActivated(true, bCanActivateWhileActivated);
 
@@ -911,7 +920,6 @@ void USpawnAreaManagerComponent::RemoveManagedFlagFromSpawnArea(const FGuid Targ
 	}
 
 	const int32 NumRemoved = GuidMap.Remove(TargetGuid);
-	const int32 NumRemovedDeactivated = CachedDeactivated.Remove(SpawnArea);
 	const int32 NumRemovedManaged = CachedManaged.Remove(SpawnArea);
 
 	if (!SpawnArea->IsManaged())
@@ -921,10 +929,10 @@ void USpawnAreaManagerComponent::RemoveManagedFlagFromSpawnArea(const FGuid Targ
 	}
 
 	if (NumRemoved == 0) UE_LOG(LogTargetManager, Warning, TEXT("Failed to remove from TargetGuidToSpawnArea map."));
-	if (NumRemovedDeactivated == 0) UE_LOG(LogTargetManager, Warning, TEXT("Failed to remove from CachedDeactivated."));
 	if (NumRemovedManaged == 0) UE_LOG(LogTargetManager, Warning, TEXT("Failed to remove from CachedManaged."));
 
 	SpawnArea->SetIsCurrentlyManaged(false);
+	UE_LOG(LogTemp, Display, TEXT("Removed %s from CachedManaged."), *TargetGuid.ToString());
 	SpawnArea->ResetGuid();
 }
 
@@ -934,9 +942,6 @@ void USpawnAreaManagerComponent::RemoveActivatedFlagFromSpawnArea(USpawnArea* Sp
 
 	// Remove from activated cache
 	const int32 NumRemovedFromCache = CachedActivated.Remove(SpawnArea);
-
-	// Add to deactivated cache
-	CachedDeactivated.Add(SpawnArea);
 
 	if (!SpawnArea->IsActivated())
 	{
@@ -990,7 +995,18 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const i
 {
 	// Assumes that we cannot activate an already activated target
 	TArray<USpawnArea*> ChosenSpawnAreas;
-	TArray<USpawnArea*> ValidSpawnAreas = GetManagedDeactivatedNotRecentSpawnAreas().Array();
+	
+	TSet<USpawnArea*> ValidSpawnAreasSet = GetManagedDeactivatedNotRecentSpawnAreas();
+	/* TODO: Might need to have separate "Recent" for spawning and activation
+	 * For game modes like ChargedBeatTrack, there will be 4 managed targets
+	 * but also 4 recent targets at some point, which is why this condition
+	 * exists */
+	
+	if (ValidSpawnAreasSet.IsEmpty())
+	{
+		ValidSpawnAreasSet = GetDeactivatedManagedSpawnAreas();
+	}
+	TArray<USpawnArea*> ValidSpawnAreas = ValidSpawnAreasSet.Array();
 	TArray<USpawnArea*> Filtered = ValidSpawnAreas;
 	USpawnArea* PreviousSpawnArea = GetMostRecentSpawnArea();
 
@@ -1079,7 +1095,7 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetSpawnableSpawnAreas_Grid(cons
 	const int32 NumToSpawn) const
 {
 	// Get all SpawnAreas that are managed, deactivated, and not recent
-	const TSet<USpawnArea*> ValidSet = GetNotManagedNotActivatedNotRecentSpawnAreas();
+	const TSet<USpawnArea*> ValidSet = GetUnflaggedSpawnAreas();
 	TArray<USpawnArea*> OutArray = ValidSet.Array();
 
 	// Always shuffle the SpawnAreas

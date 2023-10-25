@@ -144,7 +144,8 @@ protected:
 	/** Handles permanently activated targets so they can still receive activation responses, called in
 	 *  HandleTargetActivation */
 	void HandlePermanentlyActiveTargetActivation() const;
-	
+
+	/** Activates already activated targets if the game mode specifies */
 	void HandleActivateAlreadyActivated();
 	
 	/** Returns the number of targets that are allowed to be spawned at once, at runtime */
@@ -181,30 +182,34 @@ protected:
 	 *  based on if the target expired or not */
 	void UpdateDynamicLookUpValues(const FTargetDamageEvent& Event);
 
-	/** Removes from ManagedTargets based if the TargetDestructionConditions permit */
-	void HandleManagedTargetRemoval(const FTargetDamageEvent& Event);
-
-	/** Removes the DestroyedTarget from ManagedTargets, and updates its associated SpawnArea IsManaged flag */
+	/** Removes a target from ManagedTargets */
 	void RemoveFromManagedTargets(const FGuid GuidToRemove);
 
-	/** Returns the static location to place the SpawnBox */
-	FVector GenerateStaticLocation() const;
+	/** Static function that returns the static location to place the SpawnBox */
+	static FVector GenerateStaticLocation(const FBSConfig* InCfg);
 	
-	/** Returns the ending extents for a game mode. If dynamic, this is the extents that the curves lerp towards from
-	 *  StartExtents */
-	FVector GenerateStaticExtents() const;
+	/** Static function that returns the ending extents for a game mode. If dynamic, this is the extents that the
+	 *  curves lerp towards from StartExtents */
+	static FVector GenerateStaticExtents(const FBSConfig* InCfg);
 	
-	/** Returns the absolute minimum and maximum corners of the spawn volume, based on the Static Extents and SpawnBox
-	 *  origin. */
-	FExtrema GenerateStaticExtrema() const;
+	/** Static function that returns the absolute minimum and maximum corners of the spawn volume, based on the
+	 *  Static Extents and SpawnBox origin. */
+	static FExtrema GenerateStaticExtrema(const FBSConfig* InCfg, const FVector& InOrigin,
+		const FVector& InStaticExtents);
 
-	/** Returns the location to place the SpawnVolume based on the Factor if dynamic or the StaticExtents otherwise.
-	 *  X and Y will be the same as the SpawnBox's location */
-	FVector GenerateSpawnVolumeLocation(const float Factor = 1.f) const;
+	/** Static function that returns the location to place the SpawnVolume based on the Factor if dynamic or the
+	 *  StaticExtents otherwise. X and Y will be the same as the SpawnBox's location */
+	static FVector GenerateSpawnVolumeLocation(const FVector& InOrigin, const FVector& InDynamicStartExtents,
+		const FVector& InStaticExtents, const float Factor = 1.f);
 
-	/** Returns the extents to apply to the SpawnVolume based on the Factor if dynamic or the StaticExtents otherwise.
-	 *  X and Y will be the same as the SpawnBox's extents */
-	FVector GenerateSpawnVolumeExtents(const float Factor = 1.f) const;
+	/** Static function that returns the extents to apply to the SpawnVolume based on the Factor if dynamic or the
+	 *  StaticExtents otherwise. X and Y will be the same as the SpawnBox's extents */
+	static FVector GenerateSpawnVolumeExtents(const FBSConfig* InCfg, const FVector& InSpawnBoxExtents,
+		const FVector& InStaticExtents, const float Factor = 1.f);
+
+	/** Static function that returns the max extrema the SpawnVolume will ever be. Not used currently */
+	static FExtrema GenerateMaxSpawnVolumeExtrema(const FBSConfig* InCfg, const FVector& InOrigin,
+		const FVector& InStaticExtents);
 
 	/** Returns SpawnVolume's Location */
 	FVector GetSpawnVolumeLocation() const;
@@ -230,12 +235,17 @@ protected:
 	/** Updates the SpawnVolume and all directional boxes to match the current SpawnBox */
 	virtual void UpdateSpawnVolume(const float Factor) const;
 
-	/** Calls GetNewTargetDirection and sets the new direction of the target.
+	/** Calls GetNewTargetDirection and sets the new direction of the target. Also bound to targets'
+	 *  OnDeactivationResponse_ChangeDirection delegate, which it calls with parameter 2. \n\n
 	 *  Spawn = 0, Activation  = 1, Deactivation = 2 */
 	void ChangeTargetDirection(ATarget* InTarget, const uint8 InSpawnActivationDeactivation) const;
 
 	/** Returns a new unit vector direction for a target */
 	FVector GetNewTargetDirection(const FVector& LocationBeforeChange, const bool bLastDirectionChangeHorizontal) const;
+
+	/** Bound to targets' OnDeactivationResponse_Reactivate delegate to immediately reactivate a target after
+	 *  deactivation. Not broadcast if the target will destroy */
+	void OnReactivationRequested(ATarget* Target);
 
 	/** Updates the total amount of damage that can be done if a tracking target is damageable */
 	void UpdateTotalPossibleDamage();
@@ -267,7 +277,7 @@ public:
 	void SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
 	/** Prints the number of activated, recent, and managed targets to log */
-	void PrintDebug_NumRecentNumActive();
+	void PrintDebug_NumRecentNumActive() const;
 
 protected:
 	/** Initialized at start of game mode by DefaultGameMode */

@@ -172,6 +172,8 @@ void UCGMWC_SpawnArea::UpdateOptionsFromConfig()
 		GetStringArrayFromEnumArray_FromTagMap(BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy));
 
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
+	UpdateDependentOptions_TargetDamageType(BSConfig->TargetConfig.TargetDamageType);
+	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
 
 	UpdateBrushColors();
 }
@@ -234,7 +236,7 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
 		BSConfig->TargetConfig.BoxBounds.Y = MaxValue_HorizontalSpread;
 		BSConfig->TargetConfig.BoxBounds.Z = MaxValue_VerticalSpread;
 		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
-
+		
 		UpdateValueIfDifferent(SliderTextBoxOption_HorizontalSpread, BSConfig->TargetConfig.BoxBounds.Y);
 		UpdateValueIfDifferent(SliderTextBoxOption_VerticalSpread, BSConfig->TargetConfig.BoxBounds.Z);
 		UpdateValueIfDifferent(SliderTextBoxOption_FloorDistance, BSConfig->TargetConfig.FloorDistance);
@@ -257,7 +259,6 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDistributionPolicy(
 		SliderTextBoxOption_VerticalSpread->SetSliderAndTextBoxEnabledStates(true);
 		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
 	}
-	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
 }
 
 void UCGMWC_SpawnArea::UpdateDependentOptions_BoundsScalingPolicy(
@@ -282,6 +283,21 @@ void UCGMWC_SpawnArea::UpdateDependentOptions_BoundsScalingPolicy(
 		SliderTextBoxOption_EndThreshold->SetVisibility(ESlateVisibility::Collapsed);
 		SliderTextBoxOption_DecrementAmount->SetVisibility(ESlateVisibility::Collapsed);
 		ComboBoxOption_DynamicBoundsScalingPolicy->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
+void UCGMWC_SpawnArea::UpdateDependentOptions_TargetDamageType(const ETargetDamageType& InDamageType)
+{
+	if (InDamageType == ETargetDamageType::Tracking)
+	{
+		BSConfig->TargetConfig.BoundsScalingPolicy = EBoundsScalingPolicy::Static;
+		UpdateValueIfDifferent(ComboBoxOption_BoundsScalingPolicy,
+		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.BoundsScalingPolicy));
+		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(false);
+	}
+	else
+	{
+		ComboBoxOption_BoundsScalingPolicy->ComboBox->SetIsEnabled(true);
 	}
 }
 
@@ -371,6 +387,7 @@ void UCGMWC_SpawnArea::OnSelectionChanged_TargetDistributionPolicy(const TArray<
 	
 	BSConfig->TargetConfig.TargetDistributionPolicy = GetEnumFromString_FromTagMap<ETargetDistributionPolicy>(Selected[0]);
 	UpdateDependentOptions_TargetDistributionPolicy(BSConfig->TargetConfig.TargetDistributionPolicy);
+	UpdateDependentOptions_BoundsScalingPolicy(BSConfig->TargetConfig.BoundsScalingPolicy);
 	UpdateBrushColors();
 	UpdateAllOptionsValid();
 }
@@ -380,7 +397,7 @@ void UCGMWC_SpawnArea::OnSelectionChanged_DynamicBoundsScalingPolicy(const TArra
 {
 	if (SelectionType == ESelectInfo::Type::Direct || Selected.Num() < 1) return;
 	
-	BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy = GetEnumArrayFromStringArray<
+	BSConfig->DynamicSpawnAreaScaling.DynamicBoundsScalingPolicy = GetEnumArrayFromStringArray_FromTagMap<
 		EDynamicBoundsScalingPolicy>(Selected);
 	UpdateAllOptionsValid();
 }

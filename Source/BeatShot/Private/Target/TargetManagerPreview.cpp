@@ -113,6 +113,8 @@ void ATargetManagerPreview::UpdateSpawnVolume(const float Factor) const
 	const float CurrentZ = SBExtents.Z * 2.f;
 	float Height = Origin.Z - SBExtents.Z + ClampedOverflowAmount;
 	GameModePreviewWidget->SetBoxBounds_Current(FVector2d(CurrentY, CurrentZ), Height);
+	const float MaxTargetRadius = GetBSConfig()->TargetConfig.MaxSpawnedTargetScale * SphereTargetRadius;
+	GameModePreviewWidget->SetOverlayPadding(FMargin(MaxTargetRadius, MaxTargetRadius, MaxTargetRadius, 0.f));
 
 	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{

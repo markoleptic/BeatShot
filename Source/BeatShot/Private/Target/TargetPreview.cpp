@@ -88,7 +88,7 @@ bool ATargetPreview::ActivateTarget(const float Lifespan)
 	{
 		if (DestroyChance > FMath::FRandRange(0.f, 1.f))
 		{
-			const float DestroyTime = FMath::FRandRange(0.25f, 0.75f);
+			const float DestroyTime = FMath::FRandRange(0.5f, 1.f);
 			GetWorldTimerManager().ClearTimer(SimulatePlayerDestroyingTimer);
 			GetWorldTimerManager().SetTimer(SimulatePlayerDestroyingTimer, this,
 				&ThisClass::OnSimulatePlayerDestroyingTimerExpired, DestroyTime, false);
@@ -133,7 +133,7 @@ void ATargetPreview::OnIncomingDamageTaken(const FDamageEventData& InData)
 	OnTargetDamageEvent.Broadcast(Event);
 	
 	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth);
+	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth, bDestroy);
 	if (bDestroy) Destroy();
 	else
 	{

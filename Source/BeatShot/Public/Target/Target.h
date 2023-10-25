@@ -139,6 +139,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTargetDamageEvent, FTargetDamageE
 DECLARE_MULTICAST_DELEGATE_TwoParams(FOnDeactivationResponse_ChangeDirection, ATarget* InTarget,
 	const uint8 InSpawnActivationDeactivation);
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnDeactivationResponse_Reactivate, ATarget* Target);
+
 /** Base target class for this game that is mostly self-managed. TargetManager is responsible for spawning,
  *  but the lifetime is mostly controlled by parameters passed to it */
 UCLASS()
@@ -242,6 +244,9 @@ public:
 	/** Broadcast when the target needs a new direction because of a deactivation response */
 	FOnDeactivationResponse_ChangeDirection OnDeactivationResponse_ChangeDirection;
 
+	/** Broadcast when the target needs to immediately reactivate */
+	FOnDeactivationResponse_Reactivate OnDeactivationResponse_Reactivate;
+
 protected:
 	/** Called from HealthComponent when a target receives damage. Main Deactivation and Destruction handler */
 	virtual void OnIncomingDamageTaken(const FDamageEventData& InData);
@@ -262,7 +267,7 @@ public:
 
 protected:
 	/** Calls StopAllTimelines, sets TargetScale_Deactivation, and calls HandleDeactivationResponses */
-	virtual void HandleDeactivation(const bool bExpired, const bool bOutOfHealth);
+	virtual void HandleDeactivation(const bool bExpired, const bool bOutOfHealth, const bool bWillDestroy);
 
 	/** Returns true if the target should be deactivated based on TargetDeactivationConditions */
 	virtual bool ShouldDeactivate(const bool bExpired, const float CurrentHealth) const;

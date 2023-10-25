@@ -161,10 +161,10 @@ void ATargetManager::Init_Internal()
 		PlayerSettings.NotTakingTrackingDamageColor);
 
 	// Set SpawnBox location & BoxExtent, StaticExtents, and StaticExtrema
-	SpawnBox->SetRelativeLocation(GenerateStaticLocation());
-	StaticExtents = GenerateStaticExtents();
+	SpawnBox->SetRelativeLocation(GenerateStaticLocation(GetBSConfig()));
+	StaticExtents = GenerateStaticExtents(GetBSConfig());
 	SpawnBox->SetBoxExtent(StaticExtents);
-	StaticExtrema = GenerateStaticExtrema();
+	StaticExtrema = GenerateStaticExtrema(GetBSConfig(), GetSpawnBoxOrigin(), StaticExtents);
 
 	// Initialize the CompositeCurveTables in case they need to be modified
 	Init_Tables();
@@ -296,6 +296,7 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 	Target->SetTargetDamageType(FindNextTargetDamageType());
 	Target->OnTargetDamageEvent.AddDynamic(this, &ATargetManager::OnTargetDamageEvent);
 	Target->OnDeactivationResponse_ChangeDirection.AddUObject(this, &ATargetManager::ChangeTargetDirection);
+	Target->OnDeactivationResponse_Reactivate.AddUObject(this, &ATargetManager::OnReactivationRequested);
 	AddToManagedTargets(Target, InSpawnArea);
 	
 	Target->FinishSpawning(FTransform(), true);
@@ -718,8 +719,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
 	PostTargetDamageEvent.Broadcast(Event);
 	
 	SpawnAreaManager->HandleTargetDamageEvent(Event);
-	HandleManagedTargetRemoval(Event);
-
+	if (Event.bWillDestroy) RemoveFromManagedTargets(Event.Guid);
 
 	// Update RLC
 	if (RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::None) return;
@@ -762,27 +762,21 @@ void ATargetManager::UpdateDynamicLookUpValues(const FTargetDamageEvent& Event)
 	}
 }
 
-void ATargetManager::HandleManagedTargetRemoval(const FTargetDamageEvent& Event)
-{
-	if (Event.bWillDestroy) RemoveFromManagedTargets(Event.Guid);
-}
-
 void ATargetManager::RemoveFromManagedTargets(const FGuid GuidToRemove)
 {
-	SpawnAreaManager->RemoveManagedFlagFromSpawnArea(GuidToRemove);
 	ManagedTargets.Remove(GuidToRemove);
 }
 
-/* ------------------------------ */
-/* -- SpawnBox and SpawnVolume -- */
-/* ------------------------------ */
+/* -------------------------------------------------- */
+/* -- SpawnBox and SpawnVolume - Static Generators -- */
+/* -------------------------------------------------- */
 
-FVector ATargetManager::GenerateStaticLocation() const
+FVector ATargetManager::GenerateStaticLocation(const FBSConfig* InCfg)
 {
 	FVector SpawnBoxCenter = DefaultTargetManagerLocation;
-	const bool bDynamic = GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic;
+	const bool bDynamic = InCfg->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic;
 
-	switch (GetBSConfig()->TargetConfig.TargetDistributionPolicy)
+	switch (InCfg->TargetConfig.TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
 		{
@@ -796,35 +790,36 @@ FVector ATargetManager::GenerateStaticLocation() const
 			float HalfHeight;
 			if (bDynamic)
 			{
-				HalfHeight = FMath::Max(GetBSConfig()->TargetConfig.BoxBounds.Z,
-					GetBSConfig()->DynamicSpawnAreaScaling.StartBounds.Z) / 2.f;
+				HalfHeight = FMath::Max(InCfg->TargetConfig.BoxBounds.Z,
+					InCfg->DynamicSpawnAreaScaling.StartBounds.Z) / 2.f;
 			}
 			else
 			{
-				HalfHeight = GetBSConfig()->TargetConfig.BoxBounds.Z / 2.f;
+				HalfHeight = InCfg->TargetConfig.BoxBounds.Z / 2.f;
 			}
-			SpawnBoxCenter.Z = HalfHeight + GetBSConfig()->TargetConfig.FloorDistance;
+			SpawnBoxCenter.Z = HalfHeight + InCfg->TargetConfig.FloorDistance;
 		}
 		break;
 	case ETargetDistributionPolicy::Grid:
 		{
-			const float MaxTargetDiameter = FMath::Max(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale) * SphereTargetDiameter;
-			const float VSpacing = GetBSConfig()->GridConfig.GridSpacing.Y * (GetBSConfig()->GridConfig.
+			const float MaxTargetDiameter = FMath::Max(InCfg->TargetConfig.MinSpawnedTargetScale,
+				InCfg->TargetConfig.MaxSpawnedTargetScale) * SphereTargetDiameter;
+			const float VSpacing = InCfg->GridConfig.GridSpacing.Y * (InCfg->GridConfig.
 				NumVerticalGridTargets - 1);
-			const float VTargetWidth = (GetBSConfig()->GridConfig.NumVerticalGridTargets - 1) * MaxTargetDiameter;
+			const float VTargetWidth = (InCfg->GridConfig.NumVerticalGridTargets - 1) * MaxTargetDiameter;
 			const float HalfHeight = (VSpacing + VTargetWidth) * 0.5f;
-			SpawnBoxCenter.Z = HalfHeight + GetBSConfig()->TargetConfig.FloorDistance;
+			SpawnBoxCenter.Z = HalfHeight + InCfg->TargetConfig.FloorDistance;
 		}
 		break;
 	}
 	return SpawnBoxCenter;
 }
 
-FVector ATargetManager::GenerateStaticExtents() const
+FVector ATargetManager::GenerateStaticExtents(const FBSConfig* InCfg)
 {
-	FVector Out = GetBSConfig()->TargetConfig.BoxBounds * 0.5f;
+	FVector Out = InCfg->TargetConfig.BoxBounds * 0.5f;
 
-	switch (GetBSConfig()->TargetConfig.TargetDistributionPolicy)
+	switch (InCfg->TargetConfig.TargetDistributionPolicy)
 	{
 	case ETargetDistributionPolicy::HeadshotHeightOnly:
 		Out.Z = 1.f;
@@ -835,15 +830,15 @@ FVector ATargetManager::GenerateStaticExtents() const
 		break;
 	case ETargetDistributionPolicy::Grid:
 		{
-			const float MaxTargetDiameter = FMath::Max(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale) * SphereTargetDiameter;
+			const float MaxTargetDiameter = FMath::Max(InCfg->TargetConfig.MinSpawnedTargetScale, InCfg->TargetConfig.MaxSpawnedTargetScale) * SphereTargetDiameter;
 
-			const float HSpacing = GetBSConfig()->GridConfig.GridSpacing.X * (GetBSConfig()->GridConfig.
+			const float HSpacing = InCfg->GridConfig.GridSpacing.X * (InCfg->GridConfig.
 				NumHorizontalGridTargets - 1);
-			const float VSpacing = GetBSConfig()->GridConfig.GridSpacing.Y * (GetBSConfig()->GridConfig.
+			const float VSpacing = InCfg->GridConfig.GridSpacing.Y * (InCfg->GridConfig.
 				NumVerticalGridTargets - 1);
 
-			const float HTargetWidth = (GetBSConfig()->GridConfig.NumHorizontalGridTargets - 1) * MaxTargetDiameter;
-			const float VTargetWidth = (GetBSConfig()->GridConfig.NumVerticalGridTargets - 1) * MaxTargetDiameter;
+			const float HTargetWidth = (InCfg->GridConfig.NumHorizontalGridTargets - 1) * MaxTargetDiameter;
+			const float VTargetWidth = (InCfg->GridConfig.NumVerticalGridTargets - 1) * MaxTargetDiameter;
 
 			const float HalfWidth = (HSpacing + HTargetWidth) * 0.5f;
 			const float HalfHeight = (VSpacing + VTargetWidth) * 0.5f;
@@ -853,10 +848,10 @@ FVector ATargetManager::GenerateStaticExtents() const
 		break;
 	}
 
-	if (GetBSConfig()->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+	if (InCfg->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
 	{
 		// If user made StartExtents > BoxBounds
-		const FVector Start = GetBSConfig()->DynamicSpawnAreaScaling.GetStartExtents();
+		const FVector Start = InCfg->DynamicSpawnAreaScaling.GetStartExtents();
 
 		const float MaxX = FMath::Max(Start.X, Out.X);
 		const float MaxY = FMath::Max(Start.Y, Out.Y);
@@ -868,42 +863,112 @@ FVector ATargetManager::GenerateStaticExtents() const
 	return Out;
 }
 
-FExtrema ATargetManager::GenerateStaticExtrema() const
+FExtrema ATargetManager::GenerateStaticExtrema(const FBSConfig* InCfg, const FVector& InOrigin,
+	const FVector& InStaticExtents)
 {
-	const FVector Origin = GetSpawnBoxOrigin();
-	const float MaxTargetDiameter = FMath::Max(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale) * SphereTargetDiameter;
+	const float MaxTargetDiameter = FMath::Max(InCfg->TargetConfig.MinSpawnedTargetScale,
+		InCfg->TargetConfig.MaxSpawnedTargetScale) * SphereTargetDiameter;
 
-	const float MinX = Origin.X - 2 * StaticExtents.X - MaxTargetDiameter;
-	const float MaxX = Origin.X + MaxTargetDiameter;
+	const float MinX = InOrigin.X - 2 * InStaticExtents.X - MaxTargetDiameter;
+	const float MaxX = InOrigin.X + MaxTargetDiameter;
 
-	if (GetBSConfig()->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+	if (InCfg->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
 	{
-		const float HSpacing = GetBSConfig()->GridConfig.GridSpacing.X * (GetBSConfig()->GridConfig.
+		const float HSpacing = InCfg->GridConfig.GridSpacing.X * (InCfg->GridConfig.
 			NumHorizontalGridTargets - 1);
-		const float VSpacing = GetBSConfig()->GridConfig.GridSpacing.Y * (GetBSConfig()->GridConfig.
+		const float VSpacing = InCfg->GridConfig.GridSpacing.Y * (InCfg->GridConfig.
 			NumVerticalGridTargets - 1);
 
-		const float HTargetWidth = (GetBSConfig()->GridConfig.NumHorizontalGridTargets - 1) * MaxTargetDiameter;
-		const float VTargetWidth = (GetBSConfig()->GridConfig.NumVerticalGridTargets - 1) * MaxTargetDiameter;
+		const float HTargetWidth = (InCfg->GridConfig.NumHorizontalGridTargets - 1) * MaxTargetDiameter;
+		const float VTargetWidth = (InCfg->GridConfig.NumVerticalGridTargets - 1) * MaxTargetDiameter;
 
 		const float HalfWidth = (HSpacing + HTargetWidth) * 0.5f;
 		const float HalfHeight = (VSpacing + VTargetWidth) * 0.5f;
 
-		const float MinY = Origin.Y - HalfWidth;
-		const float MaxY = Origin.Y + HalfWidth;
-		const float MinZ = Origin.Z - HalfHeight;
-		const float MaxZ = Origin.Z + HalfHeight;
+		const float MinY = InOrigin.Y - HalfWidth;
+		const float MaxY = InOrigin.Y + HalfWidth;
+		const float MinZ = InOrigin.Z - HalfHeight;
+		const float MaxZ = InOrigin.Z + HalfHeight;
 
 		return FExtrema(FVector(MinX, MinY, MinZ), FVector(MaxX, MaxY, MaxZ));
 	}
 
-	const float MinY = Origin.Y - StaticExtents.Y;
-	const float MaxY = Origin.Y + StaticExtents.Y;
-	const float MinZ = Origin.Z - StaticExtents.Z;
-	const float MaxZ = Origin.Z + StaticExtents.Z;
+	const float MinY = InOrigin.Y - InStaticExtents.Y;
+	const float MaxY = InOrigin.Y + InStaticExtents.Y;
+	const float MinZ = InOrigin.Z - InStaticExtents.Z;
+	const float MaxZ = InOrigin.Z + InStaticExtents.Z;
 
 	return FExtrema(FVector(MinX, MinY, MinZ), FVector(MaxX, MaxY, MaxZ));
 }
+
+FVector ATargetManager::GenerateSpawnVolumeLocation(const FVector& InOrigin, const FVector& InDynamicStartExtents,
+	const FVector& InStaticExtents, const float Factor)
+{
+	// Y and Z will be the same as SpawnBox
+	FVector Out = InOrigin;
+	
+	const float LerpX = UKismetMathLibrary::Lerp(InDynamicStartExtents.X, InStaticExtents.X, Factor);
+	Out.X = Out.X - LerpX;
+
+	return Out;
+}
+
+FVector ATargetManager::GenerateSpawnVolumeExtents(const FBSConfig* InCfg, const FVector& InSpawnBoxExtents,
+	const FVector& InStaticExtents, const float Factor)
+{
+	FVector Out = InSpawnBoxExtents;
+
+	const FVector Start = InCfg->DynamicSpawnAreaScaling.GetStartExtents();
+	const float LerpX = UKismetMathLibrary::Lerp(Start.X, InStaticExtents.X, Factor);
+	const float MaxHalfTargetSize = FMath::Max(InCfg->TargetConfig.MinSpawnedTargetScale,
+		InCfg->TargetConfig.MaxSpawnedTargetScale) * SphereTargetRadius;
+	
+	// Account for target scale, use radius since this is half-size
+	Out.X = LerpX + MaxHalfTargetSize + DirBoxPadding;
+	Out.Y += MaxHalfTargetSize + 2.f;
+	Out.Z += MaxHalfTargetSize + 2.f;
+
+	return Out;
+}
+
+FExtrema ATargetManager::GenerateMaxSpawnVolumeExtrema(const FBSConfig* InCfg, const FVector& InOrigin,
+	const FVector& InStaticExtents)
+{
+	FVector AbsMaxOrigin = InOrigin;
+	FVector AbsMaxExtents = InStaticExtents;
+	
+	const FVector DynamicStart = InCfg->DynamicSpawnAreaScaling.GetStartExtents();
+	if (InCfg->TargetConfig.BoundsScalingPolicy == EBoundsScalingPolicy::Dynamic)
+	{
+		AbsMaxExtents.X = FMath::Max(DynamicStart.X, InStaticExtents.X);
+		AbsMaxExtents.Y = FMath::Max(DynamicStart.Y, InStaticExtents.Y);
+		AbsMaxExtents.Z = FMath::Max(DynamicStart.Z, InStaticExtents.Z);
+	}
+
+	const float MaxHalfTargetSize = FMath::Max(InCfg->TargetConfig.MinSpawnedTargetScale,
+		InCfg->TargetConfig.MaxSpawnedTargetScale) * SphereTargetRadius;
+
+	// Account for target scale, use radius since this is half-size
+	AbsMaxExtents.X += MaxHalfTargetSize + DirBoxPadding;
+	AbsMaxExtents.Y += MaxHalfTargetSize + 2.f;
+	AbsMaxExtents.Z += MaxHalfTargetSize + 2.f;
+
+	// Adjust Max Origin Location (X only)
+	AbsMaxOrigin.X = AbsMaxOrigin.X - AbsMaxExtents.X;
+
+	const float MinX = AbsMaxOrigin.X - AbsMaxExtents.X;
+	const float MaxX = AbsMaxOrigin.X + AbsMaxExtents.X;
+	const float MinY = AbsMaxOrigin.Y - AbsMaxExtents.Y;
+	const float MaxY = AbsMaxOrigin.Y + AbsMaxExtents.Y;
+	const float MinZ = AbsMaxOrigin.Z - AbsMaxExtents.Z;
+	const float MaxZ = AbsMaxOrigin.Z + AbsMaxExtents.Z;
+	
+	return FExtrema(FVector(MinX, MinY, MinZ), FVector(MaxX, MaxY, MaxZ));
+}
+
+/* ------------------------------------------------- */
+/* -- SpawnBox and SpawnVolume - Getters/Updaters -- */
+/* ------------------------------------------------- */
 
 FVector ATargetManager::GetSpawnBoxOrigin() const
 {
@@ -918,34 +983,6 @@ FVector ATargetManager::GetSpawnBoxExtents() const
 FExtrema ATargetManager::GetSpawnBoxExtrema() const
 {
 	return FExtrema(SpawnBox->Bounds.GetBoxExtrema(0), SpawnBox->Bounds.GetBoxExtrema(1));
-}
-
-FVector ATargetManager::GenerateSpawnVolumeLocation(const float Factor) const
-{
-	// Y and Z will be the same as SpawnBox
-	FVector Out = GetSpawnBoxOrigin();
-
-	const FVector Start = GetBSConfig()->DynamicSpawnAreaScaling.GetStartExtents();
-	const float LerpX = UKismetMathLibrary::Lerp(Start.X, StaticExtents.X, Factor);
-	Out.X = Out.X - LerpX;
-
-	return Out;
-}
-
-FVector ATargetManager::GenerateSpawnVolumeExtents(const float Factor) const
-{
-	FVector Out = GetSpawnBoxExtents();
-
-	const FVector Start = GetBSConfig()->DynamicSpawnAreaScaling.GetStartExtents();
-	const float LerpX = UKismetMathLibrary::Lerp(Start.X, StaticExtents.X, Factor);
-	const float MaxHalfTargetSize = FMath::Max(GetBSConfig()->TargetConfig.MinSpawnedTargetScale, GetBSConfig()->TargetConfig.MaxSpawnedTargetScale) * SphereTargetRadius;
-
-	// Account for target scale
-	Out.X = LerpX + MaxHalfTargetSize + DirBoxPadding;
-	Out.Y += MaxHalfTargetSize + DirBoxPadding;
-	Out.Z += MaxHalfTargetSize + DirBoxPadding;
-
-	return Out;
 }
 
 FVector ATargetManager::GetSpawnVolumeLocation() const
@@ -990,8 +1027,8 @@ void ATargetManager::UpdateSpawnBoxExtents(const float Factor) const
 void ATargetManager::UpdateSpawnVolume(const float Factor) const
 {
 	const FVector Origin = GetSpawnBoxOrigin();
-	const FVector VolumeLocation = GenerateSpawnVolumeLocation(Factor);
-	const FVector VolumeExtents = GenerateSpawnVolumeExtents(Factor);
+	const FVector VolumeLocation = GenerateSpawnVolumeLocation(Origin, GetSpawnBoxExtents(), StaticExtents, Factor);
+	const FVector VolumeExtents = GenerateSpawnVolumeExtents(GetBSConfig(), GetSpawnBoxExtents(), StaticExtents, Factor);
 
 	SpawnVolume->SetRelativeLocation(VolumeLocation);
 	SpawnVolume->SetBoxExtent(VolumeExtents);
@@ -1104,6 +1141,11 @@ FVector ATargetManager::GetNewTargetDirection(const FVector& LocationBeforeChang
 	return FVector::ZeroVector;
 }
 
+void ATargetManager::OnReactivationRequested(ATarget* Target)
+{
+	ActivateTarget(Target);
+}
+
 void ATargetManager::UpdateTotalPossibleDamage()
 {
 	TotalPossibleDamage++;
@@ -1188,26 +1230,11 @@ void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
 /* -- Debug -- */
 /* ----------- */
 
-void ATargetManager::PrintDebug_NumRecentNumActive()
+void ATargetManager::PrintDebug_NumRecentNumActive() const
 {
-	int NumRecent = 0;
-	int NumAct = 0;
-	int NumManaged = 0;
-	for (const USpawnArea* SpawnArea : SpawnAreaManager->GetSpawnAreasRef())
-	{
-		if (SpawnArea->IsRecent())
-		{
-			NumRecent++;
-		}
-		if (SpawnArea->IsActivated())
-		{
-			NumAct++;
-		}
-		if (SpawnArea->IsManaged())
-		{
-			NumManaged++;
-		}
-	}
+	const int NumRecent = SpawnAreaManager->GetRecentSpawnAreas().Num();
+	const int NumAct = SpawnAreaManager->GetActivatedSpawnAreas().Num();
+	const int NumManaged = SpawnAreaManager->GetManagedSpawnAreas().Num();
 	UE_LOG(LogTargetManager, Display, TEXT("NumRecent: %d NumActivated: %d NumManaged: %d"), NumRecent, NumAct,
 		NumManaged);
 }

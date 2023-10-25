@@ -5,6 +5,7 @@
 #include "Components/OverlaySlot.h"
 #include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
+#include "Components/VerticalBoxSlot.h"
 
 
 void UCGMWC_Preview::SetBoxBounds_Current(const FVector2d& InBounds, const float VerticalOffset)
@@ -48,6 +49,21 @@ void UCGMWC_Preview::SetFloorDistanceHeight(const float InHeight)
 void UCGMWC_Preview::SetText_FloorDistance(const FText& InText)
 {
 	TextBlock_FloorDistance->SetText(InText);
+}
+
+void UCGMWC_Preview::SetOverlayPadding(const FMargin InMargin)
+{
+	if (UVerticalBoxSlot* BoxSlot = Cast<UVerticalBoxSlot>(Overlay->Slot))
+	{
+		BoxSlot->SetPadding(InMargin);
+	}
+	if (UVerticalBoxSlot* BoxSlot = Cast<UVerticalBoxSlot>(Overlay_Bottom->Slot))
+	{
+		FMargin Before = BoxSlot->GetPadding();
+		Before.Left = InMargin.Left;
+		Before.Right = InMargin.Right;
+		BoxSlot->SetPadding(Before);
+	}
 }
 
 UTargetWidget* UCGMWC_Preview::ConstructTargetWidget()

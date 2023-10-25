@@ -220,7 +220,7 @@ void ATarget::Init(const FBS_TargetConfig& InTargetConfig)
 
 void ATarget::OnProjectileBounce(const FHitResult& ImpactResult, const FVector& ImpactVelocity)
 {
-	const FVector Normal = ProjectileMovementComponent->Velocity.GetSafeNormal();
+	const FVector Normal = ImpactResult.Normal;
 	FVector RoundedNormal = FVector::ZeroVector;
 	switch (Config.MovingTargetDirectionMode)
 	{
@@ -390,8 +390,12 @@ void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
 	OnTargetDamageEvent.Broadcast(Event);
 	
 	ColorWhenDamageTaken = TargetColorChangeMaterial->K2_GetVectorParameterValue("BaseColor");
-	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth);
-	if (bDestroy) Destroy();
+	if (bDeactivate) HandleDeactivation(Event.bDamagedSelf, Event.bOutOfHealth, bDestroy);
+
+	if (bDestroy)
+	{
+		Destroy();
+	}
 	else
 	{
 		CheckForHealthReset(Event.bOutOfHealth);
@@ -491,13 +495,17 @@ bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) c
 	return false;
 }
 
-void ATarget::HandleDeactivation(const bool bExpired, const bool bOutOfHealth)
+void ATarget::HandleDeactivation(const bool bExpired, const bool bOutOfHealth, const bool bWillDestroy)
 {
 	StopAllTimelines();
 	TargetScale_Deactivation = GetTargetScale_Current();
-	HandleDeactivationResponses(bExpired);
 	CurrentDeactivationHealthThreshold -= Config.DeactivationHealthLostThreshold;
+	HandleDeactivationResponses(bExpired);
 	bIsCurrentlyActivated = false;
+	if (!bWillDestroy && Config.TargetDeactivationResponses.Contains(ETargetDeactivationResponse::Reactivate))
+	{
+		OnDeactivationResponse_Reactivate.Broadcast(this);
+	}
 }
 
 void ATarget::HandleDeactivationResponses(const bool bExpired)

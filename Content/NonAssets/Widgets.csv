@@ -73,13 +73,13 @@ GM_AllGameModesRemovedText,All custom game modes removed
 GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_ApplyImmunityOnSpawn,Apply Immunity On Spawn
 GM_BaseGameMode,Base Game Mode
-GM_BeatGrid,Beat Grid
-GM_BeatGrid_Info,MultiBeat but in a grid.
+GM_BeatGrid,BeatGrid
+GM_BeatGrid_Info,Targets arranged in a static grid.
 GM_BeatGrid_NumHorizontalTargets,Number of Horizontal Targets
 GM_BeatGrid_NumVerticalTargets,Number of Vertical Targets
 GM_BeatGridSpecific,BeatGrid specific
-GM_BeatTrack,Beat Track
-GM_BeatTrack_Info,"Only one target is spawned, tracking style."
+GM_BeatTrack,BeatTrack
+GM_BeatTrack_Info,"Multiple targets moving horizontally, damaged by hovering your crosshair over them."
 GM_BeatTrackSpecific,BeatTrack specific
 GM_BoundsScalingPolicy,Spread Scaling
 GM_CompletelyRandomTargets,Completely Random Targets (vs Only Adjacent Targets)
@@ -115,8 +115,8 @@ GM_MinDistanceBetweenTargets,Min Target Distance
 GM_MinNumTargetsToActivateAtOnce,Min to Activate
 GM_MinTargetScale,Min Target Size
 GM_MovingTargetDirectionMode,Moving Target Direction Mode
-GM_MultiBeat,Multi Beat
-GM_MultiBeat_Info,Spawns targets continuously.
+GM_MultiBeat,MultiBeat
+GM_MultiBeat_Info,"Spawns targets continuously. Strikes a balance between speed and precision with a dynamically-sized spawn area, medium-sized targets, and a moderate range of target sizes."
 GM_NarrowSpread,Narrow
 GM_NumberOfTargets,Number of Targets
 GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn
@@ -132,7 +132,7 @@ GM_RemoveCustom,Remove Custom
 GM_SaveAndStartGame,Save and Start Game
 GM_SaveCustom,Save Custom
 GM_SingleBeat,Single Beat
-GM_SingleBeat_Info,One target at a time.
+GM_SingleBeat_Info,"Spawns targets one at a time, alternating between the center and edges of the spawn area."
 GM_Sizing,Target Sizing
 GM_SpawnAtOriginWheneverPossible,Spawn In Center When Possible
 GM_SpawnBeatDelay,Spawn Beat Delay
@@ -374,3 +374,5 @@ CH_CrossHairDotSize,Dot Size
 CH_DotColor,Dot Color
 GM_RuntimeTargetSpawningLocationSelectionMode,Spawn Selection
 GM_TargetSpawnResponses,Spawn Responses
+GM_MultiBeatPrecision,"Focuses on precision with a smaller, static spawn area, smaller targets, and a wider range of target sizes."
+GM_MultiBeatSpeed,"Emphasizes speed with a smaller, static spawn area, larger targets, more frequent spawning, and a narrower range of target sizes."

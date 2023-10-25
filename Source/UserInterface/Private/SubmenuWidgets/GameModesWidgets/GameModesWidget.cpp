@@ -90,6 +90,7 @@ void UGameModesWidget::SetupButtons()
 
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->SetIsEnabled(true);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start->SetIsEnabled(true);
 
 	// Difficulty buttons
 	Button_NormalDifficulty->SetDefaults(static_cast<uint8>(EGameModeDifficulty::Normal), Button_HardDifficulty);
@@ -195,6 +196,8 @@ void UGameModesWidget::BindAllDelegates()
 		&ThisClass::OnButtonClicked_CustomGameModeButton);
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->OnBSButtonPressed.AddDynamic(this,
 		&ThisClass::OnButtonClicked_CustomGameModeButton);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start->OnBSButtonPressed.AddDynamic(this,
+	&ThisClass::OnButtonClicked_CustomGameModeButton);
 	CustomGameModesWidget_CreatorView->RequestGameModeTemplateUpdate.AddUObject(this,
 		&ThisClass::OnRequestGameModeTemplateUpdate);
 	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this,
@@ -258,7 +261,7 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 		SynchronizeStartWidgets();
 		OnButtonClicked_SaveCustom();
 	}
-	else if (Button == Button_StartFromCustom)
+	else if (Button == Button_StartFromCustom || Button == CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start)
 	{
 		SynchronizeStartWidgets();
 		OnButtonClicked_StartFromCustom();
@@ -718,12 +721,22 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 	Button_RemoveAllCustom->SetIsEnabled(!LoadCustomGameModes().IsEmpty());
 	Button_RemoveSelectedCustom->SetIsEnabled(bIsCustomMode);
 
+	if (bIsCustomMode && bNewCustomGameModeNameEmpty)
+	{
+		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetButtonText(FText::FromString("Save"));
+	}
+	else
+	{
+		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetButtonText(FText::FromString("Create"));
+	}
+
 	// Invalid options, any remaining buttons disabled
 	if (!bAllCustomGameModeOptionsValid)
 	{
 		Button_SaveCustom->SetIsEnabled(false);
 		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Create->SetIsEnabled(false);
 		Button_StartFromCustom->SetIsEnabled(false);
+		CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start->SetIsEnabled(false);
 		Button_ClearRLHistory->SetIsEnabled(false);
 		Button_ExportCustom->SetIsEnabled(false);
 		return;
@@ -731,6 +744,7 @@ void UGameModesWidget::UpdateSaveStartButtonStates()
 
 	/* At this point, all custom game mode options are valid. They can play the game mode but not be able to save it */
 	Button_StartFromCustom->SetIsEnabled(true);
+	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start->SetIsEnabled(true);
 	Button_ClearRLHistory->SetIsEnabled(bIsCustomMode);
 	Button_ExportCustom->SetIsEnabled(bIsCustomMode);
 

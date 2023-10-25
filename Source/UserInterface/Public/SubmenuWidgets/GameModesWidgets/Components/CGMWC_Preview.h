@@ -33,6 +33,8 @@ public:
 
 	void SetText_FloorDistance(const FText& InText);
 
+	void SetOverlayPadding(const FMargin InMargin);
+
 	UFUNCTION()
 	UTargetWidget* ConstructTargetWidget();
 
@@ -61,6 +63,8 @@ public:
 	UBSButton* Button_RefreshPreview;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSButton* Button_Create;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSButton* Button_Start;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
@@ -68,6 +72,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UOverlay* Overlay;
+
+	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
+	UOverlay* Overlay_Bottom;
 
 	UPROPERTY(BlueprintReadOnly, meta=(BindWidget))
 	UTextBlock* TextBlock_GameModePreviewAvailability;

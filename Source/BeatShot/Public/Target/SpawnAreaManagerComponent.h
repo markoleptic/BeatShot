@@ -734,8 +734,9 @@ public:
 	void Clear();
 
 private:
-	/** Sets SpawnMemoryInY & Z, SpawnMemoryScaleY & Z, MinOverlapRadius, and bLocationsAreCorners */
-	void SetAppropriateSpawnMemoryValues();
+	/** Sets InSpawnAreaInc, InSpawnAreaScale */
+	static void SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
+		const FBSConfig* InCfg, const FVector& InStaticExtents);
 
 	/** Initializes the SpawnCounter array */
 	void InitializeSpawnAreas();
@@ -820,26 +821,31 @@ public:
 	/** Returns a set of SpawnAreas that are flagged as currently managed */
 	TSet<USpawnArea*> GetManagedSpawnAreas() const;
 
-	/** Returns a set of SpawnAreas that are flagged as currently managed and not flagged as activated */
+	/** Returns a set of SpawnAreas that are flagged as currently managed and not flagged as activated
+	 *  (Cached Managed difference Cached Activated) */
 	TSet<USpawnArea*> GetDeactivatedManagedSpawnAreas() const;
 
-	/** Returns a filtered set containing only SpawnAreas flagged as recent */
+	/** Returns a set of SpawnAreas containing only SpawnAreas flagged as recent */
 	TSet<USpawnArea*> GetRecentSpawnAreas() const;
 
-	/** Returns a filtered set containing only SpawnAreas flagged as activated */
+	/** Returns a set of SpawnAreas containing only SpawnAreas flagged as activated */
 	TSet<USpawnArea*> GetActivatedSpawnAreas() const;
 
-	/** Returns a filtered set containing only SpawnAreas flagged as activated or recent */
+	/** Returns a set of SpawnAreas containing only SpawnAreas flagged as activated or recent
+	 *  (Cached Activated union Cached Recent)*/
 	TSet<USpawnArea*> GetActivatedOrRecentSpawnAreas() const;
 
-	/** Returns a filtered set containing SpawnAreas flagged as managed, activated, or recent */
+	/** Returns a set of SpawnAreas containing SpawnAreas flagged as managed, activated, or recent
+	 *  (Cached Managed union Cached Activated union Cached Recent) */
 	TSet<USpawnArea*> GetManagedActivatedOrRecentSpawnAreas() const;
 
-	/** Returns a filtered set containing SpawnAreas flagged as managed, not activated, and not recent */
+	/** Returns a set of SpawnAreas containing SpawnAreas flagged as managed, not activated, and not recent
+	 *  (Cached Managed difference (Cached Activated union Cached Recent)) */
 	TSet<USpawnArea*> GetManagedDeactivatedNotRecentSpawnAreas() const;
 
-	/** Returns a set containing SpawnAreas not flagged with anything */
-	TSet<USpawnArea*> GetNotManagedNotActivatedNotRecentSpawnAreas() const;
+	/** Returns a set of SpawnAreas containing SpawnAreas not flagged with anything
+	 *  (AllSpawnAreas difference Cached Managed difference Cached Activated difference Cached Recent) */
+	TSet<USpawnArea*> GetUnflaggedSpawnAreas() const;
 
 	/* ------------------------ */
 	/* -- SpawnArea flagging -- */
@@ -1087,60 +1093,15 @@ public:
 	bool bDebug_Grid;
 
 private:
+	/** Whether or not to broadcast the RequestRLCSpawnArea when finding SpawnAreas */
+	bool bShouldAskRLCForSpawnAreas;
+	
 	/** Pointer to TargetManager's BSConfig */
 	FBSConfig* BSConfig;
 
 	/** The total amount of (-, horizontal, vertical) SpawnAreas in SpawnAreas */
 	FIntVector3 Size;
-
-	/** All SpawnArea objects inside the larger total spawn area. Set is filled bottom-up, left-to-right */
-	UPROPERTY()
-	TArray<USpawnArea*> SpawnAreas;
-
-	/** Maps each location in the SpawnBox to a unique SpawnArea */
-	UPROPERTY()
-	TMap<FAreaKey, USpawnArea*> AreaKeyMap;
-
-	/** Maps each Target Guid to a unique SpawnArea. Requires SpawnArea to be managed */
-	UPROPERTY()
-	TMap<FGuid, USpawnArea*> GuidMap;
-
-	/** All SpawnArea objects inside the larger total spawn area. Set is filled bottom-up, left-to-right */
-	UPROPERTY()
-	TSet<USpawnArea*> AllSpawnAreas;
-
-	/** A set of SpawnAreas that fall within the current BoxBounds */
-	UPROPERTY()
-	TSet<USpawnArea*> CachedExtrema;
-
-	/** A set of the currently managed SpawnAreas */
-	UPROPERTY()
-	TSet<USpawnArea*> CachedManaged;
-
-	/** A set of the currently activated SpawnAreas */
-	UPROPERTY()
-	TSet<USpawnArea*> CachedActivated;
-
-	/** A set of the currently managed but deactivated SpawnAreas */
-	UPROPERTY()
-	TSet<USpawnArea*> CachedDeactivated;
-
-	/** A set of the currently recent SpawnAreas */
-	UPROPERTY()
-	TSet<USpawnArea*> CachedRecent;
-
-	/** A set of the most recently spawned grid block of SpawnAreas */
-	UPROPERTY()
-	mutable TSet<USpawnArea*> MostRecentGridBlock;
-
-	/** The most recently activated SpawnArea */
-	UPROPERTY()
-	USpawnArea* MostRecentSpawnArea;
-
-	/** The SpawnArea that contains the origin */
-	UPROPERTY()
-	USpawnArea* OriginSpawnArea;
-
+	
 	/** Incremental (horizontal, vertical) step values used to iterate through SpawnAreas locations */
 	FIntVector3 SpawnAreaInc;
 
@@ -1156,8 +1117,56 @@ private:
 	/** The largest min and max extrema for the SpawnBox */
 	FExtrema StaticExtrema;
 
-	/** Preferred SpawnMemory increments */
-	const TArray<int32> PreferredScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
+	/** All SpawnArea objects inside the larger total spawn area. Set is filled bottom-up, left-to-right. Does not
+	 *  change throughout game mode */
+	UPROPERTY()
+	TArray<USpawnArea*> SpawnAreas;
+
+	/** All SpawnArea objects inside the larger total spawn area. Set is filled bottom-up, left-to-right. Does not
+	 *  change throughout game mode */
+	UPROPERTY()
+	TSet<USpawnArea*> AllSpawnAreas;
+
+	/** Maps each location in the SpawnBox to a unique SpawnArea. Does not change throughout game mode */
+	UPROPERTY()
+	TMap<FAreaKey, USpawnArea*> AreaKeyMap;
+
+	/** Maps each Target Guid to a unique SpawnArea. Added when the SpawnArea is flagged as managed, and removed
+	 *  when the managed flag is removed */
+	UPROPERTY()
+	TMap<FGuid, USpawnArea*> GuidMap;
+	
+	/** A set of SpawnAreas that fall within the current BoxBounds. All are added initially, updated when the SpawnBox
+	 *  extents changes through the OnExtremaChanged function*/
+	UPROPERTY()
+	TSet<USpawnArea*> CachedExtrema;
+
+	/** A set of the currently managed SpawnAreas. Added when the SpawnArea is flagged as managed, and removed
+	 *  when the managed flag is removed */
+	UPROPERTY()
+	TSet<USpawnArea*> CachedManaged;
+
+	/** A set of the currently activated SpawnAreas. Added when the SpawnArea is flagged as activated, and removed
+	 *  when the activated flag is removed */
+	UPROPERTY()
+	TSet<USpawnArea*> CachedActivated;
+
+	/** A set of the currently recent SpawnAreas. Added when flagged as recent, and removed when
+	 *  the recent flag is removed */
+	UPROPERTY()
+	TSet<USpawnArea*> CachedRecent;
+
+	/** A set of the most recently spawned grid block of SpawnAreas */
+	UPROPERTY()
+	mutable TSet<USpawnArea*> MostRecentGridBlock;
+
+	/** The most recently activated SpawnArea */
+	UPROPERTY()
+	USpawnArea* MostRecentSpawnArea;
+
+	/** The SpawnArea that contains the origin */
+	UPROPERTY()
+	USpawnArea* OriginSpawnArea;
 
 	/** Cardinal direction Index types that are valid to use when searching for GridBlocks */
 	const TSet<EBorderingDirection> GridBlockIndexTypes = {
@@ -1182,9 +1191,6 @@ private:
 
 	/** Delegate used to request a SpawnArea selection from the RLC */
 	FRequestRLCSpawnArea RequestRLCSpawnArea;
-
-	/** Whether or not to broadcast the RequestRLCSpawnArea when finding SpawnAreas */
-	bool bShouldAskRLCForSpawnAreas;
 };
 
 inline TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Number, const FLargestRect& Rect)

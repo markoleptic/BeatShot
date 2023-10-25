@@ -66,7 +66,7 @@ void UCGMWC_Activation::UpdateOptionsFromConfig()
 	UpdateValueIfDifferent(SliderTextBoxOption_MaxNumActivatedTargetsAtOnce,
 		BSConfig->TargetConfig.MaxNumActivatedTargetsAtOnce);
 	UpdateValuesIfDifferent(MenuOption_NumTargetsToActivateAtOnce, bConstantNumTargetsToActivateAtOnce,
-		BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce, BSConfig->TargetConfig.MaxNumActivatedTargetsAtOnce);
+		BSConfig->TargetConfig.MinNumTargetsToActivateAtOnce, BSConfig->TargetConfig.MaxNumTargetsToActivateAtOnce);
 
 	UpdateValueIfDifferent(ComboBoxOption_TargetActivationSelectionPolicy,
 		GetStringFromEnum_FromTagMap(BSConfig->TargetConfig.TargetActivationSelectionPolicy));

@@ -27,6 +27,8 @@ protected:
 
 	/** Updates options that depend on the value selection of InBoundsScalingPolicy */
 	void UpdateDependentOptions_BoundsScalingPolicy(const EBoundsScalingPolicy& InBoundsScalingPolicy);
+
+	void UpdateDependentOptions_TargetDamageType(const ETargetDamageType& InDamageType);
 	
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 

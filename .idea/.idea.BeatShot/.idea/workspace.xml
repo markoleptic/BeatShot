@@ -85,33 +85,34 @@
   <component name="ChangeListManager">
     <list default="true" id="3f728c33-cc1c-4f37-8b0f-203b8b767819" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.BeatShot/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/Blueprints/DA_EnumTagMap.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/DA_EnumTagMap.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" beforeDir="false" afterPath="$PROJECT_DIR$/BeatShot.sln.DotSettings.user" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/GameModes/DA_DefaultGameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/GameModes/DA_DefaultGameModes.uasset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Levels/MainMenuLevel.umap" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/NonAssets/Tooltips.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Tooltips.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Tooltips.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Tooltips.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_CustomGameModes_PropertyView.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_CustomGameModes_PropertyView.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_SpawnArea.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_SpawnArea.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_Spawning.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_Spawning.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubmenuWidgets/GameModes/CustomGameModes/WBP_ConditionsResponses.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubmenuWidgets/GameModes/CustomGameModes/WBP_ConditionsResponses.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ComboBoxOption_Multi.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ComboBoxOption_Multi.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ConstantMinMax.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/MenuOptionWidgets/WBP_ConstantMinMax.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/EnumTagMap.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/EnumTagMap.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" beforeDir="false" afterPath="$PROJECT_DIR$/Content/NonAssets/Widgets.csv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/StringTables/ST_Widgets.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_MainMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/MenuWidgets/WBP_PostGameMenu.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_CustomGameModes_CreatorView.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/CustomGameModes/WBP_CustomGameModes_CreatorView.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/WBP_GameModes.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/SubMenuWidgets/GameModes/WBP_GameModes.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Button_Notification.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/UserInterface/WidgetComponents/WBP_Button_Notification.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/SpawnAreaManagerComponent.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/SpawnAreaManagerComponent.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/Target.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/Target.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManager.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManagerPreview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetManagerPreview.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetPreview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Private/Target/TargetPreview.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Target/SpawnAreaManagerComponent.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/SpawnAreaManagerComponent.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Target/Target.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/Target.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShot/Public/Target/TargetManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShot/Public/Target/TargetManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/BSGameModeDataAsset.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/BeatShotGlobal/Public/BSGameModeDataAsset.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Activation.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Activation.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Base.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Base.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_ConditionsAndResponses.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_ConditionsAndResponses.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_General.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_General.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Movement.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Movement.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Preview.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Preview.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_SpawnArea.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_SpawnArea.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Spawning.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Spawning.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_TargetScaling.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/Components/CGMWC_TargetScaling.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/Boxes/BSComboBoxString.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/Boxes/BSComboBoxString.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/MenuOptionWidgets/MenuOptionWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Base.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Base.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/Boxes/BSComboBoxString.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/Boxes/BSComboBoxString.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/ComboBoxOptionWidget.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/WidgetComponents/MenuOptionWidgets/ConstantMinMaxMenuOptionWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/GameModesWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/SubmenuWidgets/GameModesWidgets/GameModesWidget.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSCarouselNavBar.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Private/WidgetComponents/BSCarouselNavBar.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Preview.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/Components/CGMWC_Preview.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/Components/CGMWC_SpawnArea.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/Components/CGMWC_SpawnArea.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/GameModesWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/UserInterface/Public/SubmenuWidgets/GameModesWidgets/GameModesWidget.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,6 +123,87 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="mock:///Dummy.cpp" root0="SKIP_HIGHLIGHTING" />
@@ -223,7 +305,7 @@
     &quot;TODO_SCOPE&quot;: &quot;All Places&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
     &quot;XThreadsFramesViewSplitterKey&quot;: &quot;0.4474708&quot;,
-    &quot;ezargs.lastUsed&quot;: &quot;a&quot;,
+    &quot;ezargs.lastUsed&quot;: &quot;&quot;,
     &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
@@ -58870,6 +58952,8 @@
       <workItem from="1697919634166" duration="29860000" />
       <workItem from="1698000832695" duration="8480000" />
       <workItem from="1698009655812" duration="90000" />
+      <workItem from="1698168676917" duration="20460000" />
+      <workItem from="1698209157715" duration="2792000" />
     </task>
     <task id="LOCAL-00001" summary="Update to 5.1">
       <created>1677735236922</created>
