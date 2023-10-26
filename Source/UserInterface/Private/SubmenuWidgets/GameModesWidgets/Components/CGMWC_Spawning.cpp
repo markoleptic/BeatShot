@@ -190,6 +190,19 @@ void UCGMWC_Spawning::UpdateDependentOptions_TargetSpawningPolicy(const ETargetS
 		SliderTextBoxOption_NumRuntimeTargetsToSpawn->SetVisibility(ESlateVisibility::Collapsed);
 
 		ComboBoxOption_RuntimeTargetSpawningLocationSelectionMode->SetVisibility(ESlateVisibility::Collapsed);
+
+		if (BSConfig->TargetConfig.TargetDistributionPolicy == ETargetDistributionPolicy::Grid)
+		{
+			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetSliderAndTextBoxEnabledStates(false);
+			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetValue(BSConfig->GridConfig.NumHorizontalGridTargets * BSConfig->GridConfig.NumVerticalGridTargets);
+			SliderTextBoxOption_MaxNumTargetsAtOnce->SetSliderAndTextBoxEnabledStates(false);
+			SliderTextBoxOption_MaxNumTargetsAtOnce->SetValue(-1.f);
+		}
+		else
+		{
+			SliderTextBoxOption_NumUpfrontTargetsToSpawn->SetSliderAndTextBoxEnabledStates(true);
+			SliderTextBoxOption_MaxNumTargetsAtOnce->SetSliderAndTextBoxEnabledStates(true);
+		}
 	}
 }
 

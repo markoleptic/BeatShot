@@ -116,7 +116,7 @@ GM_MinNumTargetsToActivateAtOnce,Min to Activate
 GM_MinTargetScale,Min Target Size
 GM_MovingTargetDirectionMode,Moving Target Direction Mode
 GM_MultiBeat,MultiBeat
-GM_MultiBeat_Info,"Spawns targets continuously. Strikes a balance between speed and precision with a dynamically-sized spawn area, medium-sized targets, and a moderate range of target sizes."
+GM_MultiBeat_Info,"Spawns targets continuously. A balance of speed and precision with a dynamically-sized spawn area, medium-sized targets, and a moderate range of target sizes."
 GM_NarrowSpread,Narrow
 GM_NumberOfTargets,Number of Targets
 GM_NumRuntimeTargetsToSpawn,Number of Targets to Spawn

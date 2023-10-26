@@ -16,22 +16,19 @@ class USERINTERFACE_API UBSCarouselNavBar : public UWidget
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar")
-	bool bShowNotificationWidgets = false;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
 	TSubclassOf<UBSButton> ButtonWidgetType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
-	FMargin ButtonPadding;
+	FMargin Padding_Button;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Notifications",
-		meta=(EditCondition="bShowNotificationWidgets==true", EditConditionHides))
-	TSubclassOf<UButtonNotificationWidget> NotificationWidgetType;
+	/** The horizontal alignment of the button */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
+	TEnumAsByte<EHorizontalAlignment> HAlign_Button = HAlign_Fill;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Notifications",
-		meta=(EditCondition="bShowNotificationWidgets==true", EditConditionHides))
-	FMargin NotificationWidgetContainerPadding;
+	/** The vertical alignment of the button */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CarouselNavBar|Buttons")
+	TEnumAsByte<EVerticalAlignment> VAlign_Button = VAlign_Fill;
 	
 	/**
 	 * Establishes the Widget Carousel instance that this Nav Bar should interact with
@@ -68,8 +65,7 @@ protected:
 
 	UPROPERTY()
 	TArray<TObjectPtr<UBSButton>> Buttons;
-
-	TArray<TObjectPtr<UButtonNotificationWidget>> Notifications;
-
+	
+	UPROPERTY()
 	TArray<FText> ButtonText;
 };

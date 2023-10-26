@@ -13,10 +13,12 @@ UCLASS()
 class USERINTERFACE_API UDefaultGameModeOptionWidget : public UMenuOptionWidget
 {
 	GENERATED_BODY()
-
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativePreConstruct() override;
 	virtual void SetStyling() override;
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
 	
 public:
 	EBaseGameMode GetBaseGameMode() const { return BaseGameMode; }
@@ -29,9 +31,9 @@ public:
 	UBSButton* Button;
 	
 protected:
-	UPROPERTY(EditDefaultsOnly, Category = "DefaultGameModeOptionWidget")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "DefaultGameModeOptionWidget")
 	EBaseGameMode BaseGameMode;
 	
-	UPROPERTY(EditDefaultsOnly, meta=(BindWidget))
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(BindWidget))
 	UCommonTextBlock* AltDescriptionText;
 };

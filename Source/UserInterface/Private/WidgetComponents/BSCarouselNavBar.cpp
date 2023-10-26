@@ -4,13 +4,12 @@
 #include "WidgetComponents/BSCarouselNavBar.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "CommonWidgetCarousel.h"
-#include "WidgetComponents/ButtonNotificationWidget.h"
+#include "WidgetComponents/Buttons/NotificationButtonCombo.h"
 
 void UBSCarouselNavBar::SetLinkedCarousel(UCommonWidgetCarousel* CommonCarousel)
 {
 	if (LinkedCarousel) LinkedCarousel->OnCurrentPageIndexChanged.RemoveAll(this);
 	
-
 	LinkedCarousel = CommonCarousel;
 
 	if (LinkedCarousel)
@@ -28,17 +27,20 @@ void UBSCarouselNavBar::SetNavButtonText(const TArray<FText>& InButtonText)
 
 void UBSCarouselNavBar::UpdateNotifications(const int32 Index, const int32 NumCautions, const int32 NumWarnings)
 {
-	if (bShowNotificationWidgets && Notifications.IsValidIndex(Index))
-	{
-		Notifications[Index]->SetNumWarnings(NumWarnings);
-		Notifications[Index]->SetNumCautions(NumCautions);
-	}
+	if (!Buttons.IsValidIndex(Index)) return;
+	
+	UNotificationButtonCombo* Button = Cast<UNotificationButtonCombo>(Buttons[Index]);
+	if (!Button) return;
+	
+	Button->SetNumWarnings(NumWarnings);
+	Button->SetNumCautions(NumCautions);
 }
 
 void UBSCarouselNavBar::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 
+	Buttons.Empty();
 	MyContainer.Reset();
 }
 
@@ -62,97 +64,67 @@ void UBSCarouselNavBar::HandleButtonClicked(const UBSButton* AssociatedButton)
 
 TSharedRef<SWidget> UBSCarouselNavBar::RebuildWidget()
 {
+	Buttons.Empty();
 	MyContainer = SNew(SHorizontalBox);
-
+	//RebuildButtons();
 	return MyContainer.ToSharedRef();
 }
 
 void UBSCarouselNavBar::RebuildButtons()
 {
-	if (ensure(MyContainer) && LinkedCarousel)
+	if (!MyContainer || !LinkedCarousel || !ButtonWidgetType) return;
+
+	MyContainer->ClearChildren();
+	
+	const int32 NumPages = LinkedCarousel->GetChildrenCount();
+	const int32 LastPage = NumPages - 1;
+
+	if (NumPages <= 0) return;
+	
+	for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
 	{
-		MyContainer->ClearChildren();
+		UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
+		if (!ButtonUserWidget) continue;
 
-		const int32 NumPages = LinkedCarousel->GetChildrenCount();
-		for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
+		Buttons.Add(ButtonUserWidget);
+		TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
+		
+		if (ButtonText.IsValidIndex(CurPage))
 		{
-			TSharedRef<SVerticalBox> MainVerticalBox = SNew(SVerticalBox);
-			if (NotificationWidgetType && bShowNotificationWidgets)
-			{
-				UButtonNotificationWidget* NotificationWidget =
-					Cast<UButtonNotificationWidget>(CreateWidget(GetOwningPlayer(), NotificationWidgetType));
-				if (NotificationWidget)
-				{
-					Notifications.Add(NotificationWidget);
-					TSharedRef<SWidget> NotificationSWidget = NotificationWidget->TakeWidget();
-
-					FMargin CurrentPadding = NotificationWidgetContainerPadding;
-					if (CurPage == 0) CurrentPadding.Left = 0.f;
-					if (CurPage == NumPages - 1) CurrentPadding.Right = 0.f;
-					
-					MainVerticalBox->AddSlot()
-						.HAlign(HAlign_Center).VAlign(VAlign_Fill)
-						.AutoHeight().Padding(CurrentPadding)
-						[NotificationSWidget];
-				}
-			}
-			
-			if (ButtonWidgetType)
-			{
-				UBSButton* ButtonUserWidget = Cast<UBSButton>(CreateWidget(GetOwningPlayer(), ButtonWidgetType));
-				if (ButtonUserWidget)
-				{
-					Buttons.Add(ButtonUserWidget);
-					TSharedRef<SWidget> ButtonSWidget = ButtonUserWidget->TakeWidget();
-					
-					if (ButtonText.IsValidIndex(CurPage))
-					{
-						ButtonUserWidget->SetButtonText(ButtonText[CurPage]);
-					}
-
-					FMargin CurrentPadding = ButtonPadding;
-					if (CurPage == 0) CurrentPadding.Left = 0.f;
-					if (CurPage == NumPages - 1) CurrentPadding.Right = 0.f;
-					
-					MainVerticalBox->AddSlot()
-						.HAlign(HAlign_Fill).VAlign(VAlign_Fill)
-						.FillHeight(1.f).Padding(CurrentPadding)
-						[ButtonSWidget];
-				}
-			}
-			
-			MyContainer->AddSlot()
-				.HAlign(HAlign_Fill).VAlign(VAlign_Center)
-				.FillWidth(1.f).Padding(0)
-				[MainVerticalBox];
-			
+			ButtonUserWidget->SetButtonText(ButtonText[CurPage]);
 		}
-		if (NumPages > 0)
+
+		FMargin CurrentPadding = Padding_Button;
+		if (CurPage == 0) CurrentPadding.Left = 0.f;
+		if (CurPage == LastPage) CurrentPadding.Right = 0.f;
+		
+		MyContainer->AddSlot()
+			.HAlign(HAlign_Button).VAlign(VAlign_Button)
+			.FillWidth(1.f).Padding(CurrentPadding)
+			[ButtonSWidget];
+	}
+	
+	
+	for (int32 CurPage = 0; CurPage < LinkedCarousel->GetChildrenCount(); CurPage++)
+	{
+		const int32 NextPage = CurPage + 1;
+		
+		// Bind button clicking to function, link buttons together to deactivate when not clicked
+		if (Buttons.IsValidIndex(CurPage))
 		{
-			for (int32 CurPage = 0; CurPage < NumPages; CurPage++)
-			{
-				const int32 NextPage = CurPage + 1;
-
-				// Default to 0 warnings and cautions
-				if (bShowNotificationWidgets && Notifications.IsValidIndex(CurPage))
-				{
-					Notifications[CurPage]->SetNumCautions(0);
-					Notifications[CurPage]->SetNumWarnings(0);
-				}
-
-				// Bind button clicking to function, link buttons together to deactivate when not clicked
-				if (Buttons.IsValidIndex(CurPage))
-				{
-					Buttons[CurPage]->OnBSButtonPressed.AddDynamic(this, &UBSCarouselNavBar::HandleButtonClicked);
-					if (Buttons.IsValidIndex(NextPage))
-					{
-						Buttons[CurPage]->SetDefaults(CurPage, Buttons[NextPage]);
-					}
-				}
-			}
-
-			Buttons.Last()->SetDefaults(static_cast<uint8>(Buttons.Num() - 1), Buttons[0]);
-			Buttons[LinkedCarousel->GetActiveWidgetIndex()]->SetActive();
+			Buttons[CurPage]->OnBSButtonPressed.AddDynamic(this, &UBSCarouselNavBar::HandleButtonClicked);
+			
+			if (Buttons.IsValidIndex(NextPage)) Buttons[CurPage]->SetDefaults(CurPage, Buttons[NextPage]);
+			
+			UNotificationButtonCombo* Button = Cast<UNotificationButtonCombo>(Buttons[CurPage]);
+			if (!Button) continue;
+			
+			// Default to 0 warnings and cautions
+			Button->SetNumCautions(0);
+			Button->SetNumWarnings(0);
 		}
 	}
+
+	Buttons.Last()->SetDefaults(static_cast<uint8>(Buttons.Num() - 1), Buttons[0]);
+	Buttons[LinkedCarousel->GetActiveWidgetIndex()]->SetActive();
 }

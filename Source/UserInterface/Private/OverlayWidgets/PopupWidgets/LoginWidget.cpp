@@ -79,24 +79,20 @@ void ULoginWidget::InitializeExit()
 	{
 		FadeOutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
 		BindToAnimationFinished(FadeOutContinueWithout, FadeOutDelegate);
-		UE_LOG(LogTemp, Display, TEXT("FadeOutContinueWithout"));
 	}
 	else if (IsAnimationPlaying(FadeOutLogin))
 	{
 		FadeOutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
 		BindToAnimationFinished(FadeOutLogin, FadeOutDelegate);
-		UE_LOG(LogTemp, Display, TEXT("FadeOutLogin"));
 	}
 	else if (IsAnimationPlaying(FadeOutSteam))
 	{
 		FadeOutDelegate.BindDynamic(this, &ULoginWidget::OnExitAnimationCompleted);
 		BindToAnimationFinished(FadeOutSteam, FadeOutDelegate);
-		UE_LOG(LogTemp, Display, TEXT("FadeOutSteam"));
 	}
 	else
 	{
 		OnExitAnimationCompleted();
-		UE_LOG(LogTemp, Display, TEXT("No animatino playing"));
 	}
 }
 

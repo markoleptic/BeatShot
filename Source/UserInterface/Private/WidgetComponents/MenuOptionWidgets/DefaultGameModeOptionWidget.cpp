@@ -20,6 +20,18 @@ void UDefaultGameModeOptionWidget::SetStyling()
 	Super::SetStyling();
 }
 
+void UDefaultGameModeOptionWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+	AltDescriptionText->SetScrollingEnabled(true);
+}
+
+void UDefaultGameModeOptionWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseLeave(InMouseEvent);
+	AltDescriptionText->SetScrollingEnabled(false);
+}
+
 void UDefaultGameModeOptionWidget::SetAltDescriptionText(const FText& Text)
 {
 	AltDescriptionText->SetText(Text);

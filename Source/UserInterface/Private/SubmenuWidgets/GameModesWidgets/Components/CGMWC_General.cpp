@@ -211,21 +211,36 @@ void UCGMWC_General::UpdateDependentOptions_DeactivationConditions(
 void UCGMWC_General::UpdateDependentOptions_EnableAI(const bool bInEnableReinforcementLearning,
 	const EReinforcementLearningHyperParameterMode HyperParameterMode)
 {
-	if (bInEnableReinforcementLearning)
+	// TODO: Implement Auto Reinforcement Learning HyperParameter Mode
+	/*if (bInEnableReinforcementLearning)
 	{
 		ComboBoxOption_HyperParameterMode->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
 	}
 	else
 	{
 		ComboBoxOption_HyperParameterMode->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
-	}
+	}*/
 	UpdateDependentOptions_HyperParameterMode(bInEnableReinforcementLearning, HyperParameterMode);
 }
 
 void UCGMWC_General::UpdateDependentOptions_HyperParameterMode(const bool bInEnableReinforcementLearning,
 	const EReinforcementLearningHyperParameterMode HyperParameterMode)
 {
-	if (!bInEnableReinforcementLearning)
+	if (bInEnableReinforcementLearning)
+	{
+		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
+		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
+		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
+	}
+	else
+	{
+		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
+	}
+	
+	// TODO: Implement Auto Reinforcement Learning HyperParameter Mode
+	/*if (!bInEnableReinforcementLearning)
 	{
 		SliderTextBoxOption_Alpha->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
 		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Disabled);
@@ -245,7 +260,7 @@ void UCGMWC_General::UpdateDependentOptions_HyperParameterMode(const bool bInEna
 		SliderTextBoxOption_Epsilon->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
 		SliderTextBoxOption_Gamma->SetMenuOptionEnabledState(EMenuOptionEnabledState::Enabled);
 		break;
-	}
+	}*/
 }
 
 void UCGMWC_General::OnCheckStateChanged_EnableAI(const bool bChecked)

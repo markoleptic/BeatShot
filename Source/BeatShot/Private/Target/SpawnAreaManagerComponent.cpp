@@ -8,13 +8,12 @@
 #include "Target/MatrixFunctions.h"
 #include "Target/TargetManager.h"
 
+/** Preferred SpawnMemory increments */
+const TArray PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
+
 /* ---------------- */
 /* -- USpawnArea -- */
 /* ---------------- */
-
-
-/** Preferred SpawnMemory increments */
-const TArray PreferredSpawnAreaIncScales = {50, 45, 40, 30, 25, 20, 15, 10, 5};
 
 USpawnArea::USpawnArea()
 {
@@ -932,7 +931,6 @@ void USpawnAreaManagerComponent::RemoveManagedFlagFromSpawnArea(const FGuid Targ
 	if (NumRemovedManaged == 0) UE_LOG(LogTargetManager, Warning, TEXT("Failed to remove from CachedManaged."));
 
 	SpawnArea->SetIsCurrentlyManaged(false);
-	UE_LOG(LogTemp, Display, TEXT("Removed %s from CachedManaged."), *TargetGuid.ToString());
 	SpawnArea->ResetGuid();
 }
 
