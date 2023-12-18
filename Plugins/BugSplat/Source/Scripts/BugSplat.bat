@@ -1,1 +1,0 @@
-"U:/UnrealProjects/BeatShot 5.1/Plugins/BugSplat/Source/ThirdParty/SymUploader/symbol-upload-win.exe" -i f08c4fd99a63d51cf62f77707a3ff678 -s jJDjDNt3JkY8wNf3mvYRTC6Z28Gd7yO5 -b beatshot_demo -a beatshot_demo_app -v 1.0 -d "U:/UnrealProjects/BeatShot 5.1/Binaries" -f "**/*.{pdb,dll,exe}" 
