@@ -256,21 +256,25 @@ void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 
 	const FString StringVariable = Variable->GetString();
 
+	// Remove AimBot
 	if (StringVariable.Equals("0"))
 	{
-		if (const FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(AimBotSpecHandle))
+		if (AimBotSpecHandle.IsValid())
 		{
-			ASC->ClearAbility(Spec->Handle);
+			ASC->ClearAbility(AimBotSpecHandle);
+			UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
 		}
-
-		UE_LOG(LogTemp, Display, TEXT("AimBot deactivated."));
 		return;
 	}
 
-	const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
-	AimBotSpecHandle = ASC->GiveAbility(AbilitySpec);
-	if (!AimBotSpecHandle.IsValid()) return;
-
+	// Give AimBot
+	if (!ASC->FindAbilitySpecFromHandle(AimBotSpecHandle))
+	{
+		const FGameplayAbilitySpec AbilitySpec(AimBotAbility, 1);
+		AimBotSpecHandle = ASC->GiveAbility(AbilitySpec);
+		UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
+	}
+	
 	FGameplayAbilitySpec* Spec = ASC->FindAbilitySpecFromHandle(AimBotSpecHandle);
 	if (!Spec) return;
 
@@ -280,9 +284,12 @@ void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 	UBSGA_AimBot* AbilityInstance = Cast<UBSGA_AimBot>(Ability);
 	if (!AbilityInstance) return;
 
-	GameMode->GetTargetManager()->OnTargetActivated_AimBot.
-	          AddUObject(AbilityInstance, &UBSGA_AimBot::OnTargetActivated);
-
+	if (!GameMode->GetTargetManager()->OnTargetActivated_AimBot.IsBoundToObject(AbilityInstance))
+	{
+		GameMode->GetTargetManager()->OnTargetActivated_AimBot.
+		  AddUObject(AbilityInstance, &UBSGA_AimBot::OnTargetActivated);
+	}
+	
 	FVector IgnoreStartLocation = FVector::ZeroVector;
 	if (StringVariable.Contains("X=") || StringVariable.Contains("Y=") || StringVariable.Contains("Z="))
 	{
@@ -290,8 +297,7 @@ void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 	}
 	AbilityInstance->SetIgnoreStartLocation(IgnoreStartLocation);
 	ASC->MarkAbilitySpecDirty(*Spec);
-
-	UE_LOG(LogTemp, Display, TEXT("AimBot activated."));
+	UE_LOG(LogTemp, Display, TEXT("AimBot modified."));
 }
 
 void UBSCheatManager::CVarOnChanged_ClearDebug(IConsoleVariable* Variable)

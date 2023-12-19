@@ -212,7 +212,8 @@ int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>
 		/* Return a random point inside the filtered spawn indices if not empty */
 		if (!FilteredSpawnAreaIndices.IsEmpty())
 		{
-			ReturnIndex = FMath::RandRange(0, FilteredSpawnAreaIndices.Num() - 1);
+			const int32 RandomIndex = FMath::RandRange(0, FilteredSpawnAreaIndices.Num() - 1);
+			ReturnIndex = FilteredSpawnAreaIndices[RandomIndex];
 			break;
 		}
 	}
@@ -341,7 +342,7 @@ TArray<int32> UReinforcementLearningComponent::GetIndices_MaximizeSecond(const i
 
 TArray<float> UReinforcementLearningComponent::GetTArray_FromNdArray_QTableAvg() const
 {
-	nc::NdArray<float> QTableMean = nc::mean(GetQTable(), nc::Axis::COL).astype<float>();
+	nc::NdArray<float> QTableMean = nc::mean(GetQTable(), nc::Axis::ROW).astype<float>();
 	const nc::NdArray<float> Reshaped = QTableMean.reshape(5, 5);
 	const nc::NdArray<float> Flipped = nc::flipud<float>(Reshaped);
 	return GetTArrayFromNdArray<float>(Flipped);

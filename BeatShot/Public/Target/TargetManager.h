@@ -100,6 +100,8 @@ public:
 	/** Called from MainMenuGameMode */
 	void Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InPlayerSettings);
 
+	void TestRLComponent(int32 NumIterations);
+
 protected:
 	/** Main initialization function */
 	void Init_Internal();
@@ -132,14 +134,14 @@ protected:
 	bool ActivateTarget(ATarget* InTarget) const;
 
 	/** Tries to spawn a target if there are less targets in ManagedTargets than MaxNumTargetsAtOnce */
-	void HandleRuntimeSpawning();
+	int32 HandleRuntimeSpawning();
 
 	/** Spawns targets at the beginning of a game mode based on the TargetDistributionPolicy */
 	void HandleUpfrontSpawning();
 
 	/** Activate target(s)/SpawnArea(s) if there are any ManagedTargets that are not activated. Handles permanent
 	 *  and temporary targets */
-	void HandleTargetActivation();
+	int32 HandleTargetActivation();
 
 	/** Handles permanently activated targets so they can still receive activation responses, called in
 	 *  HandleTargetActivation */

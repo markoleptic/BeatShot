@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/Tasks/AbilityTask.h"
+#include "Animation/AnimMontage.h"
 #include "BSAT_MontageEventWait.generated.h"
 
 class UBSAbilitySystemComponent;

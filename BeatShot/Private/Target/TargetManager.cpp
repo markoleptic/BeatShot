@@ -129,6 +129,18 @@ void ATargetManager::Init(FBSConfig* InBSConfig, const FPlayerSettings_Game& InP
 	Init_Internal();
 }
 
+void ATargetManager::TestRLComponent(int32 NumIterations)
+{
+	while (NumIterations > 0)
+	{
+		if (!ShouldSpawn) return;
+		HandleRuntimeSpawning();
+		HandleTargetActivation();
+		SpawnAreaManager->RefreshRecentFlags();
+		NumIterations--;
+	}
+}
+
 void ATargetManager::Init_Internal()
 {
 	// Clean Up
@@ -269,9 +281,9 @@ void ATargetManager::OnPlayerStopTrackingTarget()
 void ATargetManager::OnAudioAnalyzerBeat()
 {
 	if (!ShouldSpawn) return;
-	
-	HandleRuntimeSpawning();
-	HandleTargetActivation();
+
+	const int32 NumSpawned = HandleRuntimeSpawning();
+	const int32 NumActivated = HandleTargetActivation();
 	SpawnAreaManager->RefreshRecentFlags();
 	
 	#if !UE_BUILD_SHIPPING
@@ -330,8 +342,8 @@ ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
 
 void ATargetManager::AddToManagedTargets(ATarget* SpawnTarget, USpawnArea* SpawnArea)
 {
-	SpawnAreaManager->FlagSpawnAreaAsManaged(SpawnArea, SpawnTarget->GetGuid());
 	ManagedTargets.Add(SpawnTarget->GetGuid(), SpawnTarget);
+	SpawnAreaManager->FlagSpawnAreaAsManaged(SpawnArea, SpawnTarget->GetGuid());
 }
 
 bool ATargetManager::ActivateTarget(ATarget* InTarget) const
@@ -343,7 +355,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	{
 		return false;
 	}
-
+	
 	// Only perform some Activation Responses if already activated
 	const bool bPreTargetActivationState = InTarget->IsActivated();
 
@@ -387,7 +399,6 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	{
 		InTarget->SetTargetScale(FindNextSpawnedTargetScale());
 	}
-
 	const bool bPostTargetActivationState = InTarget->ActivateTarget(GetBSConfig()->TargetConfig.TargetMaxLifeSpan);
 	const bool bIsReactivation = bPreTargetActivationState && bPostTargetActivationState;
 
@@ -438,9 +449,9 @@ void ATargetManager::HandleUpfrontSpawning()
 	}
 }
 
-void ATargetManager::HandleRuntimeSpawning()
+int32 ATargetManager::HandleRuntimeSpawning()
 {
-	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy != ETargetSpawningPolicy::RuntimeOnly) return;
+	if (GetBSConfig()->TargetConfig.TargetSpawningPolicy != ETargetSpawningPolicy::RuntimeOnly) return 0;
 	
 	int32 NumberToSpawn = GetNumberOfRuntimeTargetsToSpawn();
 
@@ -457,23 +468,24 @@ void ATargetManager::HandleRuntimeSpawning()
 	int32 NumSpawned = 0;
 	for (USpawnArea* SpawnArea : FindNextSpawnAreasForSpawn(NumberToSpawn))
 	{
-		if (SpawnArea) if (SpawnTarget(SpawnArea)) NumSpawned++;
+		if (SpawnArea && SpawnTarget(SpawnArea)) NumSpawned++;
 	}
 	if (bPrintDebug_NumRecentNumActive)
 	{
 		if (NumberToSpawn > 0) UE_LOG(LogTemp, Display, TEXT("Spawned %d/%d targets."), NumSpawned, NumberToSpawn);
 	}
+	return NumSpawned;
 }
 
-void ATargetManager::HandleTargetActivation()
+int32 ATargetManager::HandleTargetActivation()
 {
-	if (GetManagedTargets().IsEmpty()) { return; }
+	if (GetManagedTargets().IsEmpty()) return 0;
 
 	// Persistant Targets are the only type that can always receive continuous activation
 	if (GetBSConfig()->TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
 	{
 		HandlePermanentlyActiveTargetActivation();
-		return;
+		return 0;
 	}
 	
 	// Check to see if theres any targets available to activate
@@ -484,22 +496,34 @@ void ATargetManager::HandleTargetActivation()
 	if (NumAvailableToActivate == 0 && NumToActivate == 0 && GetBSConfig()->TargetConfig.bAllowActivationWhileActivated)
 	{
 		HandleActivateAlreadyActivated();
-		return;
+		return 0;
 	}
 
 	int32 NumActivated = 0;
 	TArray<USpawnArea*> SpawnAreas = FindNextSpawnAreasForActivation(NumToActivate);
 	for (const USpawnArea* SpawnArea : SpawnAreas)
 	{
-		if (ATarget* Target = FindManagedTargetByGuid(SpawnArea->GetGuid()))
-			if (ActivateTarget(Target))
-				NumActivated++;
+		ATarget* Target = FindManagedTargetByGuid(SpawnArea->GetGuid());
+		if (!Target)
+		{
+			UE_LOG(LogTargetManager, Warning, TEXT("Failed to find target guid for activation."));
+			continue;
+		}
+		if (ActivateTarget(Target))
+		{
+			NumActivated++;
+		}
+		else
+		{
+			UE_LOG(LogTargetManager, Warning, TEXT("Failed to activate target."));
+		}
 	}
 	
 	if (bPrintDebug_NumRecentNumActive)
 	{
-		if (NumToActivate > 0) UE_LOG(LogTemp, Display, TEXT("Activated %d/%d targets."), NumActivated, NumToActivate);
+		if (NumToActivate > 0) UE_LOG(LogTargetManager, Display, TEXT("Activated %d/%d targets."), NumActivated, NumToActivate);
 	}
+	return NumActivated;
 }
 
 void ATargetManager::HandlePermanentlyActiveTargetActivation() const
@@ -684,6 +708,7 @@ ETargetDamageType ATargetManager::FindNextTargetDamageType()
 
 USpawnArea* ATargetManager::GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Previous) const
 {
+	// TODO: change to return index
 	TArray<int32> Indices;
 	for (const USpawnArea* SpawnArea : ValidSpawnAreas)
 	{
@@ -716,6 +741,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
 
 	// Set TargetManagerData and broadcast to GameMode
 	Event.SetTargetManagerData(CurrentStreak, TotalPossibleDamage);
+	const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(Event.Guid);
 	PostTargetDamageEvent.Broadcast(Event);
 	
 	SpawnAreaManager->HandleTargetDamageEvent(Event);
@@ -723,7 +749,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
 
 	// Update RLC
 	if (RLComponent->GetReinforcementLearningMode() == EReinforcementLearningMode::None) return;
-	const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(Event.Guid);
+	
 	if (!Found) return;
 	RLComponent->SetActiveTargetPairReward(Found->GetIndex(), !Event.bDamagedSelf);
 

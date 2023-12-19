@@ -836,10 +836,11 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, c
 	}
 
 	// Add to caches and GuidMap
-	GuidMap.Add(TargetGuid, SpawnArea);
-	CachedManaged.Add(SpawnArea);
+	
 	SpawnArea->SetGuid(TargetGuid);
 	SpawnArea->SetIsCurrentlyManaged(true);
+	GuidMap.Add(TargetGuid, SpawnArea);
+	CachedManaged.Add(SpawnArea);
 
 	// Don't generate new OverlappingVertices if they're already generated
 	if (!SpawnArea->OverlappingVertices.IsEmpty()) return;
@@ -1033,9 +1034,12 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const i
 	for (int i = 0; i < NumToActivate; i++)
 	{
 		// Add the origin if settings permit
+		// TODO: this might not work due to desync w/ spawning ?
 		if (GetBSConfig()->TargetConfig.bSpawnAtOriginWheneverPossible && ValidSpawnAreas.
 			Contains(GetOriginSpawnArea()))
 		{
+			if (!GetOriginSpawnArea()->GetGuid().IsValid()) continue;
+
 			// Add to the return array
 			ChosenSpawnAreas.Add(GetOriginSpawnArea());
 
@@ -1054,6 +1058,7 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const i
 				UE_LOG(LogTargetManager, Warning, TEXT("Unable to Spawn at SpawnArea suggested by RLAgent."));
 				continue;
 			}
+			if (!Chosen->GetGuid().IsValid()) continue;
 
 			ChosenSpawnAreas.Add(Chosen);
 			ValidSpawnAreas.Remove(Chosen);
@@ -1062,9 +1067,11 @@ TArray<USpawnArea*> USpawnAreaManagerComponent::GetActivatableSpawnAreas(const i
 		else
 		{
 			const int32 RandomIndex = FMath::RandRange(0, ValidSpawnAreas.Num() - 1);
-			if (!ValidSpawnAreas.IsValidIndex(i)) continue;
-
+			if (!ValidSpawnAreas.IsValidIndex(RandomIndex)) continue;
+			
 			USpawnArea* Chosen = ValidSpawnAreas[RandomIndex];
+			if (!Chosen->GetGuid().IsValid()) continue;
+			
 			ChosenSpawnAreas.Add(Chosen);
 			ValidSpawnAreas.Remove(Chosen);
 			PreviousSpawnArea = Chosen;
