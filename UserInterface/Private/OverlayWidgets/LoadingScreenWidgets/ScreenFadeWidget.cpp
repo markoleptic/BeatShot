@@ -35,12 +35,12 @@ void UScreenFadeWidget::SetStartOpacity(const float Value)
 	BlackScreen->SetRenderOpacity(Value);
 }
 
-void UScreenFadeWidget::FadeFromBlack()
+void UScreenFadeWidget::FadeFromBlack(const float FadeOutTime)
 {
-	PlayAnimationForward(FadeOutBlackScreen);
+	PlayAnimationForward(FadeOutBlackScreen, 1 / FadeOutTime);
 }
 
-void UScreenFadeWidget::FadeToBlack()
+void UScreenFadeWidget::FadeToBlack(const float FadeOutTime)
 {
-	PlayAnimationForward(FadeInBlackScreen);
+	PlayAnimationForward(FadeInBlackScreen, 1 / FadeOutTime);
 }

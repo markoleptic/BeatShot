@@ -9,7 +9,6 @@
 #include "Components/EditableTextBox.h"
 #include "Components/VerticalBox.h"
 #include "Components/HorizontalBox.h"
-#include "GameFramework/GameUserSettings.h"
 #include "OverlayWidgets/PopupWidgets/PopupMessageWidget.h"
 #include "WidgetComponents/Buttons/BSButton.h"
 #include "Microsoft/COMPointer.h"
@@ -311,18 +310,6 @@ void UAudioSelectWidget::PopulateSongOptionComboBox()
 		{
 			ComboBox_SongTitle->AddOption(SavedScoreObj.SongTitle);
 		}
-	}
-}
-
-void UAudioSelectWidget::OpenSongFileDialog_Implementation(TArray<FString>& OutFileNames)
-{
-	/** Cheap fix to make sure open file dialog is always on top of the game */
-	if (UGameUserSettings* GameUserSettings = UGameUserSettings::GetGameUserSettings(); GameUserSettings->
-		GetFullscreenMode() == EWindowMode::Fullscreen)
-	{
-		bWasInFullScreenMode = true;
-		GameUserSettings->SetFullscreenMode(EWindowMode::WindowedFullscreen);
-		GameUserSettings->ApplySettings(false);
 	}
 }
 

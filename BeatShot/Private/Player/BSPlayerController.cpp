@@ -55,6 +55,10 @@ void ABSPlayerController::BeginPlay()
 		}
 	}*/
 
+	LoadingScreenWidgetFadeOutTime = 0.0f;
+	GConfig->GetFloat(TEXT("/Script/CommonLoadingScreen.CommonLoadingScreenSettings"),
+		TEXT("LoadingScreenWidgetFadeOutTime"), LoadingScreenWidgetFadeOutTime, GGameIni);
+
 	if (LoadPlayerSettings().VideoAndSound.bShowFPSCounter)
 	{
 		ShowFPSCounter();
@@ -519,8 +523,14 @@ void ABSPlayerController::FadeScreenToBlack()
 	{
 		CreateScreenFadeWidget(0.f);
 	}
-	UE_LOG(LogTemp, Display, TEXT("Fading screen to black"));
-	ScreenFadeWidget->FadeToBlack();
+	if (!GetWorld()->GetMapName().Contains("Range"))
+	{
+		if (AMainMenuGameMode* MainMenuGameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			MainMenuGameMode->FadeOutMainMenuMusic(LoadingScreenWidgetFadeOutTime);
+		}
+	}
+	ScreenFadeWidget->FadeToBlack(LoadingScreenWidgetFadeOutTime);
 }
 
 void ABSPlayerController::FadeScreenFromBlack()
@@ -533,8 +543,14 @@ void ABSPlayerController::FadeScreenFromBlack()
 	{
 		CreateScreenFadeWidget(1.f);
 	}
-	UE_LOG(LogTemp, Display, TEXT("Fading screen from black"));
-	ScreenFadeWidget->FadeFromBlack();
+	if (!GetWorld()->GetMapName().Contains("Range"))
+	{
+		if (AMainMenuGameMode* MainMenuGameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+		{
+			MainMenuGameMode->FadeInMainMenuMusic(LoadingScreenWidgetFadeOutTime);
+		}
+	}
+	ScreenFadeWidget->FadeFromBlack(LoadingScreenWidgetFadeOutTime);
 }
 
 void ABSPlayerController::OnFadeScreenFromBlackFinish()

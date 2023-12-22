@@ -26,15 +26,12 @@ void ULoadingScreenWidget::BindToLoadingScreenDelegates(FOnLoadingScreenVisibili
 	OnReadyToHideLoadingScreen.AddUObject(this, &ULoadingScreenWidget::FadeOut);
 }
 
-void ULoadingScreenWidget::FadeOut(float AnimPlaybackLength)
+void ULoadingScreenWidget::FadeOut(const float LoadingScreenWidgetFadeOutTime)
 {
 	bShowLoadingScreen = true;
-
-	UE_LOG(LogTemp, Display, TEXT("Fading OUT LoadingScreenWidget"));
-
 	if (IsAnimationPlaying(FadeInAnim))
 	{
 		StopAnimation(FadeInAnim);
 	}
-	PlayAnimationForward(FadeOutAnim, 1.f / AnimPlaybackLength);
+	PlayAnimationForward(FadeOutAnim, 1 / LoadingScreenWidgetFadeOutTime);
 }

@@ -25,6 +25,11 @@ void UBSGameInstance::OnStart()
 {
 	Super::OnStart();
 	InitVideoSettings();
+	UGameplayStatics::SetBaseSoundMix(GetWorld(), GlobalSoundMix);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound,
+		LoadPlayerSettings().VideoAndSound.GlobalVolume / 100, 1, 0.0f, true);
+	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound,
+		LoadPlayerSettings().VideoAndSound.MenuVolume / 100, 1, 0.0f, true);
 }
 
 void UBSGameInstance::InitVideoSettings()

@@ -28,9 +28,9 @@ public:
 	void SetStartOpacity(const float Value);
 
 	UFUNCTION(BlueprintCallable)
-	void FadeFromBlack();
+	void FadeFromBlack(const float FadeOutTime);
 	UFUNCTION(BlueprintCallable)
-	void FadeToBlack();
+	void FadeToBlack(const float FadeOutTime);
 
 private:
 	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))

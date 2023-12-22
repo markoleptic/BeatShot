@@ -182,4 +182,5 @@ private:
 	bool PostGameMenuActive;
 	const int32 ZOrderFadeScreen = 20;
 	const int32 ZOrderFPSCounter = 19;
+	float LoadingScreenWidgetFadeOutTime;
 };

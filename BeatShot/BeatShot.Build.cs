@@ -23,17 +23,16 @@ public class BeatShot : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new[]
 		{
-			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib"
+			"ParallelcubeAudioAnalyzer", "ParallelcubeTaglib", "EnhancedInput"
 		});
 
 		PublicIncludePaths.AddRange(new[]
 		{
-			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Private",
-			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130",
-			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools",
-			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio/include",
-			"../Plugins/BeatShotAudioAnalyzer/Source/Thirdparty/miniaudio",
-			"../Plugins/BeatShotAudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb"
+			"../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Private",
+			"../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130",
+			"../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/KissFFT_130/tools",
+			"../Plugins/AudioAnalyzer/Source/Thirdparty/miniaudio/include",
+			"../Plugins/AudioAnalyzer/Source/AudioAnalyzer/Thirdparty/stb"
 		});
 
 		PublicIncludePaths.Add(Path.Combine(EngineDirectory, "Plugins/Marketplace/DLSS/Source/ThirdParty/NGX/Include"));

@@ -27,7 +27,7 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	UFUNCTION()
-	void FadeOut(float AnimPlaybackLength);
+	void FadeOut(const float LoadingScreenWidgetFadeOutTime);
 
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;

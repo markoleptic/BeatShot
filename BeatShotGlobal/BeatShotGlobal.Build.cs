@@ -9,7 +9,7 @@ public class BeatShotGlobal : ModuleRules
 	{
 		PublicDependencyModuleNames.AddRange(new[]
 		{
-			"Core", "CoreUObject", "InputCore", "Engine", "HTTP", "HttpLibrary", "Json", "JsonLibrary", "JsonUtilities",
+			"Core", "CoreUObject", "InputCore", "Engine", "HTTP", "Json", "JsonUtilities",
 			"DLSSBlueprint", "NISBlueprint", "StreamlineBlueprint", "GameplayTags", "UMG", "EnhancedInput"
 		});
 

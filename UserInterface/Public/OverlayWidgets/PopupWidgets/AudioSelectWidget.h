@@ -97,10 +97,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
 
-	/** Opens file dialog for song selection */
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OpenSongFileDialog(TArray<FString>& OutFileNames);
-
 private:
 	UFUNCTION()
 	void OnFadeOutFinish();

@@ -3,7 +3,6 @@
 
 #include "MainMenuGameMode.h"
 #include "Components/AudioComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
 #include "Target/TargetManagerPreview.h"
@@ -17,14 +16,6 @@ AMainMenuGameMode::AMainMenuGameMode()
 void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UGameplayStatics::SetBaseSoundMix(GetWorld(), GlobalSoundMix);
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, GlobalSound,
-		LoadPlayerSettings().VideoAndSound.GlobalVolume / 100, 1, 0.0f, true);
-	UGameplayStatics::SetSoundMixClassOverride(GetWorld(), GlobalSoundMix, MenuSound,
-		LoadPlayerSettings().VideoAndSound.MenuVolume / 100, 1, 0.0f, true);
-
-	MainMenuMusicComp->FadeIn(2.f, 1.f, 0.f);
 }
 
 void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)
@@ -134,4 +125,14 @@ void AMainMenuGameMode::OnGameModeBreakingChange(const bool bIsGameModeBreakingC
 	{
 		FinishSimulation();
 	}
+}
+
+void AMainMenuGameMode::FadeInMainMenuMusic(const float FadeInLength)
+{
+	MainMenuMusicComp->FadeIn(FadeInLength, 1.f, 0.f, EAudioFaderCurve::Linear);
+}
+
+void AMainMenuGameMode::FadeOutMainMenuMusic(const float FadeOutLength)
+{
+	MainMenuMusicComp->FadeOut(FadeOutLength, 0.f, EAudioFaderCurve::Linear);
 }

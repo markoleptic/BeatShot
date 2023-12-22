@@ -44,13 +44,11 @@ public:
 	/** Called when the GameModesWidget contains at least one breaking game mode option, or none */
 	void OnGameModeBreakingChange(const bool bIsGameModeBreakingChange);
 
+	void FadeInMainMenuMusic(const float FadeInLength);
+
+	void FadeOutMainMenuMusic(const float FadeOutLength);
+
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
-	USoundClass* GlobalSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
-	USoundClass* MenuSound;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
-	USoundMix* GlobalSoundMix;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
 	UAudioComponent* MainMenuMusicComp;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Classes")

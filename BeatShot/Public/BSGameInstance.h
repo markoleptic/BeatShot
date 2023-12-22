@@ -143,6 +143,12 @@ protected:
 	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
 	UPROPERTY(EditDefaultsOnly)
 	FBSConfig BSConfig;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundClass* GlobalSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundClass* MenuSound;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
+	USoundMix* GlobalSoundMix;
 
 	/** Whether or not the Steam Overlay is active */
 	bool IsSteamOverlayActive;
