@@ -3,6 +3,7 @@
 
 #include "Input/BSInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 
 UBSInputComponent::UBSInputComponent(const FObjectInitializer& ObjectInitializer)
 {
@@ -16,18 +17,21 @@ void UBSInputComponent::AddInputMappings(const UBSInputConfig* InputConfig,
 
 	ULocalPlayer* LocalPlayer = InputSubsystem->GetLocalPlayer();
 	check(LocalPlayer);
+	
+	FPlayerSettings_User UserSettings = LoadPlayerSettings().User;
 
-	// Add any registered input mappings from the settings!
-	FPlayerSettings_User Settings = LoadPlayerSettings().User;
-
-	InputSubsystem->AddPlayerMappableConfig(InputConfig->PlayerMappableInputConfig);
-
-	// Tell enhanced input about any custom keymappings that the player may have customized
-	for (const TPair<FName, FKey>& Pair : Settings.Keybindings)
+	UEnhancedInputUserSettings* EnhancedInputUserSettings = InputSubsystem->GetUserSettings();
+	
+	for (const TPair<FName, FKey>& Pair : UserSettings.Keybindings)
 	{
 		if (Pair.Key != NAME_None && Pair.Value.IsValid())
 		{
-			InputSubsystem->AddPlayerMappedKeyInSlot(Pair.Key, Pair.Value);
+			FGameplayTagContainer Failure;
+			FMapPlayerKeyArgs Args;
+			Args.MappingName = Pair.Key;
+			Args.NewKey = Pair.Value;
+			Args.Slot = EPlayerMappableKeySlot::First;
+			EnhancedInputUserSettings->MapPlayerKey(Args, Failure);
 		}
 	}
 }
@@ -42,14 +46,18 @@ void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig,
 	check(LocalPlayer);
 
 	FPlayerSettings_User Settings = LoadPlayerSettings().User;
+	UEnhancedInputUserSettings* EnhancedInputUserSettings = InputSubsystem->GetUserSettings();
 
 	// Clear any player mapped keys from enhanced input
 	for (const TPair<FName, FKey>& Pair : Settings.Keybindings)
 	{
-		InputSubsystem->RemovePlayerMappedKeyInSlot(Pair.Key);
+		FGameplayTagContainer Failure;
+		FMapPlayerKeyArgs Args;
+		Args.MappingName = Pair.Key;
+		Args.NewKey = Pair.Value;
+		Args.Slot = EPlayerMappableKeySlot::First;
+		EnhancedInputUserSettings->UnMapPlayerKey(Args, Failure);
 	}
-
-	InputSubsystem->RemovePlayerMappableConfig(InputConfig->PlayerMappableInputConfig);
 }
 
 void UBSInputComponent::RemoveBinds(TArray<uint32>& BindHandles)

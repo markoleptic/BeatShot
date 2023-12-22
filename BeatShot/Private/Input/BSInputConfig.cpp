@@ -2,9 +2,8 @@
 
 #include "Input/BSInputConfig.h"
 
-UBSInputConfig::UBSInputConfig(const FObjectInitializer& ObjectInitializer)
+UBSInputConfig::UBSInputConfig()
 {
-	PlayerMappableInputConfig = nullptr;
 }
 
 const UInputAction* UBSInputConfig::FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound) const

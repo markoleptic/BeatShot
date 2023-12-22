@@ -8,8 +8,8 @@ public class BeatShotTarget : TargetRules
 	public BeatShotTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
+		DefaultBuildSettings = BuildSettingsVersion.V4;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Latest;
 		ExtraModuleNames.AddRange(new[] { "BeatShot", "UserInterface", "BeatShotGlobal" });
 	}
 }

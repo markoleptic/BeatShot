@@ -111,6 +111,8 @@ public:
 		SLATE_ARGUMENT(bool, ShowSelection)
 		SLATE_ARGUMENT(bool, ShowWires)
 		SLATE_ARGUMENT(bool, bAllowPreselectedItemActivation)
+		SLATE_ARGUMENT(int32, MaxNumSelectedItems)
+		SLATE_ARGUMENT(bool, CanSelectNone)
 
 		/**
 		 * The Signal Selection mode affect when the owner table gets notified that the selection has changed.
@@ -395,11 +397,11 @@ public:
 	 */
 	virtual FReply OnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent) override
 	{
-		/*TSharedRef< ITypedTableView<ItemType> > OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
+		TSharedRef< ITypedTableView<ItemType> > OwnerTable = OwnerTablePtr.Pin().ToSharedRef();
 		bChangedSelectionOnMouseDown = false;
 		bDragWasDetected = false;
 
-		if ( MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton )
+		if (MouseEvent.GetEffectingButton() == EKeys::LeftMouseButton)
 		{
 			const ESelectionMode::Type SelectionMode = GetSelectionMode();
 			if (SelectionMode != ESelectionMode::None)
@@ -407,45 +409,56 @@ public:
 				if (const ItemType* MyItemPtr = GetItemForThis(OwnerTable))
 				{
 					const ItemType& MyItem = *MyItemPtr;
+					const int32 NumSelectedItems = OwnerTable->GetSelectedItems().Num();
 					const bool bIsSelected = OwnerTable->Private_IsItemSelected(MyItem);
+					const bool bCanSelectMoreItems = (GetMaxNumSelectedItems() == -1) || NumSelectedItems <
+						GetMaxNumSelectedItems();
+					const bool bCanUnselectMoreItems = CanSelectNone() || NumSelectedItems > 1;
+					bool bSignalSelectionChanged = false;
 
 					if (SelectionMode == ESelectionMode::Multi)
 					{
 						if (MouseEvent.IsControlDown())
 						{
-							OwnerTable->Private_SetItemSelection(MyItem, !bIsSelected, true);
-							bChangedSelectionOnMouseDown = true;
-							if (SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
+							if (bIsSelected && bCanUnselectMoreItems)
 							{
-								OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
+								OwnerTable->Private_SetItemSelection(MyItem, false, true);
+								bChangedSelectionOnMouseDown = true;
+								bSignalSelectionChanged = true;
+							}
+							else if (!bIsSelected && bCanSelectMoreItems)
+							{
+								OwnerTable->Private_SetItemSelection(MyItem, true, true);
+								bChangedSelectionOnMouseDown = true;
+								bSignalSelectionChanged = true;
 							}
 						}
 						else if (MouseEvent.IsShiftDown())
 						{
 							OwnerTable->Private_SelectRangeFromCurrentTo(MyItem);
 							bChangedSelectionOnMouseDown = true;
-							if (SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
-							{
-								OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
-							}
+							bSignalSelectionChanged = true;
 						}
-						// start edit
-						else
-						{
-							if (OwnerTable->GetSelectedItems().Num() < 2 && bIsSelected)
-							{
-								OwnerTable->Private_SetItemSelection(MyItem, !bIsSelected, true);
-								bChangedSelectionOnMouseDown = true;
-								if (SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
-								{
-									OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
-								}
-							}
-						}
-						// end edit
 					}
 
-					if ((bAllowPreselectedItemActivation || !bIsSelected) && !bChangedSelectionOnMouseDown)
+					if (!bChangedSelectionOnMouseDown && bCanUnselectMoreItems && bIsSelected &&
+						NumSelectedItems == 1)
+					{
+						OwnerTable->Private_SetItemSelection(MyItem, !bIsSelected, true);
+						bChangedSelectionOnMouseDown = true;
+						bSignalSelectionChanged = true;
+					}
+
+					if (bSignalSelectionChanged)
+					{
+						if (SignalSelectionMode == ETableRowSignalSelectionMode::Instantaneous)
+						{
+							OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
+						}
+					}
+
+					if ((bAllowPreselectedItemActivation || !bIsSelected) && !
+						bChangedSelectionOnMouseDown)
 					{
 						OwnerTable->Private_ClearSelection();
 						OwnerTable->Private_SetItemSelection(MyItem, true, true);
@@ -454,12 +467,6 @@ public:
 						{
 							OwnerTable->Private_SignalSelectionChanged(ESelectInfo::OnMouseClick);
 						}
-						// start edit
-						// if (!bIsSelected)
-						// {
-						//	 OwnerTable->Private_ClearSelection();
-						// }
-						// end edit
 					}
 
 					return FReply::Handled()
@@ -468,7 +475,7 @@ public:
 						.CaptureMouse(SharedThis(this));
 				}
 			}
-		}*/
+		}
 
 		return FReply::Unhandled();
 	}
@@ -1116,6 +1123,10 @@ protected:
 		this->bShowWires = InArgs._ShowWires;
 
 		this->bAllowPreselectedItemActivation = InArgs._bAllowPreselectedItemActivation;
+
+		this->MaxNumSelectedItems = InArgs._MaxNumSelectedItems;
+		
+		this->bCanSelectNone = InArgs._CanSelectNone;
 	}
 
 	void SetOwnerTableView(TSharedPtr<STableViewBase> OwnerTableView)
@@ -1170,6 +1181,16 @@ protected:
 		}
 
 		return nullptr;
+	}
+
+	int32 GetMaxNumSelectedItems() const
+	{
+		return MaxNumSelectedItems;
+	}
+
+	bool CanSelectNone() const
+	{
+		return bCanSelectNone;
 	}
 
 protected:
@@ -1236,4 +1257,8 @@ protected:
 
 private:
 	bool bShowWires;
+
+	bool bCanSelectNone;
+
+	int32 MaxNumSelectedItems;
 };

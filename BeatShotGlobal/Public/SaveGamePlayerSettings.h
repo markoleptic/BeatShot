@@ -10,6 +10,7 @@
 #include "StreamlineLibraryDLSSG.h"
 #include "StreamlineLibraryReflex.h"
 #include "GameFramework/SaveGame.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 #include "SaveGamePlayerSettings.generated.h"
 
 using namespace Constants;
@@ -304,6 +305,39 @@ struct FPlayerSettings_User
 		bNightModeUnlocked = false;
 		bHasRanBenchmark = false;
 		Keybindings = TMap<FName, FKey>();
+	}
+
+	/** Returns an array of Keybindings for use with UEnhancedInputUserSettings. Empties the Keybindings map */
+	TArray<FMapPlayerKeyArgs> GetLegacyKeybindings()
+	{
+		TArray<FMapPlayerKeyArgs> Out;
+		for (const TPair<FName, FKey>& Keybinding : Keybindings)
+		{
+			FGameplayTagContainer Failure;
+			FMapPlayerKeyArgs Args;
+			Args.NewKey = Keybinding.Value;
+			
+			FString StringKey = Keybinding.Key.ToString();
+			if (StringKey.Len() > 2 && StringKey.EndsWith("_2"))
+			{
+				StringKey = StringKey.LeftChop(2);
+				FString Last;
+				Last.AppendChar(StringKey[StringKey.Len() - 1]);
+				if (!Last.IsNumeric())
+				{
+					Args.MappingName = FName(StringKey);
+					Args.Slot = EPlayerMappableKeySlot::Second;
+				}
+			}
+			else
+			{
+				Args.MappingName = Keybinding.Key;
+				Args.Slot = EPlayerMappableKeySlot::First;
+			}
+			Out.Add(Args);
+		}
+		Keybindings.Empty();
+		return Out;
 	}
 };
 

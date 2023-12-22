@@ -40,7 +40,7 @@ class UBSInputConfig : public UDataAsset
 	GENERATED_BODY()
 
 public:
-	UBSInputConfig(const FObjectInitializer& ObjectInitializer);
+	UBSInputConfig();
 
 	UFUNCTION(BlueprintCallable, Category = "BeatShot|Pawn")
 	const UInputAction* FindNativeInputActionForTag(const FGameplayTag& InputTag, bool bLogNotFound = true) const;
@@ -58,7 +58,4 @@ public:
 	// List of input actions used by the owner.  These input actions are mapped to a gameplay tag and are automatically bound to abilities with matching input tags.
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (TitleProperty = "InputAction"))
 	TArray<FBSInputAction> AbilityInputActions;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Meta = (TitleProperty = "InputAction"))
-	UPlayerMappableInputConfig* PlayerMappableInputConfig;
 };

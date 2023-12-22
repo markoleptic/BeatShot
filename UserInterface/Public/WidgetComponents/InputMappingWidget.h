@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "EnhancedActionKeyMapping.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 #include "InputMappingWidget.generated.h"
 
 class UHorizontalBox;
@@ -12,7 +12,7 @@ class UMenuOptionStyle;
 class UTextBlock;
 class UInputKeySelector;
 
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnKeySelected, const FName MappingName, const FInputChord SelectedKey);
+DECLARE_MULTICAST_DELEGATE_ThreeParams(FOnKeySelected, const FName MappingName, const EPlayerMappableKeySlot& Slot, const FInputChord SelectedKey);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnIsSelectingKey, UInputKeySelector* KeySelector);
 
 UCLASS()
@@ -25,7 +25,9 @@ class USERINTERFACE_API UInputMappingWidget : public UUserWidget
 	virtual void SetStyles();
 
 public:
-	void Init(const TArray<FEnhancedActionKeyMapping>& Mappings);
+	void SetMappingName(const FName& InMappingName, const FText& DisplayName);
+
+	void SetKeyForSlot(const EPlayerMappableKeySlot& InSlot, const FKey& InKey);
 
 	/** Broadcast when a new Key has been selected from either of the InputKeySelectors */
 	FOnKeySelected OnKeySelected;
@@ -33,14 +35,10 @@ public:
 	/** Broadcast whenever the key selection mode starts or stops for either InputKeySelectors */
 	FOnIsSelectingKey OnIsSelectingKey;
 
-	/** Returns the array of Enhanced Action Key Mappings that this widget represents */
-	TArray<FEnhancedActionKeyMapping> GetActionKeyMappings() const { return ActionKeyMappings; }
+	FName GetMappingName() const { return MappingName; }
 
-	/** Returns the FName of the Key that one of the InputKeySelectors represents, or NAME_None */
-	FName GetMappingNameForKey(const FKey InKey);
-
-	/** Calls SetSelectedKey with NewKey on the InputKeySelector with the matching OldKey */
-	void SetKey(const FName MappingName, const FKey NewKey);
+	TSet<EPlayerMappableKeySlot> GetSlotsFromKey(const FKey& InKey) const;
+	FInputChord GetKeyFromSlot(const EPlayerMappableKeySlot& InSlot) const;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category="InputMappingWidget|Style")
@@ -73,5 +71,5 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UInputKeySelector* InputKeySelectorSlot2;
 
-	TArray<FEnhancedActionKeyMapping> ActionKeyMappings;
+	FName MappingName;
 };

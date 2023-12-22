@@ -777,7 +777,7 @@ void ATarget::PlayExplosionEffect(const FVector& ExplosionLocation, const float 
 	{
 		UNiagaraComponent* ExplosionComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), TargetExplosion,
 			ExplosionLocation);
-		ExplosionComp->SetNiagaraVariableFloat(FString("SphereRadius"), SphereRadius);
+		ExplosionComp->SetFloatParameter(FName("SphereRadius"), SphereRadius);
 		ExplosionComp->SetColorParameter(FName("SphereColor"), InColorWhenDestroyed);
 	}
 }

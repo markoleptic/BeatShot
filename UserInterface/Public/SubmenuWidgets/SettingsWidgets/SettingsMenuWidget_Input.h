@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlayerMappableInputConfig.h"
 #include "SaveLoadInterface.h"
 #include "SubmenuWidgets/SettingsWidgets/BSSettingCategoryWidget.h"
 #include "SettingsMenuWidget_Input.generated.h"
 
+class UInputMappingContext;
 class UEditableTextBoxOptionWidget;
 class USliderTextBoxOptionWidget;
 class UScrollBox;
@@ -34,25 +34,26 @@ public:
 	virtual void NativeConstruct() override;
 
 	/** Populates the settings menu */
-	void InitializeInputSettings(const FPlayerSettings_User& PlayerSettings_User);
+	void InitializeInputSettings(const TMap<FName, FKeyMappingRow>& InPlayerMappedRows = TMap<FName, FKeyMappingRow>());
 
 protected:
 	/** Function bound to all InputMappingWidgets' OnKeySelected delegates */
-	void OnKeySelected(const FName MappingName, const FInputChord SelectedKey);
+	void OnKeySelected(const FName MappingName, const EPlayerMappableKeySlot& InSlot, const FInputChord SelectedKey);
 
 	void OnIsSelectingKey(UInputKeySelector* KeySelector);
 
 	virtual FReply NativeOnMouseWheel(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
-	TArray<UInputMappingWidget*> FindInputMappingWidgetsByKey(const FKey InKey) const;
-
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UInputMappingWidget> InputMappingWidgetClass;
+
 	UPROPERTY(EditDefaultsOnly)
-	UPlayerMappableInputConfig* PlayerMappableInputConfig;
+	UInputMappingContext* BaseMappingContext;
 
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* BSBox_Combat;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UBSVerticalBox* BSBox_General;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UBSVerticalBox* BSBox_Movement;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
@@ -77,10 +78,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	USavedTextWidget* SavedTextWidget;
 
-	float Sensitivity;
-	TMap<FName, FKey> TempKeybindings;
-	FPlayerSettings_User InitialPlayerSettings;
-
 	void OnSliderTextBoxValueChanged(USliderTextBoxOptionWidget* Widget, const float Value);
 
 	UFUNCTION()
@@ -89,7 +86,11 @@ protected:
 	void OnButtonClicked_Reset();
 	void OnButtonClicked_Revert();
 
-	TArray<UInputMappingWidget*> InputMappingWidgets;
+	float Sensitivity;
+	
+	TMap<FName, FKeyMappingRow> InitialPlayerMappingRows;
+
+	TMap<FName, UInputMappingWidget*> InputMappingWidgetMap;
 
 	bool bIsSelectingKey = false;
 

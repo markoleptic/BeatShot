@@ -28,6 +28,7 @@
 #include "Inventory/BSInventoryItemDefinition.h"
 #include "Inventory/BSInventoryItemInstance.h"
 #include "Inventory/BSInventoryManagerComponent.h"
+#include "UserSettings/EnhancedInputUserSettings.h"
 
 static TAutoConsoleVariable CVarAutoBHop(TEXT("move.Pogo"), 0,
 	TEXT("If holding spacebar should make the player jump whenever possible.\n"), ECVF_Default);
@@ -233,10 +234,19 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 		PC->GetLocalPlayer());
 	check(Subsystem);
 
-	/* PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings */
+	// PawnClientRestart can run more than once in an Actor's lifetime, so start by clearing out any leftover mappings
 	Subsystem->ClearAllMappings();
-	/* Add each mapping context, along with their priority values. Higher values out-prioritize lower values */
+	
+	// Add each mapping context, along with their priority values. Higher values out-prioritize lower values
 	Subsystem->AddMappingContext(BaseMappingContext, BaseMappingPriority);
+	Subsystem->InitalizeUserSettings();
+
+	UEnhancedInputUserSettings* EnhancedInputUserSettings = Subsystem->GetUserSettings();
+	if (!EnhancedInputUserSettings->IsMappingContextRegistered(BaseMappingContext))
+	{
+		EnhancedInputUserSettings->RegisterInputMappingContext(BaseMappingContext);
+	}
+	
 	if (const UBSInputConfig* LoadedConfig = InputConfig)
 	{
 		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(PlayerInputComponent);
