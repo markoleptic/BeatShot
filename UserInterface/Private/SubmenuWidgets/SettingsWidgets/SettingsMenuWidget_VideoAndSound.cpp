@@ -106,6 +106,8 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	ComboBoxOption_NIS->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_EnabledMode);
 	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_NIS_Mode);
 	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged.AddDynamic(this, &ThisClass::OnSelectionChanged_Reflex);
+	ComboBoxOption_AntiAliasingMethod->ComboBox->OnSelectionChanged.AddDynamic(this,
+		&ThisClass::OnSelectionChanged_AntiAliasingMethod);
 
 	ComboBoxOption_WindowMode->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
 		&ThisClass::OnGenerateWidgetEvent);
@@ -120,6 +122,8 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	ComboBoxOption_NIS_Mode->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
 		&ThisClass::OnGenerateWidgetEvent);
 	ComboBoxOption_Reflex->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this, &ThisClass::OnGenerateWidgetEvent);
+	ComboBoxOption_AntiAliasingMethod->ComboBox->OnGenerateWidgetEventDelegate.BindDynamic(this,
+		&ThisClass::OnGenerateWidgetEvent);
 
 	ComboBoxOption_WindowMode->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
 		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
@@ -136,6 +140,8 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	ComboBoxOption_NIS_Mode->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
 		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 	ComboBoxOption_Reflex->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
+		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
+	ComboBoxOption_AntiAliasingMethod->ComboBox->OnSelectionChanged_GenerateWidgetForMultiSelection.BindDynamic(this,
 		&ThisClass::OnSelectionChanged_GenerateMultiSelectionItem);
 
 	SetupTooltip(ComboBoxOption_DLSS->GetTooltipImage(), ComboBoxOption_DLSS->GetTooltipImageText());
@@ -172,9 +178,10 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	TArray<FString> Options;
 
 	// Window Modes
-	Options.Add("Fullscreen");
-	Options.Add("Windowed");
-	Options.Add("Windowed Fullscreen");
+	WindowModeMap.Add("Fullscreen", EWindowMode::Type::Fullscreen);
+	WindowModeMap.Add("Windowed", EWindowMode::Type::Windowed);
+	WindowModeMap.Add("Windowed Fullscreen", EWindowMode::Type::WindowedFullscreen);
+	WindowModeMap.GetKeys(Options);
 	ComboBoxOption_WindowMode->SortAndAddOptions(Options);
 	Options.Empty();
 
@@ -245,6 +252,14 @@ void USettingsMenuWidget_VideoAndSound::NativeConstruct()
 	ComboBoxOption_Reflex->SortAndAddOptions(Options);
 	Options.Empty();
 
+	AntiAliasingMethodMap.Add("None", AAM_None);
+	AntiAliasingMethodMap.Add("Fast Approximate Anti-Aliasing (FXAA)", AAM_FXAA);
+	AntiAliasingMethodMap.Add("Temporal Anti-Aliasing (TAA)", AAM_TemporalAA);
+	AntiAliasingMethodMap.Add("Temporal Super-Resolution (TSR)", AAM_TSR);
+	AntiAliasingMethodMap.GetKeys(Options);
+	ComboBoxOption_AntiAliasingMethod->SortAndAddOptions(Options);
+	Options.Empty();
+
 	UpdateBrushColors();
 	InitializeVideoAndSoundSettings(LoadPlayerSettings().VideoAndSound);
 }
@@ -283,10 +298,33 @@ void USettingsMenuWidget_VideoAndSound::InitializeVideoAndSoundSettings(
 	VideoSettingOptionWidget_SWQ->SetActiveButton(GameUserSettings->GetShadowQuality());
 	VideoSettingOptionWidget_VD->SetActiveButton(GameUserSettings->GetViewDistanceQuality());
 	VideoSettingOptionWidget_VEQ->SetActiveButton(GameUserSettings->GetVisualEffectQuality());
-
-	ComboBoxOption_WindowMode->ComboBox->SetSelectedOption(
-		GetStringFromEnum(UGameUserSettings::GetGameUserSettings()->GetFullscreenMode()));
+	
+	if (const IConsoleVariable* CVarAntiAliasingMethod = IConsoleManager::Get().FindConsoleVariable(
+		TEXT("r.AntiAliasingMethod")))
+	{
+		const int32 Value = CVarAntiAliasingMethod->GetInt();
+		for (const TPair<FString, EAntiAliasingMethod>& Pair : AntiAliasingMethodMap)
+		{
+			if (static_cast<int32>(Pair.Value) == Value)
+			{
+				ComboBoxOption_AntiAliasingMethod->ComboBox->SetSelectedOption(Pair.Key);
+				break;
+			}
+		}
+	}
+	
+	const EWindowMode::Type WindowMode = UGameUserSettings::GetGameUserSettings()->GetFullscreenMode();
+	for (const TPair<FString, EWindowMode::Type>& Pair : WindowModeMap)
+	{
+		if (Pair.Value == WindowMode)
+		{
+			ComboBoxOption_WindowMode->ComboBox->SetSelectedOption(Pair.Key);
+			break;
+		}
+	}
+	
 	PopulateResolutionComboBox();
+	
 	ComboBoxOption_DLSS->ComboBox->SetSelectedOption(GetStringFromEnum(InVideoAndSoundSettings.DLSSEnabledMode));
 	ComboBoxOption_DLSS_FrameGeneration->ComboBox->SetSelectedOption(
 		GetStringFromEnum(InVideoAndSoundSettings.FrameGenerationEnabledMode));
@@ -369,17 +407,23 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_WindowMode(const TArr
 	LastConfirmedResolution = Settings->GetLastConfirmedScreenResolution();
 	LastConfirmedWindowMode = Settings->GetLastConfirmedFullscreenMode();
 
-	if (SelectedOption.Equals("Fullscreen"))
+	const EWindowMode::Type* Found = WindowModeMap.Find(SelectedOption);
+	if (!Found) return;
+
+	switch (*Found)
 	{
+	case EWindowMode::Fullscreen:
 		Settings->SetFullscreenMode(EWindowMode::Type::Fullscreen);
-	}
-	else if (SelectedOption.Equals("Windowed Fullscreen"))
-	{
+		break;
+	case EWindowMode::WindowedFullscreen:
 		Settings->SetFullscreenMode(EWindowMode::Type::WindowedFullscreen);
-	}
-	else if (SelectedOption.Equals("Windowed"))
-	{
+		break;
+	case EWindowMode::Windowed:
 		Settings->SetFullscreenMode(EWindowMode::Type::Windowed);
+		break;
+	case EWindowMode::NumWindowModes:
+		break;
+	default: ;
 	}
 
 	Settings->ApplyResolutionSettings(false);
@@ -514,6 +558,36 @@ void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_Reflex(const TArray<F
 	if (UStreamlineLibraryReflex::IsReflexSupported())
 	{
 		UStreamlineLibraryReflex::SetReflexMode(GetSelectedReflexMode());
+	}
+}
+
+void USettingsMenuWidget_VideoAndSound::OnSelectionChanged_AntiAliasingMethod(const TArray<FString>& SelectedOptions,
+	ESelectInfo::Type SelectionType)
+{
+	if (SelectionType == ESelectInfo::Type::Direct || SelectedOptions.Num() != 1)
+	{
+		return;
+	}
+	const FString SelectedOption = SelectedOptions[0];
+
+	const EAntiAliasingMethod* Found = AntiAliasingMethodMap.Find(SelectedOption);
+	if (!Found) return;
+
+	if (IConsoleVariable* CVarAntiAliasingMethod = IConsoleManager::Get().FindConsoleVariable(
+		TEXT("r.AntiAliasingMethod")))
+	{
+		CVarAntiAliasingMethod->Set(static_cast<uint8>(*Found), ECVF_SetByGameOverride);
+	}
+	if (GConfig)
+	{
+		const FString Value = FString::FromInt(*Found);
+		GConfig->SetString(
+		TEXT("/Script/Engine.RendererSettings"),
+		TEXT("r.AntiAliasingMethod"),
+			*Value,
+			GEngineIni
+			);
+		GConfig->Flush(false, GEngineIni);
 	}
 }
 
@@ -780,6 +854,24 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_Reset()
 {
 	UGameUserSettings::GetGameUserSettings()->SetToDefaults();
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
+
+	if (IConsoleVariable* CVarAntiAliasingMethod = IConsoleManager::Get().FindConsoleVariable(
+	TEXT("r.AntiAliasingMethod")))
+	{
+		CVarAntiAliasingMethod->Set(AAM_TSR, ECVF_SetByGameOverride);
+	}
+	if (GConfig)
+	{
+		const FString Value = FString::FromInt(AAM_TSR);
+		GConfig->SetString(
+		TEXT("/Script/Engine.RendererSettings"),
+		TEXT("r.AntiAliasingMethod"),
+			*Value,
+			GGameIni
+			);
+		GConfig->Flush(false, GGameIni);
+	}
+	
 	InitializeVideoAndSoundSettings(FPlayerSettings_VideoAndSound());
 }
 
@@ -919,17 +1011,13 @@ void USettingsMenuWidget_VideoAndSound::OnButtonPressed_CancelVideoSettings()
 	Settings->ConfirmVideoMode();
 	Settings->SaveSettings();
 
-	if (LastConfirmedWindowMode == EWindowMode::Type::Fullscreen)
+	for (const TPair<FString, EWindowMode::Type>& Pair : WindowModeMap)
 	{
-		ComboBoxOption_WindowMode->ComboBox->SetSelectedOption("Fullscreen");
-	}
-	else if (LastConfirmedWindowMode == EWindowMode::Type::WindowedFullscreen)
-	{
-		ComboBoxOption_WindowMode->ComboBox->SetSelectedOption("Windowed Fullscreen");
-	}
-	else if (LastConfirmedWindowMode == EWindowMode::Type::Windowed)
-	{
-		ComboBoxOption_WindowMode->ComboBox->SetSelectedOption("Windowed");
+		if (LastConfirmedWindowMode == Pair.Value)
+		{
+			ComboBoxOption_WindowMode->ComboBox->SetSelectedOption(Pair.Key);
+			break;
+		}
 	}
 	ComboBoxOption_Resolution->ComboBox->SetSelectedOption(
 		FString::FormatAsNumber(LastConfirmedResolution.X) + "x" + FString::FormatAsNumber(LastConfirmedResolution.Y));

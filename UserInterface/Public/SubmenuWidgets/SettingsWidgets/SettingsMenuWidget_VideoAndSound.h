@@ -90,6 +90,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_Resolution;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
+	UComboBoxOptionWidget* ComboBoxOption_AntiAliasingMethod;
+	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_DLSS;
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UComboBoxOptionWidget* ComboBoxOption_DLSS_FrameGeneration;
@@ -184,6 +186,8 @@ private:
 	void OnSelectionChanged_NIS_Mode(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 	UFUNCTION()
 	void OnSelectionChanged_Reflex(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
+	UFUNCTION()
+	void OnSelectionChanged_AntiAliasingMethod(const TArray<FString>& SelectedOptions, ESelectInfo::Type SelectionType);
 
 	UFUNCTION()
 	void OnCheckStateChanged_VSyncEnabled(const bool bIsChecked);
@@ -242,4 +246,7 @@ private:
 
 	/** Timer that starts when window mode or resolution is changed, and calls RevertVideoSettingsTimerCallback every second */
 	FTimerHandle RevertVideoSettingsTimer_UpdateSecond;
+
+	TMap<FString, EWindowMode::Type> WindowModeMap;
+	TMap<FString, EAntiAliasingMethod> AntiAliasingMethodMap;
 };
