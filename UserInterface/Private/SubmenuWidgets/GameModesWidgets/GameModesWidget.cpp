@@ -197,7 +197,7 @@ void UGameModesWidget::BindAllDelegates()
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_RefreshPreview->OnBSButtonPressed.AddDynamic(this,
 		&ThisClass::OnButtonClicked_CustomGameModeButton);
 	CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start->OnBSButtonPressed.AddDynamic(this,
-	&ThisClass::OnButtonClicked_CustomGameModeButton);
+		&ThisClass::OnButtonClicked_CustomGameModeButton);
 	CustomGameModesWidget_CreatorView->RequestGameModeTemplateUpdate.AddUObject(this,
 		&ThisClass::OnRequestGameModeTemplateUpdate);
 	CustomGameModesWidget_PropertyView->RequestGameModeTemplateUpdate.AddUObject(this,
@@ -261,7 +261,8 @@ void UGameModesWidget::OnButtonClicked_CustomGameModeButton(const UBSButton* But
 		SynchronizeStartWidgets();
 		OnButtonClicked_SaveCustom();
 	}
-	else if (Button == Button_StartFromCustom || Button == CustomGameModesWidget_CreatorView->Widget_Preview->Button_Start)
+	else if (Button == Button_StartFromCustom || Button == CustomGameModesWidget_CreatorView->Widget_Preview->
+		Button_Start)
 	{
 		SynchronizeStartWidgets();
 		OnButtonClicked_StartFromCustom();
@@ -310,30 +311,28 @@ void UGameModesWidget::OnButtonClicked_ImportCustom()
 	{
 		const FString ImportString = GameModeSharingWidget->GetImportString();
 		GameModeSharingWidget->FadeOut();
-		const FBSConfig ImportedConfig = ImportCustomGameMode(ImportString);
 
-		// Can't import default game modes
-		if (IsPresetGameMode(ImportedConfig.DefiningConfig.CustomGameModeName))
+		TSharedPtr<FBSConfig> ImportedConfig = MakeShareable(new FBSConfig);
+		FText OutFailureReason;
+		if (!ImportCustomGameMode(ImportString, *ImportedConfig.ToSharedRef(), OutFailureReason))
 		{
-			SetAndPlaySavedText(
-				FText::FromString("Failed to import " + ImportedConfig.DefiningConfig.CustomGameModeName));
-			return;
-		}
-		if (ImportedConfig.DefiningConfig.CustomGameModeName.IsEmpty())
-		{
-			SetAndPlaySavedText(FText::FromString("Failed to import game mode with empty CustomGameModeName"));
-			return;
-		}
-
-		// Check if overriding existing Custom Game Mode
-		if (IsCustomGameMode(ImportedConfig.DefiningConfig.CustomGameModeName))
-		{
-			ShowConfirmOverwriteMessage_Import(ImportedConfig);
+			if (OutFailureReason.EqualTo(FText::FromString("Existing")))
+			{
+				ShowConfirmOverwriteMessage_Import(ImportedConfig);
+			}
+			else
+			{
+				SetAndPlaySavedText(OutFailureReason);
+			}
 		}
 		else
 		{
-			SaveCustomAndReselect(
-				FText::FromString("Successfully imported " + ImportedConfig.DefiningConfig.CustomGameModeName));
+			const FBSConfig Config = *ImportedConfig.ToSharedRef();
+			SaveCustomGameMode(Config);
+			CustomGameModesWidget_CreatorView->RefreshGameModeTemplateComboBoxOptions();
+			CustomGameModesWidget_PropertyView->RefreshGameModeTemplateComboBoxOptions();
+			PopulateGameModeOptions(Config);
+			SetAndPlaySavedText(FText::FromString("Successfully imported " + Config.DefiningConfig.CustomGameModeName));
 		}
 	});
 	GameModeSharingWidget->AddToViewport();
@@ -424,7 +423,7 @@ void UGameModesWidget::OnButtonClicked_SaveCustom()
 		Buttons[1]->OnBSButtonButtonPressed_NonDynamic.AddLambda([this]
 		{
 			PopupMessageWidget->FadeOut();
-			SaveCustomAndReselect();
+			SaveCustomGameModeOptionsAndReselect();
 		});
 		PopupMessageWidget->AddToViewport();
 		PopupMessageWidget->FadeIn();
@@ -432,7 +431,7 @@ void UGameModesWidget::OnButtonClicked_SaveCustom()
 	// New custom game mode
 	else
 	{
-		SaveCustomAndReselect();
+		SaveCustomGameModeOptionsAndReselect();
 	}
 }
 
@@ -532,7 +531,7 @@ void UGameModesWidget::OnButtonClicked_StartFromCustom()
 		Buttons[1]->OnBSButtonButtonPressed_NonDynamic.AddLambda([this]
 		{
 			PopupMessageWidget->FadeOut();
-			if (SaveCustomAndReselect())
+			if (SaveCustomGameModeOptionsAndReselect())
 			{
 				ShowAudioFormatSelect(false);
 			}
@@ -544,7 +543,7 @@ void UGameModesWidget::OnButtonClicked_StartFromCustom()
 	// New custom game mode
 	else
 	{
-		if (SaveCustomAndReselect())
+		if (SaveCustomGameModeOptionsAndReselect())
 		{
 			ShowAudioFormatSelect(false);
 		}
@@ -668,7 +667,7 @@ FBSConfig UGameModesWidget::GetCustomGameModeOptions() const
 	return ReturnStruct;
 }
 
-bool UGameModesWidget::SaveCustomAndReselect(const FText& SuccessMessage)
+bool UGameModesWidget::SaveCustomGameModeOptionsAndReselect(const FText& SuccessMessage)
 {
 	const FBSConfig GameModeToSave = GetCustomGameModeOptions();
 
@@ -843,7 +842,7 @@ bool UGameModesWidget::DoesCustomGameModeExist()
 	return false;
 }
 
-void UGameModesWidget::ShowConfirmOverwriteMessage_Import(const FBSConfig& ImportedConfig)
+void UGameModesWidget::ShowConfirmOverwriteMessage_Import(TSharedPtr<FBSConfig>& ImportedConfig)
 {
 	PopupMessageWidget = CreateWidget<UPopupMessageWidget>(this, PopupMessageClass);
 	TArray<UBSButton*> Buttons = PopupMessageWidget->InitPopup(GetWidgetTextFromKey("GM_OverwritePopupTitle"),
@@ -856,11 +855,19 @@ void UGameModesWidget::ShowConfirmOverwriteMessage_Import(const FBSConfig& Impor
 	});
 
 	Buttons[1]->SetButtonText(GetWidgetTextFromKey("GM_OverwriteConfirm"));
-	Buttons[1]->OnBSButtonButtonPressed_NonDynamic.AddLambda([this, &ImportedConfig]
+	Buttons[1]->OnBSButtonButtonPressed_NonDynamic.AddLambda([this, ImportedConfig]
 	{
 		PopupMessageWidget->FadeOut();
-		SaveCustomAndReselect(
-			FText::FromString("Successfully imported " + ImportedConfig.DefiningConfig.CustomGameModeName));
+		if (ImportedConfig.IsValid())
+		{
+			const FBSConfig Config = *ImportedConfig.ToSharedRef();
+			SaveCustomGameMode(Config);
+			CustomGameModesWidget_CreatorView->RefreshGameModeTemplateComboBoxOptions();
+			CustomGameModesWidget_PropertyView->RefreshGameModeTemplateComboBoxOptions();
+			PopulateGameModeOptions(Config);
+			SetAndPlaySavedText(FText::FromString("Successfully imported " + Config.DefiningConfig.CustomGameModeName));
+		}
+
 	});
 
 	PopupMessageWidget->AddToViewport();

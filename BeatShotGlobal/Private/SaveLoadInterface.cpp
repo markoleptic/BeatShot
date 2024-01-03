@@ -156,8 +156,10 @@ int32 ISaveLoadInterface::RemoveCustomGameMode(const FBSConfig& ConfigToRemove)
 	}
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{
-		const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveCommonScoreInfo(ConfigToRemove.DefiningConfig);
-		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."), NumCommonScoreInfosRemoved);
+		const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveCommonScoreInfo(
+			ConfigToRemove.DefiningConfig);
+		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing a custom game mode."),
+			NumCommonScoreInfosRemoved);
 		SaveToSlot(SaveGamePlayerScore);
 	}
 	return NumCustomGameModesRemoved;
@@ -174,7 +176,8 @@ int32 ISaveLoadInterface::RemoveAllCustomGameModes()
 	if (USaveGamePlayerScore* SaveGamePlayerScore = LoadFromSlot_SaveGamePlayerScore())
 	{
 		const int32 NumCommonScoreInfosRemoved = SaveGamePlayerScore->RemoveAllCustomGameModeCommonScoreInfo();
-		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing all custom game modes."), NumCommonScoreInfosRemoved);
+		UE_LOG(LogTemp, Display, TEXT("%d Common Score Infos removed when removing all custom game modes."),
+			NumCommonScoreInfosRemoved);
 		SaveToSlot(SaveGamePlayerScore);
 	}
 	return NumCustomGameModesRemoved;
@@ -209,33 +212,41 @@ bool ISaveLoadInterface::DoesCustomGameModeMatchConfig(const FString& CustomGame
 	return false;
 }
 
-FBSConfig ISaveLoadInterface::ImportCustomGameMode(const FString& InImportString)
+bool ISaveLoadInterface::ImportCustomGameMode(const FString& InSerializedJsonString, FBSConfig& OutConfig,
+	FText& OutFailureReason)
 {
-	FBSConfig OutConfig = FBSConfig();
-
-	if (!InImportString.Contains("DefiningConfig") || !InImportString.Contains("TargetConfig"))
+	if (!FBSConfig::DecodeFromString(InSerializedJsonString, OutConfig, &OutFailureReason))
 	{
-		return OutConfig;
+		UE_LOG(LogTemp, Warning, TEXT("Failed to import custom game mode: %s"), *OutFailureReason.ToString());
+		OutFailureReason = FText::FromString("Invalid import string");
+		return false;
 	}
 
-	UScriptStruct* Struct = FBSConfig::StaticStruct();
-	const FString StringCopy = FString(InImportString);
-	const TCHAR* Result = Struct->ImportText(*StringCopy, &OutConfig, nullptr,
-		(PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr, "FBSConfig");
-	if (!Result)
+	if (IsPresetGameMode(OutConfig.DefiningConfig.CustomGameModeName) || OutConfig.DefiningConfig.GameModeType ==
+		EGameModeType::Preset)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to import custom game mode"));
+		OutFailureReason = FText::FromString("Default Game Modes cannot be imported");
+		return false;
 	}
-	return OutConfig;
+
+	if (OutConfig.DefiningConfig.CustomGameModeName.IsEmpty())
+	{
+		OutFailureReason = FText::FromString("Failed to import game mode with empty CustomGameModeName");
+		return false;
+	}
+
+	if (IsCustomGameMode(OutConfig.DefiningConfig.CustomGameModeName))
+	{
+		OutFailureReason = FText::FromString("Existing");
+		return false;
+	}
+
+	return true;
 }
 
-FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InGameMode)
+FString ISaveLoadInterface::ExportCustomGameMode(const FBSConfig& InConfig)
 {
-	UScriptStruct* Struct = FBSConfig::StaticStruct();
-	FString Output = TEXT("");
-	Struct->ExportText(Output, &InGameMode, nullptr, nullptr,
-		(PPF_ExportsNotFullyQualified | PPF_Copy | PPF_Delimited | PPF_IncludeTransient), nullptr);
-	return Output;
+	return InConfig.EncodeToString();
 }
 
 /* --------------------------- */

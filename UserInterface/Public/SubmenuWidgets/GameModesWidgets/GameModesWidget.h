@@ -253,7 +253,7 @@ private:
 
 	/** Saves a CustomGameMode to save slot using GetCustomGameModeOptions(), displays the saved text,
 	 *  refreshes game mode template combo box and selects it */
-	bool SaveCustomAndReselect(const FText& SuccessMessage = FText());
+	bool SaveCustomGameModeOptionsAndReselect(const FText& SuccessMessage = FText());
 
 	/** Changes the Save and Start Button states depending on what is selected in ComboBox_GameModeName and
 	 *  TextBox_CustomGameModeName */
@@ -271,8 +271,8 @@ private:
 	bool DoesCustomGameModeExist();
 
 	/** Initializes a PopupMessage asking the player if they want to overwrite an existing custom game mode, calling
-	 *  SaveCustomAndReselect if they choose to override */
-	void ShowConfirmOverwriteMessage_Import(const FBSConfig& ImportedConfig);
+	 *  SaveCustomGameModeOptionsAndReselect if they choose to override */
+	void ShowConfirmOverwriteMessage_Import(TSharedPtr<FBSConfig>& ImportedConfig);
 
 	/** Changes the SelectedGameMode depending on input button */
 	UFUNCTION()

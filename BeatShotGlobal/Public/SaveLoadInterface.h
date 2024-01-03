@@ -143,11 +143,12 @@ public:
 	/** Returns whether or not the CustomGameMode is Custom and identical to the config */
 	static bool DoesCustomGameModeMatchConfig(const FString& CustomGameModeName, const FBSConfig& InConfig);
 
-	/** Creates an FBSConfig from an exported FBSConfig string */
-	static FBSConfig ImportCustomGameMode(const FString& InImportString);
+	/** Attempts to initialize a given config using  */
+	static bool ImportCustomGameMode(const FString& InSerializedJsonString, FBSConfig& OutConfig,
+		FText& OutFailureReason);
 
-	/** Creates an export String from an FBSConfig */
-	static FString ExportCustomGameMode(const FBSConfig& InGameMode);
+	/** Creates a serialized Json object export string from an FBSConfig */
+	static FString ExportCustomGameMode(const FBSConfig& InConfig);
 
 	/** Returns the FBSConfig corresponding to the input GameModeName string and difficulty. MUST OVERRIDE GetGameModeDataAsset() */
 	FBSConfig FindPresetGameMode(const FString& GameModeName, const EGameModeDifficulty& Difficulty) const;

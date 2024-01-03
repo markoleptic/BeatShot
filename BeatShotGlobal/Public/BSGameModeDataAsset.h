@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GlobalConstants.h"
+#include "JsonObjectConverter.h"
 #include "Engine/DataAsset.h"
 #include "BSGameModeDataAsset.generated.h"
 
@@ -20,8 +21,8 @@ enum class EAudioFormat : uint8
 	None UMETA(DisplayName="None"),
 	File UMETA(DisplayName="File"),
 	Capture UMETA(DisplayName="Capture"),
-	Loopback UMETA(DisplayName="Loopback")
-};
+	Loopback UMETA(DisplayName="Loopback")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EAudioFormat, EAudioFormat::File, EAudioFormat::Loopback);
 
 
@@ -31,8 +32,8 @@ enum class EGameModeType : uint8
 {
 	None UMETA(DisplayName="None"),
 	Preset UMETA(DisplayName="Preset"),
-	Custom UMETA(DisplayName="Custom")
-};
+	Custom UMETA(DisplayName="Custom")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeType, EGameModeType::Preset, EGameModeType::Custom);
 
 
@@ -50,6 +51,7 @@ enum class EBaseGameMode : uint8
 	MultiBeatPrecision UMETA(DisplayName="MultiBeatPrecision"),
 	MultiBeatSpeed UMETA(DisplayName="MultiBeatSpeed"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBaseGameMode, EBaseGameMode::SingleBeat, EBaseGameMode::MultiBeatSpeed);
 
 
@@ -60,8 +62,8 @@ enum class EGameModeDifficulty : uint8
 	None UMETA(DisplayName="None"),
 	Normal UMETA(DisplayName="Normal"),
 	Hard UMETA(DisplayName="Hard"),
-	Death UMETA(DisplayName="Death")
-};
+	Death UMETA(DisplayName="Death")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EGameModeDifficulty, EGameModeDifficulty::None, EGameModeDifficulty::Death);
 
 
@@ -75,6 +77,7 @@ enum class EBoundsScalingPolicy : uint8
 	/** The bounding box bounds size will gradually increase from half the Box Bounds up to the full size of BoxBounds, based on consecutive targets hit */
 	Dynamic UMETA(DisplayName="Dynamic"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EBoundsScalingPolicy, EBoundsScalingPolicy::Static, EBoundsScalingPolicy::Dynamic);
 
 
@@ -92,6 +95,7 @@ enum class ETargetDistributionPolicy : uint8
 	/** Spawns targets in an evenly-spaced grid. Able to fit more targets */
 	Grid UMETA(DisplayName="Grid"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDistributionPolicy, ETargetDistributionPolicy::HeadshotHeightOnly,
 	ETargetDistributionPolicy::Grid);
 
@@ -112,6 +116,7 @@ enum class EMovingTargetDirectionMode : uint8
 	/** Only move targets forward */
 	ForwardOnly UMETA(DisplayName="Forward Only"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EMovingTargetDirectionMode, EMovingTargetDirectionMode::None,
 	EMovingTargetDirectionMode::ForwardOnly);
 
@@ -126,8 +131,8 @@ enum class EConsecutiveTargetScalePolicy : uint8
 	/** The starting scale/size of the target will be chosen randomly between min and max target scale */
 	Random UMETA(DisplayName="Random"),
 	/** The starting scale/size of the target will gradually shrink from max to min target scale, based on consecutive targets hit */
-	SkillBased UMETA(DisplayName="Skill-Based")
-};
+	SkillBased UMETA(DisplayName="Skill-Based")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EConsecutiveTargetScalePolicy, EConsecutiveTargetScalePolicy::Static,
 	EConsecutiveTargetScalePolicy::SkillBased);
 
@@ -146,6 +151,7 @@ enum class ETargetDamageType : uint8
 	/** The target damages itself */
 	Self UMETA(DisplayName="Self"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDamageType, ETargetDamageType::Tracking, ETargetDamageType::Hit);
 
 
@@ -159,6 +165,7 @@ enum class ETargetSpawningPolicy : uint8
 	/** Spawn targets when the TargetManager receives the signal from AudioAnalyzer */
 	RuntimeOnly UMETA(DisplayName="Runtime Only"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawningPolicy, ETargetSpawningPolicy::UpfrontOnly,
 	ETargetSpawningPolicy::RuntimeOnly);
 
@@ -181,8 +188,9 @@ enum class ERuntimeTargetSpawningLocationSelectionMode : uint8
 	/** Randomly choose the vertical location, but evenly distribute horizontally */
 	RandomHorizontal UMETA(DisplayName="RandomHorizontal"),
 };
-ENUM_RANGE_BY_FIRST_AND_LAST(ERuntimeTargetSpawningLocationSelectionMode, ERuntimeTargetSpawningLocationSelectionMode::Random,
-	ERuntimeTargetSpawningLocationSelectionMode::NearbyGridBlock);
+
+ENUM_RANGE_BY_FIRST_AND_LAST(ERuntimeTargetSpawningLocationSelectionMode,
+	ERuntimeTargetSpawningLocationSelectionMode::Random, ERuntimeTargetSpawningLocationSelectionMode::NearbyGridBlock);
 
 
 /** How to choose the target(s) to activate */
@@ -195,6 +203,7 @@ enum class ETargetActivationSelectionPolicy : uint8
 	/** Randomly chooses a target within the available spawn points */
 	Random UMETA(DisplayName="Random"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationSelectionPolicy, ETargetActivationSelectionPolicy::Bordering,
 	ETargetActivationSelectionPolicy::Random);
 
@@ -212,6 +221,7 @@ enum class ERecentTargetMemoryPolicy : uint8
 	/** Removes recent targets only when the number of recent targets exceeds specified capacity */
 	NumTargetsBased UMETA(DisplayName="Num Targets Based"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ERecentTargetMemoryPolicy, ERecentTargetMemoryPolicy::None,
 	ERecentTargetMemoryPolicy::NumTargetsBased);
 
@@ -228,6 +238,7 @@ enum class ETargetSpawnResponse : uint8
 	/** Immunity is granted to the target */
 	AddImmunity UMETA(DisplayName="Add Immunity"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetSpawnResponse, ETargetSpawnResponse::ChangeDirection,
 	ETargetSpawnResponse::AddImmunity);
 
@@ -254,6 +265,7 @@ enum class ETargetActivationResponse : uint8
 	/** Lifetime Target Scaling is applied throughout the target's lifetime */
 	ApplyLifetimeTargetScaling UMETA(DisplayName="Apply Lifetime Target Scaling"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetActivationResponse, ETargetActivationResponse::RemoveImmunity,
 	ETargetActivationResponse::ApplyLifetimeTargetScaling);
 
@@ -317,6 +329,7 @@ enum class ETargetDeactivationResponse : uint8
 	/** Immediately reactivate the target */
 	Reactivate UMETA(DisplayName="Reactivate"),
 };
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationResponse, ETargetDeactivationResponse::RemoveImmunity,
 	ETargetDeactivationResponse::Reactivate);
 
@@ -335,8 +348,8 @@ enum class ETargetDestructionCondition : uint8
 	/** Target is destroyed when its health reaches zero */
 	OnHealthReachedZero UMETA(DisplayName="On Health Reached Zero"),
 	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
-	OnDeactivation UMETA(DisplayName="On Deactivation")
-};
+	OnDeactivation UMETA(DisplayName="On Deactivation")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant,
 	ETargetDestructionCondition::OnDeactivation);
 
@@ -352,6 +365,7 @@ enum class EDynamicBoundsScalingPolicy : uint8
 	Vertical UMETA(DisplayName="Vertical"),
 	/** Allow the bounds to grow forward  */
 	Forward UMETA(DisplayName="Forward")};
+
 ENUM_RANGE_BY_FIRST_AND_LAST(EDynamicBoundsScalingPolicy, EDynamicBoundsScalingPolicy::Horizontal,
 	EDynamicBoundsScalingPolicy::Forward);
 
@@ -590,35 +604,35 @@ struct FBS_AudioConfig
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	FString SongTitle;
 
 	/** Whether or not to playback streamed audio */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	bool bPlaybackAudio;
 
 	/** The audio format type used for the AudioAnalyzer */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	EAudioFormat AudioFormat;
 
 	/** The input audio device */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	FString InAudioDevice;
 
 	/** The output audio device */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	FString OutAudioDevice;
 
 	/** The path to the song file */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	FString SongPath;
 
 	/** Delay between AudioAnalyzer Tracker and Player. Also the same value as time between target spawn and peak green target color */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	float PlayerDelay;
 
 	/** Length of song */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient)
 	float SongLength;
 
 	FBS_AudioConfig()
@@ -721,8 +735,7 @@ struct FBS_Dynamic_SpawnArea : public FBS_Dynamic
 		bIsCubicInterpolation = false;
 		DecrementAmount = 5;
 		DynamicBoundsScalingPolicy = TArray({
-			EDynamicBoundsScalingPolicy::Horizontal,
-			EDynamicBoundsScalingPolicy::Vertical
+			EDynamicBoundsScalingPolicy::Horizontal, EDynamicBoundsScalingPolicy::Vertical
 		});
 		StartBounds = FVector(0, 200.f, 200.f);
 	}
@@ -765,11 +778,11 @@ struct FBS_TargetConfig
 	/** Whether or not targets can receive Activation Responses if they're already activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	bool bAllowActivationWhileActivated;
-	
+
 	/** If true, targets can be spawned without being activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Activation")
 	bool bAllowSpawnWithoutActivation;
-	
+
 	/** If true, spawn at the origin if it isn't blocked by a recent target whenever possible */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	bool bSpawnAtOriginWheneverPossible;
@@ -819,9 +832,9 @@ struct FBS_TargetConfig
 	ETargetSpawningPolicy TargetSpawningPolicy;
 
 	/** Where to spawn targets if Runtime Spawning */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	ERuntimeTargetSpawningLocationSelectionMode RuntimeTargetSpawningLocationSelectionMode;
-	
+
 	/** Things a target can do when it is activated */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Spawning")
 	TArray<ETargetSpawnResponse> TargetSpawnResponses;
@@ -961,36 +974,36 @@ struct FBS_TargetConfig
 	int32 NumUpfrontTargetsToSpawn;
 
 	/** Color to applied to the actor if inactive */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor InactiveTargetColor;
-	
+
 	/** Color applied to target on spawn */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor OnSpawnColor;
 
 	/** Color interpolated from at start of ExpirationTimer timer */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor StartColor;
-	
+
 	/** Color interpolated to from StartColor */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor PeakColor;
 
 	/** Color interpolated to from PeakColor */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor EndColor;
 
 	/** Separate outline color if specified */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor OutlineColor;
 
 	/** Color applied to targets that are vulnerable to tracking damage when taking tracking damage */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor TakingTrackingDamageColor;
 
 	/** Color applied to targets that are vulnerable to tracking damage when not taking tracking damage, OR
 	 *  if the target lifespan is infinite */
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, meta=(SkipSerialization))
 	FLinearColor NotTakingTrackingDamageColor;
 
 	FBS_TargetConfig()
@@ -1036,7 +1049,7 @@ struct FBS_TargetConfig
 		RecentTargetTimeLength = 0.f;
 		TargetMaxLifeSpan = DefaultTargetMaxLifeSpan;
 		TargetSpawnCD = DefaultTargetSpawnCD;
-		
+
 		BoxBounds = DefaultSpawnBoxBounds;
 
 		BasePlayerHitDamage = 100.f;
@@ -1281,7 +1294,7 @@ struct FBSConfig
 	FBS_AIConfig AIConfig;
 
 	/** Contains info for the AudioAnalyzer and PlayerHUD */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Transient, meta=(SkipSerialization))
 	FBS_AudioConfig AudioConfig;
 
 	/** Contains info for the target spawner for BeatGrid specific game modes */
@@ -1393,7 +1406,7 @@ struct FBSConfig
 	{
 		TargetConfig.bUseSeparateOutlineColor = bUseSeparateOutlineColor;
 		TargetConfig.OutlineColor = Outline;
-		
+
 		if (TargetConfig.TargetSpawningPolicy == ETargetSpawningPolicy::UpfrontOnly)
 		{
 			if (TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
@@ -1414,13 +1427,67 @@ struct FBSConfig
 			}
 			else TargetConfig.OnSpawnColor = Start;
 		}
-		
+
 		TargetConfig.InactiveTargetColor = Inactive;
 		TargetConfig.StartColor = Start;
 		TargetConfig.PeakColor = Peak;
 		TargetConfig.EndColor = End;
 		TargetConfig.TakingTrackingDamageColor = TrackingDam;
 		TargetConfig.NotTakingTrackingDamageColor = NotTrackingDam;
+	}
+
+	/** Returns a Json Object representation of the struct */
+	FString ToString() const
+	{
+		const TSharedPtr<FJsonObject> JsonObject = FJsonObjectConverter::UStructToJsonObject<FBSConfig>(*this, 0,
+			CPF_Transient | CPF_SkipSerialization, nullptr);
+		if (JsonObject.IsValid())
+		{
+			FString JsonString;
+			const TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&JsonString);
+			FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+			return JsonString;
+		}
+		return FString();
+	}
+	
+	/** Returns a serialized Json object representation of the struct */
+	FString EncodeToString() const
+	{
+		const FString JsonString = ToString();
+		if (!JsonString.IsEmpty())
+		{
+			return FBase64::Encode(JsonString);
+			
+		}
+		return FString();
+	}
+
+	/** Initializes the OutConfig from a Json object, returns true if successful */
+	static bool FromString(const FString& JsonString, FBSConfig& OutConfig, FText* OutFailReason = nullptr)
+	{
+		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
+		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+		{
+			return FJsonObjectConverter::JsonObjectToUStruct<FBSConfig>(JsonObject.ToSharedRef(), &OutConfig,
+				0, CPF_Transient | CPF_SkipSerialization, false, OutFailReason);
+		}
+		return false;
+	}
+	
+	/** Initializes the OutConfig from a serialized Json object, returns true if successful */
+	static bool DecodeFromString(const FString& EncodedString, FBSConfig& OutConfig, FText* OutFailReason = nullptr)
+	{
+		TArray<uint8> DecodedBytes;
+		if (FBase64::Decode(EncodedString, DecodedBytes))
+		{
+			const FString JsonString(DecodedBytes.Num(), UTF8_TO_TCHAR(DecodedBytes.GetData()));
+
+			// Deserialize the JSON string to the struct
+			return FromString(JsonString, OutConfig, OutFailReason);
+		}
+		return false;
 	}
 };
 
