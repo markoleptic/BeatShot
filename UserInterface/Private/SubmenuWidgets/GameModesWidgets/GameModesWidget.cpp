@@ -874,7 +874,7 @@ void UGameModesWidget::ShowConfirmOverwriteMessage_Import(TSharedPtr<FBSConfig>&
 	PopupMessageWidget->FadeIn();
 }
 
-void UGameModesWidget::OnAccessTokenResponseReceived(const FString& AccessToken, FString GameModeNameToRemove)
+void UGameModesWidget::OnAccessTokenResponseReceived(const FString AccessToken, FString GameModeNameToRemove)
 {
 	OnAccessTokenResponse.Unbind();
 	OnDeleteScoresResponse.BindUObject(this, &ThisClass::OnDeleteScoresResponseReceived, GameModeNameToRemove);

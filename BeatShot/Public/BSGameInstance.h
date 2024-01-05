@@ -14,8 +14,6 @@ class USteamManager;
 class ATarget;
 class ABSPlayerController;
 
-DECLARE_DELEGATE(FOnPCFinishedUsingAuthTicket);
-
 /** Base GameInstance for this game */
 UCLASS()
 class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInterface, public IHttpRequestInterface
@@ -27,8 +25,6 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 	virtual void OnStart() override;
 
 	void InitVideoSettings();
-
-	virtual void Shutdown() override;
 
 public:
 	TObjectPtr<ATimeOfDayManager> TimeOfDayManager;
@@ -43,9 +39,6 @@ public:
 	/** A function pair that can be called externally, executes OnSteamOverlayIsActive() */
 	void OnSteamOverlayIsOn();
 	void OnSteamOverlayIsOff();
-
-	/** Called when the Player Controller has shown the Main Menu */
-	void OnPlayerControllerReadyForSteamLogin(ABSPlayerController* PlayerController);
 
 	/** Binds an actor's Game Settings delegate to the Game Instance's OnPlayerSettingsChanged_Game function,
 	 *  which broadcasts OnPlayerSettingsChangedDelegate_Game to all actors subscribed for updates */
@@ -107,20 +100,10 @@ protected:
 	void StartGameMode(const bool bIsRestart) const;
 
 	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions */
-	bool InitializeSteamManager();
+	void InitializeSteamManager();
 
 	/** Pauses the game and shows the Pause Screen if the overlay is active */
 	void OnSteamOverlayIsActive(bool bIsOverlayActive) const;
-
-	/** Checks if bHttpAuthTicketAsyncTaskComplete and bLoginToScoreBrowserAsyncTaskComplete are true and if so calls ResetWebApiTicket on SteamManager */
-	void CheckIfAsyncAuthTasksComplete();
-
-	/** Callback for when PlayerController is done using the AuthTicket */
-	void OnLoginToScoreBrowserAsyncTaskComplete();
-
-	/** Called after an HTTP request has been sent to BeatShot website and a response was received */
-	UFUNCTION()
-	void OnAuthTicketForWebApiResponse(const FSteamAuthTicketResponse& Response, const bool bSuccess);
 
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void
@@ -129,12 +112,6 @@ protected:
 	virtual void OnPlayerSettingsChanged_CrossHair(const FPlayerSettings_CrossHair& CrossHairSettings) override;
 	virtual void
 	OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
-
-	/** Delegate passed to AuthenticateSteamUser Http request which is executed when it receives a response */
-	FOnTicketWebApiResponse TicketWebApiResponse;
-
-	/** Delegate passed to a PlayerController with AuthTickets to be called when they're done being used */
-	FOnPCFinishedUsingAuthTicket OnPCFinishedUsingAuthTicket;
 
 	/** Object that interfaces with Steam API */
 	UPROPERTY()
@@ -152,13 +129,4 @@ protected:
 
 	/** Whether or not the Steam Overlay is active */
 	bool IsSteamOverlayActive;
-
-	/** Whether or not the Steam Manager has been initialized */
-	bool bSteamManagerInitialized = false;
-
-	/** Whether or not the AuthTicket async task has been completed */
-	bool bHttpAuthTicketAsyncTaskComplete = false;
-
-	/** Whether or not the login to score browser widget async task has been completed */
-	bool bLoginToScoreBrowserAsyncTaskComplete = false;
 };

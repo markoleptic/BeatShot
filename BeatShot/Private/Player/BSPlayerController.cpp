@@ -27,6 +27,7 @@
 #include "SubMenuWidgets/ScoreBrowserWidget.h"
 #include "SubMenuWidgets/SettingsWidgets/SettingsMenuWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
+#include "System/SteamManager.h"
 
 void ABSPlayerController::BeginPlay()
 {
@@ -136,9 +137,8 @@ void ABSPlayerController::ShowMainMenu()
 
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
-
-	// Let Game Instance know that it can send AuthTicketForWebApp
-	GI->OnPlayerControllerReadyForSteamLogin(this);
+	
+	if (!bIsLoggedIn) LoginUser();
 }
 
 void ABSPlayerController::HideMainMenu()
@@ -399,36 +399,80 @@ ABSCharacter* ABSPlayerController::GetBSCharacter() const
 	return Cast<ABSCharacter>(GetPawn());
 }
 
-void ABSPlayerController::LoginToScoreBrowserWithSteam(const FString AuthTicket,
-	FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket)
+void ABSPlayerController::LoginUser()
 {
 	if (!MainMenu) return;
 
-	if (AuthTicket.IsEmpty())
+	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (!GI) return;
+	
+	USteamManager* SteamManager = GI->GetSteamManager();
+	if (!SteamManager) return;
+
+	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler(new FOnAuthTicketForWebApiResponseCallbackHandler());
+
+	// First get auth ticket for web api
+	CallbackHandler->OnAuthTicketForWebApiReady.BindLambda([this, CallbackHandler] ()
 	{
-		if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
-		MainMenu->UpdateLoginState(false, "SignInState_SteamSignInFailed");
-		MainMenu->TryFallbackLogin();
-	}
-	else
-	{
-		FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda(
-			[&OnFinishedUsingAuthTicket, &Handle](const bool bSuccess)
+		if (CallbackHandler->Result != k_EResultOK)
+		{
+			if (SteamUser()) SteamUser()->CancelAuthTicket(CallbackHandler->Handle);
+			MainMenu->UpdateLoginState(false, "SignInState_SteamSignInFailed");
+			MainMenu->TryFallbackLogin();
+		}
+		else
+		{
+			// Get display name, user id, and refresh token from BeatShot api request
+			TSharedPtr<FSteamAuthTicketResponse> SteamAuthTicketResponse(new FSteamAuthTicketResponse());
+			SteamAuthTicketResponse->OnSteamAuthTicketResponse.BindLambda([this, SteamAuthTicketResponse] ()
 			{
-				if (OnFinishedUsingAuthTicket.IsBound()) OnFinishedUsingAuthTicket.Execute();
+				if (!SteamAuthTicketResponse->bConnectedSuccessfully) return;
+				const uint64 LocalSteamID = SteamUser()->GetSteamID().ConvertToUint64();
+				const uint64 ResponseSteamID = FCString::Atoi64(*SteamAuthTicketResponse->SteamID);
+
+				if (LocalSteamID == ResponseSteamID)
+				{
+					FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
+					PlayerSettings.DisplayName = FString(SteamFriends()->GetPersonaName());
+					PlayerSettings.UserID = SteamAuthTicketResponse->SteamID;
+					PlayerSettings.RefreshCookie = SteamAuthTicketResponse->RefreshCookie;
+					SavePlayerSettings(PlayerSettings);
+					bIsLoggedIn = true;
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("LocalSteamID != ResponseSteamID"));
+				}
+			});
+			AuthenticateSteamUser(CallbackHandler->Ticket, SteamAuthTicketResponse);
+
+			// Cancel auth ticket when done
+			FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda(
+			[this, &Handle, CallbackHandler](const bool bSuccess)
+			{
+				if (SteamUser()) SteamUser()->CancelAuthTicket(CallbackHandler->Handle);
 				Handle.Reset();
 			});
-		MainMenu->LoginScoresWidgetWithSteam(FString(AuthTicket));
+
+			// This will be OnlineAsyncTaskThreadSteam, need GameThread for TimerManager later on
+			AsyncTask(ENamedThreads::GameThread, [this, CallbackHandler]()
+			{
+				// Login to the in-game web browser using the redirect url from the auth ticket for web api
+				MainMenu->LoginScoresWidgetWithSteam(CallbackHandler->Ticket);
+			});
+		}
+	});
+	// Could fail if not logged in to Steam
+	if (!SteamManager->CreateAuthTicketForWebApi(CallbackHandler))
+	{
+		MainMenu->UpdateLoginState(false, "SignInState_SteamSignInFailed");
+		MainMenu->TryFallbackLogin();
 	}
 }
 
 void ABSPlayerController::InitiateSteamLogin()
 {
-	UE_LOG(LogTemp, Display, TEXT("InitiateSteamLogin"));
-	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	// Tell Game Instance to get an AuthTicketForWebApp
-	GI->OnPlayerControllerReadyForSteamLogin(this);
+	LoginUser();
 }
 
 void ABSPlayerController::PreProcessInput(const float DeltaTime, const bool bGamePaused)

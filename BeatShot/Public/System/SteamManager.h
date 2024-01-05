@@ -5,18 +5,15 @@
 #include <steam/isteamfriends.h>
 #include <steam/isteamuser.h>
 #include <steam/isteamuserstats.h>
-
+#include <steam/steam_api_common.h>
 #include "BSGameModeDataAsset.h"
 #include "SteamManager.generated.h"
 
 class UBSGameInstance;
 
-DECLARE_DELEGATE_OneParam(FOnAuthTicketForWebApiReady, const bool bSuccess);
-
 #define _ACH_ID(id, name ) { id, #id, name, "", 0, 0 }
 #define _STAT_ID(id, type, name) { id, type, name, 0, 0, 0, 0 }
 
-// Defining our achievements
 UENUM()
 enum ESteamAchievement : uint8
 {
@@ -55,6 +52,16 @@ struct FSteamAchievement
 	char Description[256];
 	bool bAchieved;
 	int IconImage;
+
+	FORCEINLINE bool operator==(const FSteamAchievement& Other) const
+	{
+		return APIName == Other.APIName;
+	}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FSteamAchievement& Achievement)
+	{
+		return GetTypeHash(Achievement.APIName);
+	}
 };
 
 UENUM()
@@ -77,6 +84,33 @@ struct FSteamStat
 	float FloatValue;
 	float FloatAvgNumerator;
 	float FloatAvgDenominator;
+
+	FORCEINLINE bool operator==(const FSteamStat& Other) const
+	{
+		return APIName == Other.APIName;
+	}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FSteamStat& Stat)
+	{
+		return GetTypeHash(Stat.APIName);
+	}
+};
+
+DECLARE_DELEGATE(FOnAuthTicketForWebApiReady);
+
+USTRUCT()
+struct FOnAuthTicketForWebApiResponseCallbackHandler
+{
+	GENERATED_BODY()
+	
+	FOnAuthTicketForWebApiReady OnAuthTicketForWebApiReady;
+	HAuthTicket Handle;
+	EResult Result;
+	FString Ticket;
+
+	FOnAuthTicketForWebApiResponseCallbackHandler(): Handle(0), Result(k_EResultFail)
+	{
+	}
 };
 
 /** Class responsible for linking to Steam */
@@ -90,8 +124,6 @@ public:
 
 	void InitializeSteamManager();
 
-	void ShutdownSteamManager();
-
 	void AssignGameInstance(UBSGameInstance* InDefaultGameInstance);
 
 	/** Updates locally stored StatData with new IntValue/FloatValue for matching StatAPIName, calls StoreStats() */
@@ -104,30 +136,19 @@ public:
 	UBSGameInstance* DefaultGameInstance;
 
 	/** Calls GetAuthTicketForWebApi using Steam Api, callback is OnTicketForWebApiResponse */
-	static void CreateAuthTicketForWebApi();
-
-	/** Returns true if the WebApiTicket has been filled, otherwise false */
-	bool IsAuthTicketReady() const { return !WebApiTicket.IsEmpty(); }
-
-	/** Returns the WebApiTicket */
-	FString GetWebApiTicket() { return WebApiTicket; }
-
-	/** Clears the WebApiTicket */
-	UFUNCTION()
-	void ResetWebApiTicket() { WebApiTicket.Empty(); }
-
-	/** Delegate executed when a ticket for a WebApiResponse is generated or failed to generate */
-	FOnAuthTicketForWebApiReady OnAuthTicketForWebApiReady;
+	bool CreateAuthTicketForWebApi(TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler);
 
 private:
-	/**Steam Callback Setups Using STEAM_CALLBACK_MANUAL() */
-
-	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveCallback);
-	STEAM_CALLBACK_MANUAL(USteamManager, OnTicketForWebApiResponse, GetTicketForWebApiResponse_t,
-		OnTicketForWebApiResponseCallback);
-	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsReceived, UserStatsReceived_t, OnUserStatsReceivedCallback);
-	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsStored, UserStatsStored_t, OnUserStatsStoredCallback);
-	STEAM_CALLBACK_MANUAL(USteamManager, OnAchievementStored, UserAchievementStored_t, OnAchievementStoredCallback);
+	/** Delegate registered with Steam to trigger when a user activates the Steam Overlay */
+	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveDelegate);
+	/** Delegate registered with Steam to trigger when a response is received from GetAuthTicketForWebApi */
+	STEAM_CALLBACK_MANUAL(USteamManager, OnAuthTicketForWebApiResponse, GetTicketForWebApiResponse_t, OnAuthTicketForWebApiResponseDelegate);
+	/** Delegate registered with Steam to trigger anytime RequestStats() is called */
+	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsReceived, UserStatsReceived_t, OnUserStatsReceivedDelegate);
+	/** Delegate registered with Steam to trigger anytime you attempt to store stats on Steam  */
+	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsStored, UserStatsStored_t, OnUserStatsStoredDelegate);
+	/** Delegate registered with Steam to trigger anytime you attempt to store achievements on Steam  */
+	STEAM_CALLBACK_MANUAL(USteamManager, OnAchievementStored, UserAchievementStored_t, OnAchievementStoredDelegate);
 
 	/** Wraps an asynchronous call to steam, ISteamUserStats::RequestCurrentStats, requesting the stats
 	 *  and achievements of the current user. Needs to be called before setting any stats or achievements. */
@@ -141,26 +162,21 @@ private:
 	 *  worry about only setting achievements that aren't already set. This is an asynchronous call which will trigger two callbacks:
 	 *  OnUserStatsStored() and OnAchievementStored() */
 	bool SetAchievement(const char* ID) const;
-	bool SetAchievement(const ESteamAchievement InSteamAchievement) const;
-
-	/** Returns the SteamAPI AchievementID from an ESteamAchievement enum */
-	const char* GetAchievementIDFromESteamAchievement(const ESteamAchievement InSteamAchievement) const;
 
 	/** Returns a pointer to the NumGamesPlayed FSteamStat element corresponding to GameMode */
 	FSteamStat* GetStat_NumGamesPlayed(const EBaseGameMode GameMode);
-
-	/** The current WebApiTicket retrieved from OnAuthTicketForWebApiReady */
-	FString WebApiTicket;
 
 	/** The Steam AppID for this game */
 	int64 AppId;
 
 	/** Locally stored and updated Steam Stats struct array */
-	TArray<FSteamStat> StatsData;
+	TSet<FSteamStat> StatsData;
 
 	/** Locally stored and updated Steam Achievement struct array */
-	TArray<FSteamAchievement> AchievementData;
+	TSet<FSteamAchievement> AchievementData;
 
 	/** If Steam Stats were successfully initialized */
 	bool bInitializedStats;
+	
+	TQueue<TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler>> ActiveCallbacks;
 };

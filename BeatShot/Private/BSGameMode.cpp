@@ -690,7 +690,7 @@ void ABSGameMode::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_Vi
 	SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume, VideoAndSoundSettings.MusicVolume);
 }
 
-void ABSGameMode::OnAccessTokenResponseReceived(const FString& AccessToken)
+void ABSGameMode::OnAccessTokenResponseReceived(const FString AccessToken)
 {
 	if (AccessToken.IsEmpty())
 	{

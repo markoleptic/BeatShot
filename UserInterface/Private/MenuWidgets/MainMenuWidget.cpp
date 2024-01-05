@@ -209,16 +209,16 @@ void UMainMenuWidget::OnWidgetExitAnimationCompleted(UMenuButton* ButtonToSetIna
 void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 {
 	CurrentLoginMethod = ELoginMethod::Legacy;
-	OnLoginResponse.BindLambda(
-		[this, LoginPayload](const FLoginResponse& Response, const FString& ResponseMsg, int ResponseCode)
+	TSharedPtr<FLoginResponse> LoginResponse(new FLoginResponse);
+	LoginResponse->OnLoginResponse.BindLambda([this, LoginResponse, LoginPayload]
 		{
-			if (ResponseCode != 200)
+			if (LoginResponse->HttpStatus != 200)
 			{
-				if (ResponseCode == 401)
+				if (LoginResponse->HttpStatus  == 401)
 				{
 					LoginWidget->ShowLoginScreen("Login_InvalidCredentialsText");
 				}
-				else if (ResponseCode == 408 || ResponseCode == 504)
+				else if (LoginResponse->HttpStatus == 408 || LoginResponse->HttpStatus == 504)
 				{
 					LoginWidget->ShowLoginScreen("Login_TimeOutErrorText");
 				}
@@ -231,21 +231,17 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 			else
 			{
 				FPlayerSettings_User PlayerSettingsToSave = LoadPlayerSettings().User;
-				PlayerSettingsToSave.UserID = Response.UserID;
-				PlayerSettingsToSave.DisplayName = Response.DisplayName;
-				PlayerSettingsToSave.RefreshCookie = Response.RefreshToken;
+				PlayerSettingsToSave.UserID = LoginResponse->UserID;
+				PlayerSettingsToSave.DisplayName = LoginResponse->DisplayName;
+				PlayerSettingsToSave.RefreshCookie = LoginResponse->RefreshToken;
 				SavePlayerSettings(PlayerSettingsToSave);
 				TextBlock_SignInState->SetText(
 					IBSWidgetInterface::GetWidgetTextFromKey("SignInState_LoggingWebBrowser"));
 
-				// Callback function for this will be OnURLChangedResult_ScoresWidget
+				// Callback function for this is OnURLChangedResult_ScoresWidget
 				ScoresWidget->LoginUserBrowser(LoginPayload, PlayerSettingsToSave.UserID);
-			}
-			if (OnLoginResponse.IsBound())
-			{
-				OnLoginResponse.Unbind();
 			}
 		});
 	TextBlock_SignInState->SetText(IBSWidgetInterface::GetWidgetTextFromKey("SignInState_SendingRequest"));
-	LoginUser(LoginPayload, OnLoginResponse);
+	LoginUser(LoginPayload, LoginResponse);
 }

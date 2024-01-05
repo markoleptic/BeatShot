@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "MainMenuWidget.generated.h"
 
+class UBSButton;
 class UMenuStyle;
 class UFeedbackWidget;
 class UScoreBrowserWidget;
@@ -21,7 +22,6 @@ class UHorizontalBox;
 class UOverlay;
 class UEditableTextBox;
 class UTextBlock;
-class UButton;
 class UMenuButton;
 
 /** Describes if player scores were posted or not */
@@ -136,8 +136,6 @@ private:
 	void OnURLChangedResult_ScoresWidget(const bool bSuccess);
 	UFUNCTION()
 	void OnWidgetExitAnimationCompleted(UMenuButton* ButtonToSetInactive);
-
-	FOnLoginResponse OnLoginResponse;
 
 	ELoginMethod CurrentLoginMethod;
 

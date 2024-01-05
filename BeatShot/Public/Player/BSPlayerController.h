@@ -100,19 +100,15 @@ public:
 
 	virtual void OnRep_PlayerState() override;
 
-	/** Whether or not the countdown widget is active, called by the gun */
-	UPROPERTY()
-	bool CountdownActive;
-
 	/** Delegate that executes when the ScreenFadeWidget completes its animation*/
 	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
 
 	ABSCharacter* GetBSCharacter() const;
 
-	/** Attempts to use the provided AuthTicket to log in to BeatShot website, and executes OnPCFinishedUsingAuthTicket when done */
-	void LoginToScoreBrowserWithSteam(const FString AuthTicket,
-		FOnPCFinishedUsingAuthTicket& OnFinishedUsingAuthTicket);
+	/** Login the user by authenticating using GetAuthTicketForWebApi */
+	void LoginUser();
 
+	/** Executed when the player requests to try to login through Steam after a failed attempt */
 	void InitiateSteamLogin();
 
 	/** ~ILoadingProcessInterface begin */
@@ -177,10 +173,12 @@ private:
 	UUserWidget* InteractInfoWidget;
 	UPROPERTY()
 	URLAgentWidget* RLAgentWidget;
-
-	bool PlayerHUDActive;
-	bool PostGameMenuActive;
+	
+	bool CountdownActive;
+	bool PlayerHUDActive = false;
+	bool PostGameMenuActive = false;
+	bool bIsLoggedIn = false;
 	const int32 ZOrderFadeScreen = 20;
 	const int32 ZOrderFPSCounter = 19;
-	float LoadingScreenWidgetFadeOutTime;
+	float LoadingScreenWidgetFadeOutTime = 0.75f;
 };

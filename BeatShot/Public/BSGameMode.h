@@ -177,7 +177,7 @@ private:
 
 	/** Function bound to the response of an access token, which is broadcast from RequestAccessToken() */
 	UFUNCTION()
-	void OnAccessTokenResponseReceived(const FString& AccessToken);
+	void OnAccessTokenResponseReceived(const FString AccessToken);
 
 	/** Function bound to the response of posting player scores to database, which is broadcast from PostPlayerScores() */
 	UFUNCTION()

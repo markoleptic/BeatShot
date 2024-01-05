@@ -312,7 +312,7 @@ private:
 	void OnButtonClicked_ClearRLHistory();
 
 	/** Callback function for receiving an access token response */
-	void OnAccessTokenResponseReceived(const FString& AccessToken, FString GameModeNameToRemove);
+	void OnAccessTokenResponseReceived(const FString AccessToken, FString GameModeNameToRemove);
 
 	/** Callback function for receiving a delete scores response */
 	void OnDeleteScoresResponseReceived(const int32 NumScoresRemoved, const int32 ResponseCode, FString GameModeNameToRemove);
