@@ -18,25 +18,60 @@ enum class EPostScoresResponse : uint8
 
 ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore, EPostScoresResponse::HttpSuccess);
 
+/** Executed when a response is received from a request */
+DECLARE_DELEGATE(FOnHttpResponseReceived);
 
+/** Base struct for Http requests in this class */
+USTRUCT(BlueprintType)
+struct FBSHttpResponse
+{
+	GENERATED_BODY()
 
-/** Broadcast if refresh token is invalid */
-DECLARE_DELEGATE_OneParam(FOnAccessTokenResponse, const FString AccessToken);
+	int32 HttpStatus;
+	bool bConnectedSuccessfully;
+	FOnHttpResponseReceived OnHttpResponseReceived;
 
-/** Broadcast when a login response is received from BeatShot website */
-DECLARE_DELEGATE(FOnLoginResponse);
+	FBSHttpResponse(): HttpStatus(0), bConnectedSuccessfully(false)
+	{
+	}
+};
 
-/** Broadcast when a response is received from posting player scores to database */
-DECLARE_MULTICAST_DELEGATE_OneParam(FOnPostScoresResponse, const EPostScoresResponse& Response);
+USTRUCT(BlueprintType)
+struct FAccessTokenResponse : public FBSHttpResponse
+{
+	GENERATED_BODY()
 
-/** Broadcast when a response is received from deleting player scores to database */
-DECLARE_DELEGATE_TwoParams(FOnDeleteScoresResponse, const int32 NumRemoved, const int32 ResponseCode);
+	FString AccessToken;
 
-/** Broadcast when a response is received from posting player feedback to database */
-DECLARE_DELEGATE_OneParam(FOnPostFeedbackResponse, const bool bSuccess);
+	FAccessTokenResponse()
+	{
+	}
+};
 
-/** Broadcast when a response is received from a GetAuthTicketForWebApi request */
-DECLARE_DELEGATE(FOnSteamAuthTicketResponse);
+USTRUCT(BlueprintType)
+struct FPostScoresResponse : public FBSHttpResponse
+{
+	GENERATED_BODY()
+
+	EPostScoresResponse PostScoresDescription;
+
+	FPostScoresResponse()
+	{
+		PostScoresDescription = EPostScoresResponse::HttpError;
+	}
+};
+
+USTRUCT(BlueprintType)
+struct FDeleteScoresResponse : public FBSHttpResponse
+{
+	GENERATED_BODY()
+
+	int32 NumRemoved;
+
+	FDeleteScoresResponse(): NumRemoved(0)
+	{
+	}
+};
 
 /** Simple login payload */
 USTRUCT(BlueprintType)
@@ -70,7 +105,7 @@ struct FLoginPayload
 
 /** Login Response object */
 USTRUCT(BlueprintType)
-struct FLoginResponse
+struct FLoginResponse : public FBSHttpResponse
 {
 	GENERATED_BODY()
 
@@ -85,28 +120,18 @@ struct FLoginResponse
 
 	UPROPERTY()
 	FString DisplayName;
-	
+
 	UPROPERTY()
 	FString ResponseMsg;
 
-	UPROPERTY()
-	int32 HttpStatus;
-
-	FOnLoginResponse OnLoginResponse;
-
 	FLoginResponse()
 	{
-		UserID = "";
-		AccessToken = "";
-		RefreshToken = "";
-		DisplayName = "";
-		HttpStatus = 0;
 	}
 };
 
 /** Response object returned as JSON from authentication using SteamAuthTicket */
 USTRUCT(BlueprintType)
-struct FSteamAuthTicketResponse
+struct FSteamAuthTicketResponse : public FBSHttpResponse
 {
 	GENERATED_BODY()
 
@@ -137,15 +162,7 @@ struct FSteamAuthTicketResponse
 	UPROPERTY()
 	FString ErrorDesc;
 
-	UPROPERTY()
-	int32 HttpStatus;
-
-	UPROPERTY()
-	bool bConnectedSuccessfully;
-
-	FOnSteamAuthTicketResponse OnSteamAuthTicketResponse;
-
-	FSteamAuthTicketResponse(): VacBanned(false), PublisherBanned(false), HttpStatus(0), bConnectedSuccessfully(false)
+	FSteamAuthTicketResponse(): VacBanned(false), PublisherBanned(false)
 	{
 	}
 };
@@ -219,22 +236,24 @@ class BEATSHOTGLOBAL_API IHttpRequestInterface
 
 public:
 	/** Checks to see if the user has a refresh token and if it has expired or not */
-	static bool IsRefreshTokenValid(const FString& RefreshToken);
+	static bool IsRefreshTokenValid(const FString RefreshToken);
 
 	/** Makes a GET request for a short lived access token given a valid refresh token. Executes supplied
 	 *  OnAccessTokenResponse with the access token
 	 *  
 	 *  @param RefreshToken the refresh token obtained when logging in
-	 *  @param OnAccessTokenResponse delegate executed when request completes
+	 *  @param AccessTokenResponse struct containing callback delegate and response info
 	 */
-	static void RequestAccessToken(const FString& RefreshToken, FOnAccessTokenResponse& OnAccessTokenResponse);
+	static void RequestAccessToken(const FString RefreshToken,
+		TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe> AccessTokenResponse);
 
 	/** Sends a POST login request to BeatShot website given a LoginPayload. Executes delegate in struct on completion
 	 *
 	 *  @param LoginPayload login info to send with request
 	 *  @param LoginResponse struct containing callback delegate and response info
 	 */
-	static void LoginUser(const FLoginPayload& LoginPayload, TSharedPtr<FLoginResponse> LoginResponse);
+	static void LoginUser(const FLoginPayload LoginPayload,
+		TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse);
 
 	/** Converts ScoresToPost to a JSON string and sends an http POST request to BeatShot website given a valid
 	 *  access token. Executes delegate in struct on completion
@@ -242,27 +261,28 @@ public:
 	 *  @param ScoresToPost scores to send with the request
 	 *  @param UserID userID of the BeatShot account
 	 *  @param AccessToken access token obtained using refresh token
-	 *  @param OnPostResponse delegate executed when request completes
+	 *  @param PostResponse struct containing callback delegate and response info
 	 */
-	static void PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& UserID,
-		const FString& AccessToken, FOnPostScoresResponse& OnPostResponse);
+	static void PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString UserID,
+		const FString AccessToken, TSharedPtr<FPostScoresResponse, ESPMode::ThreadSafe> PostResponse);
 
 	/** Makes a POST request to BeatShot website which emails the feedback. Executes supplied OnPostFeedbackResponse
 	 *
 	 *  @param InFeedback struct to send with the request
-	 *  @param OnPostFeedbackResponse delegate executed when request completes
+	 *  @param FeedbackResponse struct containing callback delegate and response info
 	 */
-	static void PostFeedback(const FJsonFeedback& InFeedback, FOnPostFeedbackResponse& OnPostFeedbackResponse);
+	static void PostFeedback(const FJsonFeedback InFeedback,
+		TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse);
 
 	/** Makes a DELETE request to BeatShot website which deletes all scores matching the CustomGameModeName and userID
 	 *
 	 *  @param CustomGameModeName CustomGameModeName to send with the request
 	 *  @param UserID userID of the BeatShot account
 	 *  @param AccessToken access token obtained using refresh token
-	 *  @param OnDeleteScoresResponse delegate executed when request completes
+	 *  @param DeleteScoresResponse struct containing callback delegate and response info
 	 */
-	static void DeleteScores(const FString CustomGameModeName, const FString& UserID, const FString& AccessToken,
-		FOnDeleteScoresResponse& OnDeleteScoresResponse);
+	static void DeleteScores(const FString CustomGameModeName, const FString UserID, const FString AccessToken,
+		TSharedPtr<FDeleteScoresResponse, ESPMode::ThreadSafe> DeleteScoresResponse);
 
 	/** Makes a GET request to BeatShot website that uses the AuthenticateUserTicket request from the
 	 *  ISteamUserAuthInterface. Executes supplied OnTicketWebApiResponse.
@@ -272,5 +292,6 @@ public:
 	 *  @param AuthTicket auth ticket obtained from GetAuthTicketFromWebApi Steam API call
 	 *  @param SteamAuthTicketResponse struct containing callback delegate and response info
 	 */
-	void AuthenticateSteamUser(const FString& AuthTicket, TSharedPtr<FSteamAuthTicketResponse> SteamAuthTicketResponse) const;
+	static void AuthenticateSteamUser(const FString AuthTicket,
+		TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe> SteamAuthTicketResponse);
 };

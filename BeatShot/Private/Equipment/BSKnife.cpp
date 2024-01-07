@@ -20,7 +20,7 @@ void ABSKnife::BeginPlay()
 	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ThisClass::OnPlayerSettingsChanged_Game);
+	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ThisClass::OnPlayerSettingsChanged_Game);
 }
 
 void ABSKnife::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)

@@ -625,7 +625,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManag
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bDebug_ManagedVerts = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_ManagedVertices = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConsoleVariable* Variable)
@@ -636,7 +636,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConso
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bDebug_AllVerts = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_AllVertices = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable)

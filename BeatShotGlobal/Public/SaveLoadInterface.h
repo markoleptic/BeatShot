@@ -43,22 +43,22 @@ struct FGameModeTransitionState
 };
 
 /** Broadcast when game specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayerSettings_Game&, GameSettings);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_Game, const FPlayerSettings_Game& GameSettings);
 
 /** Broadcast when Audio Analyzer specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_AudioAnalyzer,
-	const FPlayerSettings_AudioAnalyzer&, AudioAnalyzerSettings);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_AudioAnalyzer,
+	const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings);
 
 /** Broadcast when User specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_User, const FPlayerSettings_User&, UserSettings);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_User, const FPlayerSettings_User& UserSettings);
 
 /** Broadcast when CrossHair specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_CrossHair, const FPlayerSettings_CrossHair&,
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_CrossHair, const FPlayerSettings_CrossHair&
 	CrossHairSettings);
 
 /** Broadcast when VideoAndSound specific settings are changed and saved */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_VideoAndSound,
-	const FPlayerSettings_VideoAndSound&, VideoAndSoundSettings);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnPlayerSettingsChanged_VideoAndSound,
+	const FPlayerSettings_VideoAndSound& VideoAndSoundSettings);
 
 /** Broadcast from GameModesWidget, SettingsMenuWidget, PauseMenuWidget, and PostGameMenuWidget any time the game should start, restart, or stop */
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnGameModeStateChanged, const FGameModeTransitionState& TransitionState);

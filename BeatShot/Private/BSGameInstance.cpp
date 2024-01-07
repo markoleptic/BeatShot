@@ -9,8 +9,6 @@
 #include "DLSSFunctions.h"
 #include "GameFramework/GameUserSettings.h"
 
-class FOnlineSubsystemSteam;
-
 void UBSGameInstance::Init()
 {
 	Super::Init();
@@ -122,10 +120,14 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		}
 	case ETransitionState::QuitToDesktop:
 		{
+			bQuitToDesktopAfterSave = NewGameModeTransitionState.bSaveCurrentScores;
 			Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()))->EndGameMode(
 				NewGameModeTransitionState.bSaveCurrentScores, false);
-			UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
-				EQuitPreference::Quit, false);
+			if (!bQuitToDesktopAfterSave)
+			{
+				UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+					EQuitPreference::Quit, false);
+			}
 			break;
 		}
 	case ETransitionState::PlayAgain:
@@ -143,6 +145,62 @@ void UBSGameInstance::InitializeSteamManager()
 	SteamManager = NewObject<USteamManager>(this);
 	SteamManager->AssignGameInstance(this);
 	SteamManager->InitializeSteamManager();
+}
+
+void UBSGameInstance::SavePlayerScoresToDatabase(const EPostScoresResponse& CurrentResponse)
+{
+	// If game mode encountered a reason not to save to database
+	if (CurrentResponse != EPostScoresResponse::HttpSuccess)
+	{
+		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+			UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		PlayerController->OnPostScoresResponseReceived(CurrentResponse);
+		return;
+	}
+	if (LoadPlayerSettings().User.RefreshCookie.IsEmpty())
+	{
+		ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+			UGameplayStatics::GetPlayerController(GetWorld(), 0));
+		PlayerController->OnPostScoresResponseReceived(EPostScoresResponse::NoAccount);
+		return;
+	}
+	
+	TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse);
+	AccessTokenResponse->OnHttpResponseReceived.BindLambda([this, AccessTokenResponse]
+	{
+		if (AccessTokenResponse->AccessToken.IsEmpty())
+		{
+			if (bQuitToDesktopAfterSave)
+			{
+				UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+					EQuitPreference::Quit, false);
+				return;
+			}
+			ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+				UGameplayStatics::GetPlayerController(GetWorld(), 0));
+			PlayerController->OnPostScoresResponseReceived(EPostScoresResponse::HttpError);
+			return;
+		}
+		TSharedPtr<FPostScoresResponse> PostScoresResponse = MakeShareable(new FPostScoresResponse);
+		PostScoresResponse->OnHttpResponseReceived.BindLambda([this, PostScoresResponse]
+		{
+			if (PostScoresResponse->PostScoresDescription == EPostScoresResponse::HttpSuccess)
+			{
+				SetAllPlayerScoresSavedToDatabase();
+				ABSPlayerController* PlayerController = Cast<ABSPlayerController>(
+					UGameplayStatics::GetPlayerController(GetWorld(), 0));
+				PlayerController->OnPostScoresResponseReceived(EPostScoresResponse::HttpSuccess);
+			}
+			if (bQuitToDesktopAfterSave)
+			{
+				UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
+					EQuitPreference::Quit, false);
+			}
+		});
+		PostPlayerScores(LoadPlayerScores_UnsavedToDatabase(), LoadPlayerSettings().User.UserID,
+			AccessTokenResponse->AccessToken, PostScoresResponse);
+	});
+	RequestAccessToken(LoadPlayerSettings().User.RefreshCookie, AccessTokenResponse);
 }
 
 void UBSGameInstance::OnSteamOverlayIsOn()
@@ -169,27 +227,27 @@ void UBSGameInstance::OnSteamOverlayIsActive(bool bIsOverlayActive) const
 
 void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_Game& Delegate)
 {
-	Delegate.AddUniqueDynamic(this, &UBSGameInstance::OnPlayerSettingsChanged_Game);
+	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_Game);
 }
 
 void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_AudioAnalyzer& Delegate)
 {
-	Delegate.AddUniqueDynamic(this, &UBSGameInstance::OnPlayerSettingsChanged_AudioAnalyzer);
+	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_AudioAnalyzer);
 }
 
 void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_User& Delegate)
 {
-	Delegate.AddUniqueDynamic(this, &UBSGameInstance::OnPlayerSettingsChanged_User);
+	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_User);
 }
 
 void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_CrossHair& Delegate)
 {
-	Delegate.AddUniqueDynamic(this, &UBSGameInstance::OnPlayerSettingsChanged_CrossHair);
+	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_CrossHair);
 }
 
 void UBSGameInstance::AddDelegateToOnPlayerSettingsChanged(FOnPlayerSettingsChanged_VideoAndSound& Delegate)
 {
-	Delegate.AddUniqueDynamic(this, &UBSGameInstance::OnPlayerSettingsChanged_VideoAndSound);
+	Delegate.AddUObject(this, &UBSGameInstance::OnPlayerSettingsChanged_VideoAndSound);
 }
 
 void UBSGameInstance::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)

@@ -5,54 +5,61 @@
 #include "Containers/UnrealString.h"
 #include "BSGameInstance.h"
 
+DEFINE_LOG_CATEGORY(LogSteamManager);
+
 // Stats array which will hold data about the stats and their state
-TSet<FSteamStat> g_Stats = {
-	// Number of games played Multi-Beat
-	_STAT_ID(1, Stat_Int, "NumGamesPlayed_GM1"),
-	// Number of games played Single-Beat
-	_STAT_ID(2, Stat_Int, "NumGamesPlayed_GM2"),
-	// Number of games played Beat-Track
-	_STAT_ID(3, Stat_Int, "NumGamesPlayed_GM3"),
-	// Number of games played Beat-Grid
-	_STAT_ID(4, Stat_Int, "NumGamesPlayed_GM4"),
-	// Number of games played Cluster-Beat
-	_STAT_ID(5, Stat_Int, "NumGamesPlayed_GM5"),
-	// Number of games played Charged Beat-Track
-	_STAT_ID(6, Stat_Int, "NumGamesPlayed_GM6"),
+TMap<const char*, FSteamStat> g_Stats = {
+	// Number of games played MultiBeat
+	{
+		"NumGamesPlayed_GM1",
+		FSteamStat("NumGamesPlayed_GM1", Stat_Int, {
+			EBaseGameMode::MultiBeat, EBaseGameMode::MultiBeatPrecision, EBaseGameMode::MultiBeatSpeed
+		})
+	},
+	// Number of games played SingleBeat
+	{"NumGamesPlayed_GM2", FSteamStat("NumGamesPlayed_GM2", Stat_Int, {EBaseGameMode::SingleBeat})},
+	// Number of games played BeatTrack
+	{"NumGamesPlayed_GM3", FSteamStat("NumGamesPlayed_GM3", Stat_Int, {EBaseGameMode::BeatTrack})},
+	// Number of games played BeatGrid
+	{"NumGamesPlayed_GM4", FSteamStat("NumGamesPlayed_GM4", Stat_Int, {EBaseGameMode::BeatGrid})},
+	// Number of games played ClusterBeat
+	{"NumGamesPlayed_GM5", FSteamStat("NumGamesPlayed_GM5", Stat_Int, {EBaseGameMode::ClusterBeat})},
+	// Number of games played ChargedBeatTrack
+	{"NumGamesPlayed_GM6", FSteamStat("NumGamesPlayed_GM6", Stat_Int, {EBaseGameMode::ChargedBeatTrack})},
 	// Number of games played Custom Game Mode
-	_STAT_ID(8, Stat_Int, "NumGamesPlayed_Custom"),
+	{"NumGamesPlayed_Custom", FSteamStat("NumGamesPlayed_Custom", Stat_Int, {EBaseGameMode::None})},
 };
 
 // Achievement array which will hold data about the achievements and their state
-TSet<FSteamAchievement> g_Achievements = {
-	_ACH_ID(ACH_PlayAnyGM, "PlayAnyGM"),
-	_ACH_ID(ACH_Participant_GM1, "Participant_GM1"),
-	_ACH_ID(ACH_Participant_GM2, "Participant_GM2"),
-	_ACH_ID(ACH_Participant_GM3, "Participant_GM3"),
-	_ACH_ID(ACH_Participant_GM4, "Participant_GM4"),
-	_ACH_ID(ACH_Participant_GM5, "Participant_GM5"),
-	_ACH_ID(ACH_Participant_GM6, "Participant_GM6"),
-	_ACH_ID(ACH_Enthusiast_GM1, "Enthusiast_GM1"),
-	_ACH_ID(ACH_Enthusiast_GM2, "Enthusiast_GM2"),
-	_ACH_ID(ACH_Enthusiast_GM3, "Enthusiast_GM3"),
-	_ACH_ID(ACH_Enthusiast_GM4, "Enthusiast_GM4"),
-	_ACH_ID(ACH_Enthusiast_GM5, "Enthusiast_GM5"),
-	_ACH_ID(ACH_Enthusiast_GM6, "Enthusiast_GM6"),
-	_ACH_ID(ACH_Enjoyer_GM1, "Enjoyer_GM1"),
-	_ACH_ID(ACH_Enjoyer_GM2, "Enjoyer_GM2"),
-	_ACH_ID(ACH_Enjoyer_GM3, "Enjoyer_GM3"),
-	_ACH_ID(ACH_Enjoyer_GM4, "Enjoyer_GM4"),
-	_ACH_ID(ACH_Enjoyer_GM5, "Enjoyer_GM5"),
-	_ACH_ID(ACH_Enjoyer_GM6, "Enjoyer_GM6"),
-	_ACH_ID(ACH_Participant_Custom, "Participant_Custom"),
-	_ACH_ID(ACH_Enthusiast_Custom, "Enthusiast_Custom"),
-	_ACH_ID(ACH_Enjoyer_Custom, "Enjoyer_Custom"),
+TSet g_Achievements = {
+	FSteamAchievement("PlayAnyGM", nullptr, false),
+	FSteamAchievement("Participant_GM1", g_Stats.Find("NumGamesPlayed_GM1"), false),
+	FSteamAchievement("Participant_GM2", g_Stats.Find("NumGamesPlayed_GM2"), false),
+	FSteamAchievement("Participant_GM3", g_Stats.Find("NumGamesPlayed_GM3"), false),
+	FSteamAchievement("Participant_GM4", g_Stats.Find("NumGamesPlayed_GM4"), false),
+	FSteamAchievement("Participant_GM5", g_Stats.Find("NumGamesPlayed_GM5"), false),
+	FSteamAchievement("Participant_GM6", g_Stats.Find("NumGamesPlayed_GM6"), false),
+	FSteamAchievement("Enthusiast_GM1", g_Stats.Find("NumGamesPlayed_GM1"), false),
+	FSteamAchievement("Enthusiast_GM2", g_Stats.Find("NumGamesPlayed_GM2"), false),
+	FSteamAchievement("Enthusiast_GM3", g_Stats.Find("NumGamesPlayed_GM3"), false),
+	FSteamAchievement("Enthusiast_GM4", g_Stats.Find("NumGamesPlayed_GM4"), false),
+	FSteamAchievement("Enthusiast_GM5", g_Stats.Find("NumGamesPlayed_GM5"), false),
+	FSteamAchievement("Enthusiast_GM6", g_Stats.Find("NumGamesPlayed_GM6"), false),
+	FSteamAchievement("Enjoyer_GM1", g_Stats.Find("NumGamesPlayed_GM1"), false),
+	FSteamAchievement("Enjoyer_GM2", g_Stats.Find("NumGamesPlayed_GM2"), false),
+	FSteamAchievement("Enjoyer_GM3", g_Stats.Find("NumGamesPlayed_GM3"), false),
+	FSteamAchievement("Enjoyer_GM4", g_Stats.Find("NumGamesPlayed_GM4"), false),
+	FSteamAchievement("Enjoyer_GM5", g_Stats.Find("NumGamesPlayed_GM5"), false),
+	FSteamAchievement("Enjoyer_GM6", g_Stats.Find("NumGamesPlayed_GM6"), false),
+	FSteamAchievement("Participant_Custom", g_Stats.Find("NumGamesPlayed_Custom"), false),
+	FSteamAchievement("Enthusiast_Custom", g_Stats.Find("NumGamesPlayed_Custom"), false),
+	FSteamAchievement("Enjoyer_Custom", g_Stats.Find("NumGamesPlayed_Custom"), false),
 };
 
 USteamManager::USteamManager()
 {
 	AppId = 0;
-	StatsData = TSet<FSteamStat>();
+	StatsData = TMap<const char*, FSteamStat>();
 	AchievementData = TSet<FSteamAchievement>();
 	bInitializedStats = false;
 	DefaultGameInstance = nullptr;
@@ -83,48 +90,8 @@ void USteamManager::AssignGameInstance(UBSGameInstance* InDefaultGameInstance)
 	DefaultGameInstance = InDefaultGameInstance;
 }
 
-void USteamManager::UpdateStat(const char* StatAPIName, ESteamStatType StatType, int IntValue, float FloatValue)
-{
-	if (!bInitializedStats) return;
-	for (FSteamStat& Stat : StatsData)
-	{
-		if (Stat.APIName == StatAPIName)
-		{
-			switch (StatType)
-			{
-			case Stat_Int:
-				Stat.IntValue += IntValue;
-				break;
-			case Stat_Float:
-			case Stat_AvgRate:
-				Stat.FloatValue += FloatValue;
-				break;
-			default:
-				break;
-			}
-			StoreStats();
-		}
-		break;
-	}
-}
-
-void USteamManager::UpdateStat_NumGamesPlayed(const EBaseGameMode GameMode, int IntValue)
-{
-	if (!bInitializedStats) return;
-	
-	if (FSteamStat* Stat = GetStat_NumGamesPlayed(GameMode))
-	{
-		FSteamStat& Ref = *Stat;
-		Ref.IntValue += IntValue;
-		StoreStats();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find FSteamStat for GameMode"));
-	}
-}
-
-bool USteamManager::CreateAuthTicketForWebApi(TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler)
+bool USteamManager::CreateAuthTicketForWebApi(
+	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler, ESPMode::ThreadSafe> CallbackHandler)
 {
 	if (!SteamUser()) return false;
 	ActiveCallbacks.Enqueue(CallbackHandler);
@@ -144,7 +111,7 @@ void USteamManager::OnAuthTicketForWebApiResponse(GetTicketForWebApiResponse_t* 
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to dequeue a CallbackHandler."));
+		UE_LOG(LogSteamManager, Warning, TEXT("Failed to dequeue a CallbackHandler."));
 	}
 }
 
@@ -155,89 +122,17 @@ void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 	//DefaultGameInstance; //So that the call list reference on the Lambda works
 	if (bIsCurrentOverlayActive)
 	{
-		AsyncTask(ENamedThreads::GameThread, [this]()
+		AsyncTask(ENamedThreads::GameThread, [this]
 		{
 			DefaultGameInstance->OnSteamOverlayIsOn();
 		});
 	}
 	else
 	{
-		AsyncTask(ENamedThreads::GameThread, [this]()
+		AsyncTask(ENamedThreads::GameThread, [this]
 		{
 			DefaultGameInstance->OnSteamOverlayIsOff();
 		});
-	}
-}
-
-/** Callback for anytime RequestStats() is called. Updates the member variables AchievementData
- *  and StatsData to reflect the latest stats and achievement data returned from Steam. */
-void USteamManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
-{
-	if (pCallback->m_nGameID != AppId || pCallback->m_eResult != k_EResultOK) return;
-	
-	for (FSteamAchievement& Achievement : AchievementData)
-	{
-		SteamUserStats()->GetAchievement(Achievement.APIName, &Achievement.bAchieved);
-		float Percent;
-		SteamUserStats()->GetAchievementAchievedPercent(Achievement.APIName, &Percent);
-		UE_LOG(LogTemp, Warning, TEXT("Achievement.APIName %hs Percent: %f"), Achievement.APIName, Percent);
-	}
-
-	for (FSteamStat& Stat : StatsData)
-	{
-		switch (Stat.StatType)
-		{
-		case Stat_Int:
-			SteamUserStats()->GetStat(Stat.APIName, &Stat.IntValue);
-			break;
-		case Stat_Float:
-		case Stat_AvgRate:
-			SteamUserStats()->GetStat(Stat.APIName, &Stat.FloatValue);
-			break;
-		default:
-			break;
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Stat.APIName %hs IntValue: %d FloatDesc: %f"), Stat.APIName, Stat.IntValue, Stat.FloatValue);
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Received stats from Steam"));
-	bInitializedStats = true;
-}
-
-/** Callback for anytime you attempt to store stats on Steam */
-void USteamManager::OnUserStatsStored(UserStatsStored_t* pCallback)
-{
-	// We may get callbacks for other games' stats arriving, ignore them
-	if (pCallback->m_nGameID != AppId) return;
-	
-	if (k_EResultOK == pCallback->m_eResult)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Stored stats for Steam"));
-	}
-	else if (pCallback->m_eResult == k_EResultInvalidParam)
-	{
-		// One or more stats we set broke a constraint. They've been reverted,
-		// and we should re-iterate the values now to keep in sync.
-		UE_LOG(LogTemp, Warning, TEXT("StoreStats - some failed to validate"));
-		// Fake up a callback here so that we re-load the values.
-		UserStatsReceived_t callback;
-		callback.m_eResult = k_EResultOK;
-		callback.m_nGameID = AppId;
-		OnUserStatsReceived(&callback);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("StatsStored - failed, %d" ), pCallback->m_eResult);
-	}
-	
-}
-
-/** Callback for anytime Achievements are successfully stored on Steam */
-void USteamManager::OnAchievementStored(UserAchievementStored_t* pCallback)
-{
-	if (AppId == pCallback->m_nGameID)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Stored Achievement for Steam"));
 	}
 }
 
@@ -250,77 +145,198 @@ bool USteamManager::RequestStats()
 	return SteamUserStats()->RequestCurrentStats();
 }
 
-bool USteamManager::StoreStats()
+/** Callback for anytime RequestStats() is called. Updates the member variables AchievementData
+ *  and StatsData to reflect the latest stats and achievement data returned from Steam. */
+void USteamManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
 {
-	if (!bInitializedStats || !SteamUserStats()) return false;
-	
-	// load stats
-	for (FSteamStat& Stat : StatsData)
+	if (pCallback->m_nGameID != AppId || pCallback->m_eResult != k_EResultOK) return;
+
+	for (FSteamAchievement& Achievement : AchievementData)
 	{
-		switch (Stat.StatType)
+		SteamUserStats()->GetAchievement(Achievement.APIName, &Achievement.bAchieved);
+	}
+
+	for (TPair<const char*, FSteamStat>& Stat : StatsData)
+	{
+		switch (Stat.Value.StatType)
 		{
 		case Stat_Int:
-			SteamUserStats()->SetStat(Stat.APIName, Stat.IntValue);
+			SteamUserStats()->GetStat(Stat.Value.APIName, &Stat.Value.IntValue);
 			break;
 		case Stat_Float:
-			SteamUserStats()->SetStat(Stat.APIName, Stat.FloatValue);
-			break;
 		case Stat_AvgRate:
-			SteamUserStats()->UpdateAvgRateStat(Stat.APIName, Stat.FloatAvgNumerator,
-				Stat.FloatAvgDenominator);
-			// The averaged result is calculated for us
-			SteamUserStats()->GetStat(Stat.APIName, &Stat.FloatValue);
+			SteamUserStats()->GetStat(Stat.Value.APIName, &Stat.Value.FloatValue);
 			break;
 		default:
 			break;
 		}
+		// UE_LOG(LogSteamManager, Warning, TEXT("Stat.APIName %hs IntValue: %d FloatDesc: %f"), Stat.APIName,
+		// Stat.IntValue, Stat.FloatValue);
+	}
+
+	UE_LOG(LogSteamManager, Warning, TEXT("Received stats from Steam"));
+	bInitializedStats = true;
+}
+
+bool USteamManager::StoreStats()
+{
+	if (!bInitializedStats || !SteamUserStats()) return false;
+
+	// load stats
+	for (TPair<const char*, FSteamStat>& Stat : StatsData)
+	{
+		switch (Stat.Value.StatType)
+		{
+		case Stat_Int:
+			SteamUserStats()->SetStat(Stat.Key, Stat.Value.IntValue);
+			break;
+		case Stat_Float:
+			SteamUserStats()->SetStat(Stat.Key, Stat.Value.FloatValue);
+			break;
+		case Stat_AvgRate:
+			SteamUserStats()->UpdateAvgRateStat(Stat.Key, Stat.Value.FloatAvgNumerator, Stat.Value.FloatAvgDenominator);
+			// The averaged result is calculated for us
+			SteamUserStats()->GetStat(Stat.Key, &Stat.Value.FloatValue);
+			break;
+		}
 	}
 	return SteamUserStats()->StoreStats();
+}
+
+/** Callback for anytime you attempt to store stats on Steam */
+void USteamManager::OnUserStatsStored(UserStatsStored_t* pCallback)
+{
+	// Ignore callbacks for other games
+	if (pCallback->m_nGameID != AppId) return;
+
+	if (k_EResultOK == pCallback->m_eResult)
+	{
+		UE_LOG(LogSteamManager, Warning, TEXT("Stored stats for Steam"));
+	}
+	else if (pCallback->m_eResult == k_EResultInvalidParam)
+	{
+		// One or more stats broke a constraint. They've been reverted, so re-iterate the values now to keep in sync
+		UE_LOG(LogSteamManager, Warning, TEXT("StoreStats - some failed to validate"));
+		// Fake callback so that values reload
+		UserStatsReceived_t FakeCallback;
+		FakeCallback.m_eResult = k_EResultOK;
+		FakeCallback.m_nGameID = AppId;
+		OnUserStatsReceived(&FakeCallback);
+	}
+	else
+	{
+		UE_LOG(LogSteamManager, Warning, TEXT("StatsStored - failed, %d" ), pCallback->m_eResult);
+	}
+}
+
+template <typename T>
+void USteamManager::UpdateStat(const char* StatAPIName, T Value)
+{
+	if (!bInitializedStats) return;
+
+	// Update local stats
+	FSteamStat* FoundSteamStat = StatsData.Find(StatAPIName);
+	if (!FoundSteamStat) return;
+	
+	int NewValue = 0;
+	switch (FoundSteamStat->StatType)
+	{
+	case Stat_Int:
+		{
+			FoundSteamStat->IntValue += static_cast<int>(Value);
+			NewValue = FoundSteamStat->IntValue;
+		}
+		break;
+	case Stat_Float:
+	case Stat_AvgRate:
+		{
+			FoundSteamStat->FloatValue += static_cast<float>(Value);
+			NewValue = static_cast<int>(FoundSteamStat->FloatValue);
+		}
+		break;
+	}
+
+	// Store local stats
+	if (!StoreStats()) return;
+
+	// Show achievement progress
+	for (const auto& Achievement : AchievementData)
+	{
+		if (!Achievement.ProgressStat || *Achievement.ProgressStat != *FoundSteamStat) continue;
+		
+		int32 MinProgressLimit = 0;
+		int32 MaxProgressLimit = 0;
+		SteamUserStats()->GetAchievementProgressLimits(Achievement.APIName, &MinProgressLimit, &MaxProgressLimit);
+
+		UE_LOG(LogSteamManager, Display, TEXT("%s %d %d"), *FString(Achievement.APIName), MinProgressLimit,
+			MaxProgressLimit);
+		
+		// Do not show progress if already achieved
+		if (NewValue >= MaxProgressLimit) continue;
+		
+		// Only show progress for one game mode achievement
+		if (!FoundSteamStat->BaseGameModes.IsEmpty())
+		{
+			// Only show progress in increments of 5, starting at 10 and ending at 45, skipping 25
+			if ((NewValue > 5 && NewValue < 25) || (NewValue > 25 && NewValue < 50))
+			{
+				if (NewValue % 5 == 0)
+				{
+					SteamUserStats()->IndicateAchievementProgress(Achievement.APIName, FoundSteamStat->IntValue,
+						MaxProgressLimit);
+				}
+			}
+		}
+		
+		switch (FoundSteamStat->StatType)
+		{
+		case Stat_Int: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %d New Value: %d"),
+				*FString(FoundSteamStat->APIName), FoundSteamStat->IntValue - Value, FoundSteamStat->IntValue);
+			break;
+		case Stat_Float:
+		case Stat_AvgRate: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %.2f New Value: %.2f"),
+				*FString(FoundSteamStat->APIName), FoundSteamStat->FloatValue - Value, FoundSteamStat->FloatValue);
+			break;
+		}
+	}
+}
+
+void USteamManager::UpdateStat_NumGamesPlayed(const EBaseGameMode GameMode, int IntValue)
+{
+	if (!bInitializedStats) return;
+	const char* APIName = GetStat_NumGamesPlayed(GameMode);
+	if (!APIName)
+	{
+		UE_LOG(LogSteamManager, Warning, TEXT("Failed to find FSteamStat for GameMode"));
+		return;
+	}
+	UpdateStat(APIName, IntValue);
+}
+
+const char* USteamManager::GetStat_NumGamesPlayed(const EBaseGameMode GameMode)
+{
+	for (TPair<const char*, FSteamStat>& Stat : StatsData)
+	{
+		if (Stat.Value.BaseGameModes.Contains(GameMode))
+		{
+			return Stat.Key;
+		}
+	}
+	return nullptr;
+}
+
+/** Callback for anytime Achievements are successfully stored on Steam */
+void USteamManager::OnAchievementStored(UserAchievementStored_t* pCallback)
+{
+	if (AppId == pCallback->m_nGameID)
+	{
+		UE_LOG(LogSteamManager, Warning, TEXT("Stored Achievement for Steam"));
+	}
 }
 
 bool USteamManager::SetAchievement(const char* ID) const
 {
-	if (!bInitializedStats || SteamUserStats()) return false;
+	if (!bInitializedStats || !SteamUserStats()) return false;
 	SteamUserStats()->SetAchievement(ID);
 	return SteamUserStats()->StoreStats();
-}
-
-FSteamStat* USteamManager::GetStat_NumGamesPlayed(const EBaseGameMode GameMode)
-{
-	const char* APIName;
-	switch (GameMode)
-	{
-	case EBaseGameMode::MultiBeat:
-	case EBaseGameMode::MultiBeatPrecision:
-	case EBaseGameMode::MultiBeatSpeed:
-		APIName = "NumGamesPlayed_GM1";
-		break;
-	case EBaseGameMode::SingleBeat:
-		APIName = "NumGamesPlayed_GM2";
-		break;
-	case EBaseGameMode::BeatTrack:
-		APIName = "NumGamesPlayed_GM3";
-		break;
-	case EBaseGameMode::BeatGrid:
-		APIName = "NumGamesPlayed_GM4";
-		break;
-	case EBaseGameMode::ClusterBeat:
-		APIName = "NumGamesPlayed_GM5";
-		break;
-	case EBaseGameMode::ChargedBeatTrack:
-		APIName = "NumGamesPlayed_GM6";
-		break;
-	case EBaseGameMode::None:
-	default:
-		APIName = "NumGamesPlayed_Custom";
-		break;
-	}
-	for (FSteamStat& Stat : StatsData)
-	{
-		if (Stat.APIName == APIName)
-		{
-			return &Stat;
-		}
-	}
-	return nullptr;	
 }

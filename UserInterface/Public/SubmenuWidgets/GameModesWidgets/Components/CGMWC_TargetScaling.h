@@ -21,7 +21,7 @@ protected:
 	/** Updates options that depend on the value selection of TargetActivationResponses */
 	void UpdateDependentOptions_TargetActivationResponses(const TArray<ETargetActivationResponse>& InResponses);
 	
-	/** If Persistant, empties and disables Target Deactivation Responses Combo Box */
+	/** If Persistent, empties and disables Target Deactivation Responses Combo Box */
 	void UpdateDependentOptions_TargetDeactivationResponses(const TArray<ETargetDeactivationCondition>& Conditions,
 		const TArray<ETargetDeactivationResponse>& Responses);
 	

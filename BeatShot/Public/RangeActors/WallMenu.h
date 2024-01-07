@@ -6,8 +6,10 @@
 #include "AbilitySystemInterface.h"
 #include "GameFramework/Actor.h"
 #include "SaveLoadInterface.h"
+#include "BeatShot/BeatShot.h"
 #include "WallMenu.generated.h"
 
+class ATimeOfDayManager;
 struct FActiveGameplayEffectHandle;
 struct FGameplayEffectSpec;
 class UBSAbilitySystemComponent;
@@ -87,12 +89,17 @@ class BEATSHOT_API AWallMenu : public AActor, public ISaveLoadInterface, public 
 
 	virtual void PostInitializeComponents() override;
 
+	virtual void BeginPlay() override;
+
 	/* ~Begin IAbilitySystemInterface */
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	/* ~End IAbilitySystemInterface */
 
 	void OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, const FGameplayEffectSpec& EffectSpec,
 		FActiveGameplayEffectHandle EffectHandle);
+
+public:
+	void OnTimeOfDayChangeCompleted(const ETimeOfDay NewTimeOfDay);
 
 protected:
 	UPROPERTY()
@@ -189,17 +196,17 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UBoxComponent* Box_LV_RightCube_Off;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Main")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|References")
+	TSoftObjectPtr<ATimeOfDayManager> TimeOfDayManager;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Materials")
 	UMaterialInterface* Material_Main_Front_Text3D;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Main")
-	UMaterialInterface* Material_Main_Extrude_Text3D;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Materials")
+	UMaterialInterface* Material_Toggle;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Materials")
+	UMaterialInterface* Material_Extrude;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Materials")
+	UMaterialInterface* Material_Bevel;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Toggle")
-	UMaterialInterface* Material_ToggleActive_Front_Text3D;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Toggle")
-	UMaterialInterface* Material_ToggleInactive_Front_Text3D;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D|Toggle")
-	UMaterialInterface* Material_Toggle_Extrude_Text3D;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Text3D")
 	UFont* Font_Text3D;
@@ -213,17 +220,18 @@ protected:
 	float MaxHeightIndentedText = 55.f;
 
 	/** Displays which settings are on/off etc by lighting the correct words */
-	void Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings);
+	void Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings, const bool bFromSettingsUpdate = false);
 
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 
 	void SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText,
 		const FString& Key, const FVector& AdditionalOffset = FVector::ZeroVector) const;
+	
 	void SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff,
-		UBoxComponent* InBoxOn, UBoxComponent* InBoxOff, const FVector& AdditionalOffset = FVector::ZeroVector) const;
+		UBoxComponent* InBoxOn, UBoxComponent* InBoxOff, const FVector& AdditionalOffset = FVector::ZeroVector);
+	
 	void ToggleText(const bool bIsOn, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff) const;
-	void ApplyMainTextMaterials() const;
 
 	FVector Position_Corkboard = {300.f, 50.f, 0.f};
 
@@ -247,4 +255,6 @@ protected:
 	FVector Scale_BoxCollision_Off = {3.f, 1.4f, 0.65f};
 
 	TMap<TObjectPtr<UBoxComponent>, FText3DToggle> BoxToTextMap;
+
+	mutable bool bIsWaitingOnTimeOfDayTransition = false;
 };

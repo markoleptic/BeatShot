@@ -147,8 +147,8 @@ void UCGMWC_ConditionsAndResponses::SetupWarningTooltipCallbacks()
 void UCGMWC_ConditionsAndResponses::UpdateDependentOptions_TargetDeactivationConditions(
 	const TArray<ETargetDeactivationCondition>& Conditions)
 {
-	// Persistant Deactivation Condition
-	if (Conditions.Contains(ETargetDeactivationCondition::Persistant))
+	// Persistent Deactivation Condition
+	if (Conditions.Contains(ETargetDeactivationCondition::Persistent))
 	{
 		if (!BSConfig->TargetConfig.TargetDeactivationResponses.IsEmpty())
 		{
@@ -157,7 +157,7 @@ void UCGMWC_ConditionsAndResponses::UpdateDependentOptions_TargetDeactivationCon
 		UpdateValueIfDifferent(ComboBoxOption_TargetDeactivationResponses, TArray<FString>());
 		ComboBoxOption_TargetDeactivationResponses->ComboBox->SetIsEnabled(false);
 	}
-	// No Persistant Deactivation Condition
+	// No Persistent Deactivation Condition
 	else
 	{
 		ComboBoxOption_TargetDeactivationResponses->ComboBox->SetIsEnabled(true);

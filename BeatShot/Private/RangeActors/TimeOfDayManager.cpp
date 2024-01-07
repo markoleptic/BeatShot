@@ -18,7 +18,6 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GlobalConstants.h"
 #include "Components/SpotLightComponent.h"
-#include "Engine/SpotLight.h"
 #include "GameFramework/GameUserSettings.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -70,8 +69,8 @@ void ATimeOfDayManager::PostInitializeComponents()
 
 	if (UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance()))
 	{
-		GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ATimeOfDayManager::OnPlayerSettingsChanged_Game);
-		GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this,
+		GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ATimeOfDayManager::OnPlayerSettingsChanged_Game);
+		GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this,
 			&ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound);
 		GI->TimeOfDayManager = this;
 		
@@ -332,12 +331,11 @@ void ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound(
 
 void ATimeOfDayManager::OnTimelineCompletedCallback()
 {
-	if (TimeOfDay == ETimeOfDay::DayToNight)
+	TimeOfDay = (TimeOfDay == ETimeOfDay::DayToNight) ? ETimeOfDay::Night : ETimeOfDay::Day;;
+	if (OnTimeOfDayTransitionCompleted.IsBound())
 	{
-		TimeOfDay = ETimeOfDay::Night;
-		return;
+		OnTimeOfDayTransitionCompleted.Execute(TimeOfDay);
 	}
-	TimeOfDay = ETimeOfDay::Day;
 }
 
 void ATimeOfDayManager::TransitionTimeOfDay(const float Value)

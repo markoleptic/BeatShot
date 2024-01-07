@@ -311,12 +311,6 @@ private:
 	/** Creates a confirm pop up widget and binds to its buttons, clearing the RL history of a game mode if confirmed */
 	void OnButtonClicked_ClearRLHistory();
 
-	/** Callback function for receiving an access token response */
-	void OnAccessTokenResponseReceived(const FString AccessToken, FString GameModeNameToRemove);
-
-	/** Callback function for receiving a delete scores response */
-	void OnDeleteScoresResponseReceived(const int32 NumScoresRemoved, const int32 ResponseCode, FString GameModeNameToRemove);
-
 	/** Called when the GameModeTemplate selected option changes in either CustomGameModeWidget */
 	void OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty);
 
@@ -347,7 +341,4 @@ private:
 
 	/** Whether or not one of the custom game modes widgets has at least one breaking game mode option, or none */
 	bool bGameModeBreakingOptionPresent = false;
-
-	FOnAccessTokenResponse OnAccessTokenResponse;
-	FOnDeleteScoresResponse OnDeleteScoresResponse;
 };

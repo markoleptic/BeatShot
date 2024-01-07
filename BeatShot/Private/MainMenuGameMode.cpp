@@ -3,6 +3,7 @@
 
 #include "MainMenuGameMode.h"
 #include "Components/AudioComponent.h"
+#include "Player/BSPlayerController.h"
 #include "SubMenuWidgets/GameModesWidgets/GameModesWidget.h"
 #include "SubMenuWidgets/GameModesWidgets/CGMW_CreatorView.h"
 #include "Target/TargetManagerPreview.h"
@@ -16,6 +17,11 @@ AMainMenuGameMode::AMainMenuGameMode()
 void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	ABSPlayerController* PC = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PC)
+	{
+		PC->ShowMainMenu();
+	}
 }
 
 void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)

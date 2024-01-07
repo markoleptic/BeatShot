@@ -593,8 +593,44 @@ void UGameModesWidget::OnButtonClicked_RemoveSelectedCustom()
 	{
 		PopupMessageWidget->FadeOut();
 		const FString GameModeNameToRemove = BSConfig->DefiningConfig.CustomGameModeName;
-		OnAccessTokenResponse.BindUObject(this, &ThisClass::OnAccessTokenResponseReceived, GameModeNameToRemove);
-		RequestAccessToken(LoadPlayerSettings().User.RefreshCookie, OnAccessTokenResponse);
+
+		TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse);
+		AccessTokenResponse->OnHttpResponseReceived.BindLambda([this, AccessTokenResponse,
+			GameModeNameToRemove]
+		{
+			if (AccessTokenResponse->AccessToken.IsEmpty())
+			{
+				return;
+			}
+			TSharedPtr<FDeleteScoresResponse> DeleteScoresResponse = MakeShareable(new FDeleteScoresResponse);
+			DeleteScoresResponse->OnHttpResponseReceived.BindLambda([this, DeleteScoresResponse,
+				GameModeNameToRemove]
+			{
+				if (DeleteScoresResponse->HttpStatus >= 200 && DeleteScoresResponse->HttpStatus <= 300)
+				{
+					const int32 NumGameModesRemoved = RemoveCustomGameMode(FindCustomGameMode(GameModeNameToRemove));
+					if (NumGameModesRemoved >= 1)
+					{
+						const FString String = GameModeNameToRemove + " removed and " +
+							FString::FromInt(DeleteScoresResponse->NumRemoved) + " scores removed";
+						SetAndPlaySavedText(FText::FromString(String));
+						CustomGameModesWidget_CreatorView->SetNewCustomGameModeName("");
+						CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
+						CustomGameModesWidget_CreatorView->RefreshGameModeTemplateComboBoxOptions();
+						CustomGameModesWidget_PropertyView->RefreshGameModeTemplateComboBoxOptions();
+						InitCustomGameModesWidgetOptions(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal);
+						UpdateSaveStartButtonStates();
+					}
+				}
+				else
+				{
+					SetAndPlaySavedText(FText::FromString("Error connecting to database, delete aborted"));
+				}
+			});
+			DeleteScores(GameModeNameToRemove, LoadPlayerSettings().User.UserID, AccessTokenResponse->AccessToken,
+				DeleteScoresResponse);
+		});
+		RequestAccessToken(LoadPlayerSettings().User.RefreshCookie, AccessTokenResponse);
 	});
 
 	PopupMessageWidget->AddToViewport();
@@ -872,39 +908,6 @@ void UGameModesWidget::ShowConfirmOverwriteMessage_Import(TSharedPtr<FBSConfig>&
 
 	PopupMessageWidget->AddToViewport();
 	PopupMessageWidget->FadeIn();
-}
-
-void UGameModesWidget::OnAccessTokenResponseReceived(const FString AccessToken, FString GameModeNameToRemove)
-{
-	OnAccessTokenResponse.Unbind();
-	OnDeleteScoresResponse.BindUObject(this, &ThisClass::OnDeleteScoresResponseReceived, GameModeNameToRemove);
-	DeleteScores(GameModeNameToRemove, LoadPlayerSettings().User.UserID, AccessToken, OnDeleteScoresResponse);
-}
-
-void UGameModesWidget::OnDeleteScoresResponseReceived(const int32 NumScoresRemoved, const int32 ResponseCode,
-	FString GameModeNameToRemove)
-{
-	OnDeleteScoresResponse.Unbind();
-	if (ResponseCode == 200)
-	{
-		const int32 NumGameModesRemoved = RemoveCustomGameMode(FindCustomGameMode(GameModeNameToRemove));
-		if (NumGameModesRemoved >= 1)
-		{
-			const FString String = GameModeNameToRemove + " removed and " + FString::FromInt(NumScoresRemoved) +
-				" scores removed";
-			SetAndPlaySavedText(FText::FromString(String));
-			CustomGameModesWidget_CreatorView->SetNewCustomGameModeName("");
-			CustomGameModesWidget_PropertyView->SetNewCustomGameModeName("");
-			CustomGameModesWidget_CreatorView->RefreshGameModeTemplateComboBoxOptions();
-			CustomGameModesWidget_PropertyView->RefreshGameModeTemplateComboBoxOptions();
-			InitCustomGameModesWidgetOptions(EBaseGameMode::MultiBeat, EGameModeDifficulty::Normal);
-			UpdateSaveStartButtonStates();
-		}
-	}
-	else
-	{
-		SetAndPlaySavedText(FText::FromString("Error connecting to database, delete aborted"));
-	}
 }
 
 void UGameModesWidget::OnRequestGameModeTemplateUpdate(const FString& InGameMode, const EGameModeDifficulty& Difficulty)

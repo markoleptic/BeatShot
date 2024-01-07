@@ -31,7 +31,10 @@ DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, con
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
 DECLARE_MULTICAST_DELEGATE(FOnGameModeStarted);
 
-/** Base GameMode for this game */
+/** GameMode used for the Range level. A BSCharacter is spawned and possessed for each player controller. The game mode
+ *  is responsible for starting and ending a BeatShot default or custom game mode, spawning and destroying the
+ *  TargetManager and VisualizerManager, and monitoring the AudioAnalyzer on tick. It also manages abilities used for
+ *  specific BeatShot game modes and saves scores locally before asking Game Instance to save to database */
 UCLASS()
 class BEATSHOT_API ABSGameMode : public AGameMode, public ISaveLoadInterface, public IHttpRequestInterface
 {
@@ -127,11 +130,6 @@ public:
 	/** Broadcasts when the countdown has completed and the actual game has began. */
 	FOnGameModeStarted OnGameModeStarted;
 
-	/** Delegate that listens for post scores response after calling PostPlayerScores() inside SaveScoresToDatabase().
-	 *  It can also be called early inside this class if it does not make it to calling PostPlayerScores(). 
-	 *  DefaultPlayerController also binds to this in order to display correct information about scoring. */
-	FOnPostScoresResponse OnPostScoresResponse;
-
 	/** Called if the streak threshold is passed and user has not unlocked night mode */
 	FOnStreakThresholdPassed OnStreakThresholdPassed;
 
@@ -175,19 +173,8 @@ private:
 	 *  GetCompletedPlayerScores() returns a valid score object. Otherwise Broadcasts OnPostScoresResponse with "None" */
 	void HandleScoreSaving(const bool bExternalSaveScores, const FCommonScoreInfo& InCommonScoreInfo);
 
-	/** Function bound to the response of an access token, which is broadcast from RequestAccessToken() */
-	UFUNCTION()
-	void OnAccessTokenResponseReceived(const FString AccessToken);
-
-	/** Function bound to the response of posting player scores to database, which is broadcast from PostPlayerScores() */
-	UFUNCTION()
-	void OnPostScoresResponseReceived(const EPostScoresResponse& LoginState);
-
 	/** Returns the current player scores, checking for NaNs and updating the time */
 	FPlayerScore GetCompletedPlayerScores();
-
-	/** Calls RequestAccessToken if player has logged in before */
-	void SaveScoresToDatabase();
 
 	/** Function bound to TargetManager's PostTargetDamageEvent delegate */
 	void OnPostTargetDamageEvent(const FTargetDamageEvent& Event);
@@ -223,13 +210,15 @@ private:
 	/** Returns the score based on the time the target was alive for */
 	float GetScoreFromTimeAlive(const float InTimeAlive) const;
 
-	/** Returns the length of time away from a perfect shot, with negative values indicating an early shot and positive values indicating a late shot, based on the time the target was alive for */
+	/** Returns the length of time away from a perfect shot, with negative values indicating an early shot and positive
+	 *  values indicating a late shot, based on the time the target was alive for */
 	float GetHitTimingError(const float InTimeAlive) const;
 
 	/** Returns the length of time away from a perfect shot, based on the time the target was alive for */
 	float GetAbsHitTimingError(const float InTimeAlive) const;
 
-	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the time the target was alive for */
+	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the time the
+	 *  target was alive for */
 	float GetNormalizedHitTimingError(const float InTimeAlive) const;
 
 	/** Honestly idk what this does, but it was used in the AudioAnalyzer example so I'm sticking with it >.> */
@@ -258,9 +247,6 @@ private:
 
 	/** The time played for the current game mode, used to update Steam achievements */
 	float TimePlayedGameMode = 0.f;
-
-	/** Delegate that listens for the access token response after calling RequestAccessToken() inside HandleScoreSaving() */
-	FOnAccessTokenResponse OnAccessTokenResponse;
 
 	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
 	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Score")

@@ -17,6 +17,8 @@
 void UMainMenuWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
+	
 	SetStyles();
 
 	ScoresWidget->OnURLChangedResult.AddUObject(this, &UMainMenuWidget::OnURLChangedResult_ScoresWidget);
@@ -37,7 +39,7 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_FAQ->SetDefaults(Box_FAQ, Button_Feedback);
 	Button_Feedback->SetDefaults(nullptr, MenuButton_Quit);
 	MenuButton_Quit->SetDefaults(Box_PatchNotes, MenuButton_PatchNotes);
-
+	
 	MenuButton_PatchNotes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_GameModes->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Scores->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
@@ -45,7 +47,7 @@ void UMainMenuWidget::NativeConstruct()
 	MenuButton_FAQ->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	Button_Feedback->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
 	MenuButton_Quit->OnBSButtonPressed.AddDynamic(this, &ThisClass::OnMenuButtonClicked_BSButton);
-
+	
 	WebBrowserOverlayPatchNotes->InitScoreBrowser(EScoreBrowserType::PatchNotes);
 	ScoresWidget->InitScoreBrowser(EScoreBrowserType::MainMenuScores);
 	MenuButton_PatchNotes->SetActive();
@@ -71,6 +73,16 @@ void UMainMenuWidget::LoginScoresWidgetWithSteam(const FString SteamAuthTicket)
 {
 	CurrentLoginMethod = ELoginMethod::Steam;
 	ScoresWidget->LoginUserBrowser(FString(SteamAuthTicket));
+}
+
+void UMainMenuWidget::LoginScoresWidgetSubsequent()
+{
+	CurrentLoginMethod = ELoginMethod::Steam;
+	const FPlayerSettings_User PlayerSettings = LoadPlayerSettings().User;
+	if (IsRefreshTokenValid(PlayerSettings.RefreshCookie) && !PlayerSettings.UserID.IsEmpty())
+	{
+		ScoresWidget->LoadProfile(PlayerSettings.UserID);
+	}
 }
 
 void UMainMenuWidget::TryFallbackLogin()
@@ -189,6 +201,7 @@ void UMainMenuWidget::UpdateLoginState(const bool bSuccessfulLogin, const FStrin
 	else
 	{
 		TextBlock_SignInState->SetText(FText::FromString("Unhandled Login Method"));
+		Button_Login_Register->SetVisibility(ESlateVisibility::Collapsed);
 		UE_LOG(LogTemp, Warning, TEXT("Unhandled Login Method in Main Menu"));
 	}
 
@@ -210,7 +223,7 @@ void UMainMenuWidget::OnButtonClicked_Login(const FLoginPayload LoginPayload)
 {
 	CurrentLoginMethod = ELoginMethod::Legacy;
 	TSharedPtr<FLoginResponse> LoginResponse(new FLoginResponse);
-	LoginResponse->OnLoginResponse.BindLambda([this, LoginResponse, LoginPayload]
+	LoginResponse->OnHttpResponseReceived.BindLambda([this, LoginResponse, LoginPayload]
 		{
 			if (LoginResponse->HttpStatus != 200)
 			{

@@ -9,60 +9,9 @@
 #include "BSGameModeDataAsset.h"
 #include "SteamManager.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSteamManager, Log, All);
+
 class UBSGameInstance;
-
-#define _ACH_ID(id, name ) { id, #id, name, "", 0, 0 }
-#define _STAT_ID(id, type, name) { id, type, name, 0, 0, 0, 0 }
-
-UENUM()
-enum ESteamAchievement : uint8
-{
-	ACH_PlayAnyGM          = 0,
-	ACH_Participant_GM1    = 1,
-	ACH_Participant_GM2    = 2,
-	ACH_Participant_GM3    = 3,
-	ACH_Participant_GM4    = 4,
-	ACH_Participant_GM5    = 5,
-	ACH_Participant_GM6    = 6,
-	ACH_Enthusiast_GM1     = 7,
-	ACH_Enthusiast_GM2     = 8,
-	ACH_Enthusiast_GM3     = 9,
-	ACH_Enthusiast_GM4     = 10,
-	ACH_Enthusiast_GM5     = 11,
-	ACH_Enthusiast_GM6     = 12,
-	ACH_Enjoyer_GM1        = 13,
-	ACH_Enjoyer_GM2        = 14,
-	ACH_Enjoyer_GM3        = 15,
-	ACH_Enjoyer_GM4        = 16,
-	ACH_Enjoyer_GM5        = 17,
-	ACH_Enjoyer_GM6        = 18,
-	ACH_Participant_Custom = 19,
-	ACH_Enthusiast_Custom  = 20,
-	ACH_Enjoyer_Custom     = 21
-};
-
-USTRUCT()
-struct FSteamAchievement
-{
-	GENERATED_BODY()
-
-	int ID;
-	char CharID[128];
-	const char* APIName;
-	char Description[256];
-	bool bAchieved;
-	int IconImage;
-
-	FORCEINLINE bool operator==(const FSteamAchievement& Other) const
-	{
-		return APIName == Other.APIName;
-	}
-
-	friend FORCEINLINE uint32 GetTypeHash(const FSteamAchievement& Achievement)
-	{
-		return GetTypeHash(Achievement.APIName);
-	}
-};
 
 UENUM()
 enum ESteamStatType
@@ -77,13 +26,29 @@ struct FSteamStat
 {
 	GENERATED_BODY()
 
-	int ID;
-	ESteamStatType StatType;
 	const char* APIName;
+	ESteamStatType StatType;
 	int IntValue;
 	float FloatValue;
 	float FloatAvgNumerator;
 	float FloatAvgDenominator;
+	TSet<EBaseGameMode> BaseGameModes;
+
+	FSteamStat(): APIName(nullptr), StatType(Stat_Int), IntValue(0), FloatValue(0), FloatAvgNumerator(0),
+	              FloatAvgDenominator(0)
+	{
+	}
+
+	FSteamStat(const char* InAPIName, const ESteamStatType InStatType, const TSet<EBaseGameMode>& InBaseGameModes)
+	{
+		StatType = InStatType;
+		APIName = InAPIName;
+		BaseGameModes = InBaseGameModes;
+		IntValue = 0;
+		FloatValue = 0;
+		FloatAvgNumerator = 0;
+		FloatAvgDenominator = 0;
+	}
 
 	FORCEINLINE bool operator==(const FSteamStat& Other) const
 	{
@@ -96,13 +61,44 @@ struct FSteamStat
 	}
 };
 
+USTRUCT()
+struct FSteamAchievement
+{
+	GENERATED_BODY()
+
+	const char* APIName;
+	FSteamStat* ProgressStat;
+	bool bAchieved;
+
+	FSteamAchievement(): APIName(nullptr), ProgressStat(nullptr), bAchieved(false)
+	{
+	}
+
+	FSteamAchievement(const char* InAPIName, FSteamStat* InProgressStat, const bool bInAchieved)
+	{
+		APIName = InAPIName;
+		ProgressStat = InProgressStat;
+		bAchieved = bInAchieved;
+	}
+
+	FORCEINLINE bool operator==(const FSteamAchievement& Other) const
+	{
+		return APIName == Other.APIName;
+	}
+
+	friend FORCEINLINE uint32 GetTypeHash(const FSteamAchievement& Achievement)
+	{
+		return GetTypeHash(Achievement.APIName);
+	}
+};
+
 DECLARE_DELEGATE(FOnAuthTicketForWebApiReady);
 
 USTRUCT()
 struct FOnAuthTicketForWebApiResponseCallbackHandler
 {
 	GENERATED_BODY()
-	
+
 	FOnAuthTicketForWebApiReady OnAuthTicketForWebApiReady;
 	HAuthTicket Handle;
 	EResult Result;
@@ -127,7 +123,8 @@ public:
 	void AssignGameInstance(UBSGameInstance* InDefaultGameInstance);
 
 	/** Updates locally stored StatData with new IntValue/FloatValue for matching StatAPIName, calls StoreStats() */
-	void UpdateStat(const char* StatAPIName, ESteamStatType StatType, int IntValue = 0, float FloatValue = 0.f);
+	template <typename T>
+	void UpdateStat(const char* StatAPIName, const T Value);
 
 	/** Updates locally stored NumGamesPlayed StatData with new IntValue/FloatValue for matching GameMode, calls StoreStats() */
 	void UpdateStat_NumGamesPlayed(const EBaseGameMode GameMode, int IntValue);
@@ -136,13 +133,15 @@ public:
 	UBSGameInstance* DefaultGameInstance;
 
 	/** Calls GetAuthTicketForWebApi using Steam Api, callback is OnTicketForWebApiResponse */
-	bool CreateAuthTicketForWebApi(TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler);
+	bool CreateAuthTicketForWebApi(
+		TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler, ESPMode::ThreadSafe> CallbackHandler);
 
 private:
 	/** Delegate registered with Steam to trigger when a user activates the Steam Overlay */
 	STEAM_CALLBACK_MANUAL(USteamManager, OnSteamOverlayActive, GameOverlayActivated_t, OnSteamOverlayActiveDelegate);
 	/** Delegate registered with Steam to trigger when a response is received from GetAuthTicketForWebApi */
-	STEAM_CALLBACK_MANUAL(USteamManager, OnAuthTicketForWebApiResponse, GetTicketForWebApiResponse_t, OnAuthTicketForWebApiResponseDelegate);
+	STEAM_CALLBACK_MANUAL(USteamManager, OnAuthTicketForWebApiResponse, GetTicketForWebApiResponse_t,
+		OnAuthTicketForWebApiResponseDelegate);
 	/** Delegate registered with Steam to trigger anytime RequestStats() is called */
 	STEAM_CALLBACK_MANUAL(USteamManager, OnUserStatsReceived, UserStatsReceived_t, OnUserStatsReceivedDelegate);
 	/** Delegate registered with Steam to trigger anytime you attempt to store stats on Steam  */
@@ -154,29 +153,30 @@ private:
 	 *  and achievements of the current user. Needs to be called before setting any stats or achievements. */
 	static bool RequestStats();
 
-	/**  Wraps an asynchronous call to steam, ISteamUserStats::StoreStats, that stores the stats of the current
-	 *   user on the server. Needs to be called to update the stats of the user. */
+	/** Wraps an asynchronous call to steam, ISteamUserStats::StoreStats, that stores the stats of the current
+	 *  user on the server. Needs to be called to update the stats of the user. */
 	bool StoreStats();
 
-	/** Sets a given achievement to achieved and sends the results to Steam. You can set a given achievement multiple times so you don't need to
-	 *  worry about only setting achievements that aren't already set. This is an asynchronous call which will trigger two callbacks:
-	 *  OnUserStatsStored() and OnAchievementStored() */
+	/** Sets a given achievement to achieved and sends the results to Steam. You can set a given achievement multiple
+	 *  times so you don't need to worry about only setting achievements that aren't already set. This is an
+	 *  asynchronous call which will trigger two callbacks: OnUserStatsStored() and OnAchievementStored() */
 	bool SetAchievement(const char* ID) const;
 
 	/** Returns a pointer to the NumGamesPlayed FSteamStat element corresponding to GameMode */
-	FSteamStat* GetStat_NumGamesPlayed(const EBaseGameMode GameMode);
+	const char* GetStat_NumGamesPlayed(const EBaseGameMode GameMode);
 
 	/** The Steam AppID for this game */
 	int64 AppId;
 
 	/** Locally stored and updated Steam Stats struct array */
-	TSet<FSteamStat> StatsData;
+	TMap<const char*, FSteamStat> StatsData;
 
 	/** Locally stored and updated Steam Achievement struct array */
 	TSet<FSteamAchievement> AchievementData;
 
 	/** If Steam Stats were successfully initialized */
 	bool bInitializedStats;
-	
+
+	/** A queue of AuthTicket callbacks that are executed in order */
 	TQueue<TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler>> ActiveCallbacks;
 };

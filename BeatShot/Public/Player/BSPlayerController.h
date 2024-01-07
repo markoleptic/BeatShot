@@ -2,6 +2,7 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "BSGameInstance.h"
 #include "HttpRequestInterface.h"
@@ -27,7 +28,8 @@ class UBSAbilitySystemComponent;
 
 DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
-/** Base PlayerController class for this game */
+/** Base PlayerController class for this game. Responsible for adding any main widget from the UserInterface module
+ *  to the viewport (MainMenu, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
 class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface,
                                          public IHttpRequestInterface, public ILoadingProcessInterface
@@ -87,7 +89,7 @@ public:
 	void ShowCombatText(const int32 Streak, const FTransform& Transform);
 	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
-	UFUNCTION()
+	/** Called by Game Instance after saving scores to database, or before if there was a problem */
 	void OnPostScoresResponseReceived(const EPostScoresResponse& Response);
 
 	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
@@ -153,6 +155,8 @@ private:
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings);
 
+	void TryResetAuthTicketHandle(const uint32 Handle);
+
 	UPROPERTY()
 	UMainMenuWidget* MainMenu;
 	UPROPERTY()
@@ -178,6 +182,7 @@ private:
 	bool PlayerHUDActive = false;
 	bool PostGameMenuActive = false;
 	bool bIsLoggedIn = false;
+	uint8 NumAuthTicketFinishes = 0;
 	const int32 ZOrderFadeScreen = 20;
 	const int32 ZOrderFPSCounter = 19;
 	float LoadingScreenWidgetFadeOutTime = 0.75f;

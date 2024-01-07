@@ -35,20 +35,20 @@ ABSGameMode::ABSGameMode()
 void ABSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OnPostScoresResponse.AddUObject(this, &ABSGameMode::OnPostScoresResponseReceived);
-	OnAccessTokenResponse.BindUObject(this, &ABSGameMode::OnAccessTokenResponseReceived);
+	
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_AudioAnalyzer);
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
-	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGameMode::OnPlayerSettingsChanged_Game);
-	GI->GetPublicUserSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGameMode::OnPlayerSettingsChanged_User);
-	GI->GetPublicAudioAnalyzerSettingsChangedDelegate().AddUniqueDynamic(this,
+	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSGameMode::OnPlayerSettingsChanged_Game);
+	GI->GetPublicUserSettingsChangedDelegate().AddUObject(this, &ABSGameMode::OnPlayerSettingsChanged_User);
+	GI->GetPublicAudioAnalyzerSettingsChangedDelegate().AddUObject(this,
 		&ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer);
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this,
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this,
 		&ABSGameMode::OnPlayerSettingsChanged_VideoAndSound);
+
+	bNightModeUnlocked = LoadPlayerSettings().User.bNightModeUnlocked;
 
 	InitializeGameMode();
 }
@@ -271,11 +271,6 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 		Controller->HidePlayerHUD();
 		Controller->HideCountdown();
 		Controller->HideCrossHair();
-
-		if (Controller->IsLocalController())
-		{
-			OnPostScoresResponse.AddUObject(Controller, &ABSPlayerController::OnPostScoresResponseReceived);
-		}
 
 		if (ShowPostGameMenu)
 		{
@@ -595,38 +590,42 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommo
 		CurrentPlayerScore.ResetStruct();
 		return;
 	}
+	EPostScoresResponse PostScoresResponse = EPostScoresResponse::HttpSuccess;
 	if (CurrentPlayerScore.Score <= 0)
 	{
-		CurrentPlayerScore.ResetStruct();
-		OnPostScoresResponse.Broadcast(EPostScoresResponse::ZeroScore);
-		return;
+		PostScoresResponse = EPostScoresResponse::ZeroScore;
 	}
 	if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.
 		CustomGameModeName == "")
 	{
-		CurrentPlayerScore.ResetStruct();
-		OnPostScoresResponse.Broadcast(EPostScoresResponse::UnsavedGameMode);
-		return;
+		PostScoresResponse = EPostScoresResponse::UnsavedGameMode;
 	}
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 
-	// Update Steam Stat for Game Mode
-	if (TimePlayedGameMode > MinStatRequirement_Duration_NumGamesPlayed)
+	if (PostScoresResponse == EPostScoresResponse::HttpSuccess)
 	{
-		if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+		// Update Steam Stat for Game Mode
+		if (TimePlayedGameMode > MinStatRequirement_Duration_NumGamesPlayed)
 		{
-			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
+			if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+			{
+				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
+			}
+			else
+			{
+				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
+			}
 		}
-		else
-		{
-			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
-		}
+		// Save common score info and completed scores locally
+		SaveCommonScoreInfo(BSConfig.DefiningConfig, InCommonScoreInfo);
+		SavePlayerScoreInstance(GetCompletedPlayerScores());
 	}
+	
+	CurrentPlayerScore.ResetStruct();
 
-	SaveCommonScoreInfo(BSConfig.DefiningConfig, InCommonScoreInfo);
-	SavePlayerScoreInstance(GetCompletedPlayerScores());
-	SaveScoresToDatabase();
+	// Let game instance handle posting scores to db
+	GI->SavePlayerScoresToDatabase(PostScoresResponse);
 }
 
 FPlayerScore ABSGameMode::GetCompletedPlayerScores()
@@ -645,16 +644,6 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.ShotsFired);
 	CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.TargetsSpawned);
 	return CurrentPlayerScore;
-}
-
-void ABSGameMode::SaveScoresToDatabase()
-{
-	if (LoadPlayerSettings().User.RefreshCookie.IsEmpty())
-	{
-		OnPostScoresResponse.Broadcast(EPostScoresResponse::NoAccount);
-		return;
-	}
-	RequestAccessToken(LoadPlayerSettings().User.RefreshCookie, OnAccessTokenResponse);
 }
 
 void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
@@ -688,27 +677,6 @@ void ABSGameMode::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserS
 void ABSGameMode::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume, VideoAndSoundSettings.MusicVolume);
-}
-
-void ABSGameMode::OnAccessTokenResponseReceived(const FString AccessToken)
-{
-	if (AccessToken.IsEmpty())
-	{
-		OnPostScoresResponse.Broadcast(EPostScoresResponse::HttpError);
-		return;
-	}
-	const TArray<FPlayerScore> UnsavedScores = LoadPlayerScores_UnsavedToDatabase();
-	UE_LOG(LogTemp, Display, TEXT("UnsavedScores: %d"), UnsavedScores.Num());
-	PostPlayerScores(UnsavedScores, LoadPlayerSettings().User.UserID, AccessToken, OnPostScoresResponse);
-}
-
-void ABSGameMode::OnPostScoresResponseReceived(const EPostScoresResponse& LoginState)
-{
-	if (LoginState == EPostScoresResponse::HttpSuccess)
-	{
-		SetAllPlayerScoresSavedToDatabase();
-	}
-	CurrentPlayerScore.ResetStruct();
 }
 
 void ABSGameMode::OnPostTargetDamageEvent(const FTargetDamageEvent& Event)

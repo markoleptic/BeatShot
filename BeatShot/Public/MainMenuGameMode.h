@@ -12,7 +12,8 @@ class ATargetManagerPreview;
 class ABSPlayerController;
 class UTargetWidget;
 
-/** The game mode for the main menu */
+/** Game mode used for the Main Menu level. Responsible for spawning a Target Manager for game mode preview purposes,
+ *  which is bound to the GameModesWidget. */
 UCLASS()
 class BEATSHOT_API AMainMenuGameMode : public AGameModeBase, public ISaveLoadInterface
 {

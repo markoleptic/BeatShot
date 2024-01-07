@@ -27,7 +27,7 @@ void ABSGun::BeginPlay()
 	OnPlayerSettingsChanged_Game(LoadPlayerSettings().Game);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
-	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSGun::OnPlayerSettingsChanged_Game);
+	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSGun::OnPlayerSettingsChanged_Game);
 
 	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())); !OnShotFired.
 		IsBoundToObject(GameMode))

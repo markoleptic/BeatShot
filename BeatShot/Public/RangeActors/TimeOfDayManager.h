@@ -22,6 +22,8 @@ class UCurveFloat;
 class AMoon;
 class UMaterialInstanceDynamic;
 
+DECLARE_DELEGATE_OneParam(FOnTimeOfDayTransitionCompleted, const ETimeOfDay NewTimeOfDay);
+
 UCLASS()
 class BEATSHOT_API ATimeOfDayManager : public AActor, public ISaveLoadInterface
 {
@@ -59,6 +61,8 @@ public:
 	ETimeOfDay GetTimeOfDay() const { return TimeOfDay; }
 
 	void SetSpotLightFrontEnabledState(const bool bEnable);
+
+	FOnTimeOfDayTransitionCompleted OnTimeOfDayTransitionCompleted;
 
 protected:
 	/** Changes TimeOfDay */
@@ -124,11 +128,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	ETimeOfDay TimeOfDay_Editor;
 
-	/** Distance along the x-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
+	/** Distance along the x-axis the roofs covering the night time windows have to travel during the day to night
+	 *  transition. This value is reversed when the cycle goes from night to day */
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	float DayToNightRoofXTravelDistance = -1000.f;
 
-	/** Distance along the z-axis the roofs covering the night time windows have to travel during the day to night transition. This value is reversed when the cycle goes from night to day */
+	/** Distance along the z-axis the roofs covering the night time windows have to travel during the day to night
+	 *  transition. This value is reversed when the cycle goes from night to day */
 	UPROPERTY(EditAnywhere, Category = "Lighting")
 	float DayToNightRoofZTravelDistance = 20.f;
 

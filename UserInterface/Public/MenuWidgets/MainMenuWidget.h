@@ -64,7 +64,7 @@ public:
 	FOnSteamLoginRequest OnSteamLoginRequest;
 
 	void LoginScoresWidgetWithSteam(const FString SteamAuthTicket);
-
+	void LoginScoresWidgetSubsequent();
 	void TryFallbackLogin();
 
 protected:

@@ -8,7 +8,7 @@
 #include "SaveGamePlayerScore.h"
 #include "Interfaces/IHttpResponse.h"
 
-bool IHttpRequestInterface::IsRefreshTokenValid(const FString& RefreshToken)
+bool IHttpRequestInterface::IsRefreshTokenValid(const FString RefreshToken)
 {
 	if (RefreshToken.IsEmpty())
 	{
@@ -28,8 +28,8 @@ bool IHttpRequestInterface::IsRefreshTokenValid(const FString& RefreshToken)
 	return false;
 }
 
-void IHttpRequestInterface::RequestAccessToken(const FString& RefreshToken,
-	FOnAccessTokenResponse& OnAccessTokenResponse)
+void IHttpRequestInterface::RequestAccessToken(const FString RefreshToken,
+	TSharedPtr<FAccessTokenResponse, ESPMode::ThreadSafe> AccessTokenResponse)
 {
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Endpoint_Refresh);
@@ -37,43 +37,49 @@ void IHttpRequestInterface::RequestAccessToken(const FString& RefreshToken,
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetHeader("Cookie", RefreshToken);
 	HttpRequest->OnProcessRequestComplete().BindLambda(
-		[&OnAccessTokenResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+		[AccessTokenResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
+			check(AccessTokenResponse.IsValid());
+			AccessTokenResponse->bConnectedSuccessfully = bConnectedSuccessfully;
 			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
-				if (OnAccessTokenResponse.IsBound()) OnAccessTokenResponse.Execute(FString());
-				UE_LOG(LogTemp, Display, TEXT("Access Token Request failed to successfully connect."));
-				return;
-			}
-
-			const FString ResponseString = Response->GetContentAsString();
-			const int32 ResponseCode = Response->GetResponseCode();
-
-			if (ResponseCode >= 200 && ResponseCode <= 300)
-			{
-				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-				const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(ResponseString);
-				FJsonSerializer::Deserialize(JsonReader, JsonObject);
-				const FString AccessToken = JsonObject->GetStringField("accessToken");
-				if (OnAccessTokenResponse.IsBound()) OnAccessTokenResponse.Execute(AccessToken);
+				AccessTokenResponse->HttpStatus = 502;
+				UE_LOG(LogTemp, Warning, TEXT("Access Token Request failed to successfully connect."));
 			}
 			else
 			{
-				if (OnAccessTokenResponse.IsBound()) OnAccessTokenResponse.Execute(FString());
-				UE_LOG(LogTemp, Display, TEXT("Request Access Token failed Http Status: %d"), ResponseCode);
+				AccessTokenResponse->HttpStatus = Response->GetResponseCode();
+				if (AccessTokenResponse->HttpStatus >= 200 && AccessTokenResponse->HttpStatus <= 300)
+				{
+					TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+					const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
+						Response->GetContentAsString());
+					FJsonSerializer::Deserialize(JsonReader, JsonObject);
+					AccessTokenResponse->AccessToken = JsonObject->GetStringField("accessToken");
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Request Access Token failed Http Status: %d"),
+						AccessTokenResponse->HttpStatus);
+				}
+			}
+			if (AccessTokenResponse->OnHttpResponseReceived.IsBound())
+			{
+				AccessTokenResponse->OnHttpResponseReceived.Execute();
 			}
 		});
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, TSharedPtr<FLoginResponse> LoginResponse)
+void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
+	TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse)
 {
 	FString ContentString;
 	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(FLoginPayload::StaticStruct(), &LoginPayload, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
-	
+
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Endpoint_Login);
 	HttpRequest->SetVerb("POST");
@@ -83,41 +89,44 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload& LoginPayload, TShared
 	HttpRequest->OnProcessRequestComplete().BindLambda(
 		[LoginResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
+			check(LoginResponse.IsValid());
+			LoginResponse->bConnectedSuccessfully = bConnectedSuccessfully;
 			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
 				LoginResponse->ResponseMsg = "Failed to Connect";
 				LoginResponse->HttpStatus = 502;
-				if (LoginResponse->OnLoginResponse.IsBound())
-					LoginResponse->OnLoginResponse.Execute();
 				UE_LOG(LogTemp, Warning, TEXT("Login Request failed to successfully connect."));
-				return;
-			}
-			
-			LoginResponse->HttpStatus = Response->GetResponseCode();
-			TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject);
-			const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-			FJsonSerializer::Deserialize(JsonReader, ResponseJsonObject);
-			
-			if (LoginResponse->HttpStatus >= 200 && LoginResponse->HttpStatus <= 300)
-			{
-				LoginResponse->UserID = ResponseJsonObject->GetStringField("userID");
-				LoginResponse->DisplayName = ResponseJsonObject->GetStringField("displayName");
-				LoginResponse->AccessToken = ResponseJsonObject->GetStringField("accessToken");
-				LoginResponse->RefreshToken  = Response->GetHeader("set-cookie");
 			}
 			else
 			{
-				UE_LOG(LogTemp, Display, TEXT("Login Request failed Http status: %d"), LoginResponse->HttpStatus);
-			}
+				LoginResponse->HttpStatus = Response->GetResponseCode();
+				TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject);
+				const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
+					Response->GetContentAsString());
+				FJsonSerializer::Deserialize(JsonReader, ResponseJsonObject);
 
-			if (LoginResponse->OnLoginResponse.IsBound())
-				LoginResponse->OnLoginResponse.Execute();
+				if (LoginResponse->HttpStatus >= 200 && LoginResponse->HttpStatus <= 300)
+				{
+					LoginResponse->UserID = ResponseJsonObject->GetStringField("userID");
+					LoginResponse->DisplayName = ResponseJsonObject->GetStringField("displayName");
+					LoginResponse->AccessToken = ResponseJsonObject->GetStringField("accessToken");
+					LoginResponse->RefreshToken = Response->GetHeader("set-cookie");
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Login Request failed Http Status: %d"), LoginResponse->HttpStatus);
+				}
+			}
+			if (LoginResponse->OnHttpResponseReceived.IsBound())
+			{
+				LoginResponse->OnHttpResponseReceived.Execute();
+			}
 		});
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore>& ScoresToPost, const FString& UserID,
-	const FString& AccessToken, FOnPostScoresResponse& OnPostResponse)
+void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString UserID,
+	const FString AccessToken, TSharedPtr<FPostScoresResponse, ESPMode::ThreadSafe> PostResponse)
 {
 	FJsonScore JsonScores;
 	// Add all elements that haven't been saved to database to the JsonScores Scores array
@@ -128,14 +137,14 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore>& ScoresT
 			JsonScores.Scores.Add(PlayerScoreObject);
 		}
 	}
-	
+
 	FString ContentString;
 	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(FJsonScore::StaticStruct(), &JsonScores, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
 	UE_LOG(LogTemp, Display, TEXT("FJsonScore: %s"), *ContentString);
-	
+
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Segment_ApiProfile + UserID + "/savescores");
 	HttpRequest->SetVerb("POST");
@@ -144,41 +153,48 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore>& ScoresT
 	HttpRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	HttpRequest->SetContentAsString(ContentString);
 	HttpRequest->OnProcessRequestComplete().BindLambda(
-		[&OnPostResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+		[PostResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
+			check(PostResponse.IsValid());
+			PostResponse->bConnectedSuccessfully = bConnectedSuccessfully;
 			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
-				OnPostResponse.Broadcast(EPostScoresResponse::HttpError);
-				UE_LOG(LogTemp, Display, TEXT("Send Scores Request Failed to successfully connect."));
-				return;
-			}
-
-			const FString ResponseString = Response->GetContentAsString();
-			const int32 ResponseCode = Response->GetResponseCode();
-
-			if (ResponseCode >= 200 && ResponseCode <= 300)
-			{
-				OnPostResponse.Broadcast(EPostScoresResponse::HttpSuccess);
-				UE_LOG(LogTemp, Display, TEXT("Successfully saved scores to database."));
+				PostResponse->HttpStatus = 502;
+				PostResponse->PostScoresDescription = EPostScoresResponse::HttpError;
+				UE_LOG(LogTemp, Warning, TEXT("PostPlayerScores Request failed to successfully connect."));
 			}
 			else
 			{
-				OnPostResponse.Broadcast(EPostScoresResponse::HttpError);
-				UE_LOG(LogTemp, Display, TEXT("Send Scores Request Failed: %s"), *ResponseString);
+				PostResponse->HttpStatus = Response->GetResponseCode();
+				if (PostResponse->HttpStatus >= 200 && PostResponse->HttpStatus <= 300)
+				{
+					PostResponse->PostScoresDescription = EPostScoresResponse::HttpSuccess;
+					UE_LOG(LogTemp, Warning, TEXT("Successfully saved scores to database."));
+				}
+				else
+				{
+					PostResponse->PostScoresDescription = EPostScoresResponse::HttpError;
+					UE_LOG(LogTemp, Warning, TEXT("Send Scores Request failed Http Status: %d"),
+						PostResponse->HttpStatus);
+				}
+			}
+			if (PostResponse->OnHttpResponseReceived.IsBound())
+			{
+				PostResponse->OnHttpResponseReceived.Execute();
 			}
 		});
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::PostFeedback(const FJsonFeedback& InFeedback,
-	FOnPostFeedbackResponse& OnPostFeedbackResponse)
+void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
+	TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse)
 {
 	FString ContentString;
 	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
 	FJsonObjectConverter::UStructToJsonObject(FJsonFeedback::StaticStruct(), &InFeedback, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
-	
+
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Endpoint_SendFeedback);
 	HttpRequest->SetTimeout(5.f);
@@ -186,33 +202,38 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback& InFeedback,
 	HttpRequest->SetHeader("Content-Type", "application/json");
 	HttpRequest->SetContentAsString(ContentString);
 	HttpRequest->OnProcessRequestComplete().BindLambda(
-		[&OnPostFeedbackResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+		[FeedbackResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
-			if (!bConnectedSuccessfully)
+			check(FeedbackResponse.IsValid());
+			FeedbackResponse->bConnectedSuccessfully = bConnectedSuccessfully;
+			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
-				if (OnPostFeedbackResponse.IsBound()) OnPostFeedbackResponse.Execute(false);
-				UE_LOG(LogTemp, Display, TEXT("Failed to connect to send feedback."));
-				return;
+				FeedbackResponse->HttpStatus = 502;
+				UE_LOG(LogTemp, Warning, TEXT("Failed to connect to send feedback."));
 			}
-
-			const FString ResponseString = Response->GetContentAsString();
-			const int32 ResponseCode = Response->GetResponseCode();
-
-			if (ResponseCode != 200)
+			else
 			{
-				if (OnPostFeedbackResponse.IsBound()) OnPostFeedbackResponse.Execute(false);
-				UE_LOG(LogTemp, Display, TEXT("Failed to send feedback: %s"), *ResponseString);
-				return;
+				FeedbackResponse->HttpStatus = Response->GetResponseCode();
+				if (FeedbackResponse->HttpStatus >= 200 && FeedbackResponse->HttpStatus <= 300)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Successfully sent feedback."));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to send feedback Http Status: %d"),
+						FeedbackResponse->HttpStatus);
+				}
 			}
-
-			if (OnPostFeedbackResponse.IsBound()) OnPostFeedbackResponse.Execute(true);
-			UE_LOG(LogTemp, Display, TEXT("Successfully sent feedback."));
+			if (FeedbackResponse->OnHttpResponseReceived.IsBound())
+			{
+				FeedbackResponse->OnHttpResponseReceived.Execute();
+			}
 		});
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const FString& Username,
-	const FString& AccessToken, FOnDeleteScoresResponse& OnDeleteScoresResponse)
+void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const FString UserID,
+	const FString AccessToken, TSharedPtr<FDeleteScoresResponse, ESPMode::ThreadSafe> DeleteScoresResponse)
 {
 	FString ContentString;
 	const FJsonDeleteScores JsonDelete = FJsonDeleteScores(CustomGameModeName);
@@ -222,96 +243,104 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
 
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
-	HttpRequest->SetURL(Segment_ApiProfile + Username + "/deletescores");
+	HttpRequest->SetURL(Segment_ApiProfile + UserID + "/deletescores");
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetVerb("DELETE");
 	HttpRequest->SetHeader("Content-Type", "application/json");
 	HttpRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	HttpRequest->SetContentAsString(ContentString);
 	HttpRequest->OnProcessRequestComplete().BindLambda(
-		[&OnDeleteScoresResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+		[DeleteScoresResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
+			check(DeleteScoresResponse.IsValid());
+			DeleteScoresResponse->bConnectedSuccessfully = bConnectedSuccessfully;
 			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
-				if (OnDeleteScoresResponse.IsBound()) OnDeleteScoresResponse.Execute(0, 502);
+				DeleteScoresResponse->HttpStatus = 502;
 				UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server while deleting scores."));
-				return;
-			}
-
-			const int32 ResponseCode = Response->GetResponseCode();
-			
-			if (ResponseCode >= 200 && ResponseCode <= 300)
-			{
-				TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject);
-				const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-				FJsonSerializer::Deserialize(JsonReader, ResponseJsonObject);
-				
-				const int32 NumRemoved = static_cast<int32>(ResponseJsonObject->GetNumberField("Number Removed"));
-				
-				if (OnDeleteScoresResponse.IsBound()) OnDeleteScoresResponse.Execute(NumRemoved, ResponseCode);
-				UE_LOG(LogTemp, Display, TEXT("Successfully deleted scores from database."));
 			}
 			else
 			{
-				if (OnDeleteScoresResponse.IsBound()) OnDeleteScoresResponse.Execute(0, ResponseCode);
-				UE_LOG(LogTemp, Warning, TEXT("Failed to delete scores: Http Status: %d"), ResponseCode);
+				DeleteScoresResponse->HttpStatus = Response->GetResponseCode();
+				
+				if (DeleteScoresResponse->HttpStatus >= 200 && DeleteScoresResponse->HttpStatus <= 300)
+				{
+					TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject);
+					const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
+						Response->GetContentAsString());
+					FJsonSerializer::Deserialize(JsonReader, ResponseJsonObject);
+
+					DeleteScoresResponse->NumRemoved = static_cast<int32>(ResponseJsonObject->GetNumberField(
+						"Number Removed"));
+					UE_LOG(LogTemp, Display, TEXT("Successfully deleted scores from database."));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Failed to delete scores Http Status: %d"),
+						DeleteScoresResponse->HttpStatus);
+				}
+			}
+			if (DeleteScoresResponse->OnHttpResponseReceived.IsBound())
+			{
+				DeleteScoresResponse->OnHttpResponseReceived.Execute();
 			}
 		});
 	HttpRequest->ProcessRequest();
 }
 
-void IHttpRequestInterface::AuthenticateSteamUser(const FString& AuthTicket,TSharedPtr<FSteamAuthTicketResponse> SteamAuthTicketResponse) const
+void IHttpRequestInterface::AuthenticateSteamUser(const FString AuthTicket,
+	TSharedPtr<FSteamAuthTicketResponse, ESPMode::ThreadSafe> SteamAuthTicketResponse)
 {
 	const FHttpRequestRef HttpRequest = FHttpModule::Get().CreateRequest();
 	HttpRequest->SetURL(Endpoint_AuthenticateUserTicketNoRedirect + AuthTicket);
 	HttpRequest->SetTimeout(5.f);
 	HttpRequest->SetVerb("GET");
 	HttpRequest->OnProcessRequestComplete().BindLambda(
-		[this, SteamAuthTicketResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+		[SteamAuthTicketResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
+			check(SteamAuthTicketResponse.IsValid());
 			SteamAuthTicketResponse->bConnectedSuccessfully = bConnectedSuccessfully;
 			if (!SteamAuthTicketResponse->bConnectedSuccessfully || !Response.IsValid())
 			{
 				SteamAuthTicketResponse->HttpStatus = 502;
 				SteamAuthTicketResponse->ErrorCode = "502";
 				SteamAuthTicketResponse->ErrorDesc = "Failed to connect";
-				
-				UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server while trying to authenticate."));
-				
-				if (SteamAuthTicketResponse->OnSteamAuthTicketResponse.IsBound())
-					SteamAuthTicketResponse->OnSteamAuthTicketResponse.Execute();
-				
-				return;
-			}
 
-			SteamAuthTicketResponse->HttpStatus = Response->GetResponseCode();
-			
-			TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
-			const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(Response->GetContentAsString());
-			FJsonSerializer::Deserialize(JsonReader, JsonObject);
-			
-			if (SteamAuthTicketResponse->HttpStatus >= 200 && SteamAuthTicketResponse->HttpStatus <= 300)
-			{
-				SteamAuthTicketResponse->Result = JsonObject->GetStringField("result");
-				SteamAuthTicketResponse->SteamID = JsonObject->GetStringField("steamid");
-				SteamAuthTicketResponse->OwnerSteamID = JsonObject->GetStringField("ownersteamid");
-				SteamAuthTicketResponse->VacBanned = JsonObject->GetBoolField("vacbanned");
-				SteamAuthTicketResponse->PublisherBanned = JsonObject->GetBoolField("publisherbanned");
-				SteamAuthTicketResponse->DisplayName = JsonObject->GetStringField("displayname");
-				SteamAuthTicketResponse->RefreshCookie = Response->GetHeader("set-cookie");
+				UE_LOG(LogTemp, Warning, TEXT("Failed to connect to server while trying to authenticate."));
 			}
 			else
 			{
-				SteamAuthTicketResponse->ErrorCode = JsonObject->HasField("errorcode")
-					? JsonObject->GetStringField("errorcode")
-					: "Unknown Error Code";
-				SteamAuthTicketResponse->ErrorDesc = JsonObject->HasField("errordesc")
-					? JsonObject->GetStringField("errordesc")
-					: "Unknown Error Description";
-			}
+				SteamAuthTicketResponse->HttpStatus = Response->GetResponseCode();
 
-			if (SteamAuthTicketResponse->OnSteamAuthTicketResponse.IsBound())
-				SteamAuthTicketResponse->OnSteamAuthTicketResponse.Execute();
+				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+				const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
+					Response->GetContentAsString());
+				FJsonSerializer::Deserialize(JsonReader, JsonObject);
+
+				if (SteamAuthTicketResponse->HttpStatus >= 200 && SteamAuthTicketResponse->HttpStatus <= 300)
+				{
+					SteamAuthTicketResponse->Result = JsonObject->GetStringField("result");
+					SteamAuthTicketResponse->SteamID = JsonObject->GetStringField("steamid");
+					SteamAuthTicketResponse->OwnerSteamID = JsonObject->GetStringField("ownersteamid");
+					SteamAuthTicketResponse->VacBanned = JsonObject->GetBoolField("vacbanned");
+					SteamAuthTicketResponse->PublisherBanned = JsonObject->GetBoolField("publisherbanned");
+					SteamAuthTicketResponse->DisplayName = JsonObject->GetStringField("displayname");
+					SteamAuthTicketResponse->RefreshCookie = Response->GetHeader("set-cookie");
+				}
+				else
+				{
+					SteamAuthTicketResponse->ErrorCode = JsonObject->HasField("errorcode")
+						? JsonObject->GetStringField("errorcode")
+						: "Unknown Error Code";
+					SteamAuthTicketResponse->ErrorDesc = JsonObject->HasField("errordesc")
+						? JsonObject->GetStringField("errordesc")
+						: "Unknown Error Description";
+				}
+			}
+			if (SteamAuthTicketResponse->OnHttpResponseReceived.IsBound())
+			{
+				SteamAuthTicketResponse->OnHttpResponseReceived.Execute();
+			}
 		});
 	HttpRequest->ProcessRequest();
 }

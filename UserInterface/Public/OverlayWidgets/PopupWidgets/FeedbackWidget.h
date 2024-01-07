@@ -74,16 +74,9 @@ private:
 	UFUNCTION()
 	void PlayFadeOutResponse() { PlayAnimationForward(FadeOutResponse); }
 
-	/** Sets the response text based on http response */
-	UFUNCTION()
-	void OnPostFeedbackResponse(const bool bSuccess);
-
 	/** Sets the widget's visibility to collapsed and unbinds FadeOutDelegate and FadeOutResponseDelegate */
 	UFUNCTION()
 	void SetCollapsedAndUnbindDelegates();
-
-	/** Delegate passed to PostFeedback function that executes when an http response is received, bound to OnPostFeedbackResponse */
-	FOnPostFeedbackResponse OnPostFeedbackResponseDelegate;
 
 	/** Always bound to FadeOut animation and SetCollapsedAndUnbindDelegates */
 	FWidgetAnimationDynamicEvent FadeOutDelegate;

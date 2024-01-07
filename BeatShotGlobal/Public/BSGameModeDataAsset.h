@@ -276,7 +276,7 @@ enum class ETargetDeactivationCondition : uint8
 {
 	None UMETA(DisplayName="None"),
 	/** Targets are never deactivated, even if their health reaches zero */
-	Persistant UMETA(DisplayName="Persistant"),
+	Persistent UMETA(DisplayName="Persistent"),
 	/** Target is deactivated when it receives any damage from the player */
 	OnAnyExternalDamageTaken UMETA(DisplayName="On Any External Damage Taken"),
 	/** Target is deactivated after its damageable window closes */
@@ -287,7 +287,7 @@ enum class ETargetDeactivationCondition : uint8
 	OnSpecificHealthLost UMETA(DisplayName="On Specific Health Lost"),
 };
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistant,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDeactivationCondition, ETargetDeactivationCondition::Persistent,
 	ETargetDeactivationCondition::OnSpecificHealthLost);
 
 
@@ -340,7 +340,7 @@ enum class ETargetDestructionCondition : uint8
 {
 	None UMETA(DisplayName="None"),
 	/** Targets are never destroyed, even if their health reaches zero. Can still be reactivated/deactivated */
-	Persistant UMETA(DisplayName="Persistant"),
+	Persistent UMETA(DisplayName="Persistent"),
 	/** Target is deactivated after its damageable window closes */
 	OnExpiration UMETA(DisplayName="On Expiration"),
 	/** Target is destroyed when it receives any damage from the player */
@@ -350,7 +350,7 @@ enum class ETargetDestructionCondition : uint8
 	/** Target is destroyed when any of its deactivation conditions are met. This essentially makes any deactivation condition a destruction condition */
 	OnDeactivation UMETA(DisplayName="On Deactivation")};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistant,
+ENUM_RANGE_BY_FIRST_AND_LAST(ETargetDestructionCondition, ETargetDestructionCondition::Persistent,
 	ETargetDestructionCondition::OnDeactivation);
 
 

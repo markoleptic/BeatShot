@@ -127,6 +127,10 @@ void UQuitMenuWidget::OnQuitToMainMenu()
 
 void UQuitMenuWidget::OnQuitToDesktop()
 {
+	if (bShouldSaveScores)
+	{
+		PlayFadeInSaveInProgress();
+	}
 	FGameModeTransitionState TransitionState;
 	TransitionState.TransitionState = ETransitionState::QuitToDesktop;
 	TransitionState.bSaveCurrentScores = bShouldSaveScores;
@@ -150,7 +154,7 @@ void UQuitMenuWidget::CollapseWidget()
 void UQuitMenuWidget::InitializeExit()
 {
 	PlayAnimationForward(FadeOutBackgroundBlur);
-	FadeOutWidgetDelegate.BindDynamic(this, & UQuitMenuWidget::CollapseWidget);
+	FadeOutWidgetDelegate.BindDynamic(this, &UQuitMenuWidget::CollapseWidget);
 	BindToAnimationFinished(FadeOutBackgroundBlur, FadeOutWidgetDelegate);
 	if (!OnExitQuitMenu.ExecuteIfBound())
 	{

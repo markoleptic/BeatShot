@@ -9,6 +9,7 @@
 #include "BeatShot/BSGameplayTags.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "RangeActors/TimeOfDayManager.h"
 
 AWallMenu::AWallMenu()
 {
@@ -24,7 +25,7 @@ AWallMenu::AWallMenu()
 	if (!AbilitySystemComponent)
 	{
 		AbilitySystemComponent = CreateDefaultSubobject<UBSAbilitySystemComponent>("Ability System Component");
-		// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server. Attributes, GameplayTags, and GameplayCues will still replicate to us.
+		// Minimal Mode means that no GameplayEffects will replicate. They will only live on the Server.
 		AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
 	}
 
@@ -136,20 +137,127 @@ void AWallMenu::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
-	{
-		GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
-		GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged_Game);
-		GI->GetPublicUserSettingsChangedDelegate().AddUniqueDynamic(this, &AWallMenu::OnPlayerSettingsChanged_User);
-	}
-
 	if (GetAbilitySystemComponent())
 	{
 		GetAbilitySystemComponent()->InitAbilityActorInfo(this, nullptr);
 		GetAbilitySystemComponent()->OnGameplayEffectAppliedDelegateToSelf.AddUObject(this,
 			&ThisClass::OnGameplayEffectAppliedToSelf);
-		Init(LoadPlayerSettings().Game, LoadPlayerSettings().User);
 	}
+}
+
+void AWallMenu::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
+	{
+		GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
+		GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &AWallMenu::OnPlayerSettingsChanged_Game);
+		GI->GetPublicUserSettingsChangedDelegate().AddUObject(this, &AWallMenu::OnPlayerSettingsChanged_User);
+	}
+
+	if (TimeOfDayManager)
+	{
+		TimeOfDayManager->OnTimeOfDayTransitionCompleted.BindUObject(this, &ThisClass::OnTimeOfDayChangeCompleted);
+	}
+	
+	BoxToTextMap.Add(Box_LightVisualizers_On, FText3DToggle(MainText_Enable_LightVisualizers, Box_LightVisualizers_On,
+		ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off, true, "bShowLightVisualizers"));
+	BoxToTextMap.Add(Box_LightVisualizers_Off, FText3DToggle(MainText_Enable_LightVisualizers, Box_LightVisualizers_Off,
+		ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off, false, "bShowLightVisualizers"));
+
+	BoxToTextMap.Add(Box_LVFrontBeam_On, FText3DToggle(MainText_Enable_LVFrontBeam, Box_LVFrontBeam_On,
+		ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off, true, "bShow_LVFrontBeam"));
+	BoxToTextMap.Add(Box_LVFrontBeam_Off, FText3DToggle(MainText_Enable_LVFrontBeam, Box_LVFrontBeam_Off,
+		ToggleText_LVFrontBeam_On, ToggleText_LVFrontBeam_Off, false, "bShow_LVFrontBeam"));
+
+	BoxToTextMap.Add(Box_LVLeftBeam_On, FText3DToggle(MainText_Enable_LVLeftBeam, Box_LVLeftBeam_On,
+		ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, true, "bShow_LVLeftBeam"));
+	BoxToTextMap.Add(Box_LVLeftBeam_Off, FText3DToggle(MainText_Enable_LVLeftBeam, Box_LVLeftBeam_Off,
+		ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off, false, "bShow_LVLeftBeam"));
+
+	BoxToTextMap.Add(Box_LVRightBeam_On, FText3DToggle(MainText_Enable_LVRightBeam, Box_LVRightBeam_On,
+		ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off, true, "bShow_LVRightBeam"));
+	BoxToTextMap.Add(Box_LVRightBeam_Off, FText3DToggle(MainText_Enable_LVRightBeam, Box_LVRightBeam_Off,
+		ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off, false, "bShow_LVRightBeam"));
+
+	BoxToTextMap.Add(Box_LV_TopBeam_On, FText3DToggle(MainText_EnableLV_TopBeam, Box_LV_TopBeam_On,
+		ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, true, "bShow_LVTopBeam"));
+	BoxToTextMap.Add(Box_LV_TopBeam_Off, FText3DToggle(MainText_EnableLV_TopBeam, Box_LV_TopBeam_Off,
+		ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off, false, "bShow_LVTopBeam"));
+
+	BoxToTextMap.Add(Box_LV_LeftCube_On, FText3DToggle(MainText_EnableLV_LeftCube, Box_LV_LeftCube_On,
+		ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off, true, "bShow_LVLeftCube"));
+	BoxToTextMap.Add(Box_LV_LeftCube_Off, FText3DToggle(MainText_EnableLV_LeftCube, Box_LV_LeftCube_Off,
+		ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off, false, "bShow_LVLeftCube"));
+
+	BoxToTextMap.Add(Box_LV_RightCube_On, FText3DToggle(MainText_EnableLV_RightCube, Box_LV_RightCube_On,
+		ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off, true, "bShow_LVRightCube"));
+	BoxToTextMap.Add(Box_LV_RightCube_Off, FText3DToggle(MainText_EnableLV_RightCube, Box_LV_RightCube_Off,
+		ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off, false, "bShow_LVRightCube"));
+
+	BoxToTextMap.Add(Box_NightMode_On, FText3DToggle(MainText_Enable_NightMode, Box_NightMode_On,
+		ToggleText_NightMode_On, ToggleText_NightMode_Off, true, "bNightModeSelected"));
+	BoxToTextMap.Add(Box_NightMode_Off, FText3DToggle(MainText_Enable_NightMode, Box_NightMode_Off,
+		ToggleText_NightMode_On, ToggleText_NightMode_Off, false, "bNightModeSelected"));
+
+	for (TPair<TObjectPtr<UBoxComponent>, FText3DToggle>& Pair : BoxToTextMap)
+	{
+		if (Pair.Value.Parent)
+		{
+			if (UText3DComponent* CastedParent = Cast<UText3DComponent>(Pair.Value.Parent))
+			{
+				if (Material_Main_Front_Text3D)
+				{
+					CastedParent->SetFrontMaterial(Material_Main_Front_Text3D);
+				}
+				if (Material_Bevel)
+				{
+					CastedParent->SetBevelMaterial(Material_Bevel);
+				}
+				if (Material_Extrude)
+				{
+					CastedParent->SetExtrudeMaterial(Material_Extrude);
+				}
+				if (Font_Text3D)
+				{
+					CastedParent->SetFont(Font_Text3D);
+				}
+			}
+		}
+		if (!Pair.Value.OnText || !Pair.Value.OffText) continue;
+
+		if (Material_Bevel)
+		{
+			Pair.Value.OnText->SetBevelMaterial(Material_Bevel);
+			Pair.Value.OffText->SetBevelMaterial(Material_Bevel);
+		}
+		if (Material_Extrude)
+		{
+			Pair.Value.OnText->SetExtrudeMaterial(Material_Extrude);
+			Pair.Value.OffText->SetExtrudeMaterial(Material_Extrude);
+		}
+		if (Font_Text3D)
+		{
+			Pair.Value.OnText->SetFont(Font_Text3D);
+			Pair.Value.OffText->SetFont(Font_Text3D);
+		}
+		
+		if (!Material_Toggle) continue;
+
+		UMaterialInstanceDynamic* DynamicMatFrontOn = UMaterialInstanceDynamic::Create(Material_Toggle,
+			Pair.Value.OnText.Get());
+		UMaterialInstanceDynamic* DynamicMatFrontOff = UMaterialInstanceDynamic::Create(Material_Toggle,
+			Pair.Value.OffText.Get());
+
+		if (!DynamicMatFrontOn || !DynamicMatFrontOff) continue;
+
+		Pair.Value.OnText->SetFrontMaterial(DynamicMatFrontOn);
+		Pair.Value.OffText->SetFrontMaterial(DynamicMatFrontOff);
+	}
+	
+	Init(LoadPlayerSettings().Game, LoadPlayerSettings().User, false);
+	bIsWaitingOnTimeOfDayTransition = false;
 }
 
 UAbilitySystemComponent* AWallMenu::GetAbilitySystemComponent() const
@@ -175,9 +283,11 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 		const FText3DToggle* Found = BoxToTextMap.Find(Box);
 		if (Found)
 		{
+			bool bRequiresSave = false;
 			FPlayerSettings_Game PlayerSettings_Game = LoadPlayerSettings().Game;
 			if (Found->SettingType == "bNightModeSelected" && LoadPlayerSettings().User.bNightModeUnlocked)
 			{
+				bRequiresSave = (PlayerSettings_Game.bNightModeSelected != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bNightModeSelected = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShowLightVisualizers")
@@ -188,6 +298,7 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 					return;
 				}
 
+				bRequiresSave = true;
 				PlayerSettings_Game.bShowLightVisualizers = Found->bIsOnText;
 
 				// By default, only turn on 3 lights when initially toggling on
@@ -227,49 +338,75 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 			}
 			else if (Found->SettingType == "bShow_LVFrontBeam")
 			{
+				bRequiresSave = (PlayerSettings_Game.bShow_LVFrontBeam != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bShow_LVFrontBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVLeftBeam")
 			{
+				bRequiresSave = (PlayerSettings_Game.bShow_LVLeftBeam != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bShow_LVLeftBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVRightBeam")
 			{
+				bRequiresSave = (PlayerSettings_Game.bShow_LVRightBeam != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bShow_LVRightBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVTopBeam")
 			{
+				bRequiresSave = (PlayerSettings_Game.bShow_LVTopBeam != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bShow_LVTopBeam = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVLeftCube")
 			{
+				bRequiresSave = (PlayerSettings_Game.bShow_LVLeftCube != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bShow_LVLeftCube = Found->bIsOnText;
 			}
 			else if (Found->SettingType == "bShow_LVRightCube")
 			{
+				bRequiresSave = (PlayerSettings_Game.bShow_LVRightCube != Found->bIsOnText) || bRequiresSave;
 				PlayerSettings_Game.bShow_LVRightCube = Found->bIsOnText;
 			}
-
-			SavePlayerSettings(PlayerSettings_Game);
-			ToggleText(Found->bIsOnText, Found->OnText.Get(), Found->OffText.Get());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Display, TEXT("Didn't find associated FText3DToggle"));
+			
+			if (bRequiresSave)
+			{
+				SavePlayerSettings(PlayerSettings_Game);
+				ToggleText(Found->bIsOnText, Found->OnText.Get(), Found->OffText.Get());
+			}
 		}
 	}
 }
 
-void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings)
+void AWallMenu::OnTimeOfDayChangeCompleted(const ETimeOfDay NewTimeOfDay)
+{
+	if (ToggleText_NightMode_On)
+	{
+		UMaterialInterface* FrontMat = ToggleText_NightMode_On->GetFrontMaterial();
+		if (UMaterialInstanceDynamic* Dynamic = Cast<UMaterialInstanceDynamic>(FrontMat))
+		{
+			Dynamic->SetScalarParameterValue(FName("bEnablePulse"), 0.0f);
+		}
+	}
+	if (ToggleText_NightMode_Off)
+	{
+		UMaterialInterface* FrontMat = ToggleText_NightMode_Off->GetFrontMaterial();
+		if (UMaterialInstanceDynamic* Dynamic = Cast<UMaterialInstanceDynamic>(FrontMat))
+		{
+			Dynamic->SetScalarParameterValue(FName("bEnablePulse"), 0.0f);
+		}
+	}
+	bIsWaitingOnTimeOfDayTransition = false;
+}
+
+void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSettings_User& UserSettings, const bool bFromSettingsUpdate)
 {
 	MainText_Enable_NightMode->SetVisibility(UserSettings.bNightModeUnlocked);
 	ToggleText_NightMode_On->SetVisibility(UserSettings.bNightModeUnlocked);
 	ToggleText_NightMode_Off->SetVisibility(UserSettings.bNightModeUnlocked);
 
-	ApplyMainTextMaterials();
+	if (bFromSettingsUpdate) return;
 
 	ToggleText(GameSettings.bShowLightVisualizers, ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off);
-	ToggleText(GameSettings.bNightModeSelected, ToggleText_NightMode_On, ToggleText_NightMode_Off);
+	ToggleText(UserSettings.bNightModeUnlocked && GameSettings.bNightModeSelected, ToggleText_NightMode_On, ToggleText_NightMode_Off);
 	ToggleText(GameSettings.bShow_LVTopBeam, ToggleText_LV_TopBeam_On, ToggleText_LV_TopBeam_Off);
 	ToggleText(GameSettings.bShow_LVLeftCube, ToggleText_LV_LeftCube_On, ToggleText_LV_LeftCube_Off);
 	ToggleText(GameSettings.bShow_LVRightCube, ToggleText_LV_RightCube_On, ToggleText_LV_RightCube_Off);
@@ -277,59 +414,32 @@ void AWallMenu::Init(const FPlayerSettings_Game& GameSettings, const FPlayerSett
 	ToggleText(GameSettings.bShow_LVLeftBeam, ToggleText_LVLeftBeam_On, ToggleText_LVLeftBeam_Off);
 	ToggleText(GameSettings.bShow_LVRightBeam, ToggleText_LVRightBeam_On, ToggleText_LVRightBeam_Off);
 
-
-	if (BoxToTextMap.IsEmpty())
+	if (ToggleText_NightMode_On)
 	{
-		BoxToTextMap.Add(Box_LightVisualizers_On, FText3DToggle(nullptr, Box_LightVisualizers_On,
-			ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off, true, "bShowLightVisualizers"));
-		BoxToTextMap.Add(Box_LightVisualizers_Off, FText3DToggle(nullptr, Box_LightVisualizers_Off,
-			ToggleText_LightVisualizers_On, ToggleText_LightVisualizers_Off, false, "bShowLightVisualizers"));
-
-		BoxToTextMap.Add(Box_LVFrontBeam_On, FText3DToggle(nullptr, Box_LVFrontBeam_On, ToggleText_LVFrontBeam_On,
-			ToggleText_LVFrontBeam_Off, true, "bShow_LVFrontBeam"));
-		BoxToTextMap.Add(Box_LVFrontBeam_Off, FText3DToggle(nullptr, Box_LVFrontBeam_Off, ToggleText_LVFrontBeam_On,
-			ToggleText_LVFrontBeam_Off, false, "bShow_LVFrontBeam"));
-
-		BoxToTextMap.Add(Box_LVLeftBeam_On, FText3DToggle(nullptr, Box_LVLeftBeam_On, ToggleText_LVLeftBeam_On,
-			ToggleText_LVLeftBeam_Off, true, "bShow_LVLeftBeam"));
-		BoxToTextMap.Add(Box_LVLeftBeam_Off, FText3DToggle(nullptr, Box_LVLeftBeam_Off, ToggleText_LVLeftBeam_On,
-			ToggleText_LVLeftBeam_Off, false, "bShow_LVLeftBeam"));
-
-		BoxToTextMap.Add(Box_LVRightBeam_On, FText3DToggle(nullptr, Box_LVRightBeam_On, ToggleText_LVRightBeam_On,
-			ToggleText_LVRightBeam_Off, true, "bShow_LVRightBeam"));
-		BoxToTextMap.Add(Box_LVRightBeam_Off, FText3DToggle(nullptr, Box_LVRightBeam_Off, ToggleText_LVRightBeam_On,
-			ToggleText_LVRightBeam_Off, false, "bShow_LVRightBeam"));
-
-		BoxToTextMap.Add(Box_LV_TopBeam_On, FText3DToggle(nullptr, Box_LV_TopBeam_On, ToggleText_LV_TopBeam_On,
-			ToggleText_LV_TopBeam_Off, true, "bShow_LVTopBeam"));
-		BoxToTextMap.Add(Box_LV_TopBeam_Off, FText3DToggle(nullptr, Box_LV_TopBeam_Off, ToggleText_LV_TopBeam_On,
-			ToggleText_LV_TopBeam_Off, false, "bShow_LVTopBeam"));
-
-		BoxToTextMap.Add(Box_LV_LeftCube_On, FText3DToggle(nullptr, Box_LV_LeftCube_On, ToggleText_LV_LeftCube_On,
-			ToggleText_LV_LeftCube_Off, true, "bShow_LVLeftCube"));
-		BoxToTextMap.Add(Box_LV_LeftCube_Off, FText3DToggle(nullptr, Box_LV_LeftCube_Off, ToggleText_LV_LeftCube_On,
-			ToggleText_LV_LeftCube_Off, false, "bShow_LVLeftCube"));
-
-		BoxToTextMap.Add(Box_LV_RightCube_On, FText3DToggle(nullptr, Box_LV_RightCube_On, ToggleText_LV_RightCube_On,
-			ToggleText_LV_RightCube_Off, true, "bShow_LVRightCube"));
-		BoxToTextMap.Add(Box_LV_RightCube_Off, FText3DToggle(nullptr, Box_LV_RightCube_Off, ToggleText_LV_RightCube_On,
-			ToggleText_LV_RightCube_Off, false, "bShow_LVRightCube"));
-
-		BoxToTextMap.Add(Box_NightMode_On, FText3DToggle(nullptr, Box_NightMode_On, ToggleText_NightMode_On,
-			ToggleText_NightMode_Off, true, "bNightModeSelected"));
-		BoxToTextMap.Add(Box_NightMode_Off, FText3DToggle(nullptr, Box_NightMode_Off, ToggleText_NightMode_On,
-			ToggleText_NightMode_Off, false, "bNightModeSelected"));
+		UMaterialInterface* FrontMat = ToggleText_NightMode_On->GetFrontMaterial();
+		if (UMaterialInstanceDynamic* Dynamic = Cast<UMaterialInstanceDynamic>(FrontMat))
+		{
+			Dynamic->SetScalarParameterValue(FName("bEnablePulse"), 0.0f);
+		}
+	}
+	if (ToggleText_NightMode_Off)
+	{
+		UMaterialInterface* FrontMat = ToggleText_NightMode_Off->GetFrontMaterial();
+		if (UMaterialInstanceDynamic* Dynamic = Cast<UMaterialInstanceDynamic>(FrontMat))
+		{
+			Dynamic->SetScalarParameterValue(FName("bEnablePulse"), 0.0f);
+		}
 	}
 }
 
 void AWallMenu::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	Init(GameSettings, LoadPlayerSettings().User);
+	Init(GameSettings, LoadPlayerSettings().User, true);
 }
 
 void AWallMenu::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
 {
-	Init(LoadPlayerSettings().Game, UserSettings);
+	Init(LoadPlayerSettings().Game, UserSettings, true);
 }
 
 void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* InParent, const bool bFirstText,
@@ -364,26 +474,10 @@ void AWallMenu::SetupMainText(UText3DComponent* InComponent, USceneComponent* In
 	InComponent->SetBevel(2.f);
 	InComponent->SetCastShadow(false);
 	InComponent->SetHorizontalAlignment(EText3DHorizontalTextAlignment::Left);
-
-
-	if (Material_Main_Front_Text3D)
-	{
-		InComponent->SetFrontMaterial(Material_Main_Front_Text3D);
-	}
-	if (Material_Main_Extrude_Text3D)
-	{
-		InComponent->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		InComponent->SetBevelMaterial(Material_Main_Extrude_Text3D);
-	}
-	if (Font_Text3D)
-	{
-		InComponent->SetFont(Font_Text3D);
-	}
 }
 
 void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InToggleTextOn,
-	UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff,
-	const FVector& AdditionalOffset) const
+	UText3DComponent* InToggleTextOff, UBoxComponent* InBoxOn, UBoxComponent* InBoxOff, const FVector& AdditionalOffset)
 {
 	InToggleTextOn->SetupAttachment(InParent);
 	InToggleTextOn->SetRelativeLocation(Offset_OnText + AdditionalOffset);
@@ -417,22 +511,6 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InT
 		InToggleTextOff->SetMaxHeight(MaxHeightIndentedText);
 	}
 
-	if (Material_ToggleActive_Front_Text3D)
-	{
-		InToggleTextOn->SetFrontMaterial(Material_ToggleActive_Front_Text3D);
-	}
-
-	if (Material_ToggleInactive_Front_Text3D)
-	{
-		InToggleTextOff->SetBevelMaterial(Material_Toggle_Extrude_Text3D);
-	}
-
-	if (Font_Text3D)
-	{
-		InToggleTextOn->SetFont(Font_Text3D);
-		InToggleTextOff->SetFont(Font_Text3D);
-	}
-
 	InBoxOn->SetupAttachment(InToggleTextOn);
 	InBoxOn->SetRelativeLocation(Position_BoxCollision);
 	InBoxOn->SetRelativeScale3D(Scale_BoxCollision_On);
@@ -450,76 +528,48 @@ void AWallMenu::SetupToggleText(USceneComponent* InParent, UText3DComponent* InT
 
 void AWallMenu::ToggleText(const bool bIsOn, UText3DComponent* InToggleTextOn, UText3DComponent* InToggleTextOff) const
 {
-	if (!Material_ToggleActive_Front_Text3D || !Material_ToggleInactive_Front_Text3D)
+	UMaterialInterface* MatFrontOn = InToggleTextOn->GetFrontMaterial();
+	UMaterialInterface* MatFrontOff = InToggleTextOff->GetFrontMaterial();
+
+	if (!MatFrontOn || !MatFrontOff) return;
+
+	UMaterialInstanceDynamic* DynamicMatFrontOn = Cast<UMaterialInstanceDynamic>(MatFrontOn);
+	UMaterialInstanceDynamic* DynamicMatFrontOff = Cast<UMaterialInstanceDynamic>(MatFrontOff);
+
+	if (!DynamicMatFrontOn || !DynamicMatFrontOff) return;
+
+	if (InToggleTextOn == ToggleText_NightMode_On)
 	{
-		return;
-	}
-	if (bIsOn)
-	{
-		InToggleTextOn->SetFrontMaterial(Material_ToggleActive_Front_Text3D);
-		InToggleTextOff->SetFrontMaterial(Material_ToggleInactive_Front_Text3D);
+		if (!bIsWaitingOnTimeOfDayTransition)
+		{
+			if (bIsOn)
+			{
+				DynamicMatFrontOn->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Green);
+				DynamicMatFrontOff->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Red);
+				DynamicMatFrontOn->SetScalarParameterValue(FName("bEnablePulse"), 1.0f);
+				DynamicMatFrontOff->SetScalarParameterValue(FName("bEnablePulse"), 0.0f);
+			}
+			else
+			{
+				DynamicMatFrontOn->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Red);
+				DynamicMatFrontOff->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Green);
+				DynamicMatFrontOn->SetScalarParameterValue(FName("bEnablePulse"), 0.0f);
+				DynamicMatFrontOff->SetScalarParameterValue(FName("bEnablePulse"), 1.0f);
+			}
+			bIsWaitingOnTimeOfDayTransition = true;
+		}
 	}
 	else
 	{
-		InToggleTextOn->SetFrontMaterial(Material_ToggleInactive_Front_Text3D);
-		InToggleTextOff->SetFrontMaterial(Material_ToggleActive_Front_Text3D);
-	}
-}
-
-void AWallMenu::ApplyMainTextMaterials() const
-{
-	if (Material_Main_Front_Text3D)
-	{
-		MainText_Enable_LightVisualizers->SetFrontMaterial(Material_Main_Front_Text3D);
-
-		MainText_Enable_LVFrontBeam->SetFrontMaterial(Material_Main_Front_Text3D);
-		MainText_EnableLV_TopBeam->SetFrontMaterial(Material_Main_Front_Text3D);
-		MainText_Enable_LVLeftBeam->SetFrontMaterial(Material_Main_Front_Text3D);
-		MainText_Enable_LVRightBeam->SetFrontMaterial(Material_Main_Front_Text3D);
-		MainText_EnableLV_LeftCube->SetFrontMaterial(Material_Main_Front_Text3D);
-		MainText_EnableLV_RightCube->SetFrontMaterial(Material_Main_Front_Text3D);
-
-		MainText_Enable_NightMode->SetFrontMaterial(Material_Main_Front_Text3D);
-	}
-
-	if (Material_Main_Extrude_Text3D)
-	{
-		MainText_Enable_LightVisualizers->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_Enable_LightVisualizers->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_Enable_LVFrontBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_Enable_LVFrontBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_EnableLV_TopBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_EnableLV_TopBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_Enable_LVLeftBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_Enable_LVLeftBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_Enable_LVRightBeam->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_Enable_LVRightBeam->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_EnableLV_LeftCube->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_EnableLV_LeftCube->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_EnableLV_RightCube->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_EnableLV_RightCube->SetBevelMaterial(Material_Main_Extrude_Text3D);
-
-		MainText_Enable_NightMode->SetExtrudeMaterial(Material_Main_Extrude_Text3D);
-		MainText_Enable_NightMode->SetBevelMaterial(Material_Main_Extrude_Text3D);
-	}
-
-	if (Font_Text3D)
-	{
-		MainText_Enable_LightVisualizers->SetFont(Font_Text3D);
-
-		MainText_Enable_LVFrontBeam->SetFont(Font_Text3D);
-		MainText_EnableLV_TopBeam->SetFont(Font_Text3D);
-		MainText_Enable_LVLeftBeam->SetFont(Font_Text3D);
-		MainText_Enable_LVRightBeam->SetFont(Font_Text3D);
-		MainText_EnableLV_LeftCube->SetFont(Font_Text3D);
-		MainText_EnableLV_RightCube->SetFont(Font_Text3D);
-
-		MainText_Enable_NightMode->SetFont(Font_Text3D);
+		if (bIsOn)
+		{
+			DynamicMatFrontOn->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Green);
+			DynamicMatFrontOff->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Red);
+		}
+		else
+		{
+			DynamicMatFrontOn->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Red);
+			DynamicMatFrontOff->SetVectorParameterValue(FName("EmissiveColor"), FLinearColor::Green);
+		}
 	}
 }

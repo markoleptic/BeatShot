@@ -37,22 +37,26 @@ void ABSPlayerController::BeginPlay()
 	{
 		if (IsLocalController())
 		{
-			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this),
+				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: true, %s %s"), *GetNameSafe(this),
+				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 	}
 	else
 	{
 		if (IsLocalController())
 		{
-			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+			UE_LOG(LogTemp, Display, TEXT("Local Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this),
+				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this), *UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
+			UE_LOG(LogTemp, Display, TEXT("NotLocal Controller %s: Has Authority: false, %s %s"), *GetNameSafe(this),
+				*UEnum::GetValueAsString(GetLocalRole()), *UEnum::GetValueAsString(GetRemoteRole()));
 		}
 	}*/
 
@@ -67,8 +71,7 @@ void ABSPlayerController::BeginPlay()
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
-	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUniqueDynamic(this,
-		&ABSPlayerController::ABSPlayerController::OnPlayerSettingsChanged);
+	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this, &ABSPlayerController::OnPlayerSettingsChanged);
 
 	PlayerHUDActive = false;
 	PostGameMenuActive = false;
@@ -115,6 +118,10 @@ void ABSPlayerController::ShowMainMenu()
 	{
 		return;
 	}
+	
+	SetInputMode(FInputModeUIOnly());
+	SetShowMouseCursor(true);
+	
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	AMainMenuGameMode* GameMode = Cast<AMainMenuGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 
@@ -137,8 +144,15 @@ void ABSPlayerController::ShowMainMenu()
 
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitMenu);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
-	
-	if (!bIsLoggedIn) LoginUser();
+
+	if (!bIsLoggedIn)
+	{
+		LoginUser();
+	}
+	else
+	{
+		MainMenu->LoginScoresWidgetSubsequent();
+	}
 }
 
 void ABSPlayerController::HideMainMenu()
@@ -203,7 +217,7 @@ void ABSPlayerController::ShowCrossHair()
 	CrossHair = CreateWidget<UCrossHairWidget>(this, CrossHairClass);
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	GI->GetPublicCrossHairSettingsChangedDelegate().AddUniqueDynamic(CrossHair,
+	GI->GetPublicCrossHairSettingsChangedDelegate().AddUObject(CrossHair,
 		&UCrossHairWidget::OnPlayerSettingsChanged_CrossHair);
 
 	CrossHair->AddToViewport();
@@ -230,7 +244,7 @@ void ABSPlayerController::ShowPlayerHUD()
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(PlayerHUD->GetGameDelegate());
-	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(PlayerHUD, &UPlayerHUD::OnPlayerSettingsChanged_Game);
+	GI->GetPublicGameSettingsChangedDelegate().AddUObject(PlayerHUD, &UPlayerHUD::OnPlayerSettingsChanged_Game);
 
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	GameMode->UpdateScoresToHUD.AddUObject(PlayerHUD, &UPlayerHUD::UpdateAllElements);
@@ -312,7 +326,7 @@ void ABSPlayerController::ShowPostGameMenu()
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetCrossHairDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetAudioAnalyzerDelegate());
 	GI->AddDelegateToOnPlayerSettingsChanged(PostGameMenuWidget->SettingsMenuWidget->GetUserDelegate());
-
+	
 	PostGameMenuWidget->AddToViewport();
 	PostGameMenuActive = true;
 
@@ -335,13 +349,6 @@ void ABSPlayerController::OnPostScoresResponseReceived(const EPostScoresResponse
 		return;
 	}
 	PostGameMenuWidget->ScoresWidget->InitScoreBrowser(EScoreBrowserType::PostGameModeMenuScores, Response);
-	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-	{
-		if (GameMode->OnPostScoresResponse.IsBoundToObject(this))
-		{
-			GameMode->OnPostScoresResponse.RemoveAll(this);
-		}
-	}
 }
 
 void ABSPlayerController::HandlePause()
@@ -405,14 +412,15 @@ void ABSPlayerController::LoginUser()
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (!GI) return;
-	
+
 	USteamManager* SteamManager = GI->GetSteamManager();
 	if (!SteamManager) return;
 
-	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler(new FOnAuthTicketForWebApiResponseCallbackHandler());
+	TSharedPtr<FOnAuthTicketForWebApiResponseCallbackHandler> CallbackHandler(
+		new FOnAuthTicketForWebApiResponseCallbackHandler());
 
 	// First get auth ticket for web api
-	CallbackHandler->OnAuthTicketForWebApiReady.BindLambda([this, CallbackHandler] ()
+	CallbackHandler->OnAuthTicketForWebApiReady.BindLambda([this, CallbackHandler]
 	{
 		if (CallbackHandler->Result != k_EResultOK)
 		{
@@ -424,7 +432,7 @@ void ABSPlayerController::LoginUser()
 		{
 			// Get display name, user id, and refresh token from BeatShot api request
 			TSharedPtr<FSteamAuthTicketResponse> SteamAuthTicketResponse(new FSteamAuthTicketResponse());
-			SteamAuthTicketResponse->OnSteamAuthTicketResponse.BindLambda([this, SteamAuthTicketResponse] ()
+			SteamAuthTicketResponse->OnHttpResponseReceived.BindLambda([this, SteamAuthTicketResponse, CallbackHandler]
 			{
 				if (!SteamAuthTicketResponse->bConnectedSuccessfully) return;
 				const uint64 LocalSteamID = SteamUser()->GetSteamID().ConvertToUint64();
@@ -439,24 +447,23 @@ void ABSPlayerController::LoginUser()
 					SavePlayerSettings(PlayerSettings);
 					bIsLoggedIn = true;
 				}
-				else
+				
+				AsyncTask(ENamedThreads::GameThread, [this, CallbackHandler]()
 				{
-					UE_LOG(LogTemp, Warning, TEXT("LocalSteamID != ResponseSteamID"));
-				}
+					TryResetAuthTicketHandle(CallbackHandler->Handle);
+				});
 			});
 			AuthenticateSteamUser(CallbackHandler->Ticket, SteamAuthTicketResponse);
-
-			// Cancel auth ticket when done
-			FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda(
-			[this, &Handle, CallbackHandler](const bool bSuccess)
-			{
-				if (SteamUser()) SteamUser()->CancelAuthTicket(CallbackHandler->Handle);
-				Handle.Reset();
-			});
-
+			
 			// This will be OnlineAsyncTaskThreadSteam, need GameThread for TimerManager later on
 			AsyncTask(ENamedThreads::GameThread, [this, CallbackHandler]()
 			{
+				FDelegateHandle Handle = MainMenu->ScoresWidget->OnURLChangedResult.AddLambda(
+				[this, &Handle, CallbackHandler](const bool bSuccess)
+					{
+						TryResetAuthTicketHandle(CallbackHandler->Handle);
+						Handle.Reset();
+					});
 				// Login to the in-game web browser using the redirect url from the auth ticket for web api
 				MainMenu->LoginScoresWidgetWithSteam(CallbackHandler->Ticket);
 			});
@@ -699,4 +706,16 @@ void ABSPlayerController::OnPlayerSettingsChanged(const FPlayerSettings_VideoAnd
 			HideFPSCounter();
 		}
 	}
+}
+
+void ABSPlayerController::TryResetAuthTicketHandle(const uint32 Handle)
+{
+	NumAuthTicketFinishes++;
+	if (NumAuthTicketFinishes < 2) return;
+	// Cancel auth ticket after two uses (BeatShot API and MainMenuWidget)
+	if (SteamUser() && Handle)
+	{
+		SteamUser()->CancelAuthTicket(Handle);
+	}
+	NumAuthTicketFinishes = 0;
 }

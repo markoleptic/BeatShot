@@ -146,8 +146,8 @@ void ABSCharacter::BeginPlay()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
-	GI->GetPublicGameSettingsChangedDelegate().AddUniqueDynamic(this, &ABSCharacter::OnPlayerSettingsChanged_Game);
-	GI->GetPublicUserSettingsChangedDelegate().AddUniqueDynamic(this, &ABSCharacter::OnPlayerSettingsChanged_User);
+	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSCharacter::OnPlayerSettingsChanged_Game);
+	GI->GetPublicUserSettingsChangedDelegate().AddUObject(this, &ABSCharacter::OnPlayerSettingsChanged_User);
 }
 
 void ABSCharacter::Tick(float DeltaSeconds)

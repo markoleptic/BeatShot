@@ -29,8 +29,6 @@ void UFeedbackWidget::NativeConstruct()
 	Value_Title->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Title);
 	Value_Content->OnTextCommitted.AddDynamic(this, &ThisClass::OnTextCommitted_Content);
 
-	OnPostFeedbackResponseDelegate.BindUObject(this, &ThisClass::OnPostFeedbackResponse);
-
 	Button_SubmitFeedback->SetIsEnabled(false);
 	Value_Title->SetIsReadOnly(true);
 	Value_Content->SetIsReadOnly(true);
@@ -54,16 +52,49 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	{
 		const FJsonFeedback Feedback(TitlePrefix.ToString() + Value_Title->GetText().ToString(),
 			Value_Content->GetText().ToString());
-		PostFeedback(Feedback, OnPostFeedbackResponseDelegate);
+		TSharedPtr<FBSHttpResponse> Response = MakeShareable(new FBSHttpResponse);
+		Response->OnHttpResponseReceived.BindLambda([this, Response]
+		{
+			if (Response->bConnectedSuccessfully && Response->HttpStatus <= 300)
+			{
+				TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+					"FeedbackResponseSuccessTitle"));
+				TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+					"FeedbackResponseSuccessInfo"));
+				Value_Title->SetText(FText::GetEmpty());
+				Value_Content->SetText(FText::GetEmpty());
+				Button_SubmitFeedback->SetIsEnabled(false);
+			}
+			else
+			{
+				TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+					"FeedbackResponseFailureTitle"));
+				TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
+					"FeedbackResponseFailureInfo"));
+			}
+			PlayFadeInResponse();
+		});
+		PostFeedback(Feedback, Response);
 		PlayFadeOut();
 	}
 	else if (Button == Button_Okay)
 	{
-		Value_Title->SetText(FText::GetEmpty());
-		Value_Content->SetText(FText::GetEmpty());
-		Button_SubmitFeedback->SetIsEnabled(false);
-		FadeOutResponseDelegate.BindDynamic(this, &ThisClass::SetCollapsedAndUnbindDelegates);
+		if (FadeOutResponseDelegate.IsBound())
+		{
+			UnbindFromAnimationFinished(FadeOutResponse, FadeOutResponseDelegate);
+			FadeOutResponseDelegate.Unbind();
+		}
+		
+		if (Value_Title->GetText().IsEmpty() && Value_Content->GetText().IsEmpty())
+		{
+			FadeOutResponseDelegate.BindDynamic(this, &ThisClass::SetCollapsedAndUnbindDelegates);
+		}
+		else
+		{
+			FadeOutResponseDelegate.BindDynamic(this, &ThisClass::PlayFadeIn);
+		}
 		BindToAnimationFinished(FadeOutResponse, FadeOutResponseDelegate);
+		
 		PlayFadeOutResponse();
 	}
 	else if (Button == Button_Back)
@@ -72,25 +103,6 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 		BindToAnimationFinished(FadeOut, FadeOutDelegate);
 		PlayFadeOut();
 	}
-}
-
-void UFeedbackWidget::OnPostFeedbackResponse(const bool bSuccess)
-{
-	if (bSuccess)
-	{
-		TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-			"FeedbackResponseSuccessTitle"));
-		TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-			"FeedbackResponseSuccessInfo"));
-	}
-	else
-	{
-		TextBlock_FeedbackResponseTitle->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-			"FeedbackResponseFailureTitle"));
-		TextBlock_FeedbackResponseInfo->SetText(FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets",
-			"FeedbackResponseFailureInfo"));
-	}
-	PlayFadeInResponse();
 }
 
 void UFeedbackWidget::OnTextCommitted_Title(const FText& NewTitle, ETextCommit::Type CommitType)

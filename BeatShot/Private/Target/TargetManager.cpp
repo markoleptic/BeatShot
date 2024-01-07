@@ -282,8 +282,8 @@ void ATargetManager::OnAudioAnalyzerBeat()
 {
 	if (!ShouldSpawn) return;
 
-	const int32 NumSpawned = HandleRuntimeSpawning();
-	const int32 NumActivated = HandleTargetActivation();
+	HandleRuntimeSpawning();
+	HandleTargetActivation();
 	SpawnAreaManager->RefreshRecentFlags();
 	
 	#if !UE_BUILD_SHIPPING
@@ -481,8 +481,8 @@ int32 ATargetManager::HandleTargetActivation()
 {
 	if (GetManagedTargets().IsEmpty()) return 0;
 
-	// Persistant Targets are the only type that can always receive continuous activation
-	if (GetBSConfig()->TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
+	// Persistent Targets are the only type that can always receive continuous activation
+	if (GetBSConfig()->TargetConfig.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistent))
 	{
 		HandlePermanentlyActiveTargetActivation();
 		return 0;
@@ -708,7 +708,6 @@ ETargetDamageType ATargetManager::FindNextTargetDamageType()
 
 USpawnArea* ATargetManager::GetNextSpawnAreaFromRLC(const TArray<USpawnArea*>& ValidSpawnAreas, const USpawnArea* Previous) const
 {
-	// TODO: change to return index
 	TArray<int32> Indices;
 	for (const USpawnArea* SpawnArea : ValidSpawnAreas)
 	{

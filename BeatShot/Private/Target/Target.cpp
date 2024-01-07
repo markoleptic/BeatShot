@@ -469,7 +469,7 @@ bool ATarget::ActivateTarget(const float Lifespan)
 bool ATarget::ShouldDeactivate(const bool bExpired, const float CurrentHealth) const
 {
 	const bool bOutOfHealth = CurrentHealth <= 0.f;
-	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistant))
+	if (Config.TargetDeactivationConditions.Contains(ETargetDeactivationCondition::Persistent))
 	{
 		return false;
 	}
@@ -594,7 +594,7 @@ void ATarget::HandleDeactivationResponses(const bool bExpired)
 
 bool ATarget::ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const
 {
-	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant))
+	if (Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent))
 	{
 		return false;
 	}
@@ -623,7 +623,7 @@ bool ATarget::ShouldDestroy(const bool bExpired, const bool bOutOfHealth) const
 
 void ATarget::CheckForHealthReset(const bool bOutOfHealth)
 {
-	const bool bPersist = Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistant);
+	const bool bPersist = Config.TargetDestructionConditions.Contains(ETargetDestructionCondition::Persistent);
 	const bool bUnlimitedHealth = Config.MaxHealth <= 0.f;
 
 	if ((bPersist || bUnlimitedHealth) && bOutOfHealth) ResetHealth();

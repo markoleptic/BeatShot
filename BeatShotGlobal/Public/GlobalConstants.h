@@ -573,7 +573,7 @@ namespace Constants
 	/** endpoint, safe to use as standalone URL */
 	const FString Endpoint_Refresh = OriginURL + "/api/refresh";
 	/** endpoint, safe to use as standalone URL */
-	const FString Endpoint_SendFeedback = OriginURL + "/sendfeedback";
+	const FString Endpoint_SendFeedback = OriginURL + "/api/sendfeedback";
 
 	/** endpoint, safe to use as standalone URL WITH an AuthTicket appended */
 	const FString Endpoint_AuthenticateUserTicket = OriginURL + "/login/steam/authenticate/";
