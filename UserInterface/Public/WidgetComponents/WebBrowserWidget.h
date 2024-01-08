@@ -80,6 +80,8 @@ private:
 	/** The number of CheckNewURL function calls, or number of profile URL checks */
 	int32 URLCheckAttempts = 0;
 
+	const int32 MaxNumURLCheckAttempts = 10;
+
 	#pragma region SCRIPTS
 
 	/* Sets up the nativeInputValueSetter so the browser recognizes the changes */

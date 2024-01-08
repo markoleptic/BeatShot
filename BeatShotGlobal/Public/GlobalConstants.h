@@ -564,7 +564,7 @@ namespace Constants
 	#pragma region URLs
 
 	/** base url */
-	const FString OriginURL = "https://beatshot.gg";
+	const FString OriginURL = "http://localhost:3000";
 
 	/** endpoint, safe to use as standalone URL */
 	const FString Endpoint_PatchNotes = OriginURL + "/patchnotes";

@@ -259,17 +259,17 @@ void USteamManager::UpdateStat(const char* StatAPIName, T Value)
 	// Store local stats
 	if (!StoreStats()) return;
 
+	FSteamAchievement* MinNotYetAchieved = nullptr;
+	int32 MinMaxProgressLimit = INT_MAX;
+
 	// Show achievement progress
-	for (const auto& Achievement : AchievementData)
+	for (auto& Achievement : AchievementData)
 	{
 		if (!Achievement.ProgressStat || *Achievement.ProgressStat != *FoundSteamStat) continue;
 		
 		int32 MinProgressLimit = 0;
 		int32 MaxProgressLimit = 0;
 		SteamUserStats()->GetAchievementProgressLimits(Achievement.APIName, &MinProgressLimit, &MaxProgressLimit);
-
-		UE_LOG(LogSteamManager, Display, TEXT("%s %d %d"), *FString(Achievement.APIName), MinProgressLimit,
-			MaxProgressLimit);
 		
 		// Do not show progress if already achieved
 		if (NewValue >= MaxProgressLimit) continue;
@@ -282,22 +282,31 @@ void USteamManager::UpdateStat(const char* StatAPIName, T Value)
 			{
 				if (NewValue % 5 == 0)
 				{
-					SteamUserStats()->IndicateAchievementProgress(Achievement.APIName, FoundSteamStat->IntValue,
-						MaxProgressLimit);
+					if (MaxProgressLimit < MinMaxProgressLimit)
+					{
+						MinMaxProgressLimit = MaxProgressLimit;
+						MinNotYetAchieved = &Achievement;
+					}
 				}
 			}
 		}
-		
-		switch (FoundSteamStat->StatType)
-		{
-		case Stat_Int: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %d New Value: %d"),
-				*FString(FoundSteamStat->APIName), FoundSteamStat->IntValue - Value, FoundSteamStat->IntValue);
-			break;
-		case Stat_Float:
-		case Stat_AvgRate: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %.2f New Value: %.2f"),
-				*FString(FoundSteamStat->APIName), FoundSteamStat->FloatValue - Value, FoundSteamStat->FloatValue);
-			break;
-		}
+	}
+	
+	if (MinNotYetAchieved)
+	{
+		SteamUserStats()->IndicateAchievementProgress(MinNotYetAchieved->APIName, FoundSteamStat->IntValue,
+			MinMaxProgressLimit);
+	}
+	
+	switch (FoundSteamStat->StatType)
+	{
+	case Stat_Int: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %d New Value: %d"),
+			*FString(FoundSteamStat->APIName), FoundSteamStat->IntValue - Value, FoundSteamStat->IntValue);
+		break;
+	case Stat_Float:
+	case Stat_AvgRate: UE_LOG(LogSteamManager, Warning, TEXT("Updated Stat %s Old Value: %.2f New Value: %.2f"),
+			*FString(FoundSteamStat->APIName), FoundSteamStat->FloatValue - Value, FoundSteamStat->FloatValue);
+		break;
 	}
 }
 

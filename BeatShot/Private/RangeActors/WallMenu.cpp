@@ -287,8 +287,11 @@ void AWallMenu::OnGameplayEffectAppliedToSelf(UAbilitySystemComponent* ABS, cons
 			FPlayerSettings_Game PlayerSettings_Game = LoadPlayerSettings().Game;
 			if (Found->SettingType == "bNightModeSelected" && LoadPlayerSettings().User.bNightModeUnlocked)
 			{
-				bRequiresSave = (PlayerSettings_Game.bNightModeSelected != Found->bIsOnText) || bRequiresSave;
-				PlayerSettings_Game.bNightModeSelected = Found->bIsOnText;
+				if (!bIsWaitingOnTimeOfDayTransition)
+				{
+					bRequiresSave = (PlayerSettings_Game.bNightModeSelected != Found->bIsOnText) || bRequiresSave;
+					PlayerSettings_Game.bNightModeSelected = Found->bIsOnText;
+				}
 			}
 			else if (Found->SettingType == "bShowLightVisualizers")
 			{

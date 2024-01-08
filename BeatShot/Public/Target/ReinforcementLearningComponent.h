@@ -201,7 +201,7 @@ public:
 	void ClearCachedTargetPairs();
 
 	/** Returns the SpawnCounter index of the next target to spawn, based on the Epsilon value */
-	int32 ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices, const int32 PreviousSpawnAreaIndex) const;
+	int32 ChooseNextActionIndex(const int32 PreviousSpawnAreaIndex, const TArray<int32>& SpawnAreaIndices) const;
 
 private:
 	/** Returns a random SpawnArea index from the provided SpawnAreaIndices */
@@ -210,7 +210,7 @@ private:
 	/** Returns the SpawnArea index that leads to the greatest reward. Calls GetIndices_MaximizeFirst or
 	 *  GetIndices_MaximizeSecond depending on the input previous index and iterates through the indices
 	 *  until it finds a corresponding SpawnArea index from the input array. */
-	int32 ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices, const int32 PreviousSpawnAreaIndex) const;
+	int32 ChooseBestActionIndex(const int32 PreviousSpawnAreaIndex, const TArray<int32>& SpawnAreaIndices) const;
 
 	/** Updates the QTable from the QTableUpdateParams */
 	virtual void UpdateQTable(FQTableUpdateParams& UpdateParams);

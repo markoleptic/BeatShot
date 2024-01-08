@@ -150,8 +150,8 @@ void UReinforcementLearningComponent::ClearCachedTargetPairs()
 	}
 }
 
-int32 UReinforcementLearningComponent::ChooseNextActionIndex(const TArray<int32>& SpawnAreaIndices,
-	const int32 PreviousSpawnAreaIndex) const
+int32 UReinforcementLearningComponent::ChooseNextActionIndex(const int32 PreviousSpawnAreaIndex,
+	const TArray<int32>& SpawnAreaIndices) const
 {
 	// Only Exploration and ActiveAgent Reinforcement Learning Modes should choose spawn locations
 	if (SpawnAreaIndices.IsEmpty() || ReinforcementLearningMode == EReinforcementLearningMode::None ||
@@ -162,7 +162,7 @@ int32 UReinforcementLearningComponent::ChooseNextActionIndex(const TArray<int32>
 
 	if (FMath::FRandRange(0, 1.f) > Epsilon)
 	{
-		const int32 BestActionIndex = ChooseBestActionIndex(SpawnAreaIndices, PreviousSpawnAreaIndex);
+		const int32 BestActionIndex = ChooseBestActionIndex(PreviousSpawnAreaIndex, SpawnAreaIndices);
 		if (BestActionIndex == INDEX_NONE)
 		{
 			UE_LOG(LogTargetManager, Display,
@@ -179,8 +179,8 @@ int32 UReinforcementLearningComponent::ChooseRandomActionIndex(const TArray<int3
 	return SpawnAreaIndices[FMath::RandRange(0, SpawnAreaIndices.Num() - 1)];
 }
 
-int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>& SpawnAreaIndices,
-	const int32 PreviousSpawnAreaIndex) const
+int32 UReinforcementLearningComponent::ChooseBestActionIndex(const int32 PreviousSpawnAreaIndex,
+	const TArray<int32>& SpawnAreaIndices) const
 {
 	int32 ReturnIndex = INDEX_NONE;
 	int32 NumFiltersRequired = 0;
@@ -218,12 +218,15 @@ int32 UReinforcementLearningComponent::ChooseBestActionIndex(const TArray<int32>
 		}
 	}
 
+	#if !UE_BUILD_SHIPPING
 	if (bPrintDebug_ChooseBestActionIndex)
 	{
 		UE_LOG(LogTargetManager, Display, TEXT("ChooseBestActionIdx: Num Filters Required: %d"), NumFiltersRequired);
 		UE_LOG(LogTargetManager, Display, TEXT("ChooseBestActionIdx: Num Choices: %d"), NumCurrentIndexChoices);
 		UE_LOG(LogTargetManager, Display, TEXT("ChooseBestActionIdx: ChosenIdx: %d"), ReturnIndex);
 	}
+	#endif
+	
 	return ReturnIndex;
 }
 
@@ -256,6 +259,7 @@ void UReinforcementLearningComponent::UpdateQTable(FQTableUpdateParams& UpdatePa
 	TrainingSamples(UpdateParams.StateIndex, UpdateParams.ActionIndex) += 1;
 	TotalTrainingSamples += 1;
 
+	#if !UE_BUILD_SHIPPING
 	if (bPrintDebug_QTableUpdate)
 	{
 		UE_LOG(LogTargetManager, Display,
@@ -263,6 +267,7 @@ void UReinforcementLearningComponent::UpdateQTable(FQTableUpdateParams& UpdatePa
 			UpdateParams.TargetPair.First, UpdateParams.TargetPair.Second, UpdateParams.StateIndex,
 			UpdateParams.ActionIndex, OldValue, NewValue);
 	}
+	#endif
 
 	UpdateQTableWidget();
 }
@@ -375,7 +380,8 @@ int32 UReinforcementLearningComponent::GetIndex_FromSpawnArea_ToQTable(const int
 	//const int32 QTableCol = SpawnAreaColNum / WidthScaleFactor /*% ScaledWidth*/;
 	//const int32 QTableIndex = QTableRow * ScaledHeight + QTableCol;
 
-	//UE_LOG(LogTargetManager, Display, TEXT(" %d|   %d %d  %d %d   |%d"), SpawnAreaIndex, SpawnAreaRowNum, SpawnAreaColNum, QTableRow, QTableCol, QTableIndex);
+	//UE_LOG(LogTargetManager, Display, TEXT(" %d|   %d %d  %d %d   |%d"),
+	//SpawnAreaIndex, SpawnAreaRowNum, SpawnAreaColNum, QTableRow, QTableCol, QTableIndex);
 
 	//return QTableIndex;
 }

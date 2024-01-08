@@ -606,6 +606,7 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommo
 	if (PostScoresResponse == EPostScoresResponse::HttpSuccess)
 	{
 		// Update Steam Stat for Game Mode
+		#if UE_BUILD_SHIPPING
 		if (TimePlayedGameMode > MinStatRequirement_Duration_NumGamesPlayed)
 		{
 			if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
@@ -617,6 +618,17 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommo
 				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
 			}
 		}
+		#endif
+		#if UE_BUILD_DEVELOPMENT
+		if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+		{
+			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
+		}
+		else
+		{
+			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
+		}
+		#endif
 		// Save common score info and completed scores locally
 		SaveCommonScoreInfo(BSConfig.DefiningConfig, InCommonScoreInfo);
 		SavePlayerScoreInstance(GetCompletedPlayerScores());
