@@ -1,6 +1,8 @@
 ﻿// Copyright 2022-2023 Markoleptic Games, SP. All Rights Reserved.
 
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "Player/BSCheatManager.h"
 #include "AbilitySystemComponent.h"
 #include "Character/BSCharacter.h"
@@ -25,9 +27,9 @@ namespace BeatShotConsoleVariables
 		TEXT("Clears all visual and print debug options."));
 	
 
-	static TAutoConsoleVariable CVarPrintDebug_NumRecentNumActive(TEXT("bs_printdebug.numrecentnumactive"),
+	static TAutoConsoleVariable CVarPrintDebug_SpawnAreaStateInfo(TEXT("bs_printdebug.spawnareastateinfo"),
 		0,
-		TEXT("Toggles printing the number of currently activated and recent targets."));
+		TEXT("Toggles printing the number managed, activated, and recent Spawn Areas."));
 
 
 	static TAutoConsoleVariable CVarPrintDebug_ChooseBestActionIndex(TEXT("bs_printdebug.choosebestidx"),
@@ -82,49 +84,37 @@ namespace BeatShotConsoleVariables
 		TEXT("Toggles showing Cyan debug boxes for all Spawn Areas."));
 
 
-	static TAutoConsoleVariable CVarShowDebug_ValidSpawnAreas(TEXT("bs_showdebug.validspawnareas"),
+	static TAutoConsoleVariable CVarShowDebug_RemovedFromExtremaChange(TEXT("bs_showdebug.removedfromextrema"),
 		0,
-		TEXT("Toggles showing Green debug boxes for valid Spawn Areas."));
+		TEXT("Toggles showing Red debug boxes for removed Spawn Areas due to Extrema changes."));
 
-
-	static TAutoConsoleVariable CVarShowDebug_RemovedSpawnAreas(TEXT("bs_showdebug.removedspawnareas"),
+	
+	static TAutoConsoleVariable CVarShowDebug_SpawnableSpawnAreas(TEXT("bs_showdebug.spawnable"),
 		0,
-		TEXT("Toggles showing Red debug boxes for removed Spawn Areas."));
+		TEXT("Toggles showing green debug boxes for valid spawn locations at the beginning of GetValidSpawnAreas."));
 
-
-	static TAutoConsoleVariable CVarShowDebug_FilteredRecent(TEXT("bs_showdebug.filteredrecent"),
+	
+	static TAutoConsoleVariable CVarShowDebug_ActivatableSpawnAreas(TEXT("bs_showdebug.activatable"),
 		0,
-		TEXT("Toggles showing Turquoise debug boxes for filtered recent Spawn Areas."));
+		TEXT("Toggles showing green debug boxes for valid spawn areas, turquoise for recent, cyan for activated, and blue for managed locations. "));
 
-
-	static TAutoConsoleVariable CVarShowDebug_FilteredActivated(TEXT("bs_showdebug.filteredactivated"),
-		0,
-		TEXT("Toggles showing Cyan debug boxes for filtered activated Spawn Areas."));
-
-
-	static TAutoConsoleVariable CVarShowDebug_FilteredManaged(TEXT("bs_showdebug.filtermanaged"),
-		0,
-		TEXT("Toggles showing Blue debug boxes for filtered managed Spawn Areas."));
-
-
+	
 	static TAutoConsoleVariable CVarShowDebug_FilteredBordering(TEXT("bs_showdebug.filterbordering"),
 	0,
 	TEXT("Toggles showing Yellow debug boxes for filtered bordering Spawn Areas."));
 	
 	
-	static TAutoConsoleVariable CVarShowDebug_OverlappingVertices_Dynamic(TEXT("bs_showdebug.overlappingverts_dynamic"),
+	static TAutoConsoleVariable CVarShowDebug_AllVertices(TEXT("bs_showdebug.allverts"),
 		0,
 		TEXT("Shows the overlapping vertices generated during RemoveOverlappingSpawnLocations function.\n"
 			"Draws a Magenta Debug Sphere showing the target that was used to generate the overlapping points.\n"
 			"Draws Red Debug Boxes for the removed overlapping vertices."));
 
 
-	static TAutoConsoleVariable CVarShowDebug_OverlappingVertices_OnFlaggedManaged(
-		TEXT("bs_showdebug.overlappingverts_onmanaged"),
+	static TAutoConsoleVariable CVarShowDebug_Vertices(
+		TEXT("bs_showdebug.verts"),
 		0,
-		TEXT("Shows the overlapping vertices generated when Spawn Area was flagged as Managed.\n"
-			"Draws a Magenta Debug Sphere showing the target that was used to generate the overlapping points.\n"
-			"Draws Red Debug Boxes for the removed overlapping vertices.\n" "Draws Green Debug Boxes for valid."));
+		TEXT("Shows the overlapping vertices generated when Spawn Area was flagged as Managed or Activated.\n Draws a Magenta Debug Sphere showing the target that was used to generate the overlapping points.\n Draws Red Debug Boxes for the removed overlapping vertices.\n" "Draws Green Debug Boxes for valid."));
 
 
 	static TAutoConsoleVariable CVarShowDebug_FrontSpotLight(TEXT("bs_showdebug.frontspotlight"),
@@ -149,10 +139,10 @@ void UBSCheatManager::InitCheatManager()
 	CVarClearDebugDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ClearDebug);
 	BeatShotConsoleVariables::CVarClearDebug.AsVariable()->SetOnChangedCallback(CVarClearDebugDelegate);
 
-	FConsoleVariableDelegate NumRecentNumActiveDelegate;
-	NumRecentNumActiveDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_NumRecentNumActive);
-	BeatShotConsoleVariables::CVarPrintDebug_NumRecentNumActive.AsVariable()->SetOnChangedCallback(
-		NumRecentNumActiveDelegate);
+	FConsoleVariableDelegate SpawnAreaStateInfoDelegate;
+	SpawnAreaStateInfoDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_SpawnAreaStateInfo);
+	BeatShotConsoleVariables::CVarPrintDebug_SpawnAreaStateInfo.AsVariable()->SetOnChangedCallback(
+		SpawnAreaStateInfoDelegate);
 
 	FConsoleVariableDelegate ChooseBestActionIndexDelegate;
 	ChooseBestActionIndexDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_ChooseBestActionIndex);
@@ -189,43 +179,30 @@ void UBSCheatManager::InitCheatManager()
 	AllSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_AllSpawnAreas);
 	BeatShotConsoleVariables::CVarShowDebug_AllSpawnAreas.AsVariable()->SetOnChangedCallback(AllSpawnAreasDelegate);
 
-	FConsoleVariableDelegate ValidSpawnAreasDelegate;
-	ValidSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_ValidSpawnAreas);
-	BeatShotConsoleVariables::CVarShowDebug_ValidSpawnAreas.AsVariable()->SetOnChangedCallback(ValidSpawnAreasDelegate);
+	FConsoleVariableDelegate SpawnableSpawnAreasDelegate;
+	SpawnableSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_SpawnableSpawnAreas);
+	BeatShotConsoleVariables::CVarShowDebug_SpawnableSpawnAreas.AsVariable()->SetOnChangedCallback(SpawnableSpawnAreasDelegate);
 
-	FConsoleVariableDelegate RemovedSpawnAreasDelegate;
-	RemovedSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_RemovedSpawnAreas);
-	BeatShotConsoleVariables::CVarShowDebug_RemovedSpawnAreas.AsVariable()->SetOnChangedCallback(
-		RemovedSpawnAreasDelegate);
+	FConsoleVariableDelegate ActivatableSpawnAreasDelegate;
+	ActivatableSpawnAreasDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_ActivatableSpawnAreas);
+	BeatShotConsoleVariables::CVarShowDebug_ActivatableSpawnAreas.AsVariable()->SetOnChangedCallback(ActivatableSpawnAreasDelegate);
 
-	FConsoleVariableDelegate FilteredRecentDelegate;
-	FilteredRecentDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredRecent);
-	BeatShotConsoleVariables::CVarShowDebug_FilteredRecent.AsVariable()->SetOnChangedCallback(FilteredRecentDelegate);
-
-	FConsoleVariableDelegate FilteredActivatedDelegate;
-	FilteredActivatedDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredActivated);
-	BeatShotConsoleVariables::CVarShowDebug_FilteredActivated.AsVariable()->SetOnChangedCallback(
-		FilteredActivatedDelegate);
-
-	FConsoleVariableDelegate FilteredManagedDelegate;
-	FilteredManagedDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredManaged);
-	BeatShotConsoleVariables::CVarShowDebug_FilteredManaged.AsVariable()->SetOnChangedCallback(FilteredManagedDelegate);
+	FConsoleVariableDelegate ExtremaChangeDelegate;
+	ExtremaChangeDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_RemovedFromExtremaChange);
+	BeatShotConsoleVariables::CVarShowDebug_RemovedFromExtremaChange.AsVariable()->SetOnChangedCallback(
+		ExtremaChangeDelegate);
 
 	FConsoleVariableDelegate FilteredBorderingDelegate;
 	FilteredBorderingDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering);
 	BeatShotConsoleVariables::CVarShowDebug_FilteredBordering.AsVariable()->SetOnChangedCallback(FilteredBorderingDelegate);
 
-	FConsoleVariableDelegate OverlappingVertices_DynamicDelegate;
-	OverlappingVertices_DynamicDelegate.BindUObject(this,
-		&UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic);
-	BeatShotConsoleVariables::CVarShowDebug_OverlappingVertices_Dynamic.AsVariable()->SetOnChangedCallback(
-		OverlappingVertices_DynamicDelegate);
+	FConsoleVariableDelegate AllVerticesDelegate;
+	AllVerticesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_Vertices_Dynamic);
+	BeatShotConsoleVariables::CVarShowDebug_AllVertices.AsVariable()->SetOnChangedCallback(AllVerticesDelegate);
 
-	FConsoleVariableDelegate OverlappingVertices_OnFlaggedManagedDelegate;
-	OverlappingVertices_OnFlaggedManagedDelegate.BindUObject(this,
-		&UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged);
-	BeatShotConsoleVariables::CVarShowDebug_OverlappingVertices_OnFlaggedManaged.AsVariable()->SetOnChangedCallback(
-		OverlappingVertices_OnFlaggedManagedDelegate);
+	FConsoleVariableDelegate VerticesDelegate;
+	VerticesDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_Vertices);
+	BeatShotConsoleVariables::CVarShowDebug_Vertices.AsVariable()->SetOnChangedCallback(VerticesDelegate);
 
 	FConsoleVariableDelegate TargetManagerDelegate;
 	TargetManagerDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_ShowDebug_TargetManager);
@@ -303,7 +280,7 @@ void UBSCheatManager::CVarOnChanged_Cheat_AimBot(IConsoleVariable* Variable)
 void UBSCheatManager::CVarOnChanged_ClearDebug(IConsoleVariable* Variable)
 {
 	Variable->Set(false, ECVF_SetByCode);
-	CVarOnChanged_PrintDebug_NumRecentNumActive(Variable);
+	CVarOnChanged_PrintDebug_SpawnAreaStateInfo(Variable);
 	CVarOnChanged_PrintDebug_ChooseBestActionIndex(Variable);
 	CVarOnChanged_PrintDebug_GetMaxIndex(Variable);
 	CVarOnChanged_PrintDebug_QTableUpdate(Variable);
@@ -311,24 +288,24 @@ void UBSCheatManager::CVarOnChanged_ClearDebug(IConsoleVariable* Variable)
 	CVarOnChanged_ShowDebug_SpawnBox(Variable);
 	CVarOnChanged_ShowDebug_DirectionalBoxes(Variable);
 	CVarOnChanged_ShowDebug_AllSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_ValidSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_RemovedSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_FilteredRecent(Variable);
-	CVarOnChanged_ShowDebug_FilteredActivated(Variable);
-	CVarOnChanged_ShowDebug_FilteredManaged(Variable);
-	CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(Variable);
-	CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(Variable);
+	CVarOnChanged_ShowDebug_RemovedFromExtremaChange(Variable);
+	CVarOnChanged_ShowDebug_SpawnableSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_ActivatableSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_FilteredBordering(Variable);
+	CVarOnChanged_ShowDebug_Vertices(Variable);
+	CVarOnChanged_ShowDebug_Vertices_Dynamic(Variable);
 }
 
-void UBSCheatManager::CVarOnChanged_PrintDebug_NumRecentNumActive(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_PrintDebug_SpawnAreaStateInfo(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
 
-	ATargetManager* TargetManager = GameMode->GetTargetManager();
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager) return;
-
-	TargetManager->bPrintDebug_NumRecentNumActive = Variable->GetBool();
+	if (!TargetManager->SpawnAreaManager) return;
+	
+	TargetManager->SpawnAreaManager->bPrintDebug_SpawnAreaStateInfo = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVariable* Variable)
@@ -378,8 +355,8 @@ void UBSCheatManager::CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Va
 void UBSCheatManager::CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable)
 {
 	CVarOnChanged_ShowDebug_SpawnBox(Variable);
-	CVarOnChanged_ShowDebug_ValidSpawnAreas(Variable);
-	CVarOnChanged_ShowDebug_RemovedSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_ActivatableSpawnAreas(Variable);
+	CVarOnChanged_ShowDebug_RemovedFromExtremaChange(Variable);
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_ReinforcementLearningWidget(IConsoleVariable* Variable)
@@ -551,7 +528,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_AllSpawnAreas(IConsoleVariable* Va
 	}
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_ValidSpawnAreas(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_ShowDebug_RemovedFromExtremaChange(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -559,10 +536,10 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_ValidSpawnAreas(IConsoleVariable* 
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bDebug_Valid = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_RemovedFromExtremaChange = Variable->GetBool();
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_RemovedSpawnAreas(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_ShowDebug_SpawnableSpawnAreas(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -570,10 +547,10 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_RemovedSpawnAreas(IConsoleVariable
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bDebug_Removed = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_SpawnableSpawnAreas = Variable->GetBool();
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredRecent(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_ShowDebug_ActivatableSpawnAreas(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -581,29 +558,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredRecent(IConsoleVariable* V
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bDebug_FilterRecent = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredActivated(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_FilterActivated = Variable->GetBool();
-}
-
-void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredManaged(IConsoleVariable* Variable)
-{
-	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-	if (!GameMode) return;
-
-	const ATargetManager* TargetManager = GameMode->GetTargetManager();
-	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
-
-	TargetManager->SpawnAreaManager->bDebug_FilterManaged = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_ActivatableSpawnAreas = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering(IConsoleVariable* Variable)
@@ -617,7 +572,7 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_FilteredBordering(IConsoleVariable
 	TargetManager->SpawnAreaManager->bDebug_FilterBordering = Variable->GetBool();
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManaged(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_ShowDebug_Vertices(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;
@@ -625,10 +580,10 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_OnFlaggedManag
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->SpawnAreaManager) return;
 
-	TargetManager->SpawnAreaManager->bDebug_ManagedVertices = Variable->GetBool();
+	TargetManager->SpawnAreaManager->bDebug_Vertices = Variable->GetBool();
 }
 
-void UBSCheatManager::CVarOnChanged_ShowDebug_OverlappingVertices_Dynamic(IConsoleVariable* Variable)
+void UBSCheatManager::CVarOnChanged_ShowDebug_Vertices_Dynamic(IConsoleVariable* Variable)
 {
 	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	if (!GameMode) return;

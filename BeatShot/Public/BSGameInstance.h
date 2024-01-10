@@ -6,13 +6,12 @@
 #include "HttpRequestInterface.h"
 #include "SaveLoadInterface.h"
 #include "Engine/GameInstance.h"
+#include "Styles/LoadingScreenStyle.h"
 #include "BSGameInstance.generated.h"
 
+class SLoadingScreenWidget;
 class ATimeOfDayManager;
-class AGameModeBase;
 class USteamManager;
-class ATarget;
-class ABSPlayerController;
 
 /** Base GameInstance for this game */
 UCLASS()
@@ -22,6 +21,11 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 
 	virtual void Init() override;
 
+	void OnPreLoadMap(const FString& MapName);
+	void OnPostLoadMapWithWorld(UWorld* World);
+	void OnLoadingScreenFadeOutComplete();
+	void SetupLoadingScreen();
+	
 	virtual void OnStart() override;
 
 	void InitVideoSettings();
@@ -123,15 +127,37 @@ protected:
 	/** The defining game mode options that are populated from a menu widget, and accessed by the GameMode */
 	UPROPERTY(EditDefaultsOnly)
 	FBSConfig BSConfig;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
 	USoundClass* GlobalSound;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
 	USoundClass* MenuSound;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Sound")
 	USoundMix* GlobalSoundMix;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
+	USlateWidgetStyleAsset* SlateWidgetStyleAsset;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
+	UTexture2D* Texture;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Loading Screen")
+	UMaterialInterface* Material;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Loading Screen", meta = (AllowedClasses = "/Script/Engine.Texture2D"))
+	TArray<FSoftObjectPath> Images;
 
 	/** Whether or not the Steam Overlay is active */
 	bool IsSteamOverlayActive = false;
-
+	
+	/** Whether or not to postpone QuitGame until after a save game Http response */
 	bool bQuitToDesktopAfterSave = false;
+	
+	/** Loading screen slate style */
+	FLoadingScreenStyle LoadingScreenStyle;
+
+	/** Shared pointer to loading screen slate widget */
+	TSharedPtr<SLoadingScreenWidget> LoadingScreenWidget;
 };

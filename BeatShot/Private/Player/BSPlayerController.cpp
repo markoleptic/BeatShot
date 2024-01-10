@@ -60,9 +60,9 @@ void ABSPlayerController::BeginPlay()
 		}
 	}*/
 
-	LoadingScreenWidgetFadeOutTime = 0.0f;
-	GConfig->GetFloat(TEXT("/Script/CommonLoadingScreen.CommonLoadingScreenSettings"),
-		TEXT("LoadingScreenWidgetFadeOutTime"), LoadingScreenWidgetFadeOutTime, GGameIni);
+	LoadingScreenWidgetFadeOutTime = 0.5f;
+	//GConfig->GetFloat(TEXT("/Script/CommonLoadingScreen.CommonLoadingScreenSettings"),
+	//	TEXT("LoadingScreenWidgetFadeOutTime"), LoadingScreenWidgetFadeOutTime, GGameIni);
 
 	if (LoadPlayerSettings().VideoAndSound.bShowFPSCounter)
 	{
@@ -497,7 +497,7 @@ void ABSPlayerController::PostProcessInput(const float DeltaTime, const bool bGa
 	GetBSAbilitySystemComponent()->ProcessAbilityInput(DeltaTime, IsPaused());
 }
 
-void ABSPlayerController::BindToLoadingScreenDelegates(
+/*void ABSPlayerController::BindToLoadingScreenDelegates(
 	FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
 	FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
 {
@@ -505,7 +505,7 @@ void ABSPlayerController::BindToLoadingScreenDelegates(
 	{
 		OnLoadingScreenVisibilityChanged.AddUObject(this, &ABSPlayerController::OnLoadingScreenVisibilityChanged);
 	}
-}
+}*/
 
 void ABSPlayerController::OnLoadingScreenVisibilityChanged(bool bIsVisible)
 {

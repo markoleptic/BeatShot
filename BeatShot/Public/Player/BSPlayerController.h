@@ -6,7 +6,7 @@
 #include "CoreMinimal.h"
 #include "BSGameInstance.h"
 #include "HttpRequestInterface.h"
-#include "LoadingProcessInterface.h"
+/*#include "LoadingProcessInterface.h"*/
 #include "SaveLoadInterface.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
@@ -32,7 +32,7 @@ DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
  *  to the viewport (MainMenu, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
 class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface,
-                                         public IHttpRequestInterface, public ILoadingProcessInterface
+                                         public IHttpRequestInterface/*, public ILoadingProcessInterface*/
 {
 	GENERATED_BODY()
 
@@ -114,9 +114,9 @@ public:
 	void InitiateSteamLogin();
 
 	/** ~ILoadingProcessInterface begin */
-	virtual void BindToLoadingScreenDelegates(
+	/*virtual void BindToLoadingScreenDelegates(
 		FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
-		FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
+		FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;*/
 	/** ~ILoadingProcessInterface end */
 
 protected:

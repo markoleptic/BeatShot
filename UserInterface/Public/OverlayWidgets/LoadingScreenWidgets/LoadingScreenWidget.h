@@ -3,37 +3,48 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "LoadingProcessInterface.h"
 #include "Blueprint/UserWidget.h"
 #include "LoadingScreenWidget.generated.h"
 
-class ULoadingProcessTask;
+class UImage;
+
+DECLARE_DELEGATE(FOnLoadingScreenFadeOutComplete);
 
 UCLASS(BlueprintType)
-class USERINTERFACE_API ULoadingScreenWidget : public UUserWidget, public ILoadingProcessInterface
+class USERINTERFACE_API ULoadingScreenWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
 public:
-	/** ~ILoadingProcessInterface begin */
-	virtual bool ShouldShowLoadingScreen(FString& OutReason) const override;
-	virtual void BindToLoadingScreenDelegates(
-		FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
-		FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;
-	/** ~ILoadingProcessInterface end */
-
-protected:
-	virtual void NativeConstruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	UFUNCTION()
+	void FadeIn(const float LoadingScreenWidgetFadeOutTime);
 
 	UFUNCTION()
 	void FadeOut(const float LoadingScreenWidgetFadeOutTime);
 
+	FOnLoadingScreenFadeOutComplete OnLoadingScreenFadeOutComplete;
+
+protected:
+	virtual void NativeConstruct() override;
+	
+	UFUNCTION()
+	void OnFadeOutFinishedCallback();
+	
+	UFUNCTION()
+	void OnFadeInFinishedCallback();
+
+	UPROPERTY(EditDefaultsOnly, meta = (BindWidget))
+	UImage* Icon;
+
+	FWidgetAnimationDynamicEvent OnFadeOutFinished;
+	FWidgetAnimationDynamicEvent OnFadeInFinished;
+	
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeOutAnim;
 	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
 	UWidgetAnimation* FadeInAnim;
+	UPROPERTY(EditDefaultsOnly, Transient, meta = (BindWidgetAnim))
+	UWidgetAnimation* SpinLoop;
 
-	const FString Reason = "LoadScreenAnimation";
-	bool bShowLoadingScreen = false;
+	float LoadingScreenTime = 0.75f;
 };

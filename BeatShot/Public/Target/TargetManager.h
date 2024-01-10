@@ -274,9 +274,6 @@ public:
 	/** Saves the QTable inside InCommonScoreInfo */
 	void SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const;
 
-	/** Prints the number of activated, recent, and managed targets to log */
-	void PrintDebug_NumRecentNumActive() const;
-
 protected:
 	/** Initialized at start of game mode by DefaultGameMode */
 	FBSConfig BSConfigLocal;
@@ -287,15 +284,6 @@ protected:
 
 	/** Whether or not the TargetManager is allowed to spawn a target at a given time */
 	bool ShouldSpawn;
-
-	/** Whether or not to print NumRecent NumActive */
-	bool bPrintDebug_NumRecentNumActive;
-
-	/** Whether or not to print information about each activated Spawn Area */
-	bool bPrintDebug_SpawnAreaInfo;
-
-	/** Whether or not to print information about Spawn Areas spawning targets too close together */
-	bool bPrintDebug_SpawnAreaDistance;
 
 	/** The type of damage that the last target was vulnerable to */
 	ETargetDamageType LastTargetDamageType;

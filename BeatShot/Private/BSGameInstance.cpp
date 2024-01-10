@@ -7,12 +7,80 @@
 #include "System/SteamManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "DLSSFunctions.h"
+#include "MoviePlayer.h"
+#include "SlateMaterialBrush.h"
+#include "Blueprint/UserWidget.h"
 #include "GameFramework/GameUserSettings.h"
+#include "OverlayWidgets/LoadingScreenWidgets/SLoadingScreenWidget.h"
 
 void UBSGameInstance::Init()
 {
 	Super::Init();
+	GetMoviePlayer()->OnPrepareLoadingScreen().AddUObject(this, &ThisClass::SetupLoadingScreen);
+	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &ThisClass::OnPreLoadMap);
+	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &ThisClass::OnPostLoadMapWithWorld);
 	InitializeSteamManager();
+}
+
+void UBSGameInstance::OnPreLoadMap(const FString& MapName)
+{
+	//if (IsRunningDedicatedServer()) return;
+}
+
+void UBSGameInstance::OnPostLoadMapWithWorld(UWorld* World)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnPostLoadMapWithWorld"));
+	if (LoadingScreenWidget)
+	{
+		LoadingScreenWidget->FadeToBlack();
+	}
+}
+
+void UBSGameInstance::OnLoadingScreenFadeOutComplete()
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnLoadingScreenFadeOutComplete"));
+	GetMoviePlayer()->StopMovie();
+	if (LoadingScreenWidget.IsValid())
+	{
+		LoadingScreenWidget.Reset();
+	}
+	ABSPlayerController* PC = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (PC)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PC Valid - calling FadeScreenFromBlack"));
+		PC->FadeScreenFromBlack();
+	}
+}
+
+void UBSGameInstance::SetupLoadingScreen()
+{
+	FLoadingScreenAttributes Attributes;
+	Attributes.bAutoCompleteWhenLoadingCompletes = false;
+	Attributes.bAllowEngineTick = true;
+	//Attributes.bMoviesAreSkippable = false;
+	Attributes.bWaitForManualStop = true;
+	Attributes.MinimumLoadingScreenDisplayTime = 2.f;
+	//Attributes.WidgetLoadingScreen = LoadingScreenWidget;
+
+	// Hopefully temporary
+	FSlateBrush Brush1;
+	Brush1.SetResourceObject(Texture);
+	Brush1.ImageSize = FVector2D(3840, 2160);
+
+	// Hopefully temporary
+	FSlateMaterialBrush Brush2(*Material, FVector2D(360, 360));
+	Brush2.SetResourceObject(Material);
+	Brush2.ImageSize = FVector2D(360, 360);
+
+	LoadingScreenStyle = FAppStyle::Get().GetWidgetStyle<FLoadingScreenStyle>("LoadingScreen");
+	LoadingScreenStyle.SetBackgroundImage(Brush1).SetLogoImage(Brush2);
+
+	SAssignNew(LoadingScreenWidget, SLoadingScreenWidget)
+		.LoadingScreenStyle(&LoadingScreenStyle)
+		.OnLoadingScreenExitAnimComplete(BIND_UOBJECT_DELEGATE(FOnLoadingScreenExitAnimComplete, OnLoadingScreenFadeOutComplete));
+
+	Attributes.WidgetLoadingScreen = LoadingScreenWidget;
+	GetMoviePlayer()->SetupLoadingScreen(Attributes);
 }
 
 void UBSGameInstance::OnStart()
@@ -54,7 +122,7 @@ void UBSGameInstance::StartGameMode(const bool bIsRestart) const
 	{
 		PlayerController->HandlePause();
 	}
-
+	
 	/** Hide all widgets and show the countdown after the screen fades to black */
 	PlayerController->OnScreenFadeToBlackFinish.BindLambda([this, bIsRestart]
 	{

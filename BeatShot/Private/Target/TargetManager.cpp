@@ -46,9 +46,6 @@ ATargetManager::ATargetManager()
 	BSConfig = nullptr;
 	PlayerSettings = FPlayerSettings_Game();
 	ShouldSpawn = false;
-	bPrintDebug_NumRecentNumActive = false;
-	bPrintDebug_SpawnAreaInfo = false;
-	bPrintDebug_SpawnAreaDistance = false;
 	LastTargetDamageType = ETargetDamageType::Tracking;
 	CurrentTargetScale = FVector(1.f);
 	StaticExtrema = FExtrema();
@@ -285,13 +282,6 @@ void ATargetManager::OnAudioAnalyzerBeat()
 	HandleRuntimeSpawning();
 	HandleTargetActivation();
 	SpawnAreaManager->RefreshRecentFlags();
-	
-	#if !UE_BUILD_SHIPPING
-	if (bPrintDebug_NumRecentNumActive)
-	{
-		PrintDebug_NumRecentNumActive();
-	}
-	#endif
 }
 
 ATarget* ATargetManager::SpawnTarget(USpawnArea* InSpawnArea)
@@ -472,10 +462,6 @@ int32 ATargetManager::HandleRuntimeSpawning()
 	{
 		if (SpawnArea && SpawnTarget(SpawnArea)) NumSpawned++;
 	}
-	if (bPrintDebug_NumRecentNumActive)
-	{
-		if (NumberToSpawn > 0) UE_LOG(LogTargetManager, Display, TEXT("Spawned %d/%d targets."), NumSpawned, NumberToSpawn);
-	}
 	return NumSpawned;
 }
 
@@ -518,11 +504,6 @@ int32 ATargetManager::HandleTargetActivation()
 		{
 			UE_LOG(LogTargetManager, Warning, TEXT("Failed to activate target."));
 		}
-	}
-	
-	if (bPrintDebug_NumRecentNumActive)
-	{
-		if (NumToActivate > 0) UE_LOG(LogTargetManager, Display, TEXT("Activated %d/%d targets."), NumActivated, NumToActivate);
 	}
 	return NumActivated;
 }
@@ -1228,17 +1209,4 @@ void ATargetManager::SaveQTable(FCommonScoreInfo& InCommonScoreInfo) const
 			RLComponent->GetNumQTableColumns(), RLComponent->GetTArray_FromNdArray_TrainingSamples(),
 			RLComponent->GetTotalTrainingSamples());
 	}
-}
-
-/* ----------- */
-/* -- Debug -- */
-/* ----------- */
-
-void ATargetManager::PrintDebug_NumRecentNumActive() const
-{
-	const int NumRecent = SpawnAreaManager->GetRecentSpawnAreas().Num();
-	const int NumAct = SpawnAreaManager->GetActivatedSpawnAreas().Num();
-	const int NumManaged = SpawnAreaManager->GetManagedSpawnAreas().Num();
-	UE_LOG(LogTargetManager, Display, TEXT("NumRecent: %d NumActivated: %d NumManaged: %d"), NumRecent, NumAct,
-		NumManaged);
 }

@@ -21,6 +21,7 @@ class USERINTERFACE_API UWebBrowserWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
+	virtual void NativeDestruct() override;
 
 	/** The WebBrowser widget */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))

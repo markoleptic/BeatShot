@@ -10,6 +10,13 @@ void UWebBrowserWidget::NativeConstruct()
 	Super::NativeConstruct();
 }
 
+void UWebBrowserWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+	GetWorld()->GetTimerManager().ClearTimer(CheckURLTimer);
+	CheckURLDelegate.Unbind();
+}
+
 void UWebBrowserWidget::LoadAuthenticateSteamUserURL(const FString& AuthTicket)
 {
 	IntendedDestinationURL = Segment_Profile;

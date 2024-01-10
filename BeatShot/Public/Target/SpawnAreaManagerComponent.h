@@ -398,25 +398,7 @@ public:
 
 	/** Resets all variables */
 	void Clear();
-
-private:
-	/** Sets InSpawnAreaInc, InSpawnAreaScale */
-	static void SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
-		const FBSConfig* InCfg, const FVector& InStaticExtents);
-
-	/** Initializes the SpawnCounter array */
-	void InitializeSpawnAreas();
-
-	/** Returns whether or not to consider Managed SpawnAreas as invalid choices for activation */
-	bool ShouldConsiderManagedAsInvalid() const;
-
-	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
-	bool ShouldForceSpawnAtOrigin() const;
-
-public:
-	/** Returns reference to SpawnAreas */
-	USpawnArea* GetSpawnArea(const int32 Index) const { return IsSpawnAreaValid(Index) ? IndexMap.FindRef(Index) : nullptr; }
-
+	
 	/** Returns the (Height, Width) of all SpawnAreas */
 	FIntVector3 GetSpawnAreaInc() const { return SpawnAreaInc; }
 
@@ -426,17 +408,6 @@ public:
 	/** Returns delegate used to request a SpawnArea selection from the RLC */
 	FRequestRLCSpawnArea& GetSpawnAreaRequestDelegate() { return RequestRLCSpawnArea; }
 
-private:
-	/** Returns pointer to TargetManager's BSConfig */
-	FBSConfig* GetBSConfig() const { return BSConfig; }
-
-	/** Returns pointer to TargetManager's BSConfig.TargetConfig */
-	const FBS_TargetConfig& GetTargetCfg() const { return BSConfig->TargetConfig; }
-
-	/** Returns the minimum distance between targets, used just to shorten length of call */
-	float GetMinDist() const { return BSConfig->TargetConfig.MinDistanceBetweenTargets; }
-
-public:
 	/** Sets whether or not to request a SpawnArea selection from the RLC */
 	void SetShouldAskRLCForSpawnAreas(const bool bShould) { bShouldAskRLCForSpawnAreas = bShould; }
 
@@ -452,9 +423,36 @@ public:
 	/** Calls FlagSpawnAreaAsRecent, and sets a timer for when the recent flag should be removed */
 	void HandleRecentTargetRemoval(USpawnArea* SpawnArea);
 
+private:
+	/** Sets InSpawnAreaInc, InSpawnAreaScale */
+	static void SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
+		const FBSConfig* InCfg, const FVector& InStaticExtents);
+
+	/** Initializes the SpawnCounter array */
+	void InitializeSpawnAreas();
+
+	/** Returns whether or not to consider Managed SpawnAreas as invalid choices for activation */
+	bool ShouldConsiderManagedAsInvalid() const;
+
+	/** Returns true if bSpawnEveryOtherTargetInCenter is true and the previous SpawnArea is not the Origin SpawnArea */
+	bool ShouldForceSpawnAtOrigin() const;
+	
+	/** Returns pointer to TargetManager's BSConfig */
+	FBSConfig* GetBSConfig() const { return BSConfig; }
+
+	/** Returns pointer to TargetManager's BSConfig.TargetConfig */
+	const FBS_TargetConfig& GetTargetCfg() const { return BSConfig->TargetConfig; }
+
+	/** Returns the minimum distance between targets, used just to shorten length of call */
+	float GetMinDist() const { return BSConfig->TargetConfig.MinDistanceBetweenTargets; }
+	
 	/* ------------------------------- */
 	/* -- SpawnArea finders/getters -- */
 	/* ------------------------------- */
+
+public:
+	/** Returns reference to SpawnAreas */
+	USpawnArea* GetSpawnArea(const int32 Index) const;
 
 	/** Returns the most recent SpawnArea that was set at the end of ATargetManager::ActivateTarget */
 	USpawnArea* GetMostRecentSpawnArea() const { return MostRecentSpawnArea; }
@@ -479,10 +477,6 @@ public:
 
 	/** Returns true if the SpawnArea is contained in SpawnAreas */
 	bool IsSpawnAreaValid(const int32 InIndex) const;
-
-	/* ------------------------------------ */
-	/* -- TSet SpawnArea finders/getters -- */
-	/* ------------------------------------ */
 
 	/** Returns a set of SpawnAreas that are flagged as currently managed */
 	TSet<USpawnArea*> GetManagedSpawnAreas() const;
@@ -615,8 +609,9 @@ public:
 	void OnExtremaChanged(const FExtrema& Extrema);
 
 private:
-	/** Removes all SpawnAreas that are occupied by activated and recent targets, readjusted by scale if needed.
-	 *  This is a more intensive version of FilterRecentIndices and FilterActivatedIndices */
+	/** Removes all SpawnAreas that are occupied by activated, recent targets, and possibly managed targets.
+	 *  Recalculates occupied vertices for each spawn area if necessary. Only called when finding Spawnable
+	 *  Non-Grid SpawnAreas since grid-based will never have to worry about overlapping. */
 	void RemoveOverlappingSpawnAreas(TSet<USpawnArea*>& ValidSpawnAreas, const TSet<USpawnArea*>& ChosenSpawnAreas,
 		const FVector& NewTargetScale) const;
 
@@ -694,6 +689,8 @@ public:
 	/* -- Debug -- */
 	/* ----------- */
 
+	void PrintDebug_NumRecentNumActive() const;
+
 	/** Shows the grid of spawn areas drawn as debug boxes */
 	void DrawDebug_AllSpawnAreas() const;
 
@@ -733,33 +730,26 @@ public:
 	/** Prints a formatted matrix (upside down from how indexes appear in SpawnAreas so that it matches in game)  */
 	static void PrintDebug_Matrix(const TArray<int32>& Matrix, const int32 NumRows, const int32 NumCols);
 
-	/** Toggles showing green debug boxes for valid spawn locations at the end of the GetValidSpawnAreas function */
-	bool bDebug_Valid;
+	/** Toggles printing the number managed, activated, and recent Spawn Areas */
+	bool bPrintDebug_SpawnAreaStateInfo;
+	
+	/** Toggles showing green debug boxes for valid spawn locations at the beginning of GetValidSpawnAreas */
+	bool bDebug_SpawnableSpawnAreas;
+
+	/** Toggles showing green debug boxes for valid spawn areas, turquoise for recent, cyan for activated,
+	 *  and blue for managed locations */
+	bool bDebug_ActivatableSpawnAreas;
 
 	/** Toggles showing red debug boxes for removed spawn due to the BoxBounds */
-	bool bDebug_Removed;
-
-	/** Toggles showing turquoise debug boxes for filtered recent SpawnAreas */
-	bool bDebug_FilterRecent;
-
-	/** Toggles showing cyan debug boxes for filtered activated SpawnAreas */
-	bool bDebug_FilterActivated;
-
-	/** Toggles showing blue debug boxes for filtered managed SpawnAreas */
-	bool bDebug_FilterManaged;
+	bool bDebug_RemovedFromExtremaChange;
 
 	/** Toggles showing yellow debug boxes for filtered bordering SpawnAreas */
 	bool bDebug_FilterBordering;
 
-	/** Shows the overlapping vertices generated when SpawnArea was flagged as Managed as red DebugPoints.
+	/** Shows the overlapping vertices generated when flagging as managed or activated as red DebugPoints.
 	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
 	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
-	bool bDebug_ManagedVertices;
-
-	/** Shows the overlapping vertices generated when SpawnArea was flagged as Activated as red DebugPoints.
-	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
-	 *  Draws red Debug Boxes for the removed overlapping vertices, and green Debug Boxes for valid */
-	bool bDebug_ActivatedVertices;
+	bool bDebug_Vertices;
 
 	/** Shows the overlapping vertices generated during RemoveOverlappingSpawnAreas as red DebugPoints.
 	 *  Draws a magenta Debug Sphere showing the target that was used to generate the overlapping points.
