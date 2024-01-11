@@ -26,6 +26,8 @@ public:
 	void CVarOnChanged_PrintDebug_GetMaxIndex(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_Grid(IConsoleVariable* Variable);
 	void CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Variable);
+	void CVarOnChanged_PrintDebug_QTableInit(IConsoleVariable* Variable);
+	void CVarOnChanged_PrintDebug_ActiveTargetPairs(IConsoleVariable* Variable);
 	
 	void CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable);
 	void CVarOnChanged_ShowDebug_SpawnBox(IConsoleVariable* Variable);

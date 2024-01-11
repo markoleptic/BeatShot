@@ -660,23 +660,19 @@ struct FPlayerScore
 		bSavedToDatabase = false;
 	}
 
-	void ResetStruct()
+	/** Verifies that the score is greater than zero and that if the mode is custom, that the Custom Game Mode Name
+	 *  is not blank. */
+	bool IsValidToSave() const
 	{
-		DefiningConfig = FBS_DefiningConfig();
-		SongTitle = "";
-		SongLength = 0.f;
-		Score = 0;
-		HighScore = 0;
-		Accuracy = 0;
-		Completion = 0;
-		ShotsFired = 0;
-		TargetsHit = 0;
-		AvgTimeOffset = 0;
-		TargetsSpawned = 0;
-		TotalPossibleDamage = 0.f;
-		Streak = 0;
-		LocationAccuracy = TArray<FAccuracyRow>();
-		bSavedToDatabase = false;
+		if (Score <= 0.f)
+		{
+			return false;
+		}
+		if (DefiningConfig.GameModeType == EGameModeType::Custom && DefiningConfig.CustomGameModeName.IsEmpty())
+		{
+			return false;
+		}
+		return true;
 	}
 
 	FORCEINLINE bool operator==(const FPlayerScore& Other) const

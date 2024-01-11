@@ -72,7 +72,7 @@ void ATimeOfDayManager::PostInitializeComponents()
 		GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ATimeOfDayManager::OnPlayerSettingsChanged_Game);
 		GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this,
 			&ATimeOfDayManager::OnPlayerSettingsChanged_VideoAndSound);
-		GI->TimeOfDayManager = this;
+		GI->SetTimeOfDayManager(this);
 		
 		if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 		{

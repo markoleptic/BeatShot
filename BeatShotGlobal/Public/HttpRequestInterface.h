@@ -5,19 +5,6 @@
 #include "SaveGamePlayerScore.h"
 #include "HttpRequestInterface.generated.h"
 
-/** Describes if player scores were posted or not */
-UENUM(BlueprintType)
-enum class EPostScoresResponse : uint8
-{
-	ZeroScore UMETA(DisplayName="ZeroScore"),
-	UnsavedGameMode UMETA(DisplayName="UnsavedGameMode"),
-	NoAccount UMETA(DisplayName="NoAccount"),
-	HttpError UMETA(DisplayName="HttpError"),
-	HttpSuccess UMETA(DisplayName="HttpSuccess"),
-};
-
-ENUM_RANGE_BY_FIRST_AND_LAST(EPostScoresResponse, EPostScoresResponse::ZeroScore, EPostScoresResponse::HttpSuccess);
-
 /** Executed when a response is received from a request */
 DECLARE_DELEGATE(FOnHttpResponseReceived);
 
@@ -29,9 +16,10 @@ struct FBSHttpResponse
 
 	int32 HttpStatus;
 	bool bConnectedSuccessfully;
+	bool OK;
 	FOnHttpResponseReceived OnHttpResponseReceived;
 
-	FBSHttpResponse(): HttpStatus(0), bConnectedSuccessfully(false)
+	FBSHttpResponse(): HttpStatus(0), bConnectedSuccessfully(false), OK(false)
 	{
 	}
 };
@@ -45,19 +33,6 @@ struct FAccessTokenResponse : public FBSHttpResponse
 
 	FAccessTokenResponse()
 	{
-	}
-};
-
-USTRUCT(BlueprintType)
-struct FPostScoresResponse : public FBSHttpResponse
-{
-	GENERATED_BODY()
-
-	EPostScoresResponse PostScoresDescription;
-
-	FPostScoresResponse()
-	{
-		PostScoresDescription = EPostScoresResponse::HttpError;
 	}
 };
 
@@ -261,10 +236,10 @@ public:
 	 *  @param ScoresToPost scores to send with the request
 	 *  @param UserID userID of the BeatShot account
 	 *  @param AccessToken access token obtained using refresh token
-	 *  @param PostResponse struct containing callback delegate and response info
+	 *  @param PostScoresResponse struct containing callback delegate and response info
 	 */
 	static void PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString UserID,
-		const FString AccessToken, TSharedPtr<FPostScoresResponse, ESPMode::ThreadSafe> PostResponse);
+		const FString AccessToken, TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> PostScoresResponse);
 
 	/** Makes a POST request to BeatShot website which emails the feedback. Executes supplied OnPostFeedbackResponse
 	 *
@@ -286,8 +261,6 @@ public:
 
 	/** Makes a GET request to BeatShot website that uses the AuthenticateUserTicket request from the
 	 *  ISteamUserAuthInterface. Executes supplied OnTicketWebApiResponse.
-	 *
-	 *  \n Can't be static since GetAuthTicketFromWebApi calls on Async thread.
 	 *
 	 *  @param AuthTicket auth ticket obtained from GetAuthTicketFromWebApi Steam API call
 	 *  @param SteamAuthTicketResponse struct containing callback delegate and response info

@@ -2,42 +2,13 @@
 
 
 #include "OverlayWidgets/LoadingScreenWidgets/SLoadingScreenWidget.h"
-
-#include "GlobalConstants.h"
-#include "SlateOptMacros.h"
-#include "Styles/LoadingScreenStyle.h"
 #include "Widgets/Images/SSpinningImage.h"
-#include "Widgets/Images/SThrobber.h"
 
 int32 SLoadingScreenWidget::OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry,
 	const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements, int32 LayerId,
 	const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const
 {
-	if (bShouldFadeToBlack && FadeToBlackStartTime == 0)
-	{
-		FadeToBlackStartTime = Args.GetCurrentTime();
-		FadeToBlackCurrentTime = FadeToBlackStartTime;
-		FadeToBlackEndTime = FadeToBlackStartTime + FadeOutDuration;
-	}
-	else if (FadeToBlackStartTime > 0)
-	{
-		FadeToBlackCurrentTime += Args.GetDeltaTime();
-		const float NewRenderOpacity = (FadeToBlackCurrentTime - FadeToBlackStartTime) / FadeOutDuration;
-		if (NewRenderOpacity > 0.f && NewRenderOpacity <= 1.f)
-		{
-			RenderOpacity = 1 - NewRenderOpacity;
-		}
-		else
-		{
-			RenderOpacity = 0.f;
-			if (OnLoadingScreenExitAnimComplete.IsBound())
-			{
-				OnLoadingScreenExitAnimComplete.Execute();
-			}
-		}
-		MainOverlay->SetRenderOpacity(RenderOpacity);
-	}
-	
+	SetMainOverlayRenderOpacity(Args.GetCurrentTime(), Args.GetDeltaTime());
 	return SCompoundWidget::OnPaint(Args, AllottedGeometry, MyCullingRect, OutDrawElements, LayerId, InWidgetStyle,
 		bParentEnabled);
 }
@@ -47,28 +18,146 @@ void SLoadingScreenWidget::Tick(const FGeometry& AllottedGeometry, const double 
 	SCompoundWidget::Tick(AllottedGeometry, InCurrentTime, InDeltaTime);
 }
 
-void SLoadingScreenWidget::FadeToBlack()
+void SLoadingScreenWidget::SetLoadingScreenState(const ELoadingScreenState& InLoadingScreenState) const
 {
-	bShouldFadeToBlack = true;
+	if (LoadingScreenState == ELoadingScreenState::FadingIn &&
+		InLoadingScreenState == ELoadingScreenState::FadingOut &&
+		!bStartFadeOutOnFadeInEnd)
+	{
+		bStartFadeOutOnFadeInEnd = true;
+	}
+	else
+	{
+		LoadingScreenState = InLoadingScreenState;
+	}
 }
 
-FLinearColor SLoadingScreenWidget::GetOverlayColorAndOpacity() const
+void SLoadingScreenWidget::SetMainOverlayRenderOpacity(const double CurrentTime, const float DeltaTime) const
 {
-	return FLinearColor::LerpUsingHSV(FLinearColor::Blue, FLinearColor::Green, RenderOpacity);
+	if (!MainOverlay.IsValid())
+	{
+		return;
+	}
+	
+	switch (LoadingScreenState)
+	{
+	case ELoadingScreenState::None:
+		MainOverlay->SetRenderOpacity(0.f);
+		return;
+	case ELoadingScreenState::FadingIn:
+		{
+			// Tick before fading in begins
+			if (FadeStartTime == 0)
+			{
+				FadeStartTime = CurrentTime;
+				FadeCurrentTime = CurrentTime;
+				FadeEndTime = FadeStartTime + LoadingScreenStyle->FadeFromBlackDuration;
+				return;
+			}
+			// Fading from black
+			if (FadeStartTime > 0)
+			{
+				FadeCurrentTime += DeltaTime;
+				const float Opacity = (FadeCurrentTime - FadeStartTime) / LoadingScreenStyle->FadeFromBlackDuration;
+				if (Opacity >= 0.f && Opacity < 1.f)
+				{
+					MainOverlay->SetRenderOpacity(Opacity);
+					return;
+				}
+
+				// Fade from black completed, check if should fade in immediately
+				if (bStartFadeOutOnFadeInEnd)
+				{
+					SetLoadingScreenState(ELoadingScreenState::FadingOut);
+					FadeStartTime = 0.f;
+					return;
+				}
+
+				// If not fade in immediately, set state to FullOpacity and reset FadeStartTime
+				SetLoadingScreenState(ELoadingScreenState::FullOpacity);
+				FadeStartTime = 0.f;
+			}
+		}
+		break;
+	case ELoadingScreenState::FadingOut:
+		{
+			// Tick before fading out begins
+			if (FadeStartTime == 0)
+			{
+				if (LoadingScreenStyle->FadeToBlackDuration == 0.f)
+				{
+					SetLoadingScreenState(ELoadingScreenState::None);
+					FadeStartTime = 0.f;
+					if (OnFadeOutComplete.IsBound())
+					{
+						OnFadeOutComplete.Execute();
+					}
+				}
+				FadeStartTime = CurrentTime;
+				FadeCurrentTime = CurrentTime;
+				FadeEndTime = FadeStartTime + LoadingScreenStyle->FadeToBlackDuration;
+				return;
+			}
+			// Fading to black
+			if (FadeStartTime > 0)
+			{
+				FadeCurrentTime += DeltaTime;
+				const float Opacity = (FadeCurrentTime - FadeStartTime) / LoadingScreenStyle->FadeToBlackDuration;
+				if (Opacity > 0.f && Opacity <= 1.f)
+				{
+					MainOverlay->SetRenderOpacity(1 - Opacity);
+					return;
+				}
+
+				// Fade to black completed, broadcast delegate so loading screen can be removed
+				SetLoadingScreenState(ELoadingScreenState::None);
+				FadeStartTime = 0.f;
+				if (OnFadeOutComplete.IsBound())
+				{
+					OnFadeOutComplete.Execute();
+				}
+			}
+		}
+		break;
+	case ELoadingScreenState::FullOpacity:
+		MainOverlay->SetRenderOpacity(1);
+	}
 }
 
 void SLoadingScreenWidget::Construct(const FArguments& InArgs)
 {
-	OnLoadingScreenExitAnimComplete = InArgs._OnLoadingScreenExitAnimComplete;
-	//GetColorAndOpacityAttribute().ToAttribute().BindRaw(this, &SLoadingScreenWidget::GetOverlayColorAndOpacity);
+	OnFadeOutComplete = InArgs._OnFadeOutComplete;
 	LoadingScreenStyle = InArgs._LoadingScreenStyle;
+	bIsInitialLoadingScreen = InArgs._bIsInitialLoadingScreen;
 
+	if (LoadingScreenStyle->FadeFromBlackDuration == 0.f)
+	{
+		SetLoadingScreenState(ELoadingScreenState::FullOpacity);
+	}
+	else
+	{
+		SetLoadingScreenState(ELoadingScreenState::FadingIn);
+	}
+
+	// Use fallback since material instance won't load on initial
+	if (bIsInitialLoadingScreen)
+	{
+		SAssignNew(LogoImage, SSpinningImage)
+			.Image(&LoadingScreenStyle->LogoImageTexture)
+			.Period(4.0f);
+	}
+	else
+	{
+		SAssignNew(LogoImage, SImage)
+			.Image(&LoadingScreenStyle->LogoImage);
+	}
+	
 	ChildSlot
 	[
 		SNew(SOverlay)
 			+SOverlay::Slot()
 			[
-			SAssignNew(MainOverlay, SOverlay)
+			SAssignNew(MainOverlay, SOverlay).RenderOpacity(0.f)
 			+SOverlay::Slot()
 			.ZOrder(10000)
 			.HAlign(HAlign_Fill)
@@ -81,14 +170,14 @@ void SLoadingScreenWidget::Construct(const FArguments& InArgs)
 			.ZOrder(10001)
 			.HAlign(HAlign_Fill)
 			.VAlign(VAlign_Bottom)
-			.Padding(FMargin(0,0,0,128))
+			.Padding(LoadingScreenStyle->MainOverlaySlotPadding)
 			[
 				SNew(SHorizontalBox)
 				+SHorizontalBox::Slot()
 				.AutoWidth()
 				.HAlign(HAlign_Fill)
-				.VAlign(VAlign_Fill)
-				.Padding(FMargin(64, 0, 0, 16))
+				.VAlign(VAlign_Bottom)
+				.Padding(LoadingScreenStyle->HorizontalBoxSlotPadding)
 				[
 					SNew(SVerticalBox)
 					+SVerticalBox::Slot()
@@ -96,9 +185,7 @@ void SLoadingScreenWidget::Construct(const FArguments& InArgs)
 					.HAlign(HAlign_Center)
 					.VAlign(VAlign_Center)
 					[
-						SNew(SImage)
-						.DesiredSizeOverride(FVector2d(512, 512))
-						.Image(&LoadingScreenStyle->LogoImage)
+						LogoImage.ToSharedRef()
 					]
 					+SVerticalBox::Slot()
 					.HAlign(HAlign_Center)
@@ -111,9 +198,9 @@ void SLoadingScreenWidget::Construct(const FArguments& InArgs)
 						.VAlign(VAlign_Fill)
 						[
 							SNew(STextBlock)
-							.Font(LoadingScreenStyle->LogoFontLeft)
-							.Text(FText::FromString("BEAT"))
-							.ColorAndOpacity(FLinearColor::White)
+							.Font(LoadingScreenStyle->BrandFontLeft)
+							.Text(LoadingScreenStyle->BrandTextLeft)
+							.ColorAndOpacity(LoadingScreenStyle->BrandTextLeftColor)
 						]
 						+SHorizontalBox::Slot()
 						.AutoWidth()
@@ -121,7 +208,7 @@ void SLoadingScreenWidget::Construct(const FArguments& InArgs)
 						.VAlign(VAlign_Fill)
 						[
 							SNew(SSpacer)
-							.Size(FVector2d(30, 0))
+							.Size(LoadingScreenStyle->BrandTextSpacing)
 						]
 						+SHorizontalBox::Slot()
 						.AutoWidth()
@@ -129,9 +216,9 @@ void SLoadingScreenWidget::Construct(const FArguments& InArgs)
 						.VAlign(VAlign_Fill)
 						[
 							SNew(STextBlock)
-							.Font(LoadingScreenStyle->LogoFontLeft)
-							.Text(FText::FromString("SHOT"))
-							.ColorAndOpacity(Constants::BeatShotBlue)
+							.Font(LoadingScreenStyle->BrandFontRight)
+							.Text(LoadingScreenStyle->BrandTextRight)
+							.ColorAndOpacity(LoadingScreenStyle->BrandTextRightColor)
 						]
 					]
 				]

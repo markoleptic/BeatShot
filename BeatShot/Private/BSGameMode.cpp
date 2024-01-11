@@ -49,8 +49,6 @@ void ABSGameMode::BeginPlay()
 		&ABSGameMode::OnPlayerSettingsChanged_VideoAndSound);
 
 	bNightModeUnlocked = LoadPlayerSettings().User.bNightModeUnlocked;
-
-	InitializeGameMode();
 }
 
 void ABSGameMode::Tick(float DeltaSeconds)
@@ -98,7 +96,7 @@ ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
 	return SpawnedCharacter;
 }
 
-void ABSGameMode::InitializeGameMode()
+void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 {
 	Elapsed = 0.f;
 	bLastTargetOnSet = false;
@@ -113,12 +111,13 @@ void ABSGameMode::InitializeGameMode()
 	OnPlayerSettingsChanged_VideoAndSound(PlayerSettings.VideoAndSound);
 
 	/* Get config from Game Instance */
-	BSConfig = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(this))->GetBSConfig();
+	check(InConfig);
+	BSConfig = InConfig;
 
 	/* Spawn TargetManager and VisualizerManager */
 	TargetManager = GetWorld()->SpawnActor<ATargetManager>(TargetManagerClass, FVector::Zero(), FRotator::ZeroRotator,
 		SpawnParameters);
-	TargetManager->Init(BSConfig, PlayerSettings.Game);
+	TargetManager->Init(BSConfig.Get(), PlayerSettings.Game);
 
 	if (!VisualizerManager)
 	{
@@ -137,10 +136,10 @@ void ABSGameMode::InitializeGameMode()
 		const UBSAttributeSetBase* Set = ASC->GetSet<UBSAttributeSetBase>();
 		if (!Set) break;
 
-		ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig.TargetConfig.BasePlayerHitDamage);
-		ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), BSConfig.TargetConfig.BasePlayerTrackingDamage);
+		ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig->TargetConfig.BasePlayerHitDamage);
+		ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), BSConfig->TargetConfig.BasePlayerTrackingDamage);
 
-		if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
 			if (TrackGunAbilityGrantedHandles.IsEmpty())
 			{
@@ -179,7 +178,7 @@ void ABSGameMode::StartGameMode()
 	StartGameModeTimers();
 	TargetManager->SetShouldSpawn(true);
 
-	/*for (float i = 0.f; i < BSConfig.TargetConfig.TargetMaxLifeSpan; i+=0.01f)
+	/*for (float i = 0.f; i < BSConfig->TargetConfig.TargetMaxLifeSpan; i+=0.01f)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Score: %f Err: %f: AbsError: %f NormError: %f"), GetScoreFromTimeAlive(i), GetHitTimingError(i), GetAbsHitTimingError(i), GetNormalizedHitTimingError(i));
 	}*/
@@ -187,14 +186,14 @@ void ABSGameMode::StartGameMode()
 
 void ABSGameMode::StartGameModeTimers()
 {
-	if (BSConfig.AudioConfig.SongLength == 0.f)
+	if (BSConfig->AudioConfig.SongLength == 0.f)
 	{
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, 31536000, false);
 	}
 	else
 	{
 		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ABSGameMode::OnGameModeLengthTimerComplete,
-			BSConfig.AudioConfig.SongLength, false);
+			BSConfig->AudioConfig.SongLength, false);
 	}
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ABSGameMode::OnSecondPassedCallback, 1.f, true);
 }
@@ -227,9 +226,9 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 		const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
 		CurrentPlayerScore.LocationAccuracy = AccuracyData.AccuracyRows;
 
-		ScoreInfo = FindCommonScoreInfo(BSConfig.DefiningConfig);
+		ScoreInfo = FindCommonScoreInfo(BSConfig->DefiningConfig);
 		ScoreInfo.UpdateAccuracy(AccuracyData);
-		if (BSConfig.AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
+		if (BSConfig->AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
 		{
 			GetTargetManager()->SaveQTable(ScoreInfo);
 		}
@@ -301,7 +300,7 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 	if (bNewTargetState && !bLastTargetOnSet)
 	{
 		bLastTargetOnSet = true;
-		if (Elapsed > BSConfig.TargetConfig.TargetSpawnCD)
+		if (Elapsed > BSConfig->TargetConfig.TargetSpawnCD)
 		{
 			Elapsed = 0.f;
 			TargetManager->OnAudioAnalyzerBeat();
@@ -320,7 +319,7 @@ void ABSGameMode::OnGameModeLengthTimerComplete()
 
 void ABSGameMode::StartAAManagerPlayback()
 {
-	switch (BSConfig.AudioConfig.AudioFormat)
+	switch (BSConfig->AudioConfig.AudioFormat)
 	{
 	case EAudioFormat::File:
 		AATracker->Play();
@@ -328,7 +327,7 @@ void ABSGameMode::StartAAManagerPlayback()
 		{
 			/* Start playing back audio from AAPlayer after the delay */
 			GetWorldTimerManager().SetTimer(PlayerDelayTimer, this, &ABSGameMode::PlayAAPlayer,
-				BSConfig.AudioConfig.PlayerDelay, false);
+				BSConfig->AudioConfig.PlayerDelay, false);
 		}
 		else
 		{
@@ -339,7 +338,7 @@ void ABSGameMode::StartAAManagerPlayback()
 		break;
 	case EAudioFormat::Capture:
 		{
-			AATracker->StartCapture(BSConfig.AudioConfig.bPlaybackAudio, false);
+			AATracker->StartCapture(BSConfig->AudioConfig.bPlaybackAudio, false);
 			SetAAManagerVolume(LoadPlayerSettings().VideoAndSound.GlobalVolume,
 				LoadPlayerSettings().VideoAndSound.MusicVolume, AATracker);
 			break;
@@ -363,7 +362,7 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 	{
 		return;
 	}
-	switch (BSConfig.AudioConfig.AudioFormat)
+	switch (BSConfig->AudioConfig.AudioFormat)
 	{
 	case EAudioFormat::File:
 		AATracker->SetPaused(ShouldPause);
@@ -379,7 +378,7 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 		}
 		else
 		{
-			AATracker->StartCapture(BSConfig.AudioConfig.bPlaybackAudio, false);
+			AATracker->StartCapture(BSConfig->AudioConfig.bPlaybackAudio, false);
 		}
 		break;
 	case EAudioFormat::Loopback:
@@ -400,31 +399,31 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 bool ABSGameMode::InitializeAudioManagers()
 {
 	AATracker = NewObject<UAudioAnalyzerManager>(this);
-	switch (BSConfig.AudioConfig.AudioFormat)
+	switch (BSConfig->AudioConfig.AudioFormat)
 	{
 	case EAudioFormat::None:
 		break;
 	case EAudioFormat::File:
-		if (!AATracker->InitPlayerAudio(BSConfig.AudioConfig.SongPath))
+		if (!AATracker->InitPlayerAudio(BSConfig->AudioConfig.SongPath))
 		{
 			OnAAManagerError();
 			return false;
 		}
 		break;
 	case EAudioFormat::Capture:
-		AATracker->SetDefaultDevicesCapturerAudio(*BSConfig.AudioConfig.InAudioDevice,
-			*BSConfig.AudioConfig.OutAudioDevice);
+		AATracker->SetDefaultDevicesCapturerAudio(*BSConfig->AudioConfig.InAudioDevice,
+			*BSConfig->AudioConfig.OutAudioDevice);
 		if (!AATracker->InitCapturerAudioEx(48000, EAA_AudioDepth::B_16, EAA_AudioFormat::Signed_Int, 1.f,
-			BSConfig.AudioConfig.bPlaybackAudio))
+			BSConfig->AudioConfig.bPlaybackAudio))
 		{
 			OnAAManagerError();
 			return false;
 		}
 		break;
 	case EAudioFormat::Loopback:
-		AATracker->SetDefaultDevicesCapturerAudio(*BSConfig.AudioConfig.InAudioDevice,
-			*BSConfig.AudioConfig.OutAudioDevice);
-		AATracker->SetDefaultDeviceLoopbackAudio(*BSConfig.AudioConfig.OutAudioDevice);
+		AATracker->SetDefaultDevicesCapturerAudio(*BSConfig->AudioConfig.InAudioDevice,
+			*BSConfig->AudioConfig.OutAudioDevice);
+		AATracker->SetDefaultDeviceLoopbackAudio(*BSConfig->AudioConfig.OutAudioDevice);
 		if (!AATracker->InitLoopbackAudio())
 		{
 			OnAAManagerError();
@@ -444,13 +443,13 @@ bool ABSGameMode::InitializeAudioManagers()
 	SetAAManagerVolume(0, 0, AATracker);
 
 	/* AAPlayer will only be used if AudioFormat is File and PlayerDelay > 0.01f */
-	if (BSConfig.AudioConfig.PlayerDelay < 0.01f)
+	if (BSConfig->AudioConfig.PlayerDelay < 0.01f)
 	{
 		AAPlayer = nullptr;
 		return true;
 	}
 	AAPlayer = NewObject<UAudioAnalyzerManager>(this);
-	if (!AAPlayer->InitPlayerAudio(BSConfig.AudioConfig.SongPath))
+	if (!AAPlayer->InitPlayerAudio(BSConfig->AudioConfig.SongPath))
 	{
 		OnAAManagerError();
 		return false;
@@ -504,7 +503,7 @@ void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float Music
 {
 	if (AAManager)
 	{
-		switch (BSConfig.AudioConfig.AudioFormat)
+		switch (BSConfig->AudioConfig.AudioFormat)
 		{
 		case EAudioFormat::File:
 			AAManager->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
@@ -527,7 +526,7 @@ void ABSGameMode::SetAAManagerVolume(const float GlobalVolume, const float Music
 	}
 	if (AATracker)
 	{
-		switch (BSConfig.AudioConfig.AudioFormat)
+		switch (BSConfig->AudioConfig.AudioFormat)
 		{
 		case EAudioFormat::File:
 			AATracker->SetPlaybackVolume(GlobalVolume / 100 * MusicVolume / 100);
@@ -550,19 +549,19 @@ void ABSGameMode::OnSecondPassedCallback() const
 
 void ABSGameMode::LoadMatchingPlayerScores()
 {
-	CurrentPlayerScore.ResetStruct();
-	CurrentPlayerScore.DefiningConfig = BSConfig.DefiningConfig;
-	CurrentPlayerScore.SongTitle = BSConfig.AudioConfig.SongTitle;
-	CurrentPlayerScore.SongLength = BSConfig.AudioConfig.SongLength;
+	CurrentPlayerScore = FPlayerScore();
+	CurrentPlayerScore.DefiningConfig = BSConfig->DefiningConfig;
+	CurrentPlayerScore.SongTitle = BSConfig->AudioConfig.SongTitle;
+	CurrentPlayerScore.SongLength = BSConfig->AudioConfig.SongLength;
 	CurrentPlayerScore.TotalPossibleDamage = 0.f;
 
-	if (BSConfig.AudioConfig.SongLength == 0.f)
+	if (BSConfig->AudioConfig.SongLength == 0.f)
 	{
 		MaxScorePerTarget = 1000.f;
 	}
 	else
 	{
-		MaxScorePerTarget = 100000.f / ((BSConfig.AudioConfig.SongLength - 1.f) / BSConfig.TargetConfig.TargetSpawnCD);
+		MaxScorePerTarget = 100000.f / ((BSConfig->AudioConfig.SongLength - 1.f) / BSConfig->TargetConfig.TargetSpawnCD);
 	}
 
 	const TArray<FPlayerScore> PlayerScores = LoadPlayerScores().FilterByPredicate([&](const FPlayerScore& PlayerScore)
@@ -587,23 +586,14 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommo
 {
 	if (!bExternalSaveScores)
 	{
-		CurrentPlayerScore.ResetStruct();
+		CurrentPlayerScore = FPlayerScore();
 		return;
-	}
-	EPostScoresResponse PostScoresResponse = EPostScoresResponse::HttpSuccess;
-	if (CurrentPlayerScore.Score <= 0)
-	{
-		PostScoresResponse = EPostScoresResponse::ZeroScore;
-	}
-	if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom && CurrentPlayerScore.DefiningConfig.
-		CustomGameModeName == "")
-	{
-		PostScoresResponse = EPostScoresResponse::UnsavedGameMode;
 	}
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-
-	if (PostScoresResponse == EPostScoresResponse::HttpSuccess)
+	const bool bValidToSave = CurrentPlayerScore.IsValidToSave();
+	
+	if (bValidToSave)
 	{
 		// Update Steam Stat for Game Mode
 		#if UE_BUILD_SHIPPING
@@ -630,14 +620,14 @@ void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommo
 		}
 		#endif
 		// Save common score info and completed scores locally
-		SaveCommonScoreInfo(BSConfig.DefiningConfig, InCommonScoreInfo);
+		SaveCommonScoreInfo(BSConfig->DefiningConfig, InCommonScoreInfo);
 		SavePlayerScoreInstance(GetCompletedPlayerScores());
 	}
 	
-	CurrentPlayerScore.ResetStruct();
+	CurrentPlayerScore = FPlayerScore();
 
 	// Let game instance handle posting scores to db
-	GI->SavePlayerScoresToDatabase(PostScoresResponse);
+	GI->SavePlayerScoresToDatabase(bValidToSave);
 }
 
 FPlayerScore ABSGameMode::GetCompletedPlayerScores()
@@ -646,7 +636,7 @@ FPlayerScore ABSGameMode::GetCompletedPlayerScores()
 	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
-	if (BSConfig.TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
+	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{
 		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
 		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
@@ -813,10 +803,10 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 
 	const float MinScorePerTarget = MaxScorePerTarget / 2.f;
 	// Early shot
-	if (InTimeAlive < BSConfig.TargetConfig.SpawnBeatDelay)
+	if (InTimeAlive < BSConfig->TargetConfig.SpawnBeatDelay)
 	{
 		const float MinEarlyShot = 0.f;
-		const float MaxEarlyShot = BSConfig.TargetConfig.SpawnBeatDelay - PerfectScoreTimeThreshold / 2.f;
+		const float MaxEarlyShot = BSConfig->TargetConfig.SpawnBeatDelay - PerfectScoreTimeThreshold / 2.f;
 		const FVector2d InputRange = FVector2d(MinEarlyShot, MaxEarlyShot);
 		const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);
 
@@ -826,8 +816,8 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 	}
 
 	// Late shot
-	const float MinLateShot = BSConfig.TargetConfig.SpawnBeatDelay + PerfectScoreTimeThreshold / 2.f;
-	const float MaxLateShot = BSConfig.TargetConfig.TargetMaxLifeSpan;
+	const float MinLateShot = BSConfig->TargetConfig.SpawnBeatDelay + PerfectScoreTimeThreshold / 2.f;
+	const float MaxLateShot = BSConfig->TargetConfig.TargetMaxLifeSpan;
 	const FVector2d InputRange = FVector2d(MinLateShot, MaxLateShot);
 	const float LerpValue = FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 1.f), InTimeAlive);
 
@@ -838,33 +828,33 @@ float ABSGameMode::GetScoreFromTimeAlive(const float InTimeAlive) const
 
 float ABSGameMode::GetHitTimingError(const float InTimeAlive) const
 {
-	return InTimeAlive - BSConfig.TargetConfig.SpawnBeatDelay;
+	return InTimeAlive - BSConfig->TargetConfig.SpawnBeatDelay;
 }
 
 float ABSGameMode::GetAbsHitTimingError(const float InTimeAlive) const
 {
-	return FMath::Abs<float>(InTimeAlive - BSConfig.TargetConfig.SpawnBeatDelay);
+	return FMath::Abs<float>(InTimeAlive - BSConfig->TargetConfig.SpawnBeatDelay);
 }
 
 float ABSGameMode::GetNormalizedHitTimingError(const float InTimeAlive) const
 {
-	if (InTimeAlive == BSConfig.TargetConfig.SpawnBeatDelay)
+	if (InTimeAlive == BSConfig->TargetConfig.SpawnBeatDelay)
 	{
 		return 0.5f;
 	}
 
 	// Early shot
-	if (InTimeAlive < BSConfig.TargetConfig.SpawnBeatDelay)
+	if (InTimeAlive < BSConfig->TargetConfig.SpawnBeatDelay)
 	{
 		const float MinEarlyShot = 0.f;
-		const float MaxEarlyShot = BSConfig.TargetConfig.SpawnBeatDelay;
+		const float MaxEarlyShot = BSConfig->TargetConfig.SpawnBeatDelay;
 		const FVector2d InputRange = FVector2d(MinEarlyShot, MaxEarlyShot);
 		return FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.f, 0.5f), InTimeAlive);
 	}
 
 	// Late shot
-	const float MinLateShot = BSConfig.TargetConfig.SpawnBeatDelay;
-	const float MaxLateShot = BSConfig.TargetConfig.TargetMaxLifeSpan;
+	const float MinLateShot = BSConfig->TargetConfig.SpawnBeatDelay;
+	const float MaxLateShot = BSConfig->TargetConfig.TargetMaxLifeSpan;
 	const FVector2d InputRange = FVector2d(MinLateShot, MaxLateShot);
 	return FMath::GetMappedRangeValueClamped(InputRange, FVector2D(0.5f, 1.f), InTimeAlive);
 }

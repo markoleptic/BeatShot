@@ -4,14 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/TimelineComponent.h"
 #include "CountdownWidget.generated.h"
 
+class USizeBox;
 DECLARE_DELEGATE(FOnCountdownCompleted);
-
 DECLARE_DELEGATE(FStartAAManagerPlayback);
 
 class UImage;
-class UMaterialInstanceDynamic;
 class UTextBlock;
 
 /** Widget used to display a countdown before the game mode begins */
@@ -22,39 +22,49 @@ class USERINTERFACE_API UCountdownWidget : public UUserWidget
 
 protected:
 	virtual void NativeConstruct() override;
-	virtual void NativeDestruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
 	/** Called from Blueprint when user clicks on screen */
-	UFUNCTION(BlueprintCallable)
-	void StartCountDownTimer();
+	void StartCountdown(const float CountdownLength, const float PlayerDelay);
 
-	/** Called when CountDownTimer has finished, which then calls StartGameModeMainMenu in DefaultGameMode */
+	/** Called when StartAAManagerPlayback has finished. */
 	UFUNCTION()
-	void StartGameMode() const;
+	void StartAAManagerPlaybackTimerComplete() const;
 
-	/** The delay to set between the AAManagers, initialized in PlayerController when added to viewport */
-	float PlayerDelay;
+	/** Bound to CountdownTimeline, sets material parameters. */
+	UFUNCTION()
+	void CountdownTick(const float Value);
 
-	/** Executes when the countdown timer has completed. DefaultGameMode listens and calls StartGameModeMainMenu */
+	/** Bound to CountdownTimeline completion. */
+	UFUNCTION()
+	void CountdownComplete();
+
+	/** Executes when the countdown timeline has completed. */
 	FOnCountdownCompleted OnCountdownCompleted;
 
-	/** Executes when there is PlayerDelay time left in the countdown timer. DefaultGameMode listens and calls
-	 *  StartAAManagerPlayback() */
+	/** Executes when then the StartAAManagerPlaybackTimer has completed. */
 	FStartAAManagerPlayback StartAAManagerPlayback;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
-	UMaterialInstanceDynamic* MID_Countdown;
+	UCurveFloat* CountdownCurve;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UImage* Image_Countdown;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
 	UTextBlock* TextBlock_Counter;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	UTextBlock* TextBlock_Click;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta = (BindWidget))
+	USizeBox* CountdownContainer;
 
 private:
 	UPROPERTY()
-	FTimerHandle CountDownTimer;
-	/** Whether or not NativeTick or StartGameModeMainMenu has called StartAAManagerPlayback from DefaultGameMode */
-	bool bHasCalledStartAAManagerPlayback = false;
+	FTimerHandle StartAAManagerPlaybackTimer;
+	
+	FTimeline CountdownTimeline;
+	FOnTimelineFloat OnCountdownTick;
+	FOnTimelineEvent OnCountdownComplete;
 };
+
+

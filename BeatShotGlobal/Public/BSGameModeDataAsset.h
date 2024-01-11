@@ -1466,7 +1466,7 @@ struct FBSConfig
 	/** Initializes the OutConfig from a Json object, returns true if successful */
 	static bool FromString(const FString& JsonString, FBSConfig& OutConfig, FText* OutFailReason = nullptr)
 	{
-		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+		TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 		const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(JsonString);
 		if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 		{

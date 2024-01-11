@@ -76,7 +76,7 @@ public:
 
 	/** Initializes a score browser based on the type */
 	void InitScoreBrowser(const EScoreBrowserType InScoreBrowserType,
-		const EPostScoresResponse& Response = EPostScoresResponse::NoAccount);
+		const FString& ErrorStringTableKey = FString());
 
 	/** Logs in to BeatShot website using the LoginPayload and UserID */
 	void LoginUserBrowser(const FLoginPayload LoginPayload, const FString UserID);

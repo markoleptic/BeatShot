@@ -78,7 +78,7 @@ void ASimpleBeamLight::InitSimpleBeamLight(const FSimpleBeamLightConfig& InConfi
 		{
 			SimpleBeamComponent->SetAsset(SimpleBeamLightConfig.NiagaraSystem);
 		}
-		SimpleBeamComponent->InitializeSystem();
+		// SimpleBeamComponent->InitializeSystem();
 		SimpleBeamLightConfig.NiagaraColorParameters.FindOrAdd("User.BeamColor") = SimpleBeamLightConfig.LightColor;
 
 		for (TTuple<FString, float>& Elem : SimpleBeamLightConfig.NiagaraFloatParameters)

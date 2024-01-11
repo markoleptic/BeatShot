@@ -52,7 +52,7 @@ void UFeedbackWidget::OnButtonClicked_BSButton(const UBSButton* Button)
 	{
 		const FJsonFeedback Feedback(TitlePrefix.ToString() + Value_Title->GetText().ToString(),
 			Value_Content->GetText().ToString());
-		TSharedPtr<FBSHttpResponse> Response = MakeShareable(new FBSHttpResponse);
+		TSharedPtr<FBSHttpResponse> Response = MakeShareable(new FBSHttpResponse());
 		Response->OnHttpResponseReceived.BindLambda([this, Response]
 		{
 			if (Response->bConnectedSuccessfully && Response->HttpStatus <= 300)

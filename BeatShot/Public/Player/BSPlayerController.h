@@ -4,9 +4,7 @@
 
 
 #include "CoreMinimal.h"
-#include "BSGameInstance.h"
 #include "HttpRequestInterface.h"
-/*#include "LoadingProcessInterface.h"*/
 #include "SaveLoadInterface.h"
 #include "Target/ReinforcementLearningComponent.h"
 #include "BSPlayerController.generated.h"
@@ -90,16 +88,18 @@ public:
 	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
 	/** Called by Game Instance after saving scores to database, or before if there was a problem */
-	void OnPostScoresResponseReceived(const EPostScoresResponse& Response);
+	void OnPostScoresResponseReceived(const FString& StringTableKey = FString());
 
 	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
 
 	/** Called by Character when receiving input from IA_Pause, or by exiting the PostGameMenu */
 	void HandlePause();
 
+	/** Called by Character when receiving input from IA_LeftClick */
+	void HandleLeftClick();
+
 	// Server only
 	virtual void OnPossess(APawn* InPawn) override;
-
 	virtual void OnRep_PlayerState() override;
 
 	/** Delegate that executes when the ScreenFadeWidget completes its animation*/
@@ -113,12 +113,6 @@ public:
 	/** Executed when the player requests to try to login through Steam after a failed attempt */
 	void InitiateSteamLogin();
 
-	/** ~ILoadingProcessInterface begin */
-	/*virtual void BindToLoadingScreenDelegates(
-		FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
-		FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen) override;*/
-	/** ~ILoadingProcessInterface end */
-
 protected:
 	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
 	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
@@ -128,24 +122,34 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UCrossHairWidget> CrossHairClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UPlayerHUD> PlayerHUDClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UPauseMenuWidget> PauseMenuClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UCountdownWidget> CountdownClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UPostGameMenuWidget> PostGameMenuWidgetClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UFPSCounterWidget> FPSCounterClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UScreenFadeWidget> ScreenFadeClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UUserWidget> InteractInfoWidgetClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<URLAgentWidget> RLAgentWidgetClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
 
@@ -155,6 +159,7 @@ private:
 	UFUNCTION()
 	void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings);
 
+	/** Calls ResetAuthTicket from SteamAPI if both MainMenu and BeatShot API requests were completed */
 	void TryResetAuthTicketHandle(const uint32 Handle);
 
 	UPROPERTY()
@@ -178,8 +183,6 @@ private:
 	UPROPERTY()
 	URLAgentWidget* RLAgentWidget;
 	
-	bool CountdownActive;
-	bool PlayerHUDActive = false;
 	bool PostGameMenuActive = false;
 	bool bIsLoggedIn = false;
 	uint8 NumAuthTicketFinishes = 0;

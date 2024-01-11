@@ -60,6 +60,18 @@ void UBSInputComponent::RemoveInputMappings(const UBSInputConfig* InputConfig,
 	}
 }
 
+void UBSInputComponent::RemoveBind(const FGameplayTag& InputTag)
+{
+	TArray<uint32> BindHandles;
+	if (NativeActionBindings.RemoveAndCopyValue(InputTag, BindHandles))
+	{
+		for (const uint32 BindHandle : BindHandles)
+		{
+			RemoveBindingByHandle(BindHandle);
+		}
+	}
+}
+
 void UBSInputComponent::RemoveBinds(TArray<uint32>& BindHandles)
 {
 	for (uint32 Handle : BindHandles)

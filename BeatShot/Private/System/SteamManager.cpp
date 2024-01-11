@@ -119,7 +119,6 @@ void USteamManager::OnAuthTicketForWebApiResponse(GetTicketForWebApiResponse_t* 
 void USteamManager::OnSteamOverlayActive(GameOverlayActivated_t* pParam)
 {
 	const bool bIsCurrentOverlayActive = pParam->m_bActive != 0;
-	//DefaultGameInstance; //So that the call list reference on the Lambda works
 	if (bIsCurrentOverlayActive)
 	{
 		AsyncTask(ENamedThreads::GameThread, [this]
@@ -170,8 +169,6 @@ void USteamManager::OnUserStatsReceived(UserStatsReceived_t* pCallback)
 		default:
 			break;
 		}
-		// UE_LOG(LogSteamManager, Warning, TEXT("Stat.APIName %hs IntValue: %d FloatDesc: %f"), Stat.APIName,
-		// Stat.IntValue, Stat.FloatValue);
 	}
 
 	UE_LOG(LogSteamManager, Warning, TEXT("Received stats from Steam"));

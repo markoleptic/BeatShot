@@ -19,10 +19,10 @@ void UPlayerHUD::NativeConstruct()
 	TextBlock_SongTimeElapsed->SetText(FText::FromString(UKismetStringLibrary::TimeSecondsToString(0).LeftChop(3)));
 }
 
-void UPlayerHUD::Init(const FBSConfig& InConfig)
+void UPlayerHUD::Init(const TSharedPtr<FBSConfig> InConfig)
 {
 	Config = InConfig;
-	switch (InConfig.TargetConfig.TargetDamageType)
+	switch (InConfig->TargetConfig.TargetDamageType)
 	{
 	case ETargetDamageType::Tracking:
 		{
@@ -38,18 +38,18 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 		break;
 	case ETargetDamageType::Combined:
 		{
-			const int32 Min = -static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f);
+			const int32 Min = -static_cast<int32>(InConfig->TargetConfig.SpawnBeatDelay * 100.f);
 			const FString MinTick = FString::FromInt(Min) + "ms";
-			const int32 Max = (InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) * 100.f;
+			const int32 Max = (InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) * 100.f;
 			const FString MaxTick = FString::FromInt(Max) + "ms";
 			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
 		}
 	case ETargetDamageType::Hit:
 		{
 			Box_TrackingAccuracy->SetVisibility(ESlateVisibility::Collapsed);
-			const int32 Min = -static_cast<int32>(InConfig.TargetConfig.SpawnBeatDelay * 100.f);
+			const int32 Min = -static_cast<int32>(InConfig->TargetConfig.SpawnBeatDelay * 100.f);
 			const FString MinTick = FString::FromInt(Min) + "ms";
-			const int32 Max = (InConfig.TargetConfig.TargetMaxLifeSpan - InConfig.TargetConfig.SpawnBeatDelay) * 100.f;
+			const int32 Max = (InConfig->TargetConfig.TargetMaxLifeSpan - InConfig->TargetConfig.SpawnBeatDelay) * 100.f;
 			const FString MaxTick = FString::FromInt(Max) + "ms";
 			HitTimingWidget->Init(FText::FromString(MinTick), FText::FromString(MaxTick));
 		}
@@ -60,25 +60,25 @@ void UPlayerHUD::Init(const FBSConfig& InConfig)
 	}
 
 	// Display default game mode names if not custom
-	if (InConfig.DefiningConfig.GameModeType == EGameModeType::Preset)
+	if (InConfig->DefiningConfig.GameModeType == EGameModeType::Preset)
 	{
-		TextBlock_GameModeName->SetText(UEnum::GetDisplayValueAsText(InConfig.DefiningConfig.BaseGameMode));
+		TextBlock_GameModeName->SetText(UEnum::GetDisplayValueAsText(InConfig->DefiningConfig.BaseGameMode));
 	}
 	// Display custom game mode if not a default game mode
 	else
 	{
-		TextBlock_GameModeName->SetText(FText::FromString(InConfig.DefiningConfig.CustomGameModeName));
+		TextBlock_GameModeName->SetText(FText::FromString(InConfig->DefiningConfig.CustomGameModeName));
 	}
 
-	TextBlock_SongTitle->SetText(FText::FromString(InConfig.AudioConfig.SongTitle));
-	const FString Time = UKismetStringLibrary::TimeSecondsToString(InConfig.AudioConfig.SongLength).LeftChop(3);
+	TextBlock_SongTitle->SetText(FText::FromString(InConfig->AudioConfig.SongTitle));
+	const FString Time = UKismetStringLibrary::TimeSecondsToString(InConfig->AudioConfig.SongLength).LeftChop(3);
 	TextBlock_TotalSongLength->SetText(FText::FromString(Time));
 }
 
 void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	if (GameSettings.bShowHitTimingWidget && (Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
-		Config.TargetConfig.TargetDamageType == ETargetDamageType::Combined))
+	if (GameSettings.bShowHitTimingWidget && (Config->TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
+		Config->TargetConfig.TargetDamageType == ETargetDamageType::Combined))
 	{
 		if (!HitTimingWidget->GetIsEnabled())
 		{
@@ -86,8 +86,8 @@ void UPlayerHUD::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSe
 			HitTimingWidget->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
 		}
 	}
-	else if (!GameSettings.bShowHitTimingWidget && (Config.TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
-		Config.TargetConfig.TargetDamageType == ETargetDamageType::Combined))
+	else if (!GameSettings.bShowHitTimingWidget && (Config->TargetConfig.TargetDamageType == ETargetDamageType::Hit ||
+		Config->TargetConfig.TargetDamageType == ETargetDamageType::Combined))
 	{
 		if (HitTimingWidget->GetIsEnabled())
 		{
@@ -105,7 +105,7 @@ void UPlayerHUD::UpdateAllElements(const FPlayerScore& Scores, const float NormE
 	TextBlock_CurrentScore->SetText(FText::AsNumber(Score));
 	TextBlock_HighScore->SetText(FText::AsNumber(HighScore < Score ? Score : HighScore));
 	
-	switch (Config.TargetConfig.TargetDamageType)
+	switch (Config->TargetConfig.TargetDamageType)
 	{
 	case ETargetDamageType::Tracking:
 		{

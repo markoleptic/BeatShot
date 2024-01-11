@@ -1831,9 +1831,9 @@ TSet<FFactor> USpawnAreaManagerComponent::FindBestFittingFactors(const int32 Num
 			BestFactors.Add(Factor);
 		}
 	}
-
-	UE_LOG(LogTargetManager, Display, TEXT("MinDistance between factors of %d: %.2f"), Number, MinDistance);
-
+	
+	// UE_LOG(LogTargetManager, Display, TEXT("MinDistance between factors of %d: %.2f"), Number, MinDistance);
+	
 	return BestFactors;
 }
 

@@ -94,7 +94,7 @@ public:
 	
 	/** Entry point into starting game. Spawn TargetManager, Visualizers 
 	 *  If a valid path is found, calls InitializeAudioManagers, otherwise calls ShowSongPathErrorMessage */
-	void InitializeGameMode();
+	void InitializeGameMode(const TSharedPtr<FBSConfig> InConfig);
 
 	/** Allows TargetManager to start spawning targets, starts timers, shows PlayerHUD, CrossHair, and hides the
 	 *  countdown widget. Called from Countdown widget when the countdown has completed */
@@ -236,8 +236,7 @@ private:
 	const FActorSpawnParameters SpawnParameters;
 
 	/** The game mode defining properties */
-	UPROPERTY(VisibleAnywhere, Category = "BeatShot|General")
-	FBSConfig BSConfig;
+	TSharedPtr<FBSConfig> BSConfig;
 
 	/** The time elapsed since last target spawn */
 	float Elapsed;

@@ -20,10 +20,12 @@ UReinforcementLearningComponent::UReinforcementLearningComponent()
 	M = DefaultNumberOfQTableRows;
 	N = DefaultNumberOfQTableColumns;;
 
+	bPrintDebug_ActiveTargetPairs = false;
+	bPrintDebug_QTableInit = false;
 	bPrintDebug_QTableUpdate = false;
 	bPrintDebug_GetMaxIndex = false;
 	bBroadcastAverageOnQTableUpdate = false;
-	bPrintDebug_ChooseBestActionIndex = false;
+	bPrintDebug_ChooseActionIndex = false;
 
 	IntegerFormatting.MaximumFractionalDigits = 0;
 	IntegerFormatting.MaximumIntegralDigits = 2;
@@ -69,8 +71,13 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 		{
 			SpawnAreaToQTableIndexMap.Add(FSpawnAreaQTableIndexPair(SpawnAreaIndex, Mapping.Key));
 		}
-		UE_LOG(LogTargetManager, Display, TEXT("Index %d has %d SpawnAreas associated with it."), Mapping.Key,
-			Mapping.Value.MappedIndices.Num());
+		#if !UE_BUILD_SHIPPING
+		if (bPrintDebug_QTableInit)
+		{
+			UE_LOG(LogTargetManager, Display, TEXT("Index %d has %d SpawnAreas associated with it."), Mapping.Key,
+				Mapping.Value.MappedIndices.Num());
+		}
+		#endif
 	}
 
 	// Use existing QTable if possible
@@ -91,12 +98,17 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	// Check NaNs
 	QTable = nc::nan_to_num<float>(QTable, 0.f);
 
-	UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"),
-		AgentParams.ScoreInfo.QTable.Num(), QTable.size());
-	UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"),
-		AgentParams.SpawnAreaSize.Z, AgentParams.SpawnAreaSize.Y);
-	UE_LOG(LogTargetManager, Display, TEXT("QTableRows: %d QTableColumns: %d"), M, N);
-	UE_LOG(LogTargetManager, Display, TEXT("QTable Training Samples: %lld"), TotalTrainingSamples);
+	#if !UE_BUILD_SHIPPING
+	if (bPrintDebug_QTableInit)
+	{
+		UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"),
+			AgentParams.ScoreInfo.QTable.Num(), QTable.size());
+		UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"),
+			AgentParams.SpawnAreaSize.Z, AgentParams.SpawnAreaSize.Y);
+		UE_LOG(LogTargetManager, Display, TEXT("QTableRows: %d QTableColumns: %d"), M, N);
+		UE_LOG(LogTargetManager, Display, TEXT("QTable Training Samples: %lld"), TotalTrainingSamples);
+	}
+	#endif
 }
 
 // Main QTable functions
@@ -112,11 +124,20 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 SpawnAr
 		return;
 	}
 	ActiveTargetPairs.Emplace(SpawnAreaIndex_First, SpawnAreaIndex_Second);
-	//UE_LOG(LogTemp, Display, TEXT("Added [%d, %d] to Active Target Pairs"), SpawnAreaIndex_First, SpawnAreaIndex_Second);
+
+	#if !UE_BUILD_SHIPPING
+	if (bPrintDebug_ActiveTargetPairs)
+	{
+		UE_LOG(LogTargetManager, Display, TEXT("Added [%d, %d] to Active Target Pairs"),
+			SpawnAreaIndex_First, SpawnAreaIndex_Second);
+	}
+	#endif
 }
 
 void UReinforcementLearningComponent::SetActiveTargetPairReward(const int32 SpawnAreaIndex, const bool bHit)
 {
+	if (ActiveTargetPairs.IsEmpty()) return;
+
 	FTargetPair FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex);
 	if (FoundPair.First == -1 || FoundPair.Second == -1)
 	{
@@ -165,8 +186,13 @@ int32 UReinforcementLearningComponent::ChooseNextActionIndex(const int32 Previou
 		const int32 BestActionIndex = ChooseBestActionIndex(PreviousSpawnAreaIndex, SpawnAreaIndices);
 		if (BestActionIndex == INDEX_NONE)
 		{
-			UE_LOG(LogTargetManager, Display,
-				TEXT("No acceptable index range found, falling back to choosing random action"));
+			#if !UE_BUILD_SHIPPING
+			if (bPrintDebug_ChooseActionIndex)
+			{
+				UE_LOG(LogTargetManager, Display,
+					TEXT("No acceptable index range found, falling back to choosing random action"));
+			}
+			#endif
 			return ChooseRandomActionIndex(SpawnAreaIndices);
 		}
 		return BestActionIndex;
@@ -219,7 +245,7 @@ int32 UReinforcementLearningComponent::ChooseBestActionIndex(const int32 Previou
 	}
 
 	#if !UE_BUILD_SHIPPING
-	if (bPrintDebug_ChooseBestActionIndex)
+	if (bPrintDebug_ChooseActionIndex)
 	{
 		UE_LOG(LogTargetManager, Display, TEXT("ChooseBestActionIdx: Num Filters Required: %d"), NumFiltersRequired);
 		UE_LOG(LogTargetManager, Display, TEXT("ChooseBestActionIdx: Num Choices: %d"), NumCurrentIndexChoices);
@@ -355,7 +381,7 @@ TArray<float> UReinforcementLearningComponent::GetTArray_FromNdArray_QTableAvg()
 
 TArray<float> UReinforcementLearningComponent::GetTArray_FromNdArray_QTableMax() const
 {
-	nc::NdArray<float> QTableMin = nc::max(GetQTable(), nc::Axis::COL).astype<float>();
+	nc::NdArray<float> QTableMin = nc::max(GetQTable(), nc::Axis::ROW).astype<float>();
 	const nc::NdArray<float> Reshaped = QTableMin.reshape(5, 5);
 	const nc::NdArray<float> Flipped = nc::flipud<float>(Reshaped);
 	return GetTArrayFromNdArray<float>(Flipped);
@@ -370,20 +396,6 @@ int32 UReinforcementLearningComponent::GetIndex_FromSpawnArea_ToQTable(const int
 		});
 
 	return Found ? Found->QTableIndex : INDEX_NONE;
-
-	/* First find the Row and Column number that corresponds to the SpawnArea index */
-	//const int32 SpawnAreaRowNum = SpawnAreaIndex / SpawnAreasWidth;
-	//const int32 SpawnAreaColNum = SpawnAreaIndex % SpawnAreasWidth;
-
-	/* Scale down the SpawnArea row and column numbers */
-	//const int32 QTableRow = SpawnAreaRowNum / HeightScaleFactor;
-	//const int32 QTableCol = SpawnAreaColNum / WidthScaleFactor /*% ScaledWidth*/;
-	//const int32 QTableIndex = QTableRow * ScaledHeight + QTableCol;
-
-	//UE_LOG(LogTargetManager, Display, TEXT(" %d|   %d %d  %d %d   |%d"),
-	//SpawnAreaIndex, SpawnAreaRowNum, SpawnAreaColNum, QTableRow, QTableCol, QTableIndex);
-
-	//return QTableIndex;
 }
 
 TArray<int32> UReinforcementLearningComponent::GetSpawnAreaIndexRange(const int32 QTableIndex) const

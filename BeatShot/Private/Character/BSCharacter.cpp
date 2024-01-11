@@ -264,31 +264,19 @@ void ABSCharacter::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 			/*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Move_Right, this, &ThisClass::Input_Move,
 			/*bLogIfNotFound=*/ true);
-
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Look, this, &ThisClass::Input_Look,
 			/*bLogIfNotFound=*/ true);
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Jump, this, &ThisClass::Jump,
 			/*bLogIfNotFound=*/ true);
-
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Started, this,
-			&ThisClass::Input_WalkStart, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, ETriggerEvent::Completed, this,
-			&ThisClass::Input_WalkEnd, /*bLogIfNotFound=*/ true);
-
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Started, this,
-			&ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, ETriggerEvent::Completed, this,
-			&ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
-
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Started, this,
-			&ThisClass::Input_OnInteractStarted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, ETriggerEvent::Completed, this,
-			&ThisClass::Input_OnInteractCompleted, /*bLogIfNotFound=*/ true);
-
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Started, this,
-			&ThisClass::Input_OnShiftInteractStarted, /*bLogIfNotFound=*/ true);
-		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, ETriggerEvent::Completed,
-			this, &ThisClass::Input_OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
+		
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Walk, this,
+			&ThisClass::Input_WalkStart, &ThisClass::Input_WalkEnd, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Crouch, this,
+			&ThisClass::Input_Crouch, &ThisClass::Input_Crouch, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_Interact, this,
+			&ThisClass::Input_OnInteractStarted, &ThisClass::Input_OnInteractCompleted, /*bLogIfNotFound=*/ true);
+		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_ShiftInteract, this,
+			&ThisClass::Input_OnShiftInteractStarted, &ThisClass::Input_OnShiftInteractCompleted, /*bLogIfNotFound=*/ true);
 
 		BSInputComponent->BindNativeAction(LoadedConfig, GameplayTags.Input_EquipmentSlot_1, this,
 			&ThisClass::Input_OnEquipmentSlot1Started, /*bLogIfNotFound=*/ true);
@@ -485,6 +473,22 @@ bool ABSCharacter::IsSprinting() const
 		return false;
 	}
 	return true;
+}
+
+void ABSCharacter::BindLeftClick()
+{
+	if (const UBSInputConfig* LoadedConfig = InputConfig)
+	{
+		UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(InputComponent);
+		BSInputComponent->BindNativeAction(LoadedConfig, FBSGameplayTags::Get().Input_LeftClick, this,
+			&ThisClass::Input_OnLeftClick, /*bLogIfNotFound=*/ true);
+	}
+}
+
+void ABSCharacter::UnbindLeftClick()
+{
+	UBSInputComponent* BSInputComponent = CastChecked<UBSInputComponent>(InputComponent);
+	BSInputComponent->RemoveBind(FBSGameplayTags::Get().Input_LeftClick);
 }
 
 void ABSCharacter::ApplyDamageMomentum(float DamageTaken, FDamageEvent const& DamageEvent, APawn* PawnInstigator,
@@ -789,6 +793,14 @@ void ABSCharacter::Input_OnPause(const FInputActionValue& Value)
 		return;
 	}
 	BSPlayerController->HandlePause();
+}
+
+void ABSCharacter::Input_OnLeftClick(const FInputActionValue& Value)
+{
+	if (GetBSPlayerController())
+	{
+		GetBSPlayerController()->HandleLeftClick();
+	}
 }
 
 void ABSCharacter::Input_AbilityInputTagPressed(FGameplayTag InputTag)

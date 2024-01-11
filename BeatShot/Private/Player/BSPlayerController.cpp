@@ -60,10 +60,6 @@ void ABSPlayerController::BeginPlay()
 		}
 	}*/
 
-	LoadingScreenWidgetFadeOutTime = 0.5f;
-	//GConfig->GetFloat(TEXT("/Script/CommonLoadingScreen.CommonLoadingScreenSettings"),
-	//	TEXT("LoadingScreenWidgetFadeOutTime"), LoadingScreenWidgetFadeOutTime, GGameIni);
-
 	if (LoadPlayerSettings().VideoAndSound.bShowFPSCounter)
 	{
 		ShowFPSCounter();
@@ -72,12 +68,11 @@ void ABSPlayerController::BeginPlay()
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_VideoAndSound);
 	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this, &ABSPlayerController::OnPlayerSettingsChanged);
-
-	PlayerHUDActive = false;
+	
 	PostGameMenuActive = false;
 	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 	{
-		GameMode->OnGameModeStarted.AddLambda([&]
+		GameMode->OnGameModeStarted.AddLambda([this]
 		{
 			ShowCrossHair();
 			ShowPlayerHUD();
@@ -239,10 +234,12 @@ void ABSPlayerController::ShowPlayerHUD()
 		return;
 	}
 
-	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
-	PlayerHUD->Init(Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig());
-
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	
+	PlayerHUD = CreateWidget<UPlayerHUD>(this, PlayerHUDClass);
+	check(GI->GetBSConfig())
+	PlayerHUD->Init(GI->GetBSConfig());
+	
 	GI->AddDelegateToOnPlayerSettingsChanged(PlayerHUD->GetGameDelegate());
 	GI->GetPublicGameSettingsChangedDelegate().AddUObject(PlayerHUD, &UPlayerHUD::OnPlayerSettingsChanged_Game);
 
@@ -251,7 +248,6 @@ void ABSPlayerController::ShowPlayerHUD()
 	GameMode->OnSecondPassed.AddUObject(PlayerHUD, &UPlayerHUD::UpdateSongProgress);
 
 	PlayerHUD->AddToViewport();
-	PlayerHUDActive = true;
 }
 
 void ABSPlayerController::HidePlayerHUD()
@@ -260,7 +256,6 @@ void ABSPlayerController::HidePlayerHUD()
 	{
 		PlayerHUD->RemoveFromParent();
 		PlayerHUD = nullptr;
-		PlayerHUDActive = false;
 	}
 	HideRLAgentWidget();
 }
@@ -280,14 +275,17 @@ void ABSPlayerController::ShowCountdown(const bool bIsRestart)
 	{
 		FadeScreenFromBlack();
 	}
+
+	if (GetBSCharacter())
+	{
+		GetBSCharacter()->BindLeftClick();
+	}
+	
 	Countdown = CreateWidget<UCountdownWidget>(this, CountdownClass);
-	Countdown->PlayerDelay = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))->GetBSConfig().
-		AudioConfig.PlayerDelay;
 	ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
 	Countdown->OnCountdownCompleted.BindUObject(GameMode, &ABSGameMode::StartGameMode);
 	Countdown->StartAAManagerPlayback.BindUObject(GameMode, &ABSGameMode::StartAAManagerPlayback);
 	Countdown->AddToViewport();
-	CountdownActive = true;
 	UGameUserSettings::GetGameUserSettings()->SetFrameRateLimit(LoadPlayerSettings().VideoAndSound.FrameRateLimitGame);
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
@@ -302,7 +300,6 @@ void ABSPlayerController::HideCountdown()
 	{
 		Countdown->RemoveFromParent();
 		Countdown = nullptr;
-		CountdownActive = false;
 	}
 }
 
@@ -338,7 +335,7 @@ void ABSPlayerController::ShowPostGameMenu()
 	UGameUserSettings::GetGameUserSettings()->ApplySettings(false);
 }
 
-void ABSPlayerController::OnPostScoresResponseReceived(const EPostScoresResponse& Response)
+void ABSPlayerController::OnPostScoresResponseReceived(const FString& StringTableKey)
 {
 	if (!IsLocalController())
 	{
@@ -348,7 +345,7 @@ void ABSPlayerController::OnPostScoresResponseReceived(const EPostScoresResponse
 	{
 		return;
 	}
-	PostGameMenuWidget->ScoresWidget->InitScoreBrowser(EScoreBrowserType::PostGameModeMenuScores, Response);
+	PostGameMenuWidget->ScoresWidget->InitScoreBrowser(EScoreBrowserType::PostGameModeMenuScores, StringTableKey);
 }
 
 void ABSPlayerController::HandlePause()
@@ -381,6 +378,22 @@ void ABSPlayerController::HandlePause()
 		GameMode->PauseAAManager(true);
 		SetInputMode(FInputModeGameAndUI());
 		SetShowMouseCursor(true);
+	}
+}
+
+void ABSPlayerController::HandleLeftClick()
+{
+	if (GetBSCharacter())
+	{
+		GetBSCharacter()->UnbindLeftClick();
+	}
+	if (Countdown)
+	{
+		UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+		if (GI && GI->GetBSConfig().IsValid())
+		{
+			Countdown->StartCountdown(Constants::CountdownTimerLength, GI->GetBSConfig()->AudioConfig.PlayerDelay);
+		}
 	}
 }
 
@@ -496,16 +509,6 @@ void ABSPlayerController::PostProcessInput(const float DeltaTime, const bool bGa
 	}
 	GetBSAbilitySystemComponent()->ProcessAbilityInput(DeltaTime, IsPaused());
 }
-
-/*void ABSPlayerController::BindToLoadingScreenDelegates(
-	FOnLoadingScreenVisibilityChangedDelegate& OnLoadingScreenVisibilityChanged,
-	FOnReadyToHideLoadingScreenDelegate& OnReadyToHideLoadingScreen)
-{
-	if (!OnLoadingScreenVisibilityChanged.IsBoundToObject(this))
-	{
-		OnLoadingScreenVisibilityChanged.AddUObject(this, &ABSPlayerController::OnLoadingScreenVisibilityChanged);
-	}
-}*/
 
 void ABSPlayerController::OnLoadingScreenVisibilityChanged(bool bIsVisible)
 {

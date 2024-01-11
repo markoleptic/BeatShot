@@ -5,6 +5,7 @@
 // ReSharper disable CppParameterMayBeConstPtrOrRef
 #include "Player/BSCheatManager.h"
 #include "AbilitySystemComponent.h"
+#include "BSGameInstance.h"
 #include "Character/BSCharacter.h"
 #include "BSGameMode.h"
 #include "Player/BSPlayerController.h"
@@ -42,7 +43,16 @@ namespace BeatShotConsoleVariables
 		TEXT("Toggles printing the Reinforcement Learning Component's intermediate values when finding the max "
 		"action index."));
 
+	static TAutoConsoleVariable CVarPrintDebug_ActiveTargetPairs(TEXT("bs_pringdebug.activetargetpairs"),
+		0,
+		TEXT("Toggles printing the target pairs that are added to the RL Component's ActiveTargetPairs."));
 
+	
+	static TAutoConsoleVariable CVarPrintDebug_QTableInit(TEXT("bs_pringdebug.qtableinit"),
+		0,
+		TEXT("Toggles printing initialization info about the QTable in the RL Component."));
+
+	
 	static TAutoConsoleVariable CVarPrintDebug_QTableUpdate(TEXT("bs_printdebug.qtableupdate"),
 		0,
 		TEXT("Toggles printing the old and new QTable value each time the Reinforcement Learning Component "
@@ -156,6 +166,14 @@ void UBSCheatManager::InitCheatManager()
 	FConsoleVariableDelegate QTableUpdateDelegate;
 	QTableUpdateDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_QTableUpdate);
 	BeatShotConsoleVariables::CVarPrintDebug_QTableUpdate.AsVariable()->SetOnChangedCallback(QTableUpdateDelegate);
+
+	FConsoleVariableDelegate QTableInitDelegate;
+	QTableInitDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_QTableInit);
+	BeatShotConsoleVariables::CVarPrintDebug_QTableInit.AsVariable()->SetOnChangedCallback(QTableInitDelegate);
+
+	FConsoleVariableDelegate ActiveTargetPairsDelegate;
+	ActiveTargetPairsDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_ActiveTargetPairs);
+	BeatShotConsoleVariables::CVarPrintDebug_ActiveTargetPairs.AsVariable()->SetOnChangedCallback(ActiveTargetPairsDelegate);
 
 	FConsoleVariableDelegate GridDelegate;
 	GridDelegate.BindUObject(this, &UBSCheatManager::CVarOnChanged_PrintDebug_Grid);
@@ -284,6 +302,8 @@ void UBSCheatManager::CVarOnChanged_ClearDebug(IConsoleVariable* Variable)
 	CVarOnChanged_PrintDebug_ChooseBestActionIndex(Variable);
 	CVarOnChanged_PrintDebug_GetMaxIndex(Variable);
 	CVarOnChanged_PrintDebug_QTableUpdate(Variable);
+	CVarOnChanged_PrintDebug_QTableInit(Variable);
+	CVarOnChanged_PrintDebug_ActiveTargetPairs(Variable);
 	CVarOnChanged_ShowDebug_ReinforcementLearningWidget(Variable);
 	CVarOnChanged_ShowDebug_SpawnBox(Variable);
 	CVarOnChanged_ShowDebug_DirectionalBoxes(Variable);
@@ -316,7 +336,7 @@ void UBSCheatManager::CVarOnChanged_PrintDebug_ChooseBestActionIndex(IConsoleVar
 	const ATargetManager* TargetManager = GameMode->GetTargetManager();
 	if (!TargetManager || !TargetManager->RLComponent) return;
 
-	TargetManager->RLComponent->bPrintDebug_ChooseBestActionIndex = Variable->GetBool();
+	TargetManager->RLComponent->bPrintDebug_ChooseActionIndex = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_PrintDebug_Grid(IConsoleVariable* Variable)
@@ -350,6 +370,28 @@ void UBSCheatManager::CVarOnChanged_PrintDebug_QTableUpdate(IConsoleVariable* Va
 	if (!TargetManager || !TargetManager->RLComponent) return;
 
 	TargetManager->RLComponent->bPrintDebug_QTableUpdate = Variable->GetBool();
+}
+
+void UBSCheatManager::CVarOnChanged_PrintDebug_QTableInit(IConsoleVariable* Variable)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager || !TargetManager->RLComponent) return;
+
+	TargetManager->RLComponent->bPrintDebug_QTableInit = Variable->GetBool();
+}
+
+void UBSCheatManager::CVarOnChanged_PrintDebug_ActiveTargetPairs(IConsoleVariable* Variable)
+{
+	const ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
+	if (!GameMode) return;
+
+	const ATargetManager* TargetManager = GameMode->GetTargetManager();
+	if (!TargetManager || !TargetManager->RLComponent) return;
+
+	TargetManager->RLComponent->bPrintDebug_ActiveTargetPairs = Variable->GetBool();
 }
 
 void UBSCheatManager::CVarOnChanged_ShowDebug_TargetManager(IConsoleVariable* Variable)
@@ -597,24 +639,24 @@ void UBSCheatManager::CVarOnChanged_ShowDebug_Vertices_Dynamic(IConsoleVariable*
 void UBSCheatManager::CVarOnChanged_ShowDebug_SpotLightFront(IConsoleVariable* Variable)
 {
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GI->TimeOfDayManager)
+	if (GI->GetTimeOfDayManager())
 	{
-		GI->TimeOfDayManager->SetSpotLightFrontEnabledState(Variable->GetBool());
+		GI->GetTimeOfDayManager()->SetSpotLightFrontEnabledState(Variable->GetBool());
 	}
 }
 
 void UBSCheatManager::CVarOnChanged_SetTimeOfDay(IConsoleVariable* Variable)
 {
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GI->TimeOfDayManager)
+	if (GI->GetTimeOfDayManager())
 	{
 		if (Variable->GetString().Equals("day", ESearchCase::IgnoreCase))
 		{
-			GI->TimeOfDayManager->SetTimeOfDay(ETimeOfDay::Day);
+			GI->GetTimeOfDayManager()->SetTimeOfDay(ETimeOfDay::Day);
 		}
 		if (Variable->GetString().Equals("night", ESearchCase::IgnoreCase))
 		{
-			GI->TimeOfDayManager->SetTimeOfDay(ETimeOfDay::Night);
+			GI->GetTimeOfDayManager()->SetTimeOfDay(ETimeOfDay::Night);
 		}
 	}
 }

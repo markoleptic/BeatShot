@@ -312,7 +312,7 @@ void UGameModesWidget::OnButtonClicked_ImportCustom()
 		const FString ImportString = GameModeSharingWidget->GetImportString();
 		GameModeSharingWidget->FadeOut();
 
-		TSharedPtr<FBSConfig> ImportedConfig = MakeShareable(new FBSConfig);
+		TSharedPtr<FBSConfig> ImportedConfig = MakeShareable(new FBSConfig());
 		FText OutFailureReason;
 		if (!ImportCustomGameMode(ImportString, *ImportedConfig.ToSharedRef(), OutFailureReason))
 		{
@@ -594,7 +594,7 @@ void UGameModesWidget::OnButtonClicked_RemoveSelectedCustom()
 		PopupMessageWidget->FadeOut();
 		const FString GameModeNameToRemove = BSConfig->DefiningConfig.CustomGameModeName;
 
-		TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse);
+		TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse());
 		AccessTokenResponse->OnHttpResponseReceived.BindLambda([this, AccessTokenResponse,
 			GameModeNameToRemove]
 		{
@@ -602,11 +602,11 @@ void UGameModesWidget::OnButtonClicked_RemoveSelectedCustom()
 			{
 				return;
 			}
-			TSharedPtr<FDeleteScoresResponse> DeleteScoresResponse = MakeShareable(new FDeleteScoresResponse);
+			TSharedPtr<FDeleteScoresResponse> DeleteScoresResponse = MakeShareable(new FDeleteScoresResponse());
 			DeleteScoresResponse->OnHttpResponseReceived.BindLambda([this, DeleteScoresResponse,
 				GameModeNameToRemove]
 			{
-				if (DeleteScoresResponse->HttpStatus >= 200 && DeleteScoresResponse->HttpStatus <= 300)
+				if (DeleteScoresResponse->OK)
 				{
 					const int32 NumGameModesRemoved = RemoveCustomGameMode(FindCustomGameMode(GameModeNameToRemove));
 					if (NumGameModesRemoved >= 1)

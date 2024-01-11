@@ -281,14 +281,20 @@ public:
 	/** Whether to broadcast the average or max QTable when broadcasting OnQTableUpdate */
 	bool bBroadcastAverageOnQTableUpdate;
 
+	/** Whether or not to print QTable initialization to log */
+	bool bPrintDebug_QTableInit;
+
 	/** Whether or not to print QTable updates to log */
 	bool bPrintDebug_QTableUpdate;
+
+	/** Whether or not to print Active Target Pair updates to log */
+	bool bPrintDebug_ActiveTargetPairs;
 
 	/** Whether or not to print finding the max index to log */
 	bool bPrintDebug_GetMaxIndex;
 
-	/** Whether or not to print finding the best action index to log */
-	bool bPrintDebug_ChooseBestActionIndex;
+	/** Whether or not to print finding the next and/or best action index to log */
+	bool bPrintDebug_ChooseActionIndex;
 
 private:
 	/** The mode that the RLC is operating in */

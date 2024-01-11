@@ -25,7 +25,7 @@ class USERINTERFACE_API UPlayerHUD : public UUserWidget, public ISaveLoadInterfa
 public:
 	virtual void NativeConstruct() override;
 
-	void Init(const FBSConfig& InConfig);
+	void Init(const TSharedPtr<FBSConfig> InConfig);
 
 	FOnPlayerSettingsChanged_Game& GetGameDelegate() { return OnPlayerSettingsChangedDelegate_Game; }
 
@@ -89,5 +89,5 @@ public:
 	UPROPERTY(BlueprintReadOnly, meta = (BindWidget))
 	UHorizontalBox* Box_TrackingAccuracy;
 
-	FBSConfig Config;
+	TSharedPtr<FBSConfig> Config;
 };

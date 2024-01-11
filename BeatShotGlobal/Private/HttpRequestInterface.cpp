@@ -51,7 +51,8 @@ void IHttpRequestInterface::RequestAccessToken(const FString RefreshToken,
 				AccessTokenResponse->HttpStatus = Response->GetResponseCode();
 				if (AccessTokenResponse->HttpStatus >= 200 && AccessTokenResponse->HttpStatus <= 300)
 				{
-					TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+					AccessTokenResponse->OK = true;
+					TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 					const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
 						Response->GetContentAsString());
 					FJsonSerializer::Deserialize(JsonReader, JsonObject);
@@ -75,7 +76,7 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
 	TSharedPtr<FLoginResponse, ESPMode::ThreadSafe> LoginResponse)
 {
 	FString ContentString;
-	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	FJsonObjectConverter::UStructToJsonObject(FLoginPayload::StaticStruct(), &LoginPayload, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
@@ -100,13 +101,14 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
 			else
 			{
 				LoginResponse->HttpStatus = Response->GetResponseCode();
-				TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject);
+				TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject());
 				const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
 					Response->GetContentAsString());
 				FJsonSerializer::Deserialize(JsonReader, ResponseJsonObject);
 
 				if (LoginResponse->HttpStatus >= 200 && LoginResponse->HttpStatus <= 300)
 				{
+					LoginResponse->OK = true;
 					LoginResponse->UserID = ResponseJsonObject->GetStringField("userID");
 					LoginResponse->DisplayName = ResponseJsonObject->GetStringField("displayName");
 					LoginResponse->AccessToken = ResponseJsonObject->GetStringField("accessToken");
@@ -126,7 +128,7 @@ void IHttpRequestInterface::LoginUser(const FLoginPayload LoginPayload,
 }
 
 void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresToPost, const FString UserID,
-	const FString AccessToken, TSharedPtr<FPostScoresResponse, ESPMode::ThreadSafe> PostResponse)
+	const FString AccessToken, TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> PostScoresResponse)
 {
 	FJsonScore JsonScores;
 	// Add all elements that haven't been saved to database to the JsonScores Scores array
@@ -139,7 +141,7 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresTo
 	}
 
 	FString ContentString;
-	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	FJsonObjectConverter::UStructToJsonObject(FJsonScore::StaticStruct(), &JsonScores, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
@@ -153,34 +155,32 @@ void IHttpRequestInterface::PostPlayerScores(const TArray<FPlayerScore> ScoresTo
 	HttpRequest->SetHeader("Authorization", "Bearer " + AccessToken);
 	HttpRequest->SetContentAsString(ContentString);
 	HttpRequest->OnProcessRequestComplete().BindLambda(
-		[PostResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
+		[PostScoresResponse](FHttpRequestPtr Request, const FHttpResponsePtr Response, bool bConnectedSuccessfully)
 		{
-			check(PostResponse.IsValid());
-			PostResponse->bConnectedSuccessfully = bConnectedSuccessfully;
+			check(PostScoresResponse.IsValid());
+			PostScoresResponse->bConnectedSuccessfully = bConnectedSuccessfully;
 			if (!bConnectedSuccessfully || !Response.IsValid())
 			{
-				PostResponse->HttpStatus = 502;
-				PostResponse->PostScoresDescription = EPostScoresResponse::HttpError;
+				PostScoresResponse->HttpStatus = 502;
 				UE_LOG(LogTemp, Warning, TEXT("PostPlayerScores Request failed to successfully connect."));
 			}
 			else
 			{
-				PostResponse->HttpStatus = Response->GetResponseCode();
-				if (PostResponse->HttpStatus >= 200 && PostResponse->HttpStatus <= 300)
+				PostScoresResponse->HttpStatus = Response->GetResponseCode();
+				if (PostScoresResponse->HttpStatus >= 200 && PostScoresResponse->HttpStatus <= 300)
 				{
-					PostResponse->PostScoresDescription = EPostScoresResponse::HttpSuccess;
+					PostScoresResponse->OK = true;
 					UE_LOG(LogTemp, Warning, TEXT("Successfully saved scores to database."));
 				}
 				else
 				{
-					PostResponse->PostScoresDescription = EPostScoresResponse::HttpError;
 					UE_LOG(LogTemp, Warning, TEXT("Send Scores Request failed Http Status: %d"),
-						PostResponse->HttpStatus);
+						PostScoresResponse->HttpStatus);
 				}
 			}
-			if (PostResponse->OnHttpResponseReceived.IsBound())
+			if (PostScoresResponse->OnHttpResponseReceived.IsBound())
 			{
-				PostResponse->OnHttpResponseReceived.Execute();
+				PostScoresResponse->OnHttpResponseReceived.Execute();
 			}
 		});
 	HttpRequest->ProcessRequest();
@@ -190,7 +190,7 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
 	TSharedPtr<FBSHttpResponse, ESPMode::ThreadSafe> FeedbackResponse)
 {
 	FString ContentString;
-	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	FJsonObjectConverter::UStructToJsonObject(FJsonFeedback::StaticStruct(), &InFeedback, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
@@ -216,6 +216,7 @@ void IHttpRequestInterface::PostFeedback(const FJsonFeedback InFeedback,
 				FeedbackResponse->HttpStatus = Response->GetResponseCode();
 				if (FeedbackResponse->HttpStatus >= 200 && FeedbackResponse->HttpStatus <= 300)
 				{
+					FeedbackResponse->OK = true;
 					UE_LOG(LogTemp, Warning, TEXT("Successfully sent feedback."));
 				}
 				else
@@ -237,7 +238,7 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 {
 	FString ContentString;
 	const FJsonDeleteScores JsonDelete = FJsonDeleteScores(CustomGameModeName);
-	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+	const TSharedRef<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 	FJsonObjectConverter::UStructToJsonObject(FJsonDeleteScores::StaticStruct(), &JsonDelete, JsonObject);
 	const TSharedRef<TJsonWriter<>> JsonWriter = TJsonWriterFactory<>::Create(&ContentString);
 	FJsonSerializer::Serialize(JsonObject, JsonWriter);
@@ -265,7 +266,8 @@ void IHttpRequestInterface::DeleteScores(const FString CustomGameModeName, const
 				
 				if (DeleteScoresResponse->HttpStatus >= 200 && DeleteScoresResponse->HttpStatus <= 300)
 				{
-					TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject);
+					DeleteScoresResponse->OK = true;
+					TSharedPtr<FJsonObject> ResponseJsonObject = MakeShareable(new FJsonObject());
 					const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
 						Response->GetContentAsString());
 					FJsonSerializer::Deserialize(JsonReader, ResponseJsonObject);
@@ -312,13 +314,14 @@ void IHttpRequestInterface::AuthenticateSteamUser(const FString AuthTicket,
 			{
 				SteamAuthTicketResponse->HttpStatus = Response->GetResponseCode();
 
-				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+				TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject());
 				const TSharedRef<TJsonReader<>> JsonReader = TJsonReaderFactory<>::Create(
 					Response->GetContentAsString());
 				FJsonSerializer::Deserialize(JsonReader, JsonObject);
 
 				if (SteamAuthTicketResponse->HttpStatus >= 200 && SteamAuthTicketResponse->HttpStatus <= 300)
 				{
+					SteamAuthTicketResponse->OK = true;
 					SteamAuthTicketResponse->Result = JsonObject->GetStringField("result");
 					SteamAuthTicketResponse->SteamID = JsonObject->GetStringField("steamid");
 					SteamAuthTicketResponse->OwnerSteamID = JsonObject->GetStringField("ownersteamid");

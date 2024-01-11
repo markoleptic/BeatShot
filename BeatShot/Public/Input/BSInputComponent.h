@@ -33,16 +33,17 @@ public:
 	/** Removes player mapped keys to the InputSubsystem */
 	void RemoveInputMappings(const UBSInputConfig* InputConfig,
 		UEnhancedInputLocalPlayerSubsystem* InputSubsystem) const;
-
-	/** Binds an (EnhancedInputAction, GameplayTag) pair to the specified trigger event. */
-	template <class UserClass, typename FuncType>
-	void BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, ETriggerEvent TriggerEvent,
-		UserClass* Object, FuncType Func, bool bLogIfNotFound);
-
-	/** Binds an (EnhancedInputAction, GameplayTag) pair to the specified trigger event. */
+	
+	/** Binds an (EnhancedInputAction, GameplayTag) pair to the specified PressedTriggerEvent. */
 	template <class UserClass, typename FuncType>
 	void BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, UserClass* Object,
 		FuncType Func, bool bLogIfNotFound);
+
+	/** Binds an (EnhancedInputAction, GameplayTag) pair to the specified PressedTriggerEvent, along with
+	 *  binding the PressedTriggerEvent and ETriggerEvent::Completed. */
+	template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
+	void BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, UserClass* Object,
+		PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, bool bLogIfNotFound);
 
 	/** Binds an array of (EnhancedInputAction, GameplayTags) pair to the specified trigger events,
 	 *  and associates a GameplayTag with it. */
@@ -50,20 +51,15 @@ public:
 	void BindAbilityActions(const UBSInputConfig* InputConfig, UserClass* Object, PressedFuncType PressedFunc,
 		ReleasedFuncType ReleasedFunc, TArray<uint32>& BindHandles);
 
+	/** Removes a native action binding by finding the input tag in the NativeActionBindings map */
+	void RemoveBind(const FGameplayTag& InputTag);
+
 	void RemoveBinds(TArray<uint32>& BindHandles);
+
+protected:
+	TMap<FGameplayTag, TArray<uint32>> NativeActionBindings;
 };
 
-
-template <class UserClass, typename FuncType>
-void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag,
-	ETriggerEvent TriggerEvent, UserClass* Object, FuncType Func, bool bLogIfNotFound)
-{
-	check(InputConfig);
-	if (const UInputAction* IA = InputConfig->FindNativeInputActionForTag(InputTag, bLogIfNotFound))
-	{
-		BindAction(IA, TriggerEvent, Object, Func);
-	}
-}
 
 template <class UserClass, typename FuncType>
 void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag,
@@ -73,7 +69,26 @@ void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, cons
 	const FBSInputAction IA = InputConfig->FindBSInputActionForTag(InputTag, bLogIfNotFound);
 	if (IA.InputAction)
 	{
-		BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, Func);
+		NativeActionBindings.FindOrAdd(InputTag).Add(BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, Func).GetHandle());
+	}
+}
+
+template <class UserClass, typename PressedFuncType, typename ReleasedFuncType>
+void UBSInputComponent::BindNativeAction(const UBSInputConfig* InputConfig, const FGameplayTag& InputTag, UserClass* Object,
+	PressedFuncType PressedFunc, ReleasedFuncType ReleasedFunc, bool bLogIfNotFound)
+{
+	check(InputConfig);
+	const FBSInputAction IA = InputConfig->FindBSInputActionForTag(InputTag, bLogIfNotFound);
+	if (IA.InputAction && IA.InputTag.IsValid())
+	{
+		if (PressedFunc)
+		{
+			NativeActionBindings.FindOrAdd(InputTag).Add(BindAction(IA.InputAction, IA.PressedTriggerEvent, Object, PressedFunc).GetHandle());
+		}
+		if (ReleasedFunc)
+		{
+			NativeActionBindings.FindOrAdd(InputTag).Add(BindAction(IA.InputAction, ETriggerEvent::Completed, Object, ReleasedFunc).GetHandle());
+		}
 	}
 }
 

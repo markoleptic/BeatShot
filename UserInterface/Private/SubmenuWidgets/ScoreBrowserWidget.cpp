@@ -28,7 +28,7 @@ void UScoreBrowserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 }
 
 void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowserType,
-	const EPostScoresResponse& Response)
+	const FString& ErrorStringTableKey)
 {
 	ScoreBrowserType = InScoreBrowserType;
 	switch (InScoreBrowserType)
@@ -46,23 +46,13 @@ void UScoreBrowserWidget::InitScoreBrowser(const EScoreBrowserType InScoreBrowse
 
 	if (ScoreBrowserType == EScoreBrowserType::PostGameModeMenuScores)
 	{
-		switch (Response)
+		// Something went wrong
+		if (!ErrorStringTableKey.IsEmpty())
 		{
-		case EPostScoresResponse::ZeroScore:
-		case EPostScoresResponse::UnsavedGameMode:
-			SetOverlayTextAndFadeIn("SBW_DidNotSaveScores");
+			SetOverlayTextAndFadeIn(ErrorStringTableKey);
 			return;
-		case EPostScoresResponse::NoAccount:
-			SetOverlayTextAndFadeIn("SBW_NoAccount");
-			return;
-		case EPostScoresResponse::HttpError:
-			SetOverlayTextAndFadeIn("SBW_SavedScoresLocallyOnly");
-			return;
-		case EPostScoresResponse::HttpSuccess:
-			break;
-		default:
-			break;
 		}
+		
 		int64 MinTimeDifference = FDateTime::MinValue().ToUnixTimestamp();
 		FPlayerScore MinDateScore = FPlayerScore();
 		/** Could probably just use the last value in PlayerScoreArray, but just to be sure: */

@@ -166,6 +166,9 @@ public:
 
 	virtual bool IsSprinting() const;
 
+	void BindLeftClick();
+	void UnbindLeftClick();
+
 	UFUNCTION(Category = "BeatShot|Character", BlueprintCallable)
 	void SetAutoBunnyHop(bool Value) { bAutoBunnyHop = Value; }
 
@@ -258,6 +261,9 @@ private:
 
 	/** Triggered from IA_Pause */
 	void Input_OnPause(const FInputActionValue& Value);
+
+	/** Triggered from IA_LeftClick */
+	void Input_OnLeftClick(const FInputActionValue& Value);
 
 	/** Let ASC know an ability bound to an input was pressed. */
 	UFUNCTION(BlueprintCallable)

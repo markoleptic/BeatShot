@@ -2,70 +2,56 @@
 
 
 #include "OverlayWidgets/LoadingScreenWidgets/CountdownWidget.h"
-#include "GlobalConstants.h"
 #include "Components/Image.h"
+#include "Components/SizeBox.h"
 #include "Components/TextBlock.h"
+#include "Components/TimelineComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 
 void UCountdownWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
-	/* Use Color Changing Material, this is required in order to change color using C++ */
-	MID_Countdown = Image_Countdown->GetDynamicMaterial();
-}
-
-void UCountdownWidget::NativeDestruct()
-{
-	Super::NativeDestruct();
-	GetWorld()->GetTimerManager().ClearTimer(CountDownTimer);
-	CountDownTimer.Invalidate();
+	OnCountdownTick.BindDynamic(this, &UCountdownWidget::CountdownTick);
+	CountdownTimeline.AddInterpFloat(CountdownCurve, OnCountdownTick);
+	OnCountdownComplete.BindDynamic(this, &UCountdownWidget::CountdownComplete);
+	CountdownTimeline.SetTimelineFinishedFunc(OnCountdownComplete);
+	CountdownTimeline.SetPlayRate(1.f);
 }
 
 void UCountdownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+	CountdownTimeline.TickTimeline(InDeltaTime);
+}
 
-	if (!GetWorld()->GetTimerManager().IsTimerActive(CountDownTimer) || GetWorld()->GetTimerManager().
-		GetTimerRemaining(CountDownTimer) < 0)
-	{
-		return;
-	}
-	const float CurrentTime = GetWorld()->GetTimerManager().GetTimerRemaining(CountDownTimer);
-	TextBlock_Counter->SetText(FText::AsNumber(ceil(CurrentTime)));
-	MID_Countdown->SetScalarParameterValue(FName("Progress"), UKismetMathLibrary::Fraction(CurrentTime));
+void UCountdownWidget::StartCountdown(const float CountdownLength, const float PlayerDelay)
+{
+	TextBlock_Click->SetVisibility(ESlateVisibility::Collapsed);
+	CountdownContainer->SetVisibility(ESlateVisibility::Visible);
+	CountdownTimeline.SetTimelineLength(CountdownLength);
+	GetWorld()->GetTimerManager().SetTimer(StartAAManagerPlaybackTimer, this,
+		&UCountdownWidget::StartAAManagerPlaybackTimerComplete, CountdownLength - PlayerDelay, false);
+	CountdownTimeline.PlayFromStart();
+}
 
-	if (PlayerDelay <= 0.01 || CurrentTime - PlayerDelay > 0 || CurrentTime == -1)
+void UCountdownWidget::StartAAManagerPlaybackTimerComplete() const
+{
+	if (StartAAManagerPlayback.IsBound())
 	{
-		return;
-	}
-	/** If reached this point, CurrentTime is equal to PlayerDelay, and AAManager playback can be started */
-	if (!bHasCalledStartAAManagerPlayback)
-	{
-		if (!StartAAManagerPlayback.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("StartAAManagerPlayback not bound."));
-		}
-		bHasCalledStartAAManagerPlayback = true;
+		StartAAManagerPlayback.Execute();
 	}
 }
 
-void UCountdownWidget::StartCountDownTimer()
+void UCountdownWidget::CountdownTick(const float Value)
 {
-	GetWorld()->GetTimerManager().SetTimer(CountDownTimer, this, &UCountdownWidget::StartGameMode,
-		Constants::CountdownTimerLength, false);
+	TextBlock_Counter->SetText(FText::AsNumber(ceil(CountdownTimeline.GetTimelineLength() - Value)));
+	Image_Countdown->GetDynamicMaterial()->SetScalarParameterValue(FName("Progress"), UKismetMathLibrary::Fraction(CountdownTimeline.GetTimelineLength() - Value));
 }
 
-void UCountdownWidget::StartGameMode() const
+void UCountdownWidget::CountdownComplete()
 {
-	if (!OnCountdownCompleted.ExecuteIfBound())
+	if (OnCountdownCompleted.IsBound())
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnCountdownCompleted not bound."));
-	}
-	if (!bHasCalledStartAAManagerPlayback)
-	{
-		if (!StartAAManagerPlayback.ExecuteIfBound())
-		{
-			UE_LOG(LogTemp, Display, TEXT("StartAAManagerPlayback not bound."));
-		}
+		OnCountdownCompleted.Execute();
 	}
 }

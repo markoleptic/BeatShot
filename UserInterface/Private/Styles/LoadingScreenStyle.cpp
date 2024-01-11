@@ -23,5 +23,6 @@ const FLoadingScreenStyle& FLoadingScreenStyle::GetDefault()
 void FLoadingScreenStyle::GetResources(TArray<const FSlateBrush*>& OutBrushes) const
 {
 	OutBrushes.Add(&BackgroundImage);
+	OutBrushes.Add(&LogoImageTexture);
 	OutBrushes.Add(&LogoImage);
 }
