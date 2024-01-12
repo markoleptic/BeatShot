@@ -55,3 +55,17 @@ void UCountdownWidget::CountdownComplete()
 		OnCountdownCompleted.Execute();
 	}
 }
+
+void UCountdownWidget::SetCountdownPaused(const bool bIsPaused)
+{
+	if (bIsPaused && GetWorld()->GetTimerManager().IsTimerActive(StartAAManagerPlaybackTimer) && CountdownTimeline.IsPlaying())
+	{
+		CountdownTimeline.Stop();
+		GetWorld()->GetTimerManager().PauseTimer(StartAAManagerPlaybackTimer);
+	}
+	else if (!bIsPaused && GetWorld()->GetTimerManager().IsTimerPaused(StartAAManagerPlaybackTimer) && !CountdownTimeline.IsPlaying())
+	{
+		CountdownTimeline.Play();
+		GetWorld()->GetTimerManager().UnPauseTimer(StartAAManagerPlaybackTimer);
+	}
+}

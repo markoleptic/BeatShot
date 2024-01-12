@@ -27,70 +27,95 @@ class UBSAbilitySystemComponent;
 DECLARE_DELEGATE(FOnScreenFadeToBlackFinish);
 
 /** Base PlayerController class for this game. Responsible for adding any main widget from the UserInterface module
- *  to the viewport (MainMenu, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
+ *  to the viewport (MainMenuWidget, PauseMenu, PostGameModeMenu), and several other overlay widgets. */
 UCLASS()
-class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface,
-                                         public IHttpRequestInterface/*, public ILoadingProcessInterface*/
+class BEATSHOT_API ABSPlayerController : public APlayerController, public ISaveLoadInterface, public IHttpRequestInterface
 {
 	GENERATED_BODY()
 
 	virtual void BeginPlay() override;
+	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
+	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
 
+	/** Returns the player state. */
 	UFUNCTION(BlueprintCallable, Category = "BSPlayerController")
 	ABSPlayerState* GetBSPlayerState() const;
 
+	/** Returns the ability system component. */
 	UFUNCTION(BlueprintCallable, Category = "BSPlayerController")
 	UBSAbilitySystemComponent* GetBSAbilitySystemComponent() const;
 
 public:
-	/** Sets the enabled state of the pawn */
+	/** Returns the possessed character. */
+	ABSCharacter* GetBSCharacter() const;
+	
+	/** Sets the enabled state of the pawn. */
 	void SetPlayerEnabledState(const bool bPlayerEnabled);
 
-	UFUNCTION(BlueprintCallable)
+	/** Shows the main menu widget, creating it if it does not exist. */
 	void ShowMainMenu();
-	UFUNCTION(BlueprintCallable)
+	/** Hides and destroys the main menu widget, if it exists. */
 	void HideMainMenu();
 
-	UFUNCTION(BlueprintCallable)
+	/** Shows the pause menu widget, creating it if it does not exist. */
 	void ShowPauseMenu();
-	UFUNCTION(BlueprintCallable)
+	/** Hides and destroys the pause menu widget, if it exists. */
 	void HidePauseMenu();
 
+	/** Shows the crosshair widget, creating it if it does not exist. */
 	void ShowCrossHair();
+	/** Hides and destroys the crosshair widget, if it exists. */
 	void HideCrossHair();
 
+	/** Shows the PlayerHUD widget, creating it if it does not exist. */
 	void ShowPlayerHUD();
+	/** Hides and destroys the PlayerHUD widget, if it exists. */
 	void HidePlayerHUD();
 
-	void ShowCountdown(const bool bIsRestart);
+	/** Updates the PlayerHUD widget. */
+	void UpdatePlayerHUD(const FPlayerScore& PlayerScore, const float TimeOffsetNormalized, const float TimeOffsetRaw);
+	
+	/** Shows the countdown widget, creating it if it does not exist. */
+	void ShowCountdown();
+	/** Hides and destroys the countdown widget, if it exists. */
 	void HideCountdown();
 
+	/** Shows the post game mode menu widget, creating it if it does not exist. */
 	void ShowPostGameMenu();
+	/** Hides and destroys the post game mode menu widget, if it exists. */
 	void HidePostGameMenu();
 
+	/** Shows the FPS counter widget, creating it if it does not exist. */
 	void ShowFPSCounter();
+	/** Hides and destroys the FPS counter widget, if it exists. */
 	void HideFPSCounter();
 
+	/** Creates the ScreenFadeWidget and binds to its OnScreenFadeToBlackFinish delegate. */
 	void CreateScreenFadeWidget(const float StartOpacity);
+	/** Calls CreateScreenFadeWidget if necessary and plays the fade to black animation. */
 	void FadeScreenToBlack();
-
-	/** Called when entering a new level and the loading screen is finished, or when a game mode has been restarted inside a level */
+	/** Calls CreateScreenFadeWidget if necessary and plays the fade from black animation. */
 	void FadeScreenFromBlack();
 
+	/** Shows the interact info widget, creating it if it does not exist. */
 	void ShowInteractInfo();
+	/** Hides and destroys the interact info widget, if it exists. */
 	void HideInteractInfo();
 
+	/** Shows the RLAgent widget, creating it if it does not exist. Binds the provided delegate to the
+	 *  widget's UpdatePanel function. */
 	void ShowRLAgentWidget(FOnQTableUpdate& OnQTableUpdate, const int32 Rows, const int32 Columns,
 		const TArray<float>& QTable);
+	/** Hides and destroys the RLAgent widget, if it exists. */
 	void HideRLAgentWidget();
 
+	/** Spawns the floating text actor (combat text) with text indicating the streak of targets destroyed. */
 	void ShowCombatText(const int32 Streak, const FTransform& Transform);
+	/** Spawns the floating text actor (combat text) with text indicating the accuracy based on time offset. */
 	void ShowAccuracyText(const float TimeOffset, const FTransform& Transform);
 
-	/** Called by Game Instance after saving scores to database, or before if there was a problem */
+	/** Called by Game Instance after saving scores to database, or before if there was a problem. */
 	void OnPostScoresResponseReceived(const FString& StringTableKey = FString());
-
-	bool IsPostGameMenuActive() const { return PostGameMenuActive; }
 
 	/** Called by Character when receiving input from IA_Pause, or by exiting the PostGameMenu */
 	void HandlePause();
@@ -100,26 +125,23 @@ public:
 
 	// Server only
 	virtual void OnPossess(APawn* InPawn) override;
+	
+	// Server only
 	virtual void OnRep_PlayerState() override;
-
-	/** Delegate that executes when the ScreenFadeWidget completes its animation*/
-	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
-
-	ABSCharacter* GetBSCharacter() const;
-
-	/** Login the user by authenticating using GetAuthTicketForWebApi */
+	
+	/** Login the user by authenticating using GetAuthTicketForWebApi. */
 	void LoginUser();
 
-	/** Executed when the player requests to try to login through Steam after a failed attempt */
+	/** Executed when the player requests to try to login through Steam after a failed attempt. */
 	void InitiateSteamLogin();
+	
+	/** Delegate that executes when the screen fade widget completes its animation.  */
+	FOnScreenFadeToBlackFinish OnScreenFadeToBlackFinish;
+
+	/** The time the screen fade widget plays its animations for. Also applies to fading MainMenu music. */
+	float ScreenFadeWidgetAnimationDuration = 0.75f;
 
 protected:
-	virtual void PreProcessInput(const float DeltaTime, const bool bGamePaused) override;
-	virtual void PostProcessInput(const float DeltaTime, const bool bGamePaused) override;
-
-	UFUNCTION()
-	void OnLoadingScreenVisibilityChanged(bool bIsVisible);
-
 	UPROPERTY(EditDefaultsOnly, Category = "BSPlayerController|Classes")
 	TSubclassOf<UMainMenuWidget> MainMenuClass;
 	
@@ -154,39 +176,56 @@ protected:
 	TSubclassOf<AFloatingTextActor> FloatingTextActorClass;
 
 private:
-	UFUNCTION()
+	/** Callback function for screen fade widget's OnFadeFromBlackFinish delegate. */
 	void OnFadeScreenFromBlackFinish();
-	UFUNCTION()
+	
+	/** Callback function for when video and sound settings change. */
 	void OnPlayerSettingsChanged(const FPlayerSettings_VideoAndSound& PlayerSettings);
+	void OnPlayerSettingsChanged(const FPlayerSettings_Game& GameSettings);
+	void OnPlayerSettingsChanged(const FPlayerSettings_User& UserSettings);
 
-	/** Calls ResetAuthTicket from SteamAPI if both MainMenu and BeatShot API requests were completed */
+	/** Calls ResetAuthTicket from SteamAPI if both MainMenuWidget and BeatShot API requests were completed. */
 	void TryResetAuthTicketHandle(const uint32 Handle);
 
 	UPROPERTY()
-	UMainMenuWidget* MainMenu;
+	TObjectPtr<UMainMenuWidget> MainMenuWidget;
 	UPROPERTY()
-	UCrossHairWidget* CrossHair;
+	TObjectPtr<UCrossHairWidget> CrossHairWidget;
 	UPROPERTY()
-	UPlayerHUD* PlayerHUD;
+	TObjectPtr<UPlayerHUD> PlayerHUDWidget;
 	UPROPERTY()
-	UPauseMenuWidget* PauseMenu;
+	TObjectPtr<UPauseMenuWidget> PauseMenuWidget;
 	UPROPERTY()
-	UCountdownWidget* Countdown;
+	TObjectPtr<UCountdownWidget> CountdownWidget;
 	UPROPERTY()
-	UPostGameMenuWidget* PostGameMenuWidget;
+	TObjectPtr<UPostGameMenuWidget> PostGameMenuWidget;
 	UPROPERTY()
-	UFPSCounterWidget* FPSCounter;
+	TObjectPtr<UFPSCounterWidget> FPSCounterWidget;
 	UPROPERTY()
-	UScreenFadeWidget* ScreenFadeWidget;
+	TObjectPtr<UScreenFadeWidget> ScreenFadeWidget;
 	UPROPERTY()
-	UUserWidget* InteractInfoWidget;
+	TObjectPtr<UUserWidget> InteractInfoWidget;
 	UPROPERTY()
-	URLAgentWidget* RLAgentWidget;
-	
-	bool PostGameMenuActive = false;
+	TObjectPtr<URLAgentWidget> RLAgentWidget;
+
+	/** Whether or not the user successfully received a steam auth ticket BeatShot api response. */
 	bool bIsLoggedIn = false;
+
+	/** Number of completed steam auth ticket usages. */
 	uint8 NumAuthTicketFinishes = 0;
+
+	/** Z Order for the screen fade widget. */
 	const int32 ZOrderFadeScreen = 20;
+
+	/** Z Order for the FPS counter widget. */
 	const int32 ZOrderFPSCounter = 19;
-	float LoadingScreenWidgetFadeOutTime = 0.75f;
+
+	/** Cached player setting for how often to show combat text. */
+	int32 CombatTextFrequency = 5;
+
+	/** Cached player setting whether or not to show combat text. */
+	bool bShowStreakCombatText = false;
+
+	/** Cached player setting whether or not night mode has been unlocked. */
+	bool bNightModeUnlocked = false;
 };

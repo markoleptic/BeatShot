@@ -28,6 +28,9 @@ struct FTargetDamageEvent
 {
 	GENERATED_BODY()
 
+	UPROPERTY()
+	AActor* DamageCauser;
+
 	/** Whether or not the target's lifetime expired, causing it to damage itself */
 	bool bDamagedSelf;
 
@@ -70,6 +73,7 @@ struct FTargetDamageEvent
 
 	FTargetDamageEvent()
 	{
+		DamageCauser = nullptr;
 		bDamagedSelf = false;
 		bOutOfHealth = false;
 		bWillDeactivate = false;
@@ -91,6 +95,7 @@ struct FTargetDamageEvent
 	FTargetDamageEvent(const float InTimeAlive, const float OldValue, const float NewValue, const FTransform& InTransform,
 		const FGuid& InGuid, const ETargetDamageType InDamageType)
 	{
+		DamageCauser = nullptr;
 		bDamagedSelf = InDamageType == ETargetDamageType::Self;
 		bOutOfHealth = NewValue <= 0.f;
 		DamageType = InDamageType;

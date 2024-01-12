@@ -115,7 +115,6 @@ UBSAbilitySystemComponent* FBSEquipmentList::GetAbilitySystemComponent() const
 	return Cast<UBSAbilitySystemComponent>(UAbilitySystemGlobals::GetAbilitySystemComponentFromActor(OwningActor));
 }
 
-
 UBSEquipmentManagerComponent::UBSEquipmentManagerComponent(const FObjectInitializer& ObjectInitializer) :
 	Super(ObjectInitializer), EquipmentList(this)
 {
@@ -250,6 +249,23 @@ TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstance
 		if (UBSEquipmentInstance* Instance = Entry.Instance)
 		{
 			if (Instance->IsA(InstanceType))
+			{
+				Results.Add(Instance);
+			}
+		}
+	}
+	return Results;
+}
+
+TArray<UBSEquipmentInstance*> UBSEquipmentManagerComponent::GetEquipmentInstancesMatchingEquipmentType(const EEquipmentType& EquipmentType)
+{
+	TArray<UBSEquipmentInstance*> Results;
+	for (const FBSAppliedEquipmentEntry& Entry : EquipmentList.Entries)
+	{
+		const UBSEquipmentDefinition* EquipmentCDO = GetDefault<UBSEquipmentDefinition>(Entry.EquipmentDefinition);
+		if (UBSEquipmentInstance* Instance = Entry.Instance)
+		{
+			if (EquipmentCDO->EquipmentType == EquipmentType)
 			{
 				Results.Add(Instance);
 			}

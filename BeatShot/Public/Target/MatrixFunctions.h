@@ -332,8 +332,6 @@ inline TMap<int32, FGenericIndexMapping> MapMatrixTo5X5(const int32 NumRows, con
 			UniqueIndices.AddUnique(Value);
 		}
 	}
-	UE_LOG(LogTemp, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"), UniqueIndices.Num(),
-		NumRows * NumCols);
-
+	
 	return IndexMappings;
 }

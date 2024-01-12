@@ -260,7 +260,7 @@ private:
 	TArray<int32> GetSpawnAreaIndexRange(const int32 QTableIndex) const;
 
 	/** Returns the first TargetPair with the matching CurrentIndex */
-	FTargetPair FindTargetPairByCurrentIndex(const int32 InCurrentIndex);
+	FTargetPair* FindTargetPairByCurrentIndex(const int32 InCurrentIndex);
 
 public:
 	/** Broadcasts OnQTableUpdate delegate */

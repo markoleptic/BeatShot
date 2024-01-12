@@ -20,9 +20,6 @@ public:
 
 	virtual void InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor) override;
 
-	UFUNCTION(BlueprintPure)
-	virtual bool HasExactMatchingGameplayTag(const FGameplayTag& TagToCheck) const;
-
 	typedef TFunctionRef<bool(const UBSGameplayAbility* Ability, FGameplayAbilitySpecHandle Handle)>
 	TShouldCancelAbilityFunc;
 	void CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc, bool bReplicateCancelAbility);

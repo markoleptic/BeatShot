@@ -40,6 +40,9 @@ public:
 	UFUNCTION()
 	void CountdownComplete();
 
+	/** Pauses/Unpauses the countdown. */
+	void SetCountdownPaused(const bool bIsPaused);
+
 	/** Executes when the countdown timeline has completed. */
 	FOnCountdownCompleted OnCountdownCompleted;
 

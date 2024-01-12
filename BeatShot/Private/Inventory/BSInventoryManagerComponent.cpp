@@ -116,7 +116,6 @@ void FBSInventoryList::RemoveEntry(UBSInventoryItemInstance* Instance)
 	}
 }
 
-
 UBSInventoryManagerComponent::UBSInventoryManagerComponent(const FObjectInitializer& ObjectInitializer):
 	Super(ObjectInitializer), InventoryList(this)
 {

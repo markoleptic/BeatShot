@@ -47,7 +47,6 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Input_Inspect, "Input.Inspect", "");
 	AddTag(Input_KnifeAttack, "Input.KnifeAttack", "");
 	AddTag(Input_BackStab, "Input.BackStab", "");
-	AddTag(Input_Disabled, "Input.Disabled", "");
 	AddTag(Input_Pause, "Input.Pause", "");
 	AddTag(Input_LeftClick, "Input.LeftClick", "");
 
@@ -68,6 +67,7 @@ void FBSGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Ability_Crouch, "Ability.Crouch", "");
 	AddTag(Ability_Interact, "Ability.Interact", "");
 	AddTag(Ability_ShiftInteract, "Ability.ShiftInteract", "");
+	AddTag(Ability_InputBlocked, "Ability.InputBlocked", "");
 
 	AddTag(State, "State", "");
 	AddTag(State_Crouching, "State.Crouching", "");

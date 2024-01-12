@@ -197,14 +197,17 @@ void ATargetManager::Init_Internal()
 		RLComponent->Init(Params);
 
 		#if !UE_BUILD_SHIPPING
-		// Print loaded QTable
-		FNumberFormattingOptions Options;
-		Options.MinimumFractionalDigits = 2;
-		Options.MaximumFractionalDigits = 2;
-		Options.MaximumIntegralDigits = 1;
-		Options.MinimumIntegralDigits = 1;
-		UE_LOG(LogTargetManager, Display, TEXT("Loaded QTable:"));
-		USaveGamePlayerScore::PrintQTable(GetBSConfig()->DefiningConfig, CommonScoreInfo, Options);
+		if (RLComponent->bPrintDebug_QTableInit)
+		{
+			// Print loaded QTable
+			FNumberFormattingOptions Options;
+			Options.MinimumFractionalDigits = 2;
+			Options.MaximumFractionalDigits = 2;
+			Options.MaximumIntegralDigits = 1;
+			Options.MinimumIntegralDigits = 1;
+			UE_LOG(LogTargetManager, Display, TEXT("Loaded QTable:"));
+			USaveGamePlayerScore::PrintQTable(BSConfig->DefiningConfig, CommonScoreInfo, Options);
+		}
 		#endif
 	}
 
@@ -341,7 +344,7 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	// TargetManager handles all TargetActivationResponses
 	// Each target handles their own TargetDeactivationResponses & TargetDestructionConditions
 
-	if (!InTarget || !SpawnAreaManager->IsSpawnAreaValid(SpawnAreaManager->FindSpawnAreaFromGuid(InTarget->GetGuid())))
+	if (!InTarget || !SpawnAreaManager->IsSpawnAreaValid(SpawnAreaManager->FindSpawnArea(InTarget->GetGuid())))
 	{
 		return false;
 	}
@@ -395,28 +398,29 @@ bool ATargetManager::ActivateTarget(ATarget* InTarget) const
 	// Don't continue if failed to activate
 	if (!bPostTargetActivationState) return false;
 
+	// Get previous SpawnArea
 	const USpawnArea* Previous = SpawnAreaManager->GetMostRecentSpawnArea();
 
 	SpawnAreaManager->FlagSpawnAreaAsActivated(InTarget->GetGuid(),
 		GetBSConfig()->TargetConfig.bAllowActivationWhileActivated);
-	SpawnAreaManager->SetMostRecentSpawnArea(SpawnAreaManager->FindSpawnAreaFromGuid(InTarget->GetGuid()));
+	SpawnAreaManager->SetMostRecentSpawnArea(SpawnAreaManager->FindSpawnArea(InTarget->GetGuid()));
 
+	OnTargetActivated.Broadcast(InTarget->GetTargetDamageType());
+	OnTargetActivated_AimBot.Broadcast(InTarget);
+	
 	// Don't continue if the target was already activated and succeeded the reactivation
 	if (bIsReactivation)
 	{
 		UE_LOG(LogTargetManager, Display, TEXT("Reactivated Target"));
 		return true;
 	}
-
 	
-	if (bIsReactivation) 
-
-	OnTargetActivated.Broadcast(InTarget->GetTargetDamageType());
-	OnTargetActivated_AimBot.Broadcast(InTarget);
 	if (RLComponent->GetReinforcementLearningMode() != EReinforcementLearningMode::None && Previous)
 	{
-		const USpawnArea* Current = SpawnAreaManager->FindSpawnAreaFromGuid(InTarget->GetGuid());
-		if (Current) RLComponent->AddToActiveTargetPairs(Previous->GetIndex(), Current->GetIndex());
+		if (const USpawnArea* Current = SpawnAreaManager->FindSpawnArea(InTarget->GetGuid()))
+		{
+			RLComponent->AddToActiveTargetPairs(Previous->GetIndex(), Current->GetIndex());
+		}
 	}
 	return true;
 }
@@ -700,7 +704,7 @@ void ATargetManager::OnTargetDamageEvent(FTargetDamageEvent Event)
 
 	// Set TargetManagerData and broadcast to GameMode
 	Event.SetTargetManagerData(CurrentStreak, TotalPossibleDamage);
-	const USpawnArea* Found = SpawnAreaManager->FindSpawnAreaFromGuid(Event.Guid);
+	const USpawnArea* Found = SpawnAreaManager->FindSpawnArea(Event.Guid);
 	PostTargetDamageEvent.Broadcast(Event);
 	
 	SpawnAreaManager->HandleTargetDamageEvent(Event);

@@ -104,7 +104,6 @@ void UWebBrowserWidget::CheckNewURL()
 	CheckURLDelegate.BindLambda([this]
 	{
 		const FString URL = Browser->GetUrl();
-		UE_LOG(LogTemp, Display, TEXT("URL: %s"), *URL);
 		URLCheckAttempts++;
 		if (URLCheckAttempts >= MaxNumURLCheckAttempts)
 		{

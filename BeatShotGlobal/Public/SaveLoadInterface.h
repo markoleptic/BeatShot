@@ -22,9 +22,11 @@ enum class ETransitionState : uint8
 	Restart UMETA(DisplayName="Restart"),
 	QuitToMainMenu UMETA(DisplayName="QuitToMainMenu"),
 	QuitToDesktop UMETA(DisplayName="QuitToDesktop"),
-	PlayAgain UMETA(DisplayName="PlayAgain")};
+	PlayAgain UMETA(DisplayName="PlayAgain"),
+	None UMETA(DisplayName="None")
+};
 
-ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::PlayAgain);
+ENUM_RANGE_BY_FIRST_AND_LAST(ETransitionState, ETransitionState::StartFromMainMenu, ETransitionState::None);
 
 /** Information about the transition state of the game */
 USTRUCT()

@@ -193,13 +193,6 @@ void ABSCharacter::PossessedBy(AController* NewController)
 	ABSPlayerState* PS = GetPlayerState<ABSPlayerState>();
 	if (PS)
 	{
-		//Attribute change callbacks
-		//HealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetHealthAttribute()).AddUObject(this, &ThisClass::HealthChanged);
-		//MaxHealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMaxHealthAttribute()).AddUObject(this, &ThisClass::MaxHealthChanged);
-		//MoveSpeedChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetBase->GetMoveSpeedAttribute()).AddUObject(this, &ThisClass::MoveSpeedChanged);
-		//Tag change callbacks
-		//AbilitySystemComponent->RegisterGameplayTagEvent(FBSGameplayTags::Get().Input_Sprint, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::TagChange_State_Sprint);
-
 		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
 		AbilitySystemComponent = Cast<UBSAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 
@@ -416,43 +409,42 @@ void ABSCharacter::Input_Crouch(const FInputActionValue& Value)
 void ABSCharacter::Input_WalkStart(const FInputActionValue& Value)
 {
 	bWantsToWalk = true;
-	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
 	{
 		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().Input_Walk, 1);
-	}
+	}*/
 }
 
 void ABSCharacter::Input_WalkEnd(const FInputActionValue& Value)
 {
 	bWantsToWalk = false;
-	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
 	{
 		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().Input_Walk, 0);
-	}
+	}*/
 }
 
 void ABSCharacter::OnStartCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
 	{
 		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 1);
-	}
+	}*/
 	Super::OnStartCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
 void ABSCharacter::OnEndCrouch(float HalfHeightAdjust, float ScaledHalfHeightAdjust)
 {
-	if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
+	/*if (UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent()))
 	{
 		ASC->SetLooseGameplayTagCount(FBSGameplayTags::Get().State_Crouching, 0);
-	}
+	}*/
 	Super::OnEndCrouch(HalfHeightAdjust, ScaledHalfHeightAdjust);
 }
 
 void ABSCharacter::ToggleCrouch()
 {
-	const UBSCharacterMovementComponent* MoveComp = CastChecked<UBSCharacterMovementComponent>(GetCharacterMovement());
-	if (bIsCrouched || MoveComp->bWantsToCrouch)
+	if (bIsCrouched || GetCharacterMovement()->bWantsToCrouch)
 	{
 		UnCrouch();
 	}
@@ -464,10 +456,10 @@ void ABSCharacter::ToggleCrouch()
 
 bool ABSCharacter::IsSprinting() const
 {
-	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Walk))
+	/*if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Walk))
 	{
 		return false;
-	}
+	}*/
 	if (GetVelocity().IsNearlyZero(0.01))
 	{
 		return false;
@@ -786,13 +778,10 @@ void ABSCharacter::Input_OnEquipmentSlotLastEquippedStarted(const FInputActionVa
 
 void ABSCharacter::Input_OnPause(const FInputActionValue& Value)
 {
-	ABSPlayerController* BSPlayerController = GetBSPlayerController();
-
-	if (!BSPlayerController || BSPlayerController->IsPostGameMenuActive())
+	if (GetBSPlayerController())
 	{
-		return;
+		GetBSPlayerController()->HandlePause();
 	}
-	BSPlayerController->HandlePause();
 }
 
 void ABSCharacter::Input_OnLeftClick(const FInputActionValue& Value)
@@ -815,10 +804,10 @@ void ABSCharacter::Input_AbilityInputTagReleased(FGameplayTag InputTag)
 
 void ABSCharacter::GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const
 {
-	if (const UBSAbilitySystemComponent* ASC = CastChecked<UBSAbilitySystemComponent, UAbilitySystemComponent>(
-		GetAbilitySystemComponent()))
+	if (GetAbilitySystemComponent())
 	{
-		ASC->GetOwnedGameplayTags(TagContainer);
+		const UBSAbilitySystemComponent* ASC = Cast<UBSAbilitySystemComponent>(GetAbilitySystemComponent());
+		if (ASC) ASC->GetOwnedGameplayTags(TagContainer);
 	}
 }
 
@@ -839,6 +828,7 @@ bool ABSCharacter::HasAnyMatchingGameplayTags(const FGameplayTagContainer& TagCo
 
 void ABSCharacter::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
+	if (!GetAbilitySystemComponent()) return;
 	/* Changing activation policy for FireGun ability based on automatic fire bool */
 	if (TArray<FGameplayAbilitySpec*> Specs = GetBSAbilitySystemComponent()->GetAbilitySpecsFromGameplayTag(
 		FBSGameplayTags::Get().Input_Fire); !Specs.IsEmpty())

@@ -17,11 +17,6 @@ AMainMenuGameMode::AMainMenuGameMode()
 void AMainMenuGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	ABSPlayerController* PC = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PC)
-	{
-		PC->ShowMainMenu();
-	}
 }
 
 void AMainMenuGameMode::BindGameModesWidgetToTargetManager(UGameModesWidget* GameModesWidget)

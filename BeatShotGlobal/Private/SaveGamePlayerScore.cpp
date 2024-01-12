@@ -190,7 +190,10 @@ void USaveGamePlayerScore::PrintAccuracy(const FBS_DefiningConfig& InDefiningCon
 		for (int i = 0; i < AccuracyRow.Size; i++)
 		{
 			TotalHits += AccuracyRow.TotalHits[i];
-			TotalSpawns += AccuracyRow.TotalSpawns[i];
+			if (AccuracyRow.TotalSpawns[i] > 0)
+			{
+				TotalSpawns += AccuracyRow.TotalSpawns[i];
+			}
 			const float Value = AccuracyRow.Accuracy[i];
 
 			FString PercentString = (Value == -1.f) ? "XXX%" : FText::AsPercent(Value, &Options).ToString();

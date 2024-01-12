@@ -15,7 +15,8 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	BSConfig = nullptr;
-	
+
+	#if !UE_BUILD_SHIPPING
 	bPrintDebug_SpawnAreaStateInfo = false;
 	bDebug_SpawnableSpawnAreas = false;
 	bDebug_ActivatableSpawnAreas = false;
@@ -24,6 +25,7 @@ USpawnAreaManagerComponent::USpawnAreaManagerComponent()
 	bDebug_AllVertices = false;
 	bDebug_Grid = false;
 	bDebug_FilterBordering = false;
+	#endif
 	
 	AreaKeyMap = TMap<FAreaKey, USpawnArea*>();
 	GuidMap = TMap<FGuid, USpawnArea*>();
@@ -62,8 +64,9 @@ void USpawnAreaManagerComponent::Init(FBSConfig* InBSConfig, const FVector& InOr
 	SetAppropriateSpawnMemoryValues(SpawnAreaInc, SpawnAreaScale, BSConfig, StaticExtents);
 	InitializeSpawnAreas();
 
-	OriginSpawnArea = FindSpawnAreaFromLocation(Origin);
+	OriginSpawnArea = FindSpawnArea(Origin);
 
+	#if !UE_BUILD_SHIPPING
 	UE_LOG(LogTargetManager, Display, TEXT("Origin: %s "), *Origin.ToCompactString());
 	UE_LOG(LogTargetManager, Display, TEXT("StaticExtents: %s "), *StaticExtents.ToCompactString());
 	UE_LOG(LogTargetManager, Display, TEXT("StaticExtrema Min: %s Max: %s"), *StaticExtrema.Min.ToCompactString(),
@@ -73,6 +76,7 @@ void USpawnAreaManagerComponent::Init(FBSConfig* InBSConfig, const FVector& InOr
 	UE_LOG(LogTargetManager, Display, TEXT("SpawnAreaIncY: %d SpawnAreaIncZ: %d"), SpawnAreaInc.Y, SpawnAreaInc.Z);
 	UE_LOG(LogTargetManager, Display, TEXT("SpawnCounterSize: %d Allocated Size: %llu"), SpawnAreas.Num(),
 		SpawnAreas.GetAllocatedSize());
+	#endif
 }
 
 void USpawnAreaManagerComponent::SetAppropriateSpawnMemoryValues(FIntVector3& InSpawnAreaInc, FVector& InSpawnAreaScale,
@@ -229,6 +233,7 @@ void USpawnAreaManagerComponent::Clear()
 {
 	BSConfig = nullptr;
 
+	#if !UE_BUILD_SHIPPING
 	bPrintDebug_SpawnAreaStateInfo = false;
 	bDebug_SpawnableSpawnAreas = false;
 	bDebug_ActivatableSpawnAreas = false;
@@ -237,6 +242,7 @@ void USpawnAreaManagerComponent::Clear()
 	bDebug_AllVertices = false;
 	bDebug_Grid = false;
 	bDebug_FilterBordering = false;
+	#endif 
 
 	SpawnAreas.Empty();
 	AreaKeyMap.Empty();
@@ -273,7 +279,7 @@ bool USpawnAreaManagerComponent::ShouldForceSpawnAtOrigin() const
 
 void USpawnAreaManagerComponent::UpdateTotalTrackingDamagePossible(const FVector& InLocation) const
 {
-	if (USpawnArea* SpawnArea = FindSpawnAreaFromLocation(InLocation))
+	if (USpawnArea* SpawnArea = FindSpawnArea(InLocation))
 	{
 		SpawnArea->IncrementTotalTrackingDamagePossible();
 	}
@@ -281,7 +287,7 @@ void USpawnAreaManagerComponent::UpdateTotalTrackingDamagePossible(const FVector
 
 void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEvent& DamageEvent)
 {
-	USpawnArea* SpawnArea = FindSpawnAreaFromGuid(DamageEvent.Guid);
+	USpawnArea* SpawnArea = FindSpawnArea(DamageEvent.Guid);
 	if (!SpawnArea)
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("Could not find SpawnArea from DamageEvent Guid."));
@@ -293,7 +299,7 @@ void USpawnAreaManagerComponent::HandleTargetDamageEvent(const FTargetDamageEven
 	case ETargetDamageType::Tracking:
 		{
 			// Instead of using the spawn area where the target started, use the current location
-			USpawnArea* SpawnAreaByLoc = FindSpawnAreaFromLocation(DamageEvent.Transform.GetLocation());
+			USpawnArea* SpawnAreaByLoc = FindSpawnArea(DamageEvent.Transform.GetLocation());
 			if (!SpawnAreaByLoc)
 			{
 				UE_LOG(LogTargetManager, Warning, TEXT("Could not find SpawnArea from Transform: %s."),
@@ -393,7 +399,7 @@ USpawnArea* USpawnAreaManagerComponent::GetSpawnArea(const int32 Index) const
 	return IsSpawnAreaValid(Index) ? IndexMap.FindRef(Index) : nullptr;
 }
 
-USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromLocation(const FVector& InLocation) const
+USpawnArea* USpawnAreaManagerComponent::FindSpawnArea(const FVector& InLocation) const
 {
 	// Adjust for the SpawnAreaInc being aligned to the BoxBounds Origin
 	const FVector RelativeLocation = InLocation - Origin;
@@ -409,7 +415,7 @@ USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromLocation(const FVector&
 	return Found ? *Found : nullptr;
 }
 
-USpawnArea* USpawnAreaManagerComponent::FindSpawnAreaFromGuid(const FGuid& TargetGuid) const
+USpawnArea* USpawnAreaManagerComponent::FindSpawnArea(const FGuid& TargetGuid) const
 {
 	const auto Found = GuidMap.Find(TargetGuid);
 	return Found ? *Found : nullptr;
@@ -554,7 +560,7 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsManaged(USpawnArea* SpawnArea, c
 
 void USpawnAreaManagerComponent::FlagSpawnAreaAsActivated(const FGuid TargetGuid, const bool bCanActivateWhileActivated)
 {
-	USpawnArea* SpawnArea = FindSpawnAreaFromGuid(TargetGuid);
+	USpawnArea* SpawnArea = FindSpawnArea(TargetGuid);
 	if (!SpawnArea)
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("Failed to find target from Guid to activate."));
@@ -612,7 +618,7 @@ void USpawnAreaManagerComponent::FlagSpawnAreaAsRecent(USpawnArea* SpawnArea)
 
 void USpawnAreaManagerComponent::RemoveManagedFlagFromSpawnArea(const FGuid TargetGuid)
 {
-	USpawnArea* SpawnArea = FindSpawnAreaFromGuid(TargetGuid);
+	USpawnArea* SpawnArea = FindSpawnArea(TargetGuid);
 	if (!SpawnArea)
 	{
 		UE_LOG(LogTargetManager, Warning, TEXT("Failed to find target by Guid to remove from managed."));
@@ -1505,11 +1511,11 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 
 			for (float Y = MinY; Y <= MaxY; Y += SpawnAreaInc.Y)
 			{
-				if (USpawnArea* SpawnArea_MinZ = FindSpawnAreaFromLocation(FVector(0, Y, MinZ)))
+				if (USpawnArea* SpawnArea_MinZ = FindSpawnArea(FVector(0, Y, MinZ)))
 				{
 					Temp.Add(SpawnArea_MinZ);
 				}
-				if (USpawnArea* SpawnArea_MaxZ = FindSpawnAreaFromLocation(FVector(0, Y, MaxZ)))
+				if (USpawnArea* SpawnArea_MaxZ = FindSpawnArea(FVector(0, Y, MaxZ)))
 				{
 					Temp.Add(SpawnArea_MaxZ);
 				}
@@ -1517,11 +1523,11 @@ void USpawnAreaManagerComponent::OnExtremaChanged(const FExtrema& Extrema)
 
 			for (float Z = MinZ; Z <= MaxZ; Z += SpawnAreaInc.Z)
 			{
-				if (USpawnArea* SpawnArea_MinY = FindSpawnAreaFromLocation(FVector(0, MinY, Z)))
+				if (USpawnArea* SpawnArea_MinY = FindSpawnArea(FVector(0, MinY, Z)))
 				{
 					Temp.Add(SpawnArea_MinY);
 				}
-				if (USpawnArea* SpawnArea_MaxY = FindSpawnAreaFromLocation(FVector(0, MaxY, Z)))
+				if (USpawnArea* SpawnArea_MaxY = FindSpawnArea(FVector(0, MaxY, Z)))
 				{
 					Temp.Add(SpawnArea_MaxY);
 				}
@@ -2064,7 +2070,7 @@ void USpawnAreaManagerComponent::EstimateDistances(FDFSLoopParams& Params)
 /* ----------- */
 /* -- Debug -- */
 /* ----------- */
-
+#if !UE_BUILD_SHIPPING
 void USpawnAreaManagerComponent::PrintDebug_NumRecentNumActive() const
 {
 	const int NumRecent = GetRecentSpawnAreas().Num();
@@ -2307,3 +2313,4 @@ void USpawnAreaManagerComponent::PrintDebug_Matrix(const TArray<int32>& Matrix, 
 		CurrentRow--;
 	}
 }
+#endif

@@ -5,7 +5,7 @@
 #include "BSGameInstance.h"
 #include "BSGameMode.h"
 #include "BeatShot/BSGameplayTags.h"
-#include "Kismet/GameplayStatics.h"
+#include "Character/BSCharacter.h"
 
 ABSGun::ABSGun()
 {
@@ -28,12 +28,6 @@ void ABSGun::BeginPlay()
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(GetGameInstance());
 	GI->GetPublicGameSettingsChangedDelegate().AddUObject(this, &ABSGun::OnPlayerSettingsChanged_Game);
-
-	if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())); !OnShotFired.
-		IsBoundToObject(GameMode))
-	{
-		GameMode->RegisterWeapon(OnShotFired);
-	}
 }
 
 void ABSGun::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
@@ -54,9 +48,13 @@ void ABSGun::Fire()
 		return;
 	}
 	bIsFiring = true;
-	if (!OnShotFired.ExecuteIfBound())
+	if (OnShotFired.IsBound())
 	{
-		UE_LOG(LogTemp, Display, TEXT("OnShotFired not bound"));
+		check(GetOwner());
+		if (const ABSCharacter* Character = Cast<ABSCharacter>(GetOwner()))
+		{
+			OnShotFired.Execute(Character->GetBSPlayerController());
+		}
 	}
 }
 

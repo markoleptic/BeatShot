@@ -44,7 +44,6 @@ struct FBSGameplayTags
 	FGameplayTag Input_Inspect;
 	FGameplayTag Input_KnifeAttack;
 	FGameplayTag Input_BackStab;
-	FGameplayTag Input_Disabled;
 	FGameplayTag Input_EquipmentSlot;
 	FGameplayTag Input_EquipmentSlot_1;
 	FGameplayTag Input_EquipmentSlot_2;
@@ -64,6 +63,7 @@ struct FBSGameplayTags
 	FGameplayTag Ability_Crouch;
 	FGameplayTag Ability_Interact;
 	FGameplayTag Ability_ShiftInteract;
+	FGameplayTag Ability_InputBlocked;
 
 	FGameplayTag State;
 	FGameplayTag State_Crouching;

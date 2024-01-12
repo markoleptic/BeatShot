@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BSEquipmentDefinition.h"
 #include "Components/PawnComponent.h"
 #include "Containers/Array.h"
 #include "Containers/ArrayView.h"
@@ -148,6 +149,10 @@ public:
 	/** Returns all equipped instances of a given type, or an empty array if none are found */
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	TArray<UBSEquipmentInstance*> GetEquipmentInstancesOfType(TSubclassOf<UBSEquipmentInstance> InstanceType) const;
+
+	/** Returns all equipment instances matching the GameplayTags, or an empty array if none are found */
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	TArray<UBSEquipmentInstance*> GetEquipmentInstancesMatchingEquipmentType(const EEquipmentType& EquipmentType);
 
 	template <typename T>
 	T* GetFirstInstanceOfType()

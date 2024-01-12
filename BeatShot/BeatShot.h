@@ -33,7 +33,7 @@ enum class EPlatformTransitionType : uint8
 ENUM_RANGE_BY_FIRST_AND_LAST(EPlatformTransitionType, EPlatformTransitionType::None,
 	EPlatformTransitionType::MoveDownByStepOff);
 
-DECLARE_DELEGATE(FOnShotFired);
+DECLARE_DELEGATE_OneParam(FOnShotFired, class ABSPlayerController*);
 
 class FBeatShot : public FDefaultGameModuleImpl
 {

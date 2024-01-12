@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "HttpRequestInterface.h"
-#include "BeatShot/Beatshot.h"
 #include "SaveLoadInterface.h"
 #include "AbilitySystem/Globals/BSAbilitySet.h"
 #include "GameFramework/GameMode.h"
 #include "Target/Target.h"
 #include "BSGameMode.generated.h"
 
+class ABSGun;
 struct FBSAbilitySet_GrantedHandles;
 class UBSAbilitySet;
 class AVisualizerManager;
@@ -24,12 +24,8 @@ class UAudioAnalyzerManager;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogAudioData, Log, All);
 
-DECLARE_MULTICAST_DELEGATE_ThreeParams(FUpdateScoresToHUD, const FPlayerScore& PlayerScore,
-	const float TimeOffsetNormalized, const float TimeOffsetRaw);
 DECLARE_MULTICAST_DELEGATE_OneParam(FOnAAManagerSecondPassed, const float PlaybackTime);
-DECLARE_MULTICAST_DELEGATE_TwoParams(FOnStreakUpdate, const int32 NewStreak, const FVector& Position);
 DECLARE_DELEGATE(FOnStreakThresholdPassed)
-DECLARE_MULTICAST_DELEGATE(FOnGameModeStarted);
 
 /** GameMode used for the Range level. A BSCharacter is spawned and possessed for each player controller. The game mode
  *  is responsible for starting and ending a BeatShot default or custom game mode, spawning and destroying the
@@ -99,12 +95,9 @@ public:
 	/** Allows TargetManager to start spawning targets, starts timers, shows PlayerHUD, CrossHair, and hides the
 	 *  countdown widget. Called from Countdown widget when the countdown has completed */
 	void StartGameMode();
-
+	
 	/** Destroys all actors involved in a game mode and saves scores if applicable */
-	void EndGameMode(const bool bSaveScores, const bool ShowPostGameMenu);
-
-	/** Called in BeginPlay from a weapon to bind to UpdateShotsFired */
-	void RegisterWeapon(FOnShotFired& OnShotFiredDelegate);
+	void EndGameMode(const bool bSaveScores, const ETransitionState TransitionState);
 
 	/** Called from Countdown widget when user clicks to start game mode. If player delay is > 0.05, the function
 	 *  begins playback for AATracker and sets a timer of length player delay to then begin playback of AAPlayer.
@@ -114,21 +107,16 @@ public:
 	/** Called from PlayerController when the game is paused */
 	void PauseAAManager(bool ShouldPause);
 
+	/** Binds to the gun's OnShotFired delegate */
+	void RegisterGun(ABSGun* InGun);
+
 	virtual void OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings) override;
 	virtual void OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_AudioAnalyzer& AudioAnalyzerSettings) override;
-	virtual void OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings) override;
 	virtual void OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings) override;
 
 	/** Delegate that is executed every second to update the progress into song on PlayerHUD.
 	 *  PlayerHUD binds to it, while DefaultGameMode (this) executes it */
 	FOnAAManagerSecondPassed OnSecondPassed;
-
-	/** Delegate that is executed when there is any score update that should be reflected in PlayerHUD stats.
-	 *  DefaultGameMode (this) binds to it, while TargetManager executes it */
-	FUpdateScoresToHUD UpdateScoresToHUD;
-
-	/** Broadcasts when the countdown has completed and the actual game has began. */
-	FOnGameModeStarted OnGameModeStarted;
 
 	/** Called if the streak threshold is passed and user has not unlocked night mode */
 	FOnStreakThresholdPassed OnStreakThresholdPassed;
@@ -142,10 +130,6 @@ private:
 
 	/** Function to tell TargetManager to spawn a new target */
 	void SpawnNewTarget(bool bNewTargetState);
-
-	/** Calls EndGameMode after finding parameters for it */
-	UFUNCTION()
-	void OnGameModeLengthTimerComplete();
 
 	/** Does all of the AudioAnalyzer initialization, called during InitializeGameMode */
 	bool InitializeAudioManagers();
@@ -166,15 +150,18 @@ private:
 		UE_LOG(LogTemp, Warning, TEXT("Init Player Error"));
 	}
 	
+
+	void GoToMainMenu();
+	
 	/** Loads matching player scores into CurrentPlayerScore and calculates the MaxScorePerTarget */
 	void LoadMatchingPlayerScores();
 
 	/** Saves player scores to slot and calls SaveScoresToDatabase() if bShouldSavePlayerScores is true and
 	 *  GetCompletedPlayerScores() returns a valid score object. Otherwise Broadcasts OnPostScoresResponse with "None" */
-	void HandleScoreSaving(const bool bExternalSaveScores, const FCommonScoreInfo& InCommonScoreInfo);
-
+	void HandleScoreSaving(const bool bExternalSaveScores, const TMap<ABSPlayerController*, FCommonScoreInfo>& InCommonScoreInfo);
+	
 	/** Returns the current player scores, checking for NaNs and updating the time */
-	FPlayerScore GetCompletedPlayerScores();
+	void GetCompletedPlayerScores(FPlayerScore& InScore);
 
 	/** Function bound to TargetManager's PostTargetDamageEvent delegate */
 	void OnPostTargetDamageEvent(const FTargetDamageEvent& Event);
@@ -187,19 +174,13 @@ private:
 	/** Function bound to Gun_AK47's FOnShotFired delegate to keep track of number of targets spawned.
 	 *  Executed by Gun_AK47 */
 	UFUNCTION()
-	void UpdateShotsFired();
-
+	void UpdateShotsFired(ABSPlayerController* Controller);
+	
 	/** Called by UpdatePlayerScores to update the streak */
-	void UpdateStreak(const int32 Streak, const FTransform& Transform);
+	void UpdateStreak(ABSPlayerController* Controller, FPlayerScore& InScore, int32 Streak, const FTransform& Transform);
 
 	/** Not currently used */
 	void UpdateTimeOffset(const float TimeOffset, const FTransform& Transform);
-
-	/* Called by UpdatePlayerScores since everytime that function is called, a target has been hit */
-	void UpdateTargetsHit();
-
-	/** Called by UpdatePlayerScores or UpdatingTrackingScores to recalculate the high score if needed  */
-	void UpdateHighScore();
 
 	/** Callback function for OnSecondPassedTimer, executes OnSecondPassed */
 	UFUNCTION()
@@ -216,22 +197,16 @@ private:
 
 	/** Returns the length of time away from a perfect shot, based on the time the target was alive for */
 	float GetAbsHitTimingError(const float InTimeAlive) const;
-
+	
 	/** Returns a normalized time offset between 0 and 1, where 0.5 is perfect (~no time offset), based on the time the
 	 *  target was alive for */
 	float GetNormalizedHitTimingError(const float InTimeAlive) const;
 
 	/** Honestly idk what this does, but it was used in the AudioAnalyzer example so I'm sticking with it >.> */
 	bool bLastTargetOnSet;
-
-	/** Whether or not night mode has been unlocked */
-	bool bNightModeUnlocked;
 	
 	/** Whether or not to run tick functions */
 	bool bShouldTick;
-
-	/** Whether or not to show the Streak Combat Text */
-	bool bShowStreakCombatText;
 
 	const FActorSpawnParameters SpawnParameters;
 
@@ -248,8 +223,7 @@ private:
 	float TimePlayedGameMode = 0.f;
 
 	/** The "live" player score objects, which start fresh and import high score from SavedPlayerScores */
-	UPROPERTY(VisibleAnywhere, Category = "BeatShot|Score")
-	FPlayerScore CurrentPlayerScore;
+	TMap<ABSPlayerController*, FPlayerScore> CurrentPlayerScores;
 	
 	/* Locally stored AASettings since they must be accessed frequently in OnTick() */
 	UPROPERTY()
@@ -259,6 +233,8 @@ private:
 	UPROPERTY()
 	FTimerHandle GameModeLengthTimer;
 
+	FTimerDelegate GameModeLengthTimerDelegate;
+
 	/** A timer used to set the difference in start times between AATracker and AAPlayer */
 	UPROPERTY()
 	FTimerHandle PlayerDelayTimer;
@@ -267,8 +243,8 @@ private:
 	UPROPERTY()
 	FTimerHandle OnSecondPassedTimer;
 
-	/** The frequency at which to show Streak Combat Text */
-	int32 CombatTextFrequency;
+	UPROPERTY()
+	FTimerHandle GoToMainMenuTimer;
 
 	/** The threshold to activate night mode if not yet unlocked */
 	UPROPERTY(EditDefaultsOnly, Category = "BeatShot|General")

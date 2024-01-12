@@ -10,6 +10,15 @@ namespace Constants
 	/** Max Value allowed for a BandFrequency channel */
 	inline constexpr float MaxValue_BandFrequency = 22720.f;
 
+	/** Min Value allowed for a BandFrequency channel threshold */
+	inline constexpr float MinValue_BandFrequencyThreshold = 0.1f;
+
+	/** Max Value allowed for a BandFrequency channel threshold */
+	inline constexpr float MaxValue_BandFrequencyThreshold = 5.0f;
+
+	/** Snap size for a BandFrequency channel threshold */
+	inline constexpr float SnapSize_BandFrequencyThreshold = 0.1f;
+
 	/** The length of the countdown timer */
 	inline constexpr int32 CountdownTimerLength = 3;
 

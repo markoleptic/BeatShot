@@ -120,7 +120,7 @@ public:
 	/** Ends the game mode preview */
 	void StopGameModePreview();
 	
-	/** Whether or not this widget is MainMenu child or a PostGameMenu child */
+	/** Whether or not this widget is MainMenuWidget child or a PostGameMenu child */
 	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "Default", meta = (ExposeOnSpawn="true"))
 	bool bIsMainMenuChild;
 

@@ -380,6 +380,7 @@ void ATarget::OnIncomingDamageTaken(const FDamageEventData& InData)
 	
 	FTargetDamageEvent Event = FTargetDamageEvent(ElapsedTime, InData.OldValue, InData.NewValue, GetActorTransform(),
 		GetGuid(), InData.DamageType);
+	Event.DamageCauser = InData.EffectCauser;
 	const bool bDeactivate = ShouldDeactivate(Event.bDamagedSelf, Event.CurrentHealth);
 	const bool bDestroy = ShouldDestroy(Event.bDamagedSelf, Event.bOutOfHealth);
 

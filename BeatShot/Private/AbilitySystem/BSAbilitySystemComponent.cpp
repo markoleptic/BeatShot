@@ -18,11 +18,6 @@ void UBSAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActo
 	}
 }
 
-bool UBSAbilitySystemComponent::HasExactMatchingGameplayTag(const FGameplayTag& TagToCheck) const
-{
-	return GameplayTagCountContainer.GetExplicitGameplayTags().HasTagExact(TagToCheck);
-}
-
 void UBSAbilitySystemComponent::CancelAbilitiesByFunc(TShouldCancelAbilityFunc ShouldCancelFunc,
 	bool bReplicateCancelAbility)
 {
@@ -222,12 +217,7 @@ void UBSAbilitySystemComponent::AbilitySpecInputReleased(FGameplayAbilitySpec& S
 
 void UBSAbilitySystemComponent::ProcessAbilityInput(float DeltaTime, bool bGamePaused)
 {
-	if (bGamePaused)
-	{
-		return;
-	}
-
-	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Input_Disabled))
+	if (HasMatchingGameplayTag(FBSGameplayTags::Get().Ability_InputBlocked))
 	{
 		ClearAbilityInput();
 		return;

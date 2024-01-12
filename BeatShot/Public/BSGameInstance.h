@@ -8,6 +8,7 @@
 #include "Engine/GameInstance.h"
 #include "BSGameInstance.generated.h"
 
+class ABSPlayerController;
 class SLoadingScreenWidget;
 class ATimeOfDayManager;
 class USteamManager;
@@ -19,9 +20,11 @@ class BEATSHOT_API UBSGameInstance : public UGameInstance, public ISaveLoadInter
 	GENERATED_BODY()
 
 	virtual void Init() override;
-	virtual FGameInstancePIEResult StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer,
-		const FGameInstancePIEParameters& Params) override;
-
+	
+	#if WITH_EDITOR
+	virtual FGameInstancePIEResult PostCreateGameModeForPIE(const FGameInstancePIEParameters& Params, AGameModeBase* GameMode) override;
+	#endif WITH_EDITOR
+	
 	/** Called after a level has been loaded */
 	void OnPostLoadMapWithWorld(UWorld* World);
 
@@ -54,7 +57,7 @@ public:
 	void SetTimeOfDayManager(const TObjectPtr<ATimeOfDayManager> InManager) { TimeOfDayManager = InManager; }
 
 	/** Handles saving scores to database, called by BSGameMode. */
-	void SavePlayerScoresToDatabase(const bool bWasValidToSave);
+	void SavePlayerScoresToDatabase(ABSPlayerController* PC, const bool bWasValidToSave);
 	
 	/** A function pair that can be called externally, executes OnSteamOverlayIsActive(). */
 	void OnSteamOverlayIsOn();
@@ -118,11 +121,6 @@ public:
 protected:
 	void SetBSConfig(const FBSConfig& InConfig);
 	
-	/** Unpauses player controller and fades the screen to black. When fade to black is finished, the MainMenu,
-	 *  Pause Menu, and Post Game Menu are all hidden if currently shown. If the level is the Range, the countdown
-	 *  is shown, otherwise the Range level is opened.  */
-	void StartGameMode(const bool bIsRestart) const;
-
 	/** Creates SteamManager object and allows it initialize. Assigns Game Instance and binds to functions. */
 	void InitializeSteamManager();
 

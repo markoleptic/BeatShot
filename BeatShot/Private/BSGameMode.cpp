@@ -5,12 +5,13 @@
 #include "Visualizers/VisualizerManager.h"
 #include "Character/BSCharacter.h"
 #include "BSGameInstance.h"
+#include "AbilitySystem/Abilities/BSGA_AimBot.h"
 #include "Player/BSPlayerController.h"
 #include "Target/TargetManager.h"
-#include "BeatShot/BSGameplayTags.h"
 #include "GameFramework/PlayerStart.h"
 #include "AbilitySystem/Abilities/BSGA_TrackGun.h"
 #include "AbilitySystem/Globals/BSAttributeSetBase.h"
+#include "Equipment/BSGun.h"
 #include "Kismet/GameplayStatics.h"
 #include "System/SteamManager.h"
 
@@ -27,15 +28,12 @@ ABSGameMode::ABSGameMode()
 	AAPlayer = nullptr;
 	TrackGunAbilitySet = nullptr;
 	MaxScorePerTarget = 0;
-	bShowStreakCombatText = false;
-	CombatTextFrequency = 0;
-	bNightModeUnlocked = false;
 }
 
 void ABSGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_Game);
 	GI->AddDelegateToOnPlayerSettingsChanged(OnPlayerSettingsChangedDelegate_User);
@@ -48,7 +46,7 @@ void ABSGameMode::BeginPlay()
 	GI->GetPublicVideoAndSoundSettingsChangedDelegate().AddUObject(this,
 		&ABSGameMode::OnPlayerSettingsChanged_VideoAndSound);
 
-	bNightModeUnlocked = LoadPlayerSettings().User.bNightModeUnlocked;
+	InitializeGameMode(GI->GetBSConfig());
 }
 
 void ABSGameMode::Tick(float DeltaSeconds)
@@ -65,11 +63,8 @@ void ABSGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 	ABSPlayerController* NewBSPlayer = Cast<ABSPlayerController>(NewPlayer);
 	Controllers.Add(NewBSPlayer);
-
-	if (SpawnPlayer(NewBSPlayer))
-	{
-		NewBSPlayer->ShowCountdown(false);
-	}
+	CurrentPlayerScores.Add(NewBSPlayer, FPlayerScore());
+	SpawnPlayer(NewBSPlayer);
 }
 
 void ABSGameMode::PostLoad()
@@ -81,6 +76,7 @@ void ABSGameMode::Logout(AController* Exiting)
 {
 	Super::Logout(Exiting);
 	Controllers.Remove(Cast<ABSPlayerController>(Exiting));
+	CurrentPlayerScores.Remove(Cast<ABSPlayerController>(Exiting));
 }
 
 ABSCharacter* ABSGameMode::SpawnPlayer(ABSPlayerController* PlayerController)
@@ -102,6 +98,13 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 	bLastTargetOnSet = false;
 	TimePlayedGameMode = 0.f;
 	bShouldTick = false;
+
+	for (ABSPlayerController* Controller : Controllers)
+	{
+		check(Controller);
+		Controller->FadeScreenFromBlack();
+		Controller->ShowCountdown();
+	}
 
 	/* Load settings */
 	const FPlayerSettings PlayerSettings = LoadPlayerSettings();
@@ -128,16 +131,17 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 	for (const ABSPlayerController* Controller : Controllers)
 	{
 		const ABSCharacter* Character = Controller->GetBSCharacter();
-		if (!Character) break;
+		check(Character);
 
 		UBSAbilitySystemComponent* ASC = Character->GetBSAbilitySystemComponent();
-		if (!ASC) break;
+		check(ASC);
 
 		const UBSAttributeSetBase* Set = ASC->GetSet<UBSAttributeSetBase>();
-		if (!Set) break;
+		check(Set);
 
 		ASC->SetNumericAttributeBase(Set->GetHitDamageAttribute(), BSConfig->TargetConfig.BasePlayerHitDamage);
-		ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(), BSConfig->TargetConfig.BasePlayerTrackingDamage);
+		ASC->SetNumericAttributeBase(Set->GetTrackingDamageAttribute(),
+			BSConfig->TargetConfig.BasePlayerTrackingDamage);
 
 		if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 		{
@@ -169,19 +173,18 @@ void ABSGameMode::InitializeGameMode(const TSharedPtr<FBSConfig> InConfig)
 
 void ABSGameMode::StartGameMode()
 {
-	if (OnGameModeStarted.IsBound())
-	{
-		OnGameModeStarted.Broadcast();
-	}
 	LoadMatchingPlayerScores();
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
+
+	for (auto& CurrentPlayerScore : CurrentPlayerScores)
+	{
+		CurrentPlayerScore.Key->ShowCrossHair();
+		CurrentPlayerScore.Key->ShowPlayerHUD();
+		CurrentPlayerScore.Key->HideCountdown();
+		CurrentPlayerScore.Key->UpdatePlayerHUD(CurrentPlayerScore.Value, -1.f, -1.f);
+	}
+
 	StartGameModeTimers();
 	TargetManager->SetShouldSpawn(true);
-
-	/*for (float i = 0.f; i < BSConfig->TargetConfig.TargetMaxLifeSpan; i+=0.01f)
-	{
-		UE_LOG(LogTemp, Display, TEXT("Score: %f Err: %f: AbsError: %f NormError: %f"), GetScoreFromTimeAlive(i), GetHitTimingError(i), GetAbsHitTimingError(i), GetNormalizedHitTimingError(i));
-	}*/
 }
 
 void ABSGameMode::StartGameModeTimers()
@@ -192,7 +195,8 @@ void ABSGameMode::StartGameModeTimers()
 	}
 	else
 	{
-		GetWorldTimerManager().SetTimer(GameModeLengthTimer, this, &ABSGameMode::OnGameModeLengthTimerComplete,
+		GameModeLengthTimerDelegate.BindUObject(this, &ABSGameMode::EndGameMode, true, ETransitionState::None);
+		GetWorldTimerManager().SetTimer(GameModeLengthTimer, GameModeLengthTimerDelegate,
 			BSConfig->AudioConfig.SongLength, false);
 	}
 	GetWorldTimerManager().SetTimer(OnSecondPassedTimer, this, &ABSGameMode::OnSecondPassedCallback, 1.f, true);
@@ -210,27 +214,32 @@ void ABSGameMode::BindGameModeDelegates()
 	}
 }
 
-void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMenu)
+void ABSGameMode::EndGameMode(const bool bSaveScores, const ETransitionState TransitionState)
 {
 	TimePlayedGameMode = GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(GameModeLengthTimer);
 	GetWorldTimerManager().ClearTimer(PlayerDelayTimer);
 	GetWorldTimerManager().ClearTimer(OnSecondPassedTimer);
+	GameModeLengthTimerDelegate.Unbind();
 
-	FCommonScoreInfo ScoreInfo;
+	TMap<ABSPlayerController*, FCommonScoreInfo> ScoreInfo;
 
 	if (TargetManager)
 	{
 		TargetManager->SetShouldSpawn(false);
 
 		const FAccuracyData AccuracyData = TargetManager->GetLocationAccuracy();
-		CurrentPlayerScore.LocationAccuracy = AccuracyData.AccuracyRows;
 
-		ScoreInfo = FindCommonScoreInfo(BSConfig->DefiningConfig);
-		ScoreInfo.UpdateAccuracy(AccuracyData);
-		if (BSConfig->AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
+		for (auto& CurrentPlayerScore : CurrentPlayerScores)
 		{
-			GetTargetManager()->SaveQTable(ScoreInfo);
+			CurrentPlayerScore.Value.LocationAccuracy = AccuracyData.AccuracyRows;
+			FCommonScoreInfo ScoreInfoInst = CurrentPlayerScore.Key->FindCommonScoreInfo(BSConfig->DefiningConfig);
+			ScoreInfoInst.UpdateAccuracy(AccuracyData);
+			ScoreInfo.Add(CurrentPlayerScore.Key, ScoreInfoInst);
+			if (BSConfig->AIConfig.ReinforcementLearningMode != EReinforcementLearningMode::None)
+			{
+				GetTargetManager()->SaveQTable(ScoreInfoInst);
+			}
 		}
 
 		if (GetTargetManager()->OnTargetActivated.IsBoundToObject(this))
@@ -267,32 +276,56 @@ void ABSGameMode::EndGameMode(const bool bSaveScores, const bool ShowPostGameMen
 
 	for (ABSPlayerController* Controller : Controllers)
 	{
-		Controller->HidePlayerHUD();
-		Controller->HideCountdown();
-		Controller->HideCrossHair();
-
-		if (ShowPostGameMenu)
+		if (Controller->IsPaused())
 		{
-			Controller->ShowPostGameMenu();
-			if (const ABSCharacter* Character = Controller->GetBSCharacter(); Character->HasMatchingGameplayTag(
-				FBSGameplayTags::Get().State_Firing))
+			Controller->HandlePause();
+		}
+
+		// Always try to hide the countdown
+		Controller->HideCountdown();
+
+		switch (TransitionState)
+		{
+		case ETransitionState::StartFromPostGameMenu:
+		case ETransitionState::Restart:
+		case ETransitionState::PlayAgain:
 			{
-				if (const TArray<FGameplayAbilitySpec*> AbilitySpecs = Character->GetBSAbilitySystemComponent()->
-					GetAbilitySpecsFromGameplayTag(FBSGameplayTags::Get().Ability_Fire); !AbilitySpecs.IsEmpty())
+				// Fade screen to black and reinitialize
+				Controller->OnScreenFadeToBlackFinish.BindLambda([this, Controller]
 				{
-					Character->GetBSAbilitySystemComponent()->CancelAbilityHandle(AbilitySpecs[0]->Handle);
-					Character->GetBSAbilitySystemComponent()->ClearAbilityInput();
-				}
+					Controller->HidePostGameMenu();
+					Controller->HidePauseMenu();
+					Controller->HidePlayerHUD();
+					Controller->HideCrossHair();
+					InitializeGameMode(BSConfig);
+				});
+				Controller->FadeScreenToBlack();
 			}
+			break;
+		case ETransitionState::QuitToMainMenu:
+			{
+				Controller->FadeScreenToBlack();
+			}
+			break;
+		case ETransitionState::None:
+			{
+				Controller->HidePlayerHUD();
+				Controller->HideCrossHair();
+				Controller->ShowPostGameMenu();
+			}
+		case ETransitionState::QuitToDesktop:
+		case ETransitionState::StartFromMainMenu:
+			break;
 		}
 	}
 
 	HandleScoreSaving(bSaveScores, ScoreInfo);
-}
 
-void ABSGameMode::RegisterWeapon(FOnShotFired& OnShotFiredDelegate)
-{
-	OnShotFiredDelegate.BindUObject(this, &ABSGameMode::UpdateShotsFired);
+	if (TransitionState == ETransitionState::QuitToMainMenu && !Controllers.IsEmpty())
+	{
+		GetWorldTimerManager().SetTimer(GoToMainMenuTimer, this, &ABSGameMode::GoToMainMenu,
+			Controllers[0]->ScreenFadeWidgetAnimationDuration, false);
+	}
 }
 
 void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
@@ -310,11 +343,6 @@ void ABSGameMode::SpawnNewTarget(const bool bNewTargetState)
 	{
 		bLastTargetOnSet = false;
 	}
-}
-
-void ABSGameMode::OnGameModeLengthTimerComplete()
-{
-	EndGameMode(true, true);
 }
 
 void ABSGameMode::StartAAManagerPlayback()
@@ -393,6 +421,14 @@ void ABSGameMode::PauseAAManager(const bool ShouldPause)
 		break;
 	default:
 		break;
+	}
+}
+
+void ABSGameMode::RegisterGun(ABSGun* InGun)
+{
+	if (InGun)
+	{
+		InGun->OnShotFired.BindUObject(this, &ABSGameMode::UpdateShotsFired);
 	}
 }
 
@@ -547,111 +583,136 @@ void ABSGameMode::OnSecondPassedCallback() const
 	OnSecondPassed.Broadcast(GetWorldTimerManager().GetTimerElapsed(GameModeLengthTimer));
 }
 
+void ABSGameMode::GoToMainMenu()
+{
+	for (ABSPlayerController* Controller : Controllers)
+	{
+		Controller->HidePostGameMenu();
+		Controller->HidePauseMenu();
+		Controller->HidePlayerHUD();
+		Controller->HideCrossHair();
+	}
+	UGameplayStatics::OpenLevel(GetWorld(), "MainMenuLevel");
+}
+
 void ABSGameMode::LoadMatchingPlayerScores()
 {
-	CurrentPlayerScore = FPlayerScore();
-	CurrentPlayerScore.DefiningConfig = BSConfig->DefiningConfig;
-	CurrentPlayerScore.SongTitle = BSConfig->AudioConfig.SongTitle;
-	CurrentPlayerScore.SongLength = BSConfig->AudioConfig.SongLength;
-	CurrentPlayerScore.TotalPossibleDamage = 0.f;
-
 	if (BSConfig->AudioConfig.SongLength == 0.f)
 	{
 		MaxScorePerTarget = 1000.f;
 	}
 	else
 	{
-		MaxScorePerTarget = 100000.f / ((BSConfig->AudioConfig.SongLength - 1.f) / BSConfig->TargetConfig.TargetSpawnCD);
+		MaxScorePerTarget = 100000.f / ((BSConfig->AudioConfig.SongLength - 1.f) / BSConfig->TargetConfig.
+			TargetSpawnCD);
 	}
 
-	const TArray<FPlayerScore> PlayerScores = LoadPlayerScores().FilterByPredicate([&](const FPlayerScore& PlayerScore)
+	for (auto& CurrentPlayerScore : CurrentPlayerScores)
 	{
-		if (PlayerScore == CurrentPlayerScore)
-		{
-			return true;
-		}
-		return false;
-	});
+		CurrentPlayerScore.Value = FPlayerScore();
+		CurrentPlayerScore.Value.DefiningConfig = BSConfig->DefiningConfig;
+		CurrentPlayerScore.Value.SongTitle = BSConfig->AudioConfig.SongTitle;
+		CurrentPlayerScore.Value.SongLength = BSConfig->AudioConfig.SongLength;
+		CurrentPlayerScore.Value.TotalPossibleDamage = 0.f;
 
-	for (const FPlayerScore& ScoreObject : PlayerScores)
-	{
-		if (ScoreObject.Score > CurrentPlayerScore.HighScore)
+		const TArray<FPlayerScore> PlayerScores = CurrentPlayerScore.Key->LoadPlayerScores().FilterByPredicate(
+			[&](const FPlayerScore& PlayerScore)
+			{
+				if (PlayerScore == CurrentPlayerScore.Value)
+				{
+					return true;
+				}
+				return false;
+			});
+
+		for (const FPlayerScore& ScoreObject : PlayerScores)
 		{
-			CurrentPlayerScore.HighScore = ScoreObject.Score;
+			if (ScoreObject.Score > CurrentPlayerScore.Value.HighScore)
+			{
+				CurrentPlayerScore.Value.HighScore = ScoreObject.Score;
+			}
 		}
 	}
 }
 
-void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores, const FCommonScoreInfo& InCommonScoreInfo)
+void ABSGameMode::HandleScoreSaving(const bool bExternalSaveScores,
+	const TMap<ABSPlayerController*, FCommonScoreInfo>& InCommonScoreInfo)
 {
 	if (!bExternalSaveScores)
 	{
-		CurrentPlayerScore = FPlayerScore();
+		for (auto& CurrentPlayerScore : CurrentPlayerScores)
+		{
+			CurrentPlayerScore.Value = FPlayerScore();
+		}
 		return;
 	}
 
 	UBSGameInstance* GI = Cast<UBSGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	const bool bValidToSave = CurrentPlayerScore.IsValidToSave();
-	
-	if (bValidToSave)
+	for (auto& CurrentPlayerScore : CurrentPlayerScores)
 	{
-		// Update Steam Stat for Game Mode
-		#if UE_BUILD_SHIPPING
-		if (TimePlayedGameMode > MinStatRequirement_Duration_NumGamesPlayed)
+		const bool bValidToSave = CurrentPlayerScore.Value.IsValidToSave();
+		if (bValidToSave)
 		{
-			if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
+			// Update Steam Stat for Game Mode
+			#if UE_BUILD_SHIPPING
+			if (TimePlayedGameMode > MinStatRequirement_Duration_NumGamesPlayed)
+			{
+				if (CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom)
+				{
+					GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
+				}
+				else
+				{
+					GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.Value.DefiningConfig.BaseGameMode, 1);
+				}
+			}
+			#else
+			if (CurrentPlayerScore.Value.DefiningConfig.GameModeType == EGameModeType::Custom)
 			{
 				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
 			}
 			else
 			{
-				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
+				GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.Value.DefiningConfig.BaseGameMode,
+					1);
 			}
+			#endif
+			// Save common score info and completed scores locally
+			const FCommonScoreInfo* CommonScoreInfo = InCommonScoreInfo.Find(CurrentPlayerScore.Key);
+			if (CommonScoreInfo)
+			{
+				CurrentPlayerScore.Key->SaveCommonScoreInfo(BSConfig->DefiningConfig, *CommonScoreInfo);
+			}
+			GetCompletedPlayerScores(CurrentPlayerScore.Value);
+			CurrentPlayerScore.Key->SavePlayerScoreInstance(CurrentPlayerScore.Value);
 		}
-		#endif
-		#if UE_BUILD_DEVELOPMENT
-		if (CurrentPlayerScore.DefiningConfig.GameModeType == EGameModeType::Custom)
-		{
-			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(EBaseGameMode::None, 1);
-		}
-		else
-		{
-			GI->GetSteamManager()->UpdateStat_NumGamesPlayed(CurrentPlayerScore.DefiningConfig.BaseGameMode, 1);
-		}
-		#endif
-		// Save common score info and completed scores locally
-		SaveCommonScoreInfo(BSConfig->DefiningConfig, InCommonScoreInfo);
-		SavePlayerScoreInstance(GetCompletedPlayerScores());
-	}
-	
-	CurrentPlayerScore = FPlayerScore();
 
-	// Let game instance handle posting scores to db
-	GI->SavePlayerScoresToDatabase(bValidToSave);
+		CurrentPlayerScore.Value = FPlayerScore();
+
+		// Let game instance handle posting scores to db
+		GI->SavePlayerScoresToDatabase(CurrentPlayerScore.Key, bValidToSave);
+	}
 }
 
-FPlayerScore ABSGameMode::GetCompletedPlayerScores()
+void ABSGameMode::GetCompletedPlayerScores(FPlayerScore& InScore)
 {
 	/** save current time */
-	CurrentPlayerScore.Time = FDateTime::UtcNow().ToIso8601();
+	InScore.Time = FDateTime::UtcNow().ToIso8601();
 
 	/** for BeatTrack modes */
 	if (BSConfig->TargetConfig.TargetDamageType == ETargetDamageType::Tracking)
 	{
-		CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
-		CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.Score, CurrentPlayerScore.TotalPossibleDamage);
-		return CurrentPlayerScore;
+		InScore.Accuracy = FloatDivide(InScore.Score, InScore.TotalPossibleDamage);
+		InScore.Completion = FloatDivide(InScore.Score, InScore.TotalPossibleDamage);
+		return;
 	}
-	CurrentPlayerScore.AvgTimeOffset = FloatDivide(CurrentPlayerScore.TotalTimeOffset, CurrentPlayerScore.TargetsHit);
-	CurrentPlayerScore.Accuracy = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.ShotsFired);
-	CurrentPlayerScore.Completion = FloatDivide(CurrentPlayerScore.TargetsHit, CurrentPlayerScore.TargetsSpawned);
-	return CurrentPlayerScore;
+	InScore.AvgTimeOffset = FloatDivide(InScore.TotalTimeOffset, InScore.TargetsHit);
+	InScore.Accuracy = FloatDivide(InScore.TargetsHit, InScore.ShotsFired);
+	InScore.Completion = FloatDivide(InScore.TargetsHit, InScore.TargetsSpawned);
 }
 
 void ABSGameMode::OnPlayerSettingsChanged_Game(const FPlayerSettings_Game& GameSettings)
 {
-	bShowStreakCombatText = GameSettings.bShowStreakCombatText;
-	CombatTextFrequency = GameSettings.CombatTextFrequency;
 	if (VisualizerManager)
 	{
 		VisualizerManager->UpdateVisualizerSettings(GameSettings);
@@ -671,11 +732,6 @@ void ABSGameMode::OnPlayerSettingsChanged_AudioAnalyzer(const FPlayerSettings_Au
 	}
 }
 
-void ABSGameMode::OnPlayerSettingsChanged_User(const FPlayerSettings_User& UserSettings)
-{
-	bNightModeUnlocked = UserSettings.bNightModeUnlocked;
-}
-
 void ABSGameMode::OnPlayerSettingsChanged_VideoAndSound(const FPlayerSettings_VideoAndSound& VideoAndSoundSettings)
 {
 	SetAAManagerVolume(VideoAndSoundSettings.GlobalVolume, VideoAndSoundSettings.MusicVolume);
@@ -685,81 +741,103 @@ void ABSGameMode::OnPostTargetDamageEvent(const FTargetDamageEvent& Event)
 {
 	float NormalizedError = -1.f;
 	float Error = -1.f;
-	
-	switch (Event.DamageType) {
-	case ETargetDamageType::Tracking:
+
+	if (Event.DamageCauser)
+	{
+		if (ABSCharacter* Character = Cast<ABSCharacter>(Event.DamageCauser))
 		{
-			CurrentPlayerScore.TotalPossibleDamage = Event.TotalPossibleTrackingDamage;
-			CurrentPlayerScore.Score += Event.DamageDelta;
+			if (ABSPlayerController* Controller = Character->GetBSPlayerController())
+			{
+				FPlayerScore* Score = CurrentPlayerScores.Find(Controller);
+				if (Score)
+				{
+					switch (Event.DamageType)
+					{
+					case ETargetDamageType::Tracking:
+						{
+							Score->TotalPossibleDamage = Event.TotalPossibleTrackingDamage;
+							Score->Score += Event.DamageDelta;
+						}
+						break;
+					case ETargetDamageType::Hit:
+						{
+							Score->Score += GetScoreFromTimeAlive(Event.TimeAlive);
+							Score->TotalTimeOffset += GetAbsHitTimingError(Event.TimeAlive);
+							Score->TargetsHit++;
+							UpdateStreak(Controller, *Score, Event.Streak, Event.Transform);
+							// UpdateTimeOffset(TimeOffset, Transform);
+							NormalizedError = GetNormalizedHitTimingError(Event.TimeAlive);
+							Error = GetHitTimingError(Event.TimeAlive);
+						}
+						break;
+					case ETargetDamageType::Combined:
+					case ETargetDamageType::None:
+						{
+							UE_LOG(LogTemp, Warning,
+								TEXT("TargetDamageType of Combined/None received in OnPostTargetDamageEvent."));
+						}
+						return;
+					case ETargetDamageType::Self:
+						return;
+					}
+
+					// Update high score
+					if (Score->Score > Score->HighScore)
+					{
+						Score->HighScore = Score->Score;
+					}
+
+					// Update PlayerHUD
+					Controller->UpdatePlayerHUD(*Score, NormalizedError, Error);
+				}
+			}
 		}
-		break;
-	case ETargetDamageType::Hit:
-		{
-			CurrentPlayerScore.Score += GetScoreFromTimeAlive(Event.TimeAlive);
-			CurrentPlayerScore.TotalTimeOffset += GetAbsHitTimingError(Event.TimeAlive);
-			UpdateTargetsHit();
-			UpdateStreak(Event.Streak, Event.Transform);
-			//UpdateTimeOffset(TimeOffset, Transform);
-			NormalizedError = GetNormalizedHitTimingError(Event.TimeAlive);
-			Error = GetHitTimingError(Event.TimeAlive);
-		}
-		break;
-	case ETargetDamageType::Combined:
-	case ETargetDamageType::None:
-		{
-			UE_LOG(LogTemp, Warning, TEXT("TargetDamageType of Combined/None received in OnPostTargetDamageEvent."));
-		}
-		return;
-	case ETargetDamageType::Self:
-		return;
 	}
-	
-	UpdateHighScore();
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, NormalizedError, Error);
 }
 
 void ABSGameMode::UpdateTargetsSpawned(const ETargetDamageType& DamageType)
 {
 	if (DamageType == ETargetDamageType::Hit)
 	{
-		CurrentPlayerScore.TargetsSpawned++;
-		UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
+		for (auto& CurrentPlayerScore : CurrentPlayerScores)
+		{
+			CurrentPlayerScore.Value.TargetsSpawned++;
+			CurrentPlayerScore.Key->UpdatePlayerHUD(CurrentPlayerScore.Value, -1.f, -1.f);
+		}
 	}
 }
 
-void ABSGameMode::UpdateShotsFired()
+void ABSGameMode::UpdateShotsFired(ABSPlayerController* Controller)
 {
-	CurrentPlayerScore.ShotsFired++;
-	UpdateScoresToHUD.Broadcast(CurrentPlayerScore, -1.f, -1.f);
+	if (Controller)
+	{
+		FPlayerScore* Score = CurrentPlayerScores.Find(Controller);
+		if (Score)
+		{
+			Score->ShotsFired++;
+			Controller->UpdatePlayerHUD(*Score, -1.f, -1.f);
+		}
+	}
 }
 
-void ABSGameMode::UpdateStreak(const int32 Streak, const FTransform& Transform)
+void ABSGameMode::UpdateStreak(ABSPlayerController* Controller, FPlayerScore& InScore, const int32 Streak,
+	const FTransform& Transform)
 {
-	if (Streak > CurrentPlayerScore.Streak)
+	if (Streak > InScore.Streak)
 	{
-		CurrentPlayerScore.Streak = Streak;
+		InScore.Streak = Streak;
 	}
-	if (bShowStreakCombatText)
-	{
-		if (CombatTextFrequency != 0 && Streak % CombatTextFrequency == 0)
-		{
-			for (ABSPlayerController* Controller : Controllers)
-			{
-				Controller->ShowCombatText(Streak, Transform);
-			}
-		}
-	}
+	Controller->ShowCombatText(Streak, Transform);
 
-	if (Streak > StreakThreshold && !bNightModeUnlocked)
+	if (Streak > StreakThreshold && !Controller->LoadPlayerSettings().User.bNightModeUnlocked)
 	{
-		if (!OnStreakThresholdPassed.ExecuteIfBound())
+		if (OnStreakThresholdPassed.IsBound())
 		{
-			UE_LOG(LogTemp, Display, TEXT("OnStreakThresholdPassed not bound."));
+			OnStreakThresholdPassed.Execute();
 		}
-		FPlayerSettings_User Settings = LoadPlayerSettings().User;
+		FPlayerSettings_User Settings = Controller->LoadPlayerSettings().User;
 		Settings.bNightModeUnlocked = true;
-		bNightModeUnlocked = true;
-		SavePlayerSettings(Settings);
+		Controller->SavePlayerSettings(Settings);
 	}
 }
 
@@ -768,19 +846,6 @@ void ABSGameMode::UpdateTimeOffset(const float TimeOffset, const FTransform& Tra
 	for (ABSPlayerController* Controller : Controllers)
 	{
 		Controller->ShowAccuracyText(TimeOffset, Transform);
-	}
-}
-
-void ABSGameMode::UpdateTargetsHit()
-{
-	CurrentPlayerScore.TargetsHit++;
-}
-
-void ABSGameMode::UpdateHighScore()
-{
-	if (CurrentPlayerScore.Score > CurrentPlayerScore.HighScore)
-	{
-		CurrentPlayerScore.HighScore = CurrentPlayerScore.Score;
 	}
 }
 

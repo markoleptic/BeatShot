@@ -20,32 +20,18 @@ void UBSGameInstance::Init()
 	InitializeSteamManager();
 }
 
-FGameInstancePIEResult UBSGameInstance::StartPlayInEditorGameInstance(ULocalPlayer* LocalPlayer,
-	const FGameInstancePIEParameters& Params)
+#if WITH_EDITOR
+FGameInstancePIEResult UBSGameInstance::PostCreateGameModeForPIE(const FGameInstancePIEParameters& Params,
+	AGameModeBase* GameMode)
 {
 	const FBSConfig LocalConfig = FBSConfig();
 	SetBSConfig(LocalConfig);
-	if (GetWorld()->GetMapName().Contains("Range"))
-	{
-		ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld()));
-		if (GM)
-		{
-			GM->InitializeGameMode(GetBSConfig());
-		}
-	}
-	return Super::StartPlayInEditorGameInstance(LocalPlayer, Params);
+	return Super::PostCreateGameModeForPIE(Params, GameMode);
 }
+#endif WITH_EDITOR
 
 void UBSGameInstance::OnPostLoadMapWithWorld(UWorld* World)
 {
-	if (World->GetMapName().Contains("Range"))
-	{
-		ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(World));
-		if (GM)
-		{
-			GM->InitializeGameMode(GetBSConfig());
-		}
-	}
 	// Fade out the loading screen when map is ready
 	if (LoadingScreenWidget)
 	{
@@ -64,12 +50,11 @@ void UBSGameInstance::OnLoadingScreenFadeOutComplete()
 
 	// No longer the initial loading screen
 	bIsInitialLoadingScreen = false;
-
-	// Fade screen from black
-	ABSPlayerController* PC = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-	if (PC)
+	
+	if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
 	{
 		PC->FadeScreenFromBlack();
+		PC->ShowMainMenu();
 	}
 }
 
@@ -83,12 +68,12 @@ void UBSGameInstance::PrepareLoadingScreen()
 	Attributes.MinimumLoadingScreenDisplayTime = 2.f;
 	if (SlateWidgetStyleAsset && SlateWidgetStyleAsset->CustomStyle)
 	{
-		if (const FLoadingScreenStyle* Style = static_cast<const struct FLoadingScreenStyle*>(SlateWidgetStyleAsset->CustomStyle->GetStyle()))
+		if (const FLoadingScreenStyle* Style = static_cast<const struct FLoadingScreenStyle*>(SlateWidgetStyleAsset->
+			CustomStyle->GetStyle()))
 		{
-			SAssignNew(LoadingScreenWidget, SLoadingScreenWidget)
-			.LoadingScreenStyle(Style)
-			.OnFadeOutComplete(BIND_UOBJECT_DELEGATE(FOnFadeOutComplete, OnLoadingScreenFadeOutComplete))
-			.bIsInitialLoadingScreen(bIsInitialLoadingScreen);
+			SAssignNew(LoadingScreenWidget, SLoadingScreenWidget).LoadingScreenStyle(Style).OnFadeOutComplete(
+				BIND_UOBJECT_DELEGATE(FOnFadeOutComplete, OnLoadingScreenFadeOutComplete)).bIsInitialLoadingScreen(
+				bIsInitialLoadingScreen);
 		}
 	}
 	Attributes.WidgetLoadingScreen = LoadingScreenWidget;
@@ -137,45 +122,6 @@ void UBSGameInstance::SetBSConfig(const FBSConfig& InConfig)
 	}
 }
 
-void UBSGameInstance::StartGameMode(const bool bIsRestart) const
-{
-	ABSPlayerController* PC = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-
-	if (!PC) return;
-
-	if (PC->IsPaused())
-	{
-		PC->HandlePause();
-	}
-
-	/** Hide all widgets and show the countdown after the screen fades to black */
-	PC->OnScreenFadeToBlackFinish.BindLambda([this, bIsRestart]
-	{
-		ABSPlayerController* Controller = Cast<ABSPlayerController>(
-			UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		if (Controller)
-		{
-			Controller->HideMainMenu();
-			Controller->HidePostGameMenu();
-			Controller->HidePauseMenu();
-
-			if (GetWorld()->GetMapName().Contains("Range"))
-			{
-				Controller->ShowCountdown(bIsRestart);
-				if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-				{
-					GM->InitializeGameMode(GetBSConfig());
-				}
-			}
-			else
-			{
-				UGameplayStatics::OpenLevel(GetWorld(), FName("Range"));
-			}
-		}
-	});
-	PC->FadeScreenToBlack();
-}
-
 void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& NewGameModeTransitionState)
 {
 	switch (NewGameModeTransitionState.TransitionState)
@@ -183,46 +129,24 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 	case ETransitionState::StartFromMainMenu:
 		{
 			SetBSConfig(NewGameModeTransitionState.BSConfig);
-			StartGameMode(false);
+			if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
+			{
+				PC->OnScreenFadeToBlackFinish.BindLambda([this]
+				{
+					UGameplayStatics::OpenLevel(GetWorld(), FName("Range"));
+				});
+				PC->FadeScreenToBlack();
+			}
 			break;
 		}
+	case ETransitionState::QuitToMainMenu:
 	case ETransitionState::StartFromPostGameMenu:
-		{
-			SetBSConfig(NewGameModeTransitionState.BSConfig);
-			StartGameMode(true);
-			break;
-		}
 	case ETransitionState::Restart:
 		{
 			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 			{
-				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
-			}
-			StartGameMode(true);
-			break;
-		}
-	case ETransitionState::QuitToMainMenu:
-		{
-			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
-			{
-				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
-			}
-			ABSPlayerController* PC = Cast<ABSPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-			if (PC)
-			{
-				/** Hide all widgets and open MainMenu after the screen fades to black */
-				PC->OnScreenFadeToBlackFinish.BindLambda([this]
-				{
-					ABSPlayerController* Controller = Cast<ABSPlayerController>(
-						UGameplayStatics::GetPlayerController(GetWorld(), 0));
-					if (Controller)
-					{
-						Controller->HidePostGameMenu();
-						Controller->HidePauseMenu();
-					}
-					UGameplayStatics::OpenLevel(GetWorld(), "MainMenuLevel");
-				});
-				PC->FadeScreenToBlack();
+				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
+					NewGameModeTransitionState.TransitionState);
 			}
 			break;
 		}
@@ -231,7 +155,8 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 			bQuitToDesktopAfterSave = NewGameModeTransitionState.bSaveCurrentScores;
 			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
 			{
-				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores, false);
+				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
+					NewGameModeTransitionState.TransitionState);
 			}
 			if (!bQuitToDesktopAfterSave)
 			{
@@ -244,9 +169,15 @@ void UBSGameInstance::HandleGameModeTransition(const FGameModeTransitionState& N
 		{
 			BSConfig->AudioConfig = NewGameModeTransitionState.BSConfig.AudioConfig;
 			BSConfig->OnCreate();
-			StartGameMode(true);
+			if (ABSGameMode* GM = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+			{
+				GM->EndGameMode(NewGameModeTransitionState.bSaveCurrentScores,
+					NewGameModeTransitionState.TransitionState);
+			}
 			break;
 		}
+	case ETransitionState::None:
+		break;
 	}
 }
 
@@ -257,48 +188,43 @@ void UBSGameInstance::InitializeSteamManager()
 	SteamManager->InitializeSteamManager();
 }
 
-void UBSGameInstance::SavePlayerScoresToDatabase(const bool bWasValidToSave)
+void UBSGameInstance::SavePlayerScoresToDatabase(ABSPlayerController* PC, const bool bWasValidToSave)
 {
 	// If game mode encountered a reason not to save to database
 	if (!bWasValidToSave)
 	{
-		if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
-		{
-			PC->OnPostScoresResponseReceived("SBW_DidNotSaveScores");
-		}
+		PC->OnPostScoresResponseReceived("SBW_DidNotSaveScores");
 		return;
 	}
 
 	// No account
 	if (LoadPlayerSettings().User.RefreshCookie.IsEmpty())
 	{
-		if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
-		{
-			PC->OnPostScoresResponseReceived("SBW_NoAccount");
-		}
+		PC->OnPostScoresResponseReceived("SBW_NoAccount");
 		return;
 	}
-	
+
 	// Acquire access token
 	TSharedPtr<FAccessTokenResponse> AccessTokenResponse = MakeShareable(new FAccessTokenResponse());
-	AccessTokenResponse->OnHttpResponseReceived.BindLambda([this, AccessTokenResponse]
+	AccessTokenResponse->OnHttpResponseReceived.BindLambda([this, AccessTokenResponse, PC]
 	{
 		if (AccessTokenResponse->OK) // Successful access token retrieval
 		{
 			TSharedPtr<FBSHttpResponse> PostScoresResponse = MakeShareable(new FBSHttpResponse());
-			PostScoresResponse->OnHttpResponseReceived.BindLambda([this, PostScoresResponse]
+			PostScoresResponse->OnHttpResponseReceived.BindLambda([this, PostScoresResponse, PC]
 			{
-				ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld()));
 				if (PostScoresResponse->OK) // Successful scores post
 				{
 					SetAllPlayerScoresSavedToDatabase();
-					if (PC) PC->OnPostScoresResponseReceived();
+					check(PC);
+					PC->OnPostScoresResponseReceived();
 				}
 				else // Unsuccessful scores post
 				{
-					if (PC) PC->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
+					check(PC);
+					PC->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
 				}
-				
+
 				if (bQuitToDesktopAfterSave)
 				{
 					UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),
@@ -310,11 +236,9 @@ void UBSGameInstance::SavePlayerScoresToDatabase(const bool bWasValidToSave)
 		}
 		else // Unsuccessful access token retrieval
 		{
-			if (ABSPlayerController* PC = Cast<ABSPlayerController>(GetFirstLocalPlayerController(GetWorld())))
-			{
-				PC->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
-			}
-			
+			check(PC);
+			PC->OnPostScoresResponseReceived("SBW_SavedScoresLocallyOnly");
+
 			if (bQuitToDesktopAfterSave)
 			{
 				UKismetSystemLibrary::QuitGame(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0),

@@ -59,7 +59,11 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	TotalTrainingSamples = AgentParams.ScoreInfo.TotalTrainingSamples;
 
 	QTableToSpawnAreaIndexMap = MapMatrixTo5X5(AgentParams.SpawnAreaSize.Z, AgentParams.SpawnAreaSize.Y);
+	
+	#if !UE_BUILD_SHIPPING
 
+	#endif
+	
 	// Each row in QTable has size equal to ScaledSize, and so does each column
 	QTable = nc::zeros<float>(nc::Shape(M, N));
 	TrainingSamples = nc::zeros<int32>(nc::Shape(M, N));
@@ -101,6 +105,11 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 	#if !UE_BUILD_SHIPPING
 	if (bPrintDebug_QTableInit)
 	{
+		if (bPrintDebug_QTableInit)
+		{
+			UE_LOG(LogTargetManager, Display, TEXT("Unique Indices across entire mapping: %d Input Size: %d"), QTableToSpawnAreaIndexMap.Num(),
+			AgentParams.SpawnAreaSize.Z * AgentParams.SpawnAreaSize.Y);
+		}
 		UE_LOG(LogTargetManager, Display, TEXT("In QTable Size: %d  Actual QTable Size: %d"),
 			AgentParams.ScoreInfo.QTable.Num(), QTable.size());
 		UE_LOG(LogTargetManager, Display, TEXT("SpawnAreasRows: %d SpawnAreasColumns: %d"),
@@ -116,15 +125,8 @@ void UReinforcementLearningComponent::Init(const FRLAgentParams& AgentParams)
 void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 SpawnAreaIndex_First,
 	const int32 SpawnAreaIndex_Second)
 {
-	if (ActiveTargetPairs.FindByPredicate([&SpawnAreaIndex_First, &SpawnAreaIndex_Second](const FTargetPair& TargetPair)
-	{
-		return TargetPair.Second == SpawnAreaIndex_Second && TargetPair.First == SpawnAreaIndex_First;
-	}))
-	{
-		return;
-	}
 	ActiveTargetPairs.Emplace(SpawnAreaIndex_First, SpawnAreaIndex_Second);
-
+	
 	#if !UE_BUILD_SHIPPING
 	if (bPrintDebug_ActiveTargetPairs)
 	{
@@ -136,22 +138,26 @@ void UReinforcementLearningComponent::AddToActiveTargetPairs(const int32 SpawnAr
 
 void UReinforcementLearningComponent::SetActiveTargetPairReward(const int32 SpawnAreaIndex, const bool bHit)
 {
-	if (ActiveTargetPairs.IsEmpty()) return;
-
-	FTargetPair FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex);
-	if (FoundPair.First == -1 || FoundPair.Second == -1)
+	if (ActiveTargetPairs.IsEmpty())
 	{
-		UE_LOG(LogTargetManager, Warning, TEXT("SpawnAreaIndex not found in ActiveTargetPairs %d"), SpawnAreaIndex);
-		ActiveTargetPairs.Remove(FoundPair);
 		return;
 	}
-
-	/* Update reward */
-	const float Reward = bHit ? -1.f : 1.f;
-	FoundPair.SetReward(Reward);
-	ActiveTargetPairs.Remove(FoundPair);
-	TargetPairs.Enqueue(FoundPair);
-	ClearCachedTargetPairs();
+	
+	if (FTargetPair* FoundPair = FindTargetPairByCurrentIndex(SpawnAreaIndex))
+	{
+		// Update reward
+		FTargetPair Copy = *FoundPair;
+		FoundPair->SetReward(bHit ? -1.f : 1.f);
+		ActiveTargetPairs.RemoveSingle(Copy);
+		TargetPairs.Enqueue(MoveTemp(Copy));
+		ClearCachedTargetPairs();
+	}
+	#if !UE_BUILD_SHIPPING
+	else
+	{
+		UE_LOG(LogTargetManager, Warning, TEXT("SpawnAreaIndex not found in ActiveTargetPairs %d"), SpawnAreaIndex);
+	}
+	#endif
 }
 
 void UReinforcementLearningComponent::ClearCachedTargetPairs()
@@ -159,15 +165,11 @@ void UReinforcementLearningComponent::ClearCachedTargetPairs()
 	while (!TargetPairs.IsEmpty())
 	{
 		FTargetPair TargetPair;
-		if (!TargetPairs.Peek(TargetPair))
+		if (TargetPairs.Dequeue(TargetPair))
 		{
-			break;
+			FQTableUpdateParams UpdateParams = FQTableUpdateParams(TargetPair);
+			UpdateQTable(UpdateParams);
 		}
-
-		FQTableUpdateParams UpdateParams = FQTableUpdateParams(TargetPair);
-		UpdateQTable(UpdateParams);
-
-		TargetPairs.Pop();
 	}
 }
 
@@ -406,13 +408,12 @@ TArray<int32> UReinforcementLearningComponent::GetSpawnAreaIndexRange(const int3
 	return Found ? Found->MappedIndices : TArray<int32>();
 }
 
-FTargetPair UReinforcementLearningComponent::FindTargetPairByCurrentIndex(const int32 InCurrentIndex)
+FTargetPair* UReinforcementLearningComponent::FindTargetPairByCurrentIndex(const int32 InCurrentIndex)
 {
-	const FTargetPair* Found = ActiveTargetPairs.FindByPredicate([&InCurrentIndex](const FTargetPair& TargetPair)
+	return ActiveTargetPairs.FindByPredicate([&InCurrentIndex](const FTargetPair& TargetPair)
 	{
 		return TargetPair.Second == InCurrentIndex;
 	});
-	return Found ? *Found : FTargetPair();
 }
 
 // Debug functions

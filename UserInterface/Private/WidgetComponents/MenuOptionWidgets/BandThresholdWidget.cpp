@@ -2,21 +2,22 @@
 
 
 #include "WidgetComponents/MenuOptionWidgets/BandThresholdWidget.h"
-#include "Components/EditableTextBox.h"
-#include "Components/Slider.h"
+
+#include "GlobalConstants.h"
 #include "Components/TextBlock.h"
 
 void UBandThresholdWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 	OnSliderTextBoxValueChanged.AddUObject(this, &ThisClass::OnSliderTextBoxValueChanged_Threshold);
+	SetValues(Constants::MinValue_BandFrequencyThreshold, Constants::MaxValue_BandFrequencyThreshold,
+		Constants::SnapSize_BandFrequencyThreshold);
 	SetShowTooltipImage(false);
 }
 
 void UBandThresholdWidget::SetDefaultValue(const float Value, const int32 ChannelIndex)
 {
-	EditableTextBox->SetText(FText::AsNumber(Value));
-	Slider->SetValue(Value);
+	SetValue(Value);
 	const TArray ChannelNumber = {
 		FText::FromStringTable("/Game/StringTables/ST_Widgets.ST_Widgets", "AA_BandChannelText"),
 		FText::FromString(FString::FromInt(ChannelIndex + 1))

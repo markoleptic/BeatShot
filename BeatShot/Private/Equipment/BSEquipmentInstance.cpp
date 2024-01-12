@@ -3,12 +3,13 @@
 
 #include "Equipment/BSEquipmentInstance.h"
 
+#include "BSGameMode.h"
 #include "Character/BSCharacter.h"
 #include "Equipment/BSEquipmentDefinition.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/EngineTypes.h"
+#include "Equipment/BSGun.h"
 #include "GameFramework/Actor.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/Pawn.h"
 #include "Net/UnrealNetwork.h"
 
@@ -74,6 +75,13 @@ void UBSEquipmentInstance::SpawnEquipmentActors(const TArray<FBSEquipmentActorTo
 		{
 			AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(SpawnInfo.ActorToSpawn, FTransform::Identity,
 				OwningPawn);
+			if (ABSGun* Gun = Cast<ABSGun>(NewActor))
+			{
+				if (ABSGameMode* GameMode = Cast<ABSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+				{
+					GameMode->RegisterGun(Gun);
+				}
+			}
 			NewActor->FinishSpawning(FTransform::Identity, /*bIsDefaultTransform=*/ true);
 			NewActor->SetActorRelativeTransform(SpawnInfo.AttachTransform);
 			NewActor->AttachToComponent(AttachTarget, FAttachmentTransformRules::KeepRelativeTransform,

@@ -461,10 +461,10 @@ public:
 	USpawnArea* GetOriginSpawnArea() const { return OriginSpawnArea; }
 
 	/** Finds a SpawnArea with the matching InLocation using the AreaKeyMap for lookup */
-	USpawnArea* FindSpawnAreaFromLocation(const FVector& InLocation) const;
+	USpawnArea* FindSpawnArea(const FVector& InLocation) const;
 
 	/** Finds a SpawnArea with the matching TargetGuid using the GuidMap for lookup */
-	USpawnArea* FindSpawnAreaFromGuid(const FGuid& TargetGuid) const;
+	USpawnArea* FindSpawnArea(const FGuid& TargetGuid) const;
 
 	/** Returns the oldest SpawnArea flagged as recent */
 	USpawnArea* FindOldestRecentSpawnArea() const;
@@ -688,7 +688,9 @@ public:
 	/* ----------- */
 	/* -- Debug -- */
 	/* ----------- */
-
+	
+#if !UE_BUILD_SHIPPING
+	
 	void PrintDebug_NumRecentNumActive() const;
 
 	/** Shows the grid of spawn areas drawn as debug boxes */
@@ -759,6 +761,8 @@ public:
 	/** Prints various grid-distribution related info to log */
 	bool bDebug_Grid;
 
+#endif
+	
 private:
 	/** Whether or not to broadcast the RequestRLCSpawnArea when finding SpawnAreas */
 	bool bShouldAskRLCForSpawnAreas;

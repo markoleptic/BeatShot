@@ -175,6 +175,6 @@ private:
 	/** Whether or not to save scores, used as argument when calling EndGameMode() from DefaultGameMode */
 	bool bShouldSaveScores;
 
-	/** Whether or not to go to the MainMenu vs exiting to desktop. Used in Quit() */
+	/** Whether or not to go to the MainMenuWidget vs exiting to desktop. Used in Quit() */
 	bool bGotoMainMenu;
 };
